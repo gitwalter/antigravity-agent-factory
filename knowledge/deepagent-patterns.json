@@ -1,0 +1,66 @@
+{
+    "metadata": {
+        "name": "DeepAgent Patterns",
+        "description": "DeepAgent framework patterns including unified reasoning, memory folding, task planning, and subagent delegation",
+        "version": "1.0.0",
+        "last_updated": "2026-02-07",
+        "concepts": [
+            "unified_reasoning",
+            "memory_folding",
+            "task_planning",
+            "subagent_delegation"
+        ]
+    },
+    "unified_agentic_reasoning": {
+        "description": "Single stream of thought with autonomous tool discovery and usage",
+        "key_concept": "Agent maintains one coherent reasoning thread while dynamically discovering and using tools",
+        "benefits": [
+            "Coherent reasoning",
+            "Dynamic tool selection",
+            "Better context management"
+        ],
+        "implementation_pattern": "Agent uses a single prompt with tool descriptions, autonomously decides when to use tools based on task needs"
+    },
+    "memory_folding": {
+        "description": "Brain-inspired memory architecture with episodic, working, and tool memory",
+        "memory_types": {
+            "episodic_memory": {
+                "description": "Long-term storage of past experiences and conversations",
+                "implementation": "Vector database with semantic search",
+                "use_case": "Retrieve relevant past interactions"
+            },
+            "working_memory": {
+                "description": "Short-term active context for current task",
+                "implementation": "Recent messages + retrieved episodic memories",
+                "use_case": "Maintain current conversation context"
+            },
+            "tool_memory": {
+                "description": "Memory of tool usage patterns and results",
+                "implementation": "Cache of tool calls and outcomes",
+                "use_case": "Optimize tool selection and avoid redundant calls"
+            }
+        },
+        "implementation": "```python\nfrom langgraph.checkpoint.memory import MemorySaver\nfrom langgraph.store.memory import InMemoryStore\n\nclass MemoryFoldingAgent:\n    def __init__(self):\n        # Episodic memory (long-term)\n        self.episodic_store = InMemoryStore()\n        \n        # Working memory (checkpointer)\n        self.working_memory = MemorySaver()\n        \n        # Tool memory\n        self.tool_cache = {}\n    \n    async def remember(self, namespace, key, value):\n        '''Store in episodic memory'''\n        await self.episodic_store.put(\n            namespace=namespace,\n            key=key,\n            value=value\n        )\n    \n    async def recall(self, namespace, query, limit=5):\n        '''Retrieve from episodic memory'''\n        results = await self.episodic_store.search(\n            namespace_prefix=namespace,\n            query=query,\n            limit=limit\n        )\n        return results\n    \n    def cache_tool_result(self, tool_name, input_hash, result):\n        '''Cache tool results'''\n        if tool_name not in self.tool_cache:\n            self.tool_cache[tool_name] = {}\n        self.tool_cache[tool_name][input_hash] = result\n```"
+    },
+    "task_planning": {
+        "description": "Breaking complex tasks into discrete steps with progress tracking",
+        "key_features": [
+            "Task decomposition",
+            "Progress tracking",
+            "Dynamic replanning"
+        ],
+        "implementation": "```python\nfrom typing import TypedDict, List\nfrom langgraph.graph import StateGraph, END\n\nclass TaskPlanState(TypedDict):\n    objective: str\n    plan: List[dict]\n    current_step: int\n    completed_steps: List[dict]\n    context: dict\n\nclass TaskPlanningAgent:\n    def __init__(self, llm):\n        self.llm = llm\n        self.graph = self.build_graph()\n    \n    def build_graph(self):\n        workflow = StateGraph(TaskPlanState)\n        \n        workflow.add_node(\"plan\", self.create_plan)\n        workflow.add_node(\"execute\", self.execute_step)\n        workflow.add_node(\"evaluate\", self.evaluate_progress)\n        workflow.add_node(\"replan\", self.replan_if_needed)\n        \n        workflow.set_entry_point(\"plan\")\n        workflow.add_edge(\"plan\", \"execute\")\n        workflow.add_edge(\"execute\", \"evaluate\")\n        workflow.add_conditional_edges(\n            \"evaluate\",\n            self.should_continue,\n            {\"continue\": \"execute\", \"replan\": \"replan\", \"end\": END}\n        )\n        workflow.add_edge(\"replan\", \"execute\")\n        \n        return workflow.compile()\n    \n    async def create_plan(self, state: TaskPlanState):\n        prompt = f'''Create a detailed plan for: {state[\"objective\"]}\n        \nProvide numbered steps with clear success criteria.'''\n        \n        response = await self.llm.ainvoke(prompt)\n        steps = self.parse_plan(response.content)\n        \n        return {\"plan\": steps, \"current_step\": 0}\n    \n    async def execute_step(self, state: TaskPlanState):\n        current = state[\"plan\"][state[\"current_step\"]]\n        \n        result = await self.llm.ainvoke(\n            f\"Execute: {current['description']}\\nContext: {state['context']}\"\n        )\n        \n        return {\n            \"completed_steps\": state[\"completed_steps\"] + [{\n                **current,\n                \"result\": result.content\n            }],\n            \"current_step\": state[\"current_step\"] + 1\n        }\n    \n    async def evaluate_progress(self, state: TaskPlanState):\n        # Evaluate if we're on track\n        return state\n    \n    def should_continue(self, state: TaskPlanState):\n        if state[\"current_step\"] >= len(state[\"plan\"]):\n            return \"end\"\n        # Check if replanning needed\n        return \"continue\"\n```"
+    },
+    "context_management_via_files": {
+        "description": "Offload context to file system to prevent overflow",
+        "key_concept": "Store large context in files, reference them instead of keeping in memory",
+        "benefits": [
+            "Unlimited context size", \"Cost reduction\", \"Better organization\"],\n    \"implementation\": \"```python\nimport json\nfrom pathlib import Path\n\nclass FileContextManager:\n    def __init__(self, context_dir=\".context\"):\n        self.context_dir = Path(context_dir)\n        self.context_dir.mkdir(exist_ok=True)\n        self.context_index = {}\n    \n    def save_context(self, key: str, data: dict):\n        '''Save context to file'''\n        file_path = self.context_dir / f\"{key}.json\"\n        with open(file_path, 'w') as f:\n            json.dump(data, f, indent=2)\n        \n        self.context_index[key] = {\n            \"path\": str(file_path),\n            \"summary\": data.get(\"summary\", \"\")\n        }\n    \n    def load_context(self, key: str) -> dict:\n        '''Load context from file'''\n        if key not in self.context_index:\n            return {}\n        \n        file_path = Path(self.context_index[key][\"path\"])\n        with open(file_path, 'r') as f:\n            return json.load(f)\n    \n    def get_context_summary(self) -> str:\n        '''Get summary of all available context'''\n        summaries = []\n        for key, info in self.context_index.items():\n            summaries.append(f\"{key}: {info['summary']}\")\n        return \"\\n\".join(summaries)\n    \n    def compress_context(self, llm):\n        '''Compress old context using LLM summarization'''\n        for key in list(self.context_index.keys()):\n            context = self.load_context(key)\n            if len(str(context)) > 10000:  # Threshold\n                summary = llm.invoke(f\"Summarize: {context}\")\n                self.save_context(f\"{key}_summary\", {\"summary\": summary.content})\n```\"
+        },
+  \"subagent_delegation\": {
+    \"description\": \"Spawning specialized subagents for context isolation and parallel execution\",\n    \"key_concept\": \"Main agent delegates subtasks to specialized subagents with isolated context\",\n    \"benefits\": [\"Context isolation\", \"Parallel execution\", \"Specialization\", \"Scalability\"],\n    \"implementation\": \"```python\nimport asyncio\nfrom typing import List, Dict\n\nclass SubagentCoordinator:\n    def __init__(self, main_llm):\n        self.main_llm = main_llm\n        self.subagents = {}\n        self.active_tasks = {}\n    \n    def create_subagent(self, role: str, tools: List, context: Dict):\n        '''Create a specialized subagent'''\n        subagent_id = f\"{role}_{len(self.subagents)}\"\n        \n        self.subagents[subagent_id] = {\n            \"role\": role,\n            \"tools\": tools,\n            \"context\": context,\n            \"llm\": self.main_llm  # Could be specialized LLM\n        }\n        \n        return subagent_id\n    \n    async def delegate_task(self, subagent_id: str, task: str):\n        '''Delegate a task to a subagent'''\n        subagent = self.subagents[subagent_id]\n        \n        prompt = f'''Role: {subagent[\"role\"]}\nContext: {subagent[\"context\"]}\nTask: {task}\n\nExecute this task using your specialized knowledge.'''\n        \n        result = await subagent[\"llm\"].ainvoke(prompt)\n        return result.content\n    \n    async def parallel_delegation(self, tasks: List[tuple]):\n        '''Execute multiple subagent tasks in parallel'''\n        # tasks = [(subagent_id, task), ...]\n        \n        results = await asyncio.gather(*[\n            self.delegate_task(subagent_id, task)\n            for subagent_id, task in tasks\n        ])\n        \n        return dict(zip([t[0] for t in tasks], results))\n    \n    async def coordinate(self, objective: str):\n        '''Main coordination logic'''\n        # Break down objective\n        plan = await self.main_llm.ainvoke(\n            f\"Break down this objective into specialized subtasks: {objective}\"\n        )\n        \n        # Create subagents\n        researcher = self.create_subagent(\"researcher\", [], {})\n        analyst = self.create_subagent(\"analyst\", [], {})\n        writer = self.create_subagent(\"writer\", [], {})\n        \n        # Delegate in parallel\n        results = await self.parallel_delegation([\n            (researcher, \"Research the topic\"),\n            (analyst, \"Analyze findings\"),\n        ])\n        \n        # Final synthesis\n        final_result = await self.delegate_task(\n            writer,\n            f\"Synthesize: {results}\"\n        )\n        \n        return final_result\n```\"
+    },
+  \"long_term_memory\": {
+    \"description\": \"Persistent memory across conversations using LangGraph Memory Store\",\n    \"key_features\": [\"Persistent storage\", \"Semantic search\", \"Cross-conversation context\"],\n    \"implementation\": \"```python\nfrom langgraph.store.memory import InMemoryStore\nfrom langgraph.checkpoint.memory import MemorySaver\n\nclass LongTermMemoryAgent:\n    def __init__(self):\n        self.store = InMemoryStore()\n        self.checkpointer = MemorySaver()\n        self.user_memories = {}\n    \n    async def store_memory(self, user_id: str, memory_type: str, content: dict):\n        '''Store a memory for a user'''\n        namespace = (\"users\", user_id, memory_type)\n        \n        await self.store.put(\n            namespace=namespace,\n            key=str(len(self.user_memories.get(user_id, []))),\n            value=content\n        )\n    \n    async def retrieve_memories(self, user_id: str, query: str, limit=5):\n        '''Retrieve relevant memories for a user'''\n        namespace = (\"users\", user_id)\n        \n        results = await self.store.search(\n            namespace_prefix=namespace,\n            query=query,\n            limit=limit\n        )\n        \n        return [item.value for item in results]\n    \n    async def update_user_profile(self, user_id: str, new_info: dict):\n        '''Update user profile with new information'''\n        current_profile = await self.store.get(\n            namespace=(\"users\", user_id),\n            key=\"profile\"\n        )\n        \n        if current_profile:\n            profile = {**current_profile.value, **new_info}\n        else:\n            profile = new_info\n        \n        await self.store.put(\n            namespace=(\"users\", user_id),\n            key=\"profile\",\n            value=profile\n        )\n```\"
+},
+  \"best_practices\": [\n    \"Use memory folding to manage context efficiently\",\n    \"Implement task planning for complex objectives\",\n    \"Offload large context to files\",\n    \"Use subagents for parallel execution and specialization\",\n    \"Maintain long-term memory for personalization\",\n    \"Implement progress tracking and checkpointing\",\n    \"Use semantic search for memory retrieval\",\n    \"Compress old memories to save space\"\n  ],\n  \"use_cases\": [\n    \"Personal assistants with long-term memory\",\n    \"Complex project management\",\n    \"Research and analysis tasks\",\n    \"Multi-step workflows\",\n    \"Collaborative agent systems\"\n  ]\n}

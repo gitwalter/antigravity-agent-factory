@@ -1,0 +1,41 @@
+# Pre-commit hooks configuration for Antigravity Agent Factory
+# See https://pre-commit.com for more information
+
+repos:
+  # Python code formatting and linting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  # Type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-all]
+        args: [--ignore-missing-imports, --strict]
+
+  # JSON validation
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-json
+      - id: check-yaml
+      - id: check-toml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+
+  # Weekly blueprint version updates
+  - repo: local
+    hooks:
+      - id: blueprint-version-check
+        name: Weekly Blueprint Version Check
+        entry: python scripts/pre_commit_version_check.py
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
