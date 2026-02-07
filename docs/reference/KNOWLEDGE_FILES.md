@@ -1,6 +1,6 @@
 ﻿# Knowledge Files Catalog
 
-This factory currently includes **83 knowledge files** covering various aspects of AI development, project management, and technology stacks.
+This factory currently includes **87 knowledge files** covering various aspects of AI development, project management, and technology stacks.
 
 | File | Type | Description |
 |------|------|-------------|
