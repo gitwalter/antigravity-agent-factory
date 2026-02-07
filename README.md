@@ -89,14 +89,14 @@ antigravity-agent-factory/
 ├── .agent/
 │   ├── agents/                  # Factory's own agents (11 agents)
 │   │   └── *.md                 # debug-conductor, integrity-guardian, knowledge-evolution, etc.
-│   └── skills/                  # Factory's own skills (35 skills)
+│   └── skills/                  # Factory's own skills (36 skills)
 │       ├── agent-generation/
+│       ├── ai-agent-dev/
 │       ├── algo-trading/
 │       ├── alignment-check/
 │       ├── analyze-knowledge-gaps/
 │       ├── axiom-selection/
 │       ├── ci-monitor/
-│       ├── commit-release/
 │       └── ...                       # + more skills
 ├── patterns/                    # Reusable patterns (75+ files)
 │   ├── axioms/                  # Layer 0 axiom definitions
