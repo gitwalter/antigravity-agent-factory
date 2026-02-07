@@ -1,182 +1,183 @@
 {
-    "metadata": {
-        "name": "ML Agent Frameworks",
-        "description": "Comprehensive patterns for ML-based agent frameworks including PyTorch, TensorFlow, Hugging Face Transformers, and AgentTorch",
-        "version": "1.0.0",
-        "last_updated": "2026-02-07",
-        "frameworks": [
-            "pytorch",
-            "tensorflow",
-            "transformers",
-            "agenttorch"
-        ]
+  "metadata": {
+    "name": "ML Agent Frameworks",
+    "description": "Comprehensive patterns for ML-based agent frameworks including PyTorch, TensorFlow, Hugging Face Transformers, and AgentTorch",
+    "version": "1.0.0",
+    "last_updated": "2026-02-07",
+    "frameworks": [
+      "pytorch",
+      "tensorflow",
+      "transformers",
+      "agenttorch"
+    ],
+    "last_version_update": "2026-02-08T00:06:37.917053"
+  },
+  "versions": {
+    "torch": "1.0.2",
+    "tensorflow": "2.20.0",
+    "transformers": "5.1.0",
+    "agenttorch": "0.5.2"
+  },
+  "pytorch_agents": {
+    "description": "PyTorch-based agent development with TorchRL for reinforcement learning",
+    "torchrl": {
+      "description": "PyTorch library for RL with multi-agent support",
+      "key_features": [
+        "Modular environment wrappers",
+        "Replay buffers for experience storage",
+        "Multi-agent coordination",
+        "Distributed training support"
+      ],
+      "basic_agent_example": "```python\nimport torch\nimport torch.nn as nn\nfrom torchrl.data import ReplayBuffer\nfrom torchrl.envs import GymEnv\nfrom torchrl.modules import MLP, QValueActor\n\nclass DQNAgent:\n    def __init__(self, env_name, hidden_size=128):\n        self.env = GymEnv(env_name)\n        \n        # Q-network\n        self.q_network = nn.Sequential(\n            MLP(\n                in_features=self.env.observation_spec['observation'].shape[-1],\n                out_features=self.env.action_spec.space.n,\n                num_cells=[hidden_size, hidden_size]\n            )\n        )\n        \n        # Replay buffer\n        self.replay_buffer = ReplayBuffer(storage_size=10000)\n        \n        self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=0.001)\n    \n    def select_action(self, state, epsilon=0.1):\n        if torch.rand(1) < epsilon:\n            return self.env.action_spec.rand()\n        else:\n            with torch.no_grad():\n                q_values = self.q_network(state)\n                return q_values.argmax()\n    \n    def train_step(self, batch_size=32):\n        if len(self.replay_buffer) < batch_size:\n            return\n        \n        batch = self.replay_buffer.sample(batch_size)\n        \n        # Compute Q-values\n        q_values = self.q_network(batch['observation'])\n        next_q_values = self.q_network(batch['next_observation'])\n        \n        # Compute target\n        target = batch['reward'] + 0.99 * next_q_values.max(dim=1)[0] * (1 - batch['done'])\n        \n        # Compute loss\n        loss = nn.functional.mse_loss(q_values.gather(1, batch['action'].unsqueeze(1)), target.unsqueeze(1))\n        \n        # Optimize\n        self.optimizer.zero_grad()\n        loss.backward()\n        self.optimizer.step()\n        \n        return loss.item()\n```",
+      "multi_agent_example": "```python\nfrom torchrl.envs import ParallelEnv\nfrom torchrl.modules import MultiAgentMLP\n\nclass MultiAgentSystem:\n    def __init__(self, num_agents=3, env_name='CartPole-v1'):\n        # Create parallel environments\n        self.env = ParallelEnv(num_workers=num_agents, create_env_fn=lambda: GymEnv(env_name))\n        \n        # Shared policy network\n        self.policy = MultiAgentMLP(\n            n_agent_inputs=self.env.observation_spec['observation'].shape[-1],\n            n_agent_outputs=self.env.action_spec.space.n,\n            n_agents=num_agents,\n            centralised=False,\n            share_params=True\n        )\n    \n    def train(self, num_episodes=1000):\n        for episode in range(num_episodes):\n            tensordict = self.env.reset()\n            done = False\n            \n            while not done:\n                # Get actions for all agents\n                tensordict = self.policy(tensordict)\n                \n                # Step environment\n                tensordict = self.env.step(tensordict)\n                \n                done = tensordict['done'].all()\n                \n                # Update policy\n                self.update_policy(tensordict)\n```"
     },
-    "versions": {
-        "torch": "2.6.0",
-        "tensorflow": "2.20.0",
-        "transformers": "5.1.0",
-        "agenttorch": "0.5.2"
-    },
-    "pytorch_agents": {
-        "description": "PyTorch-based agent development with TorchRL for reinforcement learning",
-        "torchrl": {
-            "description": "PyTorch library for RL with multi-agent support",
-            "key_features": [
-                "Modular environment wrappers",
-                "Replay buffers for experience storage",
-                "Multi-agent coordination",
-                "Distributed training support"
-            ],
-            "basic_agent_example": "```python\nimport torch\nimport torch.nn as nn\nfrom torchrl.data import ReplayBuffer\nfrom torchrl.envs import GymEnv\nfrom torchrl.modules import MLP, QValueActor\n\nclass DQNAgent:\n    def __init__(self, env_name, hidden_size=128):\n        self.env = GymEnv(env_name)\n        \n        # Q-network\n        self.q_network = nn.Sequential(\n            MLP(\n                in_features=self.env.observation_spec['observation'].shape[-1],\n                out_features=self.env.action_spec.space.n,\n                num_cells=[hidden_size, hidden_size]\n            )\n        )\n        \n        # Replay buffer\n        self.replay_buffer = ReplayBuffer(storage_size=10000)\n        \n        self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=0.001)\n    \n    def select_action(self, state, epsilon=0.1):\n        if torch.rand(1) < epsilon:\n            return self.env.action_spec.rand()\n        else:\n            with torch.no_grad():\n                q_values = self.q_network(state)\n                return q_values.argmax()\n    \n    def train_step(self, batch_size=32):\n        if len(self.replay_buffer) < batch_size:\n            return\n        \n        batch = self.replay_buffer.sample(batch_size)\n        \n        # Compute Q-values\n        q_values = self.q_network(batch['observation'])\n        next_q_values = self.q_network(batch['next_observation'])\n        \n        # Compute target\n        target = batch['reward'] + 0.99 * next_q_values.max(dim=1)[0] * (1 - batch['done'])\n        \n        # Compute loss\n        loss = nn.functional.mse_loss(q_values.gather(1, batch['action'].unsqueeze(1)), target.unsqueeze(1))\n        \n        # Optimize\n        self.optimizer.zero_grad()\n        loss.backward()\n        self.optimizer.step()\n        \n        return loss.item()\n```",
-            "multi_agent_example": "```python\nfrom torchrl.envs import ParallelEnv\nfrom torchrl.modules import MultiAgentMLP\n\nclass MultiAgentSystem:\n    def __init__(self, num_agents=3, env_name='CartPole-v1'):\n        # Create parallel environments\n        self.env = ParallelEnv(num_workers=num_agents, create_env_fn=lambda: GymEnv(env_name))\n        \n        # Shared policy network\n        self.policy = MultiAgentMLP(\n            n_agent_inputs=self.env.observation_spec['observation'].shape[-1],\n            n_agent_outputs=self.env.action_spec.space.n,\n            n_agents=num_agents,\n            centralised=False,\n            share_params=True\n        )\n    \n    def train(self, num_episodes=1000):\n        for episode in range(num_episodes):\n            tensordict = self.env.reset()\n            done = False\n            \n            while not done:\n                # Get actions for all agents\n                tensordict = self.policy(tensordict)\n                \n                # Step environment\n                tensordict = self.env.step(tensordict)\n                \n                done = tensordict['done'].all()\n                \n                # Update policy\n                self.update_policy(tensordict)\n```"
-        },
-        "best_practices": [
-            "Use GPU acceleration for training (model.to('cuda'))",
-            "Implement proper exploration strategies (epsilon-greedy, Boltzmann)",
-            "Use experience replay for stable learning",
-            "Normalize observations and rewards",
-            "Implement target networks for DQN variants",
-            "Log metrics with TensorBoard or Weights & Biases",
-            "Save checkpoints regularly",
-            "Use distributed training for large-scale problems"
-        ]
-    },
-    "tensorflow_agents": {
-        "description": "TensorFlow-based agent development with TF-Agents library",
-        "tf_agents": {
-            "description": "TensorFlow library for RL with production-ready components",
-            "key_features": [
-                "Modular agent implementations (DQN, PPO, SAC)",
-                "TensorFlow 2.x native",
-                "Distributed training support",
-                "Production deployment ready"
-            ],
-            "basic_agent_example": "```python\nimport tensorflow as tf\nfrom tf_agents.agents.dqn import dqn_agent\nfrom tf_agents.environments import suite_gym, tf_py_environment\nfrom tf_agents.networks import q_network\nfrom tf_agents.replay_buffers import tf_uniform_replay_buffer\nfrom tf_agents.utils import common\n\nclass TFAgent:\n    def __init__(self, env_name='CartPole-v1'):\n        # Create environment\n        train_py_env = suite_gym.load(env_name)\n        self.train_env = tf_py_environment.TFPyEnvironment(train_py_env)\n        \n        # Create Q-network\n        fc_layer_params = (100, 50)\n        self.q_net = q_network.QNetwork(\n            self.train_env.observation_spec(),\n            self.train_env.action_spec(),\n            fc_layer_params=fc_layer_params\n        )\n        \n        # Create DQN agent\n        optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)\n        train_step_counter = tf.Variable(0)\n        \n        self.agent = dqn_agent.DqnAgent(\n            self.train_env.time_step_spec(),\n            self.train_env.action_spec(),\n            q_network=self.q_net,\n            optimizer=optimizer,\n            td_errors_loss_fn=common.element_wise_squared_loss,\n            train_step_counter=train_step_counter\n        )\n        \n        self.agent.initialize()\n        \n        # Create replay buffer\n        self.replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(\n            data_spec=self.agent.collect_data_spec,\n            batch_size=self.train_env.batch_size,\n            max_length=100000\n        )\n    \n    def collect_step(self, environment, policy):\n        time_step = environment.current_time_step()\n        action_step = policy.action(time_step)\n        next_time_step = environment.step(action_step.action)\n        traj = trajectory.from_transition(time_step, action_step, next_time_step)\n        \n        self.replay_buffer.add_batch(traj)\n    \n    def train(self, num_iterations=20000):\n        dataset = self.replay_buffer.as_dataset(\n            num_parallel_calls=3,\n            sample_batch_size=64,\n            num_steps=2\n        ).prefetch(3)\n        \n        iterator = iter(dataset)\n        \n        for _ in range(num_iterations):\n            # Collect experience\n            self.collect_step(self.train_env, self.agent.collect_policy)\n            \n            # Train\n            experience, unused_info = next(iterator)\n            train_loss = self.agent.train(experience).loss\n```"
-        },
-        "best_practices": [
-            "Use TF-Agents' built-in agents when possible",
-            "Leverage TensorFlow's distributed training",
-            "Use TensorBoard for monitoring",
-            "Implement proper checkpointing",
-            "Use TF-Agents metrics for evaluation",
-            "Deploy with TensorFlow Serving for production"
-        ]
-    },
-    "huggingface_agents": {
-        "description": "Hugging Face Transformers Agents with tool integration",
-        "key_features": [
-            "Pre-built agents with LLM backends",
-            "Tool integration framework",
-            "Multi-modal support",
-            "Easy deployment"
-        ],
-        "basic_agent_example": "```python\nfrom transformers import Tool, HfAgent, load_tool\n\n# Define custom tool\nclass CalculatorTool(Tool):\n    name = \"calculator\"\n    description = \"Performs basic arithmetic operations\"\n    inputs = {\"expression\": {\"type\": \"string\", \"description\": \"Math expression to evaluate\"}}\n    output_type = \"string\"\n    \n    def forward(self, expression: str):\n        try:\n            result = eval(expression)\n            return f\"Result: {result}\"\n        except Exception as e:\n            return f\"Error: {str(e)}\"\n\n# Create agent with tools\nagent = HfAgent(\n    \"https://api-inference.huggingface.co/models/bigcode/starcoder\",\n    additional_tools=[CalculatorTool()]\n)\n\n# Run agent\nresult = agent.run(\n    \"What is 25 * 17 + 42?\",\n    return_code=True\n)\nprint(result)\n```",
-        "tool_integration": "```python\nfrom transformers import Tool, ReactCodeAgent\nimport anthropic\n\n# Use Claude as backend\nclient = anthropic.Anthropic()\n\nclass WebSearchTool(Tool):\n    name = \"web_search\"\n    description = \"Search the web for information\"\n    inputs = {\"query\": {\"type\": \"string\"}}\n    output_type = \"string\"\n    \n    def forward(self, query: str):\n        # Implement web search\n        return search_results\n\n# Create agent with Claude backend\nagent = ReactCodeAgent(\n    tools=[WebSearchTool(), load_tool(\"image-question-answering\")],\n    llm_engine=lambda messages: client.messages.create(\n        model=\"claude-opus-4.6\",\n        max_tokens=4096,\n        messages=messages\n    ).content[0].text\n)\n\nresult = agent.run(\"Find information about AI agents and summarize\")\n```",
-        "best_practices": [
-            "Use pre-built tools from Hugging Face Hub when available",
-            "Implement proper error handling in custom tools",
-            "Use appropriate LLM backends (GPT-4, Claude, etc.)",
-            "Cache tool results when possible",
-            "Implement tool timeouts",
-            "Log tool usage for debugging"
-        ]
-    },
-    "agenttorch": {
-        "description": "Framework for large-scale population-based agent simulations",
-        "key_features": [
-            "Simulate millions of agents",
-            "GPU acceleration",
-            "Differentiable simulations",
-            "Policy optimization"
-        ],
-        "basic_simulation": "```python\nimport torch\nfrom agenttorch import AgentTorchSimulation, Agent, Environment\n\nclass Citizen(Agent):\n    def __init__(self, age, income):\n        super().__init__()\n        self.age = age\n        self.income = income\n        self.health = 100.0\n    \n    def step(self, environment):\n        # Agent behavior\n        if self.income < environment.poverty_line:\n            self.health -= 0.1\n        \n        # Aging\n        if environment.time_step % 365 == 0:\n            self.age += 1\n\nclass CityEnvironment(Environment):\n    def __init__(self, num_agents=100000):\n        super().__init__()\n        self.poverty_line = 30000\n        self.time_step = 0\n        \n        # Initialize agents on GPU\n        self.agents = [\n            Citizen(\n                age=torch.randint(18, 80, (1,)).item(),\n                income=torch.randint(20000, 100000, (1,)).item()\n            )\n            for _ in range(num_agents)\n        ]\n    \n    def step(self):\n        self.time_step += 1\n        for agent in self.agents:\n            agent.step(self)\n\n# Run simulation\nsim = AgentTorchSimulation(CityEnvironment(num_agents=1000000))\nsim.run(num_steps=365 * 10)  # 10 years\n```",
-        "best_practices": [
-            "Use vectorized operations for agent updates",
-            "Leverage GPU for large populations",
-            "Implement efficient state representations",
-            "Use batched processing",
-            "Monitor memory usage",
-            "Implement checkpointing for long simulations"
-        ]
-    },
-    "framework_comparison": {
-        "selection_matrix": [
-            {
-                "framework": "PyTorch + TorchRL",
-                "best_for": "Research, rapid prototyping, custom RL algorithms",
-                "pros": [
-                    "Flexible",
-                    "Large community",
-                    "Easy debugging"
-                ],
-                "cons": [
-                    "More boilerplate",
-                    "Manual optimization needed"
-                ],
-                "use_when": "Building novel RL algorithms or need maximum flexibility"
-            },
-            {
-                "framework": "TensorFlow + TF-Agents",
-                "best_for": "Production deployment, distributed training",
-                "pros": [
-                    "Production-ready",
-                    "TF Serving integration",
-                    "Robust"
-                ],
-                "cons": [
-                    "Less flexible",
-                    "Steeper learning curve"
-                ],
-                "use_when": "Deploying to production or need distributed training"
-            },
-            {
-                "framework": "Hugging Face Transformers Agents",
-                "best_for": "LLM-based agents with tools, quick prototyping",
-                "pros": [
-                    "Easy to use",
-                    "Pre-built tools",
-                    "Multi-modal"
-                ],
-                "cons": [
-                    "Limited to LLM-based agents",
-                    "Less control"
-                ],
-                "use_when": "Building LLM agents with tool use capabilities"
-            },
-            {
-                "framework": "AgentTorch",
-                "best_for": "Large-scale population simulations",
-                "pros": [
-                    "Scales to millions of agents",
-                    "GPU accelerated",
-                    "Differentiable"
-                ],
-                "cons": [
-                    "Specialized use case",
-                    "Limited documentation"
-                ],
-                "use_when": "Simulating large populations or epidemiological models"
-            }
-        ]
-    },
-    "integration_patterns": {
-        "llm_with_rl": {
-            "description": "Combine LLM reasoning with RL for decision making",
-            "example": "Use LLM to generate high-level plans, RL to execute low-level actions"
-        },
-        "multi_framework": {
-            "description": "Use multiple frameworks for different components",
-            "example": "Hugging Face for NLP, PyTorch for custom RL, TensorFlow for deployment"
-        },
-        "hybrid_agents": {
-            "description": "Combine rule-based, ML-based, and LLM-based components",
-            "example": "Rule-based safety checks + LLM reasoning + RL optimization"
-        }
-    },
-    "resources": [
-        "https://pytorch.org/rl/",
-        "https://www.tensorflow.org/agents",
-        "https://huggingface.co/docs/transformers/transformers_agents",
-        "https://github.com/AgentTorch/AgentTorch"
+    "best_practices": [
+      "Use GPU acceleration for training (model.to('cuda'))",
+      "Implement proper exploration strategies (epsilon-greedy, Boltzmann)",
+      "Use experience replay for stable learning",
+      "Normalize observations and rewards",
+      "Implement target networks for DQN variants",
+      "Log metrics with TensorBoard or Weights & Biases",
+      "Save checkpoints regularly",
+      "Use distributed training for large-scale problems"
     ]
+  },
+  "tensorflow_agents": {
+    "description": "TensorFlow-based agent development with TF-Agents library",
+    "tf_agents": {
+      "description": "TensorFlow library for RL with production-ready components",
+      "key_features": [
+        "Modular agent implementations (DQN, PPO, SAC)",
+        "TensorFlow 2.x native",
+        "Distributed training support",
+        "Production deployment ready"
+      ],
+      "basic_agent_example": "```python\nimport tensorflow as tf\nfrom tf_agents.agents.dqn import dqn_agent\nfrom tf_agents.environments import suite_gym, tf_py_environment\nfrom tf_agents.networks import q_network\nfrom tf_agents.replay_buffers import tf_uniform_replay_buffer\nfrom tf_agents.utils import common\n\nclass TFAgent:\n    def __init__(self, env_name='CartPole-v1'):\n        # Create environment\n        train_py_env = suite_gym.load(env_name)\n        self.train_env = tf_py_environment.TFPyEnvironment(train_py_env)\n        \n        # Create Q-network\n        fc_layer_params = (100, 50)\n        self.q_net = q_network.QNetwork(\n            self.train_env.observation_spec(),\n            self.train_env.action_spec(),\n            fc_layer_params=fc_layer_params\n        )\n        \n        # Create DQN agent\n        optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)\n        train_step_counter = tf.Variable(0)\n        \n        self.agent = dqn_agent.DqnAgent(\n            self.train_env.time_step_spec(),\n            self.train_env.action_spec(),\n            q_network=self.q_net,\n            optimizer=optimizer,\n            td_errors_loss_fn=common.element_wise_squared_loss,\n            train_step_counter=train_step_counter\n        )\n        \n        self.agent.initialize()\n        \n        # Create replay buffer\n        self.replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(\n            data_spec=self.agent.collect_data_spec,\n            batch_size=self.train_env.batch_size,\n            max_length=100000\n        )\n    \n    def collect_step(self, environment, policy):\n        time_step = environment.current_time_step()\n        action_step = policy.action(time_step)\n        next_time_step = environment.step(action_step.action)\n        traj = trajectory.from_transition(time_step, action_step, next_time_step)\n        \n        self.replay_buffer.add_batch(traj)\n    \n    def train(self, num_iterations=20000):\n        dataset = self.replay_buffer.as_dataset(\n            num_parallel_calls=3,\n            sample_batch_size=64,\n            num_steps=2\n        ).prefetch(3)\n        \n        iterator = iter(dataset)\n        \n        for _ in range(num_iterations):\n            # Collect experience\n            self.collect_step(self.train_env, self.agent.collect_policy)\n            \n            # Train\n            experience, unused_info = next(iterator)\n            train_loss = self.agent.train(experience).loss\n```"
+    },
+    "best_practices": [
+      "Use TF-Agents' built-in agents when possible",
+      "Leverage TensorFlow's distributed training",
+      "Use TensorBoard for monitoring",
+      "Implement proper checkpointing",
+      "Use TF-Agents metrics for evaluation",
+      "Deploy with TensorFlow Serving for production"
+    ]
+  },
+  "huggingface_agents": {
+    "description": "Hugging Face Transformers Agents with tool integration",
+    "key_features": [
+      "Pre-built agents with LLM backends",
+      "Tool integration framework",
+      "Multi-modal support",
+      "Easy deployment"
+    ],
+    "basic_agent_example": "```python\nfrom transformers import Tool, HfAgent, load_tool\n\n# Define custom tool\nclass CalculatorTool(Tool):\n    name = \"calculator\"\n    description = \"Performs basic arithmetic operations\"\n    inputs = {\"expression\": {\"type\": \"string\", \"description\": \"Math expression to evaluate\"}}\n    output_type = \"string\"\n    \n    def forward(self, expression: str):\n        try:\n            result = eval(expression)\n            return f\"Result: {result}\"\n        except Exception as e:\n            return f\"Error: {str(e)}\"\n\n# Create agent with tools\nagent = HfAgent(\n    \"https://api-inference.huggingface.co/models/bigcode/starcoder\",\n    additional_tools=[CalculatorTool()]\n)\n\n# Run agent\nresult = agent.run(\n    \"What is 25 * 17 + 42?\",\n    return_code=True\n)\nprint(result)\n```",
+    "tool_integration": "```python\nfrom transformers import Tool, ReactCodeAgent\nimport anthropic\n\n# Use Claude as backend\nclient = anthropic.Anthropic()\n\nclass WebSearchTool(Tool):\n    name = \"web_search\"\n    description = \"Search the web for information\"\n    inputs = {\"query\": {\"type\": \"string\"}}\n    output_type = \"string\"\n    \n    def forward(self, query: str):\n        # Implement web search\n        return search_results\n\n# Create agent with Claude backend\nagent = ReactCodeAgent(\n    tools=[WebSearchTool(), load_tool(\"image-question-answering\")],\n    llm_engine=lambda messages: client.messages.create(\n        model=\"claude-opus-4.6\",\n        max_tokens=4096,\n        messages=messages\n    ).content[0].text\n)\n\nresult = agent.run(\"Find information about AI agents and summarize\")\n```",
+    "best_practices": [
+      "Use pre-built tools from Hugging Face Hub when available",
+      "Implement proper error handling in custom tools",
+      "Use appropriate LLM backends (GPT-4, Claude, etc.)",
+      "Cache tool results when possible",
+      "Implement tool timeouts",
+      "Log tool usage for debugging"
+    ]
+  },
+  "agenttorch": {
+    "description": "Framework for large-scale population-based agent simulations",
+    "key_features": [
+      "Simulate millions of agents",
+      "GPU acceleration",
+      "Differentiable simulations",
+      "Policy optimization"
+    ],
+    "basic_simulation": "```python\nimport torch\nfrom agenttorch import AgentTorchSimulation, Agent, Environment\n\nclass Citizen(Agent):\n    def __init__(self, age, income):\n        super().__init__()\n        self.age = age\n        self.income = income\n        self.health = 100.0\n    \n    def step(self, environment):\n        # Agent behavior\n        if self.income < environment.poverty_line:\n            self.health -= 0.1\n        \n        # Aging\n        if environment.time_step % 365 == 0:\n            self.age += 1\n\nclass CityEnvironment(Environment):\n    def __init__(self, num_agents=100000):\n        super().__init__()\n        self.poverty_line = 30000\n        self.time_step = 0\n        \n        # Initialize agents on GPU\n        self.agents = [\n            Citizen(\n                age=torch.randint(18, 80, (1,)).item(),\n                income=torch.randint(20000, 100000, (1,)).item()\n            )\n            for _ in range(num_agents)\n        ]\n    \n    def step(self):\n        self.time_step += 1\n        for agent in self.agents:\n            agent.step(self)\n\n# Run simulation\nsim = AgentTorchSimulation(CityEnvironment(num_agents=1000000))\nsim.run(num_steps=365 * 10)  # 10 years\n```",
+    "best_practices": [
+      "Use vectorized operations for agent updates",
+      "Leverage GPU for large populations",
+      "Implement efficient state representations",
+      "Use batched processing",
+      "Monitor memory usage",
+      "Implement checkpointing for long simulations"
+    ]
+  },
+  "framework_comparison": {
+    "selection_matrix": [
+      {
+        "framework": "PyTorch + TorchRL",
+        "best_for": "Research, rapid prototyping, custom RL algorithms",
+        "pros": [
+          "Flexible",
+          "Large community",
+          "Easy debugging"
+        ],
+        "cons": [
+          "More boilerplate",
+          "Manual optimization needed"
+        ],
+        "use_when": "Building novel RL algorithms or need maximum flexibility"
+      },
+      {
+        "framework": "TensorFlow + TF-Agents",
+        "best_for": "Production deployment, distributed training",
+        "pros": [
+          "Production-ready",
+          "TF Serving integration",
+          "Robust"
+        ],
+        "cons": [
+          "Less flexible",
+          "Steeper learning curve"
+        ],
+        "use_when": "Deploying to production or need distributed training"
+      },
+      {
+        "framework": "Hugging Face Transformers Agents",
+        "best_for": "LLM-based agents with tools, quick prototyping",
+        "pros": [
+          "Easy to use",
+          "Pre-built tools",
+          "Multi-modal"
+        ],
+        "cons": [
+          "Limited to LLM-based agents",
+          "Less control"
+        ],
+        "use_when": "Building LLM agents with tool use capabilities"
+      },
+      {
+        "framework": "AgentTorch",
+        "best_for": "Large-scale population simulations",
+        "pros": [
+          "Scales to millions of agents",
+          "GPU accelerated",
+          "Differentiable"
+        ],
+        "cons": [
+          "Specialized use case",
+          "Limited documentation"
+        ],
+        "use_when": "Simulating large populations or epidemiological models"
+      }
+    ]
+  },
+  "integration_patterns": {
+    "llm_with_rl": {
+      "description": "Combine LLM reasoning with RL for decision making",
+      "example": "Use LLM to generate high-level plans, RL to execute low-level actions"
+    },
+    "multi_framework": {
+      "description": "Use multiple frameworks for different components",
+      "example": "Hugging Face for NLP, PyTorch for custom RL, TensorFlow for deployment"
+    },
+    "hybrid_agents": {
+      "description": "Combine rule-based, ML-based, and LLM-based components",
+      "example": "Rule-based safety checks + LLM reasoning + RL optimization"
+    }
+  },
+  "resources": [
+    "https://pytorch.org/rl/",
+    "https://www.tensorflow.org/agents",
+    "https://huggingface.co/docs/transformers/transformers_agents",
+    "https://github.com/AgentTorch/AgentTorch"
+  ]
 }

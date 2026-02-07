@@ -126,7 +126,8 @@ antigravity-agent-factory/
 │   ├── sap-abap/
 │   ├── sap-rap/
 │   ├── sap-cap/
-│   └── sap-cpi-pi/
+│   ├── sap-cpi-pi/
+│   └── google-agent-system/
 ├── knowledge/                   # Reference data (75+ files)
 │   └── *.json                   # Stack, workflow, MCP, security, AI patterns
 ├── templates/                   # Code and document templates (200+ files)

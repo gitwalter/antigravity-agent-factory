@@ -23,6 +23,13 @@ All notable changes to the Antigravity Agent Factory will be documented in this 
 - **ai-agent-dev/SKILL.md**: Comprehensive AI agent development skill with patterns, best practices, and troubleshooting
 - **build-langchain-agent.md**: Step-by-step workflow for building LangChain agents
 
+### Added - Google Agent Support
+#### Google Agent System
+- **New Blueprint**: `google-agent-system` utilizing `google-generativeai` SDK
+- **Templates**: Complete agent implementation with structured output, tools, and config
+- **Patterns**: `knowledge/google-generative-ai-patterns.json` covering setup, safety, and system instructions
+- **Documentation**: New `docs/google_agent_sdk.md` guide
+
 ### Added - Comprehensive Version Management
 
 #### Version Tracking

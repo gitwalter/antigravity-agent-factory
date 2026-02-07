@@ -58,7 +58,7 @@ def main():
         # Less than a week since last check, skip
         sys.exit(0)
     
-    print("🔄 Running weekly blueprint version check...")
+    print("Running weekly blueprint version check...")
     
     # Import and run the version updater
     try:
