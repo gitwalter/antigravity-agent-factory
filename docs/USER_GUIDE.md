@@ -1,12 +1,13 @@
 # User Guide
 
-This guide explains how to use the **Antigravity Agent Factory** to generate and manage AI-powered development systems.
+For a comprehensive list of all available resources, see the **[Antigravity Catalog](../CATALOG.md)**. This guide explains how to use the **Antigravity Agent Factory** to generate and manage AI-powered development systems.
 
 ## Core Concepts
 
-- **Blueprints**: Pre-configured templates for common tech stacks (e.g., Python FastAPI, React).
-- **Agents**: Specialized AI assistants tailored for specific roles (e.g., Code Reviewer, Test Generator).
-- **Skills**: Modular capabilities that agents can use (e.g., bug fixing workflows, TDD).
+- **Blueprints**: Pre-configured templates for common tech stacks. [View all Blueprints](CATALOG.md#blueprints)
+- **Agents**: Specialized AI assistants tailored for specific roles. [View all Agents](CATALOG.md#agents)
+- **Skills**: Modular capabilities that agents can use. [View all Skills](CATALOG.md#skills)
+- **Workflows**: Standard operating procedures for development. [View all Workflows](CATALOG.md#workflows)
 - **MCP Servers**: Model Context Protocol servers that provide tools for filesystem access, git, etc.
 
 ## Usage Patterns

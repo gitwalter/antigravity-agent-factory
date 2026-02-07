@@ -239,6 +239,8 @@ See all blueprints with:
 python cli/factory_cli.py --list-blueprints
 ```
 
+For a complete list of all 28+ blueprints with details, see the **[Blueprint Catalog](../CATALOG.md)**.
+
 ---
 
 ## For Teams

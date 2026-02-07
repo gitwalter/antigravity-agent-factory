@@ -32,6 +32,8 @@ Follow these steps to set up the **Antigravity Agent Factory** on your local mac
    python cli/factory_cli.py --list-blueprints
    ```
 
+5. **Explore the Catalog**: View **[CATALOG.md](../CATALOG.md)** in the root directory to see available blueprints, agents, and skills.
+
 ## Configuration
 
 The factory uses a `.env` file for API keys and environment variables. Copy the template:

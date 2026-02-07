@@ -65,6 +65,16 @@ flowchart TB
     L3 --> L4
 ```
 
+### The 5-Layer Architecture
+
+1.  **Layer 0 (Foundation)**: The axiological core. We start with **Love, Truth, and Beauty**.
+2.  **Layer 1 (Integrity)**: Virtues that guide the AI's cognition—**Reasoning, Curiosity, and Humility**.
+3.  **Layer 2 (Purpose)**: Defining **Why** we are building. Mission, stakeholders, and success criteria.
+4.  **Layer 3 (Principles)**: Defining **How** we build. Ethical boundaries and quality standards.
+5.  **Layer 4 (Technical)**: The actual **What**—Agents, Skills, and Knowledge files executing the work.
+
+This architecture ensures that every line of code generated is aligned with human values and project goals.
+
 ---
 
 ## Quick Start (CLI)
@@ -258,6 +268,8 @@ See `.github/workflows/ci.yml` for the full configuration.
 | [Troubleshooting](docs/TROUBLESHOOTING.md) | Common issues and solutions |
 | [Knowledge Files](docs/reference/KNOWLEDGE_FILES.md) | Knowledge file synchronization and structure |
 | [Workflow Patterns](docs/reference/WORKFLOW_PATTERNS.md) | Available workflow definitions |
+The factory includes a comprehensive catalog of all available resources:
+- **[Full Catalog](CATALOG.md)**: Browse all Blueprints, Agents, Skills, Workflows, and Knowledge files.
 | [Porting Guide](docs/PORTING_GUIDE.md) | Migrating from Cursor Agent Factory |
 
 ## Contributing
