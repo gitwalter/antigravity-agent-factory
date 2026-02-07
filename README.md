@@ -222,20 +222,7 @@ See `.github/workflows/ci.yml` for the full configuration.
 - **Agent Architecture**: Agent/skill composition patterns, knowledge-grounded workflows
 - **Enterprise Integration**: SAP, Jira, Confluence, GitHub via MCP servers
 
-## Acknowledgements & Inspirations
 
-This project incorporates ideas and patterns from several valuable sources:
-
-| Source | Contribution |
-|--------|--------------|
-| **[Anthropic](https://www.anthropic.com)** | Constitutional AI research demonstrating convergent discovery with our axiom-based approach. The [Claude "soul document"](https://www.anthropic.com/news/claude-new-constitution) (January 2026) and [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) specification. |
-| **[Cursor](https://cursor.com)** | AI-native IDE whose agent mode and skills features enable this entire ecosystem. |
-| **[Augmented Coding Patterns](https://lexler.github.io/augmented-coding-patterns/)** | Active Partner, Check Alignment, Chain of Small Steps, and other AI collaboration patterns. Created by Lada Kesseler, Nitsan Avni, Ivett Ordog, Llewellyn Falco, and contributors. |
-| **[Leon Chlon](https://github.com/lchlon)** | Inspiration for the Strawberry Verification skill - information-theoretic approach to hallucination detection in AI outputs. |
-| **[ai-dev-agent](https://github.com/gitwalter/ai-dev-agent)** | Pedagogical toolkit for AI agent systems that inspired the layered architecture and methodology integration concepts. |
-| **Ancient Wisdom & Philosophy** | Taoist philosophy (Wu Wei response protocol), Hilbert's axiomatic method (5-layer architecture foundation), and sacred value psychology research (Haidt, Tetlock). |
-
-For complete references, see core documentation in [docs/](docs/).
 
 ## License
 
