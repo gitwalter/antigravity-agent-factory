@@ -85,27 +85,82 @@ python cli/factory_cli.py --interactive --output C:\Projects\my-project
 ## Project Structure
 
 ```
+antigravity-agent-factory/
 ├── .agent/
 │   ├── agents/                  # Factory's own agents (11 agents)
-│   └── skills/                  # Factory's own skills (36 skills)
+│   │   └── *.md                 # debug-conductor, integrity-guardian, knowledge-evolution, etc.
+│   └── skills/                  # Factory's own skills (35 skills)
+│       ├── agent-generation/
+│       ├── algo-trading/
+│       ├── alignment-check/
+│       ├── analyze-knowledge-gaps/
+│       ├── axiom-selection/
+│       ├── ci-monitor/
+│       ├── commit-release/
+│       └── ...                       # + more skills
 ├── patterns/                    # Reusable patterns (75+ files)
+│   ├── axioms/                  # Layer 0 axiom definitions
+│   ├── principles/              # Layer 2 principle patterns
+│   ├── methodologies/           # Layer 3 methodology templates
+│   ├── enforcement/             # Enforcement patterns
+│   ├── practices/               # Practice patterns
+│   ├── agents/                  # Agent pattern definitions
+│   ├── skills/                  # Skill pattern definitions
+│   ├── games/                   # Workshop game definitions
+│   ├── workshops/               # Workshop pattern definitions
+│   ├── team-formats/            # Team size adaptations
+│   ├── stacks/                  # Stack blueprint patterns
+│   ├── templates/               # Template patterns
+│   └── workflows/               # Workflow patterns
 ├── blueprints/                  # Technology stack blueprints (27 blueprints)
-├── knowledge/                   # Reference data (80+ files)
+│   ├── python-fastapi/
+│   ├── python-streamlit/
+│   ├── ai-agent-development/
+│   ├── multi-agent-systems/
+│   ├── typescript-react/
+│   ├── nextjs-fullstack/
+│   ├── java-spring/
+│   ├── kotlin-spring/
+│   ├── csharp-dotnet/
+│   ├── n8n-automation/
+│   ├── sap-abap/
+│   ├── sap-rap/
+│   ├── sap-cap/
+│   └── sap-cpi-pi/
+├── knowledge/                   # Reference data (75+ files)
 │   └── *.json                   # Stack, workflow, MCP, security, AI patterns
 ├── templates/                   # Code and document templates (200+ files)
+│   ├── factory/                 # Factory templates (agentrules, PURPOSE.md, etc.)
+│   ├── ai/                      # AI agent templates
+│   ├── python/                  # Python templates (FastAPI, Streamlit)
+│   ├── typescript/              # TypeScript templates (Next.js)
+│   ├── java/                    # Java Spring templates
+│   ├── csharp/                  # C# Clean Architecture templates
+│   ├── abap/                    # SAP ABAP/RAP templates
+│   ├── cap/                     # SAP CAP templates
+│   ├── integration/             # SAP CPI/PI integration templates
+│   ├── automation/              # n8n automation templates
+│   ├── workflows/               # CI/CD workflow templates
+│   ├── methodology/             # Methodology templates
+│   └── docs/                    # Documentation templates
 ├── docs/                        # Documentation
 │   ├── reference/               # Detailed reference docs
+│   ├── research/                # Research paper series
+│   ├── examples/                # Example walkthroughs
 │   └── *.md                     # Guides and tutorials
 ├── diagrams/                    # Architecture diagrams (Mermaid)
 ├── scripts/                     # Utility scripts
 ├── cli/                         # CLI interface
 │   └── factory_cli.py
 ├── tests/                       # Test suite
+│   ├── unit/
+│   ├── integration/
+│   ├── validation/
+│   └── fixtures/
 ├── .github/
 │   └── workflows/               # CI/CD workflows
 ├── .agentrules                 # Factory behavior rules
 ├── CHANGELOG.md                 # Version history
-├── LICENSE                       # MIT License
 └── README.md                    # This file
 ```
 
