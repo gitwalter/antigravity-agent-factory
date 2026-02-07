@@ -1,0 +1,200 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://Antigravity-agent-factory/schemas/versioning.json",
+  "title": "Knowledge Versioning Schema",
+  "description": "Schema for tracking versions, sources, and metadata of knowledge files in the Antigravity Agent Factory",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["version", "metadata"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of this knowledge file"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["created", "updated", "checksum"],
+      "properties": {
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of initial creation"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of last update"
+        },
+        "checksum": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash of content for integrity verification"
+        },
+        "author": {
+          "type": "string",
+          "description": "Author or source of the knowledge"
+        },
+        "license": {
+          "type": "string",
+          "description": "License under which this knowledge is shared"
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "description": "External sources that contributed to this knowledge",
+      "items": {
+        "$ref": "#/definitions/source"
+      }
+    },
+    "evolution": {
+      "type": "object",
+      "description": "Evolution tracking for automatic updates",
+      "properties": {
+        "channel": {
+          "type": "string",
+          "enum": ["stable", "latest", "experimental"],
+          "default": "stable",
+          "description": "Update channel this knowledge follows"
+        },
+        "auto_update": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this file can be auto-updated"
+        },
+        "locked": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this file is locked from updates"
+        },
+        "last_check": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last time we checked for updates"
+        },
+        "upstream_version": {
+          "type": "string",
+          "description": "Latest known version from upstream sources"
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "Other knowledge files this one depends on",
+      "items": {
+        "type": "object",
+        "required": ["file", "minVersion"],
+        "properties": {
+          "file": {
+            "type": "string",
+            "description": "Filename of the dependency"
+          },
+          "minVersion": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "description": "Minimum required version"
+          }
+        }
+      }
+    },
+    "changelog": {
+      "type": "array",
+      "description": "History of changes to this knowledge file",
+      "items": {
+        "$ref": "#/definitions/changelogEntry"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "description": "Tags for categorization and subscription matching",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      }
+    }
+  },
+  "definitions": {
+    "source": {
+      "type": "object",
+      "required": ["type", "identifier"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["github", "pypi", "npm", "official_docs", "community", "user_feedback", "manual"],
+          "description": "Type of source adapter"
+        },
+        "identifier": {
+          "type": "string",
+          "description": "Unique identifier within the source type (e.g., repo URL, package name)"
+        },
+        "version": {
+          "type": "string",
+          "description": "Version of the source when knowledge was extracted"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the source"
+        },
+        "last_fetched": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this source was last fetched"
+        },
+        "trust_level": {
+          "type": "string",
+          "enum": ["official", "community", "experimental"],
+          "description": "Trust level of this source"
+        }
+      }
+    },
+    "changelogEntry": {
+      "type": "object",
+      "required": ["version", "date", "changes"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Version this entry describes"
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of this version"
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "description"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["added", "changed", "deprecated", "removed", "fixed", "security"],
+                "description": "Type of change"
+              },
+              "description": {
+                "type": "string",
+                "description": "Description of the change"
+              },
+              "source": {
+                "type": "string",
+                "description": "Source that triggered this change"
+              }
+            }
+          }
+        },
+        "breaking": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this version has breaking changes"
+        }
+      }
+    }
+  }
+}

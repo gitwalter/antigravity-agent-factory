@@ -1,0 +1,214 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Streamlit Patterns",
+  "description": "Production-grade patterns for Streamlit applications",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "Type hints and clear structure enable verification",
+    "A3_transparency": "Explicit state management makes data flow clear",
+    "A4_adaptability": "Modular structure supports easy refactoring"
+  },
+  "core_concepts": {
+    "app_structure": {
+      "description": "Organize Streamlit app with clear separation of concerns",
+      "structure": "app.py (main), pages/, utils/, components/",
+      "benefits": [
+        "Maintainability",
+        "Reusability",
+        "Testability",
+        "Scalability"
+      ]
+    },
+    "session_state": {
+      "description": "Session state for maintaining state across reruns",
+      "use_cases": [
+        "User preferences",
+        "Form data",
+        "Computed results",
+        "Authentication state"
+      ]
+    },
+    "caching": {
+      "description": "Caching with @st.cache_data and @st.cache_resource",
+      "types": [
+        "@st.cache_data for data (DataFrames, arrays, etc.)",
+        "@st.cache_resource for resources (models, connections, etc.)"
+      ]
+    },
+    "multi_page": {
+      "description": "Multi-page apps using pages/ directory",
+      "use_when": "Large applications with distinct sections",
+      "benefits": [
+        "Better organization",
+        "Improved navigation",
+        "Faster loading"
+      ]
+    }
+  },
+  "patterns": {
+    "app_structure_organization": {
+      "description": "Organize Streamlit app with clear structure",
+      "use_when": "Any Streamlit application",
+      "structure": {
+        "example": "streamlit_app/\n  app.py                    # Main entry point\n  pages/\n    dashboard.py\n    analytics.py\n    settings.py\n  utils/\n    data_loader.py\n    model_loader.py\n    helpers.py\n  components/\n    sidebar.py\n    charts.py\n  config.py                 # Configuration\n  requirements.txt"
+      },
+      "code_example": "# app.py\nimport streamlit as st\nfrom utils.data_loader import load_data\nfrom utils.model_loader import load_model\nfrom components.sidebar import render_sidebar\nfrom components.charts import render_chart\n\nst.set_page_config(\n    page_title=\"My App\",\n    page_icon=\"🚀\",\n    layout=\"wide\",\n    initial_sidebar_state=\"expanded\"\n)\n\n# Initialize session state\nif 'data' not in st.session_state:\n    st.session_state.data = None\nif 'model' not in st.session_state:\n    st.session_state.model = None\n\ndef main():\n    render_sidebar()\n    \n    st.title(\"My Streamlit App\")\n    \n    # Load data\n    if st.session_state.data is None:\n        with st.spinner(\"Loading data...\"):\n            st.session_state.data = load_data()\n    \n    # Main content\n    render_chart(st.session_state.data)\n\nif __name__ == \"__main__\":\n    main()\n\n# utils/data_loader.py\nimport pandas as pd\nimport streamlit as st\n\n@st.cache_data\ndef load_data():\n    \"\"\"Load and cache data.\"\"\"\n    return pd.read_csv(\"data.csv\")\n\n# components/sidebar.py\nimport streamlit as st\n\ndef render_sidebar():\n    with st.sidebar:\n        st.header(\"Settings\")\n        \n        option = st.selectbox(\n            \"Choose option\",\n            [\"Option 1\", \"Option 2\", \"Option 3\"]\n        )\n        \n        if st.button(\"Reset\"):\n            st.session_state.clear()\n            st.rerun()",
+      "best_practices": [
+        "Separate concerns into modules",
+        "Use utils/ for reusable functions",
+        "Use components/ for UI components",
+        "Initialize session state early",
+        "Use st.set_page_config() at the top"
+      ]
+    },
+    "multi_page_apps": {
+      "description": "Multi-page apps using pages/ directory",
+      "use_when": "Large applications with distinct sections",
+      "code_example": "# app.py (main page)\nimport streamlit as st\n\nst.set_page_config(\n    page_title=\"Home\",\n    page_icon=\"🏠\",\n    layout=\"wide\"\n)\n\nst.title(\"Welcome\")\nst.write(\"This is the home page\")\n\n# pages/dashboard.py\nimport streamlit as st\nimport pandas as pd\nfrom utils.data_loader import load_data\n\nst.set_page_config(\n    page_title=\"Dashboard\",\n    page_icon=\"📊\",\n    layout=\"wide\"\n)\n\nst.title(\"Dashboard\")\n\ndata = load_data()\nst.dataframe(data)\n\n# pages/analytics.py\nimport streamlit as st\nfrom components.charts import render_analytics_charts\n\nst.set_page_config(\n    page_title=\"Analytics\",\n    page_icon=\"📈\"\n)\n\nst.title(\"Analytics\")\nrender_analytics_charts()\n\n# pages/settings.py\nimport streamlit as st\n\nst.set_page_config(\n    page_title=\"Settings\",\n    page_icon=\"⚙️\"\n)\n\nst.title(\"Settings\")\n\n# Settings form\nwith st.form(\"settings_form\"):\n    theme = st.selectbox(\"Theme\", [\"Light\", \"Dark\"])\n    language = st.selectbox(\"Language\", [\"English\", \"Spanish\"])\n    \n    submitted = st.form_submit_button(\"Save\")\n    if submitted:\n        st.session_state.theme = theme\n        st.session_state.language = language\n        st.success(\"Settings saved!\")",
+      "best_practices": [
+        "Use pages/ directory for multi-page apps",
+        "Set page_config in each page",
+        "Share session state across pages",
+        "Use consistent navigation",
+        "Keep pages focused"
+      ]
+    },
+    "session_state_management": {
+      "description": "Managing state with st.session_state",
+      "use_when": "Need to persist data across reruns",
+      "code_example": "# Initialize session state\nif 'counter' not in st.session_state:\n    st.session_state.counter = 0\n\nif 'user_data' not in st.session_state:\n    st.session_state.user_data = {}\n\nif 'form_data' not in st.session_state:\n    st.session_state.form_data = {}\n\n# Update session state\nst.session_state.counter += 1\n\n# Use in components\nst.write(f\"Counter: {st.session_state.counter}\")\n\n# Form with session state\nwith st.form(\"my_form\"):\n    name = st.text_input(\"Name\")\n    email = st.text_input(\"Email\")\n    \n    submitted = st.form_submit_button(\"Submit\")\n    \n    if submitted:\n        st.session_state.form_data = {\n            \"name\": name,\n            \"email\": email\n        }\n        st.success(\"Form submitted!\")\n\n# Display stored data\nif st.session_state.form_data:\n    st.json(st.session_state.form_data)\n\n# Clear session state\nif st.button(\"Clear All\"):\n    st.session_state.clear()\n    st.rerun()\n\n# Conditional rendering based on state\nif 'authenticated' not in st.session_state:\n    st.session_state.authenticated = False\n\nif not st.session_state.authenticated:\n    st.warning(\"Please log in\")\n    # Login form\nelse:\n    st.success(\"Welcome!\")\n    # Main app content",
+      "best_practices": [
+        "Initialize session state early",
+        "Use descriptive keys",
+        "Check if key exists before accessing",
+        "Clear state when appropriate",
+        "Use for user preferences and form data"
+      ]
+    },
+    "caching_patterns": {
+      "description": "Caching with @st.cache_data and @st.cache_resource",
+      "use_when": "Expensive operations, data loading, model loading",
+      "code_example": "import streamlit as st\nimport pandas as pd\nimport pickle\nfrom sklearn.ensemble import RandomForestClassifier\n\n# Cache data (DataFrames, arrays, etc.)\n@st.cache_data\ndef load_data(file_path: str) -> pd.DataFrame:\n    \"\"\"Load and cache CSV data.\"\"\"\n    return pd.read_csv(file_path)\n\n@st.cache_data\ndef fetch_api_data(url: str) -> dict:\n    \"\"\"Fetch and cache API data.\"\"\"\n    import requests\n    response = requests.get(url)\n    return response.json()\n\n@st.cache_data(ttl=3600)  # Cache for 1 hour\ndef get_expensive_computation(input_data: str) -> dict:\n    \"\"\"Expensive computation with time-to-live.\"\"\"\n    # Simulate expensive operation\n    import time\n    time.sleep(2)\n    return {\"result\": f\"Processed: {input_data}\"}\n\n# Cache resources (models, connections, etc.)\n@st.cache_resource\ndef load_model(model_path: str) -> RandomForestClassifier:\n    \"\"\"Load and cache ML model.\"\"\"\n    with open(model_path, 'rb') as f:\n        return pickle.load(f)\n\n@st.cache_resource\ndef get_database_connection():\n    \"\"\"Create and cache database connection.\"\"\"\n    import sqlite3\n    return sqlite3.connect('database.db')\n\n# Usage\nst.title(\"Caching Example\")\n\n# Data caching\nif st.button(\"Load Data\"):\n    data = load_data(\"data.csv\")\n    st.dataframe(data)\n\n# Resource caching\nif st.button(\"Load Model\"):\n    model = load_model(\"model.pkl\")\n    st.success(\"Model loaded!\")\n\n# Clear cache\nif st.button(\"Clear Cache\"):\n    st.cache_data.clear()\n    st.cache_resource.clear()\n    st.success(\"Cache cleared!\")",
+      "best_practices": [
+        "Use @st.cache_data for data",
+        "Use @st.cache_resource for resources",
+        "Set ttl for time-sensitive data",
+        "Use show_spinner for better UX",
+        "Clear cache when data changes"
+      ]
+    },
+    "component_patterns": {
+      "description": "Reusable component patterns",
+      "use_when": "Repeated UI elements, complex widgets",
+      "code_example": "# components/sidebar.py\nimport streamlit as st\n\ndef render_sidebar():\n    with st.sidebar:\n        st.header(\"Navigation\")\n        \n        page = st.radio(\n            \"Select Page\",\n            [\"Home\", \"Dashboard\", \"Analytics\", \"Settings\"],\n            key=\"page_selector\"\n        )\n        \n        st.session_state.current_page = page\n        \n        st.divider()\n        \n        st.header(\"Filters\")\n        date_range = st.date_input(\n            \"Date Range\",\n            value=[],\n            key=\"date_range\"\n        )\n        \n        return page, date_range\n\n# components/charts.py\nimport streamlit as st\nimport plotly.express as px\nimport pandas as pd\n\ndef render_chart(data: pd.DataFrame, chart_type: str = \"line\"):\n    \"\"\"Render chart based on type.\"\"\"\n    \n    if chart_type == \"line\":\n        fig = px.line(data, x='date', y='value')\n    elif chart_type == \"bar\":\n        fig = px.bar(data, x='category', y='value')\n    elif chart_type == \"scatter\":\n        fig = px.scatter(data, x='x', y='y')\n    else:\n        st.error(\"Invalid chart type\")\n        return\n    \n    st.plotly_chart(fig, use_container_width=True)\n\ndef render_metric_cards(metrics: dict):\n    \"\"\"Render metric cards in columns.\"\"\"\n    cols = st.columns(len(metrics))\n    \n    for idx, (key, value) in enumerate(metrics.items()):\n        with cols[idx]:\n            st.metric(key, value)\n\n# components/forms.py\nimport streamlit as st\n\ndef render_user_form() -> dict:\n    \"\"\"Render user input form.\"\"\"\n    with st.form(\"user_form\"):\n        name = st.text_input(\"Name\")\n        email = st.text_input(\"Email\")\n        age = st.number_input(\"Age\", min_value=0, max_value=120)\n        \n        submitted = st.form_submit_button(\"Submit\")\n        \n        if submitted:\n            return {\n                \"name\": name,\n                \"email\": email,\n                \"age\": age\n            }\n    \n    return None\n\n# Usage in main app\nfrom components.sidebar import render_sidebar\nfrom components.charts import render_chart, render_metric_cards\nfrom components.forms import render_user_form\n\npage, date_range = render_sidebar()\n\nif page == \"Dashboard\":\n    metrics = {\"Users\": 1000, \"Revenue\": \"$50K\", \"Growth\": \"12%\"}\n    render_metric_cards(metrics)\n    \n    data = load_data()\n    render_chart(data, \"line\")\n\nuser_data = render_user_form()\nif user_data:\n    st.json(user_data)",
+      "best_practices": [
+        "Create reusable components",
+        "Use functions for components",
+        "Pass data as parameters",
+        "Return values from form components",
+        "Keep components focused"
+      ]
+    },
+    "chat_interface_patterns": {
+      "description": "Chat interface patterns for AI/ML models",
+      "use_when": "Conversational interfaces, AI assistants",
+      "code_example": "# components/chat.py\nimport streamlit as st\nfrom utils.model_loader import get_chat_model\n\ndef render_chat_interface():\n    \"\"\"Render chat interface.\"\"\"\n    \n    # Initialize chat history\n    if \"messages\" not in st.session_state:\n        st.session_state.messages = []\n    \n    # Display chat messages\n    for message in st.session_state.messages:\n        with st.chat_message(message[\"role\"]):\n            st.markdown(message[\"content\"])\n    \n    # Chat input\n    if prompt := st.chat_input(\"What would you like to know?\"):\n        # Add user message\n        st.session_state.messages.append({\"role\": \"user\", \"content\": prompt})\n        \n        with st.chat_message(\"user\"):\n            st.markdown(prompt)\n        \n        # Get model response\n        with st.chat_message(\"assistant\"):\n            with st.spinner(\"Thinking...\"):\n                model = get_chat_model()\n                response = model.generate(prompt)\n                st.markdown(response)\n        \n        # Add assistant message\n        st.session_state.messages.append({\"role\": \"assistant\", \"content\": response})\n\ndef clear_chat():\n    \"\"\"Clear chat history.\"\"\"\n    st.session_state.messages = []\n    st.rerun()\n\n# Usage\nst.title(\"Chat Assistant\")\n\ncol1, col2 = st.columns([3, 1])\nwith col2:\n    if st.button(\"Clear Chat\"):\n        clear_chat()\n\nrender_chat_interface()\n\n# Advanced: Streaming responses\n@st.cache_resource\ndef get_streaming_model():\n    \"\"\"Get streaming chat model.\"\"\"\n    # Initialize streaming model\n    return StreamingChatModel()\n\ndef render_streaming_chat():\n    if prompt := st.chat_input(\"Ask a question\"):\n        st.session_state.messages.append({\"role\": \"user\", \"content\": prompt})\n        \n        with st.chat_message(\"assistant\"):\n            message_placeholder = st.empty()\n            full_response = \"\"\n            \n            model = get_streaming_model()\n            for chunk in model.stream(prompt):\n                full_response += chunk\n                message_placeholder.markdown(full_response + \"▌\")\n            \n            message_placeholder.markdown(full_response)\n        \n        st.session_state.messages.append({\"role\": \"assistant\", \"content\": full_response})",
+      "best_practices": [
+        "Store messages in session state",
+        "Use st.chat_message for message display",
+        "Use st.chat_input for user input",
+        "Implement streaming for better UX",
+        "Clear chat functionality"
+      ]
+    },
+    "ai_ml_integration": {
+      "description": "Integrating AI/ML models with Streamlit",
+      "use_when": "ML model deployment, AI applications",
+      "code_example": "# utils/model_loader.py\nimport streamlit as st\nimport pickle\nimport torch\nfrom transformers import pipeline\n\n@st.cache_resource\ndef load_sklearn_model(model_path: str):\n    \"\"\"Load scikit-learn model.\"\"\"\n    with open(model_path, 'rb') as f:\n        return pickle.load(f)\n\n@st.cache_resource\ndef load_transformer_model(model_name: str):\n    \"\"\"Load Hugging Face transformer model.\"\"\"\n    return pipeline(\"text-classification\", model=model_name)\n\n@st.cache_resource\ndef load_pytorch_model(model_path: str):\n    \"\"\"Load PyTorch model.\"\"\"\n    model = torch.load(model_path)\n    model.eval()\n    return model\n\n# app.py\nimport streamlit as st\nfrom utils.model_loader import load_transformer_model\n\nst.title(\"Text Classification\")\n\n# Load model\nmodel = load_transformer_model(\"distilbert-base-uncased-finetuned-sst-2-english\")\n\n# Input\ntext = st.text_area(\"Enter text to classify\")\n\nif st.button(\"Classify\"):\n    if text:\n        with st.spinner(\"Classifying...\"):\n            result = model(text)[0]\n            \n            st.success(f\"Label: {result['label']}\")\n            st.info(f\"Confidence: {result['score']:.2%}\")\n    else:\n        st.warning(\"Please enter some text\")\n\n# Image classification example\nfrom PIL import Image\nimport torchvision.transforms as transforms\n\n@st.cache_resource\ndef load_image_classifier():\n    \"\"\"Load image classification model.\"\"\"\n    # Load your model\n    return load_pytorch_model(\"image_classifier.pth\")\n\ndef classify_image(image, model):\n    \"\"\"Classify uploaded image.\"\"\"\n    transform = transforms.Compose([\n        transforms.Resize((224, 224)),\n        transforms.ToTensor(),\n        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])\n    ])\n    \n    image_tensor = transform(image).unsqueeze(0)\n    model = load_image_classifier()\n    \n    with torch.no_grad():\n        output = model(image_tensor)\n        probabilities = torch.nn.functional.softmax(output[0], dim=0)\n    \n    return probabilities\n\nst.title(\"Image Classifier\")\n\nuploaded_file = st.file_uploader(\"Upload an image\", type=[\"jpg\", \"jpeg\", \"png\"])\n\nif uploaded_file:\n    image = Image.open(uploaded_file)\n    st.image(image, caption=\"Uploaded Image\", use_container_width=True)\n    \n    if st.button(\"Classify\"):\n        probabilities = classify_image(image, load_image_classifier())\n        \n        # Display top 5 predictions\n        top5_prob, top5_idx = torch.topk(probabilities, 5)\n        \n        for i in range(5):\n            st.write(f\"Class {top5_idx[i]}: {top5_prob[i]:.2%}\")",
+      "best_practices": [
+        "Cache models with @st.cache_resource",
+        "Use appropriate model loading for framework",
+        "Handle model errors gracefully",
+        "Show loading indicators",
+        "Validate inputs before prediction"
+      ]
+    },
+    "deployment_patterns": {
+      "description": "Deployment patterns for Streamlit apps",
+      "use_when": "Deploying to production",
+      "code_example": "# requirements.txt\nstreamlit>=1.28.0\npandas>=2.0.0\nnumpy>=1.24.0\nscikit-learn>=1.3.0\nplotly>=5.17.0\n\n# .streamlit/config.toml\n[theme]\nprimaryColor = \"#FF4B4B\"\nbackgroundColor = \"#FFFFFF\"\nsecondaryBackgroundColor = \"#F0F2F6\"\ntextColor = \"#262730\"\nfont = \"sans serif\"\n\n[server]\nport = 8501\nenableCORS = false\nenableXsrfProtection = true\n\n# Dockerfile\nFROM python:3.11-slim\n\nWORKDIR /app\n\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\n\nCOPY . .\n\nEXPOSE 8501\n\nHEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health\n\nENTRYPOINT [\"streamlit\", \"run\", \"app.py\", \"--server.port=8501\", \"--server.address=0.0.0.0\"]\n\n# docker-compose.yml\nversion: '3.8'\n\nservices:\n  streamlit-app:\n    build: .\n    ports:\n      - \"8501:8501\"\n    environment:\n      - ENVIRONMENT=production\n    volumes:\n      - ./data:/app/data\n    restart: unless-stopped\n\n# Streamlit Cloud deployment\n# Just connect GitHub repo to streamlit.io\n# Requirements:\n# - requirements.txt\n# - app.py or main entry point\n# - .streamlit/config.toml (optional)\n\n# Environment variables in Streamlit Cloud\n# Add in Settings -> Secrets\n\n# secrets.toml (for local development)\n[secrets]\nDATABASE_URL = \"postgresql://user:pass@localhost/db\"\nAPI_KEY = \"your-api-key\"\n\n# Access in app\nimport streamlit as st\n\ndb_url = st.secrets[\"secrets\"][\"DATABASE_URL\"]\napi_key = st.secrets[\"secrets\"][\"API_KEY\"]",
+      "best_practices": [
+        "Use requirements.txt for dependencies",
+        "Configure theme in config.toml",
+        "Use secrets for sensitive data",
+        "Set up health checks",
+        "Use environment variables",
+        "Optimize Docker images",
+        "Set appropriate resource limits"
+      ]
+    }
+  },
+  "best_practices": {
+    "app_structure": [
+      "Organize code into modules",
+      "Separate UI, logic, and data",
+      "Use components for reusable UI",
+      "Keep main app.py clean"
+    ],
+    "performance": [
+      "Use caching for expensive operations",
+      "Load data/models lazily",
+      "Use st.empty() for dynamic updates",
+      "Optimize data processing",
+      "Use appropriate data types"
+    ],
+    "user_experience": [
+      "Use st.spinner() for loading states",
+      "Provide clear error messages",
+      "Use st.success(), st.error(), st.warning()",
+      "Implement form validation",
+      "Use columns for layout"
+    ],
+    "state_management": [
+      "Initialize session state early",
+      "Use descriptive keys",
+      "Clear state when appropriate",
+      "Avoid storing large objects",
+      "Use for user preferences"
+    ],
+    "security": [
+      "Use st.secrets for sensitive data",
+      "Validate all inputs",
+      "Sanitize user-generated content",
+      "Use environment variables",
+      "Implement authentication when needed"
+    ]
+  },
+  "anti_patterns": {
+    "everything_in_one_file": {
+      "description": "Putting all code in a single app.py file",
+      "problem": "Hard to maintain, poor organization",
+      "solution": "Organize into modules, components, and utils"
+    },
+    "not_using_caching": {
+      "description": "Not caching expensive operations",
+      "problem": "Poor performance, slow reruns",
+      "solution": "Use @st.cache_data and @st.cache_resource"
+    },
+    "ignoring_session_state": {
+      "description": "Not using session state for persistence",
+      "problem": "Data lost on rerun, poor UX",
+      "solution": "Use st.session_state for persistent data"
+    },
+    "reloading_data_on_rerun": {
+      "description": "Reloading data on every rerun",
+      "problem": "Unnecessary I/O, slow performance",
+      "solution": "Cache data and check session state"
+    },
+    "not_handling_errors": {
+      "description": "Not handling errors gracefully",
+      "problem": "Poor user experience, app crashes",
+      "solution": "Use try-except blocks, show error messages"
+    }
+  }
+}

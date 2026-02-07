@@ -1,0 +1,38 @@
+using FluentValidation;
+using {{NAMESPACE}}.Application.Commands;
+
+namespace {{NAMESPACE}}.Application.Validators;
+
+/// <summary>
+/// {{CLASS_NAME}}CommandValidator - FluentValidation Validator
+/// 
+/// Purpose: Validate {{COMMAND_NAME}} command
+/// Author: {{AUTHOR}}
+/// Created: {{DATE}}
+/// 
+/// Validates command input using FluentValidation rules.
+/// Ensures data integrity before processing.
+/// </summary>
+public class {{CLASS_NAME}}CommandValidator : AbstractValidator<{{CLASS_NAME}}Command>
+{
+    /// <summary>
+    /// Initializes a new instance of {{CLASS_NAME}}CommandValidator.
+    /// </summary>
+    public {{CLASS_NAME}}CommandValidator()
+    {
+        RuleFor(x => x.Name)
+            .NotEmpty()
+                .WithMessage("Name is required")
+            .MaximumLength(255)
+                .WithMessage("Name must not exceed 255 characters")
+            .Matches(@"^[a-zA-Z0-9\s\-_]+$")
+                .WithMessage("Name contains invalid characters");
+
+        RuleFor(x => x.Description)
+            .MaximumLength(1000)
+                .WithMessage("Description must not exceed 1000 characters")
+            .When(x => !string.IsNullOrEmpty(x.Description));
+
+        // TODO: Add other validation rules
+    }
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Enforcement Pattern Schema",
+  "description": "Schema for enforcement patterns that ensure values are lived, not just documented",
+  "version": "1.0.0",
+  "philosophy": "Values without enforcement are just aspirations. Enforcement patterns make our values operational.",
+  "type": "object",
+  "required": ["enforcementId", "name", "category", "axiom_basis", "checks", "actions"],
+  "properties": {
+    "enforcementId": {
+      "type": "string",
+      "pattern": "^E[0-9]+_[a-z_]+$",
+      "description": "Unique identifier following pattern E{number}_{name}",
+      "examples": ["E1_quality_gate", "E2_safety_confirmation"]
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name for the enforcement"
+    },
+    "category": {
+      "type": "string",
+      "enum": ["quality", "safety", "transparency", "integrity", "service"],
+      "description": "Category of enforcement"
+    },
+    "axiom_basis": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^A[0-9]+_[a-z_]+$"
+      },
+      "description": "Axioms that this enforcement serves"
+    },
+    "trigger": {
+      "type": "string",
+      "description": "When this enforcement is activated"
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "checkId": {"type": "string"},
+          "description": {"type": "string"},
+          "condition": {"type": "string"},
+          "severity": {"type": "string", "enum": ["blocking", "warning", "advisory"]}
+        }
+      },
+      "description": "Checks that must pass for this enforcement"
+    },
+    "actions": {
+      "type": "object",
+      "properties": {
+        "on_pass": {"type": "string", "description": "Action when all checks pass"},
+        "on_fail": {"type": "string", "description": "Action when checks fail"},
+        "on_override": {"type": "string", "description": "Action when human overrides"}
+      }
+    },
+    "override_policy": {
+      "type": "string",
+      "enum": ["never", "with_justification", "with_approval", "always"],
+      "description": "Whether and how this enforcement can be overridden"
+    }
+  }
+}

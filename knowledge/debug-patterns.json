@@ -1,0 +1,183 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Debug Patterns",
+  "description": "Learned patterns from debugging sessions for the debug-conductor agent",
+  "version": "1.0.0",
+  "metadata": {
+    "created": "2026-01-31",
+    "updated": "2026-01-31",
+    "purpose": "Store and retrieve debugging patterns for faster future resolution"
+  },
+  "categories": {
+    "sync_drift": {
+      "name": "Sync Drift",
+      "description": "Documentation or counts out of sync with actual files",
+      "severity": "major",
+      "commonCauses": ["Files added without running sync", "Pre-commit hook bypassed"]
+    },
+    "import_error": {
+      "name": "Import Error",
+      "description": "Module or package cannot be found or imported",
+      "severity": "critical",
+      "commonCauses": ["Missing dependency", "Circular import", "Wrong Python path"]
+    },
+    "syntax_error": {
+      "name": "Syntax Error",
+      "description": "Python syntax is invalid",
+      "severity": "critical",
+      "commonCauses": ["Typo", "Incomplete edit", "Wrong indentation"]
+    },
+    "assertion_failure": {
+      "name": "Assertion Failure",
+      "description": "Test assertion did not pass",
+      "severity": "major",
+      "commonCauses": ["Code behavior changed", "Test expectations wrong", "Data changed"]
+    },
+    "timeout": {
+      "name": "Timeout",
+      "description": "Operation took too long",
+      "severity": "major",
+      "commonCauses": ["Infinite loop", "Slow external call", "Resource contention"]
+    },
+    "schema_validation": {
+      "name": "Schema Validation",
+      "description": "JSON/YAML does not match expected schema",
+      "severity": "major",
+      "commonCauses": ["Missing field", "Wrong type", "Invalid value"]
+    },
+    "pytest_collection": {
+      "name": "Pytest Collection Warning",
+      "description": "Pytest incorrectly collects non-test classes",
+      "severity": "minor",
+      "commonCauses": ["Class name starts with 'Test'", "NamedTuple naming"]
+    }
+  },
+  "patterns": [
+    {
+      "id": "sync-drift-artifact-count",
+      "category": "sync_drift",
+      "name": "Artifact Count Drift",
+      "description": "README.md artifact counts don't match actual file counts",
+      "symptoms": [
+        "CI test fails on test_artifacts_are_currently_synced",
+        "AssertionError with 'Out of sync' message",
+        "Count mismatch in error (e.g., '34 -> 43')"
+      ],
+      "rootCause": "Files were added/removed without running sync_artifacts.py",
+      "diagnosis": [
+        "Check git log for recent file additions",
+        "Compare README counts with actual file counts",
+        "Verify pre-commit hook is installed and running"
+      ],
+      "fix": {
+        "command": "python scripts/validation/sync_artifacts.py --sync",
+        "verification": "pytest tests/unit/test_sync_artifacts.py -v"
+      },
+      "prevention": [
+        "Ensure pre-commit hook runs sync_artifacts.py",
+        "Run sync before committing new artifacts",
+        "Use --no-verify sparingly"
+      ],
+      "timeToResolve": "5 minutes",
+      "occurrences": 1,
+      "lastSeen": "2026-01-31"
+    },
+    {
+      "id": "pytest-namedtuple-collection",
+      "category": "pytest_collection",
+      "name": "NamedTuple Collection Warning",
+      "description": "Pytest warns about collecting NamedTuple class as test",
+      "symptoms": [
+        "PytestCollectionWarning in test output",
+        "Warning mentions 'cannot collect test class'",
+        "Warning mentions '__new__ constructor'"
+      ],
+      "rootCause": "NamedTuple class name starts with 'Test' prefix",
+      "diagnosis": [
+        "Find the class mentioned in warning",
+        "Check if it's a NamedTuple with 'Test' prefix",
+        "Verify it's not intended to be a test class"
+      ],
+      "fix": {
+        "action": "Rename the NamedTuple class to not start with 'Test'",
+        "example": "TestCounts -> CountsByCategory",
+        "verification": "pytest --collect-only 2>&1 | grep -i warning"
+      },
+      "prevention": [
+        "Avoid naming non-test classes with 'Test' prefix",
+        "Use descriptive names that indicate purpose, not test"
+      ],
+      "timeToResolve": "10 minutes",
+      "occurrences": 1,
+      "lastSeen": "2026-01-31"
+    },
+    {
+      "id": "precommit-race-condition",
+      "category": "sync_drift",
+      "name": "Pre-commit Hook Race Condition",
+      "description": "Pre-commit hook modifies files but changes not included in commit",
+      "symptoms": [
+        "Sync script runs in pre-commit but file still out of sync in CI",
+        "Local tests pass but CI fails on same commit",
+        "Git shows no changes after commit with hook that modified files"
+      ],
+      "rootCause": "Pre-commit hooks modify files after Git has staged the commit snapshot",
+      "diagnosis": [
+        "Check pre-commit hook for file modifications",
+        "Verify hook stages modified files with 'git add'",
+        "Note: git add in pre-commit creates race condition"
+      ],
+      "fix": {
+        "action": "Use pre-commit as validation only, or commit with --no-verify after manual sync",
+        "alternative": "Make pre-commit fail if sync needed, forcing user to sync first",
+        "verification": "Run sync manually, then commit"
+      },
+      "prevention": [
+        "Run sync script before commit, not in hook",
+        "Make pre-commit hook validate-only (fail if out of sync)",
+        "Document the sync requirement in CONTRIBUTING.md"
+      ],
+      "timeToResolve": "15 minutes",
+      "occurrences": 1,
+      "lastSeen": "2026-01-31"
+    },
+    {
+      "id": "conflicting-validators",
+      "category": "sync_drift",
+      "name": "Conflicting Validators",
+      "description": "Multiple validation scripts updating the same field with different counts",
+      "symptoms": [
+        "CI alternates between two different counts",
+        "Sync scripts fight each other (e.g., 73 -> 74 -> 73)",
+        "Both validators claim to have synced but CI still fails"
+      ],
+      "rootCause": "Different counting methods in different validators",
+      "diagnosis": [
+        "Check what files each validator includes/excludes",
+        "Compare patterns: recursive vs direct, which extensions, which exclusions",
+        "Find the difference in counted items"
+      ],
+      "fix": {
+        "action": "Unify counting logic - make both validators use same exclusions",
+        "example": "Both exclude manifest.json from knowledge count",
+        "verification": "Run both validators, confirm same count"
+      },
+      "prevention": [
+        "One source of truth for each metric",
+        "Document what each validator counts",
+        "Remove duplicate targets from one validator"
+      ],
+      "timeToResolve": "20 minutes",
+      "occurrences": 1,
+      "lastSeen": "2026-01-31"
+    }
+  ],
+  "statistics": {
+    "totalPatterns": 4,
+    "byCategory": {
+      "sync_drift": 3,
+      "pytest_collection": 1
+    },
+    "averageResolutionTime": "12 minutes"
+  }
+}

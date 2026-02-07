@@ -1,0 +1,283 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Confluence Documentation Adapter",
+  "description": "Adapter mapping PM documentation interface operations to Confluence pages",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["metadata", "mappings"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Adapter metadata",
+      "required": ["adapterId", "adapterName", "targetSystem", "version"],
+      "properties": {
+        "adapterId": {
+          "type": "string",
+          "description": "Unique identifier for this adapter",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "adapterName": {
+          "type": "string",
+          "description": "Human-readable adapter name"
+        },
+        "targetSystem": {
+          "type": "string",
+          "description": "Target PM system name"
+        },
+        "version": {
+          "type": "string",
+          "description": "Adapter version"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the adapter"
+        },
+        "mcpServer": {
+          "type": "string",
+          "description": "MCP server name for Confluence operations",
+          "default": "atlassian"
+        }
+      }
+    },
+    "mappings": {
+      "type": "object",
+      "description": "Interface to Confluence API mappings",
+      "required": ["concepts", "documentation"],
+      "properties": {
+        "concepts": {
+          "type": "object",
+          "description": "Conceptual mappings",
+          "properties": {
+            "page": {
+              "type": "string",
+              "description": "Page = Confluence page"
+            },
+            "space": {
+              "type": "string",
+              "description": "Space = Confluence space (equivalent to spaceId)"
+            },
+            "parent": {
+              "type": "string",
+              "description": "Parent = Parent page ID"
+            },
+            "template": {
+              "type": "string",
+              "description": "Template = Confluence page template"
+            }
+          }
+        },
+        "documentation": {
+          "type": "object",
+          "properties": {
+            "createPage": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-createConfluencePage"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "title"},
+                    "content": {"type": "string", "mappedTo": "body.storage.value"},
+                    "spaceId": {"type": "string", "mappedTo": "space.key"},
+                    "parentId": {"type": "string", "mappedTo": "ancestors[0].id"}
+                  }
+                },
+                "example": {
+                  "type": "object",
+                  "properties": {
+                    "type": "page",
+                    "title": "User Guide",
+                    "space": {"key": "DOC"},
+                    "body": {
+                      "storage": {
+                        "value": "<p>Content here</p>",
+                        "representation": "storage"
+                      }
+                    },
+                    "ancestors": [{"id": "123456"}]
+                  }
+                },
+                "contentFormat": {
+                  "type": "string",
+                  "description": "Confluence Storage Format (wiki, storage, or view)",
+                  "default": "storage"
+                }
+              }
+            },
+            "updatePage": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-updateConfluencePage"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "pageId": {"type": "string", "mappedTo": "id"},
+                    "title": {"type": "string", "mappedTo": "title"},
+                    "content": {"type": "string", "mappedTo": "body.storage.value"},
+                    "version": {"type": "integer", "mappedTo": "version.number"}
+                  }
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Version number must be incremented for updates"
+                },
+                "example": {
+                  "type": "object",
+                  "properties": {
+                    "id": "123456",
+                    "type": "page",
+                    "title": "Updated User Guide",
+                    "version": {"number": 2},
+                    "body": {
+                      "storage": {
+                        "value": "<p>Updated content</p>",
+                        "representation": "storage"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "getPage": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-getConfluencePage"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "pageId": {"type": "string", "mappedTo": "id"}
+                  }
+                },
+                "queryParams": {
+                  "type": "object",
+                  "properties": {
+                    "expand": {
+                      "type": "string",
+                      "description": "Expandable fields",
+                      "default": "body.storage,version,space"
+                    }
+                  }
+                }
+              }
+            },
+            "linkToWorkItem": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-updateConfluencePage"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "pageId": {"type": "string", "mappedTo": "id"},
+                    "itemId": {"type": "string", "mappedTo": "body.storage.value (link)"}
+                  }
+                },
+                "linkPatterns": {
+                  "type": "object",
+                  "description": "Link patterns for different PM systems",
+                  "properties": {
+                    "jira": {
+                      "type": "string",
+                      "description": "Jira issue link",
+                      "example": "<ac:link><ri:page ri:content-title=\"{ITEM_ID}\" /></ac:link>"
+                    },
+                    "github": {
+                      "type": "string",
+                      "description": "GitHub issue link",
+                      "example": "[{ITEM_ID}|https://github.com/owner/repo/issues/{ITEM_NUMBER}]"
+                    },
+                    "generic": {
+                      "type": "string",
+                      "description": "Generic URL link",
+                      "example": "<a href=\"{ITEM_URL}\">{ITEM_ID}</a>"
+                    }
+                  }
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Add link to work item in page content using Confluence Storage Format"
+                }
+              }
+            }
+          }
+        },
+        "spaceMappings": {
+          "type": "object",
+          "description": "Space configuration mappings",
+          "properties": {
+            "spaceKey": {
+              "type": "string",
+              "description": "Space key identifier",
+              "example": "DOC"
+            },
+            "spaceName": {
+              "type": "string",
+              "description": "Human-readable space name",
+              "example": "Documentation"
+            }
+          }
+        },
+        "templateMappings": {
+          "type": "object",
+          "description": "Page template mappings",
+          "properties": {
+            "defaultTemplate": {
+              "type": "string",
+              "description": "Default template ID",
+              "example": "page"
+            },
+            "documentationTemplate": {
+              "type": "string",
+              "description": "Documentation template ID",
+              "example": "documentation"
+            },
+            "meetingNotesTemplate": {
+              "type": "string",
+              "description": "Meeting notes template ID",
+              "example": "meeting-notes"
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "metadata": {
+        "adapterId": "confluence-adapter",
+        "adapterName": "Confluence Documentation Adapter",
+        "targetSystem": "Confluence",
+        "version": "1.0.0",
+        "description": "Maps PM documentation interface to Confluence pages",
+        "mcpServer": "atlassian"
+      },
+      "mappings": {
+        "concepts": {
+          "page": "Confluence page",
+          "space": "Confluence space"
+        },
+        "documentation": {
+          "createPage": {
+            "mcpTool": "atlassian-createConfluencePage",
+            "mapping": {
+              "title": "mappedTo: title",
+              "content": "mappedTo: body.storage.value",
+              "spaceId": "mappedTo: space.key"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

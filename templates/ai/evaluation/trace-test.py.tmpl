@@ -1,0 +1,353 @@
+"""
+{{TEST_NAME}} - Trace-Based Testing
+
+Purpose: {{TEST_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Traces enable reproducible testing
+- A3 (Transparency): Test execution is explicit
+"""
+
+from typing import List, Dict, Any, Optional
+from langchain_core.callbacks import BaseCallbackHandler
+from langchain_core.tracers import LangChainTracer
+from langchain_core.runnables import Runnable
+import json
+import logging
+from datetime import datetime
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class {{TEST_CLASS_NAME}}:
+    """
+    {{TEST_NAME}} - Trace-Based Testing Framework
+    
+    Implements testing based on execution traces:
+    - Captures agent/chain execution traces
+    - Validates trace patterns
+    - Compares traces across runs
+    - Detects regressions
+    
+    Example:
+        >>> tester = {{TEST_CLASS_NAME}}()
+        >>> result = tester.run_test(chain, test_input)
+    """
+    
+    def __init__(
+        self,
+        trace_file: Optional[str] = None,
+        baseline_trace: Optional[str] = None
+    ):
+        """
+        Initialize trace-based tester.
+        
+        Args:
+            trace_file: File to save traces
+            baseline_trace: Baseline trace for comparison
+        """
+        self.trace_file = trace_file or "traces.json"
+        self.baseline_trace = baseline_trace
+        
+        self.traces: List[Dict[str, Any]] = []
+        
+        logger.info("Initialized {{TEST_NAME}} trace-based tester")
+    
+    def capture_trace(
+        self,
+        chain: Runnable,
+        input_data: Dict[str, Any],
+        test_name: str
+    ) -> Dict[str, Any]:
+        """
+        Capture execution trace.
+        
+        Args:
+            chain: Chain/agent to test
+            input_data: Test input
+            test_name: Test identifier
+        
+        Returns:
+            Trace dictionary
+        
+        Example:
+            >>> trace = tester.capture_trace(chain, {"input": "test"}, "test_1")
+        """
+        logger.info(f"Capturing trace for test: {test_name}")
+        
+        # Create callback handler to capture trace
+        trace_handler = TraceCaptureHandler()
+        
+        # Execute with trace capture
+        try:
+            result = chain.invoke(
+                input_data,
+                config={"callbacks": [trace_handler]}
+            )
+            
+            trace = {
+                "test_name": test_name,
+                "timestamp": datetime.now().isoformat(),
+                "input": input_data,
+                "output": str(result),
+                "events": trace_handler.events,
+                "metadata": {
+                    "execution_time": trace_handler.execution_time,
+                    "token_count": trace_handler.token_count
+                }
+            }
+            
+            self.traces.append(trace)
+            self._save_trace(trace)
+            
+            logger.info(f"Trace captured: {len(trace_handler.events)} events")
+            return trace
+            
+        except Exception as e:
+            logger.error(f"Error capturing trace: {e}")
+            trace = {
+                "test_name": test_name,
+                "timestamp": datetime.now().isoformat(),
+                "input": input_data,
+                "error": str(e),
+                "events": []
+            }
+            self.traces.append(trace)
+            return trace
+    
+    def validate_trace(
+        self,
+        trace: Dict[str, Any],
+        expected_patterns: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """
+        Validate trace against expected patterns.
+        
+        Args:
+            trace: Trace to validate
+            expected_patterns: List of expected patterns
+        
+        Returns:
+            Validation result
+        
+        Example:
+            >>> patterns = [{"type": "llm_call", "min_count": 1}]
+            >>> result = tester.validate_trace(trace, patterns)
+        """
+        logger.info(f"Validating trace: {trace['test_name']}")
+        
+        validation_result = {
+            "test_name": trace["test_name"],
+            "valid": True,
+            "errors": [],
+            "warnings": []
+        }
+        
+        events = trace.get("events", [])
+        
+        for pattern in expected_patterns:
+            event_type = pattern.get("type")
+            min_count = pattern.get("min_count", 0)
+            max_count = pattern.get("max_count", float("inf"))
+            
+            matching_events = [
+                e for e in events
+                if e.get("type") == event_type
+            ]
+            
+            count = len(matching_events)
+            
+            if count < min_count:
+                validation_result["valid"] = False
+                validation_result["errors"].append(
+                    f"Expected at least {min_count} {event_type} events, got {count}"
+                )
+            
+            if count > max_count:
+                validation_result["warnings"].append(
+                    f"Expected at most {max_count} {event_type} events, got {count}"
+                )
+        
+        logger.info(f"Validation result: {'PASS' if validation_result['valid'] else 'FAIL'}")
+        return validation_result
+    
+    def compare_with_baseline(
+        self,
+        trace: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Compare trace with baseline.
+        
+        Args:
+            trace: Current trace
+        
+        Returns:
+            Comparison result
+        """
+        if not self.baseline_trace:
+            return {"error": "No baseline trace set"}
+        
+        logger.info(f"Comparing trace with baseline: {trace['test_name']}")
+        
+        # Load baseline
+        with open(self.baseline_trace, "r") as f:
+            baseline = json.load(f)
+        
+        comparison = {
+            "test_name": trace["test_name"],
+            "differences": [],
+            "similarity_score": 0.0
+        }
+        
+        # Compare event counts
+        baseline_events = baseline.get("events", [])
+        current_events = trace.get("events", [])
+        
+        baseline_types = {}
+        for event in baseline_events:
+            event_type = event.get("type")
+            baseline_types[event_type] = baseline_types.get(event_type, 0) + 1
+        
+        current_types = {}
+        for event in current_events:
+            event_type = event.get("type")
+            current_types[event_type] = current_types.get(event_type, 0) + 1
+        
+        # Find differences
+        all_types = set(baseline_types.keys()) | set(current_types.keys())
+        
+        for event_type in all_types:
+            baseline_count = baseline_types.get(event_type, 0)
+            current_count = current_types.get(event_type, 0)
+            
+            if baseline_count != current_count:
+                comparison["differences"].append({
+                    "type": event_type,
+                    "baseline": baseline_count,
+                    "current": current_count,
+                    "diff": current_count - baseline_count
+                })
+        
+        # Calculate similarity (simplified)
+        total_baseline = sum(baseline_types.values())
+        total_current = sum(current_types.values())
+        
+        if total_baseline > 0 and total_current > 0:
+            matching = sum(
+                min(baseline_types.get(t, 0), current_types.get(t, 0))
+                for t in all_types
+            )
+            comparison["similarity_score"] = matching / max(total_baseline, total_current)
+        
+        return comparison
+    
+    def _save_trace(self, trace: Dict[str, Any]) -> None:
+        """Save trace to file."""
+        try:
+            # Load existing traces
+            try:
+                with open(self.trace_file, "r") as f:
+                    all_traces = json.load(f)
+            except FileNotFoundError:
+                all_traces = []
+            
+            # Append new trace
+            all_traces.append(trace)
+            
+            # Save
+            with open(self.trace_file, "w") as f:
+                json.dump(all_traces, f, indent=2)
+            
+        except Exception as e:
+            logger.error(f"Error saving trace: {e}")
+
+
+class TraceCaptureHandler(BaseCallbackHandler):
+    """Callback handler to capture execution traces."""
+    
+    def __init__(self):
+        """Initialize trace capture."""
+        self.events: List[Dict[str, Any]] = []
+        self.start_time: Optional[float] = None
+        self.execution_time: float = 0.0
+        self.token_count: int = 0
+    
+    def on_chain_start(self, serialized: Dict[str, Any], inputs: Dict[str, Any], **kwargs: Any) -> None:
+        """Capture chain start."""
+        if self.start_time is None:
+            import time
+            self.start_time = time.time()
+        
+        self.events.append({
+            "type": "chain_start",
+            "chain": serialized.get("name", "unknown"),
+            "timestamp": datetime.now().isoformat()
+        })
+    
+    def on_chain_end(self, outputs: Dict[str, Any], **kwargs: Any) -> None:
+        """Capture chain end."""
+        self.events.append({
+            "type": "chain_end",
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        if self.start_time:
+            import time
+            self.execution_time = time.time() - self.start_time
+    
+    def on_llm_start(self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any) -> None:
+        """Capture LLM start."""
+        self.events.append({
+            "type": "llm_start",
+            "model": serialized.get("name", "unknown"),
+            "timestamp": datetime.now().isoformat()
+        })
+    
+    def on_llm_end(self, response: Any, **kwargs: Any) -> None:
+        """Capture LLM end."""
+        self.events.append({
+            "type": "llm_end",
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        # Extract token count if available
+        if hasattr(response, "llm_output") and response.llm_output:
+            token_usage = response.llm_output.get("token_usage", {})
+            self.token_count += token_usage.get("total_tokens", 0)
+
+
+# Example usage
+if __name__ == "__main__":
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_openai import ChatOpenAI
+    
+    # Create tester
+    tester = {{TEST_CLASS_NAME}}(
+        trace_file="test_traces.json"
+    )
+    
+    # Create a simple chain
+    prompt = ChatPromptTemplate.from_template("Say hello to {name}")
+    llm = ChatOpenAI()
+    chain = prompt | llm
+    
+    # Capture trace
+    trace = tester.capture_trace(
+        chain,
+        {"name": "World"},
+        "hello_test"
+    )
+    
+    print(f"Trace captured: {len(trace['events'])} events")
+    
+    # Validate trace
+    patterns = [
+        {"type": "llm_start", "min_count": 1},
+        {"type": "chain_start", "min_count": 1}
+    ]
+    
+    validation = tester.validate_trace(trace, patterns)
+    print(f"Validation: {'PASS' if validation['valid'] else 'FAIL'}")

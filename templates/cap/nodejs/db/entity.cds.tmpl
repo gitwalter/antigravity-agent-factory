@@ -1,0 +1,56 @@
+/**
+ * ${ENTITY_NAME} Entity - CDS Entity Definition
+ * 
+ * Purpose: Define database entity for ${DOMAIN_NAME}
+ * Author: ${AUTHOR}
+ * Created: ${DATE}
+ * 
+ * This entity includes standard audit fields (createdAt, modifiedAt, createdBy, modifiedBy)
+ * following CAP best practices for BTP deployment.
+ */
+
+namespace ${NAMESPACE};
+
+/**
+ * ${ENTITY_NAME} entity with key and audit fields.
+ * 
+ * @see https://cap.cloud.sap/docs/guides/databases#audit-fields
+ */
+entity ${ENTITY_NAME} : cuid, managed, temporal {
+    /**
+     * Primary key (UUID) - automatically generated
+     */
+    key ID : UUID;
+
+    /**
+     * Entity name or identifier
+     */
+    name : String(${NAME_LENGTH:255});
+
+    /**
+     * Optional description
+     */
+    description : String(${DESCRIPTION_LENGTH:1000});
+
+    /**
+     * Status field - use enum values: ACTIVE, INACTIVE, PENDING, ARCHIVED
+     */
+    status : String(${STATUS_LENGTH:50}) default 'ACTIVE';
+
+    /**
+     * Audit fields (inherited from 'managed'):
+     * - createdAt: Timestamp of creation
+     * - createdBy: User who created the record
+     * - modifiedAt: Timestamp of last modification
+     * - modifiedBy: User who last modified the record
+     * 
+     * Temporal fields (inherited from 'temporal'):
+     * - validFrom: Start of validity period
+     * - validTo: End of validity period
+     */
+
+    /**
+     * Index for frequently queried fields
+     */
+    // @cds.persistence.index on [name, status]
+}

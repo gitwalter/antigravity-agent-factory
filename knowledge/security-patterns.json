@@ -1,0 +1,171 @@
+{
+  "metadata": {
+    "name": "Integration Security Patterns",
+    "description": "OAuth, certificates, encryption, and security patterns for SAP integrations",
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-30"
+  },
+  "authentication": {
+    "basicAuth": {
+      "description": "Username/password authentication",
+      "useCase": "Legacy systems, internal APIs",
+      "security": "Use only over HTTPS, rotate credentials regularly",
+      "cpiConfiguration": "Credential store with User Credentials artifact"
+    },
+    "oauth2": {
+      "description": "OAuth 2.0 token-based authentication",
+      "grantTypes": {
+        "clientCredentials": {
+          "description": "Machine-to-machine authentication",
+          "flow": "Client ID + Secret → Token endpoint → Access token",
+          "useCase": "API integrations, service accounts"
+        },
+        "authorizationCode": {
+          "description": "User-delegated authorization",
+          "flow": "User consent → Authorization code → Access token",
+          "useCase": "User-context integrations"
+        },
+        "saml2Bearer": {
+          "description": "SAML assertion exchange for OAuth token",
+          "flow": "SAML assertion → Token endpoint → Access token",
+          "useCase": "SAP Principal Propagation"
+        }
+      },
+      "tokenManagement": {
+        "caching": "Cache tokens until expiry minus buffer",
+        "refresh": "Use refresh tokens when available",
+        "retry": "Retry with new token on 401 response"
+      }
+    },
+    "clientCertificate": {
+      "description": "Mutual TLS (mTLS) authentication",
+      "configuration": {
+        "keystore": "Store client certificate and private key",
+        "truststore": "Store CA certificates"
+      },
+      "useCase": "High-security B2B, banking, healthcare"
+    },
+    "sapPrincipalPropagation": {
+      "description": "Propagate SAP user identity",
+      "methods": ["SAML assertion", "JWT token", "Technical user"],
+      "useCase": "End-to-end user context in SAP landscapes"
+    }
+  },
+  "encryption": {
+    "transportLevel": {
+      "description": "TLS/SSL encryption",
+      "protocols": ["TLS 1.2", "TLS 1.3"],
+      "requirements": ["Valid certificates", "Strong cipher suites", "Certificate validation"]
+    },
+    "messageLevel": {
+      "description": "Encrypt message payload",
+      "standards": ["S/MIME", "PGP", "XML Encryption"],
+      "cpiSupport": {
+        "encryptor": "Encryptor step with recipient certificate",
+        "decryptor": "Decryptor step with private key"
+      }
+    },
+    "fieldLevel": {
+      "description": "Encrypt specific sensitive fields",
+      "pattern": "import javax.crypto.Cipher\nimport javax.crypto.spec.SecretKeySpec\n// AES encryption for sensitive fields",
+      "useCase": "PII, payment data, credentials"
+    }
+  },
+  "digitalSignatures": {
+    "xmlSignature": {
+      "description": "Sign XML documents",
+      "standards": ["XMLDSig", "XAdES"],
+      "cpiSupport": "XML Signer step"
+    },
+    "pkcs7": {
+      "description": "PKCS#7/CMS signatures",
+      "useCase": "General document signing",
+      "cpiSupport": "PKCS7 Signer step"
+    },
+    "verification": {
+      "description": "Verify received signatures",
+      "steps": ["Validate certificate chain", "Check signature algorithm", "Verify digest", "Check timestamp"]
+    }
+  },
+  "credentialManagement": {
+    "secureParameter": {
+      "description": "CPI Secure Parameter Store",
+      "useCase": "Store sensitive configuration values",
+      "access": "message.getProperty('credential')"
+    },
+    "credentialStore": {
+      "description": "User Credentials artifact",
+      "types": ["User Credentials", "OAuth2 Credentials", "Secure Parameter"],
+      "deployment": "Deployed separately from iFlow"
+    },
+    "keystore": {
+      "description": "Certificate and key storage",
+      "types": ["System keystore", "Tenant keystore"],
+      "operations": ["Store certificates", "Store key pairs", "Certificate rotation"]
+    },
+    "rotation": {
+      "description": "Credential rotation best practices",
+      "frequency": "90 days for passwords, annually for certificates",
+      "process": ["Deploy new credential", "Update configurations", "Verify functionality", "Remove old credential"]
+    }
+  },
+  "dataMasking": {
+    "description": "Mask sensitive data in logs",
+    "techniques": {
+      "fullMasking": "Replace with ****",
+      "partialMasking": "Show last 4 digits: ****1234",
+      "hashing": "One-way hash for correlation"
+    },
+    "sensitiveFields": ["Passwords", "Credit cards", "SSN", "Bank accounts", "API keys"]
+  },
+  "accessControl": {
+    "roleBasedAccess": {
+      "description": "Control access based on roles",
+      "implementation": "XSUAA role collections, iFlow permissions"
+    },
+    "ipWhitelisting": {
+      "description": "Restrict access by IP address",
+      "useCase": "Partner connections, internal systems"
+    },
+    "apiManagement": {
+      "description": "API gateway security",
+      "features": ["Rate limiting", "Quota management", "API key validation", "OAuth verification"]
+    }
+  },
+  "compliancePatterns": {
+    "auditLogging": {
+      "description": "Log security events for compliance",
+      "events": ["Authentication attempts", "Authorization decisions", "Data access", "Configuration changes"]
+    },
+    "dataResidency": {
+      "description": "Ensure data stays in required regions",
+      "implementation": "Region-specific endpoints, data filtering"
+    },
+    "gdprCompliance": {
+      "description": "GDPR data protection",
+      "requirements": ["Consent management", "Data minimization", "Right to erasure", "Data portability"]
+    }
+  },
+  "bestPractices": [
+    "Never hardcode credentials in scripts",
+    "Use OAuth 2.0 over Basic Auth when possible",
+    "Implement certificate rotation procedures",
+    "Enable TLS 1.2 or higher for all connections",
+    "Mask sensitive data in all logs",
+    "Use separate credentials per environment",
+    "Implement proper error handling without exposing security details",
+    "Regularly audit security configurations",
+    "Document all security requirements and implementations",
+    "Test security configurations before production deployment"
+  ],
+  "antiPatterns": [
+    "Storing credentials in plain text",
+    "Using weak encryption algorithms",
+    "Disabling certificate validation",
+    "Logging sensitive data",
+    "Sharing credentials across environments",
+    "Not rotating credentials regularly",
+    "Ignoring security headers",
+    "Using self-signed certificates in production"
+  ]
+}

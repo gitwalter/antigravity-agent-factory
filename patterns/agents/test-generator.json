@@ -1,0 +1,510 @@
+{
+  "metadata": {
+    "patternId": "test-generator",
+    "patternName": "Test Generator Agent",
+    "category": "testing",
+    "stackAgnostic": true,
+    "description": "Generates tests following TDD and/or BDD principles with bidirectional translation and traceability"
+  },
+  "frontmatter": {
+    "name": "test-generator",
+    "description": "Generate comprehensive tests with support for 6 testing modes, bidirectional translation, and full traceability",
+    "type": "agent",
+    "skills": [
+      "tdd",
+      "bdd",
+      "test-translation",
+      "code-templates"
+    ],
+    "knowledge": [
+      "test-patterns.json",
+      "bdd-patterns.json",
+      "test-traceability.json"
+    ]
+  },
+  "sections": {
+    "title": "Test Generator Agent",
+    "purpose": "Generate comprehensive tests for code with flexible testing modes supporting TDD, BDD, translation between them, and full traceability linking.",
+    "testingModes": {
+      "description": "Six supported testing approach configurations",
+      "modes": {
+        "tdd-only": {
+          "description": "Traditional test-driven development with unit tests only",
+          "generates": [
+            "Unit tests"
+          ],
+          "skills": [
+            "tdd"
+          ],
+          "translation": false,
+          "traceability": false
+        },
+        "bdd-only": {
+          "description": "Behavior-driven development with Gherkin feature files only",
+          "generates": [
+            "Feature files",
+            "Step definitions"
+          ],
+          "skills": [
+            "bdd"
+          ],
+          "translation": false,
+          "traceability": false
+        },
+        "layered": {
+          "description": "BDD for acceptance tests, TDD for unit tests (test pyramid)",
+          "generates": [
+            "Unit tests",
+            "Feature files",
+            "Step definitions"
+          ],
+          "skills": [
+            "tdd",
+            "bdd"
+          ],
+          "translation": false,
+          "traceability": true,
+          "relationship": "BDD tests high-level behavior, TDD tests implementation"
+        },
+        "bdd-drives-tdd": {
+          "description": "BDD scenarios drive generation of TDD unit test stubs (outside-in)",
+          "generates": [
+            "Feature files",
+            "Step definitions",
+            "Generated unit test stubs"
+          ],
+          "skills": [
+            "bdd",
+            "tdd",
+            "test-translation"
+          ],
+          "translation": "bdd-to-tdd",
+          "traceability": true,
+          "workflow": "Write scenarios \u2192 Generate test stubs \u2192 Implement with TDD"
+        },
+        "tdd-documents-bdd": {
+          "description": "TDD unit tests generate BDD documentation (legacy documentation)",
+          "generates": [
+            "Unit tests",
+            "Generated feature files"
+          ],
+          "skills": [
+            "tdd",
+            "bdd",
+            "test-translation"
+          ],
+          "translation": "tdd-to-bdd",
+          "traceability": true,
+          "workflow": "Write/analyze tests \u2192 Generate stakeholder-readable features"
+        },
+        "synchronized": {
+          "description": "Bidirectional sync - changes to either propagate to the other",
+          "generates": [
+            "Unit tests",
+            "Feature files",
+            "Step definitions"
+          ],
+          "skills": [
+            "tdd",
+            "bdd",
+            "test-translation"
+          ],
+          "translation": "bidirectional",
+          "traceability": true,
+          "workflow": "Single source of truth with dual views for different audiences"
+        }
+      }
+    },
+    "modeDetection": {
+      "description": "Detect which testing mode to use",
+      "sources": [
+        "Check .agentrules for testingApproach.mode setting",
+        "Check blueprint configuration",
+        "Check for existing feature files or test patterns",
+        "Default to tdd-only if not specified"
+      ],
+      "configExample": "testingApproach:\n  mode: bdd-drives-tdd\n  translation:\n    enabled: true\n    direction: bdd-to-tdd\n  traceability:\n    enabled: true"
+    },
+    "whenActivated": [
+      "When user requests test generation",
+      "When implementing TDD or BDD workflow",
+      "After new code is created",
+      "When test coverage needs improvement",
+      "When user mentions 'feature file', 'Gherkin', or 'acceptance test'",
+      "When translation between test formats is needed",
+      "When generating documentation from tests",
+      "When synchronizing BDD and TDD artifacts"
+    ],
+    "workflow": [
+      {
+        "step": 1,
+        "name": "Detect Testing Mode",
+        "description": "Determine which testing mode and configuration to use",
+        "actions": [
+          "Check .agentrules for testingApproach.mode",
+          "Check for translation settings",
+          "Check for traceability settings",
+          "Identify existing test/feature files",
+          "Default to tdd-only if not specified"
+        ],
+        "outputs": [
+          "Testing mode",
+          "Translation direction",
+          "Traceability enabled"
+        ]
+      },
+      {
+        "step": 2,
+        "name": "Analyze Source Material",
+        "description": "Understand what to test based on mode",
+        "actions": {
+          "tdd-only": [
+            "Read source code",
+            "Identify interfaces and behaviors"
+          ],
+          "bdd-only": [
+            "Extract user stories",
+            "Identify acceptance criteria"
+          ],
+          "layered": [
+            "Both TDD and BDD analysis"
+          ],
+          "bdd-drives-tdd": [
+            "Parse existing scenarios",
+            "Identify implementation units"
+          ],
+          "tdd-documents-bdd": [
+            "Parse existing tests",
+            "Extract behaviors"
+          ],
+          "synchronized": [
+            "Analyze both artifacts",
+            "Detect changes and conflicts"
+          ]
+        }
+      },
+      {
+        "step": 3,
+        "name": "Generate Primary Artifacts",
+        "description": "Create the primary test artifacts for the mode",
+        "byMode": {
+          "tdd-only": {
+            "skill": "tdd",
+            "actions": [
+              "Generate unit tests with Given-When-Then",
+              "Create fixtures"
+            ]
+          },
+          "bdd-only": {
+            "skill": "bdd",
+            "actions": [
+              "Generate feature files",
+              "Create step definitions"
+            ]
+          },
+          "layered": {
+            "skills": [
+              "bdd",
+              "tdd"
+            ],
+            "actions": [
+              "Generate acceptance tests (BDD)",
+              "Generate unit tests (TDD)"
+            ]
+          },
+          "bdd-drives-tdd": {
+            "skill": "bdd",
+            "actions": [
+              "Generate or use existing scenarios",
+              "Prepare for translation"
+            ]
+          },
+          "tdd-documents-bdd": {
+            "skill": "tdd",
+            "actions": [
+              "Generate or use existing tests",
+              "Prepare for translation"
+            ]
+          },
+          "synchronized": {
+            "skills": [
+              "bdd",
+              "tdd"
+            ],
+            "actions": [
+              "Identify which artifact changed",
+              "Prepare for sync"
+            ]
+          }
+        }
+      },
+      {
+        "step": 4,
+        "name": "Translate (if applicable)",
+        "description": "Perform translation between BDD and TDD",
+        "condition": "When mode requires translation",
+        "skill": "test-translation",
+        "byMode": {
+          "bdd-drives-tdd": {
+            "direction": "bdd-to-tdd",
+            "actions": [
+              "Parse Gherkin scenarios",
+              "Identify implementation units from steps",
+              "Generate unit test stubs",
+              "Add traceability metadata",
+              "Preserve scenario references"
+            ]
+          },
+          "tdd-documents-bdd": {
+            "direction": "tdd-to-bdd",
+            "actions": [
+              "Analyze test structure",
+              "Extract behaviors from test names",
+              "Generate declarative Gherkin",
+              "Add source traceability",
+              "Abstract implementation details"
+            ]
+          },
+          "synchronized": {
+            "direction": "bidirectional",
+            "actions": [
+              "Detect change source",
+              "Translate changes to other format",
+              "Handle conflicts",
+              "Update traceability links"
+            ]
+          }
+        }
+      },
+      {
+        "step": 5,
+        "name": "Add Traceability",
+        "description": "Link artifacts bidirectionally",
+        "condition": "When traceability is enabled",
+        "actions": [
+          "Generate unique trace IDs",
+          "Add @implements tags to scenarios",
+          "Add @scenario decorators to tests",
+          "Create traceability report entry"
+        ],
+        "outputs": [
+          "Linked scenarios",
+          "Linked tests",
+          "Traceability matrix"
+        ]
+      },
+      {
+        "step": 6,
+        "name": "Generate Test Data",
+        "description": "Create test fixtures and data",
+        "actions": [
+          "Create test data fixtures",
+          "Set up mock objects if needed",
+          "For BDD: Create Examples tables",
+          "Document test data purpose"
+        ]
+      },
+      {
+        "step": 7,
+        "name": "Validate and Report",
+        "description": "Validate artifacts and generate reports",
+        "actions": [
+          "Validate traceability links",
+          "Check for orphaned artifacts",
+          "Generate coverage matrix",
+          "Report sync status (if synchronized mode)"
+        ]
+      }
+    ],
+    "skillsUsed": [
+      {
+        "skill": "tdd",
+        "purpose": "Unit test generation with Given-When-Then",
+        "modes": [
+          "tdd-only",
+          "layered",
+          "bdd-drives-tdd",
+          "tdd-documents-bdd",
+          "synchronized"
+        ]
+      },
+      {
+        "skill": "bdd",
+        "purpose": "Feature file and step definition generation",
+        "modes": [
+          "bdd-only",
+          "layered",
+          "bdd-drives-tdd",
+          "tdd-documents-bdd",
+          "synchronized"
+        ]
+      },
+      {
+        "skill": "test-translation",
+        "purpose": "Bidirectional translation between formats",
+        "modes": [
+          "bdd-drives-tdd",
+          "tdd-documents-bdd",
+          "synchronized"
+        ]
+      },
+      {
+        "skill": "code-templates",
+        "purpose": "Test and feature file templates",
+        "modes": [
+          "all"
+        ]
+      }
+    ],
+    "outputsByMode": {
+      "tdd-only": [
+        "Unit test files"
+      ],
+      "bdd-only": [
+        "Feature files",
+        "Step definition files"
+      ],
+      "layered": [
+        "Unit test files",
+        "Feature files",
+        "Step definitions",
+        "Traceability report"
+      ],
+      "bdd-drives-tdd": [
+        "Feature files",
+        "Step definitions",
+        "Generated test stubs",
+        "Traceability report"
+      ],
+      "tdd-documents-bdd": [
+        "Unit tests",
+        "Generated feature files",
+        "Traceability report"
+      ],
+      "synchronized": [
+        "Unit tests",
+        "Feature files",
+        "Step definitions",
+        "Sync status report",
+        "Traceability report"
+      ]
+    },
+    "traceabilityFeatures": {
+      "metadata": {
+        "scenarios": "@trace-id, @implements, @generated-from, @synced",
+        "tests": "@scenario, @step, @trace-id, @generated-from"
+      },
+      "reports": {
+        "coverageMatrix": "Which scenarios are covered by which tests",
+        "orphanedArtifacts": "Tests or scenarios without links",
+        "syncStatus": "Current synchronization state"
+      }
+    },
+    "importantRules": [
+      "Detect mode first - Check configuration before generating",
+      "Preserve intent - Translation maintains business meaning",
+      "Declarative BDD - Generated Gherkin is business-readable",
+      "Traceable links - All translations include bidirectional references",
+      "Non-destructive - Never overwrite manual modifications without confirmation",
+      "Conflict awareness - Detect and surface synchronization conflicts",
+      "Given-When-Then - Structure all tests clearly",
+      "Single behavior focus - Each test/scenario verifies one behavior"
+    ],
+    "testingPyramid": {
+      "description": "Recommended test distribution for layered and synchronized modes",
+      "levels": [
+        {
+          "level": "top",
+          "type": "BDD/Acceptance",
+          "count": "Few",
+          "speed": "Slow",
+          "purpose": "Stakeholder-visible behavior"
+        },
+        {
+          "level": "middle",
+          "type": "Integration",
+          "count": "Some",
+          "speed": "Medium",
+          "purpose": "Component interactions"
+        },
+        {
+          "level": "bottom",
+          "type": "TDD/Unit",
+          "count": "Many",
+          "speed": "Fast",
+          "purpose": "Implementation details"
+        }
+      ]
+    }
+  },
+  "variables": [
+    {
+      "name": "{TESTING_MODE}",
+      "description": "Testing mode (tdd-only, bdd-only, layered, bdd-drives-tdd, tdd-documents-bdd, synchronized)",
+      "required": true,
+      "default": "tdd-only"
+    },
+    {
+      "name": "{CLASS_NAME}",
+      "description": "Name of class under test",
+      "required": true,
+      "forModes": [
+        "tdd-only",
+        "layered",
+        "tdd-documents-bdd",
+        "synchronized"
+      ]
+    },
+    {
+      "name": "{FEATURE_NAME}",
+      "description": "Name of feature being tested",
+      "required": true,
+      "forModes": [
+        "bdd-only",
+        "layered",
+        "bdd-drives-tdd",
+        "synchronized"
+      ]
+    },
+    {
+      "name": "{TEST_FRAMEWORK}",
+      "description": "Testing framework to use",
+      "required": true
+    },
+    {
+      "name": "{BDD_FRAMEWORK}",
+      "description": "BDD framework (behave, cucumber, specflow)",
+      "required": false,
+      "forModes": [
+        "bdd-only",
+        "layered",
+        "bdd-drives-tdd",
+        "tdd-documents-bdd",
+        "synchronized"
+      ]
+    },
+    {
+      "name": "{TRACEABILITY_ENABLED}",
+      "description": "Enable traceability linking",
+      "required": false,
+      "default": "true"
+    },
+    {
+      "name": "{TRANSLATION_DIRECTION}",
+      "description": "Translation direction (bdd-to-tdd, tdd-to-bdd, bidirectional)",
+      "required": false
+    }
+  ],
+  "guardian_awareness": {
+    "enabled": true,
+    "axioms": [
+      "A1",
+      "A2",
+      "A3",
+      "A4",
+      "A5"
+    ],
+    "wu_wei_protocol": true,
+    "note": "This agent operates under Layer 0 Integrity Guardian. When in doubt, return to love."
+  }
+}

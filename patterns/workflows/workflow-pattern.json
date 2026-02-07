@@ -1,0 +1,190 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Antigravity Workflow Pattern Schema",
+  "description": "Schema for defining workflow documentation patterns in the Antigravity Agent Factory",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["metadata", "sections"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Pattern metadata for factory use",
+      "required": ["patternId", "patternName", "triggerType", "stackAgnostic"],
+      "properties": {
+        "patternId": {
+          "type": "string",
+          "description": "Unique identifier for this pattern",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "patternName": {
+          "type": "string",
+          "description": "Human-readable pattern name"
+        },
+        "triggerType": {
+          "type": "string",
+          "enum": ["jira", "confluence", "github", "gitlab", "manual", "scheduled", "custom"],
+          "description": "What triggers this workflow"
+        },
+        "stackAgnostic": {
+          "type": "boolean",
+          "description": "Whether this pattern works across all technology stacks"
+        },
+        "applicableStacks": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of applicable stacks if not stack-agnostic"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the workflow"
+        },
+        "outputArtifacts": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Artifacts produced by this workflow"
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "description": "Content sections for the workflow markdown",
+      "required": ["overview", "trigger", "steps"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Main heading for the workflow"
+        },
+        "overview": {
+          "type": "string",
+          "description": "Brief overview of the workflow"
+        },
+        "trigger": {
+          "type": "object",
+          "properties": {
+            "description": {"type": "string"},
+            "pattern": {"type": "string"},
+            "examples": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          },
+          "description": "What triggers this workflow"
+        },
+        "variableNotation": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "variable": {"type": "string"},
+              "description": {"type": "string"}
+            }
+          },
+          "description": "Variables used in this workflow"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "number": {"type": "integer"},
+              "name": {"type": "string"},
+              "description": {"type": "string"},
+              "actions": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "mcpTools": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "skillsInvoked": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "outputs": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "isMandatory": {"type": "boolean"}
+            }
+          },
+          "description": "Step-by-step workflow"
+        },
+        "flowDiagram": {
+          "type": "string",
+          "description": "ASCII or mermaid diagram of the workflow"
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "location": {"type": "string"},
+              "purpose": {"type": "string"}
+            }
+          },
+          "description": "Artifacts created by this workflow"
+        },
+        "fallbackProcedures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "condition": {"type": "string"},
+              "action": {"type": "string"}
+            }
+          },
+          "description": "Fallback procedures for error conditions"
+        },
+        "exampleSession": {
+          "type": "string",
+          "description": "Example chat session showing workflow in action"
+        }
+      }
+    },
+    "variables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "description": {"type": "string"},
+          "required": {"type": "boolean"},
+          "default": {"type": "string"}
+        }
+      },
+      "description": "Variables that must be replaced when generating"
+    }
+  },
+  "examples": [
+    {
+      "metadata": {
+        "patternId": "jira-bugfix",
+        "patternName": "Jira Bugfix Workflow",
+        "triggerType": "jira",
+        "stackAgnostic": true,
+        "description": "Bugfix workflow triggered by Jira tickets",
+        "outputArtifacts": ["implementation_plan.md", "code_changes", "test_cases"]
+      },
+      "sections": {
+        "title": "Jira Bugfix Workflow",
+        "overview": "Complete workflow for fixing bugs from Jira tickets.",
+        "trigger": {
+          "description": "Jira ticket ID mentioned",
+          "pattern": "{PROJECT}-{NUMBER}",
+          "examples": ["PROJ-123", "BUG-456"]
+        },
+        "steps": [
+          {
+            "number": 1,
+            "name": "Read Jira Ticket",
+            "description": "Fetch and analyze the ticket",
+            "mcpTools": ["atlassian-getJiraIssue"],
+            "isMandatory": true
+          }
+        ]
+      }
+    }
+  ]
+}

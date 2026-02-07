@@ -1,0 +1,162 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DeFi Protocol Patterns",
+  "description": "Design patterns for decentralized finance protocols",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A3_transparency": "All DeFi patterns emphasize transparent, verifiable operations",
+    "A4_non_harm": "Patterns include safety mechanisms to protect user funds"
+  },
+  "amm_patterns": {
+    "constant_product": {
+      "description": "x * y = k automated market maker (Uniswap V2 style)",
+      "formula": "x * y = k (constant product invariant)",
+      "use_when": "General-purpose token swaps",
+      "code_example": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\nimport \"@openzeppelin/contracts/token/ERC20/IERC20.sol\";\nimport \"@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol\";\nimport \"@openzeppelin/contracts/utils/ReentrancyGuard.sol\";\n\ncontract ConstantProductAMM is ReentrancyGuard {\n    using SafeERC20 for IERC20;\n    \n    IERC20 public immutable token0;\n    IERC20 public immutable token1;\n    \n    uint256 public reserve0;\n    uint256 public reserve1;\n    \n    uint256 public totalSupply;\n    mapping(address => uint256) public balanceOf;\n    \n    uint256 public constant FEE_DENOMINATOR = 1000;\n    uint256 public constant FEE_NUMERATOR = 3; // 0.3% fee\n    \n    event Swap(address indexed sender, uint256 amountIn, uint256 amountOut, bool zeroForOne);\n    event AddLiquidity(address indexed provider, uint256 amount0, uint256 amount1, uint256 lpTokens);\n    event RemoveLiquidity(address indexed provider, uint256 amount0, uint256 amount1, uint256 lpTokens);\n    \n    constructor(address _token0, address _token1) {\n        token0 = IERC20(_token0);\n        token1 = IERC20(_token1);\n    }\n    \n    function swap(address tokenIn, uint256 amountIn) external nonReentrant returns (uint256 amountOut) {\n        require(tokenIn == address(token0) || tokenIn == address(token1), \"Invalid token\");\n        require(amountIn > 0, \"Amount must be > 0\");\n        \n        bool isToken0 = tokenIn == address(token0);\n        (IERC20 tokenInContract, IERC20 tokenOutContract, uint256 reserveIn, uint256 reserveOut) = \n            isToken0 \n                ? (token0, token1, reserve0, reserve1) \n                : (token1, token0, reserve1, reserve0);\n        \n        tokenInContract.safeTransferFrom(msg.sender, address(this), amountIn);\n        \n        // Apply fee\n        uint256 amountInWithFee = amountIn * (FEE_DENOMINATOR - FEE_NUMERATOR);\n        amountOut = (reserveOut * amountInWithFee) / (reserveIn * FEE_DENOMINATOR + amountInWithFee);\n        \n        tokenOutContract.safeTransfer(msg.sender, amountOut);\n        \n        _updateReserves();\n        emit Swap(msg.sender, amountIn, amountOut, isToken0);\n    }\n    \n    function _updateReserves() private {\n        reserve0 = token0.balanceOf(address(this));\n        reserve1 = token1.balanceOf(address(this));\n    }\n}",
+      "best_practices": [
+        "Use ReentrancyGuard on all swap functions",
+        "Emit events for all swaps",
+        "Include slippage protection in frontend",
+        "Consider price impact for large trades"
+      ],
+      "limitations": [
+        "Capital inefficient for correlated assets",
+        "Impermanent loss for liquidity providers"
+      ]
+    },
+    "concentrated_liquidity": {
+      "description": "Liquidity within price ranges (Uniswap V3 style)",
+      "use_when": "Capital-efficient liquidity for predictable price ranges",
+      "key_concepts": [
+        "Tick-based pricing",
+        "Position NFTs for LP tracking",
+        "Just-in-time liquidity"
+      ],
+      "reference": "Uniswap V3 Whitepaper"
+    },
+    "stableswap": {
+      "description": "Optimized for stable asset swaps (Curve style)",
+      "formula": "Hybrid constant sum + constant product",
+      "use_when": "Trading between pegged assets (USDC/USDT/DAI)",
+      "benefits": [
+        "Very low slippage for pegged assets",
+        "High capital efficiency"
+      ]
+    }
+  },
+  "lending_patterns": {
+    "overcollateralized_lending": {
+      "description": "Borrow against collateral with safety margin",
+      "use_when": "Trustless lending without credit checks",
+      "code_example": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\nimport \"@openzeppelin/contracts/token/ERC20/IERC20.sol\";\nimport \"@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol\";\nimport \"@openzeppelin/contracts/utils/ReentrancyGuard.sol\";\n\ninterface IPriceOracle {\n    function getPrice(address token) external view returns (uint256);\n}\n\ncontract LendingPool is ReentrancyGuard {\n    using SafeERC20 for IERC20;\n    \n    struct Position {\n        uint256 collateralAmount;\n        uint256 borrowedAmount;\n        address collateralToken;\n    }\n    \n    mapping(address => Position) public positions;\n    \n    IERC20 public immutable borrowToken;\n    IPriceOracle public immutable oracle;\n    \n    uint256 public constant COLLATERAL_FACTOR = 75; // 75% LTV\n    uint256 public constant LIQUIDATION_THRESHOLD = 80; // 80% triggers liquidation\n    uint256 public constant LIQUIDATION_BONUS = 5; // 5% bonus for liquidators\n    \n    event Deposit(address indexed user, address indexed collateral, uint256 amount);\n    event Borrow(address indexed user, uint256 amount);\n    event Repay(address indexed user, uint256 amount);\n    event Liquidate(address indexed user, address indexed liquidator, uint256 collateralSeized);\n    \n    function deposit(address collateralToken, uint256 amount) external nonReentrant {\n        IERC20(collateralToken).safeTransferFrom(msg.sender, address(this), amount);\n        \n        positions[msg.sender].collateralAmount += amount;\n        positions[msg.sender].collateralToken = collateralToken;\n        \n        emit Deposit(msg.sender, collateralToken, amount);\n    }\n    \n    function borrow(uint256 amount) external nonReentrant {\n        Position storage pos = positions[msg.sender];\n        \n        uint256 collateralValue = _getCollateralValue(pos);\n        uint256 maxBorrow = (collateralValue * COLLATERAL_FACTOR) / 100;\n        \n        require(pos.borrowedAmount + amount <= maxBorrow, \"Insufficient collateral\");\n        \n        pos.borrowedAmount += amount;\n        borrowToken.safeTransfer(msg.sender, amount);\n        \n        emit Borrow(msg.sender, amount);\n    }\n    \n    function liquidate(address user) external nonReentrant {\n        Position storage pos = positions[user];\n        require(_isLiquidatable(pos), \"Position healthy\");\n        \n        uint256 collateralToSeize = pos.collateralAmount * (100 + LIQUIDATION_BONUS) / 100;\n        \n        // Liquidator repays debt\n        borrowToken.safeTransferFrom(msg.sender, address(this), pos.borrowedAmount);\n        \n        // Liquidator receives collateral\n        IERC20(pos.collateralToken).safeTransfer(msg.sender, collateralToSeize);\n        \n        emit Liquidate(user, msg.sender, collateralToSeize);\n        \n        delete positions[user];\n    }\n    \n    function _getCollateralValue(Position storage pos) internal view returns (uint256) {\n        return pos.collateralAmount * oracle.getPrice(pos.collateralToken) / 1e18;\n    }\n    \n    function _isLiquidatable(Position storage pos) internal view returns (bool) {\n        uint256 collateralValue = _getCollateralValue(pos);\n        uint256 threshold = (collateralValue * LIQUIDATION_THRESHOLD) / 100;\n        return pos.borrowedAmount > threshold;\n    }\n}",
+      "key_parameters": [
+        "Collateral Factor (LTV): Maximum borrow relative to collateral",
+        "Liquidation Threshold: When positions become liquidatable",
+        "Liquidation Bonus: Incentive for liquidators"
+      ],
+      "risks": [
+        "Oracle manipulation",
+        "Cascading liquidations",
+        "Bad debt if liquidation fails"
+      ]
+    },
+    "flash_loans": {
+      "description": "Uncollateralized loans repaid in same transaction",
+      "use_when": "Arbitrage, collateral swaps, liquidations",
+      "code_example": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\nimport \"@openzeppelin/contracts/token/ERC20/IERC20.sol\";\nimport \"@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol\";\n\ninterface IFlashLoanReceiver {\n    function executeOperation(\n        address token,\n        uint256 amount,\n        uint256 fee,\n        bytes calldata params\n    ) external returns (bool);\n}\n\ncontract FlashLoanProvider {\n    using SafeERC20 for IERC20;\n    \n    uint256 public constant FLASH_LOAN_FEE = 9; // 0.09% fee\n    uint256 public constant FEE_PRECISION = 10000;\n    \n    event FlashLoan(address indexed receiver, address indexed token, uint256 amount, uint256 fee);\n    \n    function flashLoan(\n        address receiver,\n        address token,\n        uint256 amount,\n        bytes calldata params\n    ) external {\n        uint256 balanceBefore = IERC20(token).balanceOf(address(this));\n        require(balanceBefore >= amount, \"Insufficient liquidity\");\n        \n        uint256 fee = (amount * FLASH_LOAN_FEE) / FEE_PRECISION;\n        \n        IERC20(token).safeTransfer(receiver, amount);\n        \n        require(\n            IFlashLoanReceiver(receiver).executeOperation(token, amount, fee, params),\n            \"Flash loan failed\"\n        );\n        \n        uint256 balanceAfter = IERC20(token).balanceOf(address(this));\n        require(balanceAfter >= balanceBefore + fee, \"Flash loan not repaid\");\n        \n        emit FlashLoan(receiver, token, amount, fee);\n    }\n}",
+      "security_notes": [
+        "Entire operation must succeed or revert",
+        "Cannot use flash loans for governance attacks if properly designed",
+        "Protocols should use TWAP oracles to resist manipulation"
+      ]
+    }
+  },
+  "staking_patterns": {
+    "simple_staking": {
+      "description": "Stake tokens to earn rewards",
+      "code_example": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\nimport \"@openzeppelin/contracts/token/ERC20/IERC20.sol\";\nimport \"@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol\";\nimport \"@openzeppelin/contracts/utils/ReentrancyGuard.sol\";\n\ncontract StakingRewards is ReentrancyGuard {\n    using SafeERC20 for IERC20;\n    \n    IERC20 public immutable stakingToken;\n    IERC20 public immutable rewardsToken;\n    \n    uint256 public rewardRate; // Rewards per second\n    uint256 public lastUpdateTime;\n    uint256 public rewardPerTokenStored;\n    \n    mapping(address => uint256) public userRewardPerTokenPaid;\n    mapping(address => uint256) public rewards;\n    mapping(address => uint256) public balances;\n    \n    uint256 public totalSupply;\n    \n    event Staked(address indexed user, uint256 amount);\n    event Withdrawn(address indexed user, uint256 amount);\n    event RewardPaid(address indexed user, uint256 reward);\n    \n    constructor(address _stakingToken, address _rewardsToken) {\n        stakingToken = IERC20(_stakingToken);\n        rewardsToken = IERC20(_rewardsToken);\n    }\n    \n    modifier updateReward(address account) {\n        rewardPerTokenStored = rewardPerToken();\n        lastUpdateTime = block.timestamp;\n        if (account != address(0)) {\n            rewards[account] = earned(account);\n            userRewardPerTokenPaid[account] = rewardPerTokenStored;\n        }\n        _;\n    }\n    \n    function rewardPerToken() public view returns (uint256) {\n        if (totalSupply == 0) return rewardPerTokenStored;\n        return rewardPerTokenStored + \n            ((block.timestamp - lastUpdateTime) * rewardRate * 1e18) / totalSupply;\n    }\n    \n    function earned(address account) public view returns (uint256) {\n        return (balances[account] * (rewardPerToken() - userRewardPerTokenPaid[account])) / 1e18 \n            + rewards[account];\n    }\n    \n    function stake(uint256 amount) external nonReentrant updateReward(msg.sender) {\n        require(amount > 0, \"Cannot stake 0\");\n        totalSupply += amount;\n        balances[msg.sender] += amount;\n        stakingToken.safeTransferFrom(msg.sender, address(this), amount);\n        emit Staked(msg.sender, amount);\n    }\n    \n    function withdraw(uint256 amount) external nonReentrant updateReward(msg.sender) {\n        require(amount > 0, \"Cannot withdraw 0\");\n        totalSupply -= amount;\n        balances[msg.sender] -= amount;\n        stakingToken.safeTransfer(msg.sender, amount);\n        emit Withdrawn(msg.sender, amount);\n    }\n    \n    function getReward() external nonReentrant updateReward(msg.sender) {\n        uint256 reward = rewards[msg.sender];\n        if (reward > 0) {\n            rewards[msg.sender] = 0;\n            rewardsToken.safeTransfer(msg.sender, reward);\n            emit RewardPaid(msg.sender, reward);\n        }\n    }\n}",
+      "best_practices": [
+        "Use updateReward modifier for accurate reward tracking",
+        "Implement ReentrancyGuard",
+        "Consider adding emergency withdraw function"
+      ]
+    },
+    "vote_escrow": {
+      "description": "Lock tokens for voting power (ve-token model)",
+      "use_when": "Governance with time-weighted voting",
+      "key_concepts": [
+        "Longer lock = more voting power",
+        "Voting power decays linearly",
+        "Non-transferable positions"
+      ],
+      "reference": "Curve veCRV model"
+    }
+  },
+  "vault_patterns": {
+    "erc4626_vault": {
+      "description": "Standardized yield-bearing vault (EIP-4626)",
+      "use_when": "Any tokenized yield strategy",
+      "code_example": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\nimport \"@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol\";\nimport \"@openzeppelin/contracts/token/ERC20/ERC20.sol\";\n\ncontract YieldVault is ERC4626 {\n    constructor(\n        IERC20 asset_,\n        string memory name_,\n        string memory symbol_\n    ) ERC4626(asset_) ERC20(name_, symbol_) {}\n    \n    function totalAssets() public view override returns (uint256) {\n        // Return total assets under management\n        return IERC20(asset()).balanceOf(address(this)) + _getExternalYield();\n    }\n    \n    function _getExternalYield() internal view returns (uint256) {\n        // Override to add yield from external protocols\n        return 0;\n    }\n    \n    function harvest() external {\n        // Collect and reinvest yield\n    }\n}",
+      "standard_functions": [
+        "deposit(assets, receiver) → shares",
+        "mint(shares, receiver) → assets",
+        "withdraw(assets, receiver, owner) → shares",
+        "redeem(shares, receiver, owner) → assets"
+      ],
+      "benefits": [
+        "Standardized interface for integrations",
+        "Automatic share price calculation",
+        "Composability with other DeFi protocols"
+      ]
+    }
+  },
+  "oracle_patterns": {
+    "chainlink_integration": {
+      "description": "Use Chainlink decentralized price feeds",
+      "code_example": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\nimport \"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\";\n\ncontract PriceConsumer {\n    AggregatorV3Interface internal immutable priceFeed;\n    \n    uint256 public constant STALENESS_THRESHOLD = 1 hours;\n    \n    constructor(address _priceFeed) {\n        priceFeed = AggregatorV3Interface(_priceFeed);\n    }\n    \n    function getLatestPrice() public view returns (int256) {\n        (\n            uint80 roundId,\n            int256 price,\n            uint256 startedAt,\n            uint256 updatedAt,\n            uint80 answeredInRound\n        ) = priceFeed.latestRoundData();\n        \n        require(price > 0, \"Invalid price\");\n        require(updatedAt > 0, \"Round not complete\");\n        require(block.timestamp - updatedAt < STALENESS_THRESHOLD, \"Stale price\");\n        require(answeredInRound >= roundId, \"Stale round\");\n        \n        return price;\n    }\n    \n    function getDecimals() public view returns (uint8) {\n        return priceFeed.decimals();\n    }\n}",
+      "validation_checks": [
+        "Price is positive",
+        "Round is complete",
+        "Data is not stale",
+        "Answered in current round"
+      ]
+    },
+    "twap_oracle": {
+      "description": "Time-weighted average price from AMM",
+      "use_when": "Need manipulation-resistant price",
+      "key_concepts": [
+        "Accumulate price over time",
+        "Query price difference over period",
+        "Resistant to single-block manipulation"
+      ]
+    }
+  },
+  "governance_patterns": {
+    "token_voting": {
+      "description": "Governance by token holders",
+      "implementation": "OpenZeppelin Governor",
+      "key_parameters": [
+        "Voting delay: Time before voting starts",
+        "Voting period: Duration of voting",
+        "Quorum: Minimum participation required",
+        "Proposal threshold: Tokens needed to propose"
+      ]
+    },
+    "timelock": {
+      "description": "Delay execution of governance decisions",
+      "use_when": "Allow users to exit before changes take effect",
+      "implementation": "OpenZeppelin TimelockController"
+    }
+  },
+  "security_patterns": {
+    "pausable": {
+      "description": "Emergency pause functionality",
+      "implementation": "OpenZeppelin Pausable",
+      "use_when": "Need circuit breaker for emergencies"
+    },
+    "rate_limiting": {
+      "description": "Limit withdrawal amounts over time",
+      "use_when": "Reduce impact of exploits"
+    }
+  }
+}

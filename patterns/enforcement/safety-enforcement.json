@@ -1,0 +1,149 @@
+{
+  "$schema": "./enforcement-pattern.json",
+  "title": "Safety Enforcement Patterns",
+  "description": "Patterns that protect users, systems, and data from harm",
+  "version": "1.0.0",
+  "philosophy": "First, do no harm. Then, strive to do good.",
+  "enforcements": [
+    {
+      "enforcementId": "E5_destructive_confirmation",
+      "name": "Destructive Action Confirmation",
+      "category": "safety",
+      "axiom_basis": ["A4_non_harm", "A2_user_primacy"],
+      "trigger": "Before any destructive or irreversible action",
+      "description": "Ensures user explicitly approves actions that cannot be undone",
+      "destructive_patterns": [
+        "delete", "drop", "remove", "destroy", "truncate", "purge",
+        "overwrite", "replace", "reset", "format", "clear"
+      ],
+      "checks": [
+        {
+          "checkId": "action_identified",
+          "description": "Destructive action clearly identified",
+          "condition": "destructive_action_detected == true",
+          "severity": "blocking"
+        },
+        {
+          "checkId": "user_informed",
+          "description": "User informed of consequences",
+          "condition": "consequences_displayed == true",
+          "severity": "blocking"
+        },
+        {
+          "checkId": "explicit_confirmation",
+          "description": "User explicitly confirmed action",
+          "condition": "user_confirmed == true",
+          "severity": "blocking"
+        }
+      ],
+      "actions": {
+        "on_pass": "Proceed with action, log event",
+        "on_fail": "Halt action, await user decision",
+        "on_override": "Not allowed - user must confirm"
+      },
+      "override_policy": "never"
+    },
+    {
+      "enforcementId": "E6_backup_before_change",
+      "name": "Backup Before Modification",
+      "category": "safety",
+      "axiom_basis": ["A4_non_harm", "A7_reversibility"],
+      "trigger": "Before modifying critical data or configuration",
+      "description": "Creates safety net allowing recovery from mistakes",
+      "checks": [
+        {
+          "checkId": "backup_created",
+          "description": "Backup of affected data created",
+          "condition": "backup_exists == true",
+          "severity": "blocking"
+        },
+        {
+          "checkId": "backup_verified",
+          "description": "Backup can be restored",
+          "condition": "backup_restorable == true",
+          "severity": "warning"
+        },
+        {
+          "checkId": "rollback_documented",
+          "description": "Rollback procedure documented",
+          "condition": "rollback_steps_exist == true",
+          "severity": "advisory"
+        }
+      ],
+      "actions": {
+        "on_pass": "Proceed with modification",
+        "on_fail": "Create backup before proceeding",
+        "on_override": "Log risk acceptance, require approval"
+      },
+      "override_policy": "with_approval"
+    },
+    {
+      "enforcementId": "E7_security_scan",
+      "name": "Security Vulnerability Check",
+      "category": "safety",
+      "axiom_basis": ["A4_non_harm"],
+      "trigger": "Before deployment or dependency update",
+      "description": "Protects systems and users from known vulnerabilities",
+      "checks": [
+        {
+          "checkId": "no_critical_vulns",
+          "description": "No critical vulnerabilities in dependencies",
+          "condition": "critical_vulns == 0",
+          "severity": "blocking"
+        },
+        {
+          "checkId": "no_high_vulns",
+          "description": "No high severity vulnerabilities",
+          "condition": "high_vulns == 0",
+          "severity": "warning"
+        },
+        {
+          "checkId": "secrets_not_exposed",
+          "description": "No secrets in code or logs",
+          "condition": "exposed_secrets == 0",
+          "severity": "blocking"
+        }
+      ],
+      "actions": {
+        "on_pass": "Proceed with deployment",
+        "on_fail": "Update dependencies or remediate",
+        "on_override": "Risk acceptance required, timeline for fix"
+      },
+      "override_policy": "with_approval"
+    },
+    {
+      "enforcementId": "E8_production_safeguard",
+      "name": "Production Environment Safeguard",
+      "category": "safety",
+      "axiom_basis": ["A4_non_harm", "A2_user_primacy"],
+      "trigger": "Before any production modification",
+      "description": "Extra care for production - where our users trust us",
+      "checks": [
+        {
+          "checkId": "environment_confirmed",
+          "description": "User confirms production environment intended",
+          "condition": "production_confirmed == true",
+          "severity": "blocking"
+        },
+        {
+          "checkId": "tested_in_staging",
+          "description": "Changes verified in staging first",
+          "condition": "staging_verified == true",
+          "severity": "blocking"
+        },
+        {
+          "checkId": "rollback_ready",
+          "description": "Rollback procedure ready and tested",
+          "condition": "rollback_ready == true",
+          "severity": "warning"
+        }
+      ],
+      "actions": {
+        "on_pass": "Proceed with production change",
+        "on_fail": "Test in staging first, prepare rollback",
+        "on_override": "Emergency only, post-mortem required"
+      },
+      "override_policy": "with_approval"
+    }
+  ]
+}

@@ -1,0 +1,231 @@
+/**
+ * ${SCRIPT_NAME} - JSON Builder
+ * 
+ * Purpose: ${SCRIPT_PURPOSE}
+ * Author: ${AUTHOR}
+ * Created: ${DATE}
+ * 
+ * Input:  ${INPUT_FORMAT} (e.g., XML, properties, or structured data)
+ * Output: JSON string
+ * 
+ * JSON Structure Generated:
+ *   ${JSON_STRUCTURE_DESCRIPTION}
+ * 
+ * Properties Used:
+ *   - ${PROPERTY_NAME}: ${PROPERTY_DESCRIPTION}
+ * 
+ * Notes:
+ *   - Uses JsonBuilder for JSON generation
+ *   - Handles nested objects and arrays
+ *   - Properly escapes special characters
+ */
+import com.sap.gateway.ip.core.customdev.util.Message
+import groovy.json.JsonBuilder
+import groovy.json.JsonOutput
+
+def Message processData(Message message) {
+    def messageLog = messageLogFactory.getMessageLog(message)
+    
+    try {
+        // Get input data
+        def inputBody = message.getBody(String)
+        messageLog.addAttachmentAsString('InputData', inputBody, 'text/plain')
+        
+        // =====================================================
+        // TODO: Parse input data if needed
+        // =====================================================
+        
+        // Option 1: Parse XML input
+        // import groovy.xml.XmlSlurper
+        // def data = new XmlSlurper().parseText(inputBody)
+        
+        // Option 2: Parse JSON input
+        // import groovy.json.JsonSlurper
+        // def data = new JsonSlurper().parseText(inputBody)
+        
+        // Option 3: Read from properties
+        // def data = [
+        //     id: message.getProperty('Id'),
+        //     name: message.getProperty('Name')
+        // ]
+        
+        // For this template, assume data is available
+        def data = parseInputData(inputBody, message)
+        
+        // =====================================================
+        // Build JSON using JsonBuilder
+        // =====================================================
+        
+        def builder = new JsonBuilder()
+        
+        // =====================================================
+        // TODO: Build JSON structure
+        // =====================================================
+        
+        // Example: Simple JSON structure
+        /*
+        builder {
+            id data.id
+            name data.name
+            date new Date().format("yyyy-MM-dd")
+        }
+        */
+        
+        // Example: JSON with nested objects
+        /*
+        builder {
+            header {
+                id data.id
+                name data.name
+                date data.date
+            }
+            items data.items.collect { item ->
+                [
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity
+                ]
+            }
+        }
+        */
+        
+        // Example: JSON with conditional fields
+        /*
+        builder {
+            id data.id
+            name data.name
+            if (data.status) {
+                status data.status
+            }
+            items data.items ?: []
+        }
+        */
+        
+        // Example: Complex nested structure
+        /*
+        builder {
+            id data.id
+            customer {
+                id data.customer?.id
+                name data.customer?.name
+                address {
+                    street data.customer?.address?.street
+                    city data.customer?.address?.city
+                    zipCode data.customer?.address?.zipCode
+                }
+            }
+            items data.items?.collect { item ->
+                [
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity as Integer,
+                    price: item.price as BigDecimal
+                ]
+            } ?: []
+        }
+        */
+        
+        // Build your JSON structure
+        buildJsonStructure(builder, data)
+        
+        // =====================================================
+        
+        // Get JSON string
+        def jsonOutput = builder.toString()
+        
+        // Option: Pretty print for readability (remove in production for smaller size)
+        // jsonOutput = JsonOutput.prettyPrint(jsonOutput)
+        
+        // Set output
+        message.setBody(jsonOutput)
+        messageLog.addAttachmentAsString('OutputJSON', jsonOutput, 'application/json')
+        
+        // Set content type header
+        message.setHeader('Content-Type', 'application/json; charset=UTF-8')
+        
+    } catch (Exception e) {
+        messageLog.addAttachmentAsString('BuildError', 
+            "JSON building error: ${e.message}\n" +
+            "Input data:\n${message.getBody(String)}", 
+            'text/plain')
+        
+        message.setProperty('ErrorMessage', e.message)
+        message.setProperty('ErrorScript', '${SCRIPT_NAME}')
+        message.setProperty('ErrorTimestamp', new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ"))
+        message.setProperty('SAP_ErrorModelStepID', '${SCRIPT_NAME}')
+        message.setProperty('SAP_ErrorText', "JSON building failed: ${e.message}")
+        
+        throw e
+    }
+    
+    return message
+}
+
+/**
+ * Parse input data based on format
+ * Customize based on your input format
+ */
+def parseInputData(String inputBody, Message message) {
+    // TODO: Implement parsing logic based on your input format
+    
+    // Example: Parse XML
+    /*
+    import groovy.xml.XmlSlurper
+    def xml = new XmlSlurper().parseText(inputBody)
+    return [
+        id: xml.Id.text(),
+        name: xml.Name.text(),
+        items: xml.Items.Item.collect { item ->
+            [
+                id: item.Id.text(),
+                name: item.Name.text()
+            ]
+        }
+    ]
+    */
+    
+    // Example: Read from properties
+    /*
+    return [
+        id: message.getProperty('Id'),
+        name: message.getProperty('Name'),
+        items: message.getProperty('Items')?.split(',').collect { it.trim() }
+    ]
+    */
+    
+    // Placeholder
+    return [data: inputBody]
+}
+
+/**
+ * Build JSON structure using JsonBuilder
+ * Customize this method based on your JSON requirements
+ */
+def buildJsonStructure(JsonBuilder builder, data) {
+    // TODO: Implement your JSON building logic
+    // Example:
+    /*
+    builder {
+        id data.id ?: ''
+        name data.name ?: ''
+        date data.date ?: new Date().format("yyyy-MM-dd")
+        customer {
+            id data.customer?.id ?: ''
+            name data.customer?.name ?: ''
+        }
+        items (data.items ?: []).collect { item ->
+            [
+                id: item.id ?: '',
+                name: item.name ?: '',
+                quantity: item.quantity ?: 0
+            ]
+        }
+    }
+    */
+    
+    // Placeholder
+    builder {
+        data data.toString()
+        timestamp new Date().format("yyyy-MM-dd'T'HH:mm:ss")
+    }
+}

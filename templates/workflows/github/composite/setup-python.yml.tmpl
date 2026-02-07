@@ -1,0 +1,30 @@
+name: 'Setup Python'
+description: 'Composite action to set up Python with caching'
+
+inputs:
+  python-version:
+    description: 'Python version to use'
+    required: false
+    default: '{{DEFAULT_PYTHON_VERSION}}'
+  cache-dependency-path:
+    description: 'Path to dependency file (requirements.txt, pyproject.toml, etc.)'
+    required: false
+    default: 'requirements.txt'
+  install-command:
+    description: 'Command to install dependencies'
+    required: false
+    default: 'pip install -r requirements.txt'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python ${{ inputs.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: 'pip'
+        cache-dependency-path: ${{ inputs.cache-dependency-path }}
+
+    - name: Install dependencies
+      shell: bash
+      run: ${{ inputs.install-command }}

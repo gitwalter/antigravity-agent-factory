@@ -1,0 +1,203 @@
+/**
+ * ${SCRIPT_NAME} - Retry Logic with Exponential Backoff
+ * 
+ * Purpose: ${SCRIPT_PURPOSE}
+ * Author: ${AUTHOR}
+ * Created: ${DATE}
+ * 
+ * Input:  ${INPUT_FORMAT}
+ * Output: ${OUTPUT_FORMAT}
+ * 
+ * Configuration Properties:
+ *   - MaxRetries: Maximum number of retry attempts (default: ${MAX_RETRIES})
+ *   - InitialDelayMs: Initial delay in milliseconds (default: ${INITIAL_DELAY_MS})
+ *   - BackoffMultiplier: Exponential backoff multiplier (default: ${BACKOFF_MULTIPLIER})
+ *   - MaxDelayMs: Maximum delay between retries in milliseconds (default: ${MAX_DELAY_MS})
+ * 
+ * Retry Properties:
+ *   - RetryCount: Current retry attempt number
+ *   - RetryDelayMs: Current delay in milliseconds
+ *   - LastRetryTimestamp: Timestamp of last retry attempt
+ */
+import com.sap.gateway.ip.core.customdev.util.Message
+
+def Message processData(Message message) {
+    def messageLog = messageLogFactory.getMessageLog(message)
+    
+    try {
+        // Configuration (can be overridden via message properties)
+        def maxRetries = (message.getProperty('MaxRetries') ?: ${MAX_RETRIES}) as Integer
+        def initialDelayMs = (message.getProperty('InitialDelayMs') ?: ${INITIAL_DELAY_MS}) as Long
+        def backoffMultiplier = (message.getProperty('BackoffMultiplier') ?: ${BACKOFF_MULTIPLIER}) as Double
+        def maxDelayMs = (message.getProperty('MaxDelayMs') ?: ${MAX_DELAY_MS}) as Long
+        
+        // Get current retry count
+        def retryCount = (message.getProperty('RetryCount') ?: 0) as Integer
+        
+        // Check if we've exceeded max retries
+        if (retryCount >= maxRetries) {
+            throw new Exception("Maximum retry attempts (${maxRetries}) exceeded. Last error: ${message.getProperty('LastError') ?: 'Unknown'}")
+        }
+        
+        // Calculate delay for this retry attempt (exponential backoff)
+        def delayMs = Math.min(
+            initialDelayMs * Math.pow(backoffMultiplier, retryCount),
+            maxDelayMs
+        ) as Long
+        
+        // If this is a retry, wait before processing
+        if (retryCount > 0) {
+            messageLog.addAttachmentAsString('RetryInfo', 
+                "Retry attempt ${retryCount}/${maxRetries}, waiting ${delayMs}ms before retry", 
+                'text/plain')
+            
+            // Sleep for calculated delay
+            Thread.sleep(delayMs)
+            
+            message.setProperty('LastRetryTimestamp', new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ"))
+        }
+        
+        // =====================================================
+        // TODO: Add your processing logic here
+        // This logic will be retried on failure
+        // =====================================================
+        
+        def body = message.getBody(String)
+        
+        // Your business logic here that may fail
+        // Example: External API call, database operation, etc.
+        def result = performOperation(body)
+        
+        // =====================================================
+        
+        // Success - reset retry count
+        if (retryCount > 0) {
+            messageLog.addAttachmentAsString('RetrySuccess', 
+                "Operation succeeded after ${retryCount} retry attempts", 
+                'text/plain')
+        }
+        
+        message.removeProperty('RetryCount')
+        message.removeProperty('LastError')
+        message.removeProperty('RetryDelayMs')
+        
+        message.setBody(result)
+        messageLog.addAttachmentAsString('Output', result, 'text/plain')
+        
+    } catch (Exception e) {
+        def retryCount = (message.getProperty('RetryCount') ?: 0) as Integer
+        def maxRetries = (message.getProperty('MaxRetries') ?: ${MAX_RETRIES}) as Integer
+        
+        // Check if error is retryable
+        def isRetryable = isRetryableError(e)
+        
+        if (isRetryable && retryCount < maxRetries) {
+            // Increment retry count
+            retryCount++
+            message.setProperty('RetryCount', retryCount)
+            message.setProperty('LastError', e.message)
+            
+            // Calculate next delay
+            def initialDelayMs = (message.getProperty('InitialDelayMs') ?: ${INITIAL_DELAY_MS}) as Long
+            def backoffMultiplier = (message.getProperty('BackoffMultiplier') ?: ${BACKOFF_MULTIPLIER}) as Double
+            def maxDelayMs = (message.getProperty('MaxDelayMs') ?: ${MAX_DELAY_MS}) as Long
+            def delayMs = Math.min(
+                initialDelayMs * Math.pow(backoffMultiplier, retryCount - 1),
+                maxDelayMs
+            ) as Long
+            
+            message.setProperty('RetryDelayMs', delayMs)
+            
+            messageLog.addAttachmentAsString('RetryScheduled', 
+                "Error occurred (attempt ${retryCount}/${maxRetries}): ${e.message}\n" +
+                "Next retry in ${delayMs}ms", 
+                'text/plain')
+            
+            // Throw exception to trigger retry (CPI will retry based on adapter configuration)
+            // Or use a custom property to signal retry needed
+            message.setProperty('RetryNeeded', 'true')
+            throw e
+            
+        } else {
+            // Non-retryable error or max retries exceeded
+            message.setProperty('ErrorMessage', e.message)
+            message.setProperty('ErrorScript', '${SCRIPT_NAME}')
+            message.setProperty('ErrorTimestamp', new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ"))
+            message.setProperty('RetryExhausted', 'true')
+            message.setProperty('FinalRetryCount', retryCount)
+            
+            messageLog.addAttachmentAsString('RetryFailed', 
+                "All retry attempts exhausted (${retryCount}/${maxRetries})\n" +
+                "Final error: ${e.message}\n" +
+                "Stack trace: ${e.stackTrace.join('\n')}", 
+                'text/plain')
+            
+            throw e
+        }
+    }
+    
+    return message
+}
+
+/**
+ * Perform the operation that may need retrying
+ * Replace this with your actual business logic
+ */
+def performOperation(String input) {
+    // TODO: Implement your operation here
+    // Example: External API call, database operation, file processing, etc.
+    return input
+}
+
+/**
+ * Determine if an error is retryable
+ * Transient errors (network, timeout, temporary unavailability) should return true
+ * Permanent errors (validation, authorization, not found) should return false
+ */
+def isRetryableError(Exception e) {
+    def errorMessage = e.message?.toLowerCase() ?: ''
+    def errorClass = e.class.simpleName.toLowerCase()
+    
+    // Retryable error patterns
+    def retryablePatterns = [
+        'timeout',
+        'connection',
+        'network',
+        'unavailable',
+        'service unavailable',
+        'temporary',
+        '503',
+        '502',
+        '504',
+        'socketexception',
+        'connectexception',
+        'readtimeoutexception'
+    ]
+    
+    // Check if error matches retryable patterns
+    def isRetryable = retryablePatterns.any { pattern ->
+        errorMessage.contains(pattern) || errorClass.contains(pattern)
+    }
+    
+    // Non-retryable error patterns
+    def nonRetryablePatterns = [
+        'validation',
+        'invalid',
+        'unauthorized',
+        'forbidden',
+        'not found',
+        '404',
+        '400',
+        '401',
+        '403',
+        'malformed',
+        'parse'
+    ]
+    
+    def isNonRetryable = nonRetryablePatterns.any { pattern ->
+        errorMessage.contains(pattern) || errorClass.contains(pattern)
+    }
+    
+    // Return true if retryable and not explicitly non-retryable
+    return isRetryable && !isNonRetryable
+}

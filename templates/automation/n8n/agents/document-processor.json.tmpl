@@ -1,0 +1,407 @@
+{
+  "name": "{{WORKFLOW_NAME}} - Document Processor Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "process-document",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger-{{NODE_ID}}",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "{{WEBHOOK_ID}}"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare document processing request\nconst input = $input.first().json.body || $input.first().json;\nconst documentUrl = input.document_url || input.url || '';\nconst documentText = input.document_text || '';\nconst processingType = input.processing_type || 'extract'; // extract, summarize, analyze, etc.\n\nif (!documentUrl && !documentText) {\n  throw new Error('Either document_url or document_text is required');\n}\n\nreturn [{\n  json: {\n    document_url: documentUrl,\n    document_text: documentText,\n    processing_type: processingType,\n    options: input.options || {}\n  }\n}];"
+      },
+      "id": "prepare-request-{{NODE_ID}}",
+      "name": "Prepare Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-url-check",
+              "leftValue": "={{ $json.document_url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ]
+        }
+      },
+      "id": "if-has-url-{{NODE_ID}}",
+      "name": "IF Has URL",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.document_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "fetch-document-{{NODE_ID}}",
+      "name": "Fetch Document",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract text from document\nconst input = $input.first();\nconst requestData = $('Prepare Request').first().json;\n\nlet documentText = requestData.document_text || '';\n\n// If we fetched a document, extract text\nif (input.json.body || input.json) {\n  const content = input.json.body || input.json || '';\n  \n  // Basic text extraction (can be enhanced with PDF parsing, etc.)\n  if (typeof content === 'string') {\n    documentText = content;\n  } else if (content.text) {\n    documentText = content.text;\n  } else {\n    documentText = JSON.stringify(content);\n  }\n}\n\n// Clean and normalize text\nconst cleanedText = documentText\n  .replace(/\\s+/g, ' ')\n  .trim();\n\nreturn [{\n  json: {\n    ...requestData,\n    document_text: cleanedText,\n    text_length: cleanedText.length,\n    word_count: cleanedText.split(/\\s+/).filter(w => w.length > 0).length\n  }\n}];"
+      },
+      "id": "extract-text-{{NODE_ID}}",
+      "name": "Extract Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "processing-type-check",
+              "leftValue": "={{ $json.processing_type }}",
+              "rightValue": "summarize",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "route-processing-{{NODE_ID}}",
+      "name": "Route Processing",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.1,
+      "position": [1250, 300],
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.processing_type }}",
+                    "rightValue": "summarize",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "summarize"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.processing_type }}",
+                    "rightValue": "extract",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "extract"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.processing_type }}",
+                    "rightValue": "analyze",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "analyze"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "complete",
+        "model": "{{LLM_MODEL}}",
+        "options": {
+          "temperature": 0.3,
+          "maxTokens": 500
+        },
+        "text": "={{ `Summarize the following document in 3-5 bullet points:\\n\\n${$json.document_text.substring(0, 4000)}` }}",
+        "prompt": ""
+      },
+      "id": "summarize-{{NODE_ID}}",
+      "name": "Summarize",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.3,
+      "position": [1450, 200],
+      "credentials": {
+        "openAiApi": {
+          "id": "{{OPENAI_CREDENTIAL_ID}}",
+          "name": "{{OPENAI_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "complete",
+        "model": "{{LLM_MODEL}}",
+        "options": {
+          "temperature": 0.2,
+          "maxTokens": 1000
+        },
+        "text": "={{ `Extract key information from this document as JSON with fields: title, author, date, key_points (array), entities (array). Document:\\n\\n${$json.document_text.substring(0, 4000)}` }}",
+        "prompt": ""
+      },
+      "id": "extract-info-{{NODE_ID}}",
+      "name": "Extract Info",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.3,
+      "position": [1450, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "{{OPENAI_CREDENTIAL_ID}}",
+          "name": "{{OPENAI_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "complete",
+        "model": "{{LLM_MODEL}}",
+        "options": {
+          "temperature": 0.4,
+          "maxTokens": 1000
+        },
+        "text": "={{ `Analyze this document and provide: sentiment, main topics, key insights, and recommendations. Document:\\n\\n${$json.document_text.substring(0, 4000)}` }}",
+        "prompt": ""
+      },
+      "id": "analyze-{{NODE_ID}}",
+      "name": "Analyze",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.3,
+      "position": [1450, 400],
+      "credentials": {
+        "openAiApi": {
+          "id": "{{OPENAI_CREDENTIAL_ID}}",
+          "name": "{{OPENAI_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format processing result\nconst input = $input.first().json;\nconst requestData = $('Extract Text').first().json;\n\nconst result = input.text || input.choices?.[0]?.message?.content || '';\n\n// Try to parse JSON if it looks like JSON\nlet parsedResult = result;\ntry {\n  parsedResult = JSON.parse(result);\n} catch (e) {\n  // Not JSON, use as-is\n}\n\nreturn [{\n  json: {\n    processing_type: requestData.processing_type,\n    result: parsedResult,\n    raw_result: result,\n    document_stats: {\n      text_length: requestData.text_length,\n      word_count: requestData.word_count\n    },\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "format-result-{{NODE_ID}}",
+      "name": "Format Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1650, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"success\", \"data\": $json } }}",
+        "options": {}
+      },
+      "id": "respond-success-{{NODE_ID}}",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1850, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Request": {
+      "main": [
+        [
+          {
+            "node": "IF Has URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Has URL": {
+      "main": [
+        [
+          {
+            "node": "Fetch Document",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Document": {
+      "main": [
+        [
+          {
+            "node": "Extract Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Text": {
+      "main": [
+        [
+          {
+            "node": "Route Processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Processing": {
+      "main": [
+        [
+          {
+            "node": "Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Info",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Analyze",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize": {
+      "main": [
+        [
+          {
+            "node": "Format Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Info": {
+      "main": [
+        [
+          {
+            "node": "Format Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze": {
+      "main": [
+        [
+          {
+            "node": "Format Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Result": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "{{TIMESTAMP}}",
+      "updatedAt": "{{TIMESTAMP}}",
+      "id": "{{TAG_ID}}",
+      "name": "document-processor"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "{{TIMESTAMP}}",
+  "versionId": "{{VERSION_ID}}"
+}

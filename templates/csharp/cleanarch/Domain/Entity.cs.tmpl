@@ -1,0 +1,139 @@
+namespace {{NAMESPACE}}.Domain;
+
+/// <summary>
+/// {{CLASS_NAME}} - Domain Entity
+/// 
+/// Purpose: {{ENTITY_PURPOSE}}
+/// Author: {{AUTHOR}}
+/// Created: {{DATE}}
+/// 
+/// Represents a {{DOMAIN_NAME}} entity in the domain layer.
+/// Contains business logic and invariants.
+/// </summary>
+public class {{CLASS_NAME}}
+{
+    /// <summary>
+    /// Gets or sets the unique identifier.
+    /// </summary>
+    public {{ID_TYPE}} Id { get; private set; }
+
+    /// <summary>
+    /// Gets or sets the name.
+    /// </summary>
+    public string Name { get; private set; }
+
+    /// <summary>
+    /// Gets or sets the description.
+    /// </summary>
+    public string? Description { get; private set; }
+
+    /// <summary>
+    /// Gets or sets the status.
+    /// </summary>
+    public {{CLASS_NAME}}Status Status { get; private set; }
+
+    /// <summary>
+    /// Gets or sets the creation timestamp.
+    /// </summary>
+    public DateTime CreatedAt { get; private set; }
+
+    /// <summary>
+    /// Gets or sets the last update timestamp.
+    /// </summary>
+    public DateTime UpdatedAt { get; private set; }
+
+    /// <summary>
+    /// Gets or sets the version for optimistic concurrency.
+    /// </summary>
+    public byte[] Version { get; private set; }
+
+    // TODO: Add other domain properties
+
+    /// <summary>
+    /// Private parameterless constructor for EF Core.
+    /// </summary>
+    private {{CLASS_NAME}}()
+    {
+        // Required by EF Core
+    }
+
+    /// <summary>
+    /// Creates a new instance of {{CLASS_NAME}}.
+    /// </summary>
+    /// <param name="name">The name.</param>
+    /// <param name="description">Optional description.</param>
+    /// <returns>A new {{CLASS_NAME}} instance.</returns>
+    public static {{CLASS_NAME}} Create(string name, string? description = null)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Name cannot be null or empty", nameof(name));
+        }
+
+        return new {{CLASS_NAME}}
+        {
+            Id = {{ID_TYPE}}.NewId(), // Or use Guid.NewGuid() or other ID generation
+            Name = name,
+            Description = description,
+            Status = {{CLASS_NAME}}Status.Active,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
+
+    /// <summary>
+    /// Updates the {{CLASS_NAME}}.
+    /// </summary>
+    /// <param name="name">The new name.</param>
+    /// <param name="description">The new description.</param>
+    public void Update(string name, string? description = null)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Name cannot be null or empty", nameof(name));
+        }
+
+        if (Status == {{CLASS_NAME}}Status.Archived)
+        {
+            throw new InvalidOperationException("Cannot update archived {{DOMAIN_NAME}}");
+        }
+
+        Name = name;
+        Description = description;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Marks the entity as archived.
+    /// </summary>
+    public void Archive()
+    {
+        if (Status == {{CLASS_NAME}}Status.Archived)
+        {
+            return;
+        }
+
+        Status = {{CLASS_NAME}}Status.Archived;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Checks if the entity is active.
+    /// </summary>
+    /// <returns>True if active, false otherwise.</returns>
+    public bool IsActive()
+    {
+        return Status == {{CLASS_NAME}}Status.Active;
+    }
+}
+
+/// <summary>
+/// Status enumeration for {{CLASS_NAME}}.
+/// </summary>
+public enum {{CLASS_NAME}}Status
+{
+    Active,
+    Inactive,
+    Pending,
+    Archived
+}

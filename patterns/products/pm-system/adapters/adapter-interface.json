@@ -1,0 +1,462 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PM System Adapter Interface",
+  "description": "Unified interface definition for Project Management system operations",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["metadata", "interface"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Interface metadata",
+      "required": ["interfaceId", "interfaceName", "version"],
+      "properties": {
+        "interfaceId": {
+          "type": "string",
+          "description": "Unique identifier for this interface",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "interfaceName": {
+          "type": "string",
+          "description": "Human-readable interface name"
+        },
+        "version": {
+          "type": "string",
+          "description": "Interface version"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the interface"
+        }
+      }
+    },
+    "interface": {
+      "type": "object",
+      "description": "Interface operations definition",
+      "required": ["workItems", "planning", "boards", "metrics", "documentation"],
+      "properties": {
+        "workItems": {
+          "type": "object",
+          "description": "Work item operations",
+          "required": ["createEpic", "createStory", "createTask", "createBug", "updateStatus", "assignItem", "getItem", "listItems"],
+          "properties": {
+            "createEpic": {
+              "type": "object",
+              "description": "Create a new epic",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "required": true},
+                    "description": {"type": "string"},
+                    "projectId": {"type": "string", "required": true}
+                  }
+                },
+                "returns": {"type": "object", "description": "Created epic with ID"}
+              }
+            },
+            "createStory": {
+              "type": "object",
+              "description": "Create a new user story",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "required": true},
+                    "description": {"type": "string"},
+                    "epicId": {"type": "string"},
+                    "projectId": {"type": "string", "required": true}
+                  }
+                },
+                "returns": {"type": "object", "description": "Created story with ID"}
+              }
+            },
+            "createTask": {
+              "type": "object",
+              "description": "Create a new task",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "required": true},
+                    "description": {"type": "string"},
+                    "storyId": {"type": "string"},
+                    "projectId": {"type": "string", "required": true}
+                  }
+                },
+                "returns": {"type": "object", "description": "Created task with ID"}
+              }
+            },
+            "createBug": {
+              "type": "object",
+              "description": "Create a new bug report",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "required": true},
+                    "description": {"type": "string"},
+                    "severity": {"type": "string"},
+                    "projectId": {"type": "string", "required": true}
+                  }
+                },
+                "returns": {"type": "object", "description": "Created bug with ID"}
+              }
+            },
+            "updateStatus": {
+              "type": "object",
+              "description": "Update work item status",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {"type": "string", "required": true},
+                    "status": {"type": "string", "required": true}
+                  }
+                },
+                "returns": {"type": "object", "description": "Updated work item"}
+              }
+            },
+            "assignItem": {
+              "type": "object",
+              "description": "Assign work item to user",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {"type": "string", "required": true},
+                    "userId": {"type": "string", "required": true}
+                  }
+                },
+                "returns": {"type": "object", "description": "Updated work item"}
+              }
+            },
+            "getItem": {
+              "type": "object",
+              "description": "Get work item by ID",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {"type": "string", "required": true}
+                  }
+                },
+                "returns": {"type": "object", "description": "Work item details"}
+              }
+            },
+            "listItems": {
+              "type": "object",
+              "description": "List work items with filters",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "projectId": {"type": "string"},
+                    "status": {"type": "string"},
+                    "assignee": {"type": "string"},
+                    "type": {"type": "string"}
+                  }
+                },
+                "returns": {"type": "array", "description": "List of work items"}
+              }
+            }
+          }
+        },
+        "planning": {
+          "type": "object",
+          "description": "Sprint/iteration planning operations",
+          "required": ["createSprint", "addToSprint", "closeSprint", "getSprint", "listSprints"],
+          "properties": {
+            "createSprint": {
+              "type": "object",
+              "description": "Create a new sprint",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "name": {"type": "string", "required": true},
+                    "startDate": {"type": "string"},
+                    "endDate": {"type": "string", "required": true},
+                    "projectId": {"type": "string", "required": true}
+                  }
+                },
+                "returns": {"type": "object", "description": "Created sprint with ID"}
+              }
+            },
+            "addToSprint": {
+              "type": "object",
+              "description": "Add work item to sprint",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "required": true},
+                    "itemId": {"type": "string", "required": true}
+                  }
+                },
+                "returns": {"type": "object", "description": "Updated sprint"}
+              }
+            },
+            "closeSprint": {
+              "type": "object",
+              "description": "Close a sprint",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "required": true}
+                  }
+                },
+                "returns": {"type": "object", "description": "Closed sprint"}
+              }
+            },
+            "getSprint": {
+              "type": "object",
+              "description": "Get sprint by ID",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "required": true}
+                  }
+                },
+                "returns": {"type": "object", "description": "Sprint details"}
+              }
+            },
+            "listSprints": {
+              "type": "object",
+              "description": "List sprints for a project",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "projectId": {"type": "string", "required": true},
+                    "state": {"type": "string"}
+                  }
+                },
+                "returns": {"type": "array", "description": "List of sprints"}
+              }
+            }
+          }
+        },
+        "boards": {
+          "type": "object",
+          "description": "Board operations",
+          "required": ["getBoard", "moveCard", "getBoardColumns"],
+          "properties": {
+            "getBoard": {
+              "type": "object",
+              "description": "Get board by ID",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "boardId": {"type": "string", "required": true}
+                  }
+                },
+                "returns": {"type": "object", "description": "Board details with columns"}
+              }
+            },
+            "moveCard": {
+              "type": "object",
+              "description": "Move card to different column",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "cardId": {"type": "string", "required": true},
+                    "columnId": {"type": "string", "required": true},
+                    "position": {"type": "integer"}
+                  }
+                },
+                "returns": {"type": "object", "description": "Updated card"}
+              }
+            },
+            "getBoardColumns": {
+              "type": "object",
+              "description": "Get board columns",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "boardId": {"type": "string", "required": true}
+                  }
+                },
+                "returns": {"type": "array", "description": "List of board columns"}
+              }
+            }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "description": "Metrics and analytics operations",
+          "required": ["getVelocity", "getBurndown", "getCycleTime", "getLeadTime", "getWIP"],
+          "properties": {
+            "getVelocity": {
+              "type": "object",
+              "description": "Get team velocity",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "projectId": {"type": "string", "required": true},
+                    "sprintCount": {"type": "integer"}
+                  }
+                },
+                "returns": {"type": "object", "description": "Velocity metrics"}
+              }
+            },
+            "getBurndown": {
+              "type": "object",
+              "description": "Get sprint burndown chart data",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "required": true}
+                  }
+                },
+                "returns": {"type": "object", "description": "Burndown chart data"}
+              }
+            },
+            "getCycleTime": {
+              "type": "object",
+              "description": "Get cycle time metrics",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "projectId": {"type": "string", "required": true},
+                    "startDate": {"type": "string"},
+                    "endDate": {"type": "string"}
+                  }
+                },
+                "returns": {"type": "object", "description": "Cycle time metrics"}
+              }
+            },
+            "getLeadTime": {
+              "type": "object",
+              "description": "Get lead time metrics",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "projectId": {"type": "string", "required": true},
+                    "startDate": {"type": "string"},
+                    "endDate": {"type": "string"}
+                  }
+                },
+                "returns": {"type": "object", "description": "Lead time metrics"}
+              }
+            },
+            "getWIP": {
+              "type": "object",
+              "description": "Get work in progress count",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "boardId": {"type": "string", "required": true}
+                  }
+                },
+                "returns": {"type": "object", "description": "WIP count by column"}
+              }
+            }
+          }
+        },
+        "documentation": {
+          "type": "object",
+          "description": "Documentation operations",
+          "required": ["createPage", "updatePage", "getPage", "linkToWorkItem"],
+          "properties": {
+            "createPage": {
+              "type": "object",
+              "description": "Create a new documentation page",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "required": true},
+                    "content": {"type": "string", "required": true},
+                    "spaceId": {"type": "string", "required": true},
+                    "parentId": {"type": "string"}
+                  }
+                },
+                "returns": {"type": "object", "description": "Created page with ID"}
+              }
+            },
+            "updatePage": {
+              "type": "object",
+              "description": "Update an existing page",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "pageId": {"type": "string", "required": true},
+                    "title": {"type": "string"},
+                    "content": {"type": "string", "required": true},
+                    "version": {"type": "integer"}
+                  }
+                },
+                "returns": {"type": "object", "description": "Updated page"}
+              }
+            },
+            "getPage": {
+              "type": "object",
+              "description": "Get page by ID",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "pageId": {"type": "string", "required": true}
+                  }
+                },
+                "returns": {"type": "object", "description": "Page content"}
+              }
+            },
+            "linkToWorkItem": {
+              "type": "object",
+              "description": "Link documentation page to work item",
+              "properties": {
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "pageId": {"type": "string", "required": true},
+                    "itemId": {"type": "string", "required": true}
+                  }
+                },
+                "returns": {"type": "object", "description": "Link created"}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "metadata": {
+        "interfaceId": "pm-adapter-interface",
+        "interfaceName": "PM System Adapter Interface",
+        "version": "1.0.0",
+        "description": "Unified interface for Project Management system operations"
+      },
+      "interface": {
+        "workItems": {
+          "createEpic": {
+            "parameters": {
+              "title": "User Authentication Epic",
+              "description": "Implement user authentication system",
+              "projectId": "PROJ-123"
+            },
+            "returns": {
+              "id": "EPIC-456",
+              "title": "User Authentication Epic",
+              "status": "To Do"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

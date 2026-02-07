@@ -1,0 +1,316 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Augmented Coding Patterns",
+  "description": "Patterns, anti-patterns, and obstacles for effective AI-augmented software development. Curated from https://lexler.github.io/augmented-coding-patterns/",
+  "version": "1.0.0",
+  "source": {
+    "url": "https://lexler.github.io/augmented-coding-patterns/",
+    "repository": "https://github.com/lexler/augmented-coding-patterns",
+    "contributors": ["Lada Kesseler", "Nitsan Avni", "Ivett Ördög", "Llewellyn Falco", "Steve Kuo"],
+    "license": "Open source"
+  },
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns emphasize verification through feedback loops and testing",
+    "A2_user_primacy": "Active Partner pattern ensures AI serves user intent, not compliance",
+    "A3_transparency": "Check Alignment and Context Management make AI reasoning visible",
+    "A4_non_harm": "Chain of Small Steps prevents cascading errors"
+  },
+  "patterns": {
+    "foundation": {
+      "ground_rules": {
+        "name": "Ground Rules",
+        "category": "foundation",
+        "problem": "Essential information needed in every session without re-explaining",
+        "pattern": "Knowledge documents that auto-load when session opens. Put only most important things - behaviors, tools, context. Scope hierarchically: user level and project level.",
+        "implementation": {
+          "user_level": "~/.agent/rules or user settings - preferred style, tools available",
+          "project_level": ".agentrules, CLAUDE.md - team standards, crucial preferences"
+        },
+        "our_equivalent": ".agentrules Layer 0-2, PURPOSE.md",
+        "axiom_basis": ["A2_user_primacy", "A3_transparency"]
+      },
+      "knowledge_document": {
+        "name": "Knowledge Document",
+        "category": "foundation",
+        "problem": "Important knowledge vanishes when you reset context",
+        "pattern": "Save important information to markdown files. Load them into context when needed. Extract valuable parts before resetting.",
+        "implementation": {
+          "project_context": "PROJECT.md or PURPOSE.md",
+          "process_docs": "tdd-process.md, workflow-*.md",
+          "techniques": "patterns/*.json, knowledge/*.json"
+        },
+        "our_equivalent": "knowledge/ directory, PURPOSE.md, patterns/",
+        "axiom_basis": ["A10_learning"]
+      },
+      "context_management": {
+        "name": "Context Management",
+        "category": "foundation",
+        "problem": "AI has no persistent memory and context degrades over time",
+        "pattern": "Treat context as scarce, degrading resource requiring active management. Two operations: append to context (prompt) and reset (new conversation).",
+        "techniques": [
+          "Ground Rules - auto-load essentials",
+          "Knowledge Document - persist to files",
+          "Extract Knowledge - save before reset",
+          "Focused Agent - narrow scope for quality",
+          "Noise Cancellation - remove irrelevant content"
+        ],
+        "our_equivalent": "5-layer architecture scopes context appropriately",
+        "axiom_basis": ["A3_transparency"]
+      }
+    },
+    "collaboration": {
+      "active_partner": {
+        "name": "Active Partner",
+        "category": "collaboration",
+        "problem": "AI defaults to silent compliance even when instructions don't make sense",
+        "pattern": "Explicitly grant permission for AI to push back, challenge assumptions, flag contradictions, say 'I don't understand', disagree and propose alternatives.",
+        "implementation": {
+          "in_ground_rules": "Set permanent permissions for pushback",
+          "in_conversation": "Actively reinforce: 'What do you really think?' 'Do you have questions?'"
+        },
+        "example_ground_rules": [
+          "Don't flatter me. Be honest. Tell me something I need to know even if I don't want to hear it",
+          "Push back when something seems wrong - don't just agree with mistakes",
+          "Flag unclear but important points before they become problems",
+          "If you don't know something, say 'I don't know' instead of making things up",
+          "Ask questions if something is not clear. Don't choose randomly if it's important"
+        ],
+        "our_equivalent": "A2 (User Primacy), EB3 (No Ignoring User Preferences), professional_objectivity user rule",
+        "axiom_basis": ["A2_user_primacy", "A3_transparency"]
+      },
+      "check_alignment": {
+        "name": "Check Alignment",
+        "category": "collaboration",
+        "problem": "Misalignment only reveals after implementation, wasting time on wrong solutions",
+        "pattern": "Before AI implements, make it show understanding: 'Tell me what you're going to do', 'Show me your plan', 'What questions do you have?'",
+        "implementation": {
+          "before_changes": "Describe structure you see and what you plan to change",
+          "during_work": "Ask 'Does this make sense?'",
+          "require": "Plan or outline before implementation"
+        },
+        "our_equivalent": "A1 (Verifiability) - verify understanding before action",
+        "axiom_basis": ["A1_verifiability", "A3_transparency"]
+      },
+      "feedback_loop": {
+        "name": "Feedback Loop",
+        "category": "collaboration",
+        "problem": "AI needs verification to iterate autonomously toward goals",
+        "pattern": "Set up automated feedback, give AI permission to iterate until goal reached. 1) Identify clear success signal, 2) Give AI access to that signal, 3) Grant permission to iterate, 4) Step away.",
+        "examples": [
+          "Bug fix with DevTools: 'Keep trying until layout matches design'",
+          "Debugging with logs: 'Debug until you find root cause'",
+          "Tests: 'Fix failing tests, keep running until all pass'",
+          "CI monitoring: 'Monitor CI and fix issues until build passes'"
+        ],
+        "our_equivalent": "pattern-feedback skill, enforcement patterns",
+        "axiom_basis": ["A1_verifiability", "A10_learning"]
+      }
+    },
+    "execution": {
+      "chain_of_small_steps": {
+        "name": "Chain of Small Steps",
+        "category": "execution",
+        "problem": "AI degrades under complexity. Complex multi-step tasks often fail when attempted in one shot.",
+        "pattern": "Break complex goals into small, focused, verifiable steps. Execute each step, verify it works, commit progress, then move to next step.",
+        "implementation": {
+          "step_1": "Identify the complex goal",
+          "step_2": "Break into small, independent steps",
+          "step_3": "Execute each step with AI, verify it works",
+          "step_4": "Commit or save progress after each step",
+          "step_5": "Move to next step, building on verified foundation"
+        },
+        "rationale": "Small steps are reliable. Each has narrow focus which AI handles well. Verification catches problems early.",
+        "our_equivalent": "Methodology patterns with ceremonies and quality gates",
+        "axiom_basis": ["A1_verifiability", "A4_non_harm"]
+      },
+      "offload_deterministic": {
+        "name": "Offload Deterministic",
+        "category": "execution",
+        "problem": "AI wastes effort on tasks that scripts can do reliably",
+        "pattern": "Automate deterministic tasks. Let AI focus on what requires intelligence.",
+        "our_equivalent": "Templates, code generation, automated enforcement",
+        "axiom_basis": ["A6_minimalism"]
+      }
+    }
+  },
+  "antiPatterns": {
+    "silent_misalignment": {
+      "name": "Silent Misalignment",
+      "category": "collaboration",
+      "problem": "AI accepts impossible or contradictory instructions instead of asking questions. Misalignment grows silently.",
+      "what_goes_wrong": [
+        "AI accepts nonsensical requests",
+        "Produces plausible but wrong fixes",
+        "Fails to say 'this doesn't make sense'",
+        "Misalignment compounds until output becomes messy or useless"
+      ],
+      "solution": {
+        "give_permission": "Add to ground rules: 'Ask questions when unclear, flag contradictions'",
+        "make_models_explicit": "Before changes ask AI to describe what it sees, require plan before implementation"
+      },
+      "our_mitigation": "A3 (Transparency), EB4 (No Unverified Claims), Active Partner pattern in .agentrules",
+      "axiom_basis": ["A3_transparency"]
+    },
+    "ai_slop": {
+      "name": "AI Slop",
+      "category": "quality",
+      "problem": "Using AI output without adding human judgment or value. Prompt → lightly edit → present as yours.",
+      "what_goes_wrong": [
+        "Real insights become needles in haystacks",
+        "Quality bar keeps dropping",
+        "Common spaces become useless"
+      ],
+      "slop_test": "Could anyone with your prompt get the same result? That's probably slop.",
+      "solution": {
+        "add_value": "Use AI as thought partner, not ghost writer",
+        "include_context": "Include YOUR specific context and hard-won insights",
+        "iterate": "Iterate until genuinely useful"
+      },
+      "our_mitigation": "QS1-5 Quality Standards, E2 Peer Review, craft practices",
+      "axiom_basis": ["A1_verifiability"]
+    },
+    "unvalidated_leaps": {
+      "name": "Unvalidated Leaps",
+      "category": "execution",
+      "problem": "AI builds on unverified assumptions. Each assumption becomes foundation for next wrong step.",
+      "what_goes_wrong": [
+        "Assumes functions return X when they return Y",
+        "Misinterprets errors based on wrong mental model",
+        "Every 'fix' builds on wrong foundation"
+      ],
+      "solution": {
+        "validate_steps": "When AI gets stuck, tell it to validate each step incrementally",
+        "use_tdd": "Create automatic micro-feedback loops that catch drift early"
+      },
+      "our_mitigation": "TDD skill, E1 Test Coverage, Chain of Small Steps",
+      "axiom_basis": ["A1_verifiability"]
+    },
+    "flying_blind": {
+      "name": "Flying Blind",
+      "category": "execution",
+      "problem": "AI makes changes without feedback on whether they work",
+      "solution": "Set up feedback loops, give AI access to test results, logs, UI",
+      "our_mitigation": "Feedback Loop pattern, enforcement patterns",
+      "axiom_basis": ["A1_verifiability"]
+    },
+    "tell_me_a_lie": {
+      "name": "Tell Me a Lie",
+      "category": "quality",
+      "problem": "AI invents answers rather than admitting uncertainty",
+      "solution": "Active Partner pattern - permission to say 'I don't know'",
+      "our_mitigation": "A1 (Verifiability), EB4 (No Unverified Claims)",
+      "axiom_basis": ["A1_verifiability", "A3_transparency"]
+    },
+    "distracted_agent": {
+      "name": "Distracted Agent",
+      "category": "execution",
+      "problem": "AI loses focus and starts working on tangential issues",
+      "solution": "Focused Agent pattern, clear scope, Ground Rules",
+      "our_mitigation": "Purpose definition (Layer 1), methodology ceremonies",
+      "axiom_basis": ["A2_user_primacy"]
+    }
+  },
+  "obstacles": {
+    "compliance_bias": {
+      "name": "Compliance Bias",
+      "description": "AI trained to be helpful above all else. Will say 'Sure thing!' even when request makes no sense.",
+      "impact": [
+        "Accepts nonsensical requests instead of clarifying",
+        "Attempts impossible tasks rather than explaining limitations",
+        "Silently misinterprets rather than questioning",
+        "Creates elaborate workarounds instead of suggesting better approaches"
+      ],
+      "mitigation": "Active Partner pattern - explicit permission to push back",
+      "our_mitigation": "professional_objectivity user rule, A2 (User Primacy)"
+    },
+    "context_rot": {
+      "name": "Context Rot",
+      "description": "As conversation grows, earlier context becomes less accessible. AI's understanding of the project degrades.",
+      "impact": "AI forgets earlier decisions, starts contradicting itself, loses project coherence",
+      "mitigation": "Context Management pattern - reset often, extract knowledge to files",
+      "our_mitigation": "5-layer architecture, knowledge files, PURPOSE.md"
+    },
+    "degrades_under_complexity": {
+      "name": "Degrades Under Complexity",
+      "description": "AI performance drops as task complexity increases.",
+      "impact": "Complex tasks get wrong solutions, multi-step work fails",
+      "mitigation": "Chain of Small Steps pattern - break into verifiable increments",
+      "our_mitigation": "Methodology patterns with ceremonies and quality gates"
+    },
+    "hallucinations": {
+      "name": "Hallucinations",
+      "description": "AI makes up APIs, methods, or syntax that don't exist.",
+      "impact": "Minor inconvenience in code (self-verifiable - won't compile). Dangerous in factual claims.",
+      "mitigation": "Approved Fixtures, tests, verification",
+      "our_mitigation": "A1 (Verifiability), QS1 (Test Coverage), strawberry-verification skill"
+    },
+    "cannot_learn": {
+      "name": "Cannot Learn",
+      "description": "AI has no persistent memory. Cannot learn from past sessions.",
+      "impact": "Same explanations needed repeatedly, no accumulation of project knowledge",
+      "mitigation": "Knowledge Document pattern - persist to files, load into context",
+      "our_mitigation": "knowledge/ directory, pattern-feedback skill, A10 (Learning)"
+    },
+    "limited_context_window": {
+      "name": "Limited Context Window",
+      "description": "Only so much information can fit in context at once.",
+      "impact": "Large codebases can't be fully understood, must work with partial views",
+      "mitigation": "Semantic Zoom, Focused Agent, hierarchical Ground Rules",
+      "our_mitigation": "5-layer architecture provides hierarchical context scoping"
+    },
+    "black_box_ai": {
+      "name": "Black Box AI",
+      "description": "Cannot see inside AI's reasoning or understanding.",
+      "impact": "Misalignment invisible until things break, can't debug AI's mental model",
+      "mitigation": "Check Alignment - make AI show understanding before acting",
+      "our_mitigation": "A3 (Transparency), Check Alignment pattern in methodology"
+    },
+    "solution_fixation": {
+      "name": "Solution Fixation",
+      "description": "AI locks onto first solution and keeps trying variations rather than reconsidering approach.",
+      "impact": "Wasted time on wrong direction, mounting frustration",
+      "mitigation": "Reset context, try Reverse Direction, Cast Wide patterns",
+      "our_mitigation": "FH8 (Blameless Post-Mortem), pattern-feedback skill"
+    }
+  },
+  "integrationGuidance": {
+    "agentrules_additions": {
+      "description": "Patterns to add to generated .agentrules files",
+      "active_partner_section": [
+        "Push back when something seems wrong - don't just agree with mistakes",
+        "Flag unclear but important points before they become problems",
+        "If you don't know something, say 'I don't know'",
+        "Ask questions if something is not clear - don't choose randomly"
+      ],
+      "check_alignment_section": [
+        "Before major changes, describe your understanding of current state",
+        "Show your plan before implementing complex changes",
+        "When stuck, validate assumptions step by step"
+      ]
+    },
+    "skill_enhancements": {
+      "description": "Patterns to integrate into skills",
+      "chain_of_small_steps": "All workflow skills should break complex tasks into verifiable increments",
+      "feedback_loop": "Skills should define clear success signals and iteration criteria"
+    },
+    "enforcement_additions": {
+      "description": "New enforcement patterns based on anti-patterns",
+      "alignment_check": "Require AI to show understanding before major implementations",
+      "slop_prevention": "Require human judgment added to AI outputs"
+    }
+  },
+  "patternRelationships": {
+    "solves": {
+      "active_partner": ["compliance_bias", "silent_misalignment"],
+      "check_alignment": ["silent_misalignment", "black_box_ai"],
+      "chain_of_small_steps": ["degrades_under_complexity", "unvalidated_leaps"],
+      "feedback_loop": ["flying_blind"],
+      "knowledge_document": ["cannot_learn", "context_rot"],
+      "ground_rules": ["cannot_learn"]
+    },
+    "causes": {
+      "compliance_bias": ["silent_misalignment", "tell_me_a_lie"],
+      "unvalidated_leaps": ["black_box_ai"]
+    }
+  }
+}

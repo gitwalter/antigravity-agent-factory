@@ -1,0 +1,342 @@
+# AI-Driven BDD Workflow
+
+## Overview
+
+This workflow implements Behavior-Driven Development (BDD) enhanced with AI assistance for collaborative specification, scenario generation, and living documentation. The workflow follows the Discovery-Formulation-Automation cycle with stakeholder-readable Gherkin specifications.
+
+**Project:** {{PROJECT_NAME}}  
+**Methodology:** {{METHODOLOGY}}  
+**Stack:** {{STACK}}
+
+## Trigger Conditions
+
+This workflow is activated when:
+
+- User mentions "BDD", "Gherkin", "feature file", or "acceptance test"
+- A user story needs executable acceptance criteria
+- Stakeholder-readable specifications are required
+- Living documentation is needed for compliance or onboarding
+- User explicitly requests behavior-driven approach
+
+**Trigger Examples:**
+- "Write BDD scenarios for user registration"
+- "Create feature file for {{FEATURE_NAME}}"
+- "Generate Gherkin acceptance tests for ticket {{TICKET_ID}}"
+- "Convert requirements to executable specifications"
+
+## Workflow Steps
+
+### Step 1: Discovery - Understand Requirements
+
+**Description:** Collaborate to understand the behavior from business, development, and testing perspectives.
+
+**Actions:**
+- Fetch ticket or specification details
+- Extract user stories and acceptance criteria
+- Identify business rules and constraints
+- List concrete examples of expected behavior
+- Note edge cases and error scenarios
+
+**MCP Tools Used:**
+- `atlassian-getJiraIssue` (if ticket ID provided)
+- `atlassian-getConfluencePage` (if specification page provided)
+
+**Skills Invoked:**
+- `requirements-gathering` - Extract and clarify requirements
+
+**Outputs:**
+- User story summary
+- Business rules list
+- Concrete examples for each rule
+- Questions for stakeholder clarification
+
+**Is Mandatory:** Yes
+
+---
+
+### Step 2: Example Mapping - Organize Examples
+
+**Description:** Structure examples using the Example Mapping technique.
+
+**Actions:**
+- Identify the main story (yellow card)
+- Extract business rules from requirements (blue cards)
+- Create concrete examples for each rule (green cards)
+- Capture open questions (red cards)
+- Validate examples cover happy path, edge cases, and errors
+
+**Knowledge Files:**
+- `knowledge/bdd-patterns.json` - Example mapping technique
+
+**Outputs:**
+- Example map structure
+- Prioritized scenarios list
+- Questions for Three Amigos session
+
+**Is Mandatory:** Yes
+
+---
+
+### Step 3: Formulation - Write Gherkin Scenarios
+
+**Description:** Convert examples into well-structured Gherkin feature files.
+
+**Actions:**
+- Create feature file with business description
+- Write Feature header with user story format (As a/I want/So that)
+- Create Background for common preconditions
+- Write Scenario for each concrete example
+- Use Scenario Outline for data-driven scenarios
+- Apply declarative style (describe what, not how)
+- Add meaningful tags for organization (@smoke, @regression, etc.)
+
+**Skills Invoked:**
+- `bdd` - Apply BDD patterns and Gherkin best practices
+- `code-templates` - Use feature file templates for {{STACK}}
+
+**Agents Referenced:**
+- `test-generator` - Agent for comprehensive scenario generation
+
+**Knowledge Files:**
+- `knowledge/bdd-patterns.json` - Gherkin syntax and best practices
+- `knowledge/test-patterns.json` - Test scenario patterns
+
+**Outputs:**
+- Feature file(s) in `features/` directory
+- Well-named scenarios following pattern: `{user_role} can {action} when {condition}`
+- Scenario Outlines with Examples tables
+
+**Is Mandatory:** Yes
+
+---
+
+### Step 4: Automation - Create Step Definitions
+
+**Description:** Implement step definitions to connect Gherkin to code.
+
+**Actions:**
+- Generate step definition stubs from feature file
+- Implement Given steps (setup/preconditions)
+- Implement When steps (actions/triggers)
+- Implement Then steps (assertions/verifications)
+- Create shared step library for reusable steps
+- Set up hooks for scenario setup/teardown
+
+**Skills Invoked:**
+- `bdd` - Step definition patterns
+- `code-templates` - Step definition templates for {{STACK}}
+
+**Knowledge Files:**
+- `knowledge/bdd-patterns.json` - Framework-specific patterns
+- `knowledge/{{STACK}}-patterns.json` - Stack-specific implementation
+
+**Outputs:**
+- Step definition files
+- Shared step library
+- Test fixtures and factories
+- Environment/hook configuration
+
+**Is Mandatory:** Yes
+
+---
+
+### Step 5: Implementation - Build to Pass Scenarios
+
+**Description:** Implement the feature code to make all scenarios pass.
+
+**Actions:**
+- Run scenarios to see failures (all should fail initially)
+- Implement minimum code to pass first scenario
+- Iterate until all scenarios pass
+- Use TDD for internal unit tests if needed
+
+**Skills Invoked:**
+- `code-templates` - Implementation templates for {{STACK}}
+- `tdd` (optional) - For internal unit testing
+
+**Knowledge Files:**
+- `knowledge/design-patterns.json` - Implementation patterns
+- `knowledge/{{STACK}}-patterns.json` - Stack-specific patterns
+
+**Outputs:**
+- Implementation code
+- Passing scenario suite
+- Code coverage report
+
+**Is Mandatory:** Yes
+
+---
+
+### Step 6: Living Documentation - Generate Reports
+
+**Description:** Generate stakeholder-readable documentation from feature files.
+
+**Actions:**
+- Generate HTML/PDF reports from executed features
+- Include pass/fail status for each scenario
+- Create living documentation portal (if applicable)
+- Review documentation with stakeholders
+- Archive for compliance if needed
+
+**Framework Commands:**
+- Python (Behave): `behave --format html --outfile report.html`
+- TypeScript (Cucumber): `cucumber-js --format html:report.html`
+- Java (Cucumber): `mvn verify -Dcucumber.plugin=html:target/cucumber-reports`
+- C# (SpecFlow): Use SpecFlow.Plus.LivingDocPlugin
+
+**Outputs:**
+- HTML/PDF test report
+- Living documentation site
+- Compliance artifacts (if required)
+
+**Is Mandatory:** No (but recommended)
+
+---
+
+### Step 7: Maintenance - Evolve Specifications
+
+**Description:** Keep specifications synchronized with evolving requirements.
+
+**Actions:**
+- Update scenarios when requirements change
+- Refactor step definitions for reusability
+- Remove obsolete scenarios
+- Add new scenarios for new requirements
+- Maintain scenario independence
+
+**Skills Invoked:**
+- `bdd` - Scenario maintenance patterns
+
+**Outputs:**
+- Updated feature files
+- Refactored step library
+- Updated living documentation
+
+**Is Mandatory:** No (ongoing activity)
+
+---
+
+## MCP Tools Reference
+
+| Tool | Purpose | When Used |
+|------|---------|-----------|
+| `atlassian-getJiraIssue` | Fetch ticket details | Step 1 |
+| `atlassian-getConfluencePage` | Fetch specifications | Step 1 |
+| `deepwiki-ask_question` | Query repository docs | Steps 2, 3 |
+| `deepwiki-read_wiki_contents` | Read documentation | Step 3 |
+
+## Skills Reference
+
+| Skill | Purpose | Steps |
+|-------|---------|-------|
+| `bdd` | BDD patterns, Gherkin syntax, step definitions | 3, 4, 7 |
+| `tdd` | Unit testing for implementation (optional) | 5 |
+| `code-templates` | Generate feature files and step definitions | 3, 4, 5 |
+| `requirements-gathering` | Extract requirements | 1 |
+
+## Agents Reference
+
+| Agent | Purpose | Steps |
+|-------|---------|-------|
+| `test-generator` | Comprehensive scenario generation | 3 |
+
+## Output Artifacts
+
+| Artifact | Location | Purpose |
+|----------|----------|---------|
+| Feature files | `features/{{DOMAIN}}/{{FEATURE_NAME}}.feature` | Executable specifications |
+| Step definitions | `features/steps/{{DOMAIN}}_steps.py` (Python) | Step implementations |
+| Shared steps | `features/steps/common_steps.py` | Reusable step library |
+| Test reports | `reports/bdd_report.html` | Living documentation |
+| Fixtures | `features/fixtures/` | Test data |
+
+## Fallback Procedures
+
+| Condition | Action |
+|-----------|--------|
+| Ticket fetch fails | Ask user to provide requirements manually |
+| Requirements unclear | Request Three Amigos session or clarification |
+| Step definition ambiguous | Create parameterized step with clear naming |
+| Scenario too complex | Break into multiple focused scenarios |
+| Framework not supported | Fall back to pytest-bdd for Python or Cucumber for others |
+| MCP tool unavailable | Use manual process or alternative tool |
+
+## Example Session
+
+```
+User: Create BDD scenarios for user registration feature
+
+Agent: 
+1. Analyzing requirements for user registration...
+2. Identifying business rules:
+   - Users must provide valid email
+   - Passwords must meet complexity requirements
+   - Duplicate emails are rejected
+3. Creating example mapping:
+   - Rule: Valid email required
+     - Example: valid email succeeds
+     - Example: invalid email fails
+   - Rule: Password complexity
+     - Example: strong password succeeds
+     - Example: weak password fails
+4. Generating feature file:
+
+Feature: User Registration
+  As a new user
+  I want to create an account
+  So that I can access the application
+
+  Scenario: Successful registration with valid email
+    Given I am on the registration page
+    When I submit valid registration details
+    Then my account should be created
+
+5. Generating step definitions...
+6. Ready for implementation!
+
+[Outputs feature files and step definitions]
+```
+
+## Best Practices
+
+- **Declarative not imperative** - Describe WHAT behavior, not HOW to test
+- **One scenario one behavior** - Each scenario tests single business rule
+- **Business language** - Use domain terminology stakeholders understand
+- **Reusable steps** - Build step library for consistency
+- **Independent scenarios** - Scenarios should not depend on each other
+- **Background for shared setup** - Use Background for common Given steps
+- **Scenario Outlines for data** - Use for testing same behavior with different data
+- **Meaningful tags** - Use @smoke, @regression, @wip for organization
+- **Living documentation** - Generate reports for stakeholder review
+
+## Integration with TDD
+
+When using both BDD and TDD (recommended for comprehensive testing):
+
+1. **BDD First** - Write acceptance scenarios (high-level behavior)
+2. **TDD for Implementation** - Use TDD for internal unit tests
+3. **Layered Testing** - BDD for acceptance, TDD for units
+4. **Test Pyramid** - Few BDD scenarios at top, many TDD tests at bottom
+
+```
+     /\
+    /  \  BDD Acceptance Tests (few, slow, high-level)
+   /----\
+  /      \  Integration Tests (some)
+ /--------\
+/          \ TDD Unit Tests (many, fast, low-level)
+```
+
+## Related Workflows
+
+- `tdd-workflow.md.tmpl` - Test-driven development workflow
+- `code-review-workflow.md.tmpl` - Review code quality
+- `feature-development-workflow.md.tmpl` - End-to-end feature development
+
+## References
+
+- `patterns/skills/bdd.json` - BDD skill definition
+- `patterns/skills/tdd.json` - TDD skill definition (for integration)
+- `patterns/agents/test-generator.json` - Test generator agent
+- `knowledge/bdd-patterns.json` - BDD patterns and examples
+- `knowledge/test-patterns.json` - Test structure patterns

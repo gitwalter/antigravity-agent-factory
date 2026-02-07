@@ -1,0 +1,337 @@
+{
+  "name": "{{WORKFLOW_NAME}}",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "{{WEBHOOK_PATH}}",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-trigger-{{NODE_ID}}",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "{{WEBHOOK_ID}}"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "retry-count",
+              "name": "retry_count",
+              "value": 0,
+              "type": "number"
+            },
+            {
+              "id": "max-retries",
+              "name": "max_retries",
+              "value": {{MAX_RETRIES}},
+              "type": "number"
+            },
+            {
+              "id": "base-delay",
+              "name": "base_delay",
+              "value": {{BASE_DELAY}},
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "id": "initialize-retry-{{NODE_ID}}",
+      "name": "Initialize Retry",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "operation": "{{OPERATION}}",
+        "resource": "{{RESOURCE}}",
+        "options": {},
+        "continueOnFail": true
+      },
+      "id": "main-operation-{{NODE_ID}}",
+      "name": "Main Operation",
+      "type": "{{NODE_TYPE}}",
+      "typeVersion": {{NODE_VERSION}},
+      "position": [650, 300],
+      "credentials": {
+        "{{CREDENTIAL_TYPE}}": {
+          "id": "{{CREDENTIAL_ID}}",
+          "name": "{{CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Check if operation succeeded\nconst input = $input.first();\nconst retryData = $('Initialize Retry').first().json;\n\n// Check for errors\nconst hasError = input.error || !input.json || input.json.error;\nconst errorMessage = input.error?.message || input.json?.error || null;\n\nif (hasError) {\n  // Increment retry count\n  const newRetryCount = retryData.retry_count + 1;\n  \n  // Check if we should retry\n  const shouldRetry = newRetryCount < retryData.max_retries;\n  \n  // Calculate exponential backoff delay\n  const delay = retryData.base_delay * Math.pow(2, retryData.retry_count);\n  \n  return [{\n    json: {\n      error: true,\n      error_message: errorMessage,\n      retry_count: newRetryCount,\n      max_retries: retryData.max_retries,\n      should_retry: shouldRetry,\n      delay: delay,\n      retry_after: new Date(Date.now() + delay).toISOString()\n    }\n  }];\n} else {\n  // Success\n  return [{\n    json: {\n      error: false,\n      success: true,\n      data: input.json,\n      retry_count: retryData.retry_count\n    }\n  }];\n}"
+      },
+      "id": "check-result-{{NODE_ID}}",
+      "name": "Check Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "error-check",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ]
+        }
+      },
+      "id": "if-error-{{NODE_ID}}",
+      "name": "IF Error",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "should-retry-check",
+              "leftValue": "={{ $json.should_retry }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ]
+        }
+      },
+      "id": "if-should-retry-{{NODE_ID}}",
+      "name": "IF Should Retry",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Wait for exponential backoff delay\nconst delay = $input.first().json.delay;\n\n// Wait using setTimeout in a promise\nawait new Promise(resolve => setTimeout(resolve, delay));\n\n// Update retry count\nconst retryData = $('Initialize Retry').first().json;\nreturn [{\n  json: {\n    ...retryData,\n    retry_count: $input.first().json.retry_count\n  }\n}];"
+      },
+      "id": "wait-delay-{{NODE_ID}}",
+      "name": "Wait Delay",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "resource": "execution",
+        "additionalFields": {
+          "note": "={{ `Retry attempt ${$json.retry_count} failed: ${$json.error_message}` }}"
+        }
+      },
+      "id": "log-retry-{{NODE_ID}}",
+      "name": "Log Retry",
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [1450, 500]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "error-details",
+              "name": "error_details",
+              "value": "={{ { \"error\": true, \"message\": $json.error_message, \"retry_count\": $json.retry_count, \"max_retries\": $json.max_retries, \"timestamp\": $now } }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "format-error-{{NODE_ID}}",
+      "name": "Format Error",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1250, 500]
+    },
+    {
+      "parameters": {
+        "url": "{{NOTIFICATION_WEBHOOK_URL}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"text\": \"Workflow Error\", \"error\": $json.error_details, \"workflow\": $workflow.name } }}",
+        "options": {}
+      },
+      "id": "notify-error-{{NODE_ID}}",
+      "name": "Notify Error",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1450, 500]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "success-response",
+              "name": "success_response",
+              "value": "={{ { \"status\": \"success\", \"data\": $json.data, \"retry_count\": $json.retry_count } }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "format-success-{{NODE_ID}}",
+      "name": "Format Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1050, 200]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Initialize Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initialize Retry": {
+      "main": [
+        [
+          {
+            "node": "Main Operation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Main Operation": {
+      "main": [
+        [
+          {
+            "node": "Check Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Result": {
+      "main": [
+        [
+          {
+            "node": "IF Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Error": {
+      "main": [
+        [
+          {
+            "node": "IF Should Retry",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Should Retry": {
+      "main": [
+        [
+          {
+            "node": "Wait Delay",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Delay": {
+      "main": [
+        [
+          {
+            "node": "Main Operation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Error": {
+      "main": [
+        [
+          {
+            "node": "Log Retry",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "errorWorkflow": "{{ERROR_WORKFLOW_ID}}"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "{{TIMESTAMP}}",
+      "updatedAt": "{{TIMESTAMP}}",
+      "id": "{{TAG_ID}}",
+      "name": "error-handling"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "{{TIMESTAMP}}",
+  "versionId": "{{VERSION_ID}}"
+}

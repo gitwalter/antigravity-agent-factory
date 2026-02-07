@@ -1,0 +1,63 @@
+/**
+ * {{NODE_NAME}} - Custom JavaScript Code Node
+ * 
+ * Purpose: {{NODE_PURPOSE}}
+ * Input: {{INPUT_DESCRIPTION}}
+ * Output: {{OUTPUT_DESCRIPTION}}
+ * 
+ * Template Variables:
+ * - {{WORKFLOW_NAME}}: Name of the workflow
+ * - {{NODE_ID}}: Unique node identifier
+ */
+
+// Get all input items
+const items = $input.all();
+
+// Process each item
+const processedItems = items.map((item, index) => {
+  const data = item.json;
+  
+  try {
+    // {{PROCESSING_LOGIC_DESCRIPTION}}
+    {{PROCESSING_LOGIC}}
+    
+    // Return processed item
+    return {
+      json: {
+        ...data,
+        {{OUTPUT_FIELDS}}
+        _metadata: {
+          processed: true,
+          processed_at: new Date().toISOString(),
+          item_index: index,
+          workflow_name: '{{WORKFLOW_NAME}}'
+        }
+      }
+    };
+  } catch (error) {
+    // Handle errors gracefully
+    return {
+      json: {
+        ...data,
+        error: true,
+        error_message: error.message,
+        _metadata: {
+          processed: false,
+          processed_at: new Date().toISOString(),
+          item_index: index
+        }
+      }
+    };
+  }
+});
+
+// {{POST_PROCESSING_DESCRIPTION}}
+{{POST_PROCESSING_LOGIC}}
+
+// Filter out error items if needed
+{{#IF FILTER_ERRORS}}
+const validItems = processedItems.filter(item => !item.json.error);
+return validItems.length > 0 ? validItems : processedItems;
+{{ELSE}}
+return processedItems;
+{{/IF}}

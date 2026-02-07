@@ -1,0 +1,196 @@
+{
+  "metadata": {
+    "name": "Groovy Patterns for SAP CPI/PI",
+    "description": "Best practices and patterns for Groovy scripting in SAP Cloud Platform Integration and Process Integration",
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-29"
+  },
+  "messageHandling": {
+    "getBody": {
+      "description": "Retrieve message body as specific type",
+      "pattern": "def body = message.getBody(String)",
+      "variants": [
+        "message.getBody(java.io.InputStream)",
+        "message.getBody(byte[])",
+        "message.getBody(org.w3c.dom.Document)"
+      ]
+    },
+    "setBody": {
+      "description": "Set message body",
+      "pattern": "message.setBody(newBody)",
+      "note": "Body can be String, byte[], InputStream, or Document"
+    },
+    "properties": {
+      "get": "message.getProperty('propertyName')",
+      "set": "message.setProperty('propertyName', value)",
+      "remove": "message.getProperties().remove('propertyName')"
+    },
+    "headers": {
+      "get": "message.getHeader('headerName', String)",
+      "set": "message.setHeader('headerName', value)",
+      "getAll": "message.getHeaders()"
+    }
+  },
+  "xmlProcessing": {
+    "parseXml": {
+      "description": "Parse XML with XmlSlurper (recommended for reading)",
+      "pattern": "def xml = new XmlSlurper().parseText(body)",
+      "accessElement": "xml.elementName.text()",
+      "accessAttribute": "xml.elementName.@attributeName.text()",
+      "iterate": "xml.items.item.each { item -> /* process */ }"
+    },
+    "parseXmlDom": {
+      "description": "Parse XML with XmlParser (for modification)",
+      "pattern": "def xml = new XmlParser().parseText(body)",
+      "modify": "xml.elementName[0].value = 'newValue'"
+    },
+    "buildXml": {
+      "description": "Build XML with MarkupBuilder",
+      "pattern": "def writer = new StringWriter()\ndef xml = new groovy.xml.MarkupBuilder(writer)\nxml.root {\n  element('value')\n}\ndef output = writer.toString()"
+    },
+    "xpath": {
+      "description": "XPath evaluation",
+      "pattern": "import javax.xml.xpath.*\ndef xpath = XPathFactory.newInstance().newXPath()\ndef result = xpath.evaluate('//element', document, XPathConstants.NODESET)"
+    },
+    "namespaces": {
+      "description": "Handle XML namespaces",
+      "pattern": "def xml = new XmlSlurper().parseText(body).declareNamespace(ns: 'http://namespace.uri')\ndef value = xml.'ns:element'.text()"
+    }
+  },
+  "jsonProcessing": {
+    "parseJson": {
+      "description": "Parse JSON with JsonSlurper",
+      "pattern": "def json = new groovy.json.JsonSlurper().parseText(body)",
+      "accessField": "json.fieldName",
+      "accessNested": "json.parent.child",
+      "accessArray": "json.items[0]"
+    },
+    "buildJson": {
+      "description": "Build JSON with JsonBuilder",
+      "pattern": "def builder = new groovy.json.JsonBuilder()\nbuilder {\n  name 'value'\n  items([1, 2, 3])\n}\ndef output = builder.toString()"
+    },
+    "prettyPrint": {
+      "description": "Pretty print JSON",
+      "pattern": "def output = groovy.json.JsonOutput.prettyPrint(jsonString)"
+    }
+  },
+  "logging": {
+    "messageLog": {
+      "description": "CPI message logging (visible in monitoring)",
+      "pattern": "def messageLog = messageLogFactory.getMessageLog(message)\nmessageLog.addAttachmentAsString('AttachmentName', content, 'text/plain')",
+      "mimeTypes": ["text/plain", "text/xml", "application/json", "application/octet-stream"]
+    },
+    "traceLog": {
+      "description": "Trace logging (for debugging)",
+      "pattern": "import com.sap.gateway.ip.core.customdev.util.Message\ndef log = message.getProperty('SAP_MessageProcessingLog')\nlog.addMessage('DEBUG', 'Message here')"
+    },
+    "propertyLogging": {
+      "description": "Log to property for later retrieval",
+      "pattern": "message.setProperty('DebugLog', 'Debug info here')"
+    }
+  },
+  "errorHandling": {
+    "tryCatch": {
+      "description": "Standard try-catch pattern",
+      "pattern": "try {\n  // logic\n} catch (Exception e) {\n  message.setProperty('ErrorMessage', e.message)\n  message.setProperty('ErrorStackTrace', e.stackTrace.join('\\n'))\n  throw e\n}"
+    },
+    "customException": {
+      "description": "Throw custom exception for error routing",
+      "pattern": "if (condition) {\n  throw new Exception('Business error: description')\n}"
+    },
+    "errorDetails": {
+      "description": "Set error details for monitoring",
+      "pattern": "message.setProperty('SAP_ErrorModelStepID', 'StepName')\nmessage.setProperty('SAP_ErrorText', 'Error description')"
+    }
+  },
+  "collections": {
+    "each": {
+      "description": "Iterate with closure",
+      "pattern": "list.each { item -> /* process */ }"
+    },
+    "collect": {
+      "description": "Transform collection",
+      "pattern": "def transformed = list.collect { it.toUpperCase() }"
+    },
+    "find": {
+      "description": "Find first matching element",
+      "pattern": "def found = list.find { it.startsWith('prefix') }"
+    },
+    "findAll": {
+      "description": "Filter collection",
+      "pattern": "def filtered = list.findAll { it.length() > 5 }"
+    },
+    "groupBy": {
+      "description": "Group elements",
+      "pattern": "def grouped = list.groupBy { it.category }"
+    },
+    "inject": {
+      "description": "Reduce/fold operation",
+      "pattern": "def sum = list.inject(0) { acc, val -> acc + val }"
+    }
+  },
+  "stringOperations": {
+    "gstring": {
+      "description": "String interpolation",
+      "pattern": "def result = \"Value is ${variable}\""
+    },
+    "multiline": {
+      "description": "Multiline strings",
+      "pattern": "def text = '''Line 1\nLine 2\nLine 3'''"
+    },
+    "regex": {
+      "description": "Regular expressions",
+      "pattern": "def match = text =~ /pattern/\nif (text ==~ /fullMatchPattern/) { /* matched */ }"
+    },
+    "split": {
+      "description": "Split string",
+      "pattern": "def parts = text.split(',')"
+    }
+  },
+  "dateTime": {
+    "currentDate": {
+      "description": "Get current date/time",
+      "pattern": "def now = new Date()\ndef formatted = now.format('yyyy-MM-dd\\'T\\'HH:mm:ss')"
+    },
+    "parseDate": {
+      "description": "Parse date string",
+      "pattern": "def date = Date.parse('yyyy-MM-dd', '2026-01-29')"
+    },
+    "dateArithmetic": {
+      "description": "Date calculations",
+      "pattern": "def tomorrow = new Date() + 1\ndef lastWeek = new Date() - 7"
+    }
+  },
+  "securityCredentials": {
+    "secureParameter": {
+      "description": "Access Secure Parameter (CPI)",
+      "pattern": "def credential = message.getProperty('credential')\n// Credential set via Secure Parameter artifact"
+    },
+    "credentialStore": {
+      "description": "Access Credential Store (never hardcode!)",
+      "pattern": "// Use User Credentials artifact in iFlow\n// Access via message property set by adapter"
+    }
+  },
+  "bestPractices": [
+    "Never use System.out.println - use messageLog instead",
+    "Always use try-catch for error handling",
+    "Use safe navigation (?.) to avoid NullPointerException",
+    "Prefer XmlSlurper over XmlParser for read-only operations",
+    "Use message properties for passing data between steps",
+    "Never hardcode credentials - use Secure Parameters",
+    "Keep scripts focused and small (Single Responsibility)",
+    "Add meaningful log attachments for debugging",
+    "Use closures for collection operations",
+    "Test scripts with Spock framework before deployment"
+  ],
+  "antiPatterns": [
+    "Hardcoding URLs, credentials, or configuration values",
+    "Using System.out for logging",
+    "Catching exceptions without proper error propagation",
+    "Not handling null values safely",
+    "Creating overly complex scripts (split into multiple steps)",
+    "Modifying message body in place without proper handling",
+    "Not using namespaces when parsing XML",
+    "Ignoring character encoding issues"
+  ]
+}

@@ -1,0 +1,206 @@
+"""
+Caching Utilities - Data caching patterns for Streamlit
+
+Purpose: Provide caching decorators and utilities for efficient data loading
+Author: {{AUTHOR}}
+Created: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Cache hits/misses are logged
+- A3 (Transparency): Clear cache behavior and TTL information
+- A4 (Non-Harm): Safe cache invalidation and memory management
+"""
+
+import streamlit as st
+import logging
+from typing import Callable, Any, Optional
+from functools import wraps
+from datetime import datetime, timedelta
+
+logger = logging.getLogger(__name__)
+
+
+def cached_data_loader(ttl: int = 300, show_spinner: bool = True):
+    """
+    Decorator for caching data loading functions.
+    
+    This decorator wraps data loading functions with Streamlit's
+    caching mechanism, reducing redundant API calls and database queries.
+    
+    Args:
+        ttl: Time to live in seconds (default: 5 minutes)
+        show_spinner: Whether to show spinner during loading
+        
+    Returns:
+        Decorated function with caching
+        
+    Example:
+        >>> @cached_data_loader(ttl=600)
+        >>> def load_user_data():
+        >>>     return fetch_from_api()
+    """
+    def decorator(func: Callable) -> Callable:
+        @st.cache_data(ttl=ttl, show_spinner=show_spinner)
+        def cached_func(*args, **kwargs):
+            logger.debug(f"Cache miss for {func.__name__}")
+            return func(*args, **kwargs)
+        
+        # Preserve function metadata
+        cached_func.__name__ = func.__name__
+        cached_func.__doc__ = func.__doc__
+        
+        return cached_func
+    return decorator
+
+
+def cached_resource(ttl: Optional[int] = None):
+    """
+    Decorator for caching expensive resources (connections, models, etc.).
+    
+    This decorator is suitable for caching resources that should be
+    shared across reruns but may need periodic refresh.
+    
+    Args:
+        ttl: Time to live in seconds (None for no expiration)
+        
+    Returns:
+        Decorated function with resource caching
+        
+    Example:
+        >>> @cached_resource(ttl=3600)
+        >>> def get_database_connection():
+        >>>     return create_connection()
+    """
+    def decorator(func: Callable) -> Callable:
+        @st.cache_resource
+        def cached_func(*args, **kwargs):
+            logger.debug(f"Loading resource: {func.__name__}")
+            return func(*args, **kwargs)
+        
+        cached_func.__name__ = func.__name__
+        cached_func.__doc__ = func.__doc__
+        
+        return cached_func
+    return decorator
+
+
+def clear_cache_for_function(func_name: str):
+    """
+    Clear cache for a specific function.
+    
+    Args:
+        func_name: Name of the function whose cache should be cleared
+    """
+    # Note: Streamlit doesn't provide direct function-level cache clearing
+    # This is a placeholder for custom cache management
+    logger.info(f"Cache clear requested for: {func_name}")
+    # st.cache_data.clear() clears all data cache
+    # st.cache_resource.clear() clears all resource cache
+
+
+def get_cache_info() -> dict:
+    """
+    Get information about current cache state.
+    
+    Returns:
+        Dictionary with cache statistics
+    """
+    # Streamlit doesn't expose cache statistics directly
+    # This is a placeholder for custom cache tracking
+    return {
+        "cache_enabled": True,
+        "note": "Use st.cache_data.clear() to clear data cache",
+        "note2": "Use st.cache_resource.clear() to clear resource cache"
+    }
+
+
+def with_cache_control(func: Callable, cache_key: Optional[str] = None):
+    """
+    Wrap a function with cache control capabilities.
+    
+    Args:
+        func: Function to wrap
+        cache_key: Optional cache key for manual invalidation
+        
+    Returns:
+        Wrapped function with cache control
+    """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # Check if cache should be bypassed
+        if st.session_state.get("bypass_cache", False):
+            logger.debug(f"Bypassing cache for {func.__name__}")
+            return func(*args, **kwargs)
+        
+        # Use cached version
+        cached_func = cached_data_loader()(func)
+        return cached_func(*args, **kwargs)
+    
+    return wrapper
+
+
+class CacheManager:
+    """
+    Cache manager for advanced cache control.
+    
+    This class provides methods for managing cache lifecycle,
+    invalidation, and monitoring.
+    
+    Example:
+        >>> cache_mgr = CacheManager()
+        >>> cache_mgr.invalidate_pattern("user_*")
+    """
+    
+    def __init__(self):
+        """Initialize cache manager."""
+        self.invalidation_times = {}
+        logger.info("CacheManager initialized")
+    
+    def invalidate_all(self):
+        """
+        Invalidate all caches.
+        """
+        st.cache_data.clear()
+        st.cache_resource.clear()
+        logger.info("All caches cleared")
+    
+    def invalidate_data_cache(self):
+        """
+        Invalidate data cache only.
+        """
+        st.cache_data.clear()
+        logger.info("Data cache cleared")
+    
+    def invalidate_resource_cache(self):
+        """
+        Invalidate resource cache only.
+        """
+        st.cache_resource.clear()
+        logger.info("Resource cache cleared")
+    
+    def mark_for_invalidation(self, key: str):
+        """
+        Mark a cache key for invalidation.
+        
+        Args:
+            key: Cache key identifier
+        """
+        self.invalidation_times[key] = datetime.now()
+        logger.debug(f"Marked for invalidation: {key}")
+    
+    def should_invalidate(self, key: str, ttl: int) -> bool:
+        """
+        Check if a cache key should be invalidated.
+        
+        Args:
+            key: Cache key identifier
+            ttl: Time to live in seconds
+            
+        Returns:
+            True if should invalidate, False otherwise
+        """
+        if key not in self.invalidation_times:
+            return False
+        
+        last_invalidation = self.invalidation_times[key]
+        return datetime.now() - last_invalidation > timedelta(seconds=ttl)

@@ -1,0 +1,108 @@
+## MTA (Multi-Target Application) Descriptor
+##
+## Purpose: Define deployment configuration for SAP BTP
+## Author: ${AUTHOR}
+## Created: ${DATE}
+##
+## This MTA descriptor defines the application modules and resources
+## for deployment to SAP Business Technology Platform (BTP).
+##
+## @see https://cap.cloud.sap/docs/guides/deployment/as-mta
+
+_schema-version: '3.1.0'
+ID: ${MTA_ID}
+version: ${MTA_VERSION:1.0.0}
+description: ${PROJECT_DESCRIPTION}
+
+## Parameters for deployment configuration
+parameters:
+  enable-parallel-deployments: true
+
+## Application modules
+modules:
+  ## CAP Backend Service
+  - name: ${SERVICE_NAME}-srv
+    type: nodejs
+    path: srv
+    parameters:
+      memory: ${MEMORY:512M}
+      disk-quota: ${DISK_QUOTA:512M}
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm
+      build-dependencies:
+        - node_modules
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: \${default-url}
+    requires:
+      - name: ${SERVICE_NAME}-db
+      - name: ${SERVICE_NAME}-auth
+
+  ## CAP Database Service (HANA)
+  - name: ${SERVICE_NAME}-db
+    type: hdb
+    path: db
+    parameters:
+      disk-quota: ${DB_DISK_QUOTA:2G}
+      memory: ${DB_MEMORY:1G}
+    requires:
+      - name: ${SERVICE_NAME}-db-hdi-container
+
+## Resources (Services)
+resources:
+  ## HDI Container for HANA Database
+  - name: ${SERVICE_NAME}-db-hdi-container
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+    properties:
+      hdi-container-name: \${service-name}
+
+  ## XSUAA (Authorization and Trust Management)
+  - name: ${SERVICE_NAME}-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: ${XSAPPNAME}
+        tenant-mode: ${TENANT_MODE:dedicated}
+        scopes:
+          - name: \$XSAPPNAME.${SCOPE_NAME}
+            description: ${SCOPE_DESCRIPTION}
+        role-collections:
+          - name: ${ROLE_COLLECTION_NAME}
+            description: ${ROLE_COLLECTION_DESCRIPTION}
+            role-template-references:
+              - \$XSAPPNAME.${ROLE_TEMPLATE_NAME}
+        role-templates:
+          - name: ${ROLE_TEMPLATE_NAME}
+            description: ${ROLE_TEMPLATE_DESCRIPTION}
+            scope-references:
+              - \$XSAPPNAME.${SCOPE_NAME}
+
+## Build options
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm install
+        - npm run build
+
+## Deployment options
+## Uncomment to configure deployment behavior
+# deploy-parameters:
+#   strategy: blue-green
+#   no-confirm: true
+#   delete-services: false
+#   delete-service-keys: false
+#   delete-service-brokers: false
+#   keep-files: false
+#   no-restart-subscribed-apps: false
+#   restart-on-env-change: false
+#   start-timeout: 300
+#   stop-timeout: 300

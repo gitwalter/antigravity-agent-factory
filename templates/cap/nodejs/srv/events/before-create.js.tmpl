@@ -1,0 +1,101 @@
+/**
+ * Before CREATE Event Handler - Validation and Data Transformation
+ * 
+ * Purpose: Validate and transform data before entity creation
+ * Author: ${AUTHOR}
+ * Created: ${DATE}
+ * 
+ * This handler implements validation logic and data transformation
+ * that runs before an entity is created. Extract to separate file
+ * for better organization in larger services.
+ * 
+ * @see https://cap.cloud.sap/docs/node.js/services#before-handlers
+ */
+
+const cds = require('@sap/cds');
+
+/**
+ * Before CREATE handler for ${ENTITY_NAME}
+ * 
+ * This handler is registered in the main service handler file.
+ * Extract complex validation logic here for better maintainability.
+ * 
+ * @param {Object} req - CAP request object containing data and context
+ * @throws {Error} Validation errors if data is invalid
+ */
+module.exports = async function beforeCreate${ENTITY_NAME}(req) {
+    const { data } = req;
+
+    /**
+     * Required field validation
+     */
+    if (!data.name || typeof data.name !== 'string' || data.name.trim().length === 0) {
+        return req.error(400, 'Name is required and must be a non-empty string');
+    }
+
+    /**
+     * Field length validation
+     */
+    if (data.name && data.name.length > ${MAX_NAME_LENGTH:255}) {
+        return req.error(400, `Name must not exceed ${MAX_NAME_LENGTH:255} characters`);
+    }
+
+    if (data.description && data.description.length > ${MAX_DESCRIPTION_LENGTH:1000}) {
+        return req.error(400, `Description must not exceed ${MAX_DESCRIPTION_LENGTH:1000} characters`);
+    }
+
+    /**
+     * Enum/Status validation
+     */
+    const validStatuses = ['ACTIVE', 'INACTIVE', 'PENDING', 'ARCHIVED'];
+    if (data.status && !validStatuses.includes(data.status)) {
+        return req.error(400, `Status must be one of: ${validStatuses.join(', ')}`);
+    }
+
+    /**
+     * Data transformation - trim whitespace
+     */
+    if (data.name) {
+        data.name = data.name.trim();
+    }
+    if (data.description) {
+        data.description = data.description.trim();
+    }
+
+    /**
+     * Set default values
+     */
+    if (!data.status) {
+        data.status = 'ACTIVE';
+    }
+
+    /**
+     * Business rule validation example
+     * 
+     * Check if entity with same name already exists
+     */
+    // const existing = await cds.run(
+    //     SELECT.one.from('${ENTITY_NAME}').where({ name: data.name })
+    // );
+    // if (existing) {
+    //     return req.error(409, `Entity with name '${data.name}' already exists`);
+    // }
+
+    /**
+     * Authorization check example
+     * 
+     * Verify user has permission to create this entity
+     */
+    // const user = req.user;
+    // if (!user.hasRole('${REQUIRED_ROLE}')) {
+    //     return req.error(403, 'Insufficient permissions to create ${ENTITY_NAME}');
+    // }
+
+    /**
+     * Data enrichment example
+     * 
+     * Add computed fields or enrich data from external sources
+     */
+    // data.computedField = await computeValue(data);
+    // data.externalData = await fetchExternalData(data);
+};

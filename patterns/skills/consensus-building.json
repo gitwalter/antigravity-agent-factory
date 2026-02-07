@@ -1,0 +1,250 @@
+{
+  "metadata": {
+    "patternId": "consensus-building",
+    "patternName": "Consensus Building Skill",
+    "category": "ai-development",
+    "stackAgnostic": true,
+    "description": "Protocols for multiple agents to reach agreement through voting, debate, or synthesis",
+    "composable": true,
+    "version": "1.0.0"
+  },
+  "frontmatter": {
+    "name": "consensus-building",
+    "description": "Enable multiple agents to reach agreement through structured consensus protocols",
+    "type": "skill",
+    "knowledge": [
+      "multi-agent-coordination.json",
+      "autogen-patterns.json"
+    ],
+    "templates": [
+      "templates/ai/multi-agent/"
+    ]
+  },
+  "sections": {
+    "title": "Consensus Building Skill",
+    "introduction": "Guides the implementation of consensus protocols for multi-agent systems. When multiple agents have different perspectives or outputs, this skill helps them reach agreement through voting, debate, iterative refinement, or synthesis mechanisms.",
+    "whenToUse": [
+      "When multiple agents produce different answers to the same question",
+      "When high-confidence decisions require validation",
+      "When implementing review processes with multiple reviewers",
+      "When aggregating outputs from parallel agent execution",
+      "When resolving conflicts between agent recommendations"
+    ],
+    "process": [
+      {
+        "step": 1,
+        "name": "Collect Perspectives",
+        "description": "Gather outputs from all participating agents",
+        "actions": [
+          "Invoke all participating agents with the same input",
+          "Collect structured outputs with reasoning",
+          "Ensure each agent provides confidence scores",
+          "Document any agent failures or abstentions"
+        ],
+        "outputs": [
+          "Agent outputs collection",
+          "Confidence scores"
+        ]
+      },
+      {
+        "step": 2,
+        "name": "Choose Consensus Mechanism",
+        "description": "Select appropriate mechanism based on task and agent count",
+        "mechanisms": {
+          "majority-voting": {
+            "description": "Simple majority wins",
+            "useCase": "Clear-cut decisions with discrete options",
+            "agentCount": "3+ agents (odd number preferred)",
+            "confidence": "High when clear majority, low when split"
+          },
+          "weighted-voting": {
+            "description": "Votes weighted by agent confidence or expertise",
+            "useCase": "When agents have varying reliability",
+            "agentCount": "2+ agents",
+            "confidence": "Based on weighted score distribution"
+          },
+          "debate-synthesis": {
+            "description": "Agents debate, synthesizer creates final answer",
+            "useCase": "Complex decisions needing multiple perspectives",
+            "agentCount": "2+ debaters + 1 synthesizer",
+            "confidence": "Based on synthesis quality"
+          },
+          "iterative-refinement": {
+            "description": "Agents iteratively improve each other's outputs",
+            "useCase": "Creative or nuanced outputs",
+            "agentCount": "2+ agents",
+            "confidence": "Based on convergence"
+          },
+          "unanimous": {
+            "description": "All agents must agree",
+            "useCase": "Critical decisions requiring full alignment",
+            "agentCount": "2+ agents",
+            "confidence": "Very high when achieved"
+          }
+        }
+      },
+      {
+        "step": 3,
+        "name": "Execute Consensus Protocol",
+        "description": "Run the selected mechanism",
+        "protocolSteps": {
+          "voting": [
+            "Normalize outputs to comparable format",
+            "Apply voting rule (majority, weighted, etc.)",
+            "Calculate confidence from vote distribution",
+            "Handle ties with tiebreaker rule"
+          ],
+          "debate": [
+            "Present each agent's position with reasoning",
+            "Allow counter-arguments",
+            "Limit debate rounds to prevent loops",
+            "Synthesizer evaluates all arguments"
+          ],
+          "refinement": [
+            "Start with initial outputs",
+            "Each agent critiques and improves",
+            "Continue until convergence or max rounds",
+            "Final output is last refined version"
+          ]
+        }
+      },
+      {
+        "step": 4,
+        "name": "Validate Consensus",
+        "description": "Verify the consensus is valid and actionable",
+        "validationChecks": [
+          "Consensus output is well-formed",
+          "Confidence meets minimum threshold",
+          "Dissenting views are documented",
+          "Reasoning chain is coherent"
+        ],
+        "actions": [
+          "Check consensus confidence threshold",
+          "Document minority opinions for audit",
+          "Flag low-confidence consensus for human review"
+        ]
+      },
+      {
+        "step": 5,
+        "name": "Handle Disagreement",
+        "description": "Resolve cases where consensus cannot be reached",
+        "strategies": {
+          "escalate": "Send to human decision maker",
+          "defer": "Request more information and retry",
+          "default": "Use predefined default or safest option",
+          "abstain": "Report inability to decide"
+        },
+        "actions": [
+          "Determine if resolution is possible",
+          "Apply appropriate strategy",
+          "Document the disagreement and resolution"
+        ]
+      }
+    ],
+    "votingMechanisms": {
+      "simple-majority": {
+        "description": "Option with >50% of votes wins",
+        "formula": "winner = argmax(vote_counts) if max(vote_counts) > total/2 else tie",
+        "tiebreaker": "Random selection or human decision"
+      },
+      "plurality": {
+        "description": "Option with most votes wins (no majority required)",
+        "formula": "winner = argmax(vote_counts)",
+        "tiebreaker": "Highest combined confidence"
+      },
+      "borda-count": {
+        "description": "Agents rank options, points assigned by rank",
+        "formula": "score = sum(n - rank) for each agent's ranking",
+        "useCase": "Multiple options with preferences"
+      },
+      "weighted-confidence": {
+        "description": "Votes weighted by agent confidence",
+        "formula": "score = sum(vote * confidence) for each agent",
+        "useCase": "Varying agent reliability"
+      }
+    },
+    "debateProtocol": {
+      "structure": {
+        "opening": "Each agent presents initial position with evidence",
+        "rebuttal": "Agents respond to others' positions",
+        "closing": "Final arguments incorporating rebuttals",
+        "synthesis": "Neutral agent creates unified response"
+      },
+      "rules": [
+        "Maximum 3 rounds of debate",
+        "Each agent must cite evidence",
+        "Ad hominem arguments ignored",
+        "Synthesizer has final authority"
+      ]
+    },
+    "refinementProtocol": {
+      "structure": {
+        "initial": "All agents produce initial outputs",
+        "critique": "Each agent critiques one other's output",
+        "improve": "Agents improve based on critique",
+        "converge": "Repeat until outputs stabilize"
+      },
+      "convergenceCriteria": [
+        "Outputs differ by less than threshold",
+        "Maximum iterations reached",
+        "All agents agree on final version"
+      ]
+    },
+    "confidenceCalculation": {
+      "voting": "confidence = (winning_votes / total_votes)",
+      "weighted": "confidence = weighted_score / max_possible_score",
+      "debate": "confidence = synthesizer_confidence",
+      "refinement": "confidence = convergence_measure"
+    },
+    "importantRules": [
+      "Always collect reasoning along with answers",
+      "Use odd numbers of agents for voting when possible",
+      "Set minimum confidence thresholds for critical decisions",
+      "Document dissenting opinions for audit trails",
+      "Limit debate/refinement rounds to prevent infinite loops",
+      "Have clear escalation paths for unresolved disagreements",
+      "Consider the cost of consensus (multiple agent calls)",
+      "All actions must align with core axioms (A1: Verifiability, A2: User Primacy, A3: Transparency, A4: Non-Harm, A5: Consistency)"
+    ],
+    "fallbackProcedures": [
+      {
+        "condition": "If vote is tied",
+        "action": "Use weighted confidence as tiebreaker, else escalate to human"
+      },
+      {
+        "condition": "If debate doesn't converge",
+        "action": "Limit rounds and use synthesizer's best judgment"
+      },
+      {
+        "condition": "If confidence is below threshold",
+        "action": "Flag for human review with agent reasoning"
+      },
+      {
+        "condition": "If all agents abstain",
+        "action": "Request more context and retry"
+      }
+    ],
+    "references": [
+      "knowledge/multi-agent-coordination.json",
+      "knowledge/autogen-patterns.json",
+      "templates/ai/multi-agent/"
+    ]
+  },
+  "variables": [
+    {
+      "name": "{PARTICIPATING_AGENTS}",
+      "description": "List of agents participating in consensus",
+      "required": true
+    },
+    {
+      "name": "{CONSENSUS_MECHANISM}",
+      "description": "Mechanism to use (voting, debate, refinement)",
+      "required": true
+    },
+    {
+      "name": "{CONFIDENCE_THRESHOLD}",
+      "description": "Minimum confidence required for valid consensus",
+      "required": true
+    }
+  ]
+}

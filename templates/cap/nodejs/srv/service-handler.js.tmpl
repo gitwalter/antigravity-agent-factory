@@ -1,0 +1,180 @@
+/**
+ * ${SERVICE_NAME} Service Handler - JavaScript Implementation
+ * 
+ * Purpose: Implement business logic and event handlers for ${SERVICE_NAME} service
+ * Author: ${AUTHOR}
+ * Created: ${DATE}
+ * 
+ * This handler implements custom business logic, validations, and side effects
+ * for the ${SERVICE_NAME} service. It follows CAP best practices for BTP deployment.
+ * 
+ * @see https://cap.cloud.sap/docs/node.js/services#event-handlers
+ */
+
+const cds = require('@sap/cds');
+
+/**
+ * Service handler for ${SERVICE_NAME}.
+ * 
+ * Event handlers are registered using the 'on' method:
+ * - 'CREATE', 'READ', 'UPDATE', 'DELETE' for CRUD operations
+ * - 'before', 'after' modifiers for timing control
+ * - Custom actions and functions
+ * 
+ * @module srv/${SERVICE_NAME}
+ */
+module.exports = cds.service.impl(async function () {
+    const { ${ENTITY_NAME} } = this.entities;
+
+    /**
+     * Before CREATE handler - validation and data transformation
+     * 
+     * Use for:
+     * - Input validation
+     * - Data enrichment
+     * - Authorization checks
+     * - Setting default values
+     */
+    this.before('CREATE', ${ENTITY_NAME}, async (req) => {
+        const { data } = req;
+
+        // Validation example
+        if (!data.name || data.name.trim().length === 0) {
+            req.error(400, 'Name is required');
+        }
+
+        // Data transformation example
+        if (data.name) {
+            data.name = data.name.trim();
+        }
+
+        // Set default values
+        if (!data.status) {
+            data.status = 'ACTIVE';
+        }
+
+        // Authorization check example
+        // if (!req.user.hasRole('${REQUIRED_ROLE}')) {
+        //     req.error(403, 'Insufficient permissions');
+        // }
+    });
+
+    /**
+     * After CREATE handler - side effects and notifications
+     * 
+     * Use for:
+     * - Sending notifications
+     * - Creating related records
+     * - Triggering workflows
+     * - Logging audit information
+     */
+    this.after('CREATE', ${ENTITY_NAME}, async (data, req) => {
+        // Side effect example: Create audit log
+        // await cds.run(
+        //     INSERT.into('${AUDIT_ENTITY}').entries({
+        //         entityType: '${ENTITY_NAME}',
+        //         entityId: data.ID,
+        //         action: 'CREATE',
+        //         userId: req.user.id
+        //     })
+        // );
+
+        // Side effect example: Send notification
+        // await sendNotification({
+        //     type: 'ENTITY_CREATED',
+        //     entityId: data.ID,
+        //     userId: req.user.id
+        // });
+    });
+
+    /**
+     * Before UPDATE handler - validation and change tracking
+     */
+    this.before('UPDATE', ${ENTITY_NAME}, async (req) => {
+        const { data, where } = req;
+
+        // Validation example: prevent status change
+        if (data.status && data.status !== req.data.status) {
+            // Check if status transition is allowed
+            // const allowedTransitions = getStatusTransitions(req.data.status);
+            // if (!allowedTransitions.includes(data.status)) {
+            //     req.error(400, `Status cannot be changed from ${req.data.status} to ${data.status}`);
+            // }
+        }
+
+        // Prevent modification of read-only fields
+        if (data.ID) {
+            delete data.ID; // ID cannot be changed
+        }
+    });
+
+    /**
+     * After READ handler - data enrichment
+     * 
+     * Use for:
+     * - Adding computed fields
+     * - Enriching with related data
+     * - Filtering sensitive information
+     */
+    this.after('READ', ${ENTITY_NAME}, async (results, req) => {
+        // Enrichment example: Add computed field
+        if (Array.isArray(results)) {
+            results.forEach(item => {
+                // item.computedField = calculateValue(item);
+            });
+        } else if (results) {
+            // results.computedField = calculateValue(results);
+        }
+    });
+
+    /**
+     * Custom action handler
+     * 
+     * Actions are side-effect operations that can modify data.
+     * Define the action in service.cds first.
+     */
+    // this.on('${ACTION_NAME}', async (req) => {
+    //     const { param1, param2 } = req.data;
+    //
+    //     // Business logic here
+    //     const result = await performAction(param1, param2);
+    //
+    //     return {
+    //         success: true,
+    //         result: result
+    //     };
+    // });
+
+    /**
+     * Custom function handler
+     * 
+     * Functions are read-only operations for queries.
+     * Define the function in service.cds first.
+     */
+    // this.on('${FUNCTION_NAME}', async (req) => {
+    //     const { param1 } = req.data;
+    //
+    //     // Query logic here
+    //     const results = await cds.run(
+    //         SELECT.from(${ENTITY_NAME}).where({ field: param1 })
+    //     );
+    //
+    //     return results;
+    // });
+});
+
+/**
+ * Helper function example
+ * 
+ * Extract reusable business logic into helper functions
+ * for better testability and maintainability.
+ */
+// async function performAction(param1, param2) {
+//     // Implementation
+//     return { /* result */ };
+// }
+
+// async function sendNotification(notification) {
+//     // Implementation for sending notifications
+//     // Could use messaging service, email, etc.
+// }

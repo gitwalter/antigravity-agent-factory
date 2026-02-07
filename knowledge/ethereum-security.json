@@ -1,0 +1,272 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Ethereum Smart Contract Security",
+  "description": "Security vulnerabilities, attack vectors, and mitigations for smart contracts",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A4_non_harm": "All patterns focus on preventing financial loss and user harm",
+    "A1_verifiability": "Include testing strategies to verify security"
+  },
+  "vulnerability_categories": {
+    "reentrancy": {
+      "description": "Attacker re-enters function before state updates complete",
+      "severity": "Critical",
+      "swc_id": "SWC-107",
+      "vulnerable_code": "// VULNERABLE: State updated after external call\nfunction withdraw() external {\n    uint256 balance = balances[msg.sender];\n    (bool success, ) = msg.sender.call{value: balance}(\"\");\n    require(success);\n    balances[msg.sender] = 0; // TOO LATE!\n}",
+      "attack_vector": "Attacker's receive() function calls withdraw() again before balance is zeroed",
+      "mitigations": [
+        {
+          "name": "Checks-Effects-Interactions Pattern",
+          "code": "function withdraw() external {\n    uint256 balance = balances[msg.sender];\n    require(balance > 0, \"No balance\");\n    balances[msg.sender] = 0; // Update state FIRST\n    (bool success, ) = msg.sender.call{value: balance}(\"\");\n    require(success, \"Transfer failed\");\n}"
+        },
+        {
+          "name": "ReentrancyGuard",
+          "code": "import \"@openzeppelin/contracts/utils/ReentrancyGuard.sol\";\n\ncontract Vault is ReentrancyGuard {\n    function withdraw() external nonReentrant {\n        // Safe from reentrancy\n    }\n}"
+        }
+      ],
+      "testing": "Use Foundry to simulate reentrancy attacks in tests"
+    },
+    "access_control": {
+      "description": "Missing or incorrect access restrictions",
+      "severity": "Critical",
+      "swc_id": "SWC-105",
+      "vulnerable_code": "// VULNERABLE: Anyone can call\nfunction setAdmin(address newAdmin) external {\n    admin = newAdmin;\n}",
+      "mitigations": [
+        {
+          "name": "Ownable Pattern",
+          "code": "import \"@openzeppelin/contracts/access/Ownable.sol\";\n\ncontract MyContract is Ownable {\n    function setAdmin(address newAdmin) external onlyOwner {\n        admin = newAdmin;\n    }\n}"
+        },
+        {
+          "name": "Role-Based Access Control",
+          "code": "import \"@openzeppelin/contracts/access/AccessControl.sol\";\n\ncontract MyContract is AccessControl {\n    bytes32 public constant ADMIN_ROLE = keccak256(\"ADMIN_ROLE\");\n    \n    function privilegedAction() external onlyRole(ADMIN_ROLE) {\n        // Only admins\n    }\n}"
+        }
+      ]
+    },
+    "integer_overflow_underflow": {
+      "description": "Arithmetic operations wrap around",
+      "severity": "High",
+      "swc_id": "SWC-101",
+      "note": "Solidity 0.8+ has built-in overflow checks",
+      "still_relevant": "When using unchecked blocks or assembly",
+      "vulnerable_code": "// VULNERABLE in Solidity < 0.8 or unchecked block\nuint8 balance = 255;\nbalance = balance + 1; // Wraps to 0!",
+      "mitigations": [
+        {
+          "name": "Use Solidity 0.8+",
+          "description": "Built-in overflow/underflow protection"
+        },
+        {
+          "name": "Careful with unchecked",
+          "code": "// Only use unchecked when mathematically safe\nunchecked {\n    // Only for loop counters, etc.\n    for (uint256 i = 0; i < arr.length; ++i) {}\n}"
+        }
+      ]
+    },
+    "front_running": {
+      "description": "Attacker observes pending transaction and front-runs it",
+      "severity": "High",
+      "swc_id": "SWC-114",
+      "attack_scenarios": [
+        "DEX arbitrage: Front-run large trades",
+        "NFT sniping: Front-run mints or purchases",
+        "Sandwich attacks: Front-run and back-run swaps"
+      ],
+      "mitigations": [
+        {
+          "name": "Commit-Reveal Scheme",
+          "code": "mapping(address => bytes32) public commitments;\nmapping(address => bool) public revealed;\n\nfunction commit(bytes32 hash) external {\n    commitments[msg.sender] = hash;\n}\n\nfunction reveal(uint256 value, bytes32 salt) external {\n    require(keccak256(abi.encodePacked(value, salt)) == commitments[msg.sender]);\n    revealed[msg.sender] = true;\n    // Process value\n}"
+        },
+        {
+          "name": "Flashbots/MEV Protection",
+          "description": "Submit transactions through private mempools"
+        },
+        {
+          "name": "Slippage Protection",
+          "code": "function swap(uint256 amountIn, uint256 minAmountOut) external {\n    uint256 amountOut = calculateOutput(amountIn);\n    require(amountOut >= minAmountOut, \"Slippage too high\");\n}"
+        }
+      ]
+    },
+    "oracle_manipulation": {
+      "description": "Attacker manipulates price oracle data",
+      "severity": "Critical",
+      "attack_vector": "Flash loans to manipulate spot prices",
+      "mitigations": [
+        {
+          "name": "Time-Weighted Average Price (TWAP)",
+          "description": "Use price averaged over time, not spot price"
+        },
+        {
+          "name": "Multiple Oracle Sources",
+          "description": "Aggregate data from multiple oracles"
+        },
+        {
+          "name": "Chainlink Price Feeds",
+          "code": "import \"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\";\n\nfunction getLatestPrice() public view returns (int256) {\n    (, int256 price, , uint256 updatedAt, ) = priceFeed.latestRoundData();\n    require(block.timestamp - updatedAt < 1 hours, \"Stale price\");\n    require(price > 0, \"Invalid price\");\n    return price;\n}"
+        }
+      ]
+    },
+    "flash_loan_attacks": {
+      "description": "Borrow large amounts without collateral in single transaction",
+      "severity": "Critical",
+      "attack_pattern": "Borrow → Manipulate → Profit → Repay (all in one tx)",
+      "mitigations": [
+        {
+          "name": "Block same-block interactions",
+          "code": "mapping(address => uint256) private lastActionBlock;\n\nmodifier preventSameBlock() {\n    require(lastActionBlock[msg.sender] < block.number, \"Same block\");\n    lastActionBlock[msg.sender] = block.number;\n    _;\n}"
+        },
+        {
+          "name": "Use TWAP for pricing",
+          "description": "Time-weighted prices resist single-block manipulation"
+        }
+      ]
+    },
+    "signature_replay": {
+      "description": "Valid signature reused in unintended context",
+      "severity": "High",
+      "swc_id": "SWC-121",
+      "vulnerable_code": "// VULNERABLE: Signature can be replayed\nfunction executeWithSig(address to, uint256 amount, bytes memory sig) external {\n    bytes32 hash = keccak256(abi.encodePacked(to, amount));\n    address signer = ECDSA.recover(hash, sig);\n    require(signer == owner);\n    // Execute...\n}",
+      "mitigations": [
+        {
+          "name": "Include nonce and chain ID",
+          "code": "mapping(address => uint256) public nonces;\n\nfunction executeWithSig(\n    address to,\n    uint256 amount,\n    uint256 deadline,\n    bytes memory sig\n) external {\n    require(block.timestamp <= deadline, \"Expired\");\n    \n    bytes32 hash = keccak256(abi.encodePacked(\n        to,\n        amount,\n        nonces[msg.sender]++,\n        deadline,\n        block.chainid,\n        address(this)\n    ));\n    \n    address signer = ECDSA.recover(hash.toEthSignedMessageHash(), sig);\n    require(signer == owner);\n}"
+        },
+        {
+          "name": "EIP-712 Typed Data",
+          "description": "Use structured, typed signing for clarity and replay protection"
+        }
+      ]
+    },
+    "denial_of_service": {
+      "description": "Contract becomes unusable",
+      "severity": "High",
+      "swc_id": "SWC-113",
+      "attack_vectors": [
+        {
+          "name": "Gas Limit DoS",
+          "description": "Loop over unbounded array exceeds block gas limit",
+          "mitigation": "Implement pagination or pull-over-push pattern"
+        },
+        {
+          "name": "Revert DoS",
+          "description": "External call to attacker contract always reverts",
+          "mitigation": "Use pull-over-push; don't rely on external calls succeeding"
+        },
+        {
+          "name": "Block Stuffing",
+          "description": "Attacker fills blocks to prevent legitimate transactions",
+          "mitigation": "Use longer deadlines; implement fallback mechanisms"
+        }
+      ],
+      "mitigation_code": "// Pull-over-push pattern\nmapping(address => uint256) public pendingWithdrawals;\n\nfunction claimReward() external {\n    uint256 amount = pendingWithdrawals[msg.sender];\n    pendingWithdrawals[msg.sender] = 0;\n    (bool success, ) = msg.sender.call{value: amount}(\"\");\n    require(success);\n}"
+    },
+    "unsafe_delegatecall": {
+      "description": "Delegatecall to untrusted contract can overwrite storage",
+      "severity": "Critical",
+      "swc_id": "SWC-112",
+      "vulnerable_code": "// VULNERABLE: Arbitrary delegatecall\nfunction execute(address target, bytes memory data) external {\n    (bool success, ) = target.delegatecall(data);\n    require(success);\n}",
+      "mitigations": [
+        {
+          "name": "Whitelist targets",
+          "code": "mapping(address => bool) public allowedTargets;\n\nfunction execute(address target, bytes memory data) external onlyOwner {\n    require(allowedTargets[target], \"Not allowed\");\n    (bool success, ) = target.delegatecall(data);\n    require(success);\n}"
+        },
+        {
+          "name": "Use established proxy patterns",
+          "description": "OpenZeppelin proxies have audited implementations"
+        }
+      ]
+    },
+    "selfdestruct_vulnerability": {
+      "description": "Forced Ether send via selfdestruct or coinbase",
+      "severity": "Medium",
+      "note": "selfdestruct deprecated in EIP-6780, but still relevant",
+      "vulnerable_code": "// VULNERABLE: Assumes balance only from deposits\nfunction isComplete() public view returns (bool) {\n    return address(this).balance == expectedBalance;\n}",
+      "mitigation": "Never rely on address(this).balance for logic; track deposits separately"
+    }
+  },
+  "security_tools": {
+    "static_analysis": [
+      {
+        "name": "Slither",
+        "description": "Python-based static analysis framework",
+        "usage": "slither . --exclude-dependencies",
+        "detects": ["Reentrancy", "Uninitialized variables", "Dangerous state changes"]
+      },
+      {
+        "name": "Mythril",
+        "description": "Symbolic execution for security analysis",
+        "usage": "myth analyze contracts/Contract.sol",
+        "detects": ["Integer overflow", "Reentrancy", "Unprotected selfdestruct"]
+      },
+      {
+        "name": "Aderyn",
+        "description": "Rust-based static analyzer",
+        "usage": "aderyn .",
+        "detects": ["Common vulnerabilities", "Gas optimizations"]
+      }
+    ],
+    "fuzzing": [
+      {
+        "name": "Foundry Fuzz Testing",
+        "description": "Property-based testing with random inputs",
+        "usage": "forge test --fuzz-runs 10000"
+      },
+      {
+        "name": "Echidna",
+        "description": "Smart contract fuzzer",
+        "usage": "echidna-test . --contract Contract --test-mode assertion"
+      }
+    ],
+    "formal_verification": [
+      {
+        "name": "Certora",
+        "description": "Formal verification for smart contracts",
+        "use_case": "Critical DeFi protocols"
+      },
+      {
+        "name": "Halmos",
+        "description": "Symbolic testing for Foundry",
+        "usage": "halmos"
+      }
+    ]
+  },
+  "audit_checklist": {
+    "critical": [
+      "Reentrancy protection on all external calls",
+      "Access control on privileged functions",
+      "No unprotected delegatecall",
+      "No tx.origin for authentication",
+      "Oracle manipulation protection"
+    ],
+    "high": [
+      "Integer arithmetic safety (or Solidity 0.8+)",
+      "Signature replay protection",
+      "Front-running protection where applicable",
+      "DoS resistance (no unbounded loops)",
+      "Flash loan attack resistance"
+    ],
+    "medium": [
+      "Event emission for state changes",
+      "Proper use of visibility modifiers",
+      "Input validation on all parameters",
+      "Deadline/expiration on time-sensitive operations",
+      "Proper error messages"
+    ],
+    "low": [
+      "Consistent coding style",
+      "NatSpec documentation",
+      "Gas optimization",
+      "Compiler version locked",
+      "License identifier present"
+    ]
+  },
+  "best_practices": [
+    "Use OpenZeppelin contracts for standard functionality",
+    "Follow Checks-Effects-Interactions pattern",
+    "Use ReentrancyGuard on all functions with external calls",
+    "Lock pragma to specific compiler version",
+    "Emit events for all state changes",
+    "Use pull-over-push for payments",
+    "Implement access control on all sensitive functions",
+    "Use SafeERC20 for token interactions",
+    "Never trust external data without validation",
+    "Get professional security audits before mainnet deployment"
+  ]
+}

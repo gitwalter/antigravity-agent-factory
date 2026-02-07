@@ -1,0 +1,194 @@
+/**
+ * Server Actions - Next.js Server Actions for {{DOMAIN_NAME}}
+ * 
+ * Purpose: Define server-side actions for {{DOMAIN_NAME}} operations
+ * Author: {{AUTHOR}}
+ * Created: {{DATE}}
+ * 
+ * Axiom Alignment:
+ * - A1 (Verifiability): All actions are logged and traceable
+ * - A3 (Transparency): Clear action signatures and error messages
+ * - A4 (Non-Harm): Input validation prevents harmful operations
+ */
+
+'use server'
+
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { z } from 'zod'
+import { {{REPOSITORY_CLASS}} } from '@/lib/{{REPOSITORY_NAME}}'
+
+// Validation schemas
+const {{CREATE_SCHEMA}} = z.object({
+  name: z.string().min(1).max(255),
+  description: z.string().max(1000).optional(),
+  // Add more fields as needed
+})
+
+const {{UPDATE_SCHEMA}} = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).max(255).optional(),
+  description: z.string().max(1000).optional(),
+  // Add more fields as needed
+})
+
+const {{DELETE_SCHEMA}} = z.object({
+  id: z.string().min(1),
+})
+
+/**
+ * Create {{ENTITY_NAME}} action.
+ * 
+ * This server action creates a new {{ENTITY_NAME}} and
+ * revalidates the relevant cache paths.
+ * 
+ * @param formData - Form data containing {{ENTITY_NAME}} information
+ * @returns Action result with success status and data/error
+ */
+export async function create{{ENTITY_NAME}}(formData: FormData) {
+  try {
+    // Extract and validate data
+    const rawData = {
+      name: formData.get('name'),
+      description: formData.get('description'),
+    }
+    
+    const validatedData = {{CREATE_SCHEMA}}.parse(rawData)
+    
+    // Perform creation
+    const result = await {{REPOSITORY_CLASS}}.create(validatedData)
+    
+    // Revalidate relevant paths
+    revalidatePath('/{{DOMAIN_PATH}}')
+    revalidateTag('{{DOMAIN_TAG}}')
+    
+    return {
+      success: true,
+      data: result,
+    }
+  } catch (error) {
+    console.error('Error creating {{ENTITY_NAME}}:', error)
+    
+    if (error instanceof z.ZodError) {
+      return {
+        success: false,
+        error: 'Validation error',
+        details: error.errors,
+      }
+    }
+    
+    return {
+      success: false,
+      error: 'Failed to create {{ENTITY_NAME}}',
+    }
+  }
+}
+
+/**
+ * Update {{ENTITY_NAME}} action.
+ * 
+ * This server action updates an existing {{ENTITY_NAME}} and
+ * revalidates the relevant cache paths.
+ * 
+ * @param formData - Form data containing update information
+ * @returns Action result with success status and data/error
+ */
+export async function update{{ENTITY_NAME}}(formData: FormData) {
+  try {
+    // Extract and validate data
+    const rawData = {
+      id: formData.get('id'),
+      name: formData.get('name'),
+      description: formData.get('description'),
+    }
+    
+    const validatedData = {{UPDATE_SCHEMA}}.parse(rawData)
+    
+    // Perform update
+    const result = await {{REPOSITORY_CLASS}}.update(validatedData.id, validatedData)
+    
+    if (!result) {
+      return {
+        success: false,
+        error: '{{ENTITY_NAME}} not found',
+      }
+    }
+    
+    // Revalidate relevant paths
+    revalidatePath('/{{DOMAIN_PATH}}')
+    revalidatePath(`/{{DOMAIN_PATH}}/${validatedData.id}`)
+    revalidateTag('{{DOMAIN_TAG}}')
+    
+    return {
+      success: true,
+      data: result,
+    }
+  } catch (error) {
+    console.error('Error updating {{ENTITY_NAME}}:', error)
+    
+    if (error instanceof z.ZodError) {
+      return {
+        success: false,
+        error: 'Validation error',
+        details: error.errors,
+      }
+    }
+    
+    return {
+      success: false,
+      error: 'Failed to update {{ENTITY_NAME}}',
+    }
+  }
+}
+
+/**
+ * Delete {{ENTITY_NAME}} action.
+ * 
+ * This server action deletes a {{ENTITY_NAME}} and
+ * revalidates the relevant cache paths.
+ * 
+ * @param formData - Form data containing {{ENTITY_NAME}} ID
+ * @returns Action result with success status
+ */
+export async function delete{{ENTITY_NAME}}(formData: FormData) {
+  try {
+    // Extract and validate data
+    const rawData = {
+      id: formData.get('id'),
+    }
+    
+    const validatedData = {{DELETE_SCHEMA}}.parse(rawData)
+    
+    // Perform deletion
+    const success = await {{REPOSITORY_CLASS}}.delete(validatedData.id)
+    
+    if (!success) {
+      return {
+        success: false,
+        error: '{{ENTITY_NAME}} not found',
+      }
+    }
+    
+    // Revalidate relevant paths
+    revalidatePath('/{{DOMAIN_PATH}}')
+    revalidateTag('{{DOMAIN_TAG}}')
+    
+    // Redirect to list page
+    redirect('/{{DOMAIN_PATH}}')
+  } catch (error) {
+    console.error('Error deleting {{ENTITY_NAME}}:', error)
+    
+    if (error instanceof z.ZodError) {
+      return {
+        success: false,
+        error: 'Validation error',
+        details: error.errors,
+      }
+    }
+    
+    return {
+      success: false,
+      error: 'Failed to delete {{ENTITY_NAME}}',
+    }
+  }
+}

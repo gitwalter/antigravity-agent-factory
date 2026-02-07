@@ -1,0 +1,234 @@
+{
+  "name": "{{WORKFLOW_NAME}}",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "{{SCHEDULE_INTERVAL}}",
+              "{{SCHEDULE_INTERVAL}}Interval": {{INTERVAL_VALUE}}
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger-{{NODE_ID}}",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "{{SOURCE_OPERATION}}",
+        "resource": "{{SOURCE_RESOURCE}}",
+        "options": {}
+      },
+      "id": "extract-data-{{NODE_ID}}",
+      "name": "Extract Data",
+      "type": "{{SOURCE_NODE_TYPE}}",
+      "typeVersion": {{SOURCE_NODE_VERSION}},
+      "position": [450, 300],
+      "credentials": {
+        "{{SOURCE_CREDENTIAL_TYPE}}": {
+          "id": "{{SOURCE_CREDENTIAL_ID}}",
+          "name": "{{SOURCE_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Transform extracted data\nconst items = $input.all();\n\nconst transformed = items.map(item => {\n  const data = item.json;\n  \n  // Apply transformations\n  const transformedData = {\n    // Map fields\n    {{FIELD_MAPPINGS}}\n    \n    // Add computed fields\n    processed_at: new Date().toISOString(),\n    source: '{{SOURCE_NAME}}',\n    \n    // Normalize data types\n    {{#IF NORMALIZE_DATES}}\n    created_at: data.created_at ? new Date(data.created_at).toISOString() : null,\n    updated_at: data.updated_at ? new Date(data.updated_at).toISOString() : null,\n    {{/IF}}\n    \n    // Clean and validate\n    {{#IF VALIDATE_EMAIL}}\n    email: data.email ? data.email.toLowerCase().trim() : null,\n    {{/IF}}\n    \n    // Original data for reference\n    _original: data\n  };\n  \n  return { json: transformedData };\n});\n\n// Filter invalid records\nconst valid = transformed.filter(item => {\n  {{VALIDATION_RULES}}\n  return true;\n});\n\nreturn valid;"
+      },
+      "id": "transform-data-{{NODE_ID}}",
+      "name": "Transform Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Batch processing for large datasets\nconst items = $input.all();\nconst batchSize = {{BATCH_SIZE}};\nconst batches = [];\n\n// Split into batches\nfor (let i = 0; i < items.length; i += batchSize) {\n  batches.push(items.slice(i, i + batchSize));\n}\n\n// Return batches as separate items for parallel processing\nreturn batches.map((batch, index) => ({\n  json: {\n    batch_number: index + 1,\n    total_batches: batches.length,\n    items: batch.map(item => item.json),\n    batch_size: batch.length\n  }\n}));"
+      },
+      "id": "batch-processor-{{NODE_ID}}",
+      "name": "Batch Processor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "operation": "{{TARGET_OPERATION}}",
+        "resource": "{{TARGET_RESOURCE}}",
+        "options": {
+          "batchSize": "={{ $json.batch_size }}"
+        }
+      },
+      "id": "load-data-{{NODE_ID}}",
+      "name": "Load Data",
+      "type": "{{TARGET_NODE_TYPE}}",
+      "typeVersion": {{TARGET_NODE_VERSION}},
+      "position": [1050, 300],
+      "credentials": {
+        "{{TARGET_CREDENTIAL_TYPE}}": {
+          "id": "{{TARGET_CREDENTIAL_ID}}",
+          "name": "{{TARGET_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "pipeline-summary",
+              "name": "pipeline_summary",
+              "value": "={{ { \"status\": \"completed\", \"records_processed\": $json.batch_size, \"batch_number\": $json.batch_number, \"total_batches\": $json.total_batches, \"timestamp\": $now } }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "create-summary-{{NODE_ID}}",
+      "name": "Create Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "error-check",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ]
+        }
+      },
+      "id": "check-error-{{NODE_ID}}",
+      "name": "Check for Error",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1050, 500]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "resource": "execution",
+        "additionalFields": {
+          "note": "={{ `Pipeline error: ${JSON.stringify($json.error)}` }}"
+        }
+      },
+      "id": "log-error-{{NODE_ID}}",
+      "name": "Log Error",
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [1250, 500]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data": {
+      "main": [
+        [
+          {
+            "node": "Transform Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Data": {
+      "main": [
+        [
+          {
+            "node": "Batch Processor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batch Processor": {
+      "main": [
+        [
+          {
+            "node": "Load Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Data": {
+      "main": [
+        [
+          {
+            "node": "Create Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check for Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Error": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "errorWorkflow": "{{ERROR_WORKFLOW_ID}}"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "{{TIMESTAMP}}",
+      "updatedAt": "{{TIMESTAMP}}",
+      "id": "{{TAG_ID}}",
+      "name": "etl-pipeline"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "{{TIMESTAMP}}",
+  "versionId": "{{VERSION_ID}}"
+}

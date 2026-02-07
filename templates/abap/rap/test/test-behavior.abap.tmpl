@@ -1,0 +1,239 @@
+"! <p class="shorttext synchronized">ABAP Unit Test for RAP Behavior</p>
+"! Unit test class for ${ENTITY_NAME} behavior implementation
+"! @author ${AUTHOR}
+"! @date ${DATE}
+"! @version 1.0
+"!
+"! Example usage:
+"!   Replace ${ENTITY_NAME} with your entity name (e.g., ZC_Travel)
+"!   Replace ${CLASS_NAME} with your test class name (e.g., ZCL_TC_TRAVEL)
+"!   Replace ${BEHAVIOR_CLASS} with your behavior implementation class
+"!   Add test methods for your specific validations, determinations, and actions
+"!
+CLASS ${CLASS_NAME} DEFINITION FOR TESTING
+  DURATION SHORT
+  RISK LEVEL HARMLESS.
+  
+  PRIVATE SECTION.
+    DATA:
+      mo_cut TYPE REF TO ${BEHAVIOR_CLASS}.
+    
+    METHODS:
+      setup,
+      teardown,
+      test_create FOR TESTING,
+      test_update FOR TESTING,
+      test_delete FOR TESTING,
+      test_validation_${VALIDATION_NAME} FOR TESTING,
+      test_determination_${DETERMINATION_NAME} FOR TESTING,
+      test_action_${ACTION_NAME} FOR TESTING.
+      
+ENDCLASS.
+
+CLASS ${CLASS_NAME} IMPLEMENTATION.
+  
+  METHOD setup.
+    " Setup test environment
+    " Create instance of behavior implementation class
+    mo_cut = NEW ${BEHAVIOR_CLASS}( ).
+  ENDMETHOD.
+  
+  METHOD teardown.
+    " Cleanup test environment
+    CLEAR mo_cut.
+  ENDMETHOD.
+  
+  METHOD test_create.
+    " Test create operation
+    
+    DATA(lt_keys) = VALUE ${ENTITY_NAME}( 
+      ( %key-${KEY_FIELD_1} = '${TEST_KEY_VALUE_1}'
+        %key-${KEY_FIELD_2} = '${TEST_KEY_VALUE_2}'
+        ${BUSINESS_FIELD_1} = '${TEST_VALUE_1}'
+        ${BUSINESS_FIELD_2} = '${TEST_VALUE_2}' )
+    ).
+    
+    " Execute create operation
+    MODIFY ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        CREATE FIELDS ( ${BUSINESS_FIELD_1} ${BUSINESS_FIELD_2} )
+        WITH lt_keys
+      MAPPED DATA(ls_mapped)
+      FAILED DATA(ls_failed)
+      REPORTED DATA(ls_reported).
+    
+    " Assertions
+    cl_abap_unit_assert=>assert_initial( ls_failed-${ENTITY_NAME} ).
+    cl_abap_unit_assert=>assert_initial( ls_reported-${ENTITY_NAME} ).
+    
+    " Verify created entity
+    READ ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        FIELDS ( ${BUSINESS_FIELD_1} ${BUSINESS_FIELD_2} )
+        WITH CORRESPONDING #( lt_keys )
+      RESULT DATA(lt_result).
+    
+    cl_abap_unit_assert=>assert_not_initial( lt_result ).
+    cl_abap_unit_assert=>assert_equals( 
+      exp = '${TEST_VALUE_1}'
+      act = lt_result[ 1 ]-${BUSINESS_FIELD_1} ).
+    
+  ENDMETHOD.
+  
+  METHOD test_update.
+    " Test update operation
+    
+    DATA(lt_keys) = VALUE ${ENTITY_NAME}( 
+      ( %key-${KEY_FIELD_1} = '${TEST_KEY_VALUE_1}'
+        %key-${KEY_FIELD_2} = '${TEST_KEY_VALUE_2}' )
+    ).
+    
+    " Execute update operation
+    MODIFY ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        UPDATE FIELDS ( ${BUSINESS_FIELD_1} )
+        WITH VALUE #( FOR ls_key IN lt_keys
+                      ( %tky = ls_key-%tky
+                        ${BUSINESS_FIELD_1} = '${UPDATED_VALUE}' ) )
+      MAPPED DATA(ls_mapped)
+      FAILED DATA(ls_failed)
+      REPORTED DATA(ls_reported).
+    
+    " Assertions
+    cl_abap_unit_assert=>assert_initial( ls_failed-${ENTITY_NAME} ).
+    cl_abap_unit_assert=>assert_initial( ls_reported-${ENTITY_NAME} ).
+    
+    " Verify updated entity
+    READ ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        FIELDS ( ${BUSINESS_FIELD_1} )
+        WITH CORRESPONDING #( lt_keys )
+      RESULT DATA(lt_result).
+    
+    cl_abap_unit_assert=>assert_not_initial( lt_result ).
+    cl_abap_unit_assert=>assert_equals( 
+      exp = '${UPDATED_VALUE}'
+      act = lt_result[ 1 ]-${BUSINESS_FIELD_1} ).
+    
+  ENDMETHOD.
+  
+  METHOD test_delete.
+    " Test delete operation
+    
+    DATA(lt_keys) = VALUE ${ENTITY_NAME}( 
+      ( %key-${KEY_FIELD_1} = '${TEST_KEY_VALUE_1}'
+        %key-${KEY_FIELD_2} = '${TEST_KEY_VALUE_2}' )
+    ).
+    
+    " Execute delete operation
+    MODIFY ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        DELETE FROM lt_keys
+      MAPPED DATA(ls_mapped)
+      FAILED DATA(ls_failed)
+      REPORTED DATA(ls_reported).
+    
+    " Assertions
+    cl_abap_unit_assert=>assert_initial( ls_failed-${ENTITY_NAME} ).
+    cl_abap_unit_assert=>assert_initial( ls_reported-${ENTITY_NAME} ).
+    
+    " Verify deleted entity
+    READ ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        ALL FIELDS
+        WITH CORRESPONDING #( lt_keys )
+      RESULT DATA(lt_result).
+    
+    cl_abap_unit_assert=>assert_initial( lt_result ).
+    
+  ENDMETHOD.
+  
+  METHOD test_validation_${VALIDATION_NAME}.
+    " Test validation logic
+    
+    DATA(lt_keys) = VALUE ${ENTITY_NAME}( 
+      ( %key-${KEY_FIELD_1} = '${TEST_KEY_VALUE_1}'
+        %key-${KEY_FIELD_2} = '${TEST_KEY_VALUE_2}'
+        ${VALIDATION_FIELD} = '' " Empty value to trigger validation
+        %control-${VALIDATION_FIELD} = if_abap_behv=>mk-on )
+    ).
+    
+    " Execute operation that triggers validation
+    MODIFY ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        UPDATE FIELDS ( ${VALIDATION_FIELD} )
+        WITH CORRESPONDING #( lt_keys )
+      MAPPED DATA(ls_mapped)
+      FAILED DATA(ls_failed)
+      REPORTED DATA(ls_reported).
+    
+    " Assertions - validation should fail
+    cl_abap_unit_assert=>assert_not_initial( ls_failed-${ENTITY_NAME} ).
+    cl_abap_unit_assert=>assert_not_initial( ls_reported-${ENTITY_NAME} ).
+    
+  ENDMETHOD.
+  
+  METHOD test_determination_${DETERMINATION_NAME}.
+    " Test determination logic
+    
+    DATA(lt_keys) = VALUE ${ENTITY_NAME}( 
+      ( %key-${KEY_FIELD_1} = '${TEST_KEY_VALUE_1}'
+        %key-${KEY_FIELD_2} = '${TEST_KEY_VALUE_2}'
+        ${SOURCE_FIELD} = '${TEST_VALUE_1}'
+        %control-${SOURCE_FIELD} = if_abap_behv=>mk-on )
+    ).
+    
+    " Execute operation that triggers determination
+    MODIFY ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        UPDATE FIELDS ( ${SOURCE_FIELD} )
+        WITH CORRESPONDING #( lt_keys )
+      MAPPED DATA(ls_mapped)
+      FAILED DATA(ls_failed)
+      REPORTED DATA(ls_reported).
+    
+    " Assertions
+    cl_abap_unit_assert=>assert_initial( ls_failed-${ENTITY_NAME} ).
+    
+    " Verify determination result
+    READ ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        FIELDS ( ${TARGET_FIELD} )
+        WITH CORRESPONDING #( lt_keys )
+      RESULT DATA(lt_result).
+    
+    cl_abap_unit_assert=>assert_not_initial( lt_result ).
+    " Add specific assertion for expected determination result
+    " cl_abap_unit_assert=>assert_equals( 
+    "   exp = '${EXPECTED_VALUE}'
+    "   act = lt_result[ 1 ]-${TARGET_FIELD} ).
+    
+  ENDMETHOD.
+  
+  METHOD test_action_${ACTION_NAME}.
+    " Test custom action
+    
+    DATA(lt_keys) = VALUE ${ENTITY_NAME}( 
+      ( %key-${KEY_FIELD_1} = '${TEST_KEY_VALUE_1}'
+        %key-${KEY_FIELD_2} = '${TEST_KEY_VALUE_2}' )
+    ).
+    
+    " Execute action
+    MODIFY ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        EXECUTE ${ACTION_NAME} FROM lt_keys
+      MAPPED DATA(ls_mapped)
+      FAILED DATA(ls_failed)
+      REPORTED DATA(ls_reported)
+      RESULT DATA(lt_result).
+    
+    " Assertions
+    cl_abap_unit_assert=>assert_initial( ls_failed-${ENTITY_NAME} ).
+    cl_abap_unit_assert=>assert_not_initial( lt_result ).
+    
+    " Verify action result
+    " Add specific assertions based on action behavior
+    
+  ENDMETHOD.
+  
+ENDCLASS.

@@ -1,0 +1,124 @@
+{
+  "metadata": {
+    "name": "CPI Error Handling Patterns",
+    "description": "Exception handling, retry strategies, and error routing patterns for SAP CPI",
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-30"
+  },
+  "exceptionHandling": {
+    "exceptionSubprocess": {
+      "description": "Dedicated subprocess for error handling",
+      "implementation": "Add Exception Subprocess to integration process",
+      "steps": [
+        "Capture error details (exception message, stack trace)",
+        "Log error with business context",
+        "Set error properties for monitoring",
+        "Send alert notification if critical",
+        "Route to dead letter queue or error handling flow"
+      ],
+      "properties": [
+        {"name": "SAP_ErrorModelStepID", "description": "Step where error occurred"},
+        {"name": "SAP_ErrorText", "description": "Error description"},
+        {"name": "ErrorMessage", "description": "Custom error message"},
+        {"name": "ErrorTimestamp", "description": "When error occurred"},
+        {"name": "ErrorCorrelationId", "description": "Correlation ID for tracing"}
+      ]
+    },
+    "tryCatchPattern": {
+      "description": "Standard try-catch in Groovy scripts",
+      "pattern": "try {\n  // processing logic\n} catch (Exception e) {\n  message.setProperty('ErrorMessage', e.message)\n  message.setProperty('ErrorScript', 'ScriptName')\n  messageLog.addAttachmentAsString('Error', e.stackTrace.join('\\n'), 'text/plain')\n  throw e\n}",
+      "bestPractices": [
+        "Always log error details before re-throwing",
+        "Set meaningful error properties",
+        "Include stack trace for debugging",
+        "Preserve original exception with cause"
+      ]
+    }
+  },
+  "retryStrategies": {
+    "immediateRetry": {
+      "description": "Retry immediately after failure",
+      "useCase": "Transient network issues",
+      "configuration": {"retryCount": 3, "delay": "0s"}
+    },
+    "fixedDelay": {
+      "description": "Retry with fixed delay between attempts",
+      "useCase": "Rate limiting, temporary unavailability",
+      "configuration": {"retryCount": 3, "delay": "5s"}
+    },
+    "exponentialBackoff": {
+      "description": "Increasing delay between retries",
+      "useCase": "System recovery, load management",
+      "configuration": {"retryCount": 5, "initialDelay": "1s", "multiplier": 2, "maxDelay": "60s"},
+      "pattern": "delays: 1s, 2s, 4s, 8s, 16s"
+    },
+    "customRetry": {
+      "description": "Groovy-based retry with custom logic",
+      "pattern": "def maxRetries = 3\ndef retryCount = message.getProperty('RetryCount') ?: 0\nif (retryCount < maxRetries) {\n  message.setProperty('RetryCount', retryCount + 1)\n  sleep(1000 * Math.pow(2, retryCount))\n  // retry logic\n} else {\n  throw new Exception('Max retries exceeded')\n}"
+    }
+  },
+  "errorRouting": {
+    "deadLetterChannel": {
+      "description": "Route failed messages to error queue",
+      "implementation": "JMS queue for failed messages",
+      "purposes": ["Manual review", "Reprocessing", "Audit trail"]
+    },
+    "errorNotification": {
+      "description": "Send alerts on error",
+      "channels": ["Email", "Slack webhook", "Microsoft Teams", "SNMP trap"],
+      "content": ["Error type", "Timestamp", "Message ID", "Business context"]
+    },
+    "errorTransformation": {
+      "description": "Transform error to standard format",
+      "pattern": "Create error response with code, message, details, timestamp"
+    }
+  },
+  "circuitBreaker": {
+    "description": "Prevent cascading failures",
+    "states": ["CLOSED", "OPEN", "HALF_OPEN"],
+    "configuration": {
+      "failureThreshold": 5,
+      "recoveryTimeout": "60s",
+      "successThreshold": 2
+    },
+    "implementation": "Track failures in property, check before external calls"
+  },
+  "errorCategories": {
+    "transient": {
+      "description": "Temporary errors that may resolve",
+      "examples": ["Network timeout", "Service unavailable", "Rate limited"],
+      "strategy": "Retry with backoff"
+    },
+    "permanent": {
+      "description": "Errors that won't resolve with retry",
+      "examples": ["Invalid input", "Authorization failure", "Resource not found"],
+      "strategy": "Log and route to error handling"
+    },
+    "business": {
+      "description": "Business rule violations",
+      "examples": ["Validation failure", "Duplicate entry", "Insufficient funds"],
+      "strategy": "Return business error response"
+    }
+  },
+  "bestPractices": [
+    "Always implement exception subprocess for production flows",
+    "Use correlation IDs for end-to-end tracing",
+    "Log sufficient context for debugging",
+    "Distinguish between retryable and non-retryable errors",
+    "Set proper alerts for critical errors",
+    "Use dead letter queues for message preservation",
+    "Implement idempotency for retry scenarios",
+    "Monitor error rates and patterns",
+    "Document error handling in flow documentation",
+    "Test error scenarios during development"
+  ],
+  "antiPatterns": [
+    "Swallowing exceptions without logging",
+    "Retrying non-retryable errors indefinitely",
+    "Not preserving original message on error",
+    "Missing correlation IDs for tracing",
+    "Logging sensitive data in error messages",
+    "Not implementing circuit breaker for external calls",
+    "Ignoring error monitoring and alerting"
+  ]
+}

@@ -1,0 +1,66 @@
+"! <p class="shorttext synchronized">${CLASS_DESCRIPTION}</p>
+"! Service class implementing ${INTERFACE_NAME}
+"! @author ${AUTHOR}
+"! @date ${DATE}
+"! @version 1.0
+"!
+"! Purpose: ${PURPOSE}
+"!
+"! Example usage:
+"!   DATA(service) = NEW ${CLASS_NAME}( repository = NEW ${REPOSITORY_CLASS_NAME}( ) ).
+"!   DATA(result) = service->${METHOD_NAME}( ${PARAMETER_NAME} = 'value' ).
+"!
+CLASS ${CLASS_NAME} DEFINITION PUBLIC FINAL CREATE PUBLIC.
+  PUBLIC SECTION.
+    INTERFACES ${INTERFACE_NAME}.
+    
+    "! Constructor with dependency injection
+    "! @parameter repository | Repository instance for data access
+    METHODS constructor
+      IMPORTING
+        repository TYPE REF TO ${REPOSITORY_INTERFACE_NAME}
+      RAISING
+        ${EXCEPTION_CLASS_NAME}.
+        
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+    DATA repository TYPE REF TO ${REPOSITORY_INTERFACE_NAME}.
+ENDCLASS.
+
+CLASS ${CLASS_NAME} IMPLEMENTATION.
+  
+  METHOD constructor.
+    " Validate input
+    IF repository IS NOT BOUND.
+      RAISE EXCEPTION TYPE ${EXCEPTION_CLASS_NAME}
+        EXPORTING
+          textid = ${EXCEPTION_CLASS_NAME}=>${CONSTANT_NAME}
+          previous = VALUE #( ).
+    ENDIF.
+    
+    " Store dependency
+    me->repository = repository.
+  ENDMETHOD.
+  
+  METHOD ${INTERFACE_NAME}~${METHOD_NAME}.
+    " Example method implementation
+    " Validate input parameters
+    IF ${PARAMETER_NAME} IS INITIAL.
+      RAISE EXCEPTION TYPE ${EXCEPTION_CLASS_NAME}
+        EXPORTING
+          textid = ${EXCEPTION_CLASS_NAME}=>${CONSTANT_NAME}
+          previous = VALUE #( ).
+    ENDIF.
+    
+    " Delegate to repository
+    repository->${REPOSITORY_METHOD_NAME}(
+      EXPORTING
+        ${PARAMETER_NAME} = ${PARAMETER_NAME}
+      IMPORTING
+        result = result
+    ).
+    
+    " Additional business logic can be added here
+  ENDMETHOD.
+  
+ENDCLASS.

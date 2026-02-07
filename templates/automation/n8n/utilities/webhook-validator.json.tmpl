@@ -1,0 +1,199 @@
+{
+  "name": "{{WORKFLOW_NAME}} - Webhook Validator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "{{HTTP_METHOD}}",
+        "path": "{{WEBHOOK_PATH}}",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger-{{NODE_ID}}",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "{{WEBHOOK_ID}}"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate webhook signature\nconst input = $input.first();\nconst headers = input.json.headers || {};\nconst body = input.json.body || input.json;\n\nconst crypto = require('crypto');\nconst secret = '{{WEBHOOK_SECRET}}';\n\n// Get signature from headers (support multiple formats)\nconst signature = headers['x-signature'] || \n                  headers['x-hub-signature-256'] || \n                  headers['x-signature-256'] ||\n                  headers['authorization']?.replace('Bearer ', '') ||\n                  '';\n\nif (!signature && secret) {\n  return [{\n    json: {\n      valid: false,\n      error: 'Missing signature header',\n      headers: Object.keys(headers)\n    }\n  }];\n}\n\n// Calculate expected signature\nconst payloadString = typeof body === 'string' ? body : JSON.stringify(body);\nconst expectedSignature = crypto\n  .createHmac('sha256', secret)\n  .update(payloadString)\n  .digest('hex');\n\n// Compare signatures (handle different formats)\nlet isValid = false;\nif (signature.includes('sha256=')) {\n  isValid = signature === `sha256=${expectedSignature}`;\n} else if (signature.includes('sha1=')) {\n  const expectedSha1 = crypto\n    .createHmac('sha1', secret)\n    .update(payloadString)\n    .digest('hex');\n  isValid = signature === `sha1=${expectedSha1}`;\n} else {\n  // Direct comparison\n  isValid = signature === expectedSignature || signature === `sha256=${expectedSignature}`;\n}\n\nreturn [{\n  json: {\n    valid: isValid,\n    signature_provided: signature ? 'yes' : 'no',\n    signature_format: signature.includes('sha256=') ? 'sha256' : signature.includes('sha1=') ? 'sha1' : 'raw',\n    payload_size: payloadString.length,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "validate-signature-{{NODE_ID}}",
+      "name": "Validate Signature",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate payload structure\nconst validationResult = $('Validate Signature').first().json;\nconst input = $input.first();\nconst body = input.json.body || input.json;\n\nif (!validationResult.valid) {\n  return [{\n    json: {\n      ...validationResult,\n      payload_valid: false,\n      error: 'Signature validation failed'\n    }\n  }];\n}\n\n// Validate required fields\nconst requiredFields = {{REQUIRED_FIELDS}};\nconst errors = [];\n\nfor (const field of requiredFields) {\n  if (!body[field] && body[field] !== 0 && body[field] !== false) {\n    errors.push(`Missing required field: ${field}`);\n  }\n}\n\n// Validate field types\n{{#IF FIELD_VALIDATIONS}}\n{{FIELD_VALIDATIONS}}\n{{/IF}}\n\n// Validate payload size\nconst maxSize = {{MAX_PAYLOAD_SIZE}};\nconst payloadSize = JSON.stringify(body).length;\nif (payloadSize > maxSize) {\n  errors.push(`Payload size ${payloadSize} exceeds maximum ${maxSize}`);\n}\n\nconst payloadValid = errors.length === 0;\n\nreturn [{\n  json: {\n    ...validationResult,\n    payload_valid: payloadValid,\n    validation_errors: errors,\n    payload_size: payloadSize,\n    required_fields_present: requiredFields.filter(field => body[field] !== undefined).length,\n    total_required_fields: requiredFields.length\n  }\n}];"
+      },
+      "id": "validate-payload-{{NODE_ID}}",
+      "name": "Validate Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "valid-check",
+              "leftValue": "={{ $json.valid && $json.payload_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ]
+        }
+      },
+      "id": "if-valid-{{NODE_ID}}",
+      "name": "IF Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "validated-payload",
+              "name": "validated_payload",
+              "value": "={{ $input.first().json.body || $input.first().json }}",
+              "type": "object"
+            },
+            {
+              "id": "validation-metadata",
+              "name": "validation_metadata",
+              "value": "={{ $('Validate Payload').first().json }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "format-valid-{{NODE_ID}}",
+      "name": "Format Valid",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 200,
+        "responseBody": "={{ { \"status\": \"valid\", \"message\": \"Webhook validated successfully\" } }}",
+        "options": {}
+      },
+      "id": "respond-valid-{{NODE_ID}}",
+      "name": "Respond Valid",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 400,
+        "responseBody": "={{ { \"status\": \"invalid\", \"error\": \"Webhook validation failed\", \"details\": $('Validate Payload').first().json.validation_errors || [$('Validate Signature').first().json.error] } }}",
+        "options": {}
+      },
+      "id": "respond-invalid-{{NODE_ID}}",
+      "name": "Respond Invalid",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 400]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Signature",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Signature": {
+      "main": [
+        [
+          {
+            "node": "Validate Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Payload": {
+      "main": [
+        [
+          {
+            "node": "IF Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Valid": {
+      "main": [
+        [
+          {
+            "node": "Format Valid",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Invalid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Valid": {
+      "main": [
+        [
+          {
+            "node": "Respond Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "{{TIMESTAMP}}",
+      "updatedAt": "{{TIMESTAMP}}",
+      "id": "{{TAG_ID}}",
+      "name": "webhook-validator"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "{{TIMESTAMP}}",
+  "versionId": "{{VERSION_ID}}"
+}

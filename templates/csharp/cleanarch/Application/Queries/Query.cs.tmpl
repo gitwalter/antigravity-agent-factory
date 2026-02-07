@@ -1,0 +1,115 @@
+using MediatR;
+
+namespace {{NAMESPACE}}.Application.Queries;
+
+/// <summary>
+/// {{CLASS_NAME}} - CQRS Query
+/// 
+/// Purpose: {{QUERY_PURPOSE}}
+/// Author: {{AUTHOR}}
+/// Created: {{DATE}}
+/// 
+/// Represents a query in the CQRS pattern.
+/// Queries read data and do not modify state.
+/// </summary>
+public record {{CLASS_NAME}}Query : IRequest<{{CLASS_NAME}}QueryResult>
+{
+    /// <summary>
+    /// Gets or sets the entity ID to query.
+    /// </summary>
+    public {{ID_TYPE}}? Id { get; init; }
+
+    /// <summary>
+    /// Gets or sets the page number for pagination.
+    /// </summary>
+    public int PageNumber { get; init; } = 1;
+
+    /// <summary>
+    /// Gets or sets the page size for pagination.
+    /// </summary>
+    public int PageSize { get; init; } = 20;
+
+    /// <summary>
+    /// Gets or sets the search filter.
+    /// </summary>
+    public string? SearchTerm { get; init; }
+
+    // TODO: Add other query parameters
+}
+
+/// <summary>
+/// Result returned by {{CLASS_NAME}}Query handler.
+/// </summary>
+public record {{CLASS_NAME}}QueryResult
+{
+    /// <summary>
+    /// Gets or sets the items.
+    /// </summary>
+    public IReadOnlyList<{{CLASS_NAME}}Dto> Items { get; init; } = Array.Empty<{{CLASS_NAME}}Dto>();
+
+    /// <summary>
+    /// Gets or sets the total count.
+    /// </summary>
+    public int TotalCount { get; init; }
+
+    /// <summary>
+    /// Gets or sets the page number.
+    /// </summary>
+    public int PageNumber { get; init; }
+
+    /// <summary>
+    /// Gets or sets the page size.
+    /// </summary>
+    public int PageSize { get; init; }
+
+    /// <summary>
+    /// Gets the total pages.
+    /// </summary>
+    public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
+
+    /// <summary>
+    /// Gets a value indicating whether there is a previous page.
+    /// </summary>
+    public bool HasPreviousPage => PageNumber > 1;
+
+    /// <summary>
+    /// Gets a value indicating whether there is a next page.
+    /// </summary>
+    public bool HasNextPage => PageNumber < TotalPages;
+}
+
+/// <summary>
+/// DTO for {{CLASS_NAME}} query results.
+/// </summary>
+public record {{CLASS_NAME}}Dto
+{
+    /// <summary>
+    /// Gets or sets the ID.
+    /// </summary>
+    public {{ID_TYPE}} Id { get; init; }
+
+    /// <summary>
+    /// Gets or sets the name.
+    /// </summary>
+    public string Name { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the description.
+    /// </summary>
+    public string? Description { get; init; }
+
+    /// <summary>
+    /// Gets or sets the status.
+    /// </summary>
+    public string Status { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the creation timestamp.
+    /// </summary>
+    public DateTime CreatedAt { get; init; }
+
+    /// <summary>
+    /// Gets or sets the last update timestamp.
+    /// </summary>
+    public DateTime UpdatedAt { get; init; }
+}

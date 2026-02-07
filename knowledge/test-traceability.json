@@ -1,0 +1,278 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Test Traceability Patterns",
+  "description": "Patterns and metadata schemas for linking BDD scenarios to TDD unit tests with full traceability",
+  "version": "1.0.0",
+  "traceabilityModel": {
+    "description": "Bidirectional linking between BDD scenarios and TDD tests",
+    "relationships": {
+      "scenario-implements-tests": {
+        "description": "A BDD scenario is implemented by one or more unit tests",
+        "cardinality": "1:N",
+        "direction": "scenario → tests"
+      },
+      "test-validates-scenario": {
+        "description": "A unit test validates part of a BDD scenario",
+        "cardinality": "N:1",
+        "direction": "test → scenario"
+      },
+      "test-validates-step": {
+        "description": "A unit test validates a specific Given/When/Then step",
+        "cardinality": "N:1",
+        "direction": "test → step"
+      }
+    }
+  },
+  "metadataSchemas": {
+    "scenarioMetadata": {
+      "description": "Metadata attached to BDD scenarios for traceability",
+      "format": "Gherkin tags and comments",
+      "fields": {
+        "implementedBy": {
+          "description": "Unit tests that implement this scenario",
+          "format": "@implements(test_file:test_class:test_method)",
+          "example": "@implements(test_user_registration.py:TestRegistration:test_valid_email)"
+        },
+        "traceId": {
+          "description": "Unique identifier for traceability",
+          "format": "@trace-id(uuid)",
+          "example": "@trace-id(550e8400-e29b-41d4-a716-446655440000)"
+        },
+        "generatedFrom": {
+          "description": "Source test if scenario was auto-generated",
+          "format": "@generated-from(test_file:test_method)",
+          "example": "@generated-from(test_auth.py:test_login_success)"
+        },
+        "lastSynced": {
+          "description": "Timestamp of last synchronization",
+          "format": "@synced(ISO8601)",
+          "example": "@synced(2024-01-15T10:30:00Z)"
+        }
+      },
+      "example": {
+        "gherkin": "@trace-id(abc123) @implements(test_registration.py:TestRegistration:test_valid_email)\n@implements(test_registration.py:TestRegistration:test_duplicate_rejected)\nScenario: User registers with valid email\n  Given the registration page is displayed\n  When I submit a valid email address\n  Then my account should be created"
+      }
+    },
+    "testMetadata": {
+      "description": "Metadata attached to TDD tests for traceability",
+      "format": "Decorators, annotations, or docstrings",
+      "fields": {
+        "validatesScenario": {
+          "description": "BDD scenario this test validates",
+          "format": "@scenario('feature_file:scenario_name')",
+          "example": "@scenario('registration.feature:User registers with valid email')"
+        },
+        "validatesStep": {
+          "description": "Specific step this test validates",
+          "format": "@step('Given|When|Then step text')",
+          "example": "@step('When I submit a valid email address')"
+        },
+        "traceId": {
+          "description": "Trace ID linking to scenario",
+          "format": "@trace-id('uuid')",
+          "example": "@trace-id('550e8400-e29b-41d4-a716-446655440000')"
+        },
+        "generatedFrom": {
+          "description": "Source scenario if test was auto-generated",
+          "format": "@generated-from('feature:scenario')",
+          "example": "@generated-from('registration.feature:User registers with valid email')"
+        }
+      },
+      "examples": {
+        "python": {
+          "decorator": "@scenario('registration.feature:User registers with valid email')\ndef test_valid_email_creates_account():\n    \"\"\"Validates: When I submit a valid email address\"\"\"\n    pass",
+          "pytest_marker": "@pytest.mark.scenario('registration.feature:User registers with valid email')\ndef test_valid_email_creates_account():\n    pass"
+        },
+        "java": {
+          "annotation": "@Scenario(feature = \"registration.feature\", name = \"User registers with valid email\")\n@Test\nvoid testValidEmailCreatesAccount() { }"
+        },
+        "typescript": {
+          "decorator": "@scenario('registration.feature:User registers with valid email')\ntest('valid email creates account', () => { });"
+        }
+      }
+    }
+  },
+  "traceabilityReports": {
+    "coverageMatrix": {
+      "description": "Matrix showing which scenarios are covered by which tests",
+      "format": "JSON or Markdown table",
+      "schema": {
+        "feature": "string",
+        "scenario": "string",
+        "traceId": "string",
+        "implementingTests": [
+          {
+            "testFile": "string",
+            "testClass": "string",
+            "testMethod": "string",
+            "coversSteps": ["Given...", "When...", "Then..."]
+          }
+        ],
+        "coverageStatus": "full | partial | none"
+      },
+      "example": {
+        "feature": "registration.feature",
+        "scenario": "User registers with valid email",
+        "traceId": "abc123",
+        "implementingTests": [
+          {
+            "testFile": "test_registration.py",
+            "testClass": "TestRegistration",
+            "testMethod": "test_valid_email",
+            "coversSteps": ["When I submit a valid email address", "Then my account should be created"]
+          }
+        ],
+        "coverageStatus": "full"
+      }
+    },
+    "orphanedArtifacts": {
+      "description": "Identify tests or scenarios without links",
+      "types": {
+        "orphanedTests": "Unit tests with no linked scenario",
+        "orphanedScenarios": "Scenarios with no implementing tests",
+        "brokenLinks": "Links pointing to non-existent artifacts"
+      }
+    },
+    "syncStatus": {
+      "description": "Status of bidirectional synchronization",
+      "states": {
+        "synced": "Both artifacts are in sync",
+        "scenario-ahead": "Scenario has changes not reflected in tests",
+        "test-ahead": "Tests have changes not reflected in scenario",
+        "conflict": "Both have conflicting changes"
+      }
+    }
+  },
+  "translationPatterns": {
+    "bddToTddMapping": {
+      "description": "How Gherkin elements map to test code",
+      "mappings": {
+        "Feature": {
+          "mapsTo": "Test module/class",
+          "example": {
+            "gherkin": "Feature: User Registration",
+            "python": "class TestUserRegistration:",
+            "java": "class UserRegistrationTest"
+          }
+        },
+        "Scenario": {
+          "mapsTo": "Test method",
+          "example": {
+            "gherkin": "Scenario: User registers with valid email",
+            "python": "def test_user_registers_with_valid_email(self):",
+            "java": "void testUserRegistersWithValidEmail()"
+          }
+        },
+        "Given": {
+          "mapsTo": "Test setup/arrange",
+          "example": {
+            "gherkin": "Given the registration page is displayed",
+            "python": "# Arrange\npage = RegistrationPage()",
+            "java": "// Arrange\nRegistrationPage page = new RegistrationPage();"
+          }
+        },
+        "When": {
+          "mapsTo": "Test action/act",
+          "example": {
+            "gherkin": "When I submit a valid email address",
+            "python": "# Act\nresult = page.submit('test@example.com')",
+            "java": "// Act\nResult result = page.submit(\"test@example.com\");"
+          }
+        },
+        "Then": {
+          "mapsTo": "Test assertion/assert",
+          "example": {
+            "gherkin": "Then my account should be created",
+            "python": "# Assert\nassert result.account_created is True",
+            "java": "// Assert\nassertTrue(result.isAccountCreated());"
+          }
+        },
+        "ScenarioOutline": {
+          "mapsTo": "Parameterized test",
+          "example": {
+            "gherkin": "Scenario Outline: Email validation\n  Examples:\n    | email | valid |\n    | a@b.c | true |",
+            "python": "@pytest.mark.parametrize('email,valid', [('a@b.c', True)])\ndef test_email_validation(email, valid):",
+            "java": "@ParameterizedTest\n@CsvSource({\"a@b.c, true\"})\nvoid testEmailValidation(String email, boolean valid)"
+          }
+        }
+      }
+    },
+    "tddToBddMapping": {
+      "description": "How test code maps to Gherkin elements",
+      "extractionPatterns": {
+        "testClassName": {
+          "pattern": "Test(\\w+) or (\\w+)Test",
+          "mapsTo": "Feature name",
+          "transformation": "Remove 'Test' prefix/suffix, add spaces"
+        },
+        "testMethodName": {
+          "pattern": "test_(\\w+)_should_(\\w+)_when_(\\w+)",
+          "mapsTo": "Scenario: {subject} should {outcome} when {condition}"
+        },
+        "arrangeSection": {
+          "patterns": ["# Arrange", "// Arrange", "given()", "@Before"],
+          "mapsTo": "Given steps"
+        },
+        "actSection": {
+          "patterns": ["# Act", "// Act", "when()"],
+          "mapsTo": "When steps"
+        },
+        "assertSection": {
+          "patterns": ["# Assert", "// Assert", "assert", "expect", "then()"],
+          "mapsTo": "Then steps"
+        }
+      }
+    }
+  },
+  "synchronizationRules": {
+    "description": "Rules for bidirectional synchronization",
+    "conflictResolution": {
+      "strategies": {
+        "scenario-wins": "BDD scenario takes precedence",
+        "test-wins": "TDD test takes precedence",
+        "manual": "Prompt user to resolve conflicts",
+        "merge": "Attempt automatic merge"
+      },
+      "default": "manual"
+    },
+    "updatePropagation": {
+      "scenarioChanged": [
+        "Regenerate affected test stubs",
+        "Preserve existing test implementation",
+        "Update only structure and metadata",
+        "Flag implementation gaps"
+      ],
+      "testChanged": [
+        "Regenerate affected scenario",
+        "Use declarative language abstraction",
+        "Preserve scenario tags and metadata",
+        "Update examples from test data"
+      ]
+    },
+    "protectedElements": {
+      "description": "Elements that should not be overwritten during sync",
+      "inTests": ["Implementation code inside test methods", "Custom assertions", "Helper methods"],
+      "inScenarios": ["Manual refinements to language", "Additional context comments", "Custom tags"]
+    }
+  },
+  "integrationHooks": {
+    "ci": {
+      "description": "CI/CD integration for traceability validation",
+      "checks": [
+        "Validate all scenarios have implementing tests",
+        "Validate all traced tests reference valid scenarios",
+        "Check for synchronization drift",
+        "Generate traceability report"
+      ]
+    },
+    "ide": {
+      "description": "IDE integration features",
+      "features": [
+        "Navigate from scenario to implementing tests",
+        "Navigate from test to source scenario",
+        "Show traceability status in gutter",
+        "Quick-fix for orphaned artifacts"
+      ]
+    }
+  }
+}

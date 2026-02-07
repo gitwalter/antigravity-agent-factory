@@ -1,0 +1,654 @@
+{
+  "metadata": {
+    "patternId": "grounding-verification",
+    "patternName": "Grounding Verification Base Pattern",
+    "category": "core",
+    "stackAgnostic": true,
+    "description": "Universal two-pass verification for LLM grounding using confidence delta comparison",
+    "composable": true,
+    "version": "1.0.0"
+  },
+  "credits": {
+    "inspiration": "Leon Chlon (https://github.com/lchlon)",
+    "project": "Pythea/Strawberry - https://github.com/leochlon/pythea",
+    "concept": "Information-theoretic approach to hallucination detection adapted for LLM-native verification",
+    "adaptation": "Confidence delta method for environments without logprobs access"
+  },
+  "frontmatter": {
+    "name": "grounding-verification",
+    "description": "Universal two-pass verification for any LLM grounding scenario. Skills opt-in by specifying a verification profile.",
+    "type": "skill",
+    "composable": true
+  },
+  "sections": {
+    "title": "Grounding Verification Skill (Base Pattern)",
+    "introduction": "Universal two-pass verification for all LLM grounding scenarios. Detects when the LLM may be confabulating by comparing confidence between scrubbed and full evidence passes. Skills opt-in by selecting a verification profile matching their domain.",
+    "concept": {
+      "description": "If removing specific identifiers from evidence doesn't significantly change LLM confidence, the evidence may not have been used - indicating potential confabulation.",
+      "principle": "Confidence delta comparison as a pragmatic approximation of information-theoretic verification (since logprobs are unavailable in Antigravity)"
+    },
+    "whenToUse": [
+      "After collecting evidence from any grounding skill",
+      "Before committing to implementation decisions",
+      "When grounding confidence is MEDIUM",
+      "For critical claims that could cause implementation failures",
+      "When multiple sources provide conflicting information"
+    ],
+    "process": [
+      {
+        "step": 1,
+        "name": "Collect Evidence Spans",
+        "description": "Gather all evidence with sources"
+      },
+      {
+        "step": 2,
+        "name": "Extract Claims",
+        "description": "Identify specific, falsifiable claims to verify"
+      },
+      {
+        "step": 3,
+        "name": "Scrubbed Evidence Test",
+        "description": "Evaluate claim with anonymized evidence (identifiers replaced by placeholders)"
+      },
+      {
+        "step": 4,
+        "name": "Full Evidence Test",
+        "description": "Evaluate claim with complete evidence"
+      },
+      {
+        "step": 5,
+        "name": "Calculate Confidence Delta",
+        "description": "delta = full_confidence - scrubbed_confidence"
+      },
+      {
+        "step": 6,
+        "name": "Assign Verification Status",
+        "description": "VERIFIED/PLAUSIBLE/SUSPICIOUS/UNSUPPORTED based on delta thresholds"
+      },
+      {
+        "step": 7,
+        "name": "Generate Report",
+        "description": "Document results and recommendation"
+      }
+    ],
+    "importantRules": [
+      "ALWAYS perform both scrubbed and full evidence tests",
+      "If scrubbed test passes too easily (low delta), be SUSPICIOUS",
+      "If UNSUPPORTED, do NOT proceed - gather more evidence or ask user",
+      "Select the appropriate profile for your domain (strawberry, code, documentation, data, security)",
+      "All actions must align with core axioms (A1: Verifiability, A2: User Primacy, A3: Transparency, A4: Non-Harm, A5: Consistency)"
+    ]
+  },
+  "algorithm": {
+    "name": "Two-Pass Confidence Delta",
+    "method": "confidence_delta",
+    "rationale": "If removing specific identifiers from evidence doesn't significantly change LLM confidence, the evidence may not have been used - indicating potential confabulation.",
+    "passes": [
+      {
+        "name": "scrubbed",
+        "description": "Evaluate claim against anonymized evidence with identifiers replaced by placeholders",
+        "purpose": "Establish baseline confidence without specific identifiers"
+      },
+      {
+        "name": "full",
+        "description": "Evaluate claim against complete evidence with all identifiers intact",
+        "purpose": "Measure confidence with full context"
+      }
+    ],
+    "comparison": {
+      "formula": "delta = full_confidence - scrubbed_confidence",
+      "interpretation": [
+        "High delta (>=threshold): Evidence is essential - identifiers matter",
+        "Low delta (<threshold): Evidence may not be used - possible confabulation",
+        "Negative delta: Anomalous - investigate (full should not be less confident)"
+      ]
+    }
+  },
+  "promptTemplates": {
+    "systemPrompt": "You are a strict textual entailment verifier. Your task is to determine whether a CLAIM is supported by the provided CONTEXT. You must be rigorous: only confirm claims that are explicitly entailed by the evidence, not merely plausible or consistent with it.",
+    "scrubbedEvaluation": {
+      "description": "Prompt for evaluating claim against scrubbed (anonymized) evidence",
+      "template": "CONTEXT (identifiers removed):\n{SCRUBBED_EVIDENCE}\n\nCLAIM: {CLAIM}\n\nBased ONLY on this context with placeholders, determine if the claim can be verified.\n\nRespond with JSON:\n```json\n{\n  \"verdict\": \"ENTAILED\" | \"CONTRADICTED\" | \"UNSURE\",\n  \"confidence\": <0.0-1.0>,\n  \"reasoning\": \"<brief explanation>\"\n}\n```"
+    },
+    "fullEvaluation": {
+      "description": "Prompt for evaluating claim against full evidence with identifiers",
+      "template": "CONTEXT:\n{FULL_EVIDENCE}\n\nCLAIM: {CLAIM}\n\nBased ONLY on this context, determine if the claim is verified.\n\nRespond with JSON:\n```json\n{\n  \"verdict\": \"ENTAILED\" | \"CONTRADICTED\" | \"UNSURE\",\n  \"confidence\": <0.0-1.0>,\n  \"reasoning\": \"<brief explanation>\"\n}\n```"
+    },
+    "verdictRules": [
+      "Reply ENTAILED if the claim is explicitly supported by the context",
+      "Reply CONTRADICTED if the context explicitly contradicts the claim",
+      "Reply UNSURE if the context neither confirms nor denies the claim, or if context contains only questions/instructions"
+    ]
+  },
+  "responseSchema": {
+    "type": "object",
+    "description": "Expected JSON response format from LLM evaluation",
+    "properties": {
+      "verdict": {
+        "type": "string",
+        "enum": [
+          "ENTAILED",
+          "CONTRADICTED",
+          "UNSURE"
+        ],
+        "description": "The entailment verdict"
+      },
+      "confidence": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 1.0,
+        "description": "Confidence in the verdict (0.0 = no confidence, 1.0 = certain)"
+      },
+      "reasoning": {
+        "type": "string",
+        "description": "Brief explanation of the verdict"
+      }
+    },
+    "required": [
+      "verdict",
+      "confidence"
+    ]
+  },
+  "verificationStatuses": {
+    "VERIFIED": {
+      "description": "Evidence is essential - removing identifiers significantly reduces confidence",
+      "action": "Proceed with confidence"
+    },
+    "PLAUSIBLE": {
+      "description": "Evidence supports claim but delta is moderate",
+      "action": "Proceed with caution, note uncertainty"
+    },
+    "SUSPICIOUS": {
+      "description": "Confidence doesn't change much - LLM may be confabulating",
+      "action": "Add warning, consider if claim is from evidence or pattern guess"
+    },
+    "UNSUPPORTED": {
+      "description": "Evidence does not support claim",
+      "action": "STOP - gather more evidence or ask user"
+    }
+  },
+  "errorHandling": {
+    "description": "Fallback procedures for handling LLM response issues",
+    "parseFailure": {
+      "description": "LLM response is not valid JSON or missing required fields",
+      "action": "retry_with_simplified_prompt",
+      "maxRetries": 2,
+      "simplifiedPrompt": "Answer only: ENTAILED, CONTRADICTED, or UNSURE. Then give confidence as a decimal (0.0-1.0).",
+      "fallback": "extract_verdict_via_regex"
+    },
+    "conflictingVerdicts": {
+      "description": "Scrubbed and full passes give contradictory results",
+      "action": "mark_SUSPICIOUS",
+      "additionalAction": "log_for_review",
+      "requiresUserConfirmation": true
+    },
+    "unsureResponse": {
+      "description": "LLM returns UNSURE verdict",
+      "action": "request_clarification",
+      "fallback": "mark_PLAUSIBLE",
+      "guidance": "If UNSURE on scrubbed but ENTAILED on full \u2192 treat as VERIFIED"
+    },
+    "lowConfidenceBothPasses": {
+      "description": "Both passes return low confidence",
+      "action": "mark_UNSUPPORTED",
+      "guidance": "Gather more evidence before proceeding"
+    },
+    "regexFallbackPatterns": {
+      "verdict": "(ENTAILED|CONTRADICTED|UNSURE)",
+      "confidence": "confidence[:\\s]+([0-9.]+)",
+      "yesNo": "(YES|NO|UNSURE)"
+    }
+  },
+  "samplingPolicy": {
+    "description": "LLM sampling configuration for verification calls",
+    "temperature": 0.0,
+    "rationale": "Deterministic sampling (temp=0) for consistent, reproducible verification results",
+    "alternativeApproach": {
+      "description": "Optional Monte Carlo sampling for higher confidence",
+      "enabled": false,
+      "samples": 3,
+      "temperature": 0.3,
+      "aggregation": "majority_vote",
+      "confidenceAggregation": "median"
+    }
+  },
+  "triggerOptions": {
+    "description": "When verification should activate",
+    "options": {
+      "always": {
+        "description": "Run verification on every grounding result",
+        "cost": "high",
+        "useCase": "Critical systems, high-stakes decisions"
+      },
+      "on_medium_confidence": {
+        "description": "Run when initial grounding confidence is MEDIUM",
+        "cost": "moderate",
+        "useCase": "Default for most skills"
+      },
+      "on_critical_claim": {
+        "description": "Run for claims marked as critical",
+        "cost": "low-moderate",
+        "useCase": "Security, data integrity, breaking changes"
+      },
+      "on_conflict": {
+        "description": "Run when multiple sources provide conflicting information",
+        "cost": "low",
+        "useCase": "Documentation lookups, multi-source grounding"
+      },
+      "manual": {
+        "description": "Only when explicitly called by skill or user",
+        "cost": "minimal",
+        "useCase": "Exploratory queries, low-stakes operations"
+      }
+    }
+  },
+  "profiles": {
+    "strawberry": {
+      "name": "Strawberry (Factual Claims)",
+      "domain": "General factual claims, mixed content verification",
+      "scrubbingRules": {
+        "typedPlaceholders": {
+          "table": "[TABLE_{N}]",
+          "field": "[FIELD_{N}]",
+          "class": "[CLASS_{N}]",
+          "function": "[FUNC_{N}]",
+          "number": "[NUM_{N}]",
+          "string": "[STR_{N}]",
+          "path": "[PATH_{N}]",
+          "url": "[URL_{N}]",
+          "identifier": "[ID_{N}]"
+        },
+        "mappingRules": [
+          {
+            "pattern": "table/entity names",
+            "placeholder": "[TABLE_{N}]"
+          },
+          {
+            "pattern": "field/column names",
+            "placeholder": "[FIELD_{N}]"
+          },
+          {
+            "pattern": "class names",
+            "placeholder": "[CLASS_{N}]"
+          },
+          {
+            "pattern": "function/method names",
+            "placeholder": "[FUNC_{N}]"
+          },
+          {
+            "pattern": "specific numbers",
+            "placeholder": "[NUM_{N}]"
+          },
+          {
+            "pattern": "string literals",
+            "placeholder": "[STR_{N}]"
+          },
+          {
+            "pattern": "file paths",
+            "placeholder": "[PATH_{N}]"
+          },
+          {
+            "pattern": "URLs/endpoints",
+            "placeholder": "[URL_{N}]"
+          }
+        ]
+      },
+      "thresholds": {
+        "VERIFIED": {
+          "minFullConfidence": 0.8,
+          "minDelta": 0.3
+        },
+        "PLAUSIBLE": {
+          "minFullConfidence": 0.6,
+          "minDelta": 0.15
+        },
+        "SUSPICIOUS": {
+          "minFullConfidence": 0.6,
+          "maxDelta": 0.15
+        },
+        "UNSUPPORTED": {
+          "maxFullConfidence": 0.6
+        }
+      },
+      "defaultTrigger": "on_medium_confidence"
+    },
+    "code": {
+      "name": "Code Structure Verification",
+      "domain": "Code structure, API usage, function behavior, type information",
+      "scrubbingRules": {
+        "typedPlaceholders": {
+          "class": "[CLASS_{N}]",
+          "function": "[FUNC_{N}]",
+          "method": "[METHOD_{N}]",
+          "variable": "[VAR_{N}]",
+          "type": "[TYPE_{N}]",
+          "path": "[PATH_{N}]",
+          "line": "[LINE_{N}]",
+          "module": "[MODULE_{N}]",
+          "package": "[PKG_{N}]"
+        },
+        "mappingRules": [
+          {
+            "pattern": "class/interface names",
+            "placeholder": "[CLASS_{N}]"
+          },
+          {
+            "pattern": "function names",
+            "placeholder": "[FUNC_{N}]"
+          },
+          {
+            "pattern": "method names",
+            "placeholder": "[METHOD_{N}]"
+          },
+          {
+            "pattern": "variable names",
+            "placeholder": "[VAR_{N}]"
+          },
+          {
+            "pattern": "type annotations",
+            "placeholder": "[TYPE_{N}]"
+          },
+          {
+            "pattern": "file paths",
+            "placeholder": "[PATH_{N}]"
+          },
+          {
+            "pattern": "line numbers",
+            "placeholder": "[LINE_{N}]"
+          },
+          {
+            "pattern": "module/import names",
+            "placeholder": "[MODULE_{N}]"
+          },
+          {
+            "pattern": "package names",
+            "placeholder": "[PKG_{N}]"
+          }
+        ]
+      },
+      "thresholds": {
+        "VERIFIED": {
+          "minFullConfidence": 0.8,
+          "minDelta": 0.3
+        },
+        "PLAUSIBLE": {
+          "minFullConfidence": 0.6,
+          "minDelta": 0.15
+        },
+        "SUSPICIOUS": {
+          "minFullConfidence": 0.6,
+          "maxDelta": 0.15
+        },
+        "UNSUPPORTED": {
+          "maxFullConfidence": 0.6
+        }
+      },
+      "defaultTrigger": "on_medium_confidence"
+    },
+    "documentation": {
+      "name": "Documentation Verification",
+      "domain": "Claims from external documentation, API docs, configuration references",
+      "scrubbingRules": {
+        "typedPlaceholders": {
+          "version": "[VERSION_{N}]",
+          "endpoint": "[ENDPOINT_{N}]",
+          "config": "[CONFIG_{N}]",
+          "param": "[PARAM_{N}]",
+          "value": "[VALUE_{N}]",
+          "url": "[URL_{N}]",
+          "command": "[CMD_{N}]"
+        },
+        "mappingRules": [
+          {
+            "pattern": "version numbers",
+            "placeholder": "[VERSION_{N}]"
+          },
+          {
+            "pattern": "API endpoints",
+            "placeholder": "[ENDPOINT_{N}]"
+          },
+          {
+            "pattern": "configuration keys",
+            "placeholder": "[CONFIG_{N}]"
+          },
+          {
+            "pattern": "parameter names",
+            "placeholder": "[PARAM_{N}]"
+          },
+          {
+            "pattern": "configuration values",
+            "placeholder": "[VALUE_{N}]"
+          },
+          {
+            "pattern": "URLs",
+            "placeholder": "[URL_{N}]"
+          },
+          {
+            "pattern": "CLI commands",
+            "placeholder": "[CMD_{N}]"
+          }
+        ]
+      },
+      "thresholds": {
+        "VERIFIED": {
+          "minFullConfidence": 0.75,
+          "minDelta": 0.25
+        },
+        "PLAUSIBLE": {
+          "minFullConfidence": 0.55,
+          "minDelta": 0.1
+        },
+        "SUSPICIOUS": {
+          "minFullConfidence": 0.55,
+          "maxDelta": 0.1
+        },
+        "UNSUPPORTED": {
+          "maxFullConfidence": 0.55
+        }
+      },
+      "defaultTrigger": "on_conflict",
+      "note": "Relaxed thresholds - documentation is often partial or version-specific"
+    },
+    "data": {
+      "name": "Data/Schema Verification",
+      "domain": "Database schemas, data models, entity relationships",
+      "scrubbingRules": {
+        "typedPlaceholders": {
+          "table": "[TABLE_{N}]",
+          "column": "[COL_{N}]",
+          "type": "[DTYPE_{N}]",
+          "constraint": "[CONSTRAINT_{N}]",
+          "index": "[INDEX_{N}]",
+          "schema": "[SCHEMA_{N}]",
+          "database": "[DB_{N}]"
+        },
+        "mappingRules": [
+          {
+            "pattern": "table/entity names",
+            "placeholder": "[TABLE_{N}]"
+          },
+          {
+            "pattern": "column/field names",
+            "placeholder": "[COL_{N}]"
+          },
+          {
+            "pattern": "data types",
+            "placeholder": "[DTYPE_{N}]"
+          },
+          {
+            "pattern": "constraints (PK, FK, UNIQUE)",
+            "placeholder": "[CONSTRAINT_{N}]"
+          },
+          {
+            "pattern": "index names",
+            "placeholder": "[INDEX_{N}]"
+          },
+          {
+            "pattern": "schema names",
+            "placeholder": "[SCHEMA_{N}]"
+          },
+          {
+            "pattern": "database names",
+            "placeholder": "[DB_{N}]"
+          }
+        ]
+      },
+      "thresholds": {
+        "VERIFIED": {
+          "minFullConfidence": 0.85,
+          "minDelta": 0.35
+        },
+        "PLAUSIBLE": {
+          "minFullConfidence": 0.7,
+          "minDelta": 0.2
+        },
+        "SUSPICIOUS": {
+          "minFullConfidence": 0.7,
+          "maxDelta": 0.2
+        },
+        "UNSUPPORTED": {
+          "maxFullConfidence": 0.7
+        }
+      },
+      "defaultTrigger": "on_medium_confidence",
+      "note": "Strict thresholds - data errors are costly and hard to detect"
+    },
+    "security": {
+      "name": "Security Verification",
+      "domain": "Security-critical claims, vulnerabilities, authentication/authorization",
+      "scrubbingRules": {
+        "typedPlaceholders": {
+          "cve": "[CVE_{N}]",
+          "vulnerability": "[VULN_{N}]",
+          "attack": "[ATTACK_{N}]",
+          "algorithm": "[ALGO_{N}]",
+          "key": "[KEY_{N}]",
+          "secret": "[SECRET_{N}]",
+          "permission": "[PERM_{N}]",
+          "role": "[ROLE_{N}]"
+        },
+        "mappingRules": [
+          {
+            "pattern": "CVE identifiers",
+            "placeholder": "[CVE_{N}]"
+          },
+          {
+            "pattern": "vulnerability names",
+            "placeholder": "[VULN_{N}]"
+          },
+          {
+            "pattern": "attack vectors",
+            "placeholder": "[ATTACK_{N}]"
+          },
+          {
+            "pattern": "algorithm names",
+            "placeholder": "[ALGO_{N}]"
+          },
+          {
+            "pattern": "key/token names",
+            "placeholder": "[KEY_{N}]"
+          },
+          {
+            "pattern": "secret identifiers",
+            "placeholder": "[SECRET_{N}]"
+          },
+          {
+            "pattern": "permission names",
+            "placeholder": "[PERM_{N}]"
+          },
+          {
+            "pattern": "role names",
+            "placeholder": "[ROLE_{N}]"
+          }
+        ]
+      },
+      "thresholds": {
+        "VERIFIED": {
+          "minFullConfidence": 0.9,
+          "minDelta": 0.4
+        },
+        "PLAUSIBLE": {
+          "minFullConfidence": 0.75,
+          "minDelta": 0.25
+        },
+        "SUSPICIOUS": {
+          "minFullConfidence": 0.75,
+          "maxDelta": 0.25
+        },
+        "UNSUPPORTED": {
+          "maxFullConfidence": 0.75
+        }
+      },
+      "defaultTrigger": "always",
+      "note": "Very strict thresholds - security errors can be catastrophic"
+    }
+  },
+  "skillIntegration": {
+    "description": "How skills opt-in to verification",
+    "frontmatterSchema": {
+      "verification": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether verification is active for this skill"
+          },
+          "profile": {
+            "type": "string",
+            "enum": [
+              "strawberry",
+              "code",
+              "documentation",
+              "data",
+              "security"
+            ],
+            "description": "Which verification profile to use"
+          },
+          "trigger": {
+            "type": "string",
+            "enum": [
+              "always",
+              "on_medium_confidence",
+              "on_critical_claim",
+              "on_conflict",
+              "manual"
+            ],
+            "description": "When to trigger verification"
+          },
+          "customThresholds": {
+            "type": "object",
+            "description": "Optional custom thresholds to override profile defaults"
+          }
+        }
+      }
+    },
+    "example": {
+      "frontmatter": {
+        "name": "grounding",
+        "verification": {
+          "enabled": true,
+          "profile": "data",
+          "trigger": "on_medium_confidence"
+        }
+      }
+    }
+  },
+  "outputFormat": "### Grounding Verification Report\n\n**Profile:** {PROFILE}\n**Trigger:** {TRIGGER}\n**Claims Analyzed:** {COUNT}\n\n---\n\n#### Evidence Spans\n\n| Span | Content Summary | Source |\n|------|-----------------|--------|\n| S0 | {SUMMARY} | {SOURCE} |\n\n---\n\n#### Claim Verification\n\n| Claim | Scrubbed Conf | Full Conf | Delta | Status |\n|-------|---------------|-----------|-------|--------|\n| {CLAIM} | {0.XX} | {0.XX} | {0.XX} | {STATUS} |\n\n---\n\n#### Verification Summary\n\n- **VERIFIED:** {COUNT} claims (evidence essential)\n- **PLAUSIBLE:** {COUNT} claims (proceed with caution)\n- **SUSPICIOUS:** {COUNT} claims (may be confabulating)\n- **UNSUPPORTED:** {COUNT} claims (insufficient evidence)\n\n---\n\n### RECOMMENDATION: {PROCEED|PROCEED_WITH_WARNINGS|STOP|GATHER_MORE_EVIDENCE}\n\n**Rationale:** {RATIONALE}",
+  "variables": [
+    {
+      "name": "{CLAIMS}",
+      "description": "List of claims to verify",
+      "required": true
+    },
+    {
+      "name": "{EVIDENCE_SPANS}",
+      "description": "Numbered evidence spans with sources",
+      "required": true
+    },
+    {
+      "name": "{PROFILE}",
+      "description": "Verification profile being used",
+      "required": true
+    }
+  ]
+}

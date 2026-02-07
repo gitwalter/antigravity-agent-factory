@@ -1,0 +1,738 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://Antigravity-agent-factory.dev/schemas/workflow-schema.json",
+  "title": "Workflow Definition Schema",
+  "description": "JSON Schema for defining autonomous agent workflows in the Antigravity Agent Factory",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["id", "name", "version", "phases"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Unique workflow identifier in kebab-case"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable workflow name"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the workflow"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of workflow purpose and behavior"
+    },
+    "extends": {
+      "type": "string",
+      "description": "ID of parent workflow to extend"
+    },
+    "triggers": {
+      "type": "array",
+      "description": "Conditions that activate this workflow",
+      "items": {
+        "$ref": "#/definitions/Trigger"
+      }
+    },
+    "context": {
+      "$ref": "#/definitions/Context",
+      "description": "Required and optional input parameters"
+    },
+    "mcpServers": {
+      "type": "array",
+      "description": "External MCP server dependencies",
+      "items": {
+        "$ref": "#/definitions/MCPRequirement"
+      }
+    },
+    "knowledge": {
+      "type": "array",
+      "description": "Referenced knowledge files",
+      "items": {
+        "$ref": "#/definitions/KnowledgeReference"
+      }
+    },
+    "phases": {
+      "type": "array",
+      "description": "Ordered execution phases",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/Phase"
+      }
+    },
+    "decisionPoints": {
+      "type": "array",
+      "description": "Conditional branching points",
+      "items": {
+        "$ref": "#/definitions/DecisionPoint"
+      }
+    },
+    "escalations": {
+      "type": "array",
+      "description": "Human escalation configurations",
+      "items": {
+        "$ref": "#/definitions/Escalation"
+      }
+    },
+    "stateSchema": {
+      "type": "object",
+      "description": "JSON Schema for workflow state tracking"
+    },
+    "learningHooks": {
+      "type": "array",
+      "description": "Continuous improvement capture points",
+      "items": {
+        "$ref": "#/definitions/LearningHook"
+      }
+    },
+    "config": {
+      "$ref": "#/definitions/WorkflowConfig",
+      "description": "Workflow configuration options"
+    }
+  },
+  "definitions": {
+    "Trigger": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["event", "manual", "schedule", "watch", "chain", "webhook"],
+          "description": "Type of trigger"
+        },
+        "source": {
+          "type": "string",
+          "description": "Event source identifier"
+        },
+        "event": {
+          "type": "string",
+          "description": "Specific event name"
+        },
+        "patterns": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "User input patterns for manual triggers"
+        },
+        "cron": {
+          "type": "string",
+          "description": "Cron expression for schedule triggers"
+        },
+        "path": {
+          "type": "string",
+          "description": "File path pattern for watch triggers"
+        },
+        "events": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "File events to watch (created, modified, deleted)"
+        },
+        "workflow": {
+          "type": "string",
+          "description": "Workflow ID for chain triggers"
+        },
+        "filter": {
+          "type": "object",
+          "description": "Filter conditions for event matching",
+          "additionalProperties": true
+        },
+        "transform": {
+          "type": "object",
+          "description": "Transform event data to context",
+          "properties": {
+            "context": {
+              "type": "object",
+              "additionalProperties": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "Context": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ContextParameter"
+          }
+        },
+        "optional": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ContextParameter"
+          }
+        }
+      }
+    },
+    "ContextParameter": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Parameter name"
+        },
+        "type": {
+          "type": "string",
+          "description": "Parameter type"
+        },
+        "description": {
+          "type": "string",
+          "description": "Parameter description"
+        },
+        "default": {
+          "description": "Default value for optional parameters"
+        },
+        "validation": {
+          "type": "object",
+          "description": "Validation rules"
+        }
+      }
+    },
+    "MCPRequirement": {
+      "type": "object",
+      "required": ["server"],
+      "properties": {
+        "server": {
+          "type": "string",
+          "description": "MCP server ID from catalog"
+        },
+        "required": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether workflow fails if server unavailable"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Required server capabilities"
+        },
+        "authCheck": {
+          "type": "boolean",
+          "default": false,
+          "description": "Verify authentication before starting"
+        },
+        "fallback": {
+          "type": "string",
+          "description": "Alternative server ID if primary unavailable"
+        },
+        "circuitBreaker": {
+          "$ref": "#/definitions/CircuitBreaker"
+        }
+      }
+    },
+    "CircuitBreaker": {
+      "type": "object",
+      "properties": {
+        "failureThreshold": {
+          "type": "integer",
+          "default": 3
+        },
+        "resetTimeout": {
+          "type": "string",
+          "default": "5m"
+        },
+        "halfOpenRequests": {
+          "type": "integer",
+          "default": 1
+        }
+      }
+    },
+    "KnowledgeReference": {
+      "type": "object",
+      "required": ["file"],
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Knowledge file name"
+        },
+        "usage": {
+          "type": "string",
+          "description": "How this knowledge is used"
+        },
+        "path": {
+          "type": "string",
+          "description": "JSON path to specific data within file"
+        }
+      }
+    },
+    "Phase": {
+      "type": "object",
+      "required": ["id", "name", "steps"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Phase identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable phase name"
+        },
+        "goal": {
+          "type": "string",
+          "description": "What this phase achieves"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Expression that must be true for phase to execute"
+        },
+        "parallel": {
+          "type": "boolean",
+          "default": false,
+          "description": "Execute steps in parallel"
+        },
+        "checkpoint": {
+          "type": "boolean",
+          "default": false,
+          "description": "Save state after each step for resume"
+        },
+        "saga": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable saga pattern with compensation"
+        },
+        "timeout": {
+          "type": "string",
+          "description": "Maximum phase duration (e.g., '5m', '1h')"
+        },
+        "loop": {
+          "$ref": "#/definitions/Loop",
+          "description": "Loop configuration for repeated execution"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Step"
+          }
+        },
+        "onFailure": {
+          "$ref": "#/definitions/FailureHandler"
+        },
+        "onSuccess": {
+          "$ref": "#/definitions/SuccessHandler"
+        }
+      }
+    },
+    "Step": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Step identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable step name"
+        },
+        "skill": {
+          "type": "string",
+          "description": "Skill ID to invoke"
+        },
+        "action": {
+          "type": "string",
+          "description": "Direct action to execute"
+        },
+        "inputs": {
+          "type": "object",
+          "description": "Input parameters mapping",
+          "additionalProperties": true
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Output"
+          }
+        },
+        "conditions": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Conditions for step execution"
+        },
+        "mcpTools": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "MCP tools this step may use"
+        },
+        "timeout": {
+          "type": "string",
+          "description": "Maximum step duration"
+        },
+        "retry": {
+          "$ref": "#/definitions/RetryConfig"
+        },
+        "compensation": {
+          "$ref": "#/definitions/Compensation",
+          "description": "Compensation for saga pattern"
+        },
+        "onFailure": {
+          "$ref": "#/definitions/FailureHandler"
+        }
+      }
+    },
+    "Output": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Output name"
+        },
+        "type": {
+          "type": "string",
+          "description": "Output type"
+        },
+        "required": {
+          "type": "boolean",
+          "default": false
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "Loop": {
+      "type": "object",
+      "properties": {
+        "over": {
+          "type": "string",
+          "description": "Expression returning array to iterate"
+        },
+        "as": {
+          "type": "string",
+          "description": "Variable name for current item"
+        },
+        "maxIterations": {
+          "type": "integer",
+          "description": "Maximum number of iterations"
+        },
+        "until": {
+          "type": "string",
+          "description": "Expression that stops loop when true"
+        }
+      }
+    },
+    "RetryConfig": {
+      "type": "object",
+      "properties": {
+        "maxAttempts": {
+          "type": "integer",
+          "default": 3
+        },
+        "backoff": {
+          "type": "string",
+          "enum": ["fixed", "linear", "exponential"],
+          "default": "exponential"
+        },
+        "initialDelay": {
+          "type": "string",
+          "default": "1s"
+        },
+        "maxDelay": {
+          "type": "string",
+          "default": "30s"
+        },
+        "retryOn": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["transient", "timeout", "rate_limit"]
+          }
+        }
+      }
+    },
+    "Compensation": {
+      "type": "object",
+      "properties": {
+        "skill": {
+          "type": "string",
+          "description": "Skill to invoke for compensation"
+        },
+        "action": {
+          "type": "string",
+          "description": "Direct action for compensation"
+        },
+        "inputs": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "FailureHandler": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": ["retry", "skip", "abort", "escalate", "compensate", "goto"],
+          "description": "Action to take on failure"
+        },
+        "goto": {
+          "type": "string",
+          "description": "Phase/step ID for goto action"
+        },
+        "escalation": {
+          "type": "string",
+          "description": "Escalation ID for escalate action"
+        },
+        "maxRetries": {
+          "type": "integer"
+        },
+        "backoff": {
+          "type": "string",
+          "enum": ["fixed", "linear", "exponential"]
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason for escalation/abort"
+        }
+      }
+    },
+    "SuccessHandler": {
+      "type": "object",
+      "properties": {
+        "condition": {
+          "type": "string",
+          "description": "Additional condition to check"
+        },
+        "goto": {
+          "type": "string",
+          "description": "Phase/step to go to"
+        }
+      }
+    },
+    "DecisionPoint": {
+      "type": "object",
+      "required": ["id", "evaluate", "branches"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Decision point identifier"
+        },
+        "after": {
+          "type": "string",
+          "description": "Phase/step ID after which to evaluate"
+        },
+        "evaluate": {
+          "type": "string",
+          "description": "Expression to evaluate"
+        },
+        "branches": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Branch"
+          }
+        },
+        "default": {
+          "type": "string",
+          "description": "Default phase/step if no branch matches"
+        }
+      }
+    },
+    "Branch": {
+      "type": "object",
+      "required": ["condition"],
+      "properties": {
+        "condition": {
+          "type": "string",
+          "description": "Condition expression"
+        },
+        "goto": {
+          "type": "string",
+          "description": "Phase/step to go to"
+        },
+        "action": {
+          "type": "string",
+          "description": "Action to perform"
+        },
+        "escalation": {
+          "type": "string",
+          "description": "Escalation to trigger"
+        },
+        "set": {
+          "type": "object",
+          "description": "State variables to set",
+          "additionalProperties": true
+        }
+      }
+    },
+    "Escalation": {
+      "type": "object",
+      "required": ["id", "method"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Escalation identifier"
+        },
+        "trigger": {
+          "type": "string",
+          "description": "Condition that triggers this escalation"
+        },
+        "method": {
+          "type": "string",
+          "enum": ["interactive", "notification", "issue", "abort", "fallback"],
+          "description": "Escalation method"
+        },
+        "prompt": {
+          "type": "string",
+          "description": "Message to present to user"
+        },
+        "message": {
+          "type": "string",
+          "description": "Notification message"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EscalationOption"
+          }
+        },
+        "context": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Context fields to include"
+        },
+        "timeout": {
+          "type": "string",
+          "description": "Time to wait for response"
+        },
+        "onTimeout": {
+          "type": "string",
+          "enum": ["abort", "continue", "fallback"],
+          "description": "Action if timeout"
+        },
+        "repository": {
+          "type": "string",
+          "description": "Repository for issue creation"
+        },
+        "title": {
+          "type": "string",
+          "description": "Issue title"
+        },
+        "labels": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Issue labels"
+        },
+        "then": {
+          "type": "string",
+          "description": "Action after escalation"
+        }
+      }
+    },
+    "EscalationOption": {
+      "type": "object",
+      "required": ["label", "action"],
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string",
+          "enum": ["continue", "abort", "pause", "goto", "expand_context"]
+        },
+        "goto": {
+          "type": "string"
+        }
+      }
+    },
+    "LearningHook": {
+      "type": "object",
+      "required": ["event", "capture", "store"],
+      "properties": {
+        "event": {
+          "type": "string",
+          "enum": ["workflow_success", "workflow_failure", "step_complete", "step_failure", "escalation_resolved", "user_correction"],
+          "description": "Lifecycle event to capture"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Additional condition for capture"
+        },
+        "capture": {
+          "type": "object",
+          "description": "Fields to capture",
+          "additionalProperties": {"type": "string"}
+        },
+        "store": {
+          "type": "string",
+          "description": "Knowledge file to store in"
+        },
+        "transform": {
+          "type": "object",
+          "description": "Transformation template for stored data",
+          "additionalProperties": true
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LearningAction"
+          }
+        }
+      }
+    },
+    "LearningAction": {
+      "type": "object",
+      "required": ["type", "target"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["increment_success_count", "increase_confidence", "decrease_confidence", "add_pattern", "add_negative_example", "update_pattern"]
+        },
+        "target": {
+          "type": "string",
+          "description": "Target knowledge path"
+        },
+        "if": {
+          "type": "string",
+          "description": "Condition for this action"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "create": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "update": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "WorkflowConfig": {
+      "type": "object",
+      "properties": {
+        "supportsDryRun": {
+          "type": "boolean",
+          "default": false
+        },
+        "maxDuration": {
+          "type": "string"
+        },
+        "concurrency": {
+          "type": "integer",
+          "default": 1
+        },
+        "autoStart": {
+          "type": "boolean",
+          "default": true
+        },
+        "logging": {
+          "type": "string",
+          "enum": ["minimal", "standard", "verbose", "debug"],
+          "default": "standard"
+        }
+      }
+    }
+  }
+}

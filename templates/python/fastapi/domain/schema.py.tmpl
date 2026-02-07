@@ -1,0 +1,175 @@
+"""
+{{MODULE_NAME}} Schemas - Pydantic models for request/response validation
+
+Purpose: Define data structures and validation rules for {{DOMAIN_NAME}} API
+Author: {{AUTHOR}}
+Created: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): All schemas enforce type safety and validation
+- A3 (Transparency): Clear field descriptions and validation messages
+- A4 (Non-Harm): Input validation prevents invalid data processing
+"""
+
+from typing import List, Optional
+from datetime import datetime
+from pydantic import BaseModel, Field, validator, EmailStr
+from pydantic.utils import GetterDict
+
+
+class {{REQUEST_SCHEMA}}(BaseModel):
+    """
+    Request schema for creating/updating {{ENTITY_NAME}}.
+    
+    This schema defines the structure and validation rules for
+    {{ENTITY_NAME}} creation and update requests.
+    
+    Example:
+        >>> request = {{REQUEST_SCHEMA}}(
+        >>>     name="Example",
+        >>>     description="An example {{ENTITY_NAME}}"
+        >>> )
+    """
+    
+    name: str = Field(
+        ...,
+        min_length=1,
+        max_length=255,
+        description="{{ENTITY_NAME}} name"
+    )
+    description: Optional[str] = Field(
+        None,
+        max_length=1000,
+        description="Optional description"
+    )
+    # Add additional fields as needed
+    
+    class Config:
+        """Pydantic configuration."""
+        schema_extra = {
+            "example": {
+                "name": "Example {{ENTITY_NAME}}",
+                "description": "An example {{ENTITY_NAME}} description"
+            }
+        }
+    
+    @validator('name')
+    def validate_name(cls, v):
+        """
+        Validate name field.
+        
+        Args:
+            v: Name value
+            
+        Returns:
+            Validated name
+            
+        Raises:
+            ValueError: If validation fails
+        """
+        if not v or not v.strip():
+            raise ValueError("Name cannot be empty")
+        return v.strip()
+
+
+class {{RESPONSE_SCHEMA}}(BaseModel):
+    """
+    Response schema for {{ENTITY_NAME}} data.
+    
+    This schema defines the structure of {{ENTITY_NAME}} responses,
+    including all fields that should be exposed to API consumers.
+    
+    Example:
+        >>> response = {{RESPONSE_SCHEMA}}(
+        >>>     id=1,
+        >>>     name="Example",
+        >>>     created_at=datetime.now()
+        >>> )
+    """
+    
+    id: int = Field(..., description="Unique identifier")
+    name: str = Field(..., description="{{ENTITY_NAME}} name")
+    description: Optional[str] = Field(None, description="Description")
+    created_at: datetime = Field(..., description="Creation timestamp")
+    updated_at: datetime = Field(..., description="Last update timestamp")
+    # Add additional fields as needed
+    
+    class Config:
+        """Pydantic configuration."""
+        orm_mode = True
+        schema_extra = {
+            "example": {
+                "id": 1,
+                "name": "Example {{ENTITY_NAME}}",
+                "description": "An example description",
+                "created_at": "2024-01-01T00:00:00",
+                "updated_at": "2024-01-01T00:00:00"
+            }
+        }
+
+
+class {{LIST_RESPONSE_SCHEMA}}(BaseModel):
+    """
+    Response schema for paginated list of {{ENTITY_NAME}}s.
+    
+    This schema wraps a list of {{ENTITY_NAME}}s with pagination metadata.
+    
+    Example:
+        >>> response = {{LIST_RESPONSE_SCHEMA}}(
+        >>>     items=[{{RESPONSE_SCHEMA}}(...)],
+        >>>     total=100,
+        >>>     skip=0,
+        >>>     limit=10
+        >>> )
+    """
+    
+    items: List[{{RESPONSE_SCHEMA}}] = Field(..., description="List of {{ENTITY_NAME}}s")
+    total: int = Field(..., description="Total number of items")
+    skip: int = Field(..., ge=0, description="Number of items skipped")
+    limit: int = Field(..., ge=1, description="Maximum number of items returned")
+    
+    class Config:
+        """Pydantic configuration."""
+        schema_extra = {
+            "example": {
+                "items": [
+                    {
+                        "id": 1,
+                        "name": "Example {{ENTITY_NAME}}",
+                        "created_at": "2024-01-01T00:00:00",
+                        "updated_at": "2024-01-01T00:00:00"
+                    }
+                ],
+                "total": 100,
+                "skip": 0,
+                "limit": 10
+            }
+        }
+
+
+class {{FILTER_SCHEMA}}(BaseModel):
+    """
+    Filter schema for querying {{ENTITY_NAME}}s.
+    
+    This schema defines filter criteria for advanced queries.
+    
+    Example:
+        >>> filters = {{FILTER_SCHEMA}}(
+        >>>     name_contains="example",
+        >>>     created_after=datetime(2024, 1, 1)
+        >>> )
+    """
+    
+    name_contains: Optional[str] = Field(None, description="Filter by name containing")
+    created_after: Optional[datetime] = Field(None, description="Filter by creation date after")
+    created_before: Optional[datetime] = Field(None, description="Filter by creation date before")
+    # Add additional filter fields as needed
+    
+    class Config:
+        """Pydantic configuration."""
+        schema_extra = {
+            "example": {
+                "name_contains": "example",
+                "created_after": "2024-01-01T00:00:00"
+            }
+        }

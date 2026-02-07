@@ -1,0 +1,86 @@
+/**
+ * Error Boundary Component - Next.js Error UI
+ * 
+ * Purpose: Handle and display errors in the application
+ * Author: {{AUTHOR}}
+ * Created: {{DATE}}
+ * 
+ * Axiom Alignment:
+ * - A1 (Verifiability): Errors are logged with context
+ * - A3 (Transparency): Clear error messages for users
+ * - A4 (Non-Harm): Prevents error propagation and provides recovery options
+ */
+
+'use client'
+
+import { useEffect } from 'react'
+import { {{BUTTON_COMPONENT}} } from '@/components/ui/{{BUTTON_NAME}}'
+
+interface ErrorProps {
+  error: Error & { digest?: string }
+  reset: () => void
+}
+
+/**
+ * Error boundary component for handling runtime errors.
+ * 
+ * This component catches errors in the page component tree
+ * and displays a user-friendly error message with recovery
+ * options.
+ * 
+ * @param error - The error object
+ * @param reset - Function to reset the error boundary
+ * @returns Error UI element
+ */
+export default function Error({ error, reset }: ErrorProps) {
+  useEffect(() => {
+    // Log error to error reporting service
+    console.error('Application error:', error)
+    
+    // Example: Send to error tracking service
+    // logErrorToService(error)
+  }, [error])
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center p-24">
+      <div className="z-10 max-w-2xl w-full text-center">
+        <h1 className="text-4xl font-bold mb-4 text-red-600">
+          {{ERROR_TITLE}}
+        </h1>
+        
+        <p className="text-lg mb-6 text-gray-700">
+          {{ERROR_MESSAGE}}
+        </p>
+        
+        {process.env.NODE_ENV === 'development' && (
+          <div className="bg-gray-100 p-4 rounded mb-6 text-left">
+            <p className="text-sm font-mono text-red-600">
+              {error.message}
+            </p>
+            {error.digest && (
+              <p className="text-xs text-gray-500 mt-2">
+                Error ID: {error.digest}
+              </p>
+            )}
+          </div>
+        )}
+        
+        <div className="flex gap-4 justify-center">
+          <{{BUTTON_COMPONENT}}
+            onClick={reset}
+            variant="primary"
+          >
+            {{RETRY_BUTTON_TEXT}}
+          </{{BUTTON_COMPONENT}}>
+          
+          <{{BUTTON_COMPONENT}}
+            onClick={() => window.location.href = '/'}
+            variant="secondary"
+          >
+            {{HOME_BUTTON_TEXT}}
+          </{{BUTTON_COMPONENT}}>
+        </div>
+      </div>
+    </div>
+  )
+}

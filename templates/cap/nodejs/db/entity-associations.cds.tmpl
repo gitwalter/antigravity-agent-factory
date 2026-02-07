@@ -1,0 +1,68 @@
+/**
+ * ${ENTITY_NAME} Entity with Associations - CDS Entity Definition
+ * 
+ * Purpose: Define database entity with relationships to other entities
+ * Author: ${AUTHOR}
+ * Created: ${DATE}
+ * 
+ * This template demonstrates how to define associations (1:1, 1:N, N:M)
+ * following CAP best practices.
+ */
+
+namespace ${NAMESPACE};
+
+using { ${PARENT_ENTITY} } from './${PARENT_ENTITY_FILE}';
+
+/**
+ * ${ENTITY_NAME} entity with associations to other entities.
+ * 
+ * Associations allow you to define relationships between entities
+ * and enable navigation in OData services.
+ * 
+ * @see https://cap.cloud.sap/docs/guides/domain-modeling#associations
+ */
+entity ${ENTITY_NAME} : cuid, managed {
+    key ID : UUID;
+    
+    name : String(${NAME_LENGTH:255});
+    description : String(${DESCRIPTION_LENGTH:1000});
+
+    /**
+     * Many-to-One association: Many ${ENTITY_NAME} belong to one ${PARENT_ENTITY}
+     * 
+     * This creates a foreign key relationship.
+     * The association name is used for navigation in OData.
+     */
+    parent : Association to ${PARENT_ENTITY};
+
+    /**
+     * One-to-Many association: One ${ENTITY_NAME} has many ${CHILD_ENTITY}
+     * 
+     * Use 'on' clause to specify the foreign key field.
+     */
+    children : Association to many ${CHILD_ENTITY} on children.parent = $self;
+
+    /**
+     * Many-to-Many association: ${ENTITY_NAME} can have many ${RELATED_ENTITY}
+     * 
+     * Requires a junction entity (not shown here, but typically named ${ENTITY_NAME}${RELATED_ENTITY})
+     */
+    // related : Association to many ${RELATED_ENTITY} via ${JUNCTION_ENTITY};
+
+    /**
+     * Composition: Strong ownership relationship
+     * 
+     * When parent is deleted, children are also deleted.
+     */
+    // items : Composition of many ${ITEM_ENTITY} on items.parent = $self;
+}
+
+/**
+ * Example child entity referenced in associations above.
+ * Replace with your actual child entity definition.
+ */
+entity ${CHILD_ENTITY} : cuid, managed {
+    key ID : UUID;
+    name : String(255);
+    parent : Association to ${ENTITY_NAME};
+}

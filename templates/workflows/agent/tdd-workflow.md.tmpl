@@ -1,0 +1,322 @@
+# AI-Driven TDD Workflow
+
+## Overview
+
+This workflow implements Test-Driven Development (TDD) enhanced with AI assistance for automated test generation, edge case identification, and test optimization. The workflow follows the Red-Green-Refactor cycle with AI-powered enhancements at each phase.
+
+**Project:** {{PROJECT_NAME}}  
+**Methodology:** {{METHODOLOGY}}  
+**Stack:** {{STACK}}
+
+## Trigger Conditions
+
+This workflow is activated when:
+
+- A ticket ID is mentioned (patterns: `{{TICKET_ID}}`, `{{PROJECT_KEY}}-123`, `#123`)
+- User explicitly requests test generation or TDD approach
+- New feature development requires test coverage
+- Bug fix requires test cases
+- Code refactoring needs test safety net
+
+**Trigger Examples:**
+- "Implement tests for ticket {{TICKET_ID}}"
+- "Use TDD for {{FEATURE_NAME}}"
+- "Generate test cases for {{CLASS_NAME}}"
+- "Create tests following TDD for {{MODULE_NAME}}"
+
+## Workflow Steps
+
+### Step 1: Understand Requirements from Ticket
+
+**Description:** Analyze the ticket or requirements to understand what needs to be tested.
+
+**Actions:**
+- Fetch ticket details using MCP tools
+- Extract functional requirements
+- Identify acceptance criteria
+- Note edge cases mentioned in ticket
+- Understand business context
+
+**MCP Tools Used:**
+- `atlassian-getJiraIssue` (if ticket ID provided)
+- `atlassian-getConfluencePage` (if specification page provided)
+
+**Skills Invoked:**
+- `requirements-gathering` - Extract and clarify requirements
+
+**Outputs:**
+- Requirements summary
+- Acceptance criteria list
+- Edge cases identified
+- Business context notes
+
+**Is Mandatory:** Yes
+
+---
+
+### Step 2: Generate Test Cases with AI
+
+**Description:** Use AI to generate comprehensive test cases based on requirements.
+
+**Actions:**
+- Analyze code structure and interfaces
+- Generate test cases for happy path
+- Identify boundary conditions
+- Generate edge case tests
+- Create property-based tests (if applicable)
+- Structure tests using Given-When-Then pattern
+
+**MCP Tools Used:**
+- `deepwiki-ask_question` - Query repository documentation for context
+- `deepwiki-read_wiki_contents` - Understand existing test patterns
+
+**Skills Invoked:**
+- `tdd` - Apply TDD patterns and Given-When-Then structure
+- `code-templates` - Use test class templates for {{STACK}}
+
+**Agents Referenced:**
+- `test-generator` - Agent for comprehensive test generation
+
+**Knowledge Files:**
+- `knowledge/tdd-patterns.json` - TDD patterns and best practices
+- `knowledge/test-patterns.json` - Test structure patterns
+
+**Outputs:**
+- Test class file(s) with failing tests
+- Test method names following pattern: `{method_name}_should_{expected_behavior}_when_{condition}`
+- Test fixtures and factories
+- Property-based test generators (if applicable)
+
+**Is Mandatory:** Yes
+
+---
+
+### Step 3: Implement Failing Tests
+
+**Description:** Write the test code that initially fails (Red phase).
+
+**Actions:**
+- Create test file structure
+- Write test methods with Given-When-Then structure
+- Add assertions for expected outcomes
+- Set up test fixtures and mocks
+- Run tests to confirm they fail
+
+**Skills Invoked:**
+- `tdd` - Ensure proper test structure
+- `code-templates` - Use appropriate test templates
+
+**Outputs:**
+- Test files in `tests/` directory
+- Failing test suite
+- Test fixtures and factories
+
+**Is Mandatory:** Yes
+
+---
+
+### Step 4: Implement Minimum Code to Pass
+
+**Description:** Write the minimal implementation to make tests pass (Green phase).
+
+**Actions:**
+- Analyze failing test requirements
+- Implement minimal code to satisfy tests
+- Run tests to verify they pass
+- Avoid adding features not covered by tests
+
+**Skills Invoked:**
+- `code-templates` - Use implementation templates for {{STACK}}
+
+**Knowledge Files:**
+- `knowledge/design-patterns.json` - Design patterns for implementation
+- `knowledge/{{STACK}}-patterns.json` - Stack-specific patterns
+
+**Outputs:**
+- Implementation code
+- Passing test suite
+- Code coverage report
+
+**Is Mandatory:** Yes
+
+---
+
+### Step 5: Refactor with Tests Green
+
+**Description:** Improve code quality while keeping all tests passing (Refactor phase).
+
+**Actions:**
+- Analyze code for improvement opportunities
+- Extract methods/classes for better structure
+- Remove duplication
+- Improve naming and readability
+- Apply design patterns where appropriate
+- Run tests after each refactoring step
+
+**Skills Invoked:**
+- `code-review` - Review code quality
+- `grounding` - Verify data model assumptions
+
+**Knowledge Files:**
+- `knowledge/design-patterns.json` - Refactoring patterns
+- `knowledge/best-practices.json` - Code quality standards
+
+**Outputs:**
+- Refactored code
+- Updated test suite (if needed)
+- Code quality metrics
+
+**Is Mandatory:** Yes
+
+---
+
+### Step 6: Edge Case Identification
+
+**Description:** Use AI to identify additional edge cases and boundary conditions.
+
+**Actions:**
+- Analyze input ranges and types
+- Identify boundary conditions
+- Generate tests for null/undefined handling
+- Test error conditions
+- Test concurrency scenarios (if applicable)
+- Use property-based testing for invariants
+
+**MCP Tools Used:**
+- `deepwiki-ask_question` - Query for domain-specific edge cases
+
+**Skills Invoked:**
+- `tdd` - Apply edge case testing patterns
+
+**Knowledge Files:**
+- `knowledge/tdd-patterns.json` - Edge case identification patterns
+
+**Outputs:**
+- Additional edge case tests
+- Property-based test generators
+- Boundary condition tests
+
+**Is Mandatory:** No (but recommended)
+
+---
+
+### Step 7: Integration Test Generation
+
+**Description:** Generate integration tests for component interactions.
+
+**Actions:**
+- Identify component interactions
+- Generate integration test scenarios
+- Set up test database/services
+- Create end-to-end test flows
+- Test API contracts (if applicable)
+
+**Skills Invoked:**
+- `tdd` - Integration testing patterns
+- `code-templates` - Integration test templates
+
+**Knowledge Files:**
+- `knowledge/tdd-patterns.json` - Integration test strategies
+- `knowledge/{{STACK}}-patterns.json` - Stack-specific integration patterns
+
+**Outputs:**
+- Integration test files
+- Test configuration files
+- Mock/stub definitions
+
+**Is Mandatory:** No (depends on feature complexity)
+
+---
+
+## MCP Tools Reference
+
+| Tool | Purpose | When Used |
+|------|---------|-----------|
+| `atlassian-getJiraIssue` | Fetch ticket details | Step 1 |
+| `atlassian-getConfluencePage` | Fetch specifications | Step 1 |
+| `deepwiki-ask_question` | Query repository docs | Steps 2, 6 |
+| `deepwiki-read_wiki_contents` | Read documentation | Step 2 |
+
+## Skills Reference
+
+| Skill | Purpose | Steps |
+|-------|---------|-------|
+| `tdd` | TDD patterns and Given-When-Then structure | 2, 3, 5, 6, 7 |
+| `code-templates` | Generate test and code templates | 2, 3, 4, 7 |
+| `requirements-gathering` | Extract requirements | 1 |
+| `code-review` | Code quality review | 5 |
+| `grounding` | Verify data model | 5 |
+
+## Agents Reference
+
+| Agent | Purpose | Steps |
+|-------|---------|-------|
+| `test-generator` | Comprehensive test generation | 2 |
+
+## Output Artifacts
+
+| Artifact | Location | Purpose |
+|----------|----------|---------|
+| Test files | `tests/unit/{{MODULE_NAME}}/test_{{CLASS_NAME}}.py` | Unit tests |
+| Integration tests | `tests/integration/{{FEATURE_NAME}}/` | Integration tests |
+| Test fixtures | `tests/fixtures/{{FEATURE_NAME}}.json` | Test data |
+| Coverage report | `coverage.xml`, `htmlcov/` | Coverage metrics |
+| Test plan | `docs/{{TICKET_ID}}_test_plan.md` | Test documentation |
+
+## Fallback Procedures
+
+| Condition | Action |
+|-----------|--------|
+| Ticket fetch fails | Ask user to provide ticket details manually |
+| Test generation unclear | Request clarification on requirements |
+| Tests fail unexpectedly | Review implementation and test logic |
+| Coverage too low | Generate additional test cases |
+| Integration tests fail | Check test environment setup |
+| MCP tool unavailable | Use manual process or alternative tool |
+
+## Example Session
+
+```
+User: Implement TDD workflow for ticket PROJ-123
+
+Agent: 
+1. Fetching ticket PROJ-123...
+2. Analyzing requirements: User registration with email validation
+3. Generating test cases:
+   - test_register_user_with_valid_email
+   - test_register_user_with_invalid_email
+   - test_register_duplicate_email
+   ...
+4. Creating failing tests...
+5. Implementing minimal code to pass tests...
+6. Refactoring with tests green...
+7. Identifying edge cases...
+8. Generating integration tests...
+
+[Outputs test files and implementation]
+```
+
+## Best Practices
+
+- **Write tests first** - Never write implementation before tests
+- **One behavior per test** - Each test verifies a single behavior
+- **Given-When-Then structure** - Make test intent clear
+- **Descriptive names** - Test names should describe the scenario
+- **Independent tests** - Tests should not depend on each other
+- **Run tests frequently** - After each small change
+- **Refactor incrementally** - Small steps with tests passing
+- **Cover edge cases** - Use AI to identify boundary conditions
+- **Balance coverage** - Aim for 80-90% coverage, focus on critical paths
+
+## Related Workflows
+
+- `code-review-workflow.md.tmpl` - Review code quality
+- `refactoring-workflow.md.tmpl` - Refactor existing code
+- `feature-development-workflow.md.tmpl` - End-to-end feature development
+
+## References
+
+- `patterns/skills/tdd.json` - TDD skill definition
+- `patterns/agents/test-generator.json` - Test generator agent
+- `knowledge/tdd-patterns.json` - TDD patterns and examples
+- `knowledge/test-patterns.json` - Test structure patterns

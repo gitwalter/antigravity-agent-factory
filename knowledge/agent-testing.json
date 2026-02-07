@@ -1,0 +1,284 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent Testing Patterns",
+  "description": "Comprehensive testing strategies for AI agents",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "Testing enables verification of agent behavior",
+    "A3_transparency": "Test results make agent capabilities and limitations explicit"
+  },
+  "evaluation_datasets": {
+    "description": "Structured datasets for agent evaluation",
+    "creating_datasets": {
+      "description": "Create evaluation datasets",
+      "code_example": "from langchain.evaluation import EvaluationDataset\nfrom langchain.evaluation.schema import Example\n\n# Create dataset\ndataset = EvaluationDataset(\n    examples=[\n        Example(\n            inputs={'query': 'What is 2+2?'},\n            outputs={'answer': '4'},\n            metadata={'category': 'math', 'difficulty': 'easy'}\n        ),\n        Example(\n            inputs={'query': 'Explain quantum computing'},\n            outputs={'answer': 'Quantum computing explanation...'},\n            metadata={'category': 'science', 'difficulty': 'hard'}\n        )\n    ]\n)\n\n# Save dataset\ndataset.save('evaluation_dataset.json')",
+      "best_practices": [
+        "Include diverse examples",
+        "Add metadata for filtering",
+        "Cover edge cases",
+        "Include negative examples"
+      ]
+    },
+    "loading_datasets": {
+      "description": "Load and use evaluation datasets",
+      "code_example": "from langchain.evaluation import EvaluationDataset\n\n# Load dataset\ndataset = EvaluationDataset.load('evaluation_dataset.json')\n\n# Filter by metadata\nmath_examples = dataset.filter(lambda ex: ex.metadata.get('category') == 'math')\n\n# Run evaluation\nresults = evaluator.evaluate_dataset(dataset, agent_chain)",
+      "best_practices": [
+        "Organize datasets by domain",
+        "Version datasets",
+        "Document dataset provenance"
+      ]
+    },
+    "synthetic_datasets": {
+      "description": "Generate synthetic test data",
+      "code_example": "from langchain.llms import OpenAI\nimport random\n\ndef generate_synthetic_dataset(num_examples: int):\n    dataset = []\n    \n    for i in range(num_examples):\n        # Generate synthetic query\n        query = generate_query()\n        \n        # Get expected output\n        expected_output = get_expected_output(query)\n        \n        dataset.append({\n            'inputs': {'query': query},\n            'outputs': {'answer': expected_output},\n            'metadata': {'synthetic': True}\n        })\n    \n    return dataset",
+      "best_practices": [
+        "Use for large-scale testing",
+        "Validate synthetic data quality",
+        "Mix with real examples"
+      ]
+    }
+  },
+  "trace_based_testing": {
+    "description": "Test agents using execution traces",
+    "capturing_traces": {
+      "description": "Capture agent execution traces",
+      "code_example": "from langchain.callbacks import LangChainTracer\nfrom langchain.callbacks.manager import CallbackManager\nimport os\n\nos.environ['LANGCHAIN_TRACING_V2'] = 'true'\nos.environ['LANGCHAIN_API_KEY'] = 'your-key'\n\n# Traces are automatically captured\ntracer = LangChainTracer()\ncallback_manager = CallbackManager([tracer])\n\nagent = create_agent(\n    llm=llm,\n    tools=tools,\n    callbacks=callback_manager\n)\n\nresult = agent.invoke({'input': 'test query'})\n\n# Access trace\nrun_id = tracer.run_id\n# Query trace from LangSmith",
+      "best_practices": [
+        "Enable tracing in test environment",
+        "Store trace IDs for analysis",
+        "Compare traces across runs"
+      ]
+    },
+    "analyzing_traces": {
+      "description": "Analyze execution traces",
+      "code_example": "from langsmith import Client\n\nclient = Client()\n\n# Get run trace\nrun = client.read_run(run_id)\n\n# Analyze tool usage\nfor step in run.trace:\n    if step.type == 'tool':\n        print(f'Tool: {step.name}, Input: {step.inputs}, Output: {step.outputs}')\n\n# Check for errors\nif run.error:\n    print(f'Error: {run.error}')\n\n# Measure latency\nlatency = run.end_time - run.start_time",
+      "best_practices": [
+        "Analyze tool usage patterns",
+        "Identify bottlenecks",
+        "Check for errors",
+        "Measure performance metrics"
+      ]
+    },
+    "trace_comparison": {
+      "description": "Compare traces across versions",
+      "code_example": "def compare_traces(run_id_1: str, run_id_2: str):\n    run1 = client.read_run(run_id_1)\n    run2 = client.read_run(run_id_2)\n    \n    # Compare tool calls\n    tools1 = [step.name for step in run1.trace if step.type == 'tool']\n    tools2 = [step.name for step in run2.trace if step.type == 'tool']\n    \n    if tools1 != tools2:\n        print(f'Tool usage changed: {tools1} vs {tools2}')\n    \n    # Compare outputs\n    if run1.outputs != run2.outputs:\n        print('Outputs differ')\n    \n    return {\n        'tools_match': tools1 == tools2,\n        'outputs_match': run1.outputs == run2.outputs\n    }",
+      "best_practices": [
+        "Compare tool usage",
+        "Check output consistency",
+        "Identify regressions"
+      ]
+    }
+  },
+  "langsmith_integration": {
+    "description": "Use LangSmith for agent testing and evaluation",
+    "evaluation_runs": {
+      "description": "Run evaluations in LangSmith",
+      "code_example": "from langchain.evaluation import EvaluatorType\nfrom langchain.evaluation import load_evaluator\nfrom langsmith import Client\n\nclient = Client()\n\nevaluator = load_evaluator(\n    EvaluatorType.QA,\n    llm=llm\n)\n\n# Evaluate agent\nresults = evaluator.evaluate(\n    examples=dataset.examples,\n    prediction=agent_chain,\n    reference_key='answer'\n)\n\n# Log to LangSmith\nclient.create_feedback(\n    run_id=run_id,\n    key='accuracy',\n    score=results['score']\n)",
+      "best_practices": [
+        "Use appropriate evaluator types",
+        "Log feedback to LangSmith",
+        "Track evaluation metrics over time"
+      ]
+    },
+    "custom_evaluators": {
+      "description": "Create custom evaluators",
+      "code_example": "from langchain.evaluation import StringEvaluator\nfrom langchain.evaluation.schema import EvaluationResult\n\nclass CustomEvaluator(StringEvaluator):\n    def __init__(self):\n        super().__init__()\n    \n    def _evaluate_strings(\n        self,\n        prediction: str,\n        reference: str,\n        **kwargs\n    ) -> EvaluationResult:\n        # Custom evaluation logic\n        score = calculate_similarity(prediction, reference)\n        \n        return EvaluationResult(\n            score=score,\n            reasoning=f'Similarity: {score}'\n        )\n\nevaluator = CustomEvaluator()\nresult = evaluator.evaluate_strings(\n    prediction='Agent output',\n    reference='Expected output'\n)",
+      "best_practices": [
+        "Define clear evaluation criteria",
+        "Return structured results",
+        "Include reasoning in results"
+      ]
+    },
+    "monitoring": {
+      "description": "Monitor agent performance",
+      "code_example": "from langsmith import Client\nfrom datetime import datetime, timedelta\n\nclient = Client()\n\n# Get runs from last 24 hours\nruns = client.list_runs(\n    project_name='my-agent',\n    start_time=datetime.now() - timedelta(days=1)\n)\n\n# Calculate metrics\nsuccess_rate = sum(1 for r in runs if not r.error) / len(runs)\navg_latency = sum(\n    (r.end_time - r.start_time).total_seconds()\n    for r in runs\n) / len(runs)\n\nprint(f'Success rate: {success_rate:.2%}')\nprint(f'Average latency: {avg_latency:.2f}s')",
+      "best_practices": [
+        "Track key metrics",
+        "Set up alerts",
+        "Monitor trends"
+      ]
+    }
+  },
+  "benchmark_approaches": {
+    "description": "Benchmark agent performance",
+    "performance_benchmarks": {
+      "description": "Measure agent performance",
+      "code_example": "import time\nfrom statistics import mean, stdev\n\ndef benchmark_agent(agent, test_cases, num_runs=10):\n    results = []\n    \n    for test_case in test_cases:\n        run_times = []\n        \n        for _ in range(num_runs):\n            start = time.time()\n            result = agent.invoke(test_case)\n            elapsed = time.time() - start\n            run_times.append(elapsed)\n        \n        results.append({\n            'test_case': test_case,\n            'mean_time': mean(run_times),\n            'std_time': stdev(run_times) if len(run_times) > 1 else 0,\n            'min_time': min(run_times),\n            'max_time': max(run_times)\n        })\n    \n    return results",
+      "best_practices": [
+        "Run multiple iterations",
+        "Calculate statistics",
+        "Compare across versions",
+        "Monitor for regressions"
+      ]
+    },
+    "accuracy_benchmarks": {
+      "description": "Measure agent accuracy",
+      "code_example": "def benchmark_accuracy(agent, test_dataset):\n    correct = 0\n    total = 0\n    \n    for example in test_dataset:\n        prediction = agent.invoke(example.inputs)\n        expected = example.outputs\n        \n        if is_correct(prediction, expected):\n            correct += 1\n        total += 1\n    \n    accuracy = correct / total\n    return {\n        'accuracy': accuracy,\n        'correct': correct,\n        'total': total\n    }",
+      "best_practices": [
+        "Use diverse test cases",
+        "Define clear correctness criteria",
+        "Track accuracy by category"
+      ]
+    },
+    "cost_benchmarks": {
+      "description": "Measure agent costs",
+      "code_example": "def benchmark_costs(agent, test_cases):\n    total_tokens = 0\n    total_cost = 0.0\n    \n    for test_case in test_cases:\n        result = agent.invoke(test_case)\n        \n        # Extract token usage from trace\n        run = get_latest_run()\n        tokens = run.usage.get('total_tokens', 0)\n        cost = calculate_cost(tokens)\n        \n        total_tokens += tokens\n        total_cost += cost\n    \n    return {\n        'total_tokens': total_tokens,\n        'total_cost': total_cost,\n        'avg_tokens_per_case': total_tokens / len(test_cases),\n        'avg_cost_per_case': total_cost / len(test_cases)\n    }",
+      "best_practices": [
+        "Track token usage",
+        "Calculate costs accurately",
+        "Compare across configurations"
+      ]
+    }
+  },
+  "regression_testing": {
+    "description": "Prevent regressions in agent behavior",
+    "snapshot_testing": {
+      "description": "Compare outputs to snapshots",
+      "code_example": "import json\nfrom pathlib import Path\n\ndef test_agent_snapshot(agent, test_case, snapshot_file):\n    result = agent.invoke(test_case)\n    \n    snapshot_path = Path(snapshot_file)\n    \n    if snapshot_path.exists():\n        # Compare with snapshot\n        with open(snapshot_path) as f:\n            snapshot = json.load(f)\n        \n        if result != snapshot:\n            # Update snapshot if intentional change\n            with open(snapshot_path, 'w') as f:\n                json.dump(result, f, indent=2)\n            \n            assert False, 'Output differs from snapshot'\n    else:\n        # Create initial snapshot\n        with open(snapshot_path, 'w') as f:\n            json.dump(result, f, indent=2)",
+      "best_practices": [
+        "Store snapshots in version control",
+        "Review snapshot changes",
+        "Use for critical outputs"
+      ]
+    },
+    "behavioral_testing": {
+      "description": "Test agent behavior patterns",
+      "code_example": "def test_agent_behavior(agent):\n    # Test that agent uses correct tools\n    result = agent.invoke({'input': 'Search for Python tutorials'})\n    \n    # Check tool usage in trace\n    trace = get_agent_trace(result)\n    tool_calls = [step for step in trace if step.type == 'tool']\n    \n    assert any('search' in tool.name.lower() for tool in tool_calls), \\\n        'Agent should use search tool'\n    \n    # Test that agent handles errors\n    result = agent.invoke({'input': 'Invalid request'})\n    assert 'error' not in result['output'].lower() or 'sorry' in result['output'].lower(), \\\n        'Agent should handle errors gracefully'",
+      "best_practices": [
+        "Test tool usage",
+        "Test error handling",
+        "Test edge cases"
+      ]
+    }
+  },
+  "mock_llm_patterns": {
+    "description": "Mock LLM for deterministic testing",
+    "simple_mock": {
+      "description": "Simple LLM mock",
+      "code_example": "from unittest.mock import Mock\nfrom langchain.schema import AIMessage\n\nclass MockLLM:\n    def __init__(self, responses=None):\n        self.responses = responses or {}\n        self.call_count = 0\n    \n    def invoke(self, messages, **kwargs):\n        self.call_count += 1\n        \n        # Return predefined response\n        if messages in self.responses:\n            return AIMessage(content=self.responses[messages])\n        \n        # Default response\n        return AIMessage(content='Mock response')\n\n# Use in tests\nmock_llm = MockLLM({\n    'What is 2+2?': 'The answer is 4.',\n    'Hello': 'Hi there!'\n})\n\nagent = create_agent(llm=mock_llm, tools=tools)\nresult = agent.invoke({'input': 'What is 2+2?'})\nassert '4' in result['output']",
+      "best_practices": [
+        "Use for unit tests",
+        "Define responses for test cases",
+        "Track call counts"
+      ]
+    },
+    "deterministic_mock": {
+      "description": "Deterministic LLM mock",
+      "code_example": "class DeterministicLLM:\n    def __init__(self):\n        self.responses = {}\n    \n    def invoke(self, messages, **kwargs):\n        # Create deterministic key from messages\n        key = self._create_key(messages)\n        \n        if key not in self.responses:\n            # Generate and cache response\n            self.responses[key] = self._generate_response(messages)\n        \n        return self.responses[key]\n    \n    def _create_key(self, messages):\n        # Create hashable key from messages\n        return tuple(\n            (msg.get('role'), msg.get('content'))\n            for msg in messages\n        )\n    \n    def _generate_response(self, messages):\n        # Generate deterministic response\n        # Use same seed for reproducibility\n        return AIMessage(content='Deterministic response')",
+      "best_practices": [
+        "Use same seed for reproducibility",
+        "Cache responses",
+        "Handle different message formats"
+      ]
+    },
+    "streaming_mock": {
+      "description": "Mock streaming LLM",
+      "code_example": "class StreamingMockLLM:\n    def stream(self, messages, **kwargs):\n        response = 'This is a streaming response'\n        \n        # Stream tokens\n        for token in response.split():\n            yield AIMessageChunk(content=token + ' ')\n\nmock_llm = StreamingMockLLM()\n\nfor chunk in mock_llm.stream('Hello'):\n    print(chunk.content, end='')",
+      "best_practices": [
+        "Simulate streaming behavior",
+        "Test streaming handling",
+        "Handle partial responses"
+      ]
+    }
+  },
+  "deterministic_testing_strategies": {
+    "description": "Make tests deterministic",
+    "fixed_temperature": {
+      "description": "Use temperature=0 for deterministic outputs",
+      "code_example": "llm = ChatOpenAI(\n    model='gpt-4',\n    temperature=0  # Deterministic\n)\n\nagent = create_agent(llm=llm, tools=tools)",
+      "best_practices": [
+        "Use temperature=0 for tests",
+        "Accept some variance in production",
+        "Document expected variance"
+      ]
+    },
+    "seed_control": {
+      "description": "Control random seeds",
+      "code_example": "import random\nimport numpy as np\n\ndef set_deterministic_seed(seed=42):\n    random.seed(seed)\n    np.random.seed(seed)\n    # Set other random seeds as needed\n\n# Use in tests\nset_deterministic_seed(42)\nresult1 = agent.invoke({'input': 'test'})\n\nset_deterministic_seed(42)\nresult2 = agent.invoke({'input': 'test'})\n\nassert result1 == result2",
+      "best_practices": [
+        "Set seeds at test start",
+        "Use consistent seeds",
+        "Document seed values"
+      ]
+    },
+    "time_mocking": {
+      "description": "Mock time for deterministic tests",
+      "code_example": "from unittest.mock import patch\nfrom datetime import datetime\n\n@patch('datetime.datetime')\ndef test_with_fixed_time(mock_datetime):\n    mock_datetime.now.return_value = datetime(2024, 1, 1, 12, 0, 0)\n    \n    # Agent that uses current time\n    result = agent.invoke({'input': 'What time is it?'})\n    \n    assert '2024-01-01' in result['output']",
+      "best_practices": [
+        "Mock time-dependent functions",
+        "Use consistent timestamps",
+        "Test time-sensitive logic"
+      ]
+    }
+  },
+  "integration_testing": {
+    "description": "Test agents end-to-end",
+    "end_to_end_tests": {
+      "description": "Test complete agent workflows",
+      "code_example": "def test_agent_workflow():\n    # Setup\n    agent = create_agent(llm=llm, tools=tools)\n    \n    # Execute\n    result = agent.invoke({\n        'input': 'Research AI frameworks and write a summary'\n    })\n    \n    # Verify\n    assert 'framework' in result['output'].lower()\n    assert len(result['output']) > 100\n    \n    # Check tool usage\n    trace = get_trace(result)\n    assert any('search' in t.name for t in trace.tool_calls)",
+      "best_practices": [
+        "Test complete workflows",
+        "Verify outputs",
+        "Check tool usage",
+        "Test error scenarios"
+      ]
+    },
+    "fixture_based_testing": {
+      "description": "Use fixtures for test setup",
+      "code_example": "import pytest\n\n@pytest.fixture\ndef agent():\n    return create_agent(llm=llm, tools=tools)\n\n@pytest.fixture\ndef test_dataset():\n    return load_dataset('test_data.json')\n\ndef test_agent_with_fixtures(agent, test_dataset):\n    for example in test_dataset:\n        result = agent.invoke(example.inputs)\n        assert is_valid(result)",
+      "best_practices": [
+        "Reuse fixtures",
+        "Isolate test data",
+        "Clean up after tests"
+      ]
+    }
+  },
+  "best_practices": {
+    "test_design": [
+      "Write tests before fixing bugs",
+      "Test behavior, not implementation",
+      "Use descriptive test names",
+      "Keep tests independent"
+    ],
+    "test_organization": [
+      "Organize by feature",
+      "Use test fixtures",
+      "Share common test utilities",
+      "Document test purposes"
+    ],
+    "test_maintenance": [
+      "Update tests when behavior changes",
+      "Remove obsolete tests",
+      "Review test coverage",
+      "Fix flaky tests"
+    ],
+    "performance": [
+      "Use mocks for fast tests",
+      "Run integration tests separately",
+      "Cache expensive operations",
+      "Parallelize when possible"
+    ]
+  },
+  "anti_patterns": {
+    "testing_with_production_llm": {
+      "description": "Using production LLM for all tests",
+      "problem": "Slow, expensive, non-deterministic",
+      "solution": "Use mocks for unit tests, real LLM only for integration"
+    },
+    "ignoring_flaky_tests": {
+      "description": "Not fixing flaky tests",
+      "problem": "Unreliable test results",
+      "solution": "Make tests deterministic, fix root causes"
+    },
+    "no_test_data": {
+      "description": "Testing without proper datasets",
+      "problem": "Incomplete coverage",
+      "solution": "Create comprehensive test datasets"
+    },
+    "testing_implementation": {
+      "description": "Testing implementation details",
+      "problem": "Tests break on refactoring",
+      "solution": "Test behavior and outputs, not internals"
+    }
+  }
+}

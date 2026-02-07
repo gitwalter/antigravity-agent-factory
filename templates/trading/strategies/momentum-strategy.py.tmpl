@@ -1,0 +1,254 @@
+"""
+{{STRATEGY_NAME}} - Momentum Trading Strategy
+
+Purpose: Implement momentum-based trading signals using moving average crossovers
+Author: {{AUTHOR}}
+Created: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): All signals logged with parameters and conditions
+- A4 (Non-Harm): Mandatory risk management with stop-loss
+"""
+
+from typing from typing import Optional
+import pandas as pd
+import numpy as np
+import pandas_ta as ta
+from dataclasses import dataclass
+from enum import Enum
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class Signal(Enum):
+    """Trading signal types."""
+    BUY = 1
+    SELL = -1
+    HOLD = 0
+
+
+@dataclass
+class StrategyConfig:
+    """Configuration for momentum strategy."""
+    
+    # Moving Average Parameters
+    fast_period: int = 10
+    slow_period: int = 50
+    signal_period: int = 9
+    
+    # Trend Filter
+    use_trend_filter: bool = True
+    trend_period: int = 200
+    
+    # Momentum Confirmation
+    use_rsi_filter: bool = True
+    rsi_period: int = 14
+    rsi_overbought: float = 70.0
+    rsi_oversold: float = 30.0
+    
+    # Risk Management (REQUIRED)
+    stop_loss_atr_multiplier: float = 2.0
+    take_profit_atr_multiplier: float = 3.0
+    max_position_size: float = 0.02  # 2% of capital per trade
+
+
+class MomentumStrategy:
+    """
+    Momentum trading strategy using moving average crossovers.
+    
+    Strategy Logic:
+    1. Calculate fast and slow moving averages
+    2. Generate signals on crossovers
+    3. Filter with trend direction (optional)
+    4. Confirm with RSI (optional)
+    
+    Example:
+        >>> config = StrategyConfig(fast_period=10, slow_period=50)
+        >>> strategy = MomentumStrategy(config)
+        >>> signals = strategy.generate_signals(df)
+    """
+    
+    def __init__(self, config: Optional[StrategyConfig] = None):
+        """
+        Initialize the momentum strategy.
+        
+        Args:
+            config: Strategy configuration parameters
+        """
+        self.config = config or StrategyConfig()
+        self._validate_config()
+        logger.info(f"Initialized MomentumStrategy with config: {self.config}")
+    
+    def _validate_config(self) -> None:
+        """Validate strategy configuration."""
+        if self.config.fast_period >= self.config.slow_period:
+            raise ValueError("Fast period must be less than slow period")
+        if self.config.max_position_size <= 0 or self.config.max_position_size > 0.1:
+            raise ValueError("Position size must be between 0 and 10%")
+    
+    def calculate_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Calculate all required indicators.
+        
+        Args:
+            df: DataFrame with OHLCV data (columns: open, high, low, close, volume)
+            
+        Returns:
+            DataFrame with added indicator columns
+        """
+        df = df.copy()
+        
+        # Moving Averages
+        df['fast_ma'] = df['close'].rolling(window=self.config.fast_period).mean()
+        df['slow_ma'] = df['close'].rolling(window=self.config.slow_period).mean()
+        
+        # MACD for momentum confirmation
+        macd = ta.macd(
+            df['close'],
+            fast=self.config.fast_period,
+            slow=self.config.slow_period,
+            signal=self.config.signal_period
+        )
+        if macd is not None:
+            df = pd.concat([df, macd], axis=1)
+        
+        # Trend Filter
+        if self.config.use_trend_filter:
+            df['trend_ma'] = df['close'].rolling(window=self.config.trend_period).mean()
+            df['trend'] = np.where(df['close'] > df['trend_ma'], 1, -1)
+        
+        # RSI Filter
+        if self.config.use_rsi_filter:
+            df['rsi'] = ta.rsi(df['close'], length=self.config.rsi_period)
+        
+        # ATR for stops
+        df['atr'] = ta.atr(df['high'], df['low'], df['close'], length=14)
+        
+        logger.debug(f"Calculated indicators for {len(df)} rows")
+        return df
+    
+    def generate_signals(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Generate trading signals.
+        
+        Args:
+            df: DataFrame with OHLCV data
+            
+        Returns:
+            DataFrame with signal column added
+        """
+        df = self.calculate_indicators(df)
+        
+        # Base signal from MA crossover
+        df['raw_signal'] = 0
+        df.loc[df['fast_ma'] > df['slow_ma'], 'raw_signal'] = 1
+        df.loc[df['fast_ma'] < df['slow_ma'], 'raw_signal'] = -1
+        
+        # Detect crossovers (signal changes)
+        df['signal'] = df['raw_signal'].diff().fillna(0)
+        
+        # Apply trend filter
+        if self.config.use_trend_filter:
+            # Only take long signals in uptrend, short in downtrend
+            df.loc[(df['signal'] == 1) & (df['trend'] == -1), 'signal'] = 0
+            df.loc[(df['signal'] == -1) & (df['trend'] == 1), 'signal'] = 0
+        
+        # Apply RSI filter
+        if self.config.use_rsi_filter:
+            # Don't buy if overbought, don't sell if oversold
+            df.loc[(df['signal'] == 1) & (df['rsi'] > self.config.rsi_overbought), 'signal'] = 0
+            df.loc[(df['signal'] == -1) & (df['rsi'] < self.config.rsi_oversold), 'signal'] = 0
+        
+        # Calculate stop loss and take profit levels
+        df['stop_loss'] = np.where(
+            df['signal'] == 1,
+            df['close'] - (df['atr'] * self.config.stop_loss_atr_multiplier),
+            np.where(
+                df['signal'] == -1,
+                df['close'] + (df['atr'] * self.config.stop_loss_atr_multiplier),
+                np.nan
+            )
+        )
+        
+        df['take_profit'] = np.where(
+            df['signal'] == 1,
+            df['close'] + (df['atr'] * self.config.take_profit_atr_multiplier),
+            np.where(
+                df['signal'] == -1,
+                df['close'] - (df['atr'] * self.config.take_profit_atr_multiplier),
+                np.nan
+            )
+        )
+        
+        # Normalize signal to enum values
+        df['signal'] = df['signal'].clip(-1, 1).astype(int)
+        
+        # Log signal summary
+        buy_signals = (df['signal'] == 1).sum()
+        sell_signals = (df['signal'] == -1).sum()
+        logger.info(f"Generated signals: {buy_signals} buy, {sell_signals} sell")
+        
+        return df
+    
+    def get_position_size(
+        self,
+        capital: float,
+        entry_price: float,
+        stop_loss: float
+    ) -> float:
+        """
+        Calculate position size based on risk.
+        
+        Args:
+            capital: Total account capital
+            entry_price: Entry price for trade
+            stop_loss: Stop loss price
+            
+        Returns:
+            Position size in units
+        """
+        risk_per_unit = abs(entry_price - stop_loss)
+        if risk_per_unit == 0:
+            return 0
+        
+        risk_amount = capital * self.config.max_position_size
+        position_size = risk_amount / risk_per_unit
+        
+        logger.debug(f"Position size: {position_size:.4f} units at {entry_price}")
+        return position_size
+
+
+def main():
+    """Example usage of the momentum strategy."""
+    import yfinance as yf
+    
+    # Download sample data
+    ticker = "SPY"
+    df = yf.download(ticker, start="2023-01-01", end="2024-01-01")
+    df.columns = [col.lower() for col in df.columns]
+    
+    # Initialize strategy
+    config = StrategyConfig(
+        fast_period=10,
+        slow_period=50,
+        use_trend_filter=True,
+        use_rsi_filter=True
+    )
+    strategy = MomentumStrategy(config)
+    
+    # Generate signals
+    signals_df = strategy.generate_signals(df)
+    
+    # Print signal summary
+    print(f"\nStrategy: Momentum MA Crossover")
+    print(f"Ticker: {ticker}")
+    print(f"Period: {df.index[0]} to {df.index[-1]}")
+    print(f"Total signals: {(signals_df['signal'] != 0).sum()}")
+    print(f"Buy signals: {(signals_df['signal'] == 1).sum()}")
+    print(f"Sell signals: {(signals_df['signal'] == -1).sum()}")
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    main()

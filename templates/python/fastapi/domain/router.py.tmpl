@@ -1,0 +1,207 @@
+"""
+{{MODULE_NAME}} Router - FastAPI route definitions
+
+Purpose: Define HTTP endpoints for {{DOMAIN_NAME}} operations
+Author: {{AUTHOR}}
+Created: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): All endpoints return structured responses
+- A3 (Transparency): Clear error messages and status codes
+- A4 (Non-Harm): Input validation prevents harmful operations
+"""
+
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from pydantic import BaseModel, Field
+import logging
+
+from .service import {{SERVICE_CLASS_NAME}}
+from .schema import {{REQUEST_SCHEMA}}, {{RESPONSE_SCHEMA}}, {{LIST_RESPONSE_SCHEMA}}
+from ..middleware.error_handler import handle_service_exceptions
+
+logger = logging.getLogger(__name__)
+router = APIRouter(prefix="/api/{{MODULE_NAME}}", tags=["{{MODULE_NAME}}"])
+security = HTTPBearer()
+
+
+def get_{{SERVICE_VAR_NAME}}() -> {{SERVICE_CLASS_NAME}}:
+    """
+    Dependency injection for {{SERVICE_CLASS_NAME}}.
+    
+    Returns:
+        Service instance
+    """
+    return {{SERVICE_CLASS_NAME}}()
+
+
+@router.post(
+    "/",
+    response_model={{RESPONSE_SCHEMA}},
+    status_code=status.HTTP_201_CREATED,
+    summary="Create {{ENTITY_NAME}}",
+    description="Create a new {{ENTITY_NAME}} record"
+)
+@handle_service_exceptions
+async def create_{{ENTITY_VAR_NAME}}(
+    request: {{REQUEST_SCHEMA}},
+    service: {{SERVICE_CLASS_NAME}} = Depends(get_{{SERVICE_VAR_NAME}}),
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+) -> {{RESPONSE_SCHEMA}}:
+    """
+    Create a new {{ENTITY_NAME}}.
+    
+    Args:
+        request: {{ENTITY_NAME}} creation data
+        service: Injected service instance
+        credentials: Authentication credentials
+        
+    Returns:
+        Created {{ENTITY_NAME}} with generated ID
+        
+    Raises:
+        HTTPException: If creation fails or validation errors occur
+    """
+    logger.info(f"Creating {{ENTITY_NAME}}: {request}")
+    result = await service.create(request)
+    logger.info(f"Created {{ENTITY_NAME}} with ID: {result.id}")
+    return result
+
+
+@router.get(
+    "/{id}",
+    response_model={{RESPONSE_SCHEMA}},
+    summary="Get {{ENTITY_NAME}} by ID",
+    description="Retrieve a {{ENTITY_NAME}} by its unique identifier"
+)
+@handle_service_exceptions
+async def get_{{ENTITY_VAR_name}}_by_id(
+    id: int = Field(..., description="{{ENTITY_NAME}} ID", gt=0),
+    service: {{SERVICE_CLASS_NAME}} = Depends(get_{{SERVICE_VAR_NAME}}),
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+) -> {{RESPONSE_SCHEMA}}:
+    """
+    Get a {{ENTITY_NAME}} by ID.
+    
+    Args:
+        id: {{ENTITY_NAME}} identifier (must be positive integer)
+        service: Injected service instance
+        credentials: Authentication credentials
+        
+    Returns:
+        {{ENTITY_NAME}} data
+        
+    Raises:
+        HTTPException: 404 if {{ENTITY_NAME}} not found
+    """
+    logger.info(f"Fetching {{ENTITY_NAME}} with ID: {id}")
+    result = await service.get_by_id(id)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"{{ENTITY_NAME}} with ID {id} not found"
+        )
+    return result
+
+
+@router.get(
+    "/",
+    response_model={{LIST_RESPONSE_SCHEMA}},
+    summary="List {{ENTITY_NAME}}s",
+    description="Retrieve a paginated list of {{ENTITY_NAME}}s with optional filtering"
+)
+@handle_service_exceptions
+async def list_{{ENTITY_VAR_NAME}}s(
+    skip: int = Field(default=0, ge=0, description="Number of records to skip"),
+    limit: int = Field(default=100, ge=1, le=1000, description="Maximum number of records to return"),
+    filter_by: Optional[str] = Field(default=None, description="Optional filter criteria"),
+    service: {{SERVICE_CLASS_NAME}} = Depends(get_{{SERVICE_VAR_NAME}}),
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+) -> {{LIST_RESPONSE_SCHEMA}}:
+    """
+    List {{ENTITY_NAME}}s with pagination.
+    
+    Args:
+        skip: Number of records to skip (for pagination)
+        limit: Maximum number of records to return (1-1000)
+        filter_by: Optional filter string
+        service: Injected service instance
+        credentials: Authentication credentials
+        
+    Returns:
+        Paginated list of {{ENTITY_NAME}}s
+    """
+    logger.info(f"Listing {{ENTITY_NAME}}s: skip={skip}, limit={limit}, filter={filter_by}")
+    results = await service.list_all(skip=skip, limit=limit, filter_by=filter_by)
+    return {{LIST_RESPONSE_SCHEMA}}(items=results, total=len(results), skip=skip, limit=limit)
+
+
+@router.put(
+    "/{id}",
+    response_model={{RESPONSE_SCHEMA}},
+    summary="Update {{ENTITY_NAME}}",
+    description="Update an existing {{ENTITY_NAME}} by ID"
+)
+@handle_service_exceptions
+async def update_{{ENTITY_VAR_NAME}}(
+    id: int = Field(..., description="{{ENTITY_NAME}} ID", gt=0),
+    request: {{REQUEST_SCHEMA}} = ...,
+    service: {{SERVICE_CLASS_NAME}} = Depends(get_{{SERVICE_VAR_NAME}}),
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+) -> {{RESPONSE_SCHEMA}}:
+    """
+    Update a {{ENTITY_NAME}}.
+    
+    Args:
+        id: {{ENTITY_NAME}} identifier
+        request: Updated {{ENTITY_NAME}} data
+        service: Injected service instance
+        credentials: Authentication credentials
+        
+    Returns:
+        Updated {{ENTITY_NAME}} data
+        
+    Raises:
+        HTTPException: 404 if {{ENTITY_NAME}} not found
+    """
+    logger.info(f"Updating {{ENTITY_NAME}} with ID: {id}")
+    result = await service.update(id, request)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"{{ENTITY_NAME}} with ID {id} not found"
+        )
+    return result
+
+
+@router.delete(
+    "/{id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete {{ENTITY_NAME}}",
+    description="Delete a {{ENTITY_NAME}} by ID"
+)
+@handle_service_exceptions
+async def delete_{{ENTITY_VAR_NAME}}(
+    id: int = Field(..., description="{{ENTITY_NAME}} ID", gt=0),
+    service: {{SERVICE_CLASS_NAME}} = Depends(get_{{SERVICE_VAR_NAME}}),
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+) -> None:
+    """
+    Delete a {{ENTITY_NAME}}.
+    
+    Args:
+        id: {{ENTITY_NAME}} identifier
+        service: Injected service instance
+        credentials: Authentication credentials
+        
+    Raises:
+        HTTPException: 404 if {{ENTITY_NAME}} not found
+    """
+    logger.info(f"Deleting {{ENTITY_NAME}} with ID: {id}")
+    success = await service.delete(id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"{{ENTITY_NAME}} with ID {id} not found"
+        )

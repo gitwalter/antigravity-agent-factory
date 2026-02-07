@@ -1,0 +1,122 @@
+{
+  "metadata": {
+    "patternId": "grounding",
+    "patternName": "Grounding Skill",
+    "category": "core",
+    "stackAgnostic": true,
+    "description": "Verify data structures and assumptions before implementation",
+    "composable": true,
+    "version": "1.1.0"
+  },
+  "frontmatter": {
+    "name": "grounding",
+    "description": "Verify data structures, field existence, and assumptions before implementation",
+    "type": "skill",
+    "knowledge": [
+      "data-patterns.json"
+    ],
+    "verification": {
+      "enabled": true,
+      "profile": "data",
+      "trigger": "on_medium_confidence",
+      "description": "Uses grounding-verification with data profile for schema/structure claims"
+    }
+  },
+  "sections": {
+    "title": "Grounding Skill",
+    "introduction": "Ensures all data structures, field existence, and assumptions are verified before implementation.",
+    "whenToUse": [
+      "When working with database tables or data structures",
+      "Before implementing data access logic",
+      "When designing data models",
+      "Before assuming any field or structure exists"
+    ],
+    "process": [
+      {
+        "step": 1,
+        "name": "Check Knowledge Files",
+        "description": "Look for cached definitions in knowledge files",
+        "actions": [
+          "Query knowledge/data-patterns.json",
+          "Check for verified structures"
+        ]
+      },
+      {
+        "step": 2,
+        "name": "Search Documentation",
+        "description": "Search external documentation if not cached",
+        "mcpTools": [
+          "documentation-search"
+        ],
+        "queryPattern": "{STRUCTURE_NAME} structure fields"
+      },
+      {
+        "step": 3,
+        "name": "Verify Critical Fields",
+        "description": "Confirm existence of key fields",
+        "actions": [
+          "Verify key fields",
+          "Verify data types",
+          "Verify relationships"
+        ]
+      },
+      {
+        "step": 4,
+        "name": "Document Verification",
+        "description": "Record verification results",
+        "outputs": [
+          "Verification table with structure, field, verified status, source"
+        ]
+      },
+      {
+        "step": 5,
+        "name": "Run Grounding Verification",
+        "description": "Apply two-pass verification when confidence is MEDIUM",
+        "trigger": "on_medium_confidence",
+        "profile": "data",
+        "actions": [
+          "If grounding confidence is MEDIUM, trigger grounding-verification",
+          "Use data profile for schema/structure verification",
+          "Compare scrubbed vs full evidence confidence",
+          "Mark claims as VERIFIED/PLAUSIBLE/SUSPICIOUS/UNSUPPORTED"
+        ],
+        "reference": "See grounding-verification.json for full algorithm"
+      },
+      {
+        "step": 6,
+        "name": "Handle Unverified",
+        "description": "If verification fails, ask user",
+        "actions": [
+          "STOP if cannot verify",
+          "ASK USER for confirmation",
+          "Do NOT proceed with assumptions"
+        ]
+      }
+    ],
+    "outputFormat": "### Data Model Verification\n\n| Structure | Field | Verified? | Source | Notes |\n|-----------|-------|-----------|--------|-------|\n| {STRUCTURE} | {FIELD} | Yes/No | knowledge/docs | {notes} |",
+    "importantRules": [
+      "NEVER assume structures exist without verification",
+      "ALWAYS verify before implementation",
+      "If verification fails, STOP and ASK user",
+      "Document all verifications in output",
+      "All actions must align with core axioms (A1: Verifiability, A2: User Primacy, A3: Transparency, A4: Non-Harm, A5: Consistency)"
+    ],
+    "fallbackProcedures": [
+      {
+        "condition": "If structure cannot be verified",
+        "action": "ASK USER: 'I cannot verify {STRUCTURE}. Please confirm it exists.'"
+      },
+      {
+        "condition": "If field does not exist",
+        "action": "Report finding and suggest alternatives"
+      }
+    ]
+  },
+  "variables": [
+    {
+      "name": "{STRUCTURE_NAME}",
+      "description": "Name of structure to verify",
+      "required": true
+    }
+  ]
+}

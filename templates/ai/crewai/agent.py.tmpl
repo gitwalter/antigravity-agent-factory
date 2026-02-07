@@ -1,0 +1,179 @@
+"""
+{{AGENT_NAME}} - CrewAI Agent Definition
+
+Purpose: {{AGENT_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A2 (User Primacy): Agent prioritizes user goals
+- A3 (Transparency): Agent role and capabilities are explicit
+"""
+
+from typing import List, Optional
+from crewai import Agent
+from crewai.tools import tool
+from langchain_openai import ChatOpenAI
+from pydantic import BaseModel, Field
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+# Tool definitions
+@tool("{{TOOL_NAME}}")
+def {{TOOL_FUNCTION_NAME}}(input_text: str) -> str:
+    """
+    {{TOOL_DESCRIPTION}}
+    
+    Args:
+        input_text: Input to process
+    
+    Returns:
+        Tool output
+    """
+    logger.info(f"Tool {{TOOL_NAME}} called: {input_text[:100]}...")
+    # Tool implementation
+    return f"Processed: {input_text}"
+
+
+class {{AGENT_CLASS_NAME}}:
+    """
+    {{AGENT_NAME}} - CrewAI Agent Definition
+    
+    Defines an agent with:
+    - Role: What the agent does
+    - Goal: What the agent aims to achieve
+    - Backstory: Context that shapes behavior
+    - Tools: Capabilities available to the agent
+    
+    Example:
+        >>> agent = {{AGENT_CLASS_NAME}}()
+        >>> result = agent.execute("Analyze this data")
+    """
+    
+    def __init__(
+        self,
+        model_name: Optional[str] = None,
+        temperature: float = {{TEMPERATURE}},
+        verbose: bool = True,
+        allow_delegation: bool = False,
+        max_iter: int = 3,
+        memory: bool = True,
+        tools: Optional[List] = None
+    ):
+        """
+        Initialize agent.
+        
+        Args:
+            model_name: Optional LLM model (uses default if None)
+            temperature: Sampling temperature
+            verbose: Enable verbose logging
+            allow_delegation: Allow agent to delegate tasks
+            max_iter: Maximum iterations per task
+            memory: Enable conversation memory
+            tools: List of tools available to agent
+        """
+        self.model_name = model_name
+        self.temperature = temperature
+        self.verbose = verbose
+        self.allow_delegation = allow_delegation
+        self.max_iter = max_iter
+        self.memory = memory
+        
+        # Default tools
+        self.tools = tools or [{{TOOL_FUNCTION_NAME}}]
+        
+        # Create LLM if custom model specified
+        llm = None
+        if model_name:
+            llm = ChatOpenAI(
+                model=model_name,
+                temperature=temperature
+            )
+        
+        # Create agent
+        self.agent = Agent(
+            role="{{AGENT_ROLE}}",
+            goal="{{AGENT_GOAL}}",
+            backstory="""{{AGENT_BACKSTORY}}
+            
+## Core Principles
+- VERIFIABILITY (A1): Provide reasoning for decisions
+- USER PRIMACY (A2): Prioritize user goals
+- TRANSPARENCY (A3): Be explicit about actions
+- NON-HARM (A4): Avoid harmful actions
+""",
+            verbose=verbose,
+            allow_delegation=allow_delegation,
+            max_iter=max_iter,
+            memory=memory,
+            tools=self.tools,
+            llm=llm
+        )
+        
+        logger.info(f"Initialized {{AGENT_NAME}} agent")
+    
+    def execute(self, task_description: str) -> str:
+        """
+        Execute a task with this agent.
+        
+        Args:
+            task_description: Description of the task
+        
+        Returns:
+            Agent output
+        
+        Example:
+            >>> result = agent.execute("Research AI trends")
+        """
+        logger.info(f"Agent executing task: {task_description[:100]}...")
+        
+        try:
+            # Create a temporary task for execution
+            from crewai.task import Task
+            
+            task = Task(
+                description=task_description,
+                agent=self.agent,
+                expected_output="Detailed response to the task"
+            )
+            
+            # Execute task
+            result = self.agent.execute_task(task)
+            
+            logger.info("Agent task completed")
+            return str(result)
+            
+        except Exception as e:
+            logger.error(f"Error during agent execution: {e}")
+            return f"Error: {str(e)}"
+    
+    def get_role(self) -> str:
+        """Get agent role."""
+        return self.agent.role
+    
+    def get_goal(self) -> str:
+        """Get agent goal."""
+        return self.agent.goal
+    
+    def get_tools(self) -> List:
+        """Get agent tools."""
+        return self.tools
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create agent
+    agent = {{AGENT_CLASS_NAME}}(
+        verbose=True,
+        allow_delegation=False
+    )
+    
+    # Execute task
+    result = agent.execute("{{EXAMPLE_TASK}}")
+    
+    print(f"Agent Role: {agent.get_role()}")
+    print(f"Agent Goal: {agent.get_goal()}")
+    print(f"\nResult:\n{result}")

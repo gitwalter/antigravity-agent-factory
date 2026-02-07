@@ -1,0 +1,322 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Architecture Patterns",
+  "description": "Software architecture patterns for different scales and requirements",
+  "version": "1.0.0",
+  "architectureStyles": {
+    "monolith": {
+      "name": "Monolithic Architecture",
+      "description": "Single deployable unit containing all application functionality",
+      "whenToUse": [
+        "Small to medium-sized applications",
+        "Small teams (2-10 developers)",
+        "Simple deployment requirements",
+        "Strong consistency requirements",
+        "Rapid prototyping and MVPs"
+      ],
+      "whenToAvoid": [
+        "Large teams working independently",
+        "Different scaling requirements per component",
+        "Polyglot technology requirements",
+        "Very high availability requirements"
+      ],
+      "bestPractices": [
+        "Use modular/layered architecture internally",
+        "Define clear boundaries between modules",
+        "Prepare for future extraction to services",
+        "Use dependency injection for loose coupling"
+      ],
+      "layers": {
+        "presentation": "Controllers, Views, API endpoints",
+        "application": "Use cases, application services",
+        "domain": "Business logic, entities, domain services",
+        "infrastructure": "Database, external services, frameworks"
+      }
+    },
+    "microservices": {
+      "name": "Microservices Architecture",
+      "description": "Application as a suite of small, independently deployable services",
+      "whenToUse": [
+        "Large, complex domains",
+        "Multiple teams working independently",
+        "Different scaling requirements per service",
+        "Need for technology diversity",
+        "High availability requirements"
+      ],
+      "whenToAvoid": [
+        "Small teams or simple domains",
+        "Limited DevOps capabilities",
+        "Strong consistency requirements",
+        "Budget constraints for infrastructure"
+      ],
+      "bestPractices": [
+        "Design around business capabilities",
+        "Implement API gateway pattern",
+        "Use event-driven communication where possible",
+        "Implement proper service discovery",
+        "Design for failure (circuit breakers, retries)"
+      ],
+      "patterns": {
+        "apiGateway": "Single entry point for all clients",
+        "serviceMesh": "Infrastructure layer for service-to-service communication",
+        "saga": "Distributed transaction management",
+        "cqrs": "Separate read and write models",
+        "eventSourcing": "Store state changes as events"
+      }
+    },
+    "serverless": {
+      "name": "Serverless Architecture",
+      "description": "Application built on third-party services and functions",
+      "whenToUse": [
+        "Event-driven workloads",
+        "Variable or unpredictable traffic",
+        "Focus on business logic over infrastructure",
+        "Cost optimization for sporadic workloads",
+        "Rapid development cycles"
+      ],
+      "whenToAvoid": [
+        "Long-running processes",
+        "Real-time or low-latency requirements",
+        "Complex state management needs",
+        "Vendor lock-in concerns"
+      ],
+      "components": {
+        "compute": ["AWS Lambda", "Azure Functions", "Google Cloud Functions", "Vercel Edge Functions"],
+        "storage": ["S3", "Azure Blob", "Cloud Storage"],
+        "database": ["DynamoDB", "Cosmos DB", "Firestore", "PlanetScale"],
+        "messaging": ["SQS", "EventBridge", "Pub/Sub"]
+      }
+    },
+    "modularMonolith": {
+      "name": "Modular Monolith",
+      "description": "Monolith with strong module boundaries, preparing for potential service extraction",
+      "whenToUse": [
+        "Starting a new project with growth potential",
+        "Team wants microservices benefits without complexity",
+        "Unclear domain boundaries initially",
+        "Need for strong consistency"
+      ],
+      "structure": {
+        "modules": "Self-contained vertical slices",
+        "communication": "In-process, through defined interfaces",
+        "data": "Each module owns its data, no direct DB access across modules",
+        "deployment": "Single unit, but modules can be extracted later"
+      }
+    }
+  },
+  "dataPatterns": {
+    "cqrs": {
+      "name": "Command Query Responsibility Segregation",
+      "description": "Separate read and write models for a data store",
+      "whenToUse": [
+        "Complex domains with different read/write requirements",
+        "High read-to-write ratio",
+        "Need for optimized read models",
+        "Event-driven systems"
+      ],
+      "components": {
+        "commandModel": "Handles writes, enforces business rules",
+        "queryModel": "Optimized for reads, denormalized",
+        "synchronization": "Events to keep models in sync"
+      }
+    },
+    "eventSourcing": {
+      "name": "Event Sourcing",
+      "description": "Store all changes as a sequence of events",
+      "whenToUse": [
+        "Audit trail requirements",
+        "Complex domain with business events",
+        "Need for temporal queries",
+        "Event-driven architecture"
+      ],
+      "components": {
+        "eventStore": "Append-only log of events",
+        "aggregates": "Rebuild state from events",
+        "projections": "Read models built from events",
+        "snapshots": "Periodic state snapshots for performance"
+      }
+    },
+    "saga": {
+      "name": "Saga Pattern",
+      "description": "Manage distributed transactions across services",
+      "types": {
+        "choreography": "Each service publishes events that trigger other services",
+        "orchestration": "Central coordinator manages the saga flow"
+      },
+      "compensatingActions": "Each step has a compensating action for rollback"
+    }
+  },
+  "apiPatterns": {
+    "rest": {
+      "name": "REST (Representational State Transfer)",
+      "description": "Resource-based API using HTTP methods",
+      "principles": [
+        "Use nouns for resources, not verbs",
+        "Use HTTP methods semantically (GET, POST, PUT, DELETE)",
+        "Use proper status codes",
+        "Support filtering, sorting, pagination",
+        "Version your API"
+      ],
+      "conventions": {
+        "naming": "/api/v1/users, /api/v1/users/{id}/orders",
+        "methods": {
+          "GET": "Read resource(s)",
+          "POST": "Create resource",
+          "PUT": "Replace resource",
+          "PATCH": "Partial update",
+          "DELETE": "Remove resource"
+        },
+        "statusCodes": {
+          "200": "Success",
+          "201": "Created",
+          "204": "No Content",
+          "400": "Bad Request",
+          "401": "Unauthorized",
+          "403": "Forbidden",
+          "404": "Not Found",
+          "422": "Validation Error",
+          "500": "Server Error"
+        }
+      }
+    },
+    "graphql": {
+      "name": "GraphQL",
+      "description": "Query language for APIs with flexible data fetching",
+      "whenToUse": [
+        "Multiple clients with different data needs",
+        "Complex, nested data structures",
+        "Rapid frontend iteration",
+        "Mobile apps with bandwidth constraints"
+      ],
+      "whenToAvoid": [
+        "Simple CRUD APIs",
+        "File uploads (use REST alongside)",
+        "Real-time requirements (consider subscriptions)",
+        "Caching is critical (REST caches better)"
+      ],
+      "bestPractices": [
+        "Implement proper authorization in resolvers",
+        "Use DataLoader to prevent N+1 queries",
+        "Implement query complexity limits",
+        "Use persisted queries in production"
+      ]
+    },
+    "grpc": {
+      "name": "gRPC",
+      "description": "High-performance RPC framework using Protocol Buffers",
+      "whenToUse": [
+        "Microservice-to-microservice communication",
+        "Low latency requirements",
+        "Streaming data",
+        "Polyglot environments"
+      ],
+      "features": [
+        "Binary protocol (smaller payloads)",
+        "HTTP/2 multiplexing",
+        "Bidirectional streaming",
+        "Code generation from .proto files"
+      ]
+    }
+  },
+  "deploymentPatterns": {
+    "blueGreen": {
+      "name": "Blue-Green Deployment",
+      "description": "Two identical production environments for zero-downtime deployments",
+      "process": [
+        "Blue (current) serves production traffic",
+        "Deploy new version to Green",
+        "Test Green environment",
+        "Switch traffic to Green",
+        "Blue becomes standby for rollback"
+      ],
+      "benefits": ["Zero downtime", "Easy rollback", "Full environment testing"],
+      "challenges": ["Double infrastructure cost", "Database migration complexity"]
+    },
+    "canary": {
+      "name": "Canary Deployment",
+      "description": "Gradual rollout to a subset of users",
+      "process": [
+        "Deploy new version alongside current",
+        "Route small percentage of traffic to new version",
+        "Monitor metrics and errors",
+        "Gradually increase traffic percentage",
+        "Full rollout or rollback based on metrics"
+      ],
+      "metrics": ["Error rates", "Latency", "Business metrics", "User feedback"]
+    },
+    "featureFlags": {
+      "name": "Feature Flags",
+      "description": "Toggle features on/off without deployment",
+      "useCases": [
+        "Gradual feature rollout",
+        "A/B testing",
+        "Kill switches for features",
+        "Environment-specific features"
+      ],
+      "tools": ["LaunchDarkly", "Unleash", "Flagsmith", "ConfigCat"]
+    }
+  },
+  "resiliencePatterns": {
+    "circuitBreaker": {
+      "name": "Circuit Breaker",
+      "description": "Prevent cascade failures by failing fast",
+      "states": {
+        "closed": "Normal operation, requests pass through",
+        "open": "Failure threshold exceeded, requests fail immediately",
+        "halfOpen": "Test if service recovered"
+      },
+      "configuration": {
+        "failureThreshold": 5,
+        "successThreshold": 3,
+        "timeout": "30s"
+      }
+    },
+    "retry": {
+      "name": "Retry Pattern",
+      "description": "Automatically retry failed operations",
+      "strategies": {
+        "immediate": "Retry immediately",
+        "fixedDelay": "Wait fixed time between retries",
+        "exponentialBackoff": "Increasing delay between retries",
+        "jitter": "Add randomness to prevent thundering herd"
+      },
+      "bestPractices": [
+        "Only retry idempotent operations",
+        "Set maximum retry count",
+        "Use exponential backoff with jitter",
+        "Don't retry on client errors (4xx)"
+      ]
+    },
+    "bulkhead": {
+      "name": "Bulkhead Pattern",
+      "description": "Isolate failures to prevent cascade",
+      "types": {
+        "threadPool": "Separate thread pools per service",
+        "semaphore": "Limit concurrent calls per service"
+      }
+    },
+    "timeout": {
+      "name": "Timeout Pattern",
+      "description": "Limit time waiting for responses",
+      "recommendations": {
+        "connectionTimeout": "1-5 seconds",
+        "readTimeout": "Based on expected response time",
+        "totalTimeout": "Connection + read + buffer"
+      }
+    }
+  },
+  "patternsByScale": {
+    "startup": {
+      "recommended": ["monolith", "modularMonolith"],
+      "focus": ["Simplicity", "Speed of development", "Low operational overhead"]
+    },
+    "scaleup": {
+      "recommended": ["modularMonolith", "microservices"],
+      "focus": ["Team autonomy", "Service boundaries", "Observability"]
+    },
+    "enterprise": {
+      "recommended": ["microservices", "eventSourcing"],
+      "focus": ["Resilience", "Scalability", "Governance"]
+    }
+  }
+}

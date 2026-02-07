@@ -1,0 +1,225 @@
+{
+  "metadata": {
+    "patternId": "trading-strategy",
+    "patternName": "Trading Strategy Development Skill",
+    "category": "workflow",
+    "stackAgnostic": false,
+    "stacks": [
+      "python",
+      "quantitative-trading"
+    ],
+    "description": "Systematic trading strategy development workflow"
+  },
+  "frontmatter": {
+    "name": "trading-strategy",
+    "description": "Develop and validate algorithmic trading strategies",
+    "type": "skill",
+    "skills": [
+      "grounding",
+      "tdd"
+    ],
+    "knowledge": [
+      "trading-patterns.json",
+      "quantitative-finance.json",
+      "risk-management.json"
+    ]
+  },
+  "sections": {
+    "title": "Trading Strategy Development Skill",
+    "introduction": "A systematic approach to developing, testing, and validating algorithmic trading strategies with proper risk management.",
+    "axiomAlignment": {
+      "A1_verifiability": "All strategies must be backtested with statistical validation",
+      "A4_non_harm": "Mandatory risk management and out-of-sample testing"
+    },
+    "whenToUse": [
+      "When developing new trading strategies",
+      "When optimizing existing strategies",
+      "When validating strategy performance",
+      "When implementing live trading systems"
+    ],
+    "process": [
+      {
+        "step": 1,
+        "name": "Strategy Hypothesis",
+        "description": "Define the trading thesis and expected behavior",
+        "actions": [
+          "Document market inefficiency being exploited",
+          "Define entry and exit conditions",
+          "Specify asset universe and timeframe",
+          "Set performance expectations"
+        ],
+        "outputs": [
+          "Strategy specification document"
+        ]
+      },
+      {
+        "step": 2,
+        "name": "Data Preparation",
+        "description": "Acquire and validate historical data",
+        "actions": [
+          "Fetch historical OHLCV data",
+          "Handle missing values and outliers",
+          "Adjust for splits and dividends",
+          "Verify data quality"
+        ],
+        "warnings": [
+          "NO LOOK-AHEAD BIAS - Only use point-in-time data",
+          "Handle survivorship bias - Include delisted securities"
+        ],
+        "isMandatory": true
+      },
+      {
+        "step": 3,
+        "name": "Signal Development",
+        "description": "Implement signal generation logic",
+        "actions": [
+          "Calculate technical indicators",
+          "Implement signal logic",
+          "Add filters (trend, volatility, etc.)",
+          "Write unit tests for signal functions"
+        ],
+        "skillsInvoked": [
+          "tdd"
+        ],
+        "templates": [
+          "templates/trading/strategies/momentum-strategy.py.tmpl"
+        ]
+      },
+      {
+        "step": 4,
+        "name": "Risk Management",
+        "description": "Implement position sizing and stops",
+        "requirements": [
+          "Position sizing method (fixed fraction, volatility-adjusted, Kelly)",
+          "Stop loss logic (fixed, ATR-based, trailing)",
+          "Maximum position limits",
+          "Portfolio-level risk controls"
+        ],
+        "templates": [
+          "templates/trading/risk/position-sizer.py.tmpl"
+        ],
+        "isMandatory": true
+      },
+      {
+        "step": 5,
+        "name": "Backtesting",
+        "description": "Validate strategy on historical data",
+        "requirements": [
+          "Include realistic transaction costs (0.1-0.5%)",
+          "Model slippage appropriately",
+          "Use proper data alignment (no look-ahead)",
+          "Reserve 20% for out-of-sample"
+        ],
+        "templates": [
+          "templates/trading/backtesting/backtest-runner.py.tmpl"
+        ],
+        "outputs": [
+          "Backtest report",
+          "Equity curve",
+          "Trade log"
+        ]
+      },
+      {
+        "step": 6,
+        "name": "Statistical Validation",
+        "description": "Ensure results are statistically significant",
+        "tests": [
+          {
+            "name": "Walk-Forward Analysis",
+            "description": "Rolling window optimization and validation"
+          },
+          {
+            "name": "Monte Carlo Simulation",
+            "description": "1000+ simulations to assess robustness"
+          },
+          {
+            "name": "Parameter Sensitivity",
+            "description": "Test performance across parameter ranges"
+          },
+          {
+            "name": "Out-of-Sample Testing",
+            "description": "20% holdout validation"
+          }
+        ],
+        "minimumRequirements": {
+          "sharpe_ratio": "> 1.0",
+          "sortino_ratio": "> 1.5",
+          "max_drawdown": "< 20%",
+          "oos_sharpe_degradation": "< 50%"
+        }
+      },
+      {
+        "step": 7,
+        "name": "Paper Trading",
+        "description": "Validate in simulated live environment",
+        "duration": "Minimum 1 month",
+        "actions": [
+          "Run strategy on live data without real money",
+          "Compare paper results to backtest expectations",
+          "Identify execution issues",
+          "Validate infrastructure"
+        ]
+      },
+      {
+        "step": 8,
+        "name": "Live Trading Approval",
+        "description": "Final validation before live deployment",
+        "requirements": [
+          "All validation tests passed",
+          "Paper trading matches expectations",
+          "Risk controls verified",
+          "Human approval obtained"
+        ],
+        "warning": "NEVER deploy to live trading without explicit human approval"
+      }
+    ],
+    "fallbackProcedures": [
+      {
+        "condition": "If backtest Sharpe < 1.0",
+        "action": "Revise strategy or reject"
+      },
+      {
+        "condition": "If OOS performance degrades > 50%",
+        "action": "Likely overfit - simplify or reject"
+      },
+      {
+        "condition": "If max drawdown > 30%",
+        "action": "Improve risk management before proceeding"
+      }
+    ],
+    "antiPatterns": [
+      "Curve fitting: Over-optimizing to historical data",
+      "Data snooping: Testing too many hypotheses",
+      "Survivorship bias: Only testing on surviving securities",
+      "Look-ahead bias: Using future information in signals",
+      "Transaction cost neglect: Ignoring realistic trading costs"
+    ],
+    "references": [
+      "knowledge/trading-patterns.json",
+      "knowledge/quantitative-finance.json",
+      "knowledge/risk-management.json",
+      "templates/trading/strategies/",
+      "templates/trading/backtesting/"
+    ],
+    "importantRules": [
+      "All actions must align with core axioms (A1: Verifiability, A2: User Primacy, A3: Transparency, A4: Non-Harm, A5: Consistency)"
+    ]
+  },
+  "variables": [
+    {
+      "name": "{STRATEGY_NAME}",
+      "description": "Name of the trading strategy",
+      "required": true
+    },
+    {
+      "name": "{ASSET_UNIVERSE}",
+      "description": "Assets the strategy trades",
+      "required": true
+    },
+    {
+      "name": "{TIMEFRAME}",
+      "description": "Trading timeframe (daily, hourly, etc.)",
+      "required": true
+    }
+  ]
+}

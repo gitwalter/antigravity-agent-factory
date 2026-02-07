@@ -1,0 +1,243 @@
+/**
+ * ${SERVICE_NAME} Service Handler Unit Tests
+ * 
+ * Purpose: Test service handler logic and event handlers
+ * Author: ${AUTHOR}
+ * Created: ${DATE}
+ * 
+ * These tests verify the business logic and event handlers
+ * for the ${SERVICE_NAME} service using CAP's testing framework.
+ * 
+ * @see https://cap.cloud.sap/docs/node.js/testing
+ */
+
+const cds = require('@sap/cds');
+const { GET, POST, PATCH, DELETE, expect } = cds.test(__dirname + '/../..');
+
+describe('${SERVICE_NAME} Service', () => {
+    let testData;
+
+    /**
+     * Setup: Run before all tests
+     * 
+     * Initialize test data and prepare the test environment
+     */
+    beforeAll(async () => {
+        // Initialize test data
+        testData = {
+            name: 'Test ${ENTITY_NAME}',
+            description: 'Test description',
+            status: 'ACTIVE'
+        };
+    });
+
+    /**
+     * Cleanup: Run after all tests
+     * 
+     * Clean up test data and resources
+     */
+    afterAll(async () => {
+        // Cleanup if needed
+    });
+
+    describe('CREATE Operations', () => {
+        /**
+         * Test: Create entity successfully
+         */
+        test('should create ${ENTITY_NAME} with valid data', async () => {
+            const response = await POST('/${SERVICE_NAME}/${ENTITY_NAME}', testData);
+
+            expect(response.status).toBe(201);
+            expect(response.data).toHaveProperty('ID');
+            expect(response.data.name).toBe(testData.name);
+            expect(response.data.status).toBe('ACTIVE');
+        });
+
+        /**
+         * Test: Validation - required field missing
+         */
+        test('should reject creation without required field', async () => {
+            const invalidData = { ...testData };
+            delete invalidData.name;
+
+            const response = await POST('/${SERVICE_NAME}/${ENTITY_NAME}', invalidData);
+
+            expect(response.status).toBe(400);
+            expect(response.data.error.message.value).toContain('required');
+        });
+
+        /**
+         * Test: Validation - invalid status value
+         */
+        test('should reject creation with invalid status', async () => {
+            const invalidData = { ...testData, status: 'INVALID_STATUS' };
+
+            const response = await POST('/${SERVICE_NAME}/${ENTITY_NAME}', invalidData);
+
+            expect(response.status).toBe(400);
+            expect(response.data.error.message.value).toContain('Status');
+        });
+
+        /**
+         * Test: Data transformation - trim whitespace
+         */
+        test('should trim whitespace from name field', async () => {
+            const dataWithWhitespace = {
+                ...testData,
+                name: '  Test Name  '
+            };
+
+            const response = await POST('/${SERVICE_NAME}/${ENTITY_NAME}', dataWithWhitespace);
+
+            expect(response.status).toBe(201);
+            expect(response.data.name).toBe('Test Name');
+        });
+    });
+
+    describe('READ Operations', () => {
+        let createdId;
+
+        beforeAll(async () => {
+            // Create test entity for read tests
+            const response = await POST('/${SERVICE_NAME}/${ENTITY_NAME}', testData);
+            createdId = response.data.ID;
+        });
+
+        /**
+         * Test: Read all entities
+         */
+        test('should read all ${ENTITY_NAME} entities', async () => {
+            const response = await GET('/${SERVICE_NAME}/${ENTITY_NAME}');
+
+            expect(response.status).toBe(200);
+            expect(Array.isArray(response.data.value)).toBe(true);
+            expect(response.data.value.length).toBeGreaterThan(0);
+        });
+
+        /**
+         * Test: Read single entity by ID
+         */
+        test('should read ${ENTITY_NAME} by ID', async () => {
+            const response = await GET(`/${SERVICE_NAME}/${ENTITY_NAME}(${createdId})`);
+
+            expect(response.status).toBe(200);
+            expect(response.data.ID).toBe(createdId);
+            expect(response.data.name).toBe(testData.name);
+        });
+
+        /**
+         * Test: Filter entities
+         */
+        test('should filter ${ENTITY_NAME} by status', async () => {
+            const response = await GET(`/${SERVICE_NAME}/${ENTITY_NAME}?$filter=status eq 'ACTIVE'`);
+
+            expect(response.status).toBe(200);
+            response.data.value.forEach(entity => {
+                expect(entity.status).toBe('ACTIVE');
+            });
+        });
+    });
+
+    describe('UPDATE Operations', () => {
+        let createdId;
+
+        beforeAll(async () => {
+            const response = await POST('/${SERVICE_NAME}/${ENTITY_NAME}', testData);
+            createdId = response.data.ID;
+        });
+
+        /**
+         * Test: Update entity successfully
+         */
+        test('should update ${ENTITY_NAME} with valid data', async () => {
+            const updateData = {
+                name: 'Updated Name',
+                description: 'Updated description'
+            };
+
+            const response = await PATCH(`/${SERVICE_NAME}/${ENTITY_NAME}(${createdId})`, updateData);
+
+            expect(response.status).toBe(200);
+            expect(response.data.name).toBe(updateData.name);
+            expect(response.data.description).toBe(updateData.description);
+        });
+
+        /**
+         * Test: Prevent ID modification
+         */
+        test('should prevent modification of ID field', async () => {
+            const updateData = { ID: 'new-id' };
+
+            const response = await PATCH(`/${SERVICE_NAME}/${ENTITY_NAME}(${createdId})`, updateData);
+
+            // ID should remain unchanged
+            const readResponse = await GET(`/${SERVICE_NAME}/${ENTITY_NAME}(${createdId})`);
+            expect(readResponse.data.ID).toBe(createdId);
+        });
+    });
+
+    describe('DELETE Operations', () => {
+        let createdId;
+
+        beforeEach(async () => {
+            // Create entity for each delete test
+            const response = await POST('/${SERVICE_NAME}/${ENTITY_NAME}', testData);
+            createdId = response.data.ID;
+        });
+
+        /**
+         * Test: Delete entity successfully
+         */
+        test('should delete ${ENTITY_NAME} by ID', async () => {
+            const response = await DELETE(`/${SERVICE_NAME}/${ENTITY_NAME}(${createdId})`);
+
+            expect(response.status).toBe(204);
+
+            // Verify entity is deleted
+            const readResponse = await GET(`/${SERVICE_NAME}/${ENTITY_NAME}(${createdId})`);
+            expect(readResponse.status).toBe(404);
+        });
+    });
+
+    describe('Custom Actions', () => {
+        /**
+         * Test: Execute custom action
+         * 
+         * Uncomment and modify when custom actions are implemented
+         */
+        // test('should execute ${ACTION_NAME} action', async () => {
+        //     const actionData = {
+        //         param1: 'test',
+        //         param2: 123
+        //     };
+        //
+        //     const response = await POST(`/${SERVICE_NAME}/${ACTION_NAME}`, actionData);
+        //
+        //     expect(response.status).toBe(200);
+        //     expect(response.data.success).toBe(true);
+        // });
+    });
+
+    describe('Error Handling', () => {
+        /**
+         * Test: Handle non-existent entity
+         */
+        test('should return 404 for non-existent entity', async () => {
+            const nonExistentId = '00000000-0000-0000-0000-000000000000';
+            const response = await GET(`/${SERVICE_NAME}/${ENTITY_NAME}(${nonExistentId})`);
+
+            expect(response.status).toBe(404);
+        });
+
+        /**
+         * Test: Handle invalid request format
+         */
+        test('should return 400 for invalid request format', async () => {
+            const invalidData = { invalidField: 'value' };
+            const response = await POST('/${SERVICE_NAME}/${ENTITY_NAME}', invalidData);
+
+            // Should either reject invalid fields or return 400
+            expect([400, 422]).toContain(response.status);
+        });
+    });
+});

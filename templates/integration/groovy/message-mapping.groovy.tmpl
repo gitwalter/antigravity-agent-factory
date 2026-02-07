@@ -1,0 +1,111 @@
+/**
+ * ${MAPPING_NAME} - Message Mapping Script
+ * 
+ * Source: ${SOURCE_SYSTEM} - ${SOURCE_FORMAT}
+ * Target: ${TARGET_SYSTEM} - ${TARGET_FORMAT}
+ * 
+ * Author: ${AUTHOR}
+ * Created: ${DATE}
+ * 
+ * Mapping Rules:
+ *   - ${SOURCE_FIELD} -> ${TARGET_FIELD}
+ */
+import com.sap.gateway.ip.core.customdev.util.Message
+import groovy.json.JsonSlurper
+import groovy.json.JsonBuilder
+import groovy.xml.XmlSlurper
+import groovy.xml.MarkupBuilder
+
+def Message processData(Message message) {
+    def messageLog = messageLogFactory.getMessageLog(message)
+    
+    try {
+        def body = message.getBody(String)
+        messageLog.addAttachmentAsString('SourceMessage', body, 'text/plain')
+        
+        // =====================================================
+        // Parse Source (choose appropriate parser)
+        // =====================================================
+        
+        // For JSON source:
+        // def source = new JsonSlurper().parseText(body)
+        
+        // For XML source:
+        // def source = new XmlSlurper().parseText(body)
+        
+        // =====================================================
+        // Build Target
+        // =====================================================
+        
+        // For JSON target:
+        /*
+        def builder = new JsonBuilder()
+        builder {
+            targetField1 source.sourceField1
+            targetField2 source.sourceField2
+            nested {
+                field source.nestedSource?.field ?: 'default'
+            }
+        }
+        def result = builder.toString()
+        */
+        
+        // For XML target:
+        /*
+        def writer = new StringWriter()
+        def xml = new MarkupBuilder(writer)
+        xml.TargetRoot {
+            TargetField1(source.sourceField1.text())
+            TargetField2(source.sourceField2.text())
+        }
+        def result = writer.toString()
+        */
+        
+        def result = body  // Replace with actual mapping
+        
+        // =====================================================
+        
+        message.setBody(result)
+        messageLog.addAttachmentAsString('TargetMessage', result, 'text/plain')
+        
+    } catch (Exception e) {
+        messageLog.addAttachmentAsString('MappingError', 
+            "Error: ${e.message}\nSource: ${message.getBody(String)}", 'text/plain')
+        message.setProperty('ErrorMessage', e.message)
+        message.setProperty('ErrorMapping', '${MAPPING_NAME}')
+        throw e
+    }
+    
+    return message
+}
+
+// =====================================================
+// Helper Methods (add as needed)
+// =====================================================
+
+/**
+ * Safe value extraction with default
+ */
+def safeGet(value, defaultValue = '') {
+    return value?.toString()?.trim() ?: defaultValue
+}
+
+/**
+ * Format date from source to target format
+ */
+def formatDate(String dateStr, String sourceFormat, String targetFormat) {
+    if (!dateStr) return ''
+    try {
+        def date = Date.parse(sourceFormat, dateStr)
+        return date.format(targetFormat)
+    } catch (Exception e) {
+        return dateStr
+    }
+}
+
+/**
+ * Map code value using lookup
+ */
+def mapCode(String sourceCode, Map<String, String> mapping, String defaultValue = '') {
+    return mapping.get(sourceCode, defaultValue)
+}

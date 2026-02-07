@@ -1,0 +1,216 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Antigravity Agent Pattern Schema",
+  "description": "Schema for defining AI agent patterns in the Antigravity Agent Factory",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["metadata", "frontmatter", "sections"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Pattern metadata for factory use",
+      "required": ["patternId", "patternName", "category", "stackAgnostic"],
+      "properties": {
+        "patternId": {
+          "type": "string",
+          "description": "Unique identifier for this pattern",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "patternName": {
+          "type": "string",
+          "description": "Human-readable pattern name"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["workflow", "quality", "documentation", "testing", "exploration", "custom"],
+          "description": "Agent category"
+        },
+        "stackAgnostic": {
+          "type": "boolean",
+          "description": "Whether this pattern works across all technology stacks"
+        },
+        "applicableStacks": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of applicable stacks if not stack-agnostic"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of what this agent does"
+        }
+      }
+    },
+    "frontmatter": {
+      "type": "object",
+      "description": "YAML frontmatter for the agent markdown file",
+      "required": ["name", "description", "type"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Agent name (kebab-case)",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "description": {
+          "type": "string",
+          "description": "Agent description for Antigravity"
+        },
+        "type": {
+          "type": "string",
+          "const": "agent"
+        },
+        "skills": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Skills this agent uses"
+        },
+        "knowledge": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Knowledge files this agent references"
+        },
+        "model": {
+          "type": "string",
+          "enum": ["inherit", "fast"],
+          "description": "Model selection preference"
+        },
+        "is_background": {
+          "type": "boolean",
+          "description": "Whether agent runs in background"
+        },
+        "readonly": {
+          "type": "boolean",
+          "description": "Whether agent only reads, never writes"
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "description": "Content sections for the agent markdown",
+      "required": ["purpose", "whenActivated", "workflow"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Main heading for the agent"
+        },
+        "purpose": {
+          "type": "string",
+          "description": "What this agent does and why"
+        },
+        "whenActivated": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of activation conditions"
+        },
+        "workflow": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "step": {"type": "integer"},
+              "name": {"type": "string"},
+              "description": {"type": "string"},
+              "actions": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            }
+          },
+          "description": "Step-by-step workflow"
+        },
+        "skillsUsed": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "skill": {"type": "string"},
+              "purpose": {"type": "string"}
+            }
+          },
+          "description": "Skills and their purposes"
+        },
+        "knowledgeFiles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "file": {"type": "string"},
+              "content": {"type": "string"}
+            }
+          },
+          "description": "Knowledge files and their contents"
+        },
+        "outputFormat": {
+          "type": "string",
+          "description": "Expected output format description"
+        },
+        "importantRules": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Critical rules the agent must follow"
+        }
+      }
+    },
+    "variables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "description": {"type": "string"},
+          "required": {"type": "boolean"},
+          "default": {"type": "string"}
+        }
+      },
+      "description": "Variables that must be replaced when generating"
+    }
+  },
+  "examples": [
+    {
+      "metadata": {
+        "patternId": "code-reviewer",
+        "patternName": "Code Reviewer Agent",
+        "category": "quality",
+        "stackAgnostic": true,
+        "description": "Reviews code against best practices and style guides"
+      },
+      "frontmatter": {
+        "name": "code-reviewer",
+        "description": "Orchestrate code quality review using specialized skills",
+        "type": "agent",
+        "skills": ["clean-code-review", "grounding"],
+        "knowledge": ["review-checklist.json", "naming-conventions.json"]
+      },
+      "sections": {
+        "title": "Code Reviewer Agent",
+        "purpose": "Orchestrate comprehensive code quality reviews by invoking specialized skills and referencing structured knowledge files.",
+        "whenActivated": [
+          "After implementation is complete",
+          "Before code is ready for deployment",
+          "When refactoring is needed"
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "name": "Detect Style Guide",
+            "description": "Check configuration for style guide setting",
+            "actions": ["Check .agentrules for style guide", "Detect from existing code patterns"]
+          },
+          {
+            "step": 2,
+            "name": "Invoke Skills",
+            "description": "Run specialized review skills",
+            "actions": ["Run clean-code-review skill", "Run grounding skill for data verification"]
+          }
+        ],
+        "importantRules": [
+          "Style consistency - All feedback must match project's style guide",
+          "Reference knowledge - Use structured data from knowledge files"
+        ]
+      },
+      "variables": [
+        {"name": "{STYLE_GUIDE}", "description": "Coding style guide name", "required": true},
+        {"name": "{LANGUAGE}", "description": "Programming language", "required": true}
+      ]
+    }
+  ]
+}

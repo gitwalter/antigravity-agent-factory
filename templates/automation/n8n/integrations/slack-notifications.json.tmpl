@@ -1,0 +1,116 @@
+{
+  "name": "{{WORKFLOW_NAME}} - Slack Notifications",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "slack-notification",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger-{{NODE_ID}}",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "{{WEBHOOK_ID}}"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare Slack notification\nconst payload = $input.first().json.body || $input.first().json;\n\n// Determine notification type and format\nconst notificationType = payload.type || 'info';\nconst channel = payload.channel || '{{DEFAULT_CHANNEL}}';\nconst message = payload.message || payload.text || '';\nconst title = payload.title || '{{DEFAULT_TITLE}}';\n\n// Format message based on type\nlet formattedMessage = message;\nlet color = '#36a64f'; // green for info\n\nswitch (notificationType) {\n  case 'error':\n    color = '#ff0000';\n    formattedMessage = `🚨 *Error*: ${message}`;\n    break;\n  case 'warning':\n    color = '#ffaa00';\n    formattedMessage = `⚠️ *Warning*: ${message}`;\n    break;\n  case 'success':\n    color = '#36a64f';\n    formattedMessage = `✅ *Success*: ${message}`;\n    break;\n  case 'info':\n  default:\n    formattedMessage = `ℹ️ *Info*: ${message}`;\n    break;\n}\n\n// Build Slack block format\nconst blocks = [\n  {\n    type: 'header',\n    text: {\n      type: 'plain_text',\n      text: title\n    }\n  },\n  {\n    type: 'section',\n    text: {\n      type: 'mrkdwn',\n      text: formattedMessage\n    }\n  }\n];\n\n// Add fields if provided\nif (payload.fields && Array.isArray(payload.fields)) {\n  blocks.push({\n    type: 'section',\n    fields: payload.fields.map(field => ({\n      type: 'mrkdwn',\n      text: `*${field.label}*\\n${field.value}`\n    }))\n  });\n}\n\n// Add context if provided\nif (payload.context) {\n  blocks.push({\n    type: 'context',\n    elements: [\n      {\n        type: 'mrkdwn',\n        text: `_${payload.context}_`\n      }\n    ]\n  });\n}\n\nreturn [{\n  json: {\n    channel: channel,\n    blocks: blocks,\n    text: formattedMessage,\n    notification_type: notificationType,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "format-message-{{NODE_ID}}",
+      "name": "Format Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "channel": "={{ $json.channel }}",
+        "text": "={{ $json.text }}",
+        "otherOptions": {
+          "blocks": "={{ JSON.stringify($json.blocks) }}",
+          "username": "{{SLACK_USERNAME}}",
+          "iconEmoji": "{{SLACK_ICON}}"
+        }
+      },
+      "id": "send-slack-{{NODE_ID}}",
+      "name": "Send to Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [650, 300],
+      "credentials": {
+        "slackApi": {
+          "id": "{{SLACK_CREDENTIAL_ID}}",
+          "name": "{{SLACK_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"sent\", \"channel\": $json.channel, \"message_ts\": $json.ts, \"timestamp\": $json.timestamp } }}",
+        "options": {}
+      },
+      "id": "respond-success-{{NODE_ID}}",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Message": {
+      "main": [
+        [
+          {
+            "node": "Send to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to Slack": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "{{TIMESTAMP}}",
+      "updatedAt": "{{TIMESTAMP}}",
+      "id": "{{TAG_ID}}",
+      "name": "slack-integration"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "{{TIMESTAMP}}",
+  "versionId": "{{VERSION_ID}}"
+}

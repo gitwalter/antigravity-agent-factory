@@ -1,0 +1,219 @@
+"""
+{{CHAT_NAME}} - AutoGen Multi-Agent Group Chat
+
+Purpose: {{CHAT_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A2 (User Primacy): Group chat serves user goals
+- A3 (Transparency): Agent interactions are explicit
+"""
+
+from typing import List, Optional, Dict, Any
+from autogen import AssistantAgent, UserProxyAgent, GroupChat, GroupChatManager
+import os
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class {{CHAT_CLASS_NAME}}:
+    """
+    {{CHAT_NAME}} - Multi-Agent Group Chat
+    
+    Coordinates multiple agents in a group conversation:
+    - Agents can communicate with each other
+    - GroupChatManager orchestrates the conversation
+    - User proxy can participate or observe
+    
+    Example:
+        >>> chat = {{CHAT_CLASS_NAME}}()
+        >>> result = chat.run("{{EXAMPLE_TASK}}")
+    """
+    
+    def __init__(
+        self,
+        model: str = "{{MODEL_NAME}}",
+        temperature: float = {{TEMPERATURE}},
+        api_key: Optional[str] = None,
+        max_round: int = 10,
+        human_input_mode: str = "TERMINATE"
+    ):
+        """
+        Initialize group chat.
+        
+        Args:
+            model: LLM model identifier
+            temperature: Sampling temperature
+            api_key: API key (uses env var if None)
+            max_round: Maximum conversation rounds
+            human_input_mode: Human input mode for user proxy
+        """
+        self.model = model
+        self.temperature = temperature
+        self.max_round = max_round
+        
+        # Get API key
+        api_key = api_key or os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise ValueError("API key required")
+        
+        # LLM configuration
+        llm_config = {
+            "model": model,
+            "api_key": api_key,
+            "temperature": temperature,
+            "timeout": 120
+        }
+        
+        # Create agents
+        self.agents = self._create_agents(llm_config)
+        
+        # Create user proxy
+        self.user_proxy = UserProxyAgent(
+            name="user_proxy",
+            human_input_mode=human_input_mode,
+            max_consecutive_auto_reply=max_round,
+            code_execution_config={
+                "work_dir": "coding",
+                "use_docker": False
+            }
+        )
+        
+        # Create group chat
+        self.group_chat = GroupChat(
+            agents=self.agents + [self.user_proxy],
+            messages=[],
+            max_round=max_round
+        )
+        
+        # Create group chat manager
+        self.manager = GroupChatManager(
+            groupchat=self.group_chat,
+            llm_config=llm_config
+        )
+        
+        logger.info(f"Initialized {{CHAT_NAME}} with {len(self.agents)} agents")
+    
+    def _create_agents(self, llm_config: Dict[str, Any]) -> List[AssistantAgent]:
+        """
+        Create agents for group chat.
+        
+        Args:
+            llm_config: LLM configuration
+        
+        Returns:
+            List of AssistantAgent instances
+        """
+        agents = []
+        
+        # Agent 1: {{AGENT_1_ROLE}}
+        agent_1 = AssistantAgent(
+            name="{{AGENT_1_NAME}}",
+            system_message="""{{AGENT_1_SYSTEM_MESSAGE}}
+            
+You are {{AGENT_1_ROLE}}. {{AGENT_1_DESCRIPTION}}
+""",
+            llm_config=llm_config,
+            max_consecutive_auto_reply=5
+        )
+        agents.append(agent_1)
+        
+        # Agent 2: {{AGENT_2_ROLE}}
+        agent_2 = AssistantAgent(
+            name="{{AGENT_2_NAME}}",
+            system_message="""{{AGENT_2_SYSTEM_MESSAGE}}
+            
+You are {{AGENT_2_ROLE}}. {{AGENT_2_DESCRIPTION}}
+""",
+            llm_config=llm_config,
+            max_consecutive_auto_reply=5
+        )
+        agents.append(agent_2)
+        
+        # Add more agents as needed
+        
+        return agents
+    
+    def run(
+        self,
+        message: str,
+        clear_history: bool = False
+    ) -> Any:
+        """
+        Run group chat with initial message.
+        
+        Args:
+            message: Initial message
+            clear_history: Clear conversation history
+        
+        Returns:
+            Chat result
+        
+        Example:
+            >>> result = chat.run("{{EXAMPLE_TASK}}")
+        """
+        logger.info(f"Running group chat with message: {message[:100]}...")
+        
+        try:
+            if clear_history:
+                self.group_chat.messages = []
+                for agent in self.agents:
+                    agent.reset()
+                self.user_proxy.reset()
+            
+            # Initiate chat through user proxy
+            result = self.user_proxy.initiate_chat(
+                recipient=self.manager,
+                message=message
+            )
+            
+            logger.info("Group chat completed")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error during group chat: {e}")
+            return f"Error: {str(e)}"
+    
+    def get_messages(self) -> List[Dict[str, Any]]:
+        """
+        Get conversation messages.
+        
+        Returns:
+            List of message dictionaries
+        """
+        return self.group_chat.messages
+    
+    def get_agents(self) -> List[AssistantAgent]:
+        """Get list of agents."""
+        return self.agents
+    
+    def reset(self) -> None:
+        """Reset group chat."""
+        logger.info("Resetting group chat")
+        self.group_chat.messages = []
+        for agent in self.agents:
+            agent.reset()
+        self.user_proxy.reset()
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create group chat
+    chat = {{CHAT_CLASS_NAME}}(
+        model="{{MODEL_NAME}}",
+        max_round=10
+    )
+    
+    # Run group chat
+    result = chat.run("{{EXAMPLE_TASK}}")
+    
+    # Get messages
+    messages = chat.get_messages()
+    print(f"Total messages: {len(messages)}")
+    
+    # Print last few messages
+    for msg in messages[-5:]:
+        print(f"{msg.get('name', 'unknown')}: {msg.get('content', '')[:100]}...")

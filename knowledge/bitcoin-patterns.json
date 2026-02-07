@@ -1,0 +1,315 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bitcoin Protocol Patterns",
+  "description": "Core concepts, patterns, and best practices for Bitcoin and Lightning Network development",
+  "version": "1.0.0",
+  "sources": [
+    "https://developer.bitcoin.org/",
+    "https://github.com/bitcoin/bitcoin",
+    "https://lightning.engineering/",
+    "https://docs.lightning.engineering/"
+  ],
+  "axiomAlignment": {
+    "A1_verifiability": "Bitcoin's design enables cryptographic verification of all transactions",
+    "A4_non_harm": "Security patterns protect user funds and privacy"
+  },
+  "core_concepts": {
+    "utxo_model": {
+      "description": "Unspent Transaction Output - Bitcoin's accounting model",
+      "key_insight": "Bitcoin doesn't have accounts with balances; instead, wallets track UTXOs they can spend",
+      "structure": {
+        "components": [
+          {"name": "txid", "description": "Transaction ID that created this output"},
+          {"name": "vout", "description": "Index of output in that transaction"},
+          {"name": "value", "description": "Amount in satoshis (1 BTC = 100M sats)"},
+          {"name": "scriptPubKey", "description": "Locking script (conditions to spend)"}
+        ]
+      },
+      "spending_process": [
+        "Reference UTXO by txid:vout",
+        "Provide scriptSig (unlocking script) that satisfies scriptPubKey",
+        "Create new outputs (which become new UTXOs)",
+        "Original UTXO is consumed (no longer spendable)"
+      ],
+      "vs_account_model": {
+        "utxo_advantages": [
+          "Better privacy (each UTXO is independent)",
+          "Parallel transaction validation",
+          "Simpler proof of ownership"
+        ],
+        "account_advantages": [
+          "Simpler balance tracking",
+          "Easier smart contract state management"
+        ]
+      }
+    },
+    "script_system": {
+      "description": "Bitcoin's simple stack-based scripting language",
+      "characteristics": [
+        "Not Turing-complete (no loops)",
+        "Stateless (no persistent storage)",
+        "Deterministic execution",
+        "Resource-limited by design"
+      ],
+      "common_script_types": {
+        "P2PKH": {
+          "name": "Pay to Public Key Hash",
+          "description": "Classic Bitcoin address starting with '1'",
+          "scriptPubKey": "OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG",
+          "scriptSig": "<signature> <pubKey>",
+          "use_case": "Standard payments to single key"
+        },
+        "P2SH": {
+          "name": "Pay to Script Hash",
+          "description": "Address starting with '3', enables complex scripts",
+          "scriptPubKey": "OP_HASH160 <scriptHash> OP_EQUAL",
+          "scriptSig": "<signatures...> <redeemScript>",
+          "use_case": "Multi-signature, timelocks, complex conditions"
+        },
+        "P2WPKH": {
+          "name": "Pay to Witness Public Key Hash",
+          "description": "Native SegWit address starting with 'bc1q'",
+          "benefits": ["Lower fees", "Malleability fix", "Better scaling"],
+          "use_case": "Recommended for new applications"
+        },
+        "P2WSH": {
+          "name": "Pay to Witness Script Hash",
+          "description": "Native SegWit for complex scripts",
+          "use_case": "Modern multi-sig, Lightning channels"
+        },
+        "P2TR": {
+          "name": "Pay to Taproot",
+          "description": "Taproot address starting with 'bc1p'",
+          "benefits": ["Privacy (scripts hidden unless used)", "Efficiency", "Schnorr signatures"],
+          "use_case": "Most advanced, recommended for new development"
+        }
+      }
+    },
+    "transaction_structure": {
+      "components": {
+        "version": "Transaction format version (currently 1 or 2)",
+        "inputs": "References to UTXOs being spent",
+        "outputs": "New UTXOs being created",
+        "locktime": "Earliest time/block transaction can be mined",
+        "witness": "SegWit signature data (if applicable)"
+      },
+      "fees": {
+        "calculation": "Fee = sum(inputs) - sum(outputs)",
+        "units": "Satoshis per virtual byte (sat/vB)",
+        "estimation": "Use mempool data to estimate competitive fee rate"
+      }
+    },
+    "consensus_rules": {
+      "description": "Rules all nodes must follow to validate blocks and transactions",
+      "key_rules": [
+        "Block subsidy schedule (halving every 210,000 blocks)",
+        "Block size limit (4 million weight units)",
+        "Difficulty adjustment every 2016 blocks",
+        "Transaction validation (signatures, scripts, amounts)"
+      ]
+    }
+  },
+  "advanced_features": {
+    "multi_signature": {
+      "description": "Require multiple signatures to spend",
+      "patterns": {
+        "m_of_n": {
+          "description": "M signatures required from N possible signers",
+          "example": "2-of-3 multisig for company treasury",
+          "script": "OP_2 <pubKey1> <pubKey2> <pubKey3> OP_3 OP_CHECKMULTISIG"
+        }
+      },
+      "modern_approach": {
+        "MuSig2": "Schnorr-based multi-signature (single aggregated signature)",
+        "benefits": ["Privacy (looks like single-sig)", "Lower fees", "Taproot compatible"]
+      }
+    },
+    "timelocks": {
+      "absolute_timelock": {
+        "name": "CLTV (CheckLockTimeVerify)",
+        "description": "Funds locked until specific time/block height",
+        "use_cases": ["Vesting schedules", "Delayed payments"]
+      },
+      "relative_timelock": {
+        "name": "CSV (CheckSequenceVerify)",
+        "description": "Funds locked for relative time after UTXO creation",
+        "use_cases": ["Lightning channel dispute period", "Recovery mechanisms"]
+      }
+    },
+    "taproot": {
+      "description": "Bitcoin's major upgrade enabling advanced scripting with privacy",
+      "components": {
+        "Schnorr_signatures": "More efficient, enables signature aggregation",
+        "MAST": "Merkelized Alternative Script Trees - hide unused spending paths",
+        "Tapscript": "Updated script version with new opcodes"
+      },
+      "key_path_spend": "Spend with just a signature (most private)",
+      "script_path_spend": "Reveal and execute script branch (for complex conditions)"
+    },
+    "psbt": {
+      "name": "Partially Signed Bitcoin Transaction",
+      "description": "Standard format for multi-party transaction signing",
+      "workflow": [
+        "Creator: Build unsigned transaction",
+        "Updater: Add derivation paths, UTXOs, scripts",
+        "Signer(s): Add signatures",
+        "Combiner: Merge signatures from multiple signers",
+        "Finalizer: Complete transaction",
+        "Extractor: Get final signed transaction"
+      ],
+      "use_cases": [
+        "Hardware wallet integration",
+        "Multi-signature workflows",
+        "Air-gapped signing"
+      ]
+    }
+  },
+  "lightning_network": {
+    "overview": {
+      "description": "Layer 2 payment network for instant, low-cost Bitcoin transactions",
+      "key_properties": [
+        "Near-instant payments (milliseconds)",
+        "Very low fees (sub-satoshi possible)",
+        "Increased privacy (payments not broadcast)",
+        "Final settlement on Bitcoin mainchain"
+      ]
+    },
+    "payment_channels": {
+      "description": "Two-party channel for unlimited off-chain transactions",
+      "lifecycle": {
+        "opening": {
+          "steps": [
+            "Create funding transaction (2-of-2 multisig)",
+            "Exchange commitment transactions",
+            "Broadcast funding transaction to mainchain"
+          ],
+          "on_chain": "1 transaction to open"
+        },
+        "operating": {
+          "steps": [
+            "Create new commitment transactions for each payment",
+            "Exchange revocation secrets for old states",
+            "No on-chain transactions needed"
+          ]
+        },
+        "closing": {
+          "cooperative": "Both parties sign closing transaction (1 tx)",
+          "unilateral": "One party broadcasts commitment (delayed by timelock)",
+          "breach": "If old state broadcast, counterparty can claim all funds"
+        }
+      }
+    },
+    "htlc": {
+      "name": "Hash Time-Locked Contract",
+      "description": "Enables trustless multi-hop payments",
+      "components": {
+        "hash_lock": "Payment requires preimage of hash",
+        "time_lock": "Refund if payment not claimed in time"
+      },
+      "payment_flow": [
+        "Receiver generates secret, shares hash",
+        "Sender creates HTLC locked to hash",
+        "Intermediate nodes forward HTLCs",
+        "Receiver reveals secret to claim",
+        "Secret propagates back, all HTLCs settle"
+      ]
+    },
+    "implementations": {
+      "LND": {
+        "description": "Lightning Network Daemon by Lightning Labs",
+        "language": "Go",
+        "features": ["gRPC API", "Watchtower support", "Autopilot"]
+      },
+      "CLN": {
+        "description": "Core Lightning (formerly c-lightning)",
+        "language": "C",
+        "features": ["Plugin system", "Lightweight", "Modular"]
+      },
+      "Eclair": {
+        "description": "ACINQ's implementation",
+        "language": "Scala",
+        "features": ["Mobile-focused", "Phoenix wallet"]
+      },
+      "LDK": {
+        "description": "Lightning Dev Kit",
+        "language": "Rust",
+        "purpose": "Library for building custom Lightning implementations"
+      }
+    },
+    "development_patterns": {
+      "invoice_flow": {
+        "description": "Standard payment request workflow",
+        "steps": [
+          "Receiver creates invoice (BOLT 11)",
+          "Invoice contains: amount, payment_hash, expiry, route hints",
+          "Sender decodes and pays invoice",
+          "Receiver reveals preimage to complete"
+        ]
+      },
+      "lnurl": {
+        "description": "HTTP-based Lightning interaction protocol",
+        "flows": [
+          "lnurl-pay: Scan QR, server provides invoice",
+          "lnurl-withdraw: Claim funds from service",
+          "lnurl-auth: Login with Lightning wallet"
+        ]
+      },
+      "keysend": {
+        "description": "Spontaneous payments without invoice",
+        "use_case": "Streaming payments, tips"
+      }
+    }
+  },
+  "development_tools": {
+    "node_software": [
+      {"name": "Bitcoin Core", "purpose": "Full node reference implementation"},
+      {"name": "btcd", "purpose": "Go-based full node"}
+    ],
+    "libraries": {
+      "python": ["python-bitcoinlib", "bdk-python"],
+      "javascript": ["bitcoinjs-lib", "bolt11", "lnurl-js"],
+      "rust": ["rust-bitcoin", "LDK", "BDK"]
+    },
+    "testing": {
+      "regtest": "Local private Bitcoin network for testing",
+      "testnet": "Public test network (testnet3 or testnet4)",
+      "signet": "Signed test network (more stable)"
+    }
+  },
+  "security_patterns": {
+    "key_management": {
+      "best_practices": [
+        "Use hardware wallets for significant funds",
+        "Implement multi-signature for shared custody",
+        "Back up seed phrases securely offline",
+        "Use hierarchical deterministic (HD) wallets"
+      ]
+    },
+    "transaction_security": {
+      "practices": [
+        "Verify addresses on hardware wallet display",
+        "Use RBF (Replace-By-Fee) for fee bumping",
+        "Wait for confirmations based on amount",
+        "Implement address reuse prevention"
+      ]
+    },
+    "lightning_security": {
+      "practices": [
+        "Run watchtower for channel monitoring",
+        "Maintain channel backups (SCB)",
+        "Set appropriate fee policies",
+        "Monitor for force-close attempts"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use native SegWit (bech32) or Taproot addresses",
+    "Implement proper fee estimation",
+    "Handle transaction malleability (use SegWit)",
+    "Test on testnet/regtest before mainnet",
+    "Use established libraries, don't roll your own crypto",
+    "Consider privacy implications of UTXO management",
+    "For Lightning: maintain balanced channels",
+    "Keep software updated for security patches"
+  ]
+}

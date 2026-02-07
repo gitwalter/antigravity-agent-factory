@@ -1,0 +1,313 @@
+/**
+ * API Client - HTTP Client Utility for API Requests
+ * 
+ * Purpose: Centralized API client with error handling and type safety
+ * Author: {{AUTHOR}}
+ * Created: {{DATE}}
+ * 
+ * Axiom Alignment:
+ * - A1 (Verifiability): All API calls are logged
+ * - A3 (Transparency): Clear error messages and request/response logging
+ * - A4 (Non-Harm): Input validation and safe error handling
+ */
+
+type RequestMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+
+interface RequestOptions extends RequestInit {
+  method?: RequestMethod
+  params?: Record<string, string | number | boolean>
+  timeout?: number
+}
+
+interface ApiError extends Error {
+  status?: number
+  statusText?: string
+  data?: unknown
+}
+
+/**
+ * API Client class for making HTTP requests.
+ * 
+ * This class provides a centralized way to make API requests
+ * with consistent error handling, logging, and type safety.
+ * 
+ * @example
+ * ```ts
+ * const client = new ApiClient('https://api.example.com')
+ * const data = await client.get('/users')
+ * ```
+ */
+export class ApiClient {
+  private baseURL: string
+  private defaultHeaders: HeadersInit
+  private defaultTimeout: number
+
+  constructor(
+    baseURL: string,
+    defaultHeaders: HeadersInit = {},
+    defaultTimeout: number = 30000
+  ) {
+    this.baseURL = baseURL.replace(/\/$/, '')
+    this.defaultHeaders = {
+      'Content-Type': 'application/json',
+      ...defaultHeaders,
+    }
+    this.defaultTimeout = defaultTimeout
+  }
+
+  /**
+   * Make an HTTP request.
+   * 
+   * @param endpoint - API endpoint (relative to baseURL)
+   * @param options - Request options
+   * @returns Promise resolving to response data
+   * @throws ApiError if request fails
+   */
+  private async request<T>(
+    endpoint: string,
+    options: RequestOptions = {}
+  ): Promise<T> {
+    const {
+      method = 'GET',
+      params,
+      timeout = this.defaultTimeout,
+      headers = {},
+      body,
+      ...restOptions
+    } = options
+
+    // Build URL with query parameters
+    let url = `${this.baseURL}${endpoint}`
+    if (params) {
+      const searchParams = new URLSearchParams()
+      Object.entries(params).forEach(([key, value]) => {
+        searchParams.append(key, String(value))
+      })
+      url += `?${searchParams.toString()}`
+    }
+
+    // Prepare headers
+    const requestHeaders: HeadersInit = {
+      ...this.defaultHeaders,
+      ...headers,
+    }
+
+    // Prepare request body
+    let requestBody: BodyInit | undefined
+    if (body) {
+      if (typeof body === 'object' && !(body instanceof FormData)) {
+        requestBody = JSON.stringify(body)
+      } else {
+        requestBody = body as BodyInit
+      }
+    }
+
+    // Create abort controller for timeout
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeout)
+
+    try {
+      // Log request (in development)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[API] ${method} ${url}`, { body: requestBody })
+      }
+
+      // Make request
+      const response = await fetch(url, {
+        method,
+        headers: requestHeaders,
+        body: requestBody,
+        signal: controller.signal,
+        ...restOptions,
+      })
+
+      clearTimeout(timeoutId)
+
+      // Handle non-OK responses
+      if (!response.ok) {
+        const errorData = await this.parseErrorResponse(response)
+        throw this.createApiError(
+          `API request failed: ${response.statusText}`,
+          response.status,
+          response.statusText,
+          errorData
+        )
+      }
+
+      // Parse response
+      const data = await this.parseResponse<T>(response)
+
+      // Log response (in development)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[API] ${method} ${url} - Success`, data)
+      }
+
+      return data
+    } catch (error) {
+      clearTimeout(timeoutId)
+
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw this.createApiError(
+          'Request timeout',
+          408,
+          'Request Timeout'
+        )
+      }
+
+      if (error instanceof Error && 'status' in error) {
+        throw error
+      }
+
+      throw this.createApiError(
+        error instanceof Error ? error.message : 'Unknown error',
+        0,
+        'Network Error'
+      )
+    }
+  }
+
+  /**
+   * Parse JSON response.
+   * 
+   * @param response - Fetch response object
+   * @returns Parsed response data
+   */
+  private async parseResponse<T>(response: Response): Promise<T> {
+    const contentType = response.headers.get('content-type')
+    
+    if (contentType?.includes('application/json')) {
+      return response.json()
+    }
+    
+    return response.text() as unknown as T
+  }
+
+  /**
+   * Parse error response.
+   * 
+   * @param response - Fetch response object
+   * @returns Parsed error data
+   */
+  private async parseErrorResponse(response: Response): Promise<unknown> {
+    try {
+      const contentType = response.headers.get('content-type')
+      if (contentType?.includes('application/json')) {
+        return await response.json()
+      }
+      return await response.text()
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * Create API error object.
+   * 
+   * @param message - Error message
+   * @param status - HTTP status code
+   * @param statusText - HTTP status text
+   * @param data - Additional error data
+   * @returns ApiError instance
+   */
+  private createApiError(
+    message: string,
+    status?: number,
+    statusText?: string,
+    data?: unknown
+  ): ApiError {
+    const error = new Error(message) as ApiError
+    error.status = status
+    error.statusText = statusText
+    error.data = data
+    return error
+  }
+
+  /**
+   * GET request.
+   * 
+   * @param endpoint - API endpoint
+   * @param options - Request options
+   * @returns Promise resolving to response data
+   */
+  async get<T>(endpoint: string, options?: Omit<RequestOptions, 'method' | 'body'>): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: 'GET' })
+  }
+
+  /**
+   * POST request.
+   * 
+   * @param endpoint - API endpoint
+   * @param body - Request body
+   * @param options - Request options
+   * @returns Promise resolving to response data
+   */
+  async post<T>(
+    endpoint: string,
+    body?: unknown,
+    options?: Omit<RequestOptions, 'method'>
+  ): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: 'POST', body })
+  }
+
+  /**
+   * PUT request.
+   * 
+   * @param endpoint - API endpoint
+   * @param body - Request body
+   * @param options - Request options
+   * @returns Promise resolving to response data
+   */
+  async put<T>(
+    endpoint: string,
+    body?: unknown,
+    options?: Omit<RequestOptions, 'method'>
+  ): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: 'PUT', body })
+  }
+
+  /**
+   * PATCH request.
+   * 
+   * @param endpoint - API endpoint
+   * @param body - Request body
+   * @param options - Request options
+   * @returns Promise resolving to response data
+   */
+  async patch<T>(
+    endpoint: string,
+    body?: unknown,
+    options?: Omit<RequestOptions, 'method'>
+  ): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: 'PATCH', body })
+  }
+
+  /**
+   * DELETE request.
+   * 
+   * @param endpoint - API endpoint
+   * @param options - Request options
+   * @returns Promise resolving to response data
+   */
+  async delete<T>(endpoint: string, options?: Omit<RequestOptions, 'method' | 'body'>): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: 'DELETE' })
+  }
+}
+
+/**
+ * Create a default API client instance.
+ * 
+ * @param baseURL - Base URL for API requests
+ * @returns ApiClient instance
+ */
+export function createApiClient(baseURL: string): ApiClient {
+  return new ApiClient(baseURL)
+}
+
+/**
+ * Default API client instance.
+ * 
+ * Configure the base URL via environment variable NEXT_PUBLIC_API_URL
+ */
+export const apiClient = createApiClient(
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
+)

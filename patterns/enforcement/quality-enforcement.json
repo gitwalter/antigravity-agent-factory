@@ -1,0 +1,146 @@
+{
+  "$schema": "./enforcement-pattern.json",
+  "title": "Quality Enforcement Patterns",
+  "description": "Patterns that ensure our work meets the standards of craftsmanship we aspire to",
+  "version": "1.0.0",
+  "philosophy": "Quality is not an accident; it is always the result of intelligent effort. - John Ruskin",
+  "enforcements": [
+    {
+      "enforcementId": "E1_test_coverage",
+      "name": "Test Coverage Gate",
+      "category": "quality",
+      "axiom_basis": ["A1_verifiability"],
+      "trigger": "Before code merge or deployment",
+      "description": "Ensures all code is verified through tests - our commitment to reliability",
+      "checks": [
+        {
+          "checkId": "coverage_threshold",
+          "description": "Test coverage meets minimum threshold",
+          "condition": "coverage >= threshold",
+          "severity": "blocking",
+          "default_threshold": 80
+        },
+        {
+          "checkId": "all_tests_pass",
+          "description": "All existing tests continue to pass",
+          "condition": "test_failures == 0",
+          "severity": "blocking"
+        },
+        {
+          "checkId": "new_code_tested",
+          "description": "New code has corresponding tests",
+          "condition": "new_lines_covered / new_lines_total >= 0.8",
+          "severity": "warning"
+        }
+      ],
+      "actions": {
+        "on_pass": "Proceed with merge/deployment",
+        "on_fail": "Block until tests added or coverage improved",
+        "on_override": "Log justification, require senior approval"
+      },
+      "override_policy": "with_justification"
+    },
+    {
+      "enforcementId": "E2_code_review",
+      "name": "Peer Review Gate",
+      "category": "quality",
+      "axiom_basis": ["A1_verifiability", "A3_transparency"],
+      "trigger": "Before code merge",
+      "description": "Ensures another set of eyes validates our work - collective craftsmanship",
+      "checks": [
+        {
+          "checkId": "review_completed",
+          "description": "At least one peer review completed",
+          "condition": "review_count >= 1",
+          "severity": "blocking"
+        },
+        {
+          "checkId": "review_approved",
+          "description": "Reviewer has approved changes",
+          "condition": "approval_count >= 1",
+          "severity": "blocking"
+        },
+        {
+          "checkId": "comments_addressed",
+          "description": "All review comments resolved",
+          "condition": "open_comments == 0",
+          "severity": "warning"
+        }
+      ],
+      "actions": {
+        "on_pass": "Proceed with merge",
+        "on_fail": "Request review or address comments",
+        "on_override": "Emergency only, post-merge review required"
+      },
+      "override_policy": "with_approval"
+    },
+    {
+      "enforcementId": "E3_documentation",
+      "name": "Documentation Completeness",
+      "category": "quality",
+      "axiom_basis": ["A3_transparency"],
+      "trigger": "Before feature completion",
+      "description": "Ensures our work is understandable to others - knowledge shared is knowledge multiplied",
+      "checks": [
+        {
+          "checkId": "public_api_documented",
+          "description": "All public interfaces have documentation",
+          "condition": "undocumented_public == 0",
+          "severity": "warning"
+        },
+        {
+          "checkId": "readme_updated",
+          "description": "README reflects current functionality",
+          "condition": "readme_current == true",
+          "severity": "advisory"
+        },
+        {
+          "checkId": "architecture_documented",
+          "description": "Significant changes documented in architecture docs",
+          "condition": "architecture_doc_current == true",
+          "severity": "advisory"
+        }
+      ],
+      "actions": {
+        "on_pass": "Proceed with completion",
+        "on_fail": "Add missing documentation",
+        "on_override": "Technical debt logged, deadline set"
+      },
+      "override_policy": "with_justification"
+    },
+    {
+      "enforcementId": "E4_style_consistency",
+      "name": "Code Style Consistency",
+      "category": "quality",
+      "axiom_basis": ["A5_consistency"],
+      "trigger": "Before commit",
+      "description": "Ensures codebase maintains consistent style - harmony in the details",
+      "checks": [
+        {
+          "checkId": "linter_pass",
+          "description": "No linter errors",
+          "condition": "linter_errors == 0",
+          "severity": "blocking"
+        },
+        {
+          "checkId": "formatter_applied",
+          "description": "Code formatted according to standards",
+          "condition": "formatting_diff == 0",
+          "severity": "blocking"
+        },
+        {
+          "checkId": "type_hints_present",
+          "description": "Type hints on public functions",
+          "condition": "untyped_public == 0",
+          "severity": "warning"
+        }
+      ],
+      "actions": {
+        "on_pass": "Proceed with commit",
+        "on_fail": "Run formatter/linter and fix issues",
+        "on_override": "Not allowed for blocking checks"
+      },
+      "override_policy": "never"
+    }
+  ]
+}

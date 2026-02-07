@@ -1,0 +1,208 @@
+/**
+ * ${SCRIPT_NAME} - IDoc Message Processing
+ * 
+ * Purpose: ${SCRIPT_PURPOSE}
+ * Author: ${AUTHOR}
+ * Created: ${DATE}
+ * 
+ * Input:  IDoc XML
+ * Output: ${OUTPUT_FORMAT} (e.g., transformed IDoc, JSON, or business data)
+ * 
+ * IDoc Structure:
+ *   - EDI_DC40: Control record (IDoc header)
+ *   - E1SEGMENT: Data segments (IDoc data)
+ *   - E2SEGMENT: Nested segments
+ * 
+ * IDoc Type: ${IDOC_TYPE} (e.g., ORDERS05, INVOIC02, MATMAS05)
+ * Message Type: ${MESSAGE_TYPE} (e.g., ORDERS, INVOIC, MATMAS)
+ * 
+ * Notes:
+ *   - IDocs are XML-based SAP document format
+ *   - Control record contains IDoc metadata
+ *   - Data segments contain business data
+ *   - Handles both inbound and outbound IDocs
+ */
+import com.sap.gateway.ip.core.customdev.util.Message
+import groovy.xml.XmlSlurper
+
+def Message processData(Message message) {
+    def messageLog = messageLogFactory.getMessageLog(message)
+    
+    try {
+        // Get IDoc XML body
+        def idocXml = message.getBody(String)
+        messageLog.addAttachmentAsString('InputIDoc', idocXml, 'text/xml')
+        
+        // Parse IDoc XML
+        def idoc = new XmlSlurper().parseText(idocXml)
+        
+        // Extract control record (EDI_DC40)
+        def controlRecord = idoc.IDOC.EDI_DC40
+        
+        // =====================================================
+        // Extract IDoc Control Record Fields
+        // =====================================================
+        
+        def idocNumber = controlRecord.DOCNUM.text()
+        def idocType = controlRecord.IDOCTYP.text()
+        def messageType = controlRecord.MESTYP.text()
+        def senderPartner = controlRecord.SNDPRN.text()
+        def senderPartnerType = controlRecord.SNDPRT.text()
+        def receiverPartner = controlRecord.RCVPRN.text()
+        def receiverPartnerType = controlRecord.RCVPRT.text()
+        def direction = controlRecord.DIRECT.text() // '1' = outbound, '2' = inbound
+        
+        // Set IDoc properties for monitoring
+        message.setProperty('IDocNumber', idocNumber)
+        message.setProperty('IDocType', idocType)
+        message.setProperty('MessageType', messageType)
+        message.setProperty('SenderPartner', senderPartner)
+        message.setProperty('ReceiverPartner', receiverPartner)
+        message.setProperty('IDocDirection', direction == '1' ? 'OUTBOUND' : 'INBOUND')
+        
+        messageLog.addAttachmentAsString('IDocControlRecord', 
+            """IDoc Control Record:
+  IDoc Number: ${idocNumber}
+  IDoc Type: ${idocType}
+  Message Type: ${messageType}
+  Sender: ${senderPartner} (${senderPartnerType})
+  Receiver: ${receiverPartner} (${receiverPartnerType})
+  Direction: ${direction == '1' ? 'OUTBOUND' : 'INBOUND'}
+""", 'text/plain')
+        
+        // =====================================================
+        // TODO: Extract IDoc Data Segments
+        // =====================================================
+        
+        // Example: Extract E1 segment (varies by IDoc type)
+        // For ORDERS05:
+        /*
+        def orderHeader = idoc.IDOC.E1EDK01[0] // Order header
+        def orderNumber = orderHeader.BELNR.text()
+        def orderDate = orderHeader.BLDAT.text()
+        
+        def orderItems = []
+        idoc.IDOC.E1EDP01.each { item ->
+            orderItems << [
+                itemNumber: item.POSEX.text(),
+                material: item.MATNR.text(),
+                quantity: item.MENGE.text(),
+                unit: item.MEINS.text(),
+                price: item.NETPR.text()
+            ]
+        }
+        */
+        
+        // For MATMAS05:
+        /*
+        def materialData = idoc.IDOC.E1MARCM[0] // Material master
+        def materialNumber = materialData.MATNR.text()
+        def materialType = materialData.MTART.text()
+        def materialDescription = materialData.MAKTX.text()
+        */
+        
+        // Extract data segments based on IDoc type
+        def idocData = extractIDocData(idoc, idocType)
+        
+        // =====================================================
+        // TODO: Process IDoc data
+        // =====================================================
+        
+        // Option 1: Transform to JSON
+        // def jsonData = transformIDocToJson(controlRecord, idocData)
+        // import groovy.json.JsonBuilder
+        // def builder = new JsonBuilder(jsonData)
+        // message.setBody(builder.toString())
+        
+        // Option 2: Transform to different XML structure
+        // def transformedXml = transformIDocToXml(controlRecord, idocData)
+        // message.setBody(transformedXml)
+        
+        // Option 3: Extract and set as properties
+        // idocData.each { key, value ->
+        //     message.setProperty(key, value?.toString())
+        // }
+        
+        // For now, set extracted data as string
+        message.setBody(idocData.toString())
+        messageLog.addAttachmentAsString('ExtractedIDocData', idocData.toString(), 'text/plain')
+        
+    } catch (Exception e) {
+        messageLog.addAttachmentAsString('IDocProcessingError', 
+            "IDoc processing error: ${e.message}\n" +
+            "Input IDoc:\n${message.getBody(String)}", 
+            'text/plain')
+        
+        message.setProperty('ErrorMessage', e.message)
+        message.setProperty('ErrorScript', '${SCRIPT_NAME}')
+        message.setProperty('ErrorTimestamp', new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ"))
+        message.setProperty('SAP_ErrorModelStepID', '${SCRIPT_NAME}')
+        message.setProperty('SAP_ErrorText', "IDoc processing failed: ${e.message}")
+        
+        throw e
+    }
+    
+    return message
+}
+
+/**
+ * Extract data from IDoc based on IDoc type
+ * Customize based on your IDoc structure
+ */
+def extractIDocData(idoc, String idocType) {
+    // TODO: Implement extraction logic based on IDoc type
+    // Example for ORDERS05:
+    /*
+    if (idocType == 'ORDERS05') {
+        def header = idoc.IDOC.E1EDK01[0]
+        return [
+            idocType: idocType,
+            orderNumber: header.BELNR.text(),
+            orderDate: header.BLDAT.text(),
+            items: idoc.IDOC.E1EDP01.collect { item ->
+                [
+                    itemNumber: item.POSEX.text(),
+                    material: item.MATNR.text(),
+                    quantity: item.MENGE.text()
+                ]
+            }
+        ]
+    }
+    */
+    
+    // Placeholder - extract all E1 segments
+    def segments = []
+    idoc.IDOC.children().each { segment ->
+        if (segment.name().startsWith('E1')) {
+            def segmentData = [:]
+            segment.children().each { field ->
+                segmentData[field.name()] = field.text()
+            }
+            segments << [
+                segmentName: segment.name(),
+                data: segmentData
+            ]
+        }
+    }
+    
+    return [
+        idocType: idocType,
+        segments: segments
+    ]
+}
+
+/**
+ * Transform IDoc to JSON structure
+ */
+def transformIDocToJson(controlRecord, idocData) {
+    return [
+        controlRecord: [
+            idocNumber: controlRecord.DOCNUM.text(),
+            idocType: controlRecord.IDOCTYP.text(),
+            messageType: controlRecord.MESTYP.text(),
+            sender: controlRecord.SNDPRN.text(),
+            receiver: controlRecord.RCVPRN.text()
+        ],
+        data: idocData
+    ]
+}

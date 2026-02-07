@@ -1,0 +1,258 @@
+{
+  "name": "{{WORKFLOW_NAME}} - Multi-Step Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "multi-step-agent",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger-{{NODE_ID}}",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "{{WEBHOOK_ID}}"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "task",
+              "name": "task",
+              "value": "={{ $json.body.task || $json.task || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "max-steps",
+              "name": "max_steps",
+              "value": "={{ $json.body.max_steps || $json.max_steps || {{MAX_STEPS}} }}",
+              "type": "number"
+            },
+            {
+              "id": "step-count",
+              "name": "step_count",
+              "value": 0,
+              "type": "number"
+            },
+            {
+              "id": "completed",
+              "name": "completed",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "context",
+              "name": "context",
+              "value": "={{ $json.body.context || $json.context || {} }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "initialize-agent-{{NODE_ID}}",
+      "name": "Initialize Agent",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Plan next step\nconst state = $input.first().json;\n\nif (state.completed) {\n  return [{\n    json: {\n      ...state,\n      action: 'complete'\n    }\n  }];\n}\n\nif (state.step_count >= state.max_steps) {\n  return [{\n    json: {\n      ...state,\n      action: 'complete',\n      reason: 'max_steps_reached'\n    }\n  }];\n}\n\n// Use LLM to plan next step\nconst planningPrompt = `You are a task planning agent. Given the current task and context, determine the next step.\\n\\nTask: ${state.task}\\n\\nContext: ${JSON.stringify(state.context)}\\n\\nCompleted Steps: ${state.step_count}\\nMax Steps: ${state.max_steps}\\n\\nRespond with JSON: {\\\"step_description\\\": \\\"...\\\", \\\"action_type\\\": \\\"...\\\", \\\"parameters\\\": {...}}`;\n\n// For now, return a simple planning structure\n// In production, this would call an LLM\nreturn [{\n  json: {\n    ...state,\n    action: 'execute',\n    step_description: `Step ${state.step_count + 1}: Process task`,\n    action_type: 'process',\n    parameters: {}\n  }\n}];"
+      },
+      "id": "plan-step-{{NODE_ID}}",
+      "name": "Plan Step",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "action-check",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "complete",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "if-complete-{{NODE_ID}}",
+      "name": "IF Complete",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "operation": "complete",
+        "model": "{{LLM_MODEL}}",
+        "options": {
+          "temperature": {{TEMPERATURE}},
+          "maxTokens": {{MAX_TOKENS}}
+        },
+        "text": "={{ `Execute this step: ${$json.step_description}\\n\\nTask: ${$json.task}\\n\\nContext: ${JSON.stringify($json.context)}\\n\\nProvide the result and updated context.` }}",
+        "prompt": ""
+      },
+      "id": "execute-step-{{NODE_ID}}",
+      "name": "Execute Step",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.3,
+      "position": [1050, 200],
+      "credentials": {
+        "openAiApi": {
+          "id": "{{OPENAI_CREDENTIAL_ID}}",
+          "name": "{{OPENAI_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Update agent state\nconst executionResult = $input.first().json.text || $input.first().json.choices?.[0]?.message?.content || '';\nconst previousState = $('Plan Step').first().json;\n\n// Parse result (simplified - in production would be more robust)\nlet result;\ntry {\n  result = JSON.parse(executionResult);\n} catch (e) {\n  result = { output: executionResult };\n}\n\n// Update context\nconst updatedContext = {\n  ...previousState.context,\n  [`step_${previousState.step_count + 1}`]: {\n    description: previousState.step_description,\n    result: result.output || result,\n    timestamp: new Date().toISOString()\n  }\n};\n\n// Check if task is complete\nconst isComplete = result.completed || result.final || previousState.step_count + 1 >= previousState.max_steps;\n\nreturn [{\n  json: {\n    ...previousState,\n    step_count: previousState.step_count + 1,\n    context: updatedContext,\n    completed: isComplete,\n    last_result: result\n  }\n}];"
+      },
+      "id": "update-state-{{NODE_ID}}",
+      "name": "Update State",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format final result\nconst state = $input.first().json;\n\nreturn [{\n  json: {\n    task: state.task,\n    completed: state.completed,\n    total_steps: state.step_count,\n    max_steps: state.max_steps,\n    final_result: state.last_result,\n    context: state.context,\n    execution_summary: {\n      steps_completed: state.step_count,\n      completion_reason: state.reason || 'task_completed',\n      timestamp: new Date().toISOString()\n    }\n  }\n}];"
+      },
+      "id": "format-result-{{NODE_ID}}",
+      "name": "Format Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"success\", \"data\": $json } }}",
+        "options": {}
+      },
+      "id": "respond-success-{{NODE_ID}}",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1450, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Initialize Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initialize Agent": {
+      "main": [
+        [
+          {
+            "node": "Plan Step",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan Step": {
+      "main": [
+        [
+          {
+            "node": "IF Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Complete": {
+      "main": [
+        [
+          {
+            "node": "Execute Step",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Step": {
+      "main": [
+        [
+          {
+            "node": "Update State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update State": {
+      "main": [
+        [
+          {
+            "node": "Plan Step",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Result": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "{{TIMESTAMP}}",
+      "updatedAt": "{{TIMESTAMP}}",
+      "id": "{{TAG_ID}}",
+      "name": "multi-step-agent"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "{{TIMESTAMP}}",
+  "versionId": "{{VERSION_ID}}"
+}

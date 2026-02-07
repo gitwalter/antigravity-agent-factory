@@ -1,0 +1,136 @@
+name: Java Build Workflow
+
+on:
+  workflow_call:
+    inputs:
+      jdk-version:
+        description: 'JDK version to use'
+        required: false
+        type: string
+        default: '17'
+      build-tool:
+        description: 'Build tool to use (maven, gradle)'
+        required: false
+        type: string
+        default: 'maven'
+      build-command:
+        description: 'Command to build project'
+        required: false
+        type: string
+        default: ''
+      test-command:
+        description: 'Command to run tests'
+        required: false
+        type: string
+        default: ''
+      matrix-jdk-versions:
+        description: 'Comma-separated JDK versions for matrix testing'
+        required: false
+        type: string
+        default: '17'
+      distribution:
+        description: 'Java distribution (temurin, microsoft, zulu)'
+        required: false
+        type: string
+        default: 'temurin'
+      publish-artifacts:
+        description: 'Publish build artifacts'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    name: Build Java ${{ matrix.jdk-version }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        jdk-version: ${{ fromJSON(format('["{0}"]', inputs.matrix-jdk-versions)) }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ matrix.jdk-version }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.jdk-version }}
+          distribution: ${{ inputs.distribution }}
+          cache: ${{ inputs.build-tool }}
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-${{ inputs.build-tool }}-${{ hashFiles(format('**/{0}', inputs.build-tool == 'maven' && 'pom.xml' || 'build.gradle*')) }}
+          restore-keys: |
+            ${{ runner.os }}-${{ inputs.build-tool }}-
+
+      - name: Run tests
+        run: |
+          if [ "${{ inputs.build-tool }}" == "maven" ]; then
+            if [ -n "${{ inputs.test-command }}" ]; then
+              ${{ inputs.test-command }}
+            else
+              ./mvnw test
+            fi
+          else
+            if [ -n "${{ inputs.test-command }}" ]; then
+              ${{ inputs.test-command }}
+            else
+              ./gradlew test
+            fi
+          fi
+
+      - name: Build project
+        run: |
+          if [ "${{ inputs.build-tool }}" == "maven" ]; then
+            if [ -n "${{ inputs.build-command }}" ]; then
+              ${{ inputs.build-command }}
+            else
+              ./mvnw clean package -DskipTests
+            fi
+          else
+            if [ -n "${{ inputs.build-command }}" ]; then
+              ${{ inputs.build-command }}
+            else
+              ./gradlew clean build -x test
+            fi
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.jdk-version }}
+          path: |
+            **/target/surefire-reports/
+            **/build/test-results/
+            **/target/jacoco/
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Upload build artifacts
+        if: inputs.publish-artifacts && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ matrix.jdk-version }}
+          path: |
+            **/target/*.jar
+            **/build/libs/*.jar
+          retention-days: 7
+
+      - name: Publish to Maven Central
+        if: inputs.publish-artifacts && github.ref == 'refs/heads/main' && success()
+        continue-on-error: true
+        run: |
+          if [ "${{ inputs.build-tool }}" == "maven" ]; then
+            ./mvnw deploy -DskipTests
+          fi

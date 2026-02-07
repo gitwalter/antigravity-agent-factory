@@ -1,0 +1,118 @@
+{
+  "metadata": {
+    "name": "Message Mapping Patterns",
+    "description": "XML, JSON, and IDoc mapping patterns for SAP integrations",
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-30"
+  },
+  "xmlToXml": {
+    "basicMapping": {
+      "description": "Simple element-to-element mapping",
+      "pattern": "def source = new XmlSlurper().parseText(body)\ndef writer = new StringWriter()\ndef xml = new MarkupBuilder(writer)\nxml.Target {\n  TargetField(source.SourceField.text())\n}\nreturn writer.toString()"
+    },
+    "conditionalMapping": {
+      "description": "Map based on conditions",
+      "pattern": "xml.Status(source.Code == 'A' ? 'Active' : 'Inactive')"
+    },
+    "iterativeMapping": {
+      "description": "Map repeating elements",
+      "pattern": "source.Items.Item.each { item ->\n  Items {\n    Item {\n      Id(item.Id.text())\n      Name(item.Name.text())\n    }\n  }\n}"
+    },
+    "namespaceHandling": {
+      "description": "Handle XML namespaces",
+      "pattern": "def source = new XmlSlurper().parseText(body).declareNamespace(ns: 'http://namespace.uri')\ndef value = source.'ns:Element'.text()"
+    }
+  },
+  "jsonToJson": {
+    "basicMapping": {
+      "description": "Simple field mapping",
+      "pattern": "def source = new JsonSlurper().parseText(body)\ndef builder = new JsonBuilder()\nbuilder {\n  targetField source.sourceField\n}\nreturn builder.toString()"
+    },
+    "nestedMapping": {
+      "description": "Map nested structures",
+      "pattern": "builder {\n  header {\n    id source.document.id\n    type source.document.type\n  }\n  items source.document.items.collect { item ->\n    [id: item.id, name: item.name]\n  }\n}"
+    },
+    "arrayTransformation": {
+      "description": "Transform arrays",
+      "pattern": "def transformed = source.items.collect { [\n  itemId: it.id,\n  itemName: it.name.toUpperCase(),\n  quantity: it.qty as Integer\n]}"
+    }
+  },
+  "xmlToJson": {
+    "basicConversion": {
+      "description": "Convert XML to JSON",
+      "pattern": "def xml = new XmlSlurper().parseText(body)\ndef builder = new JsonBuilder()\nbuilder {\n  id xml.Id.text()\n  name xml.Name.text()\n  items xml.Items.Item.collect { [id: it.Id.text(), name: it.Name.text()] }\n}\nreturn builder.toString()"
+    },
+    "attributeHandling": {
+      "description": "Map XML attributes to JSON fields",
+      "pattern": "id xml.Element.@id.text()\ntype xml.Element.@type.text()"
+    }
+  },
+  "jsonToXml": {
+    "basicConversion": {
+      "description": "Convert JSON to XML",
+      "pattern": "def json = new JsonSlurper().parseText(body)\ndef writer = new StringWriter()\ndef xml = new MarkupBuilder(writer)\nxml.Root {\n  Id(json.id)\n  Name(json.name)\n  json.items.each { item ->\n    Item {\n      Id(item.id)\n      Name(item.name)\n    }\n  }\n}\nreturn writer.toString()"
+    }
+  },
+  "idocMapping": {
+    "idocToJson": {
+      "description": "Map IDoc segments to JSON",
+      "segments": ["EDI_DC40 (Control record)", "E1... (Data segments)"],
+      "pattern": "def idoc = new XmlSlurper().parseText(body)\ndef controlRecord = idoc.IDOC.EDI_DC40\ndef dataSegment = idoc.IDOC.E1SEGMENT"
+    },
+    "jsonToIdoc": {
+      "description": "Create IDoc from JSON",
+      "requirements": ["IDoc type", "Message type", "Partner profiles"],
+      "structure": "IDOC > EDI_DC40 + E1SEGMENT > E2SEGMENT"
+    },
+    "commonIdocTypes": [
+      {"type": "ORDERS05", "description": "Purchase orders"},
+      {"type": "INVOIC02", "description": "Invoices"},
+      {"type": "DESADV01", "description": "Delivery notifications"},
+      {"type": "MATMAS05", "description": "Material master"}
+    ]
+  },
+  "flatFileMapping": {
+    "csvParsing": {
+      "description": "Parse CSV to structured data",
+      "pattern": "def lines = body.split('\\n')\ndef headers = lines[0].split(',')\ndef data = lines[1..-1].collect { line ->\n  def values = line.split(',')\n  [headers, values].transpose().collectEntries()\n}"
+    },
+    "fixedWidth": {
+      "description": "Parse fixed-width format",
+      "pattern": "def fields = [\n  [name: 'id', start: 0, length: 10],\n  [name: 'name', start: 10, length: 50]\n]\nfields.collectEntries { f -> [f.name, body.substring(f.start, f.start + f.length).trim()] }"
+    }
+  },
+  "transformationFunctions": {
+    "dateConversion": {
+      "description": "Convert date formats",
+      "pattern": "def formatDate(dateStr, sourceFormat, targetFormat) {\n  if (!dateStr) return ''\n  Date.parse(sourceFormat, dateStr).format(targetFormat)\n}"
+    },
+    "codeMapping": {
+      "description": "Map codes using lookup",
+      "pattern": "def codeMap = ['A': 'Active', 'I': 'Inactive', 'D': 'Deleted']\ndef mapCode(code) { codeMap[code] ?: 'Unknown' }"
+    },
+    "defaultValue": {
+      "description": "Provide default for missing values",
+      "pattern": "def safeGet(value, defaultVal = '') { value?.toString()?.trim() ?: defaultVal }"
+    },
+    "stringTransform": {
+      "description": "String transformations",
+      "functions": ["toUpperCase()", "toLowerCase()", "trim()", "padLeft(n, char)", "padRight(n, char)"]
+    },
+    "numberFormat": {
+      "description": "Number formatting",
+      "pattern": "String.format('%.2f', number as BigDecimal)"
+    }
+  },
+  "bestPractices": [
+    "Use safe navigation (?.) for optional fields",
+    "Provide meaningful defaults for missing data",
+    "Validate input before mapping",
+    "Handle empty collections gracefully",
+    "Use helper functions for repeated transformations",
+    "Document mapping rules in comments",
+    "Test with edge cases (nulls, empty strings, special characters)",
+    "Use consistent naming conventions",
+    "Log input/output for debugging",
+    "Handle character encoding properly"
+  ]
+}

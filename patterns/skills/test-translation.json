@@ -1,0 +1,303 @@
+{
+  "metadata": {
+    "patternId": "test-translation",
+    "patternName": "Test Translation Skill",
+    "category": "testing",
+    "stackAgnostic": true,
+    "description": "Bidirectional translation between BDD scenarios and TDD unit tests with full traceability",
+    "composable": true,
+    "requiresSkills": [
+      "tdd",
+      "bdd"
+    ]
+  },
+  "frontmatter": {
+    "name": "test-translation",
+    "description": "Translate between BDD Gherkin scenarios and TDD unit tests with traceability linking",
+    "type": "skill",
+    "skills": [
+      "tdd",
+      "bdd"
+    ],
+    "knowledge": [
+      "bdd-patterns.json",
+      "test-patterns.json",
+      "test-traceability.json"
+    ],
+    "templates": [
+      "templates/bdd/",
+      "templates/translation/"
+    ]
+  },
+  "sections": {
+    "title": "Test Translation Skill",
+    "introduction": "Provides bidirectional translation between BDD scenarios and TDD unit tests, enabling teams to use the testing approach that best fits each context while maintaining synchronization and traceability.",
+    "testingModes": {
+      "description": "Supported testing approach configurations",
+      "modes": {
+        "tdd-only": {
+          "description": "Traditional test-driven development with unit tests only",
+          "bddEnabled": false,
+          "tddEnabled": true,
+          "translation": "none"
+        },
+        "bdd-only": {
+          "description": "Behavior-driven development with Gherkin feature files only",
+          "bddEnabled": true,
+          "tddEnabled": false,
+          "translation": "none"
+        },
+        "layered": {
+          "description": "BDD for acceptance tests, TDD for unit tests (test pyramid)",
+          "bddEnabled": true,
+          "tddEnabled": true,
+          "translation": "none",
+          "relationship": "complementary"
+        },
+        "bdd-drives-tdd": {
+          "description": "BDD scenarios drive generation of TDD unit test stubs (outside-in)",
+          "bddEnabled": true,
+          "tddEnabled": true,
+          "translation": "bdd-to-tdd",
+          "workflow": "Write scenarios first, generate unit test structure from scenarios"
+        },
+        "tdd-documents-bdd": {
+          "description": "TDD unit tests generate BDD documentation (legacy documentation)",
+          "bddEnabled": true,
+          "tddEnabled": true,
+          "translation": "tdd-to-bdd",
+          "workflow": "Existing tests generate stakeholder-readable feature files"
+        },
+        "synchronized": {
+          "description": "Bidirectional sync - changes to either propagate to the other",
+          "bddEnabled": true,
+          "tddEnabled": true,
+          "translation": "bidirectional",
+          "workflow": "Single source of truth with dual views for different audiences"
+        }
+      }
+    },
+    "whenToUse": [
+      "When using bdd-drives-tdd mode for outside-in development",
+      "When generating documentation from existing tests (tdd-documents-bdd)",
+      "When maintaining synchronized BDD and TDD artifacts",
+      "When traceability between acceptance and unit tests is required",
+      "When migrating between testing approaches"
+    ],
+    "translationProcess": {
+      "bddToTdd": {
+        "name": "BDD to TDD Translation",
+        "description": "Generate unit test stubs from Gherkin scenarios",
+        "steps": [
+          {
+            "step": 1,
+            "name": "Parse Scenario",
+            "description": "Extract structure from Gherkin scenario",
+            "actions": [
+              "Parse feature file",
+              "Extract scenario name and tags",
+              "Parse Given-When-Then steps",
+              "Extract examples from Scenario Outlines"
+            ]
+          },
+          {
+            "step": 2,
+            "name": "Identify Implementation Units",
+            "description": "Determine what unit tests are needed",
+            "actions": [
+              "Analyze Given steps for setup requirements",
+              "Analyze When steps for action/function identification",
+              "Analyze Then steps for assertion requirements",
+              "Identify edge cases from examples"
+            ]
+          },
+          {
+            "step": 3,
+            "name": "Generate Test Stubs",
+            "description": "Create unit test structure",
+            "actions": [
+              "Create test file for each identified unit",
+              "Generate test method stubs with descriptive names",
+              "Include traceability comment linking to scenario",
+              "Structure as Given-When-Then in code"
+            ]
+          },
+          {
+            "step": 4,
+            "name": "Add Traceability Metadata",
+            "description": "Link tests to source scenario",
+            "actions": [
+              "Add @scenario decorator/annotation with feature:scenario reference",
+              "Include line number references",
+              "Generate traceability report entry"
+            ]
+          }
+        ],
+        "outputFormat": "Unit test files with traceability metadata"
+      },
+      "tddToBdd": {
+        "name": "TDD to BDD Translation",
+        "description": "Generate Gherkin feature files from unit tests",
+        "steps": [
+          {
+            "step": 1,
+            "name": "Analyze Test Suite",
+            "description": "Extract behavior information from tests",
+            "actions": [
+              "Parse test files and test methods",
+              "Extract test names and docstrings",
+              "Identify Given-When-Then structure in test code",
+              "Group tests by class/module (potential features)"
+            ]
+          },
+          {
+            "step": 2,
+            "name": "Extract Behaviors",
+            "description": "Identify business behaviors from tests",
+            "actions": [
+              "Parse test method names for behavior description",
+              "Extract setup (Given) from fixtures/arrange",
+              "Extract action (When) from act section",
+              "Extract assertions (Then) from assert section"
+            ]
+          },
+          {
+            "step": 3,
+            "name": "Generate Feature Files",
+            "description": "Create Gherkin documentation",
+            "actions": [
+              "Create feature file per test class/module",
+              "Generate Feature description from class docstring",
+              "Create Scenario for each test method",
+              "Use declarative language (abstract from implementation)"
+            ]
+          },
+          {
+            "step": 4,
+            "name": "Add Traceability Metadata",
+            "description": "Link scenarios to source tests",
+            "actions": [
+              "Add @test-source tag with test file:method reference",
+              "Include generation timestamp",
+              "Mark as auto-generated for sync awareness"
+            ]
+          }
+        ],
+        "outputFormat": "Feature files with source traceability"
+      },
+      "bidirectional": {
+        "name": "Bidirectional Synchronization",
+        "description": "Keep BDD and TDD artifacts synchronized",
+        "workflow": [
+          {
+            "step": 1,
+            "name": "Detect Change Source",
+            "description": "Determine which artifact was modified",
+            "actions": [
+              "Monitor feature files for changes",
+              "Monitor test files for changes",
+              "Compare timestamps and content hashes"
+            ]
+          },
+          {
+            "step": 2,
+            "name": "Translate Changes",
+            "description": "Propagate changes to other format",
+            "actions": [
+              "If scenario changed: regenerate/update test stubs",
+              "If test changed: regenerate/update scenario",
+              "Preserve manual modifications where possible"
+            ]
+          },
+          {
+            "step": 3,
+            "name": "Conflict Resolution",
+            "description": "Handle conflicting changes",
+            "actions": [
+              "Detect conflicting modifications in both",
+              "Prompt user for resolution",
+              "Merge changes when possible",
+              "Maintain audit trail of conflicts"
+            ]
+          }
+        ]
+      }
+    },
+    "traceability": {
+      "description": "Linking between BDD scenarios and TDD tests",
+      "metadata": {
+        "scenarioToTests": {
+          "format": "@implements: test_file.py::TestClass::test_method",
+          "location": "Scenario tags or comments"
+        },
+        "testToScenario": {
+          "format": "@scenario: features/feature.feature:ScenarioName",
+          "location": "Test decorator or docstring"
+        }
+      },
+      "reports": {
+        "coverageMatrix": "Which scenarios are covered by which tests",
+        "orphanedTests": "Tests without linked scenarios",
+        "orphanedScenarios": "Scenarios without implementing tests"
+      }
+    },
+    "importantRules": [
+      "Preserve intent - Translation should maintain business meaning",
+      "Declarative BDD - Generated Gherkin should be business-readable",
+      "Traceable links - All translations include bidirectional references",
+      "Non-destructive - Never overwrite manual modifications without confirmation",
+      "Conflict awareness - Detect and surface synchronization conflicts",
+      "Incremental - Support partial translation and updates",
+      "All actions must align with core axioms (A1: Verifiability, A2: User Primacy, A3: Transparency, A4: Non-Harm, A5: Consistency)"
+    ],
+    "antiPatterns": [
+      {
+        "name": "Imperative translation",
+        "problem": "Generated Gherkin contains implementation details",
+        "solution": "Abstract to business language, hide technical details"
+      },
+      {
+        "name": "Lost context",
+        "problem": "Translation loses important context or edge cases",
+        "solution": "Preserve comments, include example data"
+      },
+      {
+        "name": "Broken traceability",
+        "problem": "Links become stale after refactoring",
+        "solution": "Update links during refactoring, validate on CI"
+      }
+    ]
+  },
+  "variables": [
+    {
+      "name": "{TESTING_MODE}",
+      "description": "Testing approach mode",
+      "required": true,
+      "options": [
+        "tdd-only",
+        "bdd-only",
+        "layered",
+        "bdd-drives-tdd",
+        "tdd-documents-bdd",
+        "synchronized"
+      ]
+    },
+    {
+      "name": "{TRANSLATION_DIRECTION}",
+      "description": "Direction of translation",
+      "required": false,
+      "options": [
+        "bdd-to-tdd",
+        "tdd-to-bdd",
+        "bidirectional",
+        "none"
+      ]
+    },
+    {
+      "name": "{TRACEABILITY_ENABLED}",
+      "description": "Enable traceability linking",
+      "required": false,
+      "default": "true"
+    }
+  ]
+}

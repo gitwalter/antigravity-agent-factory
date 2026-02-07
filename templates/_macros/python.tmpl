@@ -1,0 +1,237 @@
+{# 
+Python-specific Macros for Antigravity Agent Factory Templates
+
+This file contains reusable macros for generating Python code.
+
+Usage:
+  {% from '_macros/python.tmpl' import import_block, class_def, function_def %}
+
+Author: Antigravity Agent Factory
+Version: 1.0.0
+#}
+
+{# ============================================================================
+   IMPORT MACROS
+   ============================================================================ #}
+
+{# Generate import statements #}
+{% macro import_block(imports) -%}
+{% for imp in imports %}
+{% if imp.from is defined %}
+from {{ imp.from }} import {{ imp.names | join(', ') }}
+{% else %}
+import {{ imp.name }}{% if imp.alias is defined %} as {{ imp.alias }}{% endif %}
+{% endif %}
+{% endfor %}
+{%- endmacro %}
+
+{# Generate standard library imports #}
+{% macro stdlib_imports(modules) -%}
+{% for module in modules | sort %}
+import {{ module }}
+{% endfor %}
+{%- endmacro %}
+
+{# Generate typing imports #}
+{% macro typing_imports(types) -%}
+from typing import {{ types | join(', ') }}
+{%- endmacro %}
+
+
+{# ============================================================================
+   CLASS MACROS
+   ============================================================================ #}
+
+{# Generate a class definition with docstring #}
+{% macro class_def(name, description, bases=[], attributes=[]) -%}
+class {{ name }}{% if bases %}({{ bases | join(', ') }}){% endif %}:
+    """
+    {{ description }}
+    
+    {% if attributes %}
+    Attributes:
+    {% for attr in attributes %}
+        {{ attr.name }} ({{ attr.type }}): {{ attr.description }}
+    {% endfor %}
+    {% endif %}
+    """
+{%- endmacro %}
+
+{# Generate a dataclass #}
+{% macro dataclass_def(name, description, fields=[]) -%}
+@dataclass
+class {{ name }}:
+    """{{ description }}"""
+    {% for field in fields %}
+    {{ field.name }}: {{ field.type }}{% if field.default is defined %} = {{ field.default }}{% endif %}
+    {% endfor %}
+{%- endmacro %}
+
+{# Generate a Pydantic model #}
+{% macro pydantic_model(name, description, fields=[]) -%}
+class {{ name }}(BaseModel):
+    """{{ description }}"""
+    {% for field in fields %}
+    {{ field.name }}: {{ field.type }}{% if field.default is defined %} = {{ field.default }}{% elif field.field is defined %} = Field({{ field.field }}){% endif %}
+    {% endfor %}
+{%- endmacro %}
+
+
+{# ============================================================================
+   FUNCTION MACROS
+   ============================================================================ #}
+
+{# Generate a function definition with docstring #}
+{% macro function_def(name, description, params=[], returns=none, raises=[]) -%}
+def {{ name }}({% for p in params %}{{ p.name }}: {{ p.type }}{% if p.default is defined %} = {{ p.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}){% if returns %} -> {{ returns }}{% endif %}:
+    """
+    {{ description }}
+    
+    {% if params %}
+    Args:
+    {% for p in params %}
+        {{ p.name }}: {{ p.description }}
+    {% endfor %}
+    {% endif %}
+    {% if returns %}
+    Returns:
+        {{ returns }}: Description of return value
+    {% endif %}
+    {% if raises %}
+    Raises:
+    {% for r in raises %}
+        {{ r.type }}: {{ r.description }}
+    {% endfor %}
+    {% endif %}
+    """
+{%- endmacro %}
+
+{# Generate an async function definition #}
+{% macro async_function_def(name, description, params=[], returns=none) -%}
+async {{ function_def(name, description, params, returns) }}
+{%- endmacro %}
+
+{# Generate a method definition #}
+{% macro method_def(name, description, params=[], returns=none, is_classmethod=false, is_staticmethod=false, is_property=false) -%}
+{% if is_classmethod %}
+    @classmethod
+{% elif is_staticmethod %}
+    @staticmethod
+{% elif is_property %}
+    @property
+{% endif %}
+    def {{ name }}({% if not is_staticmethod %}self{% if params %}, {% endif %}{% endif %}{% for p in params %}{{ p.name }}: {{ p.type }}{% if p.default is defined %} = {{ p.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}){% if returns %} -> {{ returns }}{% endif %}:
+        """{{ description }}"""
+{%- endmacro %}
+
+
+{# ============================================================================
+   DECORATOR MACROS
+   ============================================================================ #}
+
+{# Generate decorator line #}
+{% macro decorator(name, args=[]) -%}
+@{{ name }}{% if args %}({{ args | join(', ') }}){% endif %}
+{%- endmacro %}
+
+{# Generate route decorator (FastAPI/Flask) #}
+{% macro route(path, method='get', tags=[], summary='') -%}
+@router.{{ method }}("{{ path }}"{% if tags %}, tags={{ tags | tojson }}{% endif %}{% if summary %}, summary="{{ summary }}"{% endif %})
+{%- endmacro %}
+
+
+{# ============================================================================
+   TEST MACROS
+   ============================================================================ #}
+
+{# Generate a test class #}
+{% macro test_class(name, description) -%}
+class Test{{ name }}:
+    """{{ description }}"""
+{%- endmacro %}
+
+{# Generate a test function #}
+{% macro test_function(name, description) -%}
+    def test_{{ name }}(self):
+        """{{ description }}"""
+{%- endmacro %}
+
+{# Generate a pytest fixture #}
+{% macro pytest_fixture(name, scope='function') -%}
+@pytest.fixture(scope="{{ scope }}")
+def {{ name }}():
+    """Fixture for {{ name }}."""
+{%- endmacro %}
+
+
+{# ============================================================================
+   EXCEPTION MACROS
+   ============================================================================ #}
+
+{# Generate a custom exception class #}
+{% macro exception_class(name, description, base='Exception') -%}
+class {{ name }}({{ base }}):
+    """{{ description }}"""
+    pass
+{%- endmacro %}
+
+{# Generate try-except block structure #}
+{% macro try_except(exceptions=[]) -%}
+try:
+    pass  # TODO: Add implementation
+{% for exc in exceptions %}
+except {{ exc.type }}{% if exc.as is defined %} as {{ exc.as }}{% endif %}:
+    {% if exc.action is defined %}{{ exc.action }}{% else %}raise{% endif %}
+{% endfor %}
+{%- endmacro %}
+
+
+{# ============================================================================
+   DOCSTRING MACROS
+   ============================================================================ #}
+
+{# Generate a Google-style docstring #}
+{% macro docstring(description, args=[], returns=none, raises=[], examples=[]) -%}
+"""
+{{ description }}
+
+{% if args %}
+Args:
+{% for arg in args %}
+    {{ arg.name }}: {{ arg.description }}
+{% endfor %}
+{% endif %}
+
+{% if returns %}
+Returns:
+    {{ returns }}
+{% endif %}
+
+{% if raises %}
+Raises:
+{% for r in raises %}
+    {{ r.type }}: {{ r.description }}
+{% endfor %}
+{% endif %}
+
+{% if examples %}
+Examples:
+{% for example in examples %}
+    >>> {{ example.code }}
+    {{ example.output }}
+{% endfor %}
+{% endif %}
+"""
+{%- endmacro %}
+
+{# Module docstring #}
+{% macro module_docstring(title, description, author='Antigravity Agent Factory', version='1.0.0') -%}
+"""
+{{ title }}
+
+{{ description }}
+
+Author: {{ author }}
+Version: {{ version }}
+"""
+{%- endmacro %}

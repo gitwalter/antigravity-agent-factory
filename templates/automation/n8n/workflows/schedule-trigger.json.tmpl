@@ -1,0 +1,228 @@
+{
+  "name": "{{WORKFLOW_NAME}}",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "{{SCHEDULE_TYPE}}": [
+            {
+              {{#IF CRON_EXPRESSION}}
+              "cronExpression": "{{CRON_EXPRESSION}}"
+              {{/IF}}
+              {{#IF INTERVAL}}
+              "field": "{{INTERVAL_FIELD}}",
+              "{{INTERVAL_FIELD}}Interval": {{INTERVAL_VALUE}}
+              {{/IF}}
+            }
+          ]
+        },
+        "options": {
+          "timezone": "{{TIMEZONE}}"
+        }
+      },
+      "id": "schedule-trigger-{{NODE_ID}}",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "execution-time",
+              "name": "execution_time",
+              "value": "={{ $now }}",
+              "type": "dateTime"
+            },
+            {
+              "id": "workflow-name",
+              "name": "workflow_name",
+              "value": "={{ $workflow.name }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "set-execution-context-{{NODE_ID}}",
+      "name": "Set Execution Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pre-execution checks\nconst executionTime = $input.first().json.execution_time;\n\n// Check if execution should be skipped (e.g., maintenance window)\n{{#IF MAINTENANCE_WINDOW}}\nconst maintenanceStart = '{{MAINTENANCE_START}}'; // HH:mm format\nconst maintenanceEnd = '{{MAINTENANCE_END}}'; // HH:mm format\nconst currentTime = new Date(executionTime).toTimeString().slice(0, 5);\n\nif (currentTime >= maintenanceStart && currentTime <= maintenanceEnd) {\n  return [{\n    json: {\n      skip_execution: true,\n      reason: 'Maintenance window',\n      execution_time: executionTime\n    }\n  }];\n}\n{{/IF}}\n\n// Check last execution status\n{{#IF CHECK_LAST_EXECUTION}}\n// This would typically query a database or cache\n// For now, we'll assume execution should proceed\n{{/IF}}\n\nreturn [{\n  json: {\n    skip_execution: false,\n    execution_time: executionTime,\n    workflow_name: $input.first().json.workflow_name\n  }\n}];"
+      },
+      "id": "pre-execution-checks-{{NODE_ID}}",
+      "name": "Pre-Execution Checks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "skip-check",
+              "leftValue": "={{ $json.skip_execution }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "false"
+              }
+            }
+          ]
+        }
+      },
+      "id": "if-should-execute-{{NODE_ID}}",
+      "name": "IF Should Execute",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "operation": "{{DATABASE_OPERATION}}",
+        "query": "={{ $json.query }}",
+        "options": {}
+      },
+      "id": "execute-task-{{NODE_ID}}",
+      "name": "Execute Scheduled Task",
+      "type": "{{DATABASE_NODE_TYPE}}",
+      "typeVersion": {{DATABASE_NODE_VERSION}},
+      "position": [1050, 300],
+      "credentials": {
+        "{{CREDENTIAL_TYPE}}": {
+          "id": "{{CREDENTIAL_ID}}",
+          "name": "{{CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "execution-summary",
+              "name": "execution_summary",
+              "value": "={{ { \"status\": \"skipped\", \"reason\": $json.reason, \"execution_time\": $json.execution_time } }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "log-skip-{{NODE_ID}}",
+      "name": "Log Skip",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1050, 500]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "resource": "execution",
+        "additionalFields": {
+          "note": "={{ `Scheduled execution completed at ${$json.execution_time}` }}"
+        }
+      },
+      "id": "log-execution-{{NODE_ID}}",
+      "name": "Log Execution",
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Execution Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Execution Context": {
+      "main": [
+        [
+          {
+            "node": "Pre-Execution Checks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pre-Execution Checks": {
+      "main": [
+        [
+          {
+            "node": "IF Should Execute",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Should Execute": {
+      "main": [
+        [
+          {
+            "node": "Execute Scheduled Task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Skip",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Scheduled Task": {
+      "main": [
+        [
+          {
+            "node": "Log Execution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "{{ERROR_WORKFLOW_ID}}"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "{{TIMESTAMP}}",
+      "updatedAt": "{{TIMESTAMP}}",
+      "id": "{{TAG_ID}}",
+      "name": "{{TAG_NAME}}"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "{{TIMESTAMP}}",
+  "versionId": "{{VERSION_ID}}"
+}

@@ -1,0 +1,145 @@
+/**
+ * After CREATE Event Handler - Side Effects and Notifications
+ * 
+ * Purpose: Handle side effects after entity creation
+ * Author: ${AUTHOR}
+ * Created: ${DATE}
+ * 
+ * This handler implements side effects that occur after an entity
+ * is successfully created. Extract to separate file for better
+ * organization in larger services.
+ * 
+ * @see https://cap.cloud.sap/docs/node.js/services#after-handlers
+ */
+
+const cds = require('@sap/cds');
+
+/**
+ * After CREATE handler for ${ENTITY_NAME}
+ * 
+ * This handler is registered in the main service handler file.
+ * Use for side effects that should not block the creation operation.
+ * 
+ * @param {Object} data - Created entity data
+ * @param {Object} req - CAP request object containing context
+ */
+module.exports = async function afterCreate${ENTITY_NAME}(data, req) {
+    /**
+     * Audit logging example
+     * 
+     * Log the creation event for audit purposes
+     */
+    try {
+        // await cds.run(
+        //     INSERT.into('${AUDIT_ENTITY}').entries({
+        //         entityType: '${ENTITY_NAME}',
+        //         entityId: data.ID,
+        //         action: 'CREATE',
+        //         userId: req.user?.id || 'anonymous',
+        //         timestamp: new Date(),
+        //         changes: JSON.stringify(data)
+        //     })
+        // );
+    } catch (error) {
+        // Log error but don't fail the request
+        console.error('Failed to create audit log:', error);
+    }
+
+    /**
+     * Notification example
+     * 
+     * Send notification about the creation event
+     */
+    try {
+        // await sendNotification({
+        //     type: 'ENTITY_CREATED',
+        //     entityType: '${ENTITY_NAME}',
+        //     entityId: data.ID,
+        //     userId: req.user?.id,
+        //     message: `${ENTITY_NAME} '${data.name}' was created`
+        // });
+    } catch (error) {
+        // Log error but don't fail the request
+        console.error('Failed to send notification:', error);
+    }
+
+    /**
+     * Create related records example
+     * 
+     * Create default related entities when parent is created
+     */
+    try {
+        // await cds.run(
+        //     INSERT.into('${RELATED_ENTITY}').entries({
+        //         parentId: data.ID,
+        //         name: 'Default ${RELATED_ENTITY}',
+        //         status: 'ACTIVE'
+        //     })
+        // );
+    } catch (error) {
+        console.error('Failed to create related records:', error);
+    }
+
+    /**
+     * Trigger workflow example
+     * 
+     * Start a workflow or business process
+     */
+    try {
+        // await triggerWorkflow({
+        //     workflowId: '${WORKFLOW_ID}',
+        //     entityId: data.ID,
+        //     entityType: '${ENTITY_NAME}'
+        // });
+    } catch (error) {
+        console.error('Failed to trigger workflow:', error);
+    }
+
+    /**
+     * External system integration example
+     * 
+     * Sync with external systems (non-blocking)
+     */
+    try {
+        // await syncToExternalSystem({
+        //     entityId: data.ID,
+        //     entityData: data,
+        //     operation: 'CREATE'
+        // });
+    } catch (error) {
+        console.error('Failed to sync to external system:', error);
+    }
+};
+
+/**
+ * Helper function: Send notification
+ * 
+ * @param {Object} notification - Notification data
+ */
+// async function sendNotification(notification) {
+//     // Implementation for sending notifications
+//     // Could use SAP Event Mesh, email service, etc.
+//     console.log('Notification:', notification);
+// }
+
+/**
+ * Helper function: Trigger workflow
+ * 
+ * @param {Object} workflowData - Workflow data
+ */
+// async function triggerWorkflow(workflowData) {
+//     // Implementation for triggering workflows
+//     // Could use SAP Workflow service, etc.
+//     console.log('Workflow:', workflowData);
+// }
+
+/**
+ * Helper function: Sync to external system
+ * 
+ * @param {Object} syncData - Sync data
+ */
+// async function syncToExternalSystem(syncData) {
+//     // Implementation for external system sync
+//     // Could use HTTP client, messaging service, etc.
+//     console.log('External sync:', syncData);
+// }

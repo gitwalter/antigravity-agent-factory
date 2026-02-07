@@ -1,0 +1,1 @@
+"""Integration tests for Antigravity Agent Factory CLI and generation workflows."""

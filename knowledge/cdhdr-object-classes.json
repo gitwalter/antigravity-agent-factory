@@ -1,0 +1,117 @@
+{
+  "metadata": {
+    "name": "Change Document Object Classes",
+    "description": "SAP Change Document patterns for audit trails and history tracking",
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-30"
+  },
+  "overview": {
+    "description": "Change documents track modifications to business data",
+    "tables": {
+      "CDHDR": "Change document header (who, when, what object)",
+      "CDPOS": "Change document items (field-level changes)"
+    },
+    "purpose": ["Audit compliance", "History tracking", "Debugging", "Regulatory requirements"]
+  },
+  "commonObjectClasses": {
+    "masterData": {
+      "MATERIAL": {"description": "Material master", "tables": ["MARA", "MARC", "MARD"]},
+      "KRED": {"description": "Vendor master", "tables": ["LFA1", "LFB1", "LFM1"]},
+      "DEBI": {"description": "Customer master", "tables": ["KNA1", "KNB1", "KNVV"]},
+      "BUSPARTNER": {"description": "Business partner", "tables": ["BUT000", "BUT020", "BUT021"]},
+      "BANF": {"description": "Purchase requisition", "tables": ["EBAN"]},
+      "INFOSATZ": {"description": "Purchasing info record", "tables": ["EINA", "EINE"]}
+    },
+    "salesDocuments": {
+      "VERKBELEG": {"description": "Sales document", "tables": ["VBAK", "VBAP", "VBEP"]},
+      "LIEFERUNG": {"description": "Delivery", "tables": ["LIKP", "LIPS"]},
+      "FAKTBEL": {"description": "Billing document", "tables": ["VBRK", "VBRP"]}
+    },
+    "purchasingDocuments": {
+      "EINKBELEG": {"description": "Purchasing document", "tables": ["EKKO", "EKPO"]},
+      "KONTRAKT": {"description": "Contract", "tables": ["EKKO", "EKPO"]}
+    },
+    "financialDocuments": {
+      "BELEG": {"description": "Accounting document", "tables": ["BKPF", "BSEG"]},
+      "ANLA": {"description": "Asset master", "tables": ["ANLA", "ANLB", "ANLC"]}
+    }
+  },
+  "cdhdrStructure": {
+    "fields": [
+      {"name": "MANDANT", "description": "Client"},
+      {"name": "OBJECTCLAS", "description": "Object class (e.g., MATERIAL, VERKBELEG)"},
+      {"name": "OBJECTID", "description": "Object key (e.g., material number)"},
+      {"name": "CHANGENR", "description": "Change document number"},
+      {"name": "USERNAME", "description": "User who made change"},
+      {"name": "UDATE", "description": "Date of change"},
+      {"name": "UTIME", "description": "Time of change"},
+      {"name": "TCODE", "description": "Transaction code used"},
+      {"name": "CHANGE_IND", "description": "Change indicator (U=Update, I=Insert, D=Delete)"}
+    ]
+  },
+  "cdposStructure": {
+    "fields": [
+      {"name": "MANDANT", "description": "Client"},
+      {"name": "OBJECTCLAS", "description": "Object class"},
+      {"name": "OBJECTID", "description": "Object key"},
+      {"name": "CHANGENR", "description": "Change document number"},
+      {"name": "TABNAME", "description": "Table name"},
+      {"name": "TABKEY", "description": "Table key"},
+      {"name": "FNAME", "description": "Field name"},
+      {"name": "VALUE_OLD", "description": "Old value"},
+      {"name": "VALUE_NEW", "description": "New value"},
+      {"name": "CHNGIND", "description": "Change indicator (U/I/D/E)"}
+    ]
+  },
+  "creatingChangeDocuments": {
+    "steps": [
+      "Define change document object (transaction SCDO)",
+      "Generate function modules",
+      "Call write function module after database changes"
+    ],
+    "functionModules": {
+      "pattern": "{OBJECTCLASS}_WRITE_DOCUMENT",
+      "examples": ["MATERIAL_WRITE_DOCUMENT", "CHANGEDOCUMENT_WRITE"]
+    },
+    "customObject": {
+      "naming": "Z* or Y*",
+      "transaction": "SCDO",
+      "tables": "Select tables to track",
+      "fields": "Select fields to log"
+    }
+  },
+  "readingChangeDocuments": {
+    "functionModules": {
+      "CHANGEDOCUMENT_READ": "Read change documents for an object",
+      "CHANGEDOCUMENT_READ_ALL": "Read all change documents",
+      "CHANGEDOCUMENT_READ_HEADERS": "Read only headers"
+    },
+    "cdsViews": {
+      "I_ChangeDocument": "Standard CDS view for change documents",
+      "I_ChangeDocumentItem": "CDS view for change document items"
+    },
+    "selectPattern": "SELECT * FROM cdhdr INTO TABLE @lt_cdhdr\n  WHERE objectclas = @lv_objectclass\n    AND objectid = @lv_objectid\n    AND udate BETWEEN @lv_from_date AND @lv_to_date."
+  },
+  "rapIntegration": {
+    "description": "Change documents in RAP context",
+    "pattern": "Call change document functions in behavior implementation",
+    "location": "ON SAVE determination or saver class",
+    "example": "CALL FUNCTION 'CHANGEDOCUMENT_WRITE'\n  EXPORTING\n    objectclass = 'ZTRAVEL'\n    objectid    = ls_travel-travel_id\n    ..."
+  },
+  "bestPractices": [
+    "Define change document objects for all critical business data",
+    "Track key fields that affect business processes",
+    "Consider storage requirements for high-volume data",
+    "Use archiving for old change documents",
+    "Combine with application log (SLG1) for comprehensive audit",
+    "Test change document creation during development",
+    "Document which fields are tracked",
+    "Consider GDPR requirements for personal data"
+  ],
+  "limitations": [
+    "Maximum field length for VALUE_OLD/VALUE_NEW is 254 characters",
+    "Long text changes require special handling",
+    "High-volume changes may impact performance",
+    "Not all SAP standard objects have change documents enabled"
+  ]
+}

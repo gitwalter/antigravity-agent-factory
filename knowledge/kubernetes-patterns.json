@@ -1,0 +1,186 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Kubernetes Patterns",
+  "description": "Best practices and patterns for Kubernetes deployment, operations, and cloud-native development",
+  "version": "1.0.0",
+  "sources": [
+    "https://kubernetes.io/docs/",
+    "https://kubernetes.io/docs/concepts/"
+  ],
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns include health checks and monitoring",
+    "A4_non_harm": "Security patterns protect workloads and data"
+  },
+  "core_concepts": {
+    "pods": {
+      "description": "Smallest deployable unit, one or more containers",
+      "best_practices": [
+        "One main container per pod (with sidecars if needed)",
+        "Use resource requests and limits",
+        "Define liveness and readiness probes",
+        "Use labels for organization and selection"
+      ]
+    },
+    "workload_resources": {
+      "deployment": {
+        "use_case": "Stateless applications",
+        "features": ["Rolling updates", "Rollback", "Scaling"]
+      },
+      "statefulset": {
+        "use_case": "Stateful applications (databases, queues)",
+        "features": ["Stable network identity", "Ordered deployment", "Persistent storage"]
+      },
+      "daemonset": {
+        "use_case": "Run on every node (monitoring, logging)",
+        "features": ["Node-level operations", "Automatic scheduling"]
+      },
+      "job_cronjob": {
+        "use_case": "Batch processing, scheduled tasks",
+        "features": ["Run to completion", "Retry on failure"]
+      }
+    },
+    "services": {
+      "types": {
+        "ClusterIP": "Internal cluster communication",
+        "NodePort": "Expose on each node's IP",
+        "LoadBalancer": "External load balancer (cloud)",
+        "ExternalName": "CNAME to external service"
+      }
+    }
+  },
+  "deployment_patterns": {
+    "rolling_update": {
+      "description": "Gradually replace old pods with new ones",
+      "code_example": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: my-app\nspec:\n  replicas: 3\n  strategy:\n    type: RollingUpdate\n    rollingUpdate:\n      maxSurge: 1\n      maxUnavailable: 0\n  selector:\n    matchLabels:\n      app: my-app\n  template:\n    metadata:\n      labels:\n        app: my-app\n    spec:\n      containers:\n      - name: my-app\n        image: my-app:v2\n        resources:\n          requests:\n            memory: \"256Mi\"\n            cpu: \"250m\"\n          limits:\n            memory: \"512Mi\"\n            cpu: \"500m\"\n        readinessProbe:\n          httpGet:\n            path: /health\n            port: 8080\n          initialDelaySeconds: 5\n          periodSeconds: 10\n        livenessProbe:\n          httpGet:\n            path: /health\n            port: 8080\n          initialDelaySeconds: 15\n          periodSeconds: 20"
+    },
+    "blue_green": {
+      "description": "Run two environments, switch traffic instantly",
+      "implementation": "Use service selector to switch between blue/green deployments"
+    },
+    "canary": {
+      "description": "Route small percentage of traffic to new version",
+      "implementation": "Use multiple deployments with weighted service mesh routing"
+    }
+  },
+  "configuration_patterns": {
+    "configmaps": {
+      "description": "Store non-sensitive configuration",
+      "code_example": "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: app-config\ndata:\n  database_url: \"postgres://db:5432/myapp\"\n  log_level: \"info\"\n  config.yaml: |\n    server:\n      port: 8080\n      timeout: 30s"
+    },
+    "secrets": {
+      "description": "Store sensitive data (base64 encoded)",
+      "code_example": "apiVersion: v1\nkind: Secret\nmetadata:\n  name: app-secrets\ntype: Opaque\ndata:\n  api-key: YXBpLWtleS12YWx1ZQ==\n  db-password: cGFzc3dvcmQ=",
+      "best_practices": [
+        "Use external secret managers (Vault, AWS SM)",
+        "Enable encryption at rest",
+        "Use RBAC to limit access",
+        "Rotate secrets regularly"
+      ]
+    },
+    "env_injection": {
+      "description": "Inject config as environment variables",
+      "code_example": "env:\n- name: DATABASE_URL\n  valueFrom:\n    configMapKeyRef:\n      name: app-config\n      key: database_url\n- name: API_KEY\n  valueFrom:\n    secretKeyRef:\n      name: app-secrets\n      key: api-key"
+    }
+  },
+  "storage_patterns": {
+    "persistent_volumes": {
+      "description": "Persistent storage that survives pod restarts",
+      "code_example": "apiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: data-pvc\nspec:\n  accessModes:\n    - ReadWriteOnce\n  storageClassName: standard\n  resources:\n    requests:\n      storage: 10Gi"
+    },
+    "volume_types": {
+      "emptyDir": "Temporary storage, lost when pod dies",
+      "hostPath": "Mount host filesystem (use cautiously)",
+      "persistentVolumeClaim": "Persistent network storage",
+      "configMap_secret": "Inject config/secrets as files"
+    }
+  },
+  "networking_patterns": {
+    "ingress": {
+      "description": "HTTP routing and load balancing",
+      "code_example": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: my-ingress\n  annotations:\n    nginx.ingress.kubernetes.io/rewrite-target: /\nspec:\n  ingressClassName: nginx\n  tls:\n  - hosts:\n    - myapp.example.com\n    secretName: tls-secret\n  rules:\n  - host: myapp.example.com\n    http:\n      paths:\n      - path: /api\n        pathType: Prefix\n        backend:\n          service:\n            name: api-service\n            port:\n              number: 80"
+    },
+    "network_policies": {
+      "description": "Control pod-to-pod traffic",
+      "code_example": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: api-policy\nspec:\n  podSelector:\n    matchLabels:\n      app: api\n  policyTypes:\n  - Ingress\n  - Egress\n  ingress:\n  - from:\n    - podSelector:\n        matchLabels:\n          app: frontend\n    ports:\n    - protocol: TCP\n      port: 8080"
+    }
+  },
+  "scaling_patterns": {
+    "horizontal_pod_autoscaler": {
+      "description": "Scale pods based on metrics",
+      "code_example": "apiVersion: autoscaling/v2\nkind: HorizontalPodAutoscaler\nmetadata:\n  name: my-app-hpa\nspec:\n  scaleTargetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: my-app\n  minReplicas: 2\n  maxReplicas: 10\n  metrics:\n  - type: Resource\n    resource:\n      name: cpu\n      target:\n        type: Utilization\n        averageUtilization: 70"
+    },
+    "vertical_pod_autoscaler": {
+      "description": "Automatically adjust resource requests/limits"
+    },
+    "pod_disruption_budget": {
+      "description": "Ensure minimum availability during disruptions",
+      "code_example": "apiVersion: policy/v1\nkind: PodDisruptionBudget\nmetadata:\n  name: my-app-pdb\nspec:\n  minAvailable: 2\n  selector:\n    matchLabels:\n      app: my-app"
+    }
+  },
+  "observability_patterns": {
+    "health_probes": {
+      "liveness": "Is the container running? Restart if fails",
+      "readiness": "Is the container ready to serve? Remove from load balancer if fails",
+      "startup": "Is the container started? For slow-starting apps"
+    },
+    "logging": {
+      "pattern": "Log to stdout/stderr, collect with fluentd/fluentbit"
+    },
+    "metrics": {
+      "pattern": "Expose /metrics endpoint, scrape with Prometheus"
+    }
+  },
+  "security_patterns": {
+    "pod_security": {
+      "description": "Restrict pod capabilities",
+      "code_example": "securityContext:\n  runAsNonRoot: true\n  runAsUser: 1000\n  readOnlyRootFilesystem: true\n  allowPrivilegeEscalation: false\n  capabilities:\n    drop:\n      - ALL"
+    },
+    "rbac": {
+      "description": "Role-Based Access Control",
+      "components": ["ServiceAccount", "Role/ClusterRole", "RoleBinding/ClusterRoleBinding"]
+    },
+    "resource_quotas": {
+      "description": "Limit resources per namespace",
+      "code_example": "apiVersion: v1\nkind: ResourceQuota\nmetadata:\n  name: compute-quota\nspec:\n  hard:\n    requests.cpu: \"4\"\n    requests.memory: 8Gi\n    limits.cpu: \"8\"\n    limits.memory: 16Gi"
+    }
+  },
+  "helm_patterns": {
+    "description": "Package manager for Kubernetes",
+    "best_practices": [
+      "Use values.yaml for configuration",
+      "Template common patterns",
+      "Use dependencies for shared charts",
+      "Version charts semantically"
+    ]
+  },
+  "best_practices": [
+    "Always set resource requests and limits",
+    "Use namespaces for isolation",
+    "Implement health probes for all containers",
+    "Use labels consistently for selection and organization",
+    "Enable RBAC and principle of least privilege",
+    "Use network policies for defense in depth",
+    "Store configuration in ConfigMaps, secrets in Secrets",
+    "Use GitOps for declarative deployments",
+    "Monitor resource usage and set up alerts",
+    "Plan for pod disruption with PDBs"
+  ],
+  "anti_patterns": {
+    "no_resource_limits": {
+      "problem": "Pods can consume all node resources",
+      "solution": "Always set requests and limits"
+    },
+    "latest_tag": {
+      "problem": "Unpredictable deployments",
+      "solution": "Use specific image tags or digests"
+    },
+    "no_probes": {
+      "problem": "Traffic sent to unhealthy pods",
+      "solution": "Implement liveness and readiness probes"
+    },
+    "hardcoded_replicas": {
+      "problem": "Can't handle traffic spikes",
+      "solution": "Use HPA for dynamic scaling"
+    }
+  }
+}

@@ -1,0 +1,480 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CrewAI Patterns",
+  "description": "Best practices and patterns for CrewAI 0.50+ multi-agent systems",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A2_user_primacy": "Crews ensure user goals are achieved through coordinated agent effort",
+    "A3_transparency": "Agent roles and tasks are explicit and traceable"
+  },
+  "agent_patterns": {
+    "agent_definition": {
+      "description": "Define agents with role, goal, and backstory",
+      "use_when": "Creating specialized agents for specific tasks",
+      "code_example": "from crewai import Agent\nfrom crewai_tools import SerperDevTool\n\nresearcher = Agent(\n    role='Research Analyst',\n    goal='Conduct thorough research on given topics and provide accurate information',\n    backstory='''You are an experienced research analyst with a keen eye for detail.\n    You excel at finding reliable sources and synthesizing complex information\n    into clear, actionable insights.''',\n    verbose=True,\n    allow_delegation=False,\n    tools=[SerperDevTool()],\n    max_iter=3,\n    memory=True\n)",
+      "best_practices": [
+        "Define clear, specific roles",
+        "Write detailed backstories that guide behavior",
+        "Set appropriate max_iter to prevent infinite loops",
+        "Use memory=True for context retention",
+        "Choose tools relevant to agent's role"
+      ],
+      "key_properties": {
+        "role": "Agent's job title/function",
+        "goal": "What the agent should accomplish",
+        "backstory": "Context that shapes agent behavior",
+        "verbose": "Enable detailed logging",
+        "allow_delegation": "Can agent delegate to others",
+        "tools": "List of tools agent can use",
+        "max_iter": "Maximum iterations per task",
+        "memory": "Enable conversation memory"
+      }
+    },
+    "agent_with_custom_llm": {
+      "description": "Configure agent with specific LLM",
+      "use_when": "Need different models for different agents",
+      "code_example": "from crewai import Agent, LLM\nfrom langchain_openai import ChatOpenAI\n\n# Custom LLM configuration\nfast_llm = LLM(\n    model=ChatOpenAI(\n        model='gpt-3.5-turbo',\n        temperature=0.7\n    )\n)\n\nresearcher = Agent(\n    role='Researcher',\n    goal='Research topics quickly',\n    backstory='Fast researcher',\n    llm=fast_llm\n)",
+      "best_practices": [
+        "Use faster models for simple tasks",
+        "Use more capable models for complex reasoning",
+        "Consider cost vs capability trade-offs"
+      ]
+    },
+    "agent_with_function_calling": {
+      "description": "Agent with custom function tools",
+      "use_when": "Need custom business logic as tools",
+      "code_example": "from crewai import Agent\nfrom crewai_tools import tool\nfrom typing import Type\nfrom pydantic import BaseModel, Field\n\nclass SearchInput(BaseModel):\n    query: str = Field(description='Search query')\n    max_results: int = Field(default=5, ge=1, le=20)\n\n@tool('search_database')\ndef search_database(query: str, max_results: int) -> str:\n    '''Search internal database for information.'''\n    # Implementation here\n    return f'Found {max_results} results for {query}'\n\nresearcher = Agent(\n    role='Database Researcher',\n    goal='Find information in database',\n    backstory='Expert at querying databases',\n    tools=[search_database]\n)",
+      "best_practices": [
+        "Use @tool decorator for custom tools",
+        "Define Pydantic schemas for tool inputs",
+        "Provide clear tool descriptions",
+        "Handle errors in tool implementations"
+      ]
+    }
+  },
+  "task_patterns": {
+    "task_definition": {
+      "description": "Define tasks with description, agent assignment, and expected output",
+      "use_when": "Breaking down work into discrete tasks",
+      "code_example": "from crewai import Task\n\nresearch_task = Task(\n    description='''Research the latest developments in AI agent frameworks.\n    Focus on LangChain, CrewAI, and AutoGen. Provide a comprehensive\n    comparison of their features and use cases.''',\n    agent=researcher,\n    expected_output='''A detailed report with:\n    1. Overview of each framework\n    2. Key features comparison\n    3. Use case recommendations\n    4. Pros and cons of each'''\n)",
+      "best_practices": [
+        "Write clear, specific task descriptions",
+        "Define expected_output format",
+        "Assign tasks to appropriate agents",
+        "Set dependencies when tasks must run sequentially"
+      ],
+      "key_properties": {
+        "description": "What needs to be done",
+        "agent": "Agent responsible for task",
+        "expected_output": "Format and content of output",
+        "async_execution": "Run task asynchronously",
+        "output_file": "Save output to file",
+        "context": "Additional context for task"
+      }
+    },
+    "task_with_dependencies": {
+      "description": "Tasks that depend on other tasks",
+      "use_when": "Sequential workflow where one task needs another's output",
+      "code_example": "research_task = Task(\n    description='Research topic X',\n    agent=researcher,\n    expected_output='Research report'\n)\n\nwrite_task = Task(\n    description='Write article based on research',\n    agent=writer,\n    expected_output='Article draft',\n    context=[research_task]\n)\n\nreview_task = Task(\n    description='Review and edit article',\n    agent=reviewer,\n    expected_output='Final article',\n    context=[write_task]\n)",
+      "best_practices": [
+        "Use context parameter for dependencies",
+        "Ensure dependency order is correct",
+        "Test with different dependency chains"
+      ]
+    },
+    "task_with_human_input": {
+      "description": "Task that requires human approval or input",
+      "use_when": "Critical decisions need human oversight",
+      "code_example": "approval_task = Task(\n    description='Review proposal and approve or request changes',\n    agent=manager,\n    expected_output='Approval decision with feedback',\n    human_input=True\n)",
+      "best_practices": [
+        "Use human_input for critical tasks",
+        "Provide clear context for human decision",
+        "Set timeouts for human responses"
+      ],
+      "axiom_alignment": "A2 (User Primacy) - Human oversight for critical decisions"
+    },
+    "async_task": {
+      "description": "Execute task asynchronously",
+      "use_when": "Task can run independently",
+      "code_example": "parallel_task = Task(\n    description='Process data independently',\n    agent=processor,\n    expected_output='Processed data',\n    async_execution=True\n)",
+      "best_practices": [
+        "Use for independent tasks",
+        "Consider resource limits",
+        "Monitor async task completion"
+      ]
+    }
+  },
+  "crew_patterns": {
+    "basic_crew": {
+      "description": "Simple crew with agents and tasks",
+      "use_when": "Straightforward multi-agent workflow",
+      "code_example": "from crewai import Crew, Process\n\ncrew = Crew(\n    agents=[researcher, writer, reviewer],\n    tasks=[research_task, write_task, review_task],\n    process=Process.sequential,\n    verbose=True\n)\n\nresult = crew.kickoff()",
+      "best_practices": [
+        "Start with sequential process",
+        "Enable verbose for debugging",
+        "Test with simple tasks first"
+      ]
+    },
+    "hierarchical_crew": {
+      "description": "Crew with manager agent overseeing workers",
+      "use_when": "Need centralized coordination and decision-making",
+      "code_example": "manager = Agent(\n    role='Project Manager',\n    goal='Coordinate team and ensure quality deliverables',\n    backstory='Experienced manager who delegates effectively',\n    allow_delegation=True,\n    verbose=True\n)\n\ncrew = Crew(\n    agents=[manager, researcher, writer, reviewer],\n    tasks=[research_task, write_task, review_task],\n    process=Process.hierarchical,\n    manager_llm=ChatOpenAI(model='gpt-4'),\n    verbose=True\n)",
+      "best_practices": [
+        "Manager should have allow_delegation=True",
+        "Use capable LLM for manager",
+        "Define clear delegation rules",
+        "Monitor manager decisions"
+      ]
+    },
+    "consensual_crew": {
+      "description": "Crew where agents collaborate and reach consensus",
+      "use_when": "Tasks benefit from multiple perspectives",
+      "code_example": "crew = Crew(\n    agents=[researcher, writer, reviewer],\n    tasks=[research_task, write_task, review_task],\n    process=Process.consensual,\n    verbose=True\n)",
+      "best_practices": [
+        "Use for creative or complex tasks",
+        "Ensure agents have complementary skills",
+        "Set iteration limits to prevent deadlock"
+      ]
+    },
+    "crew_with_custom_llm": {
+      "description": "Configure crew with specific LLM",
+      "use_when": "Need consistent model across crew",
+      "code_example": "from crewai import LLM\n\ncrew_llm = LLM(\n    model=ChatOpenAI(\n        model='gpt-4',\n        temperature=0.7\n    )\n)\n\ncrew = Crew(\n    agents=[researcher, writer],\n    tasks=[research_task, write_task],\n    llm=crew_llm,\n    verbose=True\n)",
+      "best_practices": [
+        "Use consistent LLM for reproducible results",
+        "Consider cost implications",
+        "Test with different temperature settings"
+      ]
+    }
+  },
+  "process_types": {
+    "sequential": {
+      "description": "Tasks execute one after another",
+      "use_when": "Tasks have clear dependencies",
+      "code_example": "crew = Crew(\n    agents=[agent1, agent2, agent3],\n    tasks=[task1, task2, task3],\n    process=Process.sequential\n)",
+      "best_practices": [
+        "Order tasks by dependencies",
+        "Use for linear workflows",
+        "Monitor task completion"
+      ]
+    },
+    "hierarchical": {
+      "description": "Manager agent coordinates worker agents",
+      "use_when": "Need centralized control and delegation",
+      "code_example": "crew = Crew(\n    agents=[manager, worker1, worker2],\n    tasks=[task1, task2],\n    process=Process.hierarchical,\n    manager_llm=ChatOpenAI(model='gpt-4')\n)",
+      "best_practices": [
+        "Manager must have allow_delegation=True",
+        "Use capable LLM for manager",
+        "Define clear delegation criteria",
+        "Monitor manager decisions"
+      ]
+    },
+    "consensual": {
+      "description": "Agents collaborate and reach consensus",
+      "use_when": "Multiple perspectives improve quality",
+      "code_example": "crew = Crew(\n    agents=[agent1, agent2, agent3],\n    tasks=[task1, task2],\n    process=Process.consensual\n)",
+      "best_practices": [
+        "Set iteration limits",
+        "Define consensus criteria",
+        "Monitor for deadlocks"
+      ]
+    }
+  },
+  "memory_patterns": {
+    "agent_memory": {
+      "description": "Enable memory for individual agents",
+      "use_when": "Agent needs to remember past interactions",
+      "code_example": "researcher = Agent(\n    role='Researcher',\n    goal='Research topics',\n    backstory='Experienced researcher',\n    memory=True,\n    max_iter=3\n)",
+      "best_practices": [
+        "Use memory for conversational agents",
+        "Monitor memory usage",
+        "Consider memory limits"
+      ]
+    },
+    "crew_memory": {
+      "description": "Shared memory across crew",
+      "use_when": "Agents need to share context",
+      "code_example": "crew = Crew(\n    agents=[agent1, agent2],\n    tasks=[task1, task2],\n    memory=True,\n    verbose=True\n)",
+      "best_practices": [
+        "Use for collaborative tasks",
+        "Monitor shared memory size",
+        "Clear memory between runs if needed"
+      ]
+    }
+  },
+  "tool_integration": {
+    "builtin_tools": {
+      "description": "Use CrewAI built-in tools",
+      "code_example": "from crewai_tools import (\n    SerperDevTool,\n    WebsiteSearchTool,\n    FileReadTool,\n    DirectoryReadTool\n)\n\nresearcher = Agent(\n    role='Researcher',\n    goal='Research topics',\n    backstory='Expert researcher',\n    tools=[\n        SerperDevTool(),\n        WebsiteSearchTool(),\n        FileReadTool(),\n        DirectoryReadTool()\n    ]\n)",
+      "best_practices": [
+        "Choose tools relevant to agent role",
+        "Configure tool parameters appropriately",
+        "Handle tool failures gracefully"
+      ]
+    },
+    "custom_tools": {
+      "description": "Create custom tools for agents",
+      "code_example": "from crewai_tools import tool\nfrom typing import Type\nfrom pydantic import BaseModel, Field\n\nclass QueryInput(BaseModel):\n    query: str = Field(description='Database query')\n    limit: int = Field(default=10, ge=1, le=100)\n\n@tool('query_database')\ndef query_database(query: str, limit: int) -> str:\n    '''Execute database query and return results.'''\n    try:\n        results = execute_query(query, limit)\n        return json.dumps(results, indent=2)\n    except Exception as e:\n        return f'Error: {str(e)}'\n\nagent = Agent(\n    role='Data Analyst',\n    goal='Analyze data',\n    backstory='Expert data analyst',\n    tools=[query_database]\n)",
+      "best_practices": [
+        "Use @tool decorator",
+        "Define Pydantic input schemas",
+        "Provide clear descriptions",
+        "Handle errors gracefully",
+        "Return structured outputs"
+      ]
+    }
+  },
+  "peer_review_patterns": {
+    "review_task": {
+      "description": "Task where agent reviews another agent's work",
+      "use_when": "Quality assurance is critical",
+      "code_example": "write_task = Task(\n    description='Write article',\n    agent=writer,\n    expected_output='Article draft'\n)\n\nreview_task = Task(\n    description='''Review the article draft for:\n    1. Accuracy and fact-checking\n    2. Grammar and style\n    3. Clarity and readability\n    Provide detailed feedback.''',\n    agent=reviewer,\n    expected_output='Review feedback with recommendations',\n    context=[write_task]\n)",
+      "best_practices": [
+        "Define clear review criteria",
+        "Use context to pass reviewed work",
+        "Specify expected output format"
+      ]
+    },
+    "iterative_review": {
+      "description": "Multiple review cycles",
+      "use_when": "Need multiple rounds of improvement",
+      "code_example": "write_task = Task(description='Write article', agent=writer, expected_output='Draft')\nreview_task = Task(description='Review article', agent=reviewer, expected_output='Feedback', context=[write_task])\nrevise_task = Task(description='Revise based on feedback', agent=writer, expected_output='Revised draft', context=[review_task])\nfinal_review_task = Task(description='Final review', agent=reviewer, expected_output='Approval', context=[revise_task])",
+      "best_practices": [
+        "Limit review cycles",
+        "Track improvements",
+        "Define exit criteria"
+      ]
+    }
+  },
+  "manager_agent_patterns": {
+    "delegation_manager": {
+      "description": "Manager that delegates tasks to workers",
+      "use_when": "Need intelligent task routing",
+      "code_example": "manager = Agent(\n    role='Project Manager',\n    goal='Coordinate team and ensure quality',\n    backstory='''You are an experienced project manager who excels at\n    breaking down complex projects into tasks and assigning them to\n    the right team members. You monitor progress and ensure deliverables\n    meet quality standards.''',\n    allow_delegation=True,\n    verbose=True,\n    max_iter=5\n)\n\ncrew = Crew(\n    agents=[manager, researcher, writer, reviewer],\n    tasks=[complex_task],\n    process=Process.hierarchical,\n    manager_llm=ChatOpenAI(model='gpt-4', temperature=0.3)\n)",
+      "best_practices": [
+        "Write detailed backstory for delegation logic",
+        "Use capable LLM for manager",
+        "Set appropriate max_iter",
+        "Monitor delegation decisions",
+        "Define clear task descriptions"
+      ]
+    },
+    "quality_manager": {
+      "description": "Manager focused on quality assurance",
+      "use_when": "Quality is paramount",
+      "code_example": "quality_manager = Agent(\n    role='Quality Assurance Manager',\n    goal='Ensure all deliverables meet high quality standards',\n    backstory='''You are a meticulous QA manager who reviews all work\n    before approval. You check for accuracy, completeness, and adherence\n    to requirements.''',\n    allow_delegation=True,\n    verbose=True\n)",
+      "best_practices": [
+        "Define quality criteria clearly",
+        "Use detailed review prompts",
+        "Track quality metrics"
+      ]
+    }
+  },
+  "output_handling": {
+    "save_to_file": {
+      "description": "Save task output to file",
+      "code_example": "task = Task(\n    description='Generate report',\n    agent=writer,\n    expected_output='Report in markdown format',\n    output_file='report.md'\n)",
+      "best_practices": [
+        "Specify file format in expected_output",
+        "Use appropriate file extensions",
+        "Handle file write errors"
+      ]
+    },
+    "structured_output": {
+      "description": "Get structured output from crew",
+      "code_example": "result = crew.kickoff()\n\n# Access individual task outputs\nresearch_output = result.tasks_output[0]\nwrite_output = result.tasks_output[1]\n\n# Access final output\nfinal_output = result.raw",
+      "best_practices": [
+        "Parse outputs based on expected_output format",
+        "Handle missing outputs gracefully",
+        "Validate output structure"
+      ]
+    }
+  },
+  "best_practices": {
+    "agent_design": [
+      "Define clear, specific roles",
+      "Write detailed backstories",
+      "Choose appropriate tools",
+      "Set max_iter to prevent loops",
+      "Enable memory when needed"
+    ],
+    "task_design": [
+      "Write clear task descriptions",
+      "Define expected_output format",
+      "Set dependencies correctly",
+      "Use human_input for critical decisions"
+    ],
+    "crew_design": [
+      "Start with sequential process",
+      "Use hierarchical for complex coordination",
+      "Enable verbose for debugging",
+      "Test with simple tasks first"
+    ],
+    "performance": [
+      "Use async_execution for independent tasks",
+      "Choose appropriate LLM for each agent",
+      "Monitor token usage",
+      "Cache results when possible"
+    ]
+  },
+  "anti_patterns": {
+    "vague_roles": {
+      "description": "Unclear agent roles",
+      "problem": "Agents don't know what to do",
+      "solution": "Define specific, actionable roles"
+    },
+    "missing_dependencies": {
+      "description": "Tasks without proper dependencies",
+      "problem": "Tasks execute in wrong order",
+      "solution": "Use context parameter for dependencies"
+    },
+    "infinite_loops": {
+      "description": "No max_iter limits",
+      "problem": "Agents run indefinitely",
+      "solution": "Set appropriate max_iter for all agents"
+    },
+    "tool_overload": {
+      "description": "Too many tools per agent",
+      "problem": "Confusion, poor tool selection",
+      "solution": "Limit tools to 3-5 per agent, make them specific"
+    }
+  },
+  "testing_patterns": {
+    "unit_testing": {
+      "description": "Test individual agents and tasks",
+      "code_example": "def test_researcher_agent():\n    researcher = Agent(\n        role='Researcher',\n        goal='Research topics',\n        backstory='Test researcher'\n    )\n    \n    task = Task(\n        description='Research AI frameworks',\n        agent=researcher,\n        expected_output='Research report'\n    )\n    \n    result = task.execute()\n    assert 'framework' in result.lower()",
+      "best_practices": [
+        "Test agents independently",
+        "Mock external tools",
+        "Use deterministic LLM responses"
+      ]
+    },
+    "integration_testing": {
+      "description": "Test complete crew workflows",
+      "code_example": "def test_research_crew():\n    crew = Crew(\n        agents=[researcher, writer],\n        tasks=[research_task, write_task],\n        process=Process.sequential\n    )\n    \n    result = crew.kickoff()\n    assert result.tasks_output is not None",
+      "best_practices": [
+        "Test with representative scenarios",
+        "Verify task dependencies",
+        "Check output formats"
+      ]
+    }
+  },
+  "flow_patterns": {
+    "description": "CrewAI Flows for complex state management and orchestration",
+    "added_date": "2026-01-31",
+    "basic_flow": {
+      "description": "Create a flow with state management between steps",
+      "use_when": "Need fine-grained control over execution flow and state",
+      "code_example": "from crewai.flow.flow import Flow, listen, start\nfrom pydantic import BaseModel\n\nclass ResearchState(BaseModel):\n    topic: str = \"\"\n    research_results: str = \"\"\n    article: str = \"\"\n    reviewed: bool = False\n\nclass ResearchFlow(Flow[ResearchState]):\n    \n    @start()\n    def set_topic(self):\n        self.state.topic = \"AI Agents\"\n        return self.state.topic\n    \n    @listen(set_topic)\n    def research(self, topic):\n        # Research crew runs here\n        self.state.research_results = research_crew.kickoff(\n            inputs={\"topic\": topic}\n        ).raw\n        return self.state.research_results\n    \n    @listen(research)\n    def write_article(self, research):\n        self.state.article = writing_crew.kickoff(\n            inputs={\"research\": research}\n        ).raw\n        return self.state.article\n\n# Run the flow\nflow = ResearchFlow()\nresult = flow.kickoff()",
+      "best_practices": [
+        "Use Pydantic BaseModel for typed state",
+        "Decorate entry point with @start()",
+        "Use @listen() for step dependencies",
+        "Access state via self.state",
+        "Return values pass to next step"
+      ]
+    },
+    "conditional_flow": {
+      "description": "Flow with conditional branching based on state",
+      "use_when": "Different paths based on intermediate results",
+      "code_example": "from crewai.flow.flow import Flow, listen, start, router\n\nclass ConditionalFlow(Flow[MyState]):\n    \n    @start()\n    def analyze(self):\n        self.state.score = analyze_data()\n        return self.state.score\n    \n    @router(analyze)\n    def route_by_score(self, score):\n        if score > 0.8:\n            return \"high_quality\"\n        elif score > 0.5:\n            return \"medium_quality\"\n        return \"low_quality\"\n    \n    @listen(\"high_quality\")\n    def handle_high(self):\n        return \"Approved automatically\"\n    \n    @listen(\"medium_quality\")\n    def handle_medium(self):\n        return \"Needs review\"\n    \n    @listen(\"low_quality\")\n    def handle_low(self):\n        return \"Rejected\"",
+      "best_practices": [
+        "Use @router() for conditional branching",
+        "Return string route names from router",
+        "@listen() can listen to route names",
+        "Keep routing logic simple and clear"
+      ]
+    },
+    "parallel_flow": {
+      "description": "Execute multiple steps in parallel using or_",
+      "use_when": "Independent tasks that can run concurrently",
+      "code_example": "from crewai.flow.flow import Flow, listen, start, or_\n\nclass ParallelFlow(Flow[MyState]):\n    \n    @start()\n    def begin(self):\n        return \"starting\"\n    \n    @listen(begin)\n    def task_a(self, _):\n        # Runs in parallel with task_b\n        return crew_a.kickoff()\n    \n    @listen(begin)\n    def task_b(self, _):\n        # Runs in parallel with task_a\n        return crew_b.kickoff()\n    \n    @listen(or_(task_a, task_b))\n    def combine_results(self):\n        # Runs when EITHER task completes\n        return self.state",
+      "best_practices": [
+        "Use or_() for race conditions",
+        "Use and_() when all must complete",
+        "State is shared - handle concurrency",
+        "Independent crews for parallel steps"
+      ]
+    }
+  },
+  "pipeline_patterns": {
+    "description": "CrewAI Pipelines for sequential crew orchestration",
+    "added_date": "2026-01-31",
+    "basic_pipeline": {
+      "description": "Chain multiple crews in sequence",
+      "use_when": "Multi-stage workflows with different crews",
+      "code_example": "from crewai import Pipeline\n\n# Define crews\nresearch_crew = Crew(agents=[researcher], tasks=[research_task])\nwriting_crew = Crew(agents=[writer], tasks=[write_task])\nreview_crew = Crew(agents=[reviewer], tasks=[review_task])\n\n# Create pipeline\npipeline = Pipeline(\n    stages=[research_crew, writing_crew, review_crew]\n)\n\n# Run pipeline\nresults = pipeline.kickoff(\n    inputs=[{\"topic\": \"AI Agents\"}]\n)\n\n# Access results from each stage\nfor result in results:\n    print(result.raw)",
+      "best_practices": [
+        "Each stage is a complete Crew",
+        "Outputs pass automatically to next stage",
+        "Use inputs list for batch processing",
+        "Results maintain stage order"
+      ]
+    },
+    "parallel_pipeline": {
+      "description": "Run pipeline stages in parallel",
+      "use_when": "Independent crews that don't depend on each other",
+      "code_example": "from crewai import Pipeline\n\npipeline = Pipeline(\n    stages=[\n        [crew_a, crew_b],  # Parallel stage\n        crew_c              # Sequential after parallel\n    ]\n)\n\nresults = pipeline.kickoff(inputs=[{\"data\": \"input\"}])",
+      "best_practices": [
+        "Use list within stages for parallel execution",
+        "Parallel crews share same input",
+        "Results merge before next stage"
+      ]
+    }
+  },
+  "knowledge_patterns": {
+    "description": "CrewAI Knowledge for agent context and grounding",
+    "added_date": "2026-01-31",
+    "knowledge_sources": {
+      "description": "Add knowledge sources to agents",
+      "use_when": "Agents need domain-specific context",
+      "code_example": "from crewai import Agent, Crew, Task\nfrom crewai.knowledge.source.string_knowledge_source import StringKnowledgeSource\nfrom crewai.knowledge.source.text_file_knowledge_source import TextFileKnowledgeSource\n\n# String knowledge source\ncompany_info = StringKnowledgeSource(\n    content=\"Our company specializes in AI solutions...\",\n    metadata={\"type\": \"company_info\"}\n)\n\n# File knowledge source\ndocs = TextFileKnowledgeSource(\n    file_path=\"docs/product_guide.txt\"\n)\n\n# Create crew with knowledge\ncrew = Crew(\n    agents=[support_agent],\n    tasks=[support_task],\n    knowledge_sources=[company_info, docs],\n    embedder={\n        \"provider\": \"openai\",\n        \"config\": {\"model\": \"text-embedding-3-small\"}\n    }\n)",
+      "best_practices": [
+        "Use StringKnowledgeSource for inline content",
+        "Use TextFileKnowledgeSource for documents",
+        "Add metadata for filtering",
+        "Configure embedder for vector storage"
+      ]
+    },
+    "pdf_knowledge": {
+      "description": "Load PDF documents as knowledge",
+      "code_example": "from crewai.knowledge.source.pdf_knowledge_source import PDFKnowledgeSource\n\nmanual = PDFKnowledgeSource(\n    file_path=\"docs/user_manual.pdf\",\n    metadata={\"source\": \"official_docs\"}\n)\n\ncrew = Crew(\n    agents=[agent],\n    tasks=[task],\n    knowledge_sources=[manual]\n)"
+    },
+    "crew_knowledge": {
+      "description": "Crew-level knowledge shared by all agents",
+      "code_example": "crew = Crew(\n    agents=[agent1, agent2, agent3],\n    tasks=[task1, task2, task3],\n    knowledge_sources=[company_docs, product_info],\n    embedder={\"provider\": \"openai\"}\n)",
+      "best_practices": [
+        "Crew knowledge available to all agents",
+        "Agents can also have individual knowledge",
+        "Knowledge persists across crew runs"
+      ]
+    }
+  },
+  "training_patterns": {
+    "description": "Train crews for improved performance",
+    "added_date": "2026-01-31",
+    "crew_training": {
+      "description": "Train a crew on examples for better outputs",
+      "use_when": "Need consistent, high-quality outputs",
+      "code_example": "# Train the crew\ncrew.train(\n    n_iterations=5,\n    filename=\"training_data.pkl\",\n    inputs={\"topic\": \"AI Safety\"}\n)\n\n# Use trained crew\nresult = crew.kickoff(inputs={\"topic\": \"New Topic\"})",
+      "best_practices": [
+        "Provide representative training inputs",
+        "Use 3-10 iterations typically",
+        "Training data persists to file",
+        "Retrain when requirements change"
+      ]
+    }
+  },
+  "kickoff_patterns": {
+    "description": "Different ways to start crew execution",
+    "added_date": "2026-01-31",
+    "async_kickoff": {
+      "description": "Run crew asynchronously",
+      "code_example": "import asyncio\n\nasync def run_crews():\n    result = await crew.kickoff_async(\n        inputs={\"topic\": \"AI\"}\n    )\n    return result\n\n# Run multiple crews concurrently\nasync def run_all():\n    results = await asyncio.gather(\n        crew1.kickoff_async(inputs={\"topic\": \"A\"}),\n        crew2.kickoff_async(inputs={\"topic\": \"B\"}),\n        crew3.kickoff_async(inputs={\"topic\": \"C\"})\n    )\n    return results"
+    },
+    "kickoff_for_each": {
+      "description": "Run crew for multiple inputs",
+      "code_example": "topics = [\n    {\"topic\": \"AI Safety\"},\n    {\"topic\": \"AI Ethics\"},\n    {\"topic\": \"AI Governance\"}\n]\n\nresults = crew.kickoff_for_each(inputs=topics)\n\nfor result in results:\n    print(result.raw)"
+    }
+  }
+}

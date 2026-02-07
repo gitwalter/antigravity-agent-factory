@@ -1,0 +1,250 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LLM Provider Comparison",
+  "description": "Comparison of LLM providers, models, and integration patterns",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A2_user_primacy": "Provider selection considers user requirements and constraints",
+    "A3_transparency": "Pricing and capabilities are explicitly documented"
+  },
+  "provider_comparison": {
+    "openai": {
+      "provider": "OpenAI",
+      "models": {
+        "gpt-4o": {
+          "context_window": 128000,
+          "max_output": 16384,
+          "input_price": "$2.50/1M tokens",
+          "output_price": "$10.00/1M tokens",
+          "best_for": "General purpose, multimodal, fastest GPT-4 class",
+          "features": ["Vision", "Function calling", "JSON mode", "Streaming"]
+        },
+        "gpt-4o-mini": {
+          "context_window": 128000,
+          "max_output": 16384,
+          "input_price": "$0.15/1M tokens",
+          "output_price": "$0.60/1M tokens",
+          "best_for": "Cost-effective, high volume, simple tasks",
+          "features": ["Vision", "Function calling", "JSON mode", "Streaming"]
+        },
+        "gpt-4-turbo": {
+          "context_window": 128000,
+          "max_output": 4096,
+          "input_price": "$10.00/1M tokens",
+          "output_price": "$30.00/1M tokens",
+          "best_for": "Complex reasoning, legacy compatibility",
+          "features": ["Vision", "Function calling", "JSON mode"]
+        },
+        "o1": {
+          "context_window": 200000,
+          "max_output": 100000,
+          "input_price": "$15.00/1M tokens",
+          "output_price": "$60.00/1M tokens",
+          "best_for": "Complex reasoning, math, coding",
+          "features": ["Extended thinking", "Reasoning traces"]
+        },
+        "o1-mini": {
+          "context_window": 128000,
+          "max_output": 65536,
+          "input_price": "$3.00/1M tokens",
+          "output_price": "$12.00/1M tokens",
+          "best_for": "Coding, STEM, cost-effective reasoning",
+          "features": ["Extended thinking"]
+        }
+      },
+      "api_pattern": {
+        "code_example": "from openai import OpenAI\n\nclient = OpenAI()  # Uses OPENAI_API_KEY env var\n\n# Basic completion\nresponse = client.chat.completions.create(\n    model='gpt-4o',\n    messages=[\n        {'role': 'system', 'content': 'You are a helpful assistant.'},\n        {'role': 'user', 'content': 'Hello!'}\n    ],\n    temperature=0.7,\n    max_tokens=1000\n)\nprint(response.choices[0].message.content)\n\n# Streaming\nstream = client.chat.completions.create(\n    model='gpt-4o',\n    messages=[{'role': 'user', 'content': 'Tell me a story'}],\n    stream=True\n)\nfor chunk in stream:\n    if chunk.choices[0].delta.content:\n        print(chunk.choices[0].delta.content, end='')\n\n# Function calling\ntools = [{\n    'type': 'function',\n    'function': {\n        'name': 'get_weather',\n        'description': 'Get weather for a location',\n        'parameters': {\n            'type': 'object',\n            'properties': {\n                'location': {'type': 'string', 'description': 'City name'}\n            },\n            'required': ['location']\n        }\n    }\n}]\n\nresponse = client.chat.completions.create(\n    model='gpt-4o',\n    messages=[{'role': 'user', 'content': 'What is the weather in Tokyo?'}],\n    tools=tools,\n    tool_choice='auto'\n)"
+      }
+    },
+    "anthropic": {
+      "provider": "Anthropic",
+      "models": {
+        "claude-3-5-sonnet": {
+          "context_window": 200000,
+          "max_output": 8192,
+          "input_price": "$3.00/1M tokens",
+          "output_price": "$15.00/1M tokens",
+          "best_for": "Coding, analysis, balanced performance/cost",
+          "features": ["Vision", "Tool use", "Extended thinking"]
+        },
+        "claude-3-opus": {
+          "context_window": 200000,
+          "max_output": 4096,
+          "input_price": "$15.00/1M tokens",
+          "output_price": "$75.00/1M tokens",
+          "best_for": "Most complex tasks, research, nuanced analysis",
+          "features": ["Vision", "Tool use"]
+        },
+        "claude-3-haiku": {
+          "context_window": 200000,
+          "max_output": 4096,
+          "input_price": "$0.25/1M tokens",
+          "output_price": "$1.25/1M tokens",
+          "best_for": "High speed, cost-effective, simple tasks",
+          "features": ["Vision", "Tool use"]
+        }
+      },
+      "api_pattern": {
+        "code_example": "import anthropic\n\nclient = anthropic.Anthropic()  # Uses ANTHROPIC_API_KEY env var\n\n# Basic completion\nmessage = client.messages.create(\n    model='claude-3-5-sonnet-20241022',\n    max_tokens=1024,\n    system='You are a helpful assistant.',\n    messages=[\n        {'role': 'user', 'content': 'Hello!'}\n    ]\n)\nprint(message.content[0].text)\n\n# Streaming\nwith client.messages.stream(\n    model='claude-3-5-sonnet-20241022',\n    max_tokens=1024,\n    messages=[{'role': 'user', 'content': 'Tell me a story'}]\n) as stream:\n    for text in stream.text_stream:\n        print(text, end='')\n\n# Tool use\ntools = [{\n    'name': 'get_weather',\n    'description': 'Get weather for a location',\n    'input_schema': {\n        'type': 'object',\n        'properties': {\n            'location': {'type': 'string', 'description': 'City name'}\n        },\n        'required': ['location']\n    }\n}]\n\nmessage = client.messages.create(\n    model='claude-3-5-sonnet-20241022',\n    max_tokens=1024,\n    tools=tools,\n    messages=[{'role': 'user', 'content': 'What is the weather in Tokyo?'}]\n)"
+      }
+    },
+    "google": {
+      "provider": "Google",
+      "models": {
+        "gemini-2.0-flash": {
+          "context_window": 1000000,
+          "max_output": 8192,
+          "input_price": "$0.075/1M tokens",
+          "output_price": "$0.30/1M tokens",
+          "best_for": "Long context, multimodal, cost-effective",
+          "features": ["Vision", "Audio", "Function calling", "Grounding"]
+        },
+        "gemini-1.5-pro": {
+          "context_window": 2000000,
+          "max_output": 8192,
+          "input_price": "$1.25/1M tokens",
+          "output_price": "$5.00/1M tokens",
+          "best_for": "Longest context, complex multimodal",
+          "features": ["Vision", "Audio", "Video", "Function calling"]
+        }
+      },
+      "api_pattern": {
+        "code_example": "import google.generativeai as genai\n\ngenai.configure(api_key='your-api-key')\n\n# Basic completion\nmodel = genai.GenerativeModel('gemini-2.0-flash')\nresponse = model.generate_content('Hello!')\nprint(response.text)\n\n# With system instruction\nmodel = genai.GenerativeModel(\n    'gemini-2.0-flash',\n    system_instruction='You are a helpful assistant.'\n)\n\n# Streaming\nresponse = model.generate_content('Tell me a story', stream=True)\nfor chunk in response:\n    print(chunk.text, end='')\n\n# Function calling\nget_weather = genai.protos.FunctionDeclaration(\n    name='get_weather',\n    description='Get weather for a location',\n    parameters=genai.protos.Schema(\n        type=genai.protos.Type.OBJECT,\n        properties={\n            'location': genai.protos.Schema(type=genai.protos.Type.STRING)\n        },\n        required=['location']\n    )\n)\n\nmodel = genai.GenerativeModel(\n    'gemini-2.0-flash',\n    tools=[genai.protos.Tool(function_declarations=[get_weather])]\n)"
+      }
+    },
+    "local": {
+      "provider": "Local (Ollama)",
+      "models": {
+        "llama3.2": {
+          "context_window": 128000,
+          "max_output": 4096,
+          "input_price": "Free (compute cost)",
+          "output_price": "Free (compute cost)",
+          "best_for": "Privacy, offline, no API costs",
+          "features": ["Function calling", "Streaming"]
+        },
+        "mistral": {
+          "context_window": 32000,
+          "max_output": 4096,
+          "input_price": "Free (compute cost)",
+          "output_price": "Free (compute cost)",
+          "best_for": "Fast inference, good quality",
+          "features": ["Streaming"]
+        },
+        "codellama": {
+          "context_window": 16000,
+          "max_output": 4096,
+          "input_price": "Free (compute cost)",
+          "output_price": "Free (compute cost)",
+          "best_for": "Code generation, local coding assistant",
+          "features": ["Code completion"]
+        }
+      },
+      "api_pattern": {
+        "code_example": "# Using Ollama Python library\nimport ollama\n\n# Basic completion\nresponse = ollama.chat(\n    model='llama3.2',\n    messages=[{'role': 'user', 'content': 'Hello!'}]\n)\nprint(response['message']['content'])\n\n# Streaming\nstream = ollama.chat(\n    model='llama3.2',\n    messages=[{'role': 'user', 'content': 'Tell me a story'}],\n    stream=True\n)\nfor chunk in stream:\n    print(chunk['message']['content'], end='')\n\n# Using OpenAI-compatible API\nfrom openai import OpenAI\n\nclient = OpenAI(\n    base_url='http://localhost:11434/v1',\n    api_key='ollama'  # Not used but required\n)\n\nresponse = client.chat.completions.create(\n    model='llama3.2',\n    messages=[{'role': 'user', 'content': 'Hello!'}]\n)\nprint(response.choices[0].message.content)"
+      }
+    }
+  },
+  "selection_guide": {
+    "by_use_case": {
+      "general_purpose": {
+        "budget": "gpt-4o-mini, claude-3-haiku, gemini-2.0-flash",
+        "balanced": "gpt-4o, claude-3-5-sonnet",
+        "best_quality": "claude-3-opus, o1"
+      },
+      "coding": {
+        "budget": "gpt-4o-mini, claude-3-5-sonnet",
+        "balanced": "claude-3-5-sonnet, gpt-4o",
+        "best_quality": "o1, claude-3-5-sonnet"
+      },
+      "long_context": {
+        "up_to_128k": "gpt-4o, gpt-4o-mini",
+        "up_to_200k": "claude-3-5-sonnet, claude-3-opus",
+        "up_to_1m": "gemini-2.0-flash",
+        "up_to_2m": "gemini-1.5-pro"
+      },
+      "multimodal": {
+        "images": "gpt-4o, claude-3-5-sonnet, gemini-2.0-flash",
+        "video": "gemini-1.5-pro",
+        "audio": "gemini-2.0-flash, gpt-4o"
+      },
+      "privacy_sensitive": {
+        "local": "llama3.2, mistral via Ollama",
+        "enterprise": "Azure OpenAI, AWS Bedrock"
+      }
+    },
+    "by_priority": {
+      "cost": ["gpt-4o-mini", "gemini-2.0-flash", "claude-3-haiku"],
+      "quality": ["o1", "claude-3-opus", "gpt-4o"],
+      "speed": ["claude-3-haiku", "gemini-2.0-flash", "gpt-4o-mini"],
+      "context_length": ["gemini-1.5-pro", "gemini-2.0-flash", "claude-3-5-sonnet"]
+    }
+  },
+  "structured_output_patterns": {
+    "openai_json_mode": {
+      "description": "Guaranteed JSON output from OpenAI",
+      "code_example": "from openai import OpenAI\nfrom pydantic import BaseModel\n\nclient = OpenAI()\n\n# JSON mode\nresponse = client.chat.completions.create(\n    model='gpt-4o',\n    response_format={'type': 'json_object'},\n    messages=[\n        {'role': 'system', 'content': 'Output valid JSON.'},\n        {'role': 'user', 'content': 'List 3 colors with hex codes'}\n    ]\n)\ndata = json.loads(response.choices[0].message.content)\n\n# Structured outputs with Pydantic\nclass Color(BaseModel):\n    name: str\n    hex_code: str\n\nclass ColorList(BaseModel):\n    colors: list[Color]\n\nresponse = client.beta.chat.completions.parse(\n    model='gpt-4o',\n    messages=[{'role': 'user', 'content': 'List 3 colors'}],\n    response_format=ColorList\n)\ncolors = response.choices[0].message.parsed"
+    },
+    "anthropic_tool_use": {
+      "description": "Structured output via tool use",
+      "code_example": "import anthropic\n\nclient = anthropic.Anthropic()\n\n# Define output schema as a tool\nresponse = client.messages.create(\n    model='claude-3-5-sonnet-20241022',\n    max_tokens=1024,\n    tools=[{\n        'name': 'output_colors',\n        'description': 'Output a list of colors',\n        'input_schema': {\n            'type': 'object',\n            'properties': {\n                'colors': {\n                    'type': 'array',\n                    'items': {\n                        'type': 'object',\n                        'properties': {\n                            'name': {'type': 'string'},\n                            'hex_code': {'type': 'string'}\n                        }\n                    }\n                }\n            },\n            'required': ['colors']\n        }\n    }],\n    tool_choice={'type': 'tool', 'name': 'output_colors'},\n    messages=[{'role': 'user', 'content': 'List 3 colors'}]\n)\n\nfor block in response.content:\n    if block.type == 'tool_use':\n        colors = block.input['colors']"
+    }
+  },
+  "error_handling": {
+    "common_errors": {
+      "rate_limiting": {
+        "description": "Too many requests",
+        "solution": "Implement exponential backoff with retry",
+        "code_example": "from tenacity import retry, stop_after_attempt, wait_exponential\nimport openai\n\n@retry(\n    stop=stop_after_attempt(5),\n    wait=wait_exponential(multiplier=1, min=4, max=60),\n    retry=lambda e: isinstance(e, openai.RateLimitError)\n)\ndef call_api(messages):\n    return client.chat.completions.create(\n        model='gpt-4o',\n        messages=messages\n    )"
+      },
+      "context_length": {
+        "description": "Input too long for context window",
+        "solution": "Truncate or chunk input, use longer context model",
+        "code_example": "import tiktoken\n\ndef count_tokens(text, model='gpt-4o'):\n    encoding = tiktoken.encoding_for_model(model)\n    return len(encoding.encode(text))\n\ndef truncate_to_tokens(text, max_tokens, model='gpt-4o'):\n    encoding = tiktoken.encoding_for_model(model)\n    tokens = encoding.encode(text)\n    if len(tokens) > max_tokens:\n        tokens = tokens[:max_tokens]\n    return encoding.decode(tokens)"
+      },
+      "content_filter": {
+        "description": "Content blocked by safety filter",
+        "solution": "Rephrase request, use system prompt to guide",
+        "code_example": "try:\n    response = client.chat.completions.create(...)\nexcept openai.ContentFilterError as e:\n    print(f'Content filtered: {e}')\n    # Log and handle appropriately"
+      }
+    }
+  },
+  "cost_optimization": {
+    "strategies": [
+      {
+        "name": "Model tiering",
+        "description": "Use cheaper models for simple tasks",
+        "example": "Route classification/extraction to gpt-4o-mini, complex reasoning to gpt-4o"
+      },
+      {
+        "name": "Caching",
+        "description": "Cache responses for repeated queries",
+        "example": "Use Redis or semantic cache for similar questions"
+      },
+      {
+        "name": "Prompt optimization",
+        "description": "Shorter prompts = lower cost",
+        "example": "Remove verbose instructions, use examples efficiently"
+      },
+      {
+        "name": "Batch processing",
+        "description": "Use batch APIs for non-urgent requests",
+        "example": "OpenAI Batch API offers 50% discount"
+      }
+    ]
+  },
+  "langchain_integration": {
+    "description": "Use providers through LangChain abstraction",
+    "code_example": "from langchain_openai import ChatOpenAI\nfrom langchain_anthropic import ChatAnthropic\nfrom langchain_google_genai import ChatGoogleGenerativeAI\nfrom langchain_community.chat_models import ChatOllama\n\n# OpenAI\nllm_openai = ChatOpenAI(model='gpt-4o', temperature=0.7)\n\n# Anthropic\nllm_anthropic = ChatAnthropic(model='claude-3-5-sonnet-20241022')\n\n# Google\nllm_google = ChatGoogleGenerativeAI(model='gemini-2.0-flash')\n\n# Local (Ollama)\nllm_local = ChatOllama(model='llama3.2')\n\n# All share same interface\nresponse = llm_openai.invoke('Hello!')\nresponse = llm_anthropic.invoke('Hello!')\nresponse = llm_google.invoke('Hello!')\nresponse = llm_local.invoke('Hello!')"
+  },
+  "best_practices_summary": [
+    "Start with cheaper models, upgrade as needed",
+    "Use structured outputs for reliable parsing",
+    "Implement retry logic with exponential backoff",
+    "Monitor token usage and costs",
+    "Cache responses when appropriate",
+    "Use LangChain for provider flexibility",
+    "Test with multiple providers to compare",
+    "Consider privacy requirements for model selection"
+  ]
+}

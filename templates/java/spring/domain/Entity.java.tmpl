@@ -1,0 +1,119 @@
+package {{PACKAGE_NAME}}.domain;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
+
+/**
+ * {{CLASS_NAME}} - JPA Entity
+ * 
+ * Purpose: Domain model representing {{DOMAIN_NAME}}
+ * Author: {{AUTHOR}}
+ * Created: {{DATE}}
+ * 
+ * Includes audit fields (createdAt, updatedAt) for tracking changes.
+ * Uses JPA annotations for persistence mapping.
+ */
+@Entity
+@Table(name = "{{TABLE_NAME}}", indexes = {
+        // @Index(name = "idx_{{TABLE_NAME}}_field", columnList = "field")
+})
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
+public class {{CLASS_NAME}} {
+
+    /**
+     * Primary key identifier.
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    /**
+     * Example field - replace with actual domain fields.
+     */
+    @Column(nullable = false, length = 255)
+    private String name;
+
+    /**
+     * Example field - replace with actual domain fields.
+     */
+    @Column(length = 1000)
+    private String description;
+
+    /**
+     * Status field example.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private {{CLASS_NAME}}Status status = {{CLASS_NAME}}Status.ACTIVE;
+
+    /**
+     * Timestamp when entity was created.
+     * Automatically set by JPA auditing.
+     */
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    /**
+     * Timestamp when entity was last modified.
+     * Automatically updated by JPA auditing.
+     */
+    @LastModifiedDate
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    /**
+     * Version field for optimistic locking.
+     * Prevents concurrent modification conflicts.
+     */
+    @Version
+    private Long version;
+
+    /**
+     * Soft delete flag.
+     * When true, entity is considered deleted but remains in database.
+     */
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean deleted = false;
+
+    /**
+     * Status enumeration for {{CLASS_NAME}}.
+     */
+    public enum {{CLASS_NAME}}Status {
+        ACTIVE,
+        INACTIVE,
+        PENDING,
+        ARCHIVED
+    }
+
+    /**
+     * Mark entity as deleted (soft delete).
+     */
+    public void markAsDeleted() {
+        this.deleted = true;
+        this.status = {{CLASS_NAME}}Status.ARCHIVED;
+    }
+
+    /**
+     * Check if entity is active.
+     * 
+     * @return true if entity is active and not deleted
+     */
+    public boolean isActive() {
+        return status == {{CLASS_NAME}}Status.ACTIVE && !deleted;
+    }
+}

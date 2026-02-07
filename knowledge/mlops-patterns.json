@@ -1,0 +1,230 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MLOps Patterns",
+  "description": "Patterns for ML operations, experiment tracking, model registry, and deployment",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "All experiments are tracked with full reproducibility metadata",
+    "A3_transparency": "Model lineage and deployment history are explicit"
+  },
+  "tool_comparison": {
+    "experiment_tracking": {
+      "mlflow": {
+        "type": "Open source, self-hosted",
+        "best_for": "Full MLOps lifecycle, model registry",
+        "features": ["Experiment tracking", "Model registry", "Model serving", "Projects"],
+        "pros": ["Open source", "Full lifecycle", "Good integrations"],
+        "cons": ["Requires infrastructure", "UI less polished"]
+      },
+      "weights_and_biases": {
+        "type": "SaaS (free tier available)",
+        "best_for": "Rich visualizations, team collaboration",
+        "features": ["Experiment tracking", "Sweeps (HPO)", "Artifacts", "Reports"],
+        "pros": ["Beautiful UI", "Easy setup", "Great visualizations"],
+        "cons": ["SaaS dependency", "Can get expensive"]
+      },
+      "tensorboard": {
+        "type": "Open source, embedded",
+        "best_for": "Training visualization, TensorFlow users",
+        "features": ["Loss curves", "Histograms", "Embeddings", "Profiling"],
+        "pros": ["Built into TensorFlow", "No setup", "Real-time"],
+        "cons": ["Limited to visualization", "No registry"]
+      }
+    },
+    "selection_guide": {
+      "quick_experiments": "Weights & Biases - minimal setup, great visuals",
+      "full_lifecycle": "MLflow - open source, complete solution",
+      "tensorflow_projects": "TensorBoard - already integrated"
+    }
+  },
+  "mlflow_patterns": {
+    "experiment_tracking": {
+      "description": "Track experiments with MLflow",
+      "use_when": "Running ML experiments that need to be compared",
+      "code_example": "import mlflow\nimport mlflow.sklearn\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.metrics import accuracy_score, f1_score\n\n# Set tracking URI (local or remote)\nmlflow.set_tracking_uri('sqlite:///mlflow.db')  # Local SQLite\n# mlflow.set_tracking_uri('http://mlflow-server:5000')  # Remote server\n\n# Set experiment\nmlflow.set_experiment('classification-experiment')\n\n# Start run\nwith mlflow.start_run(run_name='rf-baseline'):\n    # Log parameters\n    params = {\n        'n_estimators': 100,\n        'max_depth': 10,\n        'min_samples_split': 5,\n        'random_state': 42\n    }\n    mlflow.log_params(params)\n    \n    # Train model\n    model = RandomForestClassifier(**params)\n    model.fit(X_train, y_train)\n    \n    # Make predictions\n    y_pred = model.predict(X_test)\n    \n    # Log metrics\n    metrics = {\n        'accuracy': accuracy_score(y_test, y_pred),\n        'f1_weighted': f1_score(y_test, y_pred, average='weighted')\n    }\n    mlflow.log_metrics(metrics)\n    \n    # Log model\n    mlflow.sklearn.log_model(\n        model,\n        'model',\n        registered_model_name='rf-classifier'  # Optional: register\n    )\n    \n    # Log artifacts\n    mlflow.log_artifact('confusion_matrix.png')\n    \n    print(f'Run ID: {mlflow.active_run().info.run_id}')",
+      "best_practices": [
+        "Use meaningful run names",
+        "Log all hyperparameters",
+        "Log multiple metrics for comparison",
+        "Use registered_model_name for important models",
+        "Log artifacts like plots and data samples"
+      ]
+    },
+    "autologging": {
+      "description": "Automatic logging for supported frameworks",
+      "use_when": "Want minimal code changes",
+      "code_example": "import mlflow\n\n# Enable autologging for sklearn\nmlflow.sklearn.autolog()\n\n# Now training automatically logs params, metrics, model\nfrom sklearn.ensemble import RandomForestClassifier\n\nwith mlflow.start_run():\n    model = RandomForestClassifier(n_estimators=100)\n    model.fit(X_train, y_train)\n    # Everything is logged automatically!\n\n# Other autolog options\nmlflow.pytorch.autolog()\nmlflow.tensorflow.autolog()\nmlflow.xgboost.autolog()\nmlflow.lightgbm.autolog()",
+      "best_practices": [
+        "Autolog is great for quick experiments",
+        "May log too much - customize as needed",
+        "Works with sklearn, pytorch, tensorflow, xgboost, lightgbm"
+      ]
+    },
+    "model_registry": {
+      "description": "Version and manage models in registry",
+      "use_when": "Moving models through staging to production",
+      "code_example": "from mlflow import MlflowClient\n\nclient = MlflowClient()\n\n# Register model from run\nmodel_uri = f'runs:/{run_id}/model'\nresult = mlflow.register_model(model_uri, 'my-classifier')\n\n# Transition model stage\nclient.transition_model_version_stage(\n    name='my-classifier',\n    version=1,\n    stage='Staging'\n)\n\n# After testing, promote to production\nclient.transition_model_version_stage(\n    name='my-classifier',\n    version=1,\n    stage='Production'\n)\n\n# Load production model\nmodel = mlflow.pyfunc.load_model(\n    model_uri='models:/my-classifier/Production'\n)\npredictions = model.predict(X_test)\n\n# List model versions\nfor mv in client.search_model_versions(\"name='my-classifier'\"):\n    print(f'Version {mv.version}: stage={mv.current_stage}')",
+      "best_practices": [
+        "Use stages: None → Staging → Production → Archived",
+        "Add descriptions to model versions",
+        "Tag models with metadata",
+        "Only one version should be in Production"
+      ]
+    },
+    "model_serving": {
+      "description": "Serve models via REST API",
+      "use_when": "Need to deploy model as API",
+      "code_example": "# Serve model from MLflow (command line)\n# mlflow models serve -m models:/my-classifier/Production -p 5001\n\n# Or in Python\nimport mlflow.pyfunc\n\n# Load model for inference\nmodel = mlflow.pyfunc.load_model('models:/my-classifier/Production')\n\n# Create FastAPI wrapper\nfrom fastapi import FastAPI\nfrom pydantic import BaseModel\nimport pandas as pd\n\napp = FastAPI()\n\nclass PredictionRequest(BaseModel):\n    features: list[list[float]]\n\nclass PredictionResponse(BaseModel):\n    predictions: list[int]\n\n@app.post('/predict', response_model=PredictionResponse)\ndef predict(request: PredictionRequest):\n    df = pd.DataFrame(request.features)\n    predictions = model.predict(df).tolist()\n    return PredictionResponse(predictions=predictions)",
+      "best_practices": [
+        "Use MLflow serving for simple cases",
+        "Wrap in FastAPI for custom logic",
+        "Add input validation",
+        "Implement health checks"
+      ]
+    }
+  },
+  "wandb_patterns": {
+    "experiment_tracking": {
+      "description": "Track experiments with Weights & Biases",
+      "use_when": "Want rich visualizations and easy setup",
+      "code_example": "import wandb\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.metrics import accuracy_score, f1_score\n\n# Initialize wandb\nwandb.init(\n    project='classification-project',\n    name='rf-baseline',\n    config={\n        'n_estimators': 100,\n        'max_depth': 10,\n        'min_samples_split': 5\n    }\n)\n\n# Access config\nconfig = wandb.config\n\n# Train model\nmodel = RandomForestClassifier(\n    n_estimators=config.n_estimators,\n    max_depth=config.max_depth,\n    min_samples_split=config.min_samples_split,\n    random_state=42\n)\nmodel.fit(X_train, y_train)\n\n# Log metrics\ny_pred = model.predict(X_test)\nwandb.log({\n    'accuracy': accuracy_score(y_test, y_pred),\n    'f1_weighted': f1_score(y_test, y_pred, average='weighted')\n})\n\n# Log artifacts\nwandb.save('model.joblib')\n\n# Log plots\nimport matplotlib.pyplot as plt\nfig, ax = plt.subplots()\n# ... create plot ...\nwandb.log({'confusion_matrix': wandb.Image(fig)})\n\n# Finish run\nwandb.finish()",
+      "best_practices": [
+        "Use wandb.config for hyperparameters",
+        "Log metrics incrementally during training",
+        "Use wandb.Image for plots",
+        "Always call wandb.finish()"
+      ]
+    },
+    "training_loop_logging": {
+      "description": "Log training metrics in real-time",
+      "use_when": "Training deep learning models",
+      "code_example": "import wandb\nimport torch\n\nwandb.init(project='deep-learning', name='cnn-training')\n\n# Watch model for gradient logging\nwandb.watch(model, log='all', log_freq=100)\n\nfor epoch in range(num_epochs):\n    model.train()\n    train_loss = 0\n    \n    for batch_idx, (data, target) in enumerate(train_loader):\n        optimizer.zero_grad()\n        output = model(data)\n        loss = criterion(output, target)\n        loss.backward()\n        optimizer.step()\n        \n        train_loss += loss.item()\n        \n        # Log batch metrics\n        if batch_idx % 100 == 0:\n            wandb.log({\n                'batch_loss': loss.item(),\n                'learning_rate': optimizer.param_groups[0]['lr']\n            })\n    \n    # Validation\n    model.eval()\n    val_loss = 0\n    correct = 0\n    \n    with torch.no_grad():\n        for data, target in val_loader:\n            output = model(data)\n            val_loss += criterion(output, target).item()\n            pred = output.argmax(dim=1)\n            correct += pred.eq(target).sum().item()\n    \n    # Log epoch metrics\n    wandb.log({\n        'epoch': epoch,\n        'train_loss': train_loss / len(train_loader),\n        'val_loss': val_loss / len(val_loader),\n        'val_accuracy': correct / len(val_loader.dataset)\n    })\n\nwandb.finish()",
+      "best_practices": [
+        "Use wandb.watch for gradient/weight logging",
+        "Log learning rate changes",
+        "Log validation metrics each epoch",
+        "Use step parameter for proper x-axis"
+      ]
+    },
+    "hyperparameter_sweeps": {
+      "description": "Automated hyperparameter tuning",
+      "use_when": "Need to find optimal hyperparameters",
+      "code_example": "import wandb\n\n# Define sweep configuration\nsweep_config = {\n    'method': 'bayes',  # or 'grid', 'random'\n    'metric': {\n        'name': 'val_accuracy',\n        'goal': 'maximize'\n    },\n    'parameters': {\n        'learning_rate': {\n            'distribution': 'log_uniform_values',\n            'min': 1e-5,\n            'max': 1e-2\n        },\n        'batch_size': {\n            'values': [16, 32, 64, 128]\n        },\n        'hidden_dim': {\n            'values': [128, 256, 512]\n        },\n        'dropout': {\n            'distribution': 'uniform',\n            'min': 0.1,\n            'max': 0.5\n        }\n    }\n}\n\n# Create sweep\nsweep_id = wandb.sweep(sweep_config, project='my-project')\n\n# Define training function\ndef train():\n    wandb.init()\n    config = wandb.config\n    \n    # Use config.learning_rate, config.batch_size, etc.\n    model = build_model(config.hidden_dim, config.dropout)\n    # ... training code ...\n    \n    wandb.log({'val_accuracy': val_accuracy})\n    wandb.finish()\n\n# Run sweep\nwandb.agent(sweep_id, train, count=50)  # Run 50 trials",
+      "best_practices": [
+        "Use 'bayes' for efficient search",
+        "Start with random to explore, then bayes to exploit",
+        "Define clear goal metric",
+        "Set reasonable parameter ranges"
+      ]
+    }
+  },
+  "tensorboard_patterns": {
+    "basic_logging": {
+      "description": "Log training metrics to TensorBoard",
+      "use_when": "Using TensorFlow or want simple visualization",
+      "code_example": "import tensorflow as tf\nfrom torch.utils.tensorboard import SummaryWriter  # PyTorch\n\n# TensorFlow\ntb_callback = tf.keras.callbacks.TensorBoard(\n    log_dir='./logs',\n    histogram_freq=1,\n    write_graph=True\n)\n\nmodel.fit(X_train, y_train, callbacks=[tb_callback])\n\n# PyTorch\nwriter = SummaryWriter('runs/experiment_1')\n\nfor epoch in range(num_epochs):\n    train_loss = train_epoch(...)\n    val_loss = validate(...)\n    \n    writer.add_scalar('Loss/train', train_loss, epoch)\n    writer.add_scalar('Loss/val', val_loss, epoch)\n    writer.add_scalar('Accuracy/val', val_acc, epoch)\n    \n    # Log histograms of weights\n    for name, param in model.named_parameters():\n        writer.add_histogram(name, param, epoch)\n\nwriter.close()\n\n# Launch TensorBoard\n# tensorboard --logdir=runs",
+      "best_practices": [
+        "Organize scalars with / (e.g., Loss/train, Loss/val)",
+        "Use add_histogram for weight distributions",
+        "Close writer when done",
+        "Use meaningful experiment names"
+      ]
+    }
+  },
+  "model_deployment": {
+    "docker_deployment": {
+      "description": "Package model in Docker container",
+      "use_when": "Deploying to any container platform",
+      "code_example": "# Dockerfile\nFROM python:3.11-slim\n\nWORKDIR /app\n\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\n\nCOPY model.joblib .\nCOPY app.py .\n\nEXPOSE 8000\n\nCMD [\"uvicorn\", \"app:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]\n\n# app.py\nfrom fastapi import FastAPI\nimport joblib\nimport numpy as np\n\napp = FastAPI()\nmodel = joblib.load('model.joblib')\n\n@app.get('/health')\ndef health():\n    return {'status': 'healthy'}\n\n@app.post('/predict')\ndef predict(features: list[float]):\n    X = np.array(features).reshape(1, -1)\n    prediction = model.predict(X)[0]\n    probability = model.predict_proba(X)[0].max()\n    return {\n        'prediction': int(prediction),\n        'probability': float(probability)\n    }",
+      "best_practices": [
+        "Use slim base images",
+        "Include health check endpoint",
+        "Pin dependency versions",
+        "Add input validation"
+      ]
+    },
+    "bentoml_deployment": {
+      "description": "Use BentoML for model serving",
+      "use_when": "Want production-ready serving with minimal code",
+      "code_example": "import bentoml\nfrom sklearn.ensemble import RandomForestClassifier\n\n# Save model to BentoML\nmodel = RandomForestClassifier()\nmodel.fit(X_train, y_train)\n\nsaved_model = bentoml.sklearn.save_model(\n    'rf_classifier',\n    model,\n    signatures={'predict': {'batchable': True}}\n)\nprint(f'Saved: {saved_model}')\n\n# Create service (service.py)\nimport bentoml\nimport numpy as np\nfrom bentoml.io import NumpyNdarray\n\nmodel_ref = bentoml.sklearn.get('rf_classifier:latest')\nmodel_runner = model_ref.to_runner()\n\nsvc = bentoml.Service('rf_classifier', runners=[model_runner])\n\n@svc.api(input=NumpyNdarray(), output=NumpyNdarray())\nasync def predict(input_array: np.ndarray) -> np.ndarray:\n    return await model_runner.predict.async_run(input_array)\n\n# Build and serve\n# bentoml build\n# bentoml serve service:svc",
+      "best_practices": [
+        "BentoML handles batching automatically",
+        "Use async for better throughput",
+        "Containerize with bentoml containerize",
+        "Supports GPU inference"
+      ]
+    }
+  },
+  "ci_cd_patterns": {
+    "model_testing": {
+      "description": "Test model before deployment",
+      "use_when": "Automating ML pipeline",
+      "code_example": "# tests/test_model.py\nimport pytest\nimport joblib\nimport numpy as np\n\n@pytest.fixture\ndef model():\n    return joblib.load('model.joblib')\n\n@pytest.fixture\ndef sample_input():\n    return np.random.randn(10, 20)  # 10 samples, 20 features\n\ndef test_model_loads(model):\n    assert model is not None\n\ndef test_model_predicts(model, sample_input):\n    predictions = model.predict(sample_input)\n    assert len(predictions) == 10\n\ndef test_prediction_shape(model, sample_input):\n    predictions = model.predict(sample_input)\n    assert predictions.shape == (10,)\n\ndef test_prediction_values(model, sample_input):\n    predictions = model.predict(sample_input)\n    # Check predictions are valid classes\n    assert all(p in [0, 1] for p in predictions)\n\ndef test_model_performance():\n    # Load test data\n    X_test = np.load('test_data.npy')\n    y_test = np.load('test_labels.npy')\n    \n    model = joblib.load('model.joblib')\n    accuracy = (model.predict(X_test) == y_test).mean()\n    \n    # Fail if accuracy drops below threshold\n    assert accuracy >= 0.85, f'Model accuracy {accuracy} below threshold'",
+      "best_practices": [
+        "Test model loading",
+        "Test prediction shape and values",
+        "Test performance thresholds",
+        "Include data validation tests"
+      ]
+    },
+    "github_actions": {
+      "description": "CI/CD pipeline for ML",
+      "code_example": "# .github/workflows/ml-pipeline.yml\nname: ML Pipeline\n\non:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      \n      - name: Set up Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: '3.11'\n      \n      - name: Install dependencies\n        run: |\n          pip install -r requirements.txt\n          pip install pytest\n      \n      - name: Run tests\n        run: pytest tests/\n      \n      - name: Run model validation\n        run: python scripts/validate_model.py\n\n  train:\n    needs: test\n    runs-on: ubuntu-latest\n    if: github.ref == 'refs/heads/main'\n    steps:\n      - uses: actions/checkout@v4\n      \n      - name: Train model\n        run: python scripts/train.py\n      \n      - name: Upload model artifact\n        uses: actions/upload-artifact@v4\n        with:\n          name: model\n          path: model.joblib"
+    }
+  },
+  "monitoring_patterns": {
+    "prediction_logging": {
+      "description": "Log predictions for monitoring",
+      "use_when": "Production model monitoring",
+      "code_example": "import logging\nimport json\nfrom datetime import datetime\nimport uuid\n\nclass PredictionLogger:\n    def __init__(self, log_file='predictions.jsonl'):\n        self.log_file = log_file\n    \n    def log_prediction(self, input_data, prediction, probability, model_version):\n        log_entry = {\n            'prediction_id': str(uuid.uuid4()),\n            'timestamp': datetime.utcnow().isoformat(),\n            'model_version': model_version,\n            'input_hash': hash(str(input_data)),\n            'prediction': prediction,\n            'probability': probability\n        }\n        \n        with open(self.log_file, 'a') as f:\n            f.write(json.dumps(log_entry) + '\\n')\n        \n        return log_entry['prediction_id']\n\n# Usage in API\nlogger = PredictionLogger()\n\n@app.post('/predict')\ndef predict(features: list[float]):\n    prediction = model.predict([features])[0]\n    probability = model.predict_proba([features])[0].max()\n    \n    pred_id = logger.log_prediction(\n        features, prediction, probability, 'v1.2.3'\n    )\n    \n    return {\n        'prediction_id': pred_id,\n        'prediction': prediction,\n        'probability': probability\n    }",
+      "best_practices": [
+        "Log prediction IDs for traceability",
+        "Include model version",
+        "Store input hash (not raw input for privacy)",
+        "Use structured logging format"
+      ]
+    },
+    "data_drift_detection": {
+      "description": "Detect when input data distribution changes",
+      "use_when": "Monitoring production model inputs",
+      "code_example": "from scipy import stats\nimport numpy as np\n\nclass DriftDetector:\n    def __init__(self, reference_data, threshold=0.05):\n        self.reference_data = reference_data\n        self.threshold = threshold\n    \n    def detect_drift(self, current_data):\n        drift_results = {}\n        \n        for column in range(self.reference_data.shape[1]):\n            ref_col = self.reference_data[:, column]\n            cur_col = current_data[:, column]\n            \n            # Kolmogorov-Smirnov test\n            statistic, p_value = stats.ks_2samp(ref_col, cur_col)\n            \n            drift_results[f'feature_{column}'] = {\n                'statistic': statistic,\n                'p_value': p_value,\n                'drift_detected': p_value < self.threshold\n            }\n        \n        return drift_results\n\n# Usage\ndetector = DriftDetector(X_train)\n\n# Check weekly batch of predictions\nweekly_inputs = get_weekly_inputs()\ndrift = detector.detect_drift(weekly_inputs)\n\nfor feature, result in drift.items():\n    if result['drift_detected']:\n        print(f'DRIFT DETECTED in {feature}: p={result[\"p_value\"]:.4f}')",
+      "best_practices": [
+        "Check drift regularly (daily/weekly)",
+        "Alert on significant drift",
+        "Retrain when drift is detected",
+        "Use multiple drift detection methods"
+      ]
+    }
+  },
+  "anti_patterns": {
+    "no_experiment_tracking": {
+      "description": "Not tracking experiments",
+      "problem": "Cannot reproduce or compare results",
+      "solution": "Use MLflow or W&B from the start"
+    },
+    "manual_deployment": {
+      "description": "Manually deploying models",
+      "problem": "Error-prone, not reproducible",
+      "solution": "Use CI/CD pipeline with automated testing"
+    },
+    "no_model_versioning": {
+      "description": "Not versioning models",
+      "problem": "Cannot rollback or compare versions",
+      "solution": "Use model registry with semantic versioning"
+    },
+    "no_monitoring": {
+      "description": "Not monitoring production models",
+      "problem": "Silent failures, undetected drift",
+      "solution": "Log predictions, monitor for drift"
+    }
+  },
+  "best_practices_summary": [
+    "Track all experiments with parameters and metrics",
+    "Use model registry for version management",
+    "Automate testing and deployment",
+    "Monitor predictions and data drift",
+    "Document model lineage",
+    "Set up alerts for model failures",
+    "Version everything: code, data, models"
+  ]
+}

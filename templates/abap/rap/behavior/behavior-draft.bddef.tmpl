@@ -1,0 +1,62 @@
+"! <p class="shorttext synchronized">Draft-Enabled Behavior Definition</p>
+"! Behavior definition for ${ENTITY_NAME} with draft capabilities
+"! @author ${AUTHOR}
+"! @date ${DATE}
+"! @version 1.0
+"!
+"! Example usage:
+"!   Replace ${ENTITY_NAME} with your entity name (e.g., ZC_Travel)
+"!   Replace ${ALIAS} with a short alias (e.g., Travel)
+"!   Draft enables Edit/Activate/Discard/Resume operations
+"!
+managed implementation in class ${BEHAVIOR_IMPLEMENTATION_CLASS} unique;
+strict;
+with draft;
+
+define behavior for ${ENTITY_NAME} alias ${ALIAS}
+persistent table ${TABLE_NAME}
+draft table ${DRAFT_TABLE_NAME}
+lock master
+authorization master ( instance )
+etag master ${ETAG_FIELD}
+{
+  // Draft-enabled CRUD operations
+  create;
+  update;
+  delete;
+  
+  // Draft operations
+  draft action ( features: instance ) Edit;
+  draft action ( features: instance ) Activate;
+  draft action ( features: instance ) Discard;
+  draft action ( features: instance ) Resume;
+  
+  // Draft determine action
+  draft determine action Prepare;
+  
+  // Field control
+  field ( readonly ) ${READONLY_FIELD};
+  field ( mandatory ) ${MANDATORY_FIELD};
+  
+  // Standard operations
+  action ( features: instance ) acceptTravel result ${RESULT_ENTITY};
+  action ( features: instance ) rejectTravel result ${RESULT_ENTITY};
+  
+  // Association
+  association _${ASSOCIATION_NAME} { }
+  
+  // Draft field control
+  field ( readonly: draft ) ${DRAFT_READONLY_FIELD};
+}
+
+determination save ${DETERMINATION_NAME} on save
+{
+  field ${FIELD_NAME};
+}
+
+determination action ${ACTION_DETERMINATION_NAME} on modify
+{
+  create;
+  update;
+  delete;
+}

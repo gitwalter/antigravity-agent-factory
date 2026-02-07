@@ -1,0 +1,273 @@
+/**
+ * ${SCRIPT_NAME} - EDI Message Processor
+ * 
+ * Purpose: ${SCRIPT_PURPOSE}
+ * Author: ${AUTHOR}
+ * Created: ${DATE}
+ * 
+ * Input:  EDI message (EDIFACT or X12)
+ * Output: ${OUTPUT_FORMAT} (e.g., JSON, XML, IDoc, or transformed EDI)
+ * 
+ * EDI Standard: ${EDI_STANDARD} (EDIFACT or X12)
+ * Message Type: ${EDI_MESSAGE_TYPE} (e.g., ORDERS, INVOIC, 850, 810)
+ * 
+ * EDI Structure:
+ *   EDIFACT: UNB (Interchange) > UNH (Message) > Segments > UNT > UNZ
+ *   X12: ISA (Interchange) > GS (Group) > ST (Transaction) > Segments > SE > GE > IEA
+ * 
+ * Notes:
+ *   - EDI messages are delimited text format
+ *   - Segment delimiters vary by standard and partner
+ *   - Handles both inbound and outbound EDI
+ *   - Supports acknowledgment generation
+ */
+import com.sap.gateway.ip.core.customdev.util.Message
+
+def Message processData(Message message) {
+    def messageLog = messageLogFactory.getMessageLog(message)
+    
+    try {
+        // Get EDI message body
+        def ediBody = message.getBody(String)
+        messageLog.addAttachmentAsString('InputEDI', ediBody, 'text/plain')
+        
+        // Determine EDI standard
+        def ediStandard = determineEDIStandard(ediBody)
+        message.setProperty('EDIStandard', ediStandard)
+        
+        // =====================================================
+        // TODO: Parse EDI message based on standard
+        // =====================================================
+        
+        def ediData = [:]
+        
+        if (ediStandard == 'EDIFACT') {
+            ediData = parseEDIFACT(ediBody, messageLog)
+        } else if (ediStandard == 'X12') {
+            ediData = parseX12(ediBody, messageLog)
+        } else {
+            throw new Exception("Unsupported EDI standard: ${ediStandard}")
+        }
+        
+        // Set EDI properties
+        message.setProperty('EDIMessageType', ediData.messageType)
+        message.setProperty('EDISender', ediData.sender)
+        message.setProperty('EDIReceiver', ediData.receiver)
+        message.setProperty('EDIControlNumber', ediData.controlNumber)
+        
+        // =====================================================
+        // TODO: Process EDI data
+        // =====================================================
+        
+        // Option 1: Transform to JSON
+        // def jsonData = transformEDIToJson(ediData)
+        // import groovy.json.JsonBuilder
+        // def builder = new JsonBuilder(jsonData)
+        // message.setBody(builder.toString())
+        
+        // Option 2: Transform to IDoc
+        // def idocXml = transformEDIToIDoc(ediData)
+        // message.setBody(idocXml)
+        
+        // Option 3: Transform to XML
+        // def xmlData = transformEDIToXml(ediData)
+        // message.setBody(xmlData)
+        
+        // For now, set extracted data
+        message.setBody(ediData.toString())
+        messageLog.addAttachmentAsString('ExtractedEDIData', ediData.toString(), 'text/plain')
+        
+    } catch (Exception e) {
+        messageLog.addAttachmentAsString('EDIProcessingError', 
+            "EDI processing error: ${e.message}\n" +
+            "Input EDI:\n${message.getBody(String)}", 
+            'text/plain')
+        
+        message.setProperty('ErrorMessage', e.message)
+        message.setProperty('ErrorScript', '${SCRIPT_NAME}')
+        message.setProperty('ErrorTimestamp', new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ"))
+        message.setProperty('SAP_ErrorModelStepID', '${SCRIPT_NAME}')
+        message.setProperty('SAP_ErrorText', "EDI processing failed: ${e.message}")
+        
+        throw e
+    }
+    
+    return message
+}
+
+/**
+ * Determine EDI standard from message content
+ */
+def determineEDIStandard(String ediBody) {
+    if (ediBody.startsWith('UNB') || ediBody.startsWith('UNA')) {
+        return 'EDIFACT'
+    } else if (ediBody.startsWith('ISA')) {
+        return 'X12'
+    } else {
+        throw new Exception("Cannot determine EDI standard from message content")
+    }
+}
+
+/**
+ * Parse EDIFACT message
+ * Structure: UNA (service advice) > UNB (interchange) > UNH (message) > Segments > UNT > UNZ
+ */
+def parseEDIFACT(String ediBody, messageLog) {
+    def lines = ediBody.split("'") // Segment terminator
+    
+    def ediData = [
+        standard: 'EDIFACT',
+        segments: []
+    ]
+    
+    lines.each { line ->
+        if (line.trim()) {
+            def segment = line.split('\\+')
+            def segmentTag = segment[0]
+            
+            ediData.segments << [
+                tag: segmentTag,
+                elements: segment
+            ]
+            
+            // Parse interchange header (UNB)
+            if (segmentTag == 'UNB') {
+                ediData.syntaxIdentifier = segment[1]
+                ediData.sender = segment[2]
+                ediData.receiver = segment[3]
+                ediData.dateTime = segment[4]
+                ediData.controlReference = segment[5]
+            }
+            
+            // Parse message header (UNH)
+            if (segmentTag == 'UNH') {
+                ediData.messageReference = segment[1]
+                ediData.messageType = segment[2]
+                ediData.messageVersion = segment[3]
+            }
+            
+            // Parse message trailer (UNT)
+            if (segmentTag == 'UNT') {
+                ediData.segmentCount = segment[1]
+                ediData.messageReference = segment[2]
+            }
+            
+            // Parse interchange trailer (UNZ)
+            if (segmentTag == 'UNZ') {
+                ediData.interchangeControlCount = segment[1]
+                ediData.controlNumber = segment[2]
+            }
+        }
+    }
+    
+    messageLog.addAttachmentAsString('EDIFACTParsed', 
+        """EDIFACT Message Parsed:
+  Message Type: ${ediData.messageType}
+  Sender: ${ediData.sender}
+  Receiver: ${ediData.receiver}
+  Segments: ${ediData.segments.size()}
+""", 'text/plain')
+    
+    return ediData
+}
+
+/**
+ * Parse X12 message
+ * Structure: ISA (interchange) > GS (group) > ST (transaction) > Segments > SE > GE > IEA
+ */
+def parseX12(String ediBody, messageLog) {
+    // X12 uses fixed-width ISA segment
+    def isaSegment = ediBody.substring(0, Math.min(106, ediBody.length()))
+    def elementSeparator = isaSegment[3] as char
+    def segmentTerminator = isaSegment[105] as char
+    
+    def segments = ediBody.split(segmentTerminator.toString())
+    
+    def ediData = [
+        standard: 'X12',
+        segments: []
+    ]
+    
+    segments.each { segment ->
+        if (segment.trim()) {
+            def elements = segment.split(Pattern.quote(elementSeparator.toString()))
+            def segmentTag = elements[0]
+            
+            ediData.segments << [
+                tag: segmentTag,
+                elements: elements
+            ]
+            
+            // Parse interchange header (ISA)
+            if (segmentTag == 'ISA') {
+                ediData.authorizationQualifier = elements[1]
+                ediData.authorizationInfo = elements[2]
+                ediData.securityQualifier = elements[3]
+                ediData.securityInfo = elements[4]
+                ediData.senderQualifier = elements[5]
+                ediData.sender = elements[6]
+                ediData.receiverQualifier = elements[7]
+                ediData.receiver = elements[8]
+                ediData.date = elements[9]
+                ediData.time = elements[10]
+                ediData.controlNumber = elements[13]
+            }
+            
+            // Parse functional group header (GS)
+            if (segmentTag == 'GS') {
+                ediData.functionalCode = elements[1]
+                ediData.senderId = elements[2]
+                ediData.receiverId = elements[3]
+                ediData.date = elements[4]
+                ediData.time = elements[5]
+                ediData.groupControlNumber = elements[6]
+            }
+            
+            // Parse transaction header (ST)
+            if (segmentTag == 'ST') {
+                ediData.transactionCode = elements[1]
+                ediData.messageType = elements[1] // Transaction code is message type
+                ediData.controlNumber = elements[2]
+            }
+            
+            // Parse transaction trailer (SE)
+            if (segmentTag == 'SE') {
+                ediData.segmentCount = elements[1]
+                ediData.transactionControlNumber = elements[2]
+            }
+        }
+    }
+    
+    messageLog.addAttachmentAsString('X12Parsed', 
+        """X12 Message Parsed:
+  Message Type: ${ediData.messageType}
+  Sender: ${ediData.sender}
+  Receiver: ${ediData.receiver}
+  Segments: ${ediData.segments.size()}
+""", 'text/plain')
+    
+    return ediData
+}
+
+/**
+ * Transform EDI data to JSON
+ */
+def transformEDIToJson(ediData) {
+    return [
+        standard: ediData.standard,
+        messageType: ediData.messageType,
+        sender: ediData.sender,
+        receiver: ediData.receiver,
+        controlNumber: ediData.controlNumber,
+        segments: ediData.segments
+    ]
+}
+
+/**
+ * Generate EDI acknowledgment (CONTRL for EDIFACT, 997/999 for X12)
+ */
+def generateEDIAcknowledgment(ediData, String ackType) {
+    // TODO: Implement acknowledgment generation
+    // CONTRL for EDIFACT, 997/999 for X12
+    return ''
+}

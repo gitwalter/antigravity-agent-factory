@@ -1,0 +1,324 @@
+"""
+{{RAG_CHAIN_NAME}} - RAG Pipeline with Vector Store
+
+Purpose: {{RAG_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Sources are cited and traceable
+- A3 (Transparency): Retrieval process is explicit
+"""
+
+from typing import List, Dict, Any, Optional
+from langchain_core.documents import Document
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma, FAISS
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_core.output_parsers import StrOutputParser
+from pydantic import BaseModel, Field
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class {{RAG_CLASS_NAME}}RetrievalResult(BaseModel):
+    """Result from retrieval step."""
+    documents: List[Document] = Field(description="Retrieved documents")
+    query: str = Field(description="Original query")
+    num_results: int = Field(description="Number of results retrieved")
+
+
+class {{RAG_CLASS_NAME}}Output(BaseModel):
+    """Structured output for RAG chain."""
+    answer: str = Field(description="Generated answer")
+    sources: List[str] = Field(description="Source document IDs or references")
+    context: List[str] = Field(description="Retrieved context chunks")
+    confidence: float = Field(ge=0.0, le=1.0, description="Confidence score")
+
+
+class {{RAG_CLASS_NAME}}:
+    """
+    {{RAG_CHAIN_NAME}} - Retrieval Augmented Generation Pipeline
+    
+    Implements a complete RAG pipeline:
+    1. Document ingestion and chunking
+    2. Vector store creation and management
+    3. Retrieval of relevant context
+    4. Generation with retrieved context
+    
+    Example:
+        >>> rag = {{RAG_CLASS_NAME}}()
+        >>> rag.add_documents(["Document 1", "Document 2"])
+        >>> result = rag.query("What is the main topic?")
+    """
+    
+    def __init__(
+        self,
+        model_name: str = "{{MODEL_NAME}}",
+        temperature: float = {{TEMPERATURE}},
+        embedding_model: str = "{{EMBEDDING_MODEL}}",
+        vector_store_type: str = "chroma",  # "chroma" or "faiss"
+        chunk_size: int = 1000,
+        chunk_overlap: int = 200,
+        k: int = 4  # Number of documents to retrieve
+    ):
+        """
+        Initialize RAG chain.
+        
+        Args:
+            model_name: LLM model for generation
+            temperature: Sampling temperature
+            embedding_model: Embedding model name
+            vector_store_type: Type of vector store ("chroma" or "faiss")
+            chunk_size: Size of text chunks
+            chunk_overlap: Overlap between chunks
+            k: Number of documents to retrieve
+        """
+        self.model_name = model_name
+        self.temperature = temperature
+        self.k = k
+        
+        # Initialize LLM
+        self.llm = ChatOpenAI(
+            model=self.model_name,
+            temperature=self.temperature
+        )
+        
+        # Initialize embeddings
+        self.embeddings = OpenAIEmbeddings(model=embedding_model)
+        
+        # Initialize text splitter
+        self.text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            length_function=len
+        )
+        
+        # Initialize vector store (empty initially)
+        self.vector_store_type = vector_store_type
+        self.vector_store: Optional[Any] = None
+        self.retriever: Optional[Any] = None
+        
+        # Build RAG chain
+        self.chain = None  # Will be built after documents are added
+        
+        logger.info(f"Initialized {{RAG_CHAIN_NAME}} with {vector_store_type} vector store")
+    
+    def add_documents(self, documents: List[str] | List[Document]) -> None:
+        """
+        Add documents to the vector store.
+        
+        Args:
+            documents: List of document strings or Document objects
+        """
+        logger.info(f"Adding {len(documents)} documents to vector store...")
+        
+        try:
+            # Convert strings to Document objects if needed
+            if documents and isinstance(documents[0], str):
+                docs = [Document(page_content=doc) for doc in documents]
+            else:
+                docs = documents
+            
+            # Split documents into chunks
+            chunks = self.text_splitter.split_documents(docs)
+            logger.info(f"Split into {len(chunks)} chunks")
+            
+            # Create or update vector store
+            if self.vector_store is None:
+                if self.vector_store_type == "chroma":
+                    self.vector_store = Chroma.from_documents(
+                        chunks,
+                        self.embeddings,
+                        collection_name="{{COLLECTION_NAME}}"
+                    )
+                elif self.vector_store_type == "faiss":
+                    self.vector_store = FAISS.from_documents(chunks, self.embeddings)
+                else:
+                    raise ValueError(f"Unknown vector store type: {self.vector_store_type}")
+            else:
+                # Add to existing store
+                if self.vector_store_type == "chroma":
+                    self.vector_store.add_documents(chunks)
+                elif self.vector_store_type == "faiss":
+                    self.vector_store.add_documents(chunks)
+            
+            # Create retriever
+            self.retriever = self.vector_store.as_retriever(
+                search_kwargs={"k": self.k}
+            )
+            
+            # Build RAG chain
+            self._build_chain()
+            
+            logger.info("Documents added successfully")
+            
+        except Exception as e:
+            logger.error(f"Error adding documents: {e}")
+            raise
+    
+    def _build_chain(self) -> None:
+        """Build the RAG chain."""
+        if self.retriever is None:
+            logger.warning("No retriever available. Add documents first.")
+            return
+        
+        # Create prompt template
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", """{{SYSTEM_PROMPT}}
+            
+You are a helpful assistant that answers questions based on the provided context.
+- Use only information from the context to answer (A1 - Verifiability)
+- Cite sources when possible (A1)
+- If the context doesn't contain enough information, say so (A3 - Transparency)
+- Be clear about what you know and what you don't know (A3)
+"""),
+            ("human", """Context:
+{context}
+
+Question: {question}
+
+Answer based on the context above. Cite sources when possible.""")
+        ])
+        
+        # Build chain: retrieve -> format -> generate
+        self.chain = (
+            {
+                "context": self.retriever | self._format_docs,
+                "question": RunnablePassthrough()
+            }
+            | prompt
+            | self.llm
+            | StrOutputParser()
+        )
+        
+        logger.info("RAG chain built successfully")
+    
+    def _format_docs(self, docs: List[Document]) -> str:
+        """
+        Format retrieved documents for context.
+        
+        Args:
+            docs: List of retrieved documents
+        
+        Returns:
+            Formatted context string
+        """
+        return "\n\n".join([
+            f"Document {i+1} (ID: {doc.metadata.get('source', 'unknown')}):\n{doc.page_content}"
+            for i, doc in enumerate(docs)
+        ])
+    
+    def query(self, question: str) -> {{RAG_CLASS_NAME}}Output:
+        """
+        Query the RAG system.
+        
+        Args:
+            question: User question
+        
+        Returns:
+            Structured output with answer and sources
+        """
+        if self.chain is None:
+            raise ValueError("No documents added. Call add_documents() first.")
+        
+        logger.info(f"Querying: {question[:100]}...")
+        
+        try:
+            # Retrieve relevant documents
+            retrieved_docs = self.retriever.get_relevant_documents(question)
+            
+            # Generate answer
+            answer = self.chain.invoke(question)
+            
+            # Extract sources
+            sources = [
+                doc.metadata.get("source", f"doc_{i}")
+                for i, doc in enumerate(retrieved_docs)
+            ]
+            
+            # Extract context chunks
+            context_chunks = [doc.page_content for doc in retrieved_docs]
+            
+            # Calculate confidence (simplified - can be enhanced)
+            confidence = min(1.0, len(retrieved_docs) / self.k)
+            
+            result = {{RAG_CLASS_NAME}}Output(
+                answer=answer,
+                sources=sources,
+                context=context_chunks,
+                confidence=confidence
+            )
+            
+            logger.info(f"Query completed. Retrieved {len(retrieved_docs)} documents.")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error during query: {e}")
+            return {{RAG_CLASS_NAME}}Output(
+                answer=f"Error processing query: {str(e)}",
+                sources=[],
+                context=[],
+                confidence=0.0
+            )
+    
+    async def aquery(self, question: str) -> {{RAG_CLASS_NAME}}Output:
+        """Async version of query."""
+        if self.chain is None:
+            raise ValueError("No documents added. Call add_documents() first.")
+        
+        logger.info(f"Async querying: {question[:100]}...")
+        
+        try:
+            retrieved_docs = await self.retriever.aget_relevant_documents(question)
+            answer = await self.chain.ainvoke(question)
+            
+            sources = [
+                doc.metadata.get("source", f"doc_{i}")
+                for i, doc in enumerate(retrieved_docs)
+            ]
+            context_chunks = [doc.page_content for doc in retrieved_docs]
+            confidence = min(1.0, len(retrieved_docs) / self.k)
+            
+            return {{RAG_CLASS_NAME}}Output(
+                answer=answer,
+                sources=sources,
+                context=context_chunks,
+                confidence=confidence
+            )
+            
+        except Exception as e:
+            logger.error(f"Error during async query: {e}")
+            return {{RAG_CLASS_NAME}}Output(
+                answer=f"Error: {str(e)}",
+                sources=[],
+                context=[],
+                confidence=0.0
+            )
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create RAG chain
+    rag = {{RAG_CLASS_NAME}}(
+        model_name="{{MODEL_NAME}}",
+        k=4
+    )
+    
+    # Add documents
+    documents = [
+        "{{EXAMPLE_DOCUMENT_1}}",
+        "{{EXAMPLE_DOCUMENT_2}}"
+    ]
+    rag.add_documents(documents)
+    
+    # Query
+    result = rag.query("{{EXAMPLE_QUERY}}")
+    
+    print(f"Answer: {result.answer}")
+    print(f"Sources: {result.sources}")
+    print(f"Confidence: {result.confidence}")

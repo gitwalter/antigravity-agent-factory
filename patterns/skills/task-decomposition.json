@@ -1,0 +1,270 @@
+{
+  "metadata": {
+    "patternId": "task-decomposition",
+    "patternName": "Task Decomposition Skill",
+    "category": "ai-development",
+    "stackAgnostic": true,
+    "description": "Breaking complex tasks into manageable subtasks for distribution across specialized agents",
+    "composable": true,
+    "version": "1.0.0"
+  },
+  "frontmatter": {
+    "name": "task-decomposition",
+    "description": "Systematically break complex tasks into subtasks for multi-agent execution",
+    "type": "skill",
+    "knowledge": [
+      "multi-agent-coordination.json",
+      "agent-coordination.json"
+    ],
+    "templates": [
+      "templates/ai/multi-agent/"
+    ]
+  },
+  "sections": {
+    "title": "Task Decomposition Skill",
+    "introduction": "Guides the systematic breakdown of complex tasks into manageable subtasks that can be distributed across specialized agents. Covers hierarchical, functional, and data-parallel decomposition strategies.",
+    "whenToUse": [
+      "When a task is too complex for a single agent",
+      "When multiple specializations are needed",
+      "When parallel execution would improve performance",
+      "When building task pipelines",
+      "When delegating work to specialized workers"
+    ],
+    "process": [
+      {
+        "step": 1,
+        "name": "Analyze Task Complexity",
+        "description": "Understand the full scope of the task",
+        "actions": [
+          "Identify all required capabilities and knowledge",
+          "Map dependencies between task components",
+          "Estimate effort and complexity of each component",
+          "Identify parallelizable vs. sequential components"
+        ],
+        "outputs": [
+          "Task complexity analysis",
+          "Dependency graph"
+        ]
+      },
+      {
+        "step": 2,
+        "name": "Choose Decomposition Strategy",
+        "description": "Select the appropriate strategy based on task characteristics",
+        "strategies": {
+          "hierarchical": {
+            "description": "Break into levels of abstraction (high-level goals -> mid-level tasks -> atomic actions)",
+            "useCase": "Complex projects with clear goal hierarchies",
+            "example": "Build app -> Design UI + Implement Backend -> Individual features"
+          },
+          "functional": {
+            "description": "Separate by capability or domain expertise",
+            "useCase": "Tasks requiring diverse specializations",
+            "example": "Research + Analysis + Writing + Editing"
+          },
+          "data-parallel": {
+            "description": "Same operation on different data partitions",
+            "useCase": "Processing large datasets or document collections",
+            "example": "Analyze 100 documents -> 10 agents process 10 each"
+          },
+          "pipeline": {
+            "description": "Sequential stages where each transforms the output of the previous",
+            "useCase": "Linear transformation workflows",
+            "example": "Extract -> Transform -> Validate -> Load"
+          },
+          "hybrid": {
+            "description": "Combine multiple strategies",
+            "useCase": "Complex workflows with mixed requirements",
+            "example": "Pipeline with parallel stages"
+          }
+        }
+      },
+      {
+        "step": 3,
+        "name": "Define Subtasks",
+        "description": "Create clear, atomic subtask definitions",
+        "subtaskRequirements": {
+          "atomic": "Completable without further decomposition",
+          "independent": "Minimal dependencies on other subtasks",
+          "measurable": "Clear success criteria",
+          "assignable": "Can be given to a specific agent type"
+        },
+        "actions": [
+          "Write clear subtask descriptions",
+          "Define inputs and expected outputs",
+          "Specify success criteria",
+          "Estimate complexity/duration"
+        ],
+        "outputs": [
+          "Subtask definitions",
+          "Input/output specifications"
+        ]
+      },
+      {
+        "step": 4,
+        "name": "Map Dependencies",
+        "description": "Identify relationships between subtasks",
+        "dependencyTypes": {
+          "data": "Subtask B needs output from Subtask A",
+          "resource": "Subtasks compete for limited resources",
+          "ordering": "Subtask B must run after Subtask A",
+          "none": "Subtasks are fully independent"
+        },
+        "actions": [
+          "Create dependency graph",
+          "Identify critical path",
+          "Find parallelization opportunities",
+          "Plan resource allocation"
+        ],
+        "outputs": [
+          "Dependency graph",
+          "Execution order"
+        ]
+      },
+      {
+        "step": 5,
+        "name": "Assign to Agents",
+        "description": "Match subtasks to appropriate agent types",
+        "assignmentCriteria": [
+          "Agent capability matches subtask requirements",
+          "Agent availability and current load",
+          "Historical performance on similar tasks",
+          "Cost considerations (model selection)"
+        ],
+        "actions": [
+          "Match subtasks to agent capabilities",
+          "Balance load across available agents",
+          "Consider fallback assignments"
+        ],
+        "outputs": [
+          "Assignment matrix",
+          "Agent allocation plan"
+        ]
+      },
+      {
+        "step": 6,
+        "name": "Define Aggregation",
+        "description": "Plan how to combine subtask results",
+        "aggregationPatterns": {
+          "merge": "Combine all outputs into single result",
+          "reduce": "Iteratively combine pairs of results",
+          "select": "Choose best result from multiple",
+          "synthesize": "Create new output from all inputs"
+        },
+        "actions": [
+          "Choose aggregation strategy",
+          "Handle partial failures",
+          "Define final output format"
+        ]
+      }
+    ],
+    "decompositionPatterns": {
+      "divideAndConquer": {
+        "description": "Recursively divide until atomic, then combine",
+        "steps": [
+          "Divide into subproblems",
+          "Solve subproblems",
+          "Combine solutions"
+        ],
+        "useCase": "Problems with natural recursive structure"
+      },
+      "mapReduce": {
+        "description": "Map operation across data, then reduce results",
+        "steps": [
+          "Partition data",
+          "Apply operation in parallel",
+          "Reduce results"
+        ],
+        "useCase": "Data processing at scale"
+      },
+      "orchestratorWorker": {
+        "description": "Central orchestrator manages worker execution",
+        "steps": [
+          "Orchestrator creates plan",
+          "Delegates to workers",
+          "Collects and validates results"
+        ],
+        "useCase": "Dynamic task allocation"
+      },
+      "chainOfResponsibility": {
+        "description": "Pass through chain of handlers until resolved",
+        "steps": [
+          "First handler attempts",
+          "If cannot handle, pass to next",
+          "Continue until resolved"
+        ],
+        "useCase": "Tasks with multiple possible approaches"
+      }
+    },
+    "qualityGates": {
+      "description": "Checkpoints to validate subtask completion",
+      "gates": [
+        {
+          "name": "Input validation",
+          "timing": "Before subtask starts"
+        },
+        {
+          "name": "Output validation",
+          "timing": "After subtask completes"
+        },
+        {
+          "name": "Dependency check",
+          "timing": "Before starting dependent tasks"
+        },
+        {
+          "name": "Aggregation validation",
+          "timing": "After combining results"
+        }
+      ]
+    },
+    "importantRules": [
+      "Subtasks should be atomic and independently verifiable",
+      "Minimize dependencies between subtasks for parallelism",
+      "Define clear input/output contracts for each subtask",
+      "Include quality gates at critical points",
+      "Plan for partial failures and fallbacks",
+      "Document decomposition rationale for future reference",
+      "Consider cost-benefit of decomposition overhead",
+      "All actions must align with core axioms (A1: Verifiability, A2: User Primacy, A3: Transparency, A4: Non-Harm, A5: Consistency)"
+    ],
+    "fallbackProcedures": [
+      {
+        "condition": "If subtask fails",
+        "action": "Retry, then try alternative approach, then escalate"
+      },
+      {
+        "condition": "If aggregation produces conflicts",
+        "action": "Apply conflict resolution or request human decision"
+      },
+      {
+        "condition": "If decomposition is too granular",
+        "action": "Consolidate related subtasks"
+      },
+      {
+        "condition": "If decomposition is too coarse",
+        "action": "Further subdivide problematic subtasks"
+      }
+    ],
+    "references": [
+      "knowledge/multi-agent-coordination.json",
+      "knowledge/agent-coordination.json",
+      "templates/ai/multi-agent/"
+    ]
+  },
+  "variables": [
+    {
+      "name": "{TASK_DESCRIPTION}",
+      "description": "The complex task to decompose",
+      "required": true
+    },
+    {
+      "name": "{DECOMPOSITION_STRATEGY}",
+      "description": "Strategy to use (hierarchical, functional, etc.)",
+      "required": true
+    },
+    {
+      "name": "{AVAILABLE_AGENTS}",
+      "description": "List of available agent types and capabilities",
+      "required": true
+    }
+  ]
+}

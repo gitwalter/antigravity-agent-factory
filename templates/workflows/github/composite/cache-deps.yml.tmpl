@@ -1,0 +1,34 @@
+name: 'Cache Dependencies'
+description: 'Composite action to cache dependencies for various package managers'
+
+inputs:
+  package-manager:
+    description: 'Package manager (npm, yarn, pnpm, pip, maven, gradle, nuget)'
+    required: true
+    type: string
+  cache-key:
+    description: 'Custom cache key'
+    required: false
+    type: string
+    default: ''
+  cache-path:
+    description: 'Path to cache'
+    required: false
+    type: string
+    default: ''
+  dependency-file:
+    description: 'Path to dependency file'
+    required: false
+    type: string
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: ${{ inputs.cache-path != '' && inputs.cache-path || (inputs.package-manager == 'npm' && '~/.npm' || inputs.package-manager == 'yarn' && '~/.yarn/cache' || inputs.package-manager == 'pnpm' && '~/.pnpm-store' || inputs.package-manager == 'pip' && '~/.cache/pip' || inputs.package-manager == 'maven' && '~/.m2/repository' || inputs.package-manager == 'gradle' && '~/.gradle/caches' || inputs.package-manager == 'nuget' && '~/.nuget/packages' || '') }}
+        key: ${{ inputs.cache-key != '' && inputs.cache-key || format('{0}-{1}-{2}', runner.os, inputs.package-manager, hashFiles(inputs.dependency-file != '' && inputs.dependency-file || (inputs.package-manager == 'npm' && 'package-lock.json' || inputs.package-manager == 'yarn' && 'yarn.lock' || inputs.package-manager == 'pnpm' && 'pnpm-lock.yaml' || inputs.package-manager == 'pip' && 'requirements.txt' || inputs.package-manager == 'maven' && 'pom.xml' || inputs.package-manager == 'gradle' && 'build.gradle*' || inputs.package-manager == 'nuget' && '*.csproj' || ''))) }}
+        restore-keys: |
+          ${{ runner.os }}-${{ inputs.package-manager }}-

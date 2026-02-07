@@ -1,0 +1,166 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Multi-Agent Patterns",
+  "description": "Consolidated patterns for multi-agent systems using CrewAI and AutoGen",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A2_user_primacy": "Multi-agent systems coordinate to serve user goals",
+    "A3_transparency": "Agent interactions and decisions are traceable"
+  },
+  "framework_comparison": {
+    "crewai": {
+      "description": "Role-based agent orchestration",
+      "best_for": "Complex workflows with defined roles",
+      "strengths": ["Easy role definition", "Task dependencies", "Crew management"],
+      "when_to_use": "Clear role separation, sequential or parallel tasks"
+    },
+    "autogen": {
+      "description": "Conversational multi-agent systems",
+      "best_for": "Dynamic conversations, code execution",
+      "strengths": ["GroupChat", "Code execution", "Human-in-the-loop"],
+      "when_to_use": "Collaborative problem-solving, coding tasks"
+    },
+    "langgraph": {
+      "description": "State machine based workflows",
+      "best_for": "Complex control flow, cycles",
+      "strengths": ["State management", "Conditional routing", "Persistence"],
+      "when_to_use": "Complex workflows with state, loops, branching"
+    }
+  },
+  "crewai_patterns": {
+    "role_definition": {
+      "description": "Define agents with clear roles",
+      "code_example": "from crewai import Agent, Task, Crew, Process\nfrom crewai_tools import SerperDevTool, WebsiteSearchTool\n\n# Define agents with distinct roles\nresearcher = Agent(\n    role='Research Analyst',\n    goal='Find comprehensive, accurate information on topics',\n    backstory='''You are an experienced research analyst with expertise\n    in finding and synthesizing information from multiple sources.\n    You verify facts and provide well-sourced insights.''',\n    tools=[SerperDevTool(), WebsiteSearchTool()],\n    verbose=True,\n    allow_delegation=False,\n    max_iter=5\n)\n\nwriter = Agent(\n    role='Content Writer',\n    goal='Create clear, engaging content based on research',\n    backstory='''You are a skilled content writer who transforms\n    complex information into readable, engaging content.\n    You focus on clarity and audience appropriateness.''',\n    verbose=True,\n    allow_delegation=False\n)\n\nreviewer = Agent(\n    role='Quality Reviewer',\n    goal='Ensure accuracy and quality of content',\n    backstory='''You are a meticulous editor who checks for\n    accuracy, clarity, and completeness. You provide\n    constructive feedback for improvement.''',\n    verbose=True,\n    allow_delegation=True  # Can delegate back to writer\n)",
+      "best_practices": [
+        "Write detailed backstories that guide behavior",
+        "Set clear, specific goals",
+        "Use allow_delegation appropriately",
+        "Set max_iter to prevent infinite loops"
+      ]
+    },
+    "task_workflow": {
+      "description": "Define tasks with dependencies",
+      "code_example": "# Define tasks with context dependencies\nresearch_task = Task(\n    description='''Research the following topic: {topic}\n    \n    Provide:\n    1. Key facts and statistics\n    2. Current trends\n    3. Expert opinions\n    4. Relevant sources''',\n    expected_output='Comprehensive research report with sources',\n    agent=researcher\n)\n\nwriting_task = Task(\n    description='''Based on the research, write a blog post.\n    \n    Requirements:\n    - 800-1000 words\n    - Engaging introduction\n    - Clear structure with headings\n    - Practical takeaways''',\n    expected_output='Complete blog post draft',\n    agent=writer,\n    context=[research_task]  # Depends on research\n)\n\nreview_task = Task(\n    description='''Review the blog post for:\n    - Factual accuracy\n    - Grammar and clarity\n    - Engagement and flow\n    \n    Provide specific feedback or approve.''',\n    expected_output='Reviewed content or approval',\n    agent=reviewer,\n    context=[writing_task, research_task]\n)\n\n# Create and run crew\ncrew = Crew(\n    agents=[researcher, writer, reviewer],\n    tasks=[research_task, writing_task, review_task],\n    process=Process.sequential,\n    verbose=True\n)\n\nresult = crew.kickoff(inputs={'topic': 'AI in Healthcare'})",
+      "best_practices": [
+        "Use context to pass information between tasks",
+        "Order tasks logically in sequential process",
+        "Define clear expected_output for each task"
+      ]
+    },
+    "hierarchical_crew": {
+      "description": "Manager coordinates worker agents",
+      "code_example": "from crewai import Crew, Process\nfrom langchain_openai import ChatOpenAI\n\n# Create manager agent\nmanager = Agent(\n    role='Project Manager',\n    goal='Coordinate team to deliver quality results',\n    backstory='''You are an experienced project manager who\n    excels at delegation and quality assurance.''',\n    allow_delegation=True,\n    verbose=True\n)\n\n# Hierarchical crew with manager\ncrew = Crew(\n    agents=[manager, researcher, writer, reviewer],\n    tasks=[complex_task],\n    process=Process.hierarchical,\n    manager_llm=ChatOpenAI(model='gpt-4o'),\n    verbose=True\n)\n\nresult = crew.kickoff()",
+      "best_practices": [
+        "Manager should have allow_delegation=True",
+        "Use capable LLM for manager decisions",
+        "Good for complex, ambiguous tasks"
+      ]
+    }
+  },
+  "autogen_patterns": {
+    "two_agent_chat": {
+      "description": "Simple assistant and user proxy",
+      "code_example": "from autogen import AssistantAgent, UserProxyAgent\nimport os\n\n# Configure LLM\nllm_config = {\n    'model': 'gpt-4o',\n    'api_key': os.getenv('OPENAI_API_KEY'),\n    'temperature': 0.7\n}\n\n# Create assistant\nassistant = AssistantAgent(\n    name='assistant',\n    system_message='''You are a helpful AI assistant.\n    You can write and explain code.''',\n    llm_config=llm_config\n)\n\n# Create user proxy (can execute code)\nuser_proxy = UserProxyAgent(\n    name='user_proxy',\n    human_input_mode='TERMINATE',\n    max_consecutive_auto_reply=10,\n    code_execution_config={\n        'work_dir': './coding',\n        'use_docker': False,\n        'timeout': 60\n    },\n    system_message='Execute code and provide feedback.'\n)\n\n# Start conversation\nuser_proxy.initiate_chat(\n    assistant,\n    message='Write a Python function to calculate fibonacci numbers.'\n)",
+      "best_practices": [
+        "Set max_consecutive_auto_reply to prevent loops",
+        "Use Docker for code execution in production",
+        "TERMINATE mode allows human to end conversation"
+      ]
+    },
+    "group_chat": {
+      "description": "Multiple agents collaborating",
+      "code_example": "from autogen import GroupChat, GroupChatManager\n\n# Define specialized agents\ncoder = AssistantAgent(\n    name='coder',\n    system_message='You write clean, efficient code.',\n    llm_config=llm_config\n)\n\nreviewer = AssistantAgent(\n    name='reviewer',\n    system_message='You review code for bugs and improvements.',\n    llm_config=llm_config\n)\n\ntester = AssistantAgent(\n    name='tester',\n    system_message='You write comprehensive tests.',\n    llm_config=llm_config\n)\n\n# Create group chat\ngroupchat = GroupChat(\n    agents=[user_proxy, coder, reviewer, tester],\n    messages=[],\n    max_round=12,\n    speaker_selection_method='auto'  # LLM selects next speaker\n)\n\n# Manager coordinates the chat\nmanager = GroupChatManager(\n    groupchat=groupchat,\n    llm_config=llm_config\n)\n\n# Start group conversation\nuser_proxy.initiate_chat(\n    manager,\n    message='Create a Python class for a shopping cart with tests.'\n)",
+      "best_practices": [
+        "Set max_round to prevent infinite conversations",
+        "Use 'auto' speaker selection for dynamic conversations",
+        "Use 'round_robin' for equal participation"
+      ]
+    },
+    "teachable_agent": {
+      "description": "Agent that learns from feedback",
+      "code_example": "from autogen.agentchat.contrib.teachable_agent import TeachableAgent\n\nteachable = TeachableAgent(\n    name='teachable',\n    system_message='You are a helpful assistant that learns.',\n    llm_config=llm_config,\n    teach_config={\n        'verbosity': 1,\n        'reset_db': False,\n        'path_to_db_dir': './teachable_db'\n    }\n)\n\n# Teach the agent\nuser_proxy.initiate_chat(\n    teachable,\n    message='Remember: I prefer TypeScript over JavaScript.'\n)\n\n# Later conversations will use learned preferences",
+      "best_practices": [
+        "Use persistent database for long-term memory",
+        "Review learned content periodically",
+        "Set reset_db=True for fresh start"
+      ]
+    }
+  },
+  "langgraph_patterns": {
+    "multi_agent_graph": {
+      "description": "Agents as nodes in state graph",
+      "code_example": "from langgraph.graph import StateGraph, END\nfrom typing import TypedDict, Annotated, Sequence\nfrom langchain_core.messages import BaseMessage\nimport operator\n\n# Define state\nclass AgentState(TypedDict):\n    messages: Annotated[Sequence[BaseMessage], operator.add]\n    next_agent: str\n\n# Define agent functions\ndef researcher_node(state: AgentState) -> AgentState:\n    # Research logic\n    response = researcher_llm.invoke(state['messages'])\n    return {\n        'messages': [response],\n        'next_agent': 'writer'\n    }\n\ndef writer_node(state: AgentState) -> AgentState:\n    # Writing logic\n    response = writer_llm.invoke(state['messages'])\n    return {\n        'messages': [response],\n        'next_agent': 'reviewer'\n    }\n\ndef reviewer_node(state: AgentState) -> AgentState:\n    # Review logic\n    response = reviewer_llm.invoke(state['messages'])\n    # Decide if done or needs revision\n    if 'approved' in response.content.lower():\n        return {'messages': [response], 'next_agent': 'end'}\n    return {'messages': [response], 'next_agent': 'writer'}\n\ndef route_next(state: AgentState) -> str:\n    return state['next_agent']\n\n# Build graph\nworkflow = StateGraph(AgentState)\n\nworkflow.add_node('researcher', researcher_node)\nworkflow.add_node('writer', writer_node)\nworkflow.add_node('reviewer', reviewer_node)\n\nworkflow.set_entry_point('researcher')\nworkflow.add_conditional_edges(\n    'researcher',\n    route_next,\n    {'writer': 'writer'}\n)\nworkflow.add_conditional_edges(\n    'writer',\n    route_next,\n    {'reviewer': 'reviewer'}\n)\nworkflow.add_conditional_edges(\n    'reviewer',\n    route_next,\n    {'writer': 'writer', 'end': END}\n)\n\napp = workflow.compile()\n\n# Run\nresult = app.invoke({'messages': [HumanMessage(content='Write about AI')]})",
+      "best_practices": [
+        "Use TypedDict for state schema",
+        "Implement proper routing logic",
+        "Allow cycles for iterative refinement",
+        "Add persistence for long-running workflows"
+      ]
+    }
+  },
+  "coordination_patterns": {
+    "sequential": {
+      "description": "Agents execute in order",
+      "use_when": "Clear dependencies between tasks",
+      "example": "Research → Write → Review"
+    },
+    "parallel": {
+      "description": "Agents execute simultaneously",
+      "use_when": "Independent subtasks",
+      "example": "Multiple researchers on different topics"
+    },
+    "hierarchical": {
+      "description": "Manager delegates to workers",
+      "use_when": "Complex tasks needing coordination",
+      "example": "PM assigns tasks to specialists"
+    },
+    "debate": {
+      "description": "Agents argue different perspectives",
+      "use_when": "Need balanced analysis",
+      "example": "Pro vs Con analysis"
+    },
+    "consensus": {
+      "description": "Agents reach agreement",
+      "use_when": "Need validated decisions",
+      "example": "Code review approval"
+    }
+  },
+  "tool_patterns": {
+    "shared_tools": {
+      "description": "Tools available to multiple agents",
+      "code_example": "from crewai_tools import tool\n\n@tool('search_database')\ndef search_database(query: str) -> str:\n    '''Search the internal database.'''\n    return database.search(query)\n\n@tool('create_document')\ndef create_document(title: str, content: str) -> str:\n    '''Create a new document.'''\n    return docs.create(title, content)\n\n# Assign to relevant agents\nresearcher = Agent(\n    role='Researcher',\n    tools=[search_database]\n)\n\nwriter = Agent(\n    role='Writer',\n    tools=[search_database, create_document]\n)"
+    }
+  },
+  "anti_patterns": {
+    "god_agent": {
+      "description": "One agent doing everything",
+      "problem": "Hard to debug, poor results",
+      "solution": "Split into specialized agents"
+    },
+    "infinite_delegation": {
+      "description": "Agents delegating in circles",
+      "problem": "Never completes, high costs",
+      "solution": "Set max iterations, clear termination criteria"
+    },
+    "vague_roles": {
+      "description": "Unclear agent responsibilities",
+      "problem": "Overlapping work, conflicts",
+      "solution": "Define clear, distinct roles and goals"
+    },
+    "no_error_handling": {
+      "description": "No handling for agent failures",
+      "problem": "Cascading failures",
+      "solution": "Implement fallbacks and error recovery"
+    }
+  },
+  "best_practices_summary": [
+    "Define clear, distinct agent roles",
+    "Write detailed backstories/system messages",
+    "Set iteration limits to prevent loops",
+    "Use appropriate coordination pattern",
+    "Implement proper error handling",
+    "Enable verbose mode for debugging",
+    "Test with simple scenarios first",
+    "Monitor costs and token usage"
+  ]
+}

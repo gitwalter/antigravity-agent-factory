@@ -1,0 +1,349 @@
+# Code Refactoring Workflow
+
+## Overview
+
+This workflow guides safe code refactoring by identifying refactoring targets, ensuring test coverage, applying refactoring patterns, and verifying that tests pass. The workflow prioritizes safety and incremental improvements.
+
+**Project:** {{PROJECT_NAME}}  
+**Methodology:** {{METHODOLOGY}}  
+**Stack:** {{STACK}}
+
+## Trigger Conditions
+
+This workflow is activated when:
+
+- Refactoring is explicitly requested
+- Technical debt is identified
+- Code smells are detected
+- Performance improvements needed
+- Code review suggests refactoring
+- Before adding new features to complex code
+
+**Trigger Examples:**
+- "Refactor {{CLASS_NAME}}"
+- "Improve code quality in {{MODULE_NAME}}"
+- "Reduce technical debt in {{FILE_PATH}}"
+- "Apply {{PATTERN_NAME}} pattern to {{COMPONENT_NAME}}"
+
+## Workflow Steps
+
+### Step 1: Identify Refactoring Targets
+
+**Description:** Analyze code to identify areas that need refactoring.
+
+**Actions:**
+- Analyze code complexity
+- Identify code smells (long methods, large classes, duplication)
+- Review technical debt indicators
+- Check for design pattern violations
+- Identify performance bottlenecks
+- Review maintainability issues
+
+**Skills Invoked:**
+- `code-review` - Analyze code quality
+- `code-analysis` - Identify refactoring opportunities
+
+**Knowledge Files:**
+- `knowledge/design-patterns.json` - Design patterns and anti-patterns
+- `knowledge/best-practices.json` - Code quality standards
+
+**Outputs:**
+- Refactoring targets list
+- Code smell analysis
+- Complexity metrics
+- Priority ranking
+
+**Is Mandatory:** Yes
+
+---
+
+### Step 2: Create Test Coverage
+
+**Description:** Ensure adequate test coverage before refactoring to provide safety net.
+
+**Actions:**
+- Analyze existing test coverage
+- Identify gaps in test coverage
+- Generate missing unit tests
+- Create integration tests if needed
+- Verify tests pass before refactoring
+- Document test scenarios
+
+**Skills Invoked:**
+- `tdd` - Create test coverage
+- `code-templates` - Generate test templates
+
+**Agents Referenced:**
+- `test-generator` - Generate comprehensive tests
+
+**Knowledge Files:**
+- `knowledge/tdd-patterns.json` - Test patterns
+- `knowledge/test-patterns.json` - Test structure
+
+**Outputs:**
+- Test files
+- Coverage report
+- Test documentation
+
+**Is Mandatory:** Yes
+
+---
+
+### Step 3: Apply Refactoring Patterns
+
+**Description:** Apply appropriate refactoring patterns to improve code structure.
+
+**Actions:**
+- Extract methods/classes
+- Remove code duplication
+- Apply design patterns
+- Improve naming
+- Simplify complex logic
+- Reduce coupling
+- Increase cohesion
+- Break down large methods/classes
+
+**Skills Invoked:**
+- `code-templates` - Use refactored code templates
+- `grounding` - Verify data model assumptions
+
+**Knowledge Files:**
+- `knowledge/design-patterns.json` - Refactoring patterns
+- `knowledge/{{STACK}}-patterns.json` - Stack-specific patterns
+
+**Outputs:**
+- Refactored code
+- Pattern application notes
+- Before/after comparison
+
+**Is Mandatory:** Yes
+
+---
+
+### Step 4: Verify Tests Pass
+
+**Description:** Run tests after refactoring to ensure behavior is preserved.
+
+**Actions:**
+- Run unit tests
+- Run integration tests
+- Check test coverage maintained
+- Verify no regressions
+- Fix any broken tests
+- Update tests if needed (for better structure)
+
+**Skills Invoked:**
+- `tdd` - Verify test suite
+
+**Outputs:**
+- Test results
+- Coverage report
+- Regression analysis
+
+**Is Mandatory:** Yes
+
+---
+
+### Step 5: Update Documentation
+
+**Description:** Update documentation to reflect refactored code structure.
+
+**Actions:**
+- Update API documentation
+- Update code comments
+- Update architecture diagrams
+- Update README if structure changed
+- Document refactoring decisions
+
+**Skills Invoked:**
+- `documentation-generation` - Update documentation
+
+**Outputs:**
+- Updated documentation
+- Refactoring notes
+- Architecture updates
+
+**Is Mandatory:** Yes
+
+---
+
+## Refactoring Patterns Supported
+
+### Extract Method
+**When:** Long method with multiple responsibilities  
+**Pattern:** Extract logical blocks into separate methods  
+**Safety:** High - Low risk if tests exist
+
+### Extract Class
+**When:** Class with too many responsibilities  
+**Pattern:** Create new class for extracted functionality  
+**Safety:** Medium - Requires careful interface design
+
+### Rename
+**When:** Unclear naming  
+**Pattern:** Rename variables, methods, classes for clarity  
+**Safety:** High - Low risk, IDE-assisted
+
+### Remove Duplication
+**When:** Code duplication detected  
+**Pattern:** Extract common code into shared method/class  
+**Safety:** High - Low risk if tests exist
+
+### Replace Magic Numbers
+**When:** Hardcoded values in code  
+**Pattern:** Extract to named constants  
+**Safety:** High - Low risk
+
+### Introduce Parameter Object
+**When:** Method with too many parameters  
+**Pattern:** Create parameter object  
+**Safety:** Medium - Requires interface updates
+
+### Replace Conditional with Polymorphism
+**When:** Complex conditional logic  
+**Pattern:** Use inheritance/polymorphism  
+**Safety:** Medium - Requires careful design
+
+### Move Method/Field
+**When:** Method/field in wrong class  
+**Pattern:** Move to appropriate class  
+**Safety:** Medium - Requires dependency updates
+
+### Replace Inheritance with Composition
+**When:** Inheritance hierarchy too complex  
+**Pattern:** Use composition instead  
+**Safety:** Low - Significant design change
+
+### Apply Design Pattern
+**When:** Code violates design principles  
+**Pattern:** Apply appropriate design pattern  
+**Safety:** Medium - Depends on pattern complexity
+
+## Safety Checks
+
+### Pre-Refactoring Checks
+- [ ] Test coverage > 80% for target code
+- [ ] All tests passing
+- [ ] No pending changes
+- [ ] Backup/commit current state
+- [ ] Understand code dependencies
+
+### During Refactoring Checks
+- [ ] Run tests after each small change
+- [ ] Verify behavior unchanged
+- [ ] Check for breaking changes
+- [ ] Update dependent code
+- [ ] Maintain backward compatibility (if needed)
+
+### Post-Refactoring Checks
+- [ ] All tests passing
+- [ ] Coverage maintained or improved
+- [ ] Code complexity reduced
+- [ ] Documentation updated
+- [ ] No regressions introduced
+
+## MCP Tools Reference
+
+| Tool | Purpose | When Used |
+|------|---------|-----------|
+| `deepwiki-ask_question` | Query repository docs | Step 1 |
+| `deepwiki-read_wiki_contents` | Understand codebase | Step 1 |
+
+## Skills Reference
+
+| Skill | Purpose | Steps |
+|-------|---------|-------|
+| `code-review` | Identify refactoring targets | 1 |
+| `code-analysis` | Analyze code structure | 1 |
+| `tdd` | Create test coverage | 2, 4 |
+| `code-templates` | Apply refactored patterns | 3 |
+| `grounding` | Verify data model | 3 |
+| `documentation-generation` | Update docs | 5 |
+
+## Agents Reference
+
+| Agent | Purpose | Steps |
+|-------|---------|-------|
+| `test-generator` | Generate test coverage | 2 |
+| `code-reviewer` | Review refactored code | 1, 3 |
+
+## Output Artifacts
+
+| Artifact | Location | Purpose |
+|----------|----------|---------|
+| Refactoring plan | `docs/refactoring_{{MODULE_NAME}}.md` | Refactoring strategy |
+| Test files | `tests/unit/{{MODULE_NAME}}/` | Test coverage |
+| Refactored code | `src/{{MODULE_NAME}}/` | Improved code |
+| Before/after comparison | `docs/refactoring_comparison.md` | Change documentation |
+
+## Fallback Procedures
+
+| Condition | Action |
+|-----------|--------|
+| Test coverage too low | Generate tests first before refactoring |
+| Tests fail after refactoring | Review changes, fix issues incrementally |
+| Refactoring too complex | Break into smaller steps |
+| Dependencies unclear | Request clarification on code structure |
+| Pattern application unclear | Request guidance on design pattern |
+
+## Example Session
+
+```
+User: Refactor UserService class - it's too complex
+
+Agent:
+1. Identifying refactoring targets...
+   - Found 3 long methods (>50 lines)
+   - Detected code duplication
+   - Identified missing abstraction
+2. Creating test coverage...
+   - Current coverage: 75%
+   - Generating missing tests...
+   - Coverage now: 92%
+3. Applying refactoring patterns...
+   - Extracting validation logic
+   - Removing duplication
+   - Applying Strategy pattern
+4. Verifying tests pass...
+   - All 45 tests passing ✓
+   - Coverage maintained at 92%
+5. Updating documentation...
+   - Updated API docs
+   - Added architecture notes
+
+[Outputs refactored code and documentation]
+```
+
+## Best Practices
+
+- **Test first** - Ensure test coverage before refactoring
+- **Small steps** - Refactor incrementally
+- **Run tests frequently** - After each small change
+- **Preserve behavior** - Don't change functionality
+- **One pattern at a time** - Apply patterns incrementally
+- **Document decisions** - Record why refactoring was done
+- **Review changes** - Have code reviewed after refactoring
+- **Measure improvement** - Track complexity reduction
+
+## Refactoring Anti-Patterns to Avoid
+
+- **Refactoring without tests** - High risk of breaking code
+- **Too large changes** - Hard to review and debug
+- **Changing behavior** - Refactoring should preserve functionality
+- **Ignoring tests** - Tests are your safety net
+- **Premature optimization** - Don't optimize without profiling
+- **Over-engineering** - Keep solutions simple
+
+## Related Workflows
+
+- `tdd-workflow.md.tmpl` - Create test coverage
+- `code-review-workflow.md.tmpl` - Review refactored code
+- `feature-development-workflow.md.tmpl` - Refactor before adding features
+
+## References
+
+- `knowledge/design-patterns.json` - Refactoring patterns catalog
+- `knowledge/best-practices.json` - Code quality standards
+- `knowledge/tdd-patterns.json` - Test-driven refactoring
+- `patterns/skills/code-review.json` - Code review skill
+- `patterns/agents/test-generator.json` - Test generator agent

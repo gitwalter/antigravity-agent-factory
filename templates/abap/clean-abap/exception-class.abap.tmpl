@@ -1,0 +1,58 @@
+"! <p class="shorttext synchronized">${EXCEPTION_DESCRIPTION}</p>
+"! Custom exception class inheriting from CX_STATIC_CHECK
+"! @author ${AUTHOR}
+"! @date ${DATE}
+"! @version 1.0
+"!
+"! Purpose: ${PURPOSE}
+"!
+"! Example usage:
+"!   RAISE EXCEPTION TYPE ${EXCEPTION_CLASS_NAME}
+"!     EXPORTING
+"!       textid = ${EXCEPTION_CLASS_NAME}=>${CONSTANT_NAME}
+"!       previous = previous_exception.
+"!
+CLASS ${EXCEPTION_CLASS_NAME} DEFINITION
+  INHERITING FROM cx_static_check
+  PUBLIC
+  FINAL
+  CREATE PUBLIC.
+  
+  PUBLIC SECTION.
+    INTERFACES if_t100_message.
+    
+    "! Exception text IDs
+    CONSTANTS:
+      ${CONSTANT_NAME} TYPE scx_t100key VALUE '${MESSAGE_CLASS}/${MESSAGE_NUMBER}',
+      ${SECOND_CONSTANT_NAME} TYPE scx_t100key VALUE '${MESSAGE_CLASS}/${SECOND_MESSAGE_NUMBER}'.
+    
+    "! Constructor
+    "! @parameter textid | Message text ID
+    "! @parameter previous | Previous exception in chain
+    METHODS constructor
+      IMPORTING
+        textid   TYPE scx_t100key OPTIONAL
+        previous TYPE REF TO cx_root OPTIONAL.
+        
+    "! Additional attributes for exception context
+    DATA ${ATTRIBUTE_NAME} TYPE ${ATTRIBUTE_TYPE}.
+    DATA ${SECOND_ATTRIBUTE_NAME} TYPE ${SECOND_ATTRIBUTE_TYPE}.
+    
+ENDCLASS.
+
+CLASS ${EXCEPTION_CLASS_NAME} IMPLEMENTATION.
+  
+  METHOD constructor.
+    super->constructor( previous = previous ).
+    
+    " Set message interface
+    CLEAR me->textid.
+    IF textid IS NOT INITIAL.
+      me->textid = textid.
+    ELSE.
+      " Default message
+      if_t100_message~t100key = ${CONSTANT_NAME}.
+    ENDIF.
+  ENDMETHOD.
+  
+ENDCLASS.

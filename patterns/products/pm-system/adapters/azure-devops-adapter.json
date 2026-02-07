@@ -1,0 +1,516 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Azure DevOps PM Adapter",
+  "description": "Adapter mapping PM interface operations to Azure DevOps work items, iterations, and boards",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["metadata", "mappings"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Adapter metadata",
+      "required": ["adapterId", "adapterName", "targetSystem", "version"],
+      "properties": {
+        "adapterId": {
+          "type": "string",
+          "description": "Unique identifier for this adapter",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "adapterName": {
+          "type": "string",
+          "description": "Human-readable adapter name"
+        },
+        "targetSystem": {
+          "type": "string",
+          "description": "Target PM system name"
+        },
+        "version": {
+          "type": "string",
+          "description": "Adapter version"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the adapter"
+        },
+        "apiVersion": {
+          "type": "string",
+          "description": "Azure DevOps REST API version",
+          "default": "7.1"
+        }
+      }
+    },
+    "mappings": {
+      "type": "object",
+      "description": "Interface to Azure DevOps API mappings",
+      "required": ["concepts", "workItems", "planning", "boards", "metrics", "documentation"],
+      "properties": {
+        "concepts": {
+          "type": "object",
+          "description": "Conceptual mappings",
+          "properties": {
+            "epic": {
+              "type": "string",
+              "description": "Epic = Epic work item type"
+            },
+            "story": {
+              "type": "string",
+              "description": "Story = User Story work item type"
+            },
+            "task": {
+              "type": "string",
+              "description": "Task = Task work item type"
+            },
+            "bug": {
+              "type": "string",
+              "description": "Bug = Bug work item type"
+            },
+            "sprint": {
+              "type": "string",
+              "description": "Sprint = Iteration"
+            },
+            "board": {
+              "type": "string",
+              "description": "Board = Team board (Scrum/Kanban)"
+            }
+          }
+        },
+        "workItems": {
+          "type": "object",
+          "properties": {
+            "createEpic": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "POST /{organization}/{project}/_apis/wit/workitems/$Epic"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "[{/fields/System.Title}]"},
+                    "description": {"type": "string", "mappedTo": "[{/fields/System.Description}]"},
+                    "projectId": {"type": "string", "mappedTo": "path parameter"}
+                  }
+                },
+                "example": {
+                  "type": "array",
+                  "description": "JSON Patch document",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "op": {"type": "string", "default": "add"},
+                      "path": {"type": "string"},
+                      "value": {"type": "string"}
+                    }
+                  },
+                  "example": [
+                    {"op": "add", "path": "/fields/System.Title", "value": "User Authentication Epic"},
+                    {"op": "add", "path": "/fields/System.Description", "value": "Implement user authentication"}
+                  ]
+                }
+              }
+            },
+            "createStory": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "POST /{organization}/{project}/_apis/wit/workitems/$User Story"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "[{/fields/System.Title}]"},
+                    "description": {"type": "string", "mappedTo": "[{/fields/System.Description}]"},
+                    "epicId": {"type": "string", "mappedTo": "[{/relations/-}]"},
+                    "projectId": {"type": "string", "mappedTo": "path parameter"}
+                  }
+                },
+                "relationType": {
+                  "type": "string",
+                  "description": "Epic-Story relation type",
+                  "default": "System.LinkTypes.Hierarchy-Reverse"
+                }
+              }
+            },
+            "createTask": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "POST /{organization}/{project}/_apis/wit/workitems/$Task"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "[{/fields/System.Title}]"},
+                    "description": {"type": "string", "mappedTo": "[{/fields/System.Description}]"},
+                    "storyId": {"type": "string", "mappedTo": "[{/relations/-}]"},
+                    "projectId": {"type": "string", "mappedTo": "path parameter"}
+                  }
+                },
+                "relationType": {
+                  "type": "string",
+                  "default": "System.LinkTypes.Hierarchy-Reverse"
+                }
+              }
+            },
+            "createBug": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "POST /{organization}/{project}/_apis/wit/workitems/$Bug"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "[{/fields/System.Title}]"},
+                    "description": {"type": "string", "mappedTo": "[{/fields/System.Description}]"},
+                    "severity": {"type": "string", "mappedTo": "[{/fields/Microsoft.VSTS.Common.Severity}]"},
+                    "projectId": {"type": "string", "mappedTo": "path parameter"}
+                  }
+                }
+              }
+            },
+            "updateStatus": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "PATCH /{organization}/{project}/_apis/wit/workitems/{id}"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {"type": "string", "mappedTo": "path parameter"},
+                    "status": {"type": "string", "mappedTo": "[{/fields/System.State}]"}
+                  }
+                }
+              }
+            },
+            "assignItem": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "PATCH /{organization}/{project}/_apis/wit/workitems/{id}"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {"type": "string", "mappedTo": "path parameter"},
+                    "userId": {"type": "string", "mappedTo": "[{/fields/System.AssignedTo}]"}
+                  }
+                }
+              }
+            },
+            "getItem": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "GET /{organization}/{project}/_apis/wit/workitems/{id}"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {"type": "string", "mappedTo": "path parameter"}
+                  }
+                },
+                "queryParams": {
+                  "type": "object",
+                  "properties": {
+                    "$expand": {
+                      "type": "string",
+                      "default": "all"
+                    }
+                  }
+                }
+              }
+            },
+            "listItems": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "POST /{organization}/{project}/_apis/wit/wiql"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "projectId": {"type": "string", "mappedTo": "WIQL query"},
+                    "status": {"type": "string", "mappedTo": "WIQL query"},
+                    "assignee": {"type": "string", "mappedTo": "WIQL query"},
+                    "type": {"type": "string", "mappedTo": "WIQL query"}
+                  }
+                },
+                "wiqlPatterns": {
+                  "type": "object",
+                  "description": "WIQL query patterns",
+                  "properties": {
+                    "byProject": {
+                      "type": "string",
+                      "example": "SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = @project"
+                    },
+                    "byStatus": {
+                      "type": "string",
+                      "example": "WHERE [System.State] = '{STATUS}'"
+                    },
+                    "byAssignee": {
+                      "type": "string",
+                      "example": "WHERE [System.AssignedTo] = '{USERNAME}'"
+                    },
+                    "byType": {
+                      "type": "string",
+                      "example": "WHERE [System.WorkItemType] = '{TYPE}'"
+                    },
+                    "combined": {
+                      "type": "string",
+                      "example": "SELECT [System.Id], [System.Title] FROM WorkItems WHERE [System.TeamProject] = @project AND [System.State] = 'Active' AND [System.AssignedTo] = @me"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "planning": {
+          "type": "object",
+          "properties": {
+            "createSprint": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "POST /{organization}/{project}/{team}/_apis/work/teamsettings/iterations"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "name": {"type": "string", "mappedTo": "name"},
+                    "startDate": {"type": "string", "mappedTo": "attributes.startDate"},
+                    "endDate": {"type": "string", "mappedTo": "attributes.finishDate"},
+                    "projectId": {"type": "string", "mappedTo": "path parameter"}
+                  }
+                }
+              }
+            },
+            "addToSprint": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "PATCH /{organization}/{project}/_apis/wit/workitems/{id}"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "mappedTo": "[{/fields/System.IterationPath}]"},
+                    "itemId": {"type": "string", "mappedTo": "path parameter"}
+                  }
+                }
+              }
+            },
+            "closeSprint": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "PATCH /{organization}/{project}/{team}/_apis/work/teamsettings/iterations/{id}"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "mappedTo": "path parameter"},
+                    "attributes.timeFrame": {"type": "string", "default": "past"}
+                  }
+                }
+              }
+            },
+            "getSprint": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "GET /{organization}/{project}/{team}/_apis/work/teamsettings/iterations/{id}"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "mappedTo": "path parameter"}
+                  }
+                }
+              }
+            },
+            "listSprints": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "GET /{organization}/{project}/{team}/_apis/work/teamsettings/iterations"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "projectId": {"type": "string", "mappedTo": "path parameter"},
+                    "state": {"type": "string", "mappedTo": "$timeframe query parameter"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "boards": {
+          "type": "object",
+          "properties": {
+            "getBoard": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "GET /{organization}/{project}/{team}/_apis/work/boards/{board}"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "boardId": {"type": "string", "mappedTo": "path parameter"}
+                  }
+                }
+              }
+            },
+            "moveCard": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "PATCH /{organization}/{project}/_apis/wit/workitems/{id}"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "cardId": {"type": "string", "mappedTo": "path parameter"},
+                    "columnId": {"type": "string", "mappedTo": "[{/fields/System.State}]"},
+                    "position": {"type": "integer", "mappedTo": "[{/fields/Microsoft.VSTS.Common.BacklogPriority}]"}
+                  }
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Move by updating state field to match column state"
+                }
+              }
+            },
+            "getBoardColumns": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "GET /{organization}/{project}/{team}/_apis/work/boards/{board}/columns"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "boardId": {"type": "string", "mappedTo": "path parameter"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "getVelocity": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "GET /{organization}/{project}/{team}/_apis/work/teamsettings/iterations/{id}/velocity"
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Calculate from completed iterations story points"
+                }
+              }
+            },
+            "getBurndown": {
+              "type": "object",
+              "properties": {
+                "apiEndpoint": {
+                  "type": "string",
+                  "default": "GET /{organization}/{project}/{team}/_apis/work/teamsettings/iterations/{id}/burndown"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "mappedTo": "path parameter"}
+                  }
+                }
+              }
+            },
+            "getCycleTime": {
+              "type": "object",
+              "properties": {
+                "note": {
+                  "type": "string",
+                  "description": "Calculate from work item created to completed timestamps"
+                },
+                "wiqlPattern": {
+                  "type": "string",
+                  "example": "SELECT [System.Id] FROM WorkItems WHERE [System.ChangedDate] >= '{START_DATE}' AND [System.State] = 'Done'"
+                }
+              }
+            },
+            "getLeadTime": {
+              "type": "object",
+              "properties": {
+                "note": {
+                  "type": "string",
+                  "description": "Calculate from work item created to deployed (custom field or tag)"
+                }
+              }
+            },
+            "getWIP": {
+              "type": "object",
+              "properties": {
+                "wiqlPattern": {
+                  "type": "string",
+                  "example": "SELECT [System.Id] FROM WorkItems WHERE [System.State] IN ('Active', 'New')"
+                }
+              }
+            }
+          }
+        },
+        "documentation": {
+          "type": "object",
+          "properties": {
+            "note": {
+              "type": "string",
+              "description": "Azure DevOps documentation typically handled via Wiki API or separate documentation adapter"
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "metadata": {
+        "adapterId": "azure-devops-adapter",
+        "adapterName": "Azure DevOps PM Adapter",
+        "targetSystem": "Azure DevOps",
+        "version": "1.0.0",
+        "description": "Maps PM interface to Azure DevOps work items, iterations, and boards",
+        "apiVersion": "7.1"
+      },
+      "mappings": {
+        "concepts": {
+          "epic": "Epic work item",
+          "story": "User Story work item",
+          "sprint": "Iteration",
+          "board": "Team board"
+        }
+      }
+    }
+  ]
+}

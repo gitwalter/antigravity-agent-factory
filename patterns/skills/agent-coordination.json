@@ -1,0 +1,292 @@
+{
+  "metadata": {
+    "patternId": "agent-coordination",
+    "patternName": "Agent Coordination Skill",
+    "category": "ai-development",
+    "stackAgnostic": true,
+    "description": "Patterns for orchestrating multiple AI agents including supervisor-worker, hierarchical, and collaborative topologies",
+    "composable": true,
+    "version": "1.0.0"
+  },
+  "frontmatter": {
+    "name": "agent-coordination",
+    "description": "Orchestrate multiple AI agents with proper handoffs, state management, and coordination patterns",
+    "type": "skill",
+    "knowledge": [
+      "multi-agent-coordination.json",
+      "langgraph-workflows.json",
+      "crewai-patterns.json"
+    ],
+    "templates": [
+      "templates/ai/multi-agent/"
+    ]
+  },
+  "sections": {
+    "title": "Agent Coordination Skill",
+    "introduction": "Guides the design and implementation of multi-agent systems with proper coordination patterns. Covers supervisor-worker, hierarchical, collaborative, and distributed topologies using LangGraph, CrewAI, and AutoGen frameworks.",
+    "whenToUse": [
+      "When building systems requiring multiple specialized agents",
+      "When implementing supervisor-worker coordination patterns",
+      "When designing agent handoff protocols",
+      "When orchestrating parallel or sequential agent execution",
+      "When building distributed agent systems"
+    ],
+    "process": [
+      {
+        "step": 1,
+        "name": "Identify Agent Roles",
+        "description": "Define the specialized roles needed for the task",
+        "actions": [
+          "Decompose the problem into distinct capabilities",
+          "Identify which capabilities need separate agents",
+          "Define agent responsibilities and boundaries",
+          "Document inter-agent dependencies"
+        ],
+        "outputs": [
+          "Agent role definitions",
+          "Capability matrix"
+        ]
+      },
+      {
+        "step": 2,
+        "name": "Choose Coordination Topology",
+        "description": "Select the appropriate multi-agent architecture",
+        "topologies": {
+          "supervisor-worker": {
+            "description": "Central supervisor delegates to specialized workers",
+            "useCase": "Tasks with clear subtask delegation",
+            "frameworks": [
+              "LangGraph",
+              "CrewAI"
+            ]
+          },
+          "hierarchical": {
+            "description": "Multi-level coordination with team leads",
+            "useCase": "Complex organizations with multiple teams",
+            "frameworks": [
+              "CrewAI"
+            ]
+          },
+          "collaborative": {
+            "description": "Peer agents collaborate through consensus",
+            "useCase": "Tasks needing multiple perspectives",
+            "frameworks": [
+              "AutoGen",
+              "LangGraph"
+            ]
+          },
+          "sequential": {
+            "description": "Agents process in pipeline sequence",
+            "useCase": "Linear workflows like research-analysis-writing",
+            "frameworks": [
+              "LangGraph",
+              "LangChain"
+            ]
+          },
+          "distributed": {
+            "description": "Agents across services with MCP communication",
+            "useCase": "Large-scale distributed systems",
+            "frameworks": [
+              "MCP",
+              "LangGraph"
+            ]
+          }
+        }
+      },
+      {
+        "step": 3,
+        "name": "Design State Schema",
+        "description": "Define shared state structure for agent communication",
+        "actions": [
+          "Define Pydantic models for shared state",
+          "Identify which state is shared vs. agent-local",
+          "Design state update protocols",
+          "Plan state persistence strategy"
+        ],
+        "considerations": [
+          "State should be immutable where possible",
+          "Include metadata for tracing and debugging",
+          "Consider state size for token limits"
+        ]
+      },
+      {
+        "step": 4,
+        "name": "Implement Handoff Protocol",
+        "description": "Define how agents transfer control and context",
+        "handoffComponents": {
+          "trigger": "Conditions that initiate handoff",
+          "context": "Information passed to receiving agent",
+          "acknowledgment": "Confirmation of successful handoff",
+          "fallback": "Handling failed handoffs"
+        },
+        "actions": [
+          "Define handoff trigger conditions",
+          "Specify context to pass between agents",
+          "Implement handoff acknowledgment",
+          "Add error handling for failed handoffs"
+        ]
+      },
+      {
+        "step": 5,
+        "name": "Implement Supervisor Logic",
+        "description": "Build the coordination and routing logic",
+        "supervisorResponsibilities": [
+          "Parse incoming requests and determine routing",
+          "Delegate tasks to appropriate worker agents",
+          "Aggregate results from multiple agents",
+          "Handle errors and retries",
+          "Maintain overall workflow state"
+        ],
+        "routingStrategies": {
+          "static": "Fixed routing based on task type",
+          "dynamic": "LLM-based routing decisions",
+          "capability-based": "Route based on agent capabilities"
+        }
+      },
+      {
+        "step": 6,
+        "name": "Add Observability",
+        "description": "Implement tracing and monitoring",
+        "actions": [
+          "Add LangSmith tracing to all agents",
+          "Log handoffs and state transitions",
+          "Track agent execution times",
+          "Monitor error rates and retry counts"
+        ],
+        "outputs": [
+          "Tracing integration",
+          "Monitoring dashboards"
+        ]
+      }
+    ],
+    "patterns": {
+      "supervisor-worker": {
+        "description": "Supervisor routes tasks to specialized workers",
+        "components": [
+          "Supervisor agent",
+          "Worker agents",
+          "Routing logic",
+          "Result aggregation"
+        ],
+        "example": "Research supervisor with web search, document analysis, and synthesis workers",
+        "framework": "LangGraph StateGraph with conditional edges"
+      },
+      "hierarchical": {
+        "description": "Multi-level delegation with team leads",
+        "components": [
+          "Top coordinator",
+          "Team leads",
+          "Specialists",
+          "Escalation paths"
+        ],
+        "example": "Software development with tech lead, frontend team, backend team",
+        "framework": "CrewAI hierarchical process"
+      },
+      "collaborative": {
+        "description": "Peer agents reach consensus through discussion",
+        "components": [
+          "Peer agents",
+          "Discussion protocol",
+          "Voting mechanism"
+        ],
+        "example": "Code review with multiple reviewer agents voting on quality",
+        "framework": "AutoGen GroupChat"
+      },
+      "pipeline": {
+        "description": "Sequential processing through agent chain",
+        "components": [
+          "Input processor",
+          "Transform agents",
+          "Output formatter"
+        ],
+        "example": "Research pipeline: gather -> analyze -> summarize -> format",
+        "framework": "LangGraph linear graph"
+      }
+    },
+    "stateManagement": {
+      "principles": [
+        "Use Pydantic models for type safety",
+        "Keep state minimal and focused",
+        "Include metadata for debugging",
+        "Plan for state persistence"
+      ],
+      "example": {
+        "messages": "List of agent messages",
+        "current_agent": "Which agent is currently active",
+        "task_status": "Status of delegated tasks",
+        "results": "Aggregated results from agents"
+      }
+    },
+    "errorHandling": {
+      "strategies": [
+        {
+          "name": "Retry with backoff",
+          "description": "Retry failed agent calls with exponential backoff"
+        },
+        {
+          "name": "Fallback agent",
+          "description": "Route to backup agent on primary failure"
+        },
+        {
+          "name": "Human escalation",
+          "description": "Escalate to human when agents cannot resolve"
+        },
+        {
+          "name": "Graceful degradation",
+          "description": "Continue with partial results when possible"
+        }
+      ]
+    },
+    "importantRules": [
+      "Always define clear agent responsibilities and boundaries",
+      "Use typed state with Pydantic models",
+      "Implement proper handoff protocols with acknowledgment",
+      "Add observability from the start with LangSmith",
+      "Handle errors gracefully with fallbacks",
+      "Test individual agents before integration",
+      "Document coordination protocols for maintainability",
+      "All actions must align with core axioms (A1: Verifiability, A2: User Primacy, A3: Transparency, A4: Non-Harm, A5: Consistency)"
+    ],
+    "fallbackProcedures": [
+      {
+        "condition": "If agent fails to respond",
+        "action": "Retry with backoff, then escalate to supervisor"
+      },
+      {
+        "condition": "If routing is ambiguous",
+        "action": "Ask supervisor to make explicit routing decision"
+      },
+      {
+        "condition": "If state becomes inconsistent",
+        "action": "Log state, halt workflow, and notify for human review"
+      },
+      {
+        "condition": "If coordination deadlock occurs",
+        "action": "Implement timeout and forced resolution"
+      }
+    ],
+    "references": [
+      "knowledge/multi-agent-coordination.json",
+      "knowledge/langgraph-workflows.json",
+      "knowledge/crewai-patterns.json",
+      "templates/ai/multi-agent/"
+    ]
+  },
+  "variables": [
+    {
+      "name": "{COORDINATOR_TYPE}",
+      "description": "Type of coordination (supervisor, hierarchical, etc.)",
+      "required": true
+    },
+    {
+      "name": "{AGENT_ROLES}",
+      "description": "List of agent roles and responsibilities",
+      "required": true
+    },
+    {
+      "name": "{STATE_SCHEMA}",
+      "description": "Pydantic model for shared state",
+      "required": true
+    }
+  ]
+}

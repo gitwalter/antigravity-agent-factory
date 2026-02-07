@@ -1,0 +1,208 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Next.js Patterns",
+  "description": "Production-grade patterns for Next.js 15 applications",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "TypeScript and Server Components enable compile-time verification",
+    "A3_transparency": "Explicit Server/Client boundaries make data flow clear",
+    "A4_adaptability": "Modular App Router structure supports easy refactoring"
+  },
+  "core_concepts": {
+    "app_router": {
+      "description": "File-system based routing with React Server Components",
+      "structure": "app/{route}/page.tsx, layout.tsx, loading.tsx, error.tsx",
+      "benefits": [
+        "Nested layouts",
+        "Loading states",
+        "Error boundaries",
+        "Streaming and Suspense"
+      ]
+    },
+    "server_components": {
+      "description": "React components that render on the server",
+      "characteristics": [
+        "No client-side JavaScript",
+        "Direct database access",
+        "Access to backend APIs",
+        "Better performance and SEO"
+      ]
+    },
+    "client_components": {
+      "description": "Interactive components that run in the browser",
+      "use_when": [
+        "Event handlers (onClick, onChange)",
+        "Browser APIs (localStorage, window)",
+        "State and effects (useState, useEffect)",
+        "Third-party libraries requiring client"
+      ]
+    },
+    "server_actions": {
+      "description": "Async functions that run on the server, called from client",
+      "use_when": "Form submissions, mutations, data updates",
+      "benefits": [
+        "No API routes needed",
+        "Type-safe",
+        "Progressive enhancement"
+      ]
+    }
+  },
+  "patterns": {
+    "app_router_structure": {
+      "description": "Organize routes using App Router file conventions",
+      "use_when": "Any Next.js 13+ application",
+      "structure": {
+        "example": "app/\n  layout.tsx              # Root layout\n  page.tsx                # Home page\n  loading.tsx             # Global loading UI\n  error.tsx               # Global error boundary\n  not-found.tsx           # 404 page\n  \n  dashboard/\n    layout.tsx            # Dashboard layout\n    page.tsx              # Dashboard page\n    loading.tsx           # Dashboard loading\n    \n    settings/\n      page.tsx            # Settings page\n      \n  api/\n    users/\n      route.ts            # API route handler"
+      },
+      "code_example": "// app/layout.tsx\nimport type { Metadata } from 'next'\nimport { Inter } from 'next/font/google'\nimport './globals.css'\n\nconst inter = Inter({ subsets: ['latin'] })\n\nexport const metadata: Metadata = {\n  title: 'My App',\n  description: 'Description of my app',\n}\n\nexport default function RootLayout({\n  children,\n}: {\n  children: React.ReactNode\n}) {\n  return (\n    <html lang=\"en\">\n      <body className={inter.className}>\n        <nav>Navigation</nav>\n        {children}\n        <footer>Footer</footer>\n      </body>\n    </html>\n  )\n}\n\n// app/dashboard/layout.tsx\nimport { getCurrentUser } from '@/lib/auth'\n\nexport default async function DashboardLayout({\n  children,\n}: {\n  children: React.ReactNode\n}) {\n  const user = await getCurrentUser()\n  \n  return (\n    <div className=\"dashboard\">\n      <aside>\n        <h2>Dashboard</h2>\n        <p>Welcome, {user.name}</p>\n      </aside>\n      <main>{children}</main>\n    </div>\n  )\n}",
+      "best_practices": [
+        "Use layout.tsx for shared UI",
+        "Create loading.tsx for loading states",
+        "Use error.tsx for error boundaries",
+        "Keep layouts focused and composable"
+      ]
+    },
+    "server_vs_client_components": {
+      "description": "Choose between Server and Client Components",
+      "use_when": "Deciding component architecture",
+      "code_example": "// app/products/page.tsx (Server Component - default)\nimport { getProducts } from '@/lib/db'\nimport ProductCard from './ProductCard'\n\nexport default async function ProductsPage() {\n  // Direct database access - Server Component\n  const products = await getProducts()\n  \n  return (\n    <div>\n      <h1>Products</h1>\n      <div className=\"grid\">\n        {products.map(product => (\n          <ProductCard key={product.id} product={product} />\n        ))}\n      </div>\n    </div>\n  )\n}\n\n// app/products/ProductCard.tsx (Client Component)\n'use client'\n\nimport { useState } from 'react'\nimport { addToCart } from './actions'\n\nexport default function ProductCard({ product }: { product: Product }) {\n  const [isAdding, setIsAdding] = useState(false)\n  \n  async function handleAddToCart() {\n    setIsAdding(true)\n    await addToCart(product.id)\n    setIsAdding(false)\n  }\n  \n  return (\n    <div className=\"product-card\">\n      <h3>{product.name}</h3>\n      <p>${product.price}</p>\n      <button onClick={handleAddToCart} disabled={isAdding}>\n        {isAdding ? 'Adding...' : 'Add to Cart'}\n      </button>\n    </div>\n  )\n}",
+      "best_practices": [
+        "Default to Server Components",
+        "Use 'use client' only when needed",
+        "Keep Client Components small",
+        "Pass data from Server to Client Components"
+      ]
+    },
+    "server_actions": {
+      "description": "Server Actions for mutations and form handling",
+      "use_when": "Form submissions, data mutations, server-side operations",
+      "code_example": "// app/actions.ts\n'use server'\n\nimport { revalidatePath } from 'next/cache'\nimport { redirect } from 'next/navigation'\nimport { z } from 'zod'\nimport { createUser, getUserByEmail } from '@/lib/db'\n\nconst createUserSchema = z.object({\n  email: z.string().email(),\n  name: z.string().min(1),\n  password: z.string().min(8),\n})\n\nexport async function createUserAction(formData: FormData) {\n  const rawData = {\n    email: formData.get('email'),\n    name: formData.get('name'),\n    password: formData.get('password'),\n  }\n  \n  // Validate\n  const validated = createUserSchema.parse(rawData)\n  \n  // Check if user exists\n  const existing = await getUserByEmail(validated.email)\n  if (existing) {\n    return { error: 'User already exists' }\n  }\n  \n  // Create user\n  const user = await createUser(validated)\n  \n  // Revalidate and redirect\n  revalidatePath('/users')\n  redirect(`/users/${user.id}`)\n}\n\n// app/users/create/page.tsx\nimport { createUserAction } from '../actions'\n\nexport default function CreateUserPage() {\n  return (\n    <form action={createUserAction}>\n      <input name=\"email\" type=\"email\" required />\n      <input name=\"name\" type=\"text\" required />\n      <input name=\"password\" type=\"password\" required />\n      <button type=\"submit\">Create User</button>\n    </form>\n  )\n}\n\n// With useFormState for better UX\n'use client'\n\nimport { useFormState } from 'react-dom'\nimport { createUserAction } from '../actions'\n\nexport default function CreateUserForm() {\n  const [state, formAction] = useFormState(createUserAction, null)\n  \n  return (\n    <form action={formAction}>\n      {state?.error && <p className=\"error\">{state.error}</p>}\n      <input name=\"email\" type=\"email\" required />\n      <input name=\"name\" type=\"text\" required />\n      <input name=\"password\" type=\"password\" required />\n      <button type=\"submit\">Create User</button>\n    </form>\n  )\n}",
+      "best_practices": [
+        "Use 'use server' directive",
+        "Validate inputs with Zod or similar",
+        "Use revalidatePath/redirect appropriately",
+        "Handle errors gracefully",
+        "Use useFormState for better UX"
+      ]
+    },
+    "streaming_suspense": {
+      "description": "Streaming with Suspense for progressive loading",
+      "use_when": "Loading data incrementally, improving perceived performance",
+      "code_example": "// app/dashboard/page.tsx\nimport { Suspense } from 'react'\nimport { getDashboardData, getRecentActivity } from '@/lib/db'\nimport DashboardStats from './DashboardStats'\nimport RecentActivity from './RecentActivity'\nimport LoadingSkeleton from '@/components/LoadingSkeleton'\n\nexport default async function DashboardPage() {\n  // This loads immediately\n  const dashboardData = await getDashboardData()\n  \n  return (\n    <div>\n      <DashboardStats data={dashboardData} />\n      \n      {/* This streams in separately */}\n      <Suspense fallback={<LoadingSkeleton />}>\n        <RecentActivityWrapper />\n      </Suspense>\n    </div>\n  )\n}\n\nasync function RecentActivityWrapper() {\n  const activity = await getRecentActivity()\n  return <RecentActivity activity={activity} />\n}\n\n// app/dashboard/loading.tsx\nexport default function Loading() {\n  return (\n    <div className=\"animate-pulse\">\n      <div className=\"h-8 bg-gray-200 rounded w-1/4 mb-4\" />\n      <div className=\"h-64 bg-gray-200 rounded\" />\n    </div>\n  )\n}",
+      "best_practices": [
+        "Use Suspense boundaries strategically",
+        "Create loading.tsx files for route-level loading",
+        "Use loading skeletons for better UX",
+        "Stream critical content first"
+      ]
+    },
+    "caching_strategies": {
+      "description": "Caching with fetch, unstable_cache, and revalidation",
+      "use_when": "Optimizing data fetching and reducing database load",
+      "code_example": "// lib/db.ts\nimport { unstable_cache } from 'next/cache'\n\n// fetch() is cached by default\nasync function getProducts() {\n  const res = await fetch('https://api.example.com/products', {\n    next: { revalidate: 3600 } // Revalidate every hour\n  })\n  return res.json()\n}\n\n// unstable_cache for database queries\nasync function getCachedUser(userId: string) {\n  return unstable_cache(\n    async () => {\n      // Database query\n      return db.user.findUnique({ where: { id: userId } })\n    },\n    ['user', userId], // Cache key\n    {\n      revalidate: 60, // Revalidate every minute\n      tags: ['user'] // Can be invalidated with revalidateTag\n    }\n  )()\n}\n\n// Route segment config\nimport { unstable_noStore } from 'next/cache'\n\nexport const revalidate = 3600 // Revalidate every hour\nexport const dynamic = 'force-static' // Force static generation\n\nexport default async function Page() {\n  // Opt out of caching\n  unstable_noStore()\n  \n  const data = await fetchData()\n  return <div>{data}</div>\n}\n\n// Revalidate on demand\nimport { revalidateTag } from 'next/cache'\n\nasync function updateUser(userId: string, data: UserData) {\n  await db.user.update({ where: { id: userId }, data })\n  revalidateTag('user') // Invalidate all 'user' tagged caches\n}",
+      "best_practices": [
+        "Use fetch() caching for external APIs",
+        "Use unstable_cache for database queries",
+        "Set appropriate revalidate times",
+        "Use tags for granular cache invalidation",
+        "Use unstable_noStore() to opt out when needed"
+      ]
+    },
+    "route_handlers": {
+      "description": "API Route Handlers for custom endpoints",
+      "use_when": "Need REST API endpoints, webhooks, or custom logic",
+      "code_example": "// app/api/users/route.ts\nimport { NextRequest, NextResponse } from 'next/server'\nimport { createUser, getUsers } from '@/lib/db'\nimport { z } from 'zod'\n\nconst createUserSchema = z.object({\n  email: z.string().email(),\n  name: z.string().min(1),\n})\n\nexport async function GET(request: NextRequest) {\n  try {\n    const searchParams = request.nextUrl.searchParams\n    const page = parseInt(searchParams.get('page') || '1')\n    const limit = parseInt(searchParams.get('limit') || '10')\n    \n    const users = await getUsers({ page, limit })\n    \n    return NextResponse.json({\n      data: users,\n      page,\n      limit\n    })\n  } catch (error) {\n    return NextResponse.json(\n      { error: 'Failed to fetch users' },\n      { status: 500 }\n    )\n  }\n}\n\nexport async function POST(request: NextRequest) {\n  try {\n    const body = await request.json()\n    const validated = createUserSchema.parse(body)\n    \n    const user = await createUser(validated)\n    \n    return NextResponse.json(user, { status: 201 })\n  } catch (error) {\n    if (error instanceof z.ZodError) {\n      return NextResponse.json(\n        { error: 'Validation failed', details: error.errors },\n        { status: 400 }\n      )\n    }\n    \n    return NextResponse.json(\n      { error: 'Failed to create user' },\n      { status: 500 }\n    )\n  }\n}\n\n// app/api/users/[id]/route.ts\nexport async function GET(\n  request: NextRequest,\n  { params }: { params: { id: string } }\n) {\n  const user = await getUserById(params.id)\n  \n  if (!user) {\n    return NextResponse.json(\n      { error: 'User not found' },\n      { status: 404 }\n    )\n  }\n  \n  return NextResponse.json(user)\n}",
+      "best_practices": [
+        "Use proper HTTP methods",
+        "Validate inputs",
+        "Return appropriate status codes",
+        "Handle errors gracefully",
+        "Use TypeScript for type safety"
+      ]
+    },
+    "middleware_patterns": {
+      "description": "Middleware for authentication, redirects, and request modification",
+      "use_when": "Auth checks, redirects, request/response modification",
+      "code_example": "// middleware.ts\nimport { NextResponse } from 'next/server'\nimport type { NextRequest } from 'next/server'\nimport { verifyToken } from '@/lib/auth'\n\nexport function middleware(request: NextRequest) {\n  const token = request.cookies.get('auth-token')?.value\n  \n  // Protect dashboard routes\n  if (request.nextUrl.pathname.startsWith('/dashboard')) {\n    if (!token) {\n      return NextResponse.redirect(new URL('/login', request.url))\n    }\n    \n    try {\n      const payload = verifyToken(token)\n      // Add user info to headers\n      const requestHeaders = new Headers(request.headers)\n      requestHeaders.set('x-user-id', payload.userId)\n      \n      return NextResponse.next({\n        request: {\n          headers: requestHeaders,\n        },\n      })\n    } catch {\n      return NextResponse.redirect(new URL('/login', request.url))\n    }\n  }\n  \n  // Redirect logged-in users away from auth pages\n  if (request.nextUrl.pathname.startsWith('/login') && token) {\n    return NextResponse.redirect(new URL('/dashboard', request.url))\n  }\n  \n  return NextResponse.next()\n}\n\nexport const config = {\n  matcher: [\n    '/dashboard/:path*',\n    '/login',\n    '/register'\n  ],\n}",
+      "best_practices": [
+        "Use matcher config to limit middleware execution",
+        "Keep middleware fast (no heavy operations)",
+        "Use cookies or headers for auth state",
+        "Return early for performance"
+      ]
+    },
+    "error_handling": {
+      "description": "Error boundaries with error.tsx and not-found.tsx",
+      "use_when": "Handling errors and 404s gracefully",
+      "code_example": "// app/error.tsx (Global error boundary)\n'use client'\n\nimport { useEffect } from 'react'\nimport { Button } from '@/components/Button'\n\nexport default function Error({\n  error,\n  reset,\n}: {\n  error: Error & { digest?: string }\n  reset: () => void\n}) {\n  useEffect(() => {\n    // Log error to error reporting service\n    console.error('Error:', error)\n  }, [error])\n  \n  return (\n    <div className=\"error-container\">\n      <h2>Something went wrong!</h2>\n      <p>{error.message}</p>\n      <Button onClick={reset}>Try again</Button>\n    </div>\n  )\n}\n\n// app/dashboard/error.tsx (Route-specific error boundary)\n'use client'\n\nexport default function DashboardError({\n  error,\n  reset,\n}: {\n  error: Error\n  reset: () => void\n}) {\n  return (\n    <div>\n      <h2>Dashboard Error</h2>\n      <p>Failed to load dashboard</p>\n      <button onClick={reset}>Retry</button>\n    </div>\n  )\n}\n\n// app/not-found.tsx\nexport default function NotFound() {\n  return (\n    <div>\n      <h2>Not Found</h2>\n      <p>Could not find requested resource</p>\n      <a href=\"/\">Return Home</a>\n    </div>\n  )\n}\n\n// Throwing notFound() in Server Components\nimport { notFound } from 'next/navigation'\n\nexport default async function UserPage({ params }: { params: { id: string } }) {\n  const user = await getUserById(params.id)\n  \n  if (!user) {\n    notFound() // Triggers not-found.tsx\n  }\n  \n  return <div>{user.name}</div>\n}",
+      "best_practices": [
+        "Create error.tsx at route level for granular error handling",
+        "Use 'use client' for error boundaries",
+        "Provide reset() function for recovery",
+        "Log errors to monitoring service",
+        "Use notFound() for 404s"
+      ]
+    }
+  },
+  "best_practices": {
+    "component_architecture": [
+      "Default to Server Components",
+      "Use Client Components only when needed",
+      "Keep Client Components small and focused",
+      "Pass serializable props to Client Components"
+    ],
+    "data_fetching": [
+      "Use Server Components for data fetching",
+      "Implement proper caching strategies",
+      "Use Suspense for loading states",
+      "Handle errors gracefully"
+    ],
+    "performance": [
+      "Use static generation when possible",
+      "Implement incremental static regeneration",
+      "Optimize images with next/image",
+      "Use dynamic imports for large components",
+      "Implement proper caching"
+    ],
+    "security": [
+      "Validate all inputs",
+      "Use Server Actions for mutations",
+      "Sanitize user-generated content",
+      "Implement proper authentication",
+      "Use environment variables for secrets"
+    ],
+    "seo": [
+      "Use metadata API for SEO",
+      "Implement proper Open Graph tags",
+      "Use Server Components for better SEO",
+      "Implement structured data"
+    ]
+  },
+  "anti_patterns": {
+    "fetching_in_client_components": {
+      "description": "Fetching data in Client Components with useEffect",
+      "problem": "Poor performance, SEO issues, unnecessary client-side code",
+      "solution": "Use Server Components for data fetching, pass data as props"
+    },
+    "ignoring_caching": {
+      "description": "Not implementing caching strategies",
+      "problem": "Poor performance, unnecessary database load",
+      "solution": "Use fetch caching, unstable_cache, and revalidation"
+    },
+    "overusing_client_components": {
+      "description": "Marking everything as 'use client'",
+      "problem": "Larger bundle size, worse performance",
+      "solution": "Default to Server Components, use Client Components only when needed"
+    },
+    "not_handling_errors": {
+      "description": "Not implementing error boundaries",
+      "problem": "Poor user experience when errors occur",
+      "solution": "Create error.tsx files at appropriate levels"
+    },
+    "mixing_server_client": {
+      "description": "Importing Server Components into Client Components",
+      "problem": "Breaks Server Component benefits",
+      "solution": "Pass Server Component data as props to Client Components"
+    }
+  }
+}

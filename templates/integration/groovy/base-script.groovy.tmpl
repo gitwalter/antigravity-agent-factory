@@ -1,0 +1,67 @@
+/**
+ * ${SCRIPT_NAME} - ${SCRIPT_DESCRIPTION}
+ * 
+ * Purpose: ${SCRIPT_PURPOSE}
+ * Author: ${AUTHOR}
+ * Created: ${DATE}
+ * 
+ * Input:  ${INPUT_FORMAT} (e.g., XML, JSON, CSV)
+ * Output: ${OUTPUT_FORMAT}
+ * 
+ * Properties Used:
+ *   - ${PROPERTY_NAME}: ${PROPERTY_DESCRIPTION}
+ * 
+ * Headers Used:
+ *   - ${HEADER_NAME}: ${HEADER_DESCRIPTION}
+ */
+import com.sap.gateway.ip.core.customdev.util.Message
+import groovy.json.JsonSlurper
+import groovy.json.JsonBuilder
+
+def Message processData(Message message) {
+    // Get message log factory for logging
+    def messageLog = messageLogFactory.getMessageLog(message)
+    
+    try {
+        // 1. Get message body
+        def body = message.getBody(String)
+        
+        // 2. Get properties/headers if needed
+        // def propertyValue = message.getProperty('propertyName')
+        // def headerValue = message.getHeader('headerName', String)
+        
+        // 3. Log input for debugging (remove in production)
+        messageLog.addAttachmentAsString('Input', body, 'text/plain')
+        
+        // =====================================================
+        // TODO: Add your processing logic here
+        // =====================================================
+        
+        def result = body  // Replace with actual transformation
+        
+        // =====================================================
+        
+        // 4. Set output
+        message.setBody(result)
+        
+        // 5. Set output properties if needed
+        // message.setProperty('outputProperty', value)
+        
+        // 6. Log output for debugging (remove in production)
+        messageLog.addAttachmentAsString('Output', result, 'text/plain')
+        
+    } catch (Exception e) {
+        // Log error details
+        messageLog.addAttachmentAsString('Error', e.message, 'text/plain')
+        
+        // Set error properties for monitoring
+        message.setProperty('ErrorMessage', e.message)
+        message.setProperty('ErrorScript', '${SCRIPT_NAME}')
+        message.setProperty('ErrorTimestamp', new Date().format("yyyy-MM-dd'T'HH:mm:ss"))
+        
+        // Re-throw for exception subprocess handling
+        throw e
+    }
+    
+    return message
+}

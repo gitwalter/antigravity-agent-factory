@@ -1,0 +1,107 @@
+using MediatR;
+using Microsoft.Extensions.Logging;
+using {{NAMESPACE}}.Application.Commands;
+using {{NAMESPACE}}.Domain;
+using {{NAMESPACE}}.Domain.Repositories;
+
+namespace {{NAMESPACE}}.Application.Handlers;
+
+/// <summary>
+/// {{CLASS_NAME}}CommandHandler - MediatR Command Handler
+/// 
+/// Purpose: Handle {{COMMAND_NAME}} command
+/// Author: {{AUTHOR}}
+/// Created: {{DATE}}
+/// 
+/// Implements the command handler for {{COMMAND_NAME}}.
+/// Contains business logic orchestration and calls domain methods.
+/// </summary>
+public class {{CLASS_NAME}}CommandHandler : IRequestHandler<{{CLASS_NAME}}Command, {{CLASS_NAME}}CommandResult>
+{
+    private readonly I{{CLASS_NAME}}Repository _repository;
+    private readonly ILogger<{{CLASS_NAME}}CommandHandler> _logger;
+    private readonly IUnitOfWork _unitOfWork;
+
+    /// <summary>
+    /// Initializes a new instance of {{CLASS_NAME}}CommandHandler.
+    /// </summary>
+    /// <param name="repository">The repository.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="unitOfWork">The unit of work.</param>
+    public {{CLASS_NAME}}CommandHandler(
+        I{{CLASS_NAME}}Repository repository,
+        ILogger<{{CLASS_NAME}}CommandHandler> logger,
+        IUnitOfWork unitOfWork)
+    {
+        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+    }
+
+    /// <summary>
+    /// Handles the {{CLASS_NAME}}Command.
+    /// </summary>
+    /// <param name="request">The command request.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The command result.</returns>
+    public async Task<{{CLASS_NAME}}CommandResult> Handle(
+        {{CLASS_NAME}}Command request,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Handling {{CLASS_NAME}}Command for Name: {Name}", request.Name);
+
+        try
+        {
+            // Validate business rules
+            await ValidateCommand(request, cancellationToken);
+
+            // Create domain entity
+            var entity = {{DOMAIN_ENTITY_NAME}}.Create(
+                request.Name,
+                request.Description);
+
+            // Save entity
+            await _repository.AddAsync(entity, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation(
+                "Successfully created {{DOMAIN_NAME}} with Id: {Id}",
+                entity.Id);
+
+            return {{CLASS_NAME}}CommandResult.SuccessResult(entity.Id);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error in {{CLASS_NAME}}Command");
+            return {{CLASS_NAME}}CommandResult.FailureResult(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling {{CLASS_NAME}}Command");
+            return {{CLASS_NAME}}CommandResult.FailureResult(
+                "An error occurred while processing the request");
+        }
+    }
+
+    /// <summary>
+    /// Validates the command before processing.
+    /// </summary>
+    /// <param name="request">The command request.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Task representing the validation.</returns>
+    /// <exception cref="ArgumentException">Thrown when validation fails.</exception>
+    private async Task ValidateCommand(
+        {{CLASS_NAME}}Command request,
+        CancellationToken cancellationToken)
+    {
+        // TODO: Add business validation logic
+        // Example: Check for duplicates, validate constraints, etc.
+
+        // Example validation:
+        // var exists = await _repository.ExistsByNameAsync(request.Name, cancellationToken);
+        // if (exists)
+        // {
+        //     throw new ArgumentException($"{{DOMAIN_NAME}} with name '{request.Name}' already exists");
+        // }
+    }
+}

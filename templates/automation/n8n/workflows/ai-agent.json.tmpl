@@ -1,0 +1,196 @@
+{
+  "name": "{{WORKFLOW_NAME}}",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "{{WEBHOOK_PATH}}",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger-{{NODE_ID}}",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "{{WEBHOOK_ID}}"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and validate input\nconst input = $input.first().json.body || $input.first().json;\n\n// Validate required fields\nif (!input.query && !input.message) {\n  throw new Error('Missing required field: query or message');\n}\n\nconst userQuery = input.query || input.message;\nconst context = input.context || {};\nconst systemPrompt = input.system_prompt || '{{DEFAULT_SYSTEM_PROMPT}}';\n\nreturn [{\n  json: {\n    user_query: userQuery,\n    context: context,\n    system_prompt: systemPrompt,\n    model: input.model || '{{DEFAULT_MODEL}}',\n    temperature: input.temperature || {{DEFAULT_TEMPERATURE}},\n    max_tokens: input.max_tokens || {{DEFAULT_MAX_TOKENS}}\n  }\n}];"
+      },
+      "id": "prepare-input-{{NODE_ID}}",
+      "name": "Prepare Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "operation": "complete",
+        "model": "={{ $json.model }}",
+        "options": {
+          "temperature": "={{ $json.temperature }}",
+          "maxTokens": "={{ $json.max_tokens }}"
+        },
+        "text": "={{ $json.system_prompt }}\n\nUser Query: {{ $json.user_query }}\n\nContext: {{ JSON.stringify($json.context) }}",
+        "prompt": ""
+      },
+      "id": "llm-completion-{{NODE_ID}}",
+      "name": "LLM Completion",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.3,
+      "position": [650, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "{{OPENAI_CREDENTIAL_ID}}",
+          "name": "{{OPENAI_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process LLM response\nconst llmResponse = $input.first().json.text || $input.first().json.choices?.[0]?.message?.content || '';\nconst inputData = $input.first().json;\n\n// Extract structured data if JSON response\nlet parsedResponse = llmResponse;\ntry {\n  parsedResponse = JSON.parse(llmResponse);\n} catch (e) {\n  // Not JSON, use as-is\n}\n\n// Add metadata\nreturn [{\n  json: {\n    response: parsedResponse,\n    raw_response: llmResponse,\n    model: inputData.model,\n    tokens_used: $input.first().json.usage?.total_tokens || 'unknown',\n    timestamp: new Date().toISOString(),\n    execution_id: $execution.id\n  }\n}];"
+      },
+      "id": "process-response-{{NODE_ID}}",
+      "name": "Process Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "error-check",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ]
+        }
+      },
+      "id": "check-error-{{NODE_ID}}",
+      "name": "Check for Error",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"success\", \"data\": $json.response, \"metadata\": { \"model\": $json.model, \"tokens\": $json.tokens_used, \"timestamp\": $json.timestamp } } }}",
+        "options": {}
+      },
+      "id": "respond-success-{{NODE_ID}}",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 500,
+        "responseBody": "={{ { \"status\": \"error\", \"error\": $json.error, \"message\": \"AI processing failed\" } }}",
+        "options": {}
+      },
+      "id": "respond-error-{{NODE_ID}}",
+      "name": "Respond Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 400]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Input": {
+      "main": [
+        [
+          {
+            "node": "LLM Completion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM Completion": {
+      "main": [
+        [
+          {
+            "node": "Process Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Response": {
+      "main": [
+        [
+          {
+            "node": "Check for Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Error": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "{{TIMESTAMP}}",
+      "updatedAt": "{{TIMESTAMP}}",
+      "id": "{{TAG_ID}}",
+      "name": "ai-agent"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "{{TIMESTAMP}}",
+  "versionId": "{{VERSION_ID}}"
+}

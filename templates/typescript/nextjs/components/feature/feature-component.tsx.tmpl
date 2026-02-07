@@ -1,0 +1,144 @@
+/**
+ * {{FEATURE_NAME}} Component - Feature Component Template
+ * 
+ * Purpose: {{FEATURE_PURPOSE}}
+ * Author: {{AUTHOR}}
+ * Created: {{DATE}}
+ * 
+ * Axiom Alignment:
+ * - A1 (Verifiability): All data operations are logged
+ * - A3 (Transparency): Clear component structure and props
+ * - A4 (Non-Harm): Safe data handling and error boundaries
+ */
+
+'use client'
+
+import { useState, useEffect } from 'react'
+import { {{BUTTON_COMPONENT}} } from '@/components/ui/{{BUTTON_NAME}}'
+import { {{LOADING_COMPONENT}} } from '@/components/{{LOADING_NAME}}'
+import { {{ERROR_COMPONENT}} } from '@/components/{{ERROR_NAME}}'
+
+interface {{FEATURE_NAME}}Props {
+  data?: {{DATA_TYPE}}
+  onAction?: (action: string, payload?: unknown) => void
+}
+
+interface {{DATA_TYPE}} {
+  // Define your data type here
+  id: string
+  name: string
+  // Add more fields as needed
+}
+
+/**
+ * {{FEATURE_NAME}} component.
+ * 
+ * This component implements the {{FEATURE_NAME}} feature
+ * with proper state management, error handling, and user
+ * interaction.
+ * 
+ * @param props - Component props
+ * @returns JSX element
+ * 
+ * @example
+ * ```tsx
+ * <{{FEATURE_NAME}}Component
+ *   data={featureData}
+ *   onAction={(action, payload) => console.log(action, payload)}
+ * />
+ * ```
+ */
+export function {{FEATURE_NAME}}Component({ data, onAction }: {{FEATURE_NAME}}Props) {
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+  const [localData, setLocalData] = useState<{{DATA_TYPE}} | undefined>(data)
+
+  useEffect(() => {
+    // Sync with prop changes
+    if (data) {
+      setLocalData(data)
+    }
+  }, [data])
+
+  const handleAction = async (action: string, payload?: unknown) => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      // Perform action
+      // Example: await performAction(action, payload)
+      
+      // Call callback if provided
+      if (onAction) {
+        onAction(action, payload)
+      }
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Unknown error')
+      setError(error)
+      console.error('Error in {{FEATURE_NAME}} action:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (error) {
+    return <{{ERROR_COMPONENT}} error={error} />
+  }
+
+  if (isLoading) {
+    return <{{LOADING_COMPONENT}} />
+  }
+
+  return (
+    <div className="w-full max-w-4xl mx-auto p-6">
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-2xl font-bold mb-4">
+          {{FEATURE_TITLE}}
+        </h2>
+        
+        {localData ? (
+          <div className="space-y-4">
+            {/* Render your feature content here */}
+            <div>
+              <p className="text-gray-700">
+                {{FEATURE_DESCRIPTION}}
+              </p>
+              
+              {/* Example: Display data */}
+              <div className="mt-4">
+                <pre className="bg-gray-100 p-4 rounded">
+                  {JSON.stringify(localData, null, 2)}
+                </pre>
+              </div>
+            </div>
+            
+            {/* Example: Action buttons */}
+            <div className="flex gap-4 mt-6">
+              <{{BUTTON_COMPONENT}}
+                variant="primary"
+                onClick={() => handleAction('action1')}
+                disabled={isLoading}
+              >
+                {{ACTION1_LABEL}}
+              </{{BUTTON_COMPONENT}}>
+              
+              <{{BUTTON_COMPONENT}}
+                variant="secondary"
+                onClick={() => handleAction('action2')}
+                disabled={isLoading}
+              >
+                {{ACTION2_LABEL}}
+              </{{BUTTON_COMPONENT}}>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-500">
+              {{NO_DATA_MESSAGE}}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

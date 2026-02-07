@@ -1,0 +1,126 @@
+{# 
+Agent Template for Antigravity Agent Factory
+
+This template generates agent definition files using Jinja2 syntax.
+It supports both direct variable replacement and pattern-based generation.
+
+Variables:
+  - agent_name: Agent identifier (kebab-case)
+  - agent_description: Brief description
+  - activation_triggers: List of activation patterns
+  - skills: List of skills used
+  - purpose: Purpose description
+  - capabilities: List of capability sections
+  - workflow_steps: List of workflow steps
+  - rules: List of important rules
+
+Author: Antigravity Agent Factory
+#}
+---
+name: {{ agent_name }}
+description: {{ agent_description }}
+type: agent
+activation:
+{% for trigger in activation_triggers %}
+  - "{{ trigger }}"
+{% endfor %}
+skills: [{% for skill in skills %}"{{ skill }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+templates: [{% for t in templates %}"{{ t }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+patterns: [{% for p in patterns %}"{{ p }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+knowledge: [{% for k in knowledge %}"{{ k }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+---
+
+# {{ agent_title | default(agent_name | title_case) }}
+
+{{ agent_introduction | default('') }}
+
+## Purpose
+
+{{ purpose }}
+
+## Activation Triggers
+
+Activate when the user mentions any of these patterns:
+
+| Pattern | Example |
+|---------|---------|
+{% for trigger in activation_triggers %}
+| {{ trigger.pattern | default(trigger) }} | "{{ trigger.example | default('Example usage') }}" |
+{% endfor %}
+
+{% if capabilities %}
+## Capabilities
+
+{% for capability in capabilities %}
+### {{ loop.index }}. {{ capability.title }}
+
+{{ capability.description }}
+
+{% endfor %}
+{% endif %}
+
+{% if workflow_steps %}
+## Workflow
+
+{% for step in workflow_steps %}
+### Step {{ loop.index }}: {{ step.name }}
+
+{{ step.description }}
+
+{% if step.actions %}
+{% for action in step.actions %}
+- {{ action }}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+{% endif %}
+
+{% if usage_examples %}
+## Usage Examples
+
+{% for example in usage_examples %}
+### Example {{ loop.index }}: {{ example.title }}
+
+```
+User: {{ example.input }}
+
+Agent: {{ example.output }}
+```
+
+{% endfor %}
+{% endif %}
+
+{% if skills %}
+## Skills Used
+
+| Skill | Purpose |
+|-------|---------|
+{% for skill in skills %}
+| `{{ skill.name | default(skill) }}` | {{ skill.purpose | default('Skill functionality') }} |
+{% endfor %}
+{% endif %}
+
+## Tools Available
+
+| Tool | Purpose |
+|------|---------|
+| `list_dir` | Explore file structure |
+| `read_file` | Read documents and existing files |
+| `write` | Create new files |
+| `web_search` | Research topics online |
+| `grep` | Find patterns in code |
+
+{% if rules %}
+## Important Rules
+
+{% for rule in rules %}
+{{ loop.index }}. {{ rule }}
+{% endfor %}
+{% endif %}
+
+## Related Artifacts
+
+{% if related_skill %}- **Skills**: `.agent/skills/{{ related_skill }}/SKILL.md`{% endif %}
+{% if related_template %}- **Templates**: `templates/{{ related_template }}`{% endif %}
+{% if related_knowledge %}- **Knowledge**: `knowledge/{{ related_knowledge }}.json`{% endif %}

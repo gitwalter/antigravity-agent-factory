@@ -1,0 +1,271 @@
+{
+  "metadata": {
+    "patternId": "risk-analysis",
+    "patternName": "Risk Analysis Skill",
+    "category": "analysis",
+    "stackAgnostic": false,
+    "stacks": [
+      "python",
+      "quantitative-trading",
+      "financial-ai"
+    ],
+    "description": "Portfolio and strategy risk assessment"
+  },
+  "frontmatter": {
+    "name": "risk-analysis",
+    "description": "Analyze and quantify portfolio and strategy risks",
+    "type": "skill",
+    "skills": [
+      "grounding"
+    ],
+    "knowledge": [
+      "quantitative-finance.json",
+      "risk-management.json"
+    ]
+  },
+  "sections": {
+    "title": "Risk Analysis Skill",
+    "introduction": "Comprehensive risk assessment for trading strategies and portfolios.",
+    "axiomAlignment": {
+      "A1_verifiability": "All risk metrics calculated with documented methodologies",
+      "A4_non_harm": "Identifies risks before capital is deployed"
+    },
+    "whenToUse": [
+      "After backtesting a strategy",
+      "When reviewing portfolio composition",
+      "Before increasing position sizes",
+      "When market conditions change significantly"
+    ],
+    "process": [
+      {
+        "step": 1,
+        "name": "Return Analysis",
+        "description": "Analyze return characteristics",
+        "metrics": [
+          {
+            "name": "Total Return",
+            "description": "Cumulative return over period"
+          },
+          {
+            "name": "Annualized Return (CAGR)",
+            "description": "Geometric annual return"
+          },
+          {
+            "name": "Return Distribution",
+            "description": "Skewness, kurtosis, normality test"
+          }
+        ],
+        "code_reference": "knowledge/quantitative-finance.json#return_metrics"
+      },
+      {
+        "step": 2,
+        "name": "Volatility Analysis",
+        "description": "Measure return volatility",
+        "metrics": [
+          {
+            "name": "Standard Deviation",
+            "description": "Annualized volatility"
+          },
+          {
+            "name": "Downside Deviation",
+            "description": "Volatility of negative returns"
+          },
+          {
+            "name": "Rolling Volatility",
+            "description": "Time-varying volatility"
+          }
+        ]
+      },
+      {
+        "step": 3,
+        "name": "Drawdown Analysis",
+        "description": "Analyze peak-to-trough declines",
+        "metrics": [
+          {
+            "name": "Maximum Drawdown",
+            "description": "Largest peak-to-trough decline"
+          },
+          {
+            "name": "Average Drawdown",
+            "description": "Mean of all drawdowns"
+          },
+          {
+            "name": "Drawdown Duration",
+            "description": "Time to recover from drawdowns"
+          },
+          {
+            "name": "Drawdown Frequency",
+            "description": "How often drawdowns exceed thresholds"
+          }
+        ],
+        "thresholds": {
+          "acceptable": "< 15%",
+          "warning": "15-25%",
+          "critical": "> 25%"
+        }
+      },
+      {
+        "step": 4,
+        "name": "Risk-Adjusted Performance",
+        "description": "Calculate risk-adjusted return metrics",
+        "metrics": [
+          {
+            "name": "Sharpe Ratio",
+            "formula": "(Return - Rf) / Volatility",
+            "benchmark": "> 1.0"
+          },
+          {
+            "name": "Sortino Ratio",
+            "formula": "(Return - Rf) / Downside Vol",
+            "benchmark": "> 1.5"
+          },
+          {
+            "name": "Calmar Ratio",
+            "formula": "CAGR / Max Drawdown",
+            "benchmark": "> 1.0"
+          },
+          {
+            "name": "Information Ratio",
+            "formula": "Active Return / Tracking Error",
+            "benchmark": "> 0.5"
+          }
+        ]
+      },
+      {
+        "step": 5,
+        "name": "Tail Risk Analysis",
+        "description": "Assess extreme loss potential",
+        "metrics": [
+          {
+            "name": "Value at Risk (VaR)",
+            "description": "Maximum loss at confidence level",
+            "levels": [
+              "95%",
+              "99%"
+            ]
+          },
+          {
+            "name": "Conditional VaR (CVaR)",
+            "description": "Expected loss beyond VaR"
+          },
+          {
+            "name": "Tail Ratio",
+            "description": "Ratio of extreme gains to losses"
+          }
+        ]
+      },
+      {
+        "step": 6,
+        "name": "Correlation Analysis",
+        "description": "Analyze relationships between positions",
+        "actions": [
+          "Calculate correlation matrix",
+          "Identify highly correlated positions",
+          "Assess diversification benefit",
+          "Check for hidden factor exposures"
+        ],
+        "warnings": [
+          "Correlations increase in stress periods",
+          "Historical correlations may not persist"
+        ]
+      },
+      {
+        "step": 7,
+        "name": "Stress Testing",
+        "description": "Test portfolio under extreme scenarios",
+        "scenarios": [
+          {
+            "name": "Market Crash",
+            "description": "50% decline in equities"
+          },
+          {
+            "name": "Volatility Spike",
+            "description": "VIX to 80"
+          },
+          {
+            "name": "Correlation Breakdown",
+            "description": "All correlations go to 1"
+          },
+          {
+            "name": "Liquidity Crisis",
+            "description": "10x normal slippage"
+          }
+        ]
+      },
+      {
+        "step": 8,
+        "name": "Generate Risk Report",
+        "description": "Compile findings into risk assessment",
+        "sections": [
+          "Executive Summary",
+          "Key Risk Metrics",
+          "Drawdown Analysis",
+          "Tail Risk Assessment",
+          "Stress Test Results",
+          "Recommendations"
+        ],
+        "outputs": [
+          "Risk report",
+          "Metric dashboard",
+          "Recommendations"
+        ]
+      }
+    ],
+    "riskLimits": {
+      "position_level": {
+        "max_position_size": "10% of capital",
+        "max_sector_exposure": "25% of capital",
+        "stop_loss_required": true
+      },
+      "portfolio_level": {
+        "max_leverage": "1x (no leverage)",
+        "max_drawdown": "20%",
+        "var_95_limit": "5% daily"
+      },
+      "strategy_level": {
+        "min_sharpe": "1.0",
+        "min_sortino": "1.5",
+        "min_trades": "30 for statistical significance"
+      }
+    },
+    "fallbackProcedures": [
+      {
+        "condition": "If max drawdown > 20%",
+        "action": "Reduce position sizes by 50%"
+      },
+      {
+        "condition": "If Sharpe < 0.5",
+        "action": "Re-evaluate strategy viability"
+      },
+      {
+        "condition": "If VaR exceeded",
+        "action": "Close positions to reduce risk"
+      }
+    ],
+    "references": [
+      "knowledge/quantitative-finance.json",
+      "knowledge/risk-management.json",
+      "templates/trading/risk/position-sizer.py.tmpl"
+    ],
+    "importantRules": [
+      "All actions must align with core axioms (A1: Verifiability, A2: User Primacy, A3: Transparency, A4: Non-Harm, A5: Consistency)"
+    ]
+  },
+  "variables": [
+    {
+      "name": "{PORTFOLIO_NAME}",
+      "description": "Portfolio being analyzed",
+      "required": true
+    },
+    {
+      "name": "{ANALYSIS_PERIOD}",
+      "description": "Time period for analysis",
+      "required": true
+    },
+    {
+      "name": "{RISK_FREE_RATE}",
+      "description": "Risk-free rate for calculations",
+      "default": "0.05"
+    }
+  ]
+}

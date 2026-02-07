@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Risk Management Patterns",
+  "description": "Position sizing, stop-loss strategies, and portfolio risk management",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A4_non_harm": "Risk management protects capital and prevents catastrophic losses"
+  },
+  "position_sizing": {
+    "fixed_percentage": {
+      "description": "Risk a fixed percentage of capital per trade",
+      "formula": "position_size = (capital * risk_percent) / risk_per_unit",
+      "code_example": "def fixed_percentage_size(\n    capital: float,\n    risk_percent: float,\n    entry_price: float,\n    stop_loss_price: float,\n    price_per_unit: float = None\n) -> dict:\n    \"\"\"\n    Calculate position size using fixed percentage risk.\n    \n    Args:\n        capital: Total account value\n        risk_percent: Maximum risk per trade (e.g., 0.02 for 2%)\n        entry_price: Entry price\n        stop_loss_price: Stop loss price\n        price_per_unit: Optional price per unit (for futures/options)\n        \n    Returns:\n        Dict with position details\n    \"\"\"\n    risk_per_unit = abs(entry_price - stop_loss_price)\n    max_risk = capital * risk_percent\n    \n    units = max_risk / risk_per_unit\n    \n    if price_per_unit:\n        notional_value = units * price_per_unit\n    else:\n        notional_value = units * entry_price\n    \n    return {\n        'units': int(units),\n        'notional_value': notional_value,\n        'risk_amount': max_risk,\n        'risk_percent': risk_percent,\n        'stop_loss': stop_loss_price\n    }",
+      "recommended_risk": {
+        "conservative": "0.5% - 1%",
+        "moderate": "1% - 2%",
+        "aggressive": "2% - 5%"
+      }
+    },
+    "volatility_adjusted": {
+      "description": "Size inversely proportional to volatility",
+      "formula": "position_size = target_vol / asset_vol * capital",
+      "code_example": "def volatility_adjusted_size(\n    capital: float,\n    asset_volatility: float,\n    target_volatility: float = 0.10,\n    max_leverage: float = 2.0\n) -> dict:\n    \"\"\"\n    Calculate position size targeting specific volatility.\n    \n    Args:\n        capital: Total account value\n        asset_volatility: Asset's annualized volatility\n        target_volatility: Target portfolio volatility (annualized)\n        max_leverage: Maximum allowed leverage\n        \n    Returns:\n        Dict with position details\n    \"\"\"\n    raw_weight = target_volatility / asset_volatility\n    weight = min(raw_weight, max_leverage)  # Cap at max leverage\n    \n    return {\n        'weight': weight,\n        'notional_value': capital * weight,\n        'expected_volatility': weight * asset_volatility,\n        'leverage': weight\n    }",
+      "benefits": [
+        "Equalizes risk across different assets",
+        "Reduces position in volatile markets",
+        "More stable portfolio volatility"
+      ]
+    },
+    "kelly_criterion": {
+      "description": "Mathematically optimal bet size",
+      "formula": "f* = (p * b - q) / b where p=win_prob, q=loss_prob, b=win/loss ratio",
+      "code_example": "def kelly_size(\n    win_rate: float,\n    avg_win: float,\n    avg_loss: float,\n    kelly_fraction: float = 0.25\n) -> float:\n    \"\"\"\n    Calculate Kelly criterion position size.\n    \n    Args:\n        win_rate: Probability of winning (0-1)\n        avg_win: Average winning trade return\n        avg_loss: Average losing trade return (positive number)\n        kelly_fraction: Fraction of Kelly to use (0.25 = quarter Kelly)\n        \n    Returns:\n        Optimal position size as fraction of capital\n    \"\"\"\n    if avg_loss == 0:\n        return 0\n    \n    b = avg_win / avg_loss  # Win/loss ratio\n    p = win_rate\n    q = 1 - win_rate\n    \n    full_kelly = (p * b - q) / b\n    \n    # Cap at 0 (don't bet if negative edge)\n    full_kelly = max(0, full_kelly)\n    \n    return full_kelly * kelly_fraction",
+      "warnings": [
+        "Full Kelly is very aggressive",
+        "Use quarter or half Kelly in practice",
+        "Requires accurate win rate and payoff estimates"
+      ]
+    }
+  },
+  "stop_loss_strategies": {
+    "fixed_percentage": {
+      "description": "Exit at fixed percentage loss from entry",
+      "code_example": "def fixed_stop_loss(entry_price: float, stop_percent: float, is_long: bool = True) -> float:\n    \"\"\"Calculate fixed percentage stop loss.\"\"\"\n    if is_long:\n        return entry_price * (1 - stop_percent)\n    else:\n        return entry_price * (1 + stop_percent)",
+      "typical_values": "1% - 5% depending on timeframe"
+    },
+    "atr_based": {
+      "description": "Stop loss based on Average True Range",
+      "code_example": "def atr_stop_loss(\n    entry_price: float,\n    atr: float,\n    multiplier: float = 2.0,\n    is_long: bool = True\n) -> float:\n    \"\"\"\n    Calculate ATR-based stop loss.\n    \n    Args:\n        entry_price: Entry price\n        atr: Current ATR value\n        multiplier: ATR multiplier (higher = wider stop)\n        is_long: True for long, False for short\n        \n    Returns:\n        Stop loss price\n    \"\"\"\n    stop_distance = atr * multiplier\n    \n    if is_long:\n        return entry_price - stop_distance\n    else:\n        return entry_price + stop_distance",
+      "benefits": [
+        "Adapts to market volatility",
+        "Wider stops in volatile markets",
+        "Tighter stops in calm markets"
+      ]
+    },
+    "trailing_stop": {
+      "description": "Stop that moves with favorable price action",
+      "code_example": "class TrailingStop:\n    \"\"\"\n    Trailing stop loss manager.\n    \"\"\"\n    \n    def __init__(self, entry_price: float, trail_percent: float, is_long: bool = True):\n        self.is_long = is_long\n        self.trail_percent = trail_percent\n        \n        if is_long:\n            self.highest = entry_price\n            self.stop = entry_price * (1 - trail_percent)\n        else:\n            self.lowest = entry_price\n            self.stop = entry_price * (1 + trail_percent)\n    \n    def update(self, current_price: float) -> float:\n        \"\"\"Update trailing stop with new price.\"\"\"\n        if self.is_long:\n            if current_price > self.highest:\n                self.highest = current_price\n                self.stop = self.highest * (1 - self.trail_percent)\n        else:\n            if current_price < self.lowest:\n                self.lowest = current_price\n                self.stop = self.lowest * (1 + self.trail_percent)\n        \n        return self.stop\n    \n    def is_triggered(self, current_price: float) -> bool:\n        \"\"\"Check if stop is triggered.\"\"\"\n        if self.is_long:\n            return current_price <= self.stop\n        else:\n            return current_price >= self.stop",
+      "variations": [
+        "Chandelier Exit (ATR-based trailing)",
+        "Parabolic SAR trailing",
+        "Moving average trailing"
+      ]
+    },
+    "time_based": {
+      "description": "Exit after maximum holding period",
+      "use_when": "Strategy has expected holding period",
+      "code_example": "def time_stop(\n    entry_time: datetime,\n    current_time: datetime,\n    max_holding_days: int\n) -> bool:\n    \"\"\"Check if time stop is triggered.\"\"\"\n    holding_period = (current_time - entry_time).days\n    return holding_period >= max_holding_days"
+    }
+  },
+  "portfolio_risk": {
+    "correlation_limits": {
+      "description": "Limit exposure to correlated assets",
+      "code_example": "def check_correlation_limit(\n    current_positions: dict,\n    new_position: str,\n    correlation_matrix: pd.DataFrame,\n    max_correlation: float = 0.7\n) -> bool:\n    \"\"\"\n    Check if new position violates correlation limits.\n    \n    Returns:\n        True if position is acceptable, False if too correlated\n    \"\"\"\n    for existing in current_positions:\n        if existing == new_position:\n            continue\n        \n        corr = correlation_matrix.loc[existing, new_position]\n        if abs(corr) > max_correlation:\n            return False\n    \n    return True"
+    },
+    "sector_limits": {
+      "description": "Limit exposure to single sector",
+      "typical_limits": {
+        "per_sector": "20-25%",
+        "per_asset": "5-10%"
+      }
+    },
+    "drawdown_limits": {
+      "description": "Reduce exposure during drawdowns",
+      "code_example": "class DrawdownBasedRisk:\n    \"\"\"\n    Reduce risk during drawdowns.\n    \"\"\"\n    \n    def __init__(self, base_risk: float = 0.02, max_drawdown: float = 0.20):\n        self.base_risk = base_risk\n        self.max_drawdown = max_drawdown\n        self.peak_equity = None\n    \n    def get_risk_multiplier(self, current_equity: float) -> float:\n        \"\"\"\n        Calculate risk multiplier based on current drawdown.\n        \"\"\"\n        if self.peak_equity is None:\n            self.peak_equity = current_equity\n        \n        self.peak_equity = max(self.peak_equity, current_equity)\n        \n        drawdown = (self.peak_equity - current_equity) / self.peak_equity\n        \n        if drawdown >= self.max_drawdown:\n            return 0  # Stop trading\n        \n        # Linear reduction\n        multiplier = 1 - (drawdown / self.max_drawdown)\n        return max(0.25, multiplier)  # Minimum 25% of base risk\n    \n    def get_adjusted_risk(self, current_equity: float) -> float:\n        \"\"\"Get adjusted risk percentage.\"\"\"\n        return self.base_risk * self.get_risk_multiplier(current_equity)"
+    },
+    "var_limits": {
+      "description": "Limit portfolio Value-at-Risk",
+      "implementation": "Reduce positions if VaR exceeds threshold"
+    }
+  },
+  "risk_alerts": {
+    "concentration_alert": "Single position > 20% of portfolio",
+    "volatility_alert": "Portfolio volatility > 2x target",
+    "drawdown_alert": "Drawdown > 10%",
+    "correlation_alert": "New position correlation > 0.7 with existing",
+    "leverage_alert": "Portfolio leverage > max allowed"
+  },
+  "emergency_procedures": {
+    "circuit_breaker": {
+      "description": "Stop trading after significant loss",
+      "triggers": [
+        "Daily loss > 3%",
+        "Weekly loss > 5%",
+        "Max drawdown exceeded"
+      ],
+      "actions": [
+        "Close all positions",
+        "Cancel pending orders",
+        "Alert human operator"
+      ]
+    },
+    "deleveraging": {
+      "description": "Reduce exposure systematically",
+      "priority_order": [
+        "Largest losing positions",
+        "Most volatile positions",
+        "Largest positions"
+      ]
+    }
+  },
+  "best_practices": [
+    "Never risk more than 2% of capital on single trade",
+    "Use stop losses on ALL positions",
+    "Monitor portfolio correlation continuously",
+    "Reduce risk during drawdowns",
+    "Have documented emergency procedures",
+    "Test risk systems regularly",
+    "Log all risk decisions for review",
+    "Require human approval for live trading"
+  ]
+}

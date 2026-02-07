@@ -1,0 +1,183 @@
+# Docker CI/CD Template
+#
+# Reusable template for Docker builds using Kaniko, multi-stage builds, and security scanning
+# Variables: {{DOCKER_REGISTRY}}, {{DOCKER_IMAGE_NAME}}, {{PROJECT_NAME}}
+
+# Base Docker job template
+.docker_base:
+  image: gcr.io/kaniko-project/executor:latest
+  variables:
+    DOCKER_REGISTRY: "${DOCKER_REGISTRY}"
+    DOCKER_IMAGE_NAME: "${DOCKER_IMAGE_NAME:-{{PROJECT_NAME}}}"
+    DOCKER_IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
+    DOCKER_BUILDKIT: "1"
+  before_script:
+    - echo "Building Docker image: ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+    - |
+      if [ -z "$DOCKER_REGISTRY" ]; then
+        echo "Warning: DOCKER_REGISTRY not set, using GitLab registry"
+        export DOCKER_REGISTRY="$CI_REGISTRY"
+      fi
+
+# Docker build job with Kaniko
+.docker_build:
+  extends: .docker_base
+  stage: build
+  script:
+    - |
+      # Create kaniko config for authentication
+      mkdir -p /kaniko/.docker
+      echo "{\"auths\":{\"${DOCKER_REGISTRY}\":{\"auth\":\"$(echo -n ${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD} | base64)\"}}}" > /kaniko/.docker/config.json
+    - |
+      # Build Docker image
+      /kaniko/executor
+        --context "${CI_PROJECT_DIR}"
+        --dockerfile "${DOCKERFILE:-Dockerfile}"
+        --destination "${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+        --destination "${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:latest"
+        --cache=true
+        --cache-ttl=24h
+        --snapshot-mode=redo
+        --use-new-run
+    - |
+      # Tag with branch name if not main
+      if [ "$CI_COMMIT_REF_NAME" != "main" ]; then
+        /kaniko/executor
+          --context "${CI_PROJECT_DIR}"
+          --dockerfile "${DOCKERFILE:-Dockerfile}"
+          --destination "${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${CI_COMMIT_REF_SLUG}"
+          --cache=true
+          --snapshot-mode=redo
+          --use-new-run
+      fi
+  rules:
+    - if: $CI_COMMIT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  tags:
+    - docker
+
+# Docker build with Docker-in-Docker (alternative)
+.docker_build_dind:
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_TLS_VERIFY: 1
+    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - |
+      docker build
+        --tag ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+        --tag ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:latest
+        --cache-from ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:latest
+        --file ${DOCKERFILE:-Dockerfile}
+        .
+    - docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+    - docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
+  tags:
+    - docker
+
+# Multi-stage Docker build
+.docker_build_multistage:
+  extends: .docker_build
+  variables:
+    BUILD_STAGE: "builder"
+    RUNTIME_STAGE: "runtime"
+  script:
+    - |
+      /kaniko/executor
+        --context "${CI_PROJECT_DIR}"
+        --dockerfile "${DOCKERFILE:-Dockerfile}"
+        --target "${RUNTIME_STAGE}"
+        --destination "${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+        --destination "${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:latest"
+        --cache=true
+        --cache-ttl=24h
+        --snapshot-mode=redo
+        --use-new-run
+
+# Docker security scanning with Trivy
+.docker_scan:
+  image: aquasec/trivy:latest
+  stage: test
+  script:
+    - |
+      trivy image
+        --exit-code 0
+        --severity HIGH,CRITICAL
+        --format template
+        --template "@contrib/gitlab.tpl"
+        -o gl-container-scanning-report.json
+        ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+  artifacts:
+    reports:
+      container_scanning: gl-container-scanning-report.json
+    paths:
+      - gl-container-scanning-report.json
+    expire_in: 1 week
+  allow_failure: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+# Docker security scanning with Docker Bench
+.docker_scan_bench:
+  image: docker:latest
+  stage: test
+  script:
+    - |
+      docker run --rm --net host --pid host --userns host --cap-add audit_control
+        -e DOCKER_CONTENT_TRUST=$DOCKER_CONTENT_TRUST
+        -v /etc:/etc:ro
+        -v /usr/bin/containerd:/usr/bin/containerd:ro
+        -v /usr/bin/runc:/usr/bin/runc:ro
+        -v /usr/lib/systemd:/usr/lib/systemd:ro
+        -v /var/lib:/var/lib:ro
+        -v /var/run/docker.sock:/var/run/docker.sock:ro
+        --label docker_bench_security
+        docker/docker-bench-security || true
+  allow_failure: true
+
+# Docker image size check
+.docker_size_check:
+  extends: .docker_base
+  stage: test
+  script:
+    - |
+      # Pull and inspect image size
+      docker pull ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} || true
+      SIZE=$(docker images ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} --format "{{.Size}}")
+      echo "Image size: $SIZE"
+      # Warn if image is too large (>500MB)
+      SIZE_MB=$(echo $SIZE | sed 's/[^0-9.]//g')
+      if (( $(echo "$SIZE_MB > 500" | bc -l) )); then
+        echo "Warning: Image size ($SIZE_MB MB) exceeds 500MB"
+      fi
+  allow_failure: true
+
+# Docker registry push
+.docker_push:
+  extends: .docker_build
+  script:
+    - |
+      # Build and push to registry
+      /kaniko/executor
+        --context "${CI_PROJECT_DIR}"
+        --dockerfile "${DOCKERFILE:-Dockerfile}"
+        --destination "${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+        --destination "${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${CI_COMMIT_REF_SLUG}"
+        --destination "${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:latest"
+        --cache=true
+        --snapshot-mode=redo
+        --use-new-run
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"

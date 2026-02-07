@@ -1,0 +1,287 @@
+{
+  "metadata": {
+    "patternId": "alignment-check",
+    "patternName": "Alignment Check Pattern",
+    "category": "core",
+    "stackAgnostic": true,
+    "description": "Verify understanding and alignment before major implementations to prevent silent misalignment",
+    "composable": true,
+    "version": "1.0.0"
+  },
+  "frontmatter": {
+    "name": "alignment-check",
+    "description": "Verify understanding and alignment before major implementations",
+    "type": "skill",
+    "pattern": "patterns/skills/alignment-check.json",
+    "knowledge": [
+      "augmented-coding-patterns.json"
+    ],
+    "axioms": [
+      "A1_verifiability",
+      "A2_user_primacy",
+      "A3_transparency",
+      "A4_non_harm"
+    ],
+    "triggers": [
+      "complex refactoring",
+      "architecture changes",
+      "multiple files or components",
+      "ambiguous requirements",
+      "unclear concepts",
+      "implementation > 10 minutes"
+    ]
+  },
+  "sections": {
+    "title": "Alignment Check Skill",
+    "introduction": "Prevents Silent Misalignment by verifying mutual understanding before significant work begins. This skill implements the **Check Alignment** pattern from Augmented Coding Patterns, ensuring that misalignment between understanding and AI's only reveals itself after implementation, wasting time on wrong solutions.",
+    "philosophy": "Misalignment between your understanding and AI's only reveals itself after implementation, wasting time on wrong solutions.",
+    "whenToUse": [
+      "Before complex refactoring or architecture changes",
+      "When task involves multiple files or components",
+      "After receiving ambiguous or complex requirements",
+      "When user instructions reference concepts you don't fully understand",
+      "Before any implementation that would take more than 10 minutes"
+    ],
+    "process": [
+      {
+        "step": 1,
+        "name": "Show Understanding",
+        "description": "Before implementing, describe your understanding",
+        "template": "Before I make changes, let me describe what I understand:\n\n**Current State:**\n- [Describe the current architecture/code structure]\n- [List the components involved]\n- [Note any assumptions I'm making]\n\n**Proposed Changes:**\n- [Step 1: What I'll do first]\n- [Step 2: Next action]\n- [Expected outcome]\n\n**Questions I Have:**\n- [Any unclear points]\n- [Ambiguities I've noticed]\n- [Decisions that need your input]\n\nDoes this match your understanding?",
+        "actions": [
+          "Describe current state clearly",
+          "List all components involved",
+          "Document assumptions explicitly",
+          "Outline proposed changes step-by-step",
+          "Identify unclear points",
+          "Ask for confirmation"
+        ]
+      },
+      {
+        "step": 2,
+        "name": "Surface Confusion",
+        "description": "Ask open-ended questions to reveal misalignment",
+        "questions": [
+          "What questions do you have?",
+          "What am I missing?",
+          "Is there context I should know about?"
+        ],
+        "avoid": [
+          "Do you have any questions? (too easy to say no)"
+        ],
+        "actions": [
+          "Use open-ended questions",
+          "Encourage real confusion to surface",
+          "Avoid yes/no questions",
+          "Actively seek missing context"
+        ]
+      },
+      {
+        "step": 3,
+        "name": "Validate Assumptions",
+        "description": "For each assumption, explicitly check",
+        "template": "I'm assuming that:\n1. [Assumption A] - Is this correct?\n2. [Assumption B] - Can you confirm?\n3. [Assumption C] - Should I verify this?",
+        "actions": [
+          "List all assumptions explicitly",
+          "Request confirmation for each",
+          "Verify critical assumptions",
+          "Document confirmed assumptions"
+        ]
+      },
+      {
+        "step": 4,
+        "name": "Get Explicit Confirmation",
+        "description": "Before proceeding, get explicit confirmation",
+        "template": "I'll proceed with [brief summary].\nIf this doesn't match what you want, please stop me now.",
+        "actions": [
+          "Summarize approach briefly",
+          "Request explicit confirmation",
+          "Wait for user acknowledgment",
+          "Proceed only after confirmation"
+        ]
+      }
+    ],
+    "antiPatternDetection": {
+      "description": "Watch for these signs of potential misalignment",
+      "signs": [
+        {
+          "sign": "User references 'the top parts' or 'that thing'",
+          "meaning": "Vague references may mean different things",
+          "action": "Ask for clarification"
+        },
+        {
+          "sign": "Instructions contradict earlier context",
+          "meaning": "May indicate misunderstanding",
+          "action": "Stop and verify"
+        },
+        {
+          "sign": "Multiple failed attempts at same fix",
+          "meaning": "Wrong mental model",
+          "action": "Reset and re-align"
+        },
+        {
+          "sign": "User seems frustrated with results",
+          "meaning": "Possible talking past each other",
+          "action": "Check alignment explicitly"
+        }
+      ]
+    },
+    "diagnosticTechnique": {
+      "name": "Make It Visible",
+      "description": "When stuck, make the AI's understanding visible",
+      "template": "Let me show you what I'm seeing by:\n1. Highlighting the specific elements I'm working with\n2. Describing the structure as I understand it\n3. Asking you to correct anything that's off",
+      "whenToUse": "When alignment seems unclear or when stuck on implementation"
+    },
+    "integration": {
+      "description": "How alignment check helps other skills",
+      "skills": [
+        {
+          "skill": "feature-workflow",
+          "benefit": "Verify requirements before implementation"
+        },
+        {
+          "skill": "bugfix-workflow",
+          "benefit": "Confirm reproduction steps understood"
+        },
+        {
+          "skill": "code-review",
+          "benefit": "Verify reviewer understands code intent"
+        },
+        {
+          "skill": "agent-coordination",
+          "benefit": "Ensure agents share same understanding"
+        }
+      ]
+    },
+    "axiomAlignment": {
+      "A1_verifiability": "Verify understanding is correct before acting",
+      "A2_user_primacy": "Ensure we're solving what user actually wants",
+      "A3_transparency": "Make internal understanding visible",
+      "A4_non_harm": "Prevent wasted effort on wrong direction"
+    },
+    "examples": {
+      "refactoring": {
+        "title": "Before Refactoring",
+        "scenario": "User: 'Refactor the authentication module to use JWT'",
+        "response": "Before I start, let me verify my understanding:\n\n**Current State:**\nI see the auth module in `src/auth/` with:\n- `session_manager.py` - handles session-based auth\n- `middleware.py` - validates requests\n- `models.py` - user and session models\n\n**Proposed Changes:**\n1. Add JWT generation in a new `jwt_handler.py`\n2. Update middleware to validate JWT tokens\n3. Keep session_manager for backwards compatibility initially\n4. Update models to store JWT-related data\n\n**Assumptions:**\n- You want to support both session and JWT during transition\n- Existing tests should keep passing\n- No changes to the user-facing API\n\n**Questions:**\n- Should I remove session auth entirely or keep both?\n- What JWT expiration time do you prefer?\n- Any specific JWT library preference?\n\nDoes this match what you had in mind?"
+      }
+    },
+    "importantRules": [
+      "ALWAYS show understanding before implementing major changes",
+      "Use open-ended questions to surface confusion, not yes/no questions",
+      "Explicitly validate all assumptions before proceeding",
+      "Get explicit confirmation before starting implementation",
+      "Watch for anti-pattern signs and address them immediately",
+      "Make understanding visible when stuck or unclear",
+      "All actions must align with core axioms (A1: Verifiability, A2: User Primacy, A3: Transparency, A4: Non-Harm, A5: Consistency)"
+    ],
+    "references": [
+      "https://lexler.github.io/augmented-coding-patterns/patterns/check-alignment/",
+      "https://lexler.github.io/augmented-coding-patterns/anti-patterns/silent-misalignment/",
+      "knowledge/augmented-coding-patterns.json"
+    ]
+  },
+  "promptTemplates": {
+    "showUnderstanding": {
+      "description": "Template for showing understanding before implementation",
+      "template": "Before I make changes, let me describe what I understand:\n\n**Current State:**\n- {CURRENT_ARCHITECTURE}\n- {COMPONENTS_INVOLVED}\n- {ASSUMPTIONS_MADE}\n\n**Proposed Changes:**\n- {STEP_1}\n- {STEP_2}\n- {EXPECTED_OUTCOME}\n\n**Questions I Have:**\n- {UNCLEAR_POINTS}\n- {AMBIGUITIES}\n- {DECISIONS_NEEDED}\n\nDoes this match your understanding?"
+    },
+    "validateAssumptions": {
+      "description": "Template for validating assumptions",
+      "template": "I'm assuming that:\n1. {ASSUMPTION_1} - Is this correct?\n2. {ASSUMPTION_2} - Can you confirm?\n3. {ASSUMPTION_3} - Should I verify this?"
+    },
+    "getConfirmation": {
+      "description": "Template for getting explicit confirmation",
+      "template": "I'll proceed with {BRIEF_SUMMARY}.\nIf this doesn't match what you want, please stop me now."
+    },
+    "makeVisible": {
+      "description": "Template for making understanding visible when stuck",
+      "template": "Let me show you what I'm seeing by:\n1. Highlighting the specific elements I'm working with: {ELEMENTS}\n2. Describing the structure as I understand it: {STRUCTURE_DESCRIPTION}\n3. Asking you to correct anything that's off"
+    }
+  },
+  "workflow": {
+    "diagram": "┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐\n│ 1. SHOW        │────▶│ 2. SURFACE     │────▶│ 3. VALIDATE   │\n│ Understanding  │     │ Confusion      │     │ Assumptions   │\n│ Describe state │     │ Open questions │     │ Get confirm   │\n└─────────────────┘     └─────────────────┘     └───────┬─────────┘\n                                                       │\n                                                       ▼\n                                              ┌─────────────────┐\n                                              │ 4. GET          │\n                                              │ Confirmation    │\n                                              │ Proceed?        │\n                                              └─────────────────┘"
+  },
+  "fallbackProcedures": {
+    "userDoesNotRespond": {
+      "description": "User doesn't respond to alignment check",
+      "action": [
+        "Wait reasonable time (suggest 5-10 minutes)",
+        "If no response, proceed with documented assumptions",
+        "Note that assumptions were made in implementation",
+        "Be ready to adjust if user corrects later"
+      ]
+    },
+    "conflictingFeedback": {
+      "description": "User provides conflicting feedback",
+      "action": [
+        "Stop immediately",
+        "Clarify the contradiction explicitly",
+        "Ask which direction is correct",
+        "Re-align before proceeding"
+      ]
+    },
+    "partialUnderstanding": {
+      "description": "Only partial understanding achieved",
+      "action": [
+        "Document what is understood",
+        "Document what is unclear",
+        "Proceed incrementally with what is clear",
+        "Check alignment again after each increment"
+      ]
+    }
+  },
+  "successMetrics": {
+    "misalignmentPrevention": "Reduced instances of wrong implementations",
+    "timeSaved": "Less time wasted on incorrect solutions",
+    "userSatisfaction": "Higher user satisfaction with results",
+    "firstTrySuccess": "More implementations correct on first try"
+  },
+  "relatedSkills": [
+    "feature-workflow",
+    "bugfix-workflow",
+    "code-review",
+    "agent-coordination",
+    "grounding-verification"
+  ],
+  "variables": [
+    {
+      "name": "{CURRENT_ARCHITECTURE}",
+      "description": "Description of current architecture/code structure",
+      "required": true
+    },
+    {
+      "name": "{COMPONENTS_INVOLVED}",
+      "description": "List of components/files involved in the change",
+      "required": true
+    },
+    {
+      "name": "{ASSUMPTIONS_MADE}",
+      "description": "List of assumptions being made",
+      "required": true
+    },
+    {
+      "name": "{PROPOSED_STEPS}",
+      "description": "Step-by-step list of proposed changes",
+      "required": true
+    },
+    {
+      "name": "{UNCLEAR_POINTS}",
+      "description": "Points that are unclear or ambiguous",
+      "required": false
+    },
+    {
+      "name": "{BRIEF_SUMMARY}",
+      "description": "Brief summary of what will be done",
+      "required": true
+    },
+    {
+      "name": "{TASK_COMPLEXITY}",
+      "description": "Estimated complexity/time for the task",
+      "required": false,
+      "default": "> 10 minutes"
+    }
+  ],
+  "generated_by": "Antigravity Agent Factory",
+  "source": ".agent/skills/alignment-check/SKILL.md"
+}

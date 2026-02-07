@@ -1,0 +1,127 @@
+"! <p class="shorttext synchronized">Projection View with UI Annotations</p>
+"! CDS projection view for ${ENTITY_NAME} with Fiori UI annotations
+"! @author ${AUTHOR}
+"! @date ${DATE}
+"! @version 1.0
+"!
+"! Example usage:
+"!   Replace ${ENTITY_NAME} with your projection view name (e.g., ZC_Travel)
+"!   Replace ${BASE_ENTITY} with your interface view (e.g., ZI_Travel)
+"!   Customize UI annotations for your Fiori app
+"!
+@EndUserText.label: '${ENTITY_DESCRIPTION}'
+@AccessControl.authorizationCheck: #CHECK
+@Metadata.allowExtensions: true
+@Search.searchable: true
+@UI: {
+  headerInfo: {
+    typeName: '${TYPE_NAME}',
+    typeNamePlural: '${TYPE_NAME_PLURAL}',
+    title: {
+      type: #STANDARD,
+      value: '${TITLE_FIELD}'
+    },
+    description: {
+      type: #STANDARD,
+      value: '${DESCRIPTION_FIELD}'
+    }
+  }
+}
+define root view entity ${ENTITY_NAME}
+  as projection on ${BASE_ENTITY}
+{
+  // Key fields
+  @UI.facet: [ {
+    id: 'idIdentification',
+    type: #IDENTIFICATION_REFERENCE,
+    label: '${IDENTIFICATION_LABEL}',
+    position: 10
+  } ]
+  @UI.lineItem: [ {
+    position: 10,
+    importance: #HIGH,
+    label: '${LABEL_1}'
+  } ]
+  @UI.identification: [ {
+    position: 10,
+    label: '${LABEL_1}'
+  } ]
+  key ${KEY_FIELD_1},
+  
+  @UI.lineItem: [ {
+    position: 20,
+    importance: #HIGH,
+    label: '${LABEL_2}'
+  } ]
+  @UI.identification: [ {
+    position: 20,
+    label: '${LABEL_2}'
+  } ]
+  key ${KEY_FIELD_2},
+  
+  // Business fields
+  @UI.facet: [ {
+    id: 'idGeneralInformation',
+    type: #FIELDGROUP_REFERENCE,
+    label: '${GENERAL_INFO_LABEL}',
+    targetQualifier: 'GeneralInformation',
+    position: 20
+  } ]
+  @UI.lineItem: [ {
+    position: 30,
+    importance: #MEDIUM,
+    label: '${LABEL_3}'
+  } ]
+  @UI.identification: [ {
+    position: 30,
+    label: '${LABEL_3}',
+    qualifier: 'GeneralInformation'
+  } ]
+  ${BUSINESS_FIELD_1},
+  
+  @UI.lineItem: [ {
+    position: 40,
+    importance: #MEDIUM,
+    label: '${LABEL_4}'
+  } ]
+  @UI.identification: [ {
+    position: 40,
+    label: '${LABEL_4}',
+    qualifier: 'GeneralInformation'
+  } ]
+  ${BUSINESS_FIELD_2},
+  
+  @UI.lineItem: [ {
+    position: 50,
+    importance: #LOW,
+    label: '${LABEL_5}'
+  } ]
+  @UI.identification: [ {
+    position: 50,
+    label: '${LABEL_5}',
+    qualifier: 'GeneralInformation'
+  } ]
+  ${BUSINESS_FIELD_3},
+  
+  // Audit fields (hidden in UI)
+  @UI.hidden: true
+  created_at,
+  
+  @UI.hidden: true
+  created_by,
+  
+  @UI.hidden: true
+  last_changed_at,
+  
+  @UI.hidden: true
+  last_changed_by,
+  
+  @UI.hidden: true
+  local_last_changed_at,
+  
+  @UI.hidden: true
+  etag,
+  
+  // Associations
+  _${ASSOCIATION_NAME} : association [0..*] to ${TARGET_ENTITY} on ${CONDITION} = ${TARGET_KEY}
+}

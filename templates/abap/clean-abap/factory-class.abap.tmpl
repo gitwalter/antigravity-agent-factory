@@ -1,0 +1,91 @@
+"! <p class="shorttext synchronized">${CLASS_DESCRIPTION}</p>
+"! Factory class for dependency injection and object creation
+"! @author ${AUTHOR}
+"! @date ${DATE}
+"! @version 1.0
+"!
+"! Purpose: ${PURPOSE}
+"!
+"! Example usage:
+"!   DATA(service) = ${CLASS_NAME}=>create_service( ).
+"!   DATA(repository) = ${CLASS_NAME}=>create_repository( ).
+"!
+CLASS ${CLASS_NAME} DEFINITION PUBLIC FINAL CREATE PRIVATE.
+  PUBLIC SECTION.
+    "! Create service instance with dependencies
+    "! @return Service instance
+    "! @raising ${EXCEPTION_CLASS_NAME} | Exception if creation fails
+    CLASS-METHODS create_service
+      RETURNING
+        VALUE(result) TYPE REF TO ${SERVICE_INTERFACE_NAME}
+      RAISING
+        ${EXCEPTION_CLASS_NAME}.
+        
+    "! Create repository instance
+    "! @return Repository instance
+    "! @raising ${EXCEPTION_CLASS_NAME} | Exception if creation fails
+    CLASS-METHODS create_repository
+      RETURNING
+        VALUE(result) TYPE REF TO ${REPOSITORY_INTERFACE_NAME}
+      RAISING
+        ${EXCEPTION_CLASS_NAME}.
+        
+    "! Create validator instance
+    "! @return Validator instance
+    CLASS-METHODS create_validator
+      RETURNING
+        VALUE(result) TYPE REF TO ${VALIDATOR_INTERFACE_NAME}.
+        
+  PRIVATE SECTION.
+    "! Private constructor to prevent instantiation
+    METHODS constructor.
+    
+    "! Create default repository implementation
+    CLASS-METHODS create_default_repository
+      RETURNING
+        VALUE(result) TYPE REF TO ${REPOSITORY_INTERFACE_NAME}.
+        
+ENDCLASS.
+
+CLASS ${CLASS_NAME} IMPLEMENTATION.
+  
+  METHOD constructor.
+    " Private constructor - do not instantiate this class
+  ENDMETHOD.
+  
+  METHOD create_service.
+    " Create repository dependency
+    DATA(repository) = create_repository( ).
+    
+    " Create service with injected dependency
+    TRY.
+        result = NEW ${SERVICE_CLASS_NAME}( repository = repository ).
+      CATCH ${EXCEPTION_CLASS_NAME} INTO DATA(exception).
+        RAISE EXCEPTION exception.
+    ENDTRY.
+  ENDMETHOD.
+  
+  METHOD create_repository.
+    " Create default repository implementation
+    result = create_default_repository( ).
+    
+    " Validate creation
+    IF result IS NOT BOUND.
+      RAISE EXCEPTION TYPE ${EXCEPTION_CLASS_NAME}
+        EXPORTING
+          textid = ${EXCEPTION_CLASS_NAME}=>${CONSTANT_NAME}
+          previous = VALUE #( ).
+    ENDIF.
+  ENDMETHOD.
+  
+  METHOD create_validator.
+    " Create validator instance
+    result = NEW ${VALIDATOR_CLASS_NAME}( ).
+  ENDMETHOD.
+  
+  METHOD create_default_repository.
+    " Create default repository implementation
+    result = NEW ${REPOSITORY_CLASS_NAME}( ).
+  ENDMETHOD.
+  
+ENDCLASS.

@@ -1,0 +1,283 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Security Checklist",
+  "description": "Security best practices, OWASP guidelines, and authentication patterns",
+  "version": "1.0.0",
+  "categories": {
+    "authentication": {
+      "description": "Verifying user identity",
+      "priority": "critical"
+    },
+    "authorization": {
+      "description": "Controlling access to resources",
+      "priority": "critical"
+    },
+    "inputValidation": {
+      "description": "Validating and sanitizing user input",
+      "priority": "critical"
+    },
+    "dataProtection": {
+      "description": "Protecting sensitive data at rest and in transit",
+      "priority": "high"
+    },
+    "secretsManagement": {
+      "description": "Handling API keys, passwords, and credentials",
+      "priority": "critical"
+    },
+    "logging": {
+      "description": "Security logging and monitoring",
+      "priority": "high"
+    }
+  },
+  "owaspTop10": {
+    "A01_BrokenAccessControl": {
+      "name": "Broken Access Control",
+      "description": "Restrictions on authenticated users are not properly enforced",
+      "checks": [
+        "Verify access control on every request",
+        "Deny by default except for public resources",
+        "Implement proper CORS policies",
+        "Disable directory listing",
+        "Invalidate JWT tokens on logout"
+      ],
+      "codePatterns": {
+        "python_fastapi": "@app.get('/resource/{id}')\nasync def get_resource(id: int, user: User = Depends(get_current_user)):\n    resource = await get_resource_by_id(id)\n    if resource.owner_id != user.id:\n        raise HTTPException(status_code=403, detail='Forbidden')\n    return resource",
+        "typescript_nextjs": "export async function GET(req: Request, { params }: { params: { id: string } }) {\n  const session = await getServerSession();\n  const resource = await db.resource.findUnique({ where: { id: params.id } });\n  if (resource?.ownerId !== session?.user?.id) {\n    return new Response('Forbidden', { status: 403 });\n  }\n  return Response.json(resource);\n}"
+      }
+    },
+    "A02_CryptographicFailures": {
+      "name": "Cryptographic Failures",
+      "description": "Failures related to cryptography leading to sensitive data exposure",
+      "checks": [
+        "Use TLS 1.2+ for all connections",
+        "Hash passwords with bcrypt/argon2 (cost factor >= 12)",
+        "Never store sensitive data in plain text",
+        "Use strong random number generators",
+        "Rotate encryption keys regularly"
+      ],
+      "codePatterns": {
+        "python": "from passlib.context import CryptContext\n\npwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')\n\ndef hash_password(password: str) -> str:\n    return pwd_context.hash(password)\n\ndef verify_password(plain: str, hashed: str) -> bool:\n    return pwd_context.verify(plain, hashed)",
+        "csharp": "using BCrypt.Net;\n\npublic class PasswordService\n{\n    public string HashPassword(string password) =>\n        BCrypt.HashPassword(password, BCrypt.GenerateSalt(12));\n    \n    public bool VerifyPassword(string password, string hash) =>\n        BCrypt.Verify(password, hash);\n}"
+      }
+    },
+    "A03_Injection": {
+      "name": "Injection",
+      "description": "User-supplied data is not validated, filtered, or sanitized",
+      "checks": [
+        "Use parameterized queries or ORMs",
+        "Validate and sanitize all user inputs",
+        "Escape output based on context (HTML, SQL, JS)",
+        "Use allowlists for input validation",
+        "Limit SQL query results"
+      ],
+      "codePatterns": {
+        "python_sqlalchemy": "# SAFE: Parameterized query\nresult = db.execute(\n    select(User).where(User.email == email)\n)\n\n# UNSAFE - SQL Injection vulnerable\n# result = db.execute(f\"SELECT * FROM users WHERE email = '{email}'\")",
+        "typescript_prisma": "// SAFE: Prisma handles parameterization\nconst user = await prisma.user.findUnique({\n  where: { email: userInput }\n});\n\n// UNSAFE - Raw query with interpolation\n// await prisma.$queryRaw`SELECT * FROM users WHERE email = ${userInput}`"
+      }
+    },
+    "A04_InsecureDesign": {
+      "name": "Insecure Design",
+      "description": "Missing or ineffective security controls in design",
+      "checks": [
+        "Implement threat modeling during design",
+        "Use secure design patterns",
+        "Implement rate limiting",
+        "Add circuit breakers for external services",
+        "Design for failure and recovery"
+      ]
+    },
+    "A05_SecurityMisconfiguration": {
+      "name": "Security Misconfiguration",
+      "description": "Missing appropriate security hardening",
+      "checks": [
+        "Remove default credentials",
+        "Disable unnecessary features and services",
+        "Configure proper security headers",
+        "Keep dependencies updated",
+        "Use environment-specific configurations"
+      ],
+      "securityHeaders": {
+        "Content-Security-Policy": "default-src 'self'; script-src 'self'",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+        "X-XSS-Protection": "1; mode=block"
+      }
+    },
+    "A06_VulnerableComponents": {
+      "name": "Vulnerable and Outdated Components",
+      "description": "Using components with known vulnerabilities",
+      "checks": [
+        "Maintain inventory of all components and versions",
+        "Remove unused dependencies",
+        "Monitor for CVEs in dependencies",
+        "Use automated dependency scanning",
+        "Subscribe to security advisories"
+      ],
+      "tools": {
+        "python": ["pip-audit", "safety", "bandit"],
+        "javascript": ["npm audit", "snyk", "dependabot"],
+        "csharp": ["dotnet list package --vulnerable", "OWASP Dependency-Check"]
+      }
+    },
+    "A07_AuthenticationFailures": {
+      "name": "Identification and Authentication Failures",
+      "description": "Weaknesses in authentication mechanisms",
+      "checks": [
+        "Implement multi-factor authentication",
+        "Enforce strong password policies",
+        "Limit failed login attempts",
+        "Use secure session management",
+        "Implement proper logout functionality"
+      ],
+      "passwordPolicy": {
+        "minLength": 12,
+        "requireUppercase": true,
+        "requireLowercase": true,
+        "requireNumbers": true,
+        "requireSpecialChars": true,
+        "preventCommonPasswords": true,
+        "preventPasswordReuse": 5
+      }
+    },
+    "A08_SoftwareDataIntegrity": {
+      "name": "Software and Data Integrity Failures",
+      "description": "Code and infrastructure that does not protect against integrity violations",
+      "checks": [
+        "Verify digital signatures on updates",
+        "Use integrity checking for CI/CD pipelines",
+        "Verify npm/pip package integrity",
+        "Implement proper deserialization controls",
+        "Use signed commits"
+      ]
+    },
+    "A09_LoggingMonitoring": {
+      "name": "Security Logging and Monitoring Failures",
+      "description": "Insufficient logging, detection, monitoring, and active response",
+      "checks": [
+        "Log authentication attempts (success and failure)",
+        "Log access control failures",
+        "Log input validation failures",
+        "Ensure logs have sufficient context",
+        "Implement alerting for suspicious activities"
+      ],
+      "logFormat": {
+        "fields": ["timestamp", "level", "user_id", "action", "resource", "ip_address", "user_agent", "result"]
+      }
+    },
+    "A10_SSRF": {
+      "name": "Server-Side Request Forgery",
+      "description": "Web application fetches remote resources without validating user-supplied URL",
+      "checks": [
+        "Validate and sanitize all client-supplied URLs",
+        "Use allowlists for permitted domains",
+        "Disable HTTP redirects",
+        "Block requests to internal IP ranges",
+        "Use network segmentation"
+      ],
+      "blockedIpRanges": [
+        "10.0.0.0/8",
+        "172.16.0.0/12",
+        "192.168.0.0/16",
+        "127.0.0.0/8",
+        "169.254.0.0/16"
+      ]
+    }
+  },
+  "authenticationPatterns": {
+    "jwt": {
+      "name": "JSON Web Tokens",
+      "useCase": "Stateless API authentication",
+      "bestPractices": [
+        "Use RS256 (asymmetric) for distributed systems",
+        "Keep token expiry short (15-60 minutes)",
+        "Implement refresh token rotation",
+        "Store refresh tokens securely (httpOnly cookies)",
+        "Include minimal claims in access tokens"
+      ],
+      "antiPatterns": [
+        "Storing JWTs in localStorage (XSS vulnerable)",
+        "Long-lived access tokens",
+        "Storing sensitive data in JWT payload",
+        "Not validating token signature"
+      ]
+    },
+    "session": {
+      "name": "Server-Side Sessions",
+      "useCase": "Traditional web applications",
+      "bestPractices": [
+        "Use secure, httpOnly, sameSite cookies",
+        "Regenerate session ID after login",
+        "Implement session timeout",
+        "Store sessions in Redis/database for scalability",
+        "Invalidate sessions on logout"
+      ]
+    },
+    "oauth2": {
+      "name": "OAuth 2.0",
+      "useCase": "Third-party authentication and authorization",
+      "flows": {
+        "authorizationCode": "Web apps with backend (most secure)",
+        "authorizationCodePKCE": "SPAs and mobile apps",
+        "clientCredentials": "Machine-to-machine communication"
+      },
+      "bestPractices": [
+        "Always use PKCE for public clients",
+        "Validate redirect URIs strictly",
+        "Use state parameter to prevent CSRF",
+        "Request minimal scopes",
+        "Validate ID token claims"
+      ]
+    }
+  },
+  "secretsManagement": {
+    "rules": [
+      "Never commit secrets to version control",
+      "Use environment variables or secret managers",
+      "Rotate secrets regularly",
+      "Use different secrets per environment",
+      "Implement secret scanning in CI/CD"
+    ],
+    "tools": {
+      "cloud": ["AWS Secrets Manager", "Azure Key Vault", "Google Secret Manager"],
+      "selfHosted": ["HashiCorp Vault", "Doppler", "Infisical"],
+      "gitScanning": ["git-secrets", "gitleaks", "trufflehog"]
+    },
+    "envFileRules": {
+      "gitignore": [".env", ".env.local", ".env.*.local", "*.pem", "*.key"],
+      "exampleFile": "Provide .env.example with placeholder values"
+    }
+  },
+  "inputValidation": {
+    "principles": [
+      "Validate on both client and server (server is authoritative)",
+      "Use allowlists over denylists",
+      "Validate type, length, format, and range",
+      "Sanitize based on output context",
+      "Reject invalid input, don't try to fix it"
+    ],
+    "commonPatterns": {
+      "email": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+      "uuid": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "slug": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "phone": "^\\+?[1-9]\\d{1,14}$"
+    }
+  },
+  "securityByStack": {
+    "python-fastapi": {
+      "authentication": ["python-jose", "passlib", "authlib"],
+      "validation": ["pydantic"],
+      "scanning": ["bandit", "safety", "pip-audit"]
+    },
+    "typescript-nextjs": {
+      "authentication": ["next-auth", "lucia", "clerk"],
+      "validation": ["zod", "yup"],
+      "scanning": ["npm audit", "snyk"]
+    },
+    "csharp-dotnet": {
+      "authentication": ["ASP.NET Core Identity", "IdentityServer"],
+      "validation": ["FluentValidation", "DataAnnotations"],
+      "scanning": ["dotnet list package --vulnerable"]
+    }
+  }
+}

@@ -1,0 +1,205 @@
+"""
+Streamlit Application Settings - Configuration management
+
+Purpose: Centralized configuration for Streamlit application
+Author: {{AUTHOR}}
+Created: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): All settings are typed and validated
+- A3 (Transparency): Clear configuration structure
+- A4 (Non-Harm): Safe default values and validation
+"""
+
+from typing from typing import Optional, List
+from pydantic import BaseSettings, Field, validator
+from functools import lru_cache
+import os
+
+
+class Settings(BaseSettings):
+    """
+    Application settings with environment variable support.
+    
+    This class uses Pydantic BaseSettings to automatically load
+    configuration from environment variables or .env file.
+    
+    Example:
+        >>> settings = get_settings()
+        >>> print(settings.app_name)
+    """
+    
+    # Application
+    app_name: str = Field(
+        default="{{APP_NAME}}",
+        description="Application name"
+    )
+    app_version: str = Field(
+        default="1.0.0",
+        description="Application version"
+    )
+    debug: bool = Field(
+        default=False,
+        description="Debug mode"
+    )
+    
+    # API Configuration (if connecting to backend)
+    api_url: Optional[str] = Field(
+        default=None,
+        description="Backend API URL"
+    )
+    api_timeout: int = Field(
+        default=30,
+        ge=1,
+        description="API request timeout in seconds"
+    )
+    
+    # Data Source Configuration
+    database_url: Optional[str] = Field(
+        default=None,
+        description="Database connection URL"
+    )
+    
+    # Feature Flags
+    enable_chat: bool = Field(
+        default=True,
+        description="Enable chat interface"
+    )
+    enable_dashboard: bool = Field(
+        default=True,
+        description="Enable dashboard"
+    )
+    enable_analytics: bool = Field(
+        default=False,
+        description="Enable analytics tracking"
+    )
+    
+    # UI Configuration
+    default_theme: str = Field(
+        default="Light",
+        description="Default theme (Light, Dark, Auto)"
+    )
+    default_language: str = Field(
+        default="English",
+        description="Default language"
+    )
+    page_title: str = Field(
+        default="{{APP_NAME}}",
+        description="Page title"
+    )
+    page_icon: str = Field(
+        default="{{APP_ICON}}",
+        description="Page icon"
+    )
+    layout: str = Field(
+        default="wide",
+        description="Layout mode (wide, centered)"
+    )
+    
+    # Cache Configuration
+    default_cache_ttl: int = Field(
+        default=300,
+        ge=0,
+        description="Default cache TTL in seconds"
+    )
+    enable_cache: bool = Field(
+        default=True,
+        description="Enable caching"
+    )
+    
+    # Logging
+    log_level: str = Field(
+        default="INFO",
+        description="Logging level"
+    )
+    
+    class Config:
+        """Pydantic configuration."""
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        case_sensitive = False
+    
+    @validator("default_theme")
+    def validate_theme(cls, v):
+        """
+        Validate theme value.
+        
+        Args:
+            v: Theme value
+            
+        Returns:
+            Validated theme
+            
+        Raises:
+            ValueError: If theme is invalid
+        """
+        allowed = ["Light", "Dark", "Auto"]
+        if v not in allowed:
+            raise ValueError(f"Theme must be one of {allowed}")
+        return v
+    
+    @validator("layout")
+    def validate_layout(cls, v):
+        """
+        Validate layout value.
+        
+        Args:
+            v: Layout value
+            
+        Returns:
+            Validated layout
+            
+        Raises:
+            ValueError: If layout is invalid
+        """
+        allowed = ["wide", "centered"]
+        if v not in allowed:
+            raise ValueError(f"Layout must be one of {allowed}")
+        return v
+    
+    @validator("log_level")
+    def validate_log_level(cls, v):
+        """
+        Validate log level value.
+        
+        Args:
+            v: Log level value
+            
+        Returns:
+            Validated log level
+            
+        Raises:
+            ValueError: If log level is invalid
+        """
+        allowed = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+        if v.upper() not in allowed:
+            raise ValueError(f"Log level must be one of {allowed}")
+        return v.upper()
+    
+    @property
+    def is_debug(self) -> bool:
+        """
+        Check if running in debug mode.
+        
+        Returns:
+            True if debug, False otherwise
+        """
+        return self.debug
+
+
+@lru_cache()
+def get_settings() -> Settings:
+    """
+    Get cached settings instance.
+    
+    This function uses LRU cache to ensure settings are loaded
+    only once and reused across the application.
+    
+    Returns:
+        Settings instance
+    """
+    return Settings()
+
+
+# Export settings instance
+settings = get_settings()

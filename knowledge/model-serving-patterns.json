@@ -1,0 +1,154 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Model Serving Patterns",
+  "description": "Patterns for deploying and serving ML models in production",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "Serving includes health checks and monitoring",
+    "A3_transparency": "Logging and metrics enable observability"
+  },
+  "serving_options": {
+    "comparison": {
+      "fastapi_custom": {
+        "description": "Custom FastAPI server",
+        "best_for": "Full control, custom logic",
+        "complexity": "Medium",
+        "scalability": "Good with containerization"
+      },
+      "bentoml": {
+        "description": "ML serving framework",
+        "best_for": "Standardized ML serving, batching",
+        "complexity": "Low",
+        "scalability": "Excellent"
+      },
+      "ray_serve": {
+        "description": "Distributed serving",
+        "best_for": "Large scale, multi-model",
+        "complexity": "Medium",
+        "scalability": "Excellent"
+      },
+      "triton": {
+        "description": "NVIDIA inference server",
+        "best_for": "GPU inference, high throughput",
+        "complexity": "High",
+        "scalability": "Excellent"
+      },
+      "vllm": {
+        "description": "LLM serving engine",
+        "best_for": "LLM inference with high throughput",
+        "complexity": "Medium",
+        "scalability": "Excellent for LLMs"
+      }
+    }
+  },
+  "fastapi_patterns": {
+    "basic_serving": {
+      "description": "Simple model serving with FastAPI",
+      "code_example": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nimport joblib\nimport numpy as np\nfrom contextlib import asynccontextmanager\n\n# Pydantic models\nclass PredictionRequest(BaseModel):\n    features: list[float]\n    \nclass PredictionResponse(BaseModel):\n    prediction: int\n    probability: float\n    model_version: str\n\n# Load model on startup\nml_models = {}\n\n@asynccontextmanager\nasync def lifespan(app: FastAPI):\n    # Load model\n    ml_models['classifier'] = joblib.load('model.joblib')\n    ml_models['version'] = '1.0.0'\n    yield\n    # Cleanup\n    ml_models.clear()\n\napp = FastAPI(lifespan=lifespan)\n\n@app.get('/health')\ndef health():\n    return {'status': 'healthy', 'model_loaded': 'classifier' in ml_models}\n\n@app.post('/predict', response_model=PredictionResponse)\ndef predict(request: PredictionRequest):\n    try:\n        model = ml_models['classifier']\n        X = np.array(request.features).reshape(1, -1)\n        \n        prediction = model.predict(X)[0]\n        probability = model.predict_proba(X)[0].max()\n        \n        return PredictionResponse(\n            prediction=int(prediction),\n            probability=float(probability),\n            model_version=ml_models['version']\n        )\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+      "best_practices": [
+        "Use lifespan for model loading",
+        "Include health check endpoint",
+        "Return model version with predictions",
+        "Validate input with Pydantic"
+      ]
+    },
+    "batch_predictions": {
+      "description": "Handle batch prediction requests",
+      "code_example": "from fastapi import BackgroundTasks\nfrom typing from typing import Optional\nimport asyncio\n\nclass BatchRequest(BaseModel):\n    instances: list[list[float]]\n    request_id: Optional[str] = None\n\nclass BatchResponse(BaseModel):\n    predictions: list[int]\n    probabilities: list[float]\n    request_id: Optional[str]\n\n@app.post('/predict/batch', response_model=BatchResponse)\nasync def predict_batch(request: BatchRequest):\n    model = ml_models['classifier']\n    X = np.array(request.instances)\n    \n    # Run in thread pool for CPU-bound work\n    loop = asyncio.get_event_loop()\n    predictions = await loop.run_in_executor(\n        None, model.predict, X\n    )\n    probabilities = await loop.run_in_executor(\n        None, lambda: model.predict_proba(X).max(axis=1)\n    )\n    \n    return BatchResponse(\n        predictions=predictions.tolist(),\n        probabilities=probabilities.tolist(),\n        request_id=request.request_id\n    )"
+    },
+    "async_inference": {
+      "description": "Async inference for I/O-bound models",
+      "code_example": "from fastapi import BackgroundTasks\nimport redis\nimport uuid\n\nredis_client = redis.Redis()\n\nclass AsyncRequest(BaseModel):\n    features: list[float]\n\nclass AsyncResponse(BaseModel):\n    job_id: str\n    status: str\n\n@app.post('/predict/async', response_model=AsyncResponse)\nasync def predict_async(\n    request: AsyncRequest,\n    background_tasks: BackgroundTasks\n):\n    job_id = str(uuid.uuid4())\n    \n    # Queue for background processing\n    background_tasks.add_task(process_prediction, job_id, request.features)\n    \n    return AsyncResponse(job_id=job_id, status='processing')\n\nasync def process_prediction(job_id: str, features: list[float]):\n    model = ml_models['classifier']\n    X = np.array(features).reshape(1, -1)\n    prediction = model.predict(X)[0]\n    \n    # Store result\n    redis_client.setex(f'result:{job_id}', 3600, str(prediction))\n\n@app.get('/predict/result/{job_id}')\ndef get_result(job_id: str):\n    result = redis_client.get(f'result:{job_id}')\n    if result:\n        return {'job_id': job_id, 'prediction': int(result), 'status': 'completed'}\n    return {'job_id': job_id, 'status': 'processing'}"
+    }
+  },
+  "vllm_patterns": {
+    "basic_serving": {
+      "description": "Serve LLMs with vLLM",
+      "code_example": "# Start vLLM server (command line)\n# python -m vllm.entrypoints.openai.api_server \\\n#     --model meta-llama/Llama-3.2-1B-Instruct \\\n#     --host 0.0.0.0 --port 8000\n\n# Use with OpenAI client\nfrom openai import OpenAI\n\nclient = OpenAI(\n    base_url='http://localhost:8000/v1',\n    api_key='not-needed'\n)\n\nresponse = client.chat.completions.create(\n    model='meta-llama/Llama-3.2-1B-Instruct',\n    messages=[{'role': 'user', 'content': 'Hello!'}],\n    temperature=0.7,\n    max_tokens=100\n)\nprint(response.choices[0].message.content)",
+      "configuration": {
+        "gpu_memory_utilization": "Fraction of GPU memory to use (0.9 default)",
+        "tensor_parallel_size": "Number of GPUs for tensor parallelism",
+        "max_model_len": "Maximum context length",
+        "quantization": "awq, gptq, or fp8 quantization"
+      }
+    },
+    "python_integration": {
+      "description": "Use vLLM directly in Python",
+      "code_example": "from vllm import LLM, SamplingParams\n\n# Load model\nllm = LLM(\n    model='meta-llama/Llama-3.2-1B-Instruct',\n    tensor_parallel_size=1,\n    gpu_memory_utilization=0.9\n)\n\n# Configure sampling\nsampling_params = SamplingParams(\n    temperature=0.7,\n    top_p=0.95,\n    max_tokens=256\n)\n\n# Generate\nprompts = ['Tell me a joke', 'Explain quantum computing']\noutputs = llm.generate(prompts, sampling_params)\n\nfor output in outputs:\n    print(output.outputs[0].text)"
+    }
+  },
+  "bentoml_patterns": {
+    "basic_service": {
+      "description": "Create BentoML service",
+      "code_example": "import bentoml\nfrom bentoml.io import NumpyNdarray, JSON\nimport numpy as np\nfrom sklearn.ensemble import RandomForestClassifier\n\n# Save model\nmodel = RandomForestClassifier()\nmodel.fit(X_train, y_train)\n\nsaved_model = bentoml.sklearn.save_model(\n    'rf_classifier',\n    model,\n    signatures={'predict': {'batchable': True, 'batch_dim': 0}}\n)\n\n# Create service (service.py)\nimport bentoml\nimport numpy as np\nfrom bentoml.io import NumpyNdarray\n\nmodel_ref = bentoml.sklearn.get('rf_classifier:latest')\nmodel_runner = model_ref.to_runner()\n\nsvc = bentoml.Service('classifier', runners=[model_runner])\n\n@svc.api(input=NumpyNdarray(), output=NumpyNdarray())\nasync def predict(input_array: np.ndarray) -> np.ndarray:\n    return await model_runner.predict.async_run(input_array)\n\n@svc.api(input=JSON(), output=JSON())\nasync def predict_json(input_data: dict) -> dict:\n    features = np.array(input_data['features']).reshape(1, -1)\n    prediction = await model_runner.predict.async_run(features)\n    return {'prediction': int(prediction[0])}",
+      "best_practices": [
+        "Enable batching for throughput",
+        "Use async for concurrent requests",
+        "Save model with signatures"
+      ]
+    },
+    "containerization": {
+      "description": "Build and deploy BentoML container",
+      "code_example": "# bentofile.yaml\nservice: 'service:svc'\ninclude:\n  - '*.py'\npython:\n  packages:\n    - scikit-learn\n    - numpy\n\n# Build bento\n# bentoml build\n\n# Containerize\n# bentoml containerize classifier:latest\n\n# Run container\n# docker run -p 3000:3000 classifier:latest"
+    }
+  },
+  "docker_patterns": {
+    "ml_dockerfile": {
+      "description": "Dockerfile for ML model serving",
+      "code_example": "# Dockerfile\nFROM python:3.11-slim\n\nWORKDIR /app\n\n# Install dependencies\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\n\n# Copy model and code\nCOPY model.joblib .\nCOPY app.py .\n\n# Create non-root user\nRUN useradd --create-home appuser\nUSER appuser\n\n# Expose port\nEXPOSE 8000\n\n# Health check\nHEALTHCHECK --interval=30s --timeout=10s \\\n  CMD curl -f http://localhost:8000/health || exit 1\n\n# Run server\nCMD [\"uvicorn\", \"app:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]",
+      "best_practices": [
+        "Use slim base images",
+        "Run as non-root user",
+        "Include health checks",
+        "Pin dependency versions"
+      ]
+    },
+    "gpu_dockerfile": {
+      "description": "Dockerfile for GPU inference",
+      "code_example": "# Dockerfile.gpu\nFROM nvidia/cuda:12.1-runtime-ubuntu22.04\n\nRUN apt-get update && apt-get install -y \\\n    python3 python3-pip \\\n    && rm -rf /var/lib/apt/lists/*\n\nWORKDIR /app\n\nCOPY requirements.txt .\nRUN pip3 install --no-cache-dir -r requirements.txt\n\nCOPY . .\n\nCMD [\"python3\", \"-m\", \"uvicorn\", \"app:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]\n\n# Run with GPU\n# docker run --gpus all -p 8000:8000 my-model:gpu"
+    }
+  },
+  "monitoring_patterns": {
+    "prometheus_metrics": {
+      "description": "Add Prometheus metrics to serving",
+      "code_example": "from fastapi import FastAPI\nfrom prometheus_client import Counter, Histogram, generate_latest\nfrom starlette.responses import Response\nimport time\n\n# Define metrics\nPREDICTION_COUNT = Counter(\n    'predictions_total',\n    'Total number of predictions',\n    ['model_version', 'status']\n)\n\nPREDICTION_LATENCY = Histogram(\n    'prediction_latency_seconds',\n    'Prediction latency in seconds',\n    buckets=[0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5]\n)\n\n@app.post('/predict')\ndef predict(request: PredictionRequest):\n    start_time = time.time()\n    \n    try:\n        result = model.predict(request.features)\n        PREDICTION_COUNT.labels(\n            model_version='1.0.0',\n            status='success'\n        ).inc()\n        return result\n    except Exception as e:\n        PREDICTION_COUNT.labels(\n            model_version='1.0.0',\n            status='error'\n        ).inc()\n        raise\n    finally:\n        PREDICTION_LATENCY.observe(time.time() - start_time)\n\n@app.get('/metrics')\ndef metrics():\n    return Response(\n        generate_latest(),\n        media_type='text/plain'\n    )"
+    },
+    "logging": {
+      "description": "Structured logging for ML serving",
+      "code_example": "import logging\nimport json\nfrom datetime import datetime\n\nclass JSONFormatter(logging.Formatter):\n    def format(self, record):\n        log_entry = {\n            'timestamp': datetime.utcnow().isoformat(),\n            'level': record.levelname,\n            'message': record.getMessage(),\n            'module': record.module\n        }\n        if hasattr(record, 'prediction_data'):\n            log_entry['prediction'] = record.prediction_data\n        return json.dumps(log_entry)\n\nlogger = logging.getLogger('ml_serving')\nhandler = logging.StreamHandler()\nhandler.setFormatter(JSONFormatter())\nlogger.addHandler(handler)\n\n# Log predictions\ndef log_prediction(request, response, latency):\n    logger.info(\n        'Prediction completed',\n        extra={'prediction_data': {\n            'input_shape': len(request.features),\n            'prediction': response.prediction,\n            'latency_ms': latency * 1000\n        }}\n    )"
+    }
+  },
+  "scaling_patterns": {
+    "horizontal_scaling": {
+      "description": "Scale with multiple replicas",
+      "code_example": "# docker-compose.yml\nversion: '3.8'\nservices:\n  model:\n    build: .\n    deploy:\n      replicas: 3\n    ports:\n      - '8000-8002:8000'\n    healthcheck:\n      test: ['CMD', 'curl', '-f', 'http://localhost:8000/health']\n      interval: 30s\n      timeout: 10s\n      retries: 3\n\n  nginx:\n    image: nginx:alpine\n    ports:\n      - '80:80'\n    volumes:\n      - ./nginx.conf:/etc/nginx/nginx.conf\n    depends_on:\n      - model"
+    }
+  },
+  "anti_patterns": {
+    "loading_on_request": {
+      "description": "Loading model on every request",
+      "problem": "Slow response times, resource waste",
+      "solution": "Load model once at startup"
+    },
+    "no_health_check": {
+      "description": "Missing health check endpoint",
+      "problem": "Can't detect unhealthy instances",
+      "solution": "Add /health endpoint"
+    },
+    "blocking_inference": {
+      "description": "Blocking event loop with sync inference",
+      "problem": "Poor concurrency",
+      "solution": "Use thread pool for CPU-bound work"
+    }
+  },
+  "best_practices_summary": [
+    "Load models at startup, not per-request",
+    "Include health check endpoints",
+    "Use async for I/O, thread pool for CPU",
+    "Implement proper error handling",
+    "Add monitoring and logging",
+    "Use batching for throughput",
+    "Containerize for deployment",
+    "Set resource limits"
+  ]
+}

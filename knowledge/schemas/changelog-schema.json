@@ -1,0 +1,178 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://Antigravity-agent-factory/schemas/changelog.json",
+  "title": "Knowledge Changelog Schema",
+  "description": "Schema for documenting changes to knowledge files in the Antigravity Agent Factory",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["knowledge_file", "entries"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "knowledge_file": {
+      "type": "string",
+      "description": "Name of the knowledge file this changelog tracks"
+    },
+    "current_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Current version of the knowledge file"
+    },
+    "entries": {
+      "type": "array",
+      "description": "Changelog entries in reverse chronological order",
+      "items": {
+        "$ref": "#/definitions/changelogEntry"
+      }
+    }
+  },
+  "definitions": {
+    "changelogEntry": {
+      "type": "object",
+      "required": ["version", "date", "changes"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Version number for this release"
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "Release date (YYYY-MM-DD)"
+        },
+        "title": {
+          "type": "string",
+          "description": "Optional title for this release"
+        },
+        "breaking": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this version contains breaking changes"
+        },
+        "changes": {
+          "type": "object",
+          "description": "Changes grouped by type",
+          "properties": {
+            "added": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/changeItem" },
+              "description": "New features or content added"
+            },
+            "changed": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/changeItem" },
+              "description": "Changes to existing features or content"
+            },
+            "deprecated": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/changeItem" },
+              "description": "Features marked for removal"
+            },
+            "removed": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/changeItem" },
+              "description": "Features or content removed"
+            },
+            "fixed": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/changeItem" },
+              "description": "Bug fixes or corrections"
+            },
+            "security": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/changeItem" },
+              "description": "Security-related changes"
+            }
+          }
+        },
+        "sources": {
+          "type": "array",
+          "description": "Sources that triggered these changes",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["github", "pypi", "npm", "official_docs", "community", "user_feedback", "manual"]
+              },
+              "identifier": {
+                "type": "string",
+                "description": "Source identifier"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Link to the source"
+              }
+            }
+          }
+        },
+        "migration": {
+          "type": "object",
+          "description": "Migration instructions for breaking changes",
+          "properties": {
+            "instructions": {
+              "type": "string",
+              "description": "Step-by-step migration instructions"
+            },
+            "automated": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether migration can be automated"
+            },
+            "script": {
+              "type": "string",
+              "description": "Path to migration script if automated"
+            }
+          }
+        },
+        "axiom_alignment": {
+          "type": "object",
+          "description": "How these changes align with factory axioms",
+          "properties": {
+            "primary_axiom": {
+              "type": "string",
+              "description": "Primary axiom this change supports"
+            },
+            "rationale": {
+              "type": "string",
+              "description": "Why this change aligns with axioms"
+            }
+          }
+        }
+      }
+    },
+    "changeItem": {
+      "type": "object",
+      "required": ["description"],
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Description of the change"
+        },
+        "path": {
+          "type": "string",
+          "description": "JSON path to the changed element"
+        },
+        "impact": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Impact level of this change"
+        },
+        "related_blueprints": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Blueprints affected by this change"
+        },
+        "related_skills": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Skills affected by this change"
+        }
+      }
+    }
+  }
+}

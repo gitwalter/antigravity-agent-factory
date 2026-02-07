@@ -1,0 +1,269 @@
+{
+  "name": "{{SUB_WORKFLOW_NAME}} - Notification",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "recipient",
+              "name": "recipient",
+              "value": "={{ $json.recipient || $json.email || '{{DEFAULT_RECIPIENT}}' }}",
+              "type": "string"
+            },
+            {
+              "id": "message",
+              "name": "message",
+              "value": "={{ $json.message || $json.text || '{{DEFAULT_MESSAGE}}' }}",
+              "type": "string"
+            },
+            {
+              "id": "channel",
+              "name": "channel",
+              "value": "={{ $json.channel || '{{DEFAULT_CHANNEL}}' }}",
+              "type": "string"
+            },
+            {
+              "id": "subject",
+              "name": "subject",
+              "value": "={{ $json.subject || '{{DEFAULT_SUBJECT}}' }}",
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "name": "priority",
+              "value": "={{ $json.priority || 'normal' }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "prepare-notification-{{NODE_ID}}",
+      "name": "Prepare Notification",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "channel-check",
+              "leftValue": "={{ $json.channel }}",
+              "rightValue": "slack",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "route-channel-{{NODE_ID}}",
+      "name": "Route Channel",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.1,
+      "position": [450, 300],
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "slack-check",
+                    "leftValue": "={{ $json.channel }}",
+                    "rightValue": "slack",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "slack"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "email-check",
+                    "leftValue": "={{ $json.channel }}",
+                    "rightValue": "email",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "email"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "parameters": {
+        "channel": "={{ $json.channel }}",
+        "text": "={{ $json.message }}",
+        "otherOptions": {
+          "username": "{{SLACK_USERNAME}}",
+          "iconEmoji": "{{SLACK_ICON}}"
+        }
+      },
+      "id": "send-slack-{{NODE_ID}}",
+      "name": "Send Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [650, 200],
+      "credentials": {
+        "slackApi": {
+          "id": "{{SLACK_CREDENTIAL_ID}}",
+          "name": "{{SLACK_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.recipient }}",
+        "toEmail": "={{ $json.recipient }}",
+        "subject": "={{ $json.subject }}",
+        "text": "={{ $json.message }}",
+        "options": {
+          "allowUnauthorizedCerts": false
+        }
+      },
+      "id": "send-email-{{NODE_ID}}",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [650, 400],
+      "credentials": {
+        "smtp": {
+          "id": "{{SMTP_CREDENTIAL_ID}}",
+          "name": "{{SMTP_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "notification-result",
+              "name": "notification_result",
+              "value": "={{ { \"status\": \"sent\", \"channel\": $json.channel, \"recipient\": $json.recipient, \"message_id\": $json.ts || $json.messageId, \"timestamp\": $now } }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "format-result-{{NODE_ID}}",
+      "name": "Format Result",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Handle notification errors\ntry {\n  const input = $input.first().json;\n  \n  return [{\n    json: {\n      status: 'error',\n      error: input.error || 'Unknown error',\n      channel: input.channel,\n      recipient: input.recipient,\n      timestamp: new Date().toISOString()\n    }\n  }];\n} catch (error) {\n  return [{\n    json: {\n      status: 'error',\n      error: error.message,\n      timestamp: new Date().toISOString()\n    }\n  }];\n}"
+      },
+      "id": "handle-error-{{NODE_ID}}",
+      "name": "Handle Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 500]
+    }
+  ],
+  "connections": {
+    "Prepare Notification": {
+      "main": [
+        [
+          {
+            "node": "Route Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Channel": {
+      "main": [
+        [
+          {
+            "node": "Send Slack",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Slack": {
+      "main": [
+        [
+          {
+            "node": "Format Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        [
+          {
+            "node": "Format Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "{{TIMESTAMP}}",
+      "updatedAt": "{{TIMESTAMP}}",
+      "id": "{{TAG_ID}}",
+      "name": "notification"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "{{TIMESTAMP}}",
+  "versionId": "{{VERSION_ID}}"
+}

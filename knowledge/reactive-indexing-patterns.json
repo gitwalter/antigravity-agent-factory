@@ -1,0 +1,183 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Reactive Indexing Patterns",
+  "description": "Patterns for instant artifact synchronization using reactive file watching and cached indices",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A0_love_truth_beauty": "Respects developer flow (Wu Wei) by eliminating friction",
+    "A1_verifiability": "Cached indices include hashes for integrity verification",
+    "A3_transparency": "Clear separation between fast local checks and accurate CI validation",
+    "A4_adaptability": "Layered architecture supports multiple trigger mechanisms"
+  },
+  "research_sources": {
+    "academic": {
+      "salsa": {
+        "description": "Rust framework for incremental, on-demand programs",
+        "url": "https://salsa-rs.github.io/salsa/",
+        "key_insight": "Store computation results in database, reuse when inputs unchanged",
+        "applicability": "Inspired cache structure design"
+      },
+      "adapton": {
+        "description": "Language-based framework for general-purpose incremental computation",
+        "url": "https://docs.rs/adapton/",
+        "key_insight": "Demanded computation graph with demand-driven change propagation",
+        "applicability": "Theoretical foundation for affected detection"
+      }
+    },
+    "industry": {
+      "nx_affected": {
+        "description": "Nx monorepo tool's affected pattern",
+        "url": "https://nx.dev/docs/features/ci-features/affected",
+        "key_insight": "Use git to identify changed files, map to projects via dependency graph",
+        "applicability": "Inspired directory trigger mapping"
+      },
+      "turborepo": {
+        "description": "Turborepo's computation hashing for cache invalidation",
+        "key_insight": "Hash includes source files, config, deps, runtime values",
+        "applicability": "Inspired hash-based cache validation"
+      },
+      "pre_commit": {
+        "description": "Git hook framework with environment caching",
+        "url": "https://pre-commit.com/",
+        "key_insight": "Runs only on staged/changed files, caches hook environments",
+        "applicability": "Recommended for hook management layer"
+      }
+    },
+    "tools": {
+      "python_watchdog": {
+        "description": "Python file system event monitoring library",
+        "url": "https://python-watchdog.readthedocs.io/",
+        "key_insight": "Observer pattern for reactive file watching",
+        "applicability": "Optional daemon-based reactive updates"
+      },
+      "vscode_runonsave": {
+        "description": "VS Code extension to run commands on file save",
+        "url": "https://marketplace.visualstudio.com/items?itemName=emeraldwalk.RunOnSave",
+        "key_insight": "IDE-integrated file save triggers",
+        "applicability": "Recommended for VS Code users"
+      },
+      "chokidar": {
+        "description": "Minimal cross-platform file watching for JavaScript",
+        "url": "https://github.com/paulmillr/chokidar",
+        "key_insight": "Event-based architecture using EventEmitter",
+        "applicability": "Reference for Node.js projects"
+      }
+    }
+  },
+  "patterns": {
+    "layered_validation": {
+      "description": "Separate fast local validation from accurate CI validation",
+      "layers": {
+        "pre_commit": {
+          "purpose": "Instant feedback during development",
+          "method": "Read from cached index",
+          "accuracy": "Approximate (based on last save)",
+          "speed": "< 2 seconds"
+        },
+        "ci_pipeline": {
+          "purpose": "Authoritative validation before merge",
+          "method": "Full computation (pytest --collect-only)",
+          "accuracy": "Exact",
+          "speed": "30+ seconds acceptable"
+        }
+      },
+      "rationale": "Developers need fast feedback; CI ensures accuracy"
+    },
+    "cache_structure": {
+      "description": "JSON-based artifact index with metadata",
+      "schema": {
+        "schema_version": "Semantic version for cache format",
+        "updated_at": "ISO 8601 timestamp of last update",
+        "artifacts": {
+          "<artifact_type>": {
+            "count": "Number of artifacts",
+            "hash": "Content hash for validation",
+            "last_modified": "Most recent file modification",
+            "breakdown": "Optional category breakdown"
+          }
+        }
+      },
+      "location": ".agent/cache/artifact-index.json",
+      "gitignore": true
+    },
+    "reactive_update": {
+      "description": "Update index on file save events",
+      "triggers": [
+        "File save in monitored directory",
+        "Git checkout/merge",
+        "Manual rebuild request"
+      ],
+      "update_scope": "Only affected artifact type, not full rebuild",
+      "debouncing": "Aggregate rapid changes (100ms window)"
+    },
+    "staleness_detection": {
+      "description": "Determine when cache needs refresh",
+      "methods": {
+        "time_based": "Index older than threshold (e.g., 1 hour)",
+        "hash_based": "Directory hash differs from cached hash",
+        "file_count": "Quick file count differs from cached count"
+      },
+      "fallback": "If stale, run fast file-based count before commit"
+    },
+    "file_based_counting": {
+      "description": "Fast alternative to subprocess-based counting",
+      "implementation": {
+        "test_functions": "Regex scan for def test_* patterns",
+        "file_count": "Simple glob with exclusions",
+        "directory_count": "Count matching directories"
+      },
+      "performance": "~100x faster than pytest --collect-only",
+      "trade_off": "May slightly differ from pytest (e.g., parametrized tests)"
+    },
+    "directory_triggers": {
+      "description": "Map directories to affected artifact types",
+      "example": {
+        ".agent/agents": ["agents"],
+        ".agent/skills": ["skills"],
+        "tests": ["tests"]
+      },
+      "usage": "On file change, update only relevant index sections"
+    }
+  },
+  "implementation_guidance": {
+    "minimum_viable": {
+      "description": "Simplest implementation that provides value",
+      "steps": [
+        "Add file-based counting method",
+        "Create cache JSON structure",
+        "Modify pre-commit to read from cache",
+        "Run full sync in CI only"
+      ]
+    },
+    "full_reactive": {
+      "description": "Complete reactive system with file watching",
+      "steps": [
+        "Minimum viable implementation",
+        "Add update_index.py script",
+        "Configure VS Code RunOnSave",
+        "Optional: Python watchdog daemon"
+      ]
+    }
+  },
+  "anti_patterns": {
+    "subprocess_in_hooks": {
+      "description": "Running slow subprocesses in pre-commit hooks",
+      "problem": "Breaks developer flow, encourages --no-verify",
+      "solution": "Move to CI or use cached/fast alternatives"
+    },
+    "full_rebuild_always": {
+      "description": "Rebuilding entire index on any change",
+      "problem": "Wastes computation, doesn't scale",
+      "solution": "Use affected detection to update only relevant parts"
+    },
+    "no_validation_layer": {
+      "description": "Relying only on fast local validation",
+      "problem": "Approximate counts may drift from reality",
+      "solution": "Always have CI as authoritative validation layer"
+    }
+  },
+  "related_patterns": [
+    "ci-cd-patterns",
+    "workflow-patterns"
+  ]
+}

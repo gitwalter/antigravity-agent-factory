@@ -1,0 +1,516 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Jira PM Adapter",
+  "description": "Adapter mapping PM interface operations to Jira issues, sprints, and boards",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["metadata", "mappings"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Adapter metadata",
+      "required": ["adapterId", "adapterName", "targetSystem", "version"],
+      "properties": {
+        "adapterId": {
+          "type": "string",
+          "description": "Unique identifier for this adapter",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "adapterName": {
+          "type": "string",
+          "description": "Human-readable adapter name"
+        },
+        "targetSystem": {
+          "type": "string",
+          "description": "Target PM system name"
+        },
+        "version": {
+          "type": "string",
+          "description": "Adapter version"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the adapter"
+        },
+        "mcpServer": {
+          "type": "string",
+          "description": "MCP server name for Jira operations",
+          "default": "atlassian"
+        }
+      }
+    },
+    "mappings": {
+      "type": "object",
+      "description": "Interface to Jira API mappings",
+      "required": ["concepts", "workItems", "planning", "boards", "metrics", "documentation"],
+      "properties": {
+        "concepts": {
+          "type": "object",
+          "description": "Conceptual mappings",
+          "properties": {
+            "epic": {
+              "type": "string",
+              "description": "Epic = Epic issue type"
+            },
+            "story": {
+              "type": "string",
+              "description": "Story = Story issue type with Epic Link field"
+            },
+            "task": {
+              "type": "string",
+              "description": "Task = Task issue type"
+            },
+            "bug": {
+              "type": "string",
+              "description": "Bug = Bug issue type"
+            },
+            "sprint": {
+              "type": "string",
+              "description": "Sprint = Jira Sprint"
+            },
+            "board": {
+              "type": "string",
+              "description": "Board = Scrum/Kanban board"
+            }
+          }
+        },
+        "workItems": {
+          "type": "object",
+          "properties": {
+            "createEpic": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-createJiraIssue"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "fields.summary"},
+                    "description": {"type": "string", "mappedTo": "fields.description"},
+                    "projectId": {"type": "string", "mappedTo": "fields.project.key"},
+                    "issueType": {"type": "string", "default": "Epic"}
+                  }
+                },
+                "example": {
+                  "type": "object",
+                  "properties": {
+                    "fields": {
+                      "project": {"key": "PROJ"},
+                      "summary": "User Authentication Epic",
+                      "description": "Implement user authentication system",
+                      "issuetype": {"name": "Epic"}
+                    }
+                  }
+                }
+              }
+            },
+            "createStory": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-createJiraIssue"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "fields.summary"},
+                    "description": {"type": "string", "mappedTo": "fields.description"},
+                    "epicId": {"type": "string", "mappedTo": "fields.customfield_10011"},
+                    "projectId": {"type": "string", "mappedTo": "fields.project.key"},
+                    "issueType": {"type": "string", "default": "Story"}
+                  }
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Epic Link field (customfield_10011) links story to epic"
+                }
+              }
+            },
+            "createTask": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-createJiraIssue"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "fields.summary"},
+                    "description": {"type": "string", "mappedTo": "fields.description"},
+                    "storyId": {"type": "string", "mappedTo": "fields.parent.key"},
+                    "projectId": {"type": "string", "mappedTo": "fields.project.key"},
+                    "issueType": {"type": "string", "default": "Task"}
+                  }
+                }
+              }
+            },
+            "createBug": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-createJiraIssue"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "fields.summary"},
+                    "description": {"type": "string", "mappedTo": "fields.description"},
+                    "severity": {"type": "string", "mappedTo": "fields.priority.name"},
+                    "projectId": {"type": "string", "mappedTo": "fields.project.key"},
+                    "issueType": {"type": "string", "default": "Bug"}
+                  }
+                }
+              }
+            },
+            "updateStatus": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-updateJiraIssue"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {"type": "string", "mappedTo": "issueIdOrKey"},
+                    "status": {"type": "string", "mappedTo": "transition.name"}
+                  }
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Use transition API to change status"
+                }
+              }
+            },
+            "assignItem": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-updateJiraIssue"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {"type": "string", "mappedTo": "issueIdOrKey"},
+                    "userId": {"type": "string", "mappedTo": "fields.assignee.accountId"}
+                  }
+                }
+              }
+            },
+            "getItem": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-getJiraIssue"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {"type": "string", "mappedTo": "issueIdOrKey"}
+                  }
+                }
+              }
+            },
+            "listItems": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-searchJiraIssues"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "projectId": {"type": "string", "mappedTo": "jql"},
+                    "status": {"type": "string", "mappedTo": "jql"},
+                    "assignee": {"type": "string", "mappedTo": "jql"},
+                    "type": {"type": "string", "mappedTo": "jql"}
+                  }
+                },
+                "jqlPatterns": {
+                  "type": "object",
+                  "description": "JQL query patterns",
+                  "properties": {
+                    "byProject": {
+                      "type": "string",
+                      "example": "project = {PROJECT_KEY}"
+                    },
+                    "byStatus": {
+                      "type": "string",
+                      "example": "status = {STATUS}"
+                    },
+                    "byAssignee": {
+                      "type": "string",
+                      "example": "assignee = {USERNAME}"
+                    },
+                    "byType": {
+                      "type": "string",
+                      "example": "issuetype = {ISSUE_TYPE}"
+                    },
+                    "combined": {
+                      "type": "string",
+                      "example": "project = PROJ AND status = 'In Progress' AND assignee = currentUser()"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "planning": {
+          "type": "object",
+          "properties": {
+            "createSprint": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-createJiraSprint"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "name": {"type": "string", "mappedTo": "name"},
+                    "startDate": {"type": "string", "mappedTo": "startDate"},
+                    "endDate": {"type": "string", "mappedTo": "endDate"},
+                    "projectId": {"type": "string", "mappedTo": "boardId"}
+                  }
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Sprints are created on boards"
+                }
+              }
+            },
+            "addToSprint": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-addIssuesToSprint"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "mappedTo": "sprintId"},
+                    "itemId": {"type": "string", "mappedTo": "issueIds"}
+                  }
+                }
+              }
+            },
+            "closeSprint": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-closeJiraSprint"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "mappedTo": "sprintId"}
+                  }
+                }
+              }
+            },
+            "getSprint": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-getJiraSprint"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "mappedTo": "sprintId"}
+                  }
+                }
+              }
+            },
+            "listSprints": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-listJiraSprints"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "projectId": {"type": "string", "mappedTo": "boardId"},
+                    "state": {"type": "string", "mappedTo": "state"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "boards": {
+          "type": "object",
+          "properties": {
+            "getBoard": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-getJiraBoard"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "boardId": {"type": "string", "mappedTo": "boardId"}
+                  }
+                }
+              }
+            },
+            "moveCard": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-moveJiraIssue"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "cardId": {"type": "string", "mappedTo": "issueIdOrKey"},
+                    "columnId": {"type": "string", "mappedTo": "transition.id"},
+                    "position": {"type": "integer", "mappedTo": "rank"}
+                  }
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Use transition API to move between columns"
+                }
+              }
+            },
+            "getBoardColumns": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-getJiraBoardConfiguration"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "boardId": {"type": "string", "mappedTo": "boardId"}
+                  }
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Board configuration contains column definitions"
+                }
+              }
+            }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "getVelocity": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-getJiraVelocity"
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Calculate from completed sprints story points"
+                },
+                "jqlPattern": {
+                  "type": "string",
+                  "example": "project = PROJ AND sprint in completedSprints() AND resolution = Done"
+                }
+              }
+            },
+            "getBurndown": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "atlassian-getJiraSprintReport"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "mappedTo": "sprintId"}
+                  }
+                }
+              }
+            },
+            "getCycleTime": {
+              "type": "object",
+              "properties": {
+                "note": {
+                  "type": "string",
+                  "description": "Calculate from issue created to resolved timestamps"
+                },
+                "jqlPattern": {
+                  "type": "string",
+                  "example": "project = PROJ AND resolved >= {START_DATE} AND resolved <= {END_DATE}"
+                }
+              }
+            },
+            "getLeadTime": {
+              "type": "object",
+              "properties": {
+                "note": {
+                  "type": "string",
+                  "description": "Calculate from issue created to deployed (custom field)"
+                }
+              }
+            },
+            "getWIP": {
+              "type": "object",
+              "properties": {
+                "jqlPattern": {
+                  "type": "string",
+                  "example": "project = PROJ AND status IN ('In Progress', 'In Review')"
+                }
+              }
+            }
+          }
+        },
+        "documentation": {
+          "type": "object",
+          "properties": {
+            "note": {
+              "type": "string",
+              "description": "Jira documentation typically handled via Confluence adapter"
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "metadata": {
+        "adapterId": "jira-adapter",
+        "adapterName": "Jira PM Adapter",
+        "targetSystem": "Jira",
+        "version": "1.0.0",
+        "description": "Maps PM interface to Jira issues, sprints, and boards",
+        "mcpServer": "atlassian"
+      },
+      "mappings": {
+        "concepts": {
+          "epic": "Epic issue type",
+          "story": "Story with Epic Link",
+          "sprint": "Jira Sprint",
+          "board": "Scrum/Kanban board"
+        }
+      }
+    }
+  ]
+}

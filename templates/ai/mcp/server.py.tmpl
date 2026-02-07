@@ -1,0 +1,262 @@
+"""
+{{SERVER_NAME}} - MCP Server Implementation
+
+Purpose: {{SERVER_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Server operations are traceable
+- A3 (Transparency): Server capabilities are explicit
+"""
+
+from typing import Any, Dict, List, Optional
+from mcp.server import Server
+from mcp.server.stdio import stdio_server
+from mcp.types import Tool, TextContent, ImageContent, EmbeddedResource
+import logging
+import asyncio
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class {{SERVER_CLASS_NAME}}:
+    """
+    {{SERVER_NAME}} - MCP Server
+    
+    Implements an MCP server that provides:
+    - Tools for agent interaction
+    - Resources for data access
+    - Prompts for common tasks
+    
+    Example:
+        >>> server = {{SERVER_CLASS_NAME}}()
+        >>> asyncio.run(server.run())
+    """
+    
+    def __init__(self, name: str = "{{SERVER_NAME}}"):
+        """
+        Initialize MCP server.
+        
+        Args:
+            name: Server name
+        """
+        self.name = name
+        self.server = Server(name)
+        
+        # Register handlers
+        self._register_tools()
+        self._register_resources()
+        self._register_prompts()
+        
+        logger.info(f"Initialized {{SERVER_NAME}} MCP server")
+    
+    def _register_tools(self) -> None:
+        """Register tools with the server."""
+        
+        @self.server.list_tools()
+        async def list_tools() -> List[Tool]:
+            """
+            List available tools.
+            
+            Returns:
+                List of Tool definitions
+            """
+            logger.info("Listing tools")
+            
+            tools = [
+                Tool(
+                    name="{{TOOL_1_NAME}}",
+                    description="{{TOOL_1_DESCRIPTION}}",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "input": {
+                                "type": "string",
+                                "description": "Input parameter"
+                            }
+                        },
+                        "required": ["input"]
+                    }
+                ),
+                Tool(
+                    name="{{TOOL_2_NAME}}",
+                    description="{{TOOL_2_DESCRIPTION}}",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "Query parameter"
+                            }
+                        },
+                        "required": ["query"]
+                    }
+                )
+            ]
+            
+            return tools
+        
+        @self.server.call_tool()
+        async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
+            """
+            Handle tool calls.
+            
+            Args:
+                name: Tool name
+                arguments: Tool arguments
+            
+            Returns:
+                List of content items
+            """
+            logger.info(f"Tool called: {name} with args: {arguments}")
+            
+            try:
+                if name == "{{TOOL_1_NAME}}":
+                    result = await self._handle_tool_1(arguments)
+                elif name == "{{TOOL_2_NAME}}":
+                    result = await self._handle_tool_2(arguments)
+                else:
+                    raise ValueError(f"Unknown tool: {name}")
+                
+                return [TextContent(type="text", text=str(result))]
+                
+            except Exception as e:
+                logger.error(f"Error calling tool {name}: {e}")
+                return [TextContent(type="text", text=f"Error: {str(e)}")]
+    
+    async def _handle_tool_1(self, arguments: Dict[str, Any]) -> str:
+        """
+        Handle {{TOOL_1_NAME}} tool call.
+        
+        Args:
+            arguments: Tool arguments
+        
+        Returns:
+            Tool result
+        """
+        input_param = arguments.get("input", "")
+        logger.info(f"Processing {{TOOL_1_NAME}} with input: {input_param}")
+        
+        # Tool implementation here
+        result = f"Processed: {input_param}"
+        
+        return result
+    
+    async def _handle_tool_2(self, arguments: Dict[str, Any]) -> str:
+        """
+        Handle {{TOOL_2_NAME}} tool call.
+        
+        Args:
+            arguments: Tool arguments
+        
+        Returns:
+            Tool result
+        """
+        query = arguments.get("query", "")
+        logger.info(f"Processing {{TOOL_2_NAME}} with query: {query}")
+        
+        # Tool implementation here
+        result = f"Query result for: {query}"
+        
+        return result
+    
+    def _register_resources(self) -> None:
+        """Register resources with the server."""
+        
+        @self.server.list_resources()
+        async def list_resources() -> List[EmbeddedResource]:
+            """
+            List available resources.
+            
+            Returns:
+                List of Resource definitions
+            """
+            logger.info("Listing resources")
+            
+            resources = [
+                EmbeddedResource(
+                    uri="{{RESOURCE_1_URI}}",
+                    name="{{RESOURCE_1_NAME}}",
+                    description="{{RESOURCE_1_DESCRIPTION}}",
+                    mimeType="text/plain"
+                )
+            ]
+            
+            return resources
+        
+        @self.server.read_resource()
+        async def read_resource(uri: str) -> str:
+            """
+            Read a resource.
+            
+            Args:
+                uri: Resource URI
+            
+            Returns:
+                Resource content
+            """
+            logger.info(f"Reading resource: {uri}")
+            
+            if uri == "{{RESOURCE_1_URI}}":
+                return "{{RESOURCE_1_CONTENT}}"
+            else:
+                raise ValueError(f"Unknown resource: {uri}")
+    
+    def _register_prompts(self) -> None:
+        """Register prompts with the server."""
+        
+        @self.server.list_prompts()
+        async def list_prompts() -> List:
+            """
+            List available prompts.
+            
+            Returns:
+                List of Prompt definitions
+            """
+            logger.info("Listing prompts")
+            
+            # Prompts would be defined here
+            return []
+        
+        @self.server.get_prompt()
+        async def get_prompt(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
+            """
+            Get a prompt.
+            
+            Args:
+                name: Prompt name
+                arguments: Prompt arguments
+            
+            Returns:
+                Prompt content
+            """
+            logger.info(f"Getting prompt: {name}")
+            
+            # Prompt implementation here
+            return [TextContent(type="text", text="Prompt content")]
+    
+    async def run(self) -> None:
+        """
+        Run the MCP server.
+        
+        This starts the server and handles requests.
+        """
+        logger.info("Starting MCP server...")
+        
+        async with stdio_server() as (read_stream, write_stream):
+            await self.server.run(
+                read_stream,
+                write_stream,
+                self.server.create_initialization_options()
+            )
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create and run server
+    server = {{SERVER_CLASS_NAME}}()
+    
+    # Run server
+    asyncio.run(server.run())

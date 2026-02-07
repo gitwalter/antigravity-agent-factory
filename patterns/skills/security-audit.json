@@ -1,0 +1,229 @@
+{
+  "metadata": {
+    "patternId": "security-audit",
+    "patternName": "Security Audit Skill",
+    "category": "verification",
+    "stackAgnostic": true,
+    "description": "Comprehensive security vulnerability detection and remediation guidance",
+    "composable": true,
+    "version": "1.1.0"
+  },
+  "frontmatter": {
+    "name": "security-audit",
+    "description": "Security vulnerability detection and remediation skill",
+    "type": "skill",
+    "skills": [
+      "grounding"
+    ],
+    "knowledge": [
+      "security-checklist.json"
+    ],
+    "verification": {
+      "enabled": true,
+      "profile": "security",
+      "trigger": "always",
+      "description": "Uses grounding-verification with security profile - very strict thresholds for all security claims"
+    }
+  },
+  "sections": {
+    "title": "Security Audit Skill",
+    "introduction": "Performs comprehensive security analysis based on OWASP guidelines and security best practices. Identifies vulnerabilities and provides remediation guidance.",
+    "whenToUse": [
+      "Before deploying to production",
+      "After implementing authentication/authorization",
+      "When handling sensitive data",
+      "During code review for security-sensitive changes",
+      "For compliance requirements"
+    ],
+    "process": [
+      {
+        "step": 1,
+        "name": "Secret Scanning",
+        "description": "Detect hardcoded secrets and credentials",
+        "checks": [
+          "API keys and tokens in code",
+          "Database credentials",
+          "Private keys and certificates",
+          "Environment-specific secrets in code",
+          ".env files committed to repository"
+        ],
+        "patterns": [
+          "password\\s*=\\s*['\"][^'\"]+['\"]",
+          "api[_-]?key\\s*=\\s*['\"][^'\"]+['\"]",
+          "secret\\s*=\\s*['\"][^'\"]+['\"]",
+          "-----BEGIN (RSA |DSA |EC )?PRIVATE KEY-----"
+        ],
+        "severity": "critical"
+      },
+      {
+        "step": 2,
+        "name": "Authentication Review",
+        "description": "Verify authentication implementation",
+        "checks": [
+          "Password hashing algorithm (bcrypt, argon2)",
+          "JWT token configuration (expiry, algorithm)",
+          "Session management security",
+          "Multi-factor authentication where required",
+          "Account lockout mechanisms"
+        ],
+        "referenceKnowledge": "security-checklist.json#authenticationPatterns",
+        "severity": "critical"
+      },
+      {
+        "step": 3,
+        "name": "Authorization Review",
+        "description": "Verify access control implementation",
+        "checks": [
+          "Access control on every endpoint",
+          "Role-based or attribute-based access control",
+          "Resource ownership validation",
+          "Privilege escalation prevention",
+          "Default deny policy"
+        ],
+        "referenceKnowledge": "security-checklist.json#owaspTop10.A01_BrokenAccessControl",
+        "severity": "critical"
+      },
+      {
+        "step": 4,
+        "name": "Input Validation Review",
+        "description": "Check input handling and sanitization",
+        "checks": [
+          "All user inputs validated",
+          "SQL injection prevention (parameterized queries)",
+          "XSS prevention (output encoding)",
+          "Command injection prevention",
+          "Path traversal prevention"
+        ],
+        "referenceKnowledge": "security-checklist.json#owaspTop10.A03_Injection",
+        "severity": "critical"
+      },
+      {
+        "step": 5,
+        "name": "Cryptography Review",
+        "description": "Verify cryptographic implementations",
+        "checks": [
+          "TLS configuration (1.2+)",
+          "Secure random number generation",
+          "Appropriate encryption algorithms",
+          "Key management practices",
+          "Data encryption at rest"
+        ],
+        "referenceKnowledge": "security-checklist.json#owaspTop10.A02_CryptographicFailures",
+        "severity": "high"
+      },
+      {
+        "step": 6,
+        "name": "Dependency Audit",
+        "description": "Check for vulnerable dependencies",
+        "actions": [
+          "Run dependency vulnerability scanner",
+          "Check for outdated packages",
+          "Verify dependency integrity",
+          "Review transitive dependencies"
+        ],
+        "tools": {
+          "python": [
+            "pip-audit",
+            "safety"
+          ],
+          "javascript": [
+            "npm audit",
+            "snyk"
+          ],
+          "csharp": [
+            "dotnet list package --vulnerable"
+          ]
+        },
+        "severity": "high"
+      },
+      {
+        "step": 7,
+        "name": "Security Headers Review",
+        "description": "Verify HTTP security headers",
+        "checks": [
+          "Content-Security-Policy",
+          "X-Content-Type-Options: nosniff",
+          "X-Frame-Options",
+          "Strict-Transport-Security",
+          "CORS configuration"
+        ],
+        "severity": "medium"
+      },
+      {
+        "step": 8,
+        "name": "Verify Security Claims",
+        "description": "Apply two-pass verification to all security-critical claims",
+        "trigger": "always",
+        "profile": "security",
+        "actions": [
+          "For each security finding, run grounding-verification with security profile",
+          "Security profile uses very strict thresholds (delta >= 0.4 for VERIFIED)",
+          "Any UNSUPPORTED claim must not be reported as confirmed",
+          "SUSPICIOUS claims should be flagged for manual review"
+        ],
+        "severity": "critical",
+        "reference": "See grounding-verification.json for full algorithm"
+      },
+      {
+        "step": 9,
+        "name": "Generate Security Report",
+        "description": "Compile verified findings into actionable report",
+        "outputs": [
+          "docs/security_audit_report.md"
+        ],
+        "format": {
+          "sections": [
+            "Executive Summary",
+            "Critical Issues",
+            "High Issues",
+            "Medium Issues",
+            "Recommendations",
+            "Remediation Steps",
+            "Verification Summary"
+          ]
+        },
+        "note": "Include verification status for each finding"
+      }
+    ],
+    "severityLevels": {
+      "critical": "Must fix before deployment - immediate security risk",
+      "high": "Should fix soon - significant security concern",
+      "medium": "Plan to fix - defense in depth improvement",
+      "low": "Consider fixing - minor security enhancement"
+    },
+    "fallbackProcedures": [
+      {
+        "condition": "If automated scanning unavailable",
+        "action": "Perform manual code review using patterns"
+      },
+      {
+        "condition": "If dependency scanner fails",
+        "action": "Manually check package versions against CVE databases"
+      },
+      {
+        "condition": "If uncertain about security impact",
+        "action": "Flag for security team review"
+      }
+    ],
+    "references": [
+      "knowledge/security-checklist.json",
+      "https://owasp.org/www-project-top-ten/",
+      "https://cheatsheetseries.owasp.org/"
+    ],
+    "importantRules": [
+      "All actions must align with core axioms (A1: Verifiability, A2: User Primacy, A3: Transparency, A4: Non-Harm, A5: Consistency)"
+    ]
+  },
+  "variables": [
+    {
+      "name": "{PROJECT_NAME}",
+      "description": "Project name for report",
+      "required": true
+    },
+    {
+      "name": "{LANGUAGE}",
+      "description": "Primary programming language",
+      "required": true
+    }
+  ]
+}

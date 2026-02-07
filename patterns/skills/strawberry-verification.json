@@ -1,0 +1,160 @@
+{
+  "metadata": {
+    "patternId": "strawberry-verification",
+    "patternName": "Strawberry Verification Skill",
+    "category": "core",
+    "stackAgnostic": true,
+    "description": "Factual claim verification using the strawberry profile of grounding-verification",
+    "composable": true,
+    "version": "3.0.0",
+    "extends": "grounding-verification",
+    "profile": "strawberry"
+  },
+  "credits": {
+    "inspiration": "Leon Chlon (https://github.com/lchlon)",
+    "project": "Pythea/Strawberry - https://github.com/leochlon/pythea",
+    "concept": "Information-theoretic approach to hallucination detection using evidence scrubbing and bit-budget analysis",
+    "adaptation": "Antigravity-native implementation using confidence delta comparison (logprobs not available)"
+  },
+  "frontmatter": {
+    "name": "strawberry-verification",
+    "description": "Hallucination detection via two-pass verification. Uses grounding-verification base pattern with strawberry profile.",
+    "type": "skill",
+    "extends": "grounding-verification",
+    "profile": "strawberry",
+    "inspiration": "Leon Chlon - https://github.com/leochlon/pythea"
+  },
+  "profileOverrides": {
+    "description": "Strawberry-specific overrides to base grounding-verification pattern",
+    "note": "This profile is the default/canonical implementation of the original Pythea concept"
+  },
+  "sections": {
+    "title": "Strawberry Verification Skill",
+    "introduction": "Strawberry Verification is the canonical profile of the grounding-verification pattern. It detects 'procedural hallucinations' where the AI generates correct information but then ignores it in the final output. Named after the classic 'how many r's in strawberry' problem.",
+    "concept": {
+      "description": "Detects 'procedural hallucinations' where the AI generates correct information but then ignores it in the final output",
+      "example": "Ask to count r's in 'strawberry'. AI writes 's-t-r-a-w-b-e-r-r-y', identifies each r, counts 3. Then outputs '2'.",
+      "principle": "If removing specific identifiers from evidence doesn't change confidence, the evidence wasn't actually used - indicating confabulation"
+    },
+    "relationship": {
+      "basePattern": "grounding-verification.json",
+      "profile": "strawberry",
+      "inheritance": [
+        "algorithm (two-pass confidence delta)",
+        "promptTemplates",
+        "responseSchema",
+        "errorHandling",
+        "samplingPolicy"
+      ],
+      "profileSpecific": [
+        "scrubbingRules for general identifiers",
+        "standard thresholds (delta >= 0.3 for VERIFIED)",
+        "trigger: on_medium_confidence"
+      ]
+    },
+    "whenToUse": [
+      "After collecting evidence from grounding skills",
+      "Before committing to implementation decisions",
+      "When grounding confidence is MEDIUM",
+      "For critical claims that could cause implementation failures",
+      "When multiple sources provide conflicting information",
+      "As the default profile when no domain-specific profile applies"
+    ],
+    "process": [
+      {
+        "step": 1,
+        "name": "Collect Evidence Spans",
+        "description": "Gather all evidence with sources (see grounding-verification.json for full algorithm)"
+      },
+      {
+        "step": 2,
+        "name": "Extract Claims",
+        "description": "Identify specific, falsifiable claims to verify"
+      },
+      {
+        "step": 3,
+        "name": "Scrubbed Evidence Test",
+        "description": "Evaluate claim with anonymized evidence (identifiers replaced by placeholders)"
+      },
+      {
+        "step": 4,
+        "name": "Full Evidence Test",
+        "description": "Evaluate claim with complete evidence"
+      },
+      {
+        "step": 5,
+        "name": "Calculate Support Level",
+        "description": "Compute confidence delta: delta = full_confidence - scrubbed_confidence"
+      },
+      {
+        "step": 6,
+        "name": "Assign Verification Status",
+        "description": "VERIFIED (delta >= 0.3), PLAUSIBLE, SUSPICIOUS (delta < 0.15), or UNSUPPORTED"
+      },
+      {
+        "step": 7,
+        "name": "Generate Report",
+        "description": "Document all verification results"
+      },
+      {
+        "step": 8,
+        "name": "Determine Action",
+        "description": "PROCEED, PROCEED_WITH_WARNINGS, STOP, or GATHER_MORE_EVIDENCE"
+      }
+    ],
+    "exampleVerification": {
+      "claim": "Table users has field email of type VARCHAR(255)",
+      "evidence": {
+        "S0": "From database docs: users.email stores user email addresses, VARCHAR(255)",
+        "S1": "From schema catalog: email column, type VARCHAR, max length 255"
+      },
+      "scrubbedEvidence": {
+        "S0": "From documentation: [TABLE_1].[FIELD_1] stores [STR_1], VARCHAR([NUM_1])",
+        "S1": "From catalog: [FIELD_1] column, type VARCHAR, max length [NUM_1]"
+      },
+      "scrubbedTest": {
+        "verdict": "UNSURE",
+        "confidence": 0.3,
+        "reasoning": "Cannot verify specific table/field without identifiers"
+      },
+      "fullTest": {
+        "verdict": "ENTAILED",
+        "confidence": 0.95,
+        "reasoning": "Both sources confirm users.email is VARCHAR(255)"
+      },
+      "analysis": {
+        "delta": 0.65,
+        "threshold": 0.3,
+        "result": "delta (0.65) >= threshold (0.3) \u2192 Evidence is essential"
+      },
+      "status": "VERIFIED"
+    },
+    "confabulationIndicators": [
+      "Claim seems obvious without needing the specific evidence",
+      "Scrubbed evidence supports claim just as well as full evidence",
+      "Confidence doesn't increase when adding specific identifiers",
+      "Claim uses generic patterns that would work for any similar object"
+    ],
+    "importantRules": [
+      "ALWAYS perform both scrubbed and full evidence tests",
+      "If scrubbed test passes too easily, be SUSPICIOUS - the claim may be confabulated",
+      "If UNSUPPORTED, do NOT proceed - gather more evidence or ask user",
+      "Document the reasoning for each verification decision",
+      "This is a self-check mechanism - be honest about uncertainty",
+      "All actions must align with core axioms (A1: Verifiability, A2: User Primacy, A3: Transparency, A4: Non-Harm, A5: Consistency)"
+    ],
+    "outputFormat": "### Strawberry Verification Report\n\n**Profile:** strawberry\n**Claims Analyzed:** {COUNT}\n\n---\n\n#### Claim Verification\n\n| Claim | Scrubbed Conf | Full Conf | Delta | Status |\n|-------|---------------|-----------|-------|--------|\n| {CLAIM} | {0.XX} | {0.XX} | {0.XX} | {STATUS} |\n\n---\n\n### RECOMMENDATION: {PROCEED|PROCEED_WITH_WARNINGS|STOP|GATHER_MORE_EVIDENCE}\n\n**Rationale:** {RATIONALE}"
+  },
+  "variables": [
+    {
+      "name": "{CLAIMS}",
+      "description": "List of claims to verify",
+      "required": true
+    },
+    {
+      "name": "{EVIDENCE_SPANS}",
+      "description": "Numbered evidence spans with sources",
+      "required": true
+    }
+  ]
+}

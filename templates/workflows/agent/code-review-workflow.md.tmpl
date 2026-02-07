@@ -1,0 +1,404 @@
+# Automated Code Review Workflow
+
+## Overview
+
+This workflow performs comprehensive automated code review covering correctness, style compliance, security, performance, and maintainability. The workflow generates actionable feedback with severity ratings and can approve or request changes.
+
+**Project:** {{PROJECT_NAME}}  
+**Methodology:** {{METHODOLOGY}}  
+**Stack:** {{STACK}}
+
+## Trigger Conditions
+
+This workflow is activated when:
+
+- Pull request is created or updated
+- Code review is explicitly requested
+- User mentions "review code" or "code review"
+- Before code merge/deployment
+- After feature implementation completion
+- During refactoring process
+
+**Trigger Examples:**
+- "Review PR #{{PR_NUMBER}}"
+- "Code review for {{BRANCH_NAME}}"
+- "Review changes in {{FILE_PATH}}"
+- "Check code quality for {{MODULE_NAME}}"
+
+## Workflow Steps
+
+### Step 1: Fetch PR Changes
+
+**Description:** Retrieve the changes to be reviewed from the pull request or specified files.
+
+**Actions:**
+- Fetch PR diff or file changes
+- Identify modified files
+- Understand change scope
+- Get PR metadata (title, description, labels)
+
+**MCP Tools Used:**
+- `atlassian-getJiraIssue` (if linked to ticket)
+- GitHub API (if PR from GitHub)
+- Git diff analysis
+
+**Outputs:**
+- List of modified files
+- Change summary
+- PR metadata
+
+**Is Mandatory:** Yes
+
+---
+
+### Step 2: Analyze Code Quality
+
+**Description:** Perform comprehensive code quality analysis covering correctness, logic, and error handling.
+
+**Actions:**
+- Review logic correctness
+- Check edge case handling
+- Verify error handling completeness
+- Analyze null/undefined handling
+- Check resource cleanup (connections, files, memory)
+- Identify potential race conditions
+- Review concurrency safety
+
+**Skills Invoked:**
+- `code-review` - Comprehensive review process
+- `grounding` - Verify data model assumptions
+
+**Knowledge Files:**
+- `knowledge/design-patterns.json` - Design patterns and anti-patterns
+- `knowledge/best-practices.json` - Code quality standards
+
+**Outputs:**
+- Correctness issues list
+- Logic errors identified
+- Error handling gaps
+- Resource management issues
+
+**Is Mandatory:** Yes
+
+**Severity:** Critical
+
+---
+
+### Step 3: Check Style Compliance
+
+**Description:** Verify code adheres to project style guide and formatting standards.
+
+**Actions:**
+- Check naming conventions (variables, functions, classes)
+- Verify code formatting consistency
+- Review file and folder organization
+- Check import ordering and grouping
+- Analyze comment quality and necessity
+- Verify indentation and spacing
+
+**Skills Invoked:**
+- `code-review` - Style checking
+
+**Knowledge Files:**
+- `.agentrules` - Project-specific style rules
+- `knowledge/{{STACK}}-patterns.json` - Stack-specific conventions
+
+**Outputs:**
+- Style violations list
+- Formatting issues
+- Naming convention violations
+
+**Is Mandatory:** Yes
+
+**Severity:** Low
+
+---
+
+### Step 4: Security Analysis
+
+**Description:** Perform security review to identify vulnerabilities and security issues.
+
+**Actions:**
+- Check input validation
+- Review authentication/authorization
+- Analyze data exposure risks
+- Check for injection vulnerabilities (SQL, XSS, etc.)
+- Review sensitive data handling
+- Check for hardcoded secrets
+- Analyze dependency vulnerabilities
+
+**Skills Invoked:**
+- `security-audit` - Security-focused review
+- `code-review` - Security checks
+
+**Knowledge Files:**
+- `knowledge/security-checklist.json` - Security best practices
+- `knowledge/{{STACK}}-patterns.json` - Stack-specific security patterns
+
+**Outputs:**
+- Security vulnerabilities list
+- Risk assessment
+- Remediation recommendations
+
+**Is Mandatory:** Yes
+
+**Severity:** Critical
+
+---
+
+### Step 5: Performance Review
+
+**Description:** Analyze code for performance concerns and optimization opportunities.
+
+**Actions:**
+- Analyze algorithm complexity (Big O)
+- Check for N+1 query problems
+- Review memory usage patterns
+- Identify caching opportunities
+- Check for unnecessary computations
+- Analyze loop efficiency
+- Review database query optimization
+
+**Skills Invoked:**
+- `code-review` - Performance analysis
+
+**Knowledge Files:**
+- `knowledge/best-practices.json` - Performance patterns
+- `knowledge/{{STACK}}-patterns.json` - Stack-specific performance patterns
+
+**Outputs:**
+- Performance issues list
+- Optimization suggestions
+- Complexity analysis
+
+**Is Mandatory:** Yes
+
+**Severity:** Medium
+
+---
+
+### Step 6: Design Review
+
+**Description:** Evaluate architectural decisions and design patterns.
+
+**Actions:**
+- Check Single Responsibility Principle adherence
+- Evaluate abstraction levels
+- Review design pattern usage
+- Analyze dependency management
+- Check API design quality
+- Review separation of concerns
+- Evaluate SOLID principles compliance
+
+**Skills Invoked:**
+- `code-review` - Design analysis
+
+**Knowledge Files:**
+- `knowledge/design-patterns.json` - Design patterns catalog
+- `knowledge/architecture-patterns.json` - Architecture patterns
+
+**Outputs:**
+- Design issues list
+- Pattern recommendations
+- Architecture suggestions
+
+**Is Mandatory:** Yes
+
+**Severity:** Medium
+
+---
+
+### Step 7: Generate Review Comments
+
+**Description:** Compile findings into structured review comments with severity ratings.
+
+**Actions:**
+- Categorize issues by severity (critical, high, medium, low)
+- Generate specific feedback for each issue
+- Provide code examples and suggestions
+- Create summary report
+- Format comments for PR platform
+
+**Skills Invoked:**
+- `code-review` - Comment generation
+
+**Outputs:**
+- Review comments (inline and general)
+- Summary report
+- Approval recommendation
+
+**Is Mandatory:** Yes
+
+---
+
+### Step 8: Approve or Request Changes
+
+**Description:** Make final decision based on review findings.
+
+**Actions:**
+- Evaluate overall code quality
+- Check if critical issues exist
+- Determine approval status
+- Post review comments
+- Approve PR or request changes
+
+**Approval Criteria:**
+- **Approve:** No critical or high issues, acceptable overall quality
+- **Request Changes:** Any critical issues, or multiple high issues
+- **Comment:** Minor suggestions only, approve with comments
+
+**Outputs:**
+- PR approval/request changes
+- Review summary posted
+
+**Is Mandatory:** Yes
+
+---
+
+## Review Categories
+
+### Critical Issues
+- Security vulnerabilities
+- Logic errors that cause incorrect behavior
+- Resource leaks
+- Race conditions
+- Data corruption risks
+
+### High Priority Issues
+- Performance bottlenecks
+- Missing error handling
+- Design violations
+- API contract issues
+
+### Medium Priority Issues
+- Code duplication
+- Design pattern improvements
+- Maintainability concerns
+- Documentation gaps
+
+### Low Priority Issues
+- Style inconsistencies
+- Naming improvements
+- Comment suggestions
+- Minor optimizations
+
+## MCP Tools Reference
+
+| Tool | Purpose | When Used |
+|------|---------|-----------|
+| `atlassian-getJiraIssue` | Fetch linked ticket | Step 1 |
+| GitHub API | Fetch PR changes | Step 1 |
+| Git diff | Analyze code changes | Step 1 |
+
+## Skills Reference
+
+| Skill | Purpose | Steps |
+|-------|---------|-------|
+| `code-review` | Comprehensive review process | 2, 3, 4, 5, 6, 7 |
+| `security-audit` | Security-focused analysis | 4 |
+| `grounding` | Verify data model | 2 |
+
+## Agents Reference
+
+| Agent | Purpose | Steps |
+|-------|---------|-------|
+| `code-reviewer` | Orchestrate review process | All |
+
+## Output Artifacts
+
+| Artifact | Location | Purpose |
+|----------|----------|---------|
+| Review report | `docs/code_review_{{PR_NUMBER}}.md` | Comprehensive review |
+| Inline comments | PR comments | File-specific feedback |
+| Summary | PR description | Overall assessment |
+
+## Review Report Format
+
+```markdown
+# Code Review Report
+
+## Summary
+- Files reviewed: {{FILE_COUNT}}
+- Issues found: {{ISSUE_COUNT}}
+- Critical: {{CRITICAL_COUNT}}
+- High: {{HIGH_COUNT}}
+- Medium: {{MEDIUM_COUNT}}
+- Low: {{LOW_COUNT}}
+
+## Critical Issues
+[Detailed list with file locations and suggestions]
+
+## High Priority Issues
+[Detailed list]
+
+## Suggestions
+[Improvement recommendations]
+
+## Positive Observations
+[What was done well]
+
+## Questions for Author
+[Clarifications needed]
+
+## Approval Status
+[Approve / Request Changes / Comment]
+```
+
+## Fallback Procedures
+
+| Condition | Action |
+|-----------|--------|
+| PR fetch fails | Request manual file list |
+| Style guide not specified | Detect from existing codebase patterns |
+| Context unclear | Ask for related ticket or specification |
+| Security assessment needed | Invoke security-audit skill |
+| Review too large | Focus on critical files first |
+| MCP tool unavailable | Use manual review process |
+
+## Example Session
+
+```
+User: Review PR #42
+
+Agent:
+1. Fetching PR #42 changes...
+2. Analyzing code quality...
+   - Found 2 logic issues
+   - Missing error handling in 3 places
+3. Checking style compliance...
+   - 5 naming convention violations
+4. Security analysis...
+   - 1 potential SQL injection risk
+5. Performance review...
+   - N+1 query detected
+6. Design review...
+   - Good use of repository pattern
+7. Generating review comments...
+8. Requesting changes due to critical security issue
+
+[Posts review comments and summary]
+```
+
+## Best Practices
+
+- **Be constructive** - Provide actionable feedback
+- **Prioritize issues** - Focus on critical and high priority
+- **Provide examples** - Show how to fix issues
+- **Note positives** - Acknowledge good practices
+- **Be consistent** - Apply same standards across reviews
+- **Explain why** - Help author understand reasoning
+- **Suggest patterns** - Reference design patterns when relevant
+
+## Related Workflows
+
+- `tdd-workflow.md.tmpl` - Ensure test coverage
+- `refactoring-workflow.md.tmpl` - Address review findings
+- `feature-development-workflow.md.tmpl` - Review feature implementation
+
+## References
+
+- `patterns/skills/code-review.json` - Code review skill definition
+- `patterns/agents/code-reviewer.json` - Code reviewer agent
+- `knowledge/design-patterns.json` - Design patterns catalog
+- `knowledge/security-checklist.json` - Security best practices
+- `knowledge/best-practices.json` - Code quality standards

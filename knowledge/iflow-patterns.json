@@ -1,0 +1,220 @@
+{
+  "metadata": {
+    "name": "Integration Flow Patterns for SAP CPI/PI",
+    "description": "Design patterns and best practices for SAP integration flows",
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-29"
+  },
+  "architecturePatterns": {
+    "pointToPoint": {
+      "description": "Direct integration between two systems",
+      "useCase": "Simple one-to-one integrations",
+      "components": ["Sender Adapter", "Mapping", "Receiver Adapter"],
+      "pros": ["Simple to implement", "Low latency"],
+      "cons": ["Tight coupling", "Not scalable for many connections"]
+    },
+    "contentBasedRouter": {
+      "description": "Route messages based on content",
+      "useCase": "Different processing paths based on message data",
+      "components": ["Router", "Multiple Receiver Channels"],
+      "pattern": "Evaluate XPath/JSONPath expression to determine route"
+    },
+    "splitterAggregator": {
+      "description": "Split message, process parts, aggregate results",
+      "useCase": "Batch processing, parallel processing",
+      "components": ["Splitter", "Processing Steps", "Gather/Aggregator"],
+      "considerations": ["Memory usage", "Order preservation", "Error handling per split"]
+    },
+    "requestReply": {
+      "description": "Synchronous request-response pattern",
+      "useCase": "API calls, real-time queries",
+      "components": ["Request Channel", "Processing", "Response Mapping"],
+      "timeout": "Configure appropriate timeout values"
+    },
+    "publishSubscribe": {
+      "description": "One-to-many message distribution",
+      "useCase": "Event notifications, data replication",
+      "components": ["Multicast", "Multiple Receiver Channels"],
+      "considerations": ["Independent error handling per branch"]
+    },
+    "storeAndForward": {
+      "description": "Persist message before delivery",
+      "useCase": "Guaranteed delivery, async processing",
+      "components": ["JMS Queue/Topic", "Retry Logic"],
+      "benefits": ["Reliability", "Decoupling", "Load leveling"]
+    }
+  },
+  "errorHandlingPatterns": {
+    "exceptionSubprocess": {
+      "description": "Handle errors in dedicated subprocess",
+      "implementation": "Add Exception Subprocess to main process",
+      "actions": ["Log error", "Set error properties", "Send alert", "Route to error queue"]
+    },
+    "retryWithBackoff": {
+      "description": "Retry failed operations with increasing delay",
+      "implementation": "Configure retry in adapter or use custom logic",
+      "pattern": "Retry 3 times with delays: 1s, 5s, 30s"
+    },
+    "deadLetterChannel": {
+      "description": "Route failed messages to separate queue",
+      "useCase": "Preserve failed messages for manual review",
+      "implementation": "JMS queue for failed messages"
+    },
+    "circuitBreaker": {
+      "description": "Fail fast when target system is down",
+      "implementation": "Check system health before processing",
+      "pattern": "After N failures, stop trying for X minutes"
+    },
+    "compensatingTransaction": {
+      "description": "Rollback changes on failure",
+      "useCase": "Multi-step transactions",
+      "implementation": "Track completed steps, reverse on failure"
+    }
+  },
+  "messagePatterns": {
+    "canonicalDataModel": {
+      "description": "Use common format between systems",
+      "benefits": ["Reduced mapping complexity", "System independence"],
+      "implementation": "Define enterprise schema, map to/from it"
+    },
+    "messageEnrichment": {
+      "description": "Add data from external source",
+      "useCase": "Lookup master data, add context",
+      "implementation": "Content Modifier + Request-Reply to lookup service"
+    },
+    "messageFilter": {
+      "description": "Filter out unwanted messages",
+      "implementation": "Router with discard route",
+      "useCase": "Skip test messages, filter by criteria"
+    },
+    "messageValidator": {
+      "description": "Validate message against schema",
+      "implementation": "XML Validator step with XSD",
+      "actions": ["Validate", "Route invalid to error handling"]
+    },
+    "claimCheck": {
+      "description": "Store large payload, pass reference",
+      "useCase": "Large attachments, binary data",
+      "implementation": "Store in external storage, pass ID"
+    }
+  },
+  "adapterPatterns": {
+    "http": {
+      "sender": "HTTPS sender for receiving REST/SOAP calls",
+      "receiver": "HTTP adapter for outbound calls",
+      "security": ["Client Certificate", "OAuth", "Basic Auth"],
+      "considerations": ["Timeout settings", "Connection pooling", "Retry configuration"]
+    },
+    "sftp": {
+      "sender": "Poll files from SFTP server",
+      "receiver": "Write files to SFTP server",
+      "patterns": ["Done file handling", "File locking", "Archiving"],
+      "security": ["SSH key authentication", "Known hosts"]
+    },
+    "odata": {
+      "receiver": "Call SAP OData services",
+      "operations": ["Query", "Create", "Update", "Delete", "Function Import"],
+      "pagination": "Handle $skip and $top for large datasets"
+    },
+    "idoc": {
+      "sender": "Receive IDocs from SAP systems",
+      "receiver": "Send IDocs to SAP systems",
+      "considerations": ["IDoc type", "Partner profiles", "Serialization"]
+    },
+    "jms": {
+      "description": "Message queue integration",
+      "useCase": "Async processing, decoupling",
+      "patterns": ["Point-to-point (Queue)", "Publish-subscribe (Topic)"]
+    },
+    "mail": {
+      "sender": "Receive emails (IMAP/POP3)",
+      "receiver": "Send emails (SMTP)",
+      "considerations": ["Attachment handling", "HTML content"]
+    }
+  },
+  "securityPatterns": {
+    "authentication": {
+      "clientCertificate": "Mutual TLS authentication",
+      "oauth2": "OAuth 2.0 with various grant types",
+      "basicAuth": "Username/password (avoid if possible)",
+      "saml": "SAML assertions for SSO"
+    },
+    "authorization": {
+      "roleBasedRouting": "Route based on user roles",
+      "contentFiltering": "Filter data based on permissions"
+    },
+    "dataProtection": {
+      "encryption": "Encrypt sensitive payload fields",
+      "masking": "Mask PII in logs",
+      "signing": "Digital signatures for non-repudiation"
+    },
+    "credentialManagement": {
+      "secureParameter": "Store credentials in Secure Parameter Store",
+      "keystore": "Manage certificates in Keystore",
+      "rotation": "Implement credential rotation process"
+    }
+  },
+  "performancePatterns": {
+    "parallelProcessing": {
+      "description": "Process items in parallel",
+      "implementation": "Parallel Multicast or Splitter with parallel processing",
+      "considerations": ["Resource usage", "Order independence"]
+    },
+    "caching": {
+      "description": "Cache frequently accessed data",
+      "implementation": "Global variables or external cache",
+      "useCase": "Master data lookups, configuration"
+    },
+    "batching": {
+      "description": "Combine messages for bulk processing",
+      "implementation": "Aggregator with batch criteria",
+      "benefits": ["Reduced API calls", "Better throughput"]
+    },
+    "streaming": {
+      "description": "Process large files without loading fully",
+      "implementation": "Streaming-enabled adapters and steps",
+      "useCase": "Large CSV/XML files"
+    }
+  },
+  "monitoringPatterns": {
+    "tracing": {
+      "description": "Add trace points throughout flow",
+      "implementation": "Log steps with messageLog",
+      "data": ["Timestamps", "Message IDs", "Key business data"]
+    },
+    "alerting": {
+      "description": "Send alerts on specific conditions",
+      "channels": ["Email", "Slack/Teams webhook", "SNMP"],
+      "triggers": ["Errors", "SLA breaches", "Volume thresholds"]
+    },
+    "healthCheck": {
+      "description": "Expose health endpoint",
+      "implementation": "Dedicated iFlow returning status",
+      "checks": ["Connectivity", "Queue depth", "Error rate"]
+    }
+  },
+  "bestPractices": [
+    "Use exception subprocesses for error handling",
+    "Implement proper logging with business context",
+    "Use external parameters for configuration",
+    "Design for idempotency where possible",
+    "Implement correlation IDs for tracing",
+    "Use content-based routing over multiple iFlows",
+    "Keep iFlows focused (single responsibility)",
+    "Document all interfaces and mappings",
+    "Test with various payload sizes and error conditions",
+    "Monitor message processing times and volumes"
+  ],
+  "antiPatterns": [
+    "Hardcoding configuration in scripts",
+    "Ignoring error handling",
+    "Creating overly complex single iFlows",
+    "Not considering retry and idempotency",
+    "Logging sensitive data",
+    "Tight coupling between iFlows",
+    "Not handling large payloads properly",
+    "Missing timeout configuration",
+    "No monitoring or alerting",
+    "Not testing error scenarios"
+  ]
+}

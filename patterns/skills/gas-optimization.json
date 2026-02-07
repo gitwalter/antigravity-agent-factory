@@ -1,0 +1,118 @@
+{
+  "metadata": {
+    "patternId": "gas-optimization",
+    "patternName": "Gas Optimization Skill",
+    "category": "optimization",
+    "stackAgnostic": false,
+    "stacks": [
+      "solidity",
+      "ethereum"
+    ],
+    "description": "Optimize smart contract gas consumption"
+  },
+  "frontmatter": {
+    "name": "gas-optimization",
+    "description": "Reduce gas costs in smart contracts without sacrificing security",
+    "type": "skill",
+    "knowledge": [
+      "solidity-patterns.json"
+    ]
+  },
+  "sections": {
+    "title": "Gas Optimization Skill",
+    "purpose": "Reduce transaction costs by optimizing storage, computation, and calldata usage while maintaining code security and readability.",
+    "importantRules": [
+      "NEVER sacrifice security for gas savings",
+      "Always measure before and after optimization",
+      "Document gas-saving techniques used",
+      "Consider mainnet vs L2 gas differences",
+      "All actions must align with core axioms (A1: Verifiability, A2: User Primacy, A3: Transparency, A4: Non-Harm, A5: Consistency)"
+    ],
+    "workflow": [
+      {
+        "step": 1,
+        "name": "Profile Gas Usage",
+        "description": "Measure current gas consumption",
+        "actions": [
+          "Run gas reporter (forge test --gas-report)",
+          "Identify highest-cost functions",
+          "Analyze storage access patterns",
+          "Review calldata usage"
+        ]
+      },
+      {
+        "step": 2,
+        "name": "Storage Optimization",
+        "description": "Reduce storage costs (most expensive)",
+        "patterns": [
+          "Pack variables into single slots (uint128 + uint128)",
+          "Use mappings over arrays for sparse data",
+          "Cache storage in memory for multiple reads",
+          "Use immutable for deploy-time constants",
+          "Use constant for compile-time constants"
+        ]
+      },
+      {
+        "step": 3,
+        "name": "Computation Optimization",
+        "description": "Reduce computation costs",
+        "patterns": [
+          "Use unchecked blocks for safe arithmetic",
+          "Short-circuit boolean expressions",
+          "Use ++i instead of i++",
+          "Avoid redundant calculations in loops",
+          "Use bit shifting for power-of-2 operations"
+        ]
+      },
+      {
+        "step": 4,
+        "name": "Calldata Optimization",
+        "description": "Reduce calldata costs",
+        "patterns": [
+          "Use calldata instead of memory for read-only arrays",
+          "Batch operations to reduce base transaction cost",
+          "Use bytes32 instead of string where possible",
+          "Consider function selector optimization"
+        ]
+      },
+      {
+        "step": 5,
+        "name": "Verify Savings",
+        "description": "Measure optimization results",
+        "actions": [
+          "Run gas reporter again",
+          "Compare before/after",
+          "Verify no security regressions",
+          "Document savings achieved"
+        ]
+      }
+    ],
+    "tools": [
+      {
+        "name": "forge test --gas-report",
+        "purpose": "Gas profiling"
+      },
+      {
+        "name": "hardhat-gas-reporter",
+        "purpose": "Gas profiling for Hardhat"
+      },
+      {
+        "name": "slither --detect gas-optimizations",
+        "purpose": "Automated suggestions"
+      }
+    ],
+    "outputFormat": "Gas optimization report with before/after comparisons, techniques applied, and estimated savings in gas and USD at current gas prices."
+  },
+  "variables": [
+    {
+      "name": "{GAS_PRICE}",
+      "description": "Gas price for cost estimation",
+      "required": false
+    },
+    {
+      "name": "{TARGET_CHAIN}",
+      "description": "Target chain (mainnet/L2)",
+      "required": false
+    }
+  ]
+}

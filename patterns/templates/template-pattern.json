@@ -1,0 +1,190 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Antigravity Template Pattern Schema",
+  "description": "Schema for defining code and document template patterns in the Antigravity Agent Factory",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["metadata", "structure"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Pattern metadata for factory use",
+      "required": ["patternId", "patternName", "templateType", "stackAgnostic"],
+      "properties": {
+        "patternId": {
+          "type": "string",
+          "description": "Unique identifier for this pattern",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "patternName": {
+          "type": "string",
+          "description": "Human-readable pattern name"
+        },
+        "templateType": {
+          "type": "string",
+          "enum": ["code", "document", "config", "prompt", "diagram"],
+          "description": "Type of template"
+        },
+        "stackAgnostic": {
+          "type": "boolean",
+          "description": "Whether this pattern works across all technology stacks"
+        },
+        "applicableStacks": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of applicable stacks if not stack-agnostic"
+        },
+        "language": {
+          "type": "string",
+          "description": "Programming language for code templates"
+        },
+        "category": {
+          "type": "string",
+          "description": "Template category (e.g., service-class, test-class)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the template"
+        }
+      }
+    },
+    "structure": {
+      "type": "object",
+      "description": "Template structure definition",
+      "properties": {
+        "directory": {
+          "type": "string",
+          "description": "Directory path pattern for the template"
+        },
+        "filename": {
+          "type": "string",
+          "description": "Filename pattern with variables"
+        },
+        "extension": {
+          "type": "string",
+          "description": "File extension"
+        },
+        "content": {
+          "type": "string",
+          "description": "Template content with placeholders"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "required": {"type": "boolean"},
+              "content": {"type": "string"}
+            }
+          },
+          "description": "Template sections for complex templates"
+        }
+      }
+    },
+    "variables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Variable name with braces (e.g., {CLASS_NAME})"
+          },
+          "description": {
+            "type": "string",
+            "description": "What this variable represents"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether this variable must be provided"
+          },
+          "default": {
+            "type": "string",
+            "description": "Default value if not provided"
+          },
+          "pattern": {
+            "type": "string",
+            "description": "Regex pattern for validation"
+          },
+          "examples": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Example values"
+          }
+        }
+      },
+      "description": "Variables that must be replaced when using this template"
+    },
+    "styleVariants": {
+      "type": "object",
+      "description": "Style-specific variants of this template",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "variableNaming": {
+            "type": "object",
+            "description": "Variable naming conventions for this style"
+          },
+          "content": {
+            "type": "string",
+            "description": "Style-specific content override"
+          }
+        }
+      }
+    },
+    "relatedTemplates": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Related template pattern IDs"
+    }
+  },
+  "examples": [
+    {
+      "metadata": {
+        "patternId": "service-class",
+        "patternName": "Service Class Template",
+        "templateType": "code",
+        "stackAgnostic": false,
+        "applicableStacks": ["python", "java", "csharp", "abap"],
+        "category": "service-class",
+        "description": "Template for service layer classes"
+      },
+      "structure": {
+        "directory": "templates/{language}/service-class/",
+        "filename": "{class_name}_service",
+        "extension": ".py"
+      },
+      "variables": [
+        {
+          "name": "{CLASS_NAME}",
+          "description": "Name of the service class",
+          "required": true,
+          "pattern": "^[A-Z][a-zA-Z0-9]*$",
+          "examples": ["UserService", "OrderService"]
+        },
+        {
+          "name": "{ENTITY_NAME}",
+          "description": "Name of the entity this service manages",
+          "required": true,
+          "examples": ["User", "Order"]
+        }
+      ],
+      "styleVariants": {
+        "clean": {
+          "variableNaming": {
+            "local": "snake_case",
+            "parameter": "snake_case"
+          }
+        },
+        "hungarian": {
+          "variableNaming": {
+            "local": "lv_snake_case",
+            "parameter": "iv_snake_case"
+          }
+        }
+      },
+      "relatedTemplates": ["interface", "test-class", "exception-class"]
+    }
+  ]
+}

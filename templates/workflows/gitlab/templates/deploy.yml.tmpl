@@ -1,0 +1,305 @@
+# Deployment CI/CD Template
+#
+# Reusable template for deployment workflows with environment management,
+# manual approval gates, rollback support, and Kubernetes deployment
+# Variables: {{ENVIRONMENT}}, {{KUBERNETES_NAMESPACE}}, {{STAGING_URL}}, {{PRODUCTION_URL}}
+
+# Base deployment job template
+.deploy_base:
+  image: alpine:latest
+  variables:
+    ENVIRONMENT: "${ENVIRONMENT:-staging}"
+    KUBERNETES_NAMESPACE: "${KUBERNETES_NAMESPACE:-default}"
+  before_script:
+    - apk add --no-cache curl jq git
+    - echo "Deploying to environment: ${ENVIRONMENT}"
+    - echo "Namespace: ${KUBERNETES_NAMESPACE}"
+
+# Staging deployment
+.deploy_staging:
+  extends: .deploy_base
+  stage: deploy
+  environment:
+    name: staging
+    url: "${STAGING_URL:-https://staging.example.com}"
+  variables:
+    ENVIRONMENT: "staging"
+    KUBERNETES_NAMESPACE: "${KUBERNETES_NAMESPACE:-staging}"
+  script:
+    - |
+      echo "=== Deploying to Staging ==="
+      echo "Commit: $CI_COMMIT_SHORT_SHA"
+      echo "Branch: $CI_COMMIT_REF_NAME"
+    - |
+      # Example: Deploy using kubectl
+      if command -v kubectl &> /dev/null; then
+        echo "Deploying with kubectl..."
+        kubectl set image deployment/${PROJECT_NAME} \
+          app=${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} \
+          -n ${KUBERNETES_NAMESPACE} || echo "kubectl deployment skipped"
+      fi
+    - |
+      # Example: Deploy using Helm
+      if command -v helm &> /dev/null && [ -f Chart.yaml ]; then
+        echo "Deploying with Helm..."
+        helm upgrade --install ${PROJECT_NAME} . \
+          --namespace ${KUBERNETES_NAMESPACE} \
+          --set image.tag=${DOCKER_IMAGE_TAG} \
+          --set image.repository=${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME} || echo "Helm deployment skipped"
+      fi
+    - |
+      # Example: Deploy using custom script
+      if [ -f scripts/deploy.sh ]; then
+        chmod +x scripts/deploy.sh
+        ./scripts/deploy.sh staging || echo "Custom deployment skipped"
+      fi
+    - |
+      # Example: Deploy using API call
+      if [ -n "${DEPLOY_API_URL}" ]; then
+        curl -X POST "${DEPLOY_API_URL}/deploy" \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer ${DEPLOY_API_TOKEN}" \
+          -d "{\"environment\":\"staging\",\"image\":\"${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}\"}" || echo "API deployment skipped"
+      fi
+    - |
+      # Wait for deployment to be ready
+      echo "Waiting for deployment to be ready..."
+      sleep 10
+    - |
+      # Run smoke tests
+      if [ -n "${STAGING_URL}" ]; then
+        echo "Running smoke tests..."
+        curl -f "${STAGING_URL}/health" || echo "Health check failed"
+        curl -f "${STAGING_URL}/api/status" || echo "Status check failed"
+      fi
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+      when: manual
+      allow_failure: false
+  when: manual
+
+# Production deployment
+.deploy_production:
+  extends: .deploy_base
+  stage: deploy
+  environment:
+    name: production
+    url: "${PRODUCTION_URL:-https://example.com}"
+  variables:
+    ENVIRONMENT: "production"
+    KUBERNETES_NAMESPACE: "${KUBERNETES_NAMESPACE:-production}"
+  script:
+    - |
+      echo "=== Deploying to Production ==="
+      echo "Commit: $CI_COMMIT_SHORT_SHA"
+      echo "Branch: $CI_COMMIT_REF_NAME"
+      echo "⚠️  PRODUCTION DEPLOYMENT - Please verify all checks passed"
+    - |
+      # Example: Deploy using kubectl
+      if command -v kubectl &> /dev/null; then
+        echo "Deploying with kubectl..."
+        kubectl set image deployment/${PROJECT_NAME} \
+          app=${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} \
+          -n ${KUBERNETES_NAMESPACE} || echo "kubectl deployment skipped"
+      fi
+    - |
+      # Example: Deploy using Helm
+      if command -v helm &> /dev/null && [ -f Chart.yaml ]; then
+        echo "Deploying with Helm..."
+        helm upgrade --install ${PROJECT_NAME} . \
+          --namespace ${KUBERNETES_NAMESPACE} \
+          --set image.tag=${DOCKER_IMAGE_TAG} \
+          --set image.repository=${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME} \
+          --wait --timeout 5m || echo "Helm deployment skipped"
+      fi
+    - |
+      # Example: Deploy using custom script
+      if [ -f scripts/deploy.sh ]; then
+        chmod +x scripts/deploy.sh
+        ./scripts/deploy.sh production || echo "Custom deployment skipped"
+      fi
+    - |
+      # Example: Deploy using API call
+      if [ -n "${DEPLOY_API_URL}" ]; then
+        curl -X POST "${DEPLOY_API_URL}/deploy" \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer ${DEPLOY_API_TOKEN}" \
+          -d "{\"environment\":\"production\",\"image\":\"${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}\"}" || echo "API deployment skipped"
+      fi
+    - |
+      # Wait for deployment to be ready
+      echo "Waiting for deployment to be ready..."
+      sleep 30
+    - |
+      # Run smoke tests
+      if [ -n "${PRODUCTION_URL}" ]; then
+        echo "Running smoke tests..."
+        curl -f "${PRODUCTION_URL}/health" || exit 1
+        curl -f "${PRODUCTION_URL}/api/status" || exit 1
+        echo "✅ Smoke tests passed"
+      fi
+    - |
+      # Notify team of successful deployment
+      if [ -n "${SLACK_WEBHOOK_URL}" ]; then
+        curl -X POST "${SLACK_WEBHOOK_URL}" \
+          -H "Content-Type: application/json" \
+          -d "{\"text\":\"✅ Production deployment successful: ${PROJECT_NAME} (${CI_COMMIT_SHORT_SHA})\"}" || echo "Notification skipped"
+      fi
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+      allow_failure: false
+  when: manual
+
+# Rollback deployment
+.deploy_rollback:
+  extends: .deploy_base
+  stage: deploy
+  environment:
+    name: production
+    action: rollback
+  variables:
+    ENVIRONMENT: "production"
+    ROLLBACK_TO_TAG: "${ROLLBACK_TO_TAG:-previous}"
+  script:
+    - |
+      echo "=== Rolling Back Production Deployment ==="
+      echo "⚠️  ROLLBACK OPERATION - Rolling back to: ${ROLLBACK_TO_TAG}"
+    - |
+      # Example: Rollback using kubectl
+      if command -v kubectl &> /dev/null; then
+        echo "Rolling back with kubectl..."
+        kubectl rollout undo deployment/${PROJECT_NAME} -n ${KUBERNETES_NAMESPACE} || exit 1
+        kubectl rollout status deployment/${PROJECT_NAME} -n ${KUBERNETES_NAMESPACE} --timeout=5m || exit 1
+      fi
+    - |
+      # Example: Rollback using Helm
+      if command -v helm &> /dev/null; then
+        echo "Rolling back with Helm..."
+        if [ "${ROLLBACK_TO_TAG}" != "previous" ]; then
+          helm upgrade --install ${PROJECT_NAME} . \
+            --namespace ${KUBERNETES_NAMESPACE} \
+            --set image.tag=${ROLLBACK_TO_TAG} \
+            --set image.repository=${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME} \
+            --wait --timeout 5m || exit 1
+        else
+          helm rollback ${PROJECT_NAME} -n ${KUBERNETES_NAMESPACE} || exit 1
+        fi
+      fi
+    - |
+      # Example: Rollback using custom script
+      if [ -f scripts/rollback.sh ]; then
+        chmod +x scripts/rollback.sh
+        ./scripts/rollback.sh production ${ROLLBACK_TO_TAG} || exit 1
+      fi
+    - |
+      # Verify rollback
+      echo "Verifying rollback..."
+      sleep 15
+      if [ -n "${PRODUCTION_URL}" ]; then
+        curl -f "${PRODUCTION_URL}/health" || exit 1
+        echo "✅ Rollback verified"
+      fi
+    - |
+      # Notify team of rollback
+      if [ -n "${SLACK_WEBHOOK_URL}" ]; then
+        curl -X POST "${SLACK_WEBHOOK_URL}" \
+          -H "Content-Type: application/json" \
+          -d "{\"text\":\"⚠️ Production rollback completed: ${PROJECT_NAME} (rolled back to ${ROLLBACK_TO_TAG})\"}" || echo "Notification skipped"
+      fi
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+      allow_failure: false
+  when: manual
+
+# Blue-green deployment
+.deploy_blue_green:
+  extends: .deploy_base
+  stage: deploy
+  variables:
+    BLUE_VERSION: "${CI_COMMIT_SHORT_SHA}"
+    GREEN_VERSION: "${GREEN_VERSION:-previous}"
+  script:
+    - |
+      echo "=== Blue-Green Deployment ==="
+      echo "Blue (new): ${BLUE_VERSION}"
+      echo "Green (current): ${GREEN_VERSION}"
+    - |
+      # Deploy blue version
+      kubectl apply -f k8s/blue-deployment.yaml || echo "Blue deployment skipped"
+      kubectl set image deployment/${PROJECT_NAME}-blue \
+        app=${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${BLUE_VERSION} \
+        -n ${KUBERNETES_NAMESPACE} || echo "Blue image update skipped"
+    - |
+      # Wait for blue to be ready
+      kubectl rollout status deployment/${PROJECT_NAME}-blue -n ${KUBERNETES_NAMESPACE} --timeout=5m
+    - |
+      # Switch traffic to blue
+      kubectl patch service ${PROJECT_NAME} -n ${KUBERNETES_NAMESPACE} \
+        -p '{"spec":{"selector":{"version":"blue"}}}' || echo "Traffic switch skipped"
+    - |
+      # Run smoke tests on blue
+      sleep 10
+      curl -f "${PRODUCTION_URL}/health" || exit 1
+    - |
+      # Keep green for quick rollback
+      echo "Blue deployment successful. Green kept for rollback."
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+
+# Canary deployment
+.deploy_canary:
+  extends: .deploy_base
+  stage: deploy
+  variables:
+    CANARY_PERCENTAGE: "${CANARY_PERCENTAGE:-10}"
+  script:
+    - |
+      echo "=== Canary Deployment ==="
+      echo "Canary percentage: ${CANARY_PERCENTAGE}%"
+    - |
+      # Deploy canary version
+      kubectl apply -f k8s/canary-deployment.yaml || echo "Canary deployment skipped"
+      kubectl set image deployment/${PROJECT_NAME}-canary \
+        app=${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} \
+        -n ${KUBERNETES_NAMESPACE} || echo "Canary image update skipped"
+    - |
+      # Configure traffic split
+      kubectl apply -f - <<EOF
+      apiVersion: networking.istio.io/v1alpha3
+      kind: VirtualService
+      metadata:
+        name: ${PROJECT_NAME}
+        namespace: ${KUBERNETES_NAMESPACE}
+      spec:
+        hosts:
+        - ${PROJECT_NAME}
+        http:
+        - match:
+          - headers:
+              canary:
+                exact: "true"
+          route:
+          - destination:
+              host: ${PROJECT_NAME}-canary
+              weight: ${CANARY_PERCENTAGE}
+        - route:
+          - destination:
+              host: ${PROJECT_NAME}
+              weight: $((100 - ${CANARY_PERCENTAGE}))
+          - destination:
+              host: ${PROJECT_NAME}-canary
+              weight: ${CANARY_PERCENTAGE}
+      EOF
+    - |
+      # Monitor canary
+      echo "Monitoring canary deployment..."
+      sleep 60
+    - |
+      # Promote canary if successful
+      echo "Canary deployment successful. Ready to promote."
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual

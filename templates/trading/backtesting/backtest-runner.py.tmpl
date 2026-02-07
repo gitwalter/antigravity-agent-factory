@@ -1,0 +1,384 @@
+"""
+{{BACKTEST_NAME}} - Backtesting Framework
+
+Purpose: Run and validate trading strategy backtests with proper validation
+Author: {{AUTHOR}}
+Created: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Comprehensive metrics and reproducible results
+- A4 (Non-Harm): Includes out-of-sample validation to prevent overfitting
+"""
+
+from typing import Dict, Any, Optional, Tuple
+import pandas as pd
+import numpy as np
+from dataclasses import dataclass, field
+from datetime import datetime
+import logging
+import json
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class BacktestConfig:
+    """Configuration for backtesting."""
+    
+    # Capital and costs
+    initial_capital: float = 100_000.0
+    commission_rate: float = 0.001  # 0.1% per trade
+    slippage_rate: float = 0.0005  # 0.05% slippage
+    
+    # Risk-free rate for metrics
+    risk_free_rate: float = 0.05  # 5% annual
+    
+    # Validation settings
+    out_of_sample_ratio: float = 0.2  # 20% holdout
+    
+    # Execution
+    allow_short: bool = True
+    use_stop_loss: bool = True
+    use_take_profit: bool = True
+
+
+@dataclass
+class BacktestResult:
+    """Results from a backtest run."""
+    
+    # Performance metrics
+    total_return: float = 0.0
+    annualized_return: float = 0.0
+    annualized_volatility: float = 0.0
+    sharpe_ratio: float = 0.0
+    sortino_ratio: float = 0.0
+    max_drawdown: float = 0.0
+    calmar_ratio: float = 0.0
+    
+    # Trade statistics
+    total_trades: int = 0
+    winning_trades: int = 0
+    losing_trades: int = 0
+    win_rate: float = 0.0
+    profit_factor: float = 0.0
+    avg_win: float = 0.0
+    avg_loss: float = 0.0
+    
+    # Equity curve
+    equity_curve: pd.Series = field(default_factory=pd.Series)
+    trades: pd.DataFrame = field(default_factory=pd.DataFrame)
+    
+    # Validation
+    in_sample_sharpe: float = 0.0
+    out_of_sample_sharpe: float = 0.0
+    is_valid: bool = False
+
+
+class BacktestEngine:
+    """
+    Backtesting engine for trading strategies.
+    
+    Features:
+    - Realistic transaction costs
+    - Slippage modeling
+    - In-sample / out-of-sample validation
+    - Comprehensive performance metrics
+    
+    Example:
+        >>> engine = BacktestEngine(config)
+        >>> result = engine.run(data, signals)
+        >>> print(f"Sharpe: {result.sharpe_ratio:.2f}")
+    """
+    
+    def __init__(self, config: Optional[BacktestConfig] = None):
+        """
+        Initialize backtest engine.
+        
+        Args:
+            config: Backtest configuration
+        """
+        self.config = config or BacktestConfig()
+        logger.info(f"Initialized BacktestEngine with capital: ${self.config.initial_capital:,.0f}")
+    
+    def run(
+        self,
+        data: pd.DataFrame,
+        signals: pd.Series,
+        stop_loss: Optional[pd.Series] = None,
+        take_profit: Optional[pd.Series] = None
+    ) -> BacktestResult:
+        """
+        Run backtest on signals.
+        
+        Args:
+            data: OHLCV data
+            signals: Signal series (1=long, -1=short, 0=flat)
+            stop_loss: Optional stop loss prices
+            take_profit: Optional take profit prices
+            
+        Returns:
+            BacktestResult with performance metrics
+        """
+        logger.info(f"Running backtest on {len(data)} bars")
+        
+        # Initialize
+        result = BacktestResult()
+        equity = [self.config.initial_capital]
+        position = 0
+        entry_price = 0.0
+        trades = []
+        
+        for i in range(1, len(data)):
+            current_price = data['close'].iloc[i]
+            signal = signals.iloc[i] if i < len(signals) else 0
+            
+            # Check stop loss / take profit
+            if position != 0 and self.config.use_stop_loss and stop_loss is not None:
+                sl_price = stop_loss.iloc[i-1] if i-1 < len(stop_loss) else None
+                if sl_price is not None and not np.isnan(sl_price):
+                    if position > 0 and current_price <= sl_price:
+                        signal = -1  # Close long
+                    elif position < 0 and current_price >= sl_price:
+                        signal = 1  # Close short
+            
+            # Process signals
+            if signal == 1 and position <= 0:  # Go long
+                # Close short if exists
+                if position < 0:
+                    pnl = self._calculate_pnl(entry_price, current_price, -1)
+                    trades.append({
+                        'exit_date': data.index[i],
+                        'exit_price': current_price,
+                        'pnl': pnl,
+                        'side': 'short'
+                    })
+                    equity[-1] += pnl
+                
+                # Enter long
+                position = 1
+                entry_price = current_price * (1 + self.config.slippage_rate)
+                trades.append({
+                    'entry_date': data.index[i],
+                    'entry_price': entry_price,
+                    'side': 'long'
+                })
+                equity[-1] -= entry_price * self.config.commission_rate
+                
+            elif signal == -1 and position >= 0:  # Go short or exit long
+                # Close long if exists
+                if position > 0:
+                    pnl = self._calculate_pnl(entry_price, current_price, 1)
+                    trades.append({
+                        'exit_date': data.index[i],
+                        'exit_price': current_price,
+                        'pnl': pnl,
+                        'side': 'long'
+                    })
+                    equity[-1] += pnl
+                
+                # Enter short if allowed
+                if self.config.allow_short:
+                    position = -1
+                    entry_price = current_price * (1 - self.config.slippage_rate)
+                    trades.append({
+                        'entry_date': data.index[i],
+                        'entry_price': entry_price,
+                        'side': 'short'
+                    })
+                    equity[-1] -= entry_price * self.config.commission_rate
+                else:
+                    position = 0
+            
+            # Mark-to-market
+            if position != 0:
+                mtm = self._calculate_pnl(entry_price, current_price, position)
+                equity.append(self.config.initial_capital + mtm)
+            else:
+                equity.append(equity[-1])
+        
+        # Calculate results
+        result.equity_curve = pd.Series(equity, index=data.index[:len(equity)])
+        result = self._calculate_metrics(result, data, trades)
+        
+        # Validation split
+        result = self._validate_oos(result, data, signals)
+        
+        logger.info(f"Backtest complete: Sharpe={result.sharpe_ratio:.2f}, MaxDD={result.max_drawdown:.2%}")
+        return result
+    
+    def _calculate_pnl(self, entry: float, exit: float, direction: int) -> float:
+        """Calculate P&L for a trade."""
+        gross_pnl = (exit - entry) * direction
+        costs = exit * self.config.commission_rate
+        return gross_pnl - costs
+    
+    def _calculate_metrics(
+        self,
+        result: BacktestResult,
+        data: pd.DataFrame,
+        trades: list
+    ) -> BacktestResult:
+        """Calculate performance metrics."""
+        
+        equity = result.equity_curve
+        returns = equity.pct_change().dropna()
+        
+        # Return metrics
+        result.total_return = (equity.iloc[-1] / equity.iloc[0]) - 1
+        days = (equity.index[-1] - equity.index[0]).days
+        result.annualized_return = (1 + result.total_return) ** (365 / max(days, 1)) - 1
+        result.annualized_volatility = returns.std() * np.sqrt(252)
+        
+        # Risk-adjusted returns
+        excess_returns = returns - self.config.risk_free_rate / 252
+        result.sharpe_ratio = (
+            np.sqrt(252) * excess_returns.mean() / excess_returns.std()
+            if excess_returns.std() > 0 else 0
+        )
+        
+        downside_returns = returns[returns < 0]
+        result.sortino_ratio = (
+            np.sqrt(252) * excess_returns.mean() / downside_returns.std()
+            if len(downside_returns) > 0 and downside_returns.std() > 0 else 0
+        )
+        
+        # Drawdown
+        rolling_max = equity.expanding().max()
+        drawdowns = equity / rolling_max - 1
+        result.max_drawdown = drawdowns.min()
+        
+        result.calmar_ratio = (
+            result.annualized_return / abs(result.max_drawdown)
+            if result.max_drawdown != 0 else 0
+        )
+        
+        # Trade statistics
+        completed_trades = [t for t in trades if 'pnl' in t]
+        result.total_trades = len(completed_trades)
+        
+        if result.total_trades > 0:
+            pnls = [t['pnl'] for t in completed_trades]
+            wins = [p for p in pnls if p > 0]
+            losses = [p for p in pnls if p < 0]
+            
+            result.winning_trades = len(wins)
+            result.losing_trades = len(losses)
+            result.win_rate = len(wins) / len(pnls)
+            result.avg_win = np.mean(wins) if wins else 0
+            result.avg_loss = np.mean(losses) if losses else 0
+            result.profit_factor = (
+                sum(wins) / abs(sum(losses)) if losses else float('inf')
+            )
+        
+        result.trades = pd.DataFrame(completed_trades)
+        return result
+    
+    def _validate_oos(
+        self,
+        result: BacktestResult,
+        data: pd.DataFrame,
+        signals: pd.Series
+    ) -> BacktestResult:
+        """Perform out-of-sample validation."""
+        
+        split_idx = int(len(data) * (1 - self.config.out_of_sample_ratio))
+        
+        # In-sample metrics
+        is_equity = result.equity_curve.iloc[:split_idx]
+        is_returns = is_equity.pct_change().dropna()
+        result.in_sample_sharpe = (
+            np.sqrt(252) * is_returns.mean() / is_returns.std()
+            if is_returns.std() > 0 else 0
+        )
+        
+        # Out-of-sample metrics
+        oos_equity = result.equity_curve.iloc[split_idx:]
+        oos_returns = oos_equity.pct_change().dropna()
+        result.out_of_sample_sharpe = (
+            np.sqrt(252) * oos_returns.mean() / oos_returns.std()
+            if len(oos_returns) > 0 and oos_returns.std() > 0 else 0
+        )
+        
+        # Validation: OOS should be at least 50% of IS
+        result.is_valid = result.out_of_sample_sharpe >= 0.5 * result.in_sample_sharpe
+        
+        logger.info(
+            f"Validation: IS Sharpe={result.in_sample_sharpe:.2f}, "
+            f"OOS Sharpe={result.out_of_sample_sharpe:.2f}, "
+            f"Valid={result.is_valid}"
+        )
+        
+        return result
+    
+    def generate_report(self, result: BacktestResult) -> str:
+        """Generate text report of backtest results."""
+        
+        report = f"""
+========================================
+         BACKTEST REPORT
+========================================
+
+PERFORMANCE SUMMARY
+-------------------
+Total Return:        {result.total_return:.2%}
+Annualized Return:   {result.annualized_return:.2%}
+Annualized Vol:      {result.annualized_volatility:.2%}
+Max Drawdown:        {result.max_drawdown:.2%}
+
+RISK-ADJUSTED METRICS
+---------------------
+Sharpe Ratio:        {result.sharpe_ratio:.2f}
+Sortino Ratio:       {result.sortino_ratio:.2f}
+Calmar Ratio:        {result.calmar_ratio:.2f}
+
+TRADE STATISTICS
+----------------
+Total Trades:        {result.total_trades}
+Win Rate:            {result.win_rate:.2%}
+Profit Factor:       {result.profit_factor:.2f}
+Avg Win:             ${result.avg_win:,.2f}
+Avg Loss:            ${result.avg_loss:,.2f}
+
+VALIDATION
+----------
+In-Sample Sharpe:    {result.in_sample_sharpe:.2f}
+Out-of-Sample Sharpe: {result.out_of_sample_sharpe:.2f}
+Validation Status:   {'PASSED' if result.is_valid else 'FAILED'}
+
+========================================
+"""
+        return report
+
+
+def main():
+    """Example backtest run."""
+    import yfinance as yf
+    
+    # Download data
+    df = yf.download("SPY", start="2020-01-01", end="2024-01-01")
+    df.columns = [col.lower() for col in df.columns]
+    
+    # Simple moving average crossover signals
+    fast_ma = df['close'].rolling(10).mean()
+    slow_ma = df['close'].rolling(50).mean()
+    signals = pd.Series(0, index=df.index)
+    signals[fast_ma > slow_ma] = 1
+    signals[fast_ma < slow_ma] = -1
+    signals = signals.diff().clip(-1, 1)
+    
+    # Run backtest
+    config = BacktestConfig(
+        initial_capital=100_000,
+        commission_rate=0.001,
+        allow_short=False
+    )
+    engine = BacktestEngine(config)
+    result = engine.run(df, signals)
+    
+    # Print report
+    print(engine.generate_report(result))
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    main()

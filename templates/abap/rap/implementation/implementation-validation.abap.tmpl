@@ -1,0 +1,73 @@
+"! <p class="shorttext synchronized">Validation Implementation</p>
+"! Behavior implementation with validation methods for ${ENTITY_NAME}
+"! @author ${AUTHOR}
+"! @date ${DATE}
+"! @version 1.0
+"!
+"! Example usage:
+"!   Replace ${ENTITY_NAME} with your entity name (e.g., ZC_Travel)
+"!   Replace ${CLASS_NAME} with your class name (e.g., ZCL_BP_TRAVEL)
+"!   Implement validation methods for business rule checks
+"!
+CLASS ${CLASS_NAME} DEFINITION PUBLIC ABSTRACT FINAL FOR BEHAVIOR OF ${ENTITY_NAME}.
+  PUBLIC SECTION.
+    INTERFACES if_oo_adt_classrun.
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+CLASS ${CLASS_NAME} IMPLEMENTATION.
+  
+  METHOD ${VALIDATION_METHOD_NAME}.
+    " Validation logic implementation
+    " Check business rules and report failures
+    
+    READ ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        FIELDS ( ${FIELD_TO_VALIDATE} )
+        WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_${ENTITY_NAME}).
+    
+    LOOP AT lt_${ENTITY_NAME} INTO DATA(ls_${ENTITY_NAME}).
+      " Add validation logic here
+      IF ls_${ENTITY_NAME}-${FIELD_TO_VALIDATE} IS INITIAL.
+        " Report validation failure
+        APPEND VALUE #( %tky = ls_${ENTITY_NAME}-%tky ) TO failed-${ENTITY_NAME}.
+        APPEND VALUE #( %tky = ls_${ENTITY_NAME}-%tky
+                        %msg = new_message( id       = ${MESSAGE_CLASS}
+                                           number   = ${MESSAGE_NUMBER}
+                                           severity = if_abap_behv_message=>severity-error
+                                           v1       = ls_${ENTITY_NAME}-${FIELD_TO_VALIDATE} )
+                        %element-${FIELD_TO_VALIDATE} = if_abap_behv=>mk-on ) TO reported-${ENTITY_NAME}.
+      ENDIF.
+    ENDLOOP.
+    
+  ENDMETHOD.
+  
+  METHOD ${VALIDATION_METHOD_NAME_2}.
+    " Additional validation logic
+    " Implement cross-field or complex validations
+    
+    READ ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        FIELDS ( ${FIELD_1} ${FIELD_2} )
+        WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_${ENTITY_NAME}).
+    
+    LOOP AT lt_${ENTITY_NAME} INTO DATA(ls_${ENTITY_NAME}).
+      " Add validation logic here
+      IF ls_${ENTITY_NAME}-${FIELD_1} > ls_${ENTITY_NAME}-${FIELD_2}.
+        " Report validation failure
+        APPEND VALUE #( %tky = ls_${ENTITY_NAME}-%tky ) TO failed-${ENTITY_NAME}.
+        APPEND VALUE #( %tky = ls_${ENTITY_NAME}-%tky
+                        %msg = new_message( id       = ${MESSAGE_CLASS}
+                                           number   = ${MESSAGE_NUMBER}
+                                           severity = if_abap_behv_message=>severity-error )
+                        %element-${FIELD_1} = if_abap_behv=>mk-on
+                        %element-${FIELD_2} = if_abap_behv=>mk-on ) TO reported-${ENTITY_NAME}.
+      ENDIF.
+    ENDLOOP.
+    
+  ENDMETHOD.
+  
+ENDCLASS.

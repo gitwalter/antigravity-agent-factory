@@ -1,0 +1,366 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AutoGen Patterns",
+  "description": "Best practices and patterns for AutoGen multi-agent systems",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A2_user_primacy": "UserProxyAgent ensures user intent is preserved",
+    "A3_transparency": "GroupChat makes agent interactions explicit and traceable"
+  },
+  "agent_patterns": {
+    "assistant_agent": {
+      "description": "AI agent that can use tools and communicate",
+      "use_when": "Need AI agent with capabilities",
+      "code_example": "from autogen import AssistantAgent\nimport os\n\nassistant = AssistantAgent(\n    name='assistant',\n    system_message='''You are a helpful AI assistant.\n    You can use tools to help answer questions and solve problems.''',\n    llm_config={\n        'model': 'gpt-4',\n        'api_key': os.getenv('OPENAI_API_KEY'),\n        'temperature': 0.7\n    },\n    tools=[search_tool, calculator_tool],\n    max_consecutive_auto_reply=5\n)",
+      "best_practices": [
+        "Write clear system messages",
+        "Set max_consecutive_auto_reply to prevent loops",
+        "Configure LLM appropriately",
+        "Choose relevant tools"
+      ],
+      "key_properties": {
+        "name": "Unique agent identifier",
+        "system_message": "Defines agent behavior",
+        "llm_config": "LLM configuration",
+        "tools": "List of available tools",
+        "max_consecutive_auto_reply": "Max auto-replies before human input",
+        "code_execution_config": "Code execution settings"
+      }
+    },
+    "user_proxy_agent": {
+      "description": "Agent that represents the user, can execute code",
+      "use_when": "Need human-in-the-loop or code execution",
+      "code_example": "from autogen import UserProxyAgent\n\nuser_proxy = UserProxyAgent(\n    name='user_proxy',\n    human_input_mode='TERMINATE',\n    max_consecutive_auto_reply=10,\n    code_execution_config={\n        'work_dir': 'coding',\n        'use_docker': False,\n        'timeout': 300\n    },\n    system_message='''A human admin. Execute code and provide feedback.\n    When task is complete, reply TERMINATE.'''\n)",
+      "best_practices": [
+        "Set appropriate human_input_mode",
+        "Configure code_execution_config carefully",
+        "Use Docker for code execution in production",
+        "Set reasonable timeouts"
+      ],
+      "human_input_modes": {
+        "NEVER": "No human input, fully autonomous",
+        "TERMINATE": "Human input only to terminate",
+        "ALWAYS": "Human input for every message"
+      }
+    },
+    "groupchat_agent": {
+      "description": "Agent participating in group chat",
+      "use_when": "Multi-agent collaboration needed",
+      "code_example": "researcher = AssistantAgent(\n    name='researcher',\n    system_message='You are a research specialist.',\n    llm_config={'model': 'gpt-4'}\n)\n\nwriter = AssistantAgent(\n    name='writer',\n    system_message='You are a technical writer.',\n    llm_config={'model': 'gpt-4'}\n)\n\nreviewer = AssistantAgent(\n    name='reviewer',\n    system_message='You are a quality reviewer.',\n    llm_config={'model': 'gpt-4'}\n)",
+      "best_practices": [
+        "Define distinct roles",
+        "Use complementary system messages",
+        "Configure consistent LLM settings"
+      ]
+    }
+  },
+  "groupchat_patterns": {
+    "basic_groupchat": {
+      "description": "Multiple agents collaborating in group chat",
+      "use_when": "Need multi-agent discussion and collaboration",
+      "code_example": "from autogen import GroupChat, GroupChatManager\n\nagents = [researcher, writer, reviewer]\n\n groupchat = GroupChat(\n    agents=agents,\n    messages=[],\n    max_round=12,\n    speaker_selection_method='round_robin'\n)\n\nmanager = GroupChatManager(\n    groupchat=groupchat,\n    llm_config={'model': 'gpt-4'}\n)\n\nuser_proxy.initiate_chat(\n    manager,\n    message='Write a research report on AI agents.'\n)",
+      "best_practices": [
+        "Set max_round to prevent infinite loops",
+        "Choose appropriate speaker_selection_method",
+        "Use capable LLM for manager",
+        "Monitor conversation flow"
+      ]
+    },
+    "round_robin_selection": {
+      "description": "Agents speak in round-robin order",
+      "use_when": "Want equal participation",
+      "code_example": "groupchat = GroupChat(\n    agents=[agent1, agent2, agent3],\n    messages=[],\n    max_round=10,\n    speaker_selection_method='round_robin'\n)",
+      "best_practices": [
+        "Use for balanced discussions",
+        "Set max_round appropriately"
+      ]
+    },
+    "random_selection": {
+      "description": "Random agent selection",
+      "use_when": "Want varied conversation patterns",
+      "code_example": "groupchat = GroupChat(\n    agents=[agent1, agent2, agent3],\n    messages=[],\n    max_round=10,\n    speaker_selection_method='random'\n)",
+      "best_practices": [
+        "Use for exploratory discussions",
+        "May lead to uneven participation"
+      ]
+    },
+    "manual_selection": {
+      "description": "Manual agent selection",
+      "use_when": "Need explicit control over who speaks",
+      "code_example": "groupchat = GroupChat(\n    agents=[agent1, agent2, agent3],\n    messages=[],\n    max_round=10,\n    speaker_selection_method='manual'\n)",
+      "best_practices": [
+        "Use for controlled workflows",
+        "Requires external selection logic"
+      ]
+    },
+    "auto_selection": {
+      "description": "LLM selects next speaker",
+      "use_when": "Want intelligent routing",
+      "code_example": "groupchat = GroupChat(\n    agents=[agent1, agent2, agent3],\n    messages=[],\n    max_round=10,\n    speaker_selection_method='auto'\n)",
+      "best_practices": [
+        "Use capable LLM for selection",
+        "Monitor selection quality",
+        "May be slower than other methods"
+      ]
+    }
+  },
+  "code_execution_patterns": {
+    "local_execution": {
+      "description": "Execute code locally",
+      "use_when": "Development or trusted environments",
+      "code_example": "user_proxy = UserProxyAgent(\n    name='user_proxy',\n    code_execution_config={\n        'work_dir': './coding',\n        'use_docker': False,\n        'timeout': 300\n    }\n)",
+      "best_practices": [
+        "Use only in trusted environments",
+        "Set appropriate timeouts",
+        "Isolate work directory",
+        "Monitor resource usage"
+      ],
+      "security_warning": "Local execution can be dangerous - use Docker in production"
+    },
+    "docker_execution": {
+      "description": "Execute code in Docker container",
+      "use_when": "Production or untrusted code",
+      "code_example": "user_proxy = UserProxyAgent(\n    name='user_proxy',\n    code_execution_config={\n        'work_dir': './coding',\n        'use_docker': True,\n        'docker_image': 'python:3.11',\n        'timeout': 300\n    }\n)",
+      "best_practices": [
+        "Use appropriate Docker image",
+        "Set resource limits",
+        "Configure network isolation",
+        "Clean up containers after execution"
+      ],
+      "security_note": "Docker provides isolation but still requires careful configuration"
+    },
+    "custom_executor": {
+      "description": "Custom code execution handler",
+      "use_when": "Need specialized execution environment",
+      "code_example": "from autogen import CodeExecutor\n\nclass CustomExecutor(CodeExecutor):\n    def __init__(self):\n        super().__init__()\n    \n    def execute_code(self, code, lang='python'):\n        # Custom execution logic\n        result = execute_in_custom_environment(code, lang)\n        return result\n\nuser_proxy = UserProxyAgent(\n    name='user_proxy',\n    code_execution_config={'executor': CustomExecutor()}\n)",
+      "best_practices": [
+        "Implement proper error handling",
+        "Return structured results",
+        "Log execution for debugging"
+      ]
+    }
+  },
+  "human_in_the_loop_patterns": {
+    "terminate_mode": {
+      "description": "Human input only to terminate",
+      "use_when": "Mostly autonomous with human oversight",
+      "code_example": "user_proxy = UserProxyAgent(\n    name='user_proxy',\n    human_input_mode='TERMINATE',\n    max_consecutive_auto_reply=10\n)",
+      "best_practices": [
+        "Set max_consecutive_auto_reply",
+        "Provide clear termination criteria",
+        "Monitor for stuck conversations"
+      ]
+    },
+    "always_mode": {
+      "description": "Human input for every message",
+      "use_when": "Need full human control",
+      "code_example": "user_proxy = UserProxyAgent(\n    name='user_proxy',\n    human_input_mode='ALWAYS'\n)",
+      "best_practices": [
+        "Use for critical decisions",
+        "Provide context for human",
+        "Consider UX implications"
+      ],
+      "axiom_alignment": "A2 (User Primacy) - Full human control"
+    },
+    "never_mode": {
+      "description": "No human input, fully autonomous",
+      "use_when": "Automated workflows",
+      "code_example": "user_proxy = UserProxyAgent(\n    name='user_proxy',\n    human_input_mode='NEVER',\n    max_consecutive_auto_reply=20\n)",
+      "best_practices": [
+        "Set appropriate max_consecutive_auto_reply",
+        "Monitor for loops",
+        "Implement timeout mechanisms"
+      ]
+    }
+  },
+  "nested_chat_patterns": {
+    "sub_conversation": {
+      "description": "Agent initiates sub-conversation with another agent",
+      "use_when": "Need focused discussion between two agents",
+      "code_example": "researcher.initiate_chat(\n    writer,\n    message='Can you help me write this section?',\n    max_turns=3\n)\n\n# After sub-conversation, continue main conversation\nuser_proxy.initiate_chat(\n    researcher,\n    message='What did you discuss with the writer?'\n)",
+      "best_practices": [
+        "Set max_turns for sub-conversations",
+        "Return to main conversation after",
+        "Track conversation context"
+      ]
+    },
+    "delegation_pattern": {
+      "description": "Agent delegates task to another agent",
+      "use_when": "Specialized agent needed for subtask",
+      "code_example": "manager = AssistantAgent(\n    name='manager',\n    system_message='''You are a project manager. When you need\n    specialized help, delegate to the appropriate agent.''',\n    llm_config={'model': 'gpt-4'}\n)\n\n# Manager delegates to researcher\nmanager.initiate_chat(\n    researcher,\n    message='Research AI frameworks for me.',\n    max_turns=5\n)",
+      "best_practices": [
+        "Define clear delegation criteria",
+        "Set max_turns appropriately",
+        "Aggregate results after delegation"
+      ]
+    }
+  },
+  "teachable_agent_patterns": {
+    "teachable_agent": {
+      "description": "Agent that can learn from user feedback",
+      "use_when": "Need adaptive agent behavior",
+      "code_example": "from autogen import TeachableAgent\n\nteachable = TeachableAgent(\n    name='teachable',\n    system_message='You are a helpful assistant that learns from feedback.',\n    llm_config={'model': 'gpt-4'},\n    teach_config={\n        'verbosity': 1,\n        'reset_db': False,\n        'path_to_db_dir': './teachable_db'\n    }\n)\n\nuser_proxy.initiate_chat(\n    teachable,\n    message='Remember that I prefer concise answers.'\n)\n\n# Agent learns and applies preference in future conversations",
+      "best_practices": [
+        "Configure teach_config appropriately",
+        "Use path_to_db_dir for persistence",
+        "Provide clear feedback",
+        "Review learned patterns periodically"
+      ]
+    },
+    "memory_persistence": {
+      "description": "Persist teachable agent memory",
+      "use_when": "Need long-term learning",
+      "code_example": "teachable = TeachableAgent(\n    name='teachable',\n    llm_config={'model': 'gpt-4'},\n    teach_config={\n        'path_to_db_dir': './teachable_db',\n        'reset_db': False\n    }\n)",
+      "best_practices": [
+        "Backup memory database",
+        "Review learned content",
+        "Reset when needed for testing"
+      ]
+    }
+  },
+  "custom_agent_types": {
+    "specialized_agent": {
+      "description": "Create agent with specialized behavior",
+      "use_when": "Need domain-specific agent",
+      "code_example": "class CodeReviewAgent(AssistantAgent):\n    def __init__(self, **kwargs):\n        system_message = '''You are an expert code reviewer.\n        You review code for:\n        1. Correctness\n        2. Performance\n        3. Best practices\n        4. Security issues\n        Provide detailed, actionable feedback.'''\n        super().__init__(\n            system_message=system_message,\n            **kwargs\n        )\n\nreviewer = CodeReviewAgent(\n    name='code_reviewer',\n    llm_config={'model': 'gpt-4'}\n)",
+      "best_practices": [
+        "Inherit from AssistantAgent or UserProxyAgent",
+        "Define clear system messages",
+        "Add custom methods if needed"
+      ]
+    },
+    "tool_specialist": {
+      "description": "Agent specialized in specific tools",
+      "use_when": "Need expert tool usage",
+      "code_example": "data_analyst = AssistantAgent(\n    name='data_analyst',\n    system_message='''You are a data analysis expert.\n    You excel at using pandas, numpy, and visualization tools.''',\n    llm_config={'model': 'gpt-4'},\n    tools=[pandas_tool, matplotlib_tool, sql_tool]\n)",
+      "best_practices": [
+        "Choose tools relevant to specialization",
+        "Write system message emphasizing tool expertise",
+        "Test tool usage patterns"
+      ]
+    }
+  },
+  "workflow_patterns": {
+    "two_agent_workflow": {
+      "description": "Simple two-agent collaboration",
+      "use_when": "Straightforward task delegation",
+      "code_example": "assistant = AssistantAgent(\n    name='assistant',\n    system_message='You are a helpful assistant.',\n    llm_config={'model': 'gpt-4'}\n)\n\nuser_proxy = UserProxyAgent(\n    name='user_proxy',\n    human_input_mode='TERMINATE',\n    code_execution_config={'work_dir': './coding'}\n)\n\nuser_proxy.initiate_chat(\n    assistant,\n    message='Write a Python function to calculate factorial.'\n)",
+      "best_practices": [
+        "Define clear roles",
+        "Set appropriate human_input_mode",
+        "Configure code execution if needed"
+      ]
+    },
+    "multi_agent_workflow": {
+      "description": "Multiple agents working together",
+      "use_when": "Complex task requiring multiple perspectives",
+      "code_example": "agents = [researcher, writer, reviewer]\ngroupchat = GroupChat(\n    agents=agents,\n    messages=[],\n    max_round=12\n)\nmanager = GroupChatManager(\n    groupchat=groupchat,\n    llm_config={'model': 'gpt-4'}\n)\n\nuser_proxy.initiate_chat(\n    manager,\n    message='Create a research report on AI agents.'\n)",
+      "best_practices": [
+        "Define distinct agent roles",
+        "Set max_round appropriately",
+        "Choose appropriate speaker selection",
+        "Monitor conversation flow"
+      ]
+    },
+    "pipeline_workflow": {
+      "description": "Sequential agent handoffs",
+      "use_when": "Tasks have clear sequential dependencies",
+      "code_example": "user_proxy.initiate_chat(\n    researcher,\n    message='Research AI frameworks.'\n)\n\nresearcher.initiate_chat(\n    writer,\n    message='Write article based on research.',\n    max_turns=5\n)\n\nwriter.initiate_chat(\n    reviewer,\n    message='Review this article.',\n    max_turns=3\n)",
+      "best_practices": [
+        "Order agents by dependencies",
+        "Set max_turns for each handoff",
+        "Track context across handoffs"
+      ]
+    }
+  },
+  "tool_integration": {
+    "function_calling": {
+      "description": "Agents use function calling tools",
+      "use_when": "Need structured tool interactions",
+      "code_example": "from autogen.agentchat.contrib.capabilities.teachable_agent import TeachableAgent\nfrom autogen import register_function\n\ndef search_tool(query: str) -> str:\n    '''Search for information.'''\n    return perform_search(query)\n\nregister_function(\n    search_tool,\n    caller=assistant,\n    executor=user_proxy,\n    description='Search for information'\n)\n\nassistant = AssistantAgent(\n    name='assistant',\n    system_message='You can use search_tool to find information.',\n    llm_config={\n        'model': 'gpt-4',\n        'functions': [search_tool]\n    }\n)",
+      "best_practices": [
+        "Use register_function for tool registration",
+        "Provide clear tool descriptions",
+        "Handle tool errors gracefully"
+      ]
+    },
+    "code_tools": {
+      "description": "Agents execute code as tools",
+      "use_when": "Need computational capabilities",
+      "code_example": "user_proxy = UserProxyAgent(\n    name='user_proxy',\n    code_execution_config={\n        'work_dir': './coding',\n        'use_docker': True\n    }\n)\n\nassistant = AssistantAgent(\n    name='assistant',\n    system_message='You can write and execute Python code.',\n    llm_config={'model': 'gpt-4'}\n)\n\n# Assistant can request code execution through user_proxy",
+      "best_practices": [
+        "Configure code_execution_config appropriately",
+        "Use Docker for production",
+        "Set timeouts and resource limits"
+      ]
+    }
+  },
+  "best_practices": {
+    "agent_design": [
+      "Write clear, specific system messages",
+      "Set max_consecutive_auto_reply to prevent loops",
+      "Choose appropriate LLM configuration",
+      "Define distinct agent roles"
+    ],
+    "groupchat_design": [
+      "Set max_round appropriately",
+      "Choose speaker selection method wisely",
+      "Use capable LLM for manager",
+      "Monitor conversation flow"
+    ],
+    "code_execution": [
+      "Use Docker for production",
+      "Set appropriate timeouts",
+      "Isolate work directories",
+      "Monitor resource usage"
+    ],
+    "security": [
+      "Never execute untrusted code locally",
+      "Use Docker with proper isolation",
+      "Validate inputs before execution",
+      "Set resource limits"
+    ]
+  },
+  "anti_patterns": {
+    "infinite_loops": {
+      "description": "No limits on agent replies",
+      "problem": "Agents loop indefinitely",
+      "solution": "Set max_consecutive_auto_reply and max_round"
+    },
+    "unsafe_code_execution": {
+      "description": "Executing untrusted code locally",
+      "problem": "Security vulnerability",
+      "solution": "Always use Docker for untrusted code"
+    },
+    "vague_system_messages": {
+      "description": "Unclear agent instructions",
+      "problem": "Unpredictable agent behavior",
+      "solution": "Write detailed, specific system messages"
+    },
+    "no_human_oversight": {
+      "description": "Fully autonomous for critical tasks",
+      "problem": "No safety net",
+      "solution": "Use human_input_mode='TERMINATE' or 'ALWAYS' for critical tasks"
+    }
+  },
+  "testing_patterns": {
+    "unit_testing": {
+      "description": "Test individual agents",
+      "code_example": "def test_assistant_agent():\n    assistant = AssistantAgent(\n        name='test_assistant',\n        system_message='You are a test assistant.',\n        llm_config={'model': 'gpt-3.5-turbo'}\n    )\n    \n    # Mock LLM response\n    response = assistant.generate_reply([{'role': 'user', 'content': 'Hello'}], None)\n    assert response is not None",
+      "best_practices": [
+        "Mock LLM responses for deterministic tests",
+        "Test agent initialization",
+        "Verify system message handling"
+      ]
+    },
+    "integration_testing": {
+      "description": "Test agent interactions",
+      "code_example": "def test_two_agent_chat():\n    assistant = AssistantAgent(\n        name='assistant',\n        system_message='You are helpful.',\n        llm_config={'model': 'gpt-3.5-turbo'}\n    )\n    \n    user_proxy = UserProxyAgent(\n        name='user_proxy',\n        human_input_mode='NEVER',\n        max_consecutive_auto_reply=3\n    )\n    \n    user_proxy.initiate_chat(assistant, message='Hello')\n    assert len(user_proxy.chat_messages[assistant]) > 0",
+      "best_practices": [
+        "Use human_input_mode='NEVER' for automated tests",
+        "Set low max_consecutive_auto_reply",
+        "Verify message exchange"
+      ]
+    }
+  }
+}

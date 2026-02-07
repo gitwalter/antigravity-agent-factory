@@ -1,0 +1,127 @@
+/**
+ * Custom Action Handler - Business Logic Implementation
+ * 
+ * Purpose: Implement custom action for ${SERVICE_NAME} service
+ * Author: ${AUTHOR}
+ * Created: ${DATE}
+ * 
+ * Actions are custom operations that can modify data and return results.
+ * Define the action in service.cds first, then implement here.
+ * 
+ * @see https://cap.cloud.sap/docs/guides/providing-services#actions-and-functions
+ */
+
+const cds = require('@sap/cds');
+
+/**
+ * Custom action handler: ${ACTION_NAME}
+ * 
+ * Actions are side-effect operations that can modify data.
+ * They are invoked via POST requests:
+ * POST /${SERVICE_NAME}/${ACTION_NAME}
+ * 
+ * Define the action signature in service.cds:
+ * action ${ACTION_NAME}(param1: String, param2: Integer) returns ${RETURN_TYPE};
+ * 
+ * @param {Object} req - CAP request object containing action parameters
+ * @returns {Object} Action result
+ */
+module.exports = async function ${ACTION_NAME}(req) {
+    const { param1, param2 } = req.data;
+
+    /**
+     * Input validation
+     */
+    if (!param1 || typeof param1 !== 'string') {
+        return req.error(400, 'param1 is required and must be a string');
+    }
+
+    if (param2 !== undefined && (typeof param2 !== 'number' || !Number.isInteger(param2))) {
+        return req.error(400, 'param2 must be an integer');
+    }
+
+    /**
+     * Authorization check
+     * 
+     * Verify user has permission to execute this action
+     */
+    // const user = req.user;
+    // if (!user.hasRole('${REQUIRED_ROLE}')) {
+    //     return req.error(403, 'Insufficient permissions to execute ${ACTION_NAME}');
+    // }
+
+    /**
+     * Business logic implementation
+     * 
+     * Implement your custom business logic here.
+     * This could involve:
+     * - Reading from database
+     * - Performing calculations
+     * - Updating entities
+     * - Calling external services
+     */
+    try {
+        // Example: Read related entities
+        // const entities = await cds.run(
+        //     SELECT.from('${ENTITY_NAME}').where({ field: param1 })
+        // );
+
+        // Example: Perform calculation
+        // const result = performCalculation(param1, param2);
+
+        // Example: Update entities
+        // await cds.run(
+        //     UPDATE('${ENTITY_NAME}')
+        //         .set({ status: 'PROCESSED' })
+        //         .where({ field: param1 })
+        // );
+
+        // Example: Call external service
+        // const externalResult = await callExternalService(param1, param2);
+
+        /**
+         * Return action result
+         * 
+         * The return type should match the action definition in service.cds
+         */
+        return {
+            success: true,
+            message: `${ACTION_NAME} executed successfully`,
+            // result: result,
+            // processedCount: entities.length
+        };
+    } catch (error) {
+        /**
+         * Error handling
+         * 
+         * Log error and return appropriate error response
+         */
+        console.error(`Error executing ${ACTION_NAME}:`, error);
+        return req.error(500, `Failed to execute ${ACTION_NAME}: ${error.message}`);
+    }
+};
+
+/**
+ * Helper function: Perform calculation
+ * 
+ * @param {string} param1 - First parameter
+ * @param {number} param2 - Second parameter
+ * @returns {any} Calculation result
+ */
+// function performCalculation(param1, param2) {
+//     // Implementation
+//     return { /* result */ };
+// }
+
+/**
+ * Helper function: Call external service
+ * 
+ * @param {string} param1 - First parameter
+ * @param {number} param2 - Second parameter
+ * @returns {Promise<any>} External service result
+ */
+// async function callExternalService(param1, param2) {
+//     // Implementation using axios, fetch, or CAP's HTTP client
+//     // const response = await cds.connect.to('external-service').get('/endpoint', { param1, param2 });
+//     // return response.data;
+// }

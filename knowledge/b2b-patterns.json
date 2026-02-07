@@ -1,0 +1,145 @@
+{
+  "metadata": {
+    "name": "B2B Integration Patterns",
+    "description": "EDI, AS2, partner management, and B2B integration patterns for SAP CPI",
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-30"
+  },
+  "ediStandards": {
+    "edifact": {
+      "description": "UN/EDIFACT - International EDI standard",
+      "structure": ["UNB (Interchange Header)", "UNH (Message Header)", "Segments", "UNT (Message Trailer)", "UNZ (Interchange Trailer)"],
+      "commonMessages": [
+        {"type": "ORDERS", "description": "Purchase order"},
+        {"type": "ORDRSP", "description": "Order response"},
+        {"type": "DESADV", "description": "Despatch advice"},
+        {"type": "INVOIC", "description": "Invoice"},
+        {"type": "PRICAT", "description": "Price/sales catalogue"},
+        {"type": "INVRPT", "description": "Inventory report"}
+      ],
+      "versions": ["D96A", "D01B", "D16A"]
+    },
+    "x12": {
+      "description": "ANSI ASC X12 - North American EDI standard",
+      "structure": ["ISA (Interchange Header)", "GS (Functional Group Header)", "ST (Transaction Set Header)", "Segments", "SE (Transaction Set Trailer)", "GE (Functional Group Trailer)", "IEA (Interchange Trailer)"],
+      "commonMessages": [
+        {"type": "850", "description": "Purchase order"},
+        {"type": "855", "description": "Purchase order acknowledgment"},
+        {"type": "856", "description": "Ship notice/manifest"},
+        {"type": "810", "description": "Invoice"},
+        {"type": "997", "description": "Functional acknowledgment"},
+        {"type": "824", "description": "Application advice"}
+      ],
+      "versions": ["4010", "5010", "7030"]
+    }
+  },
+  "as2Protocol": {
+    "description": "Applicability Statement 2 - Secure HTTP-based EDI transport",
+    "features": ["Encryption (S/MIME)", "Digital signatures", "MDN (Message Disposition Notification)", "Non-repudiation"],
+    "configuration": {
+      "sender": ["AS2 ID", "Signing certificate", "Encryption certificate"],
+      "receiver": ["Partner AS2 ID", "Partner certificate", "MDN settings"]
+    },
+    "mdnTypes": {
+      "synchronous": "MDN returned in HTTP response",
+      "asynchronous": "MDN returned via separate HTTP request"
+    },
+    "security": {
+      "signing": "SHA-256 or SHA-384",
+      "encryption": "AES-256 or 3DES"
+    }
+  },
+  "partnerManagement": {
+    "partnerProfile": {
+      "description": "Configuration for trading partner",
+      "attributes": [
+        {"name": "partnerId", "description": "Unique partner identifier"},
+        {"name": "partnerName", "description": "Partner display name"},
+        {"name": "ediQualifier", "description": "EDI ID qualifier (ZZ, 01, 14)"},
+        {"name": "ediId", "description": "EDI partner ID"},
+        {"name": "as2Id", "description": "AS2 identifier"},
+        {"name": "certificates", "description": "Signing/encryption certificates"},
+        {"name": "endpoints", "description": "Partner endpoints"},
+        {"name": "messageTypes", "description": "Supported message types"}
+      ]
+    },
+    "partnerAgreement": {
+      "description": "Bilateral agreement between partners",
+      "elements": ["Message types", "Transport protocol", "Security requirements", "SLA", "Error handling"]
+    },
+    "partnerDirectory": {
+      "description": "CPI Partner Directory for centralized partner data",
+      "entities": ["StringParameter", "BinaryParameter", "AlternativePartner", "AuthorizedUser"]
+    }
+  },
+  "idocIntegration": {
+    "description": "SAP IDoc for B2B with SAP systems",
+    "components": {
+      "idocType": "Structure definition (e.g., ORDERS05)",
+      "messageType": "Logical message (e.g., ORDERS)",
+      "partnerProfile": "WE20 configuration",
+      "portDefinition": "WE21 port configuration"
+    },
+    "direction": {
+      "outbound": "SAP to Partner (via ALE/RFC)",
+      "inbound": "Partner to SAP (via RFC/file)"
+    },
+    "processingModes": ["Immediate", "Collect", "Scheduled"]
+  },
+  "acknowledgments": {
+    "functionalAck": {
+      "description": "Confirms receipt and syntactic validity",
+      "edifact": "CONTRL",
+      "x12": "997/999"
+    },
+    "applicationAck": {
+      "description": "Confirms business processing",
+      "edifact": "APERAK",
+      "x12": "824"
+    },
+    "mdnAck": {
+      "description": "AS2 Message Disposition Notification",
+      "types": ["processed", "failed", "warning"]
+    }
+  },
+  "errorHandling": {
+    "syntaxErrors": {
+      "description": "EDI parsing/validation failures",
+      "response": "Generate negative acknowledgment"
+    },
+    "businessErrors": {
+      "description": "Business rule violations",
+      "response": "Generate application acknowledgment with error details"
+    },
+    "transportErrors": {
+      "description": "Communication failures",
+      "response": "Retry with backoff, alert on failure"
+    }
+  },
+  "mappingPatterns": {
+    "ediToIdoc": {
+      "description": "Map EDI message to SAP IDoc",
+      "steps": ["Parse EDI", "Map to IDoc structure", "Set control record", "Post to SAP"]
+    },
+    "idocToEdi": {
+      "description": "Map SAP IDoc to EDI message",
+      "steps": ["Receive IDoc", "Map to EDI structure", "Generate EDI envelope", "Send to partner"]
+    },
+    "integrationAdvisor": {
+      "description": "SAP Integration Advisor for B2B mapping",
+      "features": ["AI-assisted mapping", "Message implementation guidelines (MIG)", "Mapping templates"]
+    }
+  },
+  "bestPractices": [
+    "Use Partner Directory for centralized partner configuration",
+    "Implement proper acknowledgment handling",
+    "Store original messages for audit/compliance",
+    "Use correlation IDs for end-to-end tracking",
+    "Implement retry logic for transient failures",
+    "Monitor message volumes and error rates",
+    "Test with partner in sandbox before production",
+    "Document partner agreements and message specs",
+    "Use Integration Advisor for complex mappings",
+    "Implement proper security (signing, encryption)"
+  ]
+}

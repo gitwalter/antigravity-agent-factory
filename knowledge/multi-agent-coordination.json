@@ -1,0 +1,249 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Multi-Agent Coordination Patterns",
+  "description": "Advanced patterns for coordinating multiple AI agents",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A2_user_primacy": "Coordination ensures user goals are achieved effectively",
+    "A3_transparency": "Coordination patterns make multi-agent behavior explicit"
+  },
+  "supervisor_patterns": {
+    "description": "Supervisor agent coordinates worker agents",
+    "basic_supervisor": {
+      "description": "Simple supervisor routing tasks to workers",
+      "use_when": "Need centralized task distribution",
+      "code_example": "from langgraph.graph import StateGraph, MessagesState, START, END\nfrom typing import TypedDict, Literal\n\nclass SupervisorState(TypedDict):\n    messages: list\n    next_agent: str\n    task_queue: list\n\nclass Supervisor:\n    def __init__(self, workers):\n        self.workers = workers\n    \n    def route_task(self, state: SupervisorState) -> SupervisorState:\n        # Analyze task and route to appropriate worker\n        task = state['task_queue'][0]\n        \n        if 'research' in task.lower():\n            next_agent = 'researcher'\n        elif 'write' in task.lower():\n            next_agent = 'writer'\n        else:\n            next_agent = 'general_worker'\n        \n        return {\n            'next_agent': next_agent,\n            'task_queue': state['task_queue'][1:]\n        }\n\ngraph = StateGraph(SupervisorState)\ngraph.add_node('supervisor', Supervisor().route_task)\ngraph.add_node('researcher', researcher_agent)\ngraph.add_node('writer', writer_agent)\ngraph.add_conditional_edges('supervisor', lambda s: s['next_agent'])\ngraph.add_edge(START, 'supervisor')",
+      "best_practices": [
+        "Keep supervisor logic simple",
+        "Define clear routing criteria",
+        "Handle unknown tasks gracefully",
+        "Monitor worker performance"
+      ]
+    },
+    "intelligent_supervisor": {
+      "description": "Supervisor uses LLM for intelligent routing",
+      "use_when": "Complex routing decisions needed",
+      "code_example": "from langchain_openai import ChatOpenAI\nfrom langchain_core.prompts import ChatPromptTemplate\n\nclass IntelligentSupervisor:\n    def __init__(self):\n        self.llm = ChatOpenAI(model='gpt-4')\n        self.workers = ['researcher', 'writer', 'reviewer', 'coder']\n    \n    def route_task(self, state: SupervisorState) -> SupervisorState:\n        prompt = ChatPromptTemplate.from_template('''\n        Given this task: {task}\n        \n        Available workers: {workers}\n        \n        Which worker should handle this task? Respond with just the worker name.\n        ''')\n        \n        chain = prompt | self.llm\n        result = chain.invoke({\n            'task': state['task_queue'][0],\n            'workers': ', '.join(self.workers)\n        })\n        \n        next_agent = result.content.strip().lower()\n        \n        return {\n            'next_agent': next_agent,\n            'task_queue': state['task_queue'][1:]\n        }",
+      "best_practices": [
+        "Use capable LLM for supervisor",
+        "Provide clear worker descriptions",
+        "Handle invalid routing decisions",
+        "Log routing decisions for analysis"
+      ]
+    },
+    "hierarchical_supervisor": {
+      "description": "Multi-level supervisor hierarchy",
+      "use_when": "Complex organization structure",
+      "code_example": "class HierarchicalSupervisor:\n    def __init__(self):\n        self.top_level_supervisor = TopLevelSupervisor()\n        self.department_supervisors = {\n            'engineering': EngineeringSupervisor(),\n            'research': ResearchSupervisor(),\n            'writing': WritingSupervisor()\n        }\n    \n    def route_task(self, state: SupervisorState) -> SupervisorState:\n        # Top level routes to department\n        department = self.top_level_supervisor.route(state)\n        \n        # Department supervisor routes to worker\n        dept_supervisor = self.department_supervisors[department]\n        worker = dept_supervisor.route(state)\n        \n        return {'next_agent': worker}",
+      "best_practices": [
+        "Define clear hierarchy levels",
+        "Route at appropriate level",
+        "Avoid deep nesting",
+        "Monitor at each level"
+      ]
+    }
+  },
+  "swarm_intelligence": {
+    "description": "Agents work collectively without central control",
+    "particle_swarm": {
+      "description": "Agents explore solution space",
+      "use_when": "Optimization or exploration tasks",
+      "code_example": "class SwarmAgent:\n    def __init__(self, position, velocity):\n        self.position = position\n        self.velocity = velocity\n        self.best_position = position\n        self.best_score = float('-inf')\n    \n    def update(self, global_best_position, w=0.5, c1=1.5, c2=1.5):\n        # Update velocity\n        r1, r2 = random.random(), random.random()\n        self.velocity = (\n            w * self.velocity +\n            c1 * r1 * (self.best_position - self.position) +\n            c2 * r2 * (global_best_position - self.position)\n        )\n        \n        # Update position\n        self.position += self.velocity\n        \n        # Evaluate and update best\n        score = evaluate(self.position)\n        if score > self.best_score:\n            self.best_score = score\n            self.best_position = self.position\n\nclass Swarm:\n    def __init__(self, num_agents=10):\n        self.agents = [SwarmAgent(random_position(), random_velocity()) for _ in range(num_agents)]\n        self.global_best_position = None\n        self.global_best_score = float('-inf')\n    \n    def iterate(self):\n        # Each agent updates\n        for agent in self.agents:\n            agent.update(self.global_best_position)\n            \n            # Update global best\n            if agent.best_score > self.global_best_score:\n                self.global_best_score = agent.best_score\n                self.global_best_position = agent.best_position.copy()",
+      "best_practices": [
+        "Tune parameters (w, c1, c2)",
+        "Set appropriate swarm size",
+        "Define convergence criteria",
+        "Monitor progress"
+      ]
+    },
+    "ant_colony": {
+      "description": "Agents follow pheromone trails",
+      "use_when": "Path finding or optimization",
+      "code_example": "class Ant:\n    def __init__(self, start_node):\n        self.path = [start_node]\n        self.visited = {start_node}\n        self.current_node = start_node\n    \n    def choose_next(self, pheromones, distances, alpha=1, beta=2):\n        # Calculate probabilities based on pheromones and distances\n        probabilities = []\n        \n        for node in available_nodes:\n            if node not in self.visited:\n                pheromone = pheromones[self.current_node][node]\n                distance = distances[self.current_node][node]\n                \n                prob = (pheromone ** alpha) * ((1 / distance) ** beta)\n                probabilities.append((node, prob))\n        \n        # Choose based on probabilities\n        return weighted_choice(probabilities)\n    \n    def deposit_pheromone(self, pheromones, path_length):\n        # Deposit pheromone inversely proportional to path length\n        amount = 1.0 / path_length\n        \n        for i in range(len(self.path) - 1):\n            from_node = self.path[i]\n            to_node = self.path[i + 1]\n            pheromones[from_node][to_node] += amount",
+      "best_practices": [
+        "Tune alpha and beta parameters",
+        "Implement evaporation",
+        "Set appropriate number of ants",
+        "Define termination criteria"
+      ]
+    }
+  },
+  "consensus_mechanisms": {
+    "description": "Agents reach agreement on decisions",
+    "voting_consensus": {
+      "description": "Agents vote on proposals",
+      "use_when": "Need democratic decision-making",
+      "code_example": "class VotingConsensus:\n    def __init__(self, agents, threshold=0.5):\n        self.agents = agents\n        self.threshold = threshold\n    \n    def reach_consensus(self, proposal):\n        votes = []\n        \n        # Each agent votes\n        for agent in self.agents:\n            vote = agent.vote(proposal)\n            votes.append(vote)\n        \n        # Calculate support\n        support = sum(votes) / len(votes)\n        \n        if support >= self.threshold:\n            return {'approved': True, 'support': support, 'votes': votes}\n        else:\n            return {'approved': False, 'support': support, 'votes': votes}",
+      "best_practices": [
+        "Set appropriate threshold",
+        "Handle tie-breaking",
+        "Document voting rationale",
+        "Consider weighted voting"
+      ]
+    },
+    "byzantine_consensus": {
+      "description": "Consensus with faulty agents",
+      "use_when": "Some agents may be unreliable",
+      "code_example": "class ByzantineConsensus:\n    def __init__(self, agents, max_faulty=None):\n        self.agents = agents\n        self.max_faulty = max_faulty or (len(agents) - 1) // 3\n    \n    def reach_consensus(self, proposal):\n        # Phase 1: Propose\n        proposals = {}\n        for agent in self.agents:\n            proposals[agent.id] = agent.propose(proposal)\n        \n        # Phase 2: Vote\n        votes = {}\n        for agent in self.agents:\n            votes[agent.id] = agent.vote(proposals)\n        \n        # Phase 3: Decide\n        # Need 2/3 majority\n        required_votes = (2 * len(self.agents)) // 3 + 1\n        \n        approved_count = sum(1 for v in votes.values() if v == 'approve')\n        \n        return approved_count >= required_votes",
+      "best_practices": [
+        "Handle faulty agents",
+        "Require sufficient majority",
+        "Implement multiple rounds if needed",
+        "Detect and isolate faulty agents"
+      ]
+    },
+    "weighted_consensus": {
+      "description": "Agents have different voting weights",
+      "use_when": "Agents have different expertise or authority",
+      "code_example": "class WeightedConsensus:\n    def __init__(self, agents_with_weights):\n        self.agents = agents_with_weights  # [(agent, weight), ...]\n        self.total_weight = sum(w for _, w in self.agents)\n    \n    def reach_consensus(self, proposal, threshold=0.5):\n        weighted_votes = 0\n        \n        for agent, weight in self.agents:\n            vote = agent.vote(proposal)\n            if vote:\n                weighted_votes += weight\n        \n        support = weighted_votes / self.total_weight\n        \n        return support >= threshold",
+      "best_practices": [
+        "Assign weights based on expertise",
+        "Document weight rationale",
+        "Review weights periodically",
+        "Handle weight updates"
+      ]
+    }
+  },
+  "blackboard_architecture": {
+    "description": "Shared workspace for agent collaboration",
+    "basic_blackboard": {
+      "description": "Simple blackboard for agent communication",
+      "use_when": "Agents need to share information",
+      "code_example": "from threading import Lock\nfrom collections import defaultdict\n\nclass Blackboard:\n    def __init__(self):\n        self.data = {}\n        self.lock = Lock()\n        self.subscribers = defaultdict(list)\n    \n    def write(self, key, value, agent_id=None):\n        with self.lock:\n            self.data[key] = {\n                'value': value,\n                'agent': agent_id,\n                'timestamp': time.time()\n            }\n            \n            # Notify subscribers\n            for callback in self.subscribers[key]:\n                callback(key, value)\n    \n    def read(self, key, default=None):\n        with self.lock:\n            return self.data.get(key, {}).get('value', default)\n    \n    def subscribe(self, key, callback):\n        self.subscribers[key].append(callback)\n\nclass BlackboardAgent:\n    def __init__(self, agent_id, blackboard):\n        self.agent_id = agent_id\n        self.blackboard = blackboard\n    \n    def contribute(self, key, value):\n        self.blackboard.write(key, value, self.agent_id)\n    \n    def read_contribution(self, key):\n        return self.blackboard.read(key)",
+      "best_practices": [
+        "Use locks for thread safety",
+        "Implement subscription mechanism",
+        "Track contributors",
+        "Handle concurrent writes"
+      ]
+    },
+    "structured_blackboard": {
+      "description": "Blackboard with structured data",
+      "use_when": "Need organized data sharing",
+      "code_example": "class StructuredBlackboard:\n    def __init__(self):\n        self.sections = {\n            'problem': {},\n            'partial_solutions': [],\n            'current_solution': None,\n            'metadata': {}\n        }\n        self.lock = Lock()\n    \n    def update_problem(self, description):\n        with self.lock:\n            self.sections['problem'] = {\n                'description': description,\n                'timestamp': time.time()\n            }\n    \n    def add_solution(self, solution, agent_id, quality_score):\n        with self.lock:\n            self.sections['partial_solutions'].append({\n                'solution': solution,\n                'agent': agent_id,\n                'quality': quality_score,\n                'timestamp': time.time()\n            })\n            \n            # Update current best solution\n            if (self.sections['current_solution'] is None or\n                quality_score > self.sections['current_solution']['quality']):\n                self.sections['current_solution'] = {\n                    'solution': solution,\n                    'agent': agent_id,\n                    'quality': quality_score\n                }",
+      "best_practices": [
+        "Define clear sections",
+        "Track solution quality",
+        "Implement solution selection logic",
+        "Monitor blackboard state"
+      ]
+    }
+  },
+  "communication_protocols": {
+    "description": "Protocols for agent communication",
+    "message_passing": {
+      "description": "Agents communicate via messages",
+      "code_example": "from queue import Queue\nfrom typing import Dict, Any\n\nclass Message:\n    def __init__(self, sender, receiver, content, msg_type='inform'):\n        self.sender = sender\n        self.receiver = receiver\n        self.content = content\n        self.type = msg_type\n        self.timestamp = time.time()\n\nclass MessageBus:\n    def __init__(self):\n        self.queues = defaultdict(Queue)\n    \n    def send(self, message: Message):\n        if message.receiver == 'broadcast':\n            # Send to all agents\n            for queue in self.queues.values():\n                queue.put(message)\n        else:\n            # Send to specific agent\n            self.queues[message.receiver].put(message)\n    \n    def receive(self, agent_id, timeout=None):\n        return self.queues[agent_id].get(timeout=timeout)\n\nclass CommunicatingAgent:\n    def __init__(self, agent_id, message_bus):\n        self.agent_id = agent_id\n        self.message_bus = message_bus\n    \n    def send_message(self, receiver, content, msg_type='inform'):\n        message = Message(self.agent_id, receiver, content, msg_type)\n        self.message_bus.send(message)\n    \n    def receive_messages(self):\n        messages = []\n        while True:\n            try:\n                msg = self.message_bus.receive(self.agent_id, timeout=0.1)\n                messages.append(msg)\n            except:\n                break\n        return messages",
+      "best_practices": [
+        "Use message queues",
+        "Support broadcast messages",
+        "Handle message timeouts",
+        "Implement message types"
+      ]
+    },
+    "publish_subscribe": {
+      "description": "Agents publish and subscribe to topics",
+      "code_example": "class PubSubBus:\n    def __init__(self):\n        self.subscribers = defaultdict(list)\n    \n    def subscribe(self, topic, agent_id, callback):\n        self.subscribers[topic].append((agent_id, callback))\n    \n    def publish(self, topic, message, sender_id):\n        for agent_id, callback in self.subscribers[topic]:\n            if agent_id != sender_id:  # Don't send to self\n                callback(topic, message, sender_id)\n\nclass PubSubAgent:\n    def __init__(self, agent_id, pubsub_bus):\n        self.agent_id = agent_id\n        self.pubsub_bus = pubsub_bus\n    \n    def subscribe(self, topic, callback):\n        self.pubsub_bus.subscribe(topic, self.agent_id, callback)\n    \n    def publish(self, topic, message):\n        self.pubsub_bus.publish(topic, message, self.agent_id)",
+      "best_practices": [
+        "Use topics for organization",
+        "Implement filtering",
+        "Handle subscription management",
+        "Support wildcard topics"
+      ]
+    }
+  },
+  "handoff_patterns": {
+    "description": "Patterns for agent task handoffs",
+    "explicit_handoff": {
+      "description": "Explicit task handoff between agents",
+      "code_example": "class TaskHandoff:\n    def __init__(self):\n        self.pending_handoffs = {}\n    \n    def request_handoff(self, from_agent, to_agent, task, context):\n        handoff_id = str(uuid.uuid4())\n        \n        self.pending_handoffs[handoff_id] = {\n            'from': from_agent,\n            'to': to_agent,\n            'task': task,\n            'context': context,\n            'status': 'pending',\n            'timestamp': time.time()\n        }\n        \n        # Notify receiving agent\n        to_agent.receive_handoff(handoff_id, task, context)\n        \n        return handoff_id\n    \n    def accept_handoff(self, handoff_id, agent_id):\n        handoff = self.pending_handoffs[handoff_id]\n        \n        if handoff['to'] != agent_id:\n            raise ValueError('Agent not authorized for handoff')\n        \n        handoff['status'] = 'accepted'\n        return handoff['task'], handoff['context']",
+      "best_practices": [
+        "Track handoff status",
+        "Include context in handoff",
+        "Handle handoff failures",
+        "Set handoff timeouts"
+      ]
+    },
+    "implicit_handoff": {
+      "description": "Handoff through shared state",
+      "code_example": "class ImplicitHandoff:\n    def __init__(self, shared_state):\n        self.shared_state = shared_state\n    \n    def complete_task(self, agent_id, task_id, result):\n        # Mark task as complete\n        self.shared_state['tasks'][task_id] = {\n            'status': 'complete',\n            'result': result,\n            'completed_by': agent_id,\n            'timestamp': time.time()\n        }\n        \n        # Next agent picks up from shared state\n        next_agent = self.find_next_agent(task_id)\n        if next_agent:\n            next_agent.process_task(task_id)",
+      "best_practices": [
+        "Use shared state for coordination",
+        "Implement task status tracking",
+        "Handle race conditions",
+        "Monitor handoff completion"
+      ]
+    }
+  },
+  "state_sharing": {
+    "description": "Patterns for sharing state between agents",
+    "shared_memory": {
+      "description": "Agents share memory",
+      "code_example": "from threading import RLock\n\nclass SharedMemory:\n    def __init__(self):\n        self.data = {}\n        self.lock = RLock()\n        self.version = 0\n    \n    def read(self, key, default=None):\n        with self.lock:\n            return self.data.get(key, default)\n    \n    def write(self, key, value, agent_id=None):\n        with self.lock:\n            self.data[key] = {\n                'value': value,\n                'agent': agent_id,\n                'version': self.version,\n                'timestamp': time.time()\n            }\n            self.version += 1\n    \n    def get_version(self):\n        with self.lock:\n            return self.version",
+      "best_practices": [
+        "Use locks for thread safety",
+        "Track versions for conflict detection",
+        "Log state changes",
+        "Implement state snapshots"
+      ]
+    },
+    "distributed_state": {
+      "description": "State distributed across agents",
+      "code_example": "class DistributedState:\n    def __init__(self, agents):\n        self.agents = agents\n        self.local_states = {agent.id: {} for agent in agents}\n    \n    def read(self, key, agent_id):\n        # Read from local state first\n        if key in self.local_states[agent_id]:\n            return self.local_states[agent_id][key]\n        \n        # Query other agents\n        for other_agent in self.agents:\n            if key in self.local_states[other_agent.id]:\n                return self.local_states[other_agent.id][key]\n        \n        return None\n    \n    def write(self, key, value, agent_id):\n        # Write to local state\n        self.local_states[agent_id][key] = value\n        \n        # Replicate to other agents (eventually consistent)\n        self.replicate(key, value, agent_id)",
+      "best_practices": [
+        "Handle consistency",
+        "Implement replication",
+        "Handle network partitions",
+        "Monitor state divergence"
+      ]
+    }
+  },
+  "best_practices": {
+    "coordination_design": [
+      "Choose appropriate pattern for use case",
+      "Keep coordination logic simple",
+      "Monitor coordination overhead",
+      "Handle failures gracefully"
+    ],
+    "communication": [
+      "Use clear message formats",
+      "Implement message queuing",
+      "Handle message timeouts",
+      "Log all communications"
+    ],
+    "state_management": [
+      "Use locks for shared state",
+      "Track state versions",
+      "Implement state snapshots",
+      "Handle state conflicts"
+    ],
+    "performance": [
+      "Minimize coordination overhead",
+      "Use async communication",
+      "Cache when appropriate",
+      "Monitor bottlenecks"
+    ]
+  },
+  "anti_patterns": {
+    "over_coordination": {
+      "description": "Too much coordination overhead",
+      "problem": "Poor performance",
+      "solution": "Minimize coordination, use local decisions when possible"
+    },
+    "no_failure_handling": {
+      "description": "Not handling agent failures",
+      "problem": "System breaks on failures",
+      "solution": "Implement timeouts, retries, and fallbacks"
+    },
+    "tight_coupling": {
+      "description": "Agents too tightly coupled",
+      "problem": "Hard to modify or scale",
+      "solution": "Use loose coupling, message passing"
+    },
+    "state_conflicts": {
+      "description": "Not handling concurrent state updates",
+      "problem": "Data corruption",
+      "solution": "Use locks, versioning, or conflict resolution"
+    }
+  }
+}

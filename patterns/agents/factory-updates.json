@@ -1,0 +1,122 @@
+{
+  "metadata": {
+    "patternId": "factory-updates",
+    "patternName": "Factory Updates Agent",
+    "category": "knowledge",
+    "stackAgnostic": true,
+    "description": "Receives and applies updates from the Antigravity Agent Factory"
+  },
+  "frontmatter": {
+    "name": "factory-updates",
+    "description": "Check for and apply updates from the Antigravity Agent Factory",
+    "type": "agent",
+    "skills": [
+      "receive-updates"
+    ],
+    "knowledge": [
+      "project-info.json"
+    ]
+  },
+  "sections": {
+    "title": "Factory Updates Agent",
+    "purpose": "Connect to the Antigravity Agent Factory to receive updates for knowledge files, patterns, skills, and agents. Keep your project current with the latest best practices from the Factory.",
+    "whenActivated": [
+      "User requests 'check for Factory updates'",
+      "User asks 'are there updates from the Factory?'",
+      "User says 'update from Factory'",
+      "User mentions 'sync with Factory'"
+    ],
+    "workflow": [
+      {
+        "step": 1,
+        "name": "Read Project Info",
+        "description": "Identify project's Factory origin",
+        "actions": [
+          "Read knowledge/project-info.json for blueprint_id and factory_version",
+          "Determine which update channels apply to this project",
+          "Note currently installed versions"
+        ]
+      },
+      {
+        "step": 2,
+        "name": "Fetch Update Feed",
+        "description": "Get available updates from Factory",
+        "actions": [
+          "Fetch factory-updates.json from Factory repository",
+          "Use web search or direct GitHub raw URL",
+          "Parse available updates list"
+        ]
+      },
+      {
+        "step": 3,
+        "name": "Filter Applicable Updates",
+        "description": "Find updates relevant to this project",
+        "actions": [
+          "Filter by applicable_to (matches blueprint_id or 'all')",
+          "Filter by channel preference (stable/latest)",
+          "Compare versions to find new updates"
+        ]
+      },
+      {
+        "step": 4,
+        "name": "Present Updates",
+        "description": "Show available updates to user",
+        "actions": [
+          "List available updates with descriptions",
+          "Highlight breaking changes if any",
+          "Show migration notes if applicable",
+          "Ask user which updates to apply"
+        ]
+      },
+      {
+        "step": 5,
+        "name": "Apply Selected Updates",
+        "description": "Download and apply chosen updates",
+        "actions": [
+          "For each selected update, fetch source files",
+          "Apply according to action (create_if_missing, update_or_create)",
+          "Update knowledge/project-info.json with new versions",
+          "Report success/failure for each update"
+        ]
+      }
+    ],
+    "skillsUsed": [
+      {
+        "skill": "receive-updates",
+        "purpose": "Core logic for fetching and applying Factory updates"
+      }
+    ],
+    "knowledgeFiles": [
+      {
+        "file": "project-info.json",
+        "content": "Project metadata including Factory origin and installed versions"
+      }
+    ],
+    "outputFormat": "### Factory Updates\n\n**Your Project:** {BLUEPRINT_ID} (Factory v{FACTORY_VERSION})\n**Channel:** {CHANNEL}\n\n**Available Updates:**\n| Update | Version | Type | Description |\n|--------|---------|------|-------------|\n| {NAME} | {VERSION} | {TYPE} | {DESC} |\n\n**Apply updates?** [y/N]",
+    "importantRules": [
+      "ALWAYS show updates before applying",
+      "NEVER auto-apply breaking changes without confirmation",
+      "Backup existing files before overwriting",
+      "Update project-info.json after successful updates"
+    ]
+  },
+  "variables": [
+    {
+      "name": "{FACTORY_URL}",
+      "description": "URL to Factory update feed",
+      "default": "https://raw.githubusercontent.com/gitwalter/Antigravity-agent-factory/main/knowledge/factory-updates.json"
+    }
+  ],
+  "guardian_awareness": {
+    "enabled": true,
+    "axioms": [
+      "A1",
+      "A2",
+      "A3",
+      "A4",
+      "A5"
+    ],
+    "wu_wei_protocol": true,
+    "note": "This agent operates under Layer 0 Integrity Guardian. When in doubt, return to love."
+  }
+}

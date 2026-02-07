@@ -1,0 +1,142 @@
+using Microsoft.EntityFrameworkCore;
+using {{NAMESPACE}}.Domain;
+using {{NAMESPACE}}.Domain.Repositories;
+
+namespace {{NAMESPACE}}.Infrastructure.Repositories;
+
+/// <summary>
+/// {{CLASS_NAME}}Repository - EF Core Repository Implementation
+/// 
+/// Purpose: Data access implementation for {{DOMAIN_NAME}}
+/// Author: {{AUTHOR}}
+/// Created: {{DATE}}
+/// 
+/// Implements repository pattern using Entity Framework Core.
+/// Provides data access abstraction for domain layer.
+/// </summary>
+public class {{CLASS_NAME}}Repository : I{{CLASS_NAME}}Repository
+{
+    private readonly ApplicationDbContext _context;
+
+    /// <summary>
+    /// Initializes a new instance of {{CLASS_NAME}}Repository.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    public {{CLASS_NAME}}Repository(ApplicationDbContext context)
+    {
+        _context = context ?? throw new ArgumentNullException(nameof(context));
+    }
+
+    /// <summary>
+    /// Gets an entity by ID.
+    /// </summary>
+    /// <param name="id">The entity ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The entity if found, null otherwise.</returns>
+    public async Task<{{CLASS_NAME}}?> GetByIdAsync(
+        {{ID_TYPE}} id,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.Set<{{CLASS_NAME}}>()
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets all entities with pagination.
+    /// </summary>
+    /// <param name="pageNumber">Page number (1-based).</param>
+    /// <param name="pageSize">Page size.</param>
+    /// <param name="searchTerm">Optional search term.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of entities.</returns>
+    public async Task<IReadOnlyList<{{CLASS_NAME}}>> GetAllAsync(
+        int pageNumber = 1,
+        int pageSize = 20,
+        string? searchTerm = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _context.Set<{{CLASS_NAME}}>().AsQueryable();
+
+        // Apply search filter if provided
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            query = query.Where(x =>
+                x.Name.Contains(searchTerm) ||
+                (x.Description != null && x.Description.Contains(searchTerm)));
+        }
+
+        // Apply pagination
+        return await query
+            .OrderBy(x => x.Name)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Counts entities matching the search term.
+    /// </summary>
+    /// <param name="searchTerm">Optional search term.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Total count.</returns>
+    public async Task<int> CountAsync(
+        string? searchTerm = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _context.Set<{{CLASS_NAME}}>().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            query = query.Where(x =>
+                x.Name.Contains(searchTerm) ||
+                (x.Description != null && x.Description.Contains(searchTerm)));
+        }
+
+        return await query.CountAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Checks if an entity exists by name.
+    /// </summary>
+    /// <param name="name">The name to check.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>True if exists, false otherwise.</returns>
+    public async Task<bool> ExistsByNameAsync(
+        string name,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.Set<{{CLASS_NAME}}>()
+            .AnyAsync(x => x.Name == name, cancellationToken);
+    }
+
+    /// <summary>
+    /// Adds a new entity.
+    /// </summary>
+    /// <param name="entity">The entity to add.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Task representing the operation.</returns>
+    public async Task AddAsync(
+        {{CLASS_NAME}} entity,
+        CancellationToken cancellationToken = default)
+    {
+        await _context.Set<{{CLASS_NAME}}>().AddAsync(entity, cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates an existing entity.
+    /// </summary>
+    /// <param name="entity">The entity to update.</param>
+    public void Update({{CLASS_NAME}} entity)
+    {
+        _context.Set<{{CLASS_NAME}}>().Update(entity);
+    }
+
+    /// <summary>
+    /// Deletes an entity.
+    /// </summary>
+    /// <param name="entity">The entity to delete.</param>
+    public void Delete({{CLASS_NAME}} entity)
+    {
+        _context.Set<{{CLASS_NAME}}>().Remove(entity);
+    }
+}

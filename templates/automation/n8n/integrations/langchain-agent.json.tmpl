@@ -1,0 +1,104 @@
+{
+  "name": "{{WORKFLOW_NAME}} - LangChain Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "langchain-agent",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger-{{NODE_ID}}",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "{{WEBHOOK_ID}}"
+    },
+    {
+      "parameters": {
+        "jsCode": "// LangChain Agent Integration\nconst { ChatOpenAI } = require('@langchain/openai');\nconst { HumanMessage, SystemMessage } = require('@langchain/core/messages');\nconst { AgentExecutor, createOpenAIFunctionsAgent } = require('langchain/agents');\nconst { DynamicStructuredTool } = require('@langchain/core/tools');\n\n// Get input\nconst input = $input.first().json.body || $input.first().json;\nconst userQuery = input.query || input.message || '';\n\n// Initialize LLM\nconst model = new ChatOpenAI({\n  modelName: input.model || '{{DEFAULT_MODEL}}',\n  temperature: input.temperature || {{DEFAULT_TEMPERATURE}},\n  openAIApiKey: $env.OPENAI_API_KEY || '{{OPENAI_API_KEY}}'\n});\n\n// Define tools available to the agent\nconst tools = [\n  {{#IF TOOLS}}\n  {{TOOLS}}\n  {{ELSE}}\n  // Example tool: Get user info\n  new DynamicStructuredTool({\n    name: 'get_user_info',\n    description: 'Get user information by ID',\n    schema: {\n      type: 'object',\n      properties: {\n        userId: { type: 'string', description: 'User ID' }\n      },\n      required: ['userId']\n    },\n    func: async ({ userId }) => {\n      // Call your API or database\n      const response = await $http.request({\n        method: 'GET',\n        url: `{{API_BASE_URL}}/users/${userId}`\n      });\n      return JSON.stringify(response);\n    }\n  }),\n  {{/IF}}\n  \n  // Add more tools as needed\n];\n\n// Create agent\nconst agent = await createOpenAIFunctionsAgent({\n  llm: model,\n  tools: tools,\n  prompt: `{{SYSTEM_PROMPT}}`\n});\n\nconst executor = new AgentExecutor({\n  agent,\n  tools,\n  verbose: true,\n  maxIterations: input.max_iterations || {{MAX_ITERATIONS}}\n});\n\n// Execute agent\nconst result = await executor.invoke({\n  input: userQuery\n});\n\nreturn [{\n  json: {\n    response: result.output,\n    intermediate_steps: result.intermediateSteps,\n    execution_time: new Date().toISOString(),\n    model: input.model || '{{DEFAULT_MODEL}}'\n  }\n}];"
+      },
+      "id": "langchain-agent-{{NODE_ID}}",
+      "name": "LangChain Agent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process agent response\nconst result = $input.first().json;\n\n// Extract key information\nconst response = {\n  answer: result.response,\n  steps_taken: result.intermediate_steps?.length || 0,\n  tools_used: result.intermediate_steps?.map(step => step.action?.tool || 'unknown') || [],\n  execution_time: result.execution_time,\n  model: result.model\n};\n\nreturn [{\n  json: response\n}];"
+      },
+      "id": "process-response-{{NODE_ID}}",
+      "name": "Process Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"success\", \"data\": $json } }}",
+        "options": {}
+      },
+      "id": "respond-success-{{NODE_ID}}",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "LangChain Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LangChain Agent": {
+      "main": [
+        [
+          {
+            "node": "Process Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "{{TIMESTAMP}}",
+      "updatedAt": "{{TIMESTAMP}}",
+      "id": "{{TAG_ID}}",
+      "name": "langchain-agent"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "{{TIMESTAMP}}",
+  "versionId": "{{VERSION_ID}}"
+}

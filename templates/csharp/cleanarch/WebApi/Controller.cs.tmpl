@@ -1,0 +1,187 @@
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using {{NAMESPACE}}.Application.Commands;
+using {{NAMESPACE}}.Application.Queries;
+
+namespace {{NAMESPACE}}.WebApi.Controllers;
+
+/// <summary>
+/// {{CLASS_NAME}}Controller - REST API Controller
+/// 
+/// Purpose: HTTP endpoints for {{DOMAIN_NAME}} operations
+/// Author: {{AUTHOR}}
+/// Created: {{DATE}}
+/// 
+/// Provides RESTful API endpoints using MediatR for CQRS.
+/// </summary>
+[ApiController]
+[Route("api/v1/[controller]")]
+[Produces("application/json")]
+public class {{CLASS_NAME}}Controller : ControllerBase
+{
+    private readonly IMediator _mediator;
+    private readonly ILogger<{{CLASS_NAME}}Controller> _logger;
+
+    /// <summary>
+    /// Initializes a new instance of {{CLASS_NAME}}Controller.
+    /// </summary>
+    /// <param name="mediator">The MediatR mediator.</param>
+    /// <param name="logger">The logger.</param>
+    public {{CLASS_NAME}}Controller(
+        IMediator mediator,
+        ILogger<{{CLASS_NAME}}Controller> logger)
+    {
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    /// <summary>
+    /// Creates a new {{DOMAIN_NAME}}.
+    /// </summary>
+    /// <param name="command">The create command.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Created entity result.</returns>
+    /// <response code="201">Entity created successfully.</response>
+    /// <response code="400">Invalid input data.</response>
+    [HttpPost]
+    [ProducesResponseType(typeof({{CLASS_NAME}}CommandResult), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<{{CLASS_NAME}}CommandResult>> Create(
+        [FromBody] {{CLASS_NAME}}Command command,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Creating {{DOMAIN_NAME}} with Name: {Name}", command.Name);
+
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = result.Id },
+            result);
+    }
+
+    /// <summary>
+    /// Gets a {{DOMAIN_NAME}} by ID.
+    /// </summary>
+    /// <param name="id">The entity ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The entity if found.</returns>
+    /// <response code="200">Entity found.</response>
+    /// <response code="404">Entity not found.</response>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof({{CLASS_NAME}}QueryResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<{{CLASS_NAME}}QueryResult>> GetById(
+        {{ID_TYPE}} id,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Fetching {{DOMAIN_NAME}} with Id: {Id}", id);
+
+        var query = new {{CLASS_NAME}}Query { Id = id };
+        var result = await _mediator.Send(query, cancellationToken);
+
+        if (result.Items.Count == 0)
+        {
+            return NotFound();
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Gets all {{DOMAIN_NAME}} entities with pagination.
+    /// </summary>
+    /// <param name="pageNumber">Page number (default: 1).</param>
+    /// <param name="pageSize">Page size (default: 20).</param>
+    /// <param name="searchTerm">Optional search term.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Paginated list of entities.</returns>
+    /// <response code="200">Entities retrieved successfully.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof({{CLASS_NAME}}QueryResult), StatusCodes.Status200OK)]
+    public async Task<ActionResult<{{CLASS_NAME}}QueryResult>> GetAll(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "Fetching {{DOMAIN_NAME}} entities - Page: {Page}, Size: {Size}",
+            pageNumber,
+            pageSize);
+
+        var query = new {{CLASS_NAME}}Query
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            SearchTerm = searchTerm
+        };
+
+        var result = await _mediator.Send(query, cancellationToken);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Updates an existing {{DOMAIN_NAME}}.
+    /// </summary>
+    /// <param name="id">The entity ID.</param>
+    /// <param name="command">The update command.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Updated entity result.</returns>
+    /// <response code="200">Entity updated successfully.</response>
+    /// <response code="400">Invalid input data.</response>
+    /// <response code="404">Entity not found.</response>
+    [HttpPut("{id}")]
+    [ProducesResponseType(typeof({{CLASS_NAME}}CommandResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<{{CLASS_NAME}}CommandResult>> Update(
+        {{ID_TYPE}} id,
+        [FromBody] {{CLASS_NAME}}Command command,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Updating {{DOMAIN_NAME}} with Id: {Id}", id);
+
+        // TODO: Set ID from route parameter if needed
+        // command = command with { Id = id };
+
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Deletes a {{DOMAIN_NAME}} by ID.
+    /// </summary>
+    /// <param name="id">The entity ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">Entity deleted successfully.</response>
+    /// <response code="404">Entity not found.</response>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(
+        {{ID_TYPE}} id,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Deleting {{DOMAIN_NAME}} with Id: {Id}", id);
+
+        // TODO: Implement delete command
+        // var command = new Delete{{CLASS_NAME}}Command { Id = id };
+        // var result = await _mediator.Send(command, cancellationToken);
+
+        return NoContent();
+    }
+}

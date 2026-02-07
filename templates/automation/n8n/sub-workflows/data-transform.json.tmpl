@@ -1,0 +1,150 @@
+{
+  "name": "{{SUB_WORKFLOW_NAME}} - Data Transform",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Data transformation logic\nconst items = $input.all();\n\nconst transformed = items.map(item => {\n  const data = item.json;\n  \n  // {{TRANSFORMATION_DESCRIPTION}}\n  const transformedData = {\n    {{FIELD_MAPPINGS}}\n    \n    // Add transformation metadata\n    _transformed: true,\n    _transformed_at: new Date().toISOString(),\n    _source: data\n  };\n  \n  return { json: transformedData };\n});\n\nreturn transformed;"
+      },
+      "id": "transform-data-{{NODE_ID}}",
+      "name": "Transform Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate transformed data\nconst items = $input.all();\n\nconst validated = items.map(item => {\n  const data = item.json;\n  const errors = [];\n  \n  // {{VALIDATION_RULES}}\n  {{#IF REQUIRED_FIELDS}}\n  const requiredFields = {{REQUIRED_FIELDS}};\n  for (const field of requiredFields) {\n    if (!data[field] && data[field] !== 0 && data[field] !== false) {\n      errors.push(`Missing required field: ${field}`);\n    }\n  }\n  {{/IF}}\n  \n  {{#IF TYPE_VALIDATION}}\n  // Type validation\n  {{TYPE_VALIDATION_LOGIC}}\n  {{/IF}}\n  \n  return {\n    json: {\n      ...data,\n      _validated: errors.length === 0,\n      _validation_errors: errors,\n      _validated_at: new Date().toISOString()\n    }\n  };\n});\n\nreturn validated;"
+      },
+      "id": "validate-data-{{NODE_ID}}",
+      "name": "Validate Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "validation-check",
+              "leftValue": "={{ $json._validated }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ]
+        }
+      },
+      "id": "if-valid-{{NODE_ID}}",
+      "name": "IF Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "transform-summary",
+              "name": "transform_summary",
+              "value": "={{ { \"status\": \"success\", \"items_transformed\": $input.all().length, \"timestamp\": $now } }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "format-success-{{NODE_ID}}",
+      "name": "Format Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "error-summary",
+              "name": "error_summary",
+              "value": "={{ { \"status\": \"error\", \"validation_errors\": $json._validation_errors, \"timestamp\": $now } }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "format-error-{{NODE_ID}}",
+      "name": "Format Error",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [850, 400]
+    }
+  ],
+  "connections": {
+    "Transform Data": {
+      "main": [
+        [
+          {
+            "node": "Validate Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Data": {
+      "main": [
+        [
+          {
+            "node": "IF Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Valid": {
+      "main": [
+        [
+          {
+            "node": "Format Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "{{TIMESTAMP}}",
+      "updatedAt": "{{TIMESTAMP}}",
+      "id": "{{TAG_ID}}",
+      "name": "data-transform"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "{{TIMESTAMP}}",
+  "versionId": "{{VERSION_ID}}"
+}

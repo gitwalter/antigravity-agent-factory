@@ -1,0 +1,101 @@
+package {{PACKAGE_NAME}}.modulith;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.modulith.Modulith;
+import org.springframework.modulith.events.EventPublicationRegistry;
+import org.springframework.modulith.events.config.EnableAsyncEventPublication;
+
+/**
+ * {{MODULE_NAME}} - Spring Modulith Module Configuration
+ * 
+ * Purpose: Configure {{MODULE_NAME}} module boundaries and event publication
+ * Author: {{AUTHOR}}
+ * Created: {{DATE}}
+ * 
+ * This module follows Spring Modulith architecture:
+ * - Enforced module boundaries
+ * - Event-driven inter-module communication
+ * - Testable module structure
+ * 
+ * Module Structure:
+ * - {{MODULE_NAME}}.api: Public API (interfaces, DTOs)
+ * - {{MODULE_NAME}}.internal: Internal implementation
+ * - {{MODULE_NAME}}.events: Domain events
+ */
+@Modulith(
+        sharedModules = {
+                // List modules this module depends on
+                // "shared-module-name"
+        }
+)
+@Configuration
+@EnableAsyncEventPublication
+public class {{MODULE_NAME}}ModuleConfig {
+
+    /**
+     * Configure event publication registry for async event handling.
+     * 
+     * @param registry Event publication registry
+     */
+    // @Bean
+    // public EventPublicationRegistry eventPublicationRegistry() {
+    //     return new JdbcEventPublicationRegistry(dataSource);
+    // }
+
+    /**
+     * Example: Configure module-specific beans.
+     * 
+     * @return Module-specific configuration bean
+     */
+    // @Bean
+    // public {{MODULE_NAME}}Config {{MODULE_VAR_NAME}}Config() {
+    //     return new {{MODULE_NAME}}Config();
+    // }
+}
+
+/**
+ * Module API - Public interfaces exposed to other modules.
+ * Place public interfaces, DTOs, and event types here.
+ */
+package {{PACKAGE_NAME}}.modulith.api;
+
+/**
+ * Public API interface for {{MODULE_NAME}} module.
+ * Other modules should only depend on this package.
+ */
+public interface {{MODULE_NAME}}Api {
+    
+    /**
+     * Example public method.
+     * 
+     * @param input Input parameter
+     * @return Result
+     */
+    String performOperation(String input);
+}
+
+/**
+ * Module Events - Domain events published by this module.
+ */
+package {{PACKAGE_NAME}}.modulith.events;
+
+import java.time.LocalDateTime;
+
+/**
+ * Domain event: {{EVENT_NAME}}.
+ * Published when {{EVENT_DESCRIPTION}}.
+ */
+public record {{EVENT_NAME}}Event(
+        Long id,
+        String description,
+        LocalDateTime occurredAt
+) {
+    public {{EVENT_NAME}}Event {
+        if (id == null) {
+            throw new IllegalArgumentException("ID cannot be null");
+        }
+        if (occurredAt == null) {
+            occurredAt = LocalDateTime.now();
+        }
+    }
+}

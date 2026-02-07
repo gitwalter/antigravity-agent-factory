@@ -1,0 +1,153 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PyTorch Patterns",
+  "description": "Best practices and patterns for deep learning with PyTorch",
+  "version": "1.0.0",
+  "sources": [
+    "https://pytorch.org/docs/stable/",
+    "https://pytorch.org/tutorials/"
+  ],
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns include evaluation and testing strategies",
+    "A3_transparency": "Model architecture and training are explicit"
+  },
+  "core_patterns": {
+    "model_definition": {
+      "nn_module": {
+        "description": "Standard way to define neural networks",
+        "code_example": "import torch\nimport torch.nn as nn\nimport torch.nn.functional as F\n\nclass SimpleNet(nn.Module):\n    def __init__(self, input_size, hidden_size, num_classes):\n        super().__init__()\n        self.fc1 = nn.Linear(input_size, hidden_size)\n        self.bn1 = nn.BatchNorm1d(hidden_size)\n        self.fc2 = nn.Linear(hidden_size, hidden_size)\n        self.dropout = nn.Dropout(0.3)\n        self.fc3 = nn.Linear(hidden_size, num_classes)\n    \n    def forward(self, x):\n        x = F.relu(self.bn1(self.fc1(x)))\n        x = F.relu(self.fc2(x))\n        x = self.dropout(x)\n        x = self.fc3(x)\n        return x"
+      },
+      "sequential": {
+        "description": "Quick model definition for simple architectures",
+        "code_example": "model = nn.Sequential(\n    nn.Linear(784, 256),\n    nn.ReLU(),\n    nn.Dropout(0.2),\n    nn.Linear(256, 128),\n    nn.ReLU(),\n    nn.Linear(128, 10)\n)"
+      }
+    },
+    "training_loop": {
+      "description": "Standard training pattern",
+      "code_example": "def train_epoch(model, train_loader, optimizer, criterion, device):\n    model.train()\n    total_loss = 0\n    correct = 0\n    total = 0\n    \n    for batch_idx, (data, target) in enumerate(train_loader):\n        data, target = data.to(device), target.to(device)\n        \n        optimizer.zero_grad()\n        output = model(data)\n        loss = criterion(output, target)\n        loss.backward()\n        optimizer.step()\n        \n        total_loss += loss.item()\n        pred = output.argmax(dim=1)\n        correct += pred.eq(target).sum().item()\n        total += target.size(0)\n    \n    return total_loss / len(train_loader), 100. * correct / total\n\ndef evaluate(model, val_loader, criterion, device):\n    model.eval()\n    total_loss = 0\n    correct = 0\n    total = 0\n    \n    with torch.no_grad():\n        for data, target in val_loader:\n            data, target = data.to(device), target.to(device)\n            output = model(data)\n            loss = criterion(output, target)\n            \n            total_loss += loss.item()\n            pred = output.argmax(dim=1)\n            correct += pred.eq(target).sum().item()\n            total += target.size(0)\n    \n    return total_loss / len(val_loader), 100. * correct / total"
+    },
+    "data_loading": {
+      "dataset": {
+        "description": "Custom dataset definition",
+        "code_example": "from torch.utils.data import Dataset, DataLoader\n\nclass CustomDataset(Dataset):\n    def __init__(self, data, labels, transform=None):\n        self.data = data\n        self.labels = labels\n        self.transform = transform\n    \n    def __len__(self):\n        return len(self.data)\n    \n    def __getitem__(self, idx):\n        x = self.data[idx]\n        y = self.labels[idx]\n        \n        if self.transform:\n            x = self.transform(x)\n        \n        return x, y"
+      },
+      "dataloader": {
+        "description": "Efficient batching and loading",
+        "code_example": "train_loader = DataLoader(\n    dataset,\n    batch_size=32,\n    shuffle=True,\n    num_workers=4,\n    pin_memory=True,\n    drop_last=True\n)"
+      }
+    }
+  },
+  "optimization_patterns": {
+    "learning_rate_scheduling": {
+      "code_example": "from torch.optim.lr_scheduler import (\n    StepLR, CosineAnnealingLR, ReduceLROnPlateau, OneCycleLR\n)\n\noptimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=0.01)\n\n# Step decay every 10 epochs\nscheduler = StepLR(optimizer, step_size=10, gamma=0.1)\n\n# Cosine annealing\nscheduler = CosineAnnealingLR(optimizer, T_max=100)\n\n# Reduce on plateau (for validation loss)\nscheduler = ReduceLROnPlateau(optimizer, mode='min', patience=5)\n\n# One cycle (fast training)\nscheduler = OneCycleLR(\n    optimizer,\n    max_lr=1e-2,\n    epochs=100,\n    steps_per_epoch=len(train_loader)\n)"
+    },
+    "gradient_clipping": {
+      "description": "Prevent exploding gradients",
+      "code_example": "torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)"
+    },
+    "mixed_precision": {
+      "description": "Use FP16 for faster training",
+      "code_example": "from torch.cuda.amp import autocast, GradScaler\n\nscaler = GradScaler()\n\nfor data, target in train_loader:\n    optimizer.zero_grad()\n    \n    with autocast():\n        output = model(data)\n        loss = criterion(output, target)\n    \n    scaler.scale(loss).backward()\n    scaler.step(optimizer)\n    scaler.update()"
+    },
+    "gradient_accumulation": {
+      "description": "Simulate larger batch sizes",
+      "code_example": "accumulation_steps = 4\n\nfor i, (data, target) in enumerate(train_loader):\n    output = model(data)\n    loss = criterion(output, target) / accumulation_steps\n    loss.backward()\n    \n    if (i + 1) % accumulation_steps == 0:\n        optimizer.step()\n        optimizer.zero_grad()"
+    }
+  },
+  "regularization_patterns": {
+    "dropout": {
+      "code_example": "self.dropout = nn.Dropout(p=0.5)\n# Applied during training, disabled during eval"
+    },
+    "weight_decay": {
+      "code_example": "optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=0.01)"
+    },
+    "batch_normalization": {
+      "code_example": "self.bn = nn.BatchNorm2d(num_features=64)"
+    },
+    "layer_normalization": {
+      "code_example": "self.ln = nn.LayerNorm(normalized_shape=hidden_size)"
+    }
+  },
+  "model_saving": {
+    "state_dict": {
+      "description": "Recommended way to save models",
+      "save": "torch.save(model.state_dict(), 'model.pth')",
+      "load": "model.load_state_dict(torch.load('model.pth'))"
+    },
+    "checkpoint": {
+      "description": "Save training state for resumption",
+      "code_example": "checkpoint = {\n    'epoch': epoch,\n    'model_state_dict': model.state_dict(),\n    'optimizer_state_dict': optimizer.state_dict(),\n    'scheduler_state_dict': scheduler.state_dict(),\n    'loss': loss,\n    'best_val_acc': best_val_acc\n}\ntorch.save(checkpoint, 'checkpoint.pth')\n\n# Resume\ncheckpoint = torch.load('checkpoint.pth')\nmodel.load_state_dict(checkpoint['model_state_dict'])\noptimizer.load_state_dict(checkpoint['optimizer_state_dict'])\nstart_epoch = checkpoint['epoch'] + 1"
+    }
+  },
+  "distributed_training": {
+    "data_parallel": {
+      "description": "Simple multi-GPU on single machine",
+      "code_example": "model = nn.DataParallel(model)\nmodel = model.to(device)"
+    },
+    "distributed_data_parallel": {
+      "description": "Efficient multi-GPU, multi-node training",
+      "code_example": "import torch.distributed as dist\nfrom torch.nn.parallel import DistributedDataParallel as DDP\n\ndist.init_process_group(backend='nccl')\nlocal_rank = int(os.environ['LOCAL_RANK'])\ntorch.cuda.set_device(local_rank)\n\nmodel = model.to(local_rank)\nmodel = DDP(model, device_ids=[local_rank])"
+    }
+  },
+  "computer_vision_patterns": {
+    "cnn_architecture": {
+      "code_example": "class ConvNet(nn.Module):\n    def __init__(self, num_classes=10):\n        super().__init__()\n        self.features = nn.Sequential(\n            nn.Conv2d(3, 32, kernel_size=3, padding=1),\n            nn.BatchNorm2d(32),\n            nn.ReLU(inplace=True),\n            nn.MaxPool2d(2),\n            \n            nn.Conv2d(32, 64, kernel_size=3, padding=1),\n            nn.BatchNorm2d(64),\n            nn.ReLU(inplace=True),\n            nn.MaxPool2d(2),\n            \n            nn.Conv2d(64, 128, kernel_size=3, padding=1),\n            nn.BatchNorm2d(128),\n            nn.ReLU(inplace=True),\n            nn.AdaptiveAvgPool2d(1)\n        )\n        self.classifier = nn.Linear(128, num_classes)\n    \n    def forward(self, x):\n        x = self.features(x)\n        x = x.view(x.size(0), -1)\n        x = self.classifier(x)\n        return x"
+    },
+    "transfer_learning": {
+      "code_example": "import torchvision.models as models\n\n# Load pretrained model\nmodel = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)\n\n# Freeze base layers\nfor param in model.parameters():\n    param.requires_grad = False\n\n# Replace classifier\nmodel.fc = nn.Sequential(\n    nn.Linear(model.fc.in_features, 256),\n    nn.ReLU(),\n    nn.Dropout(0.3),\n    nn.Linear(256, num_classes)\n)\n\n# Unfreeze for fine-tuning later\nfor param in model.layer4.parameters():\n    param.requires_grad = True"
+    },
+    "augmentation": {
+      "code_example": "from torchvision import transforms\n\ntrain_transform = transforms.Compose([\n    transforms.RandomResizedCrop(224),\n    transforms.RandomHorizontalFlip(),\n    transforms.ColorJitter(brightness=0.2, contrast=0.2),\n    transforms.ToTensor(),\n    transforms.Normalize(mean=[0.485, 0.456, 0.406],\n                        std=[0.229, 0.224, 0.225])\n])"
+    }
+  },
+  "nlp_patterns": {
+    "embedding": {
+      "code_example": "self.embedding = nn.Embedding(\n    num_embeddings=vocab_size,\n    embedding_dim=embed_dim,\n    padding_idx=0\n)"
+    },
+    "lstm": {
+      "code_example": "class LSTMClassifier(nn.Module):\n    def __init__(self, vocab_size, embed_dim, hidden_dim, num_classes):\n        super().__init__()\n        self.embedding = nn.Embedding(vocab_size, embed_dim, padding_idx=0)\n        self.lstm = nn.LSTM(\n            embed_dim, hidden_dim,\n            num_layers=2,\n            batch_first=True,\n            bidirectional=True,\n            dropout=0.3\n        )\n        self.fc = nn.Linear(hidden_dim * 2, num_classes)\n    \n    def forward(self, x):\n        x = self.embedding(x)\n        _, (hidden, _) = self.lstm(x)\n        hidden = torch.cat((hidden[-2], hidden[-1]), dim=1)\n        return self.fc(hidden)"
+    },
+    "transformer": {
+      "code_example": "encoder_layer = nn.TransformerEncoderLayer(\n    d_model=512,\n    nhead=8,\n    dim_feedforward=2048,\n    dropout=0.1,\n    batch_first=True\n)\nencoder = nn.TransformerEncoder(encoder_layer, num_layers=6)"
+    }
+  },
+  "debugging_patterns": {
+    "gradient_checking": {
+      "code_example": "for name, param in model.named_parameters():\n    if param.grad is not None:\n        print(f\"{name}: grad_norm={param.grad.norm().item():.4f}\")"
+    },
+    "hooks": {
+      "description": "Inspect activations and gradients",
+      "code_example": "activations = {}\n\ndef get_activation(name):\n    def hook(model, input, output):\n        activations[name] = output.detach()\n    return hook\n\nmodel.layer1.register_forward_hook(get_activation('layer1'))"
+    }
+  },
+  "best_practices": [
+    "Use model.train() and model.eval() appropriately",
+    "Always use torch.no_grad() during inference",
+    "Move data and model to same device",
+    "Use appropriate weight initialization",
+    "Monitor training with TensorBoard or W&B",
+    "Save checkpoints regularly",
+    "Use learning rate schedulers",
+    "Apply data augmentation for computer vision",
+    "Set random seeds for reproducibility",
+    "Use mixed precision for faster training"
+  ],
+  "anti_patterns": {
+    "forgetting_eval_mode": {
+      "problem": "Dropout/BatchNorm active during inference",
+      "solution": "Always call model.eval() before inference"
+    },
+    "no_grad_missing": {
+      "problem": "Memory waste during inference",
+      "solution": "Use with torch.no_grad(): for inference"
+    },
+    "device_mismatch": {
+      "problem": "Tensors on different devices",
+      "solution": "Ensure data and model are on same device"
+    },
+    "in_place_operations": {
+      "problem": "Can break autograd",
+      "solution": "Avoid in-place operations on tensors requiring grad"
+    }
+  }
+}

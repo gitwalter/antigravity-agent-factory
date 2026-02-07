@@ -1,0 +1,109 @@
+/**
+ * Dynamic Route Page - Next.js App Router Dynamic Route
+ * 
+ * Purpose: Handle dynamic routes for {{DOMAIN_NAME}}
+ * Author: {{AUTHOR}}
+ * Created: {{DATE}}
+ * 
+ * Axiom Alignment:
+ * - A1 (Verifiability): Route parameters are validated
+ * - A3 (Transparency): Clear parameter handling and error messages
+ * - A4 (Non-Harm): Safe parameter validation prevents injection
+ */
+
+import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
+import { {{DOMAIN_COMPONENT}} } from '@/components/{{DOMAIN_NAME}}'
+import { {{LOADING_COMPONENT}} } from '@/components/{{LOADING_NAME}}'
+import { get{{DOMAIN_ENTITY}} } from '@/lib/{{DATA_SOURCE}}'
+
+interface PageProps {
+  params: {
+    {{PARAM_NAME}}: string
+  }
+  searchParams: {
+    [key: string]: string | string[] | undefined
+  }
+}
+
+/**
+ * Generate metadata for the dynamic route.
+ * 
+ * @param params - Route parameters
+ * @returns Metadata object
+ */
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const {{ENTITY_VAR}} = await get{{DOMAIN_ENTITY}}(params.{{PARAM_NAME}})
+  
+  if (!{{ENTITY_VAR}}) {
+    return {
+      title: '{{NOT_FOUND_TITLE}}',
+    }
+  }
+  
+  return {
+    title: `{{PAGE_TITLE_PREFIX}} - ${params.{{PARAM_NAME}}}`,
+    description: `{{PAGE_DESCRIPTION_PREFIX}} ${params.{{PARAM_NAME}}`,
+  }
+}
+
+/**
+ * Dynamic route page component.
+ * 
+ * This component handles dynamic routes with parameters.
+ * It validates the parameter, fetches data, and renders
+ * the appropriate content or 404 page.
+ * 
+ * @param params - Route parameters
+ * @param searchParams - URL search parameters
+ * @returns JSX element
+ */
+export default async function {{DOMAIN_PAGE}}Component({ params, searchParams }: PageProps) {
+  // Validate parameter
+  if (!params.{{PARAM_NAME}} || typeof params.{{PARAM_NAME}} !== 'string') {
+    notFound()
+  }
+  
+  try {
+    // Fetch data based on parameter
+    const {{ENTITY_VAR}} = await get{{DOMAIN_ENTITY}}(params.{{PARAM_NAME}})
+    
+    // Return 404 if not found
+    if (!{{ENTITY_VAR}}) {
+      notFound()
+    }
+    
+    return (
+      <main className="flex min-h-screen flex-col items-center p-24">
+        <div className="z-10 max-w-5xl w-full">
+          <Suspense fallback={<{{LOADING_COMPONENT}} />}>
+            <{{DOMAIN_COMPONENT}}
+              {{ENTITY_VAR}}={{{ENTITY_VAR}}}
+              searchParams={searchParams}
+            />
+          </Suspense>
+        </div>
+      </main>
+    )
+  } catch (error) {
+    console.error('Error loading {{DOMAIN_NAME}} page:', error)
+    notFound()
+  }
+}
+
+/**
+ * Generate static params for static generation (optional).
+ * 
+ * If you want to pre-render some routes at build time,
+ * uncomment and implement this function.
+ * 
+ * @returns Array of parameter objects
+ */
+// export async function generateStaticParams() {
+//   const {{ENTITIES_VAR}} = await getAll{{DOMAIN_ENTITIES}}()
+//   
+//   return {{ENTITIES_VAR}}.map(({{ENTITY_VAR}}) => ({
+//     {{PARAM_NAME}}: {{ENTITY_VAR}}.id.toString(),
+//   }))
+// }

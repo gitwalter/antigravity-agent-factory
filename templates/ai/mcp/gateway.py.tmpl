@@ -1,0 +1,245 @@
+"""
+{{GATEWAY_NAME}} - MCP Gateway Pattern
+
+Purpose: {{GATEWAY_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Gateway operations are logged
+- A3 (Transparency): Gateway routing is explicit
+"""
+
+from typing import List, Dict, Any, Optional
+from mcp.server import Server
+from mcp.types import Tool, TextContent
+import logging
+import asyncio
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class {{GATEWAY_CLASS_NAME}}:
+    """
+    {{GATEWAY_NAME}} - MCP Gateway
+    
+    Implements a gateway pattern that:
+    - Routes requests to appropriate MCP servers
+    - Aggregates results from multiple servers
+    - Provides unified interface to clients
+    
+    Example:
+        >>> gateway = {{GATEWAY_CLASS_NAME}}()
+        >>> result = await gateway.call_tool("tool_name", {"arg": "value"})
+    """
+    
+    def __init__(
+        self,
+        servers: Optional[List[Dict[str, Any]]] = None
+    ):
+        """
+        Initialize gateway.
+        
+        Args:
+            servers: List of server configurations
+        """
+        self.servers = servers or []
+        self.server_registry: Dict[str, Any] = {}
+        
+        # Register servers
+        self._register_servers()
+        
+        logger.info(f"Initialized {{GATEWAY_NAME}} gateway")
+    
+    def _register_servers(self) -> None:
+        """Register MCP servers with the gateway."""
+        
+        # Server 1: {{SERVER_1_NAME}}
+        self.server_registry["{{SERVER_1_NAME}}"] = {
+            "name": "{{SERVER_1_NAME}}",
+            "description": "{{SERVER_1_DESCRIPTION}}",
+            "tools": ["{{TOOL_1_NAME}}", "{{TOOL_2_NAME}}"],
+            "endpoint": "{{SERVER_1_ENDPOINT}}"
+        }
+        
+        # Server 2: {{SERVER_2_NAME}}
+        self.server_registry["{{SERVER_2_NAME}}"] = {
+            "name": "{{SERVER_2_NAME}}",
+            "description": "{{SERVER_2_DESCRIPTION}}",
+            "tools": ["{{TOOL_3_NAME}}"],
+            "endpoint": "{{SERVER_2_ENDPOINT}}"
+        }
+        
+        logger.info(f"Registered {len(self.server_registry)} servers")
+    
+    async def list_tools(self) -> List[Tool]:
+        """
+        List all tools from all servers.
+        
+        Returns:
+            Aggregated list of tools
+        """
+        logger.info("Listing all tools from gateway")
+        
+        all_tools = []
+        
+        for server_name, server_info in self.server_registry.items():
+            # In real implementation, query each server for tools
+            # For now, return tools from registry
+            
+            for tool_name in server_info["tools"]:
+                tool = Tool(
+                    name=f"{server_name}.{tool_name}",
+                    description=f"Tool from {server_name}",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {},
+                        "required": []
+                    }
+                )
+                all_tools.append(tool)
+        
+        logger.info(f"Found {len(all_tools)} tools")
+        return all_tools
+    
+    async def call_tool(
+        self,
+        tool_name: str,
+        arguments: Dict[str, Any],
+        server_name: Optional[str] = None
+    ) -> List[TextContent]:
+        """
+        Call a tool through the gateway.
+        
+        Args:
+            tool_name: Tool name (can include server prefix)
+            arguments: Tool arguments
+            server_name: Optional server name (if not in tool_name)
+        
+        Returns:
+            Tool result
+        
+        Example:
+            >>> result = await gateway.call_tool("server1.tool1", {"arg": "value"})
+        """
+        logger.info(f"Calling tool through gateway: {tool_name}")
+        
+        # Parse tool name
+        if "." in tool_name:
+            server_name, tool_name = tool_name.split(".", 1)
+        
+        if not server_name:
+            raise ValueError("Server name required")
+        
+        # Find server
+        if server_name not in self.server_registry:
+            raise ValueError(f"Unknown server: {server_name}")
+        
+        server_info = self.server_registry[server_name]
+        
+        # Check if tool exists
+        if tool_name not in server_info["tools"]:
+            raise ValueError(f"Unknown tool: {tool_name} on server {server_name}")
+        
+        # Route to server (simplified - in real implementation, make actual RPC call)
+        try:
+            result = await self._route_to_server(
+                server_name,
+                tool_name,
+                arguments
+            )
+            
+            return [TextContent(type="text", text=str(result))]
+            
+        except Exception as e:
+            logger.error(f"Error calling tool: {e}")
+            return [TextContent(type="text", text=f"Error: {str(e)}")]
+    
+    async def _route_to_server(
+        self,
+        server_name: str,
+        tool_name: str,
+        arguments: Dict[str, Any]
+    ) -> str:
+        """
+        Route request to specific server.
+        
+        Args:
+            server_name: Server name
+            tool_name: Tool name
+            arguments: Tool arguments
+        
+        Returns:
+            Server response
+        """
+        logger.info(f"Routing to server {server_name}, tool {tool_name}")
+        
+        # In real implementation, this would make an RPC call to the server
+        # For now, return a mock response
+        
+        return f"Result from {server_name}.{tool_name} with args: {arguments}"
+    
+    async def aggregate_results(
+        self,
+        tool_calls: List[Dict[str, Any]]
+    ) -> str:
+        """
+        Aggregate results from multiple tool calls.
+        
+        Args:
+            tool_calls: List of tool call dictionaries
+        
+        Returns:
+            Aggregated result
+        
+        Example:
+            >>> calls = [
+            >>>     {"tool": "tool1", "args": {}},
+            >>>     {"tool": "tool2", "args": {}}
+            >>> ]
+            >>> result = await gateway.aggregate_results(calls)
+        """
+        logger.info(f"Aggregating {len(tool_calls)} tool calls")
+        
+        results = []
+        
+        for call in tool_calls:
+            tool_name = call.get("tool")
+            arguments = call.get("args", {})
+            
+            result = await self.call_tool(tool_name, arguments)
+            results.append({
+                "tool": tool_name,
+                "result": result[0].text if result else "No result"
+            })
+        
+        # Aggregate results
+        aggregated = "\n\n".join([
+            f"{r['tool']}: {r['result']}"
+            for r in results
+        ])
+        
+        return aggregated
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create gateway
+    gateway = {{GATEWAY_CLASS_NAME}}()
+    
+    # List tools
+    async def main():
+        tools = await gateway.list_tools()
+        print(f"Available tools: {len(tools)}")
+        for tool in tools[:5]:
+            print(f"  - {tool.name}")
+        
+        # Call a tool
+        result = await gateway.call_tool(
+            "{{SERVER_1_NAME}}.{{TOOL_1_NAME}}",
+            {"input": "{{EXAMPLE_INPUT}}"}
+        )
+        print(f"\nTool result: {result[0].text}")
+    
+    asyncio.run(main())

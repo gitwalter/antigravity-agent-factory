@@ -1,0 +1,292 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PM System Configuration Questionnaire",
+  "description": "Quick 5-8 question flow for PM system setup",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["questions"],
+  "properties": {
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "question", "type", "options"],
+        "properties": {
+          "id": {"type": "string"},
+          "question": {"type": "string"},
+          "type": {"type": "string", "enum": ["single", "multiple", "conditional"]},
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": {"type": "string"},
+                "label": {"type": "string"},
+                "description": {"type": "string"},
+                "showsQuestions": {"type": "array", "items": {"type": "string"}},
+                "hidesQuestions": {"type": "array", "items": {"type": "string"}}
+              }
+            }
+          },
+          "default": {"type": "string"},
+          "required": {"type": "boolean"},
+          "helpText": {"type": "string"}
+        }
+      }
+    }
+  },
+  "questions": [
+    {
+      "id": "pm_enabled",
+      "question": "Enable Project Management integration?",
+      "type": "single",
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes - Full PM integration",
+          "description": "Complete integration with backlog, sprints, and tracking"
+        },
+        {
+          "value": "minimal",
+          "label": "Minimal - Basic issue tracking",
+          "description": "Simple issue tracking without full PM features"
+        },
+        {
+          "value": "no",
+          "label": "No - Skip PM system",
+          "description": "Do not set up project management integration"
+        }
+      ],
+      "default": "yes",
+      "required": true,
+      "helpText": "Choose the level of PM integration you need"
+    },
+    {
+      "id": "pm_backend",
+      "question": "Which PM backend do you use?",
+      "type": "single",
+      "options": [
+        {
+          "value": "github",
+          "label": "GitHub",
+          "description": "GitHub Issues and Projects"
+        },
+        {
+          "value": "jira",
+          "label": "Jira",
+          "description": "Atlassian Jira"
+        },
+        {
+          "value": "azure-devops",
+          "label": "Azure DevOps",
+          "description": "Microsoft Azure DevOps"
+        },
+        {
+          "value": "linear",
+          "label": "Linear",
+          "description": "Linear issue tracking"
+        }
+      ],
+      "default": "github",
+      "required": true,
+      "helpText": "Select your primary project management tool",
+      "conditional": {
+        "showIf": {"pm_enabled": ["yes", "minimal"]}
+      }
+    },
+    {
+      "id": "doc_backend",
+      "question": "Which documentation backend do you use?",
+      "type": "single",
+      "options": [
+        {
+          "value": "github-wiki",
+          "label": "GitHub Wiki",
+          "description": "GitHub repository wiki"
+        },
+        {
+          "value": "confluence",
+          "label": "Confluence",
+          "description": "Atlassian Confluence"
+        },
+        {
+          "value": "azure-wiki",
+          "label": "Azure Wiki",
+          "description": "Azure DevOps wiki"
+        },
+        {
+          "value": "none",
+          "label": "None",
+          "description": "No separate documentation backend"
+        }
+      ],
+      "default": "github-wiki",
+      "required": true,
+      "helpText": "Select your documentation platform",
+      "conditional": {
+        "showIf": {"pm_enabled": ["yes"]}
+      }
+    },
+    {
+      "id": "methodology",
+      "question": "Which methodology do you follow?",
+      "type": "single",
+      "options": [
+        {
+          "value": "scrum",
+          "label": "Scrum",
+          "description": "Sprint-based agile development",
+          "showsQuestions": ["sprint_length", "estimation"]
+        },
+        {
+          "value": "kanban",
+          "label": "Kanban",
+          "description": "Continuous flow with WIP limits"
+        },
+        {
+          "value": "hybrid",
+          "label": "Hybrid",
+          "description": "Combination of Scrum and Kanban"
+        },
+        {
+          "value": "waterfall",
+          "label": "Waterfall",
+          "description": "Sequential phase-based approach"
+        }
+      ],
+      "default": "scrum",
+      "required": true,
+      "helpText": "Select your project management methodology",
+      "conditional": {
+        "showIf": {"pm_enabled": ["yes"]}
+      }
+    },
+    {
+      "id": "team_size",
+      "question": "What is your team size?",
+      "type": "single",
+      "options": [
+        {
+          "value": "solo",
+          "label": "Solo (1 person)",
+          "description": "Individual developer"
+        },
+        {
+          "value": "small",
+          "label": "Small (2-5 people)",
+          "description": "Small team"
+        },
+        {
+          "value": "medium",
+          "label": "Medium (6-12 people)",
+          "description": "Medium-sized team"
+        },
+        {
+          "value": "large",
+          "label": "Large (13+ people)",
+          "description": "Large team or multiple teams"
+        }
+      ],
+      "default": "small",
+      "required": true,
+      "helpText": "Team size affects ceremony frequency and agent configuration",
+      "conditional": {
+        "showIf": {"pm_enabled": ["yes", "minimal"]}
+      }
+    },
+    {
+      "id": "sprint_length",
+      "question": "What is your sprint length?",
+      "type": "single",
+      "options": [
+        {
+          "value": "1week",
+          "label": "1 week",
+          "description": "Weekly sprints"
+        },
+        {
+          "value": "2weeks",
+          "label": "2 weeks",
+          "description": "Bi-weekly sprints (most common)"
+        },
+        {
+          "value": "3weeks",
+          "label": "3 weeks",
+          "description": "Three-week sprints"
+        },
+        {
+          "value": "continuous",
+          "label": "Continuous",
+          "description": "No fixed sprint boundaries"
+        }
+      ],
+      "default": "2weeks",
+      "required": true,
+      "helpText": "Sprint length determines ceremony scheduling",
+      "conditional": {
+        "showIf": {"methodology": ["scrum", "hybrid"]}
+      }
+    },
+    {
+      "id": "estimation",
+      "question": "How do you estimate work?",
+      "type": "single",
+      "options": [
+        {
+          "value": "story-points",
+          "label": "Story Points",
+          "description": "Fibonacci-based story points"
+        },
+        {
+          "value": "t-shirt",
+          "label": "T-Shirt Sizes",
+          "description": "XS, S, M, L, XL sizing"
+        },
+        {
+          "value": "hours",
+          "label": "Hours",
+          "description": "Time-based estimation"
+        },
+        {
+          "value": "none",
+          "label": "No Estimation",
+          "description": "No formal estimation process"
+        }
+      ],
+      "default": "story-points",
+      "required": true,
+      "helpText": "Estimation method affects backlog management",
+      "conditional": {
+        "showIf": {"methodology": ["scrum", "hybrid"]}
+      }
+    },
+    {
+      "id": "agent_autonomy",
+      "question": "What level of agent autonomy do you prefer?",
+      "type": "single",
+      "options": [
+        {
+          "value": "suggest",
+          "label": "Suggest Only",
+          "description": "Agents suggest actions, human approves"
+        },
+        {
+          "value": "draft",
+          "label": "Draft",
+          "description": "Agents create drafts, human reviews"
+        },
+        {
+          "value": "auto",
+          "label": "Automatic",
+          "description": "Agents can execute approved workflows automatically"
+        }
+      ],
+      "default": "draft",
+      "required": true,
+      "helpText": "Controls how much agents can do without human approval",
+      "conditional": {
+        "showIf": {"pm_enabled": ["yes", "minimal"]}
+      }
+    }
+  ]
+}

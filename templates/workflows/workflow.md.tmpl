@@ -1,0 +1,237 @@
+{# 
+Workflow Template for Antigravity Agent Factory
+
+This template generates workflow definition files using Jinja2 syntax.
+
+Variables:
+  - workflow_name: Workflow identifier (kebab-case)
+  - workflow_title: Human-readable title
+  - workflow_description: Brief description
+  - project_name: Project this workflow is for
+  - version: Workflow version
+  - created_date: Creation date
+  - triggers: List of trigger conditions
+  - phases: List of phase objects with steps
+  - decision_points: List of decision point objects
+  - escalation_paths: List of escalation rules
+  - learning_hooks: List of learning hook definitions
+  - output_artifacts: List of output artifact definitions
+  - fallback_procedures: List of fallback procedures
+  - related_artifacts: Related agents, skills, knowledge
+
+Author: Antigravity Agent Factory
+#}
+# {{ workflow_title | default(workflow_name | replace('-', ' ') | title) }}
+
+## Overview
+
+{{ workflow_description }}
+
+**Project:** {{ project_name | default('{{PROJECT_NAME}}') }}  
+**Version:** {{ version | default('1.0.0') }}  
+**Created:** {{ created_date | default('{{CREATED_DATE}}') }}
+
+## Trigger Conditions
+
+This workflow is activated when:
+
+{% if triggers is iterable and triggers is not string %}
+{% for trigger in triggers %}
+- {{ trigger }}
+{% endfor %}
+{% else %}
+- {{ triggers | default('User explicitly requests this workflow') }}
+{% endif %}
+
+**Trigger Examples:**
+{% if trigger_examples %}
+{% for example in trigger_examples %}
+- "{{ example }}"
+{% endfor %}
+{% else %}
+- "Run {{ workflow_name }} workflow"
+- "Execute {{ workflow_title | default(workflow_name) }}"
+{% endif %}
+
+## Phases
+
+{% for phase in phases %}
+### Phase {{ loop.index }}: {{ phase.name }}
+
+**Description:** {{ phase.description }}
+
+{% if phase.entry_criteria %}
+**Entry Criteria:** {{ phase.entry_criteria }}
+{% endif %}
+{% if phase.exit_criteria %}
+**Exit Criteria:** {{ phase.exit_criteria }}
+{% endif %}
+
+{% for step in phase.steps %}
+#### Step {{ loop.index }}: {{ step.name }}
+
+**Description:** {{ step.description }}
+
+{% if step.actions %}
+**Actions:**
+{% for action in step.actions %}
+- {{ action }}
+{% endfor %}
+{% endif %}
+
+{% if step.mcp_tools %}
+**MCP Tools:**
+{% for tool in step.mcp_tools %}
+- `{{ tool.server }}-{{ tool.name }}`: {{ tool.purpose | default('') }}
+{% endfor %}
+{% endif %}
+
+{% if step.skills %}
+**Skills:**
+{% for skill in step.skills %}
+- `{{ skill.name }}`: {{ skill.purpose | default('') }}
+{% endfor %}
+{% endif %}
+
+{% if step.knowledge %}
+**Knowledge:**
+{% for k in step.knowledge %}
+- `{{ k.file }}`: {{ k.purpose | default('') }}
+{% endfor %}
+{% endif %}
+
+{% if step.outputs %}
+**Outputs:**
+{% for output in step.outputs %}
+- {{ output }}
+{% endfor %}
+{% endif %}
+
+**Is Mandatory:** {{ step.mandatory | default('Yes') }}
+
+---
+
+{% endfor %}
+{% endfor %}
+
+{% if decision_points %}
+## Decision Points
+
+{% for decision in decision_points %}
+### Decision: {{ decision.name }}
+
+**Condition:** {{ decision.condition }}
+
+**Options:**
+
+| Condition | Next Phase | Rationale |
+|-----------|------------|-----------|
+{% for option in decision.options %}
+| {{ option.condition }} | {{ option.next_phase }} | {{ option.rationale | default('') }} |
+{% endfor %}
+
+{% endfor %}
+{% endif %}
+
+{% if escalation_paths %}
+## Escalation Paths
+
+| Trigger | Action | Escalate To |
+|---------|--------|-------------|
+{% for path in escalation_paths %}
+| {{ path.trigger }} | {{ path.action }} | {{ path.escalate_to }} |
+{% endfor %}
+{% endif %}
+
+{% if learning_hooks %}
+## Learning Hooks
+
+| Hook Point | Capture | Use For |
+|------------|---------|---------|
+{% for hook in learning_hooks %}
+| {{ hook.when }} | {{ hook.capture }} | {{ hook.use_for }} |
+{% endfor %}
+{% endif %}
+
+{% if output_artifacts %}
+## Output Artifacts
+
+| Artifact | Location | Purpose |
+|----------|----------|---------|
+{% for artifact in output_artifacts %}
+| {{ artifact.name }} | `{{ artifact.location }}` | {{ artifact.purpose }} |
+{% endfor %}
+{% endif %}
+
+## MCP Tools Reference
+
+| Tool | Purpose | When Used |
+|------|---------|-----------|
+{% if all_mcp_tools %}
+{% for tool in all_mcp_tools %}
+| `{{ tool.server }}-{{ tool.name }}` | {{ tool.purpose }} | {{ tool.phase | default('Various') }} |
+{% endfor %}
+{% else %}
+| *None configured* | - | - |
+{% endif %}
+
+## Skills Reference
+
+| Skill | Purpose | Phases |
+|-------|---------|--------|
+{% if all_skills %}
+{% for skill in all_skills %}
+| `{{ skill.name }}` | {{ skill.purpose }} | {{ skill.phases | default('Various') }} |
+{% endfor %}
+{% else %}
+| *None configured* | - | - |
+{% endif %}
+
+{% if fallback_procedures %}
+## Fallback Procedures
+
+| Condition | Action |
+|-----------|--------|
+{% for proc in fallback_procedures %}
+| {{ proc.condition }} | {{ proc.action }} |
+{% endfor %}
+{% endif %}
+
+## Example Session
+
+```
+User: {{ example_input | default('Run ' + workflow_name + ' workflow') }}
+
+Agent: 
+{{ example_output | default('1. Starting ' + workflow_name + '...
+2. Executing phases...
+3. Workflow complete.') }}
+```
+
+## Best Practices
+
+{% if best_practices %}
+{% for practice in best_practices %}
+- **{{ practice.title }}** - {{ practice.description }}
+{% endfor %}
+{% else %}
+- **Follow phase order** - Execute phases in sequence unless decision points indicate otherwise
+- **Check prerequisites** - Ensure required tools and skills are available
+- **Document decisions** - Record rationale for decision point choices
+- **Capture learnings** - Use learning hooks to improve future executions
+{% endif %}
+
+{% if related_workflows %}
+## Related Workflows
+
+{% for workflow in related_workflows %}
+- `{{ workflow.name }}` - {{ workflow.description | default('') }}
+{% endfor %}
+{% endif %}
+
+## Related Artifacts
+
+{% if related_agent %}- **Agent**: `.agent/agents/{{ related_agent }}.md`{% endif %}
+{% if related_skills %}- **Skills**: {% for skill in related_skills %}`{{ skill }}`{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}
+{% if related_knowledge %}- **Knowledge**: {% for k in related_knowledge %}`{{ k }}`{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}
+{% if related_patterns %}- **Patterns**: {% for p in related_patterns %}`{{ p }}`{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}

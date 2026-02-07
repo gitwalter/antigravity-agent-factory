@@ -1,0 +1,117 @@
+"""
+{{MODULE_NAME}} Model - SQLAlchemy database model
+
+Purpose: Define database table structure for {{DOMAIN_NAME}}
+Author: {{AUTHOR}}
+Created: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): All fields are typed and documented
+- A3 (Transparency): Clear table and column definitions
+- A4 (Non-Harm): Constraints prevent invalid data storage
+"""
+
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
+
+Base = declarative_base()
+
+
+class {{MODEL_CLASS_NAME}}(Base):
+    """
+    SQLAlchemy model for {{ENTITY_NAME}} table.
+    
+    This model defines the database table structure and relationships
+    for {{DOMAIN_NAME}} entities. It uses SQLAlchemy's declarative base
+    for ORM functionality.
+    
+    Attributes:
+        id: Primary key
+        name: {{ENTITY_NAME}} name
+        description: Optional description
+        created_at: Timestamp of creation
+        updated_at: Timestamp of last update
+        
+    Example:
+        >>> item = {{MODEL_CLASS_NAME}}(name="Example")
+        >>> session.add(item)
+        >>> session.commit()
+    """
+    
+    __tablename__ = "{{TABLE_NAME}}"
+    
+    # Primary key
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True,
+        autoincrement=True,
+        comment="Primary key identifier"
+    )
+    
+    # Core fields
+    name = Column(
+        String(255),
+        nullable=False,
+        index=True,
+        comment="{{ENTITY_NAME}} name"
+    )
+    
+    description = Column(
+        Text,
+        nullable=True,
+        comment="Optional description"
+    )
+    
+    # Timestamps
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+        comment="Creation timestamp"
+    )
+    
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+        comment="Last update timestamp"
+    )
+    
+    # Add additional fields as needed
+    # Example:
+    # status = Column(String(50), nullable=False, default="active")
+    # is_active = Column(Boolean, nullable=False, default=True)
+    # user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
+    # Relationships (if needed)
+    # Example:
+    # user = relationship("User", back_populates="{{RELATIONSHIP_NAME}}")
+    
+    def __repr__(self) -> str:
+        """
+        String representation of the model instance.
+        
+        Returns:
+            String representation
+        """
+        return f"<{{MODEL_CLASS_NAME}}(id={self.id}, name='{self.name}')>"
+    
+    def to_dict(self) -> dict:
+        """
+        Convert model instance to dictionary.
+        
+        Returns:
+            Dictionary representation of the model
+        """
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }

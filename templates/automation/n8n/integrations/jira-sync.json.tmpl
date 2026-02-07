@@ -1,0 +1,153 @@
+{
+  "name": "{{WORKFLOW_NAME}} - Jira Sync",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": {{SYNC_INTERVAL_HOURS}}
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger-{{NODE_ID}}",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "jql": "={{ 'project = {{JIRA_PROJECT}} AND updated >= -{{SYNC_INTERVAL_HOURS}}h ORDER BY updated DESC' }}",
+        "options": {
+          "maxResults": 100
+        }
+      },
+      "id": "fetch-jira-issues-{{NODE_ID}}",
+      "name": "Fetch Jira Issues",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 2.1,
+      "position": [450, 300],
+      "credentials": {
+        "jiraApi": {
+          "id": "{{JIRA_CREDENTIAL_ID}}",
+          "name": "{{JIRA_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Transform Jira issues for sync\nconst items = $input.all();\n\nconst transformed = items.map(item => {\n  const issue = item.json.fields || item.json;\n  \n  return {\n    json: {\n      jira_key: item.json.key || issue.key,\n      jira_id: item.json.id || issue.id,\n      summary: issue.summary,\n      description: issue.description,\n      status: issue.status?.name,\n      priority: issue.priority?.name,\n      assignee: issue.assignee?.displayName || issue.assignee?.emailAddress,\n      reporter: issue.reporter?.displayName || issue.reporter?.emailAddress,\n      created: issue.created,\n      updated: issue.updated,\n      issue_type: issue.issuetype?.name,\n      labels: issue.labels || [],\n      components: (issue.components || []).map(c => c.name),\n      _source: 'jira',\n      _synced_at: new Date().toISOString()\n    }\n  };\n});\n\nreturn transformed;"
+      },
+      "id": "transform-issues-{{NODE_ID}}",
+      "name": "Transform Issues",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "operation": "{{TARGET_OPERATION}}",
+        "resource": "{{TARGET_RESOURCE}}",
+        "options": {}
+      },
+      "id": "sync-to-target-{{NODE_ID}}",
+      "name": "Sync to Target",
+      "type": "{{TARGET_NODE_TYPE}}",
+      "typeVersion": {{TARGET_NODE_VERSION}},
+      "position": [850, 300],
+      "credentials": {
+        "{{TARGET_CREDENTIAL_TYPE}}": {
+          "id": "{{TARGET_CREDENTIAL_ID}}",
+          "name": "{{TARGET_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "sync-summary",
+              "name": "sync_summary",
+              "value": "={{ { \"status\": \"completed\", \"issues_synced\": $input.all().length, \"timestamp\": $now } }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "create-summary-{{NODE_ID}}",
+      "name": "Create Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1050, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Jira Issues",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Jira Issues": {
+      "main": [
+        [
+          {
+            "node": "Transform Issues",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Issues": {
+      "main": [
+        [
+          {
+            "node": "Sync to Target",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sync to Target": {
+      "main": [
+        [
+          {
+            "node": "Create Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "{{TIMESTAMP}}",
+      "updatedAt": "{{TIMESTAMP}}",
+      "id": "{{TAG_ID}}",
+      "name": "jira-integration"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "{{TIMESTAMP}}",
+  "versionId": "{{VERSION_ID}}"
+}

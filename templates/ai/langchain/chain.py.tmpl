@@ -1,0 +1,280 @@
+"""
+{{CHAIN_NAME}} - LangChain LCEL Chain Composition
+
+Purpose: {{CHAIN_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Chain outputs are structured and traceable
+- A3 (Transparency): Chain composition is explicit and inspectable
+"""
+
+from typing import Dict, Any, Optional, List
+from langchain_core.runnables import RunnablePassthrough, RunnableParallel, RunnableBranch
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
+from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
+from pydantic import BaseModel, Field
+import logging
+
+# Configure logging for transparency (A3)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class {{CHAIN_CLASS_NAME}}Output(BaseModel):
+    """
+    Structured output for {{CHAIN_NAME}} chain.
+    
+    Using structured output ensures verifiability (A1).
+    """
+    result: str = Field(description="The main output result")
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Additional metadata about the processing"
+    )
+    confidence: float = Field(
+        ge=0.0,
+        le=1.0,
+        description="Confidence score for the output"
+    )
+
+
+class {{CHAIN_CLASS_NAME}}:
+    """
+    {{CHAIN_NAME}} - LCEL Chain Composition
+    
+    This chain demonstrates LangChain Expression Language (LCEL) patterns:
+    - Sequential composition with pipe operator
+    - Parallel execution with RunnableParallel
+    - Conditional routing with RunnableBranch
+    - Structured output parsing
+    
+    Example:
+        >>> chain = {{CHAIN_CLASS_NAME}}()
+        >>> result = chain.invoke({"input": "Process this text"})
+        >>> print(result.result)
+    """
+    
+    def __init__(
+        self,
+        model_name: str = "{{MODEL_NAME}}",
+        temperature: float = {{TEMPERATURE}},
+        use_structured_output: bool = True
+    ):
+        """
+        Initialize the {{CHAIN_NAME}} chain.
+        
+        Args:
+            model_name: LLM model identifier
+            temperature: Sampling temperature (0.0-1.0)
+            use_structured_output: Whether to use structured output parsing
+        """
+        self.model_name = model_name
+        self.temperature = temperature
+        self.use_structured_output = use_structured_output
+        
+        # Initialize LLM
+        self.llm = ChatOpenAI(
+            model=self.model_name,
+            temperature=self.temperature
+        )
+        
+        # Create prompt template
+        self.prompt = self._create_prompt()
+        
+        # Build chain
+        self.chain = self._build_chain()
+        
+        logger.info(f"Initialized {{CHAIN_NAME}} chain with model {model_name}")
+    
+    def _create_prompt(self) -> ChatPromptTemplate:
+        """
+        Create the prompt template for the chain.
+        
+        Returns:
+            ChatPromptTemplate instance
+        """
+        return ChatPromptTemplate.from_messages([
+            ("system", """{{SYSTEM_PROMPT}}
+            
+## Core Principles
+- Provide accurate, verifiable outputs (A1)
+- Be transparent about your reasoning (A3)
+- Prioritize user intent (A2)
+"""),
+            ("human", "{input}")
+        ])
+    
+    def _build_chain(self):
+        """
+        Build the LCEL chain composition.
+        
+        This demonstrates:
+        1. Sequential processing: prompt -> llm -> parser
+        2. Parallel processing: multiple chains run simultaneously
+        3. Conditional routing: different paths based on input
+        
+        Returns:
+            Compiled chain
+        """
+        # Base sequential chain: prompt -> llm -> parser
+        base_chain = (
+            self.prompt
+            | self.llm
+            | StrOutputParser()
+        )
+        
+        # If using structured output, wrap LLM with structured output
+        if self.use_structured_output:
+            structured_llm = self.llm.with_structured_output({{CHAIN_CLASS_NAME}}Output)
+            base_chain = (
+                self.prompt
+                | structured_llm
+            )
+        
+        # Parallel processing example (if needed)
+        # parallel_chain = RunnableParallel(
+        #     main=base_chain,
+        #     metadata=lambda x: {"timestamp": time.time(), "input_length": len(x["input"])}
+        # )
+        
+        # Conditional routing example (if needed)
+        # branch_chain = RunnableBranch(
+        #     (lambda x: len(x.get("input", "")) > 100, long_input_chain),
+        #     (lambda x: len(x.get("input", "")) <= 100, short_input_chain),
+        #     base_chain  # default
+        # )
+        
+        return base_chain
+    
+    def invoke(self, input_data: Dict[str, Any]) -> {{CHAIN_CLASS_NAME}}Output | str:
+        """
+        Invoke the chain with input data.
+        
+        Args:
+            input_data: Dictionary containing input data
+                - input: The main input text (required)
+                - context: Optional context information
+        
+        Returns:
+            Chain output (structured or string depending on configuration)
+            
+        Example:
+            >>> result = chain.invoke({"input": "Summarize this text"})
+        """
+        logger.info(f"Invoking chain with input: {input_data.get('input', '')[:100]}...")
+        
+        try:
+            # Validate input
+            if "input" not in input_data:
+                raise ValueError("Input data must contain 'input' key")
+            
+            # Invoke chain
+            result = self.chain.invoke(input_data)
+            
+            # If result is already structured, return it
+            if isinstance(result, {{CHAIN_CLASS_NAME}}Output):
+                logger.info(f"Chain completed with confidence: {result.confidence}")
+                return result
+            
+            # Otherwise wrap in structured output
+            return {{CHAIN_CLASS_NAME}}Output(
+                result=result,
+                metadata={"model": self.model_name, "temperature": self.temperature},
+                confidence=1.0
+            )
+            
+        except Exception as e:
+            logger.error(f"Error during chain invocation: {e}")
+            # Return safe error response (A4 - Non-Harm)
+            if self.use_structured_output:
+                return {{CHAIN_CLASS_NAME}}Output(
+                    result=f"Error processing input: {str(e)}",
+                    metadata={"error": True},
+                    confidence=0.0
+                )
+            return f"Error: {str(e)}"
+    
+    async def ainvoke(self, input_data: Dict[str, Any]) -> {{CHAIN_CLASS_NAME}}Output | str:
+        """
+        Async version of invoke.
+        
+        Args:
+            input_data: Dictionary containing input data
+        
+        Returns:
+            Chain output
+        """
+        logger.info(f"Async invoking chain with input: {input_data.get('input', '')[:100]}...")
+        
+        try:
+            if "input" not in input_data:
+                raise ValueError("Input data must contain 'input' key")
+            
+            result = await self.chain.ainvoke(input_data)
+            
+            if isinstance(result, {{CHAIN_CLASS_NAME}}Output):
+                return result
+            
+            return {{CHAIN_CLASS_NAME}}Output(
+                result=result,
+                metadata={"model": self.model_name},
+                confidence=1.0
+            )
+            
+        except Exception as e:
+            logger.error(f"Error during async chain invocation: {e}")
+            if self.use_structured_output:
+                return {{CHAIN_CLASS_NAME}}Output(
+                    result=f"Error: {str(e)}",
+                    metadata={"error": True},
+                    confidence=0.0
+                )
+            return f"Error: {str(e)}"
+    
+    def stream(self, input_data: Dict[str, Any]):
+        """
+        Stream chain outputs token by token.
+        
+        Args:
+            input_data: Dictionary containing input data
+        
+        Yields:
+            Token chunks from the chain
+        """
+        logger.info("Streaming chain output...")
+        
+        try:
+            if "input" not in input_data:
+                raise ValueError("Input data must contain 'input' key")
+            
+            for chunk in self.chain.stream(input_data):
+                yield chunk
+                
+        except Exception as e:
+            logger.error(f"Error during streaming: {e}")
+            yield f"Error: {str(e)}"
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create chain
+    chain = {{CHAIN_CLASS_NAME}}(
+        model_name="{{MODEL_NAME}}",
+        temperature={{TEMPERATURE}},
+        use_structured_output=True
+    )
+    
+    # Test invocation
+    result = chain.invoke({
+        "input": "{{EXAMPLE_INPUT}}"
+    })
+    
+    if isinstance(result, {{CHAIN_CLASS_NAME}}Output):
+        print(f"Result: {result.result}")
+        print(f"Confidence: {result.confidence}")
+        print(f"Metadata: {result.metadata}")
+    else:
+        print(f"Result: {result}")

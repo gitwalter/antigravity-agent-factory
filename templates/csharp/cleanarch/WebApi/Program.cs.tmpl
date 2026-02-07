@@ -1,0 +1,144 @@
+using FluentValidation;
+using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using {{NAMESPACE}}.Application.Validators;
+using {{NAMESPACE}}.Domain.Repositories;
+using {{NAMESPACE}}.Infrastructure;
+using {{NAMESPACE}}.Infrastructure.Repositories;
+
+namespace {{NAMESPACE}}.WebApi;
+
+/// <summary>
+/// Program - Application Entry Point
+/// 
+/// Purpose: Configure and start the web application
+/// Author: {{AUTHOR}}
+/// Created: {{DATE}}
+/// 
+/// Configures dependency injection, database, MediatR, and middleware.
+/// </summary>
+public class Program
+{
+    /// <summary>
+    /// Application entry point.
+    /// </summary>
+    /// <param name="args">Command line arguments.</param>
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+
+        // Add services to the container
+        ConfigureServices(builder.Services, builder.Configuration);
+
+        var app = builder.Build();
+
+        // Configure the HTTP request pipeline
+        ConfigureMiddleware(app);
+
+        app.Run();
+    }
+
+    /// <summary>
+    /// Configures application services.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configuration">The configuration.</param>
+    private static void ConfigureServices(
+        IServiceCollection services,
+        IConfiguration configuration)
+    {
+        // Add controllers
+        services.AddControllers();
+
+        // Add API explorer for Swagger
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+            {
+                Title = "{{API_NAME}} API",
+                Version = "v1",
+                Description = "{{API_DESCRIPTION}}"
+            });
+
+            // Include XML comments
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            if (File.Exists(xmlPath))
+            {
+                c.IncludeXmlComments(xmlPath);
+            }
+        });
+
+        // Add Entity Framework Core
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlServer(
+                configuration.GetConnectionString("DefaultConnection"),
+                b => b.MigrationsAssembly("{{NAMESPACE}}.Infrastructure")));
+
+        // Add MediatR
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+            // Or specify assembly: cfg.RegisterServicesFromAssembly(typeof({{CLASS_NAME}}CommandHandler).Assembly);
+        });
+
+        // Add FluentValidation
+        services.AddValidatorsFromAssemblyContaining<{{CLASS_NAME}}CommandValidator>();
+
+        // Add AutoMapper (if using)
+        // services.AddAutoMapper(typeof(Program).Assembly);
+
+        // Register repositories
+        services.AddScoped<I{{CLASS_NAME}}Repository, {{CLASS_NAME}}Repository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        // Add CORS
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll", policy =>
+            {
+                policy.AllowAnyOrigin()
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+            });
+        });
+
+        // Add health checks
+        services.AddHealthChecks()
+            .AddDbContextCheck<ApplicationDbContext>();
+    }
+
+    /// <summary>
+    /// Configures middleware pipeline.
+    /// </summary>
+    /// <param name="app">The web application.</param>
+    private static void ConfigureMiddleware(WebApplication app)
+    {
+        // Configure the HTTP request pipeline
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+
+        app.UseHttpsRedirection();
+
+        app.UseCors("AllowAll");
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.MapControllers();
+
+        app.MapHealthChecks("/health");
+
+        // Apply database migrations (only in development)
+        if (app.Environment.IsDevelopment())
+        {
+            using var scope = app.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            dbContext.Database.Migrate();
+        }
+    }
+}

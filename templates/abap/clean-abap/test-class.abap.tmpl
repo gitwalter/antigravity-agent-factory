@@ -1,0 +1,110 @@
+"! <p class="shorttext synchronized">${CLASS_DESCRIPTION}</p>
+"! ABAP Unit test class for ${CLASS_UNDER_TEST}
+"! @author ${AUTHOR}
+"! @date ${DATE}
+"! @version 1.0
+"!
+"! Purpose: ${PURPOSE}
+"!
+"! Test structure follows Given-When-Then pattern:
+"!   Given: Setup test data and dependencies
+"!   When: Execute the method under test
+"!   Then: Assert expected results
+"!
+CLASS ${TEST_CLASS_NAME} DEFINITION
+  FOR TESTING
+  RISK LEVEL HARMLESS
+  DURATION SHORT.
+  
+  PUBLIC SECTION.
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+    "! Class under test
+    DATA cut TYPE REF TO ${CLASS_UNDER_TEST}.
+    
+    "! Test dependencies (mocks/stubs)
+    DATA mock_repository TYPE REF TO ${REPOSITORY_INTERFACE_NAME}.
+    
+    "! Test data
+    DATA test_${PARAMETER_NAME} TYPE ${PARAMETER_TYPE}.
+    DATA expected_result TYPE ${RETURN_TYPE}.
+    
+    "! Setup method - runs before each test
+    METHODS setup.
+    
+    "! Teardown method - runs after each test
+    METHODS teardown.
+    
+    "! Test method: ${TEST_METHOD_DESCRIPTION}
+    "! @given ${GIVEN_DESCRIPTION}
+    "! @when ${WHEN_DESCRIPTION}
+    "! @then ${THEN_DESCRIPTION}
+    METHODS ${TEST_METHOD_NAME} FOR TESTING.
+    
+    "! Test method: ${SECOND_TEST_METHOD_DESCRIPTION}
+    METHODS ${SECOND_TEST_METHOD_NAME} FOR TESTING
+      RAISING ${EXCEPTION_CLASS_NAME}.
+      
+ENDCLASS.
+
+CLASS ${TEST_CLASS_NAME} IMPLEMENTATION.
+  
+  METHOD setup.
+    " Given: Setup test data and dependencies
+    " Create mock repository
+    " mock_repository = NEW ${MOCK_REPOSITORY_CLASS_NAME}( ).
+    
+    " Create class under test with mock dependency
+    " cut = NEW ${CLASS_UNDER_TEST}( repository = mock_repository ).
+    
+    " Initialize test data
+    test_${PARAMETER_NAME} = 'test_value'.
+    expected_result = 'expected_result'.
+  ENDMETHOD.
+  
+  METHOD teardown.
+    " Cleanup after test
+    CLEAR: cut, mock_repository.
+  ENDMETHOD.
+  
+  METHOD ${TEST_METHOD_NAME}.
+    " Given: Setup test scenario
+    DATA(actual_result) = VALUE ${RETURN_TYPE}( ).
+    
+    " When: Execute method under test
+    TRY.
+        actual_result = cut->${METHOD_NAME}( ${PARAMETER_NAME} = test_${PARAMETER_NAME} ).
+      CATCH ${EXCEPTION_CLASS_NAME} INTO DATA(exception).
+        " Handle exception if expected
+        cl_abap_unit_assert=>fail( msg = |Unexpected exception: { exception->get_text( ) }| ).
+    ENDTRY.
+    
+    " Then: Assert expected results
+    cl_abap_unit_assert=>assert_equals(
+      act = actual_result
+      exp = expected_result
+      msg = 'Result should match expected value'
+    ).
+  ENDMETHOD.
+  
+  METHOD ${SECOND_TEST_METHOD_NAME}.
+    " Given: Setup test scenario that should raise exception
+    DATA(actual_result) = VALUE ${RETURN_TYPE}( ).
+    
+    " When: Execute method that should raise exception
+    TRY.
+        actual_result = cut->${METHOD_NAME}( ${PARAMETER_NAME} = VALUE #( ) ).
+        
+        " Then: Exception should have been raised
+        cl_abap_unit_assert=>fail( msg = 'Exception should have been raised' ).
+        
+      CATCH ${EXCEPTION_CLASS_NAME} INTO DATA(exception).
+        " Then: Verify exception was raised correctly
+        cl_abap_unit_assert=>assert_bound(
+          act = exception
+          msg = 'Exception should be bound'
+        ).
+    ENDTRY.
+  ENDMETHOD.
+  
+ENDCLASS.

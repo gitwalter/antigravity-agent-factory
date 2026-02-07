@@ -1,0 +1,482 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Linear PM Adapter",
+  "description": "Adapter mapping PM interface operations to Linear issues, cycles, and projects",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["metadata", "mappings"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Adapter metadata",
+      "required": ["adapterId", "adapterName", "targetSystem", "version"],
+      "properties": {
+        "adapterId": {
+          "type": "string",
+          "description": "Unique identifier for this adapter",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "adapterName": {
+          "type": "string",
+          "description": "Human-readable adapter name"
+        },
+        "targetSystem": {
+          "type": "string",
+          "description": "Target PM system name"
+        },
+        "version": {
+          "type": "string",
+          "description": "Adapter version"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the adapter"
+        },
+        "apiType": {
+          "type": "string",
+          "description": "Linear API type",
+          "default": "GraphQL"
+        }
+      }
+    },
+    "mappings": {
+      "type": "object",
+      "description": "Interface to Linear API mappings",
+      "required": ["concepts", "workItems", "planning", "boards", "metrics", "documentation"],
+      "properties": {
+        "concepts": {
+          "type": "object",
+          "description": "Conceptual mappings",
+          "properties": {
+            "epic": {
+              "type": "string",
+              "description": "Epic = Project"
+            },
+            "story": {
+              "type": "string",
+              "description": "Story = Issue"
+            },
+            "task": {
+              "type": "string",
+              "description": "Task = Issue with task label"
+            },
+            "bug": {
+              "type": "string",
+              "description": "Bug = Issue with bug label"
+            },
+            "sprint": {
+              "type": "string",
+              "description": "Sprint = Cycle"
+            },
+            "board": {
+              "type": "string",
+              "description": "Board = Project board view"
+            }
+          }
+        },
+        "workItems": {
+          "type": "object",
+          "properties": {
+            "createEpic": {
+              "type": "object",
+              "properties": {
+                "graphqlMutation": {
+                  "type": "string",
+                  "default": "mutation { projectCreate(input: { name: $name, description: $description, teamId: $teamId }) { project { id } } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "input.name"},
+                    "description": {"type": "string", "mappedTo": "input.description"},
+                    "projectId": {"type": "string", "mappedTo": "input.teamId"}
+                  }
+                },
+                "example": {
+                  "type": "object",
+                  "properties": {
+                    "query": "mutation ProjectCreate($name: String!, $description: String, $teamId: String!) { projectCreate(input: { name: $name, description: $description, teamId: $teamId }) { project { id name } } }",
+                    "variables": {
+                      "name": "User Authentication Epic",
+                      "description": "Implement user authentication system",
+                      "teamId": "team-123"
+                    }
+                  }
+                }
+              }
+            },
+            "createStory": {
+              "type": "object",
+              "properties": {
+                "graphqlMutation": {
+                  "type": "string",
+                  "default": "mutation { issueCreate(input: { title: $title, description: $description, teamId: $teamId, projectId: $projectId }) { issue { id } } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "input.title"},
+                    "description": {"type": "string", "mappedTo": "input.description"},
+                    "epicId": {"type": "string", "mappedTo": "input.projectId"},
+                    "projectId": {"type": "string", "mappedTo": "input.teamId"}
+                  }
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Link issue to project (epic) via projectId"
+                }
+              }
+            },
+            "createTask": {
+              "type": "object",
+              "properties": {
+                "graphqlMutation": {
+                  "type": "string",
+                  "default": "mutation { issueCreate(input: { title: $title, description: $description, teamId: $teamId, parentId: $parentId, labelIds: $labelIds }) { issue { id } } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "input.title"},
+                    "description": {"type": "string", "mappedTo": "input.description"},
+                    "storyId": {"type": "string", "mappedTo": "input.parentId"},
+                    "projectId": {"type": "string", "mappedTo": "input.teamId"},
+                    "labelIds": {"type": "array", "default": ["task-label-id"]}
+                  }
+                }
+              }
+            },
+            "createBug": {
+              "type": "object",
+              "properties": {
+                "graphqlMutation": {
+                  "type": "string",
+                  "default": "mutation { issueCreate(input: { title: $title, description: $description, teamId: $teamId, labelIds: $labelIds, priority: $priority }) { issue { id } } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "input.title"},
+                    "description": {"type": "string", "mappedTo": "input.description"},
+                    "severity": {"type": "string", "mappedTo": "input.priority"},
+                    "projectId": {"type": "string", "mappedTo": "input.teamId"},
+                    "labelIds": {"type": "array", "default": ["bug-label-id"]}
+                  }
+                }
+              }
+            },
+            "updateStatus": {
+              "type": "object",
+              "properties": {
+                "graphqlMutation": {
+                  "type": "string",
+                  "default": "mutation { issueUpdate(id: $id, input: { stateId: $stateId }) { issue { id } } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {"type": "string", "mappedTo": "id"},
+                    "status": {"type": "string", "mappedTo": "input.stateId"}
+                  }
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Status mapped to Linear workflow state ID"
+                }
+              }
+            },
+            "assignItem": {
+              "type": "object",
+              "properties": {
+                "graphqlMutation": {
+                  "type": "string",
+                  "default": "mutation { issueUpdate(id: $id, input: { assigneeId: $assigneeId }) { issue { id } } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {"type": "string", "mappedTo": "id"},
+                    "userId": {"type": "string", "mappedTo": "input.assigneeId"}
+                  }
+                }
+              }
+            },
+            "getItem": {
+              "type": "object",
+              "properties": {
+                "graphqlQuery": {
+                  "type": "string",
+                  "default": "query { issue(id: $id) { id title description state { id name } assignee { id name } } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {"type": "string", "mappedTo": "id"}
+                  }
+                }
+              }
+            },
+            "listItems": {
+              "type": "object",
+              "properties": {
+                "graphqlQuery": {
+                  "type": "string",
+                  "default": "query { issues(filter: { team: { id: { eq: $teamId } }, state: { name: { eq: $status } }, assignee: { id: { eq: $assigneeId } } }) { nodes { id title state { name } } } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "projectId": {"type": "string", "mappedTo": "filter.team.id"},
+                    "status": {"type": "string", "mappedTo": "filter.state.name"},
+                    "assignee": {"type": "string", "mappedTo": "filter.assignee.id"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "planning": {
+          "type": "object",
+          "properties": {
+            "createSprint": {
+              "type": "object",
+              "properties": {
+                "graphqlMutation": {
+                  "type": "string",
+                  "default": "mutation { cycleCreate(input: { name: $name, teamId: $teamId, startsAt: $startsAt, endsAt: $endsAt }) { cycle { id } } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "name": {"type": "string", "mappedTo": "input.name"},
+                    "startDate": {"type": "string", "mappedTo": "input.startsAt"},
+                    "endDate": {"type": "string", "mappedTo": "input.endsAt"},
+                    "projectId": {"type": "string", "mappedTo": "input.teamId"}
+                  }
+                }
+              }
+            },
+            "addToSprint": {
+              "type": "object",
+              "properties": {
+                "graphqlMutation": {
+                  "type": "string",
+                  "default": "mutation { issueUpdate(id: $id, input: { cycleId: $cycleId }) { issue { id } } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "mappedTo": "input.cycleId"},
+                    "itemId": {"type": "string", "mappedTo": "id"}
+                  }
+                }
+              }
+            },
+            "closeSprint": {
+              "type": "object",
+              "properties": {
+                "graphqlMutation": {
+                  "type": "string",
+                  "default": "mutation { cycleUpdate(id: $id, input: { completedAt: $completedAt }) { cycle { id } } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "mappedTo": "id"},
+                    "completedAt": {"type": "string", "mappedTo": "input.completedAt"}
+                  }
+                }
+              }
+            },
+            "getSprint": {
+              "type": "object",
+              "properties": {
+                "graphqlQuery": {
+                  "type": "string",
+                  "default": "query { cycle(id: $id) { id name startsAt endsAt } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "mappedTo": "id"}
+                  }
+                }
+              }
+            },
+            "listSprints": {
+              "type": "object",
+              "properties": {
+                "graphqlQuery": {
+                  "type": "string",
+                  "default": "query { cycles(filter: { team: { id: { eq: $teamId } } }) { nodes { id name startsAt endsAt } } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "projectId": {"type": "string", "mappedTo": "filter.team.id"},
+                    "state": {"type": "string", "mappedTo": "filter.completedAt"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "boards": {
+          "type": "object",
+          "properties": {
+            "getBoard": {
+              "type": "object",
+              "properties": {
+                "graphqlQuery": {
+                  "type": "string",
+                  "default": "query { project(id: $id) { id name columns { id name } } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "boardId": {"type": "string", "mappedTo": "id"}
+                  }
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Project board view contains columns"
+                }
+              }
+            },
+            "moveCard": {
+              "type": "object",
+              "properties": {
+                "graphqlMutation": {
+                  "type": "string",
+                  "default": "mutation { issueUpdate(id: $id, input: { projectId: $projectId, projectColumnId: $columnId, projectColumnPosition: $position }) { issue { id } } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "cardId": {"type": "string", "mappedTo": "id"},
+                    "columnId": {"type": "string", "mappedTo": "input.projectColumnId"},
+                    "position": {"type": "integer", "mappedTo": "input.projectColumnPosition"}
+                  }
+                }
+              }
+            },
+            "getBoardColumns": {
+              "type": "object",
+              "properties": {
+                "graphqlQuery": {
+                  "type": "string",
+                  "default": "query { project(id: $id) { columns { id name } } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "boardId": {"type": "string", "mappedTo": "id"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "getVelocity": {
+              "type": "object",
+              "properties": {
+                "graphqlQuery": {
+                  "type": "string",
+                  "default": "query { cycles(filter: { team: { id: { eq: $teamId } }, completedAt: { neq: null } }) { nodes { id completedIssuesCount estimate } } }"
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Calculate from completed cycles estimate points"
+                }
+              }
+            },
+            "getBurndown": {
+              "type": "object",
+              "properties": {
+                "graphqlQuery": {
+                  "type": "string",
+                  "default": "query { cycle(id: $id) { id burndownChartData { date remainingEstimate } } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "mappedTo": "id"}
+                  }
+                }
+              }
+            },
+            "getCycleTime": {
+              "type": "object",
+              "properties": {
+                "graphqlQuery": {
+                  "type": "string",
+                  "default": "query { issues(filter: { team: { id: { eq: $teamId } }, completedAt: { gte: $startDate, lte: $endDate } }) { nodes { id completedAt createdAt } } }"
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Calculate from issue createdAt to completedAt"
+                }
+              }
+            },
+            "getLeadTime": {
+              "type": "object",
+              "properties": {
+                "note": {
+                  "type": "string",
+                  "description": "Calculate from issue createdAt to deployed (custom field or label)"
+                }
+              }
+            },
+            "getWIP": {
+              "type": "object",
+              "properties": {
+                "graphqlQuery": {
+                  "type": "string",
+                  "default": "query { issues(filter: { team: { id: { eq: $teamId } }, state: { name: { in: [\"In Progress\", \"In Review\"] } } }) { nodes { id } } }"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "boardId": {"type": "string", "mappedTo": "filter.team.id"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "documentation": {
+          "type": "object",
+          "properties": {
+            "note": {
+              "type": "string",
+              "description": "Linear documentation typically handled via separate documentation system or linked documents"
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "metadata": {
+        "adapterId": "linear-adapter",
+        "adapterName": "Linear PM Adapter",
+        "targetSystem": "Linear",
+        "version": "1.0.0",
+        "description": "Maps PM interface to Linear issues, cycles, and projects",
+        "apiType": "GraphQL"
+      },
+      "mappings": {
+        "concepts": {
+          "epic": "Project",
+          "story": "Issue",
+          "sprint": "Cycle",
+          "board": "Project board view"
+        }
+      }
+    }
+  ]
+}

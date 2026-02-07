@@ -1,0 +1,870 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Skill Catalog",
+  "description": "Registry of skill types available for agent building. Contains metadata and descriptions - implementations are stack-specific.",
+  "version": "1.0.0",
+  "categories": {
+    "core": {
+      "description": "Generic skills applicable across all stacks",
+      "implementedInFactory": true
+    },
+    "workflow": {
+      "description": "Process and workflow skills",
+      "implementedInFactory": true
+    },
+    "grounding": {
+      "description": "Data verification and validation skills",
+      "implementedInFactory": false,
+      "note": "Stack-specific implementations live in respective agent workflow repositories"
+    },
+    "testing": {
+      "description": "Test generation, TDD, and BDD skills",
+      "implementedInFactory": true
+    },
+    "verification": {
+      "description": "Claim and hallucination verification skills",
+      "implementedInFactory": true
+    },
+    "ai-development": {
+      "description": "AI agent development, prompt engineering, and multi-agent coordination skills",
+      "implementedInFactory": true,
+      "note": "Skills for building LLM-powered agents with LangChain, LangGraph, CrewAI, and similar frameworks"
+    },
+    "sap-rap": {
+      "description": "SAP RESTful ABAP Programming (RAP) development skills",
+      "implementedInFactory": false,
+      "targetStack": "sap-abap",
+      "note": "Skills for building RAP business objects with behavior definitions, draft handling, and Fiori integration"
+    },
+    "sap-cap": {
+      "description": "SAP Cloud Application Programming Model (CAP) development skills",
+      "implementedInFactory": false,
+      "targetStack": "sap-cap",
+      "note": "Skills for building CAP applications with CDS, service handlers, and BTP deployment"
+    },
+    "sap-integration": {
+      "description": "SAP integration development skills for CPI/PI",
+      "implementedInFactory": false,
+      "targetStack": "sap-cpi-pi",
+      "note": "Skills for building iFlows, Groovy scripts, and B2B integrations"
+    }
+  },
+  "skills": {
+    "grounding": {
+      "id": "grounding",
+      "name": "Grounding",
+      "category": "core",
+      "stackAgnostic": true,
+      "description": "Base skill for verifying data structures and assumptions before implementation",
+      "factoryPattern": "patterns/skills/grounding.json",
+      "whenToUse": [
+        "Before implementing data access logic",
+        "When working with database tables or structures",
+        "Before assuming any field or structure exists"
+      ]
+    },
+    "strawberry-verification": {
+      "id": "strawberry-verification",
+      "name": "Strawberry Verification",
+      "category": "verification",
+      "stackAgnostic": true,
+      "description": "Mathematical hallucination detection using information-theoretic principles",
+      "factoryPattern": "patterns/skills/strawberry-verification.json",
+      "whenToUse": [
+        "After collecting evidence from grounding skills",
+        "For critical claims that could cause implementation failures",
+        "When grounding confidence is MEDIUM"
+      ]
+    },
+    "bugfix-workflow": {
+      "id": "bugfix-workflow",
+      "name": "Bugfix Workflow",
+      "category": "workflow",
+      "stackAgnostic": true,
+      "description": "Ticket-based bug fix workflow with Jira integration",
+      "factoryPattern": "patterns/skills/bugfix-workflow.json",
+      "whenToUse": [
+        "When fixing bugs from Jira tickets",
+        "For systematic debugging processes"
+      ]
+    },
+    "feature-workflow": {
+      "id": "feature-workflow",
+      "name": "Feature Workflow",
+      "category": "workflow",
+      "stackAgnostic": true,
+      "description": "Specification-based feature implementation workflow",
+      "factoryPattern": "patterns/skills/feature-workflow.json",
+      "whenToUse": [
+        "When implementing features from Confluence specs",
+        "For new feature development"
+      ]
+    },
+    "tdd": {
+      "id": "tdd",
+      "name": "Test-Driven Development",
+      "category": "testing",
+      "stackAgnostic": true,
+      "description": "Test-first development approach",
+      "factoryPattern": "patterns/skills/tdd.json",
+      "whenToUse": [
+        "When quality is critical",
+        "For complex business logic"
+      ]
+    },
+    "bdd": {
+      "id": "bdd",
+      "name": "Behavior-Driven Development",
+      "category": "testing",
+      "stackAgnostic": true,
+      "description": "Stakeholder-readable executable specifications using Gherkin syntax",
+      "factoryPattern": "patterns/skills/bdd.json",
+      "optional": true,
+      "complementsSkill": "tdd",
+      "frameworks": {
+        "python": "behave, pytest-bdd",
+        "typescript": "cucumber-js",
+        "java": "cucumber-jvm",
+        "csharp": "specflow",
+        "kotlin": "cucumber-jvm"
+      },
+      "whenToUse": [
+        "When stakeholders need to validate requirements",
+        "When building living documentation",
+        "When bridging developer-business communication",
+        "When acceptance criteria need to be executable"
+      ]
+    },
+    "test-translation": {
+      "id": "test-translation",
+      "name": "Test Translation",
+      "category": "testing",
+      "stackAgnostic": true,
+      "description": "Bidirectional translation between BDD scenarios and TDD unit tests with traceability",
+      "factoryPattern": "patterns/skills/test-translation.json",
+      "optional": true,
+      "requiresSkills": ["tdd", "bdd"],
+      "translationDirections": {
+        "bdd-to-tdd": "Generate unit test stubs from Gherkin scenarios",
+        "tdd-to-bdd": "Generate Gherkin documentation from unit tests"
+      },
+      "traceability": {
+        "scenarioToTests": "Link BDD scenarios to implementing unit tests",
+        "testToScenario": "Link unit tests back to their source scenario",
+        "metadata": "Store traceability in test/scenario metadata"
+      },
+      "whenToUse": [
+        "When using bdd-drives-tdd mode (outside-in development)",
+        "When using tdd-documents-bdd mode (legacy documentation)",
+        "When using synchronized mode (single source of truth)",
+        "When traceability between tests is required"
+      ]
+    },
+    "code-templates": {
+      "id": "code-templates",
+      "name": "Code Templates",
+      "category": "core",
+      "stackAgnostic": true,
+      "description": "Stack-specific code generation from templates",
+      "factoryPattern": "patterns/skills/code-templates.json",
+      "whenToUse": [
+        "When generating boilerplate code",
+        "For consistent code structure"
+      ]
+    },
+    "security-audit": {
+      "id": "security-audit",
+      "name": "Security Audit",
+      "category": "verification",
+      "stackAgnostic": true,
+      "description": "OWASP-based security vulnerability detection and remediation guidance",
+      "factoryPattern": "patterns/skills/security-audit.json",
+      "whenToUse": [
+        "Before deploying to production",
+        "After implementing authentication/authorization",
+        "When handling sensitive data",
+        "For compliance requirements"
+      ]
+    },
+    "code-review": {
+      "id": "code-review",
+      "name": "Code Review",
+      "category": "workflow",
+      "stackAgnostic": true,
+      "description": "Structured code review covering correctness, style, performance, security, and maintainability",
+      "factoryPattern": "patterns/skills/code-review.json",
+      "whenToUse": [
+        "Before merging pull requests",
+        "After feature implementation",
+        "When refactoring code",
+        "During code audit"
+      ]
+    },
+    "sap-grounding": {
+      "id": "sap-grounding",
+      "name": "SAP Grounding Coordinator",
+      "category": "grounding",
+      "stackAgnostic": false,
+      "targetStack": "sap-abap",
+      "description": "Coordinator skill that routes to specialized SAP grounding skills based on artifact type",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-sap-development-workflow",
+      "orchestrates": [
+        "ddic-grounding",
+        "cds-grounding",
+        "rap-grounding",
+        "class-grounding",
+        "function-grounding",
+        "api-grounding",
+        "enhancement-grounding",
+        "message-grounding",
+        "authorization-grounding",
+        "mapping-grounding",
+        "existence-grounding",
+        "fiori-grounding"
+      ],
+      "whenToUse": [
+        "Before any SAP implementation",
+        "When working with SAP artifacts"
+      ]
+    },
+    "ddic-grounding": {
+      "id": "ddic-grounding",
+      "name": "DDIC Grounding",
+      "category": "grounding",
+      "stackAgnostic": false,
+      "targetStack": "sap-abap",
+      "description": "Verifies SAP Data Dictionary objects: tables, structures, data elements, domains, search helps",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-sap-development-workflow",
+      "artifacts": ["tables", "structures", "data elements", "domains", "search helps", "table types"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "Before accessing SAP tables",
+        "When defining data structures"
+      ]
+    },
+    "cds-grounding": {
+      "id": "cds-grounding",
+      "name": "CDS Grounding",
+      "category": "grounding",
+      "stackAgnostic": false,
+      "targetStack": "sap-abap",
+      "description": "Verifies CDS views, entities, annotations, and access control definitions",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-sap-development-workflow",
+      "artifacts": ["CDS views", "CDS entities", "annotations", "access control"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "Before creating CDS views",
+        "When working with RAP data models"
+      ]
+    },
+    "rap-grounding": {
+      "id": "rap-grounding",
+      "name": "RAP Grounding",
+      "category": "grounding",
+      "stackAgnostic": false,
+      "targetStack": "sap-abap",
+      "description": "Verifies RAP behavior definitions, actions, determinations, and validations",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-sap-development-workflow",
+      "artifacts": ["behavior definitions", "actions", "determinations", "validations", "draft handling"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "Before implementing RAP behaviors",
+        "When defining business logic in RAP"
+      ]
+    },
+    "class-grounding": {
+      "id": "class-grounding",
+      "name": "Class Grounding",
+      "category": "grounding",
+      "stackAgnostic": false,
+      "targetStack": "sap-abap",
+      "description": "Verifies ABAP classes, interfaces, methods, and exception classes",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-sap-development-workflow",
+      "artifacts": ["global classes", "interfaces", "exception classes", "methods", "attributes"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "Before using SAP standard classes",
+        "When inheriting from base classes"
+      ]
+    },
+    "function-grounding": {
+      "id": "function-grounding",
+      "name": "Function Module Grounding",
+      "category": "grounding",
+      "stackAgnostic": false,
+      "targetStack": "sap-abap",
+      "description": "Verifies function modules, function groups, and BAPIs",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-sap-development-workflow",
+      "artifacts": ["function modules", "function groups", "BAPIs", "RFCs"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "Before calling SAP function modules",
+        "When using BAPIs"
+      ]
+    },
+    "api-grounding": {
+      "id": "api-grounding",
+      "name": "API Grounding",
+      "category": "grounding",
+      "stackAgnostic": false,
+      "targetStack": "sap-abap",
+      "description": "Verifies OData services, service bindings, and SOAP services",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-sap-development-workflow",
+      "artifacts": ["OData services", "service definitions", "service bindings", "SOAP services"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "Before consuming SAP APIs",
+        "When exposing services"
+      ]
+    },
+    "enhancement-grounding": {
+      "id": "enhancement-grounding",
+      "name": "Enhancement Grounding",
+      "category": "grounding",
+      "stackAgnostic": false,
+      "targetStack": "sap-abap",
+      "description": "Verifies enhancement spots, BAdIs, and enhancement implementations",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-sap-development-workflow",
+      "artifacts": ["enhancement spots", "BAdIs", "enhancement implementations", "implicit enhancements"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "Before implementing enhancements",
+        "When extending SAP standard"
+      ]
+    },
+    "message-grounding": {
+      "id": "message-grounding",
+      "name": "Message Grounding",
+      "category": "grounding",
+      "stackAgnostic": false,
+      "targetStack": "sap-abap",
+      "description": "Verifies message classes and message numbers",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-sap-development-workflow",
+      "artifacts": ["message classes", "message numbers", "message texts"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "Before using message classes",
+        "When defining error messages"
+      ]
+    },
+    "authorization-grounding": {
+      "id": "authorization-grounding",
+      "name": "Authorization Grounding",
+      "category": "grounding",
+      "stackAgnostic": false,
+      "targetStack": "sap-abap",
+      "description": "Verifies authorization objects and authorization fields",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-sap-development-workflow",
+      "artifacts": ["authorization objects", "authorization fields", "authorization checks"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "Before implementing authorization checks",
+        "When defining security requirements"
+      ]
+    },
+    "mapping-grounding": {
+      "id": "mapping-grounding",
+      "name": "Mapping Grounding",
+      "category": "grounding",
+      "stackAgnostic": false,
+      "targetStack": "sap-abap",
+      "description": "Validates field and structure mappings against specifications from Confluence/Excel",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-sap-development-workflow",
+      "artifacts": ["field mappings", "structure mappings", "transformation rules"],
+      "mcpServers": ["atlassian", "sap-documentation"],
+      "whenToUse": [
+        "When implementing from mapping specifications",
+        "Before data transformation logic"
+      ]
+    },
+    "existence-grounding": {
+      "id": "existence-grounding",
+      "name": "Existence Grounding",
+      "category": "grounding",
+      "stackAgnostic": false,
+      "targetStack": "sap-abap",
+      "description": "Verifies repository object existence and release contracts (C0/C1/C2)",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-sap-development-workflow",
+      "artifacts": ["repository objects", "release contracts", "deprecation status"],
+      "releaseContracts": {
+        "C0": "Extend - Can inherit/implement",
+        "C1": "Use - Can call/use",
+        "C2": "Remote - Can call remotely"
+      },
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "For ABAP Cloud compatibility checks",
+        "Before using any SAP object"
+      ]
+    },
+    "fiori-grounding": {
+      "id": "fiori-grounding",
+      "name": "Fiori Grounding",
+      "category": "grounding",
+      "stackAgnostic": false,
+      "targetStack": "sap-abap",
+      "description": "Verifies Fiori apps, semantic objects, UI5 components, and launchpad configuration",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-sap-development-workflow",
+      "artifacts": ["Fiori apps", "semantic objects", "UI5 components", "launchpad tiles"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "Before Fiori development",
+        "When configuring launchpad"
+      ]
+    },
+    "prompt-engineering": {
+      "id": "prompt-engineering",
+      "name": "Prompt Engineering",
+      "category": "ai-development",
+      "stackAgnostic": true,
+      "description": "Systematic approach to designing, testing, and optimizing prompts for LLM-powered applications",
+      "factoryPattern": "patterns/skills/prompt-engineering.json",
+      "whenToUse": [
+        "When creating new agent prompts",
+        "When improving agent response quality",
+        "When debugging agent behavior issues",
+        "When optimizing for cost or latency"
+      ],
+      "techniques": ["chain-of-thought", "few-shot-learning", "structured-outputs", "role-prompting", "temperature-tuning"]
+    },
+    "agent-coordination": {
+      "id": "agent-coordination",
+      "name": "Agent Coordination",
+      "category": "ai-development",
+      "stackAgnostic": true,
+      "description": "Patterns for orchestrating multiple AI agents including supervisor-worker, hierarchical, and collaborative topologies",
+      "factoryPattern": "patterns/skills/agent-coordination.json",
+      "whenToUse": [
+        "When building multi-agent systems",
+        "When implementing supervisor-worker patterns",
+        "When designing agent handoffs",
+        "When coordinating parallel agent execution"
+      ],
+      "patterns": ["supervisor-worker", "hierarchical", "collaborative", "sequential", "distributed"],
+      "frameworks": ["LangGraph", "CrewAI", "AutoGen"]
+    },
+    "task-decomposition": {
+      "id": "task-decomposition",
+      "name": "Task Decomposition",
+      "category": "ai-development",
+      "stackAgnostic": true,
+      "description": "Breaking complex tasks into manageable subtasks for distribution across specialized agents",
+      "factoryPattern": "patterns/skills/task-decomposition.json",
+      "whenToUse": [
+        "When a task is too complex for a single agent",
+        "When multiple specializations are needed",
+        "When parallel execution would improve performance",
+        "When building task pipelines"
+      ],
+      "strategies": ["hierarchical-decomposition", "functional-decomposition", "data-parallel", "pipeline"]
+    },
+    "consensus-building": {
+      "id": "consensus-building",
+      "name": "Consensus Building",
+      "category": "ai-development",
+      "stackAgnostic": true,
+      "description": "Protocols for multiple agents to reach agreement through voting, debate, or synthesis",
+      "factoryPattern": "patterns/skills/consensus-building.json",
+      "whenToUse": [
+        "When multiple agents have different perspectives",
+        "When high-confidence decisions are needed",
+        "When implementing review processes",
+        "When aggregating multi-agent outputs"
+      ],
+      "mechanisms": ["majority-voting", "weighted-voting", "debate-synthesis", "iterative-refinement"]
+    },
+    "crewai-workflow": {
+      "id": "crewai-workflow",
+      "name": "CrewAI Workflow",
+      "category": "ai-development",
+      "stackAgnostic": true,
+      "description": "Build production-ready multi-agent workflows using CrewAI patterns including Flows, Pipelines, and Knowledge",
+      "factorySkill": ".agent/skills/crewai-workflow/SKILL.md",
+      "factoryKnowledge": "knowledge/crewai-patterns.json",
+      "whenToUse": [
+        "When building multi-agent systems with CrewAI",
+        "When need hierarchical or sequential task execution",
+        "When implementing Flows for state management",
+        "When building pipelines that chain multiple crews"
+      ],
+      "patterns": ["agent-definition", "task-definition", "crew-orchestration", "flows", "pipelines"],
+      "frameworks": ["CrewAI"]
+    },
+    "algo-trading": {
+      "id": "algo-trading",
+      "name": "Algorithmic Trading",
+      "category": "workflow",
+      "stackAgnostic": false,
+      "targetStack": "python",
+      "description": "Build algorithmic trading strategies with backtesting, technical indicators, and fundamental data fetching",
+      "factorySkill": ".agent/skills/algo-trading/SKILL.md",
+      "factoryKnowledge": "knowledge/trading-patterns.json",
+      "whenToUse": [
+        "When building automated trading strategies",
+        "When backtesting trading ideas",
+        "When calculating technical indicators",
+        "When fetching fundamental data",
+        "When constructing multi-factor portfolios"
+      ],
+      "patterns": ["momentum", "mean-reversion", "statistical-arbitrage", "multi-factor"],
+      "frameworks": ["vectorbt", "backtrader", "yfinance", "pandas-ta"]
+    },
+    "extend-knowledge": {
+      "id": "extend-knowledge",
+      "name": "Extend Knowledge",
+      "category": "core",
+      "stackAgnostic": true,
+      "description": "Extend project knowledge base with new topics, patterns, and skills through research or user input",
+      "factoryPattern": "patterns/skills/extend-knowledge.json",
+      "whenToUse": [
+        "When adding knowledge about new technologies",
+        "When creating project-specific patterns",
+        "When incorporating external documentation",
+        "When team learns something new"
+      ],
+      "patterns": ["knowledge-extension", "document-ingestion"],
+      "includedInGenerated": true
+    },
+    "extend-workflow": {
+      "id": "extend-workflow",
+      "name": "Extend Workflow",
+      "category": "workflow",
+      "stackAgnostic": true,
+      "description": "Create and extend workflow definitions using the workflow system architecture",
+      "factorySkill": ".agent/skills/extend-workflow/SKILL.md",
+      "whenToUse": [
+        "When creating new workflows for complex tasks",
+        "When extending existing workflows with new phases",
+        "When integrating MCP servers into workflows",
+        "When designing agent orchestration patterns"
+      ],
+      "patterns": ["workflow-creation", "phase-design", "orchestration"],
+      "includedInGenerated": true
+    },
+    "ci-monitor": {
+      "id": "ci-monitor",
+      "name": "CI Monitor",
+      "category": "workflow",
+      "stackAgnostic": true,
+      "description": "Continuous CI/CD pipeline monitoring with automatic error detection and fix loop",
+      "factorySkill": ".agent/skills/ci-monitor/SKILL.md",
+      "whenToUse": [
+        "When watching CI pipeline until green",
+        "When fixing pipeline errors automatically",
+        "When monitoring deployment pipelines",
+        "When debugging CI failures systematically"
+      ],
+      "patterns": ["watch-loop", "error-detection", "auto-fix"],
+      "mcpServers": ["github", "git", "filesystem"],
+      "includedInGenerated": true
+    },
+    "receive-updates": {
+      "id": "receive-updates",
+      "name": "Receive Factory Updates",
+      "category": "core",
+      "stackAgnostic": true,
+      "description": "Receive and apply updates from the Antigravity Agent Factory to keep knowledge current",
+      "factoryPattern": "patterns/skills/receive-updates.json",
+      "whenToUse": [
+        "When checking for Factory updates",
+        "When syncing with Factory improvements",
+        "When applying new patterns from Factory"
+      ],
+      "patterns": ["update-channel", "version-sync"],
+      "includedInGenerated": true
+    },
+    "rap-behavior-design": {
+      "id": "rap-behavior-design",
+      "name": "RAP Behavior Design",
+      "category": "sap-rap",
+      "stackAgnostic": false,
+      "targetStack": "sap-abap",
+      "description": "Design and implementation of RAP behavior definitions including validations, determinations, actions, and numbering",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-sap-development-workflow",
+      "artifacts": ["behavior definitions", "validations", "determinations", "actions", "numbering"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "When creating new RAP business objects",
+        "When implementing business logic in behavior definitions",
+        "When designing entity-level constraints"
+      ],
+      "patterns": ["managed-scenario", "unmanaged-scenario", "projection-scenario", "draft-scenario"]
+    },
+    "rap-draft-handling": {
+      "id": "rap-draft-handling",
+      "name": "RAP Draft Handling",
+      "category": "sap-rap",
+      "stackAgnostic": false,
+      "targetStack": "sap-abap",
+      "description": "Implementation of draft-enabled business objects with edit, activate, discard, and resume actions",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-sap-development-workflow",
+      "artifacts": ["draft tables", "draft behavior", "draft actions", "draft determinations"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "When building Fiori applications with editing capabilities",
+        "When implementing complex editing scenarios",
+        "When users need to save incomplete work"
+      ],
+      "draftActions": ["Edit", "Activate", "Discard", "Resume", "Prepare"]
+    },
+    "rap-fiori-annotations": {
+      "id": "rap-fiori-annotations",
+      "name": "RAP Fiori Annotations",
+      "category": "sap-rap",
+      "stackAgnostic": false,
+      "targetStack": "sap-abap",
+      "description": "CDS annotations for Fiori Elements including @UI, @Common, @Capabilities for list reports and object pages",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-sap-development-workflow",
+      "artifacts": ["@UI annotations", "@Common annotations", "@Capabilities annotations", "metadata extensions"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "When building Fiori Elements applications",
+        "When configuring list reports and object pages",
+        "When adding search, filter, and value helps"
+      ],
+      "annotationTypes": ["@UI.lineItem", "@UI.identification", "@UI.facet", "@UI.fieldGroup", "@Common.Text", "@Common.ValueList"]
+    },
+    "rap-testing": {
+      "id": "rap-testing",
+      "name": "RAP Testing",
+      "category": "sap-rap",
+      "stackAgnostic": false,
+      "targetStack": "sap-abap",
+      "description": "ABAP Unit testing for RAP behavior implementations using EML and test doubles",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-sap-development-workflow",
+      "artifacts": ["test classes", "test methods", "test doubles", "EML test operations"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "When implementing TDD for RAP",
+        "When testing validations and determinations",
+        "When testing custom actions",
+        "When building regression test suites"
+      ],
+      "testPatterns": ["given-when-then", "eml-testing", "mock-entities", "test-isolation"]
+    },
+    "cap-cds-modeling": {
+      "id": "cap-cds-modeling",
+      "name": "CAP CDS Modeling",
+      "category": "sap-cap",
+      "stackAgnostic": false,
+      "targetStack": "sap-cap",
+      "description": "CDS entity and service modeling patterns for SAP CAP including associations, compositions, and aspects",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-cap-development-workflow",
+      "artifacts": ["CDS entities", "associations", "compositions", "aspects", "type definitions", "service definitions"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "When designing CAP data models",
+        "When creating service definitions",
+        "When implementing reusable aspects"
+      ],
+      "patterns": ["entity-modeling", "managed-associations", "compositions", "projections", "namespace-organization"]
+    },
+    "cap-service-handlers": {
+      "id": "cap-service-handlers",
+      "name": "CAP Service Handlers",
+      "category": "sap-cap",
+      "stackAgnostic": false,
+      "targetStack": "sap-cap",
+      "description": "Service handler implementation patterns for CAP including before, on, and after handlers for CRUD and custom actions",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-cap-development-workflow",
+      "artifacts": ["before handlers", "on handlers", "after handlers", "action handlers", "function handlers"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "When implementing business logic in CAP services",
+        "When customizing CRUD operations",
+        "When implementing custom actions and functions"
+      ],
+      "handlerTypes": ["before-create", "before-update", "on-read", "after-create", "on-action", "on-function"]
+    },
+    "cap-fiori-integration": {
+      "id": "cap-fiori-integration",
+      "name": "CAP Fiori Integration",
+      "category": "sap-cap",
+      "stackAgnostic": false,
+      "targetStack": "sap-cap",
+      "description": "Fiori Elements integration with CAP using CDS annotations for list reports, object pages, and value helps",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-cap-development-workflow",
+      "artifacts": ["annotation files", "metadata extensions", "Fiori apps", "value lists"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "When building Fiori Elements on CAP",
+        "When adding annotations for UI rendering",
+        "When configuring OData capabilities"
+      ],
+      "annotationCategories": ["@UI annotations", "@Common annotations", "@Capabilities annotations"]
+    },
+    "cap-deployment": {
+      "id": "cap-deployment",
+      "name": "CAP Deployment",
+      "category": "sap-cap",
+      "stackAgnostic": false,
+      "targetStack": "sap-cap",
+      "description": "MTA-based deployment of CAP applications to SAP BTP including HANA Cloud, XSUAA, and service bindings",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-cap-development-workflow",
+      "artifacts": ["mta.yaml", "xs-security.json", "package.json", "service bindings", "destinations"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "When deploying CAP to BTP Cloud Foundry",
+        "When configuring XSUAA authentication",
+        "When setting up HANA Cloud bindings"
+      ],
+      "deploymentSteps": ["mta-build", "cf-deploy", "service-binding", "destination-config"]
+    },
+    "iflow-development": {
+      "id": "iflow-development",
+      "name": "iFlow Development",
+      "category": "sap-integration",
+      "stackAgnostic": false,
+      "targetStack": "sap-cpi-pi",
+      "description": "Complete integration flow development workflow for SAP CPI including design, implementation, testing, and deployment",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-cpi-development-workflow",
+      "artifacts": ["iFlow definitions", "sender channels", "receiver channels", "content modifiers", "routers"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "When creating new integration flows",
+        "When designing message routing patterns",
+        "When implementing integration scenarios"
+      ],
+      "patterns": ["point-to-point", "content-based-router", "splitter-aggregator", "exception-subprocess"]
+    },
+    "groovy-scripting": {
+      "id": "groovy-scripting",
+      "name": "Groovy Scripting",
+      "category": "sap-integration",
+      "stackAgnostic": false,
+      "targetStack": "sap-cpi-pi",
+      "description": "Groovy script development for SAP CPI including message processing, XML/JSON manipulation, and error handling",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-cpi-development-workflow",
+      "artifacts": ["groovy scripts", "message processors", "logging scripts", "validation scripts"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "When processing messages in CPI",
+        "When implementing custom transformations",
+        "When adding logging and debugging",
+        "When accessing credentials securely"
+      ],
+      "patterns": ["xml-parsing", "json-parsing", "property-access", "secure-parameter-access", "message-logging"]
+    },
+    "error-handling": {
+      "id": "error-handling",
+      "name": "Error Handling",
+      "category": "sap-integration",
+      "stackAgnostic": false,
+      "targetStack": "sap-cpi-pi",
+      "description": "Exception handling patterns for SAP CPI including exception subprocesses, retry logic, and alerting",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-cpi-development-workflow",
+      "artifacts": ["exception subprocesses", "error handlers", "retry configurations", "alert rules"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "When implementing fault tolerance",
+        "When designing retry strategies",
+        "When setting up monitoring and alerting",
+        "When handling transient failures"
+      ],
+      "patterns": ["exception-subprocess", "retry-pattern", "circuit-breaker", "dead-letter-queue", "error-notification"]
+    },
+    "b2b-integration": {
+      "id": "b2b-integration",
+      "name": "B2B Integration",
+      "category": "sap-integration",
+      "stackAgnostic": false,
+      "targetStack": "sap-cpi-pi",
+      "description": "Business-to-business integration patterns for EDI, IDoc, AS2, and partner management in SAP CPI",
+      "factoryPattern": null,
+      "implementationRepo": "Antigravity-cpi-development-workflow",
+      "artifacts": ["partner profiles", "EDI mappings", "IDoc adapters", "AS2 configurations"],
+      "mcpServers": ["sap-documentation"],
+      "whenToUse": [
+        "When implementing EDI integrations",
+        "When processing IDoc messages",
+        "When configuring AS2 trading partners",
+        "When managing partner agreements"
+      ],
+      "standards": ["EDIFACT", "X12", "IDoc", "AS2", "cXML"]
+    }
+  },
+  "skillsByStack": {
+    "generic": [
+      "grounding",
+      "strawberry-verification",
+      "bugfix-workflow",
+      "feature-workflow",
+      "tdd",
+      "bdd",
+      "test-translation",
+      "code-templates",
+      "security-audit",
+      "code-review",
+      "algo-trading"
+    ],
+    "ai-development": [
+      "prompt-engineering",
+      "agent-coordination",
+      "task-decomposition",
+      "consensus-building",
+      "crewai-workflow"
+    ],
+    "sap-abap": [
+      "sap-grounding",
+      "ddic-grounding",
+      "cds-grounding",
+      "rap-grounding",
+      "class-grounding",
+      "function-grounding",
+      "api-grounding",
+      "enhancement-grounding",
+      "message-grounding",
+      "authorization-grounding",
+      "mapping-grounding",
+      "existence-grounding",
+      "fiori-grounding"
+    ],
+    "sap-rap": [
+      "rap-behavior-design",
+      "rap-draft-handling",
+      "rap-fiori-annotations",
+      "rap-testing"
+    ],
+    "sap-cap": [
+      "cap-cds-modeling",
+      "cap-service-handlers",
+      "cap-fiori-integration",
+      "cap-deployment"
+    ],
+    "sap-cpi-pi": [
+      "iflow-development",
+      "groovy-scripting",
+      "error-handling",
+      "b2b-integration"
+    ]
+  },
+  "usage": {
+    "forFactory": "Use factoryPattern path to find the implementation template",
+    "forStackSpecific": "Skills with factoryPattern: null are implemented in the respective implementationRepo",
+    "blueprintReference": "Blueprints can reference any skill by id - factory generates from pattern or documents as requirement"
+  }
+}

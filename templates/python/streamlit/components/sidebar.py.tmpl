@@ -1,0 +1,171 @@
+"""
+Sidebar Component - Navigation and Global Controls
+
+Purpose: Provide navigation and global application controls
+Author: {{AUTHOR}}
+Created: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Navigation state is tracked
+- A3 (Transparency): Clear navigation options and current location
+- A4 (Non-Harm): Safe navigation without data loss
+"""
+
+import streamlit as st
+import logging
+from typing from typing import Optional
+
+from ..utils.state import get_session_state, update_session_state
+
+logger = logging.getLogger(__name__)
+
+
+def render_sidebar():
+    """
+    Render the application sidebar.
+    
+    This function creates the sidebar with navigation menu,
+    user settings, and global controls.
+    """
+    with st.sidebar:
+        # App branding
+        render_branding()
+        
+        # Navigation menu
+        render_navigation()
+        
+        # Divider
+        st.divider()
+        
+        # User settings
+        render_user_settings()
+        
+        # Divider
+        st.divider()
+        
+        # Footer
+        render_sidebar_footer()
+
+
+def render_branding():
+    """
+    Render application branding in sidebar.
+    """
+    st.title("{{APP_NAME}}")
+    st.caption("{{APP_TAGLINE}}")
+    
+    # Optional: Add logo
+    # st.image("path/to/logo.png", width=200)
+
+
+def render_navigation():
+    """
+    Render navigation menu.
+    """
+    st.header("Navigation")
+    
+    # Navigation options
+    pages = {
+        "🏠 Dashboard": "dashboard",
+        "{{PAGE1_ICON}} {{PAGE1_NAME}}": "{{PAGE1_ID}}",
+        "{{PAGE2_ICON}} {{PAGE2_NAME}}": "{{PAGE2_ID}}",
+        # Add more pages as needed
+    }
+    
+    # Get current page from query params
+    current_page = st.query_params.get("page", "dashboard")
+    
+    # Render navigation buttons
+    for label, page_id in pages.items():
+        if st.button(
+            label,
+            key=f"nav_{page_id}",
+            use_container_width=True,
+            type="primary" if current_page == page_id else "secondary"
+        ):
+            # Update query params to navigate
+            st.query_params["page"] = page_id
+            st.rerun()
+
+
+def render_user_settings():
+    """
+    Render user settings section.
+    """
+    st.header("Settings")
+    
+    state = get_session_state()
+    
+    # Theme selector (if applicable)
+    theme = st.selectbox(
+        "Theme",
+        options=["Light", "Dark", "Auto"],
+        index=0,
+        key="theme_selector"
+    )
+    if theme != state.get("theme"):
+        update_session_state("theme", theme)
+        # Apply theme change logic here
+    
+    # Language selector (if applicable)
+    language = st.selectbox(
+        "Language",
+        options=["English", "{{LANGUAGE2}}", "{{LANGUAGE3}}"],
+        index=0,
+        key="language_selector"
+    )
+    if language != state.get("language"):
+        update_session_state("language", language)
+    
+    # Data refresh interval
+    refresh_interval = st.slider(
+        "Auto-refresh interval (seconds)",
+        min_value=0,
+        max_value=300,
+        value=state.get("refresh_interval", 60),
+        step=30,
+        key="refresh_interval_slider"
+    )
+    if refresh_interval != state.get("refresh_interval"):
+        update_session_state("refresh_interval", refresh_interval)
+    
+    # Clear cache button
+    if st.button("🗑️ Clear Cache", use_container_width=True):
+        st.cache_data.clear()
+        st.cache_resource.clear()
+        st.success("Cache cleared!")
+        st.rerun()
+
+
+def render_sidebar_footer():
+    """
+    Render sidebar footer with app info and links.
+    """
+    st.caption("{{APP_VERSION}}")
+    st.caption("© {{YEAR}} {{AUTHOR}}")
+    
+    # Optional: Add links
+    # st.markdown("[Documentation]({{DOCS_URL}})")
+    # st.markdown("[Support]({{SUPPORT_URL}})")
+    # st.markdown("[GitHub]({{GITHUB_URL}})")
+
+
+def get_current_page() -> str:
+    """
+    Get the current page identifier.
+    
+    Returns:
+        Current page ID
+    """
+    return st.query_params.get("page", "dashboard")
+
+
+def navigate_to_page(page_id: str):
+    """
+    Navigate to a specific page.
+    
+    Args:
+        page_id: Target page identifier
+    """
+    st.query_params["page"] = page_id
+    st.rerun()

@@ -1,0 +1,273 @@
+{
+  "name": "{{WORKFLOW_NAME}} - Retry Pattern",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "retry-count",
+              "name": "retry_count",
+              "value": 0,
+              "type": "number"
+            },
+            {
+              "id": "max-retries",
+              "name": "max_retries",
+              "value": {{MAX_RETRIES}},
+              "type": "number"
+            },
+            {
+              "id": "base-delay",
+              "name": "base_delay",
+              "value": {{BASE_DELAY}},
+              "type": "number"
+            },
+            {
+              "id": "max-delay",
+              "name": "max_delay",
+              "value": {{MAX_DELAY}},
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "id": "initialize-retry-{{NODE_ID}}",
+      "name": "Initialize Retry",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "{{OPERATION}}",
+        "resource": "{{RESOURCE}}",
+        "options": {},
+        "continueOnFail": true
+      },
+      "id": "execute-operation-{{NODE_ID}}",
+      "name": "Execute Operation",
+      "type": "{{NODE_TYPE}}",
+      "typeVersion": {{NODE_VERSION}},
+      "position": [450, 300],
+      "credentials": {
+        "{{CREDENTIAL_TYPE}}": {
+          "id": "{{CREDENTIAL_ID}}",
+          "name": "{{CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Check operation result and calculate retry delay\nconst operationResult = $input.first();\nconst retryState = $('Initialize Retry').first().json;\n\nconst hasError = operationResult.error || !operationResult.json || operationResult.json.error;\nconst errorMessage = operationResult.error?.message || operationResult.json?.error || null;\n\nif (!hasError) {\n  // Success - no retry needed\n  return [{\n    json: {\n      success: true,\n      data: operationResult.json,\n      retry_count: retryState.retry_count,\n      final_attempt: true\n    }\n  }];\n}\n\n// Calculate exponential backoff delay\nconst newRetryCount = retryState.retry_count + 1;\nconst exponentialDelay = retryState.base_delay * Math.pow(2, retryState.retry_count);\nconst delay = Math.min(exponentialDelay, retryState.max_delay);\n\n// Check if we should retry\nconst shouldRetry = newRetryCount < retryState.max_retries;\n\n// Add jitter to prevent thundering herd\nconst jitter = Math.random() * delay * 0.1; // 10% jitter\nconst finalDelay = Math.floor(delay + jitter);\n\nreturn [{\n  json: {\n    success: false,\n    error: errorMessage,\n    retry_count: newRetryCount,\n    max_retries: retryState.max_retries,\n    should_retry: shouldRetry,\n    delay: finalDelay,\n    retry_after: new Date(Date.now() + finalDelay).toISOString(),\n    exponential_delay: exponentialDelay,\n    final_attempt: !shouldRetry\n  }\n}];"
+      },
+      "id": "check-result-{{NODE_ID}}",
+      "name": "Check Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "success-check",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ]
+        }
+      },
+      "id": "if-success-{{NODE_ID}}",
+      "name": "IF Success",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "should-retry-check",
+              "leftValue": "={{ $json.should_retry }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ]
+        }
+      },
+      "id": "if-should-retry-{{NODE_ID}}",
+      "name": "IF Should Retry",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Wait for calculated delay with exponential backoff\nconst delay = $input.first().json.delay;\nconst retryCount = $input.first().json.retry_count;\n\n// Log retry attempt\nconsole.log(`Retry attempt ${retryCount}, waiting ${delay}ms...`);\n\n// Wait using setTimeout in a promise\nawait new Promise(resolve => setTimeout(resolve, delay));\n\n// Update retry state\nconst retryState = $('Initialize Retry').first().json;\nreturn [{\n  json: {\n    ...retryState,\n    retry_count: retryCount\n  }\n}];"
+      },
+      "id": "wait-delay-{{NODE_ID}}",
+      "name": "Wait Delay",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "success-result",
+              "name": "success_result",
+              "value": "={{ { \"status\": \"success\", \"data\": $json.data, \"retry_count\": $json.retry_count, \"timestamp\": $now } }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "format-success-{{NODE_ID}}",
+      "name": "Format Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "failure-result",
+              "name": "failure_result",
+              "value": "={{ { \"status\": \"failed\", \"error\": $json.error, \"retry_count\": $json.retry_count, \"max_retries\": $json.max_retries, \"final_attempt\": $json.final_attempt, \"timestamp\": $now } }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "format-failure-{{NODE_ID}}",
+      "name": "Format Failure",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1250, 400]
+    }
+  ],
+  "connections": {
+    "Initialize Retry": {
+      "main": [
+        [
+          {
+            "node": "Execute Operation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Operation": {
+      "main": [
+        [
+          {
+            "node": "Check Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Result": {
+      "main": [
+        [
+          {
+            "node": "IF Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Success": {
+      "main": [
+        [
+          {
+            "node": "Format Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF Should Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Should Retry": {
+      "main": [
+        [
+          {
+            "node": "Wait Delay",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Delay": {
+      "main": [
+        [
+          {
+            "node": "Execute Operation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "{{TIMESTAMP}}",
+      "updatedAt": "{{TIMESTAMP}}",
+      "id": "{{TAG_ID}}",
+      "name": "retry-pattern"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "{{TIMESTAMP}}",
+  "versionId": "{{VERSION_ID}}"
+}

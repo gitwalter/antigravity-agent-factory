@@ -1,0 +1,264 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Vector Database Patterns",
+  "description": "Patterns for vector databases used in RAG, semantic search, and AI applications",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "Includes retrieval quality metrics and evaluation patterns",
+    "A3_transparency": "Search parameters and indexing strategies are explicit"
+  },
+  "database_comparison": {
+    "overview": {
+      "description": "Comparison of popular vector databases",
+      "databases": {
+        "chromadb": {
+          "type": "Embedded / Client-Server",
+          "best_for": "Prototyping, small-medium datasets, local development",
+          "hosting": "Self-hosted, embedded",
+          "max_vectors": "~1M (embedded), more with server",
+          "features": ["Simple API", "Persistent storage", "Metadata filtering"],
+          "pros": ["Easy setup", "No infrastructure needed", "Good for RAG prototypes"],
+          "cons": ["Limited scale", "No managed option", "Basic search features"]
+        },
+        "qdrant": {
+          "type": "Client-Server",
+          "best_for": "Production RAG, hybrid search, complex filtering",
+          "hosting": "Self-hosted, Qdrant Cloud",
+          "max_vectors": "Billions",
+          "features": ["Hybrid search", "Rich filtering", "Quantization", "Multi-vector"],
+          "pros": ["Excellent performance", "Rich features", "Good documentation"],
+          "cons": ["More complex setup than Chroma"]
+        },
+        "pinecone": {
+          "type": "Managed SaaS",
+          "best_for": "Enterprise, fully managed, minimal ops",
+          "hosting": "Managed cloud only",
+          "max_vectors": "Billions",
+          "features": ["Managed infrastructure", "Namespaces", "Metadata filtering"],
+          "pros": ["Zero ops", "Enterprise support", "Easy scaling"],
+          "cons": ["Vendor lock-in", "Can be expensive", "Less control"]
+        },
+        "weaviate": {
+          "type": "Client-Server",
+          "best_for": "GraphQL fans, multi-modal, complex schemas",
+          "hosting": "Self-hosted, Weaviate Cloud",
+          "max_vectors": "Billions",
+          "features": ["GraphQL API", "Multi-modal", "Modules", "Hybrid search"],
+          "pros": ["Flexible schema", "Multi-modal support", "Active community"],
+          "cons": ["Steeper learning curve", "Resource intensive"]
+        },
+        "milvus": {
+          "type": "Client-Server",
+          "best_for": "Large scale, enterprise, Kubernetes native",
+          "hosting": "Self-hosted, Zilliz Cloud",
+          "max_vectors": "Billions+",
+          "features": ["Distributed", "GPU acceleration", "Multiple indexes"],
+          "pros": ["Massive scale", "Enterprise features", "Open source"],
+          "cons": ["Complex setup", "Heavy resource requirements"]
+        },
+        "pgvector": {
+          "type": "PostgreSQL Extension",
+          "best_for": "Existing PostgreSQL users, simple use cases",
+          "hosting": "Any PostgreSQL host",
+          "max_vectors": "Millions",
+          "features": ["SQL interface", "ACID transactions", "Joins with other data"],
+          "pros": ["Leverage existing Postgres", "SQL familiarity", "Transactions"],
+          "cons": ["Performance limits at scale", "Limited vector features"]
+        }
+      }
+    },
+    "selection_guide": {
+      "prototyping": "ChromaDB - minimal setup, good enough for development",
+      "production_rag": "Qdrant or Pinecone - balance of features and reliability",
+      "enterprise_scale": "Milvus or Pinecone - proven at large scale",
+      "existing_postgres": "pgvector - leverage existing infrastructure",
+      "multimodal": "Weaviate - built-in multimodal support"
+    }
+  },
+  "chromadb_patterns": {
+    "basic_usage": {
+      "description": "Basic ChromaDB setup and operations",
+      "use_when": "Local development, prototyping RAG",
+      "code_example": "import chromadb\nfrom chromadb.utils import embedding_functions\n\n# Create client (persistent storage)\nclient = chromadb.PersistentClient(path='./chroma_db')\n\n# Use OpenAI embeddings\nopenai_ef = embedding_functions.OpenAIEmbeddingFunction(\n    api_key='your-api-key',\n    model_name='text-embedding-3-small'\n)\n\n# Create or get collection\ncollection = client.get_or_create_collection(\n    name='documents',\n    embedding_function=openai_ef,\n    metadata={'hnsw:space': 'cosine'}  # Distance metric\n)\n\n# Add documents\ncollection.add(\n    documents=['Document 1 content', 'Document 2 content'],\n    metadatas=[{'source': 'file1.pdf'}, {'source': 'file2.pdf'}],\n    ids=['doc1', 'doc2']\n)\n\n# Query\nresults = collection.query(\n    query_texts=['What is the main topic?'],\n    n_results=5,\n    where={'source': 'file1.pdf'},  # Metadata filter\n    include=['documents', 'metadatas', 'distances']\n)\n\nprint(results['documents'][0])  # Top results\nprint(results['distances'][0])  # Similarity scores",
+      "best_practices": [
+        "Use PersistentClient for data durability",
+        "Choose appropriate distance metric (cosine for normalized)",
+        "Use metadata filters to narrow search space",
+        "Batch adds for better performance"
+      ]
+    },
+    "with_langchain": {
+      "description": "ChromaDB with LangChain integration",
+      "use_when": "Building RAG with LangChain",
+      "code_example": "from langchain_community.vectorstores import Chroma\nfrom langchain_openai import OpenAIEmbeddings\nfrom langchain.text_splitter import RecursiveCharacterTextSplitter\nfrom langchain_community.document_loaders import PyPDFLoader\n\n# Load and split documents\nloader = PyPDFLoader('document.pdf')\ndocuments = loader.load()\n\ntext_splitter = RecursiveCharacterTextSplitter(\n    chunk_size=1000,\n    chunk_overlap=200\n)\nsplits = text_splitter.split_documents(documents)\n\n# Create vector store\nembeddings = OpenAIEmbeddings(model='text-embedding-3-small')\nvectorstore = Chroma.from_documents(\n    documents=splits,\n    embedding=embeddings,\n    persist_directory='./chroma_db',\n    collection_name='my_collection'\n)\n\n# Create retriever\nretriever = vectorstore.as_retriever(\n    search_type='similarity',\n    search_kwargs={'k': 5}\n)\n\n# Query\ndocs = retriever.invoke('What is the main topic?')\nfor doc in docs:\n    print(doc.page_content[:200])"
+    }
+  },
+  "qdrant_patterns": {
+    "basic_usage": {
+      "description": "Basic Qdrant setup and operations",
+      "use_when": "Production RAG, need advanced features",
+      "code_example": "from qdrant_client import QdrantClient\nfrom qdrant_client.models import Distance, VectorParams, PointStruct\nimport openai\n\n# Connect to Qdrant\nclient = QdrantClient(path='./qdrant_db')  # Local\n# client = QdrantClient(url='http://localhost:6333')  # Server\n# client = QdrantClient(url='https://xxx.qdrant.io', api_key='...')  # Cloud\n\n# Create collection\nclient.create_collection(\n    collection_name='documents',\n    vectors_config=VectorParams(\n        size=1536,  # OpenAI embedding dimension\n        distance=Distance.COSINE\n    )\n)\n\n# Generate embeddings\ndef get_embedding(text):\n    response = openai.embeddings.create(\n        input=text,\n        model='text-embedding-3-small'\n    )\n    return response.data[0].embedding\n\n# Upsert points\npoints = [\n    PointStruct(\n        id=1,\n        vector=get_embedding('Document 1 content'),\n        payload={'source': 'file1.pdf', 'page': 1, 'text': 'Document 1 content'}\n    ),\n    PointStruct(\n        id=2,\n        vector=get_embedding('Document 2 content'),\n        payload={'source': 'file2.pdf', 'page': 1, 'text': 'Document 2 content'}\n    )\n]\n\nclient.upsert(collection_name='documents', points=points)\n\n# Search\nresults = client.search(\n    collection_name='documents',\n    query_vector=get_embedding('What is the main topic?'),\n    limit=5,\n    query_filter={\n        'must': [{'key': 'source', 'match': {'value': 'file1.pdf'}}]\n    }\n)\n\nfor result in results:\n    print(f'Score: {result.score:.4f}')\n    print(f'Text: {result.payload[\"text\"]}')",
+      "best_practices": [
+        "Use payload for metadata storage",
+        "Implement proper error handling",
+        "Use batch operations for bulk inserts",
+        "Consider quantization for large datasets"
+      ]
+    },
+    "hybrid_search": {
+      "description": "Combine vector and keyword search",
+      "use_when": "Need both semantic and keyword matching",
+      "code_example": "from qdrant_client import QdrantClient, models\n\n# Create collection with sparse vectors for hybrid search\nclient.create_collection(\n    collection_name='hybrid_docs',\n    vectors_config={\n        'dense': models.VectorParams(\n            size=1536,\n            distance=models.Distance.COSINE\n        )\n    },\n    sparse_vectors_config={\n        'sparse': models.SparseVectorParams()\n    }\n)\n\n# Hybrid search query\nfrom qdrant_client.models import SparseVector\n\n# Dense vector from embeddings\ndense_vector = get_embedding('search query')\n\n# Sparse vector from BM25 or similar\nsparse_vector = SparseVector(\n    indices=[1, 5, 10, 25],  # Token indices\n    values=[0.5, 0.8, 0.3, 0.9]  # Token weights\n)\n\nresults = client.search(\n    collection_name='hybrid_docs',\n    query_vector=models.NamedVector(name='dense', vector=dense_vector),\n    with_vectors=False,\n    limit=10\n)\n\n# Alternative: Use Reciprocal Rank Fusion\nresults = client.query_points(\n    collection_name='hybrid_docs',\n    prefetch=[\n        models.Prefetch(\n            query=dense_vector,\n            using='dense',\n            limit=20\n        ),\n        models.Prefetch(\n            query=sparse_vector,\n            using='sparse',\n            limit=20\n        )\n    ],\n    query=models.FusionQuery(fusion=models.Fusion.RRF),\n    limit=10\n)",
+      "best_practices": [
+        "Hybrid search improves recall",
+        "Use RRF (Reciprocal Rank Fusion) to combine results",
+        "Tune the balance between dense and sparse"
+      ]
+    },
+    "multi_vector": {
+      "description": "Store multiple vectors per document (ColBERT style)",
+      "use_when": "Need fine-grained matching within documents",
+      "code_example": "from qdrant_client.models import MultiVectorConfig, VectorParams\n\n# Create collection with multi-vector support\nclient.create_collection(\n    collection_name='multi_vector_docs',\n    vectors_config={\n        'colbert': VectorParams(\n            size=128,\n            distance=Distance.COSINE,\n            multivector_config=MultiVectorConfig(\n                comparator=models.MultiVectorComparator.MAX_SIM\n            )\n        )\n    }\n)\n\n# Each document has multiple token vectors\ntoken_vectors = [[0.1, 0.2, ...], [0.3, 0.4, ...], ...]  # Per-token embeddings\n\nclient.upsert(\n    collection_name='multi_vector_docs',\n    points=[\n        PointStruct(\n            id=1,\n            vector={'colbert': token_vectors},\n            payload={'text': 'Document content'}\n        )\n    ]\n)"
+    }
+  },
+  "pinecone_patterns": {
+    "basic_usage": {
+      "description": "Basic Pinecone setup and operations",
+      "use_when": "Managed vector database, enterprise use",
+      "code_example": "from pinecone import Pinecone, ServerlessSpec\nimport openai\n\n# Initialize Pinecone\npc = Pinecone(api_key='your-api-key')\n\n# Create index\npc.create_index(\n    name='documents',\n    dimension=1536,\n    metric='cosine',\n    spec=ServerlessSpec(\n        cloud='aws',\n        region='us-east-1'\n    )\n)\n\n# Connect to index\nindex = pc.Index('documents')\n\n# Generate embeddings\ndef get_embedding(text):\n    response = openai.embeddings.create(\n        input=text,\n        model='text-embedding-3-small'\n    )\n    return response.data[0].embedding\n\n# Upsert vectors\nvectors = [\n    {\n        'id': 'doc1',\n        'values': get_embedding('Document 1 content'),\n        'metadata': {'source': 'file1.pdf', 'page': 1}\n    },\n    {\n        'id': 'doc2',\n        'values': get_embedding('Document 2 content'),\n        'metadata': {'source': 'file2.pdf', 'page': 1}\n    }\n]\n\nindex.upsert(vectors=vectors, namespace='default')\n\n# Query\nresults = index.query(\n    vector=get_embedding('What is the main topic?'),\n    top_k=5,\n    include_metadata=True,\n    filter={'source': {'$eq': 'file1.pdf'}}\n)\n\nfor match in results.matches:\n    print(f'Score: {match.score:.4f}')\n    print(f'Metadata: {match.metadata}')",
+      "best_practices": [
+        "Use namespaces to organize data",
+        "Batch upserts for efficiency (up to 100 vectors)",
+        "Use metadata filtering to narrow search",
+        "Monitor usage for cost management"
+      ]
+    }
+  },
+  "embedding_patterns": {
+    "embedding_selection": {
+      "description": "Choose appropriate embedding model",
+      "recommendations": {
+        "openai_small": {
+          "model": "text-embedding-3-small",
+          "dimensions": 1536,
+          "use_for": "General purpose, cost-effective",
+          "cost": "$0.02 / 1M tokens"
+        },
+        "openai_large": {
+          "model": "text-embedding-3-large",
+          "dimensions": 3072,
+          "use_for": "Highest quality, complex retrieval",
+          "cost": "$0.13 / 1M tokens"
+        },
+        "cohere": {
+          "model": "embed-english-v3.0",
+          "dimensions": 1024,
+          "use_for": "Multilingual, good quality",
+          "cost": "$0.10 / 1M tokens"
+        },
+        "local": {
+          "model": "sentence-transformers/all-MiniLM-L6-v2",
+          "dimensions": 384,
+          "use_for": "Free, local, lower quality",
+          "cost": "Free (compute cost only)"
+        }
+      }
+    },
+    "local_embeddings": {
+      "description": "Generate embeddings locally",
+      "use_when": "Cost-sensitive or privacy requirements",
+      "code_example": "from sentence_transformers import SentenceTransformer\n\n# Load model (downloads on first use)\nmodel = SentenceTransformer('all-MiniLM-L6-v2')\n\n# Generate embeddings\ntexts = ['Document 1', 'Document 2', 'Document 3']\nembeddings = model.encode(texts, show_progress_bar=True)\n\nprint(f'Embedding shape: {embeddings.shape}')  # (3, 384)\n\n# Batch processing for large datasets\nfrom tqdm import tqdm\n\ndef batch_embed(texts, batch_size=32):\n    all_embeddings = []\n    for i in tqdm(range(0, len(texts), batch_size)):\n        batch = texts[i:i+batch_size]\n        embeddings = model.encode(batch)\n        all_embeddings.extend(embeddings)\n    return all_embeddings",
+      "best_practices": [
+        "Use GPU for faster encoding",
+        "Batch texts for efficiency",
+        "Consider model size vs quality tradeoff",
+        "Normalize embeddings for cosine similarity"
+      ]
+    }
+  },
+  "chunking_patterns": {
+    "recursive_character": {
+      "description": "Split by characters with hierarchy of separators",
+      "use_when": "General text documents",
+      "code_example": "from langchain.text_splitter import RecursiveCharacterTextSplitter\n\nsplitter = RecursiveCharacterTextSplitter(\n    chunk_size=1000,\n    chunk_overlap=200,\n    length_function=len,\n    separators=['\\n\\n', '\\n', ' ', '']\n)\n\nchunks = splitter.split_text(long_document)\nprint(f'Created {len(chunks)} chunks')",
+      "best_practices": [
+        "chunk_size 500-1500 tokens typical",
+        "chunk_overlap 10-20% of chunk_size",
+        "Adjust based on embedding model context"
+      ]
+    },
+    "semantic_chunking": {
+      "description": "Split based on semantic similarity",
+      "use_when": "Want semantically coherent chunks",
+      "code_example": "from langchain_experimental.text_splitter import SemanticChunker\nfrom langchain_openai import OpenAIEmbeddings\n\nembeddings = OpenAIEmbeddings()\n\nchunker = SemanticChunker(\n    embeddings,\n    breakpoint_threshold_type='percentile',\n    breakpoint_threshold_amount=95\n)\n\nchunks = chunker.split_text(document)\n\n# Each chunk should be semantically coherent\nfor i, chunk in enumerate(chunks[:3]):\n    print(f'Chunk {i}: {chunk[:100]}...')",
+      "best_practices": [
+        "More expensive (requires embeddings)",
+        "Better semantic coherence",
+        "Tune threshold for chunk size balance"
+      ]
+    }
+  },
+  "retrieval_patterns": {
+    "similarity_search": {
+      "description": "Basic vector similarity search",
+      "code_example": "# Simple similarity search\ndocs = vectorstore.similarity_search(\n    query='What is machine learning?',\n    k=5\n)\n\n# With scores\ndocs_with_scores = vectorstore.similarity_search_with_score(\n    query='What is machine learning?',\n    k=5\n)\n\nfor doc, score in docs_with_scores:\n    print(f'Score: {score:.4f}')\n    print(f'Content: {doc.page_content[:100]}...')"
+    },
+    "mmr_search": {
+      "description": "Maximum Marginal Relevance for diversity",
+      "use_when": "Want diverse results, not just most similar",
+      "code_example": "# MMR balances relevance and diversity\ndocs = vectorstore.max_marginal_relevance_search(\n    query='What is machine learning?',\n    k=5,\n    fetch_k=20,  # Fetch more, then diversify\n    lambda_mult=0.5  # 0=max diversity, 1=max relevance\n)",
+      "best_practices": [
+        "fetch_k should be 3-4x of k",
+        "lambda_mult=0.5 is good default",
+        "Use when results are too similar"
+      ]
+    },
+    "filtered_search": {
+      "description": "Combine vector search with metadata filters",
+      "use_when": "Need to constrain search by attributes",
+      "code_example": "# LangChain with filter\nretriever = vectorstore.as_retriever(\n    search_type='similarity',\n    search_kwargs={\n        'k': 5,\n        'filter': {'source': 'annual_report.pdf'}\n    }\n)\n\n# Qdrant filter syntax\nfrom qdrant_client.models import Filter, FieldCondition, MatchValue\n\nfilter_condition = Filter(\n    must=[\n        FieldCondition(\n            key='source',\n            match=MatchValue(value='annual_report.pdf')\n        ),\n        FieldCondition(\n            key='year',\n            range=Range(gte=2023)\n        )\n    ]\n)\n\nresults = client.search(\n    collection_name='documents',\n    query_vector=query_vector,\n    query_filter=filter_condition,\n    limit=5\n)"
+    },
+    "reranking": {
+      "description": "Re-score results with cross-encoder",
+      "use_when": "Need higher precision, can afford latency",
+      "code_example": "from sentence_transformers import CrossEncoder\n\n# Load reranker\nreranker = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')\n\n# Initial retrieval\ninitial_results = vectorstore.similarity_search(query, k=20)\n\n# Rerank\npairs = [[query, doc.page_content] for doc in initial_results]\nscores = reranker.predict(pairs)\n\n# Sort by reranker scores\nreranked = sorted(\n    zip(initial_results, scores),\n    key=lambda x: x[1],\n    reverse=True\n)[:5]\n\nfor doc, score in reranked:\n    print(f'Rerank score: {score:.4f}')\n    print(f'Content: {doc.page_content[:100]}')",
+      "best_practices": [
+        "Retrieve more (20-50), then rerank to top k",
+        "Cross-encoders are more accurate but slower",
+        "Consider Cohere Rerank API for production"
+      ]
+    }
+  },
+  "anti_patterns": {
+    "wrong_distance_metric": {
+      "description": "Using wrong distance for normalized vectors",
+      "problem": "Poor search quality",
+      "solution": "Use cosine for normalized, L2 for unnormalized embeddings"
+    },
+    "too_large_chunks": {
+      "description": "Chunks larger than embedding context window",
+      "problem": "Important content not captured in embedding",
+      "solution": "Keep chunks under embedding model's max tokens"
+    },
+    "no_metadata": {
+      "description": "Storing vectors without metadata",
+      "problem": "Cannot filter or trace source",
+      "solution": "Always store source, page, date metadata"
+    },
+    "embedding_mismatch": {
+      "description": "Different embedding models for index and query",
+      "problem": "Garbage search results",
+      "solution": "Use same embedding model for indexing and querying"
+    }
+  },
+  "best_practices_summary": [
+    "Use same embedding model for indexing and querying",
+    "Store rich metadata with vectors",
+    "Chunk documents appropriately (500-1500 tokens)",
+    "Use overlap between chunks",
+    "Consider hybrid search for production",
+    "Implement reranking for high-precision needs",
+    "Monitor and evaluate retrieval quality",
+    "Batch operations for efficiency"
+  ]
+}

@@ -1,0 +1,345 @@
+{
+  "metadata": {
+    "patternId": "ci-monitor-project",
+    "patternName": "CI Monitor Skill (Project-Scoped)",
+    "category": "workflow",
+    "stackAgnostic": true,
+    "description": "Continuous CI/CD pipeline monitoring with automatic error detection and fix loop for generated projects",
+    "composable": true
+  },
+  "frontmatter": {
+    "name": "ci-monitor-project",
+    "description": "Continuous CI/CD pipeline monitoring with automatic error detection and fix loop",
+    "type": "skill",
+    "scope": "project",
+    "triggers": [
+      "pipeline failure",
+      "CI failure",
+      "watch pipeline",
+      "monitor deployment"
+    ]
+  },
+  "sections": {
+    "title": "CI Monitor Skill",
+    "introduction": "Continuously monitor CI/CD pipeline status and automatically detect, analyze, and fix errors. This skill implements a **watch-detect-fix loop** that runs until the pipeline is green.",
+    "philosophy": "A watched pipeline never fails... and if it does, we fix it immediately. Traditional debugging is reactive - wait for failure, then investigate. This skill is **proactive** - continuously monitoring and fixing as issues appear.",
+    "whenToUse": [
+      "After push: 'Watch the pipeline until it's green'",
+      "CI failure: 'Fix the pipeline and keep trying until green'",
+      "Deployment: 'Monitor the deployment pipeline'",
+      "Background: 'Watch CI in background, alert on failure'"
+    ],
+    "prerequisites": {
+      "requiredTools": [
+        {
+          "tool": "gh CLI",
+          "purpose": "GitHub Actions access",
+          "installation": "winget install GitHub.cli (Windows) or brew install gh (macOS)"
+        },
+        {
+          "tool": "git",
+          "purpose": "Local repository access",
+          "installation": "Pre-installed or system package manager"
+        },
+        {
+          "tool": "{LANGUAGE_RUNTIME}",
+          "purpose": "Script execution",
+          "installation": "Project-specific runtime (Python, Node.js, etc.)"
+        },
+        {
+          "tool": "{LINTER_TOOL}",
+          "purpose": "Code quality checks",
+          "installation": "Project-specific linter (ruff, eslint, etc.)"
+        }
+      ],
+      "authentication": {
+        "github": "gh auth login - Choose: GitHub.com → HTTPS → Authenticate with browser"
+      }
+    },
+    "process": [
+      {
+        "step": 1,
+        "name": "Initialize Monitoring",
+        "description": "Check authentication and get latest CI run",
+        "actions": [
+          "Verify GitHub CLI authentication: gh auth status",
+          "Get latest CI run: gh run list --repo {REPO_OWNER}/{REPO_NAME} --limit 1",
+          "Extract run ID and status"
+        ],
+        "mcpTools": [
+          "github-getWorkflowRuns"
+        ],
+        "outputs": [
+          "Run ID",
+          "Current status",
+          "Workflow name"
+        ]
+      },
+      {
+        "step": 2,
+        "name": "Wait for Completion",
+        "description": "Poll CI status until run completes",
+        "actions": [
+          "Poll every 30 seconds until status is 'completed'",
+          "Display progress updates to user"
+        ],
+        "outputs": [
+          "Final status",
+          "Completion time"
+        ]
+      },
+      {
+        "step": 3,
+        "name": "Check Result",
+        "description": "Determine if pipeline succeeded or failed",
+        "actions": [
+          "Get conclusion: gh run list --limit 1 --json conclusion --jq '.[0].conclusion'",
+          "If success: exit with success message",
+          "If failure: proceed to error detection"
+        ],
+        "outputs": [
+          "Conclusion (success/failure/cancelled)"
+        ]
+      },
+      {
+        "step": 4,
+        "name": "Fetch Error Logs",
+        "description": "Retrieve failed job logs and extract errors",
+        "actions": [
+          "Get run ID: gh run list --limit 1 --json databaseId --jq '.[0].databaseId'",
+          "Fetch failed job logs: gh run view {RUN_ID} --log-failed",
+          "Extract error patterns: grep -E 'ERROR|FAILED|AssertionError|error:'"
+        ],
+        "mcpTools": [
+          "github-getWorkflowRunLogs"
+        ],
+        "outputs": [
+          "Error log file",
+          "List of error messages"
+        ]
+      },
+      {
+        "step": 5,
+        "name": "Parse and Categorize Errors",
+        "description": "Analyze errors and categorize by type",
+        "actions": [
+          "Parse error messages",
+          "Categorize errors by type (linter, test, dependency, syntax, etc.)",
+          "Prioritize fixes"
+        ],
+        "outputs": [
+          "Categorized error list",
+          "Error priority ranking"
+        ]
+      },
+      {
+        "step": 6,
+        "name": "Fix Each Error",
+        "description": "Apply targeted fixes for each error category",
+        "actions": [
+          "For linter errors: Run {LINTER_COMMAND} --fix",
+          "For test failures: Analyze test and implement fix",
+          "For dependency errors: Update {DEPENDENCY_FILE}",
+          "For syntax errors: Fix code syntax",
+          "Stage fixes: git add -A"
+        ],
+        "outputs": [
+          "Fixed files",
+          "Fix summary"
+        ]
+      },
+      {
+        "step": 7,
+        "name": "Local Verification",
+        "description": "Run tests locally before pushing",
+        "actions": [
+          "Run fast tests: {TEST_COMMAND} {FAST_TEST_ARGS}",
+          "Run linter: {LINTER_COMMAND}",
+          "Verify fixes work"
+        ],
+        "outputs": [
+          "Test results",
+          "Linter results"
+        ]
+      },
+      {
+        "step": 8,
+        "name": "Commit and Push",
+        "description": "Commit fixes and trigger new CI run",
+        "actions": [
+          "Stage all changes: git add -A",
+          "Create commit: git commit -m 'fix: {FIX_DESCRIPTION}'",
+          "Push changes: git push",
+          "Return to monitoring loop"
+        ],
+        "outputs": [
+          "Commit hash",
+          "New CI run ID"
+        ]
+      },
+      {
+        "step": 9,
+        "name": "Loop Back",
+        "description": "Return to Step 1 and continue monitoring until green",
+        "actions": [
+          "Wait for new CI run to start",
+          "Continue monitoring loop"
+        ]
+      }
+    ],
+    "errorCategories": {
+      "linter": {
+        "patterns": [
+          "{LINTER_ERROR_CODES}"
+        ],
+        "fixStrategy": "Run {LINTER_COMMAND} --fix",
+        "autoFix": true
+      },
+      "testFailure": {
+        "patterns": [
+          "AssertionError",
+          "FAILED",
+          "TestError"
+        ],
+        "fixStrategy": "Analyze test and code under test, identify root cause, implement minimal fix",
+        "autoFix": false
+      },
+      "dependency": {
+        "patterns": [
+          "ImportError",
+          "ModuleNotFoundError",
+          "PackageNotFoundError"
+        ],
+        "fixStrategy": "Add missing dependencies to {DEPENDENCY_FILE}",
+        "autoFix": true
+      },
+      "syntax": {
+        "patterns": [
+          "SyntaxError",
+          "IndentationError"
+        ],
+        "fixStrategy": "Fix code syntax errors",
+        "autoFix": false
+      },
+      "build": {
+        "patterns": [
+          "BuildError",
+          "CompilationError"
+        ],
+        "fixStrategy": "Fix build configuration or compilation errors",
+        "autoFix": false
+      }
+    },
+    "monitoringModes": {
+      "active": {
+        "description": "Foreground monitoring with real-time updates",
+        "displayFormat": "Progress updates every 30 seconds with status indicators"
+      },
+      "passive": {
+        "description": "Background monitoring with alerts on completion",
+        "displayFormat": "Silent until failure, then alert user"
+      }
+    },
+    "escalation": [
+      {
+        "condition": "> 3 fix attempts",
+        "action": "Escalate to user with analysis and recommendations"
+      },
+      {
+        "condition": "Security issue detected",
+        "action": "Stop and alert immediately"
+      },
+      {
+        "condition": "Flaky test detected",
+        "action": "Document and suggest test stabilization"
+      },
+      {
+        "condition": "External dependency failure",
+        "action": "Note and suggest workaround"
+      }
+    ],
+    "importantRules": [
+      "Always verify fixes locally before pushing",
+      "Use fail-fast approach - stop on first error when debugging",
+      "Commit fixes with descriptive messages",
+      "Continue monitoring loop until pipeline is green",
+      "Escalate after 3 failed fix attempts",
+      "All actions must align with core axioms (A1: Verifiability, A2: User Primacy, A3: Transparency, A4: Non-Harm, A5: Consistency)"
+    ],
+    "fallbackProcedures": [
+      {
+        "condition": "GitHub CLI not authenticated",
+        "action": "Prompt user to run: gh auth login"
+      },
+      {
+        "condition": "Cannot fetch CI logs",
+        "action": "Ask user to provide error logs manually"
+      },
+      {
+        "condition": "Local tests fail after fix",
+        "action": "Revert changes and try alternative fix approach"
+      },
+      {
+        "condition": "Fix attempts exceed limit",
+        "action": "Present analysis to user and request guidance"
+      }
+    ],
+    "references": [
+      "workflows/ci-monitoring.md"
+    ]
+  },
+  "variables": [
+    {
+      "name": "{REPO_OWNER}",
+      "description": "GitHub repository owner/organization",
+      "required": true
+    },
+    {
+      "name": "{REPO_NAME}",
+      "description": "GitHub repository name",
+      "required": true
+    },
+    {
+      "name": "{LANGUAGE_RUNTIME}",
+      "description": "Project runtime (python, node, etc.)",
+      "required": true
+    },
+    {
+      "name": "{LINTER_TOOL}",
+      "description": "Linter tool name (ruff, eslint, etc.)",
+      "required": true
+    },
+    {
+      "name": "{LINTER_COMMAND}",
+      "description": "Command to run linter (e.g., 'ruff check' or 'npm run lint')",
+      "required": true
+    },
+    {
+      "name": "{LINTER_ERROR_CODES}",
+      "description": "Pattern for linter error codes (e.g., 'F401|F541|F821' for ruff)",
+      "required": false,
+      "default": "ERROR|FAILED|error:"
+    },
+    {
+      "name": "{TEST_COMMAND}",
+      "description": "Command to run tests (e.g., 'pytest' or 'npm test')",
+      "required": true
+    },
+    {
+      "name": "{FAST_TEST_ARGS}",
+      "description": "Arguments for fast test runs (e.g., 'tests/unit -x --tb=short')",
+      "required": false,
+      "default": "-x --tb=short"
+    },
+    {
+      "name": "{DEPENDENCY_FILE}",
+      "description": "Dependency file path (e.g., 'requirements.txt', 'package.json')",
+      "required": true
+    },
+    {
+      "name": "{FIX_DESCRIPTION}",
+      "description": "Description of fixes applied (auto-generated from error categories)",
+      "required": false
+    }
+  ]
+}

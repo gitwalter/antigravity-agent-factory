@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Content-Based Router iFlow Pattern
+  
+  Purpose: ${PURPOSE}
+  Author: ${AUTHOR}
+  Created: ${DATE}
+  
+  Usage:
+    1. Add Router step after message reception
+    2. Configure routing conditions based on message content
+    3. Add receiver channels for each route
+    4. Customize routing logic as needed
+  
+  Routing Patterns:
+    - Route by message type
+    - Route by business partner
+    - Route by priority
+    - Route by region/country
+    - Route by operation type
+-->
+<IntegrationProcess>
+  
+  <!-- Content-Based Router Configuration -->
+  <Router name="${ROUTER_NAME}">
+    
+    <!-- Route 1: Route by Message Type -->
+    <Route name="RouteByMessageType">
+      <Condition>
+        <!-- Example: Route based on XML element or JSON field -->
+        <!-- XPath example for XML -->
+        <!-- /Root/MessageType = 'ORDER' -->
+        
+        <!-- JSONPath example for JSON -->
+        <!-- $.messageType == 'ORDER' -->
+        
+        <!-- Groovy script for complex routing -->
+        <GroovyScript>
+          <![CDATA[
+import com.sap.gateway.ip.core.customdev.util.Message
+import groovy.xml.XmlSlurper
+import groovy.json.JsonSlurper
+
+def Message processData(Message message) {
+    def body = message.getBody(String)
+    def contentType = message.getHeader('Content-Type', String) ?: ''
+    
+    try {
+        if (contentType.contains('xml') || body.trim().startsWith('<')) {
+            // XML routing
+            def xml = new XmlSlurper().parseText(body)
+            def messageType = xml.MessageType?.text() ?: 
+                             xml.Header?.MessageType?.text() ?: 
+                             xml.@messageType?.text()
+            
+            message.setProperty('MessageType', messageType)
+            message.setProperty('RouteCondition', "MessageType == '${messageType}'")
+            
+            // Return true to take this route, false otherwise
+            return messageType == '${ROUTE_CONDITION_VALUE}'
+            
+        } else if (contentType.contains('json') || body.trim().startsWith('{')) {
+            // JSON routing
+            def json = new JsonSlurper().parseText(body)
+            def messageType = json.messageType ?: 
+                             json.header?.messageType ?: 
+                             json.type
+            
+            message.setProperty('MessageType', messageType?.toString())
+            message.setProperty('RouteCondition', "MessageType == '${messageType}'")
+            
+            return messageType == '${ROUTE_CONDITION_VALUE}'
+        }
+    } catch (Exception e) {
+        message.setProperty('RoutingError', e.message)
+        return false
+    }
+    
+    return false
+}
+          ]]>
+        </GroovyScript>
+      </Condition>
+      
+      <!-- Receiver Channel for this route -->
+      <ReceiverChannel name="${RECEIVER_CHANNEL_1_NAME}">
+        <!-- Configure adapter (HTTP, SOAP, IDoc, etc.) -->
+      </ReceiverChannel>
+    </Route>
+    
+    <!-- Route 2: Route by Business Partner -->
+    <Route name="RouteByPartner">
+      <Condition>
+        <GroovyScript>
+          <![CDATA[
+import com.sap.gateway.ip.core.customdev.util.Message
+import groovy.json.JsonSlurper
+
+def Message processData(Message message) {
+    def body = message.getBody(String)
+    
+    try {
+        def json = new JsonSlurper().parseText(body)
+        def partnerId = json.partnerId ?: 
+                       json.header?.partnerId ?: 
+                       json.customer?.id
+        
+        message.setProperty('PartnerId', partnerId?.toString())
+        
+        // Route based on partner ID pattern or value
+        // Example: Route to different systems based on partner
+        def partnerRoutes = [
+            'PARTNER_A': ['${PARTNER_A_VALUES}'],
+            'PARTNER_B': ['${PARTNER_B_VALUES}']
+        ]
+        
+        def route = partnerRoutes.find { key, values ->
+            values.contains(partnerId)
+        }?.key
+        
+        message.setProperty('PartnerRoute', route ?: 'DEFAULT')
+        
+        return route == '${ROUTE_CONDITION_VALUE}'
+        
+    } catch (Exception e) {
+        message.setProperty('RoutingError', e.message)
+        return false
+    }
+    
+    return false
+}
+          ]]>
+        </GroovyScript>
+      </Condition>
+      
+      <ReceiverChannel name="${RECEIVER_CHANNEL_2_NAME}">
+        <!-- Configure adapter -->
+      </ReceiverChannel>
+    </Route>
+    
+    <!-- Route 3: Route by Priority -->
+    <Route name="RouteByPriority">
+      <Condition>
+        <GroovyScript>
+          <![CDATA[
+import com.sap.gateway.ip.core.customdev.util.Message
+
+def Message processData(Message message) {
+    def priority = message.getProperty('Priority') ?: 
+                  message.getHeader('X-Priority', String) ?: 
+                  'NORMAL'
+    
+    message.setProperty('MessagePriority', priority)
+    
+    // Route high priority messages to fast channel
+    return priority == 'HIGH' || priority == 'URGENT'
+}
+          ]]>
+        </GroovyScript>
+      </Condition>
+      
+      <ReceiverChannel name="${RECEIVER_CHANNEL_PRIORITY_NAME}">
+        <!-- Configure high-priority adapter -->
+      </ReceiverChannel>
+    </Route>
+    
+    <!-- Default Route: Catch-all -->
+    <Route name="DefaultRoute">
+      <Condition>
+        <!-- This route is taken if no other conditions match -->
+        <GroovyScript>
+          <![CDATA[
+import com.sap.gateway.ip.core.customdev.util.Message
+
+def Message processData(Message message) {
+    // Default route - always returns true
+    message.setProperty('RouteTaken', 'DEFAULT')
+    return true
+}
+          ]]>
+        </GroovyScript>
+      </Condition>
+      
+      <ReceiverChannel name="${RECEIVER_CHANNEL_DEFAULT_NAME}">
+        <!-- Configure default adapter -->
+      </ReceiverChannel>
+    </Route>
+    
+  </Router>
+  
+</IntegrationProcess>
+
+<!--
+  Configuration Notes:
+  
+  1. Router Setup:
+     - Add Router step in integration process
+     - Configure multiple routes with conditions
+     - Ensure at least one default route
+  
+  2. Routing Conditions:
+     - Use XPath for XML messages
+     - Use JSONPath for JSON messages
+     - Use Groovy scripts for complex logic
+  
+  3. Best Practices:
+     - Log routing decisions for debugging
+     - Set routing properties for monitoring
+     - Handle routing errors gracefully
+     - Test all routing paths
+  
+  4. Performance:
+     - Cache parsed message if used in multiple routes
+     - Use simple conditions when possible
+     - Avoid complex parsing in routing logic
+  
+  5. Monitoring:
+     - Track routing decisions via properties
+     - Monitor route distribution
+     - Alert on unexpected routing patterns
+-->

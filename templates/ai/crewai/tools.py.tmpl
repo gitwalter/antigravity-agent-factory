@@ -1,0 +1,211 @@
+"""
+{{TOOLS_NAME}} - CrewAI Custom Tools
+
+Purpose: {{TOOLS_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Tool outputs are traceable
+- A4 (Non-Harm): Tool inputs are validated
+"""
+
+from typing import List, Dict, Any, Optional
+from crewai.tools import tool
+from pydantic import BaseModel, Field
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+# Tool input schemas
+class {{TOOL_1_INPUT_SCHEMA}}(BaseModel):
+    """Input schema for {{TOOL_1_NAME}}."""
+    input_text: str = Field(description="Input text to process")
+    options: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Optional configuration"
+    )
+
+
+class {{TOOL_2_INPUT_SCHEMA}}(BaseModel):
+    """Input schema for {{TOOL_2_NAME}}."""
+    query: str = Field(description="Search query")
+    max_results: int = Field(
+        default=10,
+        ge=1,
+        le=100,
+        description="Maximum number of results"
+    )
+
+
+# Tool definitions
+@tool("{{TOOL_1_NAME}}")
+def {{TOOL_1_FUNCTION_NAME}}(input_text: str, options: Optional[Dict[str, Any]] = None) -> str:
+    """
+    {{TOOL_1_DESCRIPTION}}
+    
+    This tool implements A1 (Verifiability) by logging all operations.
+    This tool implements A4 (Non-Harm) by validating inputs.
+    
+    Args:
+        input_text: Input text to process
+        options: Optional configuration dictionary
+    
+    Returns:
+        Processed output
+    
+    Example:
+        >>> result = {{TOOL_1_FUNCTION_NAME}}("Process this", {"option": "value"})
+    """
+    logger.info(f"{{TOOL_1_NAME}} called with: {input_text[:100]}...")
+    
+    # Validate input (A4)
+    if not input_text or len(input_text.strip()) == 0:
+        raise ValueError("Input text cannot be empty")
+    
+    # Process input
+    try:
+        # Tool implementation here
+        result = f"Processed: {input_text}"
+        
+        if options:
+            logger.debug(f"Options: {options}")
+        
+        logger.info("{{TOOL_1_NAME}} completed successfully")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error in {{TOOL_1_NAME}}: {e}")
+        raise
+
+
+@tool("{{TOOL_2_NAME}}")
+def {{TOOL_2_FUNCTION_NAME}}(query: str, max_results: int = 10) -> str:
+    """
+    {{TOOL_2_DESCRIPTION}}
+    
+    This tool implements A1 (Verifiability) by logging search operations.
+    This tool implements A4 (Non-Harm) by validating query parameters.
+    
+    Args:
+        query: Search query string
+        max_results: Maximum number of results (1-100)
+    
+    Returns:
+        Search results as formatted string
+    
+    Example:
+        >>> results = {{TOOL_2_FUNCTION_NAME}}("AI research", max_results=5)
+    """
+    logger.info(f"{{TOOL_2_NAME}} called with query: {query[:100]}...")
+    
+    # Validate input (A4)
+    if not query or len(query.strip()) == 0:
+        raise ValueError("Query cannot be empty")
+    
+    if max_results < 1 or max_results > 100:
+        raise ValueError("max_results must be between 1 and 100")
+    
+    # Perform search
+    try:
+        # Tool implementation here
+        # This is a placeholder - implement actual search logic
+        results = [
+            f"Result {i+1}: Related to '{query}'"
+            for i in range(min(max_results, 5))
+        ]
+        
+        result_str = "\n".join(results)
+        logger.info(f"{{TOOL_2_NAME}} found {len(results)} results")
+        
+        return result_str
+        
+    except Exception as e:
+        logger.error(f"Error in {{TOOL_2_NAME}}: {e}")
+        raise
+
+
+class {{TOOLS_CLASS_NAME}}:
+    """
+    {{TOOLS_NAME}} - Collection of CrewAI Custom Tools
+    
+    Provides a convenient way to access all custom tools.
+    
+    Example:
+        >>> tools = {{TOOLS_CLASS_NAME}}()
+        >>> tool_list = tools.get_all_tools()
+    """
+    
+    def __init__(self):
+        """Initialize tools collection."""
+        self.tools = [
+            {{TOOL_1_FUNCTION_NAME}},
+            {{TOOL_2_FUNCTION_NAME}}
+            # Add more tools as needed
+        ]
+        
+        logger.info(f"Initialized {{TOOLS_NAME}} with {len(self.tools)} tools")
+    
+    def get_all_tools(self) -> List:
+        """
+        Get all available tools.
+        
+        Returns:
+            List of tool functions
+        """
+        return self.tools
+    
+    def get_tool_by_name(self, name: str):
+        """
+        Get a specific tool by name.
+        
+        Args:
+            name: Tool name
+        
+        Returns:
+            Tool function or None
+        """
+        for tool_func in self.tools:
+            if hasattr(tool_func, 'name') and tool_func.name == name:
+                return tool_func
+            elif tool_func.__name__ == name:
+                return tool_func
+        return None
+    
+    def list_tool_names(self) -> List[str]:
+        """
+        List all tool names.
+        
+        Returns:
+            List of tool names
+        """
+        names = []
+        for tool_func in self.tools:
+            if hasattr(tool_func, 'name'):
+                names.append(tool_func.name)
+            else:
+                names.append(tool_func.__name__)
+        return names
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create tools collection
+    tools = {{TOOLS_CLASS_NAME}}()
+    
+    # List all tools
+    print("Available tools:")
+    for name in tools.list_tool_names():
+        print(f"  - {name}")
+    
+    # Use a tool directly
+    print("\nUsing {{TOOL_1_NAME}}:")
+    result = {{TOOL_1_FUNCTION_NAME}}("{{EXAMPLE_INPUT}}")
+    print(f"Result: {result}")
+    
+    # Use another tool
+    print("\nUsing {{TOOL_2_NAME}}:")
+    results = {{TOOL_2_FUNCTION_NAME}}("{{EXAMPLE_QUERY}}", max_results=5)
+    print(f"Results:\n{results}")

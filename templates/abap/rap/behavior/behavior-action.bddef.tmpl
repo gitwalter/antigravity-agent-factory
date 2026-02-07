@@ -1,0 +1,58 @@
+"! <p class="shorttext synchronized">Behavior Definition with Custom Actions</p>
+"! Behavior definition for ${ENTITY_NAME} with custom action definitions
+"! @author ${AUTHOR}
+"! @date ${DATE}
+"! @version 1.0
+"!
+"! Example usage:
+"!   Replace ${ENTITY_NAME} with your entity name (e.g., ZC_Travel)
+"!   Replace ${ALIAS} with a short alias (e.g., Travel)
+"!   Custom actions extend standard CRUD operations
+"!
+managed implementation in class ${BEHAVIOR_IMPLEMENTATION_CLASS} unique;
+strict;
+
+define behavior for ${ENTITY_NAME} alias ${ALIAS}
+persistent table ${TABLE_NAME}
+lock master
+authorization master ( instance )
+etag master ${ETAG_FIELD}
+{
+  // Standard CRUD operations
+  create;
+  update;
+  delete;
+  
+  // Field control
+  field ( readonly ) ${READONLY_FIELD};
+  field ( mandatory ) ${MANDATORY_FIELD};
+  
+  // Custom actions
+  action ( features: instance ) ${ACTION_NAME_1} result ${RESULT_ENTITY_1};
+  action ( features: instance ) ${ACTION_NAME_2} result ${RESULT_ENTITY_2};
+  action ( features: instance ) ${ACTION_NAME_3} result ${RESULT_ENTITY_3};
+  
+  // Action with parameters
+  action ( features: instance ) ${ACTION_NAME_WITH_PARAM} 
+    parameter ${PARAMETER_NAME} 
+    result ${RESULT_ENTITY};
+  
+  // Standard operations
+  action ( features: instance ) acceptTravel result ${RESULT_ENTITY};
+  action ( features: instance ) rejectTravel result ${RESULT_ENTITY};
+  
+  // Association
+  association _${ASSOCIATION_NAME} { }
+}
+
+determination save ${DETERMINATION_NAME} on save
+{
+  field ${FIELD_NAME};
+}
+
+determination action ${ACTION_DETERMINATION_NAME} on modify
+{
+  create;
+  update;
+  delete;
+}

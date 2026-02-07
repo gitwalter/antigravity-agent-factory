@@ -1,0 +1,275 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Solana Program Patterns",
+  "description": "Best practices and patterns for Solana blockchain program development",
+  "version": "1.0.0",
+  "sources": [
+    "https://solana.com/docs/core",
+    "https://solana.com/developers/evm-to-svm",
+    "https://www.anchor-lang.com/docs"
+  ],
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns include testing strategies for verification",
+    "A4_non_harm": "Security patterns prevent financial loss"
+  },
+  "core_concepts": {
+    "account_model": {
+      "description": "Solana stores all data in accounts - programs are stateless, state is external",
+      "key_insight": "Unlike Ethereum where contracts own state, Solana programs receive accounts as inputs",
+      "account_structure": {
+        "fields": [
+          {"name": "lamports", "type": "u64", "description": "Balance in lamports (1 SOL = 1B lamports)"},
+          {"name": "owner", "type": "Pubkey", "description": "Program that owns this account"},
+          {"name": "executable", "type": "bool", "description": "Whether account contains program code"},
+          {"name": "data", "type": "Vec<u8>", "description": "Raw bytes of account data"},
+          {"name": "rent_epoch", "type": "u64", "description": "Next epoch rent is due"}
+        ]
+      },
+      "account_types": [
+        {"type": "Program Account", "description": "Executable, contains compiled BPF bytecode"},
+        {"type": "Data Account", "description": "Non-executable, stores state for programs"},
+        {"type": "Native Account", "description": "System programs (System, Token, etc.)"},
+        {"type": "Sysvar Account", "description": "Cluster state (clock, rent, etc.)"}
+      ],
+      "best_practices": [
+        "Always verify account ownership before trusting data",
+        "Use PDAs for program-owned accounts",
+        "Calculate space requirements accurately to minimize rent"
+      ]
+    },
+    "program_derived_addresses": {
+      "description": "Deterministically derived addresses without private keys",
+      "use_cases": [
+        "Create hashmap-like structures on-chain",
+        "Enable programs to sign transactions",
+        "Generate unique addresses per user/context"
+      ],
+      "derivation_pattern": {
+        "code_example": "// Derive PDA with seeds\nlet (pda, bump) = Pubkey::find_program_address(\n    &[\n        b\"user_account\",\n        user_pubkey.as_ref(),\n    ],\n    program_id\n);\n\n// Store bump in account for later verification\naccount.bump = bump;",
+        "explanation": "Seeds + program_id -> deterministic address off the Ed25519 curve"
+      },
+      "signing_pattern": {
+        "code_example": "// Program signing for PDA in CPI\nlet seeds = &[\n    b\"vault\",\n    authority.key.as_ref(),\n    &[bump_seed],\n];\nlet signer_seeds = &[&seeds[..]];\n\ninvoke_signed(\n    &transfer_instruction,\n    &[vault.clone(), destination.clone()],\n    signer_seeds,\n)?;",
+        "explanation": "Programs can sign for PDAs they derive, enabling autonomous control"
+      },
+      "best_practices": [
+        "Store bump seed in account data to avoid recalculation",
+        "Use meaningful, unique seed combinations",
+        "Validate PDA derivation in instruction handlers",
+        "Use canonical bump (first valid bump found)"
+      ]
+    },
+    "cross_program_invocation": {
+      "description": "One program calling instructions on another program",
+      "patterns": {
+        "basic_invoke": {
+          "code_example": "use solana_program::program::invoke;\n\ninvoke(\n    &instruction,\n    &[account1.clone(), account2.clone()],\n)?;",
+          "use_when": "Caller has required signers"
+        },
+        "invoke_signed": {
+          "code_example": "use solana_program::program::invoke_signed;\n\nlet seeds = &[b\"authority\", &[bump]];\ninvoke_signed(\n    &instruction,\n    &[pda_account.clone(), other_account.clone()],\n    &[seeds],\n)?;",
+          "use_when": "Program needs to sign as PDA"
+        }
+      },
+      "security_considerations": [
+        "Validate all accounts passed to CPI",
+        "Be aware of reentrancy through CPI",
+        "Check program IDs of invoked programs",
+        "Limit CPI depth to prevent stack overflow"
+      ],
+      "best_practices": [
+        "Use CPI guards for reentrancy protection",
+        "Verify account ownership after CPI returns",
+        "Handle CPI errors gracefully"
+      ]
+    },
+    "transactions_and_instructions": {
+      "description": "Transactions contain one or more instructions executed atomically",
+      "structure": {
+        "transaction": {
+          "components": ["signatures", "message"],
+          "message_components": ["header", "account_keys", "recent_blockhash", "instructions"]
+        },
+        "instruction": {
+          "fields": [
+            {"name": "program_id", "description": "Program to execute"},
+            {"name": "accounts", "description": "Accounts needed by program"},
+            {"name": "data", "description": "Instruction-specific data"}
+          ]
+        }
+      },
+      "fee_structure": {
+        "base_fee": "5000 lamports per signature (approximately)",
+        "priority_fee": "Optional, in micro-lamports per compute unit",
+        "compute_budget": "Default 200k CUs, max 1.4M CUs per transaction"
+      },
+      "best_practices": [
+        "Batch related operations in single transaction for atomicity",
+        "Use priority fees during congestion",
+        "Optimize compute unit usage",
+        "Handle partial transaction failures gracefully"
+      ]
+    }
+  },
+  "data_patterns": {
+    "account_data_layout": {
+      "description": "Structuring data within accounts",
+      "patterns": {
+        "borsh_serialization": {
+          "code_example": "use borsh::{BorshDeserialize, BorshSerialize};\n\n#[derive(BorshSerialize, BorshDeserialize, Debug)]\npub struct UserAccount {\n    pub is_initialized: bool,\n    pub owner: Pubkey,\n    pub balance: u64,\n    pub bump: u8,\n}",
+          "use_when": "Standard account serialization"
+        },
+        "zero_copy": {
+          "code_example": "#[account(zero_copy)]\n#[repr(C)]\npub struct LargeAccount {\n    pub data: [u64; 1000],\n}",
+          "use_when": "Large accounts where deserialization is expensive"
+        },
+        "discriminator_pattern": {
+          "description": "First 8 bytes identify account type (Anchor does this automatically)",
+          "code_example": "pub const DISCRIMINATOR: [u8; 8] = [0x01, 0x02, ...];\n\n// In Anchor, use Account<'info, MyAccount> for automatic discrimination"
+        }
+      },
+      "space_calculation": {
+        "formula": "8 (discriminator) + sum(field_sizes)",
+        "common_sizes": {
+          "bool": 1,
+          "u8": 1,
+          "u16": 2,
+          "u32": 4,
+          "u64": 8,
+          "u128": 16,
+          "Pubkey": 32,
+          "String": "4 + length",
+          "Vec<T>": "4 + (length * size_of<T>)"
+        }
+      }
+    },
+    "rent_exemption": {
+      "description": "Accounts must maintain minimum balance to avoid deletion",
+      "calculation": "Rent::get()?.minimum_balance(account_size)",
+      "best_practices": [
+        "Always make accounts rent-exempt",
+        "Include rent in account creation costs",
+        "Close accounts properly to recover rent"
+      ]
+    }
+  },
+  "instruction_patterns": {
+    "initialize_pattern": {
+      "description": "Create and initialize a new account",
+      "code_example": "pub fn initialize(\n    ctx: Context<Initialize>,\n    data: InitializeData,\n) -> Result<()> {\n    let account = &mut ctx.accounts.my_account;\n    account.owner = ctx.accounts.authority.key();\n    account.data = data.value;\n    account.bump = ctx.bumps.my_account;\n    Ok(())\n}",
+      "security_checks": [
+        "Verify account is not already initialized",
+        "Validate authority has permission",
+        "Set all required fields"
+      ]
+    },
+    "update_pattern": {
+      "description": "Modify existing account data",
+      "code_example": "pub fn update(\n    ctx: Context<Update>,\n    new_value: u64,\n) -> Result<()> {\n    let account = &mut ctx.accounts.my_account;\n    require!(account.owner == ctx.accounts.authority.key(), ErrorCode::Unauthorized);\n    account.data = new_value;\n    Ok(())\n}",
+      "security_checks": [
+        "Verify caller has authority",
+        "Validate new values",
+        "Emit events for transparency"
+      ]
+    },
+    "close_pattern": {
+      "description": "Close account and recover rent",
+      "code_example": "pub fn close(ctx: Context<Close>) -> Result<()> {\n    // Anchor's close constraint handles:\n    // 1. Transfer lamports to receiver\n    // 2. Zero account data\n    // 3. Set owner to System Program\n    Ok(())\n}\n\n#[derive(Accounts)]\npub struct Close<'info> {\n    #[account(mut, close = receiver, has_one = owner)]\n    pub my_account: Account<'info, MyAccount>,\n    pub owner: Signer<'info>,\n    #[account(mut)]\n    pub receiver: SystemAccount<'info>,\n}",
+      "security_checks": [
+        "Only owner can close",
+        "Handle any cleanup logic",
+        "Zero sensitive data before closing"
+      ]
+    }
+  },
+  "token_patterns": {
+    "spl_token_integration": {
+      "description": "Working with SPL Token program for fungible tokens",
+      "common_operations": {
+        "create_mint": "Initialize new token with decimals and authority",
+        "create_token_account": "Create account to hold tokens for a wallet",
+        "mint_tokens": "Create new tokens (requires mint authority)",
+        "transfer": "Move tokens between accounts",
+        "burn": "Destroy tokens permanently"
+      },
+      "associated_token_accounts": {
+        "description": "Deterministic token account address for wallet + mint combination",
+        "code_example": "use anchor_spl::associated_token::AssociatedToken;\n\n#[account(\n    init_if_needed,\n    payer = payer,\n    associated_token::mint = mint,\n    associated_token::authority = owner,\n)]\npub token_account: Account<'info, TokenAccount>,"
+      }
+    },
+    "token_2022_extensions": {
+      "description": "New token features in Token-2022 program",
+      "extensions": [
+        "Transfer fees",
+        "Interest-bearing tokens",
+        "Non-transferable tokens",
+        "Permanent delegate",
+        "Transfer hook",
+        "Metadata pointer",
+        "Confidential transfers"
+      ]
+    }
+  },
+  "parallel_execution": {
+    "sealevel_runtime": {
+      "description": "Solana's parallel transaction execution engine",
+      "how_it_works": "Transactions declare read/write accounts upfront; non-overlapping transactions run in parallel",
+      "implications": [
+        "Design for account isolation when possible",
+        "Minimize hot accounts (contention points)",
+        "Use multiple PDAs to shard state"
+      ]
+    },
+    "optimization_patterns": {
+      "account_sharding": {
+        "description": "Split state across multiple accounts to reduce contention",
+        "code_example": "// Instead of one global counter account,\n// use per-user counter PDAs:\nseeds = [b\"counter\", user.key().as_ref()]"
+      },
+      "compute_optimization": {
+        "tips": [
+          "Use zero-copy for large accounts",
+          "Avoid unnecessary deserialization",
+          "Batch operations when possible",
+          "Use efficient data structures"
+        ]
+      }
+    }
+  },
+  "testing_patterns": {
+    "local_development": {
+      "tools": ["solana-test-validator", "Anchor test framework", "LiteSVM", "Mollusk"],
+      "setup": "solana-test-validator --reset"
+    },
+    "anchor_testing": {
+      "code_example": "import * as anchor from \"@coral-xyz/anchor\";\nimport { Program } from \"@coral-xyz/anchor\";\nimport { MyProgram } from \"../target/types/my_program\";\n\ndescribe(\"my-program\", () => {\n  const provider = anchor.AnchorProvider.env();\n  anchor.setProvider(provider);\n  const program = anchor.workspace.MyProgram as Program<MyProgram>;\n\n  it(\"initializes correctly\", async () => {\n    const tx = await program.methods\n      .initialize()\n      .accounts({ ... })\n      .rpc();\n    console.log(\"Tx signature:\", tx);\n  });\n});",
+      "best_practices": [
+        "Test happy path and error cases",
+        "Verify account state after transactions",
+        "Test with different signers",
+        "Simulate attacks in tests"
+      ]
+    }
+  },
+  "anti_patterns": {
+    "missing_ownership_check": {
+      "description": "Trusting account data without verifying owner",
+      "problem": "Attacker can pass fake account with crafted data",
+      "solution": "Always use Anchor's Account<'info, T> or verify owner manually"
+    },
+    "missing_signer_check": {
+      "description": "Not verifying required signatures",
+      "problem": "Unauthorized actions",
+      "solution": "Use Signer<'info> type or check is_signer"
+    },
+    "pda_seed_collision": {
+      "description": "Predictable or non-unique PDA seeds",
+      "problem": "Users can derive same PDA, causing conflicts",
+      "solution": "Include user-specific data in seeds"
+    },
+    "unvalidated_cpi": {
+      "description": "Invoking programs without verifying their identity",
+      "problem": "Attacker can substitute malicious program",
+      "solution": "Check program_id matches expected value"
+    }
+  }
+}

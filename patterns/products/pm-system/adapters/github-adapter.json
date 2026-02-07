@@ -1,0 +1,539 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GitHub PM Adapter",
+  "description": "Adapter mapping PM interface operations to GitHub Issues, Milestones, and Projects",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["metadata", "mappings"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Adapter metadata",
+      "required": ["adapterId", "adapterName", "targetSystem", "version"],
+      "properties": {
+        "adapterId": {
+          "type": "string",
+          "description": "Unique identifier for this adapter",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "adapterName": {
+          "type": "string",
+          "description": "Human-readable adapter name"
+        },
+        "targetSystem": {
+          "type": "string",
+          "description": "Target PM system name"
+        },
+        "version": {
+          "type": "string",
+          "description": "Adapter version"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the adapter"
+        },
+        "mcpServer": {
+          "type": "string",
+          "description": "MCP server name for GitHub operations"
+        }
+      }
+    },
+    "mappings": {
+      "type": "object",
+      "description": "Interface to GitHub API mappings",
+      "required": ["concepts", "workItems", "planning", "boards", "metrics", "documentation"],
+      "properties": {
+        "concepts": {
+          "type": "object",
+          "description": "Conceptual mappings",
+          "properties": {
+            "epic": {
+              "type": "string",
+              "description": "Epic = Issue with 'epic' label"
+            },
+            "story": {
+              "type": "string",
+              "description": "Story = Issue with 'story' label, linked to epic via issue references"
+            },
+            "task": {
+              "type": "string",
+              "description": "Task = Issue with 'task' label"
+            },
+            "bug": {
+              "type": "string",
+              "description": "Bug = Issue with 'bug' label"
+            },
+            "sprint": {
+              "type": "string",
+              "description": "Sprint = Milestone"
+            },
+            "board": {
+              "type": "string",
+              "description": "Board = Project v2"
+            }
+          }
+        },
+        "workItems": {
+          "type": "object",
+          "properties": {
+            "createEpic": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "description": "MCP tool to use",
+                  "default": "github-createIssue"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "title"},
+                    "description": {"type": "string", "mappedTo": "body"},
+                    "projectId": {"type": "string", "mappedTo": "repository"},
+                    "labels": {"type": "array", "default": ["epic"]}
+                  }
+                },
+                "example": {
+                  "type": "object",
+                  "properties": {
+                    "title": "User Authentication Epic",
+                    "body": "Implement user authentication system",
+                    "repository": "owner/repo",
+                    "labels": ["epic"]
+                  }
+                }
+              }
+            },
+            "createStory": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-createIssue"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "title"},
+                    "description": {"type": "string", "mappedTo": "body"},
+                    "epicId": {"type": "string", "mappedTo": "body (reference)"},
+                    "projectId": {"type": "string", "mappedTo": "repository"},
+                    "labels": {"type": "array", "default": ["story"]}
+                  }
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Link to epic by referencing epic issue number in body: 'Related to #EPIC_NUMBER'"
+                }
+              }
+            },
+            "createTask": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-createIssue"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "title"},
+                    "description": {"type": "string", "mappedTo": "body"},
+                    "storyId": {"type": "string", "mappedTo": "body (reference)"},
+                    "projectId": {"type": "string", "mappedTo": "repository"},
+                    "labels": {"type": "array", "default": ["task"]}
+                  }
+                }
+              }
+            },
+            "createBug": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-createIssue"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "title"},
+                    "description": {"type": "string", "mappedTo": "body"},
+                    "severity": {"type": "string", "mappedTo": "labels"},
+                    "projectId": {"type": "string", "mappedTo": "repository"},
+                    "labels": {"type": "array", "default": ["bug"]}
+                  }
+                }
+              }
+            },
+            "updateStatus": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-updateIssue"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {"type": "string", "mappedTo": "issue_number"},
+                    "status": {
+                      "type": "string",
+                      "mappedTo": "state",
+                      "valueMapping": {
+                        "To Do": "open",
+                        "In Progress": "open",
+                        "Done": "closed"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "assignItem": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-updateIssue"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {"type": "string", "mappedTo": "issue_number"},
+                    "userId": {"type": "string", "mappedTo": "assignees"}
+                  }
+                }
+              }
+            },
+            "getItem": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-getIssue"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {"type": "string", "mappedTo": "issue_number"}
+                  }
+                }
+              }
+            },
+            "listItems": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-listIssues"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "projectId": {"type": "string", "mappedTo": "repository"},
+                    "status": {"type": "string", "mappedTo": "state"},
+                    "assignee": {"type": "string", "mappedTo": "assignee"},
+                    "type": {"type": "string", "mappedTo": "labels"}
+                  }
+                },
+                "queryPattern": {
+                  "type": "string",
+                  "description": "GitHub search query pattern",
+                  "example": "repo:owner/repo label:epic state:open"
+                }
+              }
+            }
+          }
+        },
+        "planning": {
+          "type": "object",
+          "properties": {
+            "createSprint": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-createMilestone"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "name": {"type": "string", "mappedTo": "title"},
+                    "startDate": {"type": "string", "mappedTo": "start_on"},
+                    "endDate": {"type": "string", "mappedTo": "due_on"},
+                    "projectId": {"type": "string", "mappedTo": "repository"}
+                  }
+                }
+              }
+            },
+            "addToSprint": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-updateIssue"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "mappedTo": "milestone"},
+                    "itemId": {"type": "string", "mappedTo": "issue_number"}
+                  }
+                }
+              }
+            },
+            "closeSprint": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-updateMilestone"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "mappedTo": "milestone_number"},
+                    "state": {"type": "string", "default": "closed"}
+                  }
+                }
+              }
+            },
+            "getSprint": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-getMilestone"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "sprintId": {"type": "string", "mappedTo": "milestone_number"}
+                  }
+                }
+              }
+            },
+            "listSprints": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-listMilestones"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "projectId": {"type": "string", "mappedTo": "repository"},
+                    "state": {"type": "string", "mappedTo": "state"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "boards": {
+          "type": "object",
+          "properties": {
+            "getBoard": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-getProject"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "boardId": {"type": "string", "mappedTo": "project_id"}
+                  }
+                },
+                "note": {
+                  "type": "string",
+                  "description": "GitHub Projects v2 API required"
+                }
+              }
+            },
+            "moveCard": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-updateProjectItem"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "cardId": {"type": "string", "mappedTo": "item_id"},
+                    "columnId": {"type": "string", "mappedTo": "field_id"},
+                    "position": {"type": "integer", "mappedTo": "position"}
+                  }
+                }
+              }
+            },
+            "getBoardColumns": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-listProjectFields"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "boardId": {"type": "string", "mappedTo": "project_id"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "getVelocity": {
+              "type": "object",
+              "properties": {
+                "note": {
+                  "type": "string",
+                  "description": "Calculate from closed issues in milestones over time"
+                },
+                "calculation": {
+                  "type": "string",
+                  "description": "Sum of story points from closed issues in completed milestones"
+                }
+              }
+            },
+            "getBurndown": {
+              "type": "object",
+              "properties": {
+                "note": {
+                  "type": "string",
+                  "description": "Calculate from milestone issues and their state changes"
+                },
+                "calculation": {
+                  "type": "string",
+                  "description": "Track remaining work (open issues) vs time in milestone"
+                }
+              }
+            },
+            "getCycleTime": {
+              "type": "object",
+              "properties": {
+                "note": {
+                  "type": "string",
+                  "description": "Calculate from issue creation to close timestamps"
+                }
+              }
+            },
+            "getLeadTime": {
+              "type": "object",
+              "properties": {
+                "note": {
+                  "type": "string",
+                  "description": "Calculate from issue creation to deployment"
+                }
+              }
+            },
+            "getWIP": {
+              "type": "object",
+              "properties": {
+                "note": {
+                  "type": "string",
+                  "description": "Count open issues assigned to users"
+                }
+              }
+            }
+          }
+        },
+        "documentation": {
+          "type": "object",
+          "properties": {
+            "createPage": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-createFile"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string", "mappedTo": "path"},
+                    "content": {"type": "string", "mappedTo": "content"},
+                    "spaceId": {"type": "string", "mappedTo": "repository"},
+                    "parentId": {"type": "string", "mappedTo": "path (directory)"}
+                  }
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Use GitHub wiki or docs folder in repository"
+                }
+              }
+            },
+            "updatePage": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-updateFile"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "pageId": {"type": "string", "mappedTo": "path"},
+                    "content": {"type": "string", "mappedTo": "content"},
+                    "version": {"type": "integer", "mappedTo": "sha"}
+                  }
+                }
+              }
+            },
+            "getPage": {
+              "type": "object",
+              "properties": {
+                "mcpTool": {
+                  "type": "string",
+                  "default": "github-getFile"
+                },
+                "mapping": {
+                  "type": "object",
+                  "properties": {
+                    "pageId": {"type": "string", "mappedTo": "path"}
+                  }
+                }
+              }
+            },
+            "linkToWorkItem": {
+              "type": "object",
+              "properties": {
+                "note": {
+                  "type": "string",
+                  "description": "Add issue reference in page content: 'Related to #ISSUE_NUMBER'"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "metadata": {
+        "adapterId": "github-adapter",
+        "adapterName": "GitHub PM Adapter",
+        "targetSystem": "GitHub",
+        "version": "1.0.0",
+        "description": "Maps PM interface to GitHub Issues, Milestones, and Projects",
+        "mcpServer": "github"
+      },
+      "mappings": {
+        "concepts": {
+          "epic": "Issue with 'epic' label",
+          "story": "Issue with 'story' label",
+          "sprint": "Milestone",
+          "board": "Project v2"
+        }
+      }
+    }
+  ]
+}

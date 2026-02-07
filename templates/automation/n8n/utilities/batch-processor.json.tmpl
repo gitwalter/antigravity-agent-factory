@@ -1,0 +1,129 @@
+{
+  "name": "{{WORKFLOW_NAME}} - Batch Processor",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Split items into batches\nconst items = $input.all();\nconst batchSize = {{BATCH_SIZE}};\nconst batches = [];\n\n// Create batches\nfor (let i = 0; i < items.length; i += batchSize) {\n  const batch = items.slice(i, i + batchSize);\n  batches.push({\n    json: {\n      batch_number: Math.floor(i / batchSize) + 1,\n      total_batches: Math.ceil(items.length / batchSize),\n      batch_size: batch.length,\n      items: batch.map(item => item.json),\n      start_index: i,\n      end_index: Math.min(i + batchSize - 1, items.length - 1)\n    }\n  });\n}\n\nreturn batches;"
+      },
+      "id": "create-batches-{{NODE_ID}}",
+      "name": "Create Batches",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process batch items\nconst batch = $input.first().json;\nconst items = batch.items;\n\n// Process each item in the batch\nconst processedItems = items.map((item, index) => {\n  try {\n    // {{PROCESSING_LOGIC_DESCRIPTION}}\n    {{PROCESSING_LOGIC}}\n    \n    return {\n      json: {\n        ...item,\n        processed: true,\n        batch_number: batch.batch_number,\n        item_index_in_batch: index\n      }\n    };\n  } catch (error) {\n    return {\n      json: {\n        ...item,\n        processed: false,\n        error: error.message,\n        batch_number: batch.batch_number,\n        item_index_in_batch: index\n      }\n    };\n  }\n});\n\n// Calculate batch statistics\nconst successful = processedItems.filter(item => item.json.processed).length;\nconst failed = processedItems.filter(item => !item.json.processed).length;\n\nreturn processedItems.concat([{\n  json: {\n    batch_summary: true,\n    batch_number: batch.batch_number,\n    total_batches: batch.total_batches,\n    items_processed: processedItems.length,\n    successful: successful,\n    failed: failed,\n    timestamp: new Date().toISOString()\n  }\n}]);"
+      },
+      "id": "process-batch-{{NODE_ID}}",
+      "name": "Process Batch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Rate limiting between batches\nconst batch = $input.first().json;\n\nif (batch.batch_summary) {\n  // This is a summary item, check if we need to wait before next batch\n  const delay = {{BATCH_DELAY}}; // milliseconds\n  \n  if (batch.batch_number < batch.total_batches && delay > 0) {\n    console.log(`Batch ${batch.batch_number} completed. Waiting ${delay}ms before next batch...`);\n    await new Promise(resolve => setTimeout(resolve, delay));\n  }\n}\n\nreturn $input.all();"
+      },
+      "id": "rate-limit-{{NODE_ID}}",
+      "name": "Rate Limit",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "operation": "{{TARGET_OPERATION}}",
+        "resource": "{{TARGET_RESOURCE}}",
+        "options": {
+          "batchSize": "={{ $json.batch_size }}"
+        }
+      },
+      "id": "save-results-{{NODE_ID}}",
+      "name": "Save Results",
+      "type": "{{TARGET_NODE_TYPE}}",
+      "typeVersion": {{TARGET_NODE_VERSION}},
+      "position": [850, 300],
+      "credentials": {
+        "{{TARGET_CREDENTIAL_TYPE}}": {
+          "id": "{{TARGET_CREDENTIAL_ID}}",
+          "name": "{{TARGET_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aggregate final results\nconst allItems = $input.all();\nconst summaries = allItems.filter(item => item.json.batch_summary);\nconst processedItems = allItems.filter(item => !item.json.batch_summary);\n\nconst totalProcessed = processedItems.length;\nconst totalSuccessful = processedItems.filter(item => item.json.processed).length;\nconst totalFailed = processedItems.filter(item => !item.json.processed).length;\n\nconst batchStats = summaries.map(summary => summary.json);\n\nreturn [{\n  json: {\n    final_summary: true,\n    total_items: totalProcessed,\n    total_successful: totalSuccessful,\n    total_failed: totalFailed,\n    success_rate: totalProcessed > 0 ? (totalSuccessful / totalProcessed * 100).toFixed(2) + '%' : '0%',\n    batches: batchStats.length,\n    batch_statistics: batchStats,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "aggregate-results-{{NODE_ID}}",
+      "name": "Aggregate Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 300]
+    }
+  ],
+  "connections": {
+    "Create Batches": {
+      "main": [
+        [
+          {
+            "node": "Process Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Batch": {
+      "main": [
+        [
+          {
+            "node": "Rate Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rate Limit": {
+      "main": [
+        [
+          {
+            "node": "Save Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Results": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "{{TIMESTAMP}}",
+      "updatedAt": "{{TIMESTAMP}}",
+      "id": "{{TAG_ID}}",
+      "name": "batch-processor"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "{{TIMESTAMP}}",
+  "versionId": "{{VERSION_ID}}"
+}

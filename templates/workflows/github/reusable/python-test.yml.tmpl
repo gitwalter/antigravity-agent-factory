@@ -1,0 +1,123 @@
+name: Python Test Workflow
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: 'Python version to use'
+        required: false
+        type: string
+        default: '{{DEFAULT_PYTHON_VERSION}}'
+      test-command:
+        description: 'Command to run tests'
+        required: false
+        type: string
+        default: 'pytest'
+      test-path:
+        description: 'Path to test directory or file'
+        required: false
+        type: string
+        default: 'tests/'
+      coverage-threshold:
+        description: 'Minimum coverage percentage'
+        required: false
+        type: string
+        default: '80'
+      matrix-python-versions:
+        description: 'Comma-separated Python versions for matrix testing'
+        required: false
+        type: string
+        default: '{{DEFAULT_PYTHON_VERSION}}'
+      install-command:
+        description: 'Command to install dependencies'
+        required: false
+        type: string
+        default: 'pip install -r requirements.txt'
+      upload-coverage:
+        description: 'Upload coverage reports'
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      COVERAGE_TOKEN:
+        description: 'Token for coverage service (e.g., Codecov)'
+        required: false
+
+jobs:
+  test:
+    name: Test Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ${{ fromJSON(format('["{0}"]', inputs.matrix-python-versions)) }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: ${{ inputs.install-command }}
+
+      - name: Run linter
+        continue-on-error: true
+        run: |
+          if command -v ruff &> /dev/null; then
+            ruff check .
+          elif command -v flake8 &> /dev/null; then
+            flake8 .
+          elif command -v pylint &> /dev/null; then
+            pylint **/*.py
+          fi
+
+      - name: Run type checker
+        continue-on-error: true
+        run: |
+          if command -v mypy &> /dev/null; then
+            mypy .
+          fi
+
+      - name: Run tests with coverage
+        run: |
+          ${{ inputs.test-command }} ${{ inputs.test-path }} \
+            --cov=. \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term \
+            --cov-fail-under=${{ inputs.coverage-threshold }}
+
+      - name: Upload coverage to Codecov
+        if: inputs.upload-coverage && secrets.COVERAGE_TOKEN != ''
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.COVERAGE_TOKEN }}
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-${{ matrix.python-version }}
+          path: |
+            coverage.xml
+            htmlcov/
+          retention-days: 30
+
+      - name: Comment PR with coverage
+        if: github.event_name == 'pull_request' && always()
+        uses: py-cov-action/python-coverage-comment-action@v3
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MINIMUM_GREEN: ${{ inputs.coverage-threshold }}

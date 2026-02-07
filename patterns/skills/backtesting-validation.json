@@ -1,0 +1,137 @@
+{
+  "metadata": {
+    "patternId": "backtesting-validation",
+    "patternName": "Backtesting Validation Skill",
+    "category": "testing",
+    "stackAgnostic": false,
+    "stacks": [
+      "python",
+      "quantitative-trading"
+    ],
+    "description": "Validate trading strategy backtests for reliability and robustness"
+  },
+  "frontmatter": {
+    "name": "backtesting-validation",
+    "description": "Ensure backtest results are statistically valid and free from common biases",
+    "type": "skill",
+    "knowledge": [
+      "trading-patterns.json",
+      "quantitative-finance.json",
+      "risk-management.json"
+    ]
+  },
+  "sections": {
+    "title": "Backtesting Validation Skill",
+    "purpose": "Validate that backtest results are reliable, statistically significant, and free from common pitfalls like look-ahead bias and overfitting.",
+    "importantRules": [
+      "NEVER use future data in signal generation (look-ahead bias)",
+      "Always use out-of-sample testing",
+      "Account for realistic transaction costs",
+      "Validate statistical significance of results",
+      "All actions must align with core axioms (A1: Verifiability, A2: User Primacy, A3: Transparency, A4: Non-Harm, A5: Consistency)"
+    ],
+    "workflow": [
+      {
+        "step": 1,
+        "name": "Data Validation",
+        "description": "Verify data quality and integrity",
+        "checks": [
+          "No look-ahead bias in data alignment",
+          "Survivorship bias addressed",
+          "Corporate actions handled (splits, dividends)",
+          "Data gaps identified and handled"
+        ]
+      },
+      {
+        "step": 2,
+        "name": "Implementation Validation",
+        "description": "Verify backtest implementation",
+        "checks": [
+          "Signals generated using only past data",
+          "Execution prices are realistic (not open of signal bar)",
+          "Transaction costs included (slippage, commission)",
+          "Position sizing respects available capital"
+        ]
+      },
+      {
+        "step": 3,
+        "name": "Statistical Validation",
+        "description": "Assess statistical significance",
+        "checks": [
+          "Sufficient number of trades (>30 for significance)",
+          "Results not due to outlier trades",
+          "Monte Carlo simulation for confidence intervals",
+          "Compare to random entry baseline"
+        ]
+      },
+      {
+        "step": 4,
+        "name": "Robustness Testing",
+        "description": "Test strategy stability",
+        "methods": [
+          {
+            "name": "Walk-Forward Analysis",
+            "description": "Rolling in-sample/out-of-sample windows",
+            "requirement": "12+ windows recommended"
+          },
+          {
+            "name": "Parameter Sensitivity",
+            "description": "Test nearby parameter values",
+            "requirement": "Stable performance across parameter range"
+          },
+          {
+            "name": "Out-of-Sample Testing",
+            "description": "Reserve 20% of data unseen during development",
+            "requirement": "Similar performance to in-sample"
+          }
+        ]
+      },
+      {
+        "step": 5,
+        "name": "Risk Validation",
+        "description": "Verify risk metrics are acceptable",
+        "metrics": [
+          "Maximum drawdown within limits",
+          "Sharpe ratio statistically significant",
+          "Win rate and profit factor reasonable",
+          "Tail risk acceptable (VaR, CVaR)"
+        ]
+      }
+    ],
+    "biasChecklist": [
+      {
+        "bias": "Look-Ahead Bias",
+        "check": "Signals use only data available at signal time"
+      },
+      {
+        "bias": "Survivorship Bias",
+        "check": "Delisted stocks included in universe"
+      },
+      {
+        "bias": "Overfitting",
+        "check": "Out-of-sample performance similar to in-sample"
+      },
+      {
+        "bias": "Data Snooping",
+        "check": "Multiple hypothesis testing adjustment"
+      },
+      {
+        "bias": "Selection Bias",
+        "check": "Strategy not cherry-picked from many tried"
+      }
+    ],
+    "outputFormat": "Validation report with pass/fail for each check, statistical significance metrics, robustness assessment, and recommendation for live deployment readiness."
+  },
+  "variables": [
+    {
+      "name": "{BACKTEST_ENGINE}",
+      "description": "Backtesting framework used",
+      "required": false
+    },
+    {
+      "name": "{OUT_OF_SAMPLE_PCT}",
+      "description": "Percentage for out-of-sample",
+      "default": "20"
+    }
+  ]
+}

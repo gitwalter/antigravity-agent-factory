@@ -1,0 +1,158 @@
+"! <p class="shorttext synchronized">List Report Annotations Template</p>
+"! Fiori List Report annotations for ${ENTITY_NAME}
+"! @author ${AUTHOR}
+"! @date ${DATE}
+"! @version 1.0
+"!
+"! Example usage:
+"!   Replace ${ENTITY_NAME} with your projection view name (e.g., ZC_Travel)
+"!   Add these annotations to your projection view
+"!   Customize field positions, labels, and filters as needed
+"!
+@EndUserText.label: '${ENTITY_DESCRIPTION}'
+@AccessControl.authorizationCheck: #CHECK
+@Metadata.allowExtensions: true
+@Search.searchable: true
+@UI: {
+  headerInfo: {
+    typeName: '${TYPE_NAME}',
+    typeNamePlural: '${TYPE_NAME_PLURAL}',
+    title: {
+      type: #STANDARD,
+      value: '${TITLE_FIELD}'
+    },
+    description: {
+      type: #STANDARD,
+      value: '${DESCRIPTION_FIELD}'
+    }
+  },
+  presentationVariant: [ {
+    sortOrder: [ {
+      by: '${SORT_FIELD}',
+      direction: #DESC
+    } ],
+    visualizations: [ {
+      type: #AS_LINE_ITEM,
+      qualifier: 'Default'
+    } ]
+  } ],
+  selectionFields: [ ${SELECTION_FIELD_1}, ${SELECTION_FIELD_2} ],
+  filter: {
+    selectionVariant: {
+      text: '${FILTER_VARIANT_TEXT}',
+      key: '${FILTER_VARIANT_KEY}'
+    }
+  }
+}
+define root view entity ${ENTITY_NAME}
+  as projection on ${BASE_ENTITY}
+{
+  // Key fields with list report annotations
+  @UI: {
+    lineItem: [ {
+      position: 10,
+      importance: #HIGH,
+      label: '${LABEL_1}',
+      type: #STANDARD
+    } ],
+    identification: [ {
+      position: 10,
+      label: '${LABEL_1}'
+    } ],
+    selectionField: [ {
+      position: 10,
+      qualifier: 'Default'
+    } ]
+  }
+  key ${KEY_FIELD_1},
+  
+  @UI: {
+    lineItem: [ {
+      position: 20,
+      importance: #HIGH,
+      label: '${LABEL_2}',
+      type: #STANDARD
+    } ],
+    identification: [ {
+      position: 20,
+      label: '${LABEL_2}'
+    } ],
+    selectionField: [ {
+      position: 20,
+      qualifier: 'Default'
+    } ]
+  }
+  key ${KEY_FIELD_2},
+  
+  // Business fields with list report annotations
+  @UI: {
+    lineItem: [ {
+      position: 30,
+      importance: #MEDIUM,
+      label: '${LABEL_3}',
+      type: #STANDARD
+    } ],
+    identification: [ {
+      position: 30,
+      label: '${LABEL_3}',
+      qualifier: 'GeneralInformation'
+    } ],
+    selectionField: [ {
+      position: 30,
+      qualifier: 'Default'
+    } ]
+  }
+  ${BUSINESS_FIELD_1},
+  
+  @UI: {
+    lineItem: [ {
+      position: 40,
+      importance: #MEDIUM,
+      label: '${LABEL_4}',
+      type: #STANDARD
+    } ],
+    identification: [ {
+      position: 40,
+      label: '${LABEL_4}',
+      qualifier: 'GeneralInformation'
+    } ]
+  }
+  ${BUSINESS_FIELD_2},
+  
+  @UI: {
+    lineItem: [ {
+      position: 50,
+      importance: #LOW,
+      label: '${LABEL_5}',
+      type: #STANDARD
+    } ],
+    identification: [ {
+      position: 50,
+      label: '${LABEL_5}',
+      qualifier: 'GeneralInformation'
+    } ]
+  }
+  ${BUSINESS_FIELD_3},
+  
+  // Audit fields (hidden)
+  @UI.hidden: true
+  created_at,
+  
+  @UI.hidden: true
+  created_by,
+  
+  @UI.hidden: true
+  last_changed_at,
+  
+  @UI.hidden: true
+  last_changed_by,
+  
+  @UI.hidden: true
+  local_last_changed_at,
+  
+  @UI.hidden: true
+  etag,
+  
+  // Associations
+  _${ASSOCIATION_NAME} : association [0..*] to ${TARGET_ENTITY} on ${CONDITION} = ${TARGET_KEY}
+}

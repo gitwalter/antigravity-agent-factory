@@ -1,0 +1,192 @@
+"! <p class="shorttext synchronized">Object Page Annotations Template</p>
+"! Fiori Object Page annotations for ${ENTITY_NAME}
+"! @author ${AUTHOR}
+"! @date ${DATE}
+"! @version 1.0
+"!
+"! Example usage:
+"!   Replace ${ENTITY_NAME} with your projection view name (e.g., ZC_Travel)
+"!   Add these annotations to your projection view
+"!   Customize facets, field groups, and actions as needed
+"!
+@EndUserText.label: '${ENTITY_DESCRIPTION}'
+@AccessControl.authorizationCheck: #CHECK
+@Metadata.allowExtensions: true
+@Search.searchable: true
+@UI: {
+  headerInfo: {
+    typeName: '${TYPE_NAME}',
+    typeNamePlural: '${TYPE_NAME_PLURAL}',
+    title: {
+      type: #STANDARD,
+      value: '${TITLE_FIELD}'
+    },
+    description: {
+      type: #STANDARD,
+      value: '${DESCRIPTION_FIELD}'
+    },
+    imageUrl: '${IMAGE_URL}'
+  },
+  presentationVariant: [ {
+    sortOrder: [ {
+      by: '${SORT_FIELD}',
+      direction: #DESC
+    } ],
+    visualizations: [ {
+      type: #AS_OBJECT_PAGE,
+      qualifier: 'Default'
+    } ]
+  } ],
+  chart: [ {
+    qualifier: '${CHART_QUALIFIER}',
+    title: '${CHART_TITLE}',
+    chartType: #COLUMN,
+    dimensions: [ ${CHART_DIMENSION} ],
+    measures: [ ${CHART_MEASURE} ]
+  } ]
+}
+define root view entity ${ENTITY_NAME}
+  as projection on ${BASE_ENTITY}
+{
+  // Key fields with object page annotations
+  @UI: {
+    lineItem: [ {
+      position: 10,
+      importance: #HIGH,
+      label: '${LABEL_1}'
+    } ],
+    identification: [ {
+      position: 10,
+      label: '${LABEL_1}',
+      qualifier: 'Identification'
+    } ],
+    facet: [ {
+      id: 'idIdentification',
+      type: #IDENTIFICATION_REFERENCE,
+      label: '${IDENTIFICATION_LABEL}',
+      position: 10
+    } ]
+  }
+  key ${KEY_FIELD_1},
+  
+  @UI: {
+    lineItem: [ {
+      position: 20,
+      importance: #HIGH,
+      label: '${LABEL_2}'
+    } ],
+    identification: [ {
+      position: 20,
+      label: '${LABEL_2}',
+      qualifier: 'Identification'
+    } ],
+    facet: [ {
+      id: 'idIdentification',
+      type: #IDENTIFICATION_REFERENCE,
+      label: '${IDENTIFICATION_LABEL}',
+      position: 10
+    } ]
+  }
+  key ${KEY_FIELD_2},
+  
+  // Business fields with object page annotations
+  @UI: {
+    lineItem: [ {
+      position: 30,
+      importance: #MEDIUM,
+      label: '${LABEL_3}'
+    } ],
+    identification: [ {
+      position: 30,
+      label: '${LABEL_3}',
+      qualifier: 'GeneralInformation'
+    } ],
+    facet: [ {
+      id: 'idGeneralInformation',
+      type: #FIELDGROUP_REFERENCE,
+      label: '${GENERAL_INFO_LABEL}',
+      targetQualifier: 'GeneralInformation',
+      position: 20
+    } ]
+  }
+  ${BUSINESS_FIELD_1},
+  
+  @UI: {
+    lineItem: [ {
+      position: 40,
+      importance: #MEDIUM,
+      label: '${LABEL_4}'
+    } ],
+    identification: [ {
+      position: 40,
+      label: '${LABEL_4}',
+      qualifier: 'GeneralInformation'
+    } ],
+    facet: [ {
+      id: 'idGeneralInformation',
+      type: #FIELDGROUP_REFERENCE,
+      label: '${GENERAL_INFO_LABEL}',
+      targetQualifier: 'GeneralInformation',
+      position: 20
+    } ]
+  }
+  ${BUSINESS_FIELD_2},
+  
+  @UI: {
+    lineItem: [ {
+      position: 50,
+      importance: #LOW,
+      label: '${LABEL_5}'
+    } ],
+    identification: [ {
+      position: 50,
+      label: '${LABEL_5}',
+      qualifier: 'GeneralInformation'
+    } ],
+    facet: [ {
+      id: 'idGeneralInformation',
+      type: #FIELDGROUP_REFERENCE,
+      label: '${GENERAL_INFO_LABEL}',
+      targetQualifier: 'GeneralInformation',
+      position: 20
+    } ]
+  }
+  ${BUSINESS_FIELD_3},
+  
+  // Audit fields (hidden)
+  @UI.hidden: true
+  created_at,
+  
+  @UI.hidden: true
+  created_by,
+  
+  @UI.hidden: true
+  last_changed_at,
+  
+  @UI.hidden: true
+  last_changed_by,
+  
+  @UI.hidden: true
+  local_last_changed_at,
+  
+  @UI.hidden: true
+  etag,
+  
+  // Associations with object page annotations
+  @UI: {
+    lineItem: [ {
+      position: 60,
+      importance: #MEDIUM,
+      label: '${ASSOCIATION_LABEL}',
+      type: #AS_LINE_ITEM
+    } ],
+    facet: [ {
+      id: 'id${ASSOCIATION_NAME}',
+      type: #COLLECTION_REFERENCE,
+      label: '${ASSOCIATION_LABEL}',
+      targetQualifier: 'Default',
+      position: 30
+    } ]
+  }
+  _${ASSOCIATION_NAME} : association [0..*] to ${TARGET_ENTITY} on ${CONDITION} = ${TARGET_KEY}
+}

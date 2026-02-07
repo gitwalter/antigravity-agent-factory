@@ -1,0 +1,185 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Docker Patterns",
+  "description": "Best practices and patterns for Docker containerization and development workflows",
+  "version": "1.0.0",
+  "sources": [
+    "https://docs.docker.com/",
+    "https://docs.docker.com/build/building/best-practices/"
+  ],
+  "axiomAlignment": {
+    "A1_verifiability": "Reproducible builds enable verification",
+    "A4_non_harm": "Security patterns protect containers and hosts"
+  },
+  "dockerfile_patterns": {
+    "multi_stage_build": {
+      "description": "Reduce image size by separating build and runtime",
+      "code_example": "# Build stage\nFROM node:20-alpine AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\n# Production stage\nFROM node:20-alpine AS runner\nWORKDIR /app\nENV NODE_ENV=production\n\n# Create non-root user\nRUN addgroup --system --gid 1001 nodejs\nRUN adduser --system --uid 1001 nextjs\n\nCOPY --from=builder /app/dist ./dist\nCOPY --from=builder /app/node_modules ./node_modules\n\nUSER nextjs\nEXPOSE 3000\nCMD [\"node\", \"dist/index.js\"]",
+      "benefits": [
+        "Smaller final image",
+        "No build tools in production",
+        "Faster deployment"
+      ]
+    },
+    "layer_caching": {
+      "description": "Order instructions to maximize cache hits",
+      "principle": "Put least-changing instructions first",
+      "code_example": "# Good: Dependencies change less often than source\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\n# Bad: Invalidates cache every change\nCOPY . .\nRUN npm ci\nRUN npm run build"
+    },
+    "base_image_selection": {
+      "recommendations": {
+        "alpine": "Smallest, ~5MB, best for production",
+        "slim": "Smaller than full, has essential tools",
+        "distroless": "Minimal, no shell, high security",
+        "full": "Full OS, easier debugging"
+      },
+      "code_example": "# Production: minimal\nFROM python:3.12-slim\n\n# Development: with tools\nFROM python:3.12"
+    },
+    "copy_vs_add": {
+      "description": "COPY for files, ADD only for tar extraction or URLs",
+      "best_practice": "Prefer COPY for predictability"
+    }
+  },
+  "python_patterns": {
+    "optimized_python": {
+      "code_example": "FROM python:3.12-slim AS base\n\n# Prevents Python from writing pyc files\nENV PYTHONDONTWRITEBYTECODE=1\n# Keeps Python from buffering stdout/stderr\nENV PYTHONUNBUFFERED=1\n\nWORKDIR /app\n\n# Install dependencies first for caching\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\n\nCOPY . .\n\n# Non-root user\nRUN useradd --create-home appuser\nUSER appuser\n\nCMD [\"python\", \"main.py\"]"
+    },
+    "with_poetry": {
+      "code_example": "FROM python:3.12-slim AS builder\n\nENV POETRY_NO_INTERACTION=1 \\\n    POETRY_VIRTUALENVS_IN_PROJECT=1\n\nWORKDIR /app\nRUN pip install poetry\n\nCOPY pyproject.toml poetry.lock ./\nRUN poetry install --only main --no-root\n\nFROM python:3.12-slim\nWORKDIR /app\n\nCOPY --from=builder /app/.venv ./.venv\nCOPY . .\n\nENV PATH=\"/app/.venv/bin:$PATH\"\nCMD [\"python\", \"main.py\"]"
+    }
+  },
+  "node_patterns": {
+    "optimized_node": {
+      "code_example": "FROM node:20-alpine AS deps\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\n\nFROM node:20-alpine AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM node:20-alpine AS runner\nWORKDIR /app\nENV NODE_ENV=production\n\nCOPY --from=deps /app/node_modules ./node_modules\nCOPY --from=builder /app/dist ./dist\n\nUSER node\nEXPOSE 3000\nCMD [\"node\", \"dist/index.js\"]"
+    }
+  },
+  "security_patterns": {
+    "non_root_user": {
+      "description": "Run as non-root for security",
+      "code_example": "RUN useradd --create-home --shell /bin/bash appuser\nUSER appuser"
+    },
+    "read_only_filesystem": {
+      "description": "Prevent writes to container filesystem",
+      "docker_run": "docker run --read-only --tmpfs /tmp myimage"
+    },
+    "no_new_privileges": {
+      "description": "Prevent privilege escalation",
+      "docker_run": "docker run --security-opt=no-new-privileges:true myimage"
+    },
+    "scanning": {
+      "tools": ["Trivy", "Grype", "Docker Scout"],
+      "usage": "trivy image myimage:latest"
+    },
+    "secrets_handling": {
+      "bad": "COPY secrets.env . (secrets in image layer)",
+      "good": "Use Docker secrets or environment variables at runtime"
+    }
+  },
+  "compose_patterns": {
+    "development_environment": {
+      "code_example": "services:\n  app:\n    build:\n      context: .\n      target: development\n    volumes:\n      - .:/app\n      - /app/node_modules\n    ports:\n      - \"3000:3000\"\n    environment:\n      - NODE_ENV=development\n    depends_on:\n      db:\n        condition: service_healthy\n\n  db:\n    image: postgres:16-alpine\n    environment:\n      POSTGRES_PASSWORD: devpassword\n      POSTGRES_DB: myapp\n    volumes:\n      - postgres_data:/var/lib/postgresql/data\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U postgres\"]\n      interval: 5s\n      timeout: 5s\n      retries: 5\n\nvolumes:\n  postgres_data:"
+    },
+    "production_environment": {
+      "code_example": "services:\n  app:\n    image: myapp:${VERSION:-latest}\n    deploy:\n      replicas: 3\n      resources:\n        limits:\n          cpus: '0.5'\n          memory: 512M\n    restart: always\n    healthcheck:\n      test: [\"CMD\", \"curl\", \"-f\", \"http://localhost:3000/health\"]\n      interval: 30s\n      timeout: 10s\n      retries: 3"
+    }
+  },
+  "optimization_patterns": {
+    "reduce_image_size": {
+      "techniques": [
+        "Use multi-stage builds",
+        "Choose minimal base images (alpine, distroless)",
+        "Remove package manager cache",
+        "Combine RUN instructions",
+        "Use .dockerignore"
+      ],
+      "code_example": "# Combine and clean in one layer\nRUN apt-get update && \\\n    apt-get install -y --no-install-recommends package && \\\n    rm -rf /var/lib/apt/lists/*"
+    },
+    "dockerignore": {
+      "description": "Exclude files from build context",
+      "code_example": "# .dockerignore\nnode_modules\n.git\n.env*\n*.md\nDockerfile*\ndocker-compose*\n.dockerignore\n__pycache__\n*.pyc\n.pytest_cache\n.coverage\ndist\nbuild"
+    },
+    "layer_optimization": {
+      "tips": [
+        "Order from least to most frequently changing",
+        "Combine similar operations",
+        "Use specific COPY instead of COPY . ."
+      ]
+    }
+  },
+  "networking_patterns": {
+    "bridge_network": {
+      "description": "Default network for containers on same host",
+      "code_example": "docker network create mynetwork\ndocker run --network mynetwork --name app myimage"
+    },
+    "host_network": {
+      "description": "Share host's network namespace",
+      "use_case": "High-performance networking",
+      "code_example": "docker run --network host myimage"
+    },
+    "expose_vs_publish": {
+      "EXPOSE": "Documentation only, doesn't publish port",
+      "publish": "-p 8080:80 maps host port to container port"
+    }
+  },
+  "volume_patterns": {
+    "named_volumes": {
+      "description": "Persistent data managed by Docker",
+      "code_example": "docker volume create mydata\ndocker run -v mydata:/app/data myimage"
+    },
+    "bind_mounts": {
+      "description": "Mount host directory into container",
+      "use_case": "Development (live code reload)",
+      "code_example": "docker run -v $(pwd):/app myimage"
+    },
+    "tmpfs": {
+      "description": "In-memory filesystem",
+      "use_case": "Sensitive data that shouldn't persist",
+      "code_example": "docker run --tmpfs /app/cache myimage"
+    }
+  },
+  "healthcheck_patterns": {
+    "http_check": {
+      "code_example": "HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\\n  CMD curl -f http://localhost:8080/health || exit 1"
+    },
+    "tcp_check": {
+      "code_example": "HEALTHCHECK CMD nc -z localhost 5432 || exit 1"
+    },
+    "script_check": {
+      "code_example": "HEALTHCHECK CMD /app/healthcheck.sh"
+    }
+  },
+  "best_practices": [
+    "Use official base images from trusted sources",
+    "Pin specific versions, not 'latest'",
+    "Run as non-root user",
+    "Use multi-stage builds for smaller images",
+    "Scan images for vulnerabilities",
+    "Use .dockerignore to reduce build context",
+    "Set resource limits in production",
+    "Use health checks for container monitoring",
+    "Never store secrets in images",
+    "Use COPY instead of ADD when possible"
+  ],
+  "anti_patterns": {
+    "running_as_root": {
+      "problem": "Security vulnerability",
+      "solution": "Create and use non-root user"
+    },
+    "latest_tag": {
+      "problem": "Unpredictable builds",
+      "solution": "Use specific version tags"
+    },
+    "secrets_in_image": {
+      "problem": "Secrets exposed in image layers",
+      "solution": "Use runtime environment variables or secrets"
+    },
+    "single_layer_dockerfile": {
+      "problem": "Large images, no caching benefit",
+      "solution": "Use multi-stage builds"
+    },
+    "apt_get_without_cleanup": {
+      "problem": "Bloated image",
+      "solution": "rm -rf /var/lib/apt/lists/* in same RUN"
+    }
+  }
+}

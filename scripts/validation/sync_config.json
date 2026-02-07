@@ -1,0 +1,214 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Artifact Sync Configuration",
+  "description": "Configuration for automatic synchronization of artifact counts, tables, lists, and trees across documentation",
+  "version": "1.0.0",
+  "artifacts": {
+    "agents": {
+      "description": "AI agent definitions",
+      "source_dir": ".agent/agents",
+      "pattern": "*.md",
+      "recursive": false,
+      "exclude": ["pm/"],
+      "id_extractor": "filename_stem",
+      "metadata_extractor": {
+        "type": "markdown_frontmatter",
+        "fields": ["name", "description"]
+      },
+      "targets": [
+        {
+          "type": "count",
+          "file": "README.md",
+          "pattern": "agents/\\s+#.*?\\((\\d+) agents?\\)",
+          "replacement": "agents/                  # Factory's own agents ({count} agents)"
+        },
+        {
+          "type": "tree_annotation",
+          "file": "README.md",
+          "section": "Project Structure",
+          "line_pattern": "agents/",
+          "annotation_pattern": "\\((\\d+) agents?\\)"
+        }
+      ]
+    },
+    "skills": {
+      "description": "Reusable skill definitions (direct children only)",
+      "source_dir": ".agent/skills",
+      "pattern": "*/SKILL.md",
+      "recursive": false,
+      "exclude": [],
+      "id_extractor": "parent_dir_name",
+      "metadata_extractor": {
+        "type": "markdown_frontmatter",
+        "fields": ["name", "description", "category"]
+      },
+      "targets": [
+        {
+          "type": "count",
+          "file": "README.md",
+          "pattern": "skills/\\s+#.*?\\((\\d+) skills?\\)",
+          "replacement": "skills/                  # Factory's own skills ({count} skills)"
+        },
+        {
+          "type": "json_list",
+          "file": "knowledge/skill-catalog.json",
+          "json_path": "skills",
+          "key_field": "id",
+          "sync_mode": "validate_only"
+        }
+      ]
+    },
+    "blueprints": {
+      "description": "Technology stack blueprints",
+      "source_dir": "blueprints",
+      "pattern": "*/blueprint.json",
+      "recursive": false,
+      "exclude": [],
+      "id_extractor": "parent_dir_name",
+      "metadata_extractor": {
+        "type": "json_file",
+        "fields": ["metadata.name", "metadata.description", "stack.primary_language"]
+      },
+      "targets": [
+        {
+          "type": "count",
+          "file": "README.md",
+          "pattern": "blueprints/\\s+#.*?\\((\\d+) blueprints?\\)",
+          "replacement": "blueprints/                  # Technology stack blueprints ({count} blueprints)"
+        },
+        {
+          "type": "markdown_table",
+          "file": "docs/reference/BLUEPRINTS.md",
+          "section": "Blueprint Comparison Table",
+          "columns": ["Blueprint ID", "Primary Language", "Key Frameworks", "Category", "Complexity Level"],
+          "id_column": "Blueprint ID",
+          "sync_mode": "validate_only"
+        }
+      ]
+    },
+    "patterns": {
+      "description": "Reusable pattern definitions (README count handled by validate_readme_structure.py)",
+      "source_dir": "patterns",
+      "pattern": "*/*.json",
+      "recursive": false,
+      "exclude": [],
+      "id_extractor": "relative_path",
+      "targets": []
+    },
+    "knowledge": {
+      "description": "JSON knowledge files",
+      "source_dir": "knowledge",
+      "pattern": "*.json",
+      "recursive": false,
+      "exclude": ["schemas/", "manifest.json"],
+      "id_extractor": "filename_stem",
+      "metadata_extractor": {
+        "type": "json_file",
+        "fields": ["title", "description", "version"]
+      },
+      "targets": [
+        {
+          "type": "count",
+          "file": "docs/reference/KNOWLEDGE_FILES.md",
+          "pattern": "includes \\*\\*(\\d+) knowledge files?\\*\\*",
+          "replacement": "includes **{count} knowledge files**"
+        },
+        {
+          "type": "json_field",
+          "file": "knowledge/manifest.json",
+          "json_path": "statistics.total_files"
+        },
+        {
+          "type": "markdown_table",
+          "file": "docs/reference/KNOWLEDGE_FILES.md",
+          "section": "Knowledge File Categories Table",
+          "columns": ["File", "Category", "Description"],
+          "id_column": "File",
+          "sync_mode": "validate_only"
+        }
+      ]
+    },
+    "templates": {
+      "description": "Code and document templates (README count handled by validate_readme_structure.py)",
+      "source_dir": "templates",
+      "pattern": "**/*",
+      "recursive": true,
+      "exclude": ["_macros/"],
+      "file_types_only": true,
+      "id_extractor": "relative_path",
+      "targets": []
+    },
+    "tests": {
+      "description": "Test files",
+      "source_dir": "tests",
+      "pattern": "**/*.py",
+      "recursive": true,
+      "exclude": ["__pycache__/", "conftest.py", "__init__.py", "fixtures/"],
+      "id_extractor": "relative_path",
+      "count_method": "pytest_collect",
+      "targets": [
+        {
+          "type": "count",
+          "file": "docs/TESTING.md",
+          "pattern": "consists of \\*\\*(\\d+) tests?\\*\\*",
+          "replacement": "consists of **{count} tests**"
+        },
+        {
+          "type": "category_counts",
+          "file": "docs/TESTING.md",
+          "categories": {
+            "unit": {"source_subdir": "unit", "pattern": "Unit Tests \\| ~?(\\d+)"},
+            "integration": {"source_subdir": "integration", "pattern": "Integration Tests \\| ~?(\\d+)"},
+            "validation": {"source_subdir": "validation", "pattern": "Validation Tests \\| ~?(\\d+)"},
+            "guardian": {"source_subdir": "guardian", "pattern": "Guardian Tests \\| ~?(\\d+)"},
+            "memory": {"source_subdir": "memory", "pattern": "Memory Tests \\| ~?(\\d+)"}
+          }
+        }
+      ]
+    },
+    "diagrams": {
+      "description": "Architecture and workflow diagrams (README count handled by validate_readme_structure.py)",
+      "source_dir": "diagrams",
+      "pattern": "*.md",
+      "recursive": false,
+      "exclude": ["README.md"],
+      "id_extractor": "filename_stem",
+      "targets": [
+        {
+          "type": "markdown_table",
+          "file": "diagrams/README.md",
+          "section": "Diagram Index",
+          "columns": ["File", "Description"],
+          "id_column": "File",
+          "sync_mode": "validate_only"
+        }
+      ]
+    },
+    "docs": {
+      "description": "Documentation files (README count handled by validate_readme_structure.py)",
+      "source_dir": "docs",
+      "pattern": "*.md",
+      "recursive": false,
+      "exclude": [],
+      "id_extractor": "filename_stem",
+      "targets": []
+    }
+  },
+  "sync_options": {
+    "dry_run_by_default": true,
+    "auto_stage": true,
+    "validate_before_sync": true,
+    "backup_before_modify": false
+  },
+  "directory_triggers": {
+    ".agent/agents": ["agents"],
+    ".agent/skills": ["skills"],
+    "blueprints": ["blueprints"],
+    "patterns": ["patterns"],
+    "knowledge": ["knowledge"],
+    "templates": ["templates"],
+    "tests": ["tests"],
+    "diagrams": ["diagrams"],
+    "docs": ["docs"]
+  }
+}

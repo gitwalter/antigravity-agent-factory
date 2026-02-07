@@ -1,0 +1,358 @@
+{
+  "metadata": {
+    "patternId": "pipeline-error-fix-project",
+    "patternName": "Pipeline Error Fix Skill (Project-Scoped)",
+    "category": "workflow",
+    "stackAgnostic": true,
+    "description": "Systematic error detection and fixing strategy for CI/CD pipeline failures with intelligent test packaging",
+    "composable": true
+  },
+  "frontmatter": {
+    "name": "pipeline-error-fix-project",
+    "description": "Systematic error detection and fixing strategy for CI/CD pipeline failures with intelligent test packaging",
+    "type": "skill",
+    "scope": "project",
+    "triggers": [
+      "pipeline failure",
+      "CI failure",
+      "test timeout",
+      "GitHub Actions error",
+      "{TEST_FRAMEWORK} failure"
+    ]
+  },
+  "sections": {
+    "title": "Pipeline Error Fix Skill",
+    "introduction": "Systematic approach to quickly identify and fix CI/CD pipeline test failures using intelligent test packaging and tiered error detection.",
+    "whenToUse": [
+      "Automatically activate when user mentions: pipeline failure or CI failure",
+      "Test timeouts or long-running tests",
+      "GitHub Actions errors",
+      "{TEST_FRAMEWORK} failures or test errors",
+      "'Fix the pipeline' or 'tests are failing'"
+    ],
+    "intelligentTestPackaging": {
+      "description": "Tiered test execution strategy for fast feedback",
+      "tier1": {
+        "name": "Fastest Feedback (< 30 seconds)",
+        "description": "Run these tests FIRST to catch common errors quickly",
+        "command": "{TEST_COMMAND} {TIER1_TEST_ARGS}",
+        "catches": [
+          "Syntax errors",
+          "Import errors",
+          "Configuration errors",
+          "Schema validation errors",
+          "Basic logic errors"
+        ]
+      },
+      "tier2": {
+        "name": "Medium Speed (1-5 minutes)",
+        "description": "Only run if Tier 1 passes",
+        "command": "{TEST_COMMAND} {TIER2_TEST_ARGS}",
+        "catches": [
+          "CLI command errors",
+          "Generation logic errors",
+          "File I/O errors",
+          "Path handling issues"
+        ]
+      },
+      "tier3": {
+        "name": "Slow Tests (5+ minutes)",
+        "description": "Only run if Tier 2 passes",
+        "command": "{TEST_COMMAND} {TIER3_TEST_ARGS}",
+        "catches": [
+          "Full workflow integration issues",
+          "Timeout issues",
+          "Resource contention",
+          "Complex state interactions"
+        ]
+      }
+    },
+    "process": [
+      {
+        "step": 1,
+        "name": "Analyze Failure Type",
+        "description": "Check CI/CD output to categorize the failure",
+        "actions": [
+          "Examine CI logs for error patterns",
+          "Categorize failure type",
+          "Determine which test tier to start with"
+        ],
+        "outputs": [
+          "Failure category",
+          "Recommended test tier"
+        ]
+      },
+      {
+        "step": 2,
+        "name": "Reproduce Locally",
+        "description": "Always reproduce the error locally before fixing",
+        "actions": [
+          "Run the specific failing test: {TEST_COMMAND} {FAILING_TEST_PATH} -v --tb=long",
+          "Capture full error output",
+          "Verify error matches CI output"
+        ],
+        "outputs": [
+          "Local error reproduction",
+          "Error details"
+        ]
+      },
+      {
+        "step": 3,
+        "name": "Isolate the Problem",
+        "description": "Use test markers/filters to narrow down the issue",
+        "actions": [
+          "Run only unit tests: {TEST_COMMAND} {UNIT_TEST_ARGS}",
+          "Run only fast tests: {TEST_COMMAND} {FAST_TEST_ARGS}",
+          "Skip slow tests: {TEST_COMMAND} {SKIP_SLOW_ARGS}",
+          "Run specific test categories as needed"
+        ],
+        "outputs": [
+          "Isolated test results",
+          "Problem scope"
+        ]
+      },
+      {
+        "step": 4,
+        "name": "Fix and Verify",
+        "description": "Implement minimal fix and verify it works",
+        "actions": [
+          "Make the minimal fix - don't over-engineer",
+          "Run the failing test: {TEST_COMMAND} {FAILING_TEST_PATH} -v",
+          "Run tier tests: {TEST_COMMAND} {TIER_TEST_ARGS}",
+          "Run full suite: {TEST_COMMAND} {FULL_TEST_ARGS}"
+        ],
+        "outputs": [
+          "Fixed code",
+          "Verification results"
+        ]
+      }
+    ],
+    "errorTypes": {
+      "importError": {
+        "indicator": "ModuleNotFoundError, ImportError",
+        "startWith": "Tier 1",
+        "fixStrategy": "Ensure {MODULE_PATH} includes project root or add to {DEPENDENCY_FILE}"
+      },
+      "syntaxError": {
+        "indicator": "SyntaxError, IndentationError",
+        "startWith": "Tier 1",
+        "fixStrategy": "Fix code syntax errors"
+      },
+      "schemaError": {
+        "indicator": "ValidationError, JSONDecodeError",
+        "startWith": "Tier 1",
+        "fixStrategy": "Fix schema validation or JSON parsing errors"
+      },
+      "assertionError": {
+        "indicator": "AssertionError",
+        "startWith": "Identify test, run that tier",
+        "fixStrategy": "Analyze assertion and fix underlying logic"
+      },
+      "timeout": {
+        "indicator": "TimeoutError, 'Command timed out'",
+        "startWith": "Tier 3 (optimize test)",
+        "fixStrategy": "Increase timeout for legitimately slow tests or optimize test"
+      },
+      "processError": {
+        "indicator": "SubprocessError, exit code != 0",
+        "startWith": "Tier 2",
+        "fixStrategy": "Fix subprocess command or path issues"
+      }
+    },
+    "commonErrors": {
+      "moduleNotFound": {
+        "error": "ModuleNotFoundError: No module named '{MODULE}'",
+        "fix": "Ensure sys.path includes project root or add to {DEPENDENCY_FILE}",
+        "codeExample": "import sys\nfrom pathlib import Path\nsys.path.insert(0, str(Path(__file__).parent.parent))"
+      },
+      "testTimeout": {
+        "error": "TimeoutError: Command timed out after {TIMEOUT} seconds",
+        "fix": "Increase timeout for legitimately slow tests, mark test with {SLOW_TEST_MARKER}, or optimize test",
+        "codeExample": "@{TEST_FRAMEWORK}.mark.{SLOW_TEST_MARKER}\n@{TEST_FRAMEWORK}.mark.timeout({TIMEOUT})\ndef test_slow_operation():\n    pass"
+      },
+      "subprocessFailed": {
+        "error": "subprocess.CalledProcessError: Command '{CMD}' returned non-zero exit status 1",
+        "fix": "Capture and log stderr, check actual command, verify paths work cross-platform"
+      },
+      "fileNotFound": {
+        "error": "FileNotFoundError: [Errno 2] No such file or directory",
+        "fix": "Use Path objects for cross-platform paths, verify fixtures create required directories"
+      }
+    },
+    "timeoutPrevention": {
+      "subprocessTests": {
+        "description": "Use explicit, reasonable timeouts",
+        "codeExample": "result = subprocess.run(\n    command,\n    capture_output=True,\n    text=True,\n    timeout=30  # Explicit timeout\n)"
+      },
+      "longRunningTests": {
+        "description": "Mark slow tests explicitly for intelligent packaging",
+        "codeExample": "@{TEST_FRAMEWORK}.mark.{SLOW_TEST_MARKER}\n@{TEST_FRAMEWORK}.mark.timeout({TIMEOUT})\ndef test_long_operation():\n    pass"
+      },
+      "ciConfiguration": {
+        "description": "CI workflow uses staged execution",
+        "stages": [
+          "Stage 1: Fast tests (fail-fast, < 30s)",
+          "Stage 2: Medium tests (parallel, fail-fast)",
+          "Stage 3: Slow tests (sequential, fail-fast)"
+        ]
+      }
+    },
+    "parallelExecution": {
+      "considerations": [
+        "Avoid shared state - each worker has its own process",
+        "Use {TEMP_DIR_FIXTURE} fixture - provides unique temp directories",
+        "Don't rely on test order - tests may run in any order",
+        "Avoid file conflicts - use unique file names per test"
+      ]
+    },
+    "quickReference": {
+      "fastFeedback": "{TEST_COMMAND} {FAST_TEST_ARGS}",
+      "fullTestWithCoverage": "{TEST_COMMAND} {FULL_TEST_ARGS} {COVERAGE_ARGS}",
+      "debugSpecificTest": "{TEST_COMMAND} {TEST_PATH}::test_name -v --tb=long -s",
+      "listTests": "{TEST_COMMAND} --collect-only",
+      "runMatchingPattern": "{TEST_COMMAND} -k '{PATTERN}' -v",
+      "showSlowestTests": "{TEST_COMMAND} --durations=10"
+    },
+    "importantRules": [
+      "Always start with fast tests - quick feedback loop",
+      "Use fail-fast ({FAIL_FAST_FLAG}) - stop on first failure for debugging",
+      "Reproduce locally first - don't push fixes blindly",
+      "Mark slow tests explicitly - enables intelligent packaging",
+      "Use parallel execution - speeds up CI significantly",
+      "Set explicit timeouts - prevent hanging tests",
+      "Test cross-platform - CI runs on multiple OS",
+      "All actions must align with core axioms (A1: Verifiability, A2: User Primacy, A3: Transparency, A4: Non-Harm, A5: Consistency)"
+    ],
+    "fallbackProcedures": [
+      {
+        "condition": "Cannot reproduce error locally",
+        "action": "Ask user to provide full CI logs and error details"
+      },
+      {
+        "condition": "Test framework not available",
+        "action": "Verify {TEST_COMMAND} is installed and in PATH"
+      },
+      {
+        "condition": "Fix doesn't resolve issue",
+        "action": "Try alternative approach or escalate to user with analysis"
+      },
+      {
+        "condition": "Tests are flaky",
+        "action": "Document flakiness and suggest test stabilization"
+      }
+    ],
+    "references": [
+      "workflows/pipeline-error-fix.md"
+    ]
+  },
+  "variables": [
+    {
+      "name": "{TEST_FRAMEWORK}",
+      "description": "Test framework name (pytest, jest, mocha, etc.)",
+      "required": true
+    },
+    {
+      "name": "{TEST_COMMAND}",
+      "description": "Command to run tests (e.g., 'pytest', 'npm test', 'cargo test')",
+      "required": true
+    },
+    {
+      "name": "{TIER1_TEST_ARGS}",
+      "description": "Arguments for Tier 1 fast tests (e.g., 'tests/unit tests/validation -v --tb=short -x')",
+      "required": true
+    },
+    {
+      "name": "{TIER2_TEST_ARGS}",
+      "description": "Arguments for Tier 2 medium tests (e.g., 'tests/integration -v --tb=short -x -m \"not slow\" -n auto')",
+      "required": true
+    },
+    {
+      "name": "{TIER3_TEST_ARGS}",
+      "description": "Arguments for Tier 3 slow tests (e.g., 'tests/integration -v --tb=short -x -m \"slow\"')",
+      "required": true
+    },
+    {
+      "name": "{UNIT_TEST_ARGS}",
+      "description": "Arguments for unit tests only (e.g., '-m unit -v')",
+      "required": false,
+      "default": "-m unit -v"
+    },
+    {
+      "name": "{FAST_TEST_ARGS}",
+      "description": "Arguments for fast tests (e.g., '-m fast -v')",
+      "required": false,
+      "default": "-m fast -v"
+    },
+    {
+      "name": "{SKIP_SLOW_ARGS}",
+      "description": "Arguments to skip slow tests (e.g., '-m \"not slow\" -v')",
+      "required": false,
+      "default": "-m \"not slow\" -v"
+    },
+    {
+      "name": "{FULL_TEST_ARGS}",
+      "description": "Arguments for full test suite (e.g., 'tests/ -v')",
+      "required": false,
+      "default": "-v"
+    },
+    {
+      "name": "{FAILING_TEST_PATH}",
+      "description": "Path to the specific failing test",
+      "required": false
+    },
+    {
+      "name": "{FAIL_FAST_FLAG}",
+      "description": "Flag for fail-fast mode (e.g., '-x' for pytest)",
+      "required": false,
+      "default": "-x"
+    },
+    {
+      "name": "{SLOW_TEST_MARKER}",
+      "description": "Test marker for slow tests (e.g., 'slow' for pytest)",
+      "required": false,
+      "default": "slow"
+    },
+    {
+      "name": "{TIMEOUT}",
+      "description": "Timeout value in seconds",
+      "required": false,
+      "default": "120"
+    },
+    {
+      "name": "{MODULE_PATH}",
+      "description": "Path configuration for module imports",
+      "required": false
+    },
+    {
+      "name": "{DEPENDENCY_FILE}",
+      "description": "Dependency file path (e.g., 'requirements.txt', 'package.json', 'Cargo.toml')",
+      "required": true
+    },
+    {
+      "name": "{TEMP_DIR_FIXTURE}",
+      "description": "Fixture name for temporary directories (e.g., 'tmp_path' for pytest)",
+      "required": false,
+      "default": "tmp_path"
+    },
+    {
+      "name": "{COVERAGE_ARGS}",
+      "description": "Arguments for coverage reporting (e.g., '--cov=src --cov=cli')",
+      "required": false
+    },
+    {
+      "name": "{PATTERN}",
+      "description": "Test name pattern to match",
+      "required": false
+    },
+    {
+      "name": "{MODULE}",
+      "description": "Module name in error message",
+      "required": false
+    },
+    {
+      "name": "{CMD}",
+      "description": "Command that failed",
+      "required": false
+    }
+  ]
+}

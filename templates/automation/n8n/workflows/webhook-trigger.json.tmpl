@@ -1,0 +1,184 @@
+{
+  "name": "{{WORKFLOW_NAME}}",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "{{HTTP_METHOD}}",
+        "path": "{{WEBHOOK_PATH}}",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": {{RAW_BODY}},
+          "allowedOrigins": "{{ALLOWED_ORIGINS}}"
+        }
+      },
+      "id": "webhook-trigger-{{NODE_ID}}",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "{{WEBHOOK_ID}}"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate webhook payload\nconst payload = $input.first().json.body;\nconst headers = $input.first().json.headers;\n\n// Signature validation (if using webhook secrets)\n{{#IF WEBHOOK_SECRET}}\nconst crypto = require('crypto');\nconst secret = '{{WEBHOOK_SECRET}}';\nconst signature = headers['x-signature'] || headers['x-hub-signature-256'];\n\nif (signature) {\n  const payloadString = JSON.stringify(payload);\n  const expectedSignature = crypto\n    .createHmac('sha256', secret)\n    .update(payloadString)\n    .digest('hex');\n  \n  if (signature !== `sha256=${expectedSignature}`) {\n    throw new Error('Invalid webhook signature');\n  }\n}\n{{/IF}}\n\n// Validate required fields\nconst requiredFields = {{REQUIRED_FIELDS}};\nfor (const field of requiredFields) {\n  if (!payload[field]) {\n    throw new Error(`Missing required field: ${field}`);\n  }\n}\n\n// Add validation metadata\nreturn [{\n  json: {\n    ...payload,\n    _metadata: {\n      validated: true,\n      timestamp: new Date().toISOString(),\n      source: 'webhook'\n    }\n  }\n}];"
+      },
+      "id": "validate-payload-{{NODE_ID}}",
+      "name": "Validate Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "validation-check",
+              "leftValue": "={{ $json._metadata.validated }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ]
+        }
+      },
+      "id": "if-valid-{{NODE_ID}}",
+      "name": "IF Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "processed-data",
+              "name": "processed_data",
+              "value": "={{ $json }}",
+              "type": "object"
+            },
+            {
+              "id": "workflow-id",
+              "name": "workflow_id",
+              "value": "={{ $workflow.id }}",
+              "type": "string"
+            },
+            {
+              "id": "execution-id",
+              "name": "execution_id",
+              "value": "={{ $execution.id }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "process-data-{{NODE_ID}}",
+      "name": "Process Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"success\", \"message\": \"{{SUCCESS_MESSAGE}}\", \"execution_id\": $json.execution_id } }}",
+        "options": {}
+      },
+      "id": "respond-success-{{NODE_ID}}",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 400,
+        "responseBody": "={{ { \"status\": \"error\", \"message\": \"Invalid webhook payload\", \"errors\": $json.errors } }}",
+        "options": {}
+      },
+      "id": "respond-error-{{NODE_ID}}",
+      "name": "Respond Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [850, 500]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Payload": {
+      "main": [
+        [
+          {
+            "node": "IF Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Valid": {
+      "main": [
+        [
+          {
+            "node": "Process Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Data": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "{{TIMESTAMP}}",
+      "updatedAt": "{{TIMESTAMP}}",
+      "id": "{{TAG_ID}}",
+      "name": "{{TAG_NAME}}"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "{{TIMESTAMP}}",
+  "versionId": "{{VERSION_ID}}"
+}

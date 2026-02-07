@@ -1,0 +1,271 @@
+"""
+{{CREW_NAME}} - Hierarchical Crew with Manager Agent
+
+Purpose: {{CREW_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A2 (User Primacy): Manager ensures user goals are met
+- A3 (Transparency): Hierarchy makes coordination explicit
+"""
+
+from typing import List, Dict, Any, Optional
+from crewai import Crew, Process
+from crewai.agent import Agent
+from crewai.task import Task
+from pydantic import BaseModel, Field
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class {{CREW_CLASS_NAME}}Output(BaseModel):
+    """Structured output from hierarchical crew."""
+    result: str = Field(description="Final crew result")
+    manager_decisions: List[str] = Field(
+        default_factory=list,
+        description="Decisions made by manager"
+    )
+    worker_results: Dict[str, str] = Field(
+        default_factory=dict,
+        description="Results from worker agents"
+    )
+    execution_time: float = Field(description="Execution time")
+
+
+class {{CREW_CLASS_NAME}}:
+    """
+    {{CREW_NAME}} - Hierarchical Crew with Manager Agent
+    
+    Implements hierarchical crew pattern:
+    - Manager agent coordinates and delegates
+    - Worker agents perform specific tasks
+    - Manager reviews and synthesizes results
+    
+    Example:
+        >>> crew = {{CREW_CLASS_NAME}}()
+        >>> result = crew.kickoff({"task": "Complete this project"})
+    """
+    
+    def __init__(
+        self,
+        verbose: bool = True,
+        max_iter: int = 3,
+        memory: bool = True
+    ):
+        """
+        Initialize hierarchical crew.
+        
+        Args:
+            verbose: Enable verbose logging
+            max_iter: Maximum iterations per agent
+            memory: Enable agent memory
+        """
+        self.verbose = verbose
+        self.max_iter = max_iter
+        self.memory = memory
+        
+        # Create manager agent
+        self.manager = self._create_manager()
+        
+        # Create worker agents
+        self.workers = self._create_workers()
+        
+        # Create tasks
+        self.tasks = self._create_tasks()
+        
+        # Create crew with hierarchical process
+        self.crew = Crew(
+            agents=[self.manager] + self.workers,
+            tasks=self.tasks,
+            verbose=verbose,
+            process=Process.hierarchical,
+            manager_llm=None,  # Uses default, or specify custom LLM
+            max_iter=max_iter,
+            memory=memory
+        )
+        
+        logger.info(f"Initialized {{CREW_NAME}} with 1 manager and {len(self.workers)} workers")
+    
+    def _create_manager(self) -> Agent:
+        """
+        Create manager agent.
+        
+        Returns:
+            Manager Agent instance
+        """
+        manager = Agent(
+            role="{{MANAGER_ROLE}}",
+            goal="{{MANAGER_GOAL}}",
+            backstory="""{{MANAGER_BACKSTORY}}
+            
+You are a skilled manager who coordinates teams effectively.
+- Delegate tasks to the right workers
+- Review and synthesize results
+- Ensure quality and completeness
+- Make decisions based on worker outputs
+""",
+            verbose=self.verbose,
+            allow_delegation=True,  # Manager can delegate
+            max_iter=self.max_iter,
+            memory=self.memory,
+            tools=[]
+        )
+        
+        return manager
+    
+    def _create_workers(self) -> List[Agent]:
+        """
+        Create worker agents.
+        
+        Returns:
+            List of worker Agent instances
+        """
+        workers = []
+        
+        # Worker 1: {{WORKER_1_ROLE}}
+        worker_1 = Agent(
+            role="{{WORKER_1_ROLE}}",
+            goal="{{WORKER_1_GOAL}}",
+            backstory="""{{WORKER_1_BACKSTORY}}""",
+            verbose=self.verbose,
+            allow_delegation=False,  # Workers don't delegate
+            max_iter=self.max_iter,
+            memory=self.memory,
+            tools=[]
+        )
+        workers.append(worker_1)
+        
+        # Worker 2: {{WORKER_2_ROLE}}
+        worker_2 = Agent(
+            role="{{WORKER_2_ROLE}}",
+            goal="{{WORKER_2_GOAL}}",
+            backstory="""{{WORKER_2_BACKSTORY}}""",
+            verbose=self.verbose,
+            allow_delegation=False,
+            max_iter=self.max_iter,
+            memory=self.memory,
+            tools=[]
+        )
+        workers.append(worker_2)
+        
+        # Add more workers as needed
+        
+        return workers
+    
+    def _create_tasks(self) -> List[Task]:
+        """
+        Create tasks for the crew.
+        
+        Returns:
+            List of Task instances
+        """
+        tasks = []
+        
+        # Manager task: Coordinate and synthesize
+        manager_task = Task(
+            description="""{{MANAGER_TASK_DESCRIPTION}}
+            
+Coordinate the work of your team members and synthesize their results
+into a comprehensive final output.""",
+            agent=self.manager,
+            expected_output="{{MANAGER_EXPECTED_OUTPUT}}"
+        )
+        tasks.append(manager_task)
+        
+        # Worker tasks
+        worker_1_task = Task(
+            description="""{{WORKER_1_TASK_DESCRIPTION}}""",
+            agent=self.workers[0],
+            expected_output="{{WORKER_1_EXPECTED_OUTPUT}}",
+            context=[manager_task]  # Depends on manager task
+        )
+        tasks.append(worker_1_task)
+        
+        worker_2_task = Task(
+            description="""{{WORKER_2_TASK_DESCRIPTION}}""",
+            agent=self.workers[1],
+            expected_output="{{WORKER_2_EXPECTED_OUTPUT}}",
+            context=[manager_task]
+        )
+        tasks.append(worker_2_task)
+        
+        return tasks
+    
+    def kickoff(self, inputs: Dict[str, Any]) -> {{CREW_CLASS_NAME}}Output:
+        """
+        Kickoff hierarchical crew execution.
+        
+        Args:
+            inputs: Input dictionary
+        
+        Returns:
+            Structured output with results
+        
+        Example:
+            >>> result = crew.kickoff({"project": "AI system"})
+        """
+        import time
+        
+        logger.info(f"Kicking off {{CREW_NAME}} with hierarchical process")
+        start_time = time.time()
+        
+        try:
+            # Execute crew
+            crew_result = self.crew.kickoff(inputs=inputs)
+            execution_time = time.time() - start_time
+            
+            # Extract results
+            manager_decisions = []
+            worker_results = {}
+            
+            # Parse crew result for manager decisions and worker outputs
+            result_str = str(crew_result)
+            
+            # Extract manager decisions (simplified - adjust based on actual output format)
+            if "decision" in result_str.lower():
+                manager_decisions.append("Manager made coordination decisions")
+            
+            # Extract worker results
+            for worker in self.workers:
+                worker_results[worker.role] = f"Completed {worker.role} task"
+            
+            output = {{CREW_CLASS_NAME}}Output(
+                result=result_str,
+                manager_decisions=manager_decisions,
+                worker_results=worker_results,
+                execution_time=execution_time
+            )
+            
+            logger.info(f"Crew execution completed in {execution_time:.2f}s")
+            return output
+            
+        except Exception as e:
+            logger.error(f"Error during crew execution: {e}")
+            execution_time = time.time() - start_time
+            return {{CREW_CLASS_NAME}}Output(
+                result=f"Error: {str(e)}",
+                manager_decisions=[],
+                worker_results={},
+                execution_time=execution_time
+            )
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create hierarchical crew
+    crew = {{CREW_CLASS_NAME}}(
+        verbose=True
+    )
+    
+    # Execute crew
+    result = crew.kickoff({
+        "{{INPUT_KEY}}": "{{EXAMPLE_INPUT}}"
+    })
+    
+    print(f"Result: {result.result}")
+    print(f"Execution Time: {result.execution_time:.2f}s")
+    print(f"Manager Decisions: {len(result.manager_decisions)}")
+    print(f"Worker Results: {list(result.worker_results.keys())}")

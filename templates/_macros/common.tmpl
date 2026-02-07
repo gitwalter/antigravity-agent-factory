@@ -1,0 +1,239 @@
+{# 
+Common Macros for Antigravity Agent Factory Templates
+
+This file contains reusable macros for generating consistent content
+across different template types.
+
+Usage:
+  {% from '_macros/common.tmpl' import table_row, code_block, yaml_frontmatter %}
+
+Author: Antigravity Agent Factory
+Version: 1.0.0
+#}
+
+{# ============================================================================
+   TABLE MACROS
+   ============================================================================ #}
+
+{# Generate a markdown table row #}
+{% macro table_row(cells) -%}
+| {% for cell in cells %}{{ cell }} | {% endfor %}
+{%- endmacro %}
+
+{# Generate a complete markdown table #}
+{% macro table(headers, rows) -%}
+| {% for h in headers %}{{ h }} | {% endfor %}
+
+|{% for h in headers %}---|{% endfor %}
+
+{% for row in rows %}
+{{ table_row(row) }}
+{% endfor %}
+{%- endmacro %}
+
+{# Generate a two-column table (common pattern) #}
+{% macro two_col_table(header1, header2, items) -%}
+| {{ header1 }} | {{ header2 }} |
+|---|---|
+{% for item in items %}
+| {{ item.key }} | {{ item.value }} |
+{% endfor %}
+{%- endmacro %}
+
+
+{# ============================================================================
+   CODE BLOCK MACROS
+   ============================================================================ #}
+
+{# Wrap content in a code block with language #}
+{% macro code_block(content, lang='') -%}
+```{{ lang }}
+{{ content }}
+```
+{%- endmacro %}
+
+{# Python code block #}
+{% macro python_code(content) -%}
+{{ code_block(content, 'python') }}
+{%- endmacro %}
+
+{# TypeScript code block #}
+{% macro ts_code(content) -%}
+{{ code_block(content, 'typescript') }}
+{%- endmacro %}
+
+{# JSON code block #}
+{% macro json_code(content) -%}
+{{ code_block(content, 'json') }}
+{%- endmacro %}
+
+{# YAML code block #}
+{% macro yaml_code(content) -%}
+{{ code_block(content, 'yaml') }}
+{%- endmacro %}
+
+{# Bash/shell code block #}
+{% macro bash_code(content) -%}
+{{ code_block(content, 'bash') }}
+{%- endmacro %}
+
+
+{# ============================================================================
+   FRONTMATTER MACROS
+   ============================================================================ #}
+
+{# Generate YAML frontmatter for markdown files #}
+{% macro yaml_frontmatter(fields) -%}
+---
+{% for key, value in fields.items() %}
+{% if value is sequence and value is not string %}
+{{ key }}: [{% for v in value %}"{{ v }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+{% else %}
+{{ key }}: {{ value }}
+{% endif %}
+{% endfor %}
+---
+{%- endmacro %}
+
+{# Generate agent frontmatter #}
+{% macro agent_frontmatter(name, description, activation, skills=[], templates=[], patterns=[], knowledge=[]) -%}
+---
+name: {{ name }}
+description: {{ description }}
+type: agent
+activation:
+{% for trigger in activation %}
+  - "{{ trigger }}"
+{% endfor %}
+skills: [{% for s in skills %}"{{ s }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+templates: [{% for t in templates %}"{{ t }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+patterns: [{% for p in patterns %}"{{ p }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+knowledge: [{% for k in knowledge %}"{{ k }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+---
+{%- endmacro %}
+
+{# Generate skill frontmatter #}
+{% macro skill_frontmatter(name, description, agents=[], templates=[], patterns=[], knowledge=[]) -%}
+---
+name: {{ name }}
+description: {{ description }}
+type: skill
+agents: [{% for a in agents %}"{{ a }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+templates: [{% for t in templates %}"{{ t }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+patterns: [{% for p in patterns %}"{{ p }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+knowledge: [{% for k in knowledge %}"{{ k }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+---
+{%- endmacro %}
+
+
+{# ============================================================================
+   LIST MACROS
+   ============================================================================ #}
+
+{# Generate an unordered list #}
+{% macro ul(items, indent=0) -%}
+{% for item in items %}
+{{ ' ' * indent }}- {{ item }}
+{% endfor %}
+{%- endmacro %}
+
+{# Generate an ordered list #}
+{% macro ol(items, indent=0) -%}
+{% for item in items %}
+{{ ' ' * indent }}{{ loop.index }}. {{ item }}
+{% endfor %}
+{%- endmacro %}
+
+{# Generate a checklist (GitHub-style) #}
+{% macro checklist(items, checked=false) -%}
+{% for item in items %}
+- [{% if item.checked is defined %}{{ 'x' if item.checked else ' ' }}{% else %}{{ 'x' if checked else ' ' }}{% endif %}] {{ item.text if item.text is defined else item }}
+{% endfor %}
+{%- endmacro %}
+
+
+{# ============================================================================
+   SECTION MACROS
+   ============================================================================ #}
+
+{# Generate a heading with optional anchor #}
+{% macro heading(text, level=2, anchor='') -%}
+{{ '#' * level }} {{ text }}{% if anchor %} {#{{ anchor }}}{% endif %}
+{%- endmacro %}
+
+{# Generate a collapsible section (HTML details) #}
+{% macro collapsible(summary, content) -%}
+<details>
+<summary>{{ summary }}</summary>
+
+{{ content }}
+
+</details>
+{%- endmacro %}
+
+{# Generate an admonition/callout (GitHub-style) #}
+{% macro admonition(type, content) -%}
+> [!{{ type | upper }}]
+> {{ content | replace('\n', '\n> ') }}
+{%- endmacro %}
+
+{# Note admonition #}
+{% macro note(content) -%}
+{{ admonition('NOTE', content) }}
+{%- endmacro %}
+
+{# Warning admonition #}
+{% macro warning(content) -%}
+{{ admonition('WARNING', content) }}
+{%- endmacro %}
+
+{# Tip admonition #}
+{% macro tip(content) -%}
+{{ admonition('TIP', content) }}
+{%- endmacro %}
+
+
+{# ============================================================================
+   LINK MACROS
+   ============================================================================ #}
+
+{# Generate a markdown link #}
+{% macro link(text, url) -%}
+[{{ text }}]({{ url }})
+{%- endmacro %}
+
+{# Generate a file link (relative path) #}
+{% macro file_link(path) -%}
+[`{{ path }}`]({{ path }})
+{%- endmacro %}
+
+{# Generate a reference link #}
+{% macro ref_link(text, ref_id) -%}
+[{{ text }}][{{ ref_id }}]
+{%- endmacro %}
+
+
+{# ============================================================================
+   BADGE MACROS
+   ============================================================================ #}
+
+{# Generate a shield.io badge #}
+{% macro badge(label, message, color='blue') -%}
+![{{ label }}](https://img.shields.io/badge/{{ label | replace(' ', '_') }}-{{ message | replace(' ', '_') }}-{{ color }})
+{%- endmacro %}
+
+{# Version badge #}
+{% macro version_badge(version) -%}
+{{ badge('version', version, 'blue') }}
+{%- endmacro %}
+
+{# Status badge #}
+{% macro status_badge(status) -%}
+{% if status == 'stable' %}
+{{ badge('status', status, 'green') }}
+{% elif status == 'beta' %}
+{{ badge('status', status, 'yellow') }}
+{% else %}
+{{ badge('status', status, 'red') }}
+{% endif %}
+{%- endmacro %}

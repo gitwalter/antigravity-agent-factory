@@ -1,0 +1,222 @@
+{
+  "name": "{{WORKFLOW_NAME}} - RAG Query Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rag-query",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger-{{NODE_ID}}",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "{{WEBHOOK_ID}}"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare RAG query\nconst input = $input.first().json.body || $input.first().json;\nconst query = input.query || input.question || '';\nconst topK = input.top_k || {{TOP_K}};\nconst collection = input.collection || '{{DEFAULT_COLLECTION}}';\n\nif (!query) {\n  throw new Error('Query is required');\n}\n\nreturn [{\n  json: {\n    query: query,\n    top_k: topK,\n    collection: collection,\n    filters: input.filters || {},\n    include_metadata: input.include_metadata !== false\n  }\n}];"
+      },
+      "id": "prepare-query-{{NODE_ID}}",
+      "name": "Prepare Query",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "operation": "createEmbedding",
+        "model": "{{EMBEDDING_MODEL}}",
+        "text": "={{ $json.query }}",
+        "options": {}
+      },
+      "id": "create-embedding-{{NODE_ID}}",
+      "name": "Create Embedding",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.3,
+      "position": [650, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "{{OPENAI_CREDENTIAL_ID}}",
+          "name": "{{OPENAI_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "query",
+        "collection": "={{ $json.collection }}",
+        "queryVector": "={{ $json.embedding || $('Create Embedding').first().json.data[0].embedding }}",
+        "topK": "={{ $json.top_k }}",
+        "options": {
+          "includeMetadata": "={{ $json.include_metadata }}"
+        }
+      },
+      "id": "vector-search-{{NODE_ID}}",
+      "name": "Vector Search",
+      "type": "{{VECTOR_DB_NODE_TYPE}}",
+      "typeVersion": {{VECTOR_DB_NODE_VERSION}},
+      "position": [850, 300],
+      "credentials": {
+        "{{VECTOR_DB_CREDENTIAL_TYPE}}": {
+          "id": "{{VECTOR_DB_CREDENTIAL_ID}}",
+          "name": "{{VECTOR_DB_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format context from retrieved documents\nconst queryData = $('Prepare Query').first().json;\nconst searchResults = $input.all();\n\n// Extract relevant context\nconst context = searchResults.map((item, index) => {\n  const result = item.json;\n  return {\n    text: result.metadata?.text || result.text || result.pageContent || '',\n    score: result.score || result.distance || 0,\n    metadata: result.metadata || {},\n    rank: index + 1\n  };\n}).filter(item => item.text);\n\n// Combine context\nconst contextText = context.map(item => \n  `[Document ${item.rank}, Score: ${item.score.toFixed(3)}]\\n${item.text}`\n).join('\\n\\n---\\n\\n');\n\nreturn [{\n  json: {\n    query: queryData.query,\n    context: contextText,\n    documents: context,\n    document_count: context.length\n  }\n}];"
+      },
+      "id": "format-context-{{NODE_ID}}",
+      "name": "Format Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "operation": "complete",
+        "model": "{{LLM_MODEL}}",
+        "options": {
+          "temperature": {{TEMPERATURE}},
+          "maxTokens": {{MAX_TOKENS}}
+        },
+        "text": "={{ `Answer the following question based on the provided context. If the context doesn't contain enough information to answer the question, say so.\\n\\nQuestion: ${$json.query}\\n\\nContext:\\n${$json.context}\\n\\nAnswer:` }}",
+        "prompt": ""
+      },
+      "id": "generate-answer-{{NODE_ID}}",
+      "name": "Generate Answer",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.3,
+      "position": [1250, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "{{OPENAI_CREDENTIAL_ID}}",
+          "name": "{{OPENAI_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format final response\nconst queryData = $('Format Context').first().json;\nconst answer = $input.first().json.text || $input.first().json.choices?.[0]?.message?.content || '';\n\nreturn [{\n  json: {\n    query: queryData.query,\n    answer: answer,\n    sources: queryData.documents.map(doc => ({\n      text: doc.text.substring(0, 200) + '...',\n      score: doc.score,\n      metadata: doc.metadata\n    })),\n    document_count: queryData.document_count,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "format-response-{{NODE_ID}}",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"success\", \"data\": $json } }}",
+        "options": {}
+      },
+      "id": "respond-success-{{NODE_ID}}",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1650, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Query": {
+      "main": [
+        [
+          {
+            "node": "Create Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Embedding": {
+      "main": [
+        [
+          {
+            "node": "Vector Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Search": {
+      "main": [
+        [
+          {
+            "node": "Format Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Context": {
+      "main": [
+        [
+          {
+            "node": "Generate Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Answer": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "{{TIMESTAMP}}",
+      "updatedAt": "{{TIMESTAMP}}",
+      "id": "{{TAG_ID}}",
+      "name": "rag-agent"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "{{TIMESTAMP}}",
+  "versionId": "{{VERSION_ID}}"
+}

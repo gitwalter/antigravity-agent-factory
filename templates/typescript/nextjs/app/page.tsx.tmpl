@@ -1,0 +1,57 @@
+/**
+ * Home Page - Next.js App Router Server Component
+ * 
+ * Purpose: {{PAGE_PURPOSE}}
+ * Author: {{AUTHOR}}
+ * Created: {{DATE}}
+ * 
+ * Axiom Alignment:
+ * - A1 (Verifiability): All data fetching is traceable
+ * - A3 (Transparency): Clear page structure and data sources
+ * - A4 (Non-Harm): Safe data handling and error boundaries
+ */
+
+import type { Metadata } from 'next'
+import { Suspense } from 'react'
+import { {{FEATURE_COMPONENT}} } from '@/components/{{FEATURE_NAME}}'
+import { {{LOADING_COMPONENT}} } from '@/components/{{LOADING_NAME}}'
+import { {{ERROR_COMPONENT}} } from '@/components/{{ERROR_NAME}}'
+import { get{{DATA_NAME}} } from '@/lib/{{DATA_SOURCE}}'
+
+export const metadata: Metadata = {
+  title: '{{PAGE_TITLE}}',
+  description: '{{PAGE_DESCRIPTION}}',
+}
+
+/**
+ * Home page component.
+ * 
+ * This is a Server Component that can directly fetch data
+ * and render on the server for better performance.
+ * 
+ * @returns JSX element
+ */
+export default async function HomePage() {
+  try {
+    // Fetch data on the server
+    const data = await get{{DATA_NAME}}()
+    
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-between p-24">
+        <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm">
+          <h1 className="text-4xl font-bold mb-8">
+            {{PAGE_HEADING}}
+          </h1>
+          
+          <Suspense fallback={<{{LOADING_COMPONENT}} />}>
+            <{{FEATURE_COMPONENT}} data={data} />
+          </Suspense>
+        </div>
+      </main>
+    )
+  } catch (error) {
+    // Handle errors gracefully
+    console.error('Error loading page data:', error)
+    return <{{ERROR_COMPONENT}} error={error} />
+  }
+}

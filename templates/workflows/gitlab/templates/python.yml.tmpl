@@ -1,0 +1,193 @@
+# Python CI/CD Template
+#
+# Reusable template for Python projects with pytest, coverage, linting, and type checking
+# Variables: {{PYTHON_VERSION}}, {{COVERAGE_THRESHOLD}}, {{PROJECT_NAME}}
+
+# Base Python job template
+.python_base:
+  image: python:${PYTHON_VERSION:-3.11}
+  variables:
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+    PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  before_script:
+    - python --version
+    - pip install --upgrade pip setuptools wheel
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-python
+    paths:
+      - .cache/pip
+      - venv/
+
+# Python build job
+.python_build:
+  extends: .python_base
+  script:
+    - |
+      if [ -f requirements.txt ]; then
+        pip install -r requirements.txt
+      fi
+    - |
+      if [ -f requirements-dev.txt ]; then
+        pip install -r requirements-dev.txt
+      fi
+    - |
+      if [ -f setup.py ]; then
+        pip install -e .
+      elif [ -f pyproject.toml ]; then
+        pip install -e .
+      fi
+    - |
+      if [ -f setup.py ] || [ -f pyproject.toml ]; then
+        python -m build --wheel --sdist
+        mkdir -p dist
+        cp dist/*.whl dist/*.tar.gz dist/ 2>/dev/null || true
+      fi
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+
+# Python test job with coverage
+.python_test:
+  extends: .python_base
+  script:
+    - |
+      if [ -f requirements.txt ]; then
+        pip install -r requirements.txt
+      fi
+    - |
+      if [ -f requirements-dev.txt ]; then
+        pip install -r requirements-dev.txt
+      else
+        pip install pytest pytest-cov pytest-xdist
+      fi
+    - |
+      if [ -f setup.py ] || [ -f pyproject.toml ]; then
+        pip install -e .
+      fi
+    - |
+      # Run unit tests
+      if [ -d tests/unit ]; then
+        pytest tests/unit/ -v --tb=short --cov=. --cov-report=xml --cov-report=term-missing
+      fi
+    - |
+      # Run integration tests
+      if [ -d tests/integration ]; then
+        pytest tests/integration/ -v --tb=short --cov=. --cov-report=xml --cov-report=term-missing --cov-append
+      fi
+    - |
+      # Run validation tests
+      if [ -d tests/validation ]; then
+        pytest tests/validation/ -v --tb=short --cov=. --cov-report=xml --cov-report=term-missing --cov-append
+      fi
+    - |
+      # Run all tests if no specific test directories exist
+      if [ ! -d tests/unit ] && [ ! -d tests/integration ] && [ ! -d tests/validation ]; then
+        if [ -d tests ]; then
+          pytest tests/ -v --tb=short --cov=. --cov-report=xml --cov-report=term-missing
+        fi
+      fi
+    - |
+      # Check coverage threshold
+      if [ -f coverage.xml ]; then
+        COVERAGE=$(python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); print(root.attrib.get('line-rate', '0'))")
+        COVERAGE_PCT=$(python -c "print(int(float('${COVERAGE}') * 100))")
+        THRESHOLD=${COVERAGE_THRESHOLD:-80}
+        if [ "$COVERAGE_PCT" -lt "$THRESHOLD" ]; then
+          echo "Coverage ${COVERAGE_PCT}% is below threshold ${THRESHOLD}%"
+          exit 1
+        fi
+        echo "Coverage ${COVERAGE_PCT}% meets threshold ${THRESHOLD}%"
+      fi
+  coverage: '/TOTAL.*\s+(\d+%)/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+      junit:
+        - "test-results.xml"
+    paths:
+      - coverage.xml
+      - htmlcov/
+      - .coverage
+    expire_in: 1 week
+  allow_failure: false
+
+# Python linting job
+.python_lint:
+  extends: .python_base
+  script:
+    - |
+      if [ -f requirements-dev.txt ]; then
+        pip install -r requirements-dev.txt
+      else
+        pip install ruff flake8 pylint
+      fi
+    - |
+      # Try ruff first (modern, fast)
+      if command -v ruff &> /dev/null || pip show ruff &> /dev/null; then
+        echo "Running ruff..."
+        ruff check . --output-format=github || true
+        ruff format --check . || true
+      fi
+    - |
+      # Fallback to flake8
+      if command -v flake8 &> /dev/null || pip show flake8 &> /dev/null; then
+        echo "Running flake8..."
+        flake8 . --max-line-length=120 --extend-ignore=E203,W503 || true
+      fi
+    - |
+      # Fallback to pylint
+      if command -v pylint &> /dev/null || pip show pylint &> /dev/null; then
+        echo "Running pylint..."
+        find . -name "*.py" -not -path "./venv/*" -not -path "./.cache/*" -not -path "./.git/*" | head -20 | xargs pylint || true
+      fi
+  allow_failure: true
+  artifacts:
+    paths:
+      - lint-report.txt
+    expire_in: 1 day
+
+# Python type checking job
+.python_typecheck:
+  extends: .python_base
+  script:
+    - |
+      if [ -f requirements-dev.txt ]; then
+        pip install -r requirements-dev.txt
+      else
+        pip install mypy types-all
+      fi
+    - |
+      if [ -f setup.py ] || [ -f pyproject.toml ]; then
+        pip install -e .
+      fi
+    - |
+      if command -v mypy &> /dev/null || pip show mypy &> /dev/null; then
+        echo "Running mypy..."
+        # Find Python source directories
+        if [ -d "{{PROJECT_NAME}}" ]; then
+          mypy {{PROJECT_NAME}}/ --ignore-missing-imports --no-strict-optional || true
+        elif [ -d "src" ]; then
+          mypy src/ --ignore-missing-imports --no-strict-optional || true
+        elif [ -d "cli" ]; then
+          mypy cli/ --ignore-missing-imports --no-strict-optional || true
+        else
+          mypy . --ignore-missing-imports --no-strict-optional --exclude '^(tests|venv|\.cache)' || true
+        fi
+      else
+        echo "mypy not installed, skipping type checking"
+      fi
+  allow_failure: true
+  artifacts:
+    paths:
+      - mypy-report.txt
+    expire_in: 1 day
+
+# Python matrix testing (multiple versions)
+.python_test_matrix:
+  extends: .python_test
+  parallel:
+    matrix:
+      - PYTHON_VERSION: ["3.9", "3.10", "3.11", "3.12"]

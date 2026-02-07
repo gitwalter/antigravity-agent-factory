@@ -1,0 +1,81 @@
+"! <p class="shorttext synchronized">Determination Implementation</p>
+"! Behavior implementation with determination methods for ${ENTITY_NAME}
+"! @author ${AUTHOR}
+"! @date ${DATE}
+"! @version 1.0
+"!
+"! Example usage:
+"!   Replace ${ENTITY_NAME} with your entity name (e.g., ZC_Travel)
+"!   Replace ${CLASS_NAME} with your class name (e.g., ZCL_BP_TRAVEL)
+"!   Implement determination methods for automatic field calculations
+"!
+CLASS ${CLASS_NAME} DEFINITION PUBLIC ABSTRACT FINAL FOR BEHAVIOR OF ${ENTITY_NAME}.
+  PUBLIC SECTION.
+    INTERFACES if_oo_adt_classrun.
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+CLASS ${CLASS_NAME} IMPLEMENTATION.
+  
+  METHOD ${DETERMINATION_METHOD_NAME}.
+    " Determination logic implementation
+    " Automatically calculate or set field values
+    
+    READ ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        FIELDS ( ${SOURCE_FIELD} ${TARGET_FIELD} )
+        WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_${ENTITY_NAME}).
+    
+    MODIFY ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        UPDATE FIELDS ( ${TARGET_FIELD} )
+        WITH VALUE #( FOR ls_${ENTITY_NAME} IN lt_${ENTITY_NAME}
+                      ( %tky = ls_${ENTITY_NAME}-%tky
+                        ${TARGET_FIELD} = ${CALCULATION_LOGIC} ) ).
+    
+    " Read updated data
+    READ ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        ALL FIELDS WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_${ENTITY_NAME}_updated).
+    
+    " Return updated data
+    result = VALUE #( FOR ls_${ENTITY_NAME} IN lt_${ENTITY_NAME}_updated
+                      ( %tky = ls_${ENTITY_NAME}-%tky
+                        %param = ls_${ENTITY_NAME} ) ).
+    
+  ENDMETHOD.
+  
+  METHOD ${DETERMINATION_METHOD_NAME_2}.
+    " Additional determination logic
+    " Implement complex calculations or derivations
+    
+    READ ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        FIELDS ( ${FIELD_1} ${FIELD_2} ${CALCULATED_FIELD} )
+        WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_${ENTITY_NAME}).
+    
+    MODIFY ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        UPDATE FIELDS ( ${CALCULATED_FIELD} )
+        WITH VALUE #( FOR ls_${ENTITY_NAME} IN lt_${ENTITY_NAME}
+                      ( %tky = ls_${ENTITY_NAME}-%tky
+                        ${CALCULATED_FIELD} = ls_${ENTITY_NAME}-${FIELD_1} + ls_${ENTITY_NAME}-${FIELD_2} ) ).
+    
+    " Read updated data
+    READ ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
+      ENTITY ${ENTITY_NAME}
+        ALL FIELDS WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_${ENTITY_NAME}_updated).
+    
+    " Return updated data
+    result = VALUE #( FOR ls_${ENTITY_NAME} IN lt_${ENTITY_NAME}_updated
+                      ( %tky = ls_${ENTITY_NAME}-%tky
+                        %param = ls_${ENTITY_NAME} ) ).
+    
+  ENDMETHOD.
+  
+ENDCLASS.

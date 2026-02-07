@@ -1,0 +1,305 @@
+"""
+{{AGENT_NAME}} - Persistent State with Checkpointing
+
+Purpose: {{AGENT_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Checkpoints enable state recovery
+- A3 (Transparency): State transitions are logged
+"""
+
+from typing import TypedDict, Annotated, List, Optional, Dict, Any
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.message import add_messages
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from langchain_openai import ChatOpenAI
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class {{AGENT_CLASS_NAME}}State(TypedDict):
+    """
+    State for checkpointed agent.
+    
+    Attributes:
+        messages: Conversation messages
+        input: Original input
+        step_count: Number of steps executed
+        checkpoint_data: Additional checkpoint metadata
+    """
+    messages: Annotated[List[BaseMessage], add_messages]
+    input: str
+    step_count: int
+    checkpoint_data: Dict[str, Any]
+
+
+class {{AGENT_CLASS_NAME}}:
+    """
+    {{AGENT_NAME}} - Checkpointed Agent with Persistent State
+    
+    Demonstrates checkpointing for:
+    - State persistence across sessions
+    - Recovery from failures
+    - Resuming interrupted workflows
+    
+    Example:
+        >>> agent = {{AGENT_CLASS_NAME}}()
+        >>> result = agent.run("Process this", thread_id="session-1")
+        >>> # Later, resume from checkpoint
+        >>> state = agent.get_state("session-1")
+    """
+    
+    def __init__(
+        self,
+        model_name: str = "{{MODEL_NAME}}",
+        temperature: float = {{TEMPERATURE}},
+        checkpoint_type: str = "memory",  # "memory" or "sqlite"
+        db_path: Optional[str] = None
+    ):
+        """
+        Initialize checkpointed agent.
+        
+        Args:
+            model_name: LLM model identifier
+            temperature: Sampling temperature
+            checkpoint_type: Type of checkpointer ("memory" or "sqlite")
+            db_path: Path to SQLite database (if using sqlite)
+        """
+        self.model_name = model_name
+        self.temperature = temperature
+        
+        # Initialize LLM
+        self.llm = ChatOpenAI(
+            model=model_name,
+            temperature=temperature
+        )
+        
+        # Create checkpointer
+        if checkpoint_type == "sqlite":
+            if not db_path:
+                db_path = "{{CHECKPOINT_DB_PATH}}"
+            self.checkpointer = SqliteSaver.from_conn_string(db_path)
+            logger.info(f"Using SQLite checkpointer: {db_path}")
+        else:
+            self.checkpointer = MemorySaver()
+            logger.info("Using memory checkpointer")
+        
+        # Build graph
+        self.graph = self._build_graph()
+        self.app = self.graph.compile(checkpointer=self.checkpointer)
+        
+        logger.info("Initialized {{AGENT_NAME}} with checkpointing")
+    
+    def _build_graph(self) -> StateGraph:
+        """Build the checkpointed agent graph."""
+        graph = StateGraph({{AGENT_CLASS_NAME}}State)
+        
+        # Add nodes
+        graph.add_node("step_1", self._step_1_node)
+        graph.add_node("step_2", self._step_2_node)
+        graph.add_node("step_3", self._step_3_node)
+        
+        # Add edges
+        graph.add_edge(START, "step_1")
+        graph.add_edge("step_1", "step_2")
+        graph.add_edge("step_2", "step_3")
+        graph.add_edge("step_3", END)
+        
+        return graph
+    
+    def _step_1_node(self, state: {{AGENT_CLASS_NAME}}State) -> dict:
+        """
+        Step 1 node.
+        
+        Implements A1 (Verifiability) by logging state transitions.
+        """
+        logger.info(f"Step 1 executing (step_count: {state.get('step_count', 0)})...")
+        
+        input_text = state["input"]
+        
+        response = self.llm.invoke(f"{{STEP_1_PROMPT}}\n\nInput: {input_text}")
+        
+        return {
+            "step_count": state.get("step_count", 0) + 1,
+            "checkpoint_data": {
+                **state.get("checkpoint_data", {}),
+                "step_1_complete": True,
+                "step_1_result": response.content[:100]
+            },
+            "messages": state["messages"] + [
+                AIMessage(content=f"[Step 1] {response.content}")
+            ]
+        }
+    
+    def _step_2_node(self, state: {{AGENT_CLASS_NAME}}State) -> dict:
+        """
+        Step 2 node.
+        
+        Implements A1 (Verifiability) by logging state transitions.
+        """
+        logger.info(f"Step 2 executing (step_count: {state.get('step_count', 0)})...")
+        
+        input_text = state["input"]
+        step_1_result = state.get("checkpoint_data", {}).get("step_1_result", "")
+        
+        response = self.llm.invoke(
+            f"{{STEP_2_PROMPT}}\n\nInput: {input_text}\n\nPrevious: {step_1_result}"
+        )
+        
+        return {
+            "step_count": state.get("step_count", 0) + 1,
+            "checkpoint_data": {
+                **state.get("checkpoint_data", {}),
+                "step_2_complete": True,
+                "step_2_result": response.content[:100]
+            },
+            "messages": state["messages"] + [
+                AIMessage(content=f"[Step 2] {response.content}")
+            ]
+        }
+    
+    def _step_3_node(self, state: {{AGENT_CLASS_NAME}}State) -> dict:
+        """
+        Step 3 node - final step.
+        
+        Implements A1 (Verifiability) by logging completion.
+        """
+        logger.info(f"Step 3 executing (step_count: {state.get('step_count', 0)})...")
+        
+        input_text = state["input"]
+        step_1_result = state.get("checkpoint_data", {}).get("step_1_result", "")
+        step_2_result = state.get("checkpoint_data", {}).get("step_2_result", "")
+        
+        response = self.llm.invoke(
+            f"{{STEP_3_PROMPT}}\n\nInput: {input_text}\n\n"
+            f"Step 1: {step_1_result}\nStep 2: {step_2_result}"
+        )
+        
+        return {
+            "step_count": state.get("step_count", 0) + 1,
+            "checkpoint_data": {
+                **state.get("checkpoint_data", {}),
+                "step_3_complete": True,
+                "final_result": response.content
+            },
+            "messages": state["messages"] + [
+                AIMessage(content=f"[Step 3] {response.content}")
+            ]
+        }
+    
+    def run(
+        self,
+        input_text: str,
+        thread_id: str,
+        config: Optional[Dict[str, Any]] = None
+    ) -> {{AGENT_CLASS_NAME}}State:
+        """
+        Run the agent with checkpointing.
+        
+        Args:
+            input_text: User input
+            thread_id: Thread ID for state persistence
+            config: Optional configuration
+        
+        Returns:
+            Final state
+        """
+        logger.info(f"Running agent with thread_id: {thread_id}")
+        
+        # Check if we have existing state
+        existing_state = self.get_state(thread_id)
+        
+        if existing_state and existing_state.values:
+            logger.info("Resuming from checkpoint")
+            # Resume from checkpoint
+            result = self.app.invoke(
+                None,  # No new input, resume from checkpoint
+                {"configurable": {"thread_id": thread_id}, **(config or {})}
+            )
+        else:
+            logger.info("Starting new execution")
+            # Start new execution
+            initial_state: {{AGENT_CLASS_NAME}}State = {
+                "messages": [HumanMessage(content=input_text)],
+                "input": input_text,
+                "step_count": 0,
+                "checkpoint_data": {}
+            }
+            
+            result = self.app.invoke(
+                initial_state,
+                {"configurable": {"thread_id": thread_id}, **(config or {})}
+            )
+        
+        logger.info(f"Execution complete. Steps: {result.get('step_count', 0)}")
+        return result
+    
+    def get_state(self, thread_id: str) -> Optional[Any]:
+        """
+        Get checkpointed state for a thread.
+        
+        Args:
+            thread_id: Thread ID
+        
+        Returns:
+            Checkpointed state or None
+        """
+        config = {"configurable": {"thread_id": thread_id}}
+        state = self.app.get_state(config)
+        return state
+    
+    def update_state(
+        self,
+        thread_id: str,
+        updates: Dict[str, Any]
+    ) -> None:
+        """
+        Update checkpointed state.
+        
+        Args:
+            thread_id: Thread ID
+            updates: State updates
+        """
+        config = {"configurable": {"thread_id": thread_id}}
+        current_state = self.app.get_state(config)
+        
+        if current_state.values:
+            # Update existing state
+            updated_state = {**current_state.values, **updates}
+            self.app.invoke(updated_state, config)
+            logger.info(f"State updated for thread: {thread_id}")
+    
+    def visualize(self) -> str:
+        """Generate Mermaid diagram."""
+        return self.app.get_graph().draw_mermaid()
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create checkpointed agent
+    agent = {{AGENT_CLASS_NAME}}(
+        checkpoint_type="memory"  # Use "sqlite" for persistent storage
+    )
+    
+    # Visualize
+    print("Agent Graph:")
+    print(agent.visualize())
+    print()
+    
+    # Run with thread ID
+    thread_id = "example-session-1"
+    result = agent.run("{{EXAMPLE_INPUT}}", thread_id=thread_id)
+    
+    print(f"Steps executed: {result.get('step_count', 0)}")
+    print(f"Checkpoint data: {result.get('checkpoint_data', {})}")
+    
+    # Get state later
+    state = agent.get_state(thread_id)
+    if state:
+        print(f"\nRetrieved state - Steps: {state.values.get('step_count', 0)}")

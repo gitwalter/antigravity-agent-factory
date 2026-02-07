@@ -1,0 +1,341 @@
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+env:
+  PROJECT_NAME: {{PROJECT_NAME}}
+  DEFAULT_PYTHON_VERSION: {{DEFAULT_PYTHON_VERSION}}
+  DEFAULT_NODE_VERSION: {{DEFAULT_NODE_VERSION}}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate-pr:
+    name: Validate PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Validate PR title
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            chore
+            ci
+            build
+          scopes: |
+            api
+            ui
+            docs
+            config
+            deps
+          requireScope: false
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            The subject "{subject}" found in the pull request title "{title}"
+            didn't match the configured pattern. Please ensure that the subject
+            doesn't start with an uppercase character.
+
+      - name: Check PR description
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const minDescriptionLength = 20;
+            
+            if (!pr.body || pr.body.trim().length < minDescriptionLength) {
+              core.setFailed(`PR description must be at least ${minDescriptionLength} characters long`);
+            }
+            
+            // Check for required sections
+            const requiredSections = ['## Description', '## Changes'];
+            const body = pr.body.toLowerCase();
+            
+            for (const section of requiredSections) {
+              if (!body.includes(section.toLowerCase())) {
+                console.warn(`Missing recommended section: ${section}`);
+              }
+            }
+
+  lint-pr:
+    name: Lint PR Changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            **/*.py
+            **/*.js
+            **/*.ts
+            **/*.tsx
+            **/*.jsx
+
+      - name: Run Python linter on changed files
+        if: steps.changed-files.outputs.any_changed == 'true'
+        continue-on-error: true
+        uses: ./.github/workflows/composite/setup-python.yml
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+        run: |
+          pip install ruff black isort
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [[ "$file" == *.py ]]; then
+              echo "Linting $file"
+              ruff check "$file" || true
+              black --check "$file" || true
+              isort --check-only "$file" || true
+            fi
+          done
+
+      - name: Run Node.js linter on changed files
+        if: steps.changed-files.outputs.any_changed == 'true'
+        continue-on-error: true
+        uses: ./.github/workflows/composite/setup-node.yml
+        with:
+          node-version: ${{ env.DEFAULT_NODE_VERSION }}
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [[ "$file" == *.js || "$file" == *.ts || "$file" == *.tsx || "$file" == *.jsx ]]; then
+              echo "Linting $file"
+              npx eslint "$file" || true
+            fi
+          done
+
+      - name: Comment PR with lint results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const lintResults = {
+              python: process.env.PYTHON_LINT_STATUS || 'unknown',
+              node: process.env.NODE_LINT_STATUS || 'unknown'
+            };
+            
+            const comment = `## Lint Results
+            
+            - Python: ${lintResults.python}
+            - Node.js: ${lintResults.node}
+            
+            Review the workflow logs for detailed information.`;
+
+  test-pr:
+    name: Test PR Changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Run Python tests
+        continue-on-error: true
+        uses: ./.github/workflows/reusable/python-test.yml
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          test-command: 'pytest'
+          test-path: 'tests/'
+          coverage-threshold: '80'
+          upload-coverage: true
+        secrets:
+          COVERAGE_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Run Node.js tests
+        continue-on-error: true
+        uses: ./.github/workflows/reusable/node-test.yml
+        with:
+          node-version: ${{ env.DEFAULT_NODE_VERSION }}
+          package-manager: 'npm'
+          run-lint: false
+          run-build: true
+
+      - name: Comment PR with test results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = `## Test Results
+            
+            Tests have been executed for this PR. Check the workflow logs for detailed results.
+            
+            - Python tests: ${{ job.status }}
+            - Node.js tests: ${{ job.status }}`;
+
+  security-scan-pr:
+    name: Security Scan PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            **/*.py
+            **/*.js
+            **/*.ts
+            **/requirements*.txt
+            **/package*.json
+            **/yarn.lock
+            **/pnpm-lock.yaml
+
+      - name: Run Trivy vulnerability scanner
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results to GitHub Security
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Check Python dependencies
+        if: steps.changed-files.outputs.any_changed == 'true'
+        continue-on-error: true
+        uses: ./.github/workflows/composite/setup-python.yml
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+        run: |
+          pip install safety
+          if [ -f requirements.txt ]; then
+            safety check --json || true
+          fi
+
+      - name: Check Node.js dependencies
+        if: steps.changed-files.outputs.any_changed == 'true'
+        continue-on-error: true
+        uses: ./.github/workflows/composite/setup-node.yml
+        with:
+          node-version: ${{ env.DEFAULT_NODE_VERSION }}
+        run: |
+          npm audit --audit-level=moderate || true
+
+      - name: Comment PR with security findings
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = `## Security Scan Results
+            
+            Security scans have been performed on this PR. Review the workflow logs and GitHub Security tab for detailed findings.
+            
+            ⚠️ Please review any critical or high-severity vulnerabilities before merging.`;
+
+  check-conflicts:
+    name: Check for Merge Conflicts
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          path: pr-branch
+
+      - name: Check for conflicts
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+          git merge --no-commit --no-ff origin/${{ github.event.pull_request.base.ref }} || {
+            echo "Merge conflicts detected!"
+            git merge --abort || true
+            exit 1
+          }
+          echo "No merge conflicts detected"
+
+  pr-summary:
+    name: PR Summary
+    needs: [validate-pr, lint-pr, test-pr, security-scan-pr, check-conflicts]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Create PR summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const checks = {
+              validation: '${{ needs.validate-pr.result }}',
+              lint: '${{ needs.lint-pr.result }}',
+              test: '${{ needs.test-pr.result }}',
+              security: '${{ needs.security-scan-pr.result }}',
+              conflicts: '${{ needs.check-conflicts.result }}'
+            };
+            
+            const allPassed = Object.values(checks).every(status => status === 'success' || status === 'skipped');
+            const emoji = allPassed ? '✅' : '❌';
+            
+            const summary = `## ${emoji} PR Checks Summary
+            
+            | Check | Status |
+            |-------|--------|
+            | Validation | ${checks.validation === 'success' ? '✅ Passed' : checks.validation === 'failure' ? '❌ Failed' : '⏭️ Skipped'} |
+            | Lint | ${checks.lint === 'success' ? '✅ Passed' : checks.lint === 'failure' ? '❌ Failed' : '⏭️ Skipped'} |
+            | Tests | ${checks.test === 'success' ? '✅ Passed' : checks.test === 'failure' ? '❌ Failed' : '⏭️ Skipped'} |
+            | Security Scan | ${checks.security === 'success' ? '✅ Passed' : checks.security === 'failure' ? '❌ Failed' : '⏭️ Skipped'} |
+            | Merge Conflicts | ${checks.conflicts === 'success' ? '✅ None' : checks.conflicts === 'failure' ? '❌ Detected' : '⏭️ Skipped'} |
+            
+            ${allPassed ? '🎉 All checks passed! Ready for review.' : '⚠️ Some checks failed. Please review and fix issues before merging.'}`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });

@@ -1,0 +1,173 @@
+/**
+ * ${SCRIPT_NAME} - XML to JSON Converter
+ * 
+ * Purpose: ${SCRIPT_PURPOSE}
+ * Author: ${AUTHOR}
+ * Created: ${DATE}
+ * 
+ * Input:  XML string
+ * Output: JSON string
+ * 
+ * XML Structure Expected:
+ *   ${XML_STRUCTURE_DESCRIPTION}
+ * 
+ * JSON Structure Generated:
+ *   ${JSON_STRUCTURE_DESCRIPTION}
+ * 
+ * Notes:
+ *   - Converts XML elements to JSON objects
+ *   - XML attributes become JSON fields with @ prefix
+ *   - Repeating XML elements become JSON arrays
+ *   - Handles XML namespaces
+ */
+import com.sap.gateway.ip.core.customdev.util.Message
+import groovy.xml.XmlSlurper
+import groovy.json.JsonBuilder
+
+def Message processData(Message message) {
+    def messageLog = messageLogFactory.getMessageLog(message)
+    
+    try {
+        // Get XML body
+        def xmlBody = message.getBody(String)
+        messageLog.addAttachmentAsString('InputXML', xmlBody, 'text/xml')
+        
+        // Parse XML
+        def xml = new XmlSlurper().parseText(xmlBody)
+        
+        // =====================================================
+        // TODO: Configure namespaces if needed
+        // =====================================================
+        /*
+        // Declare namespaces
+        xml = xml.declareNamespace(
+            ns1: 'http://namespace1.uri',
+            ns2: 'http://namespace2.uri'
+        )
+        */
+        
+        // =====================================================
+        // Convert XML to JSON structure
+        // =====================================================
+        
+        def jsonData = convertXmlToJson(xml)
+        
+        // =====================================================
+        
+        // Build JSON
+        def builder = new JsonBuilder(jsonData)
+        def jsonOutput = builder.toString()
+        
+        // Option: Pretty print (remove in production)
+        // import groovy.json.JsonOutput
+        // jsonOutput = JsonOutput.prettyPrint(jsonOutput)
+        
+        // Set output
+        message.setBody(jsonOutput)
+        messageLog.addAttachmentAsString('OutputJSON', jsonOutput, 'application/json')
+        
+        // Set content type header
+        message.setHeader('Content-Type', 'application/json; charset=UTF-8')
+        
+    } catch (Exception e) {
+        messageLog.addAttachmentAsString('ConversionError', 
+            "XML to JSON conversion error: ${e.message}\n" +
+            "Input XML:\n${message.getBody(String)}", 
+            'text/plain')
+        
+        message.setProperty('ErrorMessage', e.message)
+        message.setProperty('ErrorScript', '${SCRIPT_NAME}')
+        message.setProperty('ErrorTimestamp', new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ"))
+        message.setProperty('SAP_ErrorModelStepID', '${SCRIPT_NAME}')
+        message.setProperty('SAP_ErrorText', "XML to JSON conversion failed: ${e.message}")
+        
+        throw e
+    }
+    
+    return message
+}
+
+/**
+ * Convert XML node to JSON structure recursively
+ */
+def convertXmlToJson(node) {
+    // Handle text nodes
+    if (node.children().size() == 0) {
+        def text = node.text()?.trim()
+        // Try to convert to number or boolean if applicable
+        if (text?.isNumber()) {
+            return text.toDouble() == text.toLong() ? text.toLong() : text.toDouble()
+        } else if (text == 'true' || text == 'false') {
+            return text.toBoolean()
+        }
+        return text ?: ''
+    }
+    
+    // Handle attributes
+    def result = [:]
+    def attributes = node.attributes()
+    if (attributes.size() > 0) {
+        attributes.each { key, value ->
+            result["@${key}"] = value
+        }
+    }
+    
+    // Group child elements by name
+    def childrenByName = [:]
+    node.children().each { child ->
+        def childName = child.name()
+        if (!childrenByName[childName]) {
+            childrenByName[childName] = []
+        }
+        childrenByName[childName] << child
+    }
+    
+    // Process child elements
+    childrenByName.each { name, children ->
+        if (children.size() == 1) {
+            // Single element - convert to object
+            result[name] = convertXmlToJson(children[0])
+        } else {
+            // Multiple elements with same name - convert to array
+            result[name] = children.collect { convertXmlToJson(it) }
+        }
+    }
+    
+    // Handle mixed content (text + elements)
+    def textContent = node.text()?.trim()
+    if (textContent && result.size() > 0) {
+        result['#text'] = textContent
+    } else if (textContent && result.size() == 0) {
+        return textContent
+    }
+    
+    return result.size() > 0 ? result : ''
+}
+
+/**
+ * Custom conversion for specific XML structure
+ * Override this method for custom mapping rules
+ */
+def convertXmlToJsonCustom(xml) {
+    // TODO: Implement custom conversion logic
+    // Example: Map specific XML elements to JSON fields
+    /*
+    def builder = new JsonBuilder()
+    builder {
+        id xml.Id.text()
+        name xml.Name.text()
+        date xml.Date.text()
+        items xml.Items.Item.collect { item ->
+            [
+                id: item.Id.text(),
+                name: item.Name.text(),
+                quantity: item.Quantity.text() as Integer
+            ]
+        }
+    }
+    return builder.content
+    */
+    
+    // Default: Use recursive conversion
+    return convertXmlToJson(xml)
+}

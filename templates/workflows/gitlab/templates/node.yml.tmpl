@@ -1,0 +1,165 @@
+# Node.js CI/CD Template
+#
+# Reusable template for Node.js projects with npm/yarn, Jest testing, ESLint, and build
+# Variables: {{NODE_VERSION}}, {{PROJECT_NAME}}
+
+# Base Node.js job template
+.node_base:
+  image: node:${NODE_VERSION:-18}
+  variables:
+    NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.cache/npm"
+    YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/.cache/yarn"
+  before_script:
+    - node --version
+    - npm --version || yarn --version
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-node
+    paths:
+      - .cache/npm
+      - .cache/yarn
+      - node_modules/
+
+# Detect package manager
+.node_setup:
+  extends: .node_base
+  script:
+    - |
+      if [ -f yarn.lock ]; then
+        echo "Using Yarn"
+        yarn install --frozen-lockfile
+      elif [ -f package-lock.json ]; then
+        echo "Using npm"
+        npm ci
+      elif [ -f pnpm-lock.yaml ]; then
+        echo "Using pnpm"
+        npm install -g pnpm
+        pnpm install --frozen-lockfile
+      else
+        echo "No lockfile found, using npm"
+        npm install
+      fi
+
+# Node.js build job
+.node_build:
+  extends: .node_setup
+  script:
+    - |
+      if [ -f yarn.lock ]; then
+        yarn build
+      elif [ -f package-lock.json ]; then
+        npm run build
+      elif [ -f pnpm-lock.yaml ]; then
+        pnpm build
+      else
+        npm run build || echo "No build script found"
+      fi
+  artifacts:
+    paths:
+      - dist/
+      - build/
+      - .next/
+      - out/
+    expire_in: 1 week
+
+# Node.js test job
+.node_test:
+  extends: .node_setup
+  script:
+    - |
+      # Run Jest tests
+      if npm list jest &> /dev/null || yarn list --pattern jest &> /dev/null; then
+        if [ -f yarn.lock ]; then
+          yarn test --coverage --coverageReporters=cobertura --coverageReporters=html --coverageReporters=text
+        elif [ -f package-lock.json ]; then
+          npm test -- --coverage --coverageReporters=cobertura --coverageReporters=html --coverageReporters=text
+        elif [ -f pnpm-lock.yaml ]; then
+          pnpm test -- --coverage --coverageReporters=cobertura --coverageReporters=html --coverageReporters=text
+        else
+          npm test -- --coverage || echo "Tests completed"
+        fi
+      else
+        echo "Jest not found, skipping tests"
+      fi
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+      junit:
+        - "test-results.xml"
+        - "junit.xml"
+    paths:
+      - coverage/
+      - test-results.xml
+      - junit.xml
+    expire_in: 1 week
+  allow_failure: false
+
+# Node.js linting job
+.node_lint:
+  extends: .node_setup
+  script:
+    - |
+      # Run ESLint
+      if npm list eslint &> /dev/null || yarn list --pattern eslint &> /dev/null; then
+        if [ -f yarn.lock ]; then
+          yarn lint || yarn run lint || echo "Linting completed with warnings"
+        elif [ -f package-lock.json ]; then
+          npm run lint || npm run lint:fix || echo "Linting completed with warnings"
+        elif [ -f pnpm-lock.yaml ]; then
+          pnpm lint || pnpm lint:fix || echo "Linting completed with warnings"
+        else
+          npx eslint . --ext .js,.jsx,.ts,.tsx || echo "Linting completed with warnings"
+        fi
+      else
+        echo "ESLint not found, skipping linting"
+      fi
+    - |
+      # Run Prettier check
+      if npm list prettier &> /dev/null || yarn list --pattern prettier &> /dev/null; then
+        if [ -f yarn.lock ]; then
+          yarn prettier --check . || echo "Prettier check completed"
+        elif [ -f package-lock.json ]; then
+          npm run prettier:check || npx prettier --check . || echo "Prettier check completed"
+        elif [ -f pnpm-lock.yaml ]; then
+          pnpm prettier --check . || echo "Prettier check completed"
+        fi
+      fi
+  allow_failure: true
+  artifacts:
+    paths:
+      - eslint-report.txt
+    expire_in: 1 day
+
+# Node.js type checking job
+.node_typecheck:
+  extends: .node_setup
+  script:
+    - |
+      # Run TypeScript type checking
+      if npm list typescript &> /dev/null || yarn list --pattern typescript &> /dev/null; then
+        if [ -f yarn.lock ]; then
+          yarn typecheck || yarn run type-check || npx tsc --noEmit
+        elif [ -f package-lock.json ]; then
+          npm run typecheck || npm run type-check || npx tsc --noEmit
+        elif [ -f pnpm-lock.yaml ]; then
+          pnpm typecheck || pnpm type-check || pnpm exec tsc --noEmit
+        else
+          npx tsc --noEmit || echo "Type checking completed"
+        fi
+      else
+        echo "TypeScript not found, skipping type checking"
+      fi
+  allow_failure: true
+  artifacts:
+    paths:
+      - tsconfig.tsbuildinfo
+    expire_in: 1 day
+
+# Node.js matrix testing (multiple versions)
+.node_test_matrix:
+  extends: .node_test
+  parallel:
+    matrix:
+      - NODE_VERSION: ["16", "18", "20"]

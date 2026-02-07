@@ -1,0 +1,206 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Solidity Smart Contract Patterns",
+  "description": "Design patterns and best practices for Solidity smart contract development",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "All patterns include testing strategies for verification",
+    "A3_transparency": "Patterns emphasize event emission and clear state changes",
+    "A4_non_harm": "Security-first approach to prevent financial loss"
+  },
+  "creational_patterns": {
+    "factory_pattern": {
+      "description": "Create new contract instances dynamically",
+      "use_when": "Need to deploy multiple instances of the same contract type",
+      "code_example": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\nimport \"@openzeppelin/contracts/access/Ownable.sol\";\n\ncontract TokenFactory is Ownable {\n    address[] public deployedTokens;\n    \n    event TokenCreated(address indexed tokenAddress, string name, string symbol);\n    \n    constructor() Ownable(msg.sender) {}\n    \n    function createToken(\n        string memory name,\n        string memory symbol,\n        uint256 initialSupply\n    ) external onlyOwner returns (address) {\n        Token newToken = new Token(name, symbol, initialSupply, msg.sender);\n        deployedTokens.push(address(newToken));\n        emit TokenCreated(address(newToken), name, symbol);\n        return address(newToken);\n    }\n    \n    function getDeployedTokens() external view returns (address[] memory) {\n        return deployedTokens;\n    }\n}",
+      "best_practices": [
+        "Emit events for all contract creations",
+        "Store deployed contract addresses for tracking",
+        "Use access control for factory functions",
+        "Consider using CREATE2 for deterministic addresses"
+      ],
+      "gas_considerations": "Factory deployment is expensive; consider minimal proxy pattern for gas savings"
+    },
+    "clone_pattern": {
+      "description": "Create minimal proxies that delegate to implementation",
+      "use_when": "Need cheap deployment of many similar contracts",
+      "code_example": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\nimport \"@openzeppelin/contracts/proxy/Clones.sol\";\n\ncontract VaultFactory {\n    using Clones for address;\n    \n    address public immutable implementation;\n    address[] public deployedVaults;\n    \n    event VaultCreated(address indexed vault, address indexed owner);\n    \n    constructor(address _implementation) {\n        implementation = _implementation;\n    }\n    \n    function createVault(bytes32 salt) external returns (address) {\n        address vault = implementation.cloneDeterministic(salt);\n        IVault(vault).initialize(msg.sender);\n        deployedVaults.push(vault);\n        emit VaultCreated(vault, msg.sender);\n        return vault;\n    }\n    \n    function predictVaultAddress(bytes32 salt) external view returns (address) {\n        return implementation.predictDeterministicAddress(salt);\n    }\n}",
+      "best_practices": [
+        "Implementation must be initializable, not constructible",
+        "Use deterministic deployment for predictable addresses",
+        "Initialize immediately after cloning to prevent front-running",
+        "Emit events for tracking"
+      ],
+      "gas_savings": "~10x cheaper than full contract deployment"
+    }
+  },
+  "structural_patterns": {
+    "proxy_pattern": {
+      "description": "Separate logic from storage for upgradeability",
+      "variants": {
+        "transparent_proxy": {
+          "description": "Admin and user calls routed differently",
+          "use_when": "Need clear separation of admin and user functions",
+          "implementation": "OpenZeppelin TransparentUpgradeableProxy"
+        },
+        "uups_proxy": {
+          "description": "Upgrade logic in implementation contract",
+          "use_when": "Gas-efficient upgrades with simpler proxy",
+          "implementation": "OpenZeppelin UUPSUpgradeable"
+        },
+        "beacon_proxy": {
+          "description": "Multiple proxies share single upgrade point",
+          "use_when": "Need to upgrade many proxies simultaneously",
+          "implementation": "OpenZeppelin BeaconProxy"
+        }
+      },
+      "code_example": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\nimport \"@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol\";\nimport \"@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol\";\n\ncontract VaultV1 is UUPSUpgradeable, OwnableUpgradeable {\n    uint256 public totalDeposits;\n    \n    /// @custom:oz-upgrades-unsafe-allow constructor\n    constructor() {\n        _disableInitializers();\n    }\n    \n    function initialize(address owner) public initializer {\n        __Ownable_init(owner);\n        __UUPSUpgradeable_init();\n    }\n    \n    function deposit() external payable {\n        totalDeposits += msg.value;\n    }\n    \n    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}\n}",
+      "best_practices": [
+        "Always use initializers instead of constructors",
+        "Disable initializers in constructor",
+        "Never remove or reorder storage variables",
+        "Use storage gaps for future variables",
+        "Test upgrades thoroughly before mainnet"
+      ],
+      "security_considerations": [
+        "Ensure only authorized addresses can upgrade",
+        "Verify new implementation before upgrading",
+        "Consider timelock for upgrades"
+      ]
+    },
+    "diamond_pattern": {
+      "description": "Modular contract with multiple facets",
+      "use_when": "Need unlimited contract size with modular functionality",
+      "reference": "EIP-2535",
+      "code_example": "// Simplified diamond structure\nstruct FacetCut {\n    address facetAddress;\n    FacetCutAction action;\n    bytes4[] functionSelectors;\n}\n\nenum FacetCutAction { Add, Replace, Remove }\n\ninterface IDiamondCut {\n    function diamondCut(\n        FacetCut[] calldata _diamondCut,\n        address _init,\n        bytes calldata _calldata\n    ) external;\n}",
+      "best_practices": [
+        "Use diamond storage pattern (AppStorage)",
+        "Group related functions into facets",
+        "Implement DiamondLoupe for introspection",
+        "Test each facet independently"
+      ],
+      "gas_considerations": "Additional gas for delegation; optimize for hot paths"
+    }
+  },
+  "behavioral_patterns": {
+    "checks_effects_interactions": {
+      "description": "Order operations to prevent reentrancy",
+      "use_when": "Any function making external calls",
+      "code_example": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\ncontract SecureVault {\n    mapping(address => uint256) public balances;\n    \n    event Withdrawal(address indexed user, uint256 amount);\n    \n    function withdraw(uint256 amount) external {\n        // 1. CHECKS - Validate conditions\n        require(balances[msg.sender] >= amount, \"Insufficient balance\");\n        \n        // 2. EFFECTS - Update state\n        balances[msg.sender] -= amount;\n        \n        // 3. INTERACTIONS - External calls last\n        (bool success, ) = msg.sender.call{value: amount}(\"\");\n        require(success, \"Transfer failed\");\n        \n        emit Withdrawal(msg.sender, amount);\n    }\n}",
+      "best_practices": [
+        "Always check conditions first",
+        "Update state before external calls",
+        "Use ReentrancyGuard for additional protection",
+        "Emit events after successful operations"
+      ]
+    },
+    "pull_over_push": {
+      "description": "Recipients withdraw rather than sender pushes",
+      "use_when": "Distributing funds to multiple recipients",
+      "code_example": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\ncontract PullPayment {\n    mapping(address => uint256) public pendingWithdrawals;\n    \n    event PaymentPending(address indexed payee, uint256 amount);\n    event PaymentWithdrawn(address indexed payee, uint256 amount);\n    \n    function _asyncTransfer(address payee, uint256 amount) internal {\n        pendingWithdrawals[payee] += amount;\n        emit PaymentPending(payee, amount);\n    }\n    \n    function withdrawPayments() external {\n        uint256 amount = pendingWithdrawals[msg.sender];\n        require(amount > 0, \"No pending payment\");\n        \n        pendingWithdrawals[msg.sender] = 0;\n        \n        (bool success, ) = msg.sender.call{value: amount}(\"\");\n        require(success, \"Withdrawal failed\");\n        \n        emit PaymentWithdrawn(msg.sender, amount);\n    }\n}",
+      "best_practices": [
+        "Prevent DoS by failed transfers",
+        "Recipients responsible for claiming",
+        "Consider expiration for unclaimed funds"
+      ]
+    },
+    "state_machine": {
+      "description": "Manage contract states and transitions",
+      "use_when": "Complex workflows with defined stages",
+      "code_example": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\ncontract Auction {\n    enum State { Created, Active, Ended, Cancelled }\n    State public state;\n    \n    uint256 public endTime;\n    address public highestBidder;\n    uint256 public highestBid;\n    \n    event StateChanged(State indexed oldState, State indexed newState);\n    \n    modifier inState(State _state) {\n        require(state == _state, \"Invalid state\");\n        _;\n    }\n    \n    function startAuction(uint256 duration) external inState(State.Created) {\n        State oldState = state;\n        state = State.Active;\n        endTime = block.timestamp + duration;\n        emit StateChanged(oldState, state);\n    }\n    \n    function endAuction() external inState(State.Active) {\n        require(block.timestamp >= endTime, \"Auction not ended\");\n        State oldState = state;\n        state = State.Ended;\n        emit StateChanged(oldState, state);\n    }\n}",
+      "best_practices": [
+        "Use enums for states",
+        "Emit events on state transitions",
+        "Use modifiers to enforce state requirements",
+        "Define valid transitions clearly"
+      ]
+    }
+  },
+  "access_control_patterns": {
+    "ownable": {
+      "description": "Single owner with full privileges",
+      "use_when": "Simple ownership model",
+      "implementation": "OpenZeppelin Ownable",
+      "code_example": "import \"@openzeppelin/contracts/access/Ownable.sol\";\n\ncontract MyContract is Ownable {\n    constructor() Ownable(msg.sender) {}\n    \n    function adminFunction() external onlyOwner {\n        // Only owner can call\n    }\n}"
+    },
+    "role_based": {
+      "description": "Multiple roles with different permissions",
+      "use_when": "Complex permission requirements",
+      "implementation": "OpenZeppelin AccessControl",
+      "code_example": "import \"@openzeppelin/contracts/access/AccessControl.sol\";\n\ncontract Treasury is AccessControl {\n    bytes32 public constant ADMIN_ROLE = keccak256(\"ADMIN_ROLE\");\n    bytes32 public constant SPENDER_ROLE = keccak256(\"SPENDER_ROLE\");\n    \n    constructor() {\n        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);\n        _grantRole(ADMIN_ROLE, msg.sender);\n    }\n    \n    function spend(address to, uint256 amount) external onlyRole(SPENDER_ROLE) {\n        // Spending logic\n    }\n}"
+    },
+    "multisig": {
+      "description": "Multiple signatures required for actions",
+      "use_when": "High-value operations requiring consensus",
+      "implementation": "Safe (Gnosis Safe)",
+      "best_practices": [
+        "Require M-of-N signatures",
+        "Implement timelock for critical operations",
+        "Allow signature aggregation"
+      ]
+    }
+  },
+  "gas_optimization_patterns": {
+    "storage_packing": {
+      "description": "Pack multiple variables into single storage slot",
+      "code_example": "// BAD: 3 storage slots (96 bytes read/written)\ncontract Unoptimized {\n    uint256 a; // slot 0 (32 bytes)\n    uint8 b;   // slot 1\n    uint256 c; // slot 2\n    uint8 d;   // slot 3\n}\n\n// GOOD: 2 storage slots\ncontract Optimized {\n    uint256 a; // slot 0\n    uint256 c; // slot 1\n    uint8 b;   // slot 2 (packed)\n    uint8 d;   // slot 2 (packed)\n}",
+      "savings": "~2100 gas per slot saved"
+    },
+    "calldata_over_memory": {
+      "description": "Use calldata for read-only external arrays",
+      "code_example": "// BAD: Copies array to memory\nfunction bad(uint256[] memory data) external {\n    // ...\n}\n\n// GOOD: Reads directly from calldata\nfunction good(uint256[] calldata data) external {\n    // ...\n}",
+      "savings": "~200 gas per element"
+    },
+    "unchecked_arithmetic": {
+      "description": "Skip overflow checks when safe",
+      "code_example": "function increment(uint256 i) internal pure returns (uint256) {\n    unchecked {\n        return i + 1;\n    }\n}",
+      "use_when": "Mathematically impossible to overflow (e.g., loop counters)",
+      "savings": "~80 gas per operation"
+    },
+    "short_circuit": {
+      "description": "Order conditions by likelihood and gas cost",
+      "code_example": "// BAD: Expensive check first\nif (expensiveCheck() && simpleCheck) { ... }\n\n// GOOD: Cheap check first\nif (simpleCheck && expensiveCheck()) { ... }"
+    }
+  },
+  "testing_patterns": {
+    "unit_testing": {
+      "framework": "Foundry (Forge)",
+      "code_example": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\nimport \"forge-std/Test.sol\";\nimport \"../src/Token.sol\";\n\ncontract TokenTest is Test {\n    Token token;\n    address alice = makeAddr(\"alice\");\n    address bob = makeAddr(\"bob\");\n    \n    function setUp() public {\n        token = new Token(\"Test\", \"TST\", 1000e18);\n        token.transfer(alice, 100e18);\n    }\n    \n    function test_Transfer() public {\n        vm.prank(alice);\n        token.transfer(bob, 50e18);\n        \n        assertEq(token.balanceOf(alice), 50e18);\n        assertEq(token.balanceOf(bob), 50e18);\n    }\n    \n    function testFail_TransferInsufficientBalance() public {\n        vm.prank(alice);\n        token.transfer(bob, 200e18); // Should fail\n    }\n}"
+    },
+    "fuzz_testing": {
+      "description": "Randomized input testing",
+      "code_example": "function testFuzz_TransferBounded(uint256 amount) public {\n    amount = bound(amount, 0, token.balanceOf(alice));\n    \n    vm.prank(alice);\n    token.transfer(bob, amount);\n    \n    assertEq(token.balanceOf(bob), amount);\n}",
+      "best_practices": [
+        "Use bound() to constrain inputs",
+        "Run 10,000+ iterations",
+        "Test edge cases explicitly"
+      ]
+    },
+    "invariant_testing": {
+      "description": "Test properties that must always hold",
+      "code_example": "function invariant_TotalSupplyConstant() public {\n    assertEq(token.totalSupply(), INITIAL_SUPPLY);\n}\n\nfunction invariant_BalancesSumToSupply() public {\n    uint256 sum = token.balanceOf(address(this)) + \n                  token.balanceOf(alice) + \n                  token.balanceOf(bob);\n    assertEq(sum, token.totalSupply());\n}"
+    }
+  },
+  "anti_patterns": {
+    "tx_origin_authentication": {
+      "description": "Using tx.origin for authentication",
+      "problem": "Vulnerable to phishing attacks",
+      "solution": "Always use msg.sender for authentication"
+    },
+    "unchecked_external_calls": {
+      "description": "Not checking return values of external calls",
+      "problem": "Silent failures",
+      "solution": "Always check return values or use OpenZeppelin SafeERC20"
+    },
+    "floating_pragma": {
+      "description": "Using floating pragma (^0.8.0)",
+      "problem": "Inconsistent compilation across versions",
+      "solution": "Lock pragma to specific version (0.8.24)"
+    },
+    "public_storage": {
+      "description": "Relying on private visibility for secrets",
+      "problem": "All blockchain data is publicly readable",
+      "solution": "Never store secrets on-chain; use commit-reveal or encryption"
+    }
+  }
+}

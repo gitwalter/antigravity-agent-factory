@@ -1,0 +1,199 @@
+{
+  "name": "{{WORKFLOW_NAME}} - GitHub PR Review",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "github-pr-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger-{{NODE_ID}}",
+      "name": "GitHub Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "{{WEBHOOK_ID}}"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate GitHub webhook\nconst payload = $input.first().json.body;\nconst headers = $input.first().json.headers;\n\n// Verify GitHub signature\nconst crypto = require('crypto');\nconst secret = '{{GITHUB_WEBHOOK_SECRET}}';\nconst signature = headers['x-hub-signature-256'];\n\nif (signature && secret) {\n  const payloadString = JSON.stringify(payload);\n  const expectedSignature = crypto\n    .createHmac('sha256', secret)\n    .update(payloadString)\n    .digest('hex');\n  \n  if (signature !== `sha256=${expectedSignature}`) {\n    throw new Error('Invalid GitHub webhook signature');\n  }\n}\n\n// Filter for PR events\nif (payload.action !== 'opened' && payload.action !== 'synchronize') {\n  return [];\n}\n\nconst pr = payload.pull_request;\n\nreturn [{\n  json: {\n    action: payload.action,\n    pr_number: pr.number,\n    pr_title: pr.title,\n    pr_body: pr.body,\n    pr_url: pr.html_url,\n    author: pr.user.login,\n    repository: payload.repository.full_name,\n    base_branch: pr.base.ref,\n    head_branch: pr.head.ref,\n    commits: pr.commits,\n    additions: pr.additions,\n    deletions: pr.deletions,\n    changed_files: pr.changed_files\n  }\n}];"
+      },
+      "id": "validate-webhook-{{NODE_ID}}",
+      "name": "Validate Webhook",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getDiff",
+        "repository": "={{ $json.repository }}",
+        "pullRequestNumber": "={{ $json.pr_number }}",
+        "options": {}
+      },
+      "id": "get-pr-diff-{{NODE_ID}}",
+      "name": "Get PR Diff",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [650, 300],
+      "credentials": {
+        "githubApi": {
+          "id": "{{GITHUB_CREDENTIAL_ID}}",
+          "name": "{{GITHUB_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "complete",
+        "model": "{{LLM_MODEL}}",
+        "options": {
+          "temperature": 0.3,
+          "maxTokens": 2000
+        },
+        "text": "={{ `Review this GitHub Pull Request:\\n\\nTitle: ${$json.pr_title}\\n\\nDescription:\\n${$json.pr_body || 'No description'}\\n\\nDiff:\\n${$('Get PR Diff').first().json.diff}\\n\\nProvide a code review with:\\n1. Overall assessment\\n2. Critical issues\\n3. Suggestions for improvement\\n4. Security concerns\\n5. Best practices\\n\\nFormat as JSON with keys: assessment, critical_issues (array), suggestions (array), security_concerns (array), best_practices (array).` }}",
+        "prompt": ""
+      },
+      "id": "ai-review-{{NODE_ID}}",
+      "name": "AI Code Review",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.3,
+      "position": [850, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "{{OPENAI_CREDENTIAL_ID}}",
+          "name": "{{OPENAI_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse AI review response\nconst aiResponse = $input.first().json.text || $input.first().json.choices?.[0]?.message?.content || '';\nconst prData = $('Validate Webhook').first().json;\n\nlet reviewData;\ntry {\n  reviewData = JSON.parse(aiResponse);\n} catch (e) {\n  // If not JSON, create structured response\n  reviewData = {\n    assessment: aiResponse,\n    critical_issues: [],\n    suggestions: [],\n    security_concerns: [],\n    best_practices: []\n  };\n}\n\n// Format review comment\nconst commentBody = `## 🤖 AI Code Review\\n\\n### Overall Assessment\\n${reviewData.assessment || 'No assessment provided'}\\n\\n${reviewData.critical_issues?.length > 0 ? `### ⚠️ Critical Issues\\n${reviewData.critical_issues.map((issue, i) => `${i + 1}. ${issue}`).join('\\n')}\\n` : ''}\\n${reviewData.security_concerns?.length > 0 ? `### 🔒 Security Concerns\\n${reviewData.security_concerns.map((concern, i) => `${i + 1}. ${concern}`).join('\\n')}\\n` : ''}\\n${reviewData.suggestions?.length > 0 ? `### 💡 Suggestions\\n${reviewData.suggestions.map((suggestion, i) => `${i + 1}. ${suggestion}`).join('\\n')}\\n` : ''}\\n${reviewData.best_practices?.length > 0 ? `### ✅ Best Practices\\n${reviewData.best_practices.map((practice, i) => `${i + 1}. ${practice}`).join('\\n')}\\n` : ''}`;\n\nreturn [{\n  json: {\n    ...prData,\n    review: reviewData,\n    comment_body: commentBody\n  }\n}];"
+      },
+      "id": "format-review-{{NODE_ID}}",
+      "name": "Format Review",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "operation": "createComment",
+        "repository": "={{ $json.repository }}",
+        "pullRequestNumber": "={{ $json.pr_number }}",
+        "body": "={{ $json.comment_body }}",
+        "options": {}
+      },
+      "id": "post-comment-{{NODE_ID}}",
+      "name": "Post Review Comment",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [1250, 300],
+      "credentials": {
+        "githubApi": {
+          "id": "{{GITHUB_CREDENTIAL_ID}}",
+          "name": "{{GITHUB_CREDENTIAL_NAME}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"success\", \"pr_number\": $json.pr_number, \"review_posted\": true } }}",
+        "options": {}
+      },
+      "id": "respond-success-{{NODE_ID}}",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1450, 300]
+    }
+  ],
+  "connections": {
+    "GitHub Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get PR Diff",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get PR Diff": {
+      "main": [
+        [
+          {
+            "node": "AI Code Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Code Review": {
+      "main": [
+        [
+          {
+            "node": "Format Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Review": {
+      "main": [
+        [
+          {
+            "node": "Post Review Comment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Review Comment": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "{{TIMESTAMP}}",
+      "updatedAt": "{{TIMESTAMP}}",
+      "id": "{{TAG_ID}}",
+      "name": "github-integration"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "{{TIMESTAMP}}",
+  "versionId": "{{VERSION_ID}}"
+}

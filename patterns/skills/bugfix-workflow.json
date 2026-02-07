@@ -1,0 +1,136 @@
+{
+  "metadata": {
+    "patternId": "bugfix-workflow",
+    "patternName": "Bugfix Workflow Skill",
+    "category": "workflow",
+    "stackAgnostic": true,
+    "description": "Ticket-initiated bugfix workflow from analysis to implementation",
+    "composable": true
+  },
+  "frontmatter": {
+    "name": "bugfix-workflow",
+    "description": "Ticket-initiated bugfix workflow for development",
+    "type": "skill",
+    "skills": [
+      "grounding"
+    ],
+    "knowledge": [
+      "object-types.json"
+    ]
+  },
+  "sections": {
+    "title": "Bugfix Workflow Skill",
+    "introduction": "Guides the complete process of fixing bugs reported in tickets.",
+    "whenToUse": [
+      "When a ticket ID is mentioned (patterns: {PROJECT}-123, #123)",
+      "When fixing bugs in code",
+      "When investigating defects"
+    ],
+    "process": [
+      {
+        "step": 1,
+        "name": "Read Ticket",
+        "description": "Fetch and analyze the ticket",
+        "mcpTools": [
+          "atlassian-getJiraIssue"
+        ],
+        "outputs": [
+          "Issue type",
+          "Priority",
+          "Description",
+          "Affected objects"
+        ]
+      },
+      {
+        "step": 2,
+        "name": "Fetch Source",
+        "description": "Acquire source code for analysis",
+        "actions": [
+          "Check src/ folder for existing files",
+          "Provide manual copy instructions if not available"
+        ]
+      },
+      {
+        "step": 3,
+        "name": "Ground Data Model",
+        "description": "Verify all data structures before analysis",
+        "skillsInvoked": [
+          "grounding"
+        ],
+        "isMandatory": true
+      },
+      {
+        "step": 4,
+        "name": "Analyze Code",
+        "description": "Find root cause of the bug",
+        "actions": [
+          "Read source files",
+          "Search for bug-related code",
+          "Trace data flow",
+          "Identify root cause location"
+        ]
+      },
+      {
+        "step": 5,
+        "name": "Create Implementation Plan",
+        "description": "Document the fix plan",
+        "outputs": [
+          "docs/{TICKET_ID}_plan.md"
+        ],
+        "template": "templates/implementation_plan.md"
+      },
+      {
+        "step": 6,
+        "name": "Implement Fix",
+        "description": "Create code changes",
+        "outputs": [
+          "Modified code snippets",
+          "Before/after comparison"
+        ]
+      },
+      {
+        "step": 7,
+        "name": "Update Ticket",
+        "description": "Update ticket with results",
+        "mcpTools": [
+          "atlassian-addCommentToJiraIssue",
+          "atlassian-transitionJiraIssue"
+        ]
+      }
+    ],
+    "fallbackProcedures": [
+      {
+        "condition": "If ticket fetch fails",
+        "action": "Ask user to provide ticket details manually"
+      },
+      {
+        "condition": "If source not in src/ folder",
+        "action": "Provide manual copy instructions"
+      },
+      {
+        "condition": "If data model cannot be verified",
+        "action": "ASK USER for confirmation, do not proceed with assumptions"
+      }
+    ],
+    "references": [
+      "workflows/bugfix_workflow.md",
+      "workflows/manual_source_transfer.md",
+      "knowledge/object-types.json"
+    ],
+    "importantRules": [
+      "All actions must align with core axioms (A1: Verifiability, A2: User Primacy, A3: Transparency, A4: Non-Harm, A5: Consistency)"
+    ]
+  },
+  "variables": [
+    {
+      "name": "{TICKET_ID}",
+      "description": "Ticket identifier",
+      "required": true
+    },
+    {
+      "name": "{PROJECT_KEY}",
+      "description": "Project key for tickets",
+      "required": true
+    }
+  ]
+}

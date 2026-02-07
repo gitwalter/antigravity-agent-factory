@@ -1,0 +1,98 @@
+"! <p class="shorttext synchronized">${REPORT_DESCRIPTION}</p>
+"! Executable ABAP report with selection screen
+"! @author ${AUTHOR}
+"! @date ${DATE}
+"! @version 1.0
+"!
+"! Purpose: ${PURPOSE}
+"!
+"! Example usage:
+"!   Execute report and fill selection screen parameters
+"!
+REPORT ${REPORT_NAME}.
+
+" Selection screen definition
+SELECTION-SCREEN BEGIN OF BLOCK ${BLOCK_NAME} WITH FRAME TITLE ${TITLE_TEXT}.
+  SELECT-OPTIONS:
+    ${SELECT_OPTION_NAME} FOR ${TABLE_NAME}-${FIELD_NAME},
+    ${SECOND_SELECT_OPTION_NAME} FOR ${SECOND_TABLE_NAME}-${SECOND_FIELD_NAME}.
+    
+  PARAMETERS:
+    ${PARAMETER_NAME} TYPE ${PARAMETER_TYPE} DEFAULT ${DEFAULT_VALUE},
+    ${SECOND_PARAMETER_NAME} TYPE ${SECOND_PARAMETER_TYPE} DEFAULT ${SECOND_DEFAULT_VALUE}.
+    
+SELECTION-SCREEN END OF BLOCK ${BLOCK_NAME}.
+
+" Type definitions
+TYPES:
+  BEGIN OF ${TYPE_NAME},
+    ${FIELD_NAME} TYPE ${FIELD_TYPE},
+    ${SECOND_FIELD_NAME} TYPE ${SECOND_FIELD_TYPE},
+  END OF ${TYPE_NAME},
+  ${TABLE_TYPE_NAME} TYPE STANDARD TABLE OF ${TYPE_NAME} WITH DEFAULT KEY.
+
+" Data declarations
+DATA:
+  ${DATA_NAME} TYPE ${DATA_TYPE},
+  ${TABLE_NAME} TYPE ${TABLE_TYPE_NAME},
+  service TYPE REF TO ${SERVICE_INTERFACE_NAME}.
+
+" Initialization
+INITIALIZATION.
+  " Set default values or perform initialization logic
+  ${PARAMETER_NAME} = ${DEFAULT_VALUE}.
+
+" Start of selection
+START-OF-SELECTION.
+  " Main processing logic
+  PERFORM main.
+
+" End of selection
+END-OF-SELECTION.
+  " Display results
+  PERFORM display_results.
+
+" Form routines
+FORM main.
+  " Validate input
+  PERFORM validate_input.
+  
+  " Create service instance
+  TRY.
+      service = ${FACTORY_CLASS_NAME}=>create_service( ).
+    CATCH ${EXCEPTION_CLASS_NAME} INTO DATA(exception).
+      MESSAGE exception->get_text( ) TYPE 'E'.
+      RETURN.
+  ENDTRY.
+  
+  " Process data
+  PERFORM process_data.
+ENDFORM.
+
+FORM validate_input.
+  " Validate selection screen input
+  IF ${PARAMETER_NAME} IS INITIAL.
+    MESSAGE '${PARAMETER_NAME} is required' TYPE 'E'.
+  ENDIF.
+ENDFORM.
+
+FORM process_data.
+  " Process data using service
+  TRY.
+      DATA(result) = service->${METHOD_NAME}( ${PARAMETER_NAME} = ${PARAMETER_NAME} ).
+      
+      " Store result
+      ${TABLE_NAME} = result.
+      
+    CATCH ${EXCEPTION_CLASS_NAME} INTO DATA(exception).
+      MESSAGE exception->get_text( ) TYPE 'E'.
+      RETURN.
+  ENDTRY.
+ENDFORM.
+
+FORM display_results.
+  " Display results
+  LOOP AT ${TABLE_NAME} INTO DATA(line).
+    WRITE: / line-${FIELD_NAME}, line-${SECOND_FIELD_NAME}.
+  ENDLOOP.
+ENDFORM.

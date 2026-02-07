@@ -1,0 +1,250 @@
+# Java CI/CD Template
+#
+# Reusable template for Java projects with Maven/Gradle, JUnit testing, and build artifacts
+# Variables: {{JAVA_VERSION}}, {{MAVEN_VERSION}}, {{GRADLE_VERSION}}, {{PROJECT_NAME}}
+
+# Base Java job template
+.java_base:
+  image: eclipse-temurin:${JAVA_VERSION:-17}-jdk
+  variables:
+    MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.caching=true -Dorg.gradle.parallel=true"
+  before_script:
+    - java -version
+    - |
+      if [ -f pom.xml ]; then
+        mvn --version || echo "Maven not found"
+      elif [ -f build.gradle ] || [ -f build.gradle.kts ]; then
+        ./gradlew --version || gradle --version || echo "Gradle not found"
+      fi
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-java
+    paths:
+      - .m2/repository
+      - .gradle/caches
+      - .gradle/wrapper
+
+# Detect build tool
+.java_detect_build:
+  extends: .java_base
+  script:
+    - |
+      if [ -f pom.xml ]; then
+        echo "Detected Maven project"
+        export BUILD_TOOL="maven"
+      elif [ -f build.gradle ] || [ -f build.gradle.kts ]; then
+        echo "Detected Gradle project"
+        export BUILD_TOOL="gradle"
+      else
+        echo "No build tool detected (pom.xml or build.gradle)"
+        exit 1
+      fi
+
+# Maven build job
+.maven_build:
+  extends: .java_base
+  script:
+    - |
+      if [ -f pom.xml ]; then
+        mvn clean compile -DskipTests
+        mvn package -DskipTests
+      else
+        echo "pom.xml not found, skipping Maven build"
+        exit 1
+      fi
+  artifacts:
+    paths:
+      - target/*.jar
+      - target/*.war
+      - target/classes/
+    expire_in: 1 week
+
+# Gradle build job
+.gradle_build:
+  extends: .java_base
+  script:
+    - |
+      if [ -f build.gradle ] || [ -f build.gradle.kts ]; then
+        if [ -f gradlew ]; then
+          chmod +x gradlew
+          ./gradlew clean build -x test
+        else
+          gradle clean build -x test
+        fi
+      else
+        echo "build.gradle not found, skipping Gradle build"
+        exit 1
+      fi
+  artifacts:
+    paths:
+      - build/libs/*.jar
+      - build/libs/*.war
+      - build/classes/
+    expire_in: 1 week
+
+# Java build job (auto-detect Maven or Gradle)
+.java_build:
+  extends: .java_base
+  script:
+    - |
+      if [ -f pom.xml ]; then
+        echo "Building with Maven"
+        mvn clean compile -DskipTests
+        mvn package -DskipTests
+      elif [ -f build.gradle ] || [ -f build.gradle.kts ]; then
+        echo "Building with Gradle"
+        if [ -f gradlew ]; then
+          chmod +x gradlew
+          ./gradlew clean build -x test
+        else
+          gradle clean build -x test
+        fi
+      else
+        echo "No build tool detected"
+        exit 1
+      fi
+  artifacts:
+    paths:
+      - target/*.jar
+      - target/*.war
+      - build/libs/*.jar
+      - build/libs/*.war
+    expire_in: 1 week
+
+# Maven test job
+.maven_test:
+  extends: .java_base
+  script:
+    - |
+      if [ -f pom.xml ]; then
+        mvn clean test
+        mvn surefire-report:report
+      else
+        echo "pom.xml not found, skipping Maven tests"
+        exit 1
+      fi
+  coverage: '/Total.*?([0-9]{1,3})%/'
+  artifacts:
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: target/site/jacoco/jacoco.xml
+    paths:
+      - target/surefire-reports/
+      - target/site/jacoco/
+    expire_in: 1 week
+  allow_failure: false
+
+# Gradle test job
+.gradle_test:
+  extends: .java_base
+  script:
+    - |
+      if [ -f build.gradle ] || [ -f build.gradle.kts ]; then
+        if [ -f gradlew ]; then
+          chmod +x gradlew
+          ./gradlew clean test
+        else
+          gradle clean test
+        fi
+      else
+        echo "build.gradle not found, skipping Gradle tests"
+        exit 1
+      fi
+  coverage: '/Total.*?([0-9]{1,3})%/'
+  artifacts:
+    reports:
+      junit:
+        - build/test-results/test/TEST-*.xml
+    paths:
+      - build/test-results/
+      - build/reports/
+    expire_in: 1 week
+  allow_failure: false
+
+# Java test job (auto-detect Maven or Gradle)
+.java_test:
+  extends: .java_base
+  script:
+    - |
+      if [ -f pom.xml ]; then
+        echo "Testing with Maven"
+        mvn clean test
+        mvn surefire-report:report
+        # Try to generate coverage report
+        mvn jacoco:report || echo "JaCoCo not configured"
+      elif [ -f build.gradle ] || [ -f build.gradle.kts ]; then
+        echo "Testing with Gradle"
+        if [ -f gradlew ]; then
+          chmod +x gradlew
+          ./gradlew clean test
+          ./gradlew jacocoTestReport || echo "JaCoCo not configured"
+        else
+          gradle clean test
+          gradle jacocoTestReport || echo "JaCoCo not configured"
+        fi
+      else
+        echo "No build tool detected"
+        exit 1
+      fi
+  coverage: '/Total.*?([0-9]{1,3})%/'
+  artifacts:
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
+        - build/test-results/test/TEST-*.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: |
+          target/site/jacoco/jacoco.xml
+          build/reports/jacoco/test/jacoco.xml
+    paths:
+      - target/surefire-reports/
+      - target/site/jacoco/
+      - build/test-results/
+      - build/reports/
+    expire_in: 1 week
+  allow_failure: false
+
+# Java linting job (Checkstyle, PMD, SpotBugs)
+.java_lint:
+  extends: .java_base
+  script:
+    - |
+      if [ -f pom.xml ]; then
+        echo "Running Maven quality checks"
+        mvn checkstyle:check || echo "Checkstyle not configured"
+        mvn pmd:check || echo "PMD not configured"
+        mvn spotbugs:check || echo "SpotBugs not configured"
+      elif [ -f build.gradle ] || [ -f build.gradle.kts ]; then
+        echo "Running Gradle quality checks"
+        if [ -f gradlew ]; then
+          chmod +x gradlew
+          ./gradlew checkstyleMain checkstyleTest || echo "Checkstyle not configured"
+          ./gradlew pmdMain pmdTest || echo "PMD not configured"
+          ./gradlew spotbugsMain spotbugsTest || echo "SpotBugs not configured"
+        else
+          gradle checkstyleMain checkstyleTest || echo "Checkstyle not configured"
+          gradle pmdMain pmdTest || echo "PMD not configured"
+          gradle spotbugsMain spotbugsTest || echo "SpotBugs not configured"
+        fi
+      else
+        echo "No build tool detected"
+      fi
+  allow_failure: true
+  artifacts:
+    paths:
+      - target/checkstyle-result.xml
+      - build/reports/checkstyle/
+      - build/reports/pmd/
+      - build/reports/spotbugs/
+    expire_in: 1 day
+
+# Java matrix testing (multiple Java versions)
+.java_test_matrix:
+  extends: .java_test
+  parallel:
+    matrix:
+      - JAVA_VERSION: ["11", "17", "21"]

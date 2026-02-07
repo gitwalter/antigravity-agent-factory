@@ -1,0 +1,198 @@
+/**
+ * ${SCRIPT_NAME} - Structured Logging Pattern
+ * 
+ * Purpose: ${SCRIPT_PURPOSE}
+ * Author: ${AUTHOR}
+ * Created: ${DATE}
+ * 
+ * Input:  ${INPUT_FORMAT}
+ * Output: ${OUTPUT_FORMAT}
+ * 
+ * Logging Levels:
+ *   - INFO: General information about processing
+ *   - DEBUG: Detailed debugging information
+ *   - WARN: Warning messages for non-critical issues
+ *   - ERROR: Error messages for failures
+ * 
+ * Notes:
+ *   - Uses messageLog for CPI monitoring visibility
+ *   - Structured logging with consistent format
+ *   - Includes correlation IDs for tracing
+ *   - Logs business context, not sensitive data
+ */
+import com.sap.gateway.ip.core.customdev.util.Message
+
+def Message processData(Message message) {
+    def messageLog = messageLogFactory.getMessageLog(message)
+    
+    try {
+        // Get correlation ID for tracing
+        def correlationId = message.getProperty('SAP_CorrelationID') ?: 
+                           message.getHeader('X-Correlation-ID', String) ?:
+                           UUID.randomUUID().toString()
+        
+        message.setProperty('SAP_CorrelationID', correlationId)
+        
+        // Start logging
+        logInfo(messageLog, correlationId, 'Processing started', [
+            script: '${SCRIPT_NAME}',
+            timestamp: new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+        ])
+        
+        // =====================================================
+        // TODO: Add your processing logic here
+        // =====================================================
+        
+        def body = message.getBody(String)
+        
+        // Log input (sanitize if contains sensitive data)
+        logDebug(messageLog, correlationId, 'Input received', [
+            bodyLength: body?.length() ?: 0,
+            contentType: message.getHeader('Content-Type', String) ?: 'unknown'
+        ])
+        
+        // Your business logic here
+        def result = processBusinessLogic(body, messageLog, correlationId)
+        
+        // =====================================================
+        
+        // Log success
+        logInfo(messageLog, correlationId, 'Processing completed successfully', [
+            outputLength: result?.length() ?: 0
+        ])
+        
+        message.setBody(result)
+        
+    } catch (Exception e) {
+        // Log error with full context
+        logError(messageLog, 
+                message.getProperty('SAP_CorrelationID') ?: UUID.randomUUID().toString(),
+                'Processing failed',
+                [
+                    error: e.message,
+                    errorClass: e.class.simpleName,
+                    script: '${SCRIPT_NAME}'
+                ],
+                e)
+        
+        message.setProperty('ErrorMessage', e.message)
+        message.setProperty('ErrorScript', '${SCRIPT_NAME}')
+        message.setProperty('ErrorTimestamp', new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ"))
+        message.setProperty('SAP_ErrorModelStepID', '${SCRIPT_NAME}')
+        message.setProperty('SAP_ErrorText', "Error in ${SCRIPT_NAME}: ${e.message}")
+        
+        throw e
+    }
+    
+    return message
+}
+
+/**
+ * Log INFO level message
+ */
+def logInfo(messageLog, correlationId, message, Map context = [:]) {
+    def logEntry = buildLogEntry('INFO', correlationId, message, context)
+    messageLog.addAttachmentAsString('Log', logEntry, 'text/plain')
+}
+
+/**
+ * Log DEBUG level message
+ */
+def logDebug(messageLog, correlationId, message, Map context = [:]) {
+    def logEntry = buildLogEntry('DEBUG', correlationId, message, context)
+    messageLog.addAttachmentAsString('Log', logEntry, 'text/plain')
+}
+
+/**
+ * Log WARN level message
+ */
+def logWarn(messageLog, correlationId, message, Map context = [:]) {
+    def logEntry = buildLogEntry('WARN', correlationId, message, context)
+    messageLog.addAttachmentAsString('Log', logEntry, 'text/plain')
+}
+
+/**
+ * Log ERROR level message
+ */
+def logError(messageLog, correlationId, message, Map context = [:], Exception exception = null) {
+    def errorContext = new LinkedHashMap(context)
+    if (exception) {
+        errorContext.errorMessage = exception.message
+        errorContext.errorClass = exception.class.name
+        errorContext.stackTrace = exception.stackTrace.take(10).join('\n') // First 10 lines
+    }
+    
+    def logEntry = buildLogEntry('ERROR', correlationId, message, errorContext)
+    messageLog.addAttachmentAsString('Log', logEntry, 'text/plain')
+    
+    // Also log as separate error attachment
+    if (exception) {
+        def errorDetails = """ERROR: ${message}
+Correlation ID: ${correlationId}
+Timestamp: ${new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ")}
+Error: ${exception.message}
+Class: ${exception.class.name}
+
+Stack Trace:
+${exception.stackTrace.join('\n')}
+
+Context:
+${formatContext(errorContext)}
+"""
+        messageLog.addAttachmentAsString('Error', errorDetails, 'text/plain')
+    }
+}
+
+/**
+ * Build structured log entry
+ */
+def buildLogEntry(String level, String correlationId, String message, Map context) {
+    def timestamp = new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+    def contextStr = formatContext(context)
+    
+    return """[${timestamp}] [${level}] [${correlationId}] ${message}
+${contextStr}
+"""
+}
+
+/**
+ * Format context map as string
+ */
+def formatContext(Map context) {
+    if (!context || context.isEmpty()) {
+        return ''
+    }
+    
+    return context.collect { key, value ->
+        "  ${key}: ${value}"
+    }.join('\n')
+}
+
+/**
+ * Process business logic
+ * Replace with your actual processing
+ */
+def processBusinessLogic(String input, messageLog, correlationId) {
+    // TODO: Implement your business logic
+    // Example logging during processing:
+    /*
+    logDebug(messageLog, correlationId, 'Step 1: Parsing input', [:])
+    def parsed = parseInput(input)
+    
+    logDebug(messageLog, correlationId, 'Step 2: Validating data', [
+        recordCount: parsed.size()
+    ])
+    validateData(parsed)
+    
+    logDebug(messageLog, correlationId, 'Step 3: Transforming data', [:])
+    def transformed = transformData(parsed)
+    
+    logInfo(messageLog, correlationId, 'Business logic completed', [
+        recordsProcessed: transformed.size()
+    ])
+    
+    return transformed
+    */
+    
+    return input
+}

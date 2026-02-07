@@ -1,0 +1,256 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Deep Learning Patterns",
+  "description": "Framework-agnostic deep learning patterns for training, optimization, and deployment",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns include reproducibility settings and checkpointing",
+    "A3_transparency": "Training loops are explicit with clear logging"
+  },
+  "training_patterns": {
+    "basic_training_loop": {
+      "description": "Standard training loop structure",
+      "use_when": "Implementing custom training in PyTorch",
+      "code_example": "import torch\nimport torch.nn as nn\nfrom torch.utils.data import DataLoader\nfrom tqdm import tqdm\n\ndef train_epoch(model, dataloader, optimizer, criterion, device):\n    model.train()\n    total_loss = 0\n    correct = 0\n    total = 0\n    \n    for batch_idx, (inputs, targets) in enumerate(tqdm(dataloader, desc='Training')):\n        inputs, targets = inputs.to(device), targets.to(device)\n        \n        # Forward pass\n        optimizer.zero_grad()\n        outputs = model(inputs)\n        loss = criterion(outputs, targets)\n        \n        # Backward pass\n        loss.backward()\n        optimizer.step()\n        \n        # Metrics\n        total_loss += loss.item()\n        _, predicted = outputs.max(1)\n        total += targets.size(0)\n        correct += predicted.eq(targets).sum().item()\n    \n    return total_loss / len(dataloader), 100. * correct / total\n\ndef validate(model, dataloader, criterion, device):\n    model.eval()\n    total_loss = 0\n    correct = 0\n    total = 0\n    \n    with torch.no_grad():\n        for inputs, targets in dataloader:\n            inputs, targets = inputs.to(device), targets.to(device)\n            outputs = model(inputs)\n            loss = criterion(outputs, targets)\n            \n            total_loss += loss.item()\n            _, predicted = outputs.max(1)\n            total += targets.size(0)\n            correct += predicted.eq(targets).sum().item()\n    \n    return total_loss / len(dataloader), 100. * correct / total\n\n# Training loop\nfor epoch in range(num_epochs):\n    train_loss, train_acc = train_epoch(model, train_loader, optimizer, criterion, device)\n    val_loss, val_acc = validate(model, val_loader, criterion, device)\n    \n    print(f'Epoch {epoch+1}: Train Loss={train_loss:.4f}, Train Acc={train_acc:.2f}%')\n    print(f'           Val Loss={val_loss:.4f}, Val Acc={val_acc:.2f}%')",
+      "best_practices": [
+        "Always use model.train() and model.eval()",
+        "Use torch.no_grad() during validation",
+        "Zero gradients before backward pass",
+        "Move data to device explicitly",
+        "Track both loss and metrics"
+      ]
+    },
+    "keras_training": {
+      "description": "High-level training with Keras",
+      "use_when": "Using TensorFlow/Keras for simpler training",
+      "code_example": "import tensorflow as tf\nfrom tensorflow import keras\nfrom tensorflow.keras import layers\nfrom tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau\n\n# Build model\nmodel = keras.Sequential([\n    layers.Input(shape=(784,)),\n    layers.Dense(256, activation='relu'),\n    layers.Dropout(0.3),\n    layers.Dense(128, activation='relu'),\n    layers.Dropout(0.3),\n    layers.Dense(10, activation='softmax')\n])\n\n# Compile\nmodel.compile(\n    optimizer=keras.optimizers.Adam(learning_rate=1e-3),\n    loss='sparse_categorical_crossentropy',\n    metrics=['accuracy']\n)\n\n# Callbacks\ncallbacks = [\n    EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True),\n    ModelCheckpoint('best_model.keras', monitor='val_loss', save_best_only=True),\n    ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3)\n]\n\n# Train\nhistory = model.fit(\n    X_train, y_train,\n    epochs=100,\n    batch_size=32,\n    validation_data=(X_val, y_val),\n    callbacks=callbacks,\n    verbose=1\n)\n\n# Evaluate\ntest_loss, test_acc = model.evaluate(X_test, y_test)\nprint(f'Test accuracy: {test_acc:.4f}')",
+      "best_practices": [
+        "Use callbacks for early stopping and checkpointing",
+        "Include validation_data for monitoring",
+        "Use ReduceLROnPlateau for learning rate scheduling",
+        "Set restore_best_weights=True in EarlyStopping",
+        "Save model in .keras format (TF 2.x)"
+      ]
+    },
+    "gradient_accumulation": {
+      "description": "Simulate larger batch sizes with limited GPU memory",
+      "use_when": "Batch size is limited by GPU memory",
+      "code_example": "accumulation_steps = 4\noptimizer.zero_grad()\n\nfor batch_idx, (inputs, targets) in enumerate(dataloader):\n    inputs, targets = inputs.to(device), targets.to(device)\n    \n    # Forward pass\n    outputs = model(inputs)\n    loss = criterion(outputs, targets)\n    \n    # Normalize loss by accumulation steps\n    loss = loss / accumulation_steps\n    loss.backward()\n    \n    # Update weights every accumulation_steps\n    if (batch_idx + 1) % accumulation_steps == 0:\n        optimizer.step()\n        optimizer.zero_grad()\n\n# Handle remaining batches\nif (batch_idx + 1) % accumulation_steps != 0:\n    optimizer.step()\n    optimizer.zero_grad()",
+      "best_practices": [
+        "Divide loss by accumulation_steps",
+        "Effective batch size = batch_size * accumulation_steps",
+        "Handle edge case for last incomplete accumulation",
+        "Adjust learning rate for effective batch size"
+      ]
+    },
+    "mixed_precision_training": {
+      "description": "Use FP16 for faster training with less memory",
+      "use_when": "Need faster training on modern GPUs",
+      "code_example": "# PyTorch AMP\nfrom torch.cuda.amp import GradScaler, autocast\n\nscaler = GradScaler()\n\nfor inputs, targets in dataloader:\n    inputs, targets = inputs.to(device), targets.to(device)\n    \n    optimizer.zero_grad()\n    \n    # Automatic mixed precision\n    with autocast():\n        outputs = model(inputs)\n        loss = criterion(outputs, targets)\n    \n    # Scale loss and backprop\n    scaler.scale(loss).backward()\n    scaler.step(optimizer)\n    scaler.update()\n\n# TensorFlow\nfrom tensorflow.keras import mixed_precision\nmixed_precision.set_global_policy('mixed_float16')\n\n# Build and train model normally\n# TF handles mixed precision automatically",
+      "best_practices": [
+        "Use GradScaler with autocast in PyTorch",
+        "Significant speedup on Tensor Cores (Volta+)",
+        "May need to adjust loss scaling",
+        "Test for numerical stability"
+      ]
+    }
+  },
+  "optimization_patterns": {
+    "learning_rate_scheduling": {
+      "description": "Adjust learning rate during training",
+      "use_when": "Fine-tuning training dynamics",
+      "code_example": "import torch.optim as optim\nfrom torch.optim.lr_scheduler import (\n    StepLR, ExponentialLR, CosineAnnealingLR,\n    ReduceLROnPlateau, OneCycleLR\n)\n\noptimizer = optim.Adam(model.parameters(), lr=1e-3)\n\n# Step decay: reduce LR every N epochs\nscheduler = StepLR(optimizer, step_size=10, gamma=0.1)\n\n# Cosine annealing: smooth decay to min_lr\nscheduler = CosineAnnealingLR(optimizer, T_max=50, eta_min=1e-6)\n\n# Reduce on plateau: reduce when metric stops improving\nscheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5)\n\n# OneCycleLR: state-of-the-art for super-convergence\nscheduler = OneCycleLR(\n    optimizer,\n    max_lr=1e-2,\n    epochs=num_epochs,\n    steps_per_epoch=len(train_loader)\n)\n\n# Usage in training loop\nfor epoch in range(num_epochs):\n    train_loss = train_epoch(model, train_loader, optimizer, criterion, device)\n    val_loss = validate(model, val_loader, criterion, device)\n    \n    # Update scheduler\n    if isinstance(scheduler, ReduceLROnPlateau):\n        scheduler.step(val_loss)\n    else:\n        scheduler.step()\n    \n    print(f'LR: {scheduler.get_last_lr()[0]:.6f}')",
+      "best_practices": [
+        "OneCycleLR often gives best results",
+        "ReduceLROnPlateau is safest default",
+        "Log learning rate during training",
+        "Warmup helps with large learning rates"
+      ]
+    },
+    "optimizer_selection": {
+      "description": "Choose appropriate optimizer for the task",
+      "use_when": "Starting new training project",
+      "recommendations": {
+        "adam": {
+          "use_when": "Default choice for most tasks",
+          "code": "optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-4)"
+        },
+        "adamw": {
+          "use_when": "Transformers and large models (decoupled weight decay)",
+          "code": "optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4, weight_decay=0.01)"
+        },
+        "sgd_momentum": {
+          "use_when": "Computer vision with CNNs",
+          "code": "optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)"
+        }
+      },
+      "best_practices": [
+        "AdamW for transformers and NLP",
+        "SGD with momentum for CNNs (often better final accuracy)",
+        "Adam for quick experiments",
+        "Always use weight_decay for regularization"
+      ]
+    },
+    "early_stopping": {
+      "description": "Stop training when validation loss stops improving",
+      "use_when": "Preventing overfitting",
+      "code_example": "class EarlyStopping:\n    def __init__(self, patience=7, min_delta=0, restore_best_weights=True):\n        self.patience = patience\n        self.min_delta = min_delta\n        self.restore_best_weights = restore_best_weights\n        self.best_loss = None\n        self.counter = 0\n        self.best_weights = None\n    \n    def __call__(self, val_loss, model):\n        if self.best_loss is None:\n            self.best_loss = val_loss\n            self.save_checkpoint(model)\n        elif val_loss > self.best_loss - self.min_delta:\n            self.counter += 1\n            print(f'EarlyStopping counter: {self.counter}/{self.patience}')\n            if self.counter >= self.patience:\n                if self.restore_best_weights:\n                    model.load_state_dict(self.best_weights)\n                return True\n        else:\n            self.best_loss = val_loss\n            self.save_checkpoint(model)\n            self.counter = 0\n        return False\n    \n    def save_checkpoint(self, model):\n        self.best_weights = model.state_dict().copy()\n\n# Usage\nearly_stopping = EarlyStopping(patience=10)\n\nfor epoch in range(num_epochs):\n    train_loss = train_epoch(...)\n    val_loss = validate(...)\n    \n    if early_stopping(val_loss, model):\n        print('Early stopping triggered')\n        break",
+      "best_practices": [
+        "Use patience of 5-10 epochs typically",
+        "Always restore best weights",
+        "Monitor validation loss, not training loss",
+        "Consider monitoring other metrics (F1, accuracy)"
+      ]
+    }
+  },
+  "regularization_patterns": {
+    "dropout": {
+      "description": "Randomly zero activations during training",
+      "use_when": "Preventing overfitting in neural networks",
+      "code_example": "import torch.nn as nn\n\n# Standard dropout\nclass MLP(nn.Module):\n    def __init__(self, input_dim, hidden_dim, output_dim, dropout=0.3):\n        super().__init__()\n        self.layers = nn.Sequential(\n            nn.Linear(input_dim, hidden_dim),\n            nn.ReLU(),\n            nn.Dropout(dropout),\n            nn.Linear(hidden_dim, hidden_dim),\n            nn.ReLU(),\n            nn.Dropout(dropout),\n            nn.Linear(hidden_dim, output_dim)\n        )\n    \n    def forward(self, x):\n        return self.layers(x)\n\n# Dropout is automatically disabled in eval mode\nmodel.train()  # Dropout active\nmodel.eval()   # Dropout disabled",
+      "best_practices": [
+        "Use 0.2-0.5 dropout rate",
+        "Apply after activation functions",
+        "Use model.train()/model.eval() correctly",
+        "Higher dropout = more regularization"
+      ]
+    },
+    "batch_normalization": {
+      "description": "Normalize activations within mini-batch",
+      "use_when": "Training deep networks, especially CNNs",
+      "code_example": "import torch.nn as nn\n\n# CNN with BatchNorm\nclass ConvBlock(nn.Module):\n    def __init__(self, in_channels, out_channels):\n        super().__init__()\n        self.block = nn.Sequential(\n            nn.Conv2d(in_channels, out_channels, 3, padding=1),\n            nn.BatchNorm2d(out_channels),\n            nn.ReLU(),\n            nn.Conv2d(out_channels, out_channels, 3, padding=1),\n            nn.BatchNorm2d(out_channels),\n            nn.ReLU(),\n            nn.MaxPool2d(2)\n        )\n    \n    def forward(self, x):\n        return self.block(x)\n\n# LayerNorm for transformers\nclass TransformerBlock(nn.Module):\n    def __init__(self, d_model):\n        super().__init__()\n        self.norm1 = nn.LayerNorm(d_model)\n        self.norm2 = nn.LayerNorm(d_model)\n        # ... attention and FFN",
+      "best_practices": [
+        "BatchNorm before or after activation (both work)",
+        "Use LayerNorm for transformers/RNNs",
+        "BatchNorm needs larger batch sizes (32+)",
+        "Careful with BatchNorm + Dropout together"
+      ]
+    },
+    "data_augmentation": {
+      "description": "Artificially increase training data diversity",
+      "use_when": "Limited training data, especially for images",
+      "code_example": "from torchvision import transforms\nfrom torch.utils.data import DataLoader\n\n# Image augmentation pipeline\ntrain_transform = transforms.Compose([\n    transforms.RandomResizedCrop(224),\n    transforms.RandomHorizontalFlip(),\n    transforms.RandomRotation(15),\n    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),\n    transforms.ToTensor(),\n    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])\n])\n\nval_transform = transforms.Compose([\n    transforms.Resize(256),\n    transforms.CenterCrop(224),\n    transforms.ToTensor(),\n    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])\n])\n\n# Apply to datasets\ntrain_dataset = ImageDataset(train_dir, transform=train_transform)\nval_dataset = ImageDataset(val_dir, transform=val_transform)\n\n# Albumentations (more powerful)\nimport albumentations as A\nfrom albumentations.pytorch import ToTensorV2\n\ntransform = A.Compose([\n    A.RandomResizedCrop(224, 224),\n    A.HorizontalFlip(p=0.5),\n    A.ShiftScaleRotate(shift_limit=0.1, scale_limit=0.1, rotate_limit=15, p=0.5),\n    A.CoarseDropout(max_holes=8, max_height=16, max_width=16, p=0.3),\n    A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),\n    ToTensorV2()\n])",
+      "best_practices": [
+        "Only augment training data",
+        "Use domain-appropriate augmentations",
+        "Albumentations is faster than torchvision",
+        "Test that augmentations don't change semantics"
+      ]
+    }
+  },
+  "model_architecture": {
+    "transfer_learning": {
+      "description": "Use pretrained models for new tasks",
+      "use_when": "Limited data or common vision/NLP tasks",
+      "code_example": "import torch\nimport torch.nn as nn\nfrom torchvision import models\n\n# Load pretrained model\nmodel = models.resnet50(weights='IMAGENET1K_V2')\n\n# Freeze backbone\nfor param in model.parameters():\n    param.requires_grad = False\n\n# Replace classifier head\nnum_features = model.fc.in_features\nmodel.fc = nn.Sequential(\n    nn.Linear(num_features, 512),\n    nn.ReLU(),\n    nn.Dropout(0.3),\n    nn.Linear(512, num_classes)\n)\n\n# Only train new layers\noptimizer = torch.optim.Adam(model.fc.parameters(), lr=1e-3)\n\n# Fine-tune entire model (after training head)\nfor param in model.parameters():\n    param.requires_grad = True\n\noptimizer = torch.optim.Adam(model.parameters(), lr=1e-5)  # Lower LR",
+      "best_practices": [
+        "Freeze backbone first, train head",
+        "Then fine-tune entire model with lower LR",
+        "Use pretrained weights when possible",
+        "Match input normalization to pretraining"
+      ]
+    },
+    "model_ensembling": {
+      "description": "Combine multiple models for better predictions",
+      "use_when": "Need maximum accuracy, competition settings",
+      "code_example": "import torch\nimport numpy as np\n\nclass EnsembleModel:\n    def __init__(self, models, weights=None):\n        self.models = models\n        self.weights = weights or [1/len(models)] * len(models)\n    \n    def predict(self, x, device='cuda'):\n        predictions = []\n        for model in self.models:\n            model.eval()\n            with torch.no_grad():\n                pred = model(x.to(device))\n                predictions.append(pred.cpu())\n        \n        # Weighted average of predictions\n        weighted_pred = sum(w * p for w, p in zip(self.weights, predictions))\n        return weighted_pred\n    \n    def predict_proba(self, x, device='cuda'):\n        pred = self.predict(x, device)\n        return torch.softmax(pred, dim=1)\n\n# Usage\nensemble = EnsembleModel(\n    models=[model1, model2, model3],\n    weights=[0.4, 0.35, 0.25]\n)\npredictions = ensemble.predict(test_data)",
+      "best_practices": [
+        "Use diverse model architectures",
+        "Weight by validation performance",
+        "Ensembling typically gives 1-3% improvement",
+        "Consider computational cost"
+      ]
+    }
+  },
+  "checkpointing": {
+    "save_load_checkpoint": {
+      "description": "Save and resume training from checkpoints",
+      "use_when": "Long training runs, need recovery capability",
+      "code_example": "import torch\nimport os\n\ndef save_checkpoint(model, optimizer, scheduler, epoch, loss, path):\n    checkpoint = {\n        'epoch': epoch,\n        'model_state_dict': model.state_dict(),\n        'optimizer_state_dict': optimizer.state_dict(),\n        'scheduler_state_dict': scheduler.state_dict() if scheduler else None,\n        'loss': loss,\n    }\n    torch.save(checkpoint, path)\n    print(f'Checkpoint saved: {path}')\n\ndef load_checkpoint(model, optimizer, scheduler, path, device):\n    checkpoint = torch.load(path, map_location=device)\n    model.load_state_dict(checkpoint['model_state_dict'])\n    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])\n    if scheduler and checkpoint['scheduler_state_dict']:\n        scheduler.load_state_dict(checkpoint['scheduler_state_dict'])\n    return checkpoint['epoch'], checkpoint['loss']\n\n# Save best model during training\nbest_val_loss = float('inf')\nfor epoch in range(num_epochs):\n    train_loss = train_epoch(...)\n    val_loss = validate(...)\n    \n    # Save latest\n    save_checkpoint(model, optimizer, scheduler, epoch, val_loss, 'latest.pt')\n    \n    # Save best\n    if val_loss < best_val_loss:\n        best_val_loss = val_loss\n        save_checkpoint(model, optimizer, scheduler, epoch, val_loss, 'best.pt')\n\n# Resume training\nstart_epoch, _ = load_checkpoint(model, optimizer, scheduler, 'latest.pt', device)",
+      "best_practices": [
+        "Save optimizer and scheduler state too",
+        "Keep both 'best' and 'latest' checkpoints",
+        "Include epoch and loss in checkpoint",
+        "Use map_location for device compatibility"
+      ]
+    }
+  },
+  "distributed_training": {
+    "data_parallel": {
+      "description": "Simple multi-GPU training",
+      "use_when": "Single node with multiple GPUs",
+      "code_example": "import torch\nimport torch.nn as nn\n\n# Check available GPUs\nif torch.cuda.device_count() > 1:\n    print(f'Using {torch.cuda.device_count()} GPUs')\n    model = nn.DataParallel(model)\n\nmodel = model.to('cuda')\n\n# Training is same as single GPU\nfor inputs, targets in dataloader:\n    inputs, targets = inputs.to('cuda'), targets.to('cuda')\n    outputs = model(inputs)\n    # ...\n\n# Access underlying model\nif isinstance(model, nn.DataParallel):\n    actual_model = model.module\nelse:\n    actual_model = model",
+      "best_practices": [
+        "DataParallel is easy but not most efficient",
+        "Use DistributedDataParallel for better performance",
+        "Access model.module when saving"
+      ]
+    },
+    "distributed_data_parallel": {
+      "description": "Efficient multi-GPU/multi-node training",
+      "use_when": "Production training at scale",
+      "code_example": "import torch\nimport torch.distributed as dist\nimport torch.multiprocessing as mp\nfrom torch.nn.parallel import DistributedDataParallel as DDP\nfrom torch.utils.data.distributed import DistributedSampler\n\ndef setup(rank, world_size):\n    os.environ['MASTER_ADDR'] = 'localhost'\n    os.environ['MASTER_PORT'] = '12355'\n    dist.init_process_group('nccl', rank=rank, world_size=world_size)\n\ndef cleanup():\n    dist.destroy_process_group()\n\ndef train(rank, world_size):\n    setup(rank, world_size)\n    \n    # Create model and move to GPU\n    model = MyModel().to(rank)\n    model = DDP(model, device_ids=[rank])\n    \n    # Use DistributedSampler\n    sampler = DistributedSampler(dataset, num_replicas=world_size, rank=rank)\n    dataloader = DataLoader(dataset, sampler=sampler, batch_size=32)\n    \n    for epoch in range(num_epochs):\n        sampler.set_epoch(epoch)  # Important for shuffling\n        for inputs, targets in dataloader:\n            # Training loop\n            pass\n    \n    cleanup()\n\n# Launch training\nif __name__ == '__main__':\n    world_size = torch.cuda.device_count()\n    mp.spawn(train, args=(world_size,), nprocs=world_size)",
+      "best_practices": [
+        "DDP is faster than DataParallel",
+        "Use DistributedSampler for correct data loading",
+        "Call sampler.set_epoch() each epoch",
+        "Use NCCL backend for GPU training"
+      ]
+    }
+  },
+  "debugging": {
+    "gradient_checking": {
+      "description": "Detect vanishing/exploding gradients",
+      "use_when": "Model not training or unstable",
+      "code_example": "def check_gradients(model):\n    total_norm = 0\n    for name, param in model.named_parameters():\n        if param.grad is not None:\n            param_norm = param.grad.data.norm(2)\n            total_norm += param_norm.item() ** 2\n            \n            if param_norm == 0:\n                print(f'Zero gradient: {name}')\n            elif param_norm > 100:\n                print(f'Large gradient: {name} = {param_norm:.2f}')\n    \n    total_norm = total_norm ** 0.5\n    print(f'Total gradient norm: {total_norm:.4f}')\n    return total_norm\n\n# Use gradient clipping for stability\ntorch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)",
+      "best_practices": [
+        "Monitor gradient norms during training",
+        "Use gradient clipping for stability",
+        "Zero gradients indicate dead neurons",
+        "Large gradients indicate instability"
+      ]
+    },
+    "overfitting_check": {
+      "description": "Verify model can overfit small dataset",
+      "use_when": "Debugging model architecture or training",
+      "code_example": "# Take small subset of data\nsmall_dataset = torch.utils.data.Subset(train_dataset, range(100))\nsmall_loader = DataLoader(small_dataset, batch_size=10)\n\n# Train for many epochs\nfor epoch in range(100):\n    loss = train_epoch(model, small_loader, optimizer, criterion, device)\n    print(f'Epoch {epoch}: Loss = {loss:.6f}')\n\n# If loss doesn't go near 0, there's a bug",
+      "best_practices": [
+        "Model should overfit small dataset perfectly",
+        "If not overfitting, check: loss function, data loading, architecture",
+        "This catches many common bugs quickly"
+      ]
+    }
+  },
+  "anti_patterns": {
+    "forgetting_eval_mode": {
+      "description": "Not switching to eval mode for inference",
+      "problem": "Dropout and BatchNorm behave differently",
+      "solution": "Always call model.eval() before inference"
+    },
+    "not_moving_to_device": {
+      "description": "Keeping model and data on different devices",
+      "problem": "Runtime errors or silent CPU fallback",
+      "solution": "Explicitly move model and data to same device"
+    },
+    "no_gradient_zeroing": {
+      "description": "Forgetting optimizer.zero_grad()",
+      "problem": "Gradients accumulate across batches incorrectly",
+      "solution": "Zero gradients at start of each batch"
+    },
+    "learning_rate_too_high": {
+      "description": "Using learning rate from paper without scaling",
+      "problem": "Training diverges or is unstable",
+      "solution": "Scale LR with batch size; start small and increase"
+    }
+  },
+  "best_practices_summary": [
+    "Use model.train() and model.eval() correctly",
+    "Always set random seeds for reproducibility",
+    "Monitor validation loss for overfitting",
+    "Use learning rate scheduling",
+    "Save checkpoints regularly",
+    "Use mixed precision for faster training",
+    "Gradient clipping prevents instability",
+    "Start with pretrained models when possible"
+  ]
+}

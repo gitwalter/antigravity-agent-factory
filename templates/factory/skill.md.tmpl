@@ -1,0 +1,110 @@
+{# 
+Skill Template for Antigravity Agent Factory
+
+This template generates skill definition files using Jinja2 syntax.
+
+Variables:
+  - skill_name: Skill identifier (kebab-case)
+  - skill_description: Brief description
+  - agents: List of agents that use this skill
+  - when_to_use: List of usage scenarios
+  - prerequisites: List of prerequisites
+  - process_steps: List of process steps
+  - fallback_procedures: List of fallback procedures
+  - rules: List of important rules
+
+Author: Antigravity Agent Factory
+#}
+---
+name: {{ skill_name }}
+description: {{ skill_description }}
+type: skill
+agents: [{% for a in agents %}"{{ a }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+templates: [{% for t in templates %}"{{ t }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+patterns: [{% for p in patterns %}"{{ p }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+knowledge: [{% for k in knowledge %}"{{ k }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+---
+
+# {{ skill_title | default(skill_name | title_case) }}
+
+{{ skill_introduction | default('') }}
+
+## When to Use
+
+{% if when_to_use is iterable and when_to_use is not string %}
+{% for item in when_to_use %}
+- {{ item }}
+{% endfor %}
+{% else %}
+{{ when_to_use }}
+{% endif %}
+
+{% if prerequisites %}
+## Prerequisites
+
+{% for prereq in prerequisites %}
+- {{ prereq }}
+{% endfor %}
+{% endif %}
+
+## Process
+
+{% for step in process_steps %}
+### Step {{ loop.index }}: {{ step.name }}
+
+{{ step.description }}
+
+{% if step.actions %}
+{% for action in step.actions %}
+- {{ action }}
+{% endfor %}
+{% endif %}
+
+{% if step.mcp_tools %}
+**MCP Tools:** {% for tool in step.mcp_tools %}`{{ tool }}`{% if not loop.last %}, {% endif %}{% endfor %}
+{% endif %}
+
+{% endfor %}
+
+{% if changes %}
+## What Gets Created/Changed
+
+| Action | File | Change |
+|--------|------|--------|
+{% for change in changes %}
+| {{ change.action }} | `{{ change.file }}` | {{ change.description }} |
+{% endfor %}
+{% endif %}
+
+{% if example %}
+## Example
+
+```
+User: {{ example.input }}
+
+Agent: {{ example.output }}
+```
+{% endif %}
+
+{% if fallback_procedures %}
+## Fallback Procedures
+
+| Issue | Resolution |
+|-------|------------|
+{% for proc in fallback_procedures %}
+| {{ proc.issue | default(proc.condition) }} | {{ proc.resolution | default(proc.action) }} |
+{% endfor %}
+{% endif %}
+
+{% if rules %}
+## Important Rules
+
+{% for rule in rules %}
+{{ loop.index }}. {{ rule }}
+{% endfor %}
+{% endif %}
+
+## Related Artifacts
+
+{% if related_agent %}- **Agent**: `.agent/agents/{{ related_agent }}.md`{% endif %}
+{% if related_knowledge %}- **Knowledge**: `knowledge/{{ related_knowledge }}.json`{% endif %}

@@ -1,0 +1,294 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CI/CD Patterns",
+  "description": "Comprehensive CI/CD patterns for GitHub Actions, GitLab CI, and Azure DevOps with reusable workflows, caching strategies, and deployment patterns",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "CI/CD provides automated verification of code quality and functionality",
+    "A3_transparency": "Pipeline definitions make build and deployment processes explicit",
+    "A4_adaptability": "Automated pipelines enable rapid iteration and deployment"
+  },
+  "core_concepts": {
+    "reusable_workflows": {
+      "description": "Workflow templates that can be called from multiple repositories",
+      "benefits": [
+        "DRY principle - define once, use everywhere",
+        "Consistent CI/CD across projects",
+        "Centralized maintenance",
+        "Version control for pipeline changes"
+      ]
+    },
+    "matrix_testing": {
+      "description": "Run tests across multiple configurations simultaneously",
+      "use_cases": [
+        "Multiple Python/Node versions",
+        "Different operating systems",
+        "Various database backends",
+        "Cross-platform compatibility"
+      ]
+    },
+    "caching_strategies": {
+      "description": "Cache dependencies and build artifacts to speed up pipelines",
+      "targets": [
+        "Package manager caches (pip, npm, maven)",
+        "Docker layer caching",
+        "Build artifacts",
+        "Test results"
+      ]
+    },
+    "artifact_management": {
+      "description": "Store and retrieve build artifacts between jobs",
+      "patterns": [
+        "Build artifacts",
+        "Test reports",
+        "Coverage reports",
+        "Deployment packages"
+      ]
+    },
+    "deployment_patterns": {
+      "description": "Strategies for deploying to different environments",
+      "environments": [
+        "Development",
+        "Staging",
+        "Production",
+        "Feature previews"
+      ]
+    },
+    "environment_management": {
+      "description": "Managing configuration across environments",
+      "approaches": [
+        "Environment variables",
+        "Configuration files",
+        "Secret management",
+        "Infrastructure as Code"
+      ]
+    },
+    "secret_management": {
+      "description": "Secure handling of sensitive credentials",
+      "best_practices": [
+        "Never commit secrets",
+        "Use platform secret stores",
+        "Rotate secrets regularly",
+        "Limit secret access"
+      ]
+    }
+  },
+  "patterns": {
+    "github_actions_reusable_workflow": {
+      "description": "Reusable workflow pattern for GitHub Actions",
+      "use_when": "Multiple repositories need similar CI/CD pipelines",
+      "structure": {
+        "caller_workflow": "Workflow that calls the reusable workflow",
+        "reusable_workflow": "Workflow defined with workflow_call trigger"
+      },
+      "code_example": "# .github/workflows/reusable-test.yml (Reusable workflow)\nname: Reusable Test Workflow\n\non:\n  workflow_call:\n    inputs:\n      python_version:\n        required: true\n        type: string\n      test_command:\n        required: false\n        type: string\n        default: 'pytest'\n      coverage_threshold:\n        required: false\n        type: number\n        default: 80\n    secrets:\n      DATABASE_URL:\n        required: false\n      AWS_ACCESS_KEY_ID:\n        required: false\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      \n      - name: Set up Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: ${{ inputs.python_version }}\n      \n      - name: Cache pip dependencies\n        uses: actions/cache@v4\n        with:\n          path: ~/.cache/pip\n          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}\n          restore-keys: |\n            ${{ runner.os }}-pip-\n      \n      - name: Install dependencies\n        run: |\n          python -m pip install --upgrade pip\n          pip install -r requirements.txt\n          pip install -r requirements-dev.txt\n      \n      - name: Run tests\n        env:\n          DATABASE_URL: ${{ secrets.DATABASE_URL }}\n        run: ${{ inputs.test_command }}\n      \n      - name: Upload coverage\n        uses: codecov/codecov-action@v4\n        with:\n          files: ./coverage.xml\n          fail_ci_if_error: true\n          minimum_coverage: ${{ inputs.coverage_threshold }}\n\n# .github/workflows/ci.yml (Caller workflow)\nname: CI\n\non:\n  push:\n    branches: [main, develop]\n  pull_request:\n    branches: [main]\n\njobs:\n  test:\n    uses: ./.github/workflows/reusable-test.yml\n    with:\n      python_version: '3.11'\n      test_command: 'pytest --cov --cov-report=xml'\n      coverage_threshold: 85\n    secrets:\n      DATABASE_URL: ${{ secrets.DATABASE_URL }}",
+      "best_practices": [
+        "Define clear inputs and outputs",
+        "Document required secrets",
+        "Use semantic versioning for reusable workflows",
+        "Test reusable workflows independently",
+        "Version pin reusable workflows"
+      ]
+    },
+    "matrix_testing_strategy": {
+      "description": "Test across multiple configurations using matrix strategy",
+      "use_when": "Need to test compatibility across versions/platforms",
+      "code_example": "name: Matrix Testing\n\non: [push, pull_request]\n\njobs:\n  test:\n    runs-on: ${{ matrix.os }}\n    strategy:\n      fail-fast: false\n      matrix:\n        os: [ubuntu-latest, windows-latest, macos-latest]\n        python-version: ['3.9', '3.10', '3.11', '3.12']\n        database: [postgresql, mysql, sqlite]\n        exclude:\n          # Exclude incompatible combinations\n          - os: windows-latest\n            database: postgresql\n        include:\n          # Include specific combinations\n          - os: ubuntu-latest\n            python-version: '3.11'\n            database: postgresql\n            coverage: true\n    \n    services:\n      postgres:\n        image: postgres:15\n        env:\n          POSTGRES_PASSWORD: postgres\n        options: >-\n          --health-cmd pg_isready\n          --health-interval 10s\n          --health-timeout 5s\n          --health-retries 5\n        ports:\n          - 5432:5432\n      \n      mysql:\n        image: mysql:8.0\n        env:\n          MYSQL_ROOT_PASSWORD: root\n        options: >-\n          --health-cmd=\"mysqladmin ping\"\n          --health-interval 10s\n          --health-timeout 5s\n          --health-retries 5\n        ports:\n          - 3306:3306\n    \n    steps:\n      - uses: actions/checkout@v4\n      \n      - name: Set up Python ${{ matrix.python-version }}\n        uses: actions/setup-python@v5\n        with:\n          python-version: ${{ matrix.python-version }}\n      \n      - name: Install dependencies\n        run: |\n          pip install -r requirements.txt\n          pip install -r requirements-dev.txt\n      \n      - name: Run tests\n        env:\n          DATABASE_URL: ${{ matrix.database == 'postgresql' && 'postgresql://postgres:postgres@localhost:5432/test' || matrix.database == 'mysql' && 'mysql://root:root@localhost:3306/test' || 'sqlite:///test.db' }}\n        run: pytest\n      \n      - name: Upload coverage\n        if: matrix.coverage == true\n        uses: codecov/codecov-action@v4",
+      "best_practices": [
+        "Use fail-fast: false to see all failures",
+        "Exclude incompatible combinations",
+        "Use include for special cases",
+        "Limit matrix size to avoid resource exhaustion",
+        "Use matrix for parallelization"
+      ]
+    },
+    "caching_strategies": {
+      "description": "Cache dependencies and build artifacts",
+      "use_when": "Dependencies don't change frequently",
+      "code_example": "# Python pip caching\nname: Cache Python Dependencies\n\nsteps:\n  - name: Cache pip packages\n    uses: actions/cache@v4\n    with:\n      path: ~/.cache/pip\n      key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}\n      restore-keys: |\n        ${{ runner.os }}-pip-\n  \n  - name: Cache Python packages (pipenv)\n    uses: actions/cache@v4\n    with:\n      path: ~/.local/share/virtualenvs\n      key: ${{ runner.os }}-pipenv-${{ hashFiles('Pipfile.lock') }}\n  \n  - name: Cache Python packages (poetry)\n    uses: actions/cache@v4\n    with:\n      path: ~/.cache/pypoetry\n      key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}\n\n# Node.js npm caching\n  - name: Cache node modules\n    uses: actions/cache@v4\n    with:\n      path: ~/.npm\n      key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}\n      restore-keys: |\n        ${{ runner.os }}-node-\n  \n  - name: Cache node_modules\n    uses: actions/cache@v4\n    with:\n      path: node_modules\n      key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}\n\n# Maven caching\n  - name: Cache Maven dependencies\n    uses: actions/cache@v4\n    with:\n      path: ~/.m2\n      key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}\n      restore-keys: |\n        ${{ runner.os }}-m2-\n\n# Docker layer caching\n  - name: Set up Docker Buildx\n    uses: docker/setup-buildx-action@v3\n  \n  - name: Build Docker image\n    uses: docker/build-push-action@v5\n    with:\n      context: .\n      push: false\n      tags: app:latest\n      cache-from: type=gha\n      cache-to: type=gha,mode=max",
+      "best_practices": [
+        "Cache based on lockfile hashes",
+        "Use restore-keys for partial matches",
+        "Set appropriate cache scopes",
+        "Monitor cache hit rates",
+        "Invalidate caches when needed"
+      ]
+    },
+    "artifact_management": {
+      "description": "Store and retrieve artifacts between jobs",
+      "use_when": "Jobs need to share build outputs",
+      "code_example": "name: Build and Test\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      \n      - name: Build application\n        run: |\n          npm run build\n          python -m build\n      \n      - name: Upload build artifacts\n        uses: actions/upload-artifact@v4\n        with:\n          name: dist\n          path: |\n            dist/\n            dist/*.whl\n          retention-days: 7\n          compression-level: 9\n  \n  test:\n    runs-on: ubuntu-latest\n    needs: build\n    steps:\n      - uses: actions/checkout@v4\n      \n      - name: Download build artifacts\n        uses: actions/download-artifact@v4\n        with:\n          name: dist\n          path: dist/\n      \n      - name: Install and test\n        run: |\n          pip install dist/*.whl\n          pytest\n  \n  deploy:\n    runs-on: ubuntu-latest\n    needs: [build, test]\n    if: github.ref == 'refs/heads/main'\n    steps:\n      - name: Download artifacts\n        uses: actions/download-artifact@v4\n        with:\n          name: dist\n          path: dist/\n      \n      - name: Deploy to production\n        run: |\n          # Deployment steps\n          echo \"Deploying artifacts from dist/\"",
+      "best_practices": [
+        "Use descriptive artifact names",
+        "Set appropriate retention periods",
+        "Compress large artifacts",
+        "Download only when needed",
+        "Clean up old artifacts"
+      ]
+    },
+    "deployment_patterns": {
+      "description": "Deploy to different environments with approval gates",
+      "use_when": "Multiple deployment environments",
+      "code_example": "name: Deploy\n\non:\n  push:\n    branches: [main, develop]\n  workflow_dispatch:\n    inputs:\n      environment:\n        type: choice\n        options:\n          - staging\n          - production\n        required: true\n\njobs:\n  deploy-staging:\n    runs-on: ubuntu-latest\n    environment:\n      name: staging\n      url: https://staging.example.com\n    if: github.ref == 'refs/heads/develop' || github.event.inputs.environment == 'staging'\n    steps:\n      - uses: actions/checkout@v4\n      \n      - name: Deploy to staging\n        run: |\n          echo \"Deploying to staging...\"\n          # Deployment commands\n  \n  deploy-production:\n    runs-on: ubuntu-latest\n    needs: deploy-staging\n    environment:\n      name: production\n      url: https://example.com\n    if: github.ref == 'refs/heads/main' && github.event.inputs.environment == 'production'\n    steps:\n      - uses: actions/checkout@v4\n      \n      - name: Deploy to production\n        run: |\n          echo \"Deploying to production...\"\n          # Deployment commands\n      \n      - name: Run smoke tests\n        run: |\n          curl -f https://example.com/health || exit 1\n      \n      - name: Notify team\n        if: success()\n        uses: 8398a7/action-slack@v3\n        with:\n          status: custom\n          custom_payload: |\n            {\n              text: 'Deployment to production succeeded!'\n            }\n        env:\n          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}",
+      "best_practices": [
+        "Use environment protection rules",
+        "Require approvals for production",
+        "Run smoke tests after deployment",
+        "Notify on deployment status",
+        "Use blue-green deployments",
+        "Implement rollback procedures"
+      ]
+    },
+    "environment_management": {
+      "description": "Manage environment-specific configuration",
+      "use_when": "Different configs for different environments",
+      "code_example": "# .github/workflows/deploy.yml\nname: Deploy with Environment Config\n\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}\n    steps:\n      - uses: actions/checkout@v4\n      \n      - name: Set environment variables\n        run: |\n          if [ \"${{ github.ref }}\" == \"refs/heads/main\" ]; then\n            echo \"ENV=production\" >> $GITHUB_ENV\n            echo \"API_URL=https://api.example.com\" >> $GITHUB_ENV\n            echo \"DATABASE_URL=${{ secrets.PROD_DATABASE_URL }}\" >> $GITHUB_ENV\n          else\n            echo \"ENV=staging\" >> $GITHUB_ENV\n            echo \"API_URL=https://staging-api.example.com\" >> $GITHUB_ENV\n            echo \"DATABASE_URL=${{ secrets.STAGING_DATABASE_URL }}\" >> $GITHUB_ENV\n          fi\n      \n      - name: Generate config file\n        run: |\n          cat > config.json << EOF\n          {\n            \"environment\": \"${{ env.ENV }}\",\n            \"api_url\": \"${{ env.API_URL }}\",\n            \"database_url\": \"${{ env.DATABASE_URL }}\",\n            \"log_level\": \"${{ env.ENV == 'production' && 'WARNING' || 'DEBUG' }}\"\n          }\n          EOF\n      \n      - name: Deploy\n        env:\n          ENVIRONMENT: ${{ env.ENV }}\n        run: |\n          # Deployment using environment-specific config\n          deploy.sh --env $ENVIRONMENT --config config.json",
+      "best_practices": [
+        "Use GitHub Environments feature",
+        "Store secrets per environment",
+        "Use configuration files",
+        "Validate config before deployment",
+        "Document environment differences"
+      ]
+    },
+    "secret_management": {
+      "description": "Secure secret handling in CI/CD",
+      "use_when": "Need to use credentials in pipelines",
+      "code_example": "# GitHub Actions secrets\nname: Secure Deployment\n\non:\n  push:\n    branches: [main]\n\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      \n      - name: Configure AWS credentials\n        uses: aws-actions/configure-aws-credentials@v4\n        with:\n          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}\n          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}\n          aws-region: us-east-1\n      \n      - name: Login to Docker Hub\n        uses: docker/login-action@v3\n        with:\n          username: ${{ secrets.DOCKER_USERNAME }}\n          password: ${{ secrets.DOCKER_PASSWORD }}\n      \n      - name: Build and push Docker image\n        uses: docker/build-push-action@v5\n        with:\n          push: true\n          tags: user/app:latest\n      \n      - name: Deploy to ECS\n        env:\n          ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}\n          ECS_SERVICE: ${{ secrets.ECS_SERVICE }}\n        run: |\n          aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment\n      \n      # Using HashiCorp Vault\n      - name: Retrieve secrets from Vault\n        uses: hashicorp/vault-action@v3\n        with:\n          url: ${{ secrets.VAULT_ADDR }}\n          method: approle\n          roleId: ${{ secrets.VAULT_ROLE_ID }}\n          secretId: ${{ secrets.VAULT_SECRET_ID }}\n          secrets: |\n            secret/data/app/database password | DATABASE_PASSWORD ;\n            secret/data/app/api api_key | API_KEY",
+      "best_practices": [
+        "Never log secrets",
+        "Use secret masking",
+        "Rotate secrets regularly",
+        "Limit secret access",
+        "Use OIDC when possible",
+        "Store secrets in platform secret stores",
+        "Use secret scanning tools"
+      ]
+    },
+    "gitlab_ci_patterns": {
+      "description": "GitLab CI/CD pipeline patterns",
+      "use_when": "Using GitLab as CI/CD platform",
+      "code_example": "# .gitlab-ci.yml\nstages:\n  - build\n  - test\n  - deploy\n\nvariables:\n  PIP_CACHE_DIR: \"$CI_PROJECT_DIR/.cache/pip\"\n  DOCKER_DRIVER: overlay2\n\n# Reusable job template\n.python_test:\n  image: python:3.11\n  before_script:\n    - pip install --upgrade pip\n    - pip install -r requirements.txt\n    - pip install -r requirements-dev.txt\n  cache:\n    key: ${CI_COMMIT_REF_SLUG}\n    paths:\n      - .cache/pip\n  script:\n    - pytest --cov --cov-report=xml\n  coverage: '/TOTAL.*\\s+(\\d+%)/'\n  artifacts:\n    reports:\n      coverage_report:\n        coverage_format: cobertura\n        path: coverage.xml\n    paths:\n      - coverage.xml\n    expire_in: 1 week\n\n# Matrix testing\ntest:python39:\n  extends: .python_test\n  image: python:3.9\n\ntest:python310:\n  extends: .python_test\n  image: python:3.10\n\ntest:python311:\n  extends: .python_test\n  image: python:3.11\n\n# Build job\nbuild:\n  stage: build\n  image: docker:latest\n  services:\n    - docker:dind\n  script:\n    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .\n    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA\n  only:\n    - main\n    - develop\n\n# Deployment\ndeploy:staging:\n  stage: deploy\n  image: alpine:latest\n  environment:\n    name: staging\n    url: https://staging.example.com\n  script:\n    - apk add --no-cache curl\n    - curl -X POST https://staging.example.com/deploy\n  only:\n    - develop\n  when: manual\n\ndeploy:production:\n  stage: deploy\n  image: alpine:latest\n  environment:\n    name: production\n    url: https://example.com\n  script:\n    - apk add --no-cache curl\n    - curl -X POST https://example.com/deploy\n  only:\n    - main\n  when: manual\n  allow_failure: false",
+      "best_practices": [
+        "Use extends for reusable jobs",
+        "Leverage GitLab CI/CD variables",
+        "Use cache for dependencies",
+        "Use artifacts for job outputs",
+        "Use environments for deployments",
+        "Use manual deployments for production"
+      ]
+    },
+    "azure_devops_patterns": {
+      "description": "Azure DevOps pipeline patterns",
+      "use_when": "Using Azure DevOps for CI/CD",
+      "code_example": "# azure-pipelines.yml\n# Multi-stage pipeline\ntrigger:\n  branches:\n    include:\n      - main\n      - develop\n\npool:\n  vmImage: 'ubuntu-latest'\n\nvariables:\n  pythonVersion: '3.11'\n  coverageThreshold: 80\n\nstages:\n  - stage: Build\n    displayName: 'Build Stage'\n    jobs:\n      - job: Build\n        displayName: 'Build Application'\n        steps:\n          - task: UsePythonVersion@0\n            inputs:\n              versionSpec: '$(pythonVersion)'\n          \n          - task: Cache@2\n            inputs:\n              key: 'pip | \"$(Agent.OS)\" | requirements*.txt'\n              restoreKeys: |\n                pip | \"$(Agent.OS)\"\n              path: '$(Pipeline.Workspace)/.pip'\n          \n          - script: |\n              python -m pip install --upgrade pip\n              pip install -r requirements.txt\n            displayName: 'Install dependencies'\n          \n          - script: |\n              python -m build\n            displayName: 'Build package'\n          \n          - task: PublishBuildArtifacts@1\n            inputs:\n              pathToPublish: 'dist'\n              artifactName: 'dist'\n  \n  - stage: Test\n    displayName: 'Test Stage'\n    dependsOn: Build\n    jobs:\n      - job: Test\n        displayName: 'Run Tests'\n        strategy:\n          matrix:\n            Python39:\n              pythonVersion: '3.9'\n            Python310:\n              pythonVersion: '3.10'\n            Python311:\n              pythonVersion: '3.11'\n        steps:\n          - task: UsePythonVersion@0\n            inputs:\n              versionSpec: '$(pythonVersion)'\n          \n          - script: |\n              pip install -r requirements.txt\n              pip install -r requirements-dev.txt\n              pytest --cov --cov-report=xml\n            displayName: 'Run tests'\n          \n          - task: PublishCodeCoverageResults@1\n            inputs:\n              codeCoverageTool: 'Cobertura'\n              summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'\n  \n  - stage: DeployStaging\n    displayName: 'Deploy to Staging'\n    dependsOn: Test\n    condition: eq(variables['Build.SourceBranch'], 'refs/heads/develop')\n    jobs:\n      - deployment: DeployStaging\n        displayName: 'Deploy to Staging'\n        environment: 'staging'\n        strategy:\n          runOnce:\n            deploy:\n              steps:\n                - download: current\n                  artifact: dist\n                \n                - script: |\n                    echo \"Deploying to staging...\"\n                    # Deployment commands\n                  displayName: 'Deploy'\n  \n  - stage: DeployProduction\n    displayName: 'Deploy to Production'\n    dependsOn: Test\n    condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')\n    jobs:\n      - deployment: DeployProduction\n        displayName: 'Deploy to Production'\n        environment: 'production'\n        strategy:\n          runOnce:\n            deploy:\n              steps:\n                - download: current\n                  artifact: dist\n                \n                - script: |\n                    echo \"Deploying to production...\"\n                    # Deployment commands\n                  displayName: 'Deploy'",
+      "best_practices": [
+        "Use multi-stage pipelines",
+        "Leverage matrix strategies",
+        "Use cache tasks for dependencies",
+        "Use deployment jobs for environments",
+        "Use approval gates",
+        "Publish test results and coverage"
+      ]
+    }
+  },
+  "best_practices": {
+    "pipeline_design": [
+      "Keep pipelines fast (< 10 minutes for CI)",
+      "Fail fast on critical errors",
+      "Use parallel jobs when possible",
+      "Cache dependencies aggressively",
+      "Use conditional execution",
+      "Document pipeline stages"
+    ],
+    "security": [
+      "Never commit secrets",
+      "Use platform secret management",
+      "Rotate credentials regularly",
+      "Limit secret access",
+      "Use OIDC when available",
+      "Scan for secrets in code",
+      "Use least privilege principle"
+    ],
+    "reliability": [
+      "Use idempotent deployments",
+      "Implement rollback procedures",
+      "Run smoke tests after deployment",
+      "Monitor deployment health",
+      "Use blue-green deployments",
+      "Test deployment scripts"
+    ],
+    "maintainability": [
+      "Use reusable workflows/templates",
+      "Version pin actions/tasks",
+      "Document pipeline changes",
+      "Keep pipelines DRY",
+      "Use consistent naming",
+      "Review pipeline changes"
+    ],
+    "performance": [
+      "Cache dependencies",
+      "Use matrix for parallelization",
+      "Optimize Docker images",
+      "Use build artifacts",
+      "Skip unnecessary steps",
+      "Use self-hosted runners for large builds"
+    ]
+  },
+  "anti_patterns": {
+    "committing_secrets": {
+      "description": "Storing secrets in repository files",
+      "problem": "Security vulnerability, secrets exposed in history",
+      "solution": "Use platform secret stores, never commit secrets",
+      "example": "# Bad\nDATABASE_PASSWORD=secret123\n\n# Good\nDATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}"
+    },
+    "monolithic_pipelines": {
+      "description": "Single large pipeline doing everything",
+      "problem": "Hard to maintain, slow, difficult to debug",
+      "solution": "Break into stages and jobs, use reusable workflows",
+      "example": "# Bad: One job doing everything\njobs:\n  everything:\n    steps:\n      - build\n      - test\n      - deploy\n\n# Good: Separate stages\nstages:\n  - build\n  - test\n  - deploy"
+    },
+    "no_caching": {
+      "description": "Not caching dependencies",
+      "problem": "Slow pipelines, wasted resources",
+      "solution": "Cache package manager dependencies",
+      "example": "# Bad: No caching\n- run: pip install -r requirements.txt\n\n# Good: With caching\n- uses: actions/cache@v4\n  with:\n    path: ~/.cache/pip\n    key: pip-${{ hashFiles('requirements.txt') }}"
+    },
+    "hardcoded_configurations": {
+      "description": "Hardcoding environment-specific values",
+      "problem": "Not portable, hard to maintain",
+      "solution": "Use variables and secrets",
+      "example": "# Bad\n- run: deploy --url https://production.example.com\n\n# Good\n- run: deploy --url ${{ env.DEPLOYMENT_URL }}"
+    },
+    "ignoring_failures": {
+      "description": "Continuing pipeline after failures",
+      "problem": "Deploying broken code",
+      "solution": "Fail fast, fix issues before proceeding",
+      "example": "# Bad\n- run: tests || true\n\n# Good\n- run: tests"
+    },
+    "no_artifact_management": {
+      "description": "Rebuilding in every job",
+      "problem": "Wasted time and resources",
+      "solution": "Upload and download artifacts",
+      "example": "# Bad: Rebuild in every job\njobs:\n  test:\n    steps:\n      - run: npm run build\n  deploy:\n    steps:\n      - run: npm run build  # Rebuilding!\n\n# Good: Use artifacts\njobs:\n  build:\n    steps:\n      - run: npm run build\n      - uses: actions/upload-artifact@v4\n  deploy:\n    needs: build\n    steps:\n      - uses: actions/download-artifact@v4"
+    }
+  },
+  "tools_and_platforms": {
+    "github_actions": {
+      "features": ["Reusable workflows", "Matrix strategies", "Environments", "Artifacts"],
+      "documentation": "https://docs.github.com/en/actions"
+    },
+    "gitlab_ci": {
+      "features": ["Extends", "Matrix", "Environments", "Artifacts"],
+      "documentation": "https://docs.gitlab.com/ee/ci/"
+    },
+    "azure_devops": {
+      "features": ["Multi-stage pipelines", "Matrix", "Environments", "Artifacts"],
+      "documentation": "https://docs.microsoft.com/en-us/azure/devops/pipelines"
+    },
+    "jenkins": {
+      "features": ["Pipeline as Code", "Shared libraries", "Matrix builds"],
+      "documentation": "https://www.jenkins.io/doc/book/pipeline/"
+    }
+  }
+}

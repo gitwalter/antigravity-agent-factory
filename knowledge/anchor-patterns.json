@@ -1,0 +1,215 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Anchor Framework Patterns",
+  "description": "Best practices and patterns for Solana development with the Anchor framework",
+  "version": "1.0.0",
+  "sources": [
+    "https://www.anchor-lang.com/docs",
+    "https://www.anchor-lang.com/docs/references/account-constraints",
+    "https://github.com/coral-xyz/anchor"
+  ],
+  "axiomAlignment": {
+    "A1_verifiability": "Anchor's constraints provide compile-time and runtime verification",
+    "A3_transparency": "IDL generation enables transparent program interfaces"
+  },
+  "program_structure": {
+    "basic_layout": {
+      "description": "Standard Anchor program structure",
+      "code_example": "use anchor_lang::prelude::*;\n\ndeclare_id!(\"YourProgramId11111111111111111111111111111\");\n\n#[program]\npub mod my_program {\n    use super::*;\n\n    pub fn initialize(ctx: Context<Initialize>, data: u64) -> Result<()> {\n        let account = &mut ctx.accounts.my_account;\n        account.data = data;\n        account.authority = ctx.accounts.authority.key();\n        account.bump = ctx.bumps.my_account;\n        Ok(())\n    }\n\n    pub fn update(ctx: Context<Update>, new_data: u64) -> Result<()> {\n        ctx.accounts.my_account.data = new_data;\n        Ok(())\n    }\n}\n\n#[derive(Accounts)]\npub struct Initialize<'info> {\n    #[account(\n        init,\n        payer = authority,\n        space = 8 + MyAccount::INIT_SPACE,\n        seeds = [b\"my_account\", authority.key().as_ref()],\n        bump\n    )]\n    pub my_account: Account<'info, MyAccount>,\n    #[account(mut)]\n    pub authority: Signer<'info>,\n    pub system_program: Program<'info, System>,\n}\n\n#[account]\n#[derive(InitSpace)]\npub struct MyAccount {\n    pub authority: Pubkey,\n    pub data: u64,\n    pub bump: u8,\n}",
+      "components": [
+        {"name": "declare_id!", "purpose": "Set program's on-chain address"},
+        {"name": "#[program]", "purpose": "Mark module containing instruction handlers"},
+        {"name": "#[derive(Accounts)]", "purpose": "Define account validation struct"},
+        {"name": "#[account]", "purpose": "Define account data structure"}
+      ]
+    },
+    "idl_generation": {
+      "description": "Anchor automatically generates IDL (Interface Description Language) for client interaction",
+      "usage": "anchor build generates target/idl/program_name.json",
+      "benefits": [
+        "Type-safe client code generation",
+        "Automatic (de)serialization",
+        "Documentation of program interface"
+      ]
+    }
+  },
+  "account_constraints": {
+    "initialization_constraints": {
+      "init": {
+        "description": "Create and initialize a new account",
+        "code_example": "#[account(\n    init,\n    payer = payer,\n    space = 8 + DataAccount::INIT_SPACE\n)]\npub data_account: Account<'info, DataAccount>,",
+        "requirements": ["payer", "space", "system_program in accounts"]
+      },
+      "init_if_needed": {
+        "description": "Initialize only if account doesn't exist",
+        "code_example": "#[account(\n    init_if_needed,\n    payer = payer,\n    space = 8 + DataAccount::INIT_SPACE\n)]\npub data_account: Account<'info, DataAccount>,",
+        "warning": "Requires 'init-if-needed' feature; be careful of reinitialization attacks"
+      }
+    },
+    "validation_constraints": {
+      "mut": {
+        "description": "Mark account as mutable for state changes",
+        "code_example": "#[account(mut)]\npub my_account: Account<'info, MyAccount>,"
+      },
+      "signer": {
+        "description": "Require account to have signed the transaction",
+        "code_example": "#[account(signer)]\npub authority: AccountInfo<'info>,",
+        "note": "Use Signer<'info> type for simpler syntax"
+      },
+      "has_one": {
+        "description": "Verify account field matches another account's key",
+        "code_example": "#[account(\n    has_one = authority @ ErrorCode::Unauthorized\n)]\npub my_account: Account<'info, MyAccount>,\npub authority: Signer<'info>,",
+        "use_case": "Validate ownership relationships"
+      },
+      "constraint": {
+        "description": "Custom boolean constraint",
+        "code_example": "#[account(\n    constraint = my_account.data > 0 @ ErrorCode::InvalidData\n)]\npub my_account: Account<'info, MyAccount>,"
+      },
+      "address": {
+        "description": "Verify account address matches expected value",
+        "code_example": "#[account(address = ADMIN_PUBKEY)]\npub admin: Signer<'info>,"
+      },
+      "owner": {
+        "description": "Verify account owner program",
+        "code_example": "#[account(owner = token::ID)]\npub token_account: AccountInfo<'info>,"
+      }
+    },
+    "pda_constraints": {
+      "seeds_and_bump": {
+        "description": "Derive and validate PDA address",
+        "code_example": "#[account(\n    seeds = [b\"user_data\", user.key().as_ref()],\n    bump\n)]\npub user_data: Account<'info, UserData>,",
+        "automatic_bump": "Anchor finds and stores bump in ctx.bumps"
+      },
+      "seeds_with_program": {
+        "description": "PDA derived from different program",
+        "code_example": "#[account(\n    seeds = [b\"metadata\", mint.key().as_ref()],\n    bump,\n    seeds::program = metadata_program.key()\n)]\npub metadata: AccountInfo<'info>,"
+      }
+    },
+    "lifecycle_constraints": {
+      "close": {
+        "description": "Close account and transfer lamports",
+        "code_example": "#[account(\n    mut,\n    close = receiver,\n    has_one = authority\n)]\npub my_account: Account<'info, MyAccount>,\n#[account(mut)]\npub receiver: SystemAccount<'info>,",
+        "behavior": [
+          "Transfers all lamports to receiver",
+          "Zeros account data",
+          "Sets owner to System Program"
+        ]
+      },
+      "realloc": {
+        "description": "Resize account data",
+        "code_example": "#[account(\n    mut,\n    realloc = 8 + NewSize::INIT_SPACE,\n    realloc::payer = payer,\n    realloc::zero = false\n)]\npub my_account: Account<'info, MyAccount>,"
+      }
+    },
+    "spl_constraints": {
+      "token": {
+        "description": "Validate or create token accounts",
+        "code_example": "#[account(\n    init_if_needed,\n    payer = payer,\n    token::mint = mint,\n    token::authority = owner\n)]\npub token_account: Account<'info, TokenAccount>,"
+      },
+      "mint": {
+        "description": "Validate or create mint accounts",
+        "code_example": "#[account(\n    init,\n    payer = payer,\n    mint::decimals = 9,\n    mint::authority = authority\n)]\npub mint: Account<'info, Mint>,"
+      },
+      "associated_token": {
+        "description": "Use Associated Token Account",
+        "code_example": "#[account(\n    init_if_needed,\n    payer = payer,\n    associated_token::mint = mint,\n    associated_token::authority = owner\n)]\npub ata: Account<'info, TokenAccount>,"
+      }
+    }
+  },
+  "account_types": {
+    "Account": {
+      "description": "Deserialized account with ownership verification",
+      "code_example": "pub my_account: Account<'info, MyAccountData>,",
+      "checks": ["Owner matches program ID", "Discriminator matches type", "Deserializable"]
+    },
+    "Signer": {
+      "description": "Account that must sign transaction",
+      "code_example": "pub authority: Signer<'info>,",
+      "checks": ["is_signer = true"]
+    },
+    "SystemAccount": {
+      "description": "Account owned by System Program (wallet)",
+      "code_example": "pub user: SystemAccount<'info>,"
+    },
+    "Program": {
+      "description": "Executable program account",
+      "code_example": "pub system_program: Program<'info, System>,"
+    },
+    "UncheckedAccount": {
+      "description": "No automatic checks - use with caution",
+      "code_example": "/// CHECK: Validated in instruction handler\npub unchecked: UncheckedAccount<'info>,",
+      "warning": "Must document safety and validate manually"
+    }
+  },
+  "error_handling": {
+    "custom_errors": {
+      "description": "Define program-specific error codes",
+      "code_example": "#[error_code]\npub enum ErrorCode {\n    #[msg(\"User is not authorized to perform this action\")]\n    Unauthorized,\n    #[msg(\"Insufficient funds for this operation\")]\n    InsufficientFunds,\n    #[msg(\"Account is already initialized\")]\n    AlreadyInitialized,\n    #[msg(\"Invalid parameter provided\")]\n    InvalidParameter,\n}"
+    },
+    "require_macro": {
+      "description": "Assert condition with custom error",
+      "code_example": "require!(amount > 0, ErrorCode::InvalidParameter);\nrequire_keys_eq!(account.authority, ctx.accounts.signer.key(), ErrorCode::Unauthorized);\nrequire_gt!(balance, amount, ErrorCode::InsufficientFunds);"
+    },
+    "error_propagation": {
+      "description": "Use Result and ? operator",
+      "code_example": "pub fn transfer(ctx: Context<Transfer>, amount: u64) -> Result<()> {\n    let from = &mut ctx.accounts.from;\n    let to = &mut ctx.accounts.to;\n    \n    require!(from.balance >= amount, ErrorCode::InsufficientFunds);\n    \n    from.balance = from.balance.checked_sub(amount)\n        .ok_or(ErrorCode::MathOverflow)?;\n    to.balance = to.balance.checked_add(amount)\n        .ok_or(ErrorCode::MathOverflow)?;\n    \n    Ok(())\n}"
+    }
+  },
+  "events": {
+    "description": "Emit events for off-chain indexing and monitoring",
+    "definition": {
+      "code_example": "#[event]\npub struct TransferEvent {\n    pub from: Pubkey,\n    pub to: Pubkey,\n    pub amount: u64,\n    pub timestamp: i64,\n}"
+    },
+    "emission": {
+      "code_example": "emit!(TransferEvent {\n    from: ctx.accounts.from.key(),\n    to: ctx.accounts.to.key(),\n    amount,\n    timestamp: Clock::get()?.unix_timestamp,\n});"
+    },
+    "best_practices": [
+      "Emit events for all state changes",
+      "Include relevant context (who, what, when)",
+      "Use for off-chain indexing and UIs"
+    ]
+  },
+  "cpi_patterns": {
+    "basic_cpi": {
+      "description": "Call another program's instruction",
+      "code_example": "use anchor_spl::token::{self, Transfer, Token};\n\nlet cpi_accounts = Transfer {\n    from: ctx.accounts.from.to_account_info(),\n    to: ctx.accounts.to.to_account_info(),\n    authority: ctx.accounts.authority.to_account_info(),\n};\nlet cpi_program = ctx.accounts.token_program.to_account_info();\nlet cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);\n\ntoken::transfer(cpi_ctx, amount)?;"
+    },
+    "cpi_with_signer": {
+      "description": "CPI where program signs as PDA",
+      "code_example": "let seeds = &[\n    b\"vault\".as_ref(),\n    &[ctx.bumps.vault],\n];\nlet signer_seeds = &[&seeds[..]];\n\nlet cpi_ctx = CpiContext::new_with_signer(\n    ctx.accounts.token_program.to_account_info(),\n    cpi_accounts,\n    signer_seeds,\n);\n\ntoken::transfer(cpi_ctx, amount)?;"
+    }
+  },
+  "testing_patterns": {
+    "typescript_tests": {
+      "description": "Integration tests using Anchor's TypeScript client",
+      "code_example": "import * as anchor from \"@coral-xyz/anchor\";\nimport { Program } from \"@coral-xyz/anchor\";\nimport { MyProgram } from \"../target/types/my_program\";\nimport { expect } from \"chai\";\n\ndescribe(\"my-program\", () => {\n  const provider = anchor.AnchorProvider.env();\n  anchor.setProvider(provider);\n  const program = anchor.workspace.MyProgram as Program<MyProgram>;\n\n  it(\"Initializes account\", async () => {\n    const [pda] = anchor.web3.PublicKey.findProgramAddressSync(\n      [Buffer.from(\"my_account\"), provider.wallet.publicKey.toBuffer()],\n      program.programId\n    );\n\n    await program.methods\n      .initialize(new anchor.BN(100))\n      .accounts({\n        myAccount: pda,\n        authority: provider.wallet.publicKey,\n        systemProgram: anchor.web3.SystemProgram.programId,\n      })\n      .rpc();\n\n    const account = await program.account.myAccount.fetch(pda);\n    expect(account.data.toNumber()).to.equal(100);\n  });\n\n  it(\"Fails with unauthorized user\", async () => {\n    const unauthorized = anchor.web3.Keypair.generate();\n    \n    try {\n      await program.methods\n        .update(new anchor.BN(200))\n        .accounts({ authority: unauthorized.publicKey })\n        .signers([unauthorized])\n        .rpc();\n      expect.fail(\"Should have thrown\");\n    } catch (err) {\n      expect(err.error.errorCode.code).to.equal(\"Unauthorized\");\n    }\n  });\n});"
+    },
+    "rust_tests": {
+      "description": "Unit tests using LiteSVM or Mollusk",
+      "code_example": "use litesvm::LiteSVM;\nuse solana_sdk::{signature::Keypair, signer::Signer};\n\n#[test]\nfn test_initialize() {\n    let mut svm = LiteSVM::new();\n    let payer = Keypair::new();\n    svm.airdrop(&payer.pubkey(), 10_000_000_000).unwrap();\n    \n    // Deploy program and test...\n}"
+    }
+  },
+  "security_best_practices": [
+    "Always use typed Account<T> instead of AccountInfo when possible",
+    "Validate all account relationships with has_one or constraints",
+    "Store and verify bump seeds for PDAs",
+    "Use checked_add/checked_sub for arithmetic",
+    "Emit events for auditability",
+    "Test both success and failure paths",
+    "Use require! macros for clear error messages",
+    "Document /// CHECK: for any UncheckedAccount usage"
+  ],
+  "common_patterns": {
+    "vault_pattern": {
+      "description": "Program-controlled token vault",
+      "use_case": "Escrow, staking, lending protocols"
+    },
+    "authority_transfer": {
+      "description": "Two-step ownership transfer",
+      "use_case": "Safe admin handoff"
+    },
+    "timelock_pattern": {
+      "description": "Delay actions for security",
+      "use_case": "Governance, upgrades"
+    }
+  }
+}

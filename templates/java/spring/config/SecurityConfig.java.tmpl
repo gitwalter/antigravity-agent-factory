@@ -1,0 +1,108 @@
+package {{PACKAGE_NAME}}.config;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+/**
+ * SecurityConfig - Spring Security Configuration
+ * 
+ * Purpose: Configure security settings for the application
+ * Author: {{AUTHOR}}
+ * Created: {{DATE}}
+ * 
+ * Configures authentication, authorization, and security filters.
+ * Supports JWT-based authentication and method-level security.
+ */
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    // Uncomment if using JWT authentication
+    // private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    // private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    /**
+     * Configure security filter chain.
+     * 
+     * @param http HttpSecurity builder
+     * @return Configured SecurityFilterChain
+     * @throws Exception if configuration fails
+     */
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                // Disable CSRF for stateless APIs (enable if using session-based auth)
+                .csrf(AbstractHttpConfigurer::disable)
+                
+                // Configure authorization rules
+                .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
+                        .requestMatchers(
+                                "/api/v1/auth/**",
+                                "/api/v1/public/**",
+                                "/actuator/health",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        ).permitAll()
+                        
+                        // Admin endpoints require ADMIN role
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        
+                        // All other endpoints require authentication
+                        .anyRequest().authenticated()
+                )
+                
+                // Stateless session management (for JWT)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                
+                // Exception handling for authentication failures
+                // .exceptionHandling(ex -> ex
+                //         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                // )
+                
+                // Add JWT filter before username/password filter
+                // .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    /**
+     * Configure CORS settings.
+     * 
+     * @return CorsConfigurationSource with CORS rules
+     */
+    // @Bean
+    // public CorsConfigurationSource corsConfigurationSource() {
+    //     CorsConfiguration configuration = new CorsConfiguration();
+    //     configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://yourdomain.com"));
+    //     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+    //     configuration.setAllowedHeaders(List.of("*"));
+    //     configuration.setAllowCredentials(true);
+    //     
+    //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    //     source.registerCorsConfiguration("/**", configuration);
+    //     return source;
+    // }
+
+    /**
+     * Password encoder bean for encoding passwords.
+     * 
+     * @return BCryptPasswordEncoder instance
+     */
+    // @Bean
+    // public PasswordEncoder passwordEncoder() {
+    //     return new BCryptPasswordEncoder();
+    // }
+}

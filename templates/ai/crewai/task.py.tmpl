@@ -1,0 +1,178 @@
+"""
+{{TASK_NAME}} - CrewAI Task Definition
+
+Purpose: {{TASK_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Task outputs are verifiable
+- A2 (User Primacy): Tasks serve user goals
+"""
+
+from typing import List, Optional
+from crewai import Task
+from crewai.agent import Agent
+from pydantic import BaseModel, Field
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class {{TASK_CLASS_NAME}}Output(BaseModel):
+    """Structured output from task execution."""
+    result: str = Field(description="Task result")
+    completed: bool = Field(description="Whether task completed successfully")
+    agent_role: str = Field(description="Agent that executed the task")
+
+
+class {{TASK_CLASS_NAME}}:
+    """
+    {{TASK_NAME}} - CrewAI Task Definition
+    
+    Defines a task with:
+    - Description: What needs to be done
+    - Agent: Which agent executes it
+    - Expected Output: What the output should look like
+    - Context: Dependencies on other tasks
+    
+    Example:
+        >>> task = {{TASK_CLASS_NAME}}(agent=my_agent)
+        >>> result = task.execute()
+    """
+    
+    def __init__(
+        self,
+        agent: Agent,
+        description: Optional[str] = None,
+        expected_output: Optional[str] = None,
+        context: Optional[List[Task]] = None,
+        async_execution: bool = False
+    ):
+        """
+        Initialize task.
+        
+        Args:
+            agent: Agent to execute the task
+            description: Task description (uses default if None)
+            expected_output: Expected output format (uses default if None)
+            context: List of tasks this depends on
+            async_execution: Whether to execute asynchronously
+        """
+        self.agent = agent
+        self.description = description or """{{TASK_DESCRIPTION}}"""
+        self.expected_output = expected_output or """{{EXPECTED_OUTPUT}}"""
+        self.context = context or []
+        self.async_execution = async_execution
+        
+        # Create task
+        self.task = Task(
+            description=self.description,
+            agent=self.agent,
+            expected_output=self.expected_output,
+            context=self.context,
+            async_execution=self.async_execution
+        )
+        
+        logger.info(f"Initialized {{TASK_NAME}} task")
+    
+    def execute(self) -> {{TASK_CLASS_NAME}}Output:
+        """
+        Execute the task.
+        
+        Returns:
+            Structured output with result
+        
+        Example:
+            >>> result = task.execute()
+            >>> print(result.result)
+        """
+        logger.info(f"Executing task: {self.description[:100]}...")
+        
+        try:
+            # Execute task
+            if self.async_execution:
+                import asyncio
+                result = asyncio.run(self.agent.aexecute_task(self.task))
+            else:
+                result = self.agent.execute_task(self.task)
+            
+            output = {{TASK_CLASS_NAME}}Output(
+                result=str(result),
+                completed=True,
+                agent_role=self.agent.role
+            )
+            
+            logger.info("Task execution completed")
+            return output
+            
+        except Exception as e:
+            logger.error(f"Error during task execution: {e}")
+            return {{TASK_CLASS_NAME}}Output(
+                result=f"Error: {str(e)}",
+                completed=False,
+                agent_role=self.agent.role
+            )
+    
+    async def aexecute(self) -> {{TASK_CLASS_NAME}}Output:
+        """
+        Async version of execute.
+        
+        Returns:
+            Structured output
+        """
+        logger.info(f"Async executing task: {self.description[:100]}...")
+        
+        try:
+            result = await self.agent.aexecute_task(self.task)
+            
+            return {{TASK_CLASS_NAME}}Output(
+                result=str(result),
+                completed=True,
+                agent_role=self.agent.role
+            )
+            
+        except Exception as e:
+            logger.error(f"Error during async task execution: {e}")
+            return {{TASK_CLASS_NAME}}Output(
+                result=f"Error: {str(e)}",
+                completed=False,
+                agent_role=self.agent.role
+            )
+    
+    def get_description(self) -> str:
+        """Get task description."""
+        return self.description
+    
+    def get_expected_output(self) -> str:
+        """Get expected output."""
+        return self.expected_output
+    
+    def get_agent_role(self) -> str:
+        """Get agent role."""
+        return self.agent.role
+
+
+# Example usage
+if __name__ == "__main__":
+    from crewai import Agent
+    
+    # Create an agent
+    agent = Agent(
+        role="{{AGENT_ROLE}}",
+        goal="{{AGENT_GOAL}}",
+        backstory="{{AGENT_BACKSTORY}}"
+    )
+    
+    # Create task
+    task = {{TASK_CLASS_NAME}}(agent=agent)
+    
+    # Execute task
+    result = task.execute()
+    
+    print(f"Task Description: {task.get_description()}")
+    print(f"Expected Output: {task.get_expected_output()}")
+    print(f"Agent Role: {task.get_agent_role()}")
+    print(f"\nResult:\n{result.result}")
+    print(f"Completed: {result.completed}")

@@ -1,0 +1,79 @@
+"""
+{{APP_NAME}} - Main Streamlit Application
+
+Purpose: {{APP_PURPOSE}}
+Author: {{AUTHOR}}
+Created: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): All data operations are logged and traceable
+- A3 (Transparency): Clear UI feedback and error messages
+- A4 (Non-Harm): Input validation prevents invalid operations
+"""
+
+import streamlit as st
+import logging
+from pathlib import Path
+
+from .config.settings import get_settings
+from .utils.state import init_session_state
+from .components.sidebar import render_sidebar
+from .components.dashboard import render_dashboard
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
+# Page configuration
+st.set_page_config(
+    page_title="{{APP_NAME}}",
+    page_icon="{{APP_ICON}}",
+    layout="{{LAYOUT}}",  # "wide" or "centered"
+    initial_sidebar_state="{{SIDEBAR_STATE}}"  # "expanded" or "collapsed"
+)
+
+# Initialize settings
+settings = get_settings()
+
+# Initialize session state
+init_session_state()
+
+
+def main():
+    """
+    Main application entry point.
+    
+    This function orchestrates the Streamlit application flow,
+    handling page routing and component rendering.
+    """
+    logger.info("Starting {{APP_NAME}} application")
+    
+    try:
+        # Render sidebar
+        render_sidebar()
+        
+        # Get current page from query params or default
+        page = st.query_params.get("page", "dashboard")
+        
+        # Route to appropriate page/component
+        if page == "dashboard":
+            render_dashboard()
+        elif page == "{{PAGE_NAME}}":
+            # Add more page routing as needed
+            # render_{{PAGE_NAME}}()
+            pass
+        else:
+            st.error(f"Unknown page: {page}")
+            render_dashboard()
+            
+    except Exception as e:
+        logger.error(f"Error in main application: {e}", exc_info=True)
+        st.error(f"An error occurred: {str(e)}")
+        st.info("Please refresh the page or contact support if the issue persists.")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,250 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Antigravity Skill Pattern Schema",
+  "description": "Schema for defining reusable skill patterns in the Antigravity Agent Factory",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["metadata", "frontmatter", "sections"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Pattern metadata for factory use",
+      "required": ["patternId", "patternName", "category", "stackAgnostic"],
+      "properties": {
+        "patternId": {
+          "type": "string",
+          "description": "Unique identifier for this pattern",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "patternName": {
+          "type": "string",
+          "description": "Human-readable pattern name"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["workflow", "core", "quality", "testing", "documentation", "integration", "custom"],
+          "description": "Skill category"
+        },
+        "stackAgnostic": {
+          "type": "boolean",
+          "description": "Whether this pattern works across all technology stacks"
+        },
+        "applicableStacks": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of applicable stacks if not stack-agnostic"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of what this skill does"
+        },
+        "composable": {
+          "type": "boolean",
+          "description": "Whether this skill can be composed with others"
+        }
+      }
+    },
+    "frontmatter": {
+      "type": "object",
+      "description": "YAML frontmatter for the skill markdown file",
+      "required": ["name", "description", "type"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Skill name (kebab-case)",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "description": {
+          "type": "string",
+          "description": "Skill description"
+        },
+        "type": {
+          "type": "string",
+          "const": "skill"
+        },
+        "skills": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Other skills this skill depends on"
+        },
+        "knowledge": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Knowledge files this skill references"
+        },
+        "templates": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Template directories this skill uses"
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "description": "Content sections for the skill markdown",
+      "required": ["whenToUse", "process"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Main heading for the skill"
+        },
+        "introduction": {
+          "type": "string",
+          "description": "Brief introduction to the skill"
+        },
+        "whenToUse": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of use cases"
+        },
+        "process": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "step": {"type": "integer"},
+              "name": {"type": "string"},
+              "description": {"type": "string"},
+              "actions": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "mcpTools": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "outputs": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            }
+          },
+          "description": "Step-by-step process"
+        },
+        "knowledgeReferences": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "file": {"type": "string"},
+              "content": {"type": "string"},
+              "queryPattern": {"type": "string"}
+            }
+          },
+          "description": "Knowledge file references with query patterns"
+        },
+        "mcpTools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "tool": {"type": "string"},
+              "purpose": {"type": "string"},
+              "queryPattern": {"type": "string"}
+            }
+          },
+          "description": "MCP tools used by this skill"
+        },
+        "importantRules": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Critical rules the skill must follow"
+        },
+        "fallbackProcedures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "condition": {"type": "string"},
+              "action": {"type": "string"}
+            }
+          },
+          "description": "Fallback procedures for error conditions"
+        },
+        "outputFormat": {
+          "type": "string",
+          "description": "Expected output format"
+        },
+        "references": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "File references for additional documentation"
+        }
+      }
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "filename": {"type": "string"},
+          "title": {"type": "string"},
+          "content": {"type": "string"}
+        }
+      },
+      "description": "Reference files to include in skill's references folder"
+    },
+    "variables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "description": {"type": "string"},
+          "required": {"type": "boolean"},
+          "default": {"type": "string"}
+        }
+      },
+      "description": "Variables that must be replaced when generating"
+    }
+  },
+  "examples": [
+    {
+      "metadata": {
+        "patternId": "bugfix-workflow",
+        "patternName": "Bugfix Workflow Skill",
+        "category": "workflow",
+        "stackAgnostic": true,
+        "description": "Ticket-initiated bugfix workflow",
+        "composable": true
+      },
+      "frontmatter": {
+        "name": "bugfix-workflow",
+        "description": "Ticket-initiated bugfix workflow for development",
+        "type": "skill",
+        "skills": ["grounding"],
+        "knowledge": ["object-types.json"]
+      },
+      "sections": {
+        "title": "Bugfix Workflow Skill",
+        "introduction": "Guides the complete process of fixing bugs reported in tickets.",
+        "whenToUse": [
+          "When a ticket ID is mentioned",
+          "When fixing bugs in code",
+          "When investigating defects"
+        ],
+        "process": [
+          {
+            "step": 1,
+            "name": "Read Ticket",
+            "description": "Fetch and analyze the ticket",
+            "mcpTools": ["atlassian-getJiraIssue"],
+            "outputs": ["Issue type", "Priority", "Description", "Affected objects"]
+          },
+          {
+            "step": 2,
+            "name": "Fetch Source",
+            "description": "Acquire source code for analysis",
+            "actions": ["Check src/ folder", "Provide manual copy instructions"]
+          }
+        ],
+        "fallbackProcedures": [
+          {
+            "condition": "If ticket fetch fails",
+            "action": "Ask user to provide ticket details manually"
+          }
+        ]
+      }
+    }
+  ]
+}

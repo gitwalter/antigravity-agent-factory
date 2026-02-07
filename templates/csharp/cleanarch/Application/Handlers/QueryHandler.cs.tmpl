@@ -1,0 +1,122 @@
+using MediatR;
+using Microsoft.Extensions.Logging;
+using {{NAMESPACE}}.Application.Queries;
+using {{NAMESPACE}}.Domain.Repositories;
+
+namespace {{NAMESPACE}}.Application.Handlers;
+
+/// <summary>
+/// {{CLASS_NAME}}QueryHandler - MediatR Query Handler
+/// 
+/// Purpose: Handle {{QUERY_NAME}} query
+/// Author: {{AUTHOR}}
+/// Created: {{DATE}}
+/// 
+/// Implements the query handler for {{QUERY_NAME}}.
+/// Reads data without modifying state.
+/// </summary>
+public class {{CLASS_NAME}}QueryHandler : IRequestHandler<{{CLASS_NAME}}Query, {{CLASS_NAME}}QueryResult>
+{
+    private readonly I{{CLASS_NAME}}Repository _repository;
+    private readonly ILogger<{{CLASS_NAME}}QueryHandler> _logger;
+
+    /// <summary>
+    /// Initializes a new instance of {{CLASS_NAME}}QueryHandler.
+    /// </summary>
+    /// <param name="repository">The repository.</param>
+    /// <param name="logger">The logger.</param>
+    public {{CLASS_NAME}}QueryHandler(
+        I{{CLASS_NAME}}Repository repository,
+        ILogger<{{CLASS_NAME}}QueryHandler> logger)
+    {
+        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    /// <summary>
+    /// Handles the {{CLASS_NAME}}Query.
+    /// </summary>
+    /// <param name="request">The query request.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The query result.</returns>
+    public async Task<{{CLASS_NAME}}QueryResult> Handle(
+        {{CLASS_NAME}}Query request,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation(
+            "Handling {{CLASS_NAME}}Query - Id: {Id}, Page: {Page}, Size: {Size}",
+            request.Id,
+            request.PageNumber,
+            request.PageSize);
+
+        try
+        {
+            // If querying by ID, return single entity
+            if (request.Id.HasValue)
+            {
+                var entity = await _repository.GetByIdAsync(request.Id.Value, cancellationToken);
+                
+                if (entity == null)
+                {
+                    return new {{CLASS_NAME}}QueryResult
+                    {
+                        Items = Array.Empty<{{CLASS_NAME}}Dto>(),
+                        TotalCount = 0,
+                        PageNumber = request.PageNumber,
+                        PageSize = request.PageSize
+                    };
+                }
+
+                return new {{CLASS_NAME}}QueryResult
+                {
+                    Items = new[] { MapToDto(entity) },
+                    TotalCount = 1,
+                    PageNumber = 1,
+                    PageSize = 1
+                };
+            }
+
+            // Query with pagination
+            var entities = await _repository.GetAllAsync(
+                request.PageNumber,
+                request.PageSize,
+                request.SearchTerm,
+                cancellationToken);
+
+            var totalCount = await _repository.CountAsync(request.SearchTerm, cancellationToken);
+
+            var dtos = entities.Select(MapToDto).ToList();
+
+            return new {{CLASS_NAME}}QueryResult
+            {
+                Items = dtos,
+                TotalCount = totalCount,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling {{CLASS_NAME}}Query");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Maps domain entity to DTO.
+    /// </summary>
+    /// <param name="entity">The domain entity.</param>
+    /// <returns>The DTO.</returns>
+    private static {{CLASS_NAME}}Dto MapToDto({{DOMAIN_ENTITY_NAME}} entity)
+    {
+        return new {{CLASS_NAME}}Dto
+        {
+            Id = entity.Id,
+            Name = entity.Name,
+            Description = entity.Description,
+            Status = entity.Status.ToString(),
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt
+        };
+    }
+}

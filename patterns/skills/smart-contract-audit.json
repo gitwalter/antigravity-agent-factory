@@ -1,0 +1,289 @@
+{
+  "metadata": {
+    "patternId": "smart-contract-audit",
+    "patternName": "Smart Contract Security Audit Skill",
+    "category": "security",
+    "stackAgnostic": false,
+    "stacks": [
+      "solidity",
+      "ethereum",
+      "defi"
+    ],
+    "description": "Security-focused code review for smart contracts"
+  },
+  "frontmatter": {
+    "name": "smart-contract-audit",
+    "description": "Comprehensive security audit workflow for smart contracts",
+    "type": "skill",
+    "skills": [
+      "grounding"
+    ],
+    "knowledge": [
+      "ethereum-security.json",
+      "solidity-patterns.json",
+      "defi-patterns.json"
+    ]
+  },
+  "sections": {
+    "title": "Smart Contract Security Audit",
+    "introduction": "A systematic approach to identifying vulnerabilities in smart contracts before deployment.",
+    "whenToUse": [
+      "Before mainnet deployment",
+      "After significant code changes",
+      "During code review",
+      "When integrating external contracts"
+    ],
+    "process": [
+      {
+        "step": 1,
+        "name": "Initial Review",
+        "description": "Understand contract purpose and architecture",
+        "actions": [
+          "Read contract documentation and NatSpec",
+          "Identify external dependencies (OpenZeppelin, etc.)",
+          "Map contract interactions and inheritance",
+          "Identify privileged roles and access patterns"
+        ],
+        "outputs": [
+          "Architecture diagram",
+          "Dependency list",
+          "Role mapping"
+        ]
+      },
+      {
+        "step": 2,
+        "name": "Vulnerability Scan",
+        "description": "Check for known vulnerability patterns",
+        "checklist": [
+          {
+            "category": "Reentrancy",
+            "checks": [
+              "External calls before state updates",
+              "Missing ReentrancyGuard",
+              "Cross-function reentrancy"
+            ]
+          },
+          {
+            "category": "Access Control",
+            "checks": [
+              "Missing modifiers",
+              "tx.origin usage",
+              "Incorrect role checks"
+            ]
+          },
+          {
+            "category": "Integer Issues",
+            "checks": [
+              "Unchecked arithmetic (pre-0.8)",
+              "Unsafe downcasting",
+              "Division by zero"
+            ]
+          },
+          {
+            "category": "External Calls",
+            "checks": [
+              "Unchecked return values",
+              "Low-level call usage",
+              "Delegate call to untrusted"
+            ]
+          },
+          {
+            "category": "Front-running",
+            "checks": [
+              "Price manipulation vectors",
+              "Sandwich attack exposure",
+              "Missing slippage protection"
+            ]
+          },
+          {
+            "category": "Oracle Issues",
+            "checks": [
+              "Single oracle dependency",
+              "Stale price data",
+              "Flash loan manipulation"
+            ]
+          },
+          {
+            "category": "DoS Vectors",
+            "checks": [
+              "Unbounded loops",
+              "Block gas limit issues",
+              "Revert on external failure"
+            ]
+          }
+        ],
+        "tools": [
+          "Slither",
+          "Mythril",
+          "Aderyn"
+        ],
+        "isMandatory": true
+      },
+      {
+        "step": 3,
+        "name": "Business Logic Review",
+        "description": "Verify business logic implementation",
+        "actions": [
+          "Trace all value flows",
+          "Verify fee calculations",
+          "Check invariant preservation",
+          "Validate access control logic"
+        ]
+      },
+      {
+        "step": 4,
+        "name": "Gas Analysis",
+        "description": "Identify gas optimization opportunities",
+        "checks": [
+          "Storage vs memory usage",
+          "Loop optimizations",
+          "Redundant storage reads",
+          "Calldata vs memory for external functions"
+        ],
+        "tools": [
+          "hardhat-gas-reporter",
+          "forge --gas-report"
+        ]
+      },
+      {
+        "step": 5,
+        "name": "Test Coverage Review",
+        "description": "Verify adequate test coverage",
+        "requirements": [
+          "Unit tests for all public functions",
+          "Fuzz tests for input validation",
+          "Invariant tests for critical properties",
+          "Integration tests for contract interactions"
+        ],
+        "minimumCoverage": "90%"
+      },
+      {
+        "step": 6,
+        "name": "Generate Report",
+        "description": "Document findings with severity ratings",
+        "severityLevels": [
+          {
+            "level": "Critical",
+            "description": "Direct fund loss or contract takeover",
+            "color": "red"
+          },
+          {
+            "level": "High",
+            "description": "Significant impact on functionality or funds at risk",
+            "color": "orange"
+          },
+          {
+            "level": "Medium",
+            "description": "Moderate impact, requires specific conditions",
+            "color": "yellow"
+          },
+          {
+            "level": "Low",
+            "description": "Minor issues, best practice violations",
+            "color": "blue"
+          },
+          {
+            "level": "Informational",
+            "description": "Suggestions and improvements",
+            "color": "gray"
+          }
+        ],
+        "reportTemplate": "templates/docs/security_audit.md"
+      }
+    ],
+    "severityGuidelines": {
+      "Critical": {
+        "examples": [
+          "Reentrancy leading to drain",
+          "Access control bypass",
+          "Arbitrary code execution"
+        ],
+        "action": "MUST be fixed before deployment"
+      },
+      "High": {
+        "examples": [
+          "Front-running vulnerability",
+          "Oracle manipulation",
+          "Privilege escalation"
+        ],
+        "action": "SHOULD be fixed before deployment"
+      },
+      "Medium": {
+        "examples": [
+          "Denial of service vectors",
+          "Timestamp dependency",
+          "Centralization risks"
+        ],
+        "action": "CONSIDER fixing before deployment"
+      },
+      "Low": {
+        "examples": [
+          "Gas optimizations",
+          "Code style issues",
+          "Missing events"
+        ],
+        "action": "Optional to fix"
+      }
+    },
+    "fallbackProcedures": [
+      {
+        "condition": "If automated tools fail",
+        "action": "Perform manual line-by-line review"
+      },
+      {
+        "condition": "If vulnerability found",
+        "action": "Stop review, document, and notify"
+      },
+      {
+        "condition": "If complex DeFi integration",
+        "action": "Invoke defi-patterns.json for specific patterns"
+      }
+    ],
+    "references": [
+      "knowledge/ethereum-security.json",
+      "knowledge/solidity-patterns.json",
+      "knowledge/defi-patterns.json",
+      "https://swcregistry.io",
+      "https://consensys.github.io/smart-contract-best-practices"
+    ],
+    "importantRules": [
+      "All actions must align with core axioms (A1: Verifiability, A2: User Primacy, A3: Transparency, A4: Non-Harm, A5: Consistency)"
+    ]
+  },
+  "variables": [
+    {
+      "name": "{CONTRACT_NAME}",
+      "description": "Name of contract being audited",
+      "required": true
+    },
+    {
+      "name": "{SOLIDITY_VERSION}",
+      "description": "Solidity compiler version",
+      "required": true
+    },
+    {
+      "name": "{AUDIT_SCOPE}",
+      "description": "Files/contracts in scope",
+      "required": true
+    }
+  ],
+  "integrations": {
+    "tools": [
+      {
+        "name": "Slither",
+        "command": "slither . --exclude-dependencies",
+        "purpose": "Static analysis"
+      },
+      {
+        "name": "Mythril",
+        "command": "myth analyze contracts/{CONTRACT_NAME}.sol",
+        "purpose": "Symbolic execution"
+      },
+      {
+        "name": "Aderyn",
+        "command": "aderyn .",
+        "purpose": "Vulnerability detection"
+      }
+    ]
+  }
+}
