@@ -17,8 +17,11 @@ Welcome! The Antigravity Agent Factory helps you create AI development environme
 | I want to... | Here's your path |
 |--------------|------------------|
 | **See it work in 5 min** | `python cli/factory_cli.py --quickstart` |
-| **Setup guide** | [Installation Guide](docs/INSTALLATION.md) |
-| **How to use** | [User Guide](docs/USER_GUIDE.md) |
+| **Installation** | [Installation Guide](docs/INSTALLATION.md) |
+| **User Guide** | [User Guide](docs/USER_GUIDE.md) |
+| **Quick Start** | [Quick Start Guide](docs/QUICKSTART.md) |
+| **Testing** | [Testing Guide](docs/TESTING.md) |
+| **Troubleshooting** | [Troubleshooting](docs/TROUBLESHOOTING.md) |
 | **Porting from Cursor** | [Porting Guide](docs/PORTING_GUIDE.md) |
 
 ---
@@ -177,78 +180,7 @@ The Factory includes a **Memory System** that learns from your interactions and 
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-  - tdd
-mcp_servers:
-  - name: atlassian
-    url: https://mcp.atlassian.com/v1/sse
-    purpose: Jira/Confluence integration
-```
-
-## Extending the Factory
-
-### Adding New Blueprints
-
-1. Create directory: `blueprints/{blueprint-id}/`
-2. Create `blueprint.json` with:
-   - Metadata (name, description, tags)
-   - Stack configuration
-   - Agent and skill references
-   - Template paths
-
-### Adding New Patterns
-
-1. Create pattern JSON in appropriate `patterns/` directory
-2. Follow the pattern schema in `patterns/{type}/{type}-pattern.json`
-3. Reference pattern in blueprints
-
-### Adding New Skills
-
-1. Create skill directory: `.agent/skills/{skill-name}/`
-2. Create `SKILL.md` with frontmatter and process documentation
-3. Add to factory's skill registry
-
-## Development
-
-### Requirements
-
-- Python 3.10+
-- Antigravity IDE
-- PyYAML (for YAML config support)
-
-> **Tool Paths:** Commands below use default Windows paths from `.agent/config/tools.json`.
-> See [Configuration Guide](docs/CONFIGURATION.md) to customize for your environment.
-
-### Installing Development Dependencies
-
-```powershell
-# Install test dependencies
-C:\App\Anaconda\Scripts\pip.exe install -r requirements-dev.txt
-```
-
-### Running Tests
-
-The project includes a comprehensive pytest-based test suite with unit tests, integration tests, and validation tests.
-
-```powershell
-# Run all tests
-C:\App\Anaconda\python.exe -m pytest tests/ -v
-
-# Run with coverage report
-C:\App\Anaconda\python.exe -m pytest tests/ --cov=scripts --cov=cli --cov-report=html
-
-# Run specific test categories
-C:\App\Anaconda\python.exe -m pytest tests/unit/ -v           # Unit tests
-C:\App\Anaconda\python.exe -m pytest tests/integration/ -v    # Integration tests
-C:\App\Anaconda\python.exe -m pytest tests/validation/ -v     # Schema validation tests
-
-# Run specific test file
-C:\App\Anaconda\python.exe -m pytest tests/unit/test_project_config.py -v
-
-# Run tests matching a pattern
-C:\App\Anaconda\python.exe -m pytest tests/ -k "blueprint" -v
-```
-
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 For detailed testing documentation, see [docs/TESTING.md](docs/TESTING.md).
 
 ### Test Suite Structure
@@ -329,42 +261,18 @@ Each example includes a complete walkthrough, sample answers, and expected outpu
 
 ## Documentation
 
-### Comprehensive Reference
+### Core Reference
 
 | Document | Description |
 |----------|-------------|
-| **[Factory Reference](docs/FACTORY_REFERENCE.md)** | **Start here** - Complete overview of the factory with links to detailed references |
-| [Blueprints Reference](docs/reference/BLUEPRINTS.md) | All 17 technology blueprints with detailed specifications |
-| [Patterns Reference](docs/reference/PATTERNS.md) | Agent, skill, axiom, methodology, and other patterns |
-| [Knowledge Files Reference](docs/reference/KNOWLEDGE_FILES.md) | All 74 knowledge files categorized and explained |
-| [Factory Components Reference](docs/reference/FACTORY_COMPONENTS.md) | Factory's own 12 agents and 36 skills (plus PM subsystem) |
-| [Generated Output Reference](docs/reference/GENERATED_OUTPUT.md) | What gets generated: structure, formats, examples |
-
-### Guides and Tutorials
-
-| Document | Description |
-|----------|-------------|
-| [Usage Guide](docs/USAGE_GUIDE.md) | Detailed usage instructions and examples |
-| [Team Workshop Guide](docs/TEAM_WORKSHOP_GUIDE.md) | Complete facilitator's manual for team workshops |
-| [Example Walkthroughs](docs/examples/) | Complete end-to-end examples with real stacks |
-| [Layered Architecture](docs/LAYERED_ARCHITECTURE.md) | 5-layer architecture guide |
-| [Onboarding Concept](docs/LAYERED_ONBOARDING_CONCEPT.md) | Full implementation blueprint |
-| [Extension Guide](docs/EXTENSION_GUIDE.md) | How to extend the factory with new blueprints, patterns, and skills |
+| [User Guide](docs/USER_GUIDE.md) | Detailed usage instructions and examples |
+| [Installation Guide](docs/INSTALLATION.md) | Setup and environment requirements |
+| [Quick Start](docs/QUICKSTART.md) | Get running in 5 minutes |
 | [Testing Guide](docs/TESTING.md) | Test suite documentation and testing practices |
-| [SAP Grounding Design](docs/SAP_GROUNDING_DESIGN.md) | SAP-specific grounding architecture and MCP integration |
-
-### Research Paper Series
-
-Comprehensive academic documentation of the methodology (~150 pages, CC0 licensed):
-
-| Paper | Description |
-|-------|-------------|
-| [Axiom-Based Agent Architecture](docs/research/AXIOM_BASED_AGENT_ARCHITECTURE.md) | Core methodology: 5-layer system, axioms A1-A10, derivation rules |
-| [Sacred Psychology in Software Engineering](docs/research/SACRED_PSYCHOLOGY_SOFTWARE_ENGINEERING.md) | Psychological enforcement, philosophical techniques |
-| [Constitutional AI - Convergent Discovery](docs/research/CONSTITUTIONAL_AI_CONVERGENT_DISCOVERY.md) | Comparison with Anthropic Constitutional AI |
-| [Building Value-Aligned Agents](docs/research/BUILDING_VALUE_ALIGNED_AGENTS.md) | Practical step-by-step implementation guide |
-| [Future of Value-Aligned AI](docs/research/FUTURE_OF_VALUE_ALIGNED_AI.md) | Synthesis, unified framework, recommendations |
-| [Architecture Diagrams](docs/research/ARCHITECTURE_DIAGRAMS.md) | Visual diagrams of all architectures |
+| [Troubleshooting](docs/TROUBLESHOOTING.md) | Common issues and solutions |
+| [Knowledge Files](docs/reference/KNOWLEDGE_FILES.md) | Knowledge file synchronization and structure |
+| [Workflow Patterns](docs/reference/WORKFLOW_PATTERNS.md) | Available workflow definitions |
+| [Porting Guide](docs/PORTING_GUIDE.md) | Migrating from Cursor Agent Factory |
 
 ## Contributing
 
@@ -397,7 +305,7 @@ This project incorporates ideas and patterns from several valuable sources:
 | **[ai-dev-agent](https://github.com/gitwalter/ai-dev-agent)** | Pedagogical toolkit for AI agent systems that inspired the layered architecture and methodology integration concepts. |
 | **Ancient Wisdom & Philosophy** | Taoist philosophy (Wu Wei response protocol), Hilbert's axiomatic method (5-layer architecture foundation), and sacred value psychology research (Haidt, Tetlock). |
 
-For complete academic references, see [docs/research/REFERENCES.md](docs/research/REFERENCES.md).
+For complete references, see core documentation in [docs/](docs/).
 
 ## License
 
