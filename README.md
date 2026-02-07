@@ -85,82 +85,27 @@ python cli/factory_cli.py --interactive --output C:\Projects\my-project
 ## Project Structure
 
 ```
-antigravity-agent-factory/
 ├── .agent/
 │   ├── agents/                  # Factory's own agents (11 agents)
-│   │   └── *.md                 # debug-conductor, integrity-guardian, knowledge-evolution, etc.
-│   └── skills/                  # Factory's own skills (35 skills)
-│       ├── agent-generation/
-│       ├── algo-trading/
-│       ├── alignment-check/
-│       ├── analyze-knowledge-gaps/
-│       ├── axiom-selection/
-│       ├── ci-monitor/
-│       ├── commit-release/
-│       └── ...                       # + more skills
+│   └── skills/                  # Factory's own skills (36 skills)
 ├── patterns/                    # Reusable patterns (75+ files)
-│   ├── axioms/                  # Layer 0 axiom definitions
-│   ├── principles/              # Layer 2 principle patterns
-│   ├── methodologies/           # Layer 3 methodology templates
-│   ├── enforcement/             # Enforcement patterns
-│   ├── practices/               # Practice patterns
-│   ├── agents/                  # Agent pattern definitions
-│   ├── skills/                  # Skill pattern definitions
-│   ├── games/                   # Workshop game definitions
-│   ├── workshops/               # Workshop pattern definitions
-│   ├── team-formats/            # Team size adaptations
-│   ├── stacks/                  # Stack blueprint patterns
-│   ├── templates/               # Template patterns
-│   └── workflows/               # Workflow patterns
 ├── blueprints/                  # Technology stack blueprints (27 blueprints)
-│   ├── python-fastapi/
-│   ├── python-streamlit/
-│   ├── ai-agent-development/
-│   ├── multi-agent-systems/
-│   ├── typescript-react/
-│   ├── nextjs-fullstack/
-│   ├── java-spring/
-│   ├── kotlin-spring/
-│   ├── csharp-dotnet/
-│   ├── n8n-automation/
-│   ├── sap-abap/
-│   ├── sap-rap/
-│   ├── sap-cap/
-│   └── sap-cpi-pi/
-├── knowledge/                   # Reference data (75+ files)
+├── knowledge/                   # Reference data (80+ files)
 │   └── *.json                   # Stack, workflow, MCP, security, AI patterns
 ├── templates/                   # Code and document templates (200+ files)
-│   ├── factory/                 # Factory templates (agentrules, PURPOSE.md, etc.)
-│   ├── ai/                      # AI agent templates
-│   ├── python/                  # Python templates (FastAPI, Streamlit)
-│   ├── typescript/              # TypeScript templates (Next.js)
-│   ├── java/                    # Java Spring templates
-│   ├── csharp/                  # C# Clean Architecture templates
-│   ├── abap/                    # SAP ABAP/RAP templates
-│   ├── cap/                     # SAP CAP templates
-│   ├── integration/             # SAP CPI/PI integration templates
-│   ├── automation/              # n8n automation templates
-│   ├── workflows/               # CI/CD workflow templates
-│   ├── methodology/             # Methodology templates
-│   └── docs/                    # Documentation templates
 ├── docs/                        # Documentation
 │   ├── reference/               # Detailed reference docs
-│   ├── research/                # Research paper series
-│   ├── examples/                # Example walkthroughs
 │   └── *.md                     # Guides and tutorials
 ├── diagrams/                    # Architecture diagrams (Mermaid)
 ├── scripts/                     # Utility scripts
 ├── cli/                         # CLI interface
 │   └── factory_cli.py
 ├── tests/                       # Test suite
-│   ├── unit/
-│   ├── integration/
-│   ├── validation/
-│   └── fixtures/
 ├── .github/
 │   └── workflows/               # CI/CD workflows
 ├── .agentrules                 # Factory behavior rules
 ├── CHANGELOG.md                 # Version history
+├── LICENSE                       # MIT License
 └── README.md                    # This file
 ```
 
@@ -242,22 +187,7 @@ The CI pipeline includes:
 
 See `.github/workflows/ci.yml` for the full configuration.
 
-## Example Walkthroughs
 
-Complete, step-by-step examples showing the factory in action with real technology stacks:
-
-| Example | Blueprint | Description |
-|---------|-----------|-------------|
-| [REST API Service](docs/examples/01-rest-api-service/) | python-fastapi | Python FastAPI with Jira integration |
-| [Full-Stack Next.js](docs/examples/02-fullstack-nextjs-app/) | nextjs-fullstack | Next.js 14 with Prisma and auth |
-| [RAG Chatbot](docs/examples/03-rag-chatbot-agent/) | ai-agent-development | LangChain RAG with Streamlit |
-| [Multi-Agent System](docs/examples/04-multi-agent-research-system/) | multi-agent-systems | LangGraph supervisor/worker pattern |
-| [SAP Fiori](docs/examples/05-sap-fiori-integration/) | sap-abap | RAP application with MCP grounding |
-| [.NET Enterprise](docs/examples/06-dotnet-enterprise-api/) | csharp-dotnet | Clean Architecture with EF Core |
-| [Kotlin Microservice](docs/examples/07-kotlin-spring-microservice/) | kotlin-spring | Reactive Spring Boot with coroutines |
-| [SAP CPI Integration](docs/examples/08-sap-cpi-integration/) | sap-cpi-pi | Groovy scripting with iFlow patterns |
-
-Each example includes a complete walkthrough, sample answers, and expected output files for verification.
 
 ## Documentation
 
