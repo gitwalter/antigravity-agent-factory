@@ -331,15 +331,40 @@ class ProjectGenerator:
             # Generate diagrams folder with README
             self._generate_diagrams()
             
+            print(f"✓ Project generated successfully")
+            
+            return {
+                'success': True,
+                'target_dir': str(self.target_dir),
+                'files_created': self.generated_files,
+                'errors': self.errors
+            }
+            
+        except Exception as e:
+            error_msg = f"Error generating project: {str(e)}"
+            self.errors.append(error_msg)
+            print(error_msg)
+            return {
+                'success': False,
+                'target_dir': str(self.target_dir),
+                'files_created': self.generated_files,
+                'errors': self.errors
+            }
+    
+    def _create_directories(self) -> None:
+        """Create the project directory structure."""
+        directories = [
             '.agent/agents',
-            '.agent/skills',            'knowledge',
+            '.agent/skills',
+            'knowledge',
             'templates',
             'workflows',
             'scripts',
             'diagrams',
             'docs',
             'src',
-            'proofs'        ]
+            'proofs'
+        ]
         
         for dir_path in directories:
             full_path = self.target_dir / dir_path
@@ -412,7 +437,8 @@ class ProjectGenerator:
             content = content.replace('{AGENTS_LIST}', context['agents_list'])
             content = content.replace('{SKILLS_LIST}', context['skills_list'])
         
-        output_path = self.target_dir / '.agentrules'        self._write_file(output_path, content)
+        output_path = self.target_dir / '.agentrules'
+        self._write_file(output_path, content)
     
     def _build_template_context(self, blueprint: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Build a context dictionary for template rendering.
@@ -589,7 +615,9 @@ Before implementation:
         standard_agents = [
             'debug-conductor-project',
             'factory-updates',  # Enable receiving updates from Factory
-        ]        for agent_id in standard_agents:
+        ]
+        
+        for agent_id in standard_agents:
             if agent_id not in agents_to_generate:
                 agents_to_generate.append(agent_id)
         
@@ -703,8 +731,20 @@ Before implementation:
             'alignment-check',
             'research-first-project',
             'ci-monitor-project',
-            'pipeline-error-fix-project',
-                skill_dir = self.target_dir / '.agent' / 'skills' / name                skill_dir.mkdir(parents=True, exist_ok=True)
+        ]
+        
+        for skill_id in standard_skills:
+            if skill_id not in skills_to_generate:
+                skills_to_generate.append(skill_id)
+        
+        # Generate all skills
+        for skill_id in skills_to_generate:
+            pattern = self._load_pattern('skills', skill_id)
+            if pattern:
+                content = self._render_skill_from_pattern(pattern)
+                name = pattern.get('frontmatter', {}).get('name', skill_id)
+                skill_dir = self.target_dir / '.agent' / 'skills' / name
+                skill_dir.mkdir(parents=True, exist_ok=True)
                 output_path = skill_dir / 'SKILL.md'
                 self._write_file(output_path, content)
             else:

@@ -1,28 +1,28 @@
 # Test Catalog
 
-> **Auto-generated** from test suite on 2026-02-08 23:06.
+> **Auto-generated** from test suite on 2026-02-08 23:10.
 > Do not edit manually. Run `python scripts/docs/generate_test_catalog.py` to regenerate.
 
 ## Overview
 
-The test suite contains **1493 tests** across **51 files**.
+The test suite contains **1536 tests** across **52 files**.
 
 ### Summary by Category
 
 | Category | Files | Tests |
 |----------|-------|-------|
-| Unit Tests | 22 | 789 |
+| Unit Tests | 23 | 832 |
 | Integration Tests | 6 | 121 |
 | Validation Tests | 9 | 186 |
 | Guardian Tests | 1 | 9 |
 | Memory Tests | 3 | 45 |
 | Library Tests | 10 | 343 |
-| **Total** | **51** | **1493** |
+| **Total** | **52** | **1536** |
 
 ## Unit Tests
 
 **Directory:** `tests/unit/`
-**Files:** 22 | **Tests:** 789
+**Files:** 23 | **Tests:** 832
 
 ### test_adapters.py
 
@@ -452,6 +452,33 @@ The test suite contains **1493 tests** across **51 files**.
 | `TestNotificationSystemEdgeCases` | 3 | Additional edge case tests for NotificationSystem. |
 | `TestSourceAggregatorEdgeCases` | 2 | Additional edge case tests for SourceAggregator. |
 | `TestUpdateEngineEdgeCases` | 6 | Additional edge case tests for UpdateEngine. |
+
+### test_validate_readme.py
+
+**Purpose:** Unit tests for scripts/validation/validate_readme_structure.py
+
+**Path:** `tests/unit\test_validate_readme.py`
+**Tests:** 43
+
+| Class | Tests | Description |
+|-------|-------|-------------|
+| `TestStructureValidatorInit` | 2 | Tests for StructureValidator initialization. |
+| `TestShouldIgnore` | 5 | Tests for _should_ignore method. |
+| `TestCountFilesByExtension` | 3 | Tests for _count_files_by_extension method. |
+| `TestScanAgents` | 2 | Tests for scan_agents method. |
+| `TestScanSkills` | 2 | Tests for scan_skills method. |
+| `TestScanBlueprints` | 2 | Tests for scan_blueprints method. |
+| `TestScanPatterns` | 2 | Tests for scan_patterns method. |
+| `TestScanKnowledge` | 2 | Tests for scan_knowledge method. |
+| `TestScanTemplates` | 2 | Tests for scan_templates method. |
+| `TestScanAll` | 1 | Tests for scan_all method. |
+| `TestRoundToThreshold` | 3 | Tests for _round_to_threshold method. |
+| `TestGenerateCountsSummary` | 1 | Tests for generate_counts_summary method. |
+| `TestExtractReadmeCounts` | 3 | Tests for extract_readme_counts method. |
+| `TestValidate` | 2 | Tests for validate method. |
+| `TestUpdateReadme` | 3 | Tests for update_readme method. |
+| `TestGenerateStructureMarkdown` | 2 | Tests for generate_structure_markdown method. |
+| `TestMain` | 6 | Tests for main function. |
 
 ## Integration Tests
 
