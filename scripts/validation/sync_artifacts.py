@@ -89,6 +89,7 @@ class ArtifactConfig:
     recursive: bool = False
     exclude: list[str] = field(default_factory=list)
     id_extractor: str = "filename_stem"
+    metadata_extractor: Optional[dict] = None
     file_types_only: bool = False
     count_method: str = "file_count"
     targets: list[SyncTarget] = field(default_factory=list)
@@ -141,14 +142,66 @@ class ArtifactScanner:
             # Extract ID
             artifact_id = self._extract_id(path, config.id_extractor, source_dir)
             
+            # Extract metadata
+            metadata = self._extract_metadata(path, config.metadata_extractor)
+            
             # Create artifact info
             artifacts.append(ArtifactInfo(
                 id=artifact_id,
                 path=path,
-                metadata={}
+                metadata=metadata
             ))
         
         return artifacts
+    
+    def _extract_metadata(self, path: Path, extractor_config: Optional[dict]) -> dict:
+        """Extract metadata from file based on configuration."""
+        if not extractor_config:
+            return {}
+        
+        extractor_type = extractor_config.get("type")
+        fields = extractor_config.get("fields", [])
+        
+        if extractor_type == "markdown_frontmatter":
+            return self._extract_yaml_frontmatter(path, fields)
+        
+        return {}
+    
+    def _extract_yaml_frontmatter(self, path: Path, fields: list[str]) -> dict:
+        """Extract YAML frontmatter from markdown file."""
+        try:
+            content = path.read_text(encoding='utf-8')
+            
+            # Check for YAML frontmatter (--- ... ---)
+            if not content.startswith('---'):
+                return {}
+            
+            # Find the closing ---
+            lines = content.split('\n')
+            end_idx = None
+            for i in range(1, len(lines)):
+                if lines[i].strip() == '---':
+                    end_idx = i
+                    break
+            
+            if end_idx is None:
+                return {}
+            
+            # Parse YAML
+            import yaml
+            frontmatter_text = '\n'.join(lines[1:end_idx])
+            frontmatter = yaml.safe_load(frontmatter_text) or {}
+            
+            # Extract requested fields
+            metadata = {}
+            for field in fields:
+                if field in frontmatter:
+                    metadata[field] = frontmatter[field]
+            
+            return metadata
+        except Exception:
+            return {}
+
     
     def count_pytest(self, test_dir: Optional[str] = None) -> int:
         """Count tests using pytest --collect-only.
@@ -638,6 +691,7 @@ class SyncEngine:
                 recursive=artifact_data.get("recursive", False),
                 exclude=artifact_data.get("exclude", []),
                 id_extractor=artifact_data.get("id_extractor", "filename_stem"),
+                metadata_extractor=artifact_data.get("metadata_extractor"),
                 file_types_only=artifact_data.get("file_types_only", False),
                 count_method=artifact_data.get("count_method", "file_count"),
                 targets=targets,
