@@ -468,9 +468,116 @@ class TreeAnnotationSyncStrategy(SyncStrategy):
         )
 
 
-# =============================================================================
-# SYNC ENGINE
-# =============================================================================
+class MarkdownTableSyncStrategy(SyncStrategy):
+    """Syncs markdown tables with artifact lists."""
+    
+    def sync(self, target: SyncTarget, count: int, artifacts: list[ArtifactInfo],
+             dry_run: bool = True) -> SyncResult:
+        file_path = self.root_path / target.file
+        if not file_path.exists():
+            return SyncResult(
+                artifact="", target_file=target.file, target_type="markdown_table",
+                changed=False, old_value=None, new_value=count,
+                message=f"File not found: {target.file}"
+            )
+        
+        content = file_path.read_text(encoding='utf-8')
+        
+        # 1. Generate new table
+        header = "| " + " | ".join(target.columns) + " |"
+        separator = "| " + " | ".join(["---"] * len(target.columns)) + " |"
+        
+        rows = []
+        for artifact in sorted(artifacts, key=lambda a: a.id):
+            row_data = []
+            for col in target.columns:
+                if col == target.id_column:
+                    # Link formatting: [ID](link)
+                    rel_path = str(artifact.path.relative_to(self.root_path)).replace('\\', '/')
+                    row_data.append(f"[{artifact.id}](file:///{rel_path})")
+                else:
+                    # Metadata lookup
+                    # 1. Try direct field match (e.g. "Description" -> metadata["description"])
+                    # 2. Try lowercase match
+                    val = artifact.metadata.get(col) or artifact.metadata.get(col.lower(), "")
+                    # Escape pipes and remove newlines
+                    val_str = str(val).replace("|", "\\|").replace("\n", " ")
+                    row_data.append(val_str)
+            
+            rows.append("| " + " | ".join(row_data) + " |")
+            
+        new_table = f"{header}\n{separator}\n" + "\n".join(rows)
+        
+        # 2. Find and replace existing table
+        # We look for the section header and then the table following it
+        lines = content.split('\n')
+        new_lines = []
+        in_target_section = False
+        table_replaced = False
+        
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            
+            # Check for section header
+            if target.section in line and line.startswith("#"):
+                in_target_section = True
+                new_lines.append(line)
+                i += 1
+                continue
+            
+            # If in section
+            if in_target_section:
+                # Check for end of section (next header)
+                if line.startswith("#"):
+                    if not table_replaced:
+                        new_lines.append("")
+                        new_lines.append(new_table)
+                        new_lines.append("")
+                        table_replaced = True
+                    in_target_section = False
+                    new_lines.append(line)
+                    i += 1
+                    continue
+                
+                if not table_replaced:
+                    # Check if this line looks like a table start
+                    if line.strip().startswith("|") and all(c in line for c in target.columns[:2]):
+                        new_lines.append(new_table)
+                        table_replaced = True
+                        
+                        # Skip existing table lines
+                        while i < len(lines) and lines[i].strip().startswith("|"):
+                            i += 1
+                        continue
+            
+            new_lines.append(line)
+            i += 1
+            
+        # If we reached EOF and still in section (or just finished section without table), append it
+        if in_target_section and not table_replaced:
+            new_lines.append("")
+            new_lines.append(new_table)
+            new_lines.append("")
+            
+        new_content = "\n".join(new_lines)
+        
+        if new_content == content:
+             return SyncResult(
+                artifact="", target_file=target.file, target_type="markdown_table",
+                changed=False, old_value=len(rows), new_value=len(rows),
+                message="Already in sync"
+            )
+            
+        if not dry_run:
+            file_path.write_text(new_content, encoding='utf-8')
+            
+        return SyncResult(
+            artifact="", target_file=target.file, target_type="markdown_table",
+            changed=True, old_value="?", new_value=len(rows),
+            message=f"Table updated ({len(rows)} rows)"
+        )
+
 
 class SyncEngine:
     """Main orchestrator for artifact synchronization."""
@@ -493,6 +600,7 @@ class SyncEngine:
             "json_field": JsonFieldSyncStrategy(root_path),
             "category_counts": CategoryCountsSyncStrategy(root_path, self.scanner),
             "tree_annotation": TreeAnnotationSyncStrategy(root_path),
+            "markdown_table": MarkdownTableSyncStrategy(root_path),
         }
     
     def _load_config(self) -> dict[str, ArtifactConfig]:
