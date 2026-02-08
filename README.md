@@ -237,8 +237,9 @@ For visual documentation, see the [diagrams/](diagrams/) folder:
 ## Project Structure
 
 ```
-cursor-agent-factory/
-├── .agent/│   ├── agents/                  # Factory's own agents (12 agents)
+antigravity-agent-factory/
+├── .agent/
+│   ├── agents/                  # Factory's own agents (12 agents)
 │   │   └── *.md                 # debug-conductor, git-specialist, integrity-guardian, etc.
 │   └── skills/                  # Factory's own skills (37 skills)
 │       ├── agent-generation/

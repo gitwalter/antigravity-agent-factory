@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [4.1.0] - 2026-02-08
 
 ### Changed - Upstream Synchronization & Cleanup
-- **Synchronized** with upstream reference repository (`gitwalter/cursor-agent-factory`)
+- **Synchronized** with upstream reference repository (`gitwalter/antigravity-agent-factory`)
 - **Branding Preservation**: Intelligent conflict resolution to maintain "Antigravity" branding vs "Cursor".
 - **Documentation Cleanup**: Removed 20+ extraneous upstream documentation files to keep `docs/` focused.
 - **Sync Script**: Added `scripts/maintenance/sync_upstream.py` to automate future syncs with doc pruning.

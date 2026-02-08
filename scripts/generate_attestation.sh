@@ -111,14 +111,14 @@ generate_attestation() {
     # Generate attestation
     cat > "$ATTESTATIONS_DIR/$VERSION-verified.json" << EOF
 {
-  "_type": "https://cursor-agent-factory/attestation/v1",
+  "_type": "https://antigravity-agent-factory/attestation/v1",
   "subject": {
-    "name": "cursor-agent-factory",
+    "name": "antigravity-agent-factory",
     "version": "$VERSION",
     "commit": "$COMMIT_SHA",
     "commitDate": "$COMMIT_DATE"
   },
-  "predicateType": "https://cursor-agent-factory/proofs-verified/v1",
+  "predicateType": "https://antigravity-agent-factory/proofs-verified/v1",
   "predicate": {
     "verified": true,
     "verificationTime": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",

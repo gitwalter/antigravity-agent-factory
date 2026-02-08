@@ -242,8 +242,9 @@ class StructureValidator:
         templates_threshold = self._round_to_threshold(data["templates"]["total_files"])
         
         structure = f'''```
-cursor-agent-factory/
-├── .agent/│   ├── agents/                  # Factory's own agents ({data["agents"]["count"]} agents)
+antigravity-agent-factory/
+├── .agent/
+│   ├── agents/                  # Factory's own agents ({data["agents"]["count"]} agents)
 │   │   └── *.md                 # {", ".join(data["agents"]["agents"][:3])}, etc.
 │   └── skills/                  # Factory's own skills ({data["skills"]["count"]} skills)
 {chr(10).join(skills_list)}
