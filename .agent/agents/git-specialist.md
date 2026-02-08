@@ -17,6 +17,9 @@ To provide expert handling of version control operations, GitHub CI/CD pipeline 
   - Primary: `.agent/cache/session-paths.json` (Check this FIRST for local overrides).
   - Default: `.agent/config/tools.json` (Fallback if not found in session cache).
   - **Action**: Read these files to resolve tool paths. Respect the hierarchy: Cache > Defaults.
+  
+> [!IMPORTANT]
+> **STRICT PATH ENFORCEMENT**: You MUST use the full absolute path for `git` as defined in the configuration (e.g., `C:\Program Files\Git\cmd\git.exe`). DO NOT rely on the system PATH or just `git`.
 
 ## Standard Operating Procedures
 
