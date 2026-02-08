@@ -40,6 +40,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | Agent | Description |
 |-------|-------------|
 | [debug-conductor](.agent/agents/debug-conductor.md) | Debug Conductor Agent |
+| [git-specialist](.agent/agents/git-specialist.md) | Git Specialist Agent |
 | [integrity-guardian](.agent/agents/integrity-guardian.md) | Integrity Guardian |
 | [knowledge-evolution](.agent/agents/knowledge-evolution.md) | Knowledge Evolution Agent |
 | [knowledge-extender](.agent/agents/knowledge-extender.md) | Knowledge Extender Agent |

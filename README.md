@@ -97,8 +97,8 @@ python cli/factory_cli.py --interactive --output C:\Projects\my-project
 ```
 antigravity-agent-factory/
 ├── .agent/
-│   ├── agents/                  # Factory's own agents (11 agents)
-│   │   └── *.md                 # debug-conductor, integrity-guardian, knowledge-evolution, etc.
+│   ├── agents/                  # Factory's own agents (12 agents)
+│   │   └── *.md                 # debug-conductor, git-specialist, integrity-guardian, etc.
 │   └── skills/                  # Factory's own skills (36 skills)
 │       ├── agent-generation/
 │       ├── ai-agent-dev/
