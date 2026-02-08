@@ -55,9 +55,15 @@ jobs:
       - name: Setup Lean toolchain
         run: |
           cd proofs
-          cat lean-toolchain
-          elan install $(cat lean-toolchain)
-          elan default $(cat lean-toolchain)
+          TOOLCHAIN=$(cat lean-toolchain)
+          echo "Setting up toolchain: $TOOLCHAIN"
+          # Check if toolchain is already installed to avoid error
+          if ! elan toolchain list | grep -q "$TOOLCHAIN"; then
+            elan toolchain install "$TOOLCHAIN"
+          else
+            echo "Toolchain $TOOLCHAIN is already installed."
+          fi
+          elan default "$TOOLCHAIN"
       
       - name: Verify proofs
         run: |
