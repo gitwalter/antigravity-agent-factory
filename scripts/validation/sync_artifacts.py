@@ -600,7 +600,8 @@ class MarkdownTableSyncStrategy(SyncStrategy):
         rows = []
         # STABLE SORT: Sort by ID first, then by Path to ensure determinism 
         # especially when multiple files have the same ID (stem) in different dirs.
-        sorted_artifacts = sorted(artifacts, key=lambda a: (a.id, str(a.path)))
+        # Use relative path to be independent of absolute checkout location (e.g. CI vs Local)
+        sorted_artifacts = sorted(artifacts, key=lambda a: (a.id, str(a.path.relative_to(self.root_path)).replace('\\', '/')))
         
         for artifact in sorted_artifacts:
             row_data = []
