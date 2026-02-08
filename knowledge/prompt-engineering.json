@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Prompt Engineering Patterns",
   "description": "Best practices for designing effective prompts for AI agents",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "axiomAlignment": {
     "A1_verifiability": "Well-structured prompts produce verifiable outputs",
     "A3_transparency": "Clear prompts lead to explainable agent behavior"
@@ -84,25 +84,50 @@
       "description": "Include relevant context from knowledge base",
       "use_when": "Task requires domain knowledge or facts",
       "implementation": "Retrieve relevant documents, include in prompt context"
+    },
+    "least_to_most": {
+      "description": "Decompose complex task into sub-problems solved sequentially",
+      "use_when": "Task involves complex intermediate dependency steps",
+      "implementation": "1. Decompose problem. 2. Solve sub-problems using previous answers as context."
+    },
+    "emotional_stimuli": {
+      "description": "Add emotional cues to improve model focus and responsibility",
+      "use_when": "Critical tasks requiring high accuracy or truthful outputs",
+      "example": "This is very important for my career. Please ensure absolute accuracy."
     }
   },
   "prompt_patterns": {
     "code_review": {
       "template": "You are a code reviewer. Review the following code for:\n1. Correctness\n2. Code style\n3. Performance\n4. Security\n\nCode:\n```{language}\n{code}\n```\n\nProvide your review in this format:\n- **Issues**: List of problems found\n- **Suggestions**: Recommended improvements\n- **Rating**: Overall code quality (1-5)",
-      "variables": ["language", "code"],
+      "variables": [
+        "language",
+        "code"
+      ],
       "output_format": "structured"
     },
     "bug_analysis": {
       "template": "Analyze this bug report and suggest fixes.\n\n**Bug Description**: {description}\n**Error Message**: {error}\n**Relevant Code**: \n```\n{code}\n```\n\nProvide:\n1. Root cause analysis\n2. Suggested fix\n3. How to prevent similar bugs",
-      "variables": ["description", "error", "code"]
+      "variables": [
+        "description",
+        "error",
+        "code"
+      ]
     },
     "documentation": {
       "template": "Write documentation for this {type}.\n\n```{language}\n{code}\n```\n\nInclude:\n- Brief description\n- Parameters/Arguments\n- Return value\n- Usage example\n- Edge cases/notes",
-      "variables": ["type", "language", "code"]
+      "variables": [
+        "type",
+        "language",
+        "code"
+      ]
     },
     "test_generation": {
       "template": "Generate unit tests for this function.\n\n```{language}\n{code}\n```\n\nRequirements:\n- Test happy path\n- Test edge cases\n- Test error handling\n- Use {test_framework}",
-      "variables": ["language", "code", "test_framework"]
+      "variables": [
+        "language",
+        "code",
+        "test_framework"
+      ]
     }
   },
   "anti_patterns": {
@@ -145,7 +170,10 @@
     "a_b_testing": {
       "description": "Compare prompt variants systematically",
       "implementation": "Run both variants on same inputs, compare metrics",
-      "tools": ["LangSmith", "Custom evaluation scripts"]
+      "tools": [
+        "LangSmith",
+        "Custom evaluation scripts"
+      ]
     }
   },
   "safety_considerations": {
@@ -166,19 +194,43 @@
         "Plausibility checks for factual claims"
       ],
       "axiom_alignment": "A1 (Verifiability) - Verify outputs are valid"
+    },
+    "defense_in_depth": {
+      "description": "Layered defense strategies for agent workflows",
+      "techniques": [
+        "XML tagging (<query>...</query>) to delineate user intent",
+        "Instructional payload smuggling detection",
+        "Dual-LLM verification (smaller model checks larger model output)"
+      ]
     }
   },
   "model_specific_tips": {
     "openai_gpt4": {
-      "strengths": ["Complex reasoning", "Following detailed instructions"],
-      "tips": ["Use system message for core instructions", "Explicit output format works well"]
+      "strengths": [
+        "Complex reasoning",
+        "Following detailed instructions"
+      ],
+      "tips": [
+        "Use system message for core instructions",
+        "Explicit output format works well"
+      ]
     },
     "anthropic_claude": {
-      "strengths": ["Long context", "Nuanced understanding"],
-      "tips": ["XML tags for structure work well", "Claude responds well to 'think step by step'"]
+      "strengths": [
+        "Long context",
+        "Nuanced understanding"
+      ],
+      "tips": [
+        "XML tags for structure work well",
+        "Claude responds well to 'think step by step'"
+      ]
     },
     "local_models": {
-      "tips": ["Simpler prompts often work better", "More examples needed", "Explicit structure is crucial"]
+      "tips": [
+        "Simpler prompts often work better",
+        "More examples needed",
+        "Explicit structure is crucial"
+      ]
     }
   }
 }

@@ -687,7 +687,7 @@ class MarkdownTableSyncStrategy(SyncStrategy):
             file_path.write_text(new_content, encoding='utf-8')
             
         return SyncResult(
-            artifact="", target_file=target_file, target_type="markdown_table",
+            artifact="", target_file=target.file, target_type="markdown_table",
             changed=True, old_value="?", new_value=len(rows),
             message=f"Table updated ({len(rows)} rows)"
         )

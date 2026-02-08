@@ -6,7 +6,7 @@ from pathlib import Path
 def verify_links():
     root = Path(__file__).parent.parent
     docs_dir = root / 'docs'
-    catalog_path = docs_dir / 'CATALOG.md'
+    catalog_path = root / 'CATALOG.md'
 
     print(f"Checking links in {catalog_path}")
     
@@ -27,8 +27,8 @@ def verify_links():
         if link.startswith('http'):
             continue # Skip external links
             
-        # Resolve link relative to docs directory
-        target_path = (docs_dir / link).resolve()
+        # Resolve link relative to root directory (catalog is in root)
+        target_path = (root / link).resolve()
         
         if not target_path.exists():
             print(f"BROKEN: {link}")

@@ -1,0 +1,85 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Agent Memory Systems Patterns",
+    "description": "Comprehensive patterns for implementing multi-tier memory systems in AI agents including Short-term, Long-term (Episodic, Semantic, Procedural), and Graph-based memory.",
+    "version": "1.0.0",
+    "patterns": {
+        "short_term_memory": {
+            "name": "Short-term / In-context Memory",
+            "description": "Transient memory held within the LLM context window or active session state.",
+            "mechanisms": [
+                {
+                    "type": "sliding_window",
+                    "description": "Keeps the last N tokens or messages, discarding oldest when limit is reached.",
+                    "best_for": "Conversational continuity with strict token limits."
+                },
+                {
+                    "type": "summarized_buffer",
+                    "description": "Periodically summarizes older conversation history to condense information while preserving context.",
+                    "best_for": "Long-running sessions where historical gist is more important than exact quotes."
+                },
+                {
+                    "type": "state_checkpointing",
+                    "description": "Persisting the current agent state (LangGraph Checkpointer) to allow seamless thread resumption.",
+                    "best_for": "Reliable multi-step workflows."
+                }
+            ]
+        },
+        "long_term_memory": {
+            "name": "Long-term / Persistent Memory",
+            "description": "Persistent storage of knowledge, experiences, and preferences across sessions.",
+            "types": {
+                "episodic": {
+                    "name": "Episodic Memory",
+                    "description": "Record of specific past events and interactions.",
+                    "implementation": "Vector database (Chroma, Pinecone) storing embedded chat logs with temporal metadata."
+                },
+                "semantic": {
+                    "name": "Semantic Memory",
+                    "description": "Generalized facts, concepts, and rules.",
+                    "implementation": "Knowledge Graph (Neo4j, Mem0) or structured JSON/YAML document stores."
+                },
+                "procedural": {
+                    "name": "Procedural Memory",
+                    "description": "Tool-use history, skill execution successful patterns, and 'how-to' knowledge.",
+                    "implementation": "Workflow logs and specialized skill registries."
+                }
+            }
+        },
+        "working_memory": {
+            "name": "Working Memory / Scratchpad",
+            "description": "Immediate workspace for managing incremental states and sub-task coordination.",
+            "implementation": "Agent local variables, transient session cache, or 'Thought' artifacts."
+        },
+        "graph_memory": {
+            "name": "Graph-based Associative Memory",
+            "description": "Memory represented as nodes (entities) and edges (relationships) for multi-hop reasoning.",
+            "benefits": [
+                "Superior relationship tracking",
+                "Entity-centric retrieval",
+                "Multi-step inference support"
+            ],
+            "tools": [
+                "Mem0",
+                "FalkorDB",
+                "Neo4j"
+            ]
+        }
+    },
+    "integration_guidelines": [
+        "Use Vector RAG for semantic search of broad knowledge.",
+        "Use Knowledge Graphs for precise fact/relationship retrieval.",
+        "Combine STM and LTM using a Multi-tier Memory Controller.",
+        "Ensure memory pruning to prevent 'memory bloating' and irrelevant context injection."
+    ],
+    "example_architectures": [
+        {
+            "name": "Mem0 Hybrid",
+            "description": "Combines vector similarity with graph-based entity relationships."
+        },
+        {
+            "name": "LangGraph Persistence",
+            "description": "Uses Postgres checkpointers for STM and VectorDB for LTM."
+        }
+    ]
+}

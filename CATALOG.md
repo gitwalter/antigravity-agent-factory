@@ -153,6 +153,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | mcp-selection-guide | [`knowledge/mcp-selection-guide.json`](knowledge/mcp-selection-guide.json) |
 | mcp-servers-catalog | [`knowledge/mcp-servers-catalog.json`](knowledge/mcp-servers-catalog.json) |
 | memory-config | [`knowledge/memory-config.json`](knowledge/memory-config.json) |
+| memory-systems-patterns | [`knowledge/memory-systems-patterns.json`](knowledge/memory-systems-patterns.json) |
 | ml-agent-frameworks | [`knowledge/ml-agent-frameworks.json`](knowledge/ml-agent-frameworks.json) |
 | ml-workflow-patterns | [`knowledge/ml-workflow-patterns.json`](knowledge/ml-workflow-patterns.json) |
 | mlops-patterns | [`knowledge/mlops-patterns.json`](knowledge/mlops-patterns.json) |

@@ -1,6 +1,6 @@
 ﻿# Knowledge Files Catalog
 
-This factory currently includes **89 knowledge files** covering various aspects of AI development, project management, and technology stacks.
+This factory currently includes **90 knowledge files** covering various aspects of AI development, project management, and technology stacks.
 
 | File | Type | Description |
 |------|------|-------------|
@@ -67,6 +67,7 @@ This factory currently includes **89 knowledge files** covering various aspects 
 | [mcp-selection-guide](file:///knowledge/mcp-selection-guide.json) |  |  |
 | [mcp-servers-catalog](file:///knowledge/mcp-servers-catalog.json) |  |  |
 | [memory-config](file:///knowledge/memory-config.json) |  |  |
+| [memory-systems-patterns](file:///knowledge/memory-systems-patterns.json) |  |  |
 | [ml-agent-frameworks](file:///knowledge/ml-agent-frameworks.json) |  |  |
 | [ml-workflow-patterns](file:///knowledge/ml-workflow-patterns.json) |  |  |
 | [mlops-patterns](file:///knowledge/mlops-patterns.json) |  |  |

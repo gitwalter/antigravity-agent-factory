@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "RAG Patterns",
   "description": "Retrieval-Augmented Generation patterns for building production RAG systems",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "axiomAlignment": {
     "A1_verifiability": "RAG grounds responses in source documents",
     "A3_transparency": "Citations enable fact-checking"
@@ -11,7 +11,14 @@
     "basic_rag": {
       "description": "Simple retrieve-then-generate pipeline",
       "use_when": "Starting with RAG, simple use cases",
-      "components": ["Document Loader", "Text Splitter", "Embeddings", "Vector Store", "Retriever", "LLM"],
+      "components": [
+        "Document Loader",
+        "Text Splitter",
+        "Embeddings",
+        "Vector Store",
+        "Retriever",
+        "LLM"
+      ],
       "code_example": "from langchain_community.document_loaders import PyPDFLoader\nfrom langchain.text_splitter import RecursiveCharacterTextSplitter\nfrom langchain_openai import OpenAIEmbeddings, ChatOpenAI\nfrom langchain_community.vectorstores import Chroma\nfrom langchain_core.prompts import ChatPromptTemplate\nfrom langchain_core.runnables import RunnablePassthrough\nfrom langchain_core.output_parsers import StrOutputParser\n\n# 1. Load documents\nloader = PyPDFLoader('document.pdf')\ndocs = loader.load()\n\n# 2. Split into chunks\ntext_splitter = RecursiveCharacterTextSplitter(\n    chunk_size=1000,\n    chunk_overlap=200\n)\nchunks = text_splitter.split_documents(docs)\n\n# 3. Create embeddings and store\nembeddings = OpenAIEmbeddings(model='text-embedding-3-small')\nvectorstore = Chroma.from_documents(chunks, embeddings)\nretriever = vectorstore.as_retriever(search_kwargs={'k': 5})\n\n# 4. Create RAG chain\nllm = ChatOpenAI(model='gpt-4o')\n\nprompt = ChatPromptTemplate.from_template('''\nAnswer the question based on the context below.\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:''')\n\ndef format_docs(docs):\n    return '\\n\\n'.join(doc.page_content for doc in docs)\n\nrag_chain = (\n    {'context': retriever | format_docs, 'question': RunnablePassthrough()}\n    | prompt\n    | llm\n    | StrOutputParser()\n)\n\n# Query\nresponse = rag_chain.invoke('What is the main topic?')\nprint(response)",
       "best_practices": [
         "Start simple, add complexity as needed",
@@ -86,6 +93,18 @@
     "reranking": {
       "description": "Re-score results with cross-encoder",
       "code_example": "from langchain.retrievers import ContextualCompressionRetriever\nfrom langchain_cohere import CohereRerank\n\nreranker = CohereRerank(top_n=5)\ncompression_retriever = ContextualCompressionRetriever(\n    base_compressor=reranker,\n    base_retriever=retriever\n)"
+    },
+    "multi_query": {
+      "description": "Generate multiple variations of query to cast a wider net",
+      "code_example": "from langchain.retrievers.multi_query import MultiQueryRetriever\n\nretriever_from_llm = MultiQueryRetriever.from_llm(\n    retriever=vectorstore.as_retriever(),\n    llm=llm\n)\nunique_docs = retriever_from_llm.invoke(query)"
+    },
+    "hyde": {
+      "description": "Hypothetical Document Embeddings for finding similar actual documents",
+      "code_example": "from langchain.chains import HypotheticalDocumentEmbedder, LLMChain\n\nembeddings = HypotheticalDocumentEmbedder.from_llm(llm, base_embeddings, 'web_search')\nvectorstore = Chroma.from_documents(chunks, embeddings)"
+    },
+    "query_decomposition": {
+      "description": "Break complex query into simpler sub-queries",
+      "code_example": "from langchain.chains.query_constructor.base import AttributeInfo\n# Pattern: LLM identifies sub-questions and aggregates results"
     }
   },
   "prompt_patterns": {
