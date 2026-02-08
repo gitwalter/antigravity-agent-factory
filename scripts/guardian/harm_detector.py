@@ -7,8 +7,7 @@ Combines axiom checking, secret scanning, and additional patterns.
 
 import re
 from dataclasses import dataclass
-from typing import List, Dict, Any, Optional
-from pathlib import Path
+from typing import List, Optional
 
 try:
     from . import axiom_checker
