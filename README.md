@@ -122,7 +122,7 @@ antigravity-agent-factory/
 │   ├── stacks/                  # Stack blueprint patterns
 │   ├── templates/               # Template patterns
 │   └── workflows/               # Workflow patterns
-├── blueprints/                  # Technology stack blueprints (27 blueprints)
+├── blueprints/                  # Technology stack blueprints (28 blueprints)
 │   ├── python-fastapi/
 │   ├── python-streamlit/
 │   ├── ai-agent-development/
@@ -136,8 +136,7 @@ antigravity-agent-factory/
 │   ├── sap-abap/
 │   ├── sap-rap/
 │   ├── sap-cap/
-│   ├── sap-cpi-pi/
-│   └── google-agent-system/
+│   └── sap-cpi-pi/
 ├── knowledge/                   # Reference data (75+ files)
 │   └── *.json                   # Stack, workflow, MCP, security, AI patterns
 ├── templates/                   # Code and document templates (200+ files)
