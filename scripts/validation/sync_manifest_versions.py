@@ -101,7 +101,12 @@ VERSION_LOCATIONS = [
 ]
 
 
-def get_file_version_generic(filepath: Path, pattern: str) -> str | None:    """Extract version from a file using a regex pattern."""
+from typing import Optional
+
+# ... imports ...
+
+def get_file_version_generic(filepath: Path, pattern: str) -> Optional[str]:
+    """Extract version from a file using a regex pattern."""
     if not filepath.exists():
         return None
     content = filepath.read_text(encoding='utf-8')
@@ -138,9 +143,11 @@ def sync_file_version(
     
     return True
 
-def get_file_version(filepath: Path) -> str | None:    """Extract version from a knowledge JSON file."""
+def get_file_version(filepath: Path) -> Optional[str]:
+    """Extract version from a knowledge JSON file."""
     try:
-        data = json.loads(filepath.read_text(encoding='utf-8'))
+        content = filepath.read_text(encoding='utf-8')
+        data = json.loads(content)
         return data.get('version')
     except (json.JSONDecodeError, FileNotFoundError):
         return None
@@ -188,6 +195,12 @@ def sync_manifest(dry_run: bool = True) -> tuple[bool, list[str]]:
     
     # 3. Sync each knowledge file's version in manifest from actual file
     knowledge_dir = Path('knowledge')
+    # Update version in knowledge/project-info.json
+    project_info_path = knowledge_dir / "project-info.json"
+    if not project_info_path.exists():
+        print(f"Warning: {project_info_path} not found")
+        # return # Do not return, continue with other files
+    
     for filename, entry in manifest.get('files', {}).items():
         filepath = knowledge_dir / filename
         if filepath.exists():

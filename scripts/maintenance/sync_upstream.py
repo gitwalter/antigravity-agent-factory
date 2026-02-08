@@ -3,7 +3,7 @@
 Sync Upstream Script
 
 This script synchronizes the local repository with the upstream reference repository.
-Reference: https://github.com/gitwalter/cursor-agent-factory.git
+Reference: https://github.com/gitwalter/antigravity-agent-factory.git
 
 It intelligently handles conflicts by prioritizing local branding (Antigravity) and 
 structure (.agent) while adopting functional updates from upstream.

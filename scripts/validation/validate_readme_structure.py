@@ -89,13 +89,21 @@ class StructureValidator:
                 count += 1
         return count
     
+    def get_fs_agent_count(self) -> int:
+        """Count Markdown files in .agent/agents/."""
+        agents_dir = self.root_path / ".agent" / "agents"
+        if not agents_dir.exists():
+            return 0
+        return len(list(agents_dir.glob("*.md")))
+    
     def scan_agents(self) -> dict:
         """
         Scan .agent/agents/ directory.        
         Returns:
             Dictionary with agent count and list of agent names.
         """
-        agents_dir = self.root_path / ".agent" / "agents"        if not agents_dir.exists():
+        agents_dir = self.root_path / ".agent" / "agents"
+        if not agents_dir.exists():
             return {"count": 0, "agents": []}
         
         agents = sorted([
@@ -110,7 +118,8 @@ class StructureValidator:
         Returns:
             Dictionary with skill count and list of skill names.
         """
-        skills_dir = self.root_path / ".agent" / "skills"        if not skills_dir.exists():
+        skills_dir = self.root_path / ".agent" / "skills"
+        if not skills_dir.exists():
             return {"count": 0, "skills": []}
         
         skills = sorted([

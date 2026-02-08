@@ -41,34 +41,41 @@ The factory analyzes requirements and matches them to the most appropriate bluep
 ## 2. Blueprint Comparison Table
 
 | Blueprint ID | Primary Language | Key Frameworks | Category | Complexity Level |
-|--------------|------------------|----------------|----------|------------------|
-| `python-fastapi` | Python | FastAPI 0.115+, SQLAlchemy 2.0+, Pydantic 2.0+ | Backend/API | Medium |
-| `typescript-react` | TypeScript | React 19, Vite 5+, React Query 5+, Zustand 4+ | Frontend | Medium |
-| `nextjs-fullstack` | TypeScript | Next.js 15, React 19, Prisma 5+, Tailwind CSS 3+ | Frontend/Full-Stack | High |
-| `java-spring` | Java | Spring Boot 3.4, Spring Data JPA, Spring Security 6.4+ | Backend/API | High |
-| `kotlin-spring` | Kotlin | Spring Boot 3.2+, Spring WebFlux 6.1+, Kotlin Coroutines 1.8+ | Backend/API | High |
-| `csharp-dotnet` | C# | .NET 9, ASP.NET Core 9, EF Core 9, MediatR 12+ | Backend/API | High |
-| `python-streamlit` | Python | Streamlit 1.28+, Pandas 2.0+, NumPy 1.24+ | Frontend/Full-Stack | Low-Medium |
-| `ai-agent-development` | Python | LangChain 0.3+, LangGraph 0.2+, CrewAI 0.50+ | AI/Agent | High |
-| `multi-agent-systems` | Python | LangGraph 0.1+, LangChain 0.2+, Multi-agent orchestration | AI/Agent | Very High |
-| `python-ml-experimentation` | Python | PyTorch, scikit-learn, MLflow | AI/ML | Medium |
-| `python-deep-learning` | Python | PyTorch, Transformers, PEFT | AI/ML | High |
-| `python-rag-system` | Python | LangChain 0.3+, ChromaDB, OpenAI | AI/RAG | Medium-High |
-| `python-multi-agent` | Python | CrewAI, AutoGen, LangGraph | AI/Agent | High |
-| `python-fine-tuning` | Python | Transformers, PEFT, TRL | AI/ML | High |
-| `starter-ml-classification` | Python | scikit-learn, pandas | AI/ML Starter | Low |
-| `starter-chatbot` | Python | OpenAI, Streamlit | AI/LLM Starter | Low |
-| `starter-rag` | Python | LangChain, ChromaDB, Streamlit | AI/RAG Starter | Low |
-| `sap-abap` | ABAP | Clean ABAP, ABAP Cloud 2302+, Classic patterns | Integration | High |
-| `sap-rap` | ABAP/CDS | RAP 2.x, CDS, Fiori Elements, ABAP Cloud | Integration | High |
-| `sap-cap` | JavaScript/CDS | CAP 7.x, CDS, Node.js, BTP, Fiori Elements | Integration | High |
-| `sap-cpi-pi` | Groovy | SAP CPI SDK 1.x, Groovy 4.0.x, Spock Framework 2.4+ | Integration | High |
-| `n8n-automation` | JavaScript | n8n 1.0+, Node.js 18+, TypeScript 5+ (optional) | Integration/Automation | Medium |
-| `solidity-ethereum` | Solidity | Hardhat 2.x, Foundry, OpenZeppelin 5.x | Blockchain | High |
-| `defi-protocols` | Solidity | Hardhat, Foundry, Chainlink, OpenZeppelin | Blockchain/DeFi | Very High |
-| `solana-rust` | Rust | Anchor 0.30+, Solana SDK 1.18+ | Blockchain | High |
-| `quantitative-trading` | Python | pandas 2.x, vectorbt, backtrader, scikit-learn | Financial AI | High |
-| `financial-ai-agents` | Python | LangChain 0.3+, vectorbt, pandas 2.x | Financial AI/Agent | Very High |
+| --- | --- | --- | --- | --- |
+| [ai-agent-development](file:///blueprints/ai-agent-development/blueprint.json) |  |  |  |  |
+| [ai-observability-platform](file:///blueprints/ai-observability-platform/blueprint.json) |  |  |  |  |
+| [csharp-dotnet](file:///blueprints/csharp-dotnet/blueprint.json) |  |  |  |  |
+| [defi-protocols](file:///blueprints/defi-protocols/blueprint.json) |  |  |  |  |
+| [financial-ai-agents](file:///blueprints/financial-ai-agents/blueprint.json) |  |  |  |  |
+| [google-agent-system](file:///blueprints/google-agent-system/blueprint.json) |  |  |  |  |
+| [java-spring](file:///blueprints/java-spring/blueprint.json) |  |  |  |  |
+| [kotlin-spring](file:///blueprints/kotlin-spring/blueprint.json) |  |  |  |  |
+| [langchain-agent-platform](file:///blueprints/langchain-agent-platform/blueprint.json) |  |  |  |  |
+| [llm-inference-optimization](file:///blueprints/llm-inference-optimization/blueprint.json) |  |  |  |  |
+| [multi-agent-systems](file:///blueprints/multi-agent-systems/blueprint.json) |  |  |  |  |
+| [multimodal-ai](file:///blueprints/multimodal-ai/blueprint.json) |  |  |  |  |
+| [n8n-automation](file:///blueprints/n8n-automation/blueprint.json) |  |  |  |  |
+| [nextjs-fullstack](file:///blueprints/nextjs-fullstack/blueprint.json) |  |  |  |  |
+| [python-deep-learning](file:///blueprints/python-deep-learning/blueprint.json) |  |  |  |  |
+| [python-fastapi](file:///blueprints/python-fastapi/blueprint.json) |  |  |  |  |
+| [python-fine-tuning](file:///blueprints/python-fine-tuning/blueprint.json) |  |  |  |  |
+| [python-ml-experimentation](file:///blueprints/python-ml-experimentation/blueprint.json) |  |  |  |  |
+| [python-multi-agent](file:///blueprints/python-multi-agent/blueprint.json) |  |  |  |  |
+| [python-rag-system](file:///blueprints/python-rag-system/blueprint.json) |  |  |  |  |
+| [python-streamlit](file:///blueprints/python-streamlit/blueprint.json) |  |  |  |  |
+| [quantitative-trading](file:///blueprints/quantitative-trading/blueprint.json) |  |  |  |  |
+| [sap-abap](file:///blueprints/sap-abap/blueprint.json) |  |  |  |  |
+| [sap-cap](file:///blueprints/sap-cap/blueprint.json) |  |  |  |  |
+| [sap-cpi-pi](file:///blueprints/sap-cpi-pi/blueprint.json) |  |  |  |  |
+| [sap-rap](file:///blueprints/sap-rap/blueprint.json) |  |  |  |  |
+| [solana-rust](file:///blueprints/solana-rust/blueprint.json) |  |  |  |  |
+| [solidity-ethereum](file:///blueprints/solidity-ethereum/blueprint.json) |  |  |  |  |
+| [starter-chatbot](file:///blueprints/starter-chatbot/blueprint.json) |  |  |  |  |
+| [starter-ml-classification](file:///blueprints/starter-ml-classification/blueprint.json) |  |  |  |  |
+| [starter-rag](file:///blueprints/starter-rag/blueprint.json) |  |  |  |  |
+| [synthetic-data-generation](file:///blueprints/synthetic-data-generation/blueprint.json) |  |  |  |  |
+| [typescript-react](file:///blueprints/typescript-react/blueprint.json) |  |  |  |  |
+| [voice-ai-agents](file:///blueprints/voice-ai-agents/blueprint.json) |  |  |  |  |
 
 ---
 

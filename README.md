@@ -4,7 +4,7 @@
 
 > **Quick Start:** New here? See [docs/QUICKSTART.md](docs/QUICKSTART.md) or run `python cli/factory_cli.py --quickstart` to get running in 5 minutes.
 
-![cursor-ide](https://img.shields.io/badge/cursor--ide-blue)
+![antigravity-ide](https://img.shields.io/badge/antigravity--ide-blue)
 ![ai-agents](https://img.shields.io/badge/ai--agents-purple)
 ![mcp-servers](https://img.shields.io/badge/mcp--servers-green)
 ![code-generation](https://img.shields.io/badge/code--generation-orange)
@@ -13,67 +13,6 @@
 
 Welcome! Whether you're a solo developer exploring new possibilities or a team building something meaningful together, we're here to help you create an AI development environment grounded in purpose, principles, and care.
 ---
-
-## Start Here
-
-Not sure where to begin? We've got you covered.
-
-| I want to... | Here's your path |
-|--------------|------------------|
-| **Find my best path** | [Getting Started Guide](docs/GETTING_STARTED.md) - Our unified onboarding portal |
-| **See it work in 5 minutes** | [Quickstart Guide](docs/QUICKSTART.md) or `python cli/factory_cli.py --quickstart` |
-| **Quick personal setup (10-15 min)** | [Express Lane](docs/GETTING_STARTED.md#express-lane) - Guided individual onboarding |
-| **Small team alignment (1-2 hours)** | [Team Huddle](docs/GETTING_STARTED.md#team-huddle) - Condensed collaborative workshop |
-| **Full team transformation** | [Workshop Series](docs/TEAM_WORKSHOP_GUIDE.md) - 5 workshops with games |
-| **Learn a new technology** | [Learning Workshops](#learning-workshops) - 18 hands-on workshops with export |
-| **Enhance an existing repo** | [Onboarding Guide](docs/ONBOARDING_GUIDE.md) |
-| **Just finished setup?** | [First Week Guide](docs/FIRST_WEEK_GUIDE.md) - Post-onboarding coaching |
-
-New to all this? Start with [Getting Started](docs/GETTING_STARTED.md) to find your ideal path, or run the [Quickstart](docs/QUICKSTART.md) to see the factory in action.
-
-**Need help?** See [Prerequisites](docs/PREREQUISITES.md) for setup or [Troubleshooting](docs/TROUBLESHOOTING.md) if you run into issues.
----
-
-## How It Works
-
-Every project we generate is built on a **5-layer architecture** grounded in Love, Truth, and Beauty:
-
-```mermaid
-flowchart TB
-    subgraph L0 [Layer 0: Foundation]
-        A0[Love - Truth - Beauty]
-    end
-    
-    subgraph L1 [Layer 1: Integrity]
-        A1[Reasoning]
-        A2[Curiosity]
-        A3[Humility]
-    end
-    
-    subgraph L2 [Layer 2: Purpose]
-        Mission[Mission]
-        Stakeholders[Stakeholders]
-        Success[Success Criteria]
-    end
-    
-    subgraph L3 [Layer 3: Principles]
-        Ethics[Ethical Boundaries]
-        Quality[Quality Standards]
-    end
-    
-    subgraph L4 [Layer 4: Technical]
-        Agents[AI Agents]
-        Skills[Skills]
-        Knowledge[Knowledge Files]
-    end
-    
-    L0 --> L1
-    L1 --> L2
-    L2 --> L3
-    L3 --> L4
-```
-
-This isn't just about code - it's about building systems that serve the flourishing of all beings.
 
 ---
 
@@ -89,43 +28,10 @@ python cli/factory_cli.py --quickstart
 
 This creates a complete demo project showing what you'll get. Perfect for exploration!
 
-### Option 2: Chat-Based Creation (Recommended)
-
-1. Open this project in Antigravity IDE
-2. Say: **"Create a new agent system"**
-3. Follow the guided 5-phase questionnaire
-4. Specify your output directory
-5. Review your generated project
-
-### Option 3: Team Workshop Series
-
-For teams of 2+ people, collaborative workshops help align your team:
-
-| Workshop | Duration | What You'll Do |
-|----------|----------|----------------|
-| **Vision Quest** | 2-3h | Discover shared vision through games |
-| **Ethics Arena** | 2h | Debate values and find priorities |
-| **Stack Safari** | 2-3h | Explore technology together |
-| **Agent Assembly** | 3-4h | Design your AI team |
-| **Integration Celebration** | 1.5-2h | Demo and celebrate! |
-
-Each workshop is grounded in **Axiom 0: Love, Truth, and Beauty**. See the [Team Workshop Guide](docs/TEAM_WORKSHOP_GUIDE.md) for details.
-
-### Option 4: CLI (Advanced Users)
-```powershell
-# List available blueprints
-python cli/factory_cli.py --list-blueprints
-
-# Generate from a blueprint
-python cli/factory_cli.py --blueprint python-fastapi --output C:\Projects\my-api
-
-# Interactive mode with full questionnaire
-python cli/factory_cli.py --interactive --output C:\Projects\my-project
-
-# Onboard an existing repository
-python cli/factory_cli.py --onboard C:\Projects\existing-repo```
-
 ---
+
+## Overview
+
 
 ## Overview
 
@@ -332,19 +238,19 @@ For visual documentation, see the [diagrams/](diagrams/) folder:
 
 ```
 cursor-agent-factory/
-├── .agent/
-│   ├── agents/                  # Factory's own agents (14 agents)
+├── .agent/│   ├── agents/                  # Factory's own agents (12 agents)
 │   │   └── *.md                 # debug-conductor, git-specialist, integrity-guardian, etc.
-│   └── skills/                  # Factory's own skills (71 skills)
-│       ├── advanced-retrieval/
+│   └── skills/                  # Factory's own skills (37 skills)
 │       ├── agent-generation/
-│       ├── agent-testing/
-│       ├── agentic-loops/
+│       ├── ai-agent-dev/
 │       ├── algo-trading/
 │       ├── alignment-check/
 │       ├── analyze-knowledge-gaps/
+│       ├── axiom-selection/
+│       ├── ci-monitor/
 │       └── ...                       # + more skills
-├── patterns/                    # Reusable patterns (100+ files)│   ├── axioms/                  # Layer 0 axiom definitions
+├── patterns/                    # Reusable patterns (100+ files)
+│   ├── axioms/                  # Layer 0 axiom definitions
 │   ├── principles/              # Layer 2 principle patterns
 │   ├── methodologies/           # Layer 3 methodology templates
 │   ├── enforcement/             # Enforcement patterns
@@ -357,7 +263,8 @@ cursor-agent-factory/
 │   ├── stacks/                  # Stack blueprint patterns
 │   ├── templates/               # Template patterns
 │   └── workflows/               # Workflow patterns
-├── blueprints/                  # Technology stack blueprints (33 blueprints)│   ├── python-fastapi/
+├── blueprints/                  # Technology stack blueprints (34 blueprints)
+│   ├── python-fastapi/
 │   ├── python-streamlit/
 │   ├── ai-agent-development/
 │   ├── multi-agent-systems/
@@ -520,64 +427,6 @@ This foundational axiom precedes all technical axioms (A1-A5) and ensures that c
 
 For complete facilitation instructions, see [docs/TEAM_WORKSHOP_GUIDE.md](docs/TEAM_WORKSHOP_GUIDE.md).
 
-## Learning Workshops
-
-The Factory includes **18 structured learning workshops** covering modern technology stacks. Each workshop is a 2.5-hour hands-on session with a proven 5-phase methodology.
-
-### Workshop Catalog
-
-| Category | Workshops | Focus |
-|----------|-----------|-------|
-| **Blockchain** | L1 Ethereum, L2 Bitcoin, L4 Solana | Smart contracts, DeFi, Layer 2 |
-| **AI Frameworks** | L3-L8, L16-L18 | LangChain, LangGraph, CrewAI, RAG, Transformers |
-| **Web Fullstack** | L9 React, L10 Next.js, L11 FastAPI | Modern web development |
-| **Cloud Native** | L12 Kubernetes, L13 Docker | Container orchestration |
-| **Data & ML** | L14 PyTorch, L15 Fine-tuning | Deep learning, LLM customization |
-
-### Workshop Export
-
-Export any workshop to a standalone learning project with full AI assistance:
-
-```powershell
-# Export a workshop to a learning project
-python scripts/workshops/export_workshop.py L1_ethereum_fundamentals c:/learning/ethereum
-python scripts/workshops/export_workshop.py L7_langchain_fundamentals c:/learning/langchain
-```
-
-**Generated artifacts include:**
-
-| Artifact | Purpose |
-|----------|---------|
-| `.agentrules` | Project-level AI context and rules |
-| `.agent/rules/<lang>.md` | Technology-specific coding rules |
-| `.agent/knowledge/*.json` | Relevant knowledge files |
-| `.agent/WORKSHOP_CONTEXT.md` | AI assistant guidance for each phase |
-| `README.md` | Workshop overview, exercises, objectives |
-| `src/exercises/` | Starter code for hands-on exercises |
-| `.solutions/` | Hidden solutions (gitignored) |
-
-### Workshop Structure
-
-Each workshop follows a 5-phase structure:
-
-| Phase | Duration | Purpose |
-|-------|----------|---------|
-| **Concept** | 30 min | Theory, architecture, mental models |
-| **Demo** | 30 min | Live coding walkthrough |
-| **Exercise** | 45 min | Guided hands-on practice |
-| **Challenge** | 30 min | Independent problem-solving |
-| **Reflection** | 15 min | Key takeaways, self-assessment |
-
-### Learning Paths
-
-```
-Blockchain:   L1 Ethereum ──► L4 Solana ──► L2 Bitcoin
-AI Engineer:  L7 LangChain ──► L3 LangGraph ──► L8 RAG ──► L5 CrewAI
-Fullstack:    L9 React ──► L10 Next.js ──► L11 FastAPI ──► L13 Docker
-ML Engineer:  L14 PyTorch ──► L6 HuggingFace ──► L15 Fine-Tuning
-```
-
-For complete workshop documentation, see [docs/LEARNING_WORKSHOPS.md](docs/LEARNING_WORKSHOPS.md).
 
 ## Factory Agents
 
@@ -968,22 +817,6 @@ The CI pipeline includes:
 
 See `.github/workflows/ci.yml` for the full configuration.
 
-## Example Walkthroughs
-
-Complete, step-by-step examples showing the factory in action with real technology stacks:
-
-| Example | Blueprint | Description |
-|---------|-----------|-------------|
-| [REST API Service](docs/examples/01-rest-api-service/) | python-fastapi | Python FastAPI with Jira integration |
-| [Full-Stack Next.js](docs/examples/02-fullstack-nextjs-app/) | nextjs-fullstack | Next.js 14 with Prisma and auth |
-| [RAG Chatbot](docs/examples/03-rag-chatbot-agent/) | ai-agent-development | LangChain RAG with Streamlit |
-| [Multi-Agent System](docs/examples/04-multi-agent-research-system/) | multi-agent-systems | LangGraph supervisor/worker pattern |
-| [SAP Fiori](docs/examples/05-sap-fiori-integration/) | sap-abap | RAP application with MCP grounding |
-| [.NET Enterprise](docs/examples/06-dotnet-enterprise-api/) | csharp-dotnet | Clean Architecture with EF Core |
-| [Kotlin Microservice](docs/examples/07-kotlin-spring-microservice/) | kotlin-spring | Reactive Spring Boot with coroutines |
-| [SAP CPI Integration](docs/examples/08-sap-cpi-integration/) | sap-cpi-pi | Groovy scripting with iFlow patterns |
-
-Each example includes a complete walkthrough, sample answers, and expected output files for verification.
 
 ## Documentation
 
@@ -1053,7 +886,7 @@ This project incorporates ideas and patterns from several valuable sources:
 | **[Antigravity](https://cursor.com)** | AI-native IDE whose agent mode and skills features enable this entire ecosystem. |
 | **[Augmented Coding Patterns](https://lexler.github.io/augmented-coding-patterns/)** | Active Partner, Check Alignment, Chain of Small Steps, and other AI collaboration patterns. Created by Lada Kesseler, Nitsan Avni, Ivett Ordog, Llewellyn Falco, and contributors. |
 | **[Leon Chlon](https://github.com/lchlon)** | Inspiration for the Strawberry Verification skill - information-theoretic approach to hallucination detection in AI outputs. |
-| **[ai-dev-agent](https://github.com/gitwalter/ai-dev-agent)** | Pedagogical toolkit for AI agent systems that inspired the layered architecture and methodology integration concepts. |
+| **[ai-dev-agent](https://github.com/gitwalter/antigravity-agent-factory)** | Pedagogical toolkit for AI agent systems that inspired the layered architecture and methodology integration concepts. |
 | **Ancient Wisdom & Philosophy** | Taoist philosophy (Wu Wei response protocol), Hilbert's axiomatic method (5-layer architecture foundation), and sacred value psychology research (Haidt, Tetlock). |
 
 For complete academic references, see [docs/research/REFERENCES.md](docs/research/REFERENCES.md).
@@ -1063,7 +896,7 @@ MIT License
 
 ---
 
-*Antigravity Agent Factory v4.0.0*  
+*Antigravity Agent Factory v4.1.0*  
 *Meta-system for generating Antigravity AI agent development systems*  
 *Now with 5-layer architecture: Integrity -> Purpose -> Principles -> Methodology -> Technical*  
 *50+ MCP servers across 6 categories with starter packs and role-based recommendations*  

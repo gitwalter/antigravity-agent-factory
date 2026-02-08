@@ -12,6 +12,30 @@ All diagrams use [Mermaid](https://mermaid.js.org/) syntax and render automatica
 
 ## Diagram Index
 
+
+| File | Description |
+| --- | --- |
+| [agent-coordination](file:///diagrams/agent-coordination.md) |  |
+| [agent-skill-architecture](file:///diagrams/agent-skill-architecture.md) |  |
+| [cli-architecture](file:///diagrams/cli-architecture.md) |  |
+| [configuration-resolution](file:///diagrams/configuration-resolution.md) |  |
+| [factory-workflow](file:///diagrams/factory-workflow.md) |  |
+| [formal-verification](file:///diagrams/formal-verification.md) |  |
+| [guardian-state-machine](file:///diagrams/guardian-state-machine.md) |  |
+| [integrations](file:///diagrams/integrations.md) |  |
+| [knowledge-management](file:///diagrams/knowledge-management.md) |  |
+| [learning-loops](file:///diagrams/learning-loops.md) |  |
+| [memory-system](file:///diagrams/memory-system.md) |  |
+| [mindmaps](file:///diagrams/mindmaps.md) |  |
+| [onboarding-flows](file:///diagrams/onboarding-flows.md) |  |
+| [pattern-library](file:///diagrams/pattern-library.md) |  |
+| [quality-gates](file:///diagrams/quality-gates.md) |  |
+| [sap-grounding-architecture](file:///diagrams/sap-grounding-architecture.md) |  |
+| [security-pipeline](file:///diagrams/security-pipeline.md) |  |
+| [template-pipeline](file:///diagrams/template-pipeline.md) |  |
+| [verification-flow](file:///diagrams/verification-flow.md) |  |
+| [workflow-system](file:///diagrams/workflow-system.md) |  |
+
 ### Existing Core Diagrams
 
 | File | Description |

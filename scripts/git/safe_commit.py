@@ -42,7 +42,7 @@ def find_python() -> str:
     """Find Python from tools.json config, with fallbacks."""
     try:
         project_root = find_project_root()
-        tools_config = project_root / ".cursor" / "config" / "tools.json"
+        tools_config = project_root / ".agent" / "config" / "tools.json"
         
         if tools_config.exists():
             import json
@@ -51,7 +51,7 @@ def find_python() -> str:
             python_config = config.get("tools", {}).get("python", {})
             
             # Try fallbacks from config in order
-            for path in python_config.get("fallbacks", []):
+            for path in python_config.get("fallback_paths", []):
                 if os.path.isfile(path):
                     return path
     except Exception:
@@ -65,7 +65,7 @@ def find_git() -> str:
     """Find Git from tools.json config, with fallbacks."""
     try:
         project_root = find_project_root()
-        tools_config = project_root / ".cursor" / "config" / "tools.json"
+        tools_config = project_root / ".agent" / "config" / "tools.json"
         
         if tools_config.exists():
             import json
@@ -74,7 +74,7 @@ def find_git() -> str:
             git_config = config.get("tools", {}).get("git", {})
             
             # Try fallbacks from config in order
-            for path in git_config.get("fallbacks", []):
+            for path in git_config.get("fallback_paths", []):
                 if os.path.isfile(path):
                     return path
     except Exception:
