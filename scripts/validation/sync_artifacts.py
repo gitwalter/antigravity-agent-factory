@@ -298,7 +298,7 @@ class ArtifactScanner:
         elif extractor == "parent_dir_name":
             return path.parent.name
         elif extractor == "relative_path":
-            return str(path.relative_to(source_dir))
+            return str(path.relative_to(source_dir)).replace('\\', '/')
         else:
             return path.stem
 
