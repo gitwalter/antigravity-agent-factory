@@ -50,8 +50,18 @@ class TestWorkflowStructure:
         for workflow_file in all_workflow_files:
             content = workflow_file.read_text(encoding='utf-8')
             
+            # Strip YAML frontmatter if present
+            if content.startswith("---"):
+                try:
+                    # Split by --- and get the content after the second ---
+                    parts = content.split("---", 2)
+                    if len(parts) >= 3:
+                        content = parts[2].strip()
+                except IndexError:
+                    pass
+            
             # Check for H1 title
-            if not content.startswith("# "):
+            if not content.strip().startswith("# "):
                 errors.append(f"{workflow_file.name}: Missing H1 title")
         
         if errors:
