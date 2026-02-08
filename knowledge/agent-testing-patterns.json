@@ -1,0 +1,146 @@
+{
+  "id": "agent-testing-patterns",
+  "name": "Agent Testing Patterns",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "description": "Patterns for testing AI agents including unit testing with mocks, integration testing, evaluation metrics, and benchmarking",
+  "patterns": {
+    "unit_testing": {
+      "llm_mocking": {
+        "description": "Mock LLM for deterministic unit tests",
+        "example": "from unittest.mock import Mock\nfrom langchain_core.messages import AIMessage\n\nclass MockLLM:\n    def __init__(self, responses=None):\n        self.responses = responses or {}\n    \n    def invoke(self, messages, **kwargs):\n        key = str(messages)\n        return AIMessage(content=self.responses.get(key, \"Mock response\"))\n\nmock_llm = MockLLM({\"test\": \"Expected output\"})\nagent = create_agent(llm=mock_llm, tools=tools)",
+        "use_when": ["Unit tests", "Deterministic testing", "Fast test execution"]
+      },
+      "tool_mocking": {
+        "description": "Mock tools for isolated testing",
+        "example": "from unittest.mock import patch\n\n@patch('tools.web_search')\ndef test_agent_with_mocked_tool(mock_search):\n    mock_search.return_value = \"Mocked search results\"\n    result = agent.invoke({\"input\": \"test\"})\n    assert \"Mocked search results\" in result[\"output\"]",
+        "use_when": ["Tool testing", "Isolated component tests"]
+      },
+      "deterministic_testing": {
+        "description": "Make tests deterministic with fixed seeds",
+        "example": "import random\nimport numpy as np\n\ndef set_deterministic_seed(seed=42):\n    random.seed(seed)\n    np.random.seed(seed)\n\n# Use temperature=0 for deterministic LLM\nllm = ChatOpenAI(temperature=0)\nset_deterministic_seed(42)",
+        "use_when": ["Reproducible tests", "Regression testing"]
+      }
+    },
+    "integration_testing": {
+      "end_to_end_tests": {
+        "description": "Test complete agent workflows",
+        "example": "def test_agent_workflow():\n    agent = create_agent(llm=llm, tools=tools)\n    result = agent.invoke({\"input\": \"Research AI frameworks\"})\n    \n    assert \"framework\" in result[\"output\"].lower()\n    assert len(result[\"output\"]) > 100\n    \n    # Verify tool usage\n    trace = get_trace(result)\n    assert any(\"search\" in t.name for t in trace.tool_calls)",
+        "use_when": ["Full workflow validation", "System testing"]
+      },
+      "fixture_based_testing": {
+        "description": "Use fixtures for test setup and teardown",
+        "example": "import pytest\n\n@pytest.fixture\ndef agent():\n    return create_agent(llm=llm, tools=tools)\n\n@pytest.fixture\ndef test_dataset():\n    return load_dataset(\"test_data.json\")\n\ndef test_with_fixtures(agent, test_dataset):\n    for example in test_dataset:\n        result = agent.invoke(example.inputs)\n        assert is_valid(result)",
+        "use_when": ["Reusable test setup", "Test organization"]
+      },
+      "trace_based_testing": {
+        "description": "Test agents using execution traces",
+        "example": "from langsmith import Client\n\nclient = Client()\nrun = client.read_run(run_id)\n\n# Analyze tool usage\nfor step in run.trace:\n    if step.type == \"tool\":\n        assert step.name in allowed_tools\n        assert step.outputs is not None",
+        "use_when": ["Behavioral testing", "Tool usage validation"]
+      }
+    },
+    "evaluation_metrics": {
+      "accuracy_metrics": {
+        "description": "Measure agent accuracy on test datasets",
+        "example": "def evaluate_accuracy(agent, test_dataset):\n    correct = 0\n    total = 0\n    \n    for example in test_dataset:\n        prediction = agent.invoke(example.inputs)\n        expected = example.outputs\n        \n        if is_correct(prediction, expected):\n            correct += 1\n        total += 1\n    \n    return {\"accuracy\": correct / total, \"correct\": correct, \"total\": total}",
+        "use_when": ["Quality assessment", "Model comparison"]
+      },
+      "latency_metrics": {
+        "description": "Measure agent response times",
+        "example": "import time\nfrom statistics import mean\n\ndef measure_latency(agent, test_cases, num_runs=10):\n    latencies = []\n    \n    for test_case in test_cases:\n        for _ in range(num_runs):\n            start = time.time()\n            agent.invoke(test_case)\n            latencies.append(time.time() - start)\n    \n    return {\n        \"mean_latency\": mean(latencies),\n        \"min_latency\": min(latencies),\n        \"max_latency\": max(latencies)\n    }",
+        "use_when": ["Performance testing", "SLA validation"]
+      },
+      "cost_metrics": {
+        "description": "Measure agent costs (tokens, API calls)",
+        "example": "def measure_costs(agent, test_cases):\n    total_tokens = 0\n    total_cost = 0.0\n    \n    for test_case in test_cases:\n        result = agent.invoke(test_case)\n        run = get_latest_run()\n        tokens = run.usage.get(\"total_tokens\", 0)\n        cost = calculate_cost(tokens)\n        \n        total_tokens += tokens\n        total_cost += cost\n    \n    return {\n        \"total_tokens\": total_tokens,\n        \"total_cost\": total_cost,\n        \"avg_cost_per_case\": total_cost / len(test_cases)\n    }",
+        "use_when": ["Cost optimization", "Budget planning"]
+      },
+      "custom_evaluators": {
+        "description": "Create custom evaluation functions",
+        "example": "from langchain.evaluation import StringEvaluator\n\nclass CustomEvaluator(StringEvaluator):\n    def _evaluate_strings(self, prediction: str, reference: str, **kwargs):\n        score = calculate_similarity(prediction, reference)\n        return EvaluationResult(\n            score=score,\n            reasoning=f\"Similarity: {score}\"\n        )",
+        "use_when": ["Domain-specific metrics", "Custom criteria"]
+      }
+    },
+    "benchmarking": {
+      "performance_benchmarks": {
+        "description": "Benchmark agent performance",
+        "example": "def benchmark_agent(agent, test_cases, num_runs=10):\n    results = []\n    \n    for test_case in test_cases:\n        run_times = []\n        \n        for _ in range(num_runs):\n            start = time.time()\n            agent.invoke(test_case)\n            run_times.append(time.time() - start)\n        \n        results.append({\n            \"test_case\": test_case,\n            \"mean_time\": mean(run_times),\n            \"std_time\": stdev(run_times)\n        })\n    \n    return results",
+        "use_when": ["Performance comparison", "Regression detection"]
+      },
+      "accuracy_benchmarks": {
+        "description": "Benchmark agent accuracy",
+        "example": "def benchmark_accuracy(agent, test_dataset):\n    results = evaluate_accuracy(agent, test_dataset)\n    \n    # Categorize by difficulty\n    by_difficulty = {}\n    for example in test_dataset:\n        difficulty = example.metadata.get(\"difficulty\", \"medium\")\n        if difficulty not in by_difficulty:\n            by_difficulty[difficulty] = []\n        by_difficulty[difficulty].append(example)\n    \n    return {\n        \"overall\": results,\n        \"by_difficulty\": {\n            d: evaluate_accuracy(agent, examples)\n            for d, examples in by_difficulty.items()\n        }\n    }",
+        "use_when": ["Quality assessment", "Model selection"]
+      },
+      "regression_testing": {
+        "description": "Detect regressions in agent behavior",
+        "example": "def test_regression(agent, baseline_results):\n    current_results = evaluate_accuracy(agent, test_dataset)\n    \n    assert current_results[\"accuracy\"] >= baseline_results[\"accuracy\"] * 0.95, \\\n        \"Accuracy regression detected\"\n    \n    assert current_results[\"mean_latency\"] <= baseline_results[\"mean_latency\"] * 1.1, \\\n        \"Latency regression detected\"",
+        "use_when": ["CI/CD pipelines", "Version comparison"]
+      }
+    },
+    "test_datasets": {
+      "evaluation_datasets": {
+        "description": "Create structured evaluation datasets",
+        "example": "from langchain.evaluation import EvaluationDataset\nfrom langchain.evaluation.schema import Example\n\ndataset = EvaluationDataset(\n    examples=[\n        Example(\n            inputs={\"query\": \"What is 2+2?\"},\n            outputs={\"answer\": \"4\"},\n            metadata={\"category\": \"math\", \"difficulty\": \"easy\"}\n        )\n    ]\n)\ndataset.save(\"evaluation_dataset.json\")",
+        "use_when": ["Structured testing", "Reproducible evaluation"]
+      },
+      "synthetic_datasets": {
+        "description": "Generate synthetic test data",
+        "example": "def generate_synthetic_dataset(num_examples: int):\n    dataset = []\n    \n    for i in range(num_examples):\n        query = generate_query()\n        expected_output = get_expected_output(query)\n        \n        dataset.append({\n            \"inputs\": {\"query\": query},\n            \"outputs\": {\"answer\": expected_output},\n            \"metadata\": {\"synthetic\": True}\n        })\n    \n    return dataset",
+        "use_when": ["Large-scale testing", "Data augmentation"]
+      }
+    }
+  },
+  "best_practices": [
+    "Use mocks for unit tests to ensure speed and determinism",
+    "Test behavior, not implementation details",
+    "Use temperature=0 for deterministic LLM outputs in tests",
+    "Create comprehensive test datasets covering edge cases",
+    "Measure multiple metrics (accuracy, latency, cost)",
+    "Run integration tests separately from unit tests",
+    "Use fixtures for reusable test setup",
+    "Track test results over time for regression detection",
+    "Test error scenarios explicitly",
+    "Use LangSmith for trace-based testing",
+    "Benchmark performance regularly",
+    "Document test purposes and expected behavior"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Testing with production LLM",
+      "problem": "Slow, expensive, non-deterministic tests",
+      "fix": "Use mocks for unit tests, real LLM only for integration tests"
+    },
+    {
+      "name": "Ignoring flaky tests",
+      "problem": "Unreliable test results",
+      "fix": "Make tests deterministic, fix root causes of flakiness"
+    },
+    {
+      "name": "No test data",
+      "problem": "Incomplete test coverage",
+      "fix": "Create comprehensive test datasets with diverse examples"
+    },
+    {
+      "name": "Testing implementation details",
+      "problem": "Tests break on refactoring",
+      "fix": "Test behavior and outputs, not internal implementation"
+    },
+    {
+      "name": "No evaluation metrics",
+      "problem": "Cannot measure agent quality",
+      "fix": "Define and track key metrics (accuracy, latency, cost)"
+    },
+    {
+      "name": "No regression testing",
+      "problem": "Regressions go undetected",
+      "fix": "Compare results against baselines in CI/CD"
+    },
+    {
+      "name": "Skipping error tests",
+      "problem": "Poor error handling in production",
+      "fix": "Test error scenarios explicitly"
+    }
+  ],
+  "related_skills": ["langsmith-tracing", "langsmith-prompts", "logging-monitoring", "langchain-usage"]
+}

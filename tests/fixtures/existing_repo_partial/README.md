@@ -1,14 +1,12 @@
 # Partial Repository Fixture
 
-This fixture represents a repository with SOME Antigravity artifacts.
-Used to test the PARTIAL onboarding scenario.
+This fixture represents a repository with SOME Antigravity artifacts.Used to test the PARTIAL onboarding scenario.
 
 ## Contents
 
 - `.agentrules` - Factory-style rules
 - `.agent/agents/code-reviewer.md` - Custom agent
-- `.agent/skills/tdd/SKILL.md` - Custom skill
-- `src/` - Sample source code
+- `.agent/skills/tdd/SKILL.md` - Custom skill- `src/` - Sample source code
 
 ## Missing (should be added)
 

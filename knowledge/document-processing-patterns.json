@@ -1,0 +1,294 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Document Processing Patterns",
+  "description": "Patterns for document ingestion, extraction, and processing using Docling, Unstructured.io, and other tools",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "Proper extraction preserves source information",
+    "A3_transparency": "Processing steps and metadata are tracked"
+  },
+  "docling_patterns": {
+    "basic_usage": {
+      "description": "Basic document processing with Docling",
+      "use_for": "PDF, Word, PowerPoint, Excel extraction with structure preservation",
+      "code_example": "from docling.document_converter import DocumentConverter\nfrom docling.datamodel.base_models import InputFormat\nfrom docling.datamodel.pipeline_options import PdfPipelineOptions\n\n# Create converter\nconverter = DocumentConverter(\n    format_options={\n        InputFormat.PDF: PdfPipelineOptions(\n            do_ocr=True,\n            do_table_structure=True\n        )\n    }\n)\n\n# Convert document\nresult = converter.convert('document.pdf')\n\n# Access structured output\nprint(result.document.export_to_json())\n\n# Access text\nprint(result.document.text)",
+      "best_practices": [
+        "Enable OCR for scanned PDFs",
+        "Enable table_structure for table extraction",
+        "Use format_options for specific file types",
+        "Access structured output for better parsing"
+      ]
+    },
+    "pdf_extraction": {
+      "description": "Extract content from PDFs with structure",
+      "code_example": "from docling.document_converter import DocumentConverter\nfrom docling.datamodel.base_models import InputFormat\nfrom docling.datamodel.pipeline_options import PdfPipelineOptions\n\nconverter = DocumentConverter(\n    format_options={\n        InputFormat.PDF: PdfPipelineOptions(\n            do_ocr=True,\n            do_table_structure=True,\n            table_structure_options={\n                'method': 'lattice',  # or 'stream'\n                'extract_images': True\n            }\n        )\n    }\n)\n\n# Convert PDF\nresult = converter.convert('document.pdf')\n\n# Access tables\nfor table in result.document.tables:\n    print(f'Table: {table}')\n    print(f'Data: {table.data}')\n\n# Access images\nfor image in result.document.images:\n    print(f'Image: {image}')\n\n# Access text with structure\nfor section in result.document.sections:\n    print(f'Section: {section.title}')\n    print(f'Content: {section.text}')",
+      "best_practices": [
+        "Use OCR for scanned documents",
+        "Extract tables for structured data",
+        "Preserve document structure (sections, headings)",
+        "Handle multi-column layouts"
+      ]
+    },
+    "word_document_extraction": {
+      "description": "Extract from Word documents",
+      "code_example": "from docling.document_converter import DocumentConverter\nfrom docling.datamodel.base_models import InputFormat\n\nconverter = DocumentConverter()\n\n# Convert Word document\nresult = converter.convert('document.docx')\n\n# Access content\nprint(result.document.text)\n\n# Access structure\nfor section in result.document.sections:\n    print(f'Heading: {section.title}')\n    print(f'Content: {section.text}')",
+      "best_practices": [
+        "Preserves Word document structure",
+        "Extracts tables and images",
+        "Maintains formatting metadata"
+      ]
+    },
+    "batch_processing": {
+      "description": "Process multiple documents",
+      "code_example": "from docling.document_converter import DocumentConverter\nfrom pathlib import Path\n\nconverter = DocumentConverter()\n\n# Process directory\ninput_dir = Path('./documents')\noutput_dir = Path('./processed')\n\nfor pdf_file in input_dir.glob('*.pdf'):\n    try:\n        result = converter.convert(str(pdf_file))\n        \n        # Save processed content\n        output_file = output_dir / f'{pdf_file.stem}.json'\n        with open(output_file, 'w') as f:\n            f.write(result.document.export_to_json())\n    except Exception as e:\n        print(f'Error processing {pdf_file}: {e}')",
+      "best_practices": [
+        "Process files in batch",
+        "Handle errors per document",
+        "Save processed output",
+        "Track processing status"
+      ]
+    }
+  },
+  "unstructured_patterns": {
+    "basic_usage": {
+      "description": "Basic document processing with Unstructured.io",
+      "use_for": "PDF, HTML, images, and various document formats",
+      "code_example": "from unstructured.partition.auto import partition\nfrom unstructured.chunking.title import chunk_by_title\n\n# Partition document\n elements = partition(\n    filename='document.pdf',\n    strategy='hi_res',  # High resolution for better OCR\n    infer_table_structure=True\n)\n\n# Access elements\nfor element in elements:\n    print(f'Type: {element.category}')\n    print(f'Text: {element.text}')\n    if hasattr(element, 'metadata'):\n        print(f'Metadata: {element.metadata}')\n\n# Chunk by title\nchunks = chunk_by_title(elements)\nfor chunk in chunks:\n    print(chunk.text)",
+      "best_practices": [
+        "Use strategy='hi_res' for better quality",
+        "Enable infer_table_structure for tables",
+        "Chunk by title for better structure",
+        "Access element metadata"
+      ]
+    },
+    "pdf_extraction": {
+      "description": "Extract from PDFs with Unstructured",
+      "code_example": "from unstructured.partition.pdf import partition_pdf\nfrom unstructured.chunking.title import chunk_by_title\n\n# Partition PDF\n elements = partition_pdf(\n    filename='document.pdf',\n    strategy='hi_res',\n    infer_table_structure=True,\n    extract_images_in_pdf=True,\n    extract_image_block_types=['Image', 'Table']\n)\n\n# Process elements\nfor element in elements:\n    if element.category == 'Table':\n        print(f'Table: {element.metadata.text_as_html}')\n    elif element.category == 'Image':\n        print(f'Image: {element.metadata.image_path}')\n    else:\n        print(f'Text: {element.text}')\n\n# Chunk with title awareness\nchunks = chunk_by_title(elements, max_characters=1000)\nfor chunk in chunks:\n    print(f'Chunk: {chunk.text[:200]}...')",
+      "best_practices": [
+        "Use hi_res strategy for complex layouts",
+        "Extract tables as HTML for structure",
+        "Extract images when needed",
+        "Chunk by title for semantic coherence"
+      ]
+    },
+    "html_extraction": {
+      "description": "Extract from HTML documents",
+      "code_example": "from unstructured.partition.html import partition_html\n\n# Partition HTML\n elements = partition_html(\n    url='https://example.com',\n    # or filename='page.html'\n)\n\n# Process elements\nfor element in elements:\n    print(f'Type: {element.category}')\n    print(f'Text: {element.text}')\n    if element.category == 'Title':\n        print(f'Title: {element.text}')",
+      "best_practices": [
+        "Use for web scraping",
+        "Preserves HTML structure",
+        "Extracts titles, headings, paragraphs",
+        "Handles nested HTML"
+      ]
+    },
+    "image_extraction": {
+      "description": "Extract text from images",
+      "code_example": "from unstructured.partition.image import partition_image\n\n# Partition image (OCR)\n elements = partition_image(\n    filename='image.png',\n    strategy='ocr_only'\n)\n\n# Access extracted text\nfor element in elements:\n    print(element.text)\n\n# With layout detection\n elements = partition_image(\n    filename='image.png',\n    strategy='hi_res',  # Layout + OCR\n    infer_table_structure=True\n)",
+      "best_practices": [
+        "Use ocr_only for simple text extraction",
+        "Use hi_res for complex layouts",
+        "Enable table structure for tables in images",
+        "Handle different image formats"
+      ]
+    },
+    "chunking_strategies": {
+      "description": "Chunk documents with Unstructured",
+      "code_example": "from unstructured.partition.auto import partition\nfrom unstructured.chunking.title import chunk_by_title\nfrom unstructured.chunking.basic import chunk_elements\n\n# Partition document\n elements = partition('document.pdf')\n\n# Chunk by title (preserves structure)\nchunks = chunk_by_title(\n    elements,\n    max_characters=1000,\n    combine_text_under_n_chars=200,\n    new_after_n_chars=800\n)\n\n# Basic chunking\nbasic_chunks = chunk_elements(\n    elements,\n    max_characters=1000,\n    overlap=200\n)\n\n# Access chunks\nfor chunk in chunks:\n    print(f'Chunk: {chunk.text}')\n    print(f'Metadata: {chunk.metadata}')",
+      "best_practices": [
+        "Use chunk_by_title for structured documents",
+        "Set max_characters based on embedding model",
+        "Use overlap for context preservation",
+        "Access chunk metadata for citations"
+      ]
+    }
+  },
+  "pdf_extraction_patterns": {
+    "pypdf_extraction": {
+      "description": "Basic PDF extraction with PyPDF",
+      "code_example": "from pypdf import PdfReader\n\n# Read PDF\nreader = PdfReader('document.pdf')\n\n# Extract text from all pages\ntext = ''\nfor page in reader.pages:\n    text += page.extract_text() + '\\n'\n\nprint(text)\n\n# Extract metadata\nmetadata = reader.metadata\nprint(f'Title: {metadata.title}')\nprint(f'Author: {metadata.author}')",
+      "best_practices": [
+        "Simple for text-only PDFs",
+        "Doesn't handle scanned PDFs well",
+        "No structure preservation",
+        "Use for simple extraction needs"
+      ]
+    },
+    "pdfplumber_extraction": {
+      "description": "Extract PDFs with table support",
+      "code_example": "import pdfplumber\n\n# Extract with pdfplumber\nwith pdfplumber.open('document.pdf') as pdf:\n    text = ''\n    tables = []\n    \n    for page in pdf.pages:\n        # Extract text\n        page_text = page.extract_text()\n        text += page_text + '\\n'\n        \n        # Extract tables\n        page_tables = page.extract_tables()\n        for table in page_tables:\n            tables.append(table)\n            print(f'Table: {table}')\n\nprint(text)",
+      "best_practices": [
+        "Good for table extraction",
+        "Better layout detection than PyPDF",
+        "Still struggles with scanned PDFs",
+        "Use for PDFs with tables"
+      ]
+    },
+    "ocr_pdf_extraction": {
+      "description": "Extract text from scanned PDFs using OCR",
+      "code_example": "from pdf2image import convert_from_path\nimport pytesseract\nfrom PIL import Image\n\n# Convert PDF pages to images\npages = convert_from_path('scanned_document.pdf', dpi=300)\n\n# OCR each page\nextracted_text = []\nfor i, page in enumerate(pages):\n    # OCR\n    text = pytesseract.image_to_string(page, lang='eng')\n    extracted_text.append(text)\n    print(f'Page {i+1}: {text[:200]}...')\n\n# Combine text\nfull_text = '\\n\\n'.join(extracted_text)",
+      "best_practices": [
+        "Use for scanned PDFs",
+        "Set appropriate DPI (300 recommended)",
+        "Specify language for OCR",
+        "May require preprocessing for better results"
+      ]
+    }
+  },
+  "html_extraction_patterns": {
+    "beautifulsoup_extraction": {
+      "description": "Extract content from HTML",
+      "code_example": "from bs4 import BeautifulSoup\nimport requests\n\n# Fetch HTML\nresponse = requests.get('https://example.com')\nhtml = response.text\n\n# Parse HTML\nsoup = BeautifulSoup(html, 'html.parser')\n\n# Extract text\n# Remove script and style elements\nfor script in soup(['script', 'style']):\n    script.decompose()\n\ntext = soup.get_text()\n\n# Extract specific elements\nheadings = [h.get_text() for h in soup.find_all(['h1', 'h2', 'h3'])]\nparagraphs = [p.get_text() for p in soup.find_all('p')]\nlinks = [a.get('href') for a in soup.find_all('a', href=True)]",
+      "best_practices": [
+        "Remove script/style tags",
+        "Extract structured elements",
+        "Handle encoding issues",
+        "Use for simple HTML extraction"
+      ]
+    },
+    "readability_extraction": {
+      "description": "Extract main content from HTML",
+      "code_example": "from readability import Document\nimport requests\n\n# Fetch HTML\nresponse = requests.get('https://example.com')\nhtml = response.text\n\n# Extract main content\ndoc = Document(html)\nmain_content = doc.summary()\n\n# Parse main content\nfrom bs4 import BeautifulSoup\nsoup = BeautifulSoup(main_content, 'html.parser')\ntext = soup.get_text()",
+      "best_practices": [
+        "Removes navigation, ads, etc.",
+        "Extracts main article content",
+        "Good for news articles, blog posts",
+        "May miss some content"
+      ]
+    }
+  },
+  "image_extraction_patterns": {
+    "pytesseract_ocr": {
+      "description": "Extract text from images using Tesseract OCR",
+      "code_example": "import pytesseract\nfrom PIL import Image\n\n# Load image\nimage = Image.open('image.png')\n\n# OCR\ntext = pytesseract.image_to_string(image, lang='eng')\nprint(text)\n\n# With preprocessing\nfrom PIL import ImageEnhance\n\n# Enhance contrast\nenhancer = ImageEnhance.Contrast(image)\nenhanced = enhancer.enhance(2.0)\n\n# OCR enhanced image\ntext = pytesseract.image_to_string(enhanced, lang='eng')",
+      "best_practices": [
+        "Preprocess images for better OCR",
+        "Enhance contrast, resize if needed",
+        "Specify language",
+        "Handle different image formats"
+      ]
+    },
+    "easyocr_extraction": {
+      "description": "Extract text using EasyOCR",
+      "code_example": "import easyocr\n\n# Create reader\nreader = easyocr.Reader(['en'])  # English\n\n# Read text from image\nresult = reader.readtext('image.png')\n\n# Process results\nfor detection in result:\n    bbox, text, confidence = detection\n    print(f'Text: {text}, Confidence: {confidence:.2f}')",
+      "best_practices": [
+        "Good for multilingual text",
+        "Returns bounding boxes",
+        "Provides confidence scores",
+        "Slower than Tesseract"
+      ]
+    }
+  },
+  "chunking_strategies": {
+    "recursive_character_chunking": {
+      "description": "Split documents by characters with hierarchy",
+      "code_example": "from langchain.text_splitter import RecursiveCharacterTextSplitter\n\nsplitter = RecursiveCharacterTextSplitter(\n    chunk_size=1000,\n    chunk_overlap=200,\n    separators=['\\n\\n', '\\n', '. ', ' ', '']\n)\n\nchunks = splitter.split_text(document_text)\n\nfor i, chunk in enumerate(chunks):\n    print(f'Chunk {i+1}: {chunk[:200]}...')",
+      "best_practices": [
+        "Use for general text",
+        "Set chunk_size 500-1500 tokens",
+        "Use 10-20% overlap",
+        "Order separators from most to least preferred"
+      ]
+    },
+    "semantic_chunking": {
+      "description": "Chunk based on semantic similarity",
+      "code_example": "from langchain_experimental.text_splitter import SemanticChunker\nfrom langchain_openai import OpenAIEmbeddings\n\nembeddings = OpenAIEmbeddings(model='text-embedding-3-small')\n\nchunker = SemanticChunker(\n    embeddings,\n    breakpoint_threshold_type='percentile',\n    breakpoint_threshold_amount=95\n)\n\nchunks = chunker.split_text(document_text)",
+      "best_practices": [
+        "More expensive (requires embeddings)",
+        "Better semantic coherence",
+        "Chunks may vary in size",
+        "Good for complex documents"
+      ]
+    },
+    "title_based_chunking": {
+      "description": "Chunk by document structure (titles, headings)",
+      "code_example": "from unstructured.chunking.title import chunk_by_title\nfrom unstructured.partition.auto import partition\n\n# Partition document\n elements = partition('document.pdf')\n\n# Chunk by title\nchunks = chunk_by_title(\n    elements,\n    max_characters=1000,\n    combine_text_under_n_chars=200\n)\n\nfor chunk in chunks:\n    print(f'Title: {chunk.metadata.get(\"title\", \"N/A\")}')\n    print(f'Content: {chunk.text[:200]}...')",
+      "best_practices": [
+        "Preserves document structure",
+        "Better for structured documents",
+        "Maintains heading hierarchy",
+        "Use for documents with clear structure"
+      ]
+    },
+    "sentence_chunking": {
+      "description": "Chunk by sentences",
+      "code_example": "from langchain.text_splitter import SentenceSplitter\n\nsplitter = SentenceSplitter(\n    chunk_size=1000,\n    chunk_overlap=200\n)\n\nchunks = splitter.split_text(document_text)",
+      "best_practices": [
+        "Good for natural language",
+        "Preserves sentence boundaries",
+        "Use for narrative text",
+        "May split related sentences"
+      ]
+    },
+    "token_based_chunking": {
+      "description": "Chunk by tokens (for token-limited models)",
+      "code_example": "from langchain.text_splitter import TokenTextSplitter\n\nsplitter = TokenTextSplitter(\n    chunk_size=1000,\n    chunk_overlap=200,\n    encoding_name='cl100k_base'  # GPT tokenizer\n)\n\nchunks = splitter.split_text(document_text)",
+      "best_practices": [
+        "Use for token-limited models",
+        "More accurate than character-based",
+        "Specify correct encoding",
+        "Good for LLM context windows"
+      ]
+    }
+  },
+  "metadata_extraction": {
+    "document_metadata": {
+      "description": "Extract and preserve document metadata",
+      "code_example": "from docling.document_converter import DocumentConverter\nfrom langchain.schema import Document\n\n# Convert with Docling\nconverter = DocumentConverter()\nresult = converter.convert('document.pdf')\n\n# Extract metadata\nmetadata = {\n    'source': 'document.pdf',\n    'title': result.document.metadata.get('title', ''),\n    'author': result.document.metadata.get('author', ''),\n    'pages': len(result.document.pages),\n    'sections': len(result.document.sections)\n}\n\n# Create LangChain documents with metadata\ndocuments = []\nfor section in result.document.sections:\n    doc = Document(\n        page_content=section.text,\n        metadata={\n            **metadata,\n            'section_title': section.title,\n            'section_index': section.index\n        }\n    )\n    documents.append(doc)",
+      "best_practices": [
+        "Extract source, title, author, date",
+        "Preserve page numbers, section info",
+        "Include processing metadata",
+        "Use consistent metadata schema"
+      ]
+    },
+    "chunk_metadata": {
+      "description": "Add metadata to chunks",
+      "code_example": "from langchain.text_splitter import RecursiveCharacterTextSplitter\nfrom langchain.schema import Document\n\n# Split document\nsplitter = RecursiveCharacterTextSplitter(\n    chunk_size=1000,\n    chunk_overlap=200\n)\n\n# Create documents with metadata\nsource_doc = Document(\n    page_content=document_text,\n    metadata={\n        'source': 'document.pdf',\n        'page': 1,\n        'date': '2024-01-01'\n    }\n)\n\n# Split with metadata preservation\nchunks = splitter.split_documents([source_doc])\n\n# Metadata is preserved in chunks\nfor chunk in chunks:\n    print(f'Source: {chunk.metadata[\"source\"]}')\n    print(f'Content: {chunk.page_content[:200]}...')",
+      "best_practices": [
+        "Preserve source metadata in chunks",
+        "Add chunk-specific metadata (chunk_index)",
+        "Include page numbers when available",
+        "Track chunk relationships"
+      ]
+    }
+  },
+  "anti_patterns": {
+    "no_structure_preservation": {
+      "description": "Not preserving document structure",
+      "problem": "Lost context, poor chunking",
+      "solution": "Use tools that preserve structure (Docling, Unstructured)"
+    },
+    "ignoring_tables": {
+      "description": "Not extracting tables from documents",
+      "problem": "Lost structured data",
+      "solution": "Enable table extraction in processing tools"
+    },
+    "no_ocr_for_scanned": {
+      "description": "Not using OCR for scanned PDFs",
+      "problem": "No text extracted",
+      "solution": "Enable OCR for scanned documents"
+    },
+    "poor_chunking": {
+      "description": "Chunking without considering document structure",
+      "problem": "Poor semantic coherence, lost context",
+      "solution": "Use semantic or title-based chunking"
+    },
+    "no_metadata": {
+      "description": "Not preserving document metadata",
+      "problem": "Cannot trace sources, lost context",
+      "solution": "Always extract and preserve metadata"
+    }
+  },
+  "best_practices_summary": [
+    "Use Docling or Unstructured for structured extraction",
+    "Enable OCR for scanned documents",
+    "Extract tables with structure preservation",
+    "Preserve document metadata (source, page, date)",
+    "Use semantic or title-based chunking when possible",
+    "Set appropriate chunk size (500-1500 tokens)",
+    "Use 10-20% overlap between chunks",
+    "Handle different document formats appropriately",
+    "Extract images when needed",
+    "Track processing metadata for debugging"
+  ]
+}

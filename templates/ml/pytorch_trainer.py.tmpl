@@ -1,0 +1,422 @@
+"""
+PyTorch Training Loop Template
+
+Purpose: Complete PyTorch training loop with validation, checkpointing, and logging
+Author: {{AUTHOR}}
+Created: {{DATE}}
+
+This template provides a production-ready training loop with:
+- Training and validation phases
+- Model checkpointing
+- Learning rate scheduling
+- Gradient clipping
+- Early stopping
+- Comprehensive logging
+"""
+
+import os
+import logging
+from pathlib import Path
+from typing import Dict, Optional, Tuple, Any
+from dataclasses import dataclass
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
+from torch.optim.lr_scheduler import ReduceLROnPlateau, StepLR, CosineAnnealingLR
+from tqdm import tqdm
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class TrainingConfig:
+    """Configuration for training parameters."""
+    # Model and data
+    model: nn.Module
+    train_loader: DataLoader
+    val_loader: Optional[DataLoader] = None
+    
+    # Training hyperparameters
+    num_epochs: int = {{NUM_EPOCHS}}
+    learning_rate: float = {{LEARNING_RATE}}
+    weight_decay: float = {{WEIGHT_DECAY}}
+    batch_size: int = {{BATCH_SIZE}}
+    
+    # Optimizer settings
+    optimizer_type: str = "adam"  # Options: "adam", "sgd", "adamw"
+    momentum: float = 0.9  # For SGD
+    
+    # Scheduler settings
+    scheduler_type: Optional[str] = "reduce_on_plateau"  # Options: None, "reduce_on_plateau", "step", "cosine"
+    scheduler_patience: int = 5
+    scheduler_factor: float = 0.5
+    scheduler_step_size: int = 10
+    scheduler_t_max: int = 50
+    
+    # Training options
+    device: str = "cuda" if torch.cuda.is_available() else "cpu"
+    gradient_clip_value: Optional[float] = {{GRADIENT_CLIP_VALUE}}
+    early_stopping_patience: Optional[int] = {{EARLY_STOPPING_PATIENCE}}
+    save_best_only: bool = True
+    
+    # Checkpointing
+    checkpoint_dir: str = "{{CHECKPOINT_DIR}}"
+    checkpoint_prefix: str = "{{CHECKPOINT_PREFIX}}"
+    resume_from_checkpoint: Optional[str] = None
+    
+    # Logging
+    log_interval: int = {{LOG_INTERVAL}}
+    save_interval: int = {{SAVE_INTERVAL}}
+    
+    # Loss function
+    criterion: Optional[nn.Module] = None
+
+
+class PyTorchTrainer:
+    """
+    PyTorch training loop with validation, checkpointing, and logging.
+    
+    This class provides a complete training infrastructure including:
+    - Training and validation loops
+    - Model checkpointing and resuming
+    - Learning rate scheduling
+    - Early stopping
+    - Comprehensive metrics tracking
+    
+    Attributes:
+        config: Training configuration
+        model: PyTorch model to train
+        optimizer: Optimizer instance
+        scheduler: Learning rate scheduler (optional)
+        best_val_loss: Best validation loss seen so far
+        train_losses: List of training losses per epoch
+        val_losses: List of validation losses per epoch
+        
+    Example:
+        >>> config = TrainingConfig(
+        ...     model=my_model,
+        ...     train_loader=train_loader,
+        ...     val_loader=val_loader,
+        ...     num_epochs=10
+        ... )
+        >>> trainer = PyTorchTrainer(config)
+        >>> trainer.train()
+    """
+    
+    def __init__(self, config: TrainingConfig):
+        """
+        Initialize the trainer.
+        
+        Args:
+            config: Training configuration
+        """
+        self.config = config
+        self.model = config.model.to(config.device)
+        
+        # Setup optimizer
+        self.optimizer = self._create_optimizer()
+        
+        # Setup scheduler
+        self.scheduler = self._create_scheduler()
+        
+        # Setup loss function
+        self.criterion = config.criterion or nn.CrossEntropyLoss()
+        
+        # Training state
+        self.best_val_loss = float('inf')
+        self.train_losses: list = []
+        self.val_losses: list = []
+        self.current_epoch = 0
+        self.patience_counter = 0
+        
+        # Create checkpoint directory
+        Path(config.checkpoint_dir).mkdir(parents=True, exist_ok=True)
+        
+        # Resume from checkpoint if specified
+        if config.resume_from_checkpoint:
+            self._load_checkpoint(config.resume_from_checkpoint)
+    
+    def _create_optimizer(self) -> optim.Optimizer:
+        """
+        Create optimizer based on configuration.
+        
+        Returns:
+            Optimizer instance
+        """
+        params = self.model.parameters()
+        
+        if self.config.optimizer_type.lower() == "adam":
+            return optim.Adam(
+                params,
+                lr=self.config.learning_rate,
+                weight_decay=self.config.weight_decay
+            )
+        elif self.config.optimizer_type.lower() == "adamw":
+            return optim.AdamW(
+                params,
+                lr=self.config.learning_rate,
+                weight_decay=self.config.weight_decay
+            )
+        elif self.config.optimizer_type.lower() == "sgd":
+            return optim.SGD(
+                params,
+                lr=self.config.learning_rate,
+                momentum=self.config.momentum,
+                weight_decay=self.config.weight_decay
+            )
+        else:
+            raise ValueError(f"Unknown optimizer type: {self.config.optimizer_type}")
+    
+    def _create_scheduler(self) -> Optional[Any]:
+        """
+        Create learning rate scheduler based on configuration.
+        
+        Returns:
+            Scheduler instance or None
+        """
+        if self.config.scheduler_type is None:
+            return None
+        
+        scheduler_type = self.config.scheduler_type.lower()
+        
+        if scheduler_type == "reduce_on_plateau":
+            return ReduceLROnPlateau(
+                self.optimizer,
+                mode='min',
+                factor=self.config.scheduler_factor,
+                patience=self.config.scheduler_patience,
+                verbose=True
+            )
+        elif scheduler_type == "step":
+            return StepLR(
+                self.optimizer,
+                step_size=self.config.scheduler_step_size,
+                gamma=self.config.scheduler_factor
+            )
+        elif scheduler_type == "cosine":
+            return CosineAnnealingLR(
+                self.optimizer,
+                T_max=self.config.scheduler_t_max
+            )
+        else:
+            logger.warning(f"Unknown scheduler type: {scheduler_type}")
+            return None
+    
+    def train_epoch(self) -> float:
+        """
+        Train for one epoch.
+        
+        Returns:
+            Average training loss for the epoch
+        """
+        self.model.train()
+        total_loss = 0.0
+        num_batches = 0
+        
+        pbar = tqdm(self.config.train_loader, desc=f"Epoch {self.current_epoch + 1}")
+        
+        for batch_idx, (data, target) in enumerate(pbar):
+            data = data.to(self.config.device)
+            target = target.to(self.config.device)
+            
+            # Forward pass
+            self.optimizer.zero_grad()
+            output = self.model(data)
+            loss = self.criterion(output, target)
+            
+            # Backward pass
+            loss.backward()
+            
+            # Gradient clipping
+            if self.config.gradient_clip_value is not None:
+                torch.nn.utils.clip_grad_norm_(
+                    self.model.parameters(),
+                    self.config.gradient_clip_value
+                )
+            
+            self.optimizer.step()
+            
+            # Update metrics
+            total_loss += loss.item()
+            num_batches += 1
+            
+            # Logging
+            if batch_idx % self.config.log_interval == 0:
+                pbar.set_postfix({'loss': loss.item()})
+        
+        avg_loss = total_loss / num_batches
+        self.train_losses.append(avg_loss)
+        return avg_loss
+    
+    def validate(self) -> float:
+        """
+        Validate the model.
+        
+        Returns:
+            Average validation loss
+        """
+        if self.config.val_loader is None:
+            return 0.0
+        
+        self.model.eval()
+        total_loss = 0.0
+        num_batches = 0
+        
+        with torch.no_grad():
+            for data, target in tqdm(self.config.val_loader, desc="Validating"):
+                data = data.to(self.config.device)
+                target = target.to(self.config.device)
+                
+                output = self.model(data)
+                loss = self.criterion(output, target)
+                
+                total_loss += loss.item()
+                num_batches += 1
+        
+        avg_loss = total_loss / num_batches
+        self.val_losses.append(avg_loss)
+        return avg_loss
+    
+    def _save_checkpoint(self, is_best: bool = False) -> None:
+        """
+        Save model checkpoint.
+        
+        Args:
+            is_best: Whether this is the best model so far
+        """
+        checkpoint = {
+            'epoch': self.current_epoch,
+            'model_state_dict': self.model.state_dict(),
+            'optimizer_state_dict': self.optimizer.state_dict(),
+            'train_losses': self.train_losses,
+            'val_losses': self.val_losses,
+            'best_val_loss': self.best_val_loss,
+        }
+        
+        if self.scheduler is not None:
+            checkpoint['scheduler_state_dict'] = self.scheduler.state_dict()
+        
+        # Save regular checkpoint
+        checkpoint_path = os.path.join(
+            self.config.checkpoint_dir,
+            f"{self.config.checkpoint_prefix}_epoch_{self.current_epoch}.pt"
+        )
+        torch.save(checkpoint, checkpoint_path)
+        
+        # Save best model
+        if is_best:
+            best_path = os.path.join(
+                self.config.checkpoint_dir,
+                f"{self.config.checkpoint_prefix}_best.pt"
+            )
+            torch.save(checkpoint, best_path)
+            logger.info(f"Saved best model with val_loss: {self.best_val_loss:.4f}")
+    
+    def _load_checkpoint(self, checkpoint_path: str) -> None:
+        """
+        Load model from checkpoint.
+        
+        Args:
+            checkpoint_path: Path to checkpoint file
+        """
+        logger.info(f"Loading checkpoint from {checkpoint_path}")
+        checkpoint = torch.load(checkpoint_path, map_location=self.config.device)
+        
+        self.model.load_state_dict(checkpoint['model_state_dict'])
+        self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        self.current_epoch = checkpoint['epoch']
+        self.train_losses = checkpoint.get('train_losses', [])
+        self.val_losses = checkpoint.get('val_losses', [])
+        self.best_val_loss = checkpoint.get('best_val_loss', float('inf'))
+        
+        if self.scheduler is not None and 'scheduler_state_dict' in checkpoint:
+            self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+        
+        logger.info(f"Resumed from epoch {self.current_epoch}")
+    
+    def train(self) -> Dict[str, list]:
+        """
+        Run the complete training loop.
+        
+        Returns:
+            Dictionary containing training and validation losses
+        """
+        logger.info("Starting training...")
+        logger.info(f"Device: {self.config.device}")
+        logger.info(f"Model parameters: {sum(p.numel() for p in self.model.parameters()):,}")
+        
+        for epoch in range(self.current_epoch, self.config.num_epochs):
+            self.current_epoch = epoch
+            
+            # Train
+            train_loss = self.train_epoch()
+            
+            # Validate
+            val_loss = self.validate()
+            
+            # Update scheduler
+            if self.scheduler is not None:
+                if isinstance(self.scheduler, ReduceLROnPlateau):
+                    self.scheduler.step(val_loss)
+                else:
+                    self.scheduler.step()
+            
+            # Logging
+            logger.info(
+                f"Epoch {epoch + 1}/{self.config.num_epochs} - "
+                f"Train Loss: {train_loss:.4f} - "
+                f"Val Loss: {val_loss:.4f}"
+            )
+            
+            # Checkpointing
+            is_best = val_loss < self.best_val_loss
+            if is_best:
+                self.best_val_loss = val_loss
+                self.patience_counter = 0
+            else:
+                self.patience_counter += 1
+            
+            # Save checkpoint
+            if (epoch + 1) % self.config.save_interval == 0 or is_best:
+                self._save_checkpoint(is_best=is_best)
+            
+            # Early stopping
+            if (self.config.early_stopping_patience is not None and
+                self.patience_counter >= self.config.early_stopping_patience):
+                logger.info(f"Early stopping at epoch {epoch + 1}")
+                break
+        
+        logger.info("Training completed!")
+        return {
+            'train_losses': self.train_losses,
+            'val_losses': self.val_losses
+        }
+
+
+# Example usage
+if __name__ == "__main__":
+    # Example: Create a simple model and train
+    # from torchvision.models import resnet18
+    # from torchvision import transforms, datasets
+    # 
+    # model = resnet18(num_classes={{NUM_CLASSES}})
+    # 
+    # config = TrainingConfig(
+    #     model=model,
+    #     train_loader=train_loader,
+    #     val_loader=val_loader,
+    #     num_epochs=10,
+    #     learning_rate=0.001,
+    #     checkpoint_dir="./checkpoints"
+    # )
+    # 
+    # trainer = PyTorchTrainer(config)
+    # history = trainer.train()
+    pass

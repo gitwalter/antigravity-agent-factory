@@ -1,0 +1,151 @@
+# =============================================================================
+# Cursor Agent Factory - Proof Verification Workflow
+# =============================================================================
+#
+# This workflow verifies all Lean 4 proofs on every push and pull request.
+# If proofs fail to type-check, the build fails.
+#
+# Philosophy: Love, Truth, and Beauty
+# - Love: Open verification for all contributors
+# - Truth: Mathematical certainty in CI
+# - Beauty: Clean, simple workflow
+#
+# =============================================================================
+
+name: Verify Proofs
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'proofs/**'
+      - '.github/workflows/verify-proofs.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'proofs/**'
+      - '.github/workflows/verify-proofs.yml'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  verify-proofs:
+    name: Verify Lean 4 Proofs
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install Lean 4 (elan)
+        run: |
+          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+      
+      - name: Cache Lean 4 dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.elan
+            proofs/.lake
+            proofs/lake-packages
+          key: lean4-${{ runner.os }}-${{ hashFiles('proofs/lean-toolchain', 'proofs/lakefile.lean') }}
+          restore-keys: |
+            lean4-${{ runner.os }}-
+      
+      - name: Setup Lean toolchain
+        run: |
+          cd proofs
+          cat lean-toolchain
+          elan install $(cat lean-toolchain)
+          elan default $(cat lean-toolchain)
+      
+      - name: Verify proofs
+        run: |
+          cd proofs
+          lake build
+      
+      - name: Generate checksums
+        run: |
+          cd proofs
+          find . -name "*.lean" -type f | sort | xargs sha256sum > checksums.txt
+          echo "=== Proof File Checksums ==="
+          cat checksums.txt
+      
+      - name: Upload proof checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: proof-checksums
+          path: proofs/checksums.txt
+          retention-days: 90
+      
+      - name: Verification summary
+        run: |
+          echo "╔═══════════════════════════════════════════════════════════════════╗"
+          echo "║                    VERIFICATION SUCCESSFUL                        ║"
+          echo "╚═══════════════════════════════════════════════════════════════════╝"
+          echo ""
+          echo "The following properties are mathematically proven:"
+          echo ""
+          echo "  Axioms (A0-A5): All formally defined"
+          echo "  Guardian: State preservation, user notification, harm prevention"
+          echo "  Memory: User consent required, layer protection"
+          echo "  Layers: L0-L2 immutability"
+          echo ""
+          echo "Trust verified. Truth freely available."
+
+  # Generate attestation on release
+  generate-attestation:
+    name: Generate Attestation
+    runs-on: ubuntu-latest
+    needs: verify-proofs
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Download checksums
+        uses: actions/download-artifact@v4
+        with:
+          name: proof-checksums
+          path: .attestations/
+      
+      - name: Generate attestation JSON
+        run: |
+          mkdir -p .attestations
+          
+          VERSION=$(git describe --tags --always 2>/dev/null || echo "dev")
+          COMMIT_SHA=$(git rev-parse HEAD)
+          COMMIT_DATE=$(git log -1 --format=%ci)
+          CHECKSUMS_HASH=$(sha256sum .attestations/checksums.txt | cut -d' ' -f1)
+          
+          cat > .attestations/$VERSION-verified.json << EOF
+          {
+            "_type": "https://cursor-agent-factory/attestation/v1",
+            "subject": {
+              "name": "cursor-agent-factory",
+              "version": "$VERSION",
+              "commit": "$COMMIT_SHA",
+              "commitDate": "$COMMIT_DATE"
+            },
+            "predicateType": "https://cursor-agent-factory/proofs-verified/v1",
+            "predicate": {
+              "verified": true,
+              "verificationTime": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+              "prover": "Lean 4",
+              "checksums": {
+                "algorithm": "SHA-256",
+                "hash": "$CHECKSUMS_HASH"
+              }
+            }
+          }
+          EOF
+          
+          echo "Attestation generated for $VERSION"
+      
+      - name: Upload attestation
+        uses: actions/upload-artifact@v4
+        with:
+          name: proof-attestation
+          path: .attestations/
+          retention-days: 365

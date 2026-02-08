@@ -1,0 +1,88 @@
+{
+  "id": "hitl-patterns",
+  "name": "Human-in-the-Loop Patterns",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "description": "Patterns for human oversight and approval in agent workflows",
+  "patterns": {
+    "interrupt_before": {
+      "description": "Pause before executing action",
+      "use_case": "Review before high-stakes actions",
+      "implementation": "graph.compile(interrupt_before=['node_name'])"
+    },
+    "interrupt_after": {
+      "description": "Pause after generating proposal",
+      "use_case": "Review generated content",
+      "implementation": "graph.compile(interrupt_after=['node_name'])"
+    },
+    "confirmation_levels": {
+      "INFO": "Notify only, no response needed",
+      "CONFIRM": "Simple yes/no approval",
+      "VERIFY": "Type confirmation phrase"
+    },
+    "escalation": {
+      "levels": ["agent", "senior_agent", "human", "manager"],
+      "triggers": ["low confidence", "error", "sensitive operation"],
+      "pattern": "Progressive escalation based on criteria"
+    },
+    "feedback_collection": {
+      "types": ["correctness", "helpfulness", "safety"],
+      "storage": "LangSmith feedback API",
+      "use": "Continuous improvement"
+    }
+  },
+  "workflow_patterns": {
+    "single_approval": {
+      "description": "One approval point before execution",
+      "flow": "propose -> interrupt -> execute"
+    },
+    "multi_step": {
+      "description": "Approval at each step",
+      "flow": "step1 -> approve -> step2 -> approve -> ..."
+    },
+    "conditional_approval": {
+      "description": "Approval only for certain actions",
+      "criteria": ["cost > threshold", "irreversible", "external"]
+    }
+  },
+  "implementation": {
+    "checkpointing": {
+      "required": true,
+      "reason": "Resume after human response"
+    },
+    "thread_id": {
+      "required": true,
+      "reason": "Identify workflow instance"
+    },
+    "timeout": {
+      "recommended": true,
+      "pattern": "Expire pending approvals after duration"
+    }
+  },
+  "best_practices": [
+    "Use checkpointing for resumable workflows",
+    "Implement timeouts for human responses",
+    "Log all human decisions for audit",
+    "Provide clear context for decisions",
+    "Allow humans to modify, not just approve/reject",
+    "Design for async human response"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Blocking sync input",
+      "problem": "Hangs application",
+      "fix": "Use async with timeouts"
+    },
+    {
+      "name": "No context",
+      "problem": "Human can't make informed decision",
+      "fix": "Provide full details"
+    },
+    {
+      "name": "Binary only",
+      "problem": "No way to modify",
+      "fix": "Allow editing proposals"
+    }
+  ],
+  "related_skills": ["human-in-the-loop", "state-management", "langgraph-agent-building"]
+}

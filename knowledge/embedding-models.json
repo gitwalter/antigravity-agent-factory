@@ -1,0 +1,280 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Embedding Models Patterns",
+  "description": "Patterns and best practices for embedding models in RAG and semantic search",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "Embedding quality affects retrieval verifiability",
+    "A3_transparency": "Model selection and parameters should be explicit"
+  },
+  "openai_embeddings": {
+    "text_embedding_3_small": {
+      "description": "OpenAI's cost-effective embedding model",
+      "dimensions": 1536,
+      "max_tokens": 8191,
+      "use_for": "General purpose, cost-effective RAG",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key='your-key')\n\n# Generate embedding\nresponse = client.embeddings.create(\n    model='text-embedding-3-small',\n    input='Your text here'\n)\n\nembedding = response.data[0].embedding\nprint(f'Dimension: {len(embedding)}')  # 1536\n\n# Batch embeddings\nresponse = client.embeddings.create(\n    model='text-embedding-3-small',\n    input=['Text 1', 'Text 2', 'Text 3']\n)\n\nembeddings = [item.embedding for item in response.data]",
+      "cost": "$0.02 per 1M tokens",
+      "best_practices": [
+        "Use for general-purpose RAG",
+        "Good balance of cost and quality",
+        "Batch requests for efficiency",
+        "Handle rate limits appropriately"
+      ]
+    },
+    "text_embedding_3_large": {
+      "description": "OpenAI's highest quality embedding model",
+      "dimensions": 3072,
+      "max_tokens": 8191,
+      "use_for": "Highest quality, complex retrieval tasks",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key='your-key')\n\n# Generate embedding\nresponse = client.embeddings.create(\n    model='text-embedding-3-large',\n    input='Your text here'\n)\n\nembedding = response.data[0].embedding\nprint(f'Dimension: {len(embedding)}')  # 3072",
+      "cost": "$0.13 per 1M tokens",
+      "best_practices": [
+        "Use when quality is critical",
+        "Higher cost but better semantic understanding",
+        "Consider for complex domains",
+        "Larger dimensions require more storage"
+      ]
+    },
+    "dimension_reduction": {
+      "description": "Reduce embedding dimensions for cost savings",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key='your-key')\n\n# Generate embedding with reduced dimensions\nresponse = client.embeddings.create(\n    model='text-embedding-3-small',\n    input='Your text here',\n    dimensions=512  # Reduce from 1536 to 512\n)\n\nembedding = response.data[0].embedding\nprint(f'Dimension: {len(embedding)}')  # 512",
+      "best_practices": [
+        "Reducing dimensions saves storage and compute",
+        "512 dimensions often sufficient for many use cases",
+        "Test quality vs dimension tradeoff",
+        "Lower dimensions may reduce retrieval quality"
+      ]
+    },
+    "normalization": {
+      "description": "Normalize embeddings for cosine similarity",
+      "code_example": "import numpy as np\nfrom openai import OpenAI\n\nclient = OpenAI(api_key='your-key')\n\n# Get embedding\nresponse = client.embeddings.create(\n    model='text-embedding-3-small',\n    input='Your text'\n)\nembedding = np.array(response.data[0].embedding)\n\n# Normalize\nnormalized = embedding / np.linalg.norm(embedding)\n\n# Cosine similarity\nquery_embedding = np.array([...])\ndoc_embedding = np.array([...])\n\nsimilarity = np.dot(query_embedding, doc_embedding)  # Cosine similarity for normalized vectors",
+      "best_practices": [
+        "OpenAI embeddings are already normalized",
+        "Use cosine similarity for normalized embeddings",
+        "Normalize manually if using other models",
+        "Cosine similarity range: -1 to 1"
+      ]
+    }
+  },
+  "sentence_transformers": {
+    "all_minilm_l6_v2": {
+      "description": "Popular lightweight sentence transformer",
+      "dimensions": 384,
+      "use_for": "Free, local embeddings, good for prototyping",
+      "code_example": "from sentence_transformers import SentenceTransformer\nimport numpy as np\n\n# Load model (downloads on first use)\nmodel = SentenceTransformer('all-MiniLM-L6-v2')\n\n# Generate embeddings\nsentences = ['This is a sentence', 'This is another sentence']\nembeddings = model.encode(sentences, show_progress_bar=True)\n\nprint(f'Shape: {embeddings.shape}')  # (2, 384)\n\n# Single sentence\nembedding = model.encode('Single sentence')\nprint(f'Dimension: {len(embedding)}')  # 384",
+      "best_practices": [
+        "Use GPU if available for faster encoding",
+        "Batch sentences for efficiency",
+        "Good for local development",
+        "Lower quality than OpenAI but free"
+      ]
+    },
+    "all_mpnet_base_v2": {
+      "description": "Higher quality sentence transformer",
+      "dimensions": 768,
+      "use_for": "Better quality than MiniLM, still free",
+      "code_example": "from sentence_transformers import SentenceTransformer\n\nmodel = SentenceTransformer('all-mpnet-base-v2')\n\nembeddings = model.encode(\n    ['Text 1', 'Text 2'],\n    batch_size=32,\n    show_progress_bar=True\n)",
+      "best_practices": [
+        "Better quality than MiniLM",
+        "Larger model, slower encoding",
+        "Good balance for local models"
+      ]
+    },
+    "multilingual_models": {
+      "description": "Multilingual sentence transformers",
+      "code_example": "from sentence_transformers import SentenceTransformer\n\n# Multilingual model\nmodel = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')\n\n# Works with multiple languages\nembeddings = model.encode([\n    'Hello world',\n    'Bonjour le monde',\n    'Hola mundo'\n])",
+      "best_practices": [
+        "Use for multilingual content",
+        "Slightly lower quality than language-specific",
+        "Good for international applications"
+      ]
+    },
+    "domain_specific": {
+      "description": "Domain-specific sentence transformers",
+      "code_example": "from sentence_transformers import SentenceTransformer\n\n# Code-specific model\ncode_model = SentenceTransformer('microsoft/codebert-base')\ncode_embeddings = code_model.encode(['def function():', 'class MyClass:'])\n\n# Medical model\nmedical_model = SentenceTransformer('pritamdeka/S-PubMedBert-MS-MARCO')\nmedical_embeddings = medical_model.encode(['Patient symptoms', 'Diagnosis'])\n\n# Legal model\nlegal_model = SentenceTransformer('nlpaueb/legal-bert-base-uncased')\nlegal_embeddings = legal_model.encode(['Contract terms', 'Legal clause'])",
+      "best_practices": [
+        "Use domain-specific models for specialized content",
+        "Test quality vs general models",
+        "Consider fine-tuning for your domain",
+        "Domain models may perform worse on general text"
+      ]
+    },
+    "batch_processing": {
+      "description": "Efficient batch processing",
+      "code_example": "from sentence_transformers import SentenceTransformer\nfrom tqdm import tqdm\n\nmodel = SentenceTransformer('all-MiniLM-L6-v2')\n\n# Large batch\nall_texts = ['Text ' + str(i) for i in range(10000)]\n\n# Process in batches\nbatch_size = 64\nall_embeddings = []\n\nfor i in tqdm(range(0, len(all_texts), batch_size)):\n    batch = all_texts[i:i+batch_size]\n    embeddings = model.encode(batch, show_progress_bar=False)\n    all_embeddings.extend(embeddings)\n\nprint(f'Total embeddings: {len(all_embeddings)}')",
+      "best_practices": [
+        "Use batch_size 32-128 typically",
+        "Larger batches for GPU, smaller for CPU",
+        "Show progress bar for long operations",
+        "Consider memory constraints"
+      ]
+    }
+  },
+  "cohere_embeddings": {
+    "embed_english_v3": {
+      "description": "Cohere's English embedding model",
+      "dimensions": 1024,
+      "use_for": "Multilingual support, good quality",
+      "code_example": "import cohere\n\nco = cohere.Client(api_key='your-key')\n\n# Generate embeddings\nresponse = co.embed(\n    texts=['Text 1', 'Text 2'],\n    model='embed-english-v3.0',\n    input_type='search_document'  # or 'search_query'\n)\n\nembeddings = response.embeddings\nprint(f'Dimension: {len(embeddings[0])}')  # 1024",
+      "cost": "$0.10 per 1M tokens",
+      "best_practices": [
+        "Use input_type='search_document' for documents",
+        "Use input_type='search_query' for queries",
+        "Different input types optimize for different tasks",
+        "Good multilingual support"
+      ]
+    },
+    "multilingual_v3": {
+      "description": "Cohere's multilingual embedding model",
+      "dimensions": 1024,
+      "code_example": "import cohere\n\nco = cohere.Client(api_key='your-key')\n\n# Multilingual embeddings\nresponse = co.embed(\n    texts=[\n        'Hello world',\n        'Bonjour le monde',\n        'Hola mundo'\n    ],\n    model='embed-multilingual-v3.0',\n    input_type='search_document'\n)\n\nembeddings = response.embeddings",
+      "best_practices": [
+        "Use for multilingual content",
+        "Good quality across languages",
+        "Specify input_type appropriately"
+      ]
+    }
+  },
+  "model_comparison": {
+    "selection_guide": {
+      "description": "How to choose an embedding model",
+      "factors": {
+        "cost": {
+          "free": "Sentence transformers (local compute only)",
+          "low": "OpenAI text-embedding-3-small ($0.02/1M tokens)",
+          "medium": "Cohere embed-english-v3 ($0.10/1M tokens)",
+          "high": "OpenAI text-embedding-3-large ($0.13/1M tokens)"
+        },
+        "quality": {
+          "highest": "OpenAI text-embedding-3-large",
+          "high": "OpenAI text-embedding-3-small, Cohere v3",
+          "medium": "Sentence transformers (all-mpnet-base-v2)",
+          "lower": "Sentence transformers (all-MiniLM-L6-v2)"
+        },
+        "latency": {
+          "fastest": "Local sentence transformers (with GPU)",
+          "fast": "OpenAI API, Cohere API",
+          "depends": "Network latency for API calls"
+        },
+        "privacy": {
+          "highest": "Local sentence transformers",
+          "medium": "API models (data sent to provider)",
+          "consider": "Data residency requirements"
+        }
+      },
+      "recommendations": {
+        "prototyping": "Sentence transformers (all-MiniLM-L6-v2) - free, fast",
+        "production_general": "OpenAI text-embedding-3-small - good balance",
+        "production_quality": "OpenAI text-embedding-3-large - best quality",
+        "multilingual": "Cohere embed-multilingual-v3.0",
+        "privacy_sensitive": "Local sentence transformers",
+        "cost_sensitive": "Sentence transformers or OpenAI small"
+      }
+    },
+    "quality_evaluation": {
+      "description": "Evaluate embedding quality",
+      "code_example": "from sentence_transformers import SentenceTransformer, util\nimport numpy as np\n\n# Load model\nmodel = SentenceTransformer('all-MiniLM-L6-v2')\n\n# Test sentences\nsentences = [\n    'The cat sat on the mat',\n    'A feline was sitting on a rug',  # Similar meaning\n    'The weather is sunny today'  # Different topic\n]\n\n# Generate embeddings\nembeddings = model.encode(sentences)\n\n# Compute similarities\nsimilarity_1_2 = util.cos_sim(embeddings[0], embeddings[1])  # Should be high\nsimilarity_1_3 = util.cos_sim(embeddings[0], embeddings[2])  # Should be low\n\nprint(f'Similar sentences: {similarity_1_2.item():.4f}')\nprint(f'Different sentences: {similarity_1_3.item():.4f}')",
+      "best_practices": [
+        "Test on domain-specific examples",
+        "Use semantic similarity benchmarks (MTEB)",
+        "Compare retrieval quality in your RAG system",
+        "Monitor embedding quality over time"
+      ]
+    }
+  },
+  "dimensionality_patterns": {
+    "dimension_selection": {
+      "description": "Choose appropriate embedding dimensions",
+      "considerations": {
+        "storage": "Higher dimensions = more storage",
+        "compute": "Higher dimensions = slower similarity computation",
+        "quality": "Higher dimensions often = better quality (up to a point)",
+        "sweet_spot": "512-1536 dimensions often sufficient"
+      },
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key='your-key')\n\n# Test different dimensions\nfor dims in [256, 512, 1024, 1536]:\n    response = client.embeddings.create(\n        model='text-embedding-3-small',\n        input='Test text',\n        dimensions=dims\n    )\n    embedding = response.data[0].embedding\n    print(f'Dimensions {dims}: length {len(embedding)}')",
+      "best_practices": [
+        "Start with model default dimensions",
+        "Reduce dimensions if storage/compute constrained",
+        "Test quality vs dimension tradeoff",
+        "512-1024 often good balance"
+      ]
+    },
+    "dimension_reduction": {
+      "description": "Reduce dimensions post-generation",
+      "code_example": "from sklearn.decomposition import PCA\nimport numpy as np\n\n# Original embeddings (1536 dims)\noriginal_embeddings = np.array([...])  # Shape: (n, 1536)\n\n# Reduce to 512 dimensions\npca = PCA(n_components=512)\nreduced_embeddings = pca.fit_transform(original_embeddings)\n\nprint(f'Original: {original_embeddings.shape}')\nprint(f'Reduced: {reduced_embeddings.shape}')  # (n, 512)",
+      "best_practices": [
+        "Use PCA for dimension reduction",
+        "Test quality after reduction",
+        "Consider using OpenAI's dimension parameter instead",
+        "May lose some semantic information"
+      ]
+    }
+  },
+  "chunking_considerations": {
+    "chunk_size_vs_embedding": {
+      "description": "Relationship between chunk size and embedding quality",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key='your-key')\n\n# Embedding models have max token limits\n# text-embedding-3-small: 8191 tokens max\n\n# Chunk should be smaller than max tokens\nchunk = 'Your document chunk here'  # Should be < 8191 tokens\n\n# Generate embedding\nresponse = client.embeddings.create(\n    model='text-embedding-3-small',\n    input=chunk\n)\n\nembedding = response.data[0].embedding",
+      "best_practices": [
+        "Keep chunks under model's max token limit",
+        "text-embedding-3-small: ~8000 tokens max",
+        "Larger chunks may truncate or error",
+        "Test chunk size for your use case"
+      ]
+    },
+    "chunk_overlap": {
+      "description": "Use overlap to preserve context",
+      "code_example": "from langchain.text_splitter import RecursiveCharacterTextSplitter\n\nsplitter = RecursiveCharacterTextSplitter(\n    chunk_size=1000,\n    chunk_overlap=200  # 20% overlap\n)\n\nchunks = splitter.split_text(long_document)\n\n# Embed each chunk\nembeddings = []\nfor chunk in chunks:\n    embedding = get_embedding(chunk)\n    embeddings.append(embedding)",
+      "best_practices": [
+        "Use 10-20% overlap between chunks",
+        "Overlap preserves context at boundaries",
+        "More overlap = more storage but better context",
+        "Test overlap amount for your documents"
+      ]
+    },
+    "semantic_chunking": {
+      "description": "Chunk based on semantic boundaries",
+      "code_example": "from langchain_experimental.text_splitter import SemanticChunker\nfrom langchain_openai import OpenAIEmbeddings\n\nembeddings = OpenAIEmbeddings(model='text-embedding-3-small')\n\nchunker = SemanticChunker(\n    embeddings,\n    breakpoint_threshold_type='percentile',\n    breakpoint_threshold_amount=95\n)\n\nchunks = chunker.split_text(document)\n\n# Each chunk is semantically coherent",
+      "best_practices": [
+        "More expensive (requires embeddings)",
+        "Better semantic coherence",
+        "Chunks may vary in size",
+        "Good for complex documents"
+      ]
+    }
+  },
+  "anti_patterns": {
+    "mismatched_models": {
+      "description": "Using different models for indexing and querying",
+      "problem": "Poor retrieval quality, semantic mismatch",
+      "solution": "Always use the same embedding model for indexing and querying"
+    },
+    "too_large_chunks": {
+      "description": "Chunks larger than embedding model's max tokens",
+      "problem": "Truncation or errors, lost information",
+      "solution": "Keep chunks under model's max token limit"
+    },
+    "no_normalization": {
+      "description": "Not normalizing embeddings for cosine similarity",
+      "problem": "Incorrect similarity scores",
+      "solution": "Normalize embeddings or use cosine similarity correctly"
+    },
+    "ignoring_dimensions": {
+      "description": "Not considering dimension impact on storage/compute",
+      "problem": "High costs, slow queries",
+      "solution": "Choose appropriate dimensions, test tradeoffs"
+    }
+  },
+  "best_practices_summary": [
+    "Use same embedding model for indexing and querying",
+    "Choose model based on cost, quality, and privacy requirements",
+    "Keep chunks under model's max token limit",
+    "Use 10-20% overlap between chunks",
+    "Normalize embeddings for cosine similarity",
+    "Batch embedding requests for efficiency",
+    "Test embedding quality on your domain",
+    "Consider dimension reduction if storage/compute constrained",
+    "Use appropriate input_type for Cohere models",
+    "Monitor embedding costs and quality"
+  ]
+}

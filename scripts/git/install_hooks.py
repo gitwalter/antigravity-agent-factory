@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 Install Git hooks for the Antigravity Agent Factory project.
-
 This script sets up pre-commit hooks that automatically maintain
 README structure counts, ensuring documentation stays synchronized.
 
@@ -19,8 +18,7 @@ from pathlib import Path
 # Design: Only block for unfixable issues. Auto-fix everything else.
 PRE_COMMIT_HOOK = '''#!/bin/sh
 #
-# Pre-commit hook for Antigravity Agent Factory
-# 
+# Pre-commit hook for Antigravity Agent Factory# 
 # Philosophy (A10 Learning): Fast, non-blocking, auto-fixing.
 # Only blocks for: secrets, JSON syntax errors.
 # Everything else: auto-fix and stage silently.
@@ -29,10 +27,9 @@ PRE_COMMIT_HOOK = '''#!/bin/sh
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
 
-# Find Python
+# Find Python (prefer cursor-factory conda env)
 PYTHON=""
-for p in "/c/App/Anaconda/python.exe" "/d/Anaconda/python.exe" "python3" "python"; do
-    if command -v "$p" >/dev/null 2>&1; then
+for p in "/d/Anaconda/envs/cursor-factory/python.exe" "/c/App/Anaconda/envs/cursor-factory/python.exe" "/d/Anaconda/python.exe" "/c/App/Anaconda/python.exe" "python3" "python"; do    if command -v "$p" >/dev/null 2>&1; then
         PYTHON="$p"
         break
     fi
@@ -79,15 +76,42 @@ if [ -f "$SYNC_VERSIONS" ]; then
     git add docs/GETTING_STARTED.md docs/ONBOARDING_GUIDE.md 2>/dev/null || true
 fi
 
-# 4. ARTIFACT SYNC (auto-fix, silent) - wu wei: let counts flow from reality
+# 4. ARTIFACT SYNC (auto-fix, fast mode for wu-wei flow)
 SYNC_ARTIFACTS="$REPO_ROOT/scripts/validation/sync_artifacts.py"
 if [ -f "$SYNC_ARTIFACTS" ]; then
     $PYTHON "$SYNC_ARTIFACTS" --sync --fast >/dev/null 2>&1 || true
-    # Stage any auto-fixed files
-    git add docs/reference/KNOWLEDGE_FILES.md 2>/dev/null || true
-    git add knowledge/manifest.json 2>/dev/null || true
-    git add README.md 2>/dev/null || true
+    git add README.md docs/reference/KNOWLEDGE_FILES.md 2>/dev/null || true
+    git add docs/TESTING.md knowledge/manifest.json 2>/dev/null || true
 fi
+
+# 5. TEST CATALOG (always sync to avoid CI failures)
+TEST_CATALOG="$REPO_ROOT/scripts/docs/generate_test_catalog.py"
+if [ -f "$TEST_CATALOG" ]; then
+    $PYTHON "$TEST_CATALOG" >/dev/null 2>&1 || true
+    git add docs/TEST_CATALOG.md 2>/dev/null || true
+fi
+
+# 6. KNOWLEDGE COUNTS (auto-fix)
+SYNC_KNOWLEDGE="$REPO_ROOT/scripts/validation/sync_knowledge_counts.py"
+if [ -f "$SYNC_KNOWLEDGE" ]; then
+    $PYTHON "$SYNC_KNOWLEDGE" --sync >/dev/null 2>&1 || true
+    git add docs/reference/KNOWLEDGE_FILES.md 2>/dev/null || true
+fi
+
+# 7. UPDATE INDEX (auto-fix)
+UPDATE_INDEX="$REPO_ROOT/scripts/validation/update_index.py"
+if [ -f "$UPDATE_INDEX" ]; then
+    $PYTHON "$UPDATE_INDEX" --full >/dev/null 2>&1 || true
+    git add docs/index.md 2>/dev/null || true
+fi
+
+# 8. CHANGELOG CHECK (warn only - manual update required)
+CHANGELOG_HELPER="$REPO_ROOT/scripts/docs/changelog_helper.py"
+if [ -f "$CHANGELOG_HELPER" ]; then
+    if ! $PYTHON "$CHANGELOG_HELPER" --check >/dev/null 2>&1; then
+        echo "[INFO] Significant changes detected - consider updating CHANGELOG.md"
+        echo "       Run: python scripts/docs/changelog_helper.py --suggest"
+    fifi
 
 echo "[OK] Pre-commit passed"
 exit 0
@@ -138,9 +162,10 @@ def install_hooks():
     print("  1. Block commits with secrets (API keys, tokens, private keys)")
     print("  2. Block commits with invalid JSON syntax")
     print("  3. Auto-sync version numbers (silent, auto-staged)")
-    print("\nDesign: Fast (~3s), only blocks for unfixable issues.")
-    print("For artifact sync, run manually: python scripts/validation/sync_artifacts.py --sync --fast")
-    
+    print("  4. Auto-sync artifacts (fast mode, auto-staged)")
+    print("  5. Regenerate test catalog when test files change")
+    print("\nDesign: Fast (~5-10s), wu-wei sync on every commit.")
+    print("Prevents CI failures from out-of-sync artifacts.")    
     return 0
 
 

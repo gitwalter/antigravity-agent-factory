@@ -83,8 +83,7 @@ class TestGuardianIntendedBehavior:
     def test_level_2_caution_file_modifications_pause(self):
         """Modifying caution-worthy files should pause."""
         report = analyze_file_operation("write", ".agentrules")
-        assert not report.safe, ".agentrules modification should trigger caution"
-        assert report.level >= 2, "Should be at least Level 2 (Pause)"
+        assert not report.safe, ".agentrules modification should trigger caution"        assert report.level >= 2, "Should be at least Level 2 (Pause)"
         assert len(report.details) > 0, "Should provide explanation"
 
     # =========================================================================
@@ -137,10 +136,9 @@ class TestGuardianIntendedBehavior:
     def test_level_4_high_severity_secrets_protect(self):
         """High severity secrets (API keys) must be prevented."""
         high_severity_secrets = [
-            'OPENAI_KEY = "sk-" + "1234567890abcdefghijklmnopqrstuv"',
+            'OPENAI_KEY = "sk-1234567890abcdefghijklmnopqrstuv"',
             'DATABASE_URL = "postgres://user:pass@prod.db.com/main"',
-            '-----BEGIN RSA ' + 'PRIVATE KEY-----',
-        ]
+            '-----BEGIN RSA PRIVATE KEY-----',        ]
         
         for content in high_severity_secrets:
             matches = scan_content(content)
@@ -212,10 +210,9 @@ class TestGuardianRealWorldScenarios:
         env_content = """
         # Production environment
         DATABASE_URL=postgres://admin:secretpass123@prod.db.com:5432/main
-        OPENAI_API_KEY=%s
+        OPENAI_API_KEY=sk-proj-realkey1234567890abcdefghijklmn
         SECRET_KEY=django-insecure-realprodsecret
-        """ % ("sk-proj-" + "realkey1234567890abcdef...")
-        
+        """        
         matches = scan_content(env_content)
         level = get_severity_level(matches)
         
@@ -228,8 +225,7 @@ class TestGuardianRealWorldScenarios:
         import openai
         
         client = openai.OpenAI(
-            api_key="sk-" + "1234567890abcdefghijklmnopqrstuv"  # TODO: move to env
-        )
+            api_key="sk-1234567890abcdefghijklmnopqrstuv"  # TODO: move to env        )
         '''
         
         matches = scan_content(code_content)
@@ -254,8 +250,7 @@ class TestGuardianRealWorldScenarios:
         sql_content = '''
         def delete_user(user_id):
             # This is dangerous!
-            Antigravity.execute("DELETE FROM users")  # Missing WHERE clause!
-        '''
+            cursor.execute("DELETE FROM users")  # Missing WHERE clause!        '''
         
         result = check_command("DELETE FROM users")
         assert result.level == 4, "DELETE without WHERE should be Level 4"
@@ -276,8 +271,7 @@ class TestGuardianNoFalsePositives:
         test_content = '''
         def test_api_key_validation():
             """Test that API key format is validated."""
-            fake_key = "sk-" + "test123456789012345678901234"  # Test fixture
-            assert validate_key(fake_key)
+            fake_key = "sk-test123456789012345678901234"  # Test fixture            assert validate_key(fake_key)
         '''
         
         # Test fixtures might be detected but should be lower severity
@@ -321,8 +315,7 @@ class TestGuardianIntegrationPoints:
             command="cat .env",
             file_path="secrets.json",
             file_operation="write",
-            content='api_key = "sk-" + "1234567890abcdefghijklmnopqrstuv"'
-        )
+            content='api_key = "sk-1234567890abcdefghijklmnopqrstuv"'        )
         
         assert not report.safe, "Should detect combined issues"
         assert report.level >= 3, "Should escalate to highest level"

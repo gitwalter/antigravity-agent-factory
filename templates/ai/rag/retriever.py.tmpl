@@ -1,0 +1,398 @@
+"""
+{{RETRIEVER_NAME}} - Hybrid Search Retriever
+
+Purpose: {{RETRIEVER_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Retrieval sources are tracked and citable
+- A3 (Transparency): Retrieval process is explicit and explainable
+"""
+
+from typing import List, Dict, Any, Optional, Union
+from langchain_core.documents import Document
+from langchain_core.retrievers import BaseRetriever
+from langchain.retrievers import EnsembleRetriever
+from langchain_community.retrievers import BM25Retriever
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma, FAISS, VectorStore
+from langchain_core.callbacks import CallbackManagerForRetrieverRun
+from pydantic import BaseModel, Field
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class RetrievalResult(BaseModel):
+    """Result from retrieval operation."""
+    documents: List[Document] = Field(description="Retrieved documents")
+    scores: Optional[List[float]] = Field(
+        description="Relevance scores for each document"
+    )
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Additional retrieval metadata",
+    )
+
+
+class {{RETRIEVER_CLASS_NAME}}(BaseRetriever):
+    """
+    {{RETRIEVER_NAME}} - Hybrid Search Retriever
+    
+    Combines dense vector search (semantic) with sparse keyword search (BM25)
+    for improved retrieval quality. Supports multiple retrieval strategies.
+    
+    Example:
+        >>> retriever = {{RETRIEVER_CLASS_NAME}}(
+        ...     vector_store=vectorstore,
+        ...     documents=documents,
+        ...     dense_weight=0.7,
+        ...     sparse_weight=0.3
+        ... )
+        >>> results = retriever.invoke("machine learning algorithms")
+        >>> print(f"Retrieved {len(results)} documents")
+    """
+    
+    def __init__(
+        self,
+        vector_store: Optional[VectorStore] = None,
+        documents: Optional[List[Document]] = None,
+        embedding_model: str = "{{EMBEDDING_MODEL}}",
+        dense_weight: float = {{DENSE_WEIGHT}},
+        sparse_weight: float = {{SPARSE_WEIGHT}},
+        k: int = {{K}},
+        search_type: str = "hybrid",  # "hybrid", "dense", "sparse", "mmr"
+        fetch_k: int = {{FETCH_K}},  # For MMR search
+        lambda_mult: float = {{LAMBDA_MULT}},  # For MMR search
+        score_threshold: Optional[float] = None,
+    ):
+        """
+        Initialize hybrid retriever.
+        
+        Args:
+            vector_store: Vector store for dense search (optional if documents provided)
+            documents: Documents for BM25 sparse search (required for hybrid/sparse)
+            embedding_model: Embedding model name
+            dense_weight: Weight for dense vector search (0.0-1.0)
+            sparse_weight: Weight for sparse keyword search (0.0-1.0)
+            k: Number of documents to retrieve
+            search_type: Type of search ("hybrid", "dense", "sparse", "mmr")
+            fetch_k: Number of documents to fetch before MMR reranking
+            lambda_mult: Diversity parameter for MMR (0.0-1.0)
+            score_threshold: Minimum score threshold for results
+        """
+        super().__init__()
+        
+        self.embedding_model = embedding_model
+        self.dense_weight = dense_weight
+        self.sparse_weight = sparse_weight
+        self.k = k
+        self.search_type = search_type
+        self.fetch_k = fetch_k
+        self.lambda_mult = lambda_mult
+        self.score_threshold = score_threshold
+        
+        # Normalize weights
+        total_weight = dense_weight + sparse_weight
+        if total_weight > 0:
+            self.dense_weight = dense_weight / total_weight
+            self.sparse_weight = sparse_weight / total_weight
+        
+        # Initialize embeddings
+        self.embeddings = OpenAIEmbeddings(model=embedding_model)
+        
+        # Setup vector store
+        if vector_store is None and documents:
+            # Create vector store from documents
+            logger.info("Creating vector store from documents...")
+            self.vector_store = Chroma.from_documents(documents, self.embeddings)
+        else:
+            self.vector_store = vector_store
+        
+        # Setup BM25 retriever for sparse search
+        self.bm25_retriever: Optional[BM25Retriever] = None
+        if search_type in ["hybrid", "sparse"] and documents:
+            logger.info("Initializing BM25 retriever...")
+            self.bm25_retriever = BM25Retriever.from_documents(documents)
+            self.bm25_retriever.k = k
+        
+        # Setup dense retriever
+        self.dense_retriever: Optional[Any] = None
+        if search_type in ["hybrid", "dense", "mmr"] and self.vector_store:
+            self.dense_retriever = self.vector_store.as_retriever(
+                search_type="similarity" if search_type != "mmr" else "mmr",
+                search_kwargs={
+                    "k": k if search_type != "mmr" else fetch_k,
+                    "lambda_mult": lambda_mult if search_type == "mmr" else None,
+                },
+            )
+        
+        # Setup ensemble retriever for hybrid search
+        self.ensemble_retriever: Optional[EnsembleRetriever] = None
+        if search_type == "hybrid" and self.dense_retriever and self.bm25_retriever:
+            self.ensemble_retriever = EnsembleRetriever(
+                retrievers=[self.bm25_retriever, self.dense_retriever],
+                weights=[self.sparse_weight, self.dense_weight],
+            )
+        
+        logger.info(
+            f"Initialized {{RETRIEVER_NAME}} with {search_type} search, k={k}"
+        )
+    
+    @property
+    def _get_lc_namespace(self) -> List[str]:
+        """Return namespace for LangChain."""
+        return ["langchain", "retrievers", "{{RETRIEVER_CLASS_NAME}}"]
+    
+    def _get_relevant_documents(
+        self,
+        query: str,
+        *,
+        run_manager: CallbackManagerForRetrieverRun,
+    ) -> List[Document]:
+        """
+        Retrieve relevant documents for a query.
+        
+        Args:
+            query: Query string
+            run_manager: Callback manager for tracing
+            
+        Returns:
+            List of relevant documents
+        """
+        logger.info(f"Retrieving documents for query: {query[:100]}...")
+        
+        try:
+            if self.search_type == "hybrid":
+                if not self.ensemble_retriever:
+                    raise ValueError(
+                        "Ensemble retriever not initialized. "
+                        "Provide both vector_store and documents for hybrid search."
+                    )
+                documents = self.ensemble_retriever.invoke(query)
+            elif self.search_type == "dense":
+                if not self.dense_retriever:
+                    raise ValueError(
+                        "Dense retriever not initialized. Provide vector_store."
+                    )
+                documents = self.dense_retriever.invoke(query)
+            elif self.search_type == "sparse":
+                if not self.bm25_retriever:
+                    raise ValueError(
+                        "BM25 retriever not initialized. Provide documents."
+                    )
+                documents = self.bm25_retriever.invoke(query)
+            elif self.search_type == "mmr":
+                if not self.dense_retriever:
+                    raise ValueError(
+                        "Dense retriever not initialized. Provide vector_store."
+                    )
+                documents = self.dense_retriever.invoke(query)
+            else:
+                raise ValueError(f"Unknown search type: {self.search_type}")
+            
+            # Apply score threshold if specified
+            if self.score_threshold and hasattr(documents[0], "metadata"):
+                # Filter by score if available in metadata
+                filtered = []
+                for doc in documents:
+                    score = doc.metadata.get("score", 1.0)
+                    if score >= self.score_threshold:
+                        filtered.append(doc)
+                documents = filtered
+            
+            # Limit to k documents
+            documents = documents[: self.k]
+            
+            logger.info(f"Retrieved {len(documents)} documents")
+            return documents
+            
+        except Exception as e:
+            logger.error(f"Error retrieving documents: {e}")
+            return []
+    
+    async def _aget_relevant_documents(
+        self,
+        query: str,
+        *,
+        run_manager: CallbackManagerForRetrieverRun,
+    ) -> List[Document]:
+        """Async version of retrieval."""
+        logger.info(f"Async retrieving documents for query: {query[:100]}...")
+        
+        try:
+            if self.search_type == "hybrid":
+                if not self.ensemble_retriever:
+                    raise ValueError("Ensemble retriever not initialized.")
+                documents = await self.ensemble_retriever.ainvoke(query)
+            elif self.search_type == "dense":
+                if not self.dense_retriever:
+                    raise ValueError("Dense retriever not initialized.")
+                documents = await self.dense_retriever.ainvoke(query)
+            elif self.search_type == "sparse":
+                if not self.bm25_retriever:
+                    raise ValueError("BM25 retriever not initialized.")
+                documents = await self.bm25_retriever.ainvoke(query)
+            elif self.search_type == "mmr":
+                if not self.dense_retriever:
+                    raise ValueError("Dense retriever not initialized.")
+                documents = await self.dense_retriever.ainvoke(query)
+            else:
+                raise ValueError(f"Unknown search type: {self.search_type}")
+            
+            # Apply score threshold
+            if self.score_threshold:
+                filtered = []
+                for doc in documents:
+                    score = doc.metadata.get("score", 1.0)
+                    if score >= self.score_threshold:
+                        filtered.append(doc)
+                documents = filtered
+            
+            documents = documents[: self.k]
+            
+            logger.info(f"Retrieved {len(documents)} documents (async)")
+            return documents
+            
+        except Exception as e:
+            logger.error(f"Error in async retrieval: {e}")
+            return []
+    
+    def retrieve_with_scores(
+        self, query: str
+    ) -> RetrievalResult:
+        """
+        Retrieve documents with relevance scores.
+        
+        Args:
+            query: Query string
+            
+        Returns:
+            RetrievalResult with documents and scores
+            
+        Example:
+            >>> result = retriever.retrieve_with_scores("machine learning")
+            >>> for doc, score in zip(result.documents, result.scores):
+            ...     print(f"Score: {score:.3f}, Doc: {doc.page_content[:50]}")
+        """
+        logger.info(f"Retrieving with scores for query: {query[:100]}...")
+        
+        try:
+            documents = self.invoke(query)
+            
+            # Try to extract scores from metadata or compute similarity
+            scores = []
+            if self.vector_store and self.search_type in ["dense", "hybrid", "mmr"]:
+                # Get similarity scores from vector store
+                if hasattr(self.vector_store, "similarity_search_with_score"):
+                    scored_docs = self.vector_store.similarity_search_with_score(
+                        query, k=self.k
+                    )
+                    scores = [score for _, score in scored_docs]
+                else:
+                    # Fallback: assign default scores
+                    scores = [1.0 - (i * 0.1) for i in range(len(documents))]
+            else:
+                # Default scores
+                scores = [1.0 - (i * 0.1) for i in range(len(documents))]
+            
+            result = RetrievalResult(
+                documents=documents,
+                scores=scores[: len(documents)],
+                metadata={
+                    "search_type": self.search_type,
+                    "k": len(documents),
+                    "query": query,
+                },
+            )
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error retrieving with scores: {e}")
+            return RetrievalResult(
+                documents=[],
+                scores=[],
+                metadata={"error": str(e)},
+            )
+    
+    def update_documents(self, documents: List[Document]) -> None:
+        """
+        Update retriever with new documents.
+        
+        Args:
+            documents: New documents to add
+            
+        Example:
+            >>> retriever.update_documents(new_documents)
+        """
+        logger.info(f"Updating retriever with {len(documents)} documents...")
+        
+        try:
+            # Update vector store
+            if self.vector_store:
+                self.vector_store.add_documents(documents)
+            
+            # Update BM25 retriever
+            if self.bm25_retriever:
+                self.bm25_retriever.add_documents(documents)
+            
+            # Recreate ensemble retriever if needed
+            if self.search_type == "hybrid" and self.dense_retriever and self.bm25_retriever:
+                self.ensemble_retriever = EnsembleRetriever(
+                    retrievers=[self.bm25_retriever, self.dense_retriever],
+                    weights=[self.sparse_weight, self.dense_weight],
+                )
+            
+            logger.info("Retriever updated successfully")
+            
+        except Exception as e:
+            logger.error(f"Error updating retriever: {e}")
+            raise
+
+
+# Example usage
+if __name__ == "__main__":
+    from langchain_core.documents import Document
+    
+    # Create sample documents
+    documents = [
+        Document(
+            page_content="Machine learning is a subset of artificial intelligence.",
+            metadata={"source": "doc1"},
+        ),
+        Document(
+            page_content="Deep learning uses neural networks with multiple layers.",
+            metadata={"source": "doc2"},
+        ),
+        Document(
+            page_content="Natural language processing enables computers to understand text.",
+            metadata={"source": "doc3"},
+        ),
+    ]
+    
+    # Create hybrid retriever
+    retriever = {{RETRIEVER_CLASS_NAME}}(
+        documents=documents,
+        dense_weight={{DENSE_WEIGHT}},
+        sparse_weight={{SPARSE_WEIGHT}},
+        k={{K}},
+        search_type="hybrid",
+    )
+    
+    # Retrieve documents
+    query = "{{EXAMPLE_QUERY}}"
+    results = retriever.invoke(query)
+    print(f"Retrieved {len(results)} documents for query: {query}")
+    for i, doc in enumerate(results):
+        print(f"\nDocument {i+1}:")
+        print(f"  Content: {doc.page_content[:100]}...")
+        print(f"  Source: {doc.metadata.get('source', 'unknown')}")
+    
+    # Retrieve with scores
+    result_with_scores = retriever.retrieve_with_scores(query)
+    print(f"\nRetrieval with scores:")
+    for doc, score in zip(result_with_scores.documents, result_with_scores.scores):
+        print(f"  Score: {score:.3f} - {doc.page_content[:50]}...")

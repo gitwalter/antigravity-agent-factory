@@ -29,8 +29,7 @@ from typing import Optional
 # Directories to scan for markdown files
 MARKDOWN_DIRS = [
     ".agent/agents",
-    ".agent/skills",
-    "docs",
+    ".agent/skills",    "docs",
     "blueprints",
     "patterns",
     "workflows",

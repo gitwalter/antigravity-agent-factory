@@ -1,0 +1,573 @@
+"""
+{{ project_name | default('Project') }} Axiom Compliance Monitor
+
+Monitors agent event streams for violations of foundational axioms (A0-A5).
+Part of the agent society verification system.
+
+Note: For projects using the Cursor Agent Factory lib/society module directly,
+you can import the full implementation:
+
+    from lib.society import AxiomComplianceMonitor, create_default_monitor
+    from lib.society.verification import A1LoveVerifier, A2TruthVerifier
+
+This template provides a standalone implementation for generated projects.
+
+Usage:
+    monitor = AxiomComplianceMonitor()
+    monitor.register_verifier(A1LoveVerifier())
+    monitor.register_verifier(A2TruthVerifier())
+    
+    for event in event_stream:
+        result = monitor.verify(event)
+        if result.has_violations():
+            monitor.handle_violation(event, result)
+"""
+
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
+import hashlib
+import json
+import logging
+import uuid
+
+logger = logging.getLogger(__name__)
+
+
+class VerificationStatus(Enum):
+    """Status of axiom verification."""
+    PENDING = "pending"
+    VERIFIED = "verified"
+    VIOLATION = "violation"
+    ESCALATED = "escalated"
+
+
+class AxiomId(Enum):
+    """Foundational axioms."""
+    A0_SDG = "A0"       # Sustainable Development Goals
+    A1_LOVE = "A1"      # Love - prioritize user wellbeing
+    A2_TRUTH = "A2"     # Truth - honesty and transparency
+    A3_BEAUTY = "A3"    # Beauty - simplicity and elegance
+    A4_GUARDIAN = "A4"  # Guardian protocol
+    A5_MEMORY = "A5"    # Memory consent requirements
+
+
+@dataclass
+class AxiomResult:
+    """Result of a single axiom verification."""
+    axiom: AxiomId
+    passed: bool
+    reason: str = ""
+    confidence: float = 1.0
+    details: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class VerificationResult:
+    """Complete verification result for an event."""
+    event_id: str
+    status: VerificationStatus
+    axiom_results: List[AxiomResult]
+    verified_at: datetime = field(default_factory=datetime.utcnow)
+    escalated: bool = False
+    
+    def has_violations(self) -> bool:
+        """Check if any axiom was violated."""
+        return any(not r.passed for r in self.axiom_results)
+    
+    def get_violations(self) -> List[AxiomResult]:
+        """Get list of violated axioms."""
+        return [r for r in self.axiom_results if not r.passed]
+
+
+@dataclass
+class AgentEvent:
+    """Immutable record of an agent action."""
+    event_id: str
+    timestamp: datetime
+    sequence: int
+    previous_hash: str
+    agent_id: str
+    agent_type: str
+    action_type: str
+    action_description: str
+    action_payload: Dict[str, Any]
+    target_agent: Optional[str]
+    declared_axiom_alignment: List[AxiomId]
+    axiom_justification: str
+    signature: str
+    hash: str
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "AgentEvent":
+        """Create event from dictionary."""
+        return cls(
+            event_id=data["event_id"],
+            timestamp=datetime.fromisoformat(data["timestamp"]),
+            sequence=data["sequence"],
+            previous_hash=data["previous_hash"],
+            agent_id=data["agent"]["id"],
+            agent_type=data["agent"]["type"],
+            action_type=data["action"]["type"],
+            action_description=data["action"]["description"],
+            action_payload=data["action"].get("payload", {}),
+            target_agent=data["action"].get("target"),
+            declared_axiom_alignment=[
+                AxiomId(a) for a in data.get("axiom_context", {}).get("declared_alignment", [])
+            ],
+            axiom_justification=data.get("axiom_context", {}).get("justification", ""),
+            signature=data["signature"],
+            hash=data["hash"]
+        )
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert event to dictionary."""
+        return {
+            "event_id": self.event_id,
+            "timestamp": self.timestamp.isoformat(),
+            "sequence": self.sequence,
+            "previous_hash": self.previous_hash,
+            "agent": {
+                "id": self.agent_id,
+                "type": self.agent_type
+            },
+            "action": {
+                "type": self.action_type,
+                "description": self.action_description,
+                "payload": self.action_payload,
+                "target": self.target_agent
+            },
+            "axiom_context": {
+                "declared_alignment": [a.value for a in self.declared_axiom_alignment],
+                "justification": self.axiom_justification
+            },
+            "signature": self.signature,
+            "hash": self.hash
+        }
+
+
+class AxiomVerifier(ABC):
+    """Base class for axiom verifiers."""
+    
+    @property
+    @abstractmethod
+    def axiom(self) -> AxiomId:
+        """The axiom this verifier checks."""
+        pass
+    
+    @abstractmethod
+    def verify(self, event: AgentEvent) -> AxiomResult:
+        """Verify event against this axiom."""
+        pass
+    
+    def applies_to(self, event: AgentEvent) -> bool:
+        """Check if this verifier applies to the given event."""
+        return True  # By default, apply to all events
+
+
+class A1LoveVerifier(AxiomVerifier):
+    """Verifies actions prioritize user wellbeing (A1: Love)."""
+    
+    @property
+    def axiom(self) -> AxiomId:
+        return AxiomId.A1_LOVE
+    
+    def verify(self, event: AgentEvent) -> AxiomResult:
+        """Check if action prioritizes user wellbeing."""
+        # Check for manipulation patterns
+        if self._is_manipulative(event):
+            return AxiomResult(
+                axiom=self.axiom,
+                passed=False,
+                reason="Action appears manipulative",
+                details={"pattern": "manipulation_detected"}
+            )
+        
+        # Check if action benefits user
+        if event.target_agent and not self._benefits_user(event):
+            return AxiomResult(
+                axiom=self.axiom,
+                passed=False,
+                reason="Action affects user without clear benefit",
+                details={"issue": "no_user_benefit"}
+            )
+        
+        return AxiomResult(
+            axiom=self.axiom,
+            passed=True,
+            reason="Action aligns with user wellbeing"
+        )
+    
+    def _is_manipulative(self, event: AgentEvent) -> bool:
+        """Detect manipulation patterns."""
+        manipulation_keywords = [
+            "force", "trick", "deceive", "manipulate", "coerce"
+        ]
+        description_lower = event.action_description.lower()
+        return any(kw in description_lower for kw in manipulation_keywords)
+    
+    def _benefits_user(self, event: AgentEvent) -> bool:
+        """Check if action benefits user."""
+        # This is a simplified check - real implementation would be more sophisticated
+        return "user" in event.axiom_justification.lower() or \
+               "benefit" in event.axiom_justification.lower()
+
+
+class A2TruthVerifier(AxiomVerifier):
+    """Verifies actions are honest and transparent (A2: Truth)."""
+    
+    @property
+    def axiom(self) -> AxiomId:
+        return AxiomId.A2_TRUTH
+    
+    def verify(self, event: AgentEvent) -> AxiomResult:
+        """Check for honesty and transparency."""
+        # Check for deception patterns
+        if self._contains_deception(event):
+            return AxiomResult(
+                axiom=self.axiom,
+                passed=False,
+                reason="Action contains potentially deceptive elements",
+                details={"pattern": "deception_detected"}
+            )
+        
+        # Check for hidden effects
+        if self._has_hidden_effects(event):
+            return AxiomResult(
+                axiom=self.axiom,
+                passed=False,
+                reason="Action has undisclosed side effects",
+                details={"issue": "hidden_effects"}
+            )
+        
+        return AxiomResult(
+            axiom=self.axiom,
+            passed=True,
+            reason="Action is transparent and honest"
+        )
+    
+    def _contains_deception(self, event: AgentEvent) -> bool:
+        """Check for deceptive patterns."""
+        deception_keywords = ["hide", "conceal", "mislead", "false"]
+        description_lower = event.action_description.lower()
+        return any(kw in description_lower for kw in deception_keywords)
+    
+    def _has_hidden_effects(self, event: AgentEvent) -> bool:
+        """Check for undisclosed side effects."""
+        # Check if action type suggests side effects not mentioned
+        side_effect_actions = ["external_effect", "state_change"]
+        if event.action_type in side_effect_actions:
+            return "effect" not in event.action_description.lower()
+        return False
+
+
+class A4GuardianVerifier(AxiomVerifier):
+    """Verifies actions follow Guardian protocol (A4: Guardian)."""
+    
+    @property
+    def axiom(self) -> AxiomId:
+        return AxiomId.A4_GUARDIAN
+    
+    def verify(self, event: AgentEvent) -> AxiomResult:
+        """Check Guardian protocol compliance."""
+        # Check for harmful action prevention
+        if self._is_harmful(event):
+            return AxiomResult(
+                axiom=self.axiom,
+                passed=False,
+                reason="Harmful action was not prevented",
+                details={"issue": "harm_not_prevented"}
+            )
+        
+        # Check for proper escalation
+        if self._requires_escalation(event) and not self._was_escalated(event):
+            return AxiomResult(
+                axiom=self.axiom,
+                passed=False,
+                reason="Action required escalation but was not escalated",
+                details={"issue": "missing_escalation"}
+            )
+        
+        return AxiomResult(
+            axiom=self.axiom,
+            passed=True,
+            reason="Guardian protocol followed"
+        )
+    
+    def _is_harmful(self, event: AgentEvent) -> bool:
+        """Check if action is harmful."""
+        harm_keywords = ["delete", "destroy", "corrupt", "damage", "harm"]
+        description_lower = event.action_description.lower()
+        return any(kw in description_lower for kw in harm_keywords)
+    
+    def _requires_escalation(self, event: AgentEvent) -> bool:
+        """Check if action requires escalation."""
+        escalation_triggers = ["sensitive", "critical", "irreversible"]
+        payload_str = json.dumps(event.action_payload).lower()
+        return any(t in payload_str for t in escalation_triggers)
+    
+    def _was_escalated(self, event: AgentEvent) -> bool:
+        """Check if action was properly escalated."""
+        return "escalat" in event.action_description.lower()
+
+
+class A5MemoryVerifier(AxiomVerifier):
+    """Verifies memory operations respect consent (A5: Memory)."""
+    
+    @property
+    def axiom(self) -> AxiomId:
+        return AxiomId.A5_MEMORY
+    
+    def applies_to(self, event: AgentEvent) -> bool:
+        """Only apply to memory-related actions."""
+        memory_actions = ["memory_create", "memory_update", "state_change"]
+        return event.action_type in memory_actions
+    
+    def verify(self, event: AgentEvent) -> AxiomResult:
+        """Check memory consent requirements."""
+        # Check if semantic memory created without consent
+        if self._creates_semantic_memory(event):
+            if not self._has_user_consent(event):
+                return AxiomResult(
+                    axiom=self.axiom,
+                    passed=False,
+                    reason="Semantic memory created without user consent",
+                    details={"issue": "consent_missing"}
+                )
+        
+        # Check for layer immutability violation
+        if self._modifies_immutable_layer(event):
+            return AxiomResult(
+                axiom=self.axiom,
+                passed=False,
+                reason="Attempt to modify immutable layer (L0-L2)",
+                details={"issue": "layer_violation"}
+            )
+        
+        return AxiomResult(
+            axiom=self.axiom,
+            passed=True,
+            reason="Memory consent requirements satisfied"
+        )
+    
+    def _creates_semantic_memory(self, event: AgentEvent) -> bool:
+        """Check if action creates semantic memory."""
+        payload = event.action_payload
+        return payload.get("memory_type") == "semantic"
+    
+    def _has_user_consent(self, event: AgentEvent) -> bool:
+        """Check for user consent."""
+        payload = event.action_payload
+        return payload.get("user_consented", False)
+    
+    def _modifies_immutable_layer(self, event: AgentEvent) -> bool:
+        """Check if action modifies immutable layers."""
+        payload = event.action_payload
+        target_layer = payload.get("target_layer", 99)
+        return target_layer <= 2  # L0, L1, L2 are immutable
+
+
+class AxiomComplianceMonitor:
+    """
+    Monitors agent event streams for axiom compliance.
+    
+    Implements real-time verification against foundational axioms
+    with configurable escalation thresholds.
+    """
+    
+    def __init__(
+        self,
+        escalation_threshold: int = 3,
+        escalation_window: timedelta = timedelta(hours=24)
+    ):
+        """
+        Initialize monitor.
+        
+        Args:
+            escalation_threshold: Number of violations before escalation
+            escalation_window: Time window for counting violations
+        """
+        self.verifiers: List[AxiomVerifier] = []
+        self.violation_handlers: List[Callable[[AgentEvent, VerificationResult], None]] = []
+        self.escalation_threshold = escalation_threshold
+        self.escalation_window = escalation_window
+        self.violation_history: Dict[str, List[datetime]] = {}  # agent_id -> violation times
+    
+    def register_verifier(self, verifier: AxiomVerifier) -> None:
+        """Register an axiom verifier."""
+        self.verifiers.append(verifier)
+        logger.info(f"Registered verifier for {verifier.axiom.value}")
+    
+    def register_violation_handler(
+        self,
+        handler: Callable[[AgentEvent, VerificationResult], None]
+    ) -> None:
+        """Register a handler for violations."""
+        self.violation_handlers.append(handler)
+    
+    def verify(self, event: AgentEvent) -> VerificationResult:
+        """
+        Verify event against all registered axiom verifiers.
+        
+        Args:
+            event: The agent event to verify
+            
+        Returns:
+            VerificationResult with status and axiom results
+        """
+        axiom_results = []
+        
+        for verifier in self.verifiers:
+            if verifier.applies_to(event):
+                result = verifier.verify(event)
+                axiom_results.append(result)
+                
+                if not result.passed:
+                    logger.warning(
+                        f"Axiom {result.axiom.value} violation: {result.reason} "
+                        f"(event: {event.event_id})"
+                    )
+        
+        # Determine overall status
+        has_violations = any(not r.passed for r in axiom_results)
+        escalated = False
+        
+        if has_violations:
+            # Track violation
+            self._record_violation(event.agent_id)
+            
+            # Check escalation threshold
+            if self._should_escalate(event.agent_id):
+                escalated = True
+                logger.error(
+                    f"Escalation threshold reached for agent {event.agent_id}"
+                )
+        
+        verification_result = VerificationResult(
+            event_id=event.event_id,
+            status=VerificationStatus.ESCALATED if escalated else (
+                VerificationStatus.VIOLATION if has_violations else VerificationStatus.VERIFIED
+            ),
+            axiom_results=axiom_results,
+            escalated=escalated
+        )
+        
+        # Call violation handlers
+        if has_violations:
+            for handler in self.violation_handlers:
+                try:
+                    handler(event, verification_result)
+                except Exception as e:
+                    logger.error(f"Violation handler error: {e}")
+        
+        return verification_result
+    
+    def _record_violation(self, agent_id: str) -> None:
+        """Record a violation for tracking."""
+        if agent_id not in self.violation_history:
+            self.violation_history[agent_id] = []
+        self.violation_history[agent_id].append(datetime.utcnow())
+    
+    def _should_escalate(self, agent_id: str) -> bool:
+        """Check if agent has exceeded escalation threshold."""
+        if agent_id not in self.violation_history:
+            return False
+        
+        # Count recent violations
+        now = datetime.utcnow()
+        cutoff = now - self.escalation_window
+        recent_violations = [
+            v for v in self.violation_history[agent_id]
+            if v > cutoff
+        ]
+        
+        return len(recent_violations) >= self.escalation_threshold
+    
+    def get_agent_reputation_impact(self, agent_id: str) -> float:
+        """
+        Calculate reputation impact from violations.
+        
+        Returns:
+            Reputation score adjustment (negative for violations)
+        """
+        if agent_id not in self.violation_history:
+            return 0.0
+        
+        now = datetime.utcnow()
+        cutoff = now - self.escalation_window
+        recent_violations = len([
+            v for v in self.violation_history[agent_id]
+            if v > cutoff
+        ])
+        
+        # -5 points per violation
+        return -5.0 * recent_violations
+
+
+def create_default_monitor() -> AxiomComplianceMonitor:
+    """
+    Create monitor with default verifiers.
+    
+    Returns:
+        Configured AxiomComplianceMonitor with standard verifiers
+    """
+    monitor = AxiomComplianceMonitor()
+    
+    # Register default verifiers
+    monitor.register_verifier(A1LoveVerifier())
+    monitor.register_verifier(A2TruthVerifier())
+    monitor.register_verifier(A4GuardianVerifier())
+    monitor.register_verifier(A5MemoryVerifier())
+    
+    # Add logging handler
+    def log_violation(event: AgentEvent, result: VerificationResult) -> None:
+        violations = result.get_violations()
+        logger.warning(
+            f"[VIOLATION] Agent {event.agent_id} violated axioms: "
+            f"{[v.axiom.value for v in violations]} - {event.action_description}"
+        )
+    
+    monitor.register_violation_handler(log_violation)
+    
+    return monitor
+
+
+# Example usage
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    
+    # Create monitor
+    monitor = create_default_monitor()
+    
+    # Example event
+    event_data = {
+        "event_id": str(uuid.uuid4()),
+        "timestamp": datetime.utcnow().isoformat(),
+        "sequence": 1,
+        "previous_hash": "",
+        "agent": {
+            "id": str(uuid.uuid4()),
+            "type": "worker"
+        },
+        "action": {
+            "type": "message",
+            "description": "Process user request for data analysis",
+            "payload": {"request_type": "analyze"},
+            "target": str(uuid.uuid4())
+        },
+        "axiom_context": {
+            "declared_alignment": ["A1", "A2"],
+            "justification": "Processing user request to benefit their analysis needs"
+        },
+        "signature": "ed25519:" + "0" * 128,
+        "hash": "sha256:" + "0" * 64
+    }
+    
+    event = AgentEvent.from_dict(event_data)
+    result = monitor.verify(event)
+    
+    print(f"Verification status: {result.status.value}")
+    for axiom_result in result.axiom_results:
+        print(f"  {axiom_result.axiom.value}: {'PASS' if axiom_result.passed else 'FAIL'}")

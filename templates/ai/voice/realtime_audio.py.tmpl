@@ -1,0 +1,548 @@
+"""
+{{REALTIME_AUDIO_CLASS_NAME}} - Real-time Audio Streaming
+
+Purpose: {{REALTIME_AUDIO_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+This module provides real-time audio streaming capabilities:
+- Real-time audio capture from microphone
+- Real-time audio playback
+- Audio streaming with buffering
+- WebSocket support for streaming
+- Audio format conversion
+- Low-latency processing
+"""
+
+from typing import Optional, Callable, Union, BinaryIO, Iterator
+from pathlib import Path
+import io
+import logging
+import threading
+import queue
+import time
+from dataclasses import dataclass
+from enum import Enum
+
+try:
+    import pyaudio
+    PYAUDIO_AVAILABLE = True
+except ImportError:
+    PYAUDIO_AVAILABLE = False
+    logging.warning("PyAudio not available. Install with: pip install pyaudio")
+
+try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except ImportError:
+    NUMPY_AVAILABLE = False
+    logging.warning("NumPy not available. Install with: pip install numpy")
+
+try:
+    import pydub
+    from pydub import AudioSegment
+    PYDUB_AVAILABLE = True
+except ImportError:
+    PYDUB_AVAILABLE = False
+    logging.warning("pydub not available. Install with: pip install pydub")
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class AudioFormat(Enum):
+    """Audio format enumeration."""
+    INT16 = "int16"
+    FLOAT32 = "float32"
+    INT32 = "int32"
+
+
+@dataclass
+class AudioConfig:
+    """
+    Configuration for audio streaming.
+    
+    Attributes:
+        sample_rate: Sample rate in Hz (e.g., 16000, 44100)
+        channels: Number of audio channels (1=mono, 2=stereo)
+        chunk_size: Number of frames per buffer
+        format: Audio format (INT16, FLOAT32, INT32)
+        device_index: Audio device index (None for default)
+    """
+    sample_rate: int = {{SAMPLE_RATE}}
+    channels: int = {{CHANNELS}}
+    chunk_size: int = {{CHUNK_SIZE}}
+    format: AudioFormat = AudioFormat.INT16
+    device_index: Optional[int] = {{DEVICE_INDEX}}
+
+
+class {{REALTIME_AUDIO_CLASS_NAME}}:
+    """
+    {{REALTIME_AUDIO_CLASS_NAME}} - Real-time audio streaming and processing.
+    
+    Provides low-latency audio capture and playback with support for
+    real-time processing, buffering, and streaming.
+    
+    Features:
+    - Real-time microphone capture
+    - Real-time audio playback
+    - Streaming with buffering
+    - Audio format conversion
+    - Multi-threaded processing
+    - WebSocket support ready
+    
+    Example:
+        >>> audio = {{REALTIME_AUDIO_CLASS_NAME}}()
+        >>> audio.start_capture(callback=lambda data: process_audio(data))
+        >>> # ... process audio ...
+        >>> audio.stop_capture()
+    """
+    
+    def __init__(self, config: Optional[AudioConfig] = None):
+        """
+        Initialize real-time audio streaming.
+        
+        Args:
+            config: Audio configuration (uses defaults if None)
+        """
+        if not PYAUDIO_AVAILABLE:
+            raise ImportError(
+                "PyAudio is required. Install with: pip install pyaudio"
+            )
+        
+        self.config = config or AudioConfig()
+        self.audio = pyaudio.PyAudio()
+        
+        # Streaming state
+        self._is_capturing = False
+        self._is_playing = False
+        self._capture_stream = None
+        self._playback_stream = None
+        self._capture_thread = None
+        self._playback_thread = None
+        
+        # Buffers
+        self._capture_queue = queue.Queue(maxsize={{QUEUE_SIZE}})
+        self._playback_queue = queue.Queue(maxsize={{QUEUE_SIZE}})
+        
+        logger.info(f"Initialized {{REALTIME_AUDIO_CLASS_NAME}} "
+                   f"(sample_rate={self.config.sample_rate}, "
+                   f"channels={self.config.channels})")
+    
+    def _get_pyaudio_format(self) -> int:
+        """Convert AudioFormat to PyAudio format constant."""
+        format_map = {
+            AudioFormat.INT16: pyaudio.paInt16,
+            AudioFormat.FLOAT32: pyaudio.paFloat32,
+            AudioFormat.INT32: pyaudio.paInt32,
+        }
+        return format_map.get(self.config.format, pyaudio.paInt16)
+    
+    def list_audio_devices(self) -> list[dict]:
+        """
+        List available audio input/output devices.
+        
+        Returns:
+            List of device dictionaries with index, name, and capabilities
+        """
+        devices = []
+        device_count = self.audio.get_device_count()
+        
+        for i in range(device_count):
+            info = self.audio.get_device_info_by_index(i)
+            devices.append({
+                "index": i,
+                "name": info.get("name"),
+                "max_input_channels": info.get("maxInputChannels", 0),
+                "max_output_channels": info.get("maxOutputChannels", 0),
+                "default_sample_rate": info.get("defaultSampleRate", 0)
+            })
+        
+        return devices
+    
+    def get_default_input_device(self) -> Optional[dict]:
+        """Get default input device information."""
+        try:
+            default_index = self.audio.get_default_input_device_info()["index"]
+            return self.list_audio_devices()[default_index]
+        except Exception as e:
+            logger.warning(f"Could not get default input device: {e}")
+            return None
+    
+    def get_default_output_device(self) -> Optional[dict]:
+        """Get default output device information."""
+        try:
+            default_index = self.audio.get_default_output_device_info()["index"]
+            return self.list_audio_devices()[default_index]
+        except Exception as e:
+            logger.warning(f"Could not get default output device: {e}")
+            return None
+    
+    def start_capture(
+        self,
+        callback: Optional[Callable[[bytes], None]] = None,
+        device_index: Optional[int] = None
+    ) -> None:
+        """
+        Start capturing audio from microphone.
+        
+        Args:
+            callback: Optional callback function called with each audio chunk
+            device_index: Audio device index (None for default)
+            
+        Example:
+            >>> def process_chunk(data):
+            ...     # Process audio data
+            ...     pass
+            >>> audio.start_capture(callback=process_chunk)
+        """
+        if self._is_capturing:
+            logger.warning("Capture already in progress")
+            return
+        
+        device_idx = device_index or self.config.device_index
+        
+        try:
+            self._capture_stream = self.audio.open(
+                format=self._get_pyaudio_format(),
+                channels=self.config.channels,
+                rate=self.config.sample_rate,
+                input=True,
+                input_device_index=device_idx,
+                frames_per_buffer=self.config.chunk_size,
+                stream_callback=self._capture_callback if callback else None
+            )
+            
+            self._is_capturing = True
+            
+            if callback:
+                # Use callback mode
+                self._capture_stream.start_stream()
+                logger.info("Started audio capture with callback")
+            else:
+                # Use thread-based capture
+                self._capture_thread = threading.Thread(
+                    target=self._capture_loop,
+                    daemon=True
+                )
+                self._capture_thread.start()
+                logger.info("Started audio capture thread")
+                
+        except Exception as e:
+            logger.error(f"Failed to start capture: {e}")
+            self._is_capturing = False
+            raise RuntimeError(f"Failed to start audio capture: {e}")
+    
+    def _capture_callback(self, in_data, frame_count, time_info, status):
+        """PyAudio callback for audio capture."""
+        if status:
+            logger.warning(f"Capture status: {status}")
+        
+        try:
+            self._capture_queue.put_nowait(in_data)
+        except queue.Full:
+            logger.warning("Capture queue full, dropping frame")
+        
+        return (None, pyaudio.paContinue)
+    
+    def _capture_loop(self):
+        """Thread loop for capturing audio."""
+        try:
+            while self._is_capturing:
+                data = self._capture_stream.read(
+                    self.config.chunk_size,
+                    exception_on_overflow=False
+                )
+                try:
+                    self._capture_queue.put_nowait(data)
+                except queue.Full:
+                    logger.warning("Capture queue full, dropping frame")
+        except Exception as e:
+            logger.error(f"Capture loop error: {e}")
+    
+    def stop_capture(self) -> None:
+        """Stop capturing audio."""
+        if not self._is_capturing:
+            return
+        
+        self._is_capturing = False
+        
+        if self._capture_stream:
+            self._capture_stream.stop_stream()
+            self._capture_stream.close()
+            self._capture_stream = None
+        
+        if self._capture_thread:
+            self._capture_thread.join(timeout=1.0)
+            self._capture_thread = None
+        
+        logger.info("Stopped audio capture")
+    
+    def read_audio_chunk(self, timeout: Optional[float] = None) -> Optional[bytes]:
+        """
+        Read a chunk of captured audio data.
+        
+        Args:
+            timeout: Timeout in seconds (None for blocking)
+            
+        Returns:
+            Audio data bytes or None if timeout/empty
+        """
+        try:
+            return self._capture_queue.get(timeout=timeout)
+        except queue.Empty:
+            return None
+    
+    def read_audio_stream(self, timeout: Optional[float] = None) -> Iterator[bytes]:
+        """
+        Generator that yields audio chunks.
+        
+        Args:
+            timeout: Timeout per chunk read
+            
+        Yields:
+            Audio data chunks (bytes)
+        """
+        while self._is_capturing:
+            chunk = self.read_audio_chunk(timeout=timeout)
+            if chunk:
+                yield chunk
+            else:
+                break
+    
+    def start_playback(
+        self,
+        device_index: Optional[int] = None
+    ) -> None:
+        """
+        Start audio playback stream.
+        
+        Args:
+            device_index: Audio device index (None for default)
+        """
+        if self._is_playing:
+            logger.warning("Playback already in progress")
+            return
+        
+        device_idx = device_index or self.config.device_index
+        
+        try:
+            self._playback_stream = self.audio.open(
+                format=self._get_pyaudio_format(),
+                channels=self.config.channels,
+                rate=self.config.sample_rate,
+                output=True,
+                output_device_index=device_idx,
+                frames_per_buffer=self.config.chunk_size
+            )
+            
+            self._is_playing = True
+            
+            self._playback_thread = threading.Thread(
+                target=self._playback_loop,
+                daemon=True
+            )
+            self._playback_thread.start()
+            
+            logger.info("Started audio playback")
+            
+        except Exception as e:
+            logger.error(f"Failed to start playback: {e}")
+            self._is_playing = False
+            raise RuntimeError(f"Failed to start audio playback: {e}")
+    
+    def _playback_loop(self):
+        """Thread loop for audio playback."""
+        try:
+            while self._is_playing:
+                try:
+                    data = self._playback_queue.get(timeout=0.1)
+                    if data:
+                        self._playback_stream.write(data)
+                except queue.Empty:
+                    continue
+        except Exception as e:
+            logger.error(f"Playback loop error: {e}")
+    
+    def write_audio_chunk(self, data: bytes) -> bool:
+        """
+        Write audio chunk to playback queue.
+        
+        Args:
+            data: Audio data bytes
+            
+        Returns:
+            True if successfully queued, False if queue full
+        """
+        if not self._is_playing:
+            logger.warning("Playback not started")
+            return False
+        
+        try:
+            self._playback_queue.put_nowait(data)
+            return True
+        except queue.Full:
+            logger.warning("Playback queue full, dropping frame")
+            return False
+    
+    def stop_playback(self) -> None:
+        """Stop audio playback."""
+        if not self._is_playing:
+            return
+        
+        self._is_playing = False
+        
+        if self._playback_thread:
+            self._playback_thread.join(timeout=1.0)
+            self._playback_thread = None
+        
+        if self._playback_stream:
+            self._playback_stream.stop_stream()
+            self._playback_stream.close()
+            self._playback_stream = None
+        
+        logger.info("Stopped audio playback")
+    
+    def play_audio_file(
+        self,
+        file_path: Union[str, Path],
+        chunk_size: Optional[int] = None
+    ) -> None:
+        """
+        Play an audio file through the playback stream.
+        
+        Args:
+            file_path: Path to audio file
+            chunk_size: Chunk size for reading (uses config default if None)
+        """
+        if not PYDUB_AVAILABLE:
+            raise ImportError("pydub required for file playback")
+        
+        if not self._is_playing:
+            self.start_playback()
+        
+        # Load and convert audio
+        audio = AudioSegment.from_file(str(file_path))
+        audio = audio.set_frame_rate(self.config.sample_rate)
+        audio = audio.set_channels(self.config.channels)
+        audio = audio.set_sample_width(2)  # 16-bit
+        
+        # Convert to raw bytes
+        raw_audio = audio.raw_data
+        
+        # Play in chunks
+        chunk_sz = chunk_size or self.config.chunk_size
+        for i in range(0, len(raw_audio), chunk_sz):
+            chunk = raw_audio[i:i + chunk_sz]
+            self.write_audio_chunk(chunk)
+            time.sleep(chunk_sz / (self.config.sample_rate * self.config.channels * 2))
+        
+        logger.info(f"Finished playing audio file: {file_path}")
+    
+    def convert_audio_format(
+        self,
+        data: bytes,
+        from_format: AudioFormat,
+        to_format: AudioFormat
+    ) -> bytes:
+        """
+        Convert audio data between formats.
+        
+        Args:
+            data: Input audio data
+            from_format: Source format
+            to_format: Target format
+            
+        Returns:
+            Converted audio data
+        """
+        if not NUMPY_AVAILABLE:
+            raise ImportError("NumPy required for format conversion")
+        
+        # Convert to numpy array
+        if from_format == AudioFormat.INT16:
+            arr = np.frombuffer(data, dtype=np.int16)
+        elif from_format == AudioFormat.FLOAT32:
+            arr = np.frombuffer(data, dtype=np.float32)
+        else:
+            raise ValueError(f"Unsupported source format: {from_format}")
+        
+        # Convert to target format
+        if to_format == AudioFormat.INT16:
+            if from_format == AudioFormat.FLOAT32:
+                arr = (arr * 32767).astype(np.int16)
+            result = arr.tobytes()
+        elif to_format == AudioFormat.FLOAT32:
+            if from_format == AudioFormat.INT16:
+                arr = arr.astype(np.float32) / 32767.0
+            result = arr.tobytes()
+        else:
+            raise ValueError(f"Unsupported target format: {to_format}")
+        
+        return result
+    
+    def cleanup(self) -> None:
+        """Clean up resources."""
+        self.stop_capture()
+        self.stop_playback()
+        
+        if self.audio:
+            self.audio.terminate()
+        
+        logger.info("Cleaned up audio resources")
+    
+    def __enter__(self):
+        """Context manager entry."""
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit."""
+        self.cleanup()
+
+
+# Example usage
+if __name__ == "__main__":
+    # Initialize audio streaming
+    config = AudioConfig(
+        sample_rate={{SAMPLE_RATE}},
+        channels={{CHANNELS}},
+        chunk_size={{CHUNK_SIZE}}
+    )
+    
+    audio = {{REALTIME_AUDIO_CLASS_NAME}}(config=config)
+    
+    # List available devices
+    # devices = audio.list_audio_devices()
+    # print("Available audio devices:")
+    # for device in devices:
+    #     print(f"  [{device['index']}] {device['name']}")
+    
+    # Capture audio
+    # def process_audio(data):
+    #     # Process audio chunk
+    #     print(f"Received {len(data)} bytes")
+    # 
+    # audio.start_capture(callback=process_audio)
+    # time.sleep(5)  # Capture for 5 seconds
+    # audio.stop_capture()
+    
+    # Stream audio
+    # audio.start_capture()
+    # for chunk in audio.read_audio_stream(timeout=1.0):
+    #     # Process chunk
+    #     print(f"Chunk: {len(chunk)} bytes")
+    # audio.stop_capture()
+    
+    # Playback
+    # audio.start_playback()
+    # # Write audio chunks
+    # # audio.write_audio_chunk(audio_data)
+    # audio.stop_playback()
+    
+    # Play audio file
+    # audio.start_playback()
+    # audio.play_audio_file("{{AUDIO_FILE_PATH}}")
+    # audio.stop_playback()
+    
+    # Cleanup
+    audio.cleanup()

@@ -28,9 +28,8 @@ class TestScanContent:
 
     # High severity secrets - must be detected
     @pytest.mark.parametrize("content,secret_type", [
-        ('api_key = "sk-" + "1234567890abcdefghijklmnopqrstuv"', "OpenAI API Key"),
-        ('key = "sk-proj-' + 'abcdefghijklmnopqrstuvwxyz"', "OpenAI Project API Key"),
-        ('AWS_KEY = "AKIAIOSFODNN7A1B2C3D"', "AWS Access Key ID"),  # Valid format, no "EXAMPLE"
+        ('api_key = "sk-1234567890abcdefghijklmnopqrstuv"', "OpenAI API Key"),
+        ('key = "sk-proj-abcdefghijklmnopqrstuvwxyz"', "OpenAI Project API Key"),        ('AWS_KEY = "AKIAIOSFODNN7A1B2C3D"', "AWS Access Key ID"),  # Valid format, no "EXAMPLE"
         ('token = "ghp_1234567890abcdefghijklmnopqrstuvwxyz"', "GitHub Personal Access Token"),
         ('GITLAB_TOKEN = "glpat-Abc123Def456Ghi789Jkl"', "GitLab Personal Access Token"),  # Realistic
         ('SENDGRID_KEY = "SG.1234567890abcdefghijkl.12345678901234567890123456789012345678901234"', "SendGrid API Key"),
@@ -44,8 +43,7 @@ class TestScanContent:
 
     # Private keys - must be detected
     @pytest.mark.parametrize("content", [
-        "-----BEGIN RSA " + "PRIVATE KEY-----",
-        "-----BEGIN PRIVATE KEY-----",
+        "-----BEGIN RSA PRIVATE KEY-----",        "-----BEGIN PRIVATE KEY-----",
         "-----BEGIN EC PRIVATE KEY-----",
         "-----BEGIN OPENSSH PRIVATE KEY-----",
         "-----BEGIN PGP PRIVATE KEY BLOCK-----",
@@ -58,8 +56,7 @@ class TestScanContent:
 
     # Database connection strings - must be detected
     @pytest.mark.parametrize("content,db_type", [
-        ('DATABASE_URL = "postgres://user:" + "password@localhost/db"', "PostgreSQL"),
-        ('MONGO_URI = "mongodb://admin:secret@localhost/mydb"', "MongoDB"),
+        ('DATABASE_URL = "postgres://user:password@localhost/db"', "PostgreSQL"),        ('MONGO_URI = "mongodb://admin:secret@localhost/mydb"', "MongoDB"),
         ('MYSQL_URL = "mysql://root:pass123@localhost/app"', "MySQL"),
         ('REDIS_URL = "redis://user:secret@localhost:6379"', "Redis"),
     ])
@@ -104,9 +101,8 @@ class TestScanContent:
         content = """
         # Configuration
         DEBUG = True
-        API_KEY = "sk-" + "1234567890abcdefghijklmnopqrstuv"
-        DATABASE_URL = "postgres://user:" + "pass@localhost/db"
-        """
+        API_KEY = "sk-1234567890abcdefghijklmnopqrstuv"
+        DATABASE_URL = "postgres://user:pass@localhost/db"        """
         matches = scan_content(content)
         assert len(matches) >= 2, "Should detect multiple secrets"
         

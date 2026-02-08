@@ -1,0 +1,355 @@
+{
+  "$schema": "../patterns/knowledge/knowledge-schema.json",
+  "metadata": {
+    "name": "Coordination Pattern Selection",
+    "version": "1.0.0",
+    "description": "Decision guidance for selecting multi-agent coordination patterns based on system requirements",
+    "category": "ai_agent",
+    "tags": ["coordination", "multi-agent", "patterns", "decision-matrix", "asp"],
+    "created": "2026-02-08",
+    "updated": "2026-02-08"
+  },
+  "value_proposition": {
+    "problem": "Developers implement wrong coordination patterns, leading to bottlenecks, deadlocks, or over-engineering",
+    "solution": "Match coordination pattern to task characteristics and team structure",
+    "benefit": "Optimal agent coordination - avoid bottlenecks and over-engineering"
+  },
+  "patterns": {
+    "supervisor_worker": {
+      "name": "Supervisor-Worker",
+      "description": "Central supervisor delegates tasks to specialized workers",
+      "structure": {
+        "supervisor": "1 (orchestrator)",
+        "workers": "N (specialists)",
+        "communication": "Star topology"
+      },
+      "select_when": {
+        "task_type": ["decomposable", "parallelizable"],
+        "coordination_complexity": "low",
+        "worker_specialization": "high",
+        "decision_authority": "centralized",
+        "team_size": "3-10 agents"
+      },
+      "advantages": [
+        "Simple coordination logic",
+        "Clear responsibility assignment",
+        "Easy monitoring and debugging",
+        "Natural task decomposition"
+      ],
+      "disadvantages": [
+        "Supervisor is single point of failure",
+        "Bottleneck at supervisor",
+        "Limited autonomy for workers"
+      ],
+      "implementation": {
+        "framework": ["LangGraph", "CrewAI"],
+        "template": "templates/ai/langgraph/supervisor-graph.py.tmpl",
+        "trust_tier": "L0_local (internal) or L1_attested (cross-org)"
+      },
+      "examples": [
+        "Code review with specialized reviewers",
+        "Research with domain specialists",
+        "Data processing pipeline"
+      ]
+    },
+    "hierarchical": {
+      "name": "Hierarchical",
+      "description": "Multi-level coordination with team leads and specialists",
+      "structure": {
+        "levels": "2-4",
+        "managers": "Team leads at each level",
+        "workers": "Specialists at leaf level",
+        "communication": "Tree topology"
+      },
+      "select_when": {
+        "task_type": ["complex", "multi-domain"],
+        "coordination_complexity": "high",
+        "worker_specialization": "very high",
+        "decision_authority": "distributed",
+        "team_size": "10-50 agents"
+      },
+      "advantages": [
+        "Scales to large teams",
+        "Domain isolation",
+        "Parallel decision-making",
+        "Clear escalation paths"
+      ],
+      "disadvantages": [
+        "Complex coordination",
+        "Communication overhead",
+        "Potential for silos"
+      ],
+      "implementation": {
+        "framework": ["CrewAI", "LangGraph"],
+        "template": "templates/ai/crewai/hierarchical-crew.py.tmpl",
+        "trust_tier": "L1_attested (minimum)"
+      },
+      "examples": [
+        "Enterprise software development",
+        "Large-scale research projects",
+        "Multi-department coordination"
+      ]
+    },
+    "collaborative": {
+      "name": "Collaborative (Peer-to-Peer)",
+      "description": "Peer agents collaborate through consensus and voting",
+      "structure": {
+        "peers": "N (equal authority)",
+        "coordinator": "Optional (rotating or elected)",
+        "communication": "Mesh topology"
+      },
+      "select_when": {
+        "task_type": ["creative", "subjective"],
+        "coordination_complexity": "medium",
+        "worker_specialization": "similar",
+        "decision_authority": "democratic",
+        "team_size": "3-7 agents"
+      },
+      "advantages": [
+        "No single point of failure",
+        "Diverse perspectives",
+        "Fair decision-making",
+        "Agent autonomy"
+      ],
+      "disadvantages": [
+        "Slower decisions",
+        "Potential deadlocks",
+        "Coordination overhead"
+      ],
+      "implementation": {
+        "framework": ["AutoGen", "LangGraph"],
+        "template": "templates/ai/autogen/group-chat.py.tmpl",
+        "trust_tier": "L0_local with consensus protocol"
+      },
+      "examples": [
+        "Design reviews",
+        "Content evaluation",
+        "Multi-perspective analysis"
+      ]
+    },
+    "sequential": {
+      "name": "Sequential Pipeline",
+      "description": "Agents process in sequence, each building on previous output",
+      "structure": {
+        "stages": "N (ordered)",
+        "flow": "Linear",
+        "communication": "Chain topology"
+      },
+      "select_when": {
+        "task_type": ["ordered", "transformative"],
+        "coordination_complexity": "very low",
+        "worker_specialization": "stage-specific",
+        "decision_authority": "per-stage",
+        "team_size": "2-5 agents"
+      },
+      "advantages": [
+        "Simple to understand",
+        "Clear data flow",
+        "Easy testing",
+        "Natural quality gates"
+      ],
+      "disadvantages": [
+        "Sequential bottleneck",
+        "No parallelism",
+        "Single failure blocks pipeline"
+      ],
+      "implementation": {
+        "framework": ["LangGraph", "LangChain"],
+        "template": "templates/ai/langgraph/sequential-workflow.py.tmpl",
+        "trust_tier": "L0_local"
+      },
+      "examples": [
+        "Research → Analysis → Writing",
+        "Data extraction → Transform → Load",
+        "Draft → Review → Publish"
+      ]
+    },
+    "broadcast": {
+      "name": "Broadcast (Fan-out/Fan-in)",
+      "description": "Distribute task to many agents, aggregate results",
+      "structure": {
+        "broadcaster": "1",
+        "receivers": "N",
+        "aggregator": "1 (often same as broadcaster)",
+        "communication": "Star with aggregation"
+      },
+      "select_when": {
+        "task_type": ["embarrassingly parallel", "aggregatable"],
+        "coordination_complexity": "low",
+        "worker_specialization": "identical",
+        "decision_authority": "centralized aggregation",
+        "team_size": "5-100 agents"
+      },
+      "advantages": [
+        "Maximum parallelism",
+        "Simple coordination",
+        "Easy scaling",
+        "Fault tolerant (partial results)"
+      ],
+      "disadvantages": [
+        "Aggregation complexity",
+        "Resource-intensive",
+        "Diminishing returns at scale"
+      ],
+      "implementation": {
+        "framework": ["LangGraph", "Custom"],
+        "template": "templates/ai/langgraph/parallel-workflow.py.tmpl",
+        "trust_tier": "L0_local"
+      },
+      "examples": [
+        "Parallel document analysis",
+        "Multi-source search",
+        "Ensemble voting"
+      ]
+    },
+    "event_driven": {
+      "name": "Event-Driven",
+      "description": "Agents react to events and publish new events",
+      "structure": {
+        "publishers": "N",
+        "subscribers": "M",
+        "event_bus": "1 (message broker)",
+        "communication": "Pub/sub"
+      },
+      "select_when": {
+        "task_type": ["reactive", "asynchronous"],
+        "coordination_complexity": "medium",
+        "worker_specialization": "event-type specific",
+        "decision_authority": "decentralized",
+        "team_size": "5-50 agents"
+      },
+      "advantages": [
+        "Loose coupling",
+        "Easy to extend",
+        "Natural async",
+        "Scalable"
+      ],
+      "disadvantages": [
+        "Complex debugging",
+        "Event ordering challenges",
+        "Eventual consistency"
+      ],
+      "implementation": {
+        "framework": ["Custom", "LangGraph"],
+        "template": "templates/ai/society/event_driven.py.tmpl",
+        "trust_tier": "L1_attested (for audit trail)"
+      },
+      "examples": [
+        "Real-time monitoring",
+        "Workflow automation",
+        "Notification systems"
+      ]
+    }
+  },
+  "selection_algorithm": {
+    "description": "Step-by-step pattern selection process",
+    "steps": [
+      {
+        "step": 1,
+        "question": "How many agents are involved?",
+        "guidance": {
+          "2-3": "Sequential or Supervisor-Worker",
+          "4-7": "Collaborative or Broadcast",
+          "8-15": "Supervisor-Worker or Hierarchical",
+          "15+": "Hierarchical or Event-Driven"
+        }
+      },
+      {
+        "step": 2,
+        "question": "Is the task naturally decomposable into independent parts?",
+        "guidance": {
+          "yes": "Supervisor-Worker or Broadcast",
+          "no": "Sequential or Collaborative"
+        }
+      },
+      {
+        "step": 3,
+        "question": "How should decisions be made?",
+        "guidance": {
+          "single_authority": "Supervisor-Worker",
+          "consensus": "Collaborative",
+          "per_stage": "Sequential",
+          "per_event": "Event-Driven"
+        }
+      },
+      {
+        "step": 4,
+        "question": "What is the communication pattern?",
+        "guidance": {
+          "request_response": "Supervisor-Worker or Sequential",
+          "broadcast": "Broadcast",
+          "publish_subscribe": "Event-Driven",
+          "peer_to_peer": "Collaborative"
+        }
+      },
+      {
+        "step": 5,
+        "question": "What is the failure tolerance requirement?",
+        "guidance": {
+          "any_failure_critical": "Sequential (with retries)",
+          "partial_results_ok": "Broadcast or Event-Driven",
+          "consensus_required": "Collaborative",
+          "automatic_failover": "Hierarchical"
+        }
+      }
+    ]
+  },
+  "pattern_combinations": {
+    "description": "Patterns can be combined for complex systems",
+    "common_combinations": [
+      {
+        "name": "Supervisor with Sequential Workers",
+        "patterns": ["supervisor_worker", "sequential"],
+        "use_case": "Complex tasks with ordered subtask processing"
+      },
+      {
+        "name": "Hierarchical with Broadcast",
+        "patterns": ["hierarchical", "broadcast"],
+        "use_case": "Large-scale parallel processing with management"
+      },
+      {
+        "name": "Event-Driven with Supervisor",
+        "patterns": ["event_driven", "supervisor_worker"],
+        "use_case": "Reactive system with task delegation"
+      }
+    ]
+  },
+  "anti_patterns": {
+    "description": "Patterns to avoid",
+    "patterns": [
+      {
+        "name": "God Agent",
+        "description": "Single agent doing everything",
+        "problem": "No scalability, single point of failure",
+        "solution": "Decompose into Supervisor-Worker"
+      },
+      {
+        "name": "Spaghetti Messaging",
+        "description": "All agents can message all agents",
+        "problem": "Complex debugging, race conditions",
+        "solution": "Use structured pattern with clear topology"
+      },
+      {
+        "name": "Over-Consensus",
+        "description": "Requiring consensus for every decision",
+        "problem": "Slow, deadlock-prone",
+        "solution": "Use hierarchical authority for routine decisions"
+      }
+    ]
+  },
+  "integration_with_factory": {
+    "default_pattern": "supervisor_worker",
+    "blueprint_recommendations": {
+      "multi-agent-systems": "supervisor_worker or hierarchical",
+      "ai-agent-development": "supervisor_worker",
+      "financial-ai-agents": "hierarchical with L2 trust"
+    }
+  },
+  "references": {
+    "internal": [
+      "knowledge/agent-coordination.json",
+      "knowledge/multi-agent-patterns.json",
+      "blueprints/multi-agent-systems/blueprint.json"
+    ]
+  }
+}

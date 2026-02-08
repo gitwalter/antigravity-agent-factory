@@ -1,0 +1,186 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "{{ project_name | default('Project') }} Agent Event",
+  "description": "Schema for immutable, signed agent action events",
+  "type": "object",
+  "required": [
+    "event_id",
+    "timestamp",
+    "sequence",
+    "previous_hash",
+    "agent",
+    "action",
+    "signature",
+    "hash"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this event"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when event was created"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Monotonically increasing sequence number"
+    },
+    "previous_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$",
+      "description": "SHA-256 hash of previous event (empty string for genesis)"
+    },
+    "agent": {
+      "type": "object",
+      "required": ["id", "type", "public_key"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique agent identifier"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["guardian", "worker", "coordinator", "supervisor", "specialist"],
+          "description": "Agent role in the society"
+        },
+        "public_key": {
+          "type": "string",
+          "pattern": "^ed25519:[a-f0-9]{64}$",
+          "description": "Ed25519 public key for signature verification"
+        }
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": ["type", "description"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "message",
+            "decision",
+            "state_change",
+            "external_effect",
+            "contract_creation",
+            "contract_signature",
+            "violation_report"
+          ],
+          "description": "Type of action performed"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Human-readable description of the action"
+        },
+        "payload": {
+          "type": "object",
+          "description": "Action-specific data"
+        },
+        "target": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Target agent ID (for directed actions)"
+        }
+      }
+    },
+    "axiom_context": {
+      "type": "object",
+      "properties": {
+        "declared_alignment": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["A0", "A1", "A2", "A3", "A4", "A5"]
+          },
+          "description": "Axioms this action claims to align with"
+        },
+        "justification": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Explanation of how action serves declared axioms"
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["pending", "verified", "violation", "escalated"],
+          "description": "Current verification status"
+        },
+        "axiom_results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "axiom": {
+                "type": "string",
+                "enum": ["A0", "A1", "A2", "A3", "A4", "A5"]
+              },
+              "passed": {
+                "type": "boolean"
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "Results of axiom compliance checks"
+        },
+        "verified_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "verified_by": {
+          "type": "string",
+          "description": "ID of verification monitor"
+        }
+      }
+    },
+    "signature": {
+      "type": "string",
+      "pattern": "^ed25519:[a-f0-9]{128}$",
+      "description": "Ed25519 signature of canonical JSON (excluding this field and hash)"
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$",
+      "description": "SHA-256 hash of complete event (for chain linking)"
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "event_id": "550e8400-e29b-41d4-a716-446655440000",
+      "timestamp": "2026-02-05T10:30:00.000Z",
+      "sequence": 1234,
+      "previous_hash": "sha256:abc123def456789012345678901234567890123456789012345678901234abcd",
+      "agent": {
+        "id": "660e8400-e29b-41d4-a716-446655440001",
+        "type": "worker",
+        "public_key": "ed25519:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+      },
+      "action": {
+        "type": "message",
+        "description": "Request data processing from coordinator",
+        "payload": {
+          "request_type": "process_data",
+          "data_id": "dataset-001"
+        },
+        "target": "770e8400-e29b-41d4-a716-446655440002"
+      },
+      "axiom_context": {
+        "declared_alignment": ["A1", "A2"],
+        "justification": "Processing user data to provide requested analysis (A1: user benefit, A2: transparent operation)"
+      },
+      "signature": "ed25519:fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321",
+      "hash": "sha256:def456789012345678901234567890123456789012345678901234567890abcdef"
+    }
+  ]
+}

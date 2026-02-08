@@ -5,8 +5,7 @@ This module provides topic taxonomies that define what knowledge should exist
 in the knowledge base. Taxonomies are used by the gap analyzer to identify
 missing or shallow coverage areas.
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 import json

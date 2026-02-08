@@ -2,8 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "RAG Patterns",
   "description": "Retrieval-Augmented Generation patterns for building production RAG systems",
-  "version": "1.1.0",
-  "axiomAlignment": {
+  "version": "1.0.0",  "axiomAlignment": {
     "A1_verifiability": "RAG grounds responses in source documents",
     "A3_transparency": "Citations enable fact-checking"
   },
@@ -11,15 +10,7 @@
     "basic_rag": {
       "description": "Simple retrieve-then-generate pipeline",
       "use_when": "Starting with RAG, simple use cases",
-      "components": [
-        "Document Loader",
-        "Text Splitter",
-        "Embeddings",
-        "Vector Store",
-        "Retriever",
-        "LLM"
-      ],
-      "code_example": "from langchain_community.document_loaders import PyPDFLoader\nfrom langchain.text_splitter import RecursiveCharacterTextSplitter\nfrom langchain_openai import OpenAIEmbeddings, ChatOpenAI\nfrom langchain_community.vectorstores import Chroma\nfrom langchain_core.prompts import ChatPromptTemplate\nfrom langchain_core.runnables import RunnablePassthrough\nfrom langchain_core.output_parsers import StrOutputParser\n\n# 1. Load documents\nloader = PyPDFLoader('document.pdf')\ndocs = loader.load()\n\n# 2. Split into chunks\ntext_splitter = RecursiveCharacterTextSplitter(\n    chunk_size=1000,\n    chunk_overlap=200\n)\nchunks = text_splitter.split_documents(docs)\n\n# 3. Create embeddings and store\nembeddings = OpenAIEmbeddings(model='text-embedding-3-small')\nvectorstore = Chroma.from_documents(chunks, embeddings)\nretriever = vectorstore.as_retriever(search_kwargs={'k': 5})\n\n# 4. Create RAG chain\nllm = ChatOpenAI(model='gpt-4o')\n\nprompt = ChatPromptTemplate.from_template('''\nAnswer the question based on the context below.\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:''')\n\ndef format_docs(docs):\n    return '\\n\\n'.join(doc.page_content for doc in docs)\n\nrag_chain = (\n    {'context': retriever | format_docs, 'question': RunnablePassthrough()}\n    | prompt\n    | llm\n    | StrOutputParser()\n)\n\n# Query\nresponse = rag_chain.invoke('What is the main topic?')\nprint(response)",
+      "components": ["Document Loader", "Text Splitter", "Embeddings", "Vector Store", "Retriever", "LLM"],      "code_example": "from langchain_community.document_loaders import PyPDFLoader\nfrom langchain.text_splitter import RecursiveCharacterTextSplitter\nfrom langchain_openai import OpenAIEmbeddings, ChatOpenAI\nfrom langchain_community.vectorstores import Chroma\nfrom langchain_core.prompts import ChatPromptTemplate\nfrom langchain_core.runnables import RunnablePassthrough\nfrom langchain_core.output_parsers import StrOutputParser\n\n# 1. Load documents\nloader = PyPDFLoader('document.pdf')\ndocs = loader.load()\n\n# 2. Split into chunks\ntext_splitter = RecursiveCharacterTextSplitter(\n    chunk_size=1000,\n    chunk_overlap=200\n)\nchunks = text_splitter.split_documents(docs)\n\n# 3. Create embeddings and store\nembeddings = OpenAIEmbeddings(model='text-embedding-3-small')\nvectorstore = Chroma.from_documents(chunks, embeddings)\nretriever = vectorstore.as_retriever(search_kwargs={'k': 5})\n\n# 4. Create RAG chain\nllm = ChatOpenAI(model='gpt-4o')\n\nprompt = ChatPromptTemplate.from_template('''\nAnswer the question based on the context below.\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:''')\n\ndef format_docs(docs):\n    return '\\n\\n'.join(doc.page_content for doc in docs)\n\nrag_chain = (\n    {'context': retriever | format_docs, 'question': RunnablePassthrough()}\n    | prompt\n    | llm\n    | StrOutputParser()\n)\n\n# Query\nresponse = rag_chain.invoke('What is the main topic?')\nprint(response)",
       "best_practices": [
         "Start simple, add complexity as needed",
         "Log retrieved chunks for debugging",
@@ -66,8 +57,24 @@
     "parent_document": {
       "description": "Store small chunks, retrieve larger parents",
       "use_when": "Need precise matching with broader context",
-      "code_example": "from langchain.retrievers import ParentDocumentRetriever\nfrom langchain.storage import InMemoryStore\nfrom langchain.text_splitter import RecursiveCharacterTextSplitter\n\n# Small chunks for retrieval\nchild_splitter = RecursiveCharacterTextSplitter(chunk_size=400)\n# Large chunks for context\nparent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)\n\nstore = InMemoryStore()\nretriever = ParentDocumentRetriever(\n    vectorstore=vectorstore,\n    docstore=store,\n    child_splitter=child_splitter,\n    parent_splitter=parent_splitter\n)\n\nretriever.add_documents(docs)"
-    }
+      "code_example": "from langchain.retrievers import ParentDocumentRetriever\nfrom langchain.storage import InMemoryStore\nfrom langchain.text_splitter import RecursiveCharacterTextSplitter\n\n# Small chunks for retrieval\nchild_splitter = RecursiveCharacterTextSplitter(chunk_size=400)\n# Large chunks for context\nparent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)\n\nstore = InMemoryStore()\nretriever = ParentDocumentRetriever(\n    vectorstore=vectorstore,\n    docstore=store,\n    child_splitter=child_splitter,\n    parent_splitter=parent_splitter\n)\n\nretriever.add_documents(docs)",
+      "best_practices": [
+        "Use child chunks 200-500 tokens for precise retrieval",
+        "Use parent chunks 1000-2000 tokens for context",
+        "Store parent-child relationships in metadata",
+        "Consider hierarchical chunking for complex documents"
+      ]
+    },
+    "parent_child_chunking": {
+      "description": "Advanced parent-child chunking with metadata tracking",
+      "use_when": "Complex documents requiring hierarchical context",
+      "code_example": "from langchain.text_splitter import RecursiveCharacterTextSplitter\nfrom langchain.schema import Document\n\n# Create hierarchical chunks\nparent_splitter = RecursiveCharacterTextSplitter(\n    chunk_size=2000,\n    chunk_overlap=200\n)\nchild_splitter = RecursiveCharacterTextSplitter(\n    chunk_size=400,\n    chunk_overlap=50\n)\n\nparent_chunks = parent_splitter.split_documents(docs)\nall_chunks = []\n\nfor parent_idx, parent_chunk in enumerate(parent_chunks):\n    parent_id = f'parent_{parent_idx}'\n    \n    # Create child chunks from parent\n    child_chunks = child_splitter.split_text(parent_chunk.page_content)\n    \n    for child_idx, child_text in enumerate(child_chunks):\n        child_id = f'{parent_id}_child_{child_idx}'\n        child_doc = Document(\n            page_content=child_text,\n            metadata={\n                **parent_chunk.metadata,\n                'parent_id': parent_id,\n                'child_id': child_id,\n                'child_index': child_idx,\n                'total_children': len(child_chunks)\n            }\n        )\n        all_chunks.append(child_doc)\n    \n    # Store parent separately\n    parent_doc = Document(\n        page_content=parent_chunk.page_content,\n        metadata={\n            **parent_chunk.metadata,\n            'parent_id': parent_id,\n            'is_parent': True\n        }\n    )\n    all_chunks.append(parent_doc)\n\n# Store all chunks\nvectorstore.add_documents(all_chunks)",
+      "best_practices": [
+        "Maintain parent-child relationships in metadata",
+        "Retrieve children first, then fetch parent for context",
+        "Use parent_id to group related chunks",
+        "Store both children and parents in vector store"
+      ]    }
   },
   "retrieval_strategies": {
     "similarity": {
@@ -80,8 +87,49 @@
     },
     "hybrid": {
       "description": "Combine vector and keyword search",
-      "code_example": "from langchain.retrievers import EnsembleRetriever\nfrom langchain_community.retrievers import BM25Retriever\n\n# BM25 for keyword matching\nbm25_retriever = BM25Retriever.from_documents(docs)\nbm25_retriever.k = 5\n\n# Vector for semantic\nvector_retriever = vectorstore.as_retriever(search_kwargs={'k': 5})\n\n# Combine with weights\nensemble_retriever = EnsembleRetriever(\n    retrievers=[bm25_retriever, vector_retriever],\n    weights=[0.3, 0.7]  # Prefer semantic\n)"
+      "code_example": "from langchain.retrievers import EnsembleRetriever\nfrom langchain_community.retrievers import BM25Retriever\n\n# BM25 for keyword matching\nbm25_retriever = BM25Retriever.from_documents(docs)\nbm25_retriever.k = 5\n\n# Vector for semantic\nvector_retriever = vectorstore.as_retriever(search_kwargs={'k': 5})\n\n# Combine with weights\nensemble_retriever = EnsembleRetriever(\n    retrievers=[bm25_retriever, vector_retriever],\n    weights=[0.3, 0.7]  # Prefer semantic\n)",
+      "best_practices": [
+        "Tune weights based on domain (keyword-heavy vs semantic-heavy)",
+        "Use BM25 for exact term matching",
+        "Use dense vectors for semantic understanding",
+        "Consider Reciprocal Rank Fusion (RRF) for combining results"
+      ]
     },
+    "hybrid_search_dense_sparse": {
+      "description": "Hybrid search combining dense embeddings with sparse keyword vectors",
+      "use_when": "Need both semantic understanding and exact keyword matching",
+      "code_example": "from langchain.retrievers import EnsembleRetriever\nfrom langchain_community.retrievers import BM25Retriever\nfrom langchain_openai import OpenAIEmbeddings\nfrom langchain_community.vectorstores import Qdrant\n\n# Dense embeddings (semantic)\nembeddings = OpenAIEmbeddings(model='text-embedding-3-small')\nvectorstore = Qdrant.from_documents(docs, embeddings)\ndense_retriever = vectorstore.as_retriever(search_kwargs={'k': 10})\n\n# Sparse BM25 (keyword)\nbm25_retriever = BM25Retriever.from_documents(docs)\nbm25_retriever.k = 10\n\n# Hybrid ensemble\nhybrid_retriever = EnsembleRetriever(\n    retrievers=[bm25_retriever, dense_retriever],\n    weights=[0.4, 0.6]  # Adjust based on domain\n)\n\n# Query\nresults = hybrid_retriever.invoke('machine learning algorithms')\n\n# Alternative: Use Qdrant native hybrid search\nfrom qdrant_client import QdrantClient\nfrom qdrant_client.models import SparseVector\n\n# Generate dense embedding\ndense_query = embeddings.embed_query(query)\n\n# Generate sparse vector (BM25-like)\nfrom collections import Counter\nimport math\n\ndef create_sparse_vector(text, vocab_index):\n    tokens = text.lower().split()\n    tf = Counter(tokens)\n    indices = [vocab_index.get(token, 0) for token in tokens if token in vocab_index]\n    values = [tf[token] for token in tokens if token in vocab_index]\n    return SparseVector(indices=indices, values=values)\n\nsparse_query = create_sparse_vector(query, vocab_index)\n\n# Hybrid search in Qdrant\nresults = qdrant_client.query_points(\n    collection_name='documents',\n    prefetch=[\n        {'query': dense_query, 'using': 'dense', 'limit': 20},\n        {'query': sparse_query, 'using': 'sparse', 'limit': 20}\n    ],\n    query={'fusion': 'rrf'},  # Reciprocal Rank Fusion\n    limit=10\n)",
+      "best_practices": [
+        "Use dense vectors for semantic similarity",
+        "Use sparse vectors (BM25) for exact keyword matching",
+        "Tune weight balance: 0.3-0.5 for sparse, 0.5-0.7 for dense",
+        "Consider RRF (Reciprocal Rank Fusion) for result combination",
+        "Hybrid search improves recall, especially for technical terms"
+      ]
+    },
+    "contextual_retrieval": {
+      "description": "Contextual retrieval using query embeddings and conversation history",
+      "use_when": "Building conversational RAG with context awareness",
+      "code_example": "from langchain_openai import OpenAIEmbeddings, ChatOpenAI\nfrom langchain_core.prompts import ChatPromptTemplate\nfrom langchain_core.runnables import RunnablePassthrough\n\nembeddings = OpenAIEmbeddings(model='text-embedding-3-small')\nllm = ChatOpenAI(model='gpt-4o')\n\n# Contextualize query with conversation history\ndef contextualize_query(query: str, history: list) -> str:\n    if not history:\n        return query\n    \n    # Create context from history\n    context = '\\n'.join([\n        f'User: {msg[\"user\"]}\\nAssistant: {msg[\"assistant\"]}'\n        for msg in history[-3:]  # Last 3 exchanges\n    ])\n    \n    # Generate contextualized query\n    prompt = ChatPromptTemplate.from_template('''\n    Given the conversation history and the latest question, \n    reformulate the question to be standalone and include \n    necessary context from the conversation.\n    \n    History:\n    {history}\n    \n    Latest Question: {question}\n    \n    Reformulated Question:''')\n    \n    chain = prompt | llm\n    contextualized = chain.invoke({'history': context, 'question': query})\n    return contextualized.content\n\n# Enhanced retrieval with query expansion\ndef expand_query(query: str) -> list[str]:\n    '''Generate multiple query variations for better retrieval'''\n    prompt = ChatPromptTemplate.from_template('''\n    Generate 3 different ways to ask this question:\n    {query}\n    \n    Return only the questions, one per line:''')\n    \n    chain = prompt | llm\n    expanded = chain.invoke({'query': query})\n    queries = [q.strip() for q in expanded.content.split('\\n') if q.strip()]\n    return queries[:3]\n\n# Contextual retrieval function\ndef contextual_retrieve(query: str, history: list, retriever, k: int = 5):\n    # Contextualize query\n    contextualized = contextualize_query(query, history)\n    \n    # Expand query\n    expanded_queries = expand_query(contextualized)\n    expanded_queries.append(contextualized)  # Include original\n    \n    # Retrieve for each query\n    all_docs = []\n    seen_ids = set()\n    \n    for q in expanded_queries:\n        docs = retriever.invoke(q)\n        for doc in docs:\n            doc_id = hash(doc.page_content)\n            if doc_id not in seen_ids:\n                seen_ids.add(doc_id)\n                all_docs.append(doc)\n    \n    # Return top k unique documents\n    return all_docs[:k]\n\n# Usage\nhistory = [\n    {'user': 'What is machine learning?', 'assistant': 'Machine learning is...'}\n]\n\nresults = contextual_retrieve(\n    query='Tell me more about that',\n    history=history,\n    retriever=vectorstore.as_retriever()\n)",
+      "best_practices": [
+        "Reformulate queries using conversation history",
+        "Use query expansion for better recall",
+        "Deduplicate results from multiple queries",
+        "Limit history length to avoid token limits",
+        "Consider using embeddings of contextualized queries"
+      ]
+    },
+    "multi_query_retrieval": {
+      "description": "Generate multiple query variations and combine results",
+      "use_when": "Single query may miss relevant documents, need better recall",
+      "code_example": "from langchain_openai import ChatOpenAI\nfrom langchain_core.prompts import ChatPromptTemplate\nfrom langchain.retrievers.multi_query import MultiQueryRetriever\nfrom langchain_core.output_parsers import StrOutputParser\n\nllm = ChatOpenAI(model='gpt-4o', temperature=0)\n\n# Create multi-query retriever\nretriever = MultiQueryRetriever.from_llm(\n    retriever=vectorstore.as_retriever(search_kwargs={'k': 5}),\n    llm=llm\n)\n\n# Automatically generates multiple queries and combines results\nresults = retriever.invoke('What are the benefits of machine learning?')\n\n# Custom multi-query implementation\ndef generate_queries(original_query: str, llm) -> list[str]:\n    prompt = ChatPromptTemplate.from_template('You are an AI language model assistant. Your task is to generate 3 different versions of the given user question to retrieve relevant documents from a vector database. By generating multiple perspectives on the user question, your goal is to help the user overcome some of the limitations of distance-based similarity search.\\n\\nOriginal question: {question}\\n\\nGenerate 3 alternative questions:\\n1.')\n    chain = prompt | llm | StrOutputParser()\n    response = chain.invoke({'question': original_query})\n    queries = [q.strip() for q in response.split('\\\\n') if q.strip() and q.strip()[0].isdigit()]\n    queries = [q.split('.', 1)[1].strip() if '.' in q else q for q in queries]\n    return queries[:3] + [original_query]\n\ndef multi_query_retrieve(query: str, retriever, k: int = 5):\n    queries = generate_queries(query, llm)\n    all_docs = []\n    seen_content = set()\n    for q in queries:\n        docs = retriever.invoke(q)\n        for doc in docs:\n            content_hash = hash(doc.page_content)\n            if content_hash not in seen_content:\n                seen_content.add(content_hash)\n                all_docs.append((doc, q))\n    return all_docs[:k]\n\nresults = multi_query_retrieve('What are neural networks?', vectorstore.as_retriever())\nfor doc, source_query in results:\n    print(f'Found by: {source_query}')\n    print(f'Content: {doc.page_content[:200]}...')",
+      "best_practices": [
+        "Generate 3-5 query variations",
+        "Deduplicate results across queries",
+        "Use LLM to generate diverse perspectives",
+        "Combine results using union or weighted scoring",
+        "Track which query found each document for debugging"
+      ]    },
     "self_query": {
       "description": "LLM generates metadata filters from query",
       "code_example": "from langchain.retrievers.self_query.base import SelfQueryRetriever\nfrom langchain.chains.query_constructor.base import AttributeInfo\n\nmetadata_field_info = [\n    AttributeInfo(name='source', description='Document source', type='string'),\n    AttributeInfo(name='date', description='Publication date', type='date'),\n    AttributeInfo(name='category', description='Category', type='string')\n]\n\nretriever = SelfQueryRetriever.from_llm(\n    llm=llm,\n    vectorstore=vectorstore,\n    document_contents='Technical documentation',\n    metadata_field_info=metadata_field_info\n)"
@@ -94,18 +142,18 @@
       "description": "Re-score results with cross-encoder",
       "code_example": "from langchain.retrievers import ContextualCompressionRetriever\nfrom langchain_cohere import CohereRerank\n\nreranker = CohereRerank(top_n=5)\ncompression_retriever = ContextualCompressionRetriever(\n    base_compressor=reranker,\n    base_retriever=retriever\n)"
     },
-    "multi_query": {
-      "description": "Generate multiple variations of query to cast a wider net",
-      "code_example": "from langchain.retrievers.multi_query import MultiQueryRetriever\n\nretriever_from_llm = MultiQueryRetriever.from_llm(\n    retriever=vectorstore.as_retriever(),\n    llm=llm\n)\nunique_docs = retriever_from_llm.invoke(query)"
-    },
-    "hyde": {
-      "description": "Hypothetical Document Embeddings for finding similar actual documents",
-      "code_example": "from langchain.chains import HypotheticalDocumentEmbedder, LLMChain\n\nembeddings = HypotheticalDocumentEmbedder.from_llm(llm, base_embeddings, 'web_search')\nvectorstore = Chroma.from_documents(chunks, embeddings)"
-    },
-    "query_decomposition": {
-      "description": "Break complex query into simpler sub-queries",
-      "code_example": "from langchain.chains.query_constructor.base import AttributeInfo\n# Pattern: LLM identifies sub-questions and aggregates results"
-    }
+    "reranking_cross_encoder": {
+      "description": "Re-rank retrieval results using cross-encoder models for improved precision",
+      "use_when": "Need higher precision, can afford additional latency",
+      "code_example": "from langchain.retrievers import ContextualCompressionRetriever\nfrom langchain_cohere import CohereRerank\nfrom sentence_transformers import CrossEncoder\n\n# Option 1: Cohere Rerank API (recommended for production)\ncohere_reranker = CohereRerank(\n    top_n=5,\n    model='rerank-english-v3.0'  # or 'rerank-multilingual-v3.0'\n)\n\ncompression_retriever = ContextualCompressionRetriever(\n    base_compressor=cohere_reranker,\n    base_retriever=retriever\n)\n\n# Option 2: Local cross-encoder (free, slower)\nlocal_reranker = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')\n\ndef rerank_documents(query: str, documents: list, top_k: int = 5):\n    '''Rerank documents using cross-encoder'''\n    # Create query-document pairs\n    pairs = [[query, doc.page_content] for doc in documents]\n    \n    # Get reranking scores\n    scores = local_reranker.predict(pairs)\n    \n    # Sort by score\n    reranked = sorted(\n        zip(documents, scores),\n        key=lambda x: x[1],\n        reverse=True\n    )\n    \n    return [doc for doc, score in reranked[:top_k]]\n\n# Usage: Retrieve more, then rerank\ninitial_docs = retriever.invoke(query, k=20)  # Retrieve 20\nreranked_docs = rerank_documents(query, initial_docs, top_k=5)  # Rerank to top 5\n\n# Option 3: LangChain integration\nfrom langchain.retrievers.document_compressors import LLMRerank\n\nllm_reranker = LLMRerank.from_llm(\n    llm=ChatOpenAI(model='gpt-4o', temperature=0),\n    top_n=5\n)\n\ncompression_retriever = ContextualCompressionRetriever(\n    base_compressor=llm_reranker,\n    base_retriever=retriever\n)",
+      "best_practices": [
+        "Retrieve 3-5x more documents than needed, then rerank",
+        "Use cross-encoders for better accuracy than bi-encoders",
+        "Cohere Rerank API is fastest for production",
+        "Local cross-encoders are free but slower",
+        "Reranking improves precision at cost of latency",
+        "Consider reranking only for top candidates (20-50 docs)"
+      ]    }
   },
   "prompt_patterns": {
     "basic_qa": {
@@ -129,57 +177,4 @@
         "context_recall": "Did we retrieve all needed context?"
       }
     },
-    "custom_evaluation": {
-      "description": "Custom evaluation metrics",
-      "code_example": "from langchain_openai import ChatOpenAI\n\ndef evaluate_answer(question, answer, context, ground_truth):\n    llm = ChatOpenAI(model='gpt-4o', temperature=0)\n    \n    prompt = f'''Evaluate the answer on a scale of 1-5:\n    \n    Question: {question}\n    Context: {context}\n    Answer: {answer}\n    Expected: {ground_truth}\n    \n    Score (1-5) and explanation:'''\n    \n    response = llm.invoke(prompt)\n    return response.content"
-    }
-  },
-  "production_patterns": {
-    "caching": {
-      "description": "Cache embeddings and responses",
-      "code_example": "from langchain.cache import SQLiteCache\nfrom langchain.globals import set_llm_cache\n\n# LLM response cache\nset_llm_cache(SQLiteCache(database_path='.langchain.db'))\n\n# Embedding cache\nfrom langchain.embeddings import CacheBackedEmbeddings\nfrom langchain.storage import LocalFileStore\n\nstore = LocalFileStore('./embedding_cache')\ncached_embeddings = CacheBackedEmbeddings.from_bytes_store(\n    underlying_embeddings=embeddings,\n    document_embedding_cache=store,\n    namespace='embeddings'\n)"
-    },
-    "streaming": {
-      "description": "Stream responses for better UX",
-      "code_example": "from langchain_core.output_parsers import StrOutputParser\n\nrag_chain = (\n    {'context': retriever | format_docs, 'question': RunnablePassthrough()}\n    | prompt\n    | llm\n    | StrOutputParser()\n)\n\n# Stream response\nfor chunk in rag_chain.stream('What is the main topic?'):\n    print(chunk, end='', flush=True)"
-    },
-    "observability": {
-      "description": "Monitor RAG in production",
-      "code_example": "import os\nos.environ['LANGCHAIN_TRACING_V2'] = 'true'\nos.environ['LANGCHAIN_API_KEY'] = 'your-key'\nos.environ['LANGCHAIN_PROJECT'] = 'rag-production'\n\n# All chains automatically traced to LangSmith"
-    }
-  },
-  "anti_patterns": {
-    "no_chunking": {
-      "description": "Using whole documents without chunking",
-      "problem": "Poor retrieval, token limit issues",
-      "solution": "Chunk documents appropriately"
-    },
-    "wrong_embedding_model": {
-      "description": "Using different models for indexing and query",
-      "problem": "Semantic mismatch, bad results",
-      "solution": "Use same embedding model throughout"
-    },
-    "no_evaluation": {
-      "description": "Deploying without evaluation",
-      "problem": "Unknown quality, silent failures",
-      "solution": "Evaluate with RAGAS before deployment"
-    },
-    "hallucination_risk": {
-      "description": "Not instructing model to admit uncertainty",
-      "problem": "Confident wrong answers",
-      "solution": "Prompt to say 'I don't know' when unsure"
-    }
-  },
-  "best_practices_summary": [
-    "Chunk documents appropriately (500-1500 tokens)",
-    "Use overlap between chunks (10-20%)",
-    "Store rich metadata with chunks",
-    "Consider hybrid search for production",
-    "Implement reranking for precision",
-    "Include source citations in responses",
-    "Evaluate with RAGAS before deployment",
-    "Enable tracing for debugging",
-    "Cache embeddings and responses",
-    "Stream for better user experience"
-  ]
 }

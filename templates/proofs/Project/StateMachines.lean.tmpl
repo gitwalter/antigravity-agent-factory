@@ -1,0 +1,159 @@
+/-
+  Project/StateMachines.lean - {{ project_name }} State Machines
+  
+  This file defines and proves properties of state machines
+  specific to {{ project_name }}.
+  
+  Generated from Cursor Agent Factory template.
+  Customize for your project's domain.
+-/
+
+import Axioms
+
+namespace {{ project_name | pascal_case | default("Project") }}.Project
+
+/-!
+  # Project State Machine
+  
+  Define your project-specific states and transitions here.
+-/
+
+{% if blueprint_python_fastapi %}
+/-- API Request states -/
+inductive RequestState where
+  | pending    : RequestState  -- Request received
+  | validating : RequestState  -- Authorization check
+  | processing : RequestState  -- Business logic
+  | completed  : RequestState  -- Success response
+  | failed     : RequestState  -- Error response
+  deriving Repr, DecidableEq, Inhabited
+
+/-- Request state transition -/
+def requestTransition (s : RequestState) (success : Bool) : RequestState :=
+  match s with
+  | .pending => .validating
+  | .validating => if success then .processing else .failed
+  | .processing => if success then .completed else .failed
+  | .completed => .completed
+  | .failed => .failed
+
+/-- Theorem: Failed requests preserve data -/
+theorem failed_preserves_data (s : RequestState) (success : Bool) :
+    requestTransition s success = .failed →
+    True := by  -- Replace with actual data preservation proof
+  intro _; trivial
+{% endif %}
+
+{% if blueprint_trading %}
+/-- Trading order states -/
+inductive OrderState where
+  | created   : OrderState  -- Order created
+  | validated : OrderState  -- Risk checks passed
+  | submitted : OrderState  -- Sent to exchange
+  | filled    : OrderState  -- Order executed
+  | cancelled : OrderState  -- Order cancelled
+  | rejected  : OrderState  -- Order rejected
+  deriving Repr, DecidableEq, Inhabited
+
+/-- Order state transition -/
+def orderTransition (s : OrderState) (event : String) : OrderState :=
+  match s, event with
+  | .created, "validate"   => .validated
+  | .validated, "submit"   => .submitted
+  | .submitted, "fill"     => .filled
+  | .submitted, "cancel"   => .cancelled
+  | _, "reject"            => .rejected
+  | _, _                   => s
+
+/-- Theorem: Filled orders were validated -/
+theorem filled_was_validated : 
+    ∀ s, s = OrderState.filled → True := by
+  intro _ _; trivial  -- Replace with actual proof tracking state history
+{% endif %}
+
+{% if blueprint_solidity %}
+/-- Smart contract states -/
+inductive ContractState where
+  | deployed   : ContractState
+  | active     : ContractState
+  | paused     : ContractState
+  | deprecated : ContractState
+  deriving Repr, DecidableEq, Inhabited
+
+/-- Contract state transition -/
+def contractTransition (s : ContractState) (action : String) : ContractState :=
+  match s, action with
+  | .deployed, "activate"  => .active
+  | .active, "pause"       => .paused
+  | .paused, "unpause"     => .active
+  | .active, "deprecate"   => .deprecated
+  | .paused, "deprecate"   => .deprecated
+  | _, _                   => s
+
+/-- Theorem: Paused contracts can be unpaused -/
+theorem pause_is_reversible :
+    contractTransition .paused "unpause" = .active := by
+  rfl
+{% endif %}
+
+{% if blueprint_ai_agent %}
+/-- Agent reasoning states -/
+inductive AgentState where
+  | idle       : AgentState  -- Waiting for input
+  | thinking   : AgentState  -- Processing request
+  | acting     : AgentState  -- Executing action
+  | reflecting : AgentState  -- Evaluating result
+  | responding : AgentState  -- Generating response
+  deriving Repr, DecidableEq, Inhabited
+
+/-- Agent state transition -/
+def agentTransition (s : AgentState) : AgentState :=
+  match s with
+  | .idle       => .thinking
+  | .thinking   => .acting
+  | .acting     => .reflecting
+  | .reflecting => .responding
+  | .responding => .idle
+
+/-- Theorem: Agent always returns to idle -/
+theorem agent_returns_to_idle :
+    agentTransition .responding = .idle := by
+  rfl
+{% endif %}
+
+/-- Default example state for projects without specific blueprints -/
+inductive ExampleState where
+  | initial  : ExampleState
+  | running  : ExampleState
+  | complete : ExampleState
+  deriving Repr, DecidableEq, Inhabited
+
+/-- Example transition -/
+def exampleTransition (s : ExampleState) : ExampleState :=
+  match s with
+  | .initial  => .running
+  | .running  => .complete
+  | .complete => .complete
+
+/-!
+  # Axiom Alignment
+  
+  Prove your state machines align with foundational axioms.
+-/
+
+-- TODO: Add A1 (Transparency) alignment proof
+-- theorem project_aligns_A1 : ...
+
+-- TODO: Add A2 (User Primacy) alignment proof
+-- theorem project_aligns_A2 : ...
+
+-- TODO: Add A3 (Derivability) alignment proof
+-- theorem project_aligns_A3 : ...
+
+-- TODO: Add A4 (Non-Harm) alignment proof
+-- theorem project_aligns_A4 : ...
+
+-- TODO: Add A5 (Consistency) alignment proof
+-- theorem project_aligns_A5 : ...
+
+end {{ project_name | pascal_case | default("Project") }}.Project

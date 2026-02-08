@@ -1,13 +1,11 @@
 # Linear MCP Server Setup Guide
 
 This guide walks you through setting up the Linear MCP server for Antigravity using OAuth authentication.
-
 ## Prerequisites
 
 - Node.js 18+ installed
 - A Linear account
 - Antigravity IDE installed
-
 ## Step 1: Generate a Linear API Key
 
 Linear uses API keys for authentication. You can generate one through Linear's web interface.
@@ -17,8 +15,7 @@ Linear uses API keys for authentication. You can generate one through Linear's w
 1. Go to [Linear Settings > API](https://linear.app/settings/api)
 2. Scroll to **Personal API keys**
 3. Click **Create API key**
-4. Give your key a name (e.g., "Antigravity MCP Linear")
-5. Select the scopes/permissions you need:
+4. Give your key a name (e.g., "Antigravity MCP Linear")5. Select the scopes/permissions you need:
    - **Read**: View issues, projects, teams
    - **Write**: Create and update issues, comments
    - **Admin**: Full access (use with caution)
@@ -33,8 +30,7 @@ If you need OAuth-based authentication for team-wide access:
 2. Click **Create application**
 3. Fill in application details:
    - **Name**: Antigravity MCP Integration
-   - **Description**: MCP server integration for Antigravity IDE
-   - **Redirect URLs**: Not required for MCP server
+   - **Description**: MCP server integration for Antigravity IDE   - **Redirect URLs**: Not required for MCP server
 4. After creating, go to the **API** tab
 5. Generate an API key from the application
 6. Copy the API key
@@ -58,7 +54,6 @@ LINEAR_API_KEY=lin_api_your_api_key_here
    - **Windows**: `%APPDATA%\Antigravity\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json`
    - **macOS**: `~/Library/Application Support/Antigravity/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
    - **Linux**: `~/.config/Antigravity/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
-
 4. Copy the contents of `mcp-config.json.tmpl` into your MCP config
 5. Replace `${LINEAR_API_KEY}` with your actual API key
 
@@ -68,7 +63,6 @@ LINEAR_API_KEY=lin_api_your_api_key_here
 2. Open the MCP panel or check the status indicator
 3. The Linear MCP server should appear as connected
 4. Try using Linear-related commands in Antigravity (e.g., query issues, create tasks)
-
 ## OAuth Setup (Advanced)
 
 If you need OAuth-based authentication instead of API keys:
@@ -115,7 +109,6 @@ The Linear MCP server may support OAuth. Check the server documentation for OAut
 - Ensure your API key is correct and starts with `lin_api_`
 - Verify your API key hasn't expired or been revoked
 - Check Antigravity's MCP logs for error messages
-
 ### Authentication Errors
 
 - Verify your API key is correct (regenerate if needed)

@@ -1,0 +1,554 @@
+"""
+Model Loader Utilities - Load and manage ML models for serving
+
+Purpose: Provide utilities for loading different model types with caching and lifecycle management
+Author: {{AUTHOR}}
+Created: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Model versioning and metadata tracking
+- A3 (Transparency): Clear logging of model loading and configuration
+- A4 (Non-Harm): Resource management and error handling
+
+This module provides:
+- Unified model loading interface for multiple frameworks
+- Model caching and lifecycle management
+- Device management (CPU/GPU)
+- Batch inference support
+- Model metadata tracking
+"""
+
+from typing import Dict, Any, Optional, List, Union, Callable
+from dataclasses import dataclass, field
+from pathlib import Path
+import logging
+import pickle
+import json
+import hashlib
+from datetime import datetime
+import asyncio
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class ModelConfig:
+    """Configuration for model loading."""
+    model_path: str
+    model_type: str  # "pytorch", "tensorflow", "onnx", "sklearn", "huggingface", "custom"
+    device: str = "{{DEVICE}}"  # "cpu", "cuda", "cuda:0", etc.
+    batch_size: int = {{BATCH_SIZE}}
+    max_sequence_length: Optional[int] = None
+    use_gpu: bool = {{USE_GPU}}
+    model_kwargs: Dict[str, Any] = field(default_factory=dict)
+    preprocessor_path: Optional[str] = None
+    postprocessor_path: Optional[str] = None
+    cache_model: bool = {{CACHE_MODEL}}
+    model_version: Optional[str] = None
+
+
+class ModelLoader:
+    """
+    Unified model loader for multiple ML frameworks.
+    
+    Supports loading models from:
+    - PyTorch (.pt, .pth)
+    - TensorFlow (.pb, SavedModel)
+    - ONNX (.onnx)
+    - Scikit-learn (.pkl)
+    - Hugging Face transformers
+    - Custom loaders
+    
+    Example:
+        >>> config = ModelConfig(
+        ...     model_path="model.pt",
+        ...     model_type="pytorch",
+        ...     device="cuda"
+        ... )
+        >>> loader = ModelLoader(config)
+        >>> await loader.load()
+        >>> result = await loader.predict(inputs)
+    """
+    
+    _model_cache: Dict[str, Any] = {}
+    _loaders: Dict[str, Callable] = {}
+    
+    def __init__(self, config: ModelConfig):
+        """
+        Initialize model loader.
+        
+        Args:
+            config: Model configuration
+        """
+        self.config = config
+        self.model: Optional[Any] = None
+        self.preprocessor: Optional[Any] = None
+        self.postprocessor: Optional[Any] = None
+        self.model_name: str = Path(config.model_path).stem
+        self.model_version: str = config.model_version or self._get_model_version()
+        self._load_time: Optional[datetime] = None
+        
+        # Register default loaders
+        self._register_default_loaders()
+    
+    @classmethod
+    def _register_default_loaders(cls):
+        """Register default model loaders."""
+        if not cls._loaders:
+            cls._loaders = {
+                "pytorch": cls._load_pytorch,
+                "tensorflow": cls._load_tensorflow,
+                "onnx": cls._load_onnx,
+                "sklearn": cls._load_sklearn,
+                "huggingface": cls._load_huggingface,
+                "custom": cls._load_custom,
+            }
+    
+    def _get_model_version(self) -> str:
+        """Get model version from file hash or metadata."""
+        model_path = Path(self.config.model_path)
+        if not model_path.exists():
+            return "unknown"
+        
+        # Try to read version from metadata file
+        metadata_path = model_path.parent / f"{model_path.stem}_metadata.json"
+        if metadata_path.exists():
+            try:
+                with open(metadata_path) as f:
+                    metadata = json.load(f)
+                    return metadata.get("version", "unknown")
+            except Exception:
+                pass
+        
+        # Use file hash as version
+        try:
+            with open(model_path, "rb") as f:
+                file_hash = hashlib.md5(f.read()).hexdigest()[:8]
+                return file_hash
+        except Exception:
+            return "unknown"
+    
+    async def load(self) -> None:
+        """
+        Load the model asynchronously.
+        
+        Raises:
+            ValueError: If model type is not supported
+            FileNotFoundError: If model file doesn't exist
+        """
+        if self.config.cache_model:
+            cache_key = self._get_cache_key()
+            if cache_key in ModelLoader._model_cache:
+                logger.info(f"Loading model from cache: {self.model_name}")
+                self.model = ModelLoader._model_cache[cache_key]
+                self._load_time = datetime.now()
+                return
+        
+        logger.info(f"Loading model: {self.config.model_path}")
+        logger.info(f"Model type: {self.config.model_type}")
+        logger.info(f"Device: {self.config.device}")
+        
+        # Check if model file exists
+        model_path = Path(self.config.model_path)
+        if not model_path.exists():
+            raise FileNotFoundError(f"Model file not found: {self.config.model_path}")
+        
+        # Load model based on type
+        loader = self._loaders.get(self.config.model_type)
+        if not loader:
+            raise ValueError(f"Unsupported model type: {self.config.model_type}")
+        
+        # Run loader in executor to avoid blocking
+        loop = asyncio.get_event_loop()
+        self.model = await loop.run_in_executor(
+            None,
+            lambda: loader(self.config)
+        )
+        
+        # Load preprocessor and postprocessor
+        if self.config.preprocessor_path:
+            self.preprocessor = await self._load_preprocessor()
+        
+        if self.config.postprocessor_path:
+            self.postprocessor = await self._load_postprocessor()
+        
+        # Cache model if enabled
+        if self.config.cache_model:
+            cache_key = self._get_cache_key()
+            ModelLoader._model_cache[cache_key] = self.model
+        
+        self._load_time = datetime.now()
+        logger.info(f"Model loaded successfully: {self.model_name} v{self.model_version}")
+    
+    def _get_cache_key(self) -> str:
+        """Generate cache key for model."""
+        return f"{self.config.model_path}:{self.config.model_type}:{self.config.device}"
+    
+    async def _load_preprocessor(self) -> Any:
+        """Load preprocessor."""
+        preprocessor_path = Path(self.config.preprocessor_path)
+        if not preprocessor_path.exists():
+            logger.warning(f"Preprocessor not found: {preprocessor_path}")
+            return None
+        
+        logger.info(f"Loading preprocessor: {preprocessor_path}")
+        loop = asyncio.get_event_loop()
+        
+        if preprocessor_path.suffix == ".pkl":
+            return await loop.run_in_executor(
+                None,
+                lambda: pickle.load(open(preprocessor_path, "rb"))
+            )
+        else:
+            # Assume it's a Python module or custom loader
+            # This would need to be customized based on your preprocessor format
+            logger.warning("Custom preprocessor loading not implemented")
+            return None
+    
+    async def _load_postprocessor(self) -> Any:
+        """Load postprocessor."""
+        postprocessor_path = Path(self.config.postprocessor_path)
+        if not postprocessor_path.exists():
+            logger.warning(f"Postprocessor not found: {postprocessor_path}")
+            return None
+        
+        logger.info(f"Loading postprocessor: {postprocessor_path}")
+        loop = asyncio.get_event_loop()
+        
+        if postprocessor_path.suffix == ".pkl":
+            return await loop.run_in_executor(
+                None,
+                lambda: pickle.load(open(postprocessor_path, "rb"))
+            )
+        else:
+            logger.warning("Custom postprocessor loading not implemented")
+            return None
+    
+    @staticmethod
+    def _load_pytorch(config: ModelConfig) -> Any:
+        """Load PyTorch model."""
+        import torch
+        
+        model_path = Path(config.model_path)
+        device = torch.device(config.device if config.use_gpu and torch.cuda.is_available() else "cpu")
+        
+        # Load model
+        if model_path.suffix == ".pt" or model_path.suffix == ".pth":
+            model = torch.load(model_path, map_location=device, **config.model_kwargs)
+            
+            # Handle different PyTorch model formats
+            if isinstance(model, torch.nn.Module):
+                model.eval()
+                model.to(device)
+                return model
+            elif isinstance(model, dict) and "model" in model:
+                model_obj = model["model"]
+                if isinstance(model_obj, torch.nn.Module):
+                    model_obj.eval()
+                    model_obj.to(device)
+                    return model_obj
+            else:
+                return model
+        else:
+            raise ValueError(f"Unsupported PyTorch model format: {model_path.suffix}")
+    
+    @staticmethod
+    def _load_tensorflow(config: ModelConfig) -> Any:
+        """Load TensorFlow model."""
+        import tensorflow as tf
+        
+        model_path = Path(config.model_path)
+        
+        # Disable GPU if not requested
+        if not config.use_gpu:
+            tf.config.set_visible_devices([], 'GPU')
+        
+        # Load SavedModel format
+        if model_path.is_dir() or (model_path.suffix == "" and model_path.exists()):
+            return tf.saved_model.load(str(model_path))
+        # Load .pb format
+        elif model_path.suffix == ".pb":
+            # This requires more complex loading - simplified here
+            logger.warning("Direct .pb loading not fully implemented")
+            return tf.saved_model.load(str(model_path.parent))
+        else:
+            # Try Keras format
+            return tf.keras.models.load_model(str(model_path), **config.model_kwargs)
+    
+    @staticmethod
+    def _load_onnx(config: ModelConfig) -> Any:
+        """Load ONNX model."""
+        try:
+            import onnxruntime as ort
+        except ImportError:
+            raise ImportError("onnxruntime not installed. Install with: pip install onnxruntime")
+        
+        model_path = Path(config.model_path)
+        
+        # Create inference session
+        providers = ["CUDAExecutionProvider", "CPUExecutionProvider"] if config.use_gpu else ["CPUExecutionProvider"]
+        
+        sess_options = ort.SessionOptions()
+        sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        
+        session = ort.InferenceSession(
+            str(model_path),
+            sess_options=sess_options,
+            providers=providers
+        )
+        
+        return session
+    
+    @staticmethod
+    def _load_sklearn(config: ModelConfig) -> Any:
+        """Load scikit-learn model."""
+        model_path = Path(config.model_path)
+        
+        with open(model_path, "rb") as f:
+            return pickle.load(f)
+    
+    @staticmethod
+    def _load_huggingface(config: ModelConfig) -> Any:
+        """Load Hugging Face model."""
+        try:
+            from transformers import AutoModel, AutoTokenizer, AutoModelForSequenceClassification
+        except ImportError:
+            raise ImportError("transformers not installed. Install with: pip install transformers")
+        
+        model_path = config.model_path
+        model_class = config.model_kwargs.get("model_class", "AutoModel")
+        
+        if model_class == "AutoModelForSequenceClassification":
+            return AutoModelForSequenceClassification.from_pretrained(
+                model_path,
+                **{k: v for k, v in config.model_kwargs.items() if k != "model_class"}
+            )
+        else:
+            return AutoModel.from_pretrained(
+                model_path,
+                **{k: v for k, v in config.model_kwargs.items() if k != "model_class"}
+            )
+    
+    @staticmethod
+    def _load_custom(config: ModelConfig) -> Any:
+        """Load custom model using provided loader function."""
+        loader_fn = config.model_kwargs.get("loader_fn")
+        if not loader_fn:
+            raise ValueError("Custom loader requires 'loader_fn' in model_kwargs")
+        
+        return loader_fn(config.model_path, **config.model_kwargs)
+    
+    async def predict(
+        self,
+        inputs: Union[List[Any], Dict[str, Any], Any],
+        parameters: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Make a prediction.
+        
+        Args:
+            inputs: Model inputs
+            parameters: Optional inference parameters
+            
+        Returns:
+            Dictionary with predictions and metadata
+        """
+        if self.model is None:
+            raise RuntimeError("Model not loaded. Call load() first.")
+        
+        # Preprocess
+        if self.preprocessor:
+            inputs = self.preprocessor(inputs)
+        
+        # Run inference
+        loop = asyncio.get_event_loop()
+        predictions = await loop.run_in_executor(
+            None,
+            lambda: self._run_inference(inputs, parameters or {})
+        )
+        
+        # Postprocess
+        if self.postprocessor:
+            predictions = self.postprocessor(predictions)
+        
+        return {
+            "predictions": predictions,
+            "metadata": {
+                "model_name": self.model_name,
+                "model_version": self.model_version,
+                "model_type": self.config.model_type
+            }
+        }
+    
+    async def predict_batch(
+        self,
+        inputs: List[Any],
+        parameters: Optional[Dict[str, Any]] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Make batch predictions.
+        
+        Args:
+            inputs: List of model inputs
+            parameters: Optional inference parameters
+            
+        Returns:
+            List of prediction dictionaries
+        """
+        if self.model is None:
+            raise RuntimeError("Model not loaded. Call load() first.")
+        
+        # Process in batches
+        results = []
+        batch_size = self.config.batch_size
+        
+        for i in range(0, len(inputs), batch_size):
+            batch = inputs[i:i + batch_size]
+            
+            # Preprocess batch
+            if self.preprocessor:
+                batch = [self.preprocessor(item) for item in batch]
+            
+            # Run inference
+            loop = asyncio.get_event_loop()
+            batch_predictions = await loop.run_in_executor(
+                None,
+                lambda: self._run_inference_batch(batch, parameters or {})
+            )
+            
+            # Postprocess batch
+            if self.postprocessor:
+                batch_predictions = [self.postprocessor(pred) for pred in batch_predictions]
+            
+            results.extend([
+                {
+                    "predictions": pred,
+                    "metadata": {
+                        "model_name": self.model_name,
+                        "model_version": self.model_version,
+                        "model_type": self.config.model_type
+                    }
+                }
+                for pred in batch_predictions
+            ])
+        
+        return results
+    
+    def _run_inference(self, inputs: Any, parameters: Dict[str, Any]) -> Any:
+        """Run inference (synchronous)."""
+        model_type = self.config.model_type
+        
+        if model_type == "pytorch":
+            import torch
+            with torch.no_grad():
+                if isinstance(inputs, (list, tuple)):
+                    inputs = torch.tensor(inputs)
+                elif not isinstance(inputs, torch.Tensor):
+                    inputs = torch.tensor([inputs])
+                
+                device = torch.device(self.config.device if self.config.use_gpu else "cpu")
+                inputs = inputs.to(device)
+                
+                return self.model(inputs).cpu().numpy()
+        
+        elif model_type == "tensorflow":
+            return self.model(inputs)
+        
+        elif model_type == "onnx":
+            # ONNX expects inputs as dict or list
+            if isinstance(inputs, dict):
+                return self.model.run(None, inputs)
+            else:
+                input_name = self.model.get_inputs()[0].name
+                return self.model.run(None, {input_name: inputs})
+        
+        elif model_type == "sklearn":
+            return self.model.predict(inputs)
+        
+        elif model_type == "huggingface":
+            import torch
+            tokenizer = self.config.model_kwargs.get("tokenizer")
+            if tokenizer:
+                inputs = tokenizer(inputs, return_tensors="pt", padding=True, truncation=True)
+                with torch.no_grad():
+                    outputs = self.model(**inputs)
+                    return outputs.logits if hasattr(outputs, "logits") else outputs
+            else:
+                return self.model(inputs)
+        
+        else:
+            # Assume model is callable
+            return self.model(inputs)
+    
+    def _run_inference_batch(self, batch: List[Any], parameters: Dict[str, Any]) -> List[Any]:
+        """Run batch inference (synchronous)."""
+        # Try to run as batch first
+        try:
+            if self.config.model_type == "pytorch":
+                import torch
+                with torch.no_grad():
+                    batch_tensor = torch.tensor(batch)
+                    device = torch.device(self.config.device if self.config.use_gpu else "cpu")
+                    batch_tensor = batch_tensor.to(device)
+                    results = self.model(batch_tensor).cpu().numpy()
+                    return [results[i] for i in range(len(batch))]
+            elif self.config.model_type == "sklearn":
+                return self.model.predict(batch).tolist()
+            else:
+                # Fallback to individual predictions
+                return [self._run_inference(item, parameters) for item in batch]
+        except Exception:
+            # Fallback to individual predictions
+            return [self._run_inference(item, parameters) for item in batch]
+    
+    async def unload(self) -> None:
+        """Unload the model and free resources."""
+        if self.model is None:
+            return
+        
+        logger.info(f"Unloading model: {self.model_name}")
+        
+        # Clear cache entry
+        cache_key = self._get_cache_key()
+        ModelLoader._model_cache.pop(cache_key, None)
+        
+        # Clear model
+        self.model = None
+        self.preprocessor = None
+        self.postprocessor = None
+        
+        # Force garbage collection for GPU models
+        if self.config.use_gpu:
+            import gc
+            import torch
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            gc.collect()
+        
+        logger.info("Model unloaded")
+
+
+# Example usage
+if __name__ == "__main__":
+    import asyncio
+    
+    async def main():
+        config = ModelConfig(
+            model_path="{{MODEL_PATH}}",
+            model_type="{{MODEL_TYPE}}",
+            device="{{DEVICE}}",
+            batch_size={{BATCH_SIZE}},
+            use_gpu={{USE_GPU}}
+        )
+        
+        loader = ModelLoader(config)
+        await loader.load()
+        
+        # Make prediction
+        result = await loader.predict({{EXAMPLE_INPUT}})
+        print(f"Prediction: {result}")
+        
+        await loader.unload()
+    
+    # asyncio.run(main())
+    print("Model loader ready")

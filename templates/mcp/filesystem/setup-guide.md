@@ -20,7 +20,6 @@ npx @modelcontextprotocol/server-filesystem /path/to/allowed/directory
 ## Configuration
 
 ### Antigravity MCP Config (`.agent/mcp.json`)
-
 ```json
 {
   "mcpServers": {
@@ -82,8 +81,7 @@ npx @modelcontextprotocol/server-filesystem /path/to/allowed/directory
 Test the server is working:
 
 1. Add configuration to `.agent/mcp.json`
-2. Restart Antigravity
-3. Ask the AI to "list files in the project directory"
+2. Restart Antigravity3. Ask the AI to "list files in the project directory"
 
 ## Troubleshooting
 

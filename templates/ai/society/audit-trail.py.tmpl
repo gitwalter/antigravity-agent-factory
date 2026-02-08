@@ -1,0 +1,598 @@
+"""
+{{ project_name | default('Project') }} Signed Audit Trail
+
+Implements an append-only, cryptographically signed event log for
+tracking agent actions with tamper-evident hash chaining.
+
+Note: For projects using the Cursor Agent Factory lib/society module directly,
+you can import the full implementation:
+
+    from lib.society import EventStore, MerkleTree, AnchorService
+    from lib.society.blockchain import LocalAnchor, SolanaAnchor
+
+This template provides a standalone implementation for generated projects.
+
+Usage:
+    trail = AuditTrail()
+    event = trail.record_action(agent, action)
+    
+    # Verify chain integrity
+    is_valid = trail.verify_chain()
+    
+    # Export for blockchain anchoring
+    merkle_root = trail.compute_merkle_root()
+"""
+
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any, Callable, Dict, List, Optional, Tuple
+import hashlib
+import json
+import logging
+import os
+import uuid
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class Agent:
+    """Agent identity with cryptographic keys."""
+    id: str
+    type: str
+    public_key: str
+    
+    def to_dict(self) -> Dict[str, str]:
+        return {
+            "id": self.id,
+            "type": self.type,
+            "public_key": self.public_key
+        }
+
+
+@dataclass
+class Action:
+    """Agent action record."""
+    type: str
+    description: str
+    payload: Dict[str, Any] = field(default_factory=dict)
+    target: Optional[str] = None
+    
+    def to_dict(self) -> Dict[str, Any]:
+        result = {
+            "type": self.type,
+            "description": self.description,
+            "payload": self.payload
+        }
+        if self.target:
+            result["target"] = self.target
+        return result
+
+
+@dataclass
+class AuditEvent:
+    """Immutable audit event with hash chain linking."""
+    event_id: str
+    timestamp: datetime
+    sequence: int
+    previous_hash: str
+    agent: Agent
+    action: Action
+    axiom_alignment: List[str]
+    axiom_justification: str
+    signature: str
+    hash: str
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "event_id": self.event_id,
+            "timestamp": self.timestamp.isoformat(),
+            "sequence": self.sequence,
+            "previous_hash": self.previous_hash,
+            "agent": self.agent.to_dict(),
+            "action": self.action.to_dict(),
+            "axiom_context": {
+                "declared_alignment": self.axiom_alignment,
+                "justification": self.axiom_justification
+            },
+            "signature": self.signature,
+            "hash": self.hash
+        }
+    
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict(), sort_keys=True, indent=2)
+
+
+class SigningService:
+    """
+    Cryptographic signing service.
+    
+    In production, this would use actual Ed25519 keys.
+    This implementation uses HMAC for demonstration.
+    """
+    
+    def __init__(self, secret_key: Optional[str] = None):
+        self.secret_key = secret_key or os.environ.get(
+            "AUDIT_SIGNING_KEY", 
+            "development-key-replace-in-production"
+        )
+    
+    def sign(self, data: bytes) -> str:
+        """Sign data and return signature."""
+        import hmac
+        signature = hmac.new(
+            self.secret_key.encode(),
+            data,
+            hashlib.sha256
+        ).hexdigest()
+        return f"ed25519:{signature}"
+    
+    def verify(self, data: bytes, signature: str) -> bool:
+        """Verify signature."""
+        expected = self.sign(data)
+        return signature == expected
+
+
+class MerkleTree:
+    """
+    Merkle tree for batch verification and blockchain anchoring.
+    """
+    
+    def __init__(self, leaves: List[str]):
+        """
+        Build Merkle tree from leaf hashes.
+        
+        Args:
+            leaves: List of SHA-256 hashes
+        """
+        self.leaves = leaves
+        self.tree: List[List[str]] = []
+        self._build()
+    
+    def _build(self) -> None:
+        """Build the Merkle tree."""
+        if not self.leaves:
+            self.tree = [[]]
+            return
+        
+        # Ensure even number of leaves
+        leaves = self.leaves.copy()
+        if len(leaves) % 2 == 1:
+            leaves.append(leaves[-1])  # Duplicate last leaf
+        
+        self.tree = [leaves]
+        
+        # Build tree layers
+        while len(self.tree[-1]) > 1:
+            current_layer = self.tree[-1]
+            next_layer = []
+            
+            for i in range(0, len(current_layer), 2):
+                left = current_layer[i]
+                right = current_layer[i + 1] if i + 1 < len(current_layer) else left
+                combined = hashlib.sha256(
+                    (left + right).encode()
+                ).hexdigest()
+                next_layer.append(combined)
+            
+            self.tree.append(next_layer)
+    
+    @property
+    def root(self) -> str:
+        """Get the Merkle root."""
+        if not self.tree or not self.tree[-1]:
+            return "sha256:" + "0" * 64
+        return f"sha256:{self.tree[-1][0]}"
+    
+    def get_proof(self, index: int) -> List[Tuple[str, str]]:
+        """
+        Get Merkle proof for leaf at index.
+        
+        Returns:
+            List of (sibling_hash, position) pairs
+        """
+        if index >= len(self.leaves):
+            raise ValueError(f"Index {index} out of range")
+        
+        proof = []
+        current_index = index
+        
+        for layer in self.tree[:-1]:
+            sibling_index = current_index ^ 1  # XOR to get sibling
+            if sibling_index < len(layer):
+                position = "right" if current_index % 2 == 0 else "left"
+                proof.append((layer[sibling_index], position))
+            current_index //= 2
+        
+        return proof
+    
+    def verify_proof(
+        self, 
+        leaf_hash: str, 
+        proof: List[Tuple[str, str]]
+    ) -> bool:
+        """Verify a Merkle proof."""
+        current = leaf_hash
+        
+        for sibling, position in proof:
+            if position == "right":
+                combined = current + sibling
+            else:
+                combined = sibling + current
+            current = hashlib.sha256(combined.encode()).hexdigest()
+        
+        return f"sha256:{current}" == self.root
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Export tree structure."""
+        return {
+            "leaves": self.leaves,
+            "root": self.root,
+            "layers": len(self.tree)
+        }
+
+
+class AuditTrail:
+    """
+    Append-only, cryptographically signed audit trail.
+    
+    Features:
+    - Hash chain linking for tamper evidence
+    - Cryptographic signatures for authenticity
+    - Merkle tree computation for blockchain anchoring
+    - Chain verification
+    """
+    
+    def __init__(
+        self,
+        signing_service: Optional[SigningService] = None,
+        storage_path: Optional[str] = None
+    ):
+        """
+        Initialize audit trail.
+        
+        Args:
+            signing_service: Service for signing events
+            storage_path: Optional path for persistent storage
+        """
+        self.signer = signing_service or SigningService()
+        self.storage_path = storage_path
+        self.events: List[AuditEvent] = []
+        self._sequence = 0
+        
+        if storage_path:
+            self._load()
+    
+    def record_action(
+        self,
+        agent: Agent,
+        action: Action,
+        axiom_alignment: List[str] = None,
+        axiom_justification: str = ""
+    ) -> AuditEvent:
+        """
+        Record an agent action in the audit trail.
+        
+        Args:
+            agent: The agent performing the action
+            action: The action being performed
+            axiom_alignment: Axioms this action aligns with
+            axiom_justification: Explanation of axiom alignment
+            
+        Returns:
+            The created audit event
+        """
+        self._sequence += 1
+        
+        # Get previous hash
+        previous_hash = ""
+        if self.events:
+            previous_hash = self.events[-1].hash
+        
+        # Create event data for signing
+        event_data = {
+            "event_id": str(uuid.uuid4()),
+            "timestamp": datetime.utcnow().isoformat(),
+            "sequence": self._sequence,
+            "previous_hash": previous_hash,
+            "agent": agent.to_dict(),
+            "action": action.to_dict(),
+            "axiom_context": {
+                "declared_alignment": axiom_alignment or [],
+                "justification": axiom_justification
+            }
+        }
+        
+        # Sign the event
+        canonical_json = json.dumps(event_data, sort_keys=True)
+        signature = self.signer.sign(canonical_json.encode())
+        
+        # Compute hash (includes signature)
+        event_data["signature"] = signature
+        full_json = json.dumps(event_data, sort_keys=True)
+        event_hash = f"sha256:{hashlib.sha256(full_json.encode()).hexdigest()}"
+        
+        # Create event object
+        event = AuditEvent(
+            event_id=event_data["event_id"],
+            timestamp=datetime.fromisoformat(event_data["timestamp"]),
+            sequence=event_data["sequence"],
+            previous_hash=previous_hash,
+            agent=agent,
+            action=action,
+            axiom_alignment=axiom_alignment or [],
+            axiom_justification=axiom_justification,
+            signature=signature,
+            hash=event_hash
+        )
+        
+        self.events.append(event)
+        
+        if self.storage_path:
+            self._save()
+        
+        logger.info(
+            f"Recorded event {event.event_id} (seq: {event.sequence}) "
+            f"for agent {agent.id}"
+        )
+        
+        return event
+    
+    def verify_chain(self) -> Tuple[bool, Optional[str]]:
+        """
+        Verify the integrity of the entire chain.
+        
+        Returns:
+            (is_valid, error_message)
+        """
+        if not self.events:
+            return True, None
+        
+        for i, event in enumerate(self.events):
+            # Verify sequence
+            if event.sequence != i + 1:
+                return False, f"Sequence mismatch at event {event.event_id}"
+            
+            # Verify previous hash
+            if i == 0:
+                if event.previous_hash != "":
+                    return False, f"First event has non-empty previous hash"
+            else:
+                expected_prev = self.events[i - 1].hash
+                if event.previous_hash != expected_prev:
+                    return False, f"Hash chain broken at event {event.event_id}"
+            
+            # Verify signature
+            event_data = event.to_dict()
+            signature = event_data.pop("signature")
+            event_data.pop("hash")
+            canonical_json = json.dumps(event_data, sort_keys=True)
+            
+            if not self.signer.verify(canonical_json.encode(), signature):
+                return False, f"Invalid signature at event {event.event_id}"
+            
+            # Verify hash
+            event_data["signature"] = signature
+            full_json = json.dumps(event_data, sort_keys=True)
+            computed_hash = f"sha256:{hashlib.sha256(full_json.encode()).hexdigest()}"
+            
+            if event.hash != computed_hash:
+                return False, f"Hash mismatch at event {event.event_id}"
+        
+        return True, None
+    
+    def compute_merkle_root(self) -> str:
+        """
+        Compute Merkle root of all events for blockchain anchoring.
+        
+        Returns:
+            Merkle root hash
+        """
+        if not self.events:
+            return "sha256:" + "0" * 64
+        
+        leaves = [event.hash.replace("sha256:", "") for event in self.events]
+        tree = MerkleTree(leaves)
+        return tree.root
+    
+    def get_merkle_proof(self, event_id: str) -> Dict[str, Any]:
+        """
+        Get Merkle proof for a specific event.
+        
+        Args:
+            event_id: ID of the event
+            
+        Returns:
+            Proof data including path and root
+        """
+        # Find event index
+        index = None
+        for i, event in enumerate(self.events):
+            if event.event_id == event_id:
+                index = i
+                break
+        
+        if index is None:
+            raise ValueError(f"Event {event_id} not found")
+        
+        leaves = [event.hash.replace("sha256:", "") for event in self.events]
+        tree = MerkleTree(leaves)
+        proof = tree.get_proof(index)
+        
+        return {
+            "event_id": event_id,
+            "event_hash": self.events[index].hash,
+            "index": index,
+            "proof": proof,
+            "merkle_root": tree.root
+        }
+    
+    def get_events(
+        self,
+        agent_id: Optional[str] = None,
+        action_type: Optional[str] = None,
+        since: Optional[datetime] = None,
+        limit: int = 100
+    ) -> List[AuditEvent]:
+        """
+        Query events with filters.
+        
+        Args:
+            agent_id: Filter by agent ID
+            action_type: Filter by action type
+            since: Filter by timestamp
+            limit: Maximum events to return
+            
+        Returns:
+            Matching events
+        """
+        results = []
+        
+        for event in reversed(self.events):
+            if agent_id and event.agent.id != agent_id:
+                continue
+            if action_type and event.action.type != action_type:
+                continue
+            if since and event.timestamp < since:
+                continue
+            
+            results.append(event)
+            
+            if len(results) >= limit:
+                break
+        
+        return results
+    
+    def export_for_anchoring(self) -> Dict[str, Any]:
+        """
+        Export data for blockchain anchoring.
+        
+        Returns:
+            Anchoring data including Merkle root and metadata
+        """
+        merkle_root = self.compute_merkle_root()
+        
+        return {
+            "merkle_root": merkle_root,
+            "event_count": len(self.events),
+            "first_sequence": self.events[0].sequence if self.events else 0,
+            "last_sequence": self.events[-1].sequence if self.events else 0,
+            "first_timestamp": self.events[0].timestamp.isoformat() if self.events else None,
+            "last_timestamp": self.events[-1].timestamp.isoformat() if self.events else None,
+            "exported_at": datetime.utcnow().isoformat()
+        }
+    
+    def _save(self) -> None:
+        """Save events to storage."""
+        if not self.storage_path:
+            return
+        
+        data = {
+            "sequence": self._sequence,
+            "events": [e.to_dict() for e in self.events]
+        }
+        
+        with open(self.storage_path, "w") as f:
+            json.dump(data, f, indent=2)
+    
+    def _load(self) -> None:
+        """Load events from storage."""
+        if not self.storage_path or not os.path.exists(self.storage_path):
+            return
+        
+        with open(self.storage_path, "r") as f:
+            data = json.load(f)
+        
+        self._sequence = data.get("sequence", 0)
+        
+        for event_data in data.get("events", []):
+            event = AuditEvent(
+                event_id=event_data["event_id"],
+                timestamp=datetime.fromisoformat(event_data["timestamp"]),
+                sequence=event_data["sequence"],
+                previous_hash=event_data["previous_hash"],
+                agent=Agent(**event_data["agent"]),
+                action=Action(**event_data["action"]),
+                axiom_alignment=event_data["axiom_context"]["declared_alignment"],
+                axiom_justification=event_data["axiom_context"]["justification"],
+                signature=event_data["signature"],
+                hash=event_data["hash"]
+            )
+            self.events.append(event)
+
+
+# Example usage
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    
+    # Create audit trail
+    trail = AuditTrail()
+    
+    # Create sample agents
+    agent_a = Agent(
+        id=str(uuid.uuid4()),
+        type="worker",
+        public_key="ed25519:" + "a" * 64
+    )
+    
+    agent_b = Agent(
+        id=str(uuid.uuid4()),
+        type="coordinator",
+        public_key="ed25519:" + "b" * 64
+    )
+    
+    # Record some actions
+    trail.record_action(
+        agent=agent_a,
+        action=Action(
+            type="message",
+            description="Request data processing",
+            payload={"data_id": "dataset-001"},
+            target=agent_b.id
+        ),
+        axiom_alignment=["A1", "A2"],
+        axiom_justification="Processing user request transparently"
+    )
+    
+    trail.record_action(
+        agent=agent_b,
+        action=Action(
+            type="decision",
+            description="Approve data processing request",
+            payload={"approved": True, "reason": "Valid request"}
+        ),
+        axiom_alignment=["A1", "A4"],
+        axiom_justification="Approving beneficial request per guardian protocol"
+    )
+    
+    trail.record_action(
+        agent=agent_a,
+        action=Action(
+            type="external_effect",
+            description="Execute data processing job",
+            payload={"job_id": "job-001", "status": "completed"}
+        ),
+        axiom_alignment=["A1", "A2", "A3"],
+        axiom_justification="Completed processing with elegant solution"
+    )
+    
+    # Verify chain
+    is_valid, error = trail.verify_chain()
+    print(f"\nChain valid: {is_valid}")
+    if error:
+        print(f"Error: {error}")
+    
+    # Compute Merkle root for anchoring
+    merkle_root = trail.compute_merkle_root()
+    print(f"\nMerkle root: {merkle_root}")
+    
+    # Get Merkle proof for first event
+    proof = trail.get_merkle_proof(trail.events[0].event_id)
+    print(f"\nMerkle proof for event 0:")
+    print(f"  Event hash: {proof['event_hash']}")
+    print(f"  Proof path: {proof['proof']}")
+    
+    # Export for anchoring
+    anchoring_data = trail.export_for_anchoring()
+    print(f"\nAnchoring data:")
+    print(json.dumps(anchoring_data, indent=2))

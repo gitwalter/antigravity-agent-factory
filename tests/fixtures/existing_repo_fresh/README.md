@@ -1,7 +1,6 @@
 # Fresh Repository Fixture
 
-This fixture represents a repository with NO Antigravity artifacts.
-Used to test the FRESH onboarding scenario.
+This fixture represents a repository with NO Antigravity artifacts.Used to test the FRESH onboarding scenario.
 
 ## Contents
 

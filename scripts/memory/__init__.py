@@ -1,6 +1,5 @@
 """
 Memory System for Antigravity Agent Factory
-
 This module provides the inductive memory system that enables the Factory
 to learn from experience through user-validated proposals.
 
@@ -33,7 +32,6 @@ Usage:
 
 __version__ = "1.0.0"
 __author__ = "Antigravity Agent Factory"
-
 from pathlib import Path
 
 # Memory module directory

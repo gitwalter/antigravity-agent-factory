@@ -1,0 +1,427 @@
+"""
+{{MEMORY_NAME}} - Memory Integration for Agents
+
+Purpose: {{MEMORY_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Memory operations are logged and traceable
+- A3 (Transparency): Memory storage and retrieval mechanisms are explicit
+
+This template provides memory integration patterns for:
+- LangChain 1.x agents
+- CrewAI 1.x agents
+- Standalone memory management
+
+Supports multiple memory types:
+- Conversation buffer (short-term)
+- Conversation summary (compressed)
+- Vector store memory (long-term semantic)
+- Entity memory (structured facts)
+- Hybrid memory (combining multiple types)
+"""
+
+from typing import List, Dict, Any, Optional, Sequence
+from datetime import datetime
+from langchain_core.chat_history import BaseChatMessageHistory, InMemoryChatMessageHistory
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage, get_buffer_string
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma, FAISS
+from langchain_core.documents import Document
+from langchain_core.runnables import RunnablePassthrough
+from pydantic import BaseModel, Field
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class MemoryConfig(BaseModel):
+    """Configuration for memory integration."""
+    memory_type: str = Field(
+        default="{{MEMORY_TYPE}}",
+        description="Type of memory: 'buffer', 'summary', 'vector', 'entity', or 'hybrid'"
+    )
+    max_token_limit: int = Field(
+        default={{MAX_TOKEN_LIMIT}},
+        description="Maximum tokens for buffer memory"
+    )
+    vector_store_type: str = Field(
+        default="{{VECTOR_STORE_TYPE}}",
+        description="Vector store type: 'chroma' or 'faiss'"
+    )
+    embedding_model: str = Field(
+        default="{{EMBEDDING_MODEL}}",
+        description="Embedding model name"
+    )
+    retrieval_k: int = Field(
+        default={{RETRIEVAL_K}},
+        description="Number of memories to retrieve"
+    )
+
+
+class MemoryResult(BaseModel):
+    """Result from memory operations."""
+    retrieved_messages: List[BaseMessage] = Field(
+        default_factory=list,
+        description="Retrieved conversation messages"
+    )
+    retrieved_documents: List[Document] = Field(
+        default_factory=list,
+        description="Retrieved memory documents"
+    )
+    entities: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Retrieved entities"
+    )
+    token_count: int = Field(
+        default=0,
+        description="Token count of retrieved content"
+    )
+
+
+class {{MEMORY_CLASS_NAME}}:
+    """
+    {{MEMORY_NAME}} - Memory Integration for Agents
+    
+    Provides unified memory management for LangChain and CrewAI agents.
+    Supports multiple memory types and hybrid approaches.
+    
+    Memory Types:
+    - buffer: Full conversation history (short-term)
+    - summary: Summarized conversation (compressed)
+    - vector: Semantic search over past interactions (long-term)
+    - entity: Structured entity extraction and storage
+    - hybrid: Combination of multiple memory types
+    
+    Example:
+        >>> memory = {{MEMORY_CLASS_NAME}}(config=MemoryConfig(memory_type="hybrid"))
+        >>> memory.add_message("user", "My name is John")
+        >>> memory.add_message("assistant", "Nice to meet you, John!")
+        >>> context = memory.get_context("What is my name?")
+        >>> print(context.retrieved_messages)
+    """
+    
+    def __init__(
+        self,
+        config: Optional[MemoryConfig] = None,
+        user_id: Optional[str] = None
+    ):
+        """
+        Initialize memory integration.
+        
+        Args:
+            config: Memory configuration
+            user_id: Optional user identifier for multi-user scenarios
+        """
+        self.config = config or MemoryConfig()
+        self.user_id = user_id or "default"
+        
+        # Initialize memory components based on type
+        self.short_term_memory: Optional[BaseChatMessageHistory] = None
+        self.vector_store = None
+        self.embeddings = None
+        self.entities: Dict[str, Any] = {}
+        
+        self._initialize_memory()
+        
+        logger.info(
+            f"Initialized {{MEMORY_NAME}} with type={self.config.memory_type}, "
+            f"user_id={self.user_id}"
+        )
+    
+    def _initialize_memory(self):
+        """Initialize memory components based on configuration."""
+        # Short-term memory (always available)
+        if self.config.memory_type in ["buffer", "summary", "hybrid"]:
+            self.short_term_memory = InMemoryChatMessageHistory()
+            logger.info("Initialized short-term memory")
+        
+        # Vector store for long-term memory
+        if self.config.memory_type in ["vector", "hybrid"]:
+            self.embeddings = OpenAIEmbeddings(
+                model=self.config.embedding_model
+            )
+            
+            if self.config.vector_store_type == "chroma":
+                self.vector_store = Chroma(
+                    embedding_function=self.embeddings,
+                    collection_name=f"memory_{self.user_id}"
+                )
+            elif self.config.vector_store_type == "faiss":
+                # FAISS requires initialization with documents
+                # For now, we'll create an empty one
+                self.vector_store = None  # Initialize on first use
+                logger.warning("FAISS vector store will be initialized on first use")
+            
+            logger.info(f"Initialized vector store: {self.config.vector_store_type}")
+        
+        # Entity memory (always available for hybrid)
+        if self.config.memory_type in ["entity", "hybrid"]:
+            self.entities = {}
+            logger.info("Initialized entity memory")
+    
+    def add_message(
+        self,
+        role: str,
+        content: str,
+        metadata: Optional[Dict[str, Any]] = None
+    ):
+        """
+        Add a message to memory.
+        
+        Args:
+            role: Message role ("user", "assistant", "system")
+            content: Message content
+            metadata: Optional metadata dictionary
+        """
+        if role == "user":
+            message = HumanMessage(content=content)
+        elif role == "assistant":
+            message = AIMessage(content=content)
+        elif role == "system":
+            message = SystemMessage(content=content)
+        else:
+            raise ValueError(f"Unknown role: {role}")
+        
+        # Add to short-term memory
+        if self.short_term_memory:
+            self.short_term_memory.add_message(message)
+            logger.debug(f"Added {role} message to short-term memory")
+        
+        # Add to vector store if enabled
+        if self.config.memory_type in ["vector", "hybrid"] and self.vector_store:
+            doc = Document(
+                page_content=content,
+                metadata={
+                    "role": role,
+                    "user_id": self.user_id,
+                    "timestamp": datetime.now().isoformat(),
+                    **(metadata or {})
+                }
+            )
+            self.vector_store.add_documents([doc])
+            logger.debug(f"Added {role} message to vector store")
+        
+        # Extract entities if enabled
+        if self.config.memory_type in ["entity", "hybrid"]:
+            self._extract_entities(content)
+    
+    def get_context(
+        self,
+        query: str,
+        max_messages: Optional[int] = None
+    ) -> MemoryResult:
+        """
+        Get relevant context from memory for a query.
+        
+        Args:
+            query: Query string to find relevant context
+            max_messages: Maximum number of messages to return
+        
+        Returns:
+            MemoryResult with retrieved context
+        """
+        retrieved_messages: List[BaseMessage] = []
+        retrieved_documents: List[Document] = []
+        entities: Dict[str, Any] = {}
+        
+        # Get from short-term memory
+        if self.short_term_memory:
+            messages = self.short_term_memory.messages
+            if max_messages:
+                messages = messages[-max_messages:]
+            retrieved_messages = messages
+            logger.debug(f"Retrieved {len(retrieved_messages)} messages from short-term memory")
+        
+        # Get from vector store
+        if self.config.memory_type in ["vector", "hybrid"] and self.vector_store:
+            try:
+                retriever = self.vector_store.as_retriever(
+                    search_kwargs={"k": self.config.retrieval_k}
+                )
+                docs = retriever.invoke(query)
+                
+                # Filter by user_id if available
+                user_docs = [
+                    doc for doc in docs
+                    if doc.metadata.get("user_id") == self.user_id
+                ]
+                retrieved_documents = user_docs[:self.config.retrieval_k]
+                logger.debug(f"Retrieved {len(retrieved_documents)} documents from vector store")
+            except Exception as e:
+                logger.warning(f"Error retrieving from vector store: {e}")
+        
+        # Get entities
+        if self.config.memory_type in ["entity", "hybrid"]:
+            entities = self.entities.copy()
+            logger.debug(f"Retrieved {len(entities)} entities")
+        
+        # Calculate token count (approximate)
+        token_count = sum(
+            len(msg.content.split()) for msg in retrieved_messages
+        ) + sum(
+            len(doc.page_content.split()) for doc in retrieved_documents
+        )
+        
+        return MemoryResult(
+            retrieved_messages=retrieved_messages,
+            retrieved_documents=retrieved_documents,
+            entities=entities,
+            token_count=token_count
+        )
+    
+    def _extract_entities(self, content: str):
+        """
+        Extract entities from content and store them.
+        
+        Args:
+            content: Text content to extract entities from
+        """
+        # Simple entity extraction (can be enhanced with NER)
+        # This is a placeholder - implement actual entity extraction
+        import re
+        
+        # Extract names (capitalized words)
+        names = re.findall(r'\b[A-Z][a-z]+\b', content)
+        for name in names:
+            if name not in self.entities:
+                self.entities[name] = {
+                    "type": "person",
+                    "first_seen": datetime.now().isoformat(),
+                    "mentions": []
+                }
+            self.entities[name]["mentions"].append(content[:100])
+        
+        logger.debug(f"Extracted {len(names)} entities from content")
+    
+    def get_conversation_history(
+        self,
+        max_messages: Optional[int] = None
+    ) -> List[BaseMessage]:
+        """
+        Get conversation history.
+        
+        Args:
+            max_messages: Maximum number of messages to return
+        
+        Returns:
+            List of conversation messages
+        """
+        if not self.short_term_memory:
+            return []
+        
+        messages = self.short_term_memory.messages
+        if max_messages:
+            messages = messages[-max_messages:]
+        
+        return messages
+    
+    def clear_memory(self):
+        """Clear all memory."""
+        if self.short_term_memory:
+            self.short_term_memory.clear()
+        
+        if self.vector_store:
+            # Clear vector store (implementation depends on type)
+            logger.warning("Vector store clearing not implemented - manual cleanup may be needed")
+        
+        self.entities = {}
+        
+        logger.info("Cleared all memory")
+    
+    def get_memory_stats(self) -> Dict[str, Any]:
+        """
+        Get memory statistics.
+        
+        Returns:
+            Dictionary with memory statistics
+        """
+        stats = {
+            "memory_type": self.config.memory_type,
+            "user_id": self.user_id,
+            "short_term_messages": len(self.short_term_memory.messages) if self.short_term_memory else 0,
+            "entities_count": len(self.entities),
+            "vector_store_available": self.vector_store is not None
+        }
+        
+        return stats
+
+
+# ===== LangChain Integration =====
+
+def create_langchain_memory_chain(
+    memory: {{MEMORY_CLASS_NAME}},
+    llm: ChatOpenAI,
+    system_prompt: str = "{{SYSTEM_PROMPT}}"
+):
+    """
+    Create a LangChain chain with memory integration.
+    
+    Args:
+        memory: {{MEMORY_CLASS_NAME}} instance
+        llm: LangChain LLM instance
+        system_prompt: System prompt for the chain
+    
+    Returns:
+        LangChain chain with memory support
+    """
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", system_prompt),
+        MessagesPlaceholder(variable_name="history"),
+        ("human", "{input}")
+    ])
+    
+    def get_context(input_dict: Dict[str, Any]) -> Dict[str, Any]:
+        """Get context from memory."""
+        query = input_dict.get("input", "")
+        memory_result = memory.get_context(query, max_messages=10)
+        
+        return {
+            "input": input_dict["input"],
+            "history": memory_result.retrieved_messages
+        }
+    
+    chain = (
+        RunnablePassthrough.assign(**{"history": lambda x: memory.get_conversation_history(max_messages=10)})
+        | prompt
+        | llm
+    )
+    
+    return chain
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create memory
+    config = MemoryConfig(
+        memory_type="{{MEMORY_TYPE}}",
+        max_token_limit={{MAX_TOKEN_LIMIT}}
+    )
+    
+    memory = {{MEMORY_CLASS_NAME}}(config=config, user_id="user_123")
+    
+    # Add messages
+    memory.add_message("user", "My name is {{EXAMPLE_NAME}}")
+    memory.add_message("assistant", "Nice to meet you, {{EXAMPLE_NAME}}!")
+    memory.add_message("user", "I like {{EXAMPLE_INTEREST}}")
+    
+    # Get context
+    result = memory.get_context("What is my name?")
+    print(f"Retrieved {len(result.retrieved_messages)} messages")
+    print(f"Retrieved {len(result.retrieved_documents)} documents")
+    print(f"Entities: {list(result.entities.keys())}")
+    
+    # Get stats
+    stats = memory.get_memory_stats()
+    print(f"\nMemory Stats: {stats}")
+    
+    # Create LangChain chain with memory
+    llm = ChatOpenAI(model="{{MODEL_NAME}}")
+    chain = create_langchain_memory_chain(memory, llm)
+    
+    # Use chain
+    # response = chain.invoke({"input": "What do I like?"})
+    # print(f"Response: {response.content}")

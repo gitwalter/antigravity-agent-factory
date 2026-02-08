@@ -1,0 +1,353 @@
+{
+  "$schema": "../learning-workshop-pattern.json",
+  "workshopId": "L3_langgraph_workflows",
+  "name": "LangGraph Stateful Agent Workflows",
+  "technology": {
+    "category": "ai_framework",
+    "stack": "LangGraph",
+    "language": "Python",
+    "version": "LangGraph 0.2+"
+  },
+  "level": "intermediate",
+  "prerequisites": {
+    "workshops": ["L7_langchain_fundamentals"],
+    "knowledge": [
+      "LangChain basics (chains, tools, agents)",
+      "Python async/await",
+      "State machines and graph concepts",
+      "LLM prompt engineering"
+    ],
+    "tools": [
+      "Python 3.10+",
+      "OpenAI or Anthropic API key",
+      "VS Code with Python extension"
+    ]
+  },
+  "duration": {
+    "total_hours": 2.5,
+    "concept_minutes": 30,
+    "demo_minutes": 30,
+    "exercise_minutes": 45,
+    "challenge_minutes": 30,
+    "reflection_minutes": 15
+  },
+  "learning_objectives": [
+    {
+      "objective": "Understand LangGraph's state-based architecture and when to use it over chains",
+      "bloom_level": "understand",
+      "verification": "Can explain StateGraph, nodes, edges, and conditional routing"
+    },
+    {
+      "objective": "Define typed state schemas with TypedDict and Annotated reducers",
+      "bloom_level": "apply",
+      "verification": "Creates state with messages, custom fields, and proper reducers"
+    },
+    {
+      "objective": "Build multi-step agent workflows with conditional branching",
+      "bloom_level": "apply",
+      "verification": "Implements workflow with router node and multiple tool nodes"
+    },
+    {
+      "objective": "Implement human-in-the-loop patterns with interrupts and checkpoints",
+      "bloom_level": "apply",
+      "verification": "Creates workflow that pauses for human approval"
+    },
+    {
+      "objective": "Design supervisor-worker patterns for multi-agent orchestration",
+      "bloom_level": "create",
+      "verification": "Builds supervisor that delegates to specialized worker agents"
+    }
+  ],
+  "knowledge_files": [
+    "langgraph-workflows.json",
+    "langchain-patterns.json",
+    "multi-agent-patterns.json"
+  ],
+  "phases": [
+    {
+      "phaseId": "concept",
+      "name": "LangGraph Architecture and Mental Models",
+      "type": "concept",
+      "duration_minutes": 30,
+      "description": "Understanding LangGraph's graph-based execution model",
+      "content": {
+        "topics": [
+          "Why LangGraph: Limitations of chains for complex workflows",
+          "StateGraph: Nodes, edges, and state flow",
+          "State management: TypedDict, Annotated, reducers",
+          "Conditional edges and routing patterns",
+          "Checkpointing and persistence",
+          "Human-in-the-loop and interrupts",
+          "Multi-agent patterns: Supervisor, hierarchical, swarm"
+        ],
+        "diagrams": [
+          "LangGraph execution flow",
+          "State mutation and reducer pattern",
+          "Supervisor-worker architecture",
+          "Checkpoint and resume flow"
+        ],
+        "key_points": [
+          "LangGraph treats agents as state machines, not pipelines",
+          "State flows through nodes; reducers handle concurrent updates",
+          "Conditional edges enable dynamic routing based on state",
+          "Checkpoints allow pause/resume and human oversight",
+          "Supervisor pattern delegates to specialized workers"
+        ]
+      },
+      "facilitator_notes": "Emphasize the difference between chains (linear) and graphs (branching, looping). Show real examples where chains fail.",
+      "common_questions": [
+        "When should I use LangGraph vs LangChain chains?",
+        "How do I handle errors in a graph?",
+        "Can I persist state across sessions?"
+      ]
+    },
+    {
+      "phaseId": "demo",
+      "name": "Building a Research Agent with Tool Routing",
+      "type": "demo",
+      "duration_minutes": 30,
+      "description": "Live coding a multi-tool research agent with LangGraph",
+      "content": {
+        "topics": [
+          "Define state schema with messages and tool calls",
+          "Create tool nodes (search, calculator, code executor)",
+          "Build router node with conditional edges",
+          "Add cycle detection and max iterations",
+          "Compile and invoke the graph",
+          "Visualize the graph structure"
+        ],
+        "code_examples": [
+          "StateGraph with TypedDict state",
+          "Tool node implementation",
+          "Conditional edge functions",
+          "Graph compilation and invocation"
+        ],
+        "key_points": [
+          "Each node receives and returns state",
+          "The router decides which tool to call next",
+          "END is a special node that terminates the graph",
+          "graph.get_graph().draw_mermaid() visualizes the flow"
+        ]
+      },
+      "facilitator_notes": "Show the mermaid diagram to help visualize. Demonstrate how state changes at each step."
+    },
+    {
+      "phaseId": "exercise_1",
+      "name": "State Management and Routing",
+      "type": "exercise",
+      "duration_minutes": 20,
+      "description": "Create a graph with custom state and conditional routing",
+      "content": {
+        "topics": [
+          "Define a custom state with multiple fields",
+          "Create nodes that modify state",
+          "Implement conditional routing based on state",
+          "Handle the END condition"
+        ]
+      }
+    },
+    {
+      "phaseId": "exercise_2",
+      "name": "Human-in-the-Loop Workflow",
+      "type": "exercise",
+      "duration_minutes": 25,
+      "description": "Implement a workflow that pauses for human approval",
+      "content": {
+        "topics": [
+          "Add checkpointer for persistence",
+          "Create interrupt points",
+          "Resume with human input",
+          "Handle approval/rejection"
+        ]
+      }
+    },
+    {
+      "phaseId": "challenge",
+      "name": "Supervisor-Worker Multi-Agent System",
+      "type": "challenge",
+      "duration_minutes": 30,
+      "description": "Build a supervisor that orchestrates multiple worker agents",
+      "content": {
+        "topics": [
+          "Design supervisor that routes to workers",
+          "Create specialized worker agents",
+          "Handle worker responses and aggregation",
+          "Implement error handling and fallbacks"
+        ]
+      }
+    },
+    {
+      "phaseId": "reflection",
+      "name": "Production Patterns and Next Steps",
+      "type": "reflection",
+      "duration_minutes": 15,
+      "description": "Consolidate learning and explore advanced patterns",
+      "content": {
+        "topics": [
+          "When to use LangGraph in production",
+          "Testing and debugging strategies",
+          "LangSmith integration for observability",
+          "Advanced patterns: subgraphs, parallel execution"
+        ],
+        "key_points": [
+          "LangGraph excels at complex, stateful workflows",
+          "Checkpointing enables reliable human oversight",
+          "Supervisor pattern scales to many agents",
+          "LangSmith provides visibility into execution"
+        ]
+      }
+    }
+  ],
+  "exercises": [
+    {
+      "exerciseId": "ex1_state_routing",
+      "name": "State Management and Routing",
+      "type": "guided",
+      "difficulty": "medium",
+      "duration_minutes": 20,
+      "description": "Create a graph with custom state and conditional routing",
+      "starter_code": "from typing import TypedDict, Annotated, Literal\nfrom langgraph.graph import StateGraph, END\nfrom langgraph.graph.message import add_messages\n\n# TODO: Define state with messages and a 'next_action' field\nclass AgentState(TypedDict):\n    messages: Annotated[list, add_messages]\n    # TODO: Add next_action field\n\n# TODO: Create a router node that sets next_action based on last message\ndef router(state: AgentState) -> AgentState:\n    # TODO: Analyze last message, set next_action to 'search', 'calculate', or 'respond'\n    pass\n\n# TODO: Create tool nodes\ndef search_node(state: AgentState) -> AgentState:\n    # TODO: Simulate search and add result to messages\n    pass\n\ndef calculate_node(state: AgentState) -> AgentState:\n    # TODO: Simulate calculation and add result to messages\n    pass\n\ndef respond_node(state: AgentState) -> AgentState:\n    # TODO: Generate final response\n    pass\n\n# TODO: Build the graph with conditional routing\ngraph = StateGraph(AgentState)\n# Add nodes and edges...",
+      "solution_code": "from typing import TypedDict, Annotated, Literal\nfrom langgraph.graph import StateGraph, END\nfrom langgraph.graph.message import add_messages\nfrom langchain_core.messages import HumanMessage, AIMessage\n\nclass AgentState(TypedDict):\n    messages: Annotated[list, add_messages]\n    next_action: str\n\ndef router(state: AgentState) -> AgentState:\n    last_message = state['messages'][-1].content.lower()\n    if 'search' in last_message or 'find' in last_message:\n        next_action = 'search'\n    elif 'calculate' in last_message or 'math' in last_message:\n        next_action = 'calculate'\n    else:\n        next_action = 'respond'\n    return {'next_action': next_action}\n\ndef search_node(state: AgentState) -> AgentState:\n    query = state['messages'][-1].content\n    result = f\"Search results for: {query}... [simulated results]\"\n    return {'messages': [AIMessage(content=result)]}\n\ndef calculate_node(state: AgentState) -> AgentState:\n    result = \"Calculation result: 42 [simulated]\"\n    return {'messages': [AIMessage(content=result)]}\n\ndef respond_node(state: AgentState) -> AgentState:\n    result = \"Based on my analysis, here is my response...\"\n    return {'messages': [AIMessage(content=result)]}\n\ndef route_next(state: AgentState) -> Literal['search', 'calculate', 'respond']:\n    return state['next_action']\n\ngraph = StateGraph(AgentState)\ngraph.add_node('router', router)\ngraph.add_node('search', search_node)\ngraph.add_node('calculate', calculate_node)\ngraph.add_node('respond', respond_node)\n\ngraph.set_entry_point('router')\ngraph.add_conditional_edges('router', route_next, {\n    'search': 'search',\n    'calculate': 'calculate',\n    'respond': 'respond'\n})\ngraph.add_edge('search', END)\ngraph.add_edge('calculate', END)\ngraph.add_edge('respond', END)\n\napp = graph.compile()\n\n# Test\nresult = app.invoke({'messages': [HumanMessage(content='Search for Python tutorials')]})\nprint(result['messages'][-1].content)",
+      "hints": [
+        "Use Annotated[list, add_messages] for automatic message accumulation",
+        "Conditional edges use a function that returns the next node name",
+        "Each node should return a dict with only the fields it modifies"
+      ],
+      "verification": "Graph routes correctly based on message content",
+      "common_mistakes": [
+        "Returning full state instead of just modified fields",
+        "Forgetting to set entry point",
+        "Not handling the END condition"
+      ]
+    },
+    {
+      "exerciseId": "ex2_human_loop",
+      "name": "Human-in-the-Loop Workflow",
+      "type": "guided",
+      "difficulty": "hard",
+      "duration_minutes": 25,
+      "description": "Implement workflow with human approval checkpoint",
+      "starter_code": "from typing import TypedDict, Annotated\nfrom langgraph.graph import StateGraph, END\nfrom langgraph.checkpoint.memory import MemorySaver\nfrom langchain_core.messages import HumanMessage, AIMessage\n\nclass State(TypedDict):\n    messages: list\n    approved: bool | None\n    action_to_take: str\n\n# TODO: Create node that proposes an action\ndef propose_action(state: State) -> State:\n    # TODO: Analyze request, propose action, set action_to_take\n    pass\n\n# TODO: Create node that executes approved action\ndef execute_action(state: State) -> State:\n    # TODO: Execute the action_to_take\n    pass\n\n# TODO: Create routing function\ndef should_execute(state: State):\n    # TODO: Return 'execute' if approved, 'end' if rejected, 'wait' if pending\n    pass\n\n# TODO: Build graph with checkpointer\ngraph = StateGraph(State)\n# Add nodes, edges, and compile with MemorySaver()...",
+      "solution_code": "from typing import TypedDict, Annotated, Literal\nfrom langgraph.graph import StateGraph, END\nfrom langgraph.checkpoint.memory import MemorySaver\nfrom langchain_core.messages import HumanMessage, AIMessage\n\nclass State(TypedDict):\n    messages: list\n    approved: bool | None\n    action_to_take: str\n\ndef propose_action(state: State) -> State:\n    request = state['messages'][-1].content if state['messages'] else 'No request'\n    action = f\"Proposed action: Process '{request}'\"\n    return {\n        'messages': state['messages'] + [AIMessage(content=f\"I propose: {action}. Do you approve?\")],\n        'action_to_take': action,\n        'approved': None  # Waiting for human\n    }\n\ndef execute_action(state: State) -> State:\n    action = state['action_to_take']\n    result = f\"Executed: {action} - Success!\"\n    return {\n        'messages': state['messages'] + [AIMessage(content=result)]\n    }\n\ndef should_execute(state: State) -> Literal['execute', 'end', '__interrupt__']:\n    if state['approved'] is None:\n        return '__interrupt__'  # Pause for human\n    elif state['approved']:\n        return 'execute'\n    else:\n        return 'end'\n\ngraph = StateGraph(State)\ngraph.add_node('propose', propose_action)\ngraph.add_node('execute', execute_action)\n\ngraph.set_entry_point('propose')\ngraph.add_conditional_edges('propose', should_execute, {\n    'execute': 'execute',\n    'end': END,\n    '__interrupt__': 'propose'  # Will interrupt here\n})\ngraph.add_edge('execute', END)\n\ncheckpointer = MemorySaver()\napp = graph.compile(checkpointer=checkpointer, interrupt_before=['execute'])\n\n# Usage:\n# 1. Start workflow\nconfig = {'configurable': {'thread_id': 'user-123'}}\nresult = app.invoke(\n    {'messages': [HumanMessage(content='Delete old files')], 'approved': None, 'action_to_take': ''},\n    config\n)\nprint(result['messages'][-1].content)  # Shows proposal\n\n# 2. Human approves\nresult = app.invoke({'approved': True}, config)  # Resume with approval\nprint(result['messages'][-1].content)  # Shows execution result",
+      "hints": [
+        "Use MemorySaver() for in-memory checkpointing",
+        "interrupt_before=['node'] pauses execution before that node",
+        "Resume by calling invoke() again with the same thread_id"
+      ],
+      "verification": "Workflow pauses for approval and resumes correctly",
+      "common_mistakes": [
+        "Forgetting to pass checkpointer to compile()",
+        "Not using the same thread_id to resume",
+        "Not handling the None case for approved"
+      ]
+    }
+  ],
+  "challenges": [
+    {
+      "challengeId": "supervisor_worker",
+      "name": "Supervisor-Worker Multi-Agent System",
+      "description": "Build a supervisor that orchestrates multiple specialized worker agents",
+      "requirements": [
+        "Create a supervisor agent that analyzes tasks and routes to workers",
+        "Implement at least 3 specialized worker agents (researcher, writer, critic)",
+        "Handle worker responses and aggregate results",
+        "Implement error handling when workers fail",
+        "Add maximum iteration limit to prevent infinite loops"
+      ],
+      "evaluation_criteria": [
+        "Supervisor correctly routes tasks to appropriate workers",
+        "Workers return properly formatted responses",
+        "Results are aggregated into final output",
+        "Errors are handled gracefully",
+        "Graph terminates correctly"
+      ],
+      "stretch_goals": [
+        "Add parallel worker execution",
+        "Implement worker-to-worker communication",
+        "Add human oversight at key decision points",
+        "Integrate with LangSmith for tracing"
+      ]
+    }
+  ],
+  "resources": {
+    "official_docs": [
+      "https://langchain-ai.github.io/langgraph/",
+      "https://langchain-ai.github.io/langgraph/concepts/",
+      "https://langchain-ai.github.io/langgraph/tutorials/"
+    ],
+    "tutorials": [
+      "LangGraph Quick Start - Official",
+      "Building Agents with LangGraph - LangChain Blog",
+      "Multi-Agent Systems with LangGraph"
+    ],
+    "videos": [
+      "LangGraph Explained - LangChain YouTube",
+      "Building Production Agents - AI Engineer Summit"
+    ],
+    "community": [
+      "LangChain Discord #langgraph",
+      "GitHub Discussions",
+      "Stack Overflow - langgraph tag"
+    ]
+  },
+  "assessment": {
+    "knowledge_check": [
+      {
+        "question": "When should you use LangGraph instead of LangChain chains?",
+        "type": "short_answer",
+        "answer": "Use LangGraph when you need: 1) Stateful workflows with memory across steps, 2) Conditional branching and loops, 3) Human-in-the-loop patterns, 4) Multi-agent orchestration, 5) Checkpoint/resume capabilities. Chains are sufficient for linear, stateless pipelines.",
+        "explanation": "LangGraph adds state management and graph execution"
+      },
+      {
+        "question": "What is the purpose of a reducer in LangGraph state?",
+        "type": "short_answer",
+        "answer": "Reducers define how state updates are merged when multiple nodes write to the same field. For example, add_messages reducer appends new messages instead of replacing. Without reducers, the last write wins, which can lose data in concurrent or loop scenarios.",
+        "explanation": "Reducers handle state merging safely"
+      },
+      {
+        "question": "How do you implement human-in-the-loop in LangGraph?",
+        "type": "short_answer",
+        "answer": "1) Add a checkpointer (MemorySaver or database-backed), 2) Use interrupt_before or interrupt_after in compile(), 3) Resume with app.invoke(new_state, config) using the same thread_id. The graph pauses at interrupt points and resumes when invoked again.",
+        "explanation": "Checkpoints + interrupts enable human oversight"
+      }
+    ],
+    "practical_assessment": "Build a multi-agent research system with a supervisor that routes to researcher, summarizer, and fact-checker workers, with human approval before final output",
+    "self_assessment": [
+      "Can I explain when LangGraph is better than chains?",
+      "Can I define proper state schemas with reducers?",
+      "Can I implement conditional routing?",
+      "Can I add human-in-the-loop checkpoints?",
+      "Can I design a supervisor-worker pattern?"
+    ]
+  },
+  "next_steps": {
+    "next_workshop": "L5_crewai_multiagent",
+    "practice_projects": [
+      "Build a code review agent with approve/reject flow",
+      "Create a research assistant with parallel workers",
+      "Implement a customer support bot with escalation"
+    ],
+    "deeper_learning": [
+      "LangGraph Platform for deployment",
+      "Subgraphs for modular design",
+      "Streaming with LangGraph"
+    ]
+  },
+  "axiom_zero_integration": {
+    "love_moments": [
+      "Celebrating when first graph executes correctly",
+      "Patient debugging of state flow issues",
+      "Encouraging exploration of creative patterns"
+    ],
+    "truth_moments": [
+      "Honest about complexity vs chains trade-off",
+      "Clear explanation of when NOT to use LangGraph",
+      "Accurate state mutation demonstrations"
+    ],
+    "beauty_moments": [
+      "Elegant graph visualizations with mermaid",
+      "Clean separation of concerns in nodes",
+      "Well-structured supervisor patterns"
+    ]
+  }
+}

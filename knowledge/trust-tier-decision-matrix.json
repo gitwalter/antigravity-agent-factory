@@ -1,0 +1,258 @@
+{
+  "$schema": "../patterns/knowledge/knowledge-schema.json",
+  "metadata": {
+    "name": "Trust Tier Decision Matrix",
+    "version": "1.0.0",
+    "description": "Decision guidance for selecting appropriate trust verification tier based on interaction context",
+    "category": "ai_agent",
+    "tags": ["trust", "verification", "decision-matrix", "tiered-trust", "asp"],
+    "created": "2026-02-08",
+    "updated": "2026-02-08"
+  },
+  "value_proposition": {
+    "problem": "Developers waste resources using heavyweight verification for low-stakes interactions, or expose risk using lightweight verification for high-stakes ones",
+    "solution": "Match verification cost to interaction stakes using clear decision criteria",
+    "benefit": "Right-sized security - optimal cost/latency for each scenario"
+  },
+  "decision_matrix": {
+    "description": "Select trust tier based on interaction characteristics",
+    "tiers": {
+      "L0_local": {
+        "name": "Local Verification",
+        "mechanism": "Ed25519 cryptographic signatures",
+        "latency": "<10ms",
+        "cost": "Free",
+        "guarantees": ["Authenticity", "Integrity", "Non-repudiation"],
+        "select_when": {
+          "stakes": ["low", "medium"],
+          "cross_society": false,
+          "audit_required": false,
+          "economic_value": "<$100",
+          "trust_history": "established"
+        },
+        "examples": [
+          "Internal agent task delegation",
+          "Status updates between agents",
+          "Non-critical information sharing",
+          "Development and testing environments"
+        ]
+      },
+      "L1_attested": {
+        "name": "Attested Verification",
+        "mechanism": "Merkle root anchoring on blockchain",
+        "latency": "5-60 minutes (batch interval)",
+        "cost": "$0.0001-$0.001 per event (batched)",
+        "guarantees": ["Tamper evidence", "Timestamp proof", "Audit trail"],
+        "select_when": {
+          "stakes": ["medium", "high"],
+          "cross_society": true,
+          "audit_required": true,
+          "economic_value": "$100-$10,000",
+          "trust_history": "partial"
+        },
+        "examples": [
+          "Cross-team agent handoffs",
+          "Regulatory compliance logging",
+          "Customer-facing interactions",
+          "Production deployments"
+        ]
+      },
+      "L2_contracted": {
+        "name": "Contracted Verification",
+        "mechanism": "Smart contract enforcement",
+        "latency": "400ms-2s (Solana) / 1-30s (Ethereum L2)",
+        "cost": "$0.00025-$0.50 per operation",
+        "guarantees": ["Automated enforcement", "Dispute resolution", "Trustless execution"],
+        "select_when": {
+          "stakes": ["high"],
+          "cross_society": true,
+          "audit_required": true,
+          "economic_value": "$10,000-$100,000",
+          "trust_history": "none"
+        },
+        "examples": [
+          "Financial transactions between agents",
+          "SLA enforcement",
+          "Multi-party agreements",
+          "Resource allocation with penalties"
+        ]
+      },
+      "L3_consensus": {
+        "name": "Consensus Verification",
+        "mechanism": "Multi-party weighted Byzantine fault tolerance",
+        "latency": "1-30 seconds",
+        "cost": "$0.00025-$5 per operation",
+        "guarantees": ["Byzantine fault tolerance", "Decentralized agreement", "No single point of failure"],
+        "select_when": {
+          "stakes": ["critical"],
+          "cross_society": true,
+          "audit_required": true,
+          "economic_value": "$100,000+",
+          "trust_history": "none",
+          "requires_consensus": true
+        },
+        "examples": [
+          "Governance decisions",
+          "High-value resource allocation",
+          "Critical infrastructure changes",
+          "Multi-stakeholder approvals"
+        ]
+      },
+      "L4_economic": {
+        "name": "Economic Verification",
+        "mechanism": "Stake-based trust with slashing",
+        "latency": "Variable (depends on stake period)",
+        "cost": "Stake requirement (typically 1-10% of transaction value)",
+        "guarantees": ["Economic security", "Aligned incentives", "Skin in the game"],
+        "select_when": {
+          "stakes": ["critical"],
+          "cross_society": true,
+          "audit_required": true,
+          "economic_value": "$1,000,000+",
+          "long_term_relationship": true,
+          "requires_stake": true
+        },
+        "examples": [
+          "Long-term partnership agreements",
+          "Critical infrastructure operation",
+          "High-value continuous services",
+          "Insurance-backed operations"
+        ]
+      }
+    }
+  },
+  "selection_algorithm": {
+    "description": "Step-by-step tier selection process",
+    "steps": [
+      {
+        "step": 1,
+        "question": "What is the economic value at risk?",
+        "thresholds": {
+          "<$100": "Start with L0",
+          "$100-$10K": "Consider L1",
+          "$10K-$100K": "Consider L2",
+          "$100K+": "Consider L3 or L4"
+        }
+      },
+      {
+        "step": 2,
+        "question": "Is this cross-society (different organizations)?",
+        "impact": {
+          "yes": "Increase tier by 1",
+          "no": "No change"
+        }
+      },
+      {
+        "step": 3,
+        "question": "Is audit trail required for compliance?",
+        "impact": {
+          "yes": "Minimum L1",
+          "no": "No change"
+        }
+      },
+      {
+        "step": 4,
+        "question": "Is automated enforcement needed?",
+        "impact": {
+          "yes": "Minimum L2",
+          "no": "No change"
+        }
+      },
+      {
+        "step": 5,
+        "question": "Is consensus among multiple parties required?",
+        "impact": {
+          "yes": "Minimum L3",
+          "no": "No change"
+        }
+      },
+      {
+        "step": 6,
+        "question": "Is long-term stake commitment appropriate?",
+        "impact": {
+          "yes": "Consider L4",
+          "no": "Use tier from previous steps"
+        }
+      }
+    ]
+  },
+  "escalation_triggers": {
+    "description": "Conditions that trigger automatic tier escalation",
+    "triggers": [
+      {
+        "condition": "Violation threshold exceeded",
+        "threshold": "3+ violations in 24 hours",
+        "escalation": "+1 tier"
+      },
+      {
+        "condition": "Dispute unresolved",
+        "threshold": "Dispute open > 48 hours",
+        "escalation": "+1 tier"
+      },
+      {
+        "condition": "Multi-party conflict",
+        "threshold": ">2 parties in disagreement",
+        "escalation": "Jump to L3"
+      },
+      {
+        "condition": "Critical axiom violation",
+        "threshold": "Any A4 (Guardian) violation",
+        "escalation": "Jump to L3"
+      }
+    ],
+    "de_escalation": {
+      "condition": "Compliance period with good behavior",
+      "period": "7 days with no violations",
+      "action": "-1 tier (minimum L0)"
+    }
+  },
+  "cost_benefit_analysis": {
+    "L0_local": {
+      "setup_cost": "Minimal",
+      "operational_cost": "Free",
+      "latency_impact": "None",
+      "security_level": "Good for trusted environments"
+    },
+    "L1_attested": {
+      "setup_cost": "Low",
+      "operational_cost": "$0.10-$1/month (batched)",
+      "latency_impact": "Batch delay acceptable",
+      "security_level": "Audit-ready"
+    },
+    "L2_contracted": {
+      "setup_cost": "Medium (smart contract development)",
+      "operational_cost": "$10-$100/month (active usage)",
+      "latency_impact": "Sub-second acceptable",
+      "security_level": "Enterprise-grade"
+    },
+    "L3_consensus": {
+      "setup_cost": "High (multi-party coordination)",
+      "operational_cost": "$100-$1000/month",
+      "latency_impact": "Seconds acceptable",
+      "security_level": "Critical infrastructure"
+    },
+    "L4_economic": {
+      "setup_cost": "Very high (stake capital)",
+      "operational_cost": "Stake opportunity cost",
+      "latency_impact": "Variable",
+      "security_level": "Maximum"
+    }
+  },
+  "integration_with_factory": {
+    "default_tier": "L0_local",
+    "generated_projects": {
+      "single_agent": "L0_local",
+      "multi_agent_internal": "L0_local with optional L1",
+      "multi_agent_cross_org": "L1_attested minimum",
+      "financial_agents": "L2_contracted minimum",
+      "critical_infrastructure": "L3_consensus or L4_economic"
+    }
+  },
+  "references": {
+    "internal": [
+      "docs/research/agent-society-protocol/03-TIERED-TRUST.md",
+      "knowledge/agent-society-protocol.json",
+      "lib/society/hybrid/"
+    ]
+  }
+}

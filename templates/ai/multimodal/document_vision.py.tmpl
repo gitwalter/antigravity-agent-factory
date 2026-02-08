@@ -1,0 +1,588 @@
+"""
+{{DOCUMENT_VISION_NAME}} - Document Understanding with Vision
+
+Purpose: {{DOCUMENT_VISION_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Document analysis includes source references and confidence scores
+- A3 (Transparency): Document processing steps and extracted information are logged
+
+This module provides document understanding capabilities using vision LLMs:
+- Document OCR and text extraction
+- Form and table extraction
+- Document classification
+- Key information extraction
+- Multi-page document processing
+"""
+
+from typing import List, Optional, Dict, Any, Union
+from pathlib import Path
+from pydantic import BaseModel, Field
+import base64
+import logging
+from datetime import datetime
+
+try:
+    from openai import OpenAI
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+    logger.warning("OpenAI not available. Install with: pip install openai")
+
+try:
+    from anthropic import Anthropic
+    ANTHROPIC_AVAILABLE = True
+except ImportError:
+    ANTHROPIC_AVAILABLE = False
+    logger.warning("Anthropic not available. Install with: pip install anthropic")
+
+try:
+    from PIL import Image
+    import pdf2image
+    PDF_PROCESSING_AVAILABLE = True
+except ImportError:
+    PDF_PROCESSING_AVAILABLE = False
+    logger.warning("PDF processing not available. Install with: pip install pdf2image pillow")
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class ExtractedField(BaseModel):
+    """Extracted field from document."""
+    field_name: str = Field(description="Name of the field")
+    value: str = Field(description="Extracted value")
+    confidence: float = Field(ge=0.0, le=1.0, description="Confidence score")
+    location: Optional[Dict[str, Any]] = Field(default=None, description="Location in document")
+
+
+class DocumentAnalysisResult(BaseModel):
+    """Result from document analysis."""
+    document_type: str = Field(description="Type of document (e.g., invoice, form, letter)")
+    extracted_text: str = Field(description="Full extracted text content")
+    extracted_fields: List[ExtractedField] = Field(default_factory=list, description="Structured fields")
+    tables: List[Dict[str, Any]] = Field(default_factory=list, description="Extracted tables")
+    summary: str = Field(description="Summary of document content")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+    confidence: float = Field(ge=0.0, le=1.0, description="Overall confidence score")
+    model_used: str = Field(description="Vision model used")
+
+
+class DocumentConfig(BaseModel):
+    """Configuration for document processing."""
+    provider: str = Field(default="{{PROVIDER}}", description="Provider: 'openai' or 'anthropic'")
+    model_name: str = Field(default="{{MODEL_NAME}}", description="Vision model name")
+    max_tokens: int = Field(default={{MAX_TOKENS}}, description="Max tokens for response")
+    temperature: float = Field(default={{TEMPERATURE}}, ge=0.0, le=2.0, description="Sampling temperature")
+    detail: str = Field(default="{{DETAIL}}", description="Image detail level: 'low' or 'high'")
+    extract_tables: bool = Field(default={{EXTRACT_TABLES}}, description="Extract tables from document")
+    extract_fields: bool = Field(default={{EXTRACT_FIELDS}}, description="Extract structured fields")
+    document_types: Optional[List[str]] = Field(default=None, description="Expected document types")
+
+
+class {{DOCUMENT_VISION_CLASS_NAME}}:
+    """
+    {{DOCUMENT_VISION_NAME}} - Document Understanding with Vision
+    
+    Processes documents using vision-capable LLMs to extract text, fields, and structured information.
+    Supports PDFs, images, and multi-page documents.
+    
+    Features:
+    - OCR and text extraction
+    - Form field extraction
+    - Table extraction
+    - Document classification
+    - Key information extraction
+    
+    Example:
+        >>> processor = {{DOCUMENT_VISION_CLASS_NAME}}(
+        ...     provider="openai",
+        ...     model_name="gpt-4o-vision"
+        ... )
+        >>> result = processor.process_document("invoice.pdf")
+        >>> print(f"Document type: {result.document_type}")
+        >>> print(f"Extracted fields: {len(result.extracted_fields)}")
+    """
+    
+    def __init__(self, config: Optional[DocumentConfig] = None):
+        """
+        Initialize document processor.
+        
+        Args:
+            config: Document processing configuration
+        """
+        self.config = config or DocumentConfig()
+        
+        # Initialize provider client
+        if self.config.provider == "openai":
+            if not OPENAI_AVAILABLE:
+                raise ImportError("OpenAI package not installed. Install with: pip install openai")
+            self.client = OpenAI(api_key="{{OPENAI_API_KEY}}")
+            self.model = self.config.model_name or "gpt-4o-vision"
+        elif self.config.provider == "anthropic":
+            if not ANTHROPIC_AVAILABLE:
+                raise ImportError("Anthropic package not installed. Install with: pip install anthropic")
+            self.client = Anthropic(api_key="{{ANTHROPIC_API_KEY}}")
+            self.model = self.config.model_name or "claude-3-opus-20240229"
+        else:
+            raise ValueError(f"Unsupported provider: {self.config.provider}")
+        
+        logger.info(f"Initialized {{DOCUMENT_VISION_NAME}} with {self.config.provider}/{self.model}")
+    
+    def _load_image(self, image_path: Union[str, Path]) -> bytes:
+        """Load image from file path."""
+        path = Path(image_path)
+        if not path.exists():
+            raise FileNotFoundError(f"Image not found: {image_path}")
+        
+        with open(path, "rb") as f:
+            return f.read()
+    
+    def _encode_image(self, image_bytes: bytes) -> str:
+        """Encode image bytes to base64."""
+        return base64.b64encode(image_bytes).decode("utf-8")
+    
+    def _pdf_to_images(self, pdf_path: Union[str, Path]) -> List[Image.Image]:
+        """
+        Convert PDF to list of images.
+        
+        Args:
+            pdf_path: Path to PDF file
+            
+        Returns:
+            List of PIL Images
+        """
+        if not PDF_PROCESSING_AVAILABLE:
+            raise ImportError("PDF processing not available. Install with: pip install pdf2image pillow")
+        
+        logger.info(f"Converting PDF to images: {pdf_path}")
+        images = pdf2image.convert_from_path(pdf_path)
+        logger.info(f"Converted {len(images)} pages")
+        return images
+    
+    def _prepare_document_message(
+        self,
+        image_bytes: bytes,
+        prompt: str
+    ) -> Dict[str, Any]:
+        """Prepare message with document image for API call."""
+        image_base64 = self._encode_image(image_bytes)
+        
+        if self.config.provider == "openai":
+            return {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": prompt
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_base64}",
+                            "detail": self.config.detail
+                        }
+                    }
+                ]
+            }
+        else:  # anthropic
+            return {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "image/jpeg",
+                            "data": image_base64
+                        }
+                    },
+                    {
+                        "type": "text",
+                        "text": prompt
+                    }
+                ]
+            }
+    
+    def process_document(
+        self,
+        document_path: Union[str, Path],
+        document_type: Optional[str] = None
+    ) -> DocumentAnalysisResult:
+        """
+        Process a document and extract information.
+        
+        Args:
+            document_path: Path to document (PDF or image)
+            document_type: Expected document type (optional)
+            
+        Returns:
+            DocumentAnalysisResult with extracted information
+            
+        Example:
+            >>> result = processor.process_document("invoice.pdf")
+            >>> print(f"Type: {result.document_type}")
+            >>> print(f"Fields: {[f.field_name for f in result.extracted_fields]}")
+        """
+        logger.info(f"Processing document: {document_path}")
+        
+        path = Path(document_path)
+        suffix = path.suffix.lower()
+        
+        # Convert PDF to images if needed
+        if suffix == ".pdf":
+            images = self._pdf_to_images(path)
+            # Process first page for now (can be extended to multi-page)
+            image_bytes = self._image_to_bytes(images[0])
+        else:
+            image_bytes = self._load_image(path)
+        
+        # Build analysis prompt
+        analysis_prompt = self._build_analysis_prompt(document_type)
+        
+        try:
+            user_message = self._prepare_document_message(image_bytes, analysis_prompt)
+            
+            if self.config.provider == "openai":
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[user_message],
+                    max_tokens=self.config.max_tokens,
+                    temperature=self.config.temperature
+                )
+                content = response.choices[0].message.content
+            else:  # anthropic
+                response = self.client.messages.create(
+                    model=self.model,
+                    max_tokens=self.config.max_tokens,
+                    temperature=self.config.temperature,
+                    messages=[user_message]
+                )
+                content = response.content[0].text
+            
+            # Parse response
+            result = self._parse_analysis_response(content, document_path)
+            
+            logger.info(f"Document processed. Type: {result.document_type}, Fields: {len(result.extracted_fields)}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error processing document: {e}")
+            raise
+    
+    def extract_text(
+        self,
+        document_path: Union[str, Path]
+    ) -> str:
+        """
+        Extract text content from document (OCR).
+        
+        Args:
+            document_path: Path to document
+            
+        Returns:
+            Extracted text content
+            
+        Example:
+            >>> text = processor.extract_text("document.pdf")
+            >>> print(text)
+        """
+        logger.info(f"Extracting text from: {document_path}")
+        
+        path = Path(document_path)
+        if path.suffix.lower() == ".pdf":
+            images = self._pdf_to_images(path)
+            image_bytes = self._image_to_bytes(images[0])
+        else:
+            image_bytes = self._load_image(path)
+        
+        ocr_prompt = """Extract all text from this document. Return only the text content, preserving the structure and layout as much as possible."""
+        
+        user_message = self._prepare_document_message(image_bytes, ocr_prompt)
+        
+        if self.config.provider == "openai":
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[user_message],
+                max_tokens=self.config.max_tokens,
+                temperature=0.0  # Low temperature for OCR
+            )
+            return response.choices[0].message.content
+        else:  # anthropic
+            response = self.client.messages.create(
+                model=self.model,
+                max_tokens=self.config.max_tokens,
+                temperature=0.0,
+                messages=[user_message]
+            )
+            return response.content[0].text
+    
+    def extract_fields(
+        self,
+        document_path: Union[str, Path],
+        field_names: List[str]
+    ) -> List[ExtractedField]:
+        """
+        Extract specific fields from document.
+        
+        Args:
+            document_path: Path to document
+            field_names: List of field names to extract
+            
+        Returns:
+            List of ExtractedField objects
+            
+        Example:
+            >>> fields = processor.extract_fields(
+            ...     "invoice.pdf",
+            ...     ["invoice_number", "date", "total_amount"]
+            ... )
+            >>> for field in fields:
+            ...     print(f"{field.field_name}: {field.value}")
+        """
+        logger.info(f"Extracting fields: {field_names}")
+        
+        path = Path(document_path)
+        if path.suffix.lower() == ".pdf":
+            images = self._pdf_to_images(path)
+            image_bytes = self._image_to_bytes(images[0])
+        else:
+            image_bytes = self._load_image(path)
+        
+        fields_str = ", ".join(field_names)
+        extraction_prompt = f"""Extract the following fields from this document:
+{fields_str}
+
+For each field, provide:
+- Field name
+- Extracted value
+- Confidence score (0.0 to 1.0)
+
+Format as JSON or structured text."""
+        
+        user_message = self._prepare_document_message(image_bytes, extraction_prompt)
+        
+        if self.config.provider == "openai":
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[user_message],
+                max_tokens=self.config.max_tokens,
+                temperature=0.0
+            )
+            content = response.choices[0].message.content
+        else:  # anthropic
+            response = self.client.messages.create(
+                model=self.model,
+                max_tokens=self.config.max_tokens,
+                temperature=0.0,
+                messages=[user_message]
+            )
+            content = response.content[0].text
+        
+        return self._parse_fields_response(content, field_names)
+    
+    def extract_tables(
+        self,
+        document_path: Union[str, Path]
+    ) -> List[Dict[str, Any]]:
+        """
+        Extract tables from document.
+        
+        Args:
+            document_path: Path to document
+            
+        Returns:
+            List of extracted tables as dictionaries
+            
+        Example:
+            >>> tables = processor.extract_tables("report.pdf")
+            >>> for table in tables:
+            ...     print(f"Table with {len(table['rows'])} rows")
+        """
+        logger.info(f"Extracting tables from: {document_path}")
+        
+        path = Path(document_path)
+        if path.suffix.lower() == ".pdf":
+            images = self._pdf_to_images(path)
+            image_bytes = self._image_to_bytes(images[0])
+        else:
+            image_bytes = self._load_image(path)
+        
+        table_prompt = """Extract all tables from this document. For each table, provide:
+- Table title/caption
+- Column headers
+- All rows of data
+- Table structure
+
+Format as structured data (JSON preferred)."""
+        
+        user_message = self._prepare_document_message(image_bytes, table_prompt)
+        
+        if self.config.provider == "openai":
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[user_message],
+                max_tokens=self.config.max_tokens,
+                temperature=0.0
+            )
+            content = response.choices[0].message.content
+        else:  # anthropic
+            response = self.client.messages.create(
+                model=self.model,
+                max_tokens=self.config.max_tokens,
+                temperature=0.0,
+                messages=[user_message]
+            )
+            content = response.content[0].text
+        
+        return self._parse_tables_response(content)
+    
+    def _build_analysis_prompt(self, document_type: Optional[str] = None) -> str:
+        """Build analysis prompt based on configuration."""
+        prompt_parts = ["Analyze this document and provide:"]
+        
+        prompt_parts.append("1. Document type (e.g., invoice, form, letter, receipt, contract)")
+        prompt_parts.append("2. Complete text content extracted from the document")
+        
+        if self.config.extract_fields:
+            prompt_parts.append("3. Key fields and their values (e.g., dates, amounts, names, IDs)")
+        
+        if self.config.extract_tables:
+            prompt_parts.append("4. All tables with their data")
+        
+        prompt_parts.append("5. A summary of the document's main content and purpose")
+        
+        if document_type:
+            prompt_parts.append(f"\nNote: This appears to be a {document_type} document.")
+        
+        return "\n".join(prompt_parts)
+    
+    def _parse_analysis_response(
+        self,
+        content: str,
+        document_path: Union[str, Path]
+    ) -> DocumentAnalysisResult:
+        """Parse analysis response into structured result."""
+        # Simplified parsing - can be enhanced with structured output
+        document_type = self._extract_document_type(content)
+        extracted_text = content  # Full response as text
+        extracted_fields = self._extract_fields_from_text(content)
+        tables = self._extract_tables_from_text(content)
+        summary = self._extract_summary(content)
+        
+        return DocumentAnalysisResult(
+            document_type=document_type,
+            extracted_text=extracted_text,
+            extracted_fields=extracted_fields,
+            tables=tables,
+            summary=summary,
+            confidence=0.85,  # Default - can be enhanced
+            model_used=self.model,
+            metadata={
+                "document_path": str(document_path),
+                "provider": self.config.provider
+            }
+        )
+    
+    def _extract_document_type(self, text: str) -> str:
+        """Extract document type from response."""
+        doc_types = ["invoice", "receipt", "form", "letter", "contract", "report", "memo"]
+        text_lower = text.lower()
+        for doc_type in doc_types:
+            if doc_type in text_lower:
+                return doc_type
+        return "unknown"
+    
+    def _extract_fields_from_text(self, text: str) -> List[ExtractedField]:
+        """Extract fields from response text."""
+        fields = []
+        # Simplified extraction - can be enhanced
+        lines = text.split("\n")
+        for line in lines:
+            if ":" in line and any(keyword in line.lower() for keyword in ["date", "amount", "number", "name"]):
+                parts = line.split(":", 1)
+                if len(parts) == 2:
+                    fields.append(ExtractedField(
+                        field_name=parts[0].strip(),
+                        value=parts[1].strip(),
+                        confidence=0.8
+                    ))
+        return fields
+    
+    def _extract_tables_from_text(self, text: str) -> List[Dict[str, Any]]:
+        """Extract tables from response text."""
+        tables = []
+        # Simplified extraction - can be enhanced with structured parsing
+        return tables
+    
+    def _extract_summary(self, text: str) -> str:
+        """Extract summary from response."""
+        # Look for summary section
+        if "summary" in text.lower():
+            summary_start = text.lower().find("summary")
+            return text[summary_start:summary_start+500]
+        return text[:500]  # First 500 chars as summary
+    
+    def _parse_fields_response(
+        self,
+        content: str,
+        field_names: List[str]
+    ) -> List[ExtractedField]:
+        """Parse fields extraction response."""
+        fields = []
+        for field_name in field_names:
+            # Look for field in response
+            if field_name.lower() in content.lower():
+                # Extract value (simplified)
+                fields.append(ExtractedField(
+                    field_name=field_name,
+                    value="",  # Would extract actual value
+                    confidence=0.8
+                ))
+        return fields
+    
+    def _parse_tables_response(self, content: str) -> List[Dict[str, Any]]:
+        """Parse tables extraction response."""
+        tables = []
+        # Simplified - would parse structured table data
+        return tables
+    
+    def _image_to_bytes(self, image: Image.Image) -> bytes:
+        """Convert PIL Image to bytes."""
+        from io import BytesIO
+        buffer = BytesIO()
+        image.save(buffer, format="JPEG")
+        return buffer.getvalue()
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create processor
+    config = DocumentConfig(
+        provider="{{PROVIDER}}",
+        model_name="{{MODEL_NAME}}",
+        extract_fields={{EXTRACT_FIELDS}},
+        extract_tables={{EXTRACT_TABLES}}
+    )
+    
+    processor = {{DOCUMENT_VISION_CLASS_NAME}}(config=config)
+    
+    # Process document
+    # result = processor.process_document("{{EXAMPLE_DOCUMENT_PATH}}")
+    # print(f"Document type: {result.document_type}")
+    # print(f"Summary: {result.summary}")
+    # print(f"Extracted fields: {len(result.extracted_fields)}")
+    
+    # Extract text only
+    # text = processor.extract_text("{{EXAMPLE_DOCUMENT_PATH}}")
+    # print(f"Extracted text: {text[:500]}...")
+    
+    # Extract specific fields
+    # fields = processor.extract_fields(
+    #     "{{EXAMPLE_DOCUMENT_PATH}}",
+    #     ["{{FIELD1}}", "{{FIELD2}}", "{{FIELD3}}"]
+    # )
+    # for field in fields:
+    #     print(f"{field.field_name}: {field.value}")

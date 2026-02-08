@@ -5,8 +5,7 @@ Extends the Guardian module to enforce protection of Layers 0-2 (Axioms, Purpose
 Principles) from modification by the inductive memory system.
 
 Protection Levels:
-    - L0 (Axioms): .agentrules Layer 0, patterns/axioms/ - IMMUTABLE
-    - L1 (Purpose): PURPOSE.md, patterns/purpose/ - IMMUTABLE  
+    - L0 (Axioms): .agentrules Layer 0, patterns/axioms/ - IMMUTABLE    - L1 (Purpose): PURPOSE.md, patterns/purpose/ - IMMUTABLE  
     - L2 (Principles): patterns/principles/, patterns/enforcement/ - IMMUTABLE
     - L3-L4 (Methodology, Technical): Mutable by induction system
 
@@ -63,8 +62,7 @@ PROTECTED_LAYERS: Dict[str, Dict[str, Any]] = {
         "name": "Axioms & Guardian",
         "description": "Core axioms (A1-A5) and Guardian protocol - the foundation",
         "paths": [
-            ".agentrules",  # Contains Layer 0 section
-            "patterns/axioms/",
+            ".agentrules",  # Contains Layer 0 section            "patterns/axioms/",
         ],
         "content_patterns": [
             r"# LAYER 0: INTEGRITY GUARDIAN",
@@ -119,8 +117,7 @@ MUTABLE_PATHS: List[str] = [
 
 # Files that are never modifiable regardless of path
 NEVER_MODIFY: List[str] = [
-    ".agentrules",
-    "patterns/axioms/core-axioms.json",
+    ".agentrules",    "patterns/axioms/core-axioms.json",
     "patterns/axioms/axiom-zero.json",
     "patterns/principles/ethical-boundaries.json",
     "patterns/enforcement/integrity-enforcement.json",

@@ -20,7 +20,6 @@ npx @modelcontextprotocol/server-memory
 ## Configuration
 
 ### Antigravity MCP Config (`.agent/mcp.json`)
-
 ```json
 {
   "mcpServers": {
@@ -98,14 +97,12 @@ Once configured, you can ask the AI to:
 - Memory is stored in a JSON file
 - Default location: `~/.mcp-memory/memory.json`
 - Persists across Antigravity restarts
-
 ## Verification
 
 Test the server is working:
 
 1. Add configuration to `.agent/mcp.json`
-2. Restart Antigravity
-3. Ask the AI to "remember that this is a test project"
+2. Restart Antigravity3. Ask the AI to "remember that this is a test project"
 4. In a new conversation, ask "what do you know about this project?"
 
 ## Troubleshooting

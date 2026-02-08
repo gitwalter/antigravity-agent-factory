@@ -143,8 +143,7 @@ class TestScanAgents:
         """Test scanning with agents present."""
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
-            agents_dir = root / ".agent" / "agents"
-            agents_dir.mkdir(parents=True)
+            agents_dir = root / ".agent" / "agents"            agents_dir.mkdir(parents=True)
             (agents_dir / "code-reviewer.md").touch()
             (agents_dir / "test-generator.md").touch()
             
@@ -172,8 +171,7 @@ class TestScanSkills:
         """Test scanning with skills present."""
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
-            skills_dir = root / ".agent" / "skills"
-            
+            skills_dir = root / ".agent" / "skills"            
             # Create valid skill (has SKILL.md)
             tdd = skills_dir / "tdd"
             tdd.mkdir(parents=True)
@@ -406,8 +404,7 @@ class TestExtractReadmeCounts:
 ## Project Structure
 
 ```
-+-- .agent/
-|   +-- agents/                  # Factory's own agents (5 agents)
++-- .agent/|   +-- agents/                  # Factory's own agents (5 agents)
 |   +-- skills/                  # Factory's own skills (10 skills)
 +-- blueprints/                  # Technology stack blueprints (28 blueprints)
 ```
@@ -456,8 +453,7 @@ class TestValidate:
             root = Path(tmpdir)
             
             # Create actual structure
-            agents_dir = root / ".agent" / "agents"
-            agents_dir.mkdir(parents=True)
+            agents_dir = root / ".agent" / "agents"            agents_dir.mkdir(parents=True)
             (agents_dir / "agent1.md").touch()
             (agents_dir / "agent2.md").touch()
             
@@ -467,8 +463,7 @@ class TestValidate:
 ## Project Structure
 
 ```
-+-- .agent/
-|   +-- agents/                  # Factory's own agents (2 agents)
++-- .agent/|   +-- agents/                  # Factory's own agents (2 agents)
 ```
 """, encoding="utf-8")
             
@@ -546,8 +541,7 @@ old structure here
             
             assert result is True
             content = readme.read_text()
-            assert "antigravity-agent-factory/" in content
-    
+            assert "cursor-agent-factory/" in content    
     def test_update_no_structure_section(self):
         """Test updating README without structure section."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -581,8 +575,7 @@ class TestGenerateStructureMarkdown:
             root = Path(tmpdir)
             
             # Create minimal structure including patterns
-            agents_dir = root / ".agent" / "agents"
-            agents_dir.mkdir(parents=True)
+            agents_dir = root / ".agent" / "agents"            agents_dir.mkdir(parents=True)
             (agents_dir / "test-agent.md").touch()
             
             patterns_dir = root / "patterns" / "agents"
@@ -592,8 +585,7 @@ class TestGenerateStructureMarkdown:
             validator = StructureValidator(root)
             markdown = validator.generate_structure_markdown()
             
-            assert "antigravity-agent-factory/" in markdown
-            assert "agents/" in markdown
+            assert "cursor-agent-factory/" in markdown            assert "agents/" in markdown
     
     def test_includes_counts(self):
         """Test that counts are included in markdown."""
@@ -623,8 +615,7 @@ class TestMain:
             
             assert result == 0
             captured = capsys.readouterr()
-            assert "antigravity-agent-factory/" in captured.out
-    
+            assert "cursor-agent-factory/" in captured.out    
     def test_main_json_mode(self, capsys):
         """Test main with --json."""
         with patch('sys.argv', ['validate_readme_structure.py', '--json']):

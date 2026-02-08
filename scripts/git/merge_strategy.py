@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 Antigravity Agent Factory - Merge Strategy Engine
-
 Defines merge strategies, conflict detection, and resolution mechanisms
 for onboarding existing repositories.
 
@@ -12,8 +11,7 @@ Usage:
     conflicts = engine.detect_conflicts()
     engine.resolve_conflict(conflict, ConflictResolution.KEEP_EXISTING)
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 import difflib
@@ -21,8 +19,7 @@ import json
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-
+from typing import Any, Callable, Dict, List, Optional
 from scripts.analysis.repo_analyzer import RepoInventory, get_file_hash
 
 
@@ -47,21 +44,19 @@ class ArtifactType(Enum):
     """Types of artifacts that can be managed.
     
     Attributes:
-        AGENTRULES: The .agentrules file.
+        CURSORRULES: The .agentrules file.
         AGENT: Agent definition in .agent/agents/.
         SKILL: Skill definition in .agent/skills/.
         COMMAND: Custom command in .agent/commands/.
         RULE: Custom rule in .agent/rules/.
-        MCP_CONFIG: MCP configuration in .agent/mcp.json.
-        KNOWLEDGE: Knowledge file in knowledge/.
+        MCP_CONFIG: MCP configuration in .agent/mcp.json.        KNOWLEDGE: Knowledge file in knowledge/.
         TEMPLATE: Template file in templates/.
         WORKFLOW: Workflow file in workflows/.
         PURPOSE: PURPOSE.md file.
         PRACTICES: practices.yaml file.
         METHODOLOGY: workflows/methodology.yaml file.
     """
-    AGENTRULES = "agentrules"
-    AGENT = "agent"
+    CURSORRULES = "cursorrules"    AGENT = "agent"
     SKILL = "skill"
     COMMAND = "command"
     RULE = "rule"
@@ -91,8 +86,7 @@ class MergeStrategy(Enum):
 
 # Default strategies for each artifact type
 DEFAULT_STRATEGIES: Dict[ArtifactType, MergeStrategy] = {
-    ArtifactType.AGENTRULES: MergeStrategy.MERGE,
-    ArtifactType.AGENT: MergeStrategy.ADD,
+    ArtifactType.CURSORRULES: MergeStrategy.MERGE,    ArtifactType.AGENT: MergeStrategy.ADD,
     ArtifactType.SKILL: MergeStrategy.ADD,
     ArtifactType.COMMAND: MergeStrategy.PRESERVE,  # User custom
     ArtifactType.RULE: MergeStrategy.PRESERVE,     # User custom
@@ -243,8 +237,7 @@ class MergeEngine:
         desired_agents: List[str],
         desired_skills: List[str],
         desired_knowledge: List[str],
-        new_agentrules: Optional[str] = None,
-        new_mcp_servers: Optional[Dict[str, Any]] = None,
+        new_cursorrules: Optional[str] = None,        new_mcp_servers: Optional[Dict[str, Any]] = None,
     ) -> List[Conflict]:
         """Detect all conflicts between existing and desired artifacts.
         
@@ -252,8 +245,7 @@ class MergeEngine:
             desired_agents: List of agent names to generate.
             desired_skills: List of skill names to generate.
             desired_knowledge: List of knowledge file names to generate.
-            new_agentrules: New .agentrules content (if generating).
-            new_mcp_servers: New MCP server configurations (if any).
+            new_cursorrules: New .agentrules content (if generating).            new_mcp_servers: New MCP server configurations (if any).
             
         Returns:
             List of detected conflicts.
@@ -261,9 +253,8 @@ class MergeEngine:
         conflicts: List[Conflict] = []
         
         # Check .agentrules conflict
-        if new_agentrules and self.inventory.agentrules.exists:
-            conflict = self._create_agentrules_conflict(new_agentrules)
-            if conflict:
+        if new_cursorrules and self.inventory.agentrules.exists:
+            conflict = self._create_cursorrules_conflict(new_cursorrules)            if conflict:
                 conflicts.append(conflict)
         
         # Check agent conflicts
@@ -296,18 +287,16 @@ class MergeEngine:
         self._conflicts = conflicts
         return conflicts
     
-    def _create_agentrules_conflict(self, new_content: str) -> Optional[Conflict]:
+    def _create_cursorrules_conflict(self, new_content: str) -> Optional[Conflict]:
         """Create a conflict for .agentrules if content differs.
         
         Args:
-            new_content: The new .agentrules content.
-            
+            new_content: The new .agentrules content.            
         Returns:
             Conflict if files differ, None otherwise.
         """
         existing_path = self.inventory.path / ".agentrules"
-        existing_content = self.inventory.agentrules.content or ""
-        
+        existing_content = self.inventory.agentrules.content or ""        
         existing_hash = get_file_hash(existing_path)
         import hashlib
         new_hash = hashlib.md5(new_content.encode()).hexdigest()
@@ -319,8 +308,7 @@ class MergeEngine:
             existing_content.splitlines(keepends=True),
             new_content.splitlines(keepends=True),
             fromfile="existing/.agentrules",
-            tofile="new/.agentrules",
-            lineterm=""
+            tofile="new/.agentrules",            lineterm=""
         ))
         
         # Create summary
@@ -329,9 +317,8 @@ class MergeEngine:
         diff_summary = f"+{additions} lines, -{deletions} lines"
         
         return Conflict(
-            artifact_type=ArtifactType.AGENTRULES,
-            artifact_name=".agentrules",
-            existing_path=existing_path,
+            artifact_type=ArtifactType.CURSORRULES,
+            artifact_name=".agentrules",            existing_path=existing_path,
             new_content=new_content,
             existing_hash=existing_hash,
             new_hash=new_hash,
@@ -348,8 +335,7 @@ class MergeEngine:
         Returns:
             Conflict if agent exists with different content, None otherwise.
         """
-        existing_path = self.inventory.path / ".agent" / "agents" / f"{agent_name}.md"
-        
+        existing_path = self.inventory.path / ".agent" / "agents" / f"{agent_name}.md"        
         if not existing_path.exists():
             return None
         
@@ -378,8 +364,7 @@ class MergeEngine:
         Returns:
             Conflict if skill exists with different content, None otherwise.
         """
-        existing_path = self.inventory.path / ".agent" / "skills" / skill_name / "SKILL.md"
-        
+        existing_path = self.inventory.path / ".agent" / "skills" / skill_name / "SKILL.md"        
         if not existing_path.exists():
             return None
         
@@ -428,8 +413,7 @@ class MergeEngine:
         Returns:
             Conflict if there are overlapping server names, None otherwise.
         """
-        existing_path = self.inventory.path / ".agent" / "mcp.json"
-        
+        existing_path = self.inventory.path / ".agent" / "mcp.json"        
         overlapping = set(new_servers.keys()) & set(self.inventory.mcp.servers)
         
         if not overlapping:
@@ -461,8 +445,7 @@ class MergeEngine:
             options = [ConflictResolution.KEEP_EXISTING, ConflictResolution.SKIP]
             recommendation = ConflictResolution.KEEP_EXISTING
             reason = "Custom user artifact - preserving original"
-        elif conflict.artifact_type == ArtifactType.AGENTRULES:
-            options = [
+        elif conflict.artifact_type == ArtifactType.CURSORRULES:            options = [
                 ConflictResolution.KEEP_EXISTING,
                 ConflictResolution.REPLACE,
                 ConflictResolution.MERGE,

@@ -60,8 +60,7 @@ class TestNoAxiomDrift:
             "patterns/principles/quality-standards.json",
             "patterns/enforcement/integrity-enforcement.json",
             "patterns/enforcement/safety-enforcement.json",
-            ".agentrules",
-        ]
+            ".agentrules",        ]
         
         snapshot = {}
         for path in protected_files:
@@ -118,8 +117,7 @@ class TestNoAxiomDrift:
         axiom_files = [
             "patterns/axioms/core-axioms.json",
             "patterns/axioms/axiom-zero.json",
-            ".agentrules",
-        ]
+            ".agentrules",        ]
         
         for axiom_file in axiom_files:
             # Should not be in any mutable path
@@ -198,8 +196,7 @@ class TestNoAxiomDrift:
             )
         
         # Verify no protected files were created in temp_dir
-        protected_patterns = ["axiom", "principle", "enforcement", "agentrules"]
-        
+        protected_patterns = ["axiom", "principle", "enforcement", "cursorrules"]        
         for pattern in protected_patterns:
             matches = list(Path(temp_dir).rglob(f"*{pattern}*"))
             assert len(matches) == 0, \
@@ -245,8 +242,7 @@ class TestAxiomIntegrity:
         from scripts.guardian.mutability_guard import NEVER_MODIFY
         
         critical_files = [
-            ".agentrules",
-            "patterns/axioms/core-axioms.json",
+            ".agentrules",            "patterns/axioms/core-axioms.json",
         ]
         
         for critical in critical_files:

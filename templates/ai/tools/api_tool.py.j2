@@ -1,0 +1,441 @@
+"""
+{{ tool_name | default('API Tool') }} - HTTP API Calling Tool
+
+Purpose: {{ tool_purpose | default('Make HTTP API calls with retry logic and error handling') }}
+Author: {{ author | default('Cursor Agent Factory') }}
+Date: {{ date | default('2026-02-08') }}
+
+Axiom Alignment:
+- A1 (Verifiability): All API calls are logged with request/response details
+- A4 (Non-Harm): Input validation and sanitization before API calls
+- A5 (Resilience): Retry logic and error handling for network failures
+
+This tool provides async HTTP client functionality with:
+- Automatic retry on failures
+- Request/response logging
+- Error handling and validation
+- Configurable timeouts and headers
+"""
+
+from typing import Dict, Any, Optional, List, Union
+from langchain_core.tools import tool, BaseTool
+from pydantic import BaseModel, Field, field_validator, HttpUrl
+import httpx
+import asyncio
+import logging
+from datetime import datetime, timedelta
+import json
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class RetryConfig(BaseModel):
+    """Configuration for retry logic."""
+    max_retries: int = Field(default={{ max_retries | default(3) }}, ge=0, le=10)
+    backoff_factor: float = Field(default={{ backoff_factor | default(1.5) }}, gt=0)
+    retry_on_status: List[int] = Field(
+        default_factory=lambda: [500, 502, 503, 504],
+        description="HTTP status codes that trigger retry"
+    )
+    timeout: float = Field(default={{ timeout | default(30.0) }}, gt=0)
+
+
+class APIRequest(BaseModel):
+    """API request parameters."""
+    url: str = Field(description="API endpoint URL")
+    method: str = Field(default="GET", description="HTTP method")
+    headers: Optional[Dict[str, str]] = Field(default=None, description="Request headers")
+    params: Optional[Dict[str, Any]] = Field(default=None, description="URL query parameters")
+    json_data: Optional[Dict[str, Any]] = Field(default=None, description="JSON request body")
+    data: Optional[Dict[str, Any]] = Field(default=None, description="Form data")
+    timeout: Optional[float] = Field(default=None, description="Request timeout in seconds")
+    
+    @field_validator('method')
+    @classmethod
+    def validate_method(cls, v: str) -> str:
+        """Validate HTTP method."""
+        valid_methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']
+        if v.upper() not in valid_methods:
+            raise ValueError(f"Method must be one of {valid_methods}")
+        return v.upper()
+    
+    @field_validator('url')
+    @classmethod
+    def validate_url(cls, v: str) -> str:
+        """Validate and sanitize URL."""
+        if not v or not v.strip():
+            raise ValueError("URL cannot be empty")
+        # Basic URL validation
+        if not (v.startswith('http://') or v.startswith('https://')):
+            raise ValueError("URL must start with http:// or https://")
+        return v.strip()
+
+
+class APIResponse(BaseModel):
+    """API response model."""
+    status_code: int
+    headers: Dict[str, str]
+    content: Union[str, Dict[str, Any]]
+    elapsed_time: float
+    url: str
+    method: str
+
+
+class {{ tool_class_name | default('APITool') }}:
+    """
+    {{ tool_name | default('API Tool') }} - Async HTTP Client with Retry Logic
+    
+    Provides robust HTTP API calling capabilities with automatic retries,
+    error handling, and comprehensive logging.
+    
+    Example:
+        >>> tool = {{ tool_class_name | default('APITool') }}()
+        >>> response = await tool.call(
+        ...     url="https://api.example.com/data",
+        ...     method="GET",
+        ...     headers={"Authorization": "Bearer token"}
+        ... )
+        >>> print(f"Status: {response.status_code}")
+    """
+    
+    def __init__(
+        self,
+        default_headers: Optional[Dict[str, str]] = None,
+        retry_config: Optional[RetryConfig] = None,
+        base_url: Optional[str] = None
+    ):
+        """
+        Initialize API tool.
+        
+        Args:
+            default_headers: Default headers for all requests
+            retry_config: Retry configuration (uses defaults if None)
+            base_url: Base URL for relative paths
+        """
+        self.default_headers = default_headers or {}
+        self.retry_config = retry_config or RetryConfig()
+        self.base_url = base_url
+        self.client: Optional[httpx.AsyncClient] = None
+        
+        logger.info(
+            f"Initialized {{ tool_class_name | default('APITool') }} "
+            f"with max_retries={self.retry_config.max_retries}"
+        )
+    
+    async def __aenter__(self):
+        """Async context manager entry."""
+        self.client = httpx.AsyncClient(
+            timeout=self.retry_config.timeout,
+            headers=self.default_headers,
+            base_url=self.base_url
+        )
+        return self
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit."""
+        if self.client:
+            await self.client.aclose()
+    
+    def _get_client(self) -> httpx.AsyncClient:
+        """Get or create HTTP client."""
+        if self.client is None:
+            self.client = httpx.AsyncClient(
+                timeout=self.retry_config.timeout,
+                headers=self.default_headers,
+                base_url=self.base_url
+            )
+        return self.client
+    
+    async def _make_request(
+        self,
+        request: APIRequest,
+        attempt: int = 1
+    ) -> APIResponse:
+        """
+        Make HTTP request with retry logic.
+        
+        Args:
+            request: API request parameters
+            attempt: Current attempt number
+            
+        Returns:
+            API response
+            
+        Raises:
+            httpx.HTTPError: On HTTP errors after retries exhausted
+            httpx.TimeoutException: On timeout after retries exhausted
+        """
+        client = self._get_client()
+        start_time = datetime.now()
+        
+        # Merge headers
+        headers = {**self.default_headers}
+        if request.headers:
+            headers.update(request.headers)
+        
+        # Prepare request kwargs
+        request_kwargs: Dict[str, Any] = {
+            "method": request.method,
+            "url": request.url,
+            "headers": headers,
+        }
+        
+        if request.params:
+            request_kwargs["params"] = request.params
+        
+        if request.json_data:
+            request_kwargs["json"] = request.json_data
+        elif request.data:
+            request_kwargs["data"] = request.data
+        
+        if request.timeout:
+            request_kwargs["timeout"] = request.timeout
+        
+        # Log request (A1 - Verifiability)
+        logger.info(
+            f"[Attempt {attempt}/{self.retry_config.max_retries + 1}] "
+            f"{request.method} {request.url}"
+        )
+        if request.json_data:
+            logger.debug(f"Request body: {json.dumps(request.json_data, indent=2)}")
+        
+        try:
+            response = await client.request(**request_kwargs)
+            elapsed = (datetime.now() - start_time).total_seconds()
+            
+            # Parse response content
+            try:
+                content = response.json()
+            except (json.JSONDecodeError, ValueError):
+                content = response.text
+            
+            # Log response (A1 - Verifiability)
+            logger.info(
+                f"Response: {response.status_code} "
+                f"({elapsed:.2f}s) - {len(str(content))} bytes"
+            )
+            
+            # Check if retry is needed
+            if (
+                response.status_code in self.retry_config.retry_on_status
+                and attempt <= self.retry_config.max_retries
+            ):
+                wait_time = self.retry_config.backoff_factor ** attempt
+                logger.warning(
+                    f"Status {response.status_code} - "
+                    f"Retrying in {wait_time:.2f}s (attempt {attempt})"
+                )
+                await asyncio.sleep(wait_time)
+                return await self._make_request(request, attempt + 1)
+            
+            return APIResponse(
+                status_code=response.status_code,
+                headers=dict(response.headers),
+                content=content,
+                elapsed_time=elapsed,
+                url=str(response.url),
+                method=request.method
+            )
+            
+        except httpx.TimeoutException as e:
+            elapsed = (datetime.now() - start_time).total_seconds()
+            logger.error(f"Request timeout after {elapsed:.2f}s")
+            
+            if attempt <= self.retry_config.max_retries:
+                wait_time = self.retry_config.backoff_factor ** attempt
+                logger.warning(f"Retrying in {wait_time:.2f}s (attempt {attempt})")
+                await asyncio.sleep(wait_time)
+                return await self._make_request(request, attempt + 1)
+            
+            raise
+            
+        except httpx.HTTPError as e:
+            elapsed = (datetime.now() - start_time).total_seconds()
+            logger.error(f"HTTP error: {e} (after {elapsed:.2f}s)")
+            
+            if attempt <= self.retry_config.max_retries:
+                wait_time = self.retry_config.backoff_factor ** attempt
+                logger.warning(f"Retrying in {wait_time:.2f}s (attempt {attempt})")
+                await asyncio.sleep(wait_time)
+                return await self._make_request(request, attempt + 1)
+            
+            raise
+    
+    async def call(
+        self,
+        url: str,
+        method: str = "GET",
+        headers: Optional[Dict[str, str]] = None,
+        params: Optional[Dict[str, Any]] = None,
+        json_data: Optional[Dict[str, Any]] = None,
+        data: Optional[Dict[str, Any]] = None,
+        timeout: Optional[float] = None
+    ) -> APIResponse:
+        """
+        Make API call with retry logic.
+        
+        Args:
+            url: API endpoint URL
+            method: HTTP method (GET, POST, etc.)
+            headers: Request headers
+            params: URL query parameters
+            json_data: JSON request body
+            data: Form data
+            timeout: Request timeout in seconds
+            
+        Returns:
+            API response
+            
+        Example:
+            >>> response = await tool.call(
+            ...     url="https://api.example.com/users",
+            ...     method="POST",
+            ...     json_data={"name": "John"}
+            ... )
+        """
+        # Validate input (A4 - Non-Harm)
+        request = APIRequest(
+            url=url,
+            method=method,
+            headers=headers,
+            params=params,
+            json_data=json_data,
+            data=data,
+            timeout=timeout
+        )
+        
+        return await self._make_request(request)
+    
+    async def get(
+        self,
+        url: str,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None
+    ) -> APIResponse:
+        """Convenience method for GET requests."""
+        return await self.call(url=url, method="GET", params=params, headers=headers)
+    
+    async def post(
+        self,
+        url: str,
+        json_data: Optional[Dict[str, Any]] = None,
+        data: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None
+    ) -> APIResponse:
+        """Convenience method for POST requests."""
+        return await self.call(
+            url=url,
+            method="POST",
+            json_data=json_data,
+            data=data,
+            headers=headers
+        )
+    
+    async def put(
+        self,
+        url: str,
+        json_data: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None
+    ) -> APIResponse:
+        """Convenience method for PUT requests."""
+        return await self.call(
+            url=url,
+            method="PUT",
+            json_data=json_data,
+            headers=headers
+        )
+    
+    async def delete(
+        self,
+        url: str,
+        headers: Optional[Dict[str, str]] = None
+    ) -> APIResponse:
+        """Convenience method for DELETE requests."""
+        return await self.call(url=url, method="DELETE", headers=headers)
+    
+    async def close(self):
+        """Close HTTP client."""
+        if self.client:
+            await self.client.aclose()
+            self.client = None
+
+
+# LangChain tool wrapper
+@tool
+async def {{ tool_function_name | default('api_call') }}(
+    url: str,
+    method: str = "GET",
+    headers: Optional[str] = None,
+    params: Optional[str] = None,
+    json_data: Optional[str] = None
+) -> str:
+    """
+    Make an HTTP API call with retry logic and error handling.
+    
+    This tool implements A1 (Verifiability) by logging all requests/responses.
+    This tool implements A4 (Non-Harm) by validating inputs.
+    This tool implements A5 (Resilience) with automatic retries.
+    
+    Args:
+        url: API endpoint URL (required)
+        method: HTTP method (GET, POST, PUT, DELETE, etc.)
+        headers: JSON string of headers (e.g., '{"Authorization": "Bearer token"}')
+        params: JSON string of query parameters
+        json_data: JSON string of request body
+        
+    Returns:
+        JSON string of response data
+        
+    Example:
+        >>> result = await {{ tool_function_name | default('api_call') }}(
+        ...     url="https://api.example.com/data",
+        ...     method="GET"
+        ... )
+    """
+    # Parse JSON strings
+    headers_dict = json.loads(headers) if headers else None
+    params_dict = json.loads(params) if params else None
+    json_dict = json.loads(json_data) if json_data else None
+    
+    # Create tool instance
+    async with {{ tool_class_name | default('APITool') }}() as tool_instance:
+        response = await tool_instance.call(
+            url=url,
+            method=method,
+            headers=headers_dict,
+            params=params_dict,
+            json_data=json_dict
+        )
+        
+        # Return response as JSON string
+        return json.dumps({
+            "status_code": response.status_code,
+            "content": response.content,
+            "headers": response.headers,
+            "elapsed_time": response.elapsed_time
+        }, indent=2)
+
+
+# Example usage
+if __name__ == "__main__":
+    async def main():
+        # Example 1: Using context manager
+        async with {{ tool_class_name | default('APITool') }}(
+            default_headers={"User-Agent": "{{ tool_name | default('API Tool') }}/1.0"}
+        ) as tool:
+            response = await tool.get(
+                url="{{ example_url | default('https://httpbin.org/get') }}",
+                params={"key": "value"}
+            )
+            print(f"Status: {response.status_code}")
+            print(f"Response: {response.content}")
+        
+        # Example 2: Using LangChain tool
+        result = await {{ tool_function_name | default('api_call') }}(
+            url="{{ example_url | default('https://httpbin.org/get') }}",
+            method="GET"
+        )
+        print(f"Tool result: {result}")
+    
+    asyncio.run(main())

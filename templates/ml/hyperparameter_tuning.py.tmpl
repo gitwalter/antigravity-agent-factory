@@ -1,0 +1,465 @@
+"""
+Hyperparameter Tuning Template - Optuna-based
+
+Purpose: Automated hyperparameter optimization using Optuna
+Author: {{AUTHOR}}
+Created: {{DATE}}
+
+This template provides:
+- Optuna-based hyperparameter optimization
+- Multiple optimization strategies (TPE, Random, Grid Search)
+- Pruning and early stopping
+- Parallel optimization support
+- Results visualization and export
+"""
+
+import os
+import json
+import pickle
+from pathlib import Path
+from typing import Dict, List, Optional, Any, Callable, Tuple
+from dataclasses import dataclass, asdict
+import logging
+
+import optuna
+from optuna import Trial, Study
+from optuna.pruners import MedianPruner, SuccessiveHalvingPruner, NopPruner
+from optuna.samplers import TPESampler, RandomSampler, GridSampler
+from optuna.visualization import (
+    plot_optimization_history,
+    plot_param_importances,
+    plot_parallel_coordinate
+)
+import torch
+import torch.nn as nn
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class HyperparameterConfig:
+    """Configuration for hyperparameter optimization."""
+    # Study settings
+    study_name: str = "{{STUDY_NAME}}"
+    direction: str = "minimize"  # Options: "minimize", "maximize"
+    n_trials: int = {{N_TRIALS}}
+    timeout: Optional[float] = {{TIMEOUT}}  # Seconds, None for no timeout
+    
+    # Optimization strategy
+    sampler_type: str = "tpe"  # Options: "tpe", "random", "grid"
+    
+    # Pruning
+    enable_pruning: bool = True
+    pruner_type: str = "median"  # Options: "median", "halving", "none"
+    n_startup_trials: int = 5
+    n_warmup_steps: int = 0
+    
+    # Storage
+    storage: Optional[str] = None  # Database URL for persistent storage
+    load_if_exists: bool = True
+    
+    # Parallel execution
+    n_jobs: int = 1  # Number of parallel jobs
+    
+    # Output
+    output_dir: str = "{{OUTPUT_DIR}}"
+    save_best_params: bool = True
+    save_plots: bool = True
+
+
+class HyperparameterTuner:
+    """
+    Hyperparameter optimization using Optuna.
+    
+    This class provides a complete hyperparameter tuning framework
+    with support for multiple optimization strategies, pruning, and
+    result visualization.
+    
+    Attributes:
+        config: Hyperparameter optimization configuration
+        study: Optuna study instance
+        best_params: Best hyperparameters found
+        best_value: Best objective value
+        
+    Example:
+        >>> def objective(trial):
+        ...     lr = trial.suggest_float('lr', 1e-5, 1e-1, log=True)
+        ...     batch_size = trial.suggest_categorical('batch_size', [16, 32, 64])
+        ...     return train_and_evaluate(lr, batch_size)
+        >>> 
+        >>> config = HyperparameterConfig(n_trials=100)
+        >>> tuner = HyperparameterTuner(config)
+        >>> tuner.optimize(objective)
+        >>> print(tuner.best_params)
+    """
+    
+    def __init__(self, config: HyperparameterConfig):
+        """
+        Initialize hyperparameter tuner.
+        
+        Args:
+            config: Hyperparameter optimization configuration
+        """
+        self.config = config
+        self.study: Optional[Study] = None
+        self.best_params: Optional[Dict[str, Any]] = None
+        self.best_value: Optional[float] = None
+        
+        # Create output directory
+        Path(config.output_dir).mkdir(parents=True, exist_ok=True)
+    
+    def _create_sampler(self) -> optuna.samplers.BaseSampler:
+        """
+        Create sampler based on configuration.
+        
+        Returns:
+            Sampler instance
+        """
+        if self.config.sampler_type.lower() == "tpe":
+            return TPESampler(seed=42)
+        elif self.config.sampler_type.lower() == "random":
+            return RandomSampler(seed=42)
+        elif self.config.sampler_type.lower() == "grid":
+            # Grid sampler requires search space definition
+            # This should be customized based on specific use case
+            return GridSampler({})
+        else:
+            logger.warning(f"Unknown sampler type: {self.config.sampler_type}, using TPE")
+            return TPESampler(seed=42)
+    
+    def _create_pruner(self) -> optuna.pruners.BasePruner:
+        """
+        Create pruner based on configuration.
+        
+        Returns:
+            Pruner instance
+        """
+        if not self.config.enable_pruning:
+            return NopPruner()
+        
+        if self.config.pruner_type.lower() == "median":
+            return MedianPruner(
+                n_startup_trials=self.config.n_startup_trials,
+                n_warmup_steps=self.config.n_warmup_steps
+            )
+        elif self.config.pruner_type.lower() == "halving":
+            return SuccessiveHalvingPruner()
+        else:
+            logger.warning(f"Unknown pruner type: {self.config.pruner_type}, using Median")
+            return MedianPruner()
+    
+    def create_study(self) -> Study:
+        """
+        Create or load Optuna study.
+        
+        Returns:
+            Study instance
+        """
+        sampler = self._create_sampler()
+        pruner = self._create_pruner()
+        
+        self.study = optuna.create_study(
+            study_name=self.config.study_name,
+            direction=self.config.direction,
+            sampler=sampler,
+            pruner=pruner,
+            storage=self.config.storage,
+            load_if_exists=self.config.load_if_exists
+        )
+        
+        logger.info(f"Created study: {self.config.study_name}")
+        return self.study
+    
+    def optimize(
+        self,
+        objective: Callable[[Trial], float],
+        callbacks: Optional[List[Callable]] = None
+    ) -> Study:
+        """
+        Run hyperparameter optimization.
+        
+        Args:
+            objective: Objective function that takes a Trial and returns a float
+            callbacks: Optional list of callback functions
+            
+        Returns:
+            Optimized study
+        """
+        if self.study is None:
+            self.create_study()
+        
+        logger.info(f"Starting optimization with {self.config.n_trials} trials")
+        
+        self.study.optimize(
+            objective,
+            n_trials=self.config.n_trials,
+            timeout=self.config.timeout,
+            n_jobs=self.config.n_jobs,
+            callbacks=callbacks,
+            show_progress_bar=True
+        )
+        
+        # Store best results
+        self.best_params = self.study.best_params
+        self.best_value = self.study.best_value
+        
+        logger.info(f"Optimization completed!")
+        logger.info(f"Best value: {self.best_value:.4f}")
+        logger.info(f"Best params: {self.best_params}")
+        
+        # Save results
+        if self.config.save_best_params:
+            self._save_results()
+        
+        if self.config.save_plots:
+            self._save_plots()
+        
+        return self.study
+    
+    def _save_results(self) -> None:
+        """Save optimization results to files."""
+        # Save best parameters as JSON
+        results_path = Path(self.config.output_dir) / "best_params.json"
+        with open(results_path, 'w') as f:
+            json.dump(self.best_params, f, indent=2)
+        
+        # Save study as pickle
+        study_path = Path(self.config.output_dir) / "study.pkl"
+        with open(study_path, 'wb') as f:
+            pickle.dump(self.study, f)
+        
+        # Save trial results as CSV
+        df = self.study.trials_dataframe()
+        csv_path = Path(self.config.output_dir) / "trials.csv"
+        df.to_csv(csv_path, index=False)
+        
+        logger.info(f"Results saved to {self.config.output_dir}")
+    
+    def _save_plots(self) -> None:
+        """Generate and save visualization plots."""
+        try:
+            # Optimization history
+            fig = plot_optimization_history(self.study)
+            fig.write_html(
+                str(Path(self.config.output_dir) / "optimization_history.html")
+            )
+            
+            # Parameter importances
+            try:
+                fig = plot_param_importances(self.study)
+                fig.write_html(
+                    str(Path(self.config.output_dir) / "param_importances.html")
+                )
+            except Exception as e:
+                logger.warning(f"Could not generate parameter importances: {e}")
+            
+            # Parallel coordinate plot
+            try:
+                fig = plot_parallel_coordinate(self.study)
+                fig.write_html(
+                    str(Path(self.config.output_dir) / "parallel_coordinate.html")
+                )
+            except Exception as e:
+                logger.warning(f"Could not generate parallel coordinate plot: {e}")
+            
+            logger.info(f"Plots saved to {self.config.output_dir}")
+        except Exception as e:
+            logger.error(f"Error generating plots: {e}")
+    
+    def get_best_trial(self) -> optuna.Trial:
+        """
+        Get the best trial from the study.
+        
+        Returns:
+            Best trial
+        """
+        return self.study.best_trial
+    
+    def get_trial_count(self) -> int:
+        """
+        Get the number of completed trials.
+        
+        Returns:
+            Number of trials
+        """
+        return len(self.study.trials)
+
+
+def suggest_hyperparameters(trial: Trial, config: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Suggest hyperparameters for a trial.
+    
+    This is a helper function that provides common hyperparameter
+    suggestions. Customize based on your specific needs.
+    
+    Args:
+        trial: Optuna trial object
+        config: Configuration dictionary with hyperparameter ranges
+        
+    Returns:
+        Dictionary of suggested hyperparameters
+        
+    Example:
+        >>> config = {
+        ...     'learning_rate': {'type': 'log_float', 'low': 1e-5, 'high': 1e-1},
+        ...     'batch_size': {'type': 'categorical', 'choices': [16, 32, 64, 128]},
+        ...     'dropout': {'type': 'float', 'low': 0.0, 'high': 0.5}
+        ... }
+        >>> params = suggest_hyperparameters(trial, config)
+    """
+    params = {}
+    
+    for param_name, param_config in config.items():
+        param_type = param_config.get('type', 'float')
+        
+        if param_type == 'float':
+            params[param_name] = trial.suggest_float(
+                param_name,
+                param_config['low'],
+                param_config['high'],
+                step=param_config.get('step', None),
+                log=param_config.get('log', False)
+            )
+        elif param_type == 'log_float':
+            params[param_name] = trial.suggest_float(
+                param_name,
+                param_config['low'],
+                param_config['high'],
+                log=True
+            )
+        elif param_type == 'int':
+            params[param_name] = trial.suggest_int(
+                param_name,
+                param_config['low'],
+                param_config['high'],
+                step=param_config.get('step', 1),
+                log=param_config.get('log', False)
+            )
+        elif param_type == 'categorical':
+            params[param_name] = trial.suggest_categorical(
+                param_name,
+                param_config['choices']
+            )
+        else:
+            raise ValueError(f"Unknown parameter type: {param_type}")
+    
+    return params
+
+
+class PyTorchObjective:
+    """
+    Objective function wrapper for PyTorch training.
+    
+    This class provides a convenient way to create objective functions
+    for PyTorch model training with Optuna.
+    """
+    
+    def __init__(
+        self,
+        model_factory: Callable[[Dict[str, Any]], nn.Module],
+        train_loader: Any,
+        val_loader: Any,
+        device: str = "cuda",
+        epochs_per_trial: int = 5
+    ):
+        """
+        Initialize PyTorch objective.
+        
+        Args:
+            model_factory: Function that creates a model from hyperparameters
+            train_loader: Training data loader
+            val_loader: Validation data loader
+            device: Device to train on
+            epochs_per_trial: Number of epochs per trial
+        """
+        self.model_factory = model_factory
+        self.train_loader = train_loader
+        self.val_loader = val_loader
+        self.device = device
+        self.epochs_per_trial = epochs_per_trial
+    
+    def __call__(self, trial: Trial) -> float:
+        """
+        Objective function for Optuna.
+        
+        Args:
+            trial: Optuna trial object
+            
+        Returns:
+            Validation loss (or metric to minimize)
+        """
+        # Suggest hyperparameters
+        params = {
+            'learning_rate': trial.suggest_float('learning_rate', 1e-5, 1e-1, log=True),
+            'batch_size': trial.suggest_categorical('batch_size', [16, 32, 64, 128]),
+            'weight_decay': trial.suggest_float('weight_decay', 1e-6, 1e-2, log=True),
+        }
+        
+        # Create model
+        model = self.model_factory(params).to(self.device)
+        
+        # Setup optimizer
+        optimizer = torch.optim.Adam(
+            model.parameters(),
+            lr=params['learning_rate'],
+            weight_decay=params['weight_decay']
+        )
+        
+        criterion = nn.CrossEntropyLoss()
+        
+        # Training loop
+        model.train()
+        for epoch in range(self.epochs_per_trial):
+            for batch_idx, (data, target) in enumerate(self.train_loader):
+                data = data.to(self.device)
+                target = target.to(self.device)
+                
+                optimizer.zero_grad()
+                output = model(data)
+                loss = criterion(output, target)
+                loss.backward()
+                optimizer.step()
+                
+                # Report intermediate value for pruning
+                if batch_idx % 10 == 0:
+                    trial.report(loss.item(), epoch * len(self.train_loader) + batch_idx)
+                    
+                    # Check if trial should be pruned
+                    if trial.should_prune():
+                        raise optuna.TrialPruned()
+        
+        # Validation
+        model.eval()
+        val_loss = 0.0
+        with torch.no_grad():
+            for data, target in self.val_loader:
+                data = data.to(self.device)
+                target = target.to(self.device)
+                output = model(data)
+                val_loss += criterion(output, target).item()
+        
+        val_loss /= len(self.val_loader)
+        return val_loss
+
+
+# Example usage
+if __name__ == "__main__":
+    # Example: Basic hyperparameter tuning
+    # def objective(trial):
+    #     x = trial.suggest_float('x', -10, 10)
+    #     y = trial.suggest_int('y', 0, 10)
+    #     return (x - 2) ** 2 + y
+    # 
+    # config = HyperparameterConfig(
+    #     study_name="example_study",
+    #     n_trials=100,
+    #     output_dir="./optuna_results"
+    # )
+    # 
+    # tuner = HyperparameterTuner(config)
+    # tuner.optimize(objective)
+    # 
+    # print(f"Best value: {tuner.best_value}")
+    # print(f"Best params: {tuner.best_params}")
+    pass

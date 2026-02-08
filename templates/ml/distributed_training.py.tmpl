@@ -1,0 +1,551 @@
+"""
+{{MODULE_NAME}} - Distributed PyTorch Training
+
+Purpose: Distributed training utilities for PyTorch models
+Author: {{AUTHOR}}
+Created: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Training is reproducible with proper seeding
+- A3 (Transparency): Clear logging of training progress and metrics
+- A4 (Non-Harm): Validates inputs and handles errors gracefully
+"""
+
+from typing import List, Optional, Dict, Any, Tuple, Callable, Union
+import torch
+import torch.nn as nn
+import torch.distributed as dist
+import torch.multiprocessing as mp
+from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.utils.data import Dataset, DataLoader, DistributedSampler
+from torch.optim import Optimizer
+from torch.optim.lr_scheduler import _LRScheduler
+import logging
+import os
+from dataclasses import dataclass
+from enum import Enum
+import time
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class Backend(Enum):
+    """Distributed backend enumeration."""
+    NCCL = "nccl"  # CUDA
+    GLOO = "gloo"  # CPU
+    MPI = "mpi"
+
+
+@dataclass
+class TrainingConfig:
+    """Training configuration."""
+    batch_size: int = {{BATCH_SIZE}}
+    num_epochs: int = {{NUM_EPOCHS}}
+    learning_rate: float = {{LEARNING_RATE}}
+    weight_decay: float = {{WEIGHT_DECAY}}
+    gradient_clip: Optional[float] = {{GRADIENT_CLIP}}
+    save_checkpoint: bool = {{SAVE_CHECKPOINT}}
+    checkpoint_dir: str = "{{CHECKPOINT_DIR}}"
+    log_interval: int = {{LOG_INTERVAL}}
+    eval_interval: int = {{EVAL_INTERVAL}}
+    use_mixed_precision: bool = {{USE_MIXED_PRECISION}}
+
+
+class DistributedTrainer:
+    """
+    Distributed PyTorch training utilities.
+    
+    Provides utilities for multi-GPU/multi-node training with DDP,
+    gradient synchronization, and checkpoint management.
+    
+    Example:
+        >>> trainer = DistributedTrainer(
+        ...     backend=Backend.NCCL,
+        ...     world_size=4
+        ... )
+        >>> trainer.train(model, train_loader, val_loader, config)
+    """
+    
+    def __init__(
+        self,
+        backend: Backend = Backend.{{DEFAULT_BACKEND}},
+        world_size: int = {{WORLD_SIZE}},
+        rank: Optional[int] = None,
+        master_addr: str = "{{MASTER_ADDR}}",
+        master_port: str = "{{MASTER_PORT}}",
+        device: Optional[torch.device] = None
+    ):
+        """
+        Initialize distributed trainer.
+        
+        Args:
+            backend: Distributed backend (nccl for GPU, gloo for CPU)
+            world_size: Number of processes
+            rank: Process rank (None for auto-detection)
+            master_addr: Master node address
+            master_port: Master node port
+            device: Device to use (None for auto-detection)
+        """
+        self.backend = backend
+        self.world_size = world_size
+        self.rank = rank
+        self.master_addr = master_addr
+        self.master_port = master_port
+        
+        # Auto-detect device
+        if device is None:
+            self.device = torch.device(f"cuda:{self.rank}" if torch.cuda.is_available() else "cpu")
+        else:
+            self.device = device
+        
+        self.is_distributed = False
+        self.model = None
+        self.optimizer = None
+        self.scaler = None
+        
+        logger.info(f"Initialized DistributedTrainer with backend={backend.value}, "
+                   f"world_size={world_size}, device={self.device}")
+    
+    def setup_distributed(
+        self,
+        rank: int,
+        world_size: int
+    ) -> None:
+        """
+        Setup distributed environment.
+        
+        Args:
+            rank: Process rank
+            world_size: Number of processes
+        """
+        os.environ['MASTER_ADDR'] = self.master_addr
+        os.environ['MASTER_PORT'] = self.master_port
+        
+        # Initialize process group
+        dist.init_process_group(
+            backend=self.backend.value,
+            rank=rank,
+            world_size=world_size
+        )
+        
+        # Set device
+        if torch.cuda.is_available():
+            torch.cuda.set_device(rank)
+            self.device = torch.device(f"cuda:{rank}")
+        
+        self.rank = rank
+        self.world_size = world_size
+        self.is_distributed = True
+        
+        logger.info(f"Process group initialized: rank={rank}, world_size={world_size}")
+    
+    def cleanup_distributed(self) -> None:
+        """Cleanup distributed environment."""
+        if self.is_distributed:
+            dist.destroy_process_group()
+            logger.info("Process group destroyed")
+    
+    def wrap_model(self, model: nn.Module) -> nn.Module:
+        """
+        Wrap model with DDP.
+        
+        Args:
+            model: PyTorch model
+            
+        Returns:
+            DDP-wrapped model
+        """
+        if self.is_distributed:
+            model = model.to(self.device)
+            model = DDP(model, device_ids=[self.rank] if torch.cuda.is_available() else None)
+            logger.info(f"Model wrapped with DDP on rank {self.rank}")
+        else:
+            model = model.to(self.device)
+        
+        self.model = model
+        return model
+    
+    def create_dataloader(
+        self,
+        dataset: Dataset,
+        batch_size: int,
+        shuffle: bool = True,
+        num_workers: int = {{NUM_WORKERS}},
+        pin_memory: bool = True
+    ) -> DataLoader:
+        """
+        Create distributed data loader.
+        
+        Args:
+            dataset: PyTorch dataset
+            batch_size: Batch size per process
+            shuffle: Whether to shuffle
+            num_workers: Number of data loading workers
+            pin_memory: Whether to pin memory
+            
+        Returns:
+            DataLoader with DistributedSampler
+        """
+        if self.is_distributed:
+            sampler = DistributedSampler(
+                dataset,
+                num_replicas=self.world_size,
+                rank=self.rank,
+                shuffle=shuffle
+            )
+            shuffle = False  # Sampler handles shuffling
+        else:
+            sampler = None
+        
+        dataloader = DataLoader(
+            dataset,
+            batch_size=batch_size,
+            shuffle=shuffle,
+            sampler=sampler,
+            num_workers=num_workers,
+            pin_memory=pin_memory and torch.cuda.is_available()
+        )
+        
+        return dataloader
+    
+    def train_epoch(
+        self,
+        model: nn.Module,
+        train_loader: DataLoader,
+        optimizer: Optimizer,
+        criterion: nn.Module,
+        config: TrainingConfig,
+        epoch: int
+    ) -> Dict[str, float]:
+        """
+        Train for one epoch.
+        
+        Args:
+            model: PyTorch model
+            train_loader: Training data loader
+            optimizer: Optimizer
+            criterion: Loss function
+            config: Training configuration
+            epoch: Current epoch number
+            
+        Returns:
+            Dictionary with training metrics
+        """
+        model.train()
+        total_loss = 0.0
+        num_batches = 0
+        
+        # Mixed precision scaler
+        if config.use_mixed_precision and self.scaler is None:
+            self.scaler = torch.cuda.amp.GradScaler()
+        
+        if self.is_distributed:
+            train_loader.sampler.set_epoch(epoch)
+        
+        for batch_idx, (data, target) in enumerate(train_loader):
+            data, target = data.to(self.device), target.to(self.device)
+            
+            optimizer.zero_grad()
+            
+            # Forward pass with mixed precision
+            if config.use_mixed_precision:
+                with torch.cuda.amp.autocast():
+                    output = model(data)
+                    loss = criterion(output, target)
+                
+                # Backward pass with mixed precision
+                self.scaler.scale(loss).backward()
+                
+                # Gradient clipping
+                if config.gradient_clip:
+                    self.scaler.unscale_(optimizer)
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), config.gradient_clip)
+                
+                self.scaler.step(optimizer)
+                self.scaler.update()
+            else:
+                output = model(data)
+                loss = criterion(output, target)
+                loss.backward()
+                
+                # Gradient clipping
+                if config.gradient_clip:
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), config.gradient_clip)
+                
+                optimizer.step()
+            
+            total_loss += loss.item()
+            num_batches += 1
+            
+            # Logging
+            if batch_idx % config.log_interval == 0 and (not self.is_distributed or self.rank == 0):
+                logger.info(
+                    f"Epoch {epoch}, Batch {batch_idx}/{len(train_loader)}, "
+                    f"Loss: {loss.item():.4f}"
+                )
+        
+        avg_loss = total_loss / num_batches
+        
+        # Aggregate loss across processes
+        if self.is_distributed:
+            loss_tensor = torch.tensor(avg_loss).to(self.device)
+            dist.all_reduce(loss_tensor, op=dist.ReduceOp.SUM)
+            avg_loss = loss_tensor.item() / self.world_size
+        
+        return {'loss': avg_loss}
+    
+    def validate(
+        self,
+        model: nn.Module,
+        val_loader: DataLoader,
+        criterion: nn.Module
+    ) -> Dict[str, float]:
+        """
+        Validate model.
+        
+        Args:
+            model: PyTorch model
+            val_loader: Validation data loader
+            criterion: Loss function
+            
+        Returns:
+            Dictionary with validation metrics
+        """
+        model.eval()
+        total_loss = 0.0
+        correct = 0
+        total = 0
+        
+        with torch.no_grad():
+            for data, target in val_loader:
+                data, target = data.to(self.device), target.to(self.device)
+                output = model(data)
+                
+                loss = criterion(output, target)
+                total_loss += loss.item()
+                
+                # For classification
+                if len(output.shape) > 1 and output.shape[1] > 1:
+                    pred = output.argmax(dim=1)
+                    correct += pred.eq(target).sum().item()
+                    total += target.size(0)
+        
+        avg_loss = total_loss / len(val_loader)
+        accuracy = correct / total if total > 0 else 0.0
+        
+        # Aggregate metrics across processes
+        if self.is_distributed:
+            metrics_tensor = torch.tensor([avg_loss, accuracy, total]).to(self.device)
+            dist.all_reduce(metrics_tensor, op=dist.ReduceOp.SUM)
+            avg_loss = metrics_tensor[0].item() / self.world_size
+            accuracy = metrics_tensor[1].item() / metrics_tensor[2].item()
+        
+        return {'loss': avg_loss, 'accuracy': accuracy}
+    
+    def save_checkpoint(
+        self,
+        model: nn.Module,
+        optimizer: Optimizer,
+        epoch: int,
+        metrics: Dict[str, float],
+        filepath: str
+    ) -> None:
+        """
+        Save training checkpoint.
+        
+        Args:
+            model: PyTorch model
+            optimizer: Optimizer
+            epoch: Current epoch
+            metrics: Training metrics
+            filepath: Checkpoint file path
+        """
+        # Get underlying model if wrapped with DDP
+        model_state = model.module.state_dict() if isinstance(model, DDP) else model.state_dict()
+        
+        checkpoint = {
+            'epoch': epoch,
+            'model_state_dict': model_state,
+            'optimizer_state_dict': optimizer.state_dict(),
+            'metrics': metrics,
+        }
+        
+        if self.scaler:
+            checkpoint['scaler_state_dict'] = self.scaler.state_dict()
+        
+        torch.save(checkpoint, filepath)
+        logger.info(f"Checkpoint saved: {filepath}")
+    
+    def load_checkpoint(
+        self,
+        model: nn.Module,
+        optimizer: Optional[Optimizer],
+        filepath: str
+    ) -> int:
+        """
+        Load training checkpoint.
+        
+        Args:
+            model: PyTorch model
+            optimizer: Optimizer (optional)
+            filepath: Checkpoint file path
+            
+        Returns:
+            Epoch number
+        """
+        checkpoint = torch.load(filepath, map_location=self.device)
+        
+        # Load model state
+        if isinstance(model, DDP):
+            model.module.load_state_dict(checkpoint['model_state_dict'])
+        else:
+            model.load_state_dict(checkpoint['model_state_dict'])
+        
+        # Load optimizer state
+        if optimizer and 'optimizer_state_dict' in checkpoint:
+            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        
+        # Load scaler state
+        if self.scaler and 'scaler_state_dict' in checkpoint:
+            self.scaler.load_state_dict(checkpoint['scaler_state_dict'])
+        
+        epoch = checkpoint.get('epoch', 0)
+        logger.info(f"Checkpoint loaded: {filepath}, epoch={epoch}")
+        
+        return epoch
+    
+    def train(
+        self,
+        model: nn.Module,
+        train_loader: DataLoader,
+        val_loader: Optional[DataLoader],
+        optimizer: Optimizer,
+        criterion: nn.Module,
+        config: TrainingConfig,
+        scheduler: Optional[_LRScheduler] = None,
+        resume_from: Optional[str] = None
+    ) -> Dict[str, List[float]]:
+        """
+        Full training loop.
+        
+        Args:
+            model: PyTorch model
+            train_loader: Training data loader
+            val_loader: Validation data loader
+            optimizer: Optimizer
+            criterion: Loss function
+            config: Training configuration
+            scheduler: Learning rate scheduler (optional)
+            resume_from: Path to checkpoint to resume from (optional)
+            
+        Returns:
+            Dictionary with training history
+        """
+        model = self.wrap_model(model)
+        start_epoch = 0
+        
+        # Resume from checkpoint
+        if resume_from:
+            start_epoch = self.load_checkpoint(model, optimizer, resume_from) + 1
+        
+        history = {'train_loss': [], 'val_loss': [], 'val_accuracy': []}
+        
+        for epoch in range(start_epoch, config.num_epochs):
+            # Training
+            train_metrics = self.train_epoch(
+                model, train_loader, optimizer, criterion, config, epoch
+            )
+            history['train_loss'].append(train_metrics['loss'])
+            
+            # Validation
+            if val_loader and (epoch + 1) % config.eval_interval == 0:
+                val_metrics = self.validate(model, val_loader, criterion)
+                history['val_loss'].append(val_metrics['loss'])
+                if 'accuracy' in val_metrics:
+                    history['val_accuracy'].append(val_metrics['accuracy'])
+                
+                if not self.is_distributed or self.rank == 0:
+                    logger.info(
+                        f"Epoch {epoch}: Train Loss: {train_metrics['loss']:.4f}, "
+                        f"Val Loss: {val_metrics['loss']:.4f}, "
+                        f"Val Acc: {val_metrics.get('accuracy', 0):.4f}"
+                    )
+            
+            # Learning rate scheduling
+            if scheduler:
+                scheduler.step()
+            
+            # Save checkpoint
+            if config.save_checkpoint and (not self.is_distributed or self.rank == 0):
+                os.makedirs(config.checkpoint_dir, exist_ok=True)
+                checkpoint_path = os.path.join(
+                    config.checkpoint_dir,
+                    f"checkpoint_epoch_{epoch}.pt"
+                )
+                self.save_checkpoint(
+                    model, optimizer, epoch,
+                    {**train_metrics, **(val_metrics if val_loader else {})},
+                    checkpoint_path
+                )
+        
+        return history
+
+
+def spawn_training_processes(
+    trainer_fn: Callable,
+    world_size: int,
+    backend: Backend = Backend.NCCL
+) -> None:
+    """
+    Spawn multiple training processes.
+    
+    Args:
+        trainer_fn: Training function to run in each process
+        world_size: Number of processes
+        backend: Distributed backend
+    """
+    mp.spawn(
+        trainer_fn,
+        args=(world_size, backend),
+        nprocs=world_size,
+        join=True
+    )
+
+
+# Example usage
+if __name__ == "__main__":
+    # Example model
+    class SimpleModel(nn.Module):
+        def __init__(self, input_size=784, num_classes=10):
+            super().__init__()
+            self.fc1 = nn.Linear(input_size, 128)
+            self.fc2 = nn.Linear(128, num_classes)
+            self.relu = nn.ReLU()
+        
+        def forward(self, x):
+            x = x.view(x.size(0), -1)
+            x = self.relu(self.fc1(x))
+            x = self.fc2(x)
+            return x
+    
+    # Example training function
+    def train_distributed(rank: int, world_size: int, backend: Backend):
+        trainer = DistributedTrainer(
+            backend=backend,
+            world_size=world_size,
+            rank=rank
+        )
+        trainer.setup_distributed(rank, world_size)
+        
+        # Create model, data loaders, etc.
+        model = SimpleModel()
+        # ... setup data loaders, optimizer, etc.
+        
+        # Train
+        # trainer.train(...)
+        
+        trainer.cleanup_distributed()
+    
+    # Run distributed training
+    # spawn_training_processes(train_distributed, world_size=4)

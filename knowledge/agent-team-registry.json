@@ -1,0 +1,234 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "agent-team-registry",
+  "name": "Agent Team Registry",
+  "category": "agent-system",
+  "title": "Agent Team Registry",
+  "description": "Central registry of all agents with their capabilities, DIDs, and UAL communication protocols",
+  "version": "1.0.0",
+  "metadata": {
+    "created": "2026-02-08",
+    "updated": "2026-02-08",
+    "ual_version": "1.0.0",
+    "purpose": "Enable formal agent-to-agent communication using Universal Agent Language (UAL)"
+  },
+  "team": {
+    "team_id": "cursor-factory-agents",
+    "team_name": "Cursor Agent Factory Agent Team",
+    "communication_protocol": "UAL/1.0.0",
+    "trust_model": "tiered",
+    "default_trust_tier": "L0",
+    "axiom_requirements": ["A0", "A1", "A2", "A3", "A4", "A5"]
+  },
+  "agents": [
+    {
+      "agent_id": "debug-conductor",
+      "did": "did:agent:debug-conductor",
+      "name": "Debug Conductor",
+      "role": "orchestrator",
+      "description": "Autonomous debugging agent that investigates failures, identifies root causes, and implements fixes",
+      "specialty": ["debugging", "error analysis", "root cause identification", "fix implementation"],
+      "capabilities": ["debug", "analyze", "delegate", "escalate", "reason", "learn"],
+      "skills": ["pipeline-error-fix", "ci-monitor", "grounding-verification"],
+      "knowledge": ["debug-patterns.json", "agent-team-registry.json"],
+      "delegation_to": ["test-conductor", "integrity-guardian", "knowledge-extender"],
+      "delegation_from": [],
+      "trust_tier": "L0",
+      "ual_performatives": ["REQUEST", "QUERY", "INFORM", "RESPONSE", "CONFIRM"],
+      "axiom_alignment": ["A1", "A2", "A3", "A4"]
+    },
+    {
+      "agent_id": "test-conductor",
+      "did": "did:agent:test-conductor",
+      "name": "Test Conductor",
+      "role": "executor",
+      "description": "Proactive test orchestration agent with parallelization, coverage, and regression detection",
+      "specialty": ["test execution", "parallelization", "coverage analysis", "regression detection"],
+      "capabilities": ["test", "measure", "report", "parallelize", "optimize"],
+      "skills": ["agent-testing", "shell-platform", "pipeline-error-fix"],
+      "knowledge": ["agent-testing-patterns.json"],
+      "delegation_to": [],
+      "delegation_from": ["debug-conductor"],
+      "trust_tier": "L0",
+      "ual_performatives": ["RESPONSE", "INFORM", "CONFIRM"],
+      "axiom_alignment": ["A1", "A2"]
+    },
+    {
+      "agent_id": "integrity-guardian",
+      "did": "did:agent:integrity-guardian",
+      "name": "Integrity Guardian",
+      "role": "guardian",
+      "description": "Layer 0 guardian ensuring axiom compliance, purpose alignment, and conflict resolution",
+      "specialty": ["axiom verification", "purpose alignment", "conflict resolution", "ethical oversight"],
+      "capabilities": ["verify", "escalate", "resolve", "align", "protect"],
+      "skills": ["grounding-verification"],
+      "knowledge": ["agent-society-verification.json"],
+      "delegation_to": [],
+      "delegation_from": ["debug-conductor", "test-conductor", "knowledge-extender"],
+      "trust_tier": "L0",
+      "ual_performatives": ["RESPONSE", "INFORM", "REJECT"],
+      "axiom_alignment": ["A0", "A1", "A2", "A3", "A4", "A5"],
+      "is_layer_0": true
+    },
+    {
+      "agent_id": "knowledge-extender",
+      "did": "did:agent:knowledge-extender",
+      "name": "Knowledge Extender",
+      "role": "knowledge",
+      "description": "Intelligent knowledge extension agent for capturing patterns and updating knowledge base",
+      "specialty": ["knowledge capture", "pattern extraction", "knowledge base updates", "learning"],
+      "capabilities": ["learn", "store", "retrieve", "synthesize", "validate"],
+      "skills": ["extend-knowledge", "update-knowledge"],
+      "knowledge": ["manifest.json"],
+      "delegation_to": [],
+      "delegation_from": ["debug-conductor"],
+      "trust_tier": "L0",
+      "ual_performatives": ["RESPONSE", "CONFIRM", "INFORM"],
+      "axiom_alignment": ["A1", "A2", "A10"]
+    },
+    {
+      "agent_id": "workflow-architect",
+      "did": "did:agent:workflow-architect",
+      "name": "Workflow Architect",
+      "role": "designer",
+      "description": "Design, create, and orchestrate workflows for complex multi-step tasks",
+      "specialty": ["workflow design", "process orchestration", "task decomposition"],
+      "capabilities": ["design", "orchestrate", "decompose", "optimize"],
+      "skills": ["extend-workflow", "workflow-generation"],
+      "knowledge": ["workflow-patterns.json"],
+      "delegation_to": [],
+      "delegation_from": ["debug-conductor"],
+      "trust_tier": "L0",
+      "ual_performatives": ["RESPONSE", "PROPOSE", "CONFIRM"],
+      "axiom_alignment": ["A1", "A3"]
+    },
+    {
+      "agent_id": "template-generator",
+      "did": "did:agent:template-generator",
+      "name": "Template Generator",
+      "role": "generator",
+      "description": "Generate code and document templates for target projects",
+      "specialty": ["code generation", "template rendering", "boilerplate creation"],
+      "capabilities": ["generate", "render", "customize"],
+      "skills": ["template-generation"],
+      "knowledge": [],
+      "delegation_to": [],
+      "delegation_from": ["debug-conductor"],
+      "trust_tier": "L0",
+      "ual_performatives": ["RESPONSE", "CONFIRM"],
+      "axiom_alignment": ["A1", "A3"]
+    }
+  ],
+  "delegation_rules": {
+    "default_timeout_ms": 30000,
+    "max_delegation_depth": 3,
+    "require_axiom_context": true,
+    "escalation_on_failure": true,
+    "patterns": [
+      {
+        "pattern_id": "test-execution",
+        "description": "Delegate test execution to test-conductor",
+        "from_agent": "debug-conductor",
+        "to_agent": "test-conductor",
+        "triggers": ["need_tests", "verify_fix", "check_regression"],
+        "performative": "REQUEST",
+        "timeout_ms": 60000
+      },
+      {
+        "pattern_id": "conflict-resolution",
+        "description": "Escalate conflicts to integrity-guardian",
+        "from_agent": "debug-conductor",
+        "to_agent": "integrity-guardian",
+        "triggers": ["conflicting_evidence", "purpose_unclear", "axiom_question"],
+        "performative": "QUERY",
+        "timeout_ms": 30000
+      },
+      {
+        "pattern_id": "knowledge-capture",
+        "description": "Store learned patterns in knowledge base",
+        "from_agent": "debug-conductor",
+        "to_agent": "knowledge-extender",
+        "triggers": ["new_pattern", "lesson_learned", "resolution_documented"],
+        "performative": "INFORM",
+        "timeout_ms": 10000
+      },
+      {
+        "pattern_id": "workflow-creation",
+        "description": "Create new debugging workflow",
+        "from_agent": "debug-conductor",
+        "to_agent": "workflow-architect",
+        "triggers": ["recurring_issue", "complex_procedure", "process_needed"],
+        "performative": "REQUEST",
+        "timeout_ms": 30000
+      }
+    ]
+  },
+  "ual_message_templates": {
+    "test_request": {
+      "performative": "REQUEST",
+      "content": {
+        "type": "skill",
+        "payload": {
+          "action": "run_tests",
+          "parameters": {
+            "path": "{test_path}",
+            "parallel": true,
+            "coverage": false
+          }
+        }
+      },
+      "axiom_context": {
+        "declared_alignment": ["A1", "A2"],
+        "justification": "Running tests for user benefit (A1), with transparent parameters (A2)"
+      }
+    },
+    "conflict_query": {
+      "performative": "QUERY",
+      "content": {
+        "type": "data",
+        "payload": {
+          "question": "resolve_conflict",
+          "context": {
+            "evidence": "{evidence_array}",
+            "options": "{options_array}"
+          }
+        }
+      },
+      "axiom_context": {
+        "declared_alignment": ["A1", "A2", "A4"],
+        "justification": "Seeking guidance for user benefit (A1), transparent about dilemma (A2), avoiding harmful decisions (A4)"
+      }
+    },
+    "pattern_inform": {
+      "performative": "INFORM",
+      "content": {
+        "type": "knowledge",
+        "payload": {
+          "pattern_type": "{pattern_type}",
+          "pattern": {
+            "symptom": "{symptom}",
+            "root_cause": "{root_cause}",
+            "resolution": "{resolution}",
+            "axiom_alignment": "{axioms}"
+          }
+        }
+      },
+      "axiom_context": {
+        "declared_alignment": ["A1", "A10"],
+        "justification": "Capturing pattern for future benefit (A1), enabling learning (A10)"
+      }
+    }
+  },
+  "statistics": {
+    "total_agents": 6,
+    "by_role": {
+      "orchestrator": 1,
+      "executor": 1,
+      "guardian": 1,
+      "knowledge": 1,
+      "designer": 1,
+      "generator": 1
+    },
+    "delegation_patterns": 4
+  }
+}

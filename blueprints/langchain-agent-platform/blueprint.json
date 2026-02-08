@@ -1,0 +1,654 @@
+{
+  "metadata": {
+    "blueprintId": "langchain-agent-platform",
+    "blueprintName": "LangChain Agent Platform Blueprint",
+    "description": "Enterprise multi-domain LangChain/LangGraph agent development platform with API, trading, business, data, and RAG capabilities",
+    "version": "1.0.0",
+    "author": "Cursor Agent Factory",
+    "tags": [
+      "python",
+      "ai",
+      "agents",
+      "langchain",
+      "langgraph",
+      "multi-domain",
+      "enterprise",
+      "aisuite",
+      "gemini"
+    ],
+    "extends": "ai-agent-development",
+    "purpose": "Enable developers to build production-grade AI agents across multiple domains with provider-agnostic LLM access"
+  },
+  "stack": {
+    "primaryLanguage": "python",
+    "pythonVersion": "^3.11",
+    "frameworks": [
+      {
+        "name": "LangChain",
+        "version": "1.2.9",
+        "purpose": "Core agent framework and chains"
+      },
+      {
+        "name": "LangGraph",
+        "version": "1.0.8",
+        "purpose": "Stateful agent orchestration and workflows"
+      },
+      {
+        "name": "CrewAI",
+        "version": "1.9.3",
+        "purpose": "Multi-agent crew orchestration"
+      },
+      {
+        "name": "aisuite",
+        "version": "0.1.14",
+        "purpose": "Unified LLM interface - provider abstraction layer",
+        "required": true,
+        "note": "Andrew Ng's LLM abstraction for easy provider switching"
+      },
+      {
+        "name": "FastAPI",
+        "version": "0.128.4",
+        "purpose": "Production API endpoints"
+      },
+      {
+        "name": "Streamlit",
+        "version": "1.40+",
+        "purpose": "Interactive dashboards and UIs"
+      },
+      {
+        "name": "Pydantic",
+        "version": "2.10.0",
+        "purpose": "Data validation and structured outputs"
+      },
+      {
+        "name": "pandas",
+        "version": "2.2+",
+        "purpose": "Data manipulation and analysis"
+      },
+      {
+        "name": "polars",
+        "version": "1.0+",
+        "purpose": "High-performance data processing"
+      },
+      {
+        "name": "vectorbt",
+        "version": "0.26+",
+        "purpose": "Backtesting engine for trading"
+      },
+      {
+        "name": "httpx",
+        "version": "0.27+",
+        "purpose": "Async HTTP client for API calling"
+      }
+    ],
+    "databases": [
+      {
+        "type": "vector",
+        "name": "ChromaDB",
+        "version": "0.5+",
+        "purpose": "Vector embeddings for RAG"
+      },
+      {
+        "type": "sql",
+        "name": "PostgreSQL",
+        "version": "16+",
+        "purpose": "Production database"
+      },
+      {
+        "type": "sql",
+        "name": "DuckDB",
+        "version": "1.0+",
+        "purpose": "Analytical queries and data processing"
+      },
+      {
+        "type": "cache",
+        "name": "Redis",
+        "version": "7+",
+        "purpose": "Caching and pub/sub"
+      },
+      {
+        "type": "sql",
+        "name": "SQLite",
+        "purpose": "Development and testing"
+      }
+    ],
+    "llmConfiguration": {
+      "abstractionLayer": {
+        "name": "aisuite",
+        "version": "0.1.14",
+        "description": "Provider-agnostic LLM interface by Andrew Ng",
+        "installation": "pip install 'aisuite[google,mcp]'"
+      },
+      "defaultProvider": "google",
+      "providers": [
+        {
+          "name": "Google Gemini",
+          "id": "google",
+          "envVar": "GOOGLE_API_KEY",
+          "tier": "free",
+          "models": [
+            {
+              "id": "gemini-2.5-flash",
+              "purpose": "Primary model - reasoning, analysis, complex tasks",
+              "contextWindow": 1048576,
+              "maxOutput": 65535
+            },
+            {
+              "id": "gemini-2.5-flash-lite",
+              "purpose": "Fast model - simple tasks, high volume",
+              "contextWindow": 1048576,
+              "maxOutput": 65535
+            }
+          ],
+          "default": true
+        },
+        {
+          "name": "Ollama",
+          "id": "ollama",
+          "envVar": null,
+          "tier": "local",
+          "models": [
+            {
+              "id": "llama3.2",
+              "purpose": "Local development and offline"
+            },
+            {
+              "id": "mistral",
+              "purpose": "Local alternative"
+            },
+            {
+              "id": "codellama",
+              "purpose": "Code generation"
+            }
+          ],
+          "default": false,
+          "note": "Fallback for offline development"
+        }
+      ],
+      "modelMapping": {
+        "primary": "google:gemini-2.5-flash",
+        "fast": "google:gemini-2.5-flash-lite",
+        "local": "ollama:llama3.2",
+        "code": "ollama:codellama"
+      }
+    },
+    "dataSources": {
+      "trading": [
+        {"name": "yfinance", "purpose": "Yahoo Finance data"},
+        {"name": "ccxt", "purpose": "Cryptocurrency exchanges"},
+        {"name": "alpaca-trade-api", "purpose": "US equities live trading"},
+        {"name": "polygon-api-client", "purpose": "Real-time market data"}
+      ],
+      "business": [
+        {"name": "langchain-community", "purpose": "Document loaders"},
+        {"name": "unstructured", "purpose": "Document parsing"},
+        {"name": "pypdf", "purpose": "PDF processing"}
+      ],
+      "data": [
+        {"name": "sqlalchemy", "purpose": "Database abstraction"},
+        {"name": "aiohttp", "purpose": "Async HTTP requests"},
+        {"name": "requests", "purpose": "HTTP client"}
+      ]
+    },
+    "tools": [
+      {"name": "pytest", "version": "8.0+", "purpose": "Testing framework"},
+      {"name": "pytest-asyncio", "purpose": "Async test support"},
+      {"name": "ruff", "version": "0.4+", "purpose": "Linting and formatting"},
+      {"name": "mypy", "version": "1.10+", "purpose": "Type checking"},
+      {"name": "langsmith", "purpose": "Agent tracing and debugging"},
+      {"name": "poetry", "version": "1.8+", "purpose": "Dependency management"},
+      {"name": "pre-commit", "purpose": "Git hooks"}
+    ],
+    "styleGuides": [
+      {"name": "pep8", "description": "PEP 8 Style Guide", "reference": "https://pep8.org"},
+      {"name": "google", "description": "Google Python Style", "reference": "https://google.github.io/styleguide/pyguide.html"}
+    ]
+  },
+  "agents": [
+    {
+      "patternId": "code-reviewer",
+      "required": true,
+      "customizations": {
+        "skills": ["clean-code-review", "grounding"]
+      }
+    },
+    {
+      "patternId": "test-generator",
+      "required": true,
+      "customizations": {
+        "skills": ["tdd"]
+      }
+    },
+    {
+      "patternId": "documentation-agent",
+      "required": true,
+      "customizations": {
+        "focus": "multi-domain-agent-documentation"
+      }
+    },
+    {
+      "patternId": "knowledge-extender",
+      "required": true,
+      "description": "Extend knowledge base during development"
+    },
+    {
+      "patternId": "knowledge-evolution",
+      "required": true,
+      "description": "Manage and evolve project knowledge independently"
+    },
+    {
+      "patternId": "factory-updates",
+      "required": true,
+      "description": "Receive updates from the Cursor Agent Factory"
+    },
+    {
+      "patternId": "explorer",
+      "required": false,
+      "customizations": {
+        "focus": "multi-domain-research"
+      }
+    },
+    {
+      "patternId": "debug-conductor-project",
+      "required": false,
+      "description": "Autonomous debugging agent for CI/CD and test failures"
+    }
+  ],
+  "domainAgents": {
+    "api": [
+      {
+        "id": "api-caller",
+        "name": "API Caller Agent",
+        "purpose": "Generic REST/GraphQL caller with retry logic and error handling",
+        "tools": ["http-client", "retry-handler", "response-parser"],
+        "skills": ["api-integration"]
+      },
+      {
+        "id": "webhook-handler",
+        "name": "Webhook Handler Agent",
+        "purpose": "Process incoming webhooks and trigger workflows",
+        "tools": ["webhook-validator", "event-dispatcher"],
+        "skills": ["api-integration"]
+      },
+      {
+        "id": "api-orchestrator",
+        "name": "API Orchestrator Agent",
+        "purpose": "Coordinate multi-API workflows and data aggregation",
+        "tools": ["workflow-engine", "data-merger"],
+        "skills": ["api-integration", "agent-coordination"]
+      }
+    ],
+    "trading": [
+      {
+        "id": "market-analyst",
+        "name": "Market Analyst Agent",
+        "purpose": "Technical and fundamental market analysis",
+        "tools": ["technical-indicators", "fundamental-data", "chart-analyzer"],
+        "skills": ["algo-trading", "grounding"]
+      },
+      {
+        "id": "strategy-executor",
+        "name": "Strategy Executor Agent",
+        "purpose": "Generate trading signals and manage execution",
+        "tools": ["signal-generator", "order-manager", "position-tracker"],
+        "skills": ["algo-trading", "risk-analysis"]
+      },
+      {
+        "id": "risk-manager",
+        "name": "Risk Manager Agent",
+        "purpose": "Position sizing, risk controls, and portfolio limits",
+        "tools": ["risk-calculator", "position-sizer", "limit-enforcer"],
+        "skills": ["algo-trading", "risk-analysis"]
+      },
+      {
+        "id": "portfolio-manager",
+        "name": "Portfolio Manager Agent",
+        "purpose": "Portfolio optimization and rebalancing",
+        "tools": ["optimizer", "rebalancer", "performance-tracker"],
+        "skills": ["algo-trading"]
+      }
+    ],
+    "business": [
+      {
+        "id": "document-processor",
+        "name": "Document Processor Agent",
+        "purpose": "PDF, email, invoice, and document parsing",
+        "tools": ["pdf-parser", "email-parser", "invoice-extractor", "ocr"],
+        "skills": ["business-automation"]
+      },
+      {
+        "id": "workflow-automator",
+        "name": "Workflow Automator Agent",
+        "purpose": "Business process automation and task orchestration",
+        "tools": ["workflow-engine", "task-scheduler", "notification-sender"],
+        "skills": ["business-automation", "agent-coordination"]
+      },
+      {
+        "id": "crm-integrator",
+        "name": "CRM Integrator Agent",
+        "purpose": "CRM data sync, lead management, and actions",
+        "tools": ["crm-connector", "lead-scorer", "activity-logger"],
+        "skills": ["business-automation", "api-integration"]
+      }
+    ],
+    "data": [
+      {
+        "id": "data-fetcher",
+        "name": "Data Fetcher Agent",
+        "purpose": "Multi-source data acquisition and validation",
+        "tools": ["api-fetcher", "file-loader", "database-connector"],
+        "skills": ["data-pipeline"]
+      },
+      {
+        "id": "data-transformer",
+        "name": "Data Transformer Agent",
+        "purpose": "ETL pipelines and data transformation",
+        "tools": ["transformer", "validator", "quality-checker"],
+        "skills": ["data-pipeline"]
+      },
+      {
+        "id": "report-generator",
+        "name": "Report Generator Agent",
+        "purpose": "Automated report generation and insights",
+        "tools": ["report-builder", "chart-generator", "insight-extractor"],
+        "skills": ["data-pipeline"]
+      }
+    ],
+    "rag": [
+      {
+        "id": "knowledge-indexer",
+        "name": "Knowledge Indexer Agent",
+        "purpose": "Document ingestion, chunking, and embedding",
+        "tools": ["document-loader", "chunker", "embedder", "vector-store"],
+        "skills": ["rag-development"]
+      },
+      {
+        "id": "retrieval-agent",
+        "name": "Retrieval Agent",
+        "purpose": "Semantic search and Q&A over knowledge bases",
+        "tools": ["retriever", "reranker", "answer-generator"],
+        "skills": ["rag-development", "grounding"]
+      },
+      {
+        "id": "context-manager",
+        "name": "Context Manager Agent",
+        "purpose": "Memory management and context handling",
+        "tools": ["memory-store", "context-compressor", "relevance-filter"],
+        "skills": ["rag-development"]
+      }
+    ],
+    "orchestration": [
+      {
+        "id": "supervisor-agent",
+        "name": "Supervisor Agent",
+        "purpose": "Multi-agent coordination and task delegation",
+        "tools": ["task-router", "agent-selector", "result-aggregator"],
+        "skills": ["agent-coordination"]
+      },
+      {
+        "id": "crew-conductor",
+        "name": "Crew Conductor Agent",
+        "purpose": "CrewAI crew management and role assignment",
+        "tools": ["crew-builder", "role-assigner", "process-manager"],
+        "skills": ["agent-coordination", "crewai-workflow"]
+      },
+      {
+        "id": "workflow-graph",
+        "name": "Workflow Graph Agent",
+        "purpose": "LangGraph state machine orchestration",
+        "tools": ["graph-builder", "state-manager", "edge-router"],
+        "skills": ["agent-coordination"]
+      }
+    ]
+  },
+  "skills": [
+    {"patternId": "prompt-engineering", "required": true},
+    {"patternId": "agent-coordination", "required": true},
+    {"patternId": "society-tier-selection", "required": false, "default": true},
+    {"patternId": "export-agent-bundle", "required": false, "default": true},
+    {"patternId": "grounding", "required": true},
+    {"patternId": "grounding-verification", "required": true, "default": true},
+    {"patternId": "alignment-check", "required": true, "default": true},
+    {"patternId": "research-first-project", "required": true, "default": true},
+    {"patternId": "tdd", "required": true},
+    {"patternId": "bugfix-workflow", "required": true},
+    {"patternId": "feature-workflow", "required": true},
+    {"patternId": "extend-knowledge", "required": true},
+    {"patternId": "receive-updates", "required": true},
+    {"patternId": "ci-monitor-project", "required": false, "default": true},
+    {"patternId": "pipeline-error-fix-project", "required": false, "default": true},
+    {"patternId": "algo-trading", "required": true, "description": "Trading strategy patterns"},
+    {"patternId": "crewai-workflow", "required": true, "description": "CrewAI multi-agent patterns"},
+    {"patternId": "langchain-usage", "required": true, "description": "LangChain 1.x patterns for chains, tools, memory, and structured outputs"},
+    {"patternId": "langgraph-agent-building", "required": true, "description": "Build stateful agents and workflows with LangGraph 1.x"},
+    {"patternId": "langsmith-tracing", "required": true, "description": "Debugging and tracing with LangSmith MCP"},
+    {"patternId": "langsmith-prompts", "required": true, "description": "Prompt management with LangSmith Hub - versioning, testing, and evaluation"},
+    {"patternId": "tool-usage", "required": true, "description": "Tool design, binding, and error handling patterns for LangChain agents"},
+    {"patternId": "memory-management", "required": true, "description": "Agent memory patterns - conversation, long-term, and backend implementations"},
+    {"patternId": "state-management", "required": true, "description": "LangGraph state schemas, reducers, checkpointing, and persistence"},
+    {"patternId": "human-in-the-loop", "required": true, "description": "Approval workflows, interrupts, and feedback patterns for agents"},
+    {"patternId": "crewai-agents", "required": true, "description": "Detailed CrewAI agent design patterns - role design, backstories, collaboration, hierarchical vs sequential processes"},
+    {"patternId": "anthropic-patterns", "required": true, "description": "Claude agentic loop patterns - tool use until done, extended thinking for complex reasoning, safety and alignment patterns"},
+    {"patternId": "subagent-orchestration", "required": true, "description": "Spawning subagents dynamically, parent-child agent communication, task delegation and result aggregation"},
+    {"patternId": "agentic-loops", "required": true, "description": "Agentic loop patterns for autonomous decision-making and iterative task completion"},
+    {"patternId": "mcp-integration", "required": true, "description": "Model Context Protocol overview, server creation, tool exposure, and common integrations"},
+    {"patternId": "database-agents", "required": true, "description": "SQL generation with LLMs, schema understanding, query optimization, and text-to-SQL pipelines"},
+    {"patternId": "web-browsing", "required": true, "description": "Web scraping with agents, browser automation, content extraction, and ethical scraping practices"},
+    {"patternId": "filesystem-ops", "required": true, "description": "File reading/writing tools, directory traversal, file type detection, and security sandboxing"},
+    {"patternId": "ocr-processing", "required": true, "description": "Image-to-text with various engines (Tesseract, EasyOCR, cloud APIs), PDF text extraction, table recognition, and layout analysis"},
+    {"patternId": "speech-processing", "required": true, "description": "Speech-to-text (Whisper, cloud APIs), text-to-speech synthesis, real-time transcription, and audio analysis"},
+    {"patternId": "vision-agents", "required": true, "description": "Image analysis with multi-modal LLMs (GPT-4V, Gemini Vision), object detection integration, image generation pipelines, and visual question answering"},
+    {"patternId": "rag-patterns", "required": true, "description": "Document chunking strategies, hybrid retrieval (semantic + keyword), reranking patterns, and citation/attribution"},
+    {"patternId": "advanced-retrieval", "required": true, "description": "Multi-index RAG, query decomposition, contextual compression, and self-querying retrievers"},
+    {"patternId": "knowledge-graphs", "required": true, "description": "Graph RAG patterns, entity extraction with LLMs, relationship mapping, and Neo4j integration"},
+    {"patternId": "streaming-realtime", "required": true, "description": "Token streaming from LLMs, event streaming with astream_events, WebSocket agent patterns, and real-time UI updates"},
+    {"patternId": "caching-optimization", "required": true, "description": "LLM response caching, semantic caching patterns, and performance optimization strategies"},
+    {"patternId": "error-handling", "required": true, "description": "Robust error handling patterns, retry strategies, fallback mechanisms, and graceful degradation"},
+    {"patternId": "agent-testing", "required": true, "description": "Agent testing patterns, evaluation frameworks, mock LLM responses, and integration testing strategies"},
+    {"patternId": "security-sandboxing", "required": true, "description": "Input validation and sanitization, output filtering, code execution safety, and permission management"},
+    {"patternId": "logging-monitoring", "required": true, "description": "Structured logging with structlog, metrics collection, alerting patterns, and distributed tracing"}
+  ],
+  "domainSkills": [
+    {
+      "patternId": "api-integration",
+      "required": true,
+      "description": "REST, GraphQL, webhook patterns with retry and error handling",
+      "generate": true
+    },
+    {
+      "patternId": "business-automation",
+      "required": true,
+      "description": "Document processing, workflow automation, CRM integration",
+      "generate": true
+    },
+    {
+      "patternId": "data-pipeline",
+      "required": true,
+      "description": "ETL, data transformation, reporting patterns",
+      "generate": true
+    },
+    {
+      "patternId": "rag-development",
+      "required": true,
+      "description": "RAG architecture, retrieval patterns, embedding strategies",
+      "generate": true
+    }
+  ],
+  "knowledge": [
+    {"filename": "agent-society-protocol.json", "description": "ASP protocol patterns"},
+    {"filename": "langchain-patterns.json", "description": "LangChain 1.x patterns"},
+    {"filename": "langgraph-workflows.json", "description": "LangGraph state machine patterns"},
+    {"filename": "crewai-patterns.json", "description": "CrewAI orchestration patterns"},
+    {"filename": "aisuite-integration.json", "description": "aisuite LLM abstraction guide"},
+    {"filename": "trading-patterns.json", "description": "Trading strategy patterns"},
+    {"filename": "quantitative-finance.json", "description": "Risk metrics and portfolio theory"},
+    {"filename": "risk-management.json", "description": "Position sizing and risk controls"},
+    {"filename": "rag-patterns.json", "description": "RAG architecture patterns"},
+    {"filename": "mcp-patterns.json", "description": "MCP integration patterns"},
+    {"filename": "agent-coordination.json", "description": "Multi-agent coordination"},
+    {"filename": "prompt-engineering.json", "description": "Prompt optimization"},
+    {"filename": "vector-database-patterns.json", "description": "Vector store patterns"},
+    {"filename": "langsmith-prompts-patterns.json", "description": "LangSmith Hub prompt management patterns"},
+    {"filename": "tool-patterns.json", "description": "Tool design and usage patterns"},
+    {"filename": "memory-patterns.json", "description": "Agent memory management patterns"},
+    {"filename": "state-patterns.json", "description": "LangGraph state management patterns"},
+    {"filename": "hitl-patterns.json", "description": "Human-in-the-loop workflow patterns"},
+    {"filename": "anthropic-agentic.json", "description": "Claude agentic loop patterns"},
+    {"filename": "subagent-patterns.json", "description": "Subagent orchestration patterns"},
+    {"filename": "agentic-loop-patterns.json", "description": "Agentic loop design patterns"},
+    {"filename": "database-agent-patterns.json", "description": "Database agent patterns"},
+    {"filename": "ocr-patterns.json", "description": "OCR and image processing patterns"},
+    {"filename": "speech-patterns.json", "description": "Speech processing patterns"},
+    {"filename": "streaming-patterns.json", "description": "Streaming and real-time patterns"},
+    {"filename": "agent-testing-patterns.json", "description": "Agent testing and evaluation patterns"},
+    {"filename": "security-patterns.json", "description": "Security and sandboxing patterns"}
+  ],
+  "domainKnowledge": [
+    {
+      "filename": "api-integration-patterns.json",
+      "description": "REST, GraphQL, webhook, retry patterns",
+      "generate": true
+    },
+    {
+      "filename": "business-automation-patterns.json",
+      "description": "Document processing, workflow, CRM patterns",
+      "generate": true
+    },
+    {
+      "filename": "data-pipeline-patterns.json",
+      "description": "ETL, transformation, reporting patterns",
+      "generate": true
+    }
+  ],
+  "templates": {
+    "codeTemplates": [
+      {"category": "agent-base", "directory": "templates/ai/agent/"},
+      {"category": "langchain-agent", "directory": "templates/ai/langchain/"},
+      {"category": "langgraph-workflow", "directory": "templates/ai/langgraph/"},
+      {"category": "tool-definition", "directory": "templates/ai/tool/"},
+      {"category": "prompt-template", "directory": "templates/ai/prompt/"},
+      {"category": "workflow-graph", "directory": "templates/ai/workflow/"},
+      {"category": "test-class", "directory": "templates/python/test/"},
+      {"category": "api-endpoint", "directory": "templates/python/api/"},
+      {"category": "trading-strategy", "directory": "templates/trading/strategies/"},
+      {"category": "trading-agent", "directory": "templates/trading/agents/"}
+    ],
+    "documentTemplates": [
+      {"name": "agent_design.md", "directory": "templates/docs/"},
+      {"name": "prompt_library.md", "directory": "templates/docs/"},
+      {"name": "implementation_plan.md", "directory": "templates/docs/"}
+    ]
+  },
+  "workflows": [
+    {"patternId": "agent-development", "customizations": {}},
+    {"patternId": "prompt-iteration", "customizations": {}},
+    {"patternId": "strategy-development", "customizations": {}},
+    {"patternId": "jira-bugfix", "customizations": {}}
+  ],
+  "mcpServers": [
+    {"name": "deepwiki", "url": "https://mcp.deepwiki.com/mcp", "purpose": "GitHub analysis", "required": true},
+    {"name": "atlassian", "url": "https://mcp.atlassian.com/v1/sse", "purpose": "Jira/Confluence", "required": false}
+  ],
+  "projectStructure": {
+    "directories": [
+      {"path": ".cursor/agents/", "purpose": "Cursor agent definitions"},
+      {"path": ".cursor/skills/", "purpose": "Skill definitions"},
+      {"path": ".cursor/rules/", "purpose": "Domain-specific rules"},
+      {"path": "agents/core/", "purpose": "Base agent classes"},
+      {"path": "agents/api/", "purpose": "API domain agents"},
+      {"path": "agents/trading/", "purpose": "Trading domain agents"},
+      {"path": "agents/business/", "purpose": "Business domain agents"},
+      {"path": "agents/data/", "purpose": "Data domain agents"},
+      {"path": "agents/rag/", "purpose": "RAG domain agents"},
+      {"path": "agents/orchestration/", "purpose": "Multi-agent orchestration"},
+      {"path": "tools/api/", "purpose": "API calling tools"},
+      {"path": "tools/trading/", "purpose": "Trading tools"},
+      {"path": "tools/business/", "purpose": "Business tools"},
+      {"path": "tools/data/", "purpose": "Data processing tools"},
+      {"path": "tools/rag/", "purpose": "RAG tools"},
+      {"path": "prompts/system/", "purpose": "System prompts"},
+      {"path": "prompts/templates/", "purpose": "Prompt templates"},
+      {"path": "workflows/graphs/", "purpose": "LangGraph workflows"},
+      {"path": "workflows/crews/", "purpose": "CrewAI crew configs"},
+      {"path": "knowledge/", "purpose": "Domain knowledge files"},
+      {"path": "apps/dashboard/", "purpose": "Streamlit dashboard"},
+      {"path": "api/endpoints/", "purpose": "FastAPI endpoints"},
+      {"path": "api/models/", "purpose": "Pydantic models"},
+      {"path": "tests/agents/", "purpose": "Agent tests"},
+      {"path": "tests/tools/", "purpose": "Tool tests"},
+      {"path": "tests/workflows/", "purpose": "Workflow tests"},
+      {"path": "tests/integration/", "purpose": "Integration tests"},
+      {"path": "docs/", "purpose": "Documentation"},
+      {"path": "config/", "purpose": "Environment configs"}
+    ],
+    "files": [
+      {"path": ".cursorrules", "purpose": "Agent behavior rules (5-layer)"},
+      {"path": "PURPOSE.md", "purpose": "Purpose document (Layer 1)"},
+      {"path": "README.md", "purpose": "Project documentation"},
+      {"path": "pyproject.toml", "purpose": "Python project config with Poetry"},
+      {"path": "workflows/methodology.yaml", "purpose": "Methodology configuration"},
+      {"path": ".env.example", "purpose": "Environment variables template"},
+      {"path": "config/settings.py", "purpose": "Application settings"}
+    ]
+  },
+  "cursorrules": {
+    "variables": [
+      {"name": "PYTHON_PATH", "description": "Python executable path", "default": "${PYTHON_PATH}"},
+      {"name": "STYLE_GUIDE", "description": "Coding style", "default": "google"},
+      {"name": "LLM_PROVIDER", "description": "Default LLM provider", "default": "google"},
+      {"name": "LLM_MODEL", "description": "Default LLM model", "default": "gemini-2.5-flash"},
+      {"name": "LANGSMITH_TRACING", "description": "Enable LangSmith tracing", "default": "true"}
+    ],
+    "rules": [
+      {"name": "Type Hints", "description": "Always use type hints for function parameters and returns"},
+      {"name": "Docstrings", "description": "Use Google-style docstrings for all public functions"},
+      {"name": "Structured Outputs", "description": "Use Pydantic models for LLM structured outputs"},
+      {"name": "Error Handling", "description": "Implement proper error handling with fallbacks"},
+      {"name": "Tracing", "description": "Add LangSmith tracing to all agent operations"},
+      {"name": "Provider Agnostic", "description": "Use aisuite for all LLM calls - never hardcode providers"},
+      {"name": "Async First", "description": "Prefer async implementations for I/O operations"}
+    ]
+  },
+  "layerDefaults": {
+    "layer0": {
+      "coreAxioms": ["A1", "A2", "A3", "A4", "A5"],
+      "optionalAxioms": ["A10"],
+      "note": "A10 (Learning) is essential for AI agent development"
+    },
+    "layer1": {
+      "purposeTemplate": "To create intelligent, multi-domain AI agents that serve users with integrity, transparency, and adaptability across API, trading, business, data, and knowledge domains",
+      "stakeholders": "Developers building AI-powered applications"
+    },
+    "layer3": {
+      "methodology": "research-development",
+      "note": "R&D methodology suits experimental AI development with 70/30 exploration/exploitation"
+    }
+  },
+  "axiomAlignment": {
+    "A1_verifiability": "All agent outputs include reasoning traces via LangSmith",
+    "A2_user_primacy": "Agents always confirm before taking consequential actions (trades, API calls with side effects)",
+    "A3_transparency": "Agent decisions are explainable through prompt inspection and tracing",
+    "A4_non_harm": "Risk limits on trading, validation on API actions, safety checks on automations",
+    "A5_consistency": "Agent behavior derives from documented prompts and rules",
+    "A10_learning": "Feedback loops improve agent performance over time"
+  },
+  "safetyRequirements": {
+    "mandatory": [
+      "Human approval for live trading and consequential API calls",
+      "Rate limiting on all external API calls",
+      "Audit logging for all agent decisions",
+      "Input validation on all user inputs",
+      "Error boundaries around all agent operations"
+    ],
+    "recommended": [
+      "Gradual rollout with feature flags",
+      "Real-time monitoring dashboard",
+      "Alert notifications for anomalies",
+      "Automated testing before deployment"
+    ]
+  },
+  "pmIntegration": {
+    "enabled": false,
+    "description": "Optional project management integration with agile workflows"
+  }
+}

@@ -88,8 +88,7 @@ class TestPMBlueprintGeneration:
         
         assert result.returncode == 0
         # Basic output directory should exist
-        assert (output_dir / ".agent" / "agents").exists()
-    
+        assert (output_dir / ".agent" / "agents").exists()    
     def test_pm_enabled_config_recognized(self, python_executable, cli_path, temp_output_dir):
         """Test that PM config is recognized in output."""
         output_dir = temp_output_dir / "pm-config-test"
@@ -127,8 +126,7 @@ class TestPMBlueprintGeneration:
         
         # PM directories should not exist or should be empty
         pm_agents_dir = output_dir / ".agent" / "agents" / "pm"
-        pm_skills_dir = output_dir / ".agent" / "skills" / "pm"
-        
+        pm_skills_dir = output_dir / ".agent" / "skills" / "pm"        
         # Check that PM-specific agent files don't exist
         if pm_agents_dir.exists():
             pm_agent_files = ['product-owner.md', 'sprint-master.md', 'task-manager.md', 'reporting-agent.md']

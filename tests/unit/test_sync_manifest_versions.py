@@ -68,8 +68,7 @@ class TestGetFileVersionGeneric:
         
         version = get_file_version_generic(
             test_file,
-            r'\*Antigravity Agent Factory v(\d+\.\d+\.\d+)\*'
-        )
+            r'\*Antigravity Agent Factory v(\d+\.\d+\.\d+)\*'        )
         assert version == "3.4.0"
     
     def test_returns_none_for_missing_file(self, tmp_path):
@@ -100,14 +99,12 @@ class TestSyncFileVersion:
     def test_dry_run_does_not_modify_file(self, tmp_path):
         """Should not modify file when dry_run=True."""
         test_file = tmp_path / "test.md"
-        original_content = "*Antigravity Agent Factory v1.0.0*\n"
-        test_file.write_text(original_content, encoding='utf-8')
+        original_content = "*Antigravity Agent Factory v1.0.0*\n"        test_file.write_text(original_content, encoding='utf-8')
         
         result = sync_file_version(
             test_file,
             r'\*Antigravity Agent Factory v[\d.]+\*',
-            lambda v: f'*Antigravity Agent Factory v{v}*',
-            "2.0.0",
+            lambda v: f'*Antigravity Agent Factory v{v}*',            "2.0.0",
             dry_run=True
         )
         
@@ -122,14 +119,12 @@ class TestSyncFileVersion:
         result = sync_file_version(
             test_file,
             r'\*Antigravity Agent Factory v[\d.]+\*',
-            lambda v: f'*Antigravity Agent Factory v{v}*',
-            "2.0.0",
+            lambda v: f'*Antigravity Agent Factory v{v}*',            "2.0.0",
             dry_run=False
         )
         
         assert result is True
-        assert "*Antigravity Agent Factory v2.0.0*" in test_file.read_text(encoding='utf-8')
-    
+        assert "*Antigravity Agent Factory v2.0.0*" in test_file.read_text(encoding='utf-8')    
     def test_returns_false_for_missing_file(self, tmp_path):
         """Should return False if file doesn't exist."""
         missing_file = tmp_path / "missing.md"

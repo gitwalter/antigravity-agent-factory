@@ -1,0 +1,239 @@
+"""{{ agent_name }} - {{ description }} - RAG agent with retriever integration"""
+from typing import List, Optional, Dict, Any
+from pydantic import BaseModel, Field
+import aisuite as ai
+import asyncio
+import logging
+
+logger = logging.getLogger(__name__)
+
+class {{ agent_class }}Config(BaseModel):
+    """Configuration for {{ agent_name }}."""
+    model: str = "google:gemini-2.5-flash"
+    temperature: float = 0.7
+    max_tokens: int = 4096
+    top_k: int = 5  # Number of documents to retrieve
+    chunk_size: int = 1000
+    chunk_overlap: int = 200
+
+class {{ agent_class }}RetrievalResult(BaseModel):
+    """Result from retrieval step."""
+    documents: List[Dict[str, Any]] = Field(description="Retrieved documents")
+    query: str = Field(description="Original query")
+    num_results: int = Field(description="Number of results retrieved")
+    scores: Optional[List[float]] = Field(default=None, description="Relevance scores")
+
+class {{ agent_class }}:
+    """RAG agent for {{ agent_name }} with retriever integration."""
+    
+    def __init__(self, config: {{ agent_class }}Config = None, retriever = None):
+        """
+        Initialize RAG agent.
+        
+        Args:
+            config: Agent configuration
+            retriever: Retriever instance (vector store, hybrid retriever, etc.)
+        """
+        self.config = config or {{ agent_class }}Config()
+        self.client = ai.Client()
+        self.retriever = retriever
+        
+        if retriever is None:
+            logger.warning("No retriever provided. Agent will work without retrieval.")
+    
+    @property
+    def system_prompt(self) -> str:
+        """Return the system prompt."""
+        return """{{ system_prompt | default("You are a helpful AI assistant that answers questions using retrieved context. Always cite your sources when using retrieved information.") }}
+
+Guidelines:
+- Use only information from the provided context to answer questions
+- Cite sources using [1], [2], etc. when referencing retrieved documents
+- If the context doesn't contain enough information, say so clearly
+- Be transparent about what information comes from retrieval vs. general knowledge"""
+    
+    async def retrieve(self, query: str) -> {{ agent_class }}RetrievalResult:
+        """
+        Retrieve relevant documents for a query.
+        
+        Args:
+            query: Search query
+            
+        Returns:
+            Retrieval result with documents and metadata
+        """
+        if not self.retriever:
+            logger.warning("No retriever available. Returning empty results.")
+            return {{ agent_class }}RetrievalResult(
+                documents=[],
+                query=query,
+                num_results=0
+            )
+        
+        try:
+            # Use retriever to get documents
+            if hasattr(self.retriever, "get_relevant_documents"):
+                # LangChain-style retriever
+                docs = await self.retriever.aget_relevant_documents(query) if hasattr(self.retriever, "aget_relevant_documents") else self.retriever.get_relevant_documents(query)
+                
+                # Convert to dict format
+                documents = []
+                for doc in docs[:self.config.top_k]:
+                    doc_dict = {
+                        "content": doc.page_content if hasattr(doc, "page_content") else str(doc),
+                        "metadata": doc.metadata if hasattr(doc, "metadata") else {}
+                    }
+                    documents.append(doc_dict)
+                
+                return {{ agent_class }}RetrievalResult(
+                    documents=documents,
+                    query=query,
+                    num_results=len(documents)
+                )
+            
+            elif hasattr(self.retriever, "similarity_search"):
+                # Vector store-style retriever
+                results = self.retriever.similarity_search(query, k=self.config.top_k)
+                
+                documents = []
+                for doc in results:
+                    doc_dict = {
+                        "content": doc.page_content if hasattr(doc, "page_content") else str(doc),
+                        "metadata": doc.metadata if hasattr(doc, "metadata") else {}
+                    }
+                    documents.append(doc_dict)
+                
+                return {{ agent_class }}RetrievalResult(
+                    documents=documents,
+                    query=query,
+                    num_results=len(documents)
+                )
+            
+            elif callable(self.retriever):
+                # Custom retriever function
+                results = await self.retriever(query) if asyncio.iscoroutinefunction(self.retriever) else self.retriever(query)
+                
+                documents = results if isinstance(results, list) else [results]
+                return {{ agent_class }}RetrievalResult(
+                    documents=documents,
+                    query=query,
+                    num_results=len(documents)
+                )
+            
+            else:
+                raise ValueError("Unsupported retriever type")
+                
+        except Exception as e:
+            logger.error(f"Error during retrieval: {e}")
+            return {{ agent_class }}RetrievalResult(
+                documents=[],
+                query=query,
+                num_results=0
+            )
+    
+    def _format_context(self, retrieval_result: {{ agent_class }}RetrievalResult) -> str:
+        """
+        Format retrieved documents as context for the LLM.
+        
+        Args:
+            retrieval_result: Result from retrieve() method
+            
+        Returns:
+            Formatted context string with citations
+        """
+        if not retrieval_result.documents:
+            return "No relevant documents found."
+        
+        context_parts = []
+        for i, doc in enumerate(retrieval_result.documents, 1):
+            content = doc.get("content", "") if isinstance(doc, dict) else str(doc)
+            metadata = doc.get("metadata", {}) if isinstance(doc, dict) else {}
+            
+            source = metadata.get("source", f"Document {i}")
+            page = metadata.get("page", "")
+            
+            citation = f"[{i}]"
+            source_info = f"Source: {source}"
+            if page:
+                source_info += f", Page {page}"
+            
+            context_parts.append(f"{citation} {content}\n{source_info}")
+        
+        return "\n\n".join(context_parts)
+    
+    async def run(self, input_data: dict) -> dict:
+        """
+        Execute the RAG agent.
+        
+        Args:
+            input_data: Input dictionary with 'query' or 'question' key
+            
+        Returns:
+            Dictionary with 'response', 'sources', and 'context' keys
+        """
+        query = input_data.get("query") or input_data.get("question", "")
+        
+        if not query:
+            return {"error": "No query or question provided"}
+        
+        logger.info(f"Processing query: {query[:100]}...")
+        
+        # Retrieve relevant documents
+        retrieval_result = await self.retrieve(query)
+        
+        # Format context
+        context = self._format_context(retrieval_result)
+        
+        # Build prompt with context
+        prompt = f"""Context:
+{context}
+
+Question: {query}
+
+Answer the question using the context above. Cite sources using [1], [2], etc. when referencing information from the context."""
+        
+        # Get response from LLM
+        try:
+            response = await self.client.chat.completions.create(
+                model=self.config.model,
+                messages=[
+                    {"role": "system", "content": self.system_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=self.config.temperature,
+                max_tokens=self.config.max_tokens
+            )
+            
+            answer = response.choices[0].message.content if hasattr(response, "choices") else str(response)
+            
+            # Extract sources
+            sources = []
+            for doc in retrieval_result.documents:
+                metadata = doc.get("metadata", {}) if isinstance(doc, dict) else {}
+                sources.append({
+                    "source": metadata.get("source", "Unknown"),
+                    "page": metadata.get("page", ""),
+                    "excerpt": (doc.get("content", "") if isinstance(doc, dict) else str(doc))[:200]
+                })
+            
+            return {
+                "response": answer,
+                "sources": sources,
+                "context": context,
+                "num_sources": len(sources),
+                "query": query
+            }
+            
+        except Exception as e:
+            logger.error(f"Error generating response: {e}")
+            return {
+                "error": str(e),
+                "query": query,
+                "sources": [],
+                "context": context
+            }
+    
+    def set_retriever(self, retriever):
+        """Set or update the retriever."""
+        self.retriever = retriever
+        logger.info("Retriever updated")

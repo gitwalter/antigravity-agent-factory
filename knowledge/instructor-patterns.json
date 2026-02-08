@@ -1,0 +1,337 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Instructor Patterns",
+  "description": "Best practices and patterns for Instructor library structured output extraction",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "Structured outputs enable validation and verification",
+    "A3_transparency": "Pydantic models provide explicit output schemas"
+  },
+  "basic_patterns": {
+    "simple_extraction": {
+      "description": "Extract simple structured data from LLM responses",
+      "use_when": "Need basic structured output with validation",
+      "code_example": "from instructor import Instructor\nfrom pydantic import BaseModel, Field\nfrom openai import OpenAI\n\nclass User(BaseModel):\n    name: str = Field(description=\"User's full name\")\n    age: int = Field(description=\"Age in years\", ge=0, le=120)\n    email: str = Field(description=\"Email address\")\n\nclient = OpenAI()\ninstructor = Instructor(client)\n\nuser = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=User,\n    messages=[{\"role\": \"user\", \"content\": \"Extract user info: John Doe, 30, john@example.com\"}]\n)\n\nprint(user.name)  # 'John Doe'\nprint(user.age)   # 30",
+      "best_practices": [
+        "Use Field descriptions to guide LLM extraction",
+        "Add validation constraints (ge, le, etc.)",
+        "Provide clear examples in prompts",
+        "Handle validation errors gracefully"
+      ]
+    },
+    "list_extraction": {
+      "description": "Extract lists of structured objects",
+      "use_when": "Need multiple entities or items from text",
+      "code_example": "from typing import List\nfrom pydantic import BaseModel, Field\n\nclass Product(BaseModel):\n    name: str = Field(description=\"Product name\")\n    price: float = Field(description=\"Price in USD\", ge=0)\n    category: str = Field(description=\"Product category\")\n\nclass ProductList(BaseModel):\n    products: List[Product] = Field(description=\"List of products\")\n\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=ProductList,\n    messages=[{\"role\": \"user\", \"content\": \"Extract products from: Laptop $999, Phone $699, Tablet $399\"}]\n)\n\nfor product in result.products:\n    print(f\"{product.name}: ${product.price}\")",
+      "best_practices": [
+        "Use List types for multiple items",
+        "Provide examples of expected list length",
+        "Consider max_items constraint if needed",
+        "Handle empty lists appropriately"
+      ]
+    },
+    "nested_structures": {
+      "description": "Extract complex nested data structures",
+      "use_when": "Need hierarchical or related data",
+      "code_example": "from typing import List, Optional\nfrom pydantic import BaseModel, Field\n\nclass Address(BaseModel):\n    street: str = Field(description=\"Street address\")\n    city: str = Field(description=\"City name\")\n    zip_code: str = Field(description=\"ZIP code\")\n\nclass Contact(BaseModel):\n    phone: Optional[str] = Field(description=\"Phone number\", default=None)\n    email: str = Field(description=\"Email address\")\n\nclass Person(BaseModel):\n    name: str = Field(description=\"Full name\")\n    address: Address = Field(description=\"Home address\")\n    contacts: List[Contact] = Field(description=\"Contact methods\")\n\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=Person,\n    messages=[{\"role\": \"user\", \"content\": \"Extract person: John Doe, 123 Main St, NYC, 10001, phone: 555-1234, email: john@example.com\"}]\n)\n\nprint(result.address.city)  # 'NYC'\nprint(result.contacts[0].email)  # 'john@example.com'",
+      "best_practices": [
+        "Use nested Pydantic models for related data",
+        "Use Optional for fields that may be missing",
+        "Provide clear descriptions for nested fields",
+        "Test with various nesting depths"
+      ]
+    }
+  },
+  "validation_patterns": {
+    "field_validation": {
+      "description": "Validate extracted data using Pydantic validators",
+      "use_when": "Need custom validation logic beyond type constraints",
+      "code_example": "from pydantic import BaseModel, Field, field_validator\nfrom typing import List\n\nclass EmailList(BaseModel):\n    emails: List[str] = Field(description=\"List of email addresses\")\n    \n    @field_validator('emails')\n    @classmethod\n    def validate_emails(cls, v):\n        if not v:\n            raise ValueError('At least one email required')\n        for email in v:\n            if '@' not in email:\n                raise ValueError(f'Invalid email format: {email}')\n        return v\n\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=EmailList,\n    messages=[{\"role\": \"user\", \"content\": \"Extract emails: john@example.com, jane@example.com\"}]\n)",
+      "best_practices": [
+        "Use @field_validator for custom validation",
+        "Provide clear error messages",
+        "Validate early in the pipeline",
+        "Consider using EmailStr from pydantic for emails"
+      ]
+    },
+    "retry_on_validation_error": {
+      "description": "Automatic retry when validation fails",
+      "use_when": "LLM output may occasionally fail validation",
+      "code_example": "from instructor import Instructor\nfrom pydantic import BaseModel, Field, ValidationError\n\nclass StrictUser(BaseModel):\n    name: str = Field(description=\"Full name\", min_length=2)\n    age: int = Field(description=\"Age\", ge=0, le=120)\n    email: str = Field(description=\"Email\", pattern=r\"^[\\w\\.-]+@[\\w\\.-]+\\.[a-zA-Z]{2,}$\")\n\n# Instructor automatically retries on validation errors\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=StrictUser,\n    messages=[{\"role\": \"user\", \"content\": \"Extract user info\"}],\n    max_retries=3  # Retry up to 3 times on validation failure\n)",
+      "best_practices": [
+        "Set max_retries appropriately (2-5 typically)",
+        "Use validation errors to improve prompts",
+        "Log retry attempts for monitoring",
+        "Consider adjusting temperature for more consistent outputs"
+      ]
+    },
+    "custom_validators": {
+      "description": "Create reusable custom validators",
+      "use_when": "Need complex validation logic across multiple models",
+      "code_example": "from pydantic import BaseModel, Field, field_validator\nfrom typing import Any\n\nclass DateRange(BaseModel):\n    start_date: str = Field(description=\"Start date (YYYY-MM-DD)\")\n    end_date: str = Field(description=\"End date (YYYY-MM-DD)\")\n    \n    @field_validator('start_date', 'end_date')\n    @classmethod\n    def validate_date_format(cls, v: str) -> str:\n        from datetime import datetime\n        try:\n            datetime.strptime(v, '%Y-%m-%d')\n            return v\n        except ValueError:\n            raise ValueError(f'Invalid date format: {v}. Expected YYYY-MM-DD')\n    \n    @field_validator('end_date')\n    @classmethod\n    def validate_date_range(cls, v: str, info) -> str:\n        start = info.data.get('start_date')\n        if start and v < start:\n            raise ValueError('End date must be after start date')\n        return v",
+      "best_practices": [
+        "Create reusable validator functions",
+        "Validate format before business logic",
+        "Use info.data for cross-field validation",
+        "Return validated value or raise ValueError"
+      ]
+    }
+  },
+  "streaming_patterns": {
+    "streaming_structured_output": {
+      "description": "Stream structured output as it's generated",
+      "use_when": "Need real-time updates for long-running extractions",
+      "code_example": "from instructor import Instructor\nfrom pydantic import BaseModel, Field\nfrom typing import Iterator\n\nclass Article(BaseModel):\n    title: str = Field(description=\"Article title\")\n    summary: str = Field(description=\"Article summary\")\n    tags: List[str] = Field(description=\"Article tags\")\n\n# Stream partial responses\nstream = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=Article,\n    messages=[{\"role\": \"user\", \"content\": \"Write an article about AI\"}],\n    stream=True\n)\n\nfor chunk in stream:\n    if hasattr(chunk, 'choices') and chunk.choices:\n        # Process streaming chunks\n        delta = chunk.choices[0].delta\n        if hasattr(delta, 'content') and delta.content:\n            print(delta.content, end='', flush=True)",
+      "best_practices": [
+        "Use streaming for better UX",
+        "Handle partial responses appropriately",
+        "Reconstruct full object from stream",
+        "Consider using partial mode for incremental updates"
+      ]
+    },
+    "partial_responses": {
+      "description": "Handle partial responses during streaming",
+      "use_when": "Need incremental updates before final validation",
+      "code_example": "from instructor import Instructor\nfrom pydantic import BaseModel, Field\nfrom typing import Optional\n\nclass PartialArticle(BaseModel):\n    title: Optional[str] = Field(description=\"Article title\", default=None)\n    summary: Optional[str] = Field(description=\"Article summary\", default=None)\n    tags: Optional[List[str]] = Field(description=\"Article tags\", default=None)\n\n# Use mode='partial' for incremental updates\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=PartialArticle,\n    messages=[{\"role\": \"user\", \"content\": \"Write an article\"}],\n    mode='partial'  # Allows partial object construction\n)\n\n# Fields may be None during streaming\nif result.title:\n    print(f\"Title: {result.title}\")",
+      "best_practices": [
+        "Use Optional fields for partial responses",
+        "Set default=None for optional fields",
+        "Check field existence before use",
+        "Handle None values gracefully"
+      ]
+    }
+  },
+  "multi_provider_patterns": {
+    "openai_provider": {
+      "description": "Use Instructor with OpenAI models",
+      "use_when": "Using GPT-4, GPT-3.5, or other OpenAI models",
+      "code_example": "from instructor import Instructor\nfrom openai import OpenAI\n\nclient = OpenAI(api_key=\"your-api-key\")\ninstructor = Instructor(client)\n\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=YourModel,\n    messages=[{\"role\": \"user\", \"content\": \"Extract data\"}]\n)",
+      "best_practices": [
+        "Use gpt-4o or gpt-4-turbo for best results",
+        "Set appropriate temperature (0-0.3 for extraction)",
+        "Use function calling mode when available"
+      ]
+    },
+    "anthropic_provider": {
+      "description": "Use Instructor with Anthropic Claude models",
+      "use_when": "Using Claude 3 Opus, Sonnet, or Haiku",
+      "code_example": "from instructor import Instructor\nfrom anthropic import Anthropic\n\nclient = Anthropic(api_key=\"your-api-key\")\ninstructor = Instructor(client)\n\nresult = instructor.messages.create(\n    model=\"claude-3-opus-20240229\",\n    response_model=YourModel,\n    messages=[{\"role\": \"user\", \"content\": \"Extract data\"}],\n    max_tokens=4096\n)",
+      "best_practices": [
+        "Use claude-3-opus for complex extractions",
+        "Set max_tokens appropriately",
+        "Claude has excellent structured output support",
+        "Use claude-3-sonnet for cost-effective extraction"
+      ]
+    },
+    "google_provider": {
+      "description": "Use Instructor with Google Gemini models",
+      "use_when": "Using Gemini Pro or Gemini Ultra",
+      "code_example": "from instructor import Instructor\nimport google.generativeai as genai\n\n# Configure Gemini\ngenai.configure(api_key=\"your-api-key\")\n\n# Use Instructor with Gemini\nfrom instructor.integrations.google import InstructorGoogle\n\ninstructor = InstructorGoogle(\n    model=\"gemini-pro\",\n    api_key=\"your-api-key\"\n)\n\nresult = instructor.create(\n    response_model=YourModel,\n    messages=[{\"role\": \"user\", \"content\": \"Extract data\"}]\n)",
+      "best_practices": [
+        "Use gemini-pro for general extraction",
+        "Configure safety settings appropriately",
+        "Handle Google-specific response formats"
+      ]
+    },
+    "provider_abstraction": {
+      "description": "Abstract provider differences for multi-model support",
+      "use_when": "Need to support multiple LLM providers",
+      "code_example": "from typing import Protocol\nfrom instructor import Instructor\nfrom openai import OpenAI\nfrom anthropic import Anthropic\n\nclass LLMProvider(Protocol):\n    def create(self, **kwargs): ...\n\ndef create_instructor(provider: str, api_key: str) -> Instructor:\n    if provider == \"openai\":\n        client = OpenAI(api_key=api_key)\n        return Instructor(client)\n    elif provider == \"anthropic\":\n        client = Anthropic(api_key=api_key)\n        return Instructor(client)\n    else:\n        raise ValueError(f\"Unsupported provider: {provider}\")\n\n# Use with any provider\ninstructor = create_instructor(\"openai\", \"your-key\")\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=YourModel,\n    messages=[{\"role\": \"user\", \"content\": \"Extract\"}]\n)",
+      "best_practices": [
+        "Create provider abstraction layer",
+        "Handle provider-specific differences",
+        "Use consistent interface across providers",
+        "Test with multiple providers"
+      ]
+    }
+  },
+  "advanced_patterns": {
+    "enum_types": {
+      "description": "Extract enum or literal types",
+      "use_when": "Need constrained categorical values",
+      "code_example": "from enum import Enum\nfrom typing import Literal\nfrom pydantic import BaseModel, Field\n\nclass Status(str, Enum):\n    PENDING = \"pending\"\n    APPROVED = \"approved\"\n    REJECTED = \"rejected\"\n\nclass Task(BaseModel):\n    title: str = Field(description=\"Task title\")\n    status: Status = Field(description=\"Task status\")\n    priority: Literal[\"low\", \"medium\", \"high\"] = Field(description=\"Priority level\")\n\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=Task,\n    messages=[{\"role\": \"user\", \"content\": \"Extract task: Review PR, status: approved, priority: high\"}]\n)\n\nprint(result.status)  # Status.APPROVED\nprint(result.priority)  # 'high'",
+      "best_practices": [
+        "Use Enum for reusable categorical values",
+        "Use Literal for one-off constrained strings",
+        "Provide clear descriptions for enum values",
+        "Handle invalid enum values gracefully"
+      ]
+    },
+    "maybe_pattern": {
+      "description": "Handle uncertain extraction with Maybe pattern",
+      "use_when": "Extraction may fail or be uncertain",
+      "code_example": "from typing import Optional\nfrom pydantic import BaseModel, Field\n\nclass MaybeExtraction(BaseModel):\n    value: Optional[str] = Field(description=\"Extracted value if found\", default=None)\n    confidence: float = Field(description=\"Confidence score 0-1\", ge=0.0, le=1.0)\n    found: bool = Field(description=\"Whether value was found\")\n\nclass UncertainData(BaseModel):\n    name: MaybeExtraction = Field(description=\"Name if available\")\n    email: MaybeExtraction = Field(description=\"Email if available\")\n\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=UncertainData,\n    messages=[{\"role\": \"user\", \"content\": \"Extract what you can from: John (maybe email: john@example.com)\"}]\n)\n\nif result.name.found and result.name.confidence > 0.7:\n    print(f\"Name: {result.name.value}\")\nelse:\n    print(\"Name not found or low confidence\")",
+      "best_practices": [
+        "Use Optional for uncertain fields",
+        "Include confidence scores",
+        "Set thresholds for acceptance",
+        "Handle None values appropriately"
+      ]
+    },
+    "union_types": {
+      "description": "Extract one of multiple possible types",
+      "use_when": "Output can be one of several different structures",
+      "code_example": "from typing import Union\nfrom pydantic import BaseModel, Field\n\nclass EmailContact(BaseModel):\n    type: Literal[\"email\"] = \"email\"\n    address: str = Field(description=\"Email address\")\n\nclass PhoneContact(BaseModel):\n    type: Literal[\"phone\"] = \"phone\"\n    number: str = Field(description=\"Phone number\")\n\nclass Contact(BaseModel):\n    contact: Union[EmailContact, PhoneContact] = Field(description=\"Contact information\")\n\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=Contact,\n    messages=[{\"role\": \"user\", \"content\": \"Extract contact: john@example.com\"}]\n)\n\nif isinstance(result.contact, EmailContact):\n    print(f\"Email: {result.contact.address}\")",
+      "best_practices": [
+        "Use Union for multiple possible types",
+        "Include type discriminator fields",
+        "Test with all union types",
+        "Handle type checking appropriately"
+      ]
+    },
+    "complex_nested_types": {
+      "description": "Handle deeply nested and complex data structures",
+      "use_when": "Extracting hierarchical or relational data",
+      "code_example": "from typing import List, Dict, Optional\nfrom pydantic import BaseModel, Field\n\nclass Skill(BaseModel):\n    name: str = Field(description=\"Skill name\")\n    level: Literal[\"beginner\", \"intermediate\", \"advanced\"] = Field(description=\"Proficiency level\")\n    years_experience: int = Field(description=\"Years of experience\", ge=0)\n\nclass Project(BaseModel):\n    name: str = Field(description=\"Project name\")\n    description: str = Field(description=\"Project description\")\n    technologies: List[str] = Field(description=\"Technologies used\")\n\nclass Person(BaseModel):\n    name: str = Field(description=\"Full name\")\n    skills: List[Skill] = Field(description=\"List of skills\")\n    projects: List[Project] = Field(description=\"List of projects\")\n    metadata: Dict[str, str] = Field(description=\"Additional metadata\", default_factory=dict)\n\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=Person,\n    messages=[{\"role\": \"user\", \"content\": \"Extract person profile with skills and projects\"}]\n)",
+      "best_practices": [
+        "Break complex structures into smaller models",
+        "Use Dict for flexible key-value data",
+        "Provide clear descriptions at each level",
+        "Test with various nesting depths",
+        "Consider flattening if too complex"
+      ]
+    }
+  },
+  "prompt_patterns": {
+    "structured_prompts": {
+      "description": "Design prompts optimized for structured extraction",
+      "use_when": "Need to guide LLM toward better extraction",
+      "code_example": "prompt = \"\"\"Extract the following information from the text below.\n\nRequired fields:\n- name: Full name of the person\n- age: Age in years (must be between 0 and 120)\n- email: Valid email address\n\nText: {text}\n\nReturn the extracted information in the specified format.\"\"\"\n\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=User,\n    messages=[{\"role\": \"user\", \"content\": prompt.format(text=user_text)}]\n)",
+      "best_practices": [
+        "List required fields explicitly",
+        "Provide examples when helpful",
+        "Specify format requirements",
+        "Use clear, directive language"
+      ]
+    },
+    "few_shot_examples": {
+      "description": "Include examples in prompts for better extraction",
+      "use_when": "Complex extraction patterns or edge cases",
+      "code_example": "prompt = \"\"\"Extract product information from the text.\n\nExamples:\n\nText: \"iPhone 15 Pro, $999, available in Space Black\"\nExtracted:\n- name: iPhone 15 Pro\n- price: 999\n- color: Space Black\n\nText: \"Samsung Galaxy S24, $799, colors: Phantom Black, Cream\"\nExtracted:\n- name: Samsung Galaxy S24\n- price: 799\n- color: Phantom Black, Cream\n\nNow extract from: {text}\"\"\"",
+      "best_practices": [
+        "Use 2-3 diverse examples",
+        "Show edge cases when relevant",
+        "Keep examples concise",
+        "Match example format to expected output"
+      ]
+    }
+  },
+  "error_handling_patterns": {
+    "validation_error_handling": {
+      "description": "Handle validation errors gracefully",
+      "use_when": "Extraction may fail validation",
+      "code_example": "from pydantic import ValidationError\nfrom instructor import Instructor\n\ntry:\n    result = instructor.chat.completions.create(\n        model=\"gpt-4o\",\n        response_model=StrictModel,\n        messages=[{\"role\": \"user\", \"content\": \"Extract data\"}],\n        max_retries=3\n    )\nexcept ValidationError as e:\n    print(f\"Validation failed after retries: {e}\")\n    # Fallback handling\n    result = handle_extraction_failure(e)\nexcept Exception as e:\n    print(f\"Unexpected error: {e}\")\n    raise",
+      "best_practices": [
+        "Catch ValidationError specifically",
+        "Log validation failures for analysis",
+        "Implement fallback strategies",
+        "Use max_retries for automatic retry"
+      ]
+    },
+    "partial_failure_handling": {
+      "description": "Handle cases where some fields fail extraction",
+      "use_when": "Some fields may be missing or invalid",
+      "code_example": "from typing import Optional\nfrom pydantic import BaseModel, Field, ValidationError\n\nclass FlexibleModel(BaseModel):\n    required_field: str = Field(description=\"Required field\")\n    optional_field: Optional[str] = Field(description=\"Optional field\", default=None)\n    \n    class Config:\n        # Allow partial validation\n        extra = \"allow\"\n\n# Use mode='partial' for incremental extraction\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=FlexibleModel,\n    messages=[{\"role\": \"user\", \"content\": \"Extract data\"}],\n    mode='partial'\n)\n\n# Check field existence\nif result.optional_field:\n    process_field(result.optional_field)",
+      "best_practices": [
+        "Use Optional for non-critical fields",
+        "Set appropriate defaults",
+        "Validate critical fields separately",
+        "Log missing fields for monitoring"
+      ]
+    }
+  },
+  "best_practices": {
+    "model_design": [
+      "Use clear, descriptive Field descriptions",
+      "Add validation constraints (ge, le, min_length, etc.)",
+      "Break complex models into smaller nested models",
+      "Use appropriate types (str, int, float, bool, List, Dict)",
+      "Prefer Enum over Literal for reusable values",
+      "Use Optional for fields that may be missing"
+    ],
+    "prompt_design": [
+      "Provide clear instructions in prompts",
+      "Include examples for complex extractions",
+      "Specify required vs optional fields",
+      "Use structured prompt templates",
+      "Test prompts with various inputs"
+    ],
+    "validation": [
+      "Add field-level validation constraints",
+      "Use custom validators for complex logic",
+      "Set appropriate max_retries (2-5 typically)",
+      "Log validation failures for improvement",
+      "Handle ValidationError gracefully"
+    ],
+    "provider_selection": [
+      "Use gpt-4o or claude-3-opus for complex extractions",
+      "Use gpt-3.5-turbo or claude-3-haiku for simple extractions",
+      "Set low temperature (0-0.3) for consistent extraction",
+      "Consider cost vs quality trade-offs",
+      "Test with multiple providers when possible"
+    ],
+    "error_handling": [
+      "Implement retry logic with max_retries",
+      "Use try/except for ValidationError",
+      "Provide fallback strategies",
+      "Log errors for monitoring and improvement",
+      "Handle partial failures gracefully"
+    ],
+    "performance": [
+      "Use streaming for long-running extractions",
+      "Cache results when appropriate",
+      "Batch multiple extractions when possible",
+      "Monitor token usage and costs",
+      "Use appropriate model size for task complexity"
+    ]
+  },
+  "common_use_cases": {
+    "entity_extraction": {
+      "description": "Extract entities (people, places, organizations) from text",
+      "code_example": "from typing import List\nfrom pydantic import BaseModel, Field\n\nclass Entity(BaseModel):\n    text: str = Field(description=\"Entity text\")\n    type: Literal[\"person\", \"place\", \"organization\"] = Field(description=\"Entity type\")\n    confidence: float = Field(description=\"Confidence score\", ge=0.0, le=1.0)\n\nclass EntityExtraction(BaseModel):\n    entities: List[Entity] = Field(description=\"List of extracted entities\")\n\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=EntityExtraction,\n    messages=[{\"role\": \"user\", \"content\": \"Extract entities from: {text}\"}]\n)"
+    },
+    "classification": {
+      "description": "Classify text into predefined categories",
+      "code_example": "from enum import Enum\nfrom pydantic import BaseModel, Field\n\nclass Sentiment(str, Enum):\n    POSITIVE = \"positive\"\n    NEGATIVE = \"negative\"\n    NEUTRAL = \"neutral\"\n\nclass Classification(BaseModel):\n    category: Sentiment = Field(description=\"Sentiment category\")\n    confidence: float = Field(description=\"Confidence score\", ge=0.0, le=1.0)\n    reasoning: str = Field(description=\"Brief explanation\")\n\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=Classification,\n    messages=[{\"role\": \"user\", \"content\": \"Classify sentiment: {text}\"}]\n)"
+    },
+    "data_extraction": {
+      "description": "Extract structured data from unstructured text",
+      "code_example": "from typing import List, Optional\nfrom pydantic import BaseModel, Field\nfrom datetime import datetime\n\nclass InvoiceItem(BaseModel):\n    description: str = Field(description=\"Item description\")\n    quantity: int = Field(description=\"Quantity\", ge=1)\n    unit_price: float = Field(description=\"Unit price\", ge=0)\n    total: float = Field(description=\"Line total\", ge=0)\n\nclass Invoice(BaseModel):\n    invoice_number: str = Field(description=\"Invoice number\")\n    date: str = Field(description=\"Invoice date\")\n    items: List[InvoiceItem] = Field(description=\"Invoice items\")\n    total_amount: float = Field(description=\"Total amount\", ge=0)\n    customer_name: Optional[str] = Field(description=\"Customer name\", default=None)\n\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=Invoice,\n    messages=[{\"role\": \"user\", \"content\": \"Extract invoice data from: {text}\"}]\n)"
+    },
+    "knowledge_graph_extraction": {
+      "description": "Extract relationships and build knowledge graphs",
+      "code_example": "from typing import List\nfrom pydantic import BaseModel, Field\n\nclass Relationship(BaseModel):\n    source: str = Field(description=\"Source entity\")\n    relation: str = Field(description=\"Relationship type\")\n    target: str = Field(description=\"Target entity\")\n\nclass KnowledgeGraph(BaseModel):\n    entities: List[str] = Field(description=\"List of unique entities\")\n    relationships: List[Relationship] = Field(description=\"List of relationships\")\n\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=KnowledgeGraph,\n    messages=[{\"role\": \"user\", \"content\": \"Extract knowledge graph from: {text}\"}]\n)"
+    },
+    "table_extraction": {
+      "description": "Extract tabular data from text or images",
+      "code_example": "from typing import List\nfrom pydantic import BaseModel, Field\n\nclass TableRow(BaseModel):\n    cells: List[str] = Field(description=\"Row cells\")\n\nclass Table(BaseModel):\n    headers: List[str] = Field(description=\"Table headers\")\n    rows: List[TableRow] = Field(description=\"Table rows\")\n\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=Table,\n    messages=[{\"role\": \"user\", \"content\": \"Extract table from: {text}\"}]\n)"
+    }
+  },
+  "anti_patterns": {
+    "overly_complex_models": {
+      "description": "Creating models that are too complex",
+      "problem": "Hard to validate, poor extraction quality",
+      "solution": "Break into smaller, focused models"
+    },
+    "missing_descriptions": {
+      "description": "Not providing Field descriptions",
+      "problem": "Poor extraction quality, ambiguous fields",
+      "solution": "Always provide clear Field descriptions"
+    },
+    "no_validation": {
+      "description": "Not adding validation constraints",
+      "problem": "Invalid data passes through",
+      "solution": "Add appropriate validation constraints"
+    },
+    "ignoring_errors": {
+      "description": "Not handling validation errors",
+      "problem": "Silent failures, poor user experience",
+      "solution": "Implement proper error handling and retries"
+    },
+    "wrong_model_size": {
+      "description": "Using wrong model size for task",
+      "problem": "Overpaying or poor quality",
+      "solution": "Match model capability to task complexity"
+    }
+  }
+}

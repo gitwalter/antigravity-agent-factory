@@ -1,0 +1,480 @@
+"""
+{{QUERY_ENGINE_NAME}} - RAG Query Engine
+
+Purpose: {{QUERY_ENGINE_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): All responses include source citations
+- A3 (Transparency): Query processing steps are explicit
+
+This module provides a RAG query engine with:
+- Query processing and expansion
+- Context retrieval
+- Response generation with citations
+- Multiple retrieval strategies
+"""
+
+from typing import List, Optional, Dict, Any, Callable
+from langchain_core.documents import Document
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.runnables import RunnablePassthrough
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.retrievers import BaseRetriever
+from langchain.retrievers import (
+    ContextualCompressionRetriever,
+    EnsembleRetriever
+)
+from langchain.retrievers.document_compressors import LLMChainExtractor
+from langchain_cohere import CohereRerank
+from pydantic import BaseModel, Field
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class QueryResult(BaseModel):
+    """Result from query engine."""
+    answer: str = Field(description="Generated answer")
+    sources: List[str] = Field(description="Source document IDs or references")
+    context_chunks: List[str] = Field(description="Retrieved context chunks")
+    confidence: float = Field(ge=0.0, le=1.0, description="Confidence score")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+
+
+class QueryConfig(BaseModel):
+    """Configuration for query engine."""
+    model_name: str = Field(default="{{MODEL_NAME}}", description="LLM model name")
+    temperature: float = Field(default={{TEMPERATURE}}, description="Sampling temperature")
+    max_tokens: Optional[int] = Field(default=None, description="Max tokens for response")
+    retrieval_k: int = Field(default={{RETRIEVAL_K}}, description="Number of documents to retrieve")
+    use_reranking: bool = Field(default={{USE_RERANKING}}, description="Use reranking for results")
+    use_compression: bool = Field(default={{USE_COMPRESSION}}, description="Use context compression")
+    citation_format: str = Field(default="[Source {i}]", description="Citation format string")
+
+
+class {{QUERY_ENGINE_CLASS_NAME}}:
+    """
+    {{QUERY_ENGINE_NAME}} - RAG Query Engine
+    
+    Processes queries, retrieves relevant context, and generates answers
+    with proper citations and source attribution.
+    
+    Features:
+    - Query expansion and rewriting
+    - Multiple retrieval strategies
+    - Context compression and reranking
+    - Structured output with citations
+    
+    Example:
+        >>> engine = {{QUERY_ENGINE_CLASS_NAME}}(retriever=my_retriever)
+        >>> result = engine.query("What is machine learning?")
+        >>> print(result.answer)
+        >>> print(f"Sources: {result.sources}")
+    """
+    
+    def __init__(
+        self,
+        retriever: BaseRetriever,
+        config: Optional[QueryConfig] = None,
+        system_prompt: Optional[str] = None
+    ):
+        """
+        Initialize query engine.
+        
+        Args:
+            retriever: LangChain retriever for document retrieval
+            config: Query engine configuration
+            system_prompt: Custom system prompt (optional)
+        """
+        self.config = config or QueryConfig()
+        self.retriever = retriever
+        
+        # Initialize LLM
+        self.llm = ChatOpenAI(
+            model=self.config.model_name,
+            temperature=self.config.temperature,
+            max_tokens=self.config.max_tokens
+        )
+        
+        # Setup retriever with optional enhancements
+        self.enhanced_retriever = self._setup_retriever()
+        
+        # Create prompt template
+        self.system_prompt = system_prompt or self._default_system_prompt()
+        self.prompt = self._create_prompt()
+        
+        # Build query chain
+        self.chain = self._build_chain()
+        
+        logger.info(f"Initialized {{QUERY_ENGINE_NAME}} with model {self.config.model_name}")
+    
+    def _default_system_prompt(self) -> str:
+        """Get default system prompt."""
+        return """You are a helpful assistant that answers questions based on the provided context.
+
+Rules:
+1. Use ONLY information from the context to answer (A1 - Verifiability)
+2. Cite sources using the format: [Source N] where N is the source number
+3. If the context doesn't contain enough information, say "I don't have enough information in the provided context"
+4. Be clear about what you know and what you don't know (A3 - Transparency)
+5. If you're uncertain, express that uncertainty
+
+Context:
+{context}
+
+Question: {question}
+
+Answer based on the context above. Include citations."""
+    
+    def _create_prompt(self) -> ChatPromptTemplate:
+        """Create prompt template."""
+        return ChatPromptTemplate.from_messages([
+            ("system", self.system_prompt),
+            ("human", "{question}")
+        ])
+    
+    def _setup_retriever(self) -> BaseRetriever:
+        """Setup retriever with optional enhancements."""
+        retriever = self.retriever
+        
+        # Add compression if enabled
+        if self.config.use_compression:
+            compressor = LLMChainExtractor.from_llm(self.llm)
+            retriever = ContextualCompressionRetriever(
+                base_compressor=compressor,
+                base_retriever=retriever
+            )
+            logger.info("Enabled context compression")
+        
+        # Add reranking if enabled
+        if self.config.use_reranking:
+            try:
+                reranker = CohereRerank(top_n=self.config.retrieval_k)
+                retriever = ContextualCompressionRetriever(
+                    base_compressor=reranker,
+                    base_retriever=retriever
+                )
+                logger.info("Enabled reranking")
+            except Exception as e:
+                logger.warning(f"Could not enable reranking: {e}. Continuing without reranking.")
+        
+        return retriever
+    
+    def _build_chain(self):
+        """Build the RAG query chain."""
+        def format_docs(docs: List[Document]) -> str:
+            """Format documents for context."""
+            formatted = []
+            for i, doc in enumerate(docs):
+                source = doc.metadata.get("source", f"Document {i+1}")
+                formatted.append(
+                    f"[Source {i+1}] ({source})\n{doc.page_content}"
+                )
+            return "\n\n".join(formatted)
+        
+        chain = (
+            {
+                "context": self.enhanced_retriever | format_docs,
+                "question": RunnablePassthrough()
+            }
+            | self.prompt
+            | self.llm
+            | StrOutputParser()
+        )
+        
+        return chain
+    
+    def query(self, question: str, **kwargs) -> QueryResult:
+        """
+        Process a query and return structured result.
+        
+        Args:
+            question: User question
+            **kwargs: Additional parameters (k, filter, etc.)
+        
+        Returns:
+            QueryResult with answer, sources, and metadata
+            
+        Example:
+            >>> result = engine.query("What is RAG?", k=5)
+            >>> print(result.answer)
+            >>> print(f"Confidence: {result.confidence}")
+        """
+        logger.info(f"Processing query: {question[:100]}...")
+        
+        try:
+            # Retrieve relevant documents
+            retrieval_k = kwargs.get("k", self.config.retrieval_k)
+            filter_dict = kwargs.get("filter")
+            
+            if filter_dict:
+                retrieved_docs = self.enhanced_retriever.get_relevant_documents(
+                    question,
+                    k=retrieval_k
+                )
+                # Apply filter manually if retriever doesn't support it
+                retrieved_docs = [
+                    doc for doc in retrieved_docs
+                    if all(doc.metadata.get(k) == v for k, v in filter_dict.items())
+                ][:retrieval_k]
+            else:
+                retrieved_docs = self.enhanced_retriever.get_relevant_documents(
+                    question,
+                    k=retrieval_k
+                )
+            
+            if not retrieved_docs:
+                return QueryResult(
+                    answer="I couldn't find any relevant information to answer your question.",
+                    sources=[],
+                    context_chunks=[],
+                    confidence=0.0,
+                    metadata={"retrieved_docs": 0}
+                )
+            
+            # Generate answer
+            answer = self.chain.invoke(question)
+            
+            # Extract sources
+            sources = [
+                doc.metadata.get("source", f"doc_{i}")
+                for i, doc in enumerate(retrieved_docs)
+            ]
+            
+            # Extract context chunks
+            context_chunks = [doc.page_content for doc in retrieved_docs]
+            
+            # Calculate confidence (simplified - can be enhanced)
+            confidence = min(1.0, len(retrieved_docs) / self.config.retrieval_k)
+            
+            result = QueryResult(
+                answer=answer,
+                sources=sources,
+                context_chunks=context_chunks,
+                confidence=confidence,
+                metadata={
+                    "retrieved_docs": len(retrieved_docs),
+                    "query": question
+                }
+            )
+            
+            logger.info(f"Query completed. Retrieved {len(retrieved_docs)} documents.")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error processing query: {e}")
+            return QueryResult(
+                answer=f"Error processing query: {str(e)}",
+                sources=[],
+                context_chunks=[],
+                confidence=0.0,
+                metadata={"error": str(e)}
+            )
+    
+    async def aquery(self, question: str, **kwargs) -> QueryResult:
+        """
+        Async version of query.
+        
+        Args:
+            question: User question
+            **kwargs: Additional parameters
+        
+        Returns:
+            QueryResult with answer, sources, and metadata
+        """
+        logger.info(f"Processing query (async): {question[:100]}...")
+        
+        try:
+            retrieval_k = kwargs.get("k", self.config.retrieval_k)
+            
+            retrieved_docs = await self.enhanced_retriever.aget_relevant_documents(
+                question,
+                k=retrieval_k
+            )
+            
+            if not retrieved_docs:
+                return QueryResult(
+                    answer="I couldn't find any relevant information.",
+                    sources=[],
+                    context_chunks=[],
+                    confidence=0.0
+                )
+            
+            answer = await self.chain.ainvoke(question)
+            
+            sources = [
+                doc.metadata.get("source", f"doc_{i}")
+                for i, doc in enumerate(retrieved_docs)
+            ]
+            context_chunks = [doc.page_content for doc in retrieved_docs]
+            confidence = min(1.0, len(retrieved_docs) / self.config.retrieval_k)
+            
+            return QueryResult(
+                answer=answer,
+                sources=sources,
+                context_chunks=context_chunks,
+                confidence=confidence,
+                metadata={"retrieved_docs": len(retrieved_docs)}
+            )
+            
+        except Exception as e:
+            logger.error(f"Error in async query: {e}")
+            return QueryResult(
+                answer=f"Error: {str(e)}",
+                sources=[],
+                context_chunks=[],
+                confidence=0.0,
+                metadata={"error": str(e)}
+            )
+    
+    def query_with_rewrite(
+        self,
+        question: str,
+        conversation_history: Optional[List[Dict[str, str]]] = None
+    ) -> QueryResult:
+        """
+        Query with query rewriting based on conversation history.
+        
+        Args:
+            question: User question
+            conversation_history: List of {"user": "...", "assistant": "..."} dicts
+        
+        Returns:
+            QueryResult with rewritten query and answer
+        """
+        if conversation_history:
+            # Rewrite query with context
+            rewrite_prompt = ChatPromptTemplate.from_messages([
+                ("system", """Given the conversation history and the latest question,
+reformulate the question to be standalone and include necessary context.
+Do NOT answer the question, just reformulate it if needed."""),
+                MessagesPlaceholder("history"),
+                ("human", "{question}")
+            ])
+            
+            # Format history
+            history_messages = []
+            for turn in conversation_history[-3:]:  # Last 3 turns
+                history_messages.append(("human", turn.get("user", "")))
+                history_messages.append(("ai", turn.get("assistant", "")))
+            
+            rewrite_chain = rewrite_prompt | self.llm | StrOutputParser()
+            rewritten = rewrite_chain.invoke({
+                "history": history_messages,
+                "question": question
+            })
+            
+            logger.info(f"Rewritten query: {rewritten}")
+            return self.query(rewritten)
+        else:
+            return self.query(question)
+    
+    def query_with_expansion(self, question: str, num_expansions: int = 3) -> QueryResult:
+        """
+        Query with query expansion (generate multiple query variations).
+        
+        Args:
+            question: Original question
+            num_expansions: Number of query variations to generate
+        
+        Returns:
+            QueryResult with expanded queries and combined results
+        """
+        # Generate query variations
+        expansion_prompt = ChatPromptTemplate.from_template("""
+Generate {num} different ways to ask this question. Return only the questions, one per line.
+
+Question: {question}
+
+Variations:""")
+        
+        expansion_chain = expansion_prompt | self.llm | StrOutputParser()
+        expanded_text = expansion_chain.invoke({
+            "num": num_expansions,
+            "question": question
+        })
+        
+        expanded_queries = [
+            q.strip() for q in expanded_text.split("\n")
+            if q.strip() and not q.strip().startswith("#")
+        ][:num_expansions]
+        expanded_queries.append(question)  # Include original
+        
+        logger.info(f"Expanded queries: {expanded_queries}")
+        
+        # Retrieve for each query
+        all_docs = []
+        seen_ids = set()
+        
+        for query in expanded_queries:
+            docs = self.enhanced_retriever.get_relevant_documents(
+                query,
+                k=self.config.retrieval_k
+            )
+            for doc in docs:
+                doc_id = hash(doc.page_content)
+                if doc_id not in seen_ids:
+                    seen_ids.add(doc_id)
+                    all_docs.append(doc)
+        
+        # Use top k unique documents
+        unique_docs = all_docs[:self.config.retrieval_k]
+        
+        # Generate answer with expanded context
+        formatted_context = "\n\n".join([
+            f"[Source {i+1}]\n{doc.page_content}"
+            for i, doc in enumerate(unique_docs)
+        ])
+        
+        answer = self.llm.invoke(
+            self.prompt.format_messages(
+                context=formatted_context,
+                question=question
+            )
+        ).content
+        
+        sources = [
+            doc.metadata.get("source", f"doc_{i}")
+            for i, doc in enumerate(unique_docs)
+        ]
+        
+        return QueryResult(
+            answer=answer,
+            sources=sources,
+            context_chunks=[doc.page_content for doc in unique_docs],
+            confidence=min(1.0, len(unique_docs) / self.config.retrieval_k),
+            metadata={
+                "expanded_queries": expanded_queries,
+                "unique_docs": len(unique_docs)
+            }
+        )
+
+
+# Example usage
+if __name__ == "__main__":
+    from langchain_community.vectorstores import Chroma
+    from langchain_openai import OpenAIEmbeddings
+    
+    # Setup retriever (example)
+    embeddings = OpenAIEmbeddings()
+    # vectorstore = Chroma(...)  # Initialize your vector store
+    # retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+    
+    # Create query engine
+    config = QueryConfig(
+        model_name="{{MODEL_NAME}}",
+        retrieval_k={{RETRIEVAL_K}},
+        use_reranking={{USE_RERANKING}}
+    )
+    
+    # engine = {{QUERY_ENGINE_CLASS_NAME}}(retriever=retriever, config=config)
+    
+    # Query
+    # result = engine.query("{{EXAMPLE_QUERY}}")
+    # print(f"Answer: {result.answer}")
+    # print(f"Sources: {result.sources}")
+    # print(f"Confidence: {result.confidence}")

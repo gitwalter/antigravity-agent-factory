@@ -30,10 +30,9 @@ class TestMutabilityGuard:
                 "Layer 0" in result.reason or
                 "never-modify" in result.reason.lower())
     
-    def test_agentrules_is_protected(self, guard):
+    def test_cursorrules_is_protected(self, guard):
         """CRITICAL: Verify .agentrules cannot be modified."""
-        result = guard.can_modify(".agentrules")
-        
+        result = guard.can_modify(".agentrules")        
         assert result.allowed is False
     
     def test_axiom_zero_is_protected(self, guard):
@@ -190,8 +189,7 @@ class TestMutabilityGuard:
         """Test getting all protected paths."""
         paths = guard.get_all_protected_paths()
         
-        assert ".agentrules" in paths
-        assert any("axioms" in p for p in paths)
+        assert ".agentrules" in paths        assert any("axioms" in p for p in paths)
         assert any("principles" in p for p in paths)
     
     def test_get_protection_summary(self, guard):

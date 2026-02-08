@@ -1,0 +1,418 @@
+{
+  "$schema": "../learning-workshop-pattern.json",
+  "workshopId": "L14_pytorch_deeplearning",
+  "name": "PyTorch Deep Learning Fundamentals",
+  "technology": {
+    "category": "data_ml",
+    "stack": "PyTorch",
+    "language": "Python",
+    "version": "PyTorch 2.0+"
+  },
+  "level": "fundamentals",
+  "prerequisites": {
+    "workshops": [],
+    "knowledge": [
+      "Python programming (functions, classes, OOP)",
+      "Basic linear algebra (tensors, matrix operations)",
+      "Understanding of neural networks (forward pass, backpropagation)",
+      "NumPy basics"
+    ],
+    "tools": [
+      "Python 3.8+",
+      "PyTorch 2.0+ installed",
+      "CUDA-capable GPU (optional but recommended)",
+      "Jupyter Notebook or VS Code",
+      "Matplotlib for visualization"
+    ]
+  },
+  "duration": {
+    "total_hours": 2.5,
+    "concept_minutes": 30,
+    "demo_minutes": 30,
+    "exercise_minutes": 45,
+    "challenge_minutes": 30,
+    "reflection_minutes": 15
+  },
+  "learning_objectives": [
+    {
+      "objective": "Define models with nn.Module and understand the architecture",
+      "bloom_level": "understand",
+      "verification": "Can explain how nn.Module works, when to use forward() vs __call__(), and how layers compose"
+    },
+    {
+      "objective": "Implement training loops with proper gradient management",
+      "bloom_level": "apply",
+      "verification": "Can write a complete training loop with loss.backward(), optimizer.step(), and zero_grad()"
+    },
+    {
+      "objective": "Use DataLoader for efficient data loading and batching",
+      "bloom_level": "apply",
+      "verification": "Can create Dataset and DataLoader classes, handle transforms, and iterate batches correctly"
+    },
+    {
+      "objective": "Apply optimization techniques including learning rate scheduling and mixed precision",
+      "bloom_level": "apply",
+      "verification": "Can implement LR schedulers and use torch.cuda.amp for mixed precision training"
+    },
+    {
+      "objective": "Save and load model checkpoints for training resumption",
+      "bloom_level": "apply",
+      "verification": "Can save/load model state_dict, optimizer state, and epoch information"
+    }
+  ],
+  "knowledge_files": [
+    "pytorch-patterns.json",
+    "deep-learning-patterns.json"
+  ],
+  "phases": [
+    {
+      "phaseId": "concept",
+      "name": "PyTorch Fundamentals: Tensors, Autograd, and nn.Module",
+      "type": "concept",
+      "duration_minutes": 30,
+      "description": "Understanding PyTorch's core concepts and how neural networks are built",
+      "content": {
+        "topics": [
+          "Tensors: creation, operations, device placement (CPU/GPU)",
+          "Autograd: automatic differentiation, requires_grad, backward()",
+          "nn.Module: base class for all neural network modules",
+          "Layer composition: Sequential, ModuleList, ModuleDict",
+          "Forward pass: how data flows through the network",
+          "Gradient computation: computational graph and backpropagation"
+        ],
+        "diagrams": [
+          "Tensor operations visualization",
+          "Computational graph for autograd",
+          "nn.Module inheritance hierarchy",
+          "Forward and backward pass flow",
+          "Layer composition patterns"
+        ],
+        "key_points": [
+          "Tensors are the fundamental data structure (like NumPy arrays with GPU support)",
+          "Autograd tracks operations to compute gradients automatically",
+          "nn.Module provides structure and parameter management",
+          "forward() defines the computation, __call__() handles hooks",
+          "Gradients accumulate - always zero_grad() before backward()",
+          "Model.eval() vs model.train() changes behavior (dropout, batchnorm)"
+        ]
+      },
+      "facilitator_notes": "Start with simple tensor operations before showing autograd. Use visual diagrams to explain computational graphs. Emphasize the difference between training and evaluation modes.",
+      "common_questions": [
+        "When should I use .cpu() vs .cuda()?",
+        "Why do I need to call zero_grad()?",
+        "What's the difference between model.train() and model.eval()?",
+        "How do I know if my model is on GPU?",
+        "What happens if I forget requires_grad=True?"
+      ]
+    },
+    {
+      "phaseId": "demo",
+      "name": "Building an Image Classifier",
+      "type": "demo",
+      "duration_minutes": 30,
+      "description": "Live coding a complete CNN image classifier from scratch",
+      "content": {
+        "topics": [
+          "Dataset and DataLoader setup with transforms",
+          "Defining CNN architecture with nn.Module",
+          "Loss function and optimizer selection",
+          "Training loop implementation",
+          "Validation loop with metrics",
+          "Model checkpointing"
+        ],
+        "code_examples": [
+          "Custom Dataset class implementation",
+          "CNN model with Conv2d, BatchNorm, ReLU",
+          "Complete training loop with progress tracking",
+          "Checkpoint save/load functions"
+        ],
+        "key_points": [
+          "Always normalize images with transforms.Normalize()",
+          "Use DataLoader with num_workers for parallel loading",
+          "Move model and data to same device",
+          "Validate on separate dataset to check overfitting",
+          "Save checkpoints regularly during training"
+        ]
+      },
+      "facilitator_notes": "Type code live, explain each component. Show how to debug with print statements and tensor shapes. Demonstrate GPU usage if available."
+    },
+    {
+      "phaseId": "exercise_1",
+      "name": "Custom Dataset and DataLoader",
+      "type": "exercise",
+      "duration_minutes": 20,
+      "description": "Create a custom dataset class and set up data loading",
+      "content": {
+        "topics": [
+          "Implement Dataset class with __len__ and __getitem__",
+          "Apply transforms for preprocessing",
+          "Create DataLoader with appropriate batch size",
+          "Handle different data formats (images, CSV, etc.)"
+        ]
+      }
+    },
+    {
+      "phaseId": "exercise_2",
+      "name": "Training Loop Implementation",
+      "type": "exercise",
+      "duration_minutes": 25,
+      "description": "Write a complete training loop with gradient management",
+      "content": {
+        "topics": [
+          "Forward pass through model",
+          "Loss computation and backward pass",
+          "Optimizer step and gradient zeroing",
+          "Epoch tracking and logging",
+          "Basic metrics calculation"
+        ]
+      }
+    },
+    {
+      "phaseId": "challenge",
+      "name": "Transfer Learning with Pre-trained Models",
+      "type": "challenge",
+      "duration_minutes": 30,
+      "description": "Fine-tune a pre-trained model for a custom task",
+      "content": {
+        "topics": [
+          "Load pre-trained weights from torchvision.models",
+          "Modify final layers for new task",
+          "Freeze/unfreeze layers selectively",
+          "Train with different learning rates for different layers",
+          "Evaluate fine-tuned model performance"
+        ]
+      }
+    },
+    {
+      "phaseId": "reflection",
+      "name": "Key Takeaways and Best Practices",
+      "type": "reflection",
+      "duration_minutes": 15,
+      "description": "Consolidate learning and discuss production considerations",
+      "content": {
+        "topics": [
+          "Summary of PyTorch fundamentals",
+          "Common pitfalls and debugging strategies",
+          "Performance optimization tips",
+          "Resources for advanced topics"
+        ],
+        "key_points": [
+          "Always check tensor shapes during development",
+          "Use torch.no_grad() for inference to save memory",
+          "Monitor GPU memory usage",
+          "Save checkpoints frequently",
+          "Use torch.compile() for PyTorch 2.0+ performance gains",
+          "Validate your model on unseen data"
+        ]
+      }
+    }
+  ],
+  "exercises": [
+    {
+      "exerciseId": "ex1_dataset_dataloader",
+      "name": "Custom Dataset and DataLoader",
+      "type": "guided",
+      "difficulty": "medium",
+      "duration_minutes": 20,
+      "description": "Create a custom dataset class for image classification and set up DataLoader",
+      "starter_code": "import torch\nfrom torch.utils.data import Dataset, DataLoader\nfrom torchvision import transforms\nfrom PIL import Image\nimport os\n\nclass CustomImageDataset(Dataset):\n    def __init__(self, root_dir, transform=None):\n        \"\"\"\n        Args:\n            root_dir: Directory with subdirectories for each class\n            transform: Optional transform to be applied on a sample\n        \"\"\"\n        self.root_dir = root_dir\n        self.transform = transform\n        \n        # TODO: Get list of all image files and their labels\n        # Hint: os.walk() or os.listdir() to find images\n        self.images = []\n        self.labels = []\n        \n    def __len__(self):\n        # TODO: Return total number of samples\n        pass\n    \n    def __getitem__(self, idx):\n        # TODO: Load image at idx\n        # TODO: Apply transform if provided\n        # TODO: Return (image_tensor, label)\n        pass\n\n# TODO: Define transforms\n# Hint: transforms.Compose([transforms.Resize(...), transforms.ToTensor(), ...])\ntransform = None\n\n# TODO: Create dataset and dataloader\ndataset = None\ndataloader = None\n\n# Test: Iterate through one batch\nfor images, labels in dataloader:\n    print(f\"Batch shape: {images.shape}\")\n    print(f\"Labels: {labels}\")\n    break",
+      "solution_code": "import torch\nfrom torch.utils.data import Dataset, DataLoader\nfrom torchvision import transforms\nfrom PIL import Image\nimport os\n\nclass CustomImageDataset(Dataset):\n    def __init__(self, root_dir, transform=None):\n        \"\"\"\n        Args:\n            root_dir: Directory with subdirectories for each class\n            transform: Optional transform to be applied on a sample\n        \"\"\"\n        self.root_dir = root_dir\n        self.transform = transform\n        \n        # Get list of all image files and their labels\n        self.images = []\n        self.labels = []\n        self.class_to_idx = {}\n        \n        # Assume structure: root_dir/class_name/image.jpg\n        for class_name in os.listdir(root_dir):\n            class_path = os.path.join(root_dir, class_name)\n            if os.path.isdir(class_path):\n                if class_name not in self.class_to_idx:\n                    self.class_to_idx[class_name] = len(self.class_to_idx)\n                \n                for img_name in os.listdir(class_path):\n                    if img_name.lower().endswith(('.png', '.jpg', '.jpeg')):\n                        self.images.append(os.path.join(class_path, img_name))\n                        self.labels.append(self.class_to_idx[class_name])\n        \n    def __len__(self):\n        return len(self.images)\n    \n    def __getitem__(self, idx):\n        # Load image\n        img_path = self.images[idx]\n        image = Image.open(img_path).convert('RGB')\n        label = self.labels[idx]\n        \n        # Apply transform\n        if self.transform:\n            image = self.transform(image)\n        \n        return image, label\n\n# Define transforms\n# Normalize with ImageNet stats (common for pre-trained models)\ntransform = transforms.Compose([\n    transforms.Resize((224, 224)),\n    transforms.ToTensor(),\n    transforms.Normalize(mean=[0.485, 0.456, 0.406], \n                        std=[0.229, 0.224, 0.225])\n])\n\n# Create dataset and dataloader\n# Note: Adjust root_dir to your actual data path\ndataset = CustomImageDataset(root_dir='./data/train', transform=transform)\ndataloader = DataLoader(\n    dataset, \n    batch_size=32, \n    shuffle=True,\n    num_workers=4,\n    pin_memory=True  # Faster GPU transfer\n)\n\n# Test: Iterate through one batch\nfor images, labels in dataloader:\n    print(f\"Batch shape: {images.shape}\")  # Should be [32, 3, 224, 224]\n    print(f\"Labels: {labels}\")\n    print(f\"Label shape: {labels.shape}\")  # Should be [32]\n    break",
+      "hints": [
+        "Use os.walk() or os.listdir() to find all images",
+        "Create a mapping from class names to integer labels",
+        "Use PIL Image.open() to load images",
+        "transforms.ToTensor() converts PIL Image to tensor and scales to [0,1]",
+        "transforms.Normalize() standardizes the data",
+        "Set pin_memory=True for faster GPU transfer"
+      ],
+      "verification": "DataLoader successfully loads batches with correct shapes",
+      "common_mistakes": [
+        "Forgetting to convert image to RGB with .convert('RGB')",
+        "Not handling different image formats",
+        "Incorrect normalization values",
+        "Forgetting to set shuffle=True for training",
+        "Not using num_workers for parallel loading"
+      ]
+    },
+    {
+      "exerciseId": "ex2_training_loop",
+      "name": "Complete Training Loop",
+      "type": "guided",
+      "difficulty": "medium",
+      "duration_minutes": 25,
+      "description": "Implement a complete training loop with proper gradient management",
+      "starter_code": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.utils.data import DataLoader\n\n# Assume we have a model, dataloader, and device already defined\n# model = YourModel()\n# train_loader = DataLoader(...)\n# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\n\ndef train_one_epoch(model, train_loader, criterion, optimizer, device):\n    \"\"\"Train the model for one epoch.\"\"\"\n    model.train()  # Set to training mode\n    running_loss = 0.0\n    correct = 0\n    total = 0\n    \n    for batch_idx, (inputs, targets) in enumerate(train_loader):\n        # TODO: Move data to device\n        \n        # TODO: Zero gradients\n        \n        # TODO: Forward pass\n        \n        # TODO: Compute loss\n        \n        # TODO: Backward pass\n        \n        # TODO: Update weights\n        \n        # TODO: Update statistics\n        running_loss += loss.item()\n        _, predicted = outputs.max(1)\n        total += targets.size(0)\n        correct += predicted.eq(targets).sum().item()\n        \n        # Print progress every 100 batches\n        if (batch_idx + 1) % 100 == 0:\n            print(f'Batch {batch_idx + 1}/{len(train_loader)}, '\n                  f'Loss: {running_loss/(batch_idx+1):.4f}, '\n                  f'Acc: {100.*correct/total:.2f}%')\n    \n    epoch_loss = running_loss / len(train_loader)\n    epoch_acc = 100. * correct / total\n    return epoch_loss, epoch_acc\n\n# Example usage:\n# criterion = nn.CrossEntropyLoss()\n# optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)\n# loss, acc = train_one_epoch(model, train_loader, criterion, optimizer, device)",
+      "solution_code": "import torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.utils.data import DataLoader\n\ndef train_one_epoch(model, train_loader, criterion, optimizer, device):\n    \"\"\"Train the model for one epoch.\"\"\"\n    model.train()  # Set to training mode\n    running_loss = 0.0\n    correct = 0\n    total = 0\n    \n    for batch_idx, (inputs, targets) in enumerate(train_loader):\n        # Move data to device\n        inputs = inputs.to(device)\n        targets = targets.to(device)\n        \n        # Zero gradients (IMPORTANT: do this before backward pass)\n        optimizer.zero_grad()\n        \n        # Forward pass\n        outputs = model(inputs)\n        \n        # Compute loss\n        loss = criterion(outputs, targets)\n        \n        # Backward pass (computes gradients)\n        loss.backward()\n        \n        # Update weights\n        optimizer.step()\n        \n        # Update statistics\n        running_loss += loss.item()\n        _, predicted = outputs.max(1)\n        total += targets.size(0)\n        correct += predicted.eq(targets).sum().item()\n        \n        # Print progress every 100 batches\n        if (batch_idx + 1) % 100 == 0:\n            print(f'Batch {batch_idx + 1}/{len(train_loader)}, '\n                  f'Loss: {running_loss/(batch_idx+1):.4f}, '\n                  f'Acc: {100.*correct/total:.2f}%')\n    \n    epoch_loss = running_loss / len(train_loader)\n    epoch_acc = 100. * correct / total\n    return epoch_loss, epoch_acc\n\ndef validate(model, val_loader, criterion, device):\n    \"\"\"Validate the model.\"\"\"\n    model.eval()  # Set to evaluation mode\n    running_loss = 0.0\n    correct = 0\n    total = 0\n    \n    with torch.no_grad():  # Disable gradient computation for efficiency\n        for inputs, targets in val_loader:\n            inputs = inputs.to(device)\n            targets = targets.to(device)\n            \n            outputs = model(inputs)\n            loss = criterion(outputs, targets)\n            \n            running_loss += loss.item()\n            _, predicted = outputs.max(1)\n            total += targets.size(0)\n            correct += predicted.eq(targets).sum().item()\n    \n    epoch_loss = running_loss / len(val_loader)\n    epoch_acc = 100. * correct / total\n    return epoch_loss, epoch_acc\n\n# Example usage:\n# model = YourModel().to(device)\n# criterion = nn.CrossEntropyLoss()\n# optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)\n# scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)\n# \n# for epoch in range(num_epochs):\n#     train_loss, train_acc = train_one_epoch(model, train_loader, criterion, optimizer, device)\n#     val_loss, val_acc = validate(model, val_loader, criterion, device)\n#     scheduler.step()\n#     print(f'Epoch {epoch+1}: Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}%, '\n#           f'Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.2f}%')",
+      "hints": [
+        "Always call optimizer.zero_grad() before backward()",
+        "Move both inputs and targets to the same device as model",
+        "Use model.train() for training, model.eval() for validation",
+        "Use torch.no_grad() during validation to save memory",
+        "Call optimizer.step() after backward() to update weights"
+      ],
+      "verification": "Training loop runs without errors and loss decreases over epochs",
+      "common_mistakes": [
+        "Forgetting optimizer.zero_grad() - causes gradient accumulation",
+        "Not moving data to device (CPU/GPU mismatch)",
+        "Using model.train() during validation",
+        "Forgetting torch.no_grad() in validation (wastes memory)",
+        "Calling optimizer.step() before backward()",
+        "Not handling batch dimension correctly"
+      ]
+    },
+    {
+      "exerciseId": "ex3_checkpointing",
+      "name": "Model Checkpointing",
+      "type": "guided",
+      "difficulty": "easy",
+      "duration_minutes": 15,
+      "description": "Implement save and load functions for model checkpoints",
+      "starter_code": "import torch\nimport os\n\ndef save_checkpoint(model, optimizer, epoch, loss, filepath):\n    \"\"\"Save model checkpoint.\"\"\"\n    # TODO: Create checkpoint dictionary\n    # Include: model state_dict, optimizer state_dict, epoch, loss\n    checkpoint = {}\n    \n    # TODO: Save checkpoint\n    # Hint: torch.save(checkpoint, filepath)\n    pass\n\ndef load_checkpoint(filepath, model, optimizer=None):\n    \"\"\"Load model checkpoint.\"\"\"\n    # TODO: Load checkpoint\n    # TODO: Load model state_dict\n    # TODO: Load optimizer state_dict if provided\n    # TODO: Return epoch and loss\n    pass\n\n# Example usage:\n# save_checkpoint(model, optimizer, epoch, best_loss, 'checkpoint.pth')\n# model, optimizer, epoch, loss = load_checkpoint('checkpoint.pth', model, optimizer)",
+      "solution_code": "import torch\nimport os\n\ndef save_checkpoint(model, optimizer, epoch, loss, filepath, best=False):\n    \"\"\"Save model checkpoint.\"\"\"\n    checkpoint = {\n        'epoch': epoch,\n        'model_state_dict': model.state_dict(),\n        'optimizer_state_dict': optimizer.state_dict() if optimizer else None,\n        'loss': loss,\n    }\n    \n    # Create directory if it doesn't exist\n    os.makedirs(os.path.dirname(filepath) if os.path.dirname(filepath) else '.', exist_ok=True)\n    \n    torch.save(checkpoint, filepath)\n    \n    if best:\n        # Also save as best model\n        best_path = filepath.replace('.pth', '_best.pth')\n        torch.save(checkpoint, best_path)\n    \n    print(f'Checkpoint saved: {filepath}')\n\ndef load_checkpoint(filepath, model, optimizer=None, device='cpu'):\n    \"\"\"Load model checkpoint.\"\"\"\n    if not os.path.exists(filepath):\n        raise FileNotFoundError(f'Checkpoint not found: {filepath}')\n    \n    checkpoint = torch.load(filepath, map_location=device)\n    \n    # Load model state\n    model.load_state_dict(checkpoint['model_state_dict'])\n    \n    # Load optimizer state if provided\n    if optimizer and checkpoint.get('optimizer_state_dict'):\n        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])\n    \n    epoch = checkpoint.get('epoch', 0)\n    loss = checkpoint.get('loss', float('inf'))\n    \n    print(f'Checkpoint loaded: {filepath}')\n    print(f'Resuming from epoch {epoch}, loss: {loss:.4f}')\n    \n    return epoch, loss\n\n# Example usage:\n# # Save checkpoint\n# save_checkpoint(model, optimizer, epoch, best_loss, 'checkpoints/model_epoch_10.pth', best=True)\n# \n# # Load checkpoint\n# start_epoch, start_loss = load_checkpoint('checkpoints/model_best.pth', model, optimizer, device)\n# \n# # Continue training\n# for epoch in range(start_epoch, num_epochs):\n#     train_one_epoch(...)",
+      "hints": [
+        "Use model.state_dict() to get model parameters",
+        "Use optimizer.state_dict() to save optimizer state",
+        "Include epoch number to resume training",
+        "Use map_location in torch.load() for device compatibility",
+        "Check if file exists before loading"
+      ],
+      "verification": "Can save and load checkpoints, resume training from saved state",
+      "common_mistakes": [
+        "Not saving optimizer state (can't resume training properly)",
+        "Forgetting to create directory before saving",
+        "Not handling device mapping when loading",
+        "Saving full model instead of state_dict (less portable)",
+        "Not checking if checkpoint exists before loading"
+      ]
+    }
+  ],
+  "challenges": [
+    {
+      "challengeId": "transfer_learning",
+      "name": "Transfer Learning with Pre-trained Models",
+      "description": "Fine-tune a pre-trained ResNet model for a custom image classification task",
+      "requirements": [
+        "Load pre-trained ResNet18 from torchvision.models",
+        "Replace final fully connected layer for your number of classes",
+        "Freeze backbone layers, only train classifier",
+        "Implement learning rate scheduling",
+        "Use mixed precision training with torch.cuda.amp",
+        "Save best model checkpoint based on validation accuracy",
+        "Achieve >85% validation accuracy"
+      ],
+      "evaluation_criteria": [
+        "Model loads pre-trained weights correctly",
+        "Only classifier layers have requires_grad=True",
+        "Training uses mixed precision",
+        "Learning rate decreases according to schedule",
+        "Best model checkpoint is saved",
+        "Validation accuracy meets threshold"
+      ],
+      "stretch_goals": [
+        "Implement fine-tuning with differential learning rates (lower LR for backbone)",
+        "Add data augmentation (random crops, flips, color jitter)",
+        "Visualize training curves with matplotlib",
+        "Implement early stopping based on validation loss",
+        "Export model to ONNX format"
+      ]
+    }
+  ],
+  "resources": {
+    "official_docs": [
+      "https://pytorch.org/docs/stable/index.html",
+      "https://pytorch.org/tutorials/",
+      "https://pytorch.org/vision/stable/index.html"
+    ],
+    "tutorials": [
+      "https://pytorch.org/tutorials/beginner/basics/intro.html",
+      "https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html",
+      "https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html"
+    ],
+    "videos": [
+      "PyTorch Official YouTube Channel",
+      "Deep Learning with PyTorch - Fast.ai"
+    ],
+    "books": [
+      "Deep Learning with PyTorch by Eli Stevens et al.",
+      "Programming PyTorch for Deep Learning by Ian Pointer"
+    ],
+    "community": [
+      "PyTorch Forums: https://discuss.pytorch.org/",
+      "Stack Overflow pytorch tag",
+      "PyTorch GitHub Discussions"
+    ]
+  },
+  "assessment": {
+    "knowledge_check": [
+      {
+        "question": "What is the purpose of calling optimizer.zero_grad() before loss.backward()?",
+        "type": "short_answer",
+        "answer": "zero_grad() clears the gradients from the previous iteration. Without it, gradients accumulate across batches, leading to incorrect updates and memory issues.",
+        "explanation": "PyTorch accumulates gradients by default, so you must explicitly zero them"
+      },
+      {
+        "question": "What is the difference between model.train() and model.eval()?",
+        "type": "short_answer",
+        "answer": "model.train() enables training-specific behaviors like dropout and batch normalization updates. model.eval() disables these behaviors for consistent inference behavior.",
+        "explanation": "This is crucial for getting correct results during validation"
+      },
+      {
+        "question": "What does nn.Module provide that makes it the base class for all neural network modules?",
+        "type": "multiple_choice",
+        "answer": "Parameter registration, device management, state_dict for saving/loading, and hook system",
+        "explanation": "nn.Module handles all the infrastructure needed for neural networks"
+      },
+      {
+        "question": "Why should you use torch.no_grad() during validation?",
+        "type": "short_answer",
+        "answer": "torch.no_grad() disables gradient computation, saving memory and computation since gradients aren't needed during inference.",
+        "explanation": "This can significantly reduce memory usage for large models"
+      }
+    ],
+    "practical_assessment": "Build and train a CNN model that achieves >80% accuracy on CIFAR-10, including proper data loading, training loop, and checkpointing",
+    "self_assessment": [
+      "Can I explain how autograd works and when gradients are computed?",
+      "Do I understand when to use model.train() vs model.eval()?",
+      "Can I write a complete training loop from scratch?",
+      "Do I know how to save and load model checkpoints?",
+      "Can I use DataLoader effectively for my data?"
+    ]
+  },
+  "next_steps": {
+    "next_workshop": "L15_llm_finetuning",
+    "practice_projects": [
+      "Image classification on custom dataset",
+      "Object detection with YOLO",
+      "Image segmentation with U-Net",
+      "GAN for image generation"
+    ],
+    "deeper_learning": [
+      "Advanced architectures (ResNet, Transformer, Vision Transformer)",
+      "Distributed training with DDP",
+      "Model optimization (quantization, pruning)",
+      "Deployment with TorchScript and ONNX"
+    ]
+  },
+  "axiom_zero_integration": {
+    "love_moments": [
+      "Patient debugging of tensor shape mismatches",
+      "Celebrating first successful model training",
+      "Encouraging experimentation with different architectures",
+      "Creating a supportive environment for learning complex concepts"
+    ],
+    "truth_moments": [
+      "Honest discussion of GPU memory limitations",
+      "Clear explanation of gradient accumulation bugs",
+      "Accurate performance expectations for training times",
+      "Transparent about debugging strategies and common pitfalls",
+      "Verified code examples that actually run"
+    ],
+    "beauty_moments": [
+      "Elegant model architecture design",
+      "Clean, readable training loop structure",
+      "The satisfaction of seeing loss decrease",
+      "Beautiful visualization of model predictions",
+      "Elegant use of PyTorch's functional API"
+    ]
+  }
+}

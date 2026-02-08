@@ -1,0 +1,533 @@
+"""
+{{AGENT_NAME}} - Multi-Agent Orchestration System
+
+Purpose: {{AGENT_PURPOSE}}
+Stakeholders: {{PRIMARY_STAKEHOLDERS}}
+
+Axiom Alignment:
+- A1 (Verifiability): All agent interactions and handoffs are logged
+- A2 (User Primacy): User intent is preserved across agent handoffs
+- A3 (Transparency): Agent roles, responsibilities, and coordination are explicit
+- A4 (Non-Harm): Agent actions are validated before execution
+- A5 (Consistency): Coordination protocols are consistently applied
+
+Multi-Agent Pattern: Orchestrates multiple specialized agents to solve complex tasks
+"""
+
+from typing import List, Dict, Any, Optional, TypedDict, Annotated
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_openai import ChatOpenAI
+from langchain_core.tools import tool, Tool
+from pydantic import BaseModel, Field
+from enum import Enum
+import logging
+import asyncio
+from datetime import datetime
+
+# Configure logging for transparency (A3)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class AgentRole(str, Enum):
+    """Roles for different agents in the system."""
+    COORDINATOR = "coordinator"
+    RESEARCHER = "researcher"
+    ANALYZER = "analyzer"
+    EXECUTOR = "executor"
+    VALIDATOR = "validator"
+    {{CUSTOM_ROLES}}
+
+
+class AgentStatus(str, Enum):
+    """Status of an agent."""
+    IDLE = "idle"
+    WORKING = "working"
+    COMPLETED = "completed"
+    ERROR = "error"
+    WAITING = "waiting"
+
+
+class AgentMessage(BaseModel):
+    """Message passed between agents."""
+    from_agent: str = Field(description="Source agent identifier")
+    to_agent: str = Field(description="Target agent identifier")
+    content: str = Field(description="Message content")
+    task_id: str = Field(description="Task identifier")
+    timestamp: datetime = Field(default_factory=datetime.now)
+    requires_response: bool = Field(default=False, description="Whether response is expected")
+
+
+class AgentTask(BaseModel):
+    """Task assigned to an agent."""
+    task_id: str = Field(description="Unique task identifier")
+    agent_role: AgentRole = Field(description="Agent role for this task")
+    description: str = Field(description="Task description")
+    input_data: Dict[str, Any] = Field(default_factory=dict, description="Input data for task")
+    output_data: Optional[Dict[str, Any]] = Field(default=None, description="Output data from task")
+    status: AgentStatus = Field(default=AgentStatus.IDLE)
+    assigned_to: Optional[str] = Field(default=None, description="Agent instance identifier")
+    dependencies: List[str] = Field(default_factory=list, description="Task IDs this depends on")
+
+
+class {{AGENT_CLASS_NAME}}Output(BaseModel):
+    """
+    Structured output for multi-agent orchestration.
+    
+    Using structured output ensures verifiability (A1).
+    """
+    final_result: str = Field(description="Final result from agent coordination")
+    task_results: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="Results from each agent task"
+    )
+    agent_interactions: List[AgentMessage] = Field(
+        default_factory=list,
+        description="All messages passed between agents"
+    )
+    coordination_plan: List[AgentTask] = Field(
+        default_factory=list,
+        description="Plan of tasks executed"
+    )
+    execution_time: float = Field(description="Total execution time in seconds")
+    success: bool = Field(description="Whether orchestration succeeded")
+
+
+class BaseAgent:
+    """
+    Base class for individual agents in the multi-agent system.
+    
+    Each agent has a specific role and can communicate with other agents.
+    """
+    
+    def __init__(
+        self,
+        agent_id: str,
+        role: AgentRole,
+        llm: ChatOpenAI,
+        tools: Optional[List[Tool]] = None
+    ):
+        """
+        Initialize a base agent.
+        
+        Args:
+            agent_id: Unique identifier for this agent
+            role: Role of this agent
+            llm: LLM instance to use
+            tools: Tools available to this agent
+        """
+        self.agent_id = agent_id
+        self.role = role
+        self.llm = llm
+        self.tools = tools or []
+        self.status = AgentStatus.IDLE
+        self.message_queue: List[AgentMessage] = []
+        
+        logger.info(f"Initialized agent {agent_id} with role {role.value}")
+    
+    async def process_task(self, task: AgentTask) -> Dict[str, Any]:
+        """
+        Process a task assigned to this agent.
+        
+        Args:
+            task: Task to process
+            
+        Returns:
+            Task result dictionary
+        """
+        self.status = AgentStatus.WORKING
+        task.assigned_to = self.agent_id
+        task.status = AgentStatus.WORKING
+        
+        logger.info(f"Agent {self.agent_id} processing task {task.task_id}")
+        
+        try:
+            # Agent-specific processing logic
+            result = await self._execute_task(task)
+            
+            task.status = AgentStatus.COMPLETED
+            task.output_data = result
+            self.status = AgentStatus.IDLE
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Agent {self.agent_id} error: {e}")
+            task.status = AgentStatus.ERROR
+            self.status = AgentStatus.ERROR
+            raise
+    
+    async def _execute_task(self, task: AgentTask) -> Dict[str, Any]:
+        """
+        Execute the actual task logic (to be implemented by subclasses).
+        
+        Args:
+            task: Task to execute
+            
+        Returns:
+            Task result
+        """
+        # Default implementation
+        return {"result": f"Task {task.task_id} processed by {self.agent_id}"}
+    
+    def send_message(self, to_agent: str, content: str, task_id: str) -> AgentMessage:
+        """
+        Send a message to another agent.
+        
+        Args:
+            to_agent: Target agent identifier
+            content: Message content
+            task_id: Associated task ID
+            
+        Returns:
+            Created message
+        """
+        message = AgentMessage(
+            from_agent=self.agent_id,
+            to_agent=to_agent,
+            content=content,
+            task_id=task_id
+        )
+        logger.info(f"Agent {self.agent_id} -> {to_agent}: {content[:100]}...")
+        return message
+
+
+class {{AGENT_CLASS_NAME}}:
+    """
+    {{AGENT_NAME}} - Multi-Agent Orchestration System
+    
+    Coordinates multiple specialized agents to solve complex tasks.
+    
+    Architecture:
+    - Coordinator Agent: Plans and delegates tasks
+    - Specialized Agents: Execute specific tasks (research, analysis, execution, etc.)
+    - Message Bus: Facilitates agent communication
+    - Task Queue: Manages task dependencies and execution order
+    
+    This system follows the 5-layer architecture:
+    - Layer 0: Respects core axioms (A1-A5)
+    - Layer 1: Serves purpose of {{AGENT_PURPOSE}}
+    - Layer 2: Follows quality standards and ethical boundaries
+    - Layer 3: Works within {{METHODOLOGY}} methodology
+    - Layer 4: Uses {{TECH_STACK}} stack
+    
+    Example:
+        >>> orchestrator = {{AGENT_CLASS_NAME}}()
+        >>> result = await orchestrator.coordinate("{{EXAMPLE_TASK}}")
+        >>> print(result.final_result)
+    """
+    
+    # Configuration
+    MODEL_NAME = "{{LLM_MODEL}}"
+    TEMPERATURE = {{TEMPERATURE}}
+    MAX_AGENTS = {{MAX_AGENTS}}
+    
+    def __init__(
+        self,
+        model_name: Optional[str] = None,
+        temperature: Optional[float] = None,
+        agents: Optional[Dict[str, BaseAgent]] = None
+    ):
+        """
+        Initialize the multi-agent orchestration system.
+        
+        Args:
+            model_name: LLM model to use (default: {{LLM_MODEL}})
+            temperature: Sampling temperature (default: {{TEMPERATURE}})
+            agents: Pre-configured agents (if None, creates default agents)
+        """
+        self.model_name = model_name or self.MODEL_NAME
+        self.temperature = temperature if temperature is not None else {{TEMPERATURE}}
+        
+        # Initialize LLM
+        self.llm = ChatOpenAI(
+            model=self.model_name,
+            temperature=self.temperature
+        )
+        
+        # Initialize agents
+        self.agents: Dict[str, BaseAgent] = agents or self._create_default_agents()
+        
+        # Message bus for agent communication
+        self.message_bus: Dict[str, List[AgentMessage]] = {
+            agent_id: [] for agent_id in self.agents.keys()
+        }
+        
+        # Task queue
+        self.task_queue: List[AgentTask] = []
+        self.completed_tasks: Dict[str, AgentTask] = {}
+        
+        logger.info(f"Initialized {{AGENT_NAME}} with {len(self.agents)} agents")
+        logger.info(f"Agent roles: {[agent.role.value for agent in self.agents.values()]}")
+    
+    def _create_default_agents(self) -> Dict[str, BaseAgent]:
+        """
+        Create default set of agents for the orchestration system.
+        
+        Returns:
+            Dictionary of agent_id -> BaseAgent
+        """
+        agents = {}
+        
+        # Coordinator agent
+        coordinator = BaseAgent(
+            agent_id="coordinator-1",
+            role=AgentRole.COORDINATOR,
+            llm=self.llm
+        )
+        agents[coordinator.agent_id] = coordinator
+        
+        # Add more default agents as needed
+        # Example: Researcher agent
+        researcher = BaseAgent(
+            agent_id="researcher-1",
+            role=AgentRole.RESEARCHER,
+            llm=self.llm
+        )
+        agents[researcher.agent_id] = researcher
+        
+        return agents
+    
+    async def coordinate(
+        self,
+        user_query: str,
+        context: Optional[Dict[str, Any]] = None
+    ) -> {{AGENT_CLASS_NAME}}Output:
+        """
+        Coordinate multiple agents to solve a task.
+        
+        Args:
+            user_query: User's query/task
+            context: Optional additional context
+            
+        Returns:
+            Structured output with coordination results
+            
+        Example:
+            >>> result = await orchestrator.coordinate(
+            ...     "Research and analyze the latest AI trends",
+            ...     context={"domain": "machine learning"}
+            ... )
+        """
+        start_time = datetime.now()
+        logger.info(f"Starting multi-agent coordination for: {user_query[:100]}...")
+        
+        try:
+            # Step 1: Plan task decomposition
+            plan = await self._create_coordination_plan(user_query, context)
+            
+            # Step 2: Execute tasks in dependency order
+            task_results = []
+            agent_interactions = []
+            
+            for task in plan:
+                # Wait for dependencies
+                await self._wait_for_dependencies(task)
+                
+                # Assign to appropriate agent
+                agent = self._select_agent_for_task(task)
+                
+                if agent:
+                    # Process task
+                    result = await agent.process_task(task)
+                    task_results.append({
+                        "task_id": task.task_id,
+                        "agent": agent.agent_id,
+                        "result": result
+                    })
+                    
+                    # Handle agent messages
+                    if agent.message_queue:
+                        agent_interactions.extend(agent.message_queue)
+                        agent.message_queue.clear()
+                    
+                    self.completed_tasks[task.task_id] = task
+                else:
+                    logger.warning(f"No agent available for task {task.task_id}")
+            
+            # Step 3: Synthesize final result
+            final_result = await self._synthesize_results(user_query, task_results)
+            
+            execution_time = (datetime.now() - start_time).total_seconds()
+            
+            output = {{AGENT_CLASS_NAME}}Output(
+                final_result=final_result,
+                task_results=task_results,
+                agent_interactions=agent_interactions,
+                coordination_plan=plan,
+                execution_time=execution_time,
+                success=True
+            )
+            
+            logger.info(f"Coordination completed in {execution_time:.2f}s")
+            return output
+            
+        except Exception as e:
+            logger.error(f"Error during coordination: {e}", exc_info=True)
+            execution_time = (datetime.now() - start_time).total_seconds()
+            
+            return {{AGENT_CLASS_NAME}}Output(
+                final_result=f"Error: {str(e)}",
+                task_results=[],
+                agent_interactions=[],
+                coordination_plan=[],
+                execution_time=execution_time,
+                success=False
+            )
+    
+    async def _create_coordination_plan(
+        self,
+        user_query: str,
+        context: Optional[Dict[str, Any]]
+    ) -> List[AgentTask]:
+        """
+        Create a plan for coordinating agents.
+        
+        Args:
+            user_query: User's query
+            context: Optional context
+            
+        Returns:
+            List of tasks in execution order
+        """
+        # Use LLM to decompose task into subtasks
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are a task coordinator. Break down the user's query into 
+            subtasks that can be handled by specialized agents.
+            
+            Available agent roles: {{AVAILABLE_ROLES}}
+            
+            Return a JSON list of tasks with:
+            - task_id: unique identifier
+            - agent_role: which agent should handle it
+            - description: what needs to be done
+            - dependencies: list of task_ids this depends on
+            """),
+            ("human", "Query: {query}\nContext: {context}")
+        ])
+        
+        chain = prompt | self.llm
+        response = await chain.ainvoke({
+            "query": user_query,
+            "context": str(context) if context else "None"
+        })
+        
+        # Parse response and create tasks
+        # In production, use structured output parsing
+        tasks = [
+            AgentTask(
+                task_id=f"task-{i+1}",
+                agent_role=AgentRole.COORDINATOR,  # Default, should be parsed from LLM
+                description=user_query,
+                input_data=context or {}
+            )
+            for i in range(1)  # Simplified: single task
+        ]
+        
+        return tasks
+    
+    async def _wait_for_dependencies(self, task: AgentTask) -> None:
+        """
+        Wait for task dependencies to complete.
+        
+        Args:
+            task: Task to check dependencies for
+        """
+        for dep_id in task.dependencies:
+            while dep_id not in self.completed_tasks:
+                await asyncio.sleep(0.1)
+    
+    def _select_agent_for_task(self, task: AgentTask) -> Optional[BaseAgent]:
+        """
+        Select the best agent for a task.
+        
+        Args:
+            task: Task to assign
+            
+        Returns:
+            Selected agent or None
+        """
+        # Find agents with matching role
+        candidates = [
+            agent for agent in self.agents.values()
+            if agent.role == task.agent_role and agent.status == AgentStatus.IDLE
+        ]
+        
+        if candidates:
+            return candidates[0]
+        
+        # Fallback to any idle agent
+        idle_agents = [
+            agent for agent in self.agents.values()
+            if agent.status == AgentStatus.IDLE
+        ]
+        
+        return idle_agents[0] if idle_agents else None
+    
+    async def _synthesize_results(
+        self,
+        user_query: str,
+        task_results: List[Dict[str, Any]]
+    ) -> str:
+        """
+        Synthesize results from multiple agents into final answer.
+        
+        Args:
+            user_query: Original user query
+            task_results: Results from all tasks
+            
+        Returns:
+            Synthesized final result
+        """
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are synthesizing results from multiple agents.
+            Combine the task results into a coherent final answer to the user's query.
+            """),
+            ("human", """Original Query: {query}
+            
+Task Results:
+{results}
+
+Provide a comprehensive final answer.""")
+        ])
+        
+        results_text = "\n".join([
+            f"Task {r['task_id']}: {r['result']}"
+            for r in task_results
+        ])
+        
+        chain = prompt | self.llm
+        response = await chain.ainvoke({
+            "query": user_query,
+            "results": results_text
+        })
+        
+        return response.content if hasattr(response, 'content') else str(response)
+
+
+# Example usage
+if __name__ == "__main__":
+    import asyncio
+    
+    async def main():
+        # Create orchestrator
+        orchestrator = {{AGENT_CLASS_NAME}}(
+            model_name="{{LLM_MODEL}}"
+        )
+        
+        # Coordinate agents
+        result = await orchestrator.coordinate("{{EXAMPLE_TASK}}")
+        
+        print(f"\n{'='*60}")
+        print(f"Final Result: {result.final_result}")
+        print(f"{'='*60}")
+        print(f"\nExecution Time: {result.execution_time:.2f}s")
+        print(f"Success: {result.success}")
+        print(f"\nTasks Executed: {len(result.task_results)}")
+        for task_result in result.task_results:
+            print(f"  - {task_result['task_id']}: {task_result['agent']}")
+        
+        print(f"\nAgent Interactions: {len(result.agent_interactions)}")
+    
+    asyncio.run(main())

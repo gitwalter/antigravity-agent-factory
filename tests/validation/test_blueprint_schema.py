@@ -94,8 +94,7 @@ BLUEPRINT_SCHEMA = {
             }
         },
         "projectStructure": {"type": "object"},
-        "agentrules": {"type": "object"}
-    }
+        "cursorrules": {"type": "object"}    }
 }
 
 

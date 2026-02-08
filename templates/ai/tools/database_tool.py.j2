@@ -1,0 +1,532 @@
+"""
+{{ tool_name | default('Database Tool') }} - Database Query Tool
+
+Purpose: {{ tool_purpose | default('Execute SQL queries with schema introspection and result formatting') }}
+Author: {{ author | default('Cursor Agent Factory') }}
+Date: {{ date | default('2026-02-08') }}
+
+Axiom Alignment:
+- A1 (Verifiability): All queries are logged with parameters
+- A4 (Non-Harm): SQL injection prevention and input validation
+- A3 (Transparency): Schema introspection provides visibility into database structure
+
+This tool provides database query capabilities with:
+- SQL execution with parameterized queries
+- Schema introspection
+- Result formatting and validation
+- Connection pooling and transaction management
+"""
+
+from typing import Dict, Any, Optional, List, Union, Tuple
+from langchain_core.tools import tool, BaseTool
+from pydantic import BaseModel, Field, field_validator
+import logging
+from datetime import datetime
+import json
+
+# Database driver imports - adjust based on database type
+{% if database_type == 'postgresql' or database_type == 'postgres' %}
+import asyncpg
+from asyncpg import Connection, Pool
+{% elif database_type == 'mysql' %}
+import aiomysql
+from aiomysql import Connection, Pool
+{% elif database_type == 'sqlite' %}
+import aiosqlite
+{% else %}
+# Generic database interface
+import sqlalchemy
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+{% endif %}
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class QueryResult(BaseModel):
+    """Database query result model."""
+    rows: List[Dict[str, Any]] = Field(description="Query result rows")
+    row_count: int = Field(description="Number of rows returned")
+    columns: List[str] = Field(description="Column names")
+    execution_time: float = Field(description="Query execution time in seconds")
+    query: str = Field(description="Executed query")
+
+
+class SchemaInfo(BaseModel):
+    """Database schema information."""
+    tables: List[str] = Field(description="List of table names")
+    columns: Dict[str, List[Dict[str, Any]]] = Field(
+        description="Column information by table"
+    )
+    foreign_keys: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="Foreign key relationships"
+    )
+
+
+class {{ tool_class_name | default('DatabaseTool') }}:
+    """
+    {{ tool_name | default('Database Tool') }} - SQL Query Execution with Schema Introspection
+    
+    Provides database query capabilities with automatic schema introspection,
+    parameterized queries for security, and formatted results.
+    
+    Example:
+        >>> tool = {{ tool_class_name | default('DatabaseTool') }}(
+        ...     connection_string="{{ connection_string | default('postgresql://user:pass@localhost/db') }}"
+        ... )
+        >>> result = await tool.execute_query(
+        ...     "SELECT * FROM users WHERE id = $1",
+        ...     parameters=[1]
+        ... )
+        >>> print(f"Found {result.row_count} rows")
+    """
+    
+    def __init__(
+        self,
+        connection_string: str,
+        pool_size: int = {{ pool_size | default(5) }},
+        max_queries: int = {{ max_queries | default(100) }},
+        enable_schema_cache: bool = {{ enable_schema_cache | default(True) }}
+    ):
+        """
+        Initialize database tool.
+        
+        Args:
+            connection_string: Database connection string
+            pool_size: Connection pool size
+            max_queries: Maximum queries per connection before refresh
+            enable_schema_cache: Cache schema information
+        """
+        self.connection_string = connection_string
+        self.pool_size = pool_size
+        self.max_queries = max_queries
+        self.enable_schema_cache = enable_schema_cache
+        self.pool: Optional[Any] = None
+        self._schema_cache: Optional[SchemaInfo] = None
+        
+        logger.info(
+            f"Initialized {{ tool_class_name | default('DatabaseTool') }} "
+            f"with pool_size={pool_size}"
+        )
+    
+    async def connect(self):
+        """Initialize database connection pool."""
+        {% if database_type == 'postgresql' or database_type == 'postgres' %}
+        self.pool = await asyncpg.create_pool(
+            self.connection_string,
+            min_size=1,
+            max_size=self.pool_size
+        )
+        {% elif database_type == 'mysql' %}
+        self.pool = await aiomysql.create_pool(
+            host=self.connection_string.split('@')[1].split('/')[0].split(':')[0],
+            port=int(self.connection_string.split(':')[-1].split('/')[0]) if ':' in self.connection_string else 3306,
+            user=self.connection_string.split('://')[1].split(':')[0],
+            password=self.connection_string.split(':')[2].split('@')[0] if '@' in self.connection_string else '',
+            db=self.connection_string.split('/')[-1],
+            minsize=1,
+            maxsize=self.pool_size
+        )
+        {% elif database_type == 'sqlite' %}
+        # SQLite doesn't use connection pooling in the same way
+        self.pool = None
+        {% else %}
+        # Generic SQLAlchemy approach
+        engine = create_async_engine(self.connection_string, pool_size=self.pool_size)
+        async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+        self.pool = async_session
+        {% endif %}
+        logger.info("Database connection pool created")
+    
+    async def disconnect(self):
+        """Close database connection pool."""
+        {% if database_type == 'postgresql' or database_type == 'postgres' %}
+        if self.pool:
+            await self.pool.close()
+        {% elif database_type == 'mysql' %}
+        if self.pool:
+            self.pool.close()
+            await self.pool.wait_closed()
+        {% elif database_type == 'sqlite' %}
+        # SQLite cleanup if needed
+        pass
+        {% else %}
+        # Generic cleanup
+        if self.pool:
+            await self.pool.close_all()
+        {% endif %}
+        logger.info("Database connection pool closed")
+    
+    def _validate_query(self, query: str) -> str:
+        """
+        Validate and sanitize SQL query (A4 - Non-Harm).
+        
+        Args:
+            query: SQL query string
+            
+        Returns:
+            Validated query string
+            
+        Raises:
+            ValueError: If query is invalid or dangerous
+        """
+        if not query or not query.strip():
+            raise ValueError("Query cannot be empty")
+        
+        query = query.strip()
+        
+        # Basic SQL injection prevention - only allow parameterized queries
+        dangerous_patterns = [
+            '; DROP',
+            '; DELETE',
+            '; TRUNCATE',
+            '; UPDATE',
+            '; INSERT',
+            '--',
+            '/*',
+            '*/',
+            'xp_',
+            'sp_',
+        ]
+        
+        query_upper = query.upper()
+        for pattern in dangerous_patterns:
+            if pattern.upper() in query_upper:
+                logger.warning(f"Potentially dangerous pattern detected: {pattern}")
+                # Allow if using parameterized queries ($1, $2, :param, %s, ?)
+                if not any(param in query for param in ['$', ':', '%s', '?']):
+                    raise ValueError(f"Query contains potentially dangerous pattern: {pattern}")
+        
+        return query
+    
+    async def execute_query(
+        self,
+        query: str,
+        parameters: Optional[List[Any]] = None,
+        fetch_all: bool = True
+    ) -> QueryResult:
+        """
+        Execute SQL query with parameters.
+        
+        Args:
+            query: SQL query string (use $1, $2, etc. for parameters)
+            parameters: Query parameters (prevents SQL injection)
+            fetch_all: Whether to fetch all results or just execute
+            
+        Returns:
+            Query result with rows and metadata
+            
+        Example:
+            >>> result = await tool.execute_query(
+            ...     "SELECT name, email FROM users WHERE id = $1",
+            ...     parameters=[123]
+            ... )
+        """
+        # Validate query (A4 - Non-Harm)
+        query = self._validate_query(query)
+        
+        if not self.pool:
+            await self.connect()
+        
+        start_time = datetime.now()
+        
+        # Log query (A1 - Verifiability)
+        logger.info(f"Executing query: {query[:100]}...")
+        if parameters:
+            logger.debug(f"Parameters: {parameters}")
+        
+        try:
+            {% if database_type == 'postgresql' or database_type == 'postgres' %}
+            async with self.pool.acquire() as conn:
+                if fetch_all:
+                    rows = await conn.fetch(query, *(parameters or []))
+                    # Convert Record objects to dicts
+                    result_rows = [dict(row) for row in rows]
+                    columns = list(rows[0].keys()) if rows else []
+                else:
+                    result = await conn.execute(query, *(parameters or []))
+                    result_rows = []
+                    columns = []
+            {% elif database_type == 'mysql' %}
+            async with self.pool.acquire() as conn:
+                async with conn.cursor(aiomysql.DictCursor) as cur:
+                    await cur.execute(query, parameters or [])
+                    if fetch_all:
+                        rows = await cur.fetchall()
+                        result_rows = [dict(row) for row in rows]
+                        columns = [desc[0] for desc in cur.description] if cur.description else []
+                    else:
+                        await conn.commit()
+                        result_rows = []
+                        columns = []
+            {% elif database_type == 'sqlite' %}
+            async with aiosqlite.connect(self.connection_string.replace('sqlite:///', '')) as conn:
+                conn.row_factory = aiosqlite.Row
+                async with conn.execute(query, parameters or []) as cursor:
+                    if fetch_all:
+                        rows = await cursor.fetchall()
+                        result_rows = [dict(row) for row in rows]
+                        columns = [desc[0] for desc in cursor.description] if cursor.description else []
+                    else:
+                        await conn.commit()
+                        result_rows = []
+                        columns = []
+            {% else %}
+            # Generic SQLAlchemy approach
+            async with self.pool() as session:
+                result = await session.execute(
+                    sqlalchemy.text(query),
+                    parameters or {}
+                )
+                if fetch_all:
+                    rows = result.fetchall()
+                    result_rows = [dict(row._mapping) for row in rows]
+                    columns = list(result.keys()) if rows else []
+                else:
+                    await session.commit()
+                    result_rows = []
+                    columns = []
+            {% endif %}
+            
+            elapsed = (datetime.now() - start_time).total_seconds()
+            
+            logger.info(f"Query executed successfully: {len(result_rows)} rows in {elapsed:.2f}s")
+            
+            return QueryResult(
+                rows=result_rows,
+                row_count=len(result_rows),
+                columns=columns,
+                execution_time=elapsed,
+                query=query
+            )
+            
+        except Exception as e:
+            elapsed = (datetime.now() - start_time).total_seconds()
+            logger.error(f"Query failed after {elapsed:.2f}s: {e}")
+            raise
+    
+    async def get_schema(self, table_name: Optional[str] = None) -> SchemaInfo:
+        """
+        Get database schema information (A3 - Transparency).
+        
+        Args:
+            table_name: Specific table name (None for all tables)
+            
+        Returns:
+            Schema information
+            
+        Example:
+            >>> schema = await tool.get_schema()
+            >>> print(f"Tables: {schema.tables}")
+        """
+        # Return cached schema if available
+        if self.enable_schema_cache and self._schema_cache and not table_name:
+            return self._schema_cache
+        
+        if not self.pool:
+            await self.connect()
+        
+        try:
+            {% if database_type == 'postgresql' or database_type == 'postgres' %}
+            # PostgreSQL schema introspection
+            tables_query = """
+                SELECT table_name 
+                FROM information_schema.tables 
+                WHERE table_schema = 'public'
+                ORDER BY table_name
+            """
+            if table_name:
+                tables_query += f" AND table_name = '{table_name}'"
+            
+            tables_result = await self.execute_query(tables_query)
+            tables = [row['table_name'] for row in tables_result.rows]
+            
+            columns_info = {}
+            for table in tables:
+                columns_query = f"""
+                    SELECT 
+                        column_name,
+                        data_type,
+                        is_nullable,
+                        column_default
+                    FROM information_schema.columns
+                    WHERE table_name = '{table}'
+                    ORDER BY ordinal_position
+                """
+                cols_result = await self.execute_query(columns_query)
+                columns_info[table] = [
+                    {
+                        'name': row['column_name'],
+                        'type': row['data_type'],
+                        'nullable': row['is_nullable'] == 'YES',
+                        'default': row['column_default']
+                    }
+                    for row in cols_result.rows
+                ]
+            
+            # Foreign keys
+            fk_query = """
+                SELECT
+                    tc.table_name,
+                    kcu.column_name,
+                    ccu.table_name AS foreign_table_name,
+                    ccu.column_name AS foreign_column_name
+                FROM information_schema.table_constraints AS tc
+                JOIN information_schema.key_column_usage AS kcu
+                    ON tc.constraint_name = kcu.constraint_name
+                JOIN information_schema.constraint_column_usage AS ccu
+                    ON ccu.constraint_name = tc.constraint_name
+                WHERE tc.constraint_type = 'FOREIGN KEY'
+            """
+            fk_result = await self.execute_query(fk_query)
+            foreign_keys = [dict(row) for row in fk_result.rows]
+            
+            {% else %}
+            # Generic schema introspection (implement based on database)
+            tables_query = "SELECT name FROM sqlite_master WHERE type='table'"
+            tables_result = await self.execute_query(tables_query)
+            tables = [row['name'] for row in tables_result.rows] if tables_result.rows else []
+            
+            columns_info = {}
+            foreign_keys = []
+            # Add specific introspection logic for your database type
+            {% endif %}
+            
+            schema_info = SchemaInfo(
+                tables=tables,
+                columns=columns_info,
+                foreign_keys=foreign_keys
+            )
+            
+            # Cache schema if enabled
+            if self.enable_schema_cache and not table_name:
+                self._schema_cache = schema_info
+            
+            return schema_info
+            
+        except Exception as e:
+            logger.error(f"Error introspecting schema: {e}")
+            raise
+    
+    def format_result(self, result: QueryResult, format_type: str = "json") -> str:
+        """
+        Format query result for display.
+        
+        Args:
+            result: Query result
+            format_type: Output format ("json", "table", "csv")
+            
+        Returns:
+            Formatted result string
+        """
+        if format_type == "json":
+            return json.dumps({
+                "row_count": result.row_count,
+                "columns": result.columns,
+                "rows": result.rows,
+                "execution_time": result.execution_time
+            }, indent=2, default=str)
+        
+        elif format_type == "table":
+            if not result.rows:
+                return "No rows returned"
+            
+            # Simple table formatting
+            lines = []
+            lines.append(" | ".join(result.columns))
+            lines.append("-" * (sum(len(c) for c in result.columns) + len(result.columns) * 3 - 1))
+            for row in result.rows:
+                lines.append(" | ".join(str(row.get(col, "")) for col in result.columns))
+            
+            return "\n".join(lines)
+        
+        elif format_type == "csv":
+            if not result.rows:
+                return ""
+            
+            lines = [",".join(result.columns)]
+            for row in result.rows:
+                lines.append(",".join(str(row.get(col, "")) for col in result.columns))
+            
+            return "\n".join(lines)
+        
+        else:
+            raise ValueError(f"Unknown format type: {format_type}")
+
+
+# LangChain tool wrapper
+@tool
+async def {{ tool_function_name | default('execute_sql_query') }}(
+    query: str,
+    parameters: Optional[str] = None
+) -> str:
+    """
+    Execute a SQL query with parameterized inputs for security.
+    
+    This tool implements A1 (Verifiability) by logging all queries.
+    This tool implements A4 (Non-Harm) by using parameterized queries.
+    This tool implements A3 (Transparency) by providing schema introspection.
+    
+    Args:
+        query: SQL query string (use $1, $2 for parameters in PostgreSQL)
+        parameters: JSON array of parameter values (e.g., '[1, "text"]')
+        
+    Returns:
+        JSON string of query results
+        
+    Example:
+        >>> result = await {{ tool_function_name | default('execute_sql_query') }}(
+        ...     query="SELECT * FROM users WHERE id = $1",
+        ...     parameters="[123]"
+        ... )
+    """
+    # Parse parameters
+    params_list = json.loads(parameters) if parameters else None
+    
+    # Create tool instance
+    tool_instance = {{ tool_class_name | default('DatabaseTool') }}(
+        connection_string="{{ connection_string | default('postgresql://user:pass@localhost/db') }}"
+    )
+    
+    try:
+        await tool_instance.connect()
+        result = await tool_instance.execute_query(query, parameters=params_list)
+        formatted = tool_instance.format_result(result, format_type="json")
+        return formatted
+    finally:
+        await tool_instance.disconnect()
+
+
+# Example usage
+if __name__ == "__main__":
+    import asyncio
+    
+    async def main():
+        tool = {{ tool_class_name | default('DatabaseTool') }}(
+            connection_string="{{ connection_string | default('postgresql://user:pass@localhost/db') }}"
+        )
+        
+        try:
+            await tool.connect()
+            
+            # Get schema
+            schema = await tool.get_schema()
+            print(f"Tables: {schema.tables}")
+            
+            # Execute query
+            result = await tool.execute_query(
+                "SELECT version()",
+                parameters=None
+            )
+            print(f"Query result: {result.rows}")
+            
+            # Format result
+            formatted = tool.format_result(result, format_type="table")
+            print(f"\nFormatted:\n{formatted}")
+            
+        finally:
+            await tool.disconnect()
+    
+    asyncio.run(main())

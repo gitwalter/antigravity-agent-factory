@@ -2,8 +2,7 @@
 """
 Antigravity Agent Factory - Project Generation Engine
 
-This module generates complete Antigravity agent development systems based on
-requirements configuration and blueprint templates.
+This module generates complete Antigravity agent development systems based onrequirements configuration and blueprint templates.
 
 Supports two modes:
 1. Fresh generation: Create new project from scratch
@@ -20,8 +19,7 @@ Usage:
     generator = ProjectGenerator(config, target_dir, onboarding_mode=True)
     generator.generate()
 
-Author: Antigravity Agent Factory
-Version: 2.0.0
+Author: Antigravity Agent FactoryVersion: 2.0.0
 """
 
 import json
@@ -57,8 +55,7 @@ except ImportError:
 
 QUICKSTART_CONFIG = {
     "project_name": "TaskMaster Demo",
-    "project_description": "AI-powered task management API - a demo project showcasing Antigravity Agent Factory capabilities",
-    "domain": "web, productivity, api",
+    "project_description": "AI-powered task management API - a demo project showcasing Antigravity Agent Factory capabilities",    "domain": "web, productivity, api",
     "primary_language": "python",
     "frameworks": ["fastapi", "sqlalchemy", "pydantic"],
     "triggers": ["jira", "confluence", "manual"],
@@ -73,16 +70,14 @@ QUICKSTART_CONFIG = {
     ],
     "style_guide": "pep8",
     "blueprint_id": "python-fastapi",
-    "team_context": "Demo project for learning Antigravity Agent Factory"
-}
+    "team_context": "Demo project for learning Antigravity Agent Factory"}
 
 
 def create_quickstart_config() -> 'ProjectConfig':
     """Create a ProjectConfig with sensible quickstart defaults.
     
     This configuration is designed to demonstrate the full capabilities
-    of Antigravity Agent Factory with zero user input required.
-    
+    of Antigravity Agent Factory with zero user input required.    
     Returns:
         ProjectConfig instance with demo project settings.
     """
@@ -221,8 +216,7 @@ class ProjectConfig:
 class ProjectGenerator:
     """Generates complete Antigravity agent projects.
     
-    This class orchestrates the generation of a complete Antigravity agent
-    development system based on configuration and patterns.
+    This class orchestrates the generation of a complete Antigravity agent    development system based on configuration and patterns.
     
     Supports two modes:
     1. Fresh generation (default): Create complete project from scratch
@@ -243,8 +237,7 @@ class ProjectGenerator:
         target_dir: str,
         onboarding_mode: bool = False,
         dry_run: bool = False,
-        conflict_resolver: Optional[Callable[['ConflictPrompt'], 'ConflictResolution']] = None
-    ):
+        conflict_resolver: Optional[Callable[[ConflictPrompt], ConflictResolution]] = None    ):
         """Initialize the generator.
         
         Args:
@@ -316,8 +309,7 @@ class ProjectGenerator:
             blueprint = self._load_blueprint()
             
             # Generate .agentrules
-            self._generate_agentrules(blueprint)
-            
+            self._generate_cursorrules(blueprint)            
             # Generate agents
             self._generate_agents(blueprint)
             
@@ -339,35 +331,15 @@ class ProjectGenerator:
             # Generate diagrams folder with README
             self._generate_diagrams()
             
-            return {
-                'success': len(self.errors) == 0,
-                'target_dir': str(self.target_dir),
-                'files_created': self.generated_files,
-                'errors': self.errors
-            }
-            
-        except Exception as e:
-            self.errors.append(f"Generation failed: {str(e)}")
-            return {
-                'success': False,
-                'target_dir': str(self.target_dir),
-                'files_created': self.generated_files,
-                'errors': self.errors
-            }
-    
-    def _create_directories(self) -> None:
-        """Create the project directory structure."""
-        directories = [
             '.agent/agents',
-            '.agent/skills',
-            'knowledge',
+            '.agent/skills',            'knowledge',
             'templates',
             'workflows',
             'scripts',
             'diagrams',
             'docs',
-            'src'
-        ]
+            'src',
+            'proofs'        ]
         
         for dir_path in directories:
             full_path = self.target_dir / dir_path
@@ -411,14 +383,12 @@ class ProjectGenerator:
         with open(pattern_path, 'r', encoding='utf-8') as f:
             return json.load(f)
     
-    def _generate_agentrules(self, blueprint: Optional[Dict[str, Any]]) -> None:
-        """Generate the .agentrules file.
-        
+    def _generate_cursorrules(self, blueprint: Optional[Dict[str, Any]]) -> None:
+        """Generate the .agentrules file.        
         Args:
             blueprint: Optional blueprint configuration.
         """
-        template = self._load_agentrules_template()
-        
+        template = self._load_cursorrules_template()        
         # Build template context
         context = self._build_template_context(blueprint)
         
@@ -442,8 +412,7 @@ class ProjectGenerator:
             content = content.replace('{AGENTS_LIST}', context['agents_list'])
             content = content.replace('{SKILLS_LIST}', context['skills_list'])
         
-        output_path = self.target_dir / '.agentrules'
-        self._write_file(output_path, content)
+        output_path = self.target_dir / '.agentrules'        self._write_file(output_path, content)
     
     def _build_template_context(self, blueprint: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Build a context dictionary for template rendering.
@@ -488,14 +457,12 @@ class ProjectGenerator:
         
         return context
     
-    def _load_agentrules_template(self) -> str:
-        """Load the agentrules template.
-        
+    def _load_cursorrules_template(self) -> str:
+        """Load the cursorrules template.        
         Returns:
             Template content string.
         """
-        template_path = self.factory_root / 'templates' / 'factory' / 'agentrules-template.md'
-        
+        template_path = self.factory_root / 'templates' / 'factory' / 'cursorrules-template.md'        
         if template_path.exists():
             with open(template_path, 'r', encoding='utf-8') as f:
                 return f.read()
@@ -558,8 +525,7 @@ Before implementation:
 
 ---
 
-*Generated by Antigravity Agent Factory on {GENERATED_DATE}*
-'''
+*Generated by Antigravity Agent Factory on {GENERATED_DATE}*'''
     
     def _generate_mcp_section(self) -> str:
         """Generate MCP servers configuration section.
@@ -615,14 +581,15 @@ Before implementation:
         Args:
             blueprint: Optional blueprint configuration.
         """
-        agents_dir = self.target_dir / '.agent' / 'agents'
-        
+        agents_dir = self.target_dir / '.agent' / 'agents'        
         # Collect all agents to generate
         agents_to_generate = list(self.config.agents)
         
         # Add standard patterns that should be included in all projects
-        standard_agents = ['debug-conductor-project']
-        for agent_id in standard_agents:
+        standard_agents = [
+            'debug-conductor-project',
+            'factory-updates',  # Enable receiving updates from Factory
+        ]        for agent_id in standard_agents:
             if agent_id not in agents_to_generate:
                 agents_to_generate.append(agent_id)
         
@@ -737,28 +704,7 @@ Before implementation:
             'research-first-project',
             'ci-monitor-project',
             'pipeline-error-fix-project',
-        ]
-        for skill_id in standard_skills:
-            if skill_id not in skills_to_generate:
-                skills_to_generate.append(skill_id)
-        
-        # Add PM skills if PM integration is enabled in blueprint
-        if blueprint and blueprint.get('pmIntegration', {}).get('enabled', False):
-            pm_integration = blueprint.get('pmIntegration', {})
-            pm_skills = pm_integration.get('skills', [])
-            for pm_skill in pm_skills:
-                skill_pattern_id = pm_skill.get('patternId') if isinstance(pm_skill, dict) else pm_skill
-                if skill_pattern_id and skill_pattern_id not in skills_to_generate:
-                    skills_to_generate.append(skill_pattern_id)
-        
-        # Generate all skills
-        for skill_id in skills_to_generate:
-            pattern = self._load_pattern('skills', skill_id)
-            if pattern:
-                content = self._render_skill_from_pattern(pattern)
-                name = pattern.get('frontmatter', {}).get('name', skill_id)
-                skill_dir = self.target_dir / '.agent' / 'skills' / name
-                skill_dir.mkdir(parents=True, exist_ok=True)
+                skill_dir = self.target_dir / '.agent' / 'skills' / name                skill_dir.mkdir(parents=True, exist_ok=True)
                 output_path = skill_dir / 'SKILL.md'
                 self._write_file(output_path, content)
             else:
@@ -889,29 +835,75 @@ Before implementation:
                     dest = knowledge_dir / filename
                     shutil.copy2(src_file, dest)
                     self.generated_files.append(str(dest))
-    
-    def _generate_guardian_protocol(self, knowledge_dir: Path) -> None:
-        """Generate the guardian-protocol.json file.
+    def _generate_project_info(
+        self, 
+        knowledge_dir: Path, 
+        blueprint: Optional[Dict[str, Any]]
+    ) -> None:
+        """Generate the project-info.json file for Factory update system.
+        
+        This file enables generated projects to receive updates from the Factory.
+        It tracks the Factory origin, blueprint used, and installed updates.
         
         Args:
             knowledge_dir: Path to knowledge directory.
+            blueprint: Optional blueprint configuration.
         """
-        template_path = self.factory_root / 'templates' / 'knowledge' / 'guardian-protocol.json.tmpl'
+        template_path = self.factory_root / 'templates' / 'knowledge' / 'project-info.json.tmpl'
         
         if not template_path.exists():
-            print("Warning: guardian-protocol.json.tmpl not found")
+            print("Warning: project-info.json.tmpl not found")
             return
         
-        context = {
-            'project_name': self.config.project_name,
-            'generated_date': datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'),
+        # Get blueprint ID
+        blueprint_id = "custom"
+        if self.config.blueprint_id:
+            blueprint_id = self.config.blueprint_id
+        elif blueprint:
+            blueprint_id = blueprint.get('metadata', {}).get('blueprintId', 'custom')
+        
+        # Get Factory version from manifest
+        factory_version = self._get_factory_version()
+        
+        # Read template and substitute placeholders
+        template_content = template_path.read_text(encoding='utf-8')
+        
+        now = datetime.now()
+        
+        # Replace placeholders (template uses {PLACEHOLDER} format)
+        replacements = {
+            '{PROJECT_NAME}': self.config.project_name,
+            '{PROJECT_DESCRIPTION}': self.config.project_description or '',
+            '{CREATED_DATE}': now.strftime('%Y-%m-%dT%H:%M:%SZ'),
+            '{GENERATED_DATE}': now.strftime('%Y-%m-%dT%H:%M:%SZ'),
+            '{FACTORY_VERSION}': factory_version,
+            '{BLUEPRINT_ID}': blueprint_id,
         }
         
-        content = self._render_template_file(template_path, context)
-        output_path = knowledge_dir / 'guardian-protocol.json'
+        content = template_content
+        for placeholder, value in replacements.items():
+            content = content.replace(placeholder, value)
+        
+        output_path = knowledge_dir / 'project-info.json'
         self._write_file(output_path, content)
     
-    def _render_template_file(
+    def _get_factory_version(self) -> str:
+        """Get the Factory version from manifest.json.
+        
+        Returns:
+            Factory version string, or '0.0.0' if not found.
+        """
+        manifest_path = self.factory_root / 'knowledge' / 'manifest.json'
+        
+        if manifest_path.exists():
+            try:
+                manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+                return manifest.get('factory_version', '0.0.0')
+            except (json.JSONDecodeError, IOError):
+                pass
+        
+        return '0.0.0'
+        def _render_template_file(
         self,
         template_path: Path,
         context: Dict[str, Any]
@@ -1027,8 +1019,7 @@ Before implementation:
 ```
 
 ---
-*Generated by Antigravity Agent System*
-'''
+*Generated by Antigravity Agent System*'''
     
     def _get_technical_spec_template(self) -> str:
         """Get technical specification template content.
@@ -1085,8 +1076,7 @@ Before implementation:
 {TESTING_APPROACH}
 
 ---
-*Generated by Antigravity Agent System*
-'''
+*Generated by Antigravity Agent System*'''
     
     def _get_test_plan_template(self) -> str:
         """Get test plan template content.
@@ -1128,8 +1118,7 @@ Before implementation:
 {TEST_ENVIRONMENT}
 
 ---
-*Generated by Antigravity Agent System*
-'''
+*Generated by Antigravity Agent System*'''
     
     def _generate_workflows(self, blueprint: Optional[Dict[str, Any]]) -> None:
         """Generate workflow documentation.
@@ -1296,8 +1285,7 @@ Use the `workflow-architect` agent to:
 - `.agent/skills/extend-workflow/SKILL.md` - Workflow extension skill
 
 ---
-*Generated by Antigravity Agent Factory v3.5.0*
-'''
+*Generated by Antigravity Agent Factory v3.5.0*'''
     
     def _get_bugfix_workflow_template(self) -> str:
         """Get bugfix workflow template.
@@ -1326,8 +1314,7 @@ Ticket ID mentioned (e.g., {PROJECT}-123)
 - Code changes
 
 ---
-*Generated by Antigravity Agent Factory*
-'''
+*Generated by Antigravity Agent Factory*'''
     
     def _get_feature_workflow_template(self) -> str:
         """Get feature workflow template.
@@ -1358,8 +1345,7 @@ Specification page referenced
 - Code
 
 ---
-*Generated by Antigravity Agent Factory*
-'''
+*Generated by Antigravity Agent Factory*'''
     
     def _generate_readme(self) -> None:
         """Generate project README."""
@@ -1369,8 +1355,7 @@ Specification page referenced
 
 ## Overview
 
-This is an Antigravity agent development system generated by the Antigravity Agent Factory.
-
+This is a Antigravity agent development system generated by the Antigravity Agent Factory.
 **Domain:** {self.config.domain}  
 **Primary Language:** {self.config.primary_language}  
 **Style Guide:** {self.config.style_guide}
@@ -1379,8 +1364,7 @@ This is an Antigravity agent development system generated by the Antigravity Age
 
 ```
 {self.config.project_name}/
-├── .agent/
-│   ├── agents/           # AI agent definitions
+├── .agent/│   ├── agents/           # AI agent definitions
 │   └── skills/           # Reusable skill definitions
 ├── knowledge/            # Structured reference data
 ├── templates/            # Code and document templates
@@ -1389,15 +1373,13 @@ This is an Antigravity agent development system generated by the Antigravity Age
 ├── diagrams/             # Architecture diagrams
 ├── docs/                 # Documentation
 ├── src/                  # Source code
-├── .agentrules          # LLM agent behavior rules
-└── README.md             # This file
+├── .agentrules          # LLM agent behavior rules└── README.md             # This file
 ```
 
 ## Quick Start
 
 1. Open this project in Antigravity IDE
-2. The `.agentrules` file will configure agent behavior
-3. Start by mentioning a ticket or requesting a workflow
+2. The `.agentrules` file will configure agent behavior3. Start by mentioning a ticket or requesting a workflow
 
 ## Available Agents
 
@@ -1413,8 +1395,7 @@ See `workflows/README.md` for available workflows.
 
 ---
 
-*Generated by Antigravity Agent Factory on {datetime.now().strftime('%Y-%m-%d')}*
-'''
+*Generated by Antigravity Agent Factory on {datetime.now().strftime('%Y-%m-%d')}*'''
         
         self._write_file(self.target_dir / 'README.md', content)
     
@@ -1442,33 +1423,7 @@ To render diagrams to PNG, use a Mermaid CLI tool or the diagram rendering scrip
         
         self._write_file(diagrams_dir / 'README.md', readme_content)
     
-    def _write_file(self, path: Path, content: str) -> None:
-        """Write content to file.
-        
-        Args:
-            path: File path.
-            content: File content.
-        """
-        if self.dry_run:
-            print(f"[DRY RUN] Would create: {path}")
-            self.generated_files.append(str(path))
-            return
-        
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, 'w', encoding='utf-8') as f:
-            f.write(content)
-        self.generated_files.append(str(path))
-        print(f"Created: {path}")
-    
-    # =========================================================================
-    # ONBOARDING MODE METHODS
-    # =========================================================================
-    
-    def _generate_onboarding(self) -> Dict[str, Any]:
-        """Generate project in onboarding mode (non-destructive).
-        
-        This method integrates Antigravity Agent Factory into an existing
-        repository without destroying existing artifacts.
+        This method integrates Antigravity Agent Factory into an existing        repository without destroying existing artifacts.
         
         Returns:
             Dictionary with generation results.
@@ -1536,8 +1491,7 @@ To render diagrams to PNG, use a Mermaid CLI tool or the diagram rendering scrip
             
             # Step 6: Generate artifacts
             self._onboard_directories()
-            self._onboard_agentrules()
-            self._onboard_agents()
+            self._onboard_cursorrules()            self._onboard_agents()
             self._onboard_skills()
             self._onboard_knowledge()
             self._onboard_templates()
@@ -1613,8 +1567,7 @@ To render diagrams to PNG, use a Mermaid CLI tool or the diagram rendering scrip
         """Create directory structure for onboarding (only missing dirs)."""
         directories = [
             '.agent/agents',
-            '.agent/skills',
-            'knowledge',
+            '.agent/skills',            'knowledge',
             'templates',
             'workflows',
             'diagrams',
@@ -1628,64 +1581,58 @@ To render diagrams to PNG, use a Mermaid CLI tool or the diagram rendering scrip
                     full_path.mkdir(parents=True, exist_ok=True)
                 print(f"Created directory: {full_path}")
     
-    def _onboard_agentrules(self) -> None:
+    def _onboard_cursorrules(self) -> None:
         """Handle .agentrules in onboarding mode."""
-        if self.merge_engine.should_skip_artifact(ArtifactType.AGENTRULES, ".agentrules"):
+        if self.merge_engine.should_skip_artifact(ArtifactType.CURSORRULES, ".agentrules"):
             print("Skipping .agentrules (user choice)")
             return
         
-        agentrules_path = self.target_dir / ".agentrules"
+        cursorrules_path = self.target_dir / ".agentrules"
         
         if self.inventory.agentrules.exists:
             # Backup existing
             if self.backup_session:
-                self.backup_session.backup_file(agentrules_path)
+                self.backup_session.backup_file(cursorrules_path)
             
             # Check if merge was requested
             resolution = self.merge_engine.get_resolution(
-                Conflict(ArtifactType.AGENTRULES, ".agentrules", agentrules_path, "")
-            )
+                Conflict(ArtifactType.CURSORRULES, ".agentrules", cursorrules_path, "")            )
             
             if resolution == ConflictResolution.MERGE:
                 # Merge existing with new sections
-                new_content = self._merge_agentrules()
-                self._write_file(agentrules_path, new_content)
+                new_content = self._merge_cursorrules()
+                self._write_file(cursorrules_path, new_content)
                 print("Merged .agentrules with factory sections")
                 return
             elif resolution == ConflictResolution.KEEP_EXISTING:
-                print("Keeping existing .agentrules")
-                return
+                print("Keeping existing .agentrules")                return
         
         # Generate new (for FRESH scenario or REPLACE resolution)
         blueprint = self._load_blueprint()
-        self._generate_agentrules(blueprint)
+        self._generate_cursorrules(blueprint)
     
-    def _merge_agentrules(self) -> str:
-        """Merge existing .agentrules with factory sections.
-        
+    def _merge_cursorrules(self) -> str:
+        """Merge existing .agentrules with factory sections.        
         Returns:
             Merged content.
         """
-        existing = self.inventory.agentrules.content or ""
-        
+        existing = self.inventory.agentrules.content or ""        
         # Factory marker
         factory_marker = f"""
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ANTIGRAVITY AGENT FACTORY INTEGRATION
+# CURSOR AGENT FACTORY INTEGRATION
 # Generated: {datetime.now().strftime('%Y-%m-%d')}
 # Blueprint: {self.config.blueprint_id or 'custom'}
-# Factory Version: 2.1.0
-# ═══════════════════════════════════════════════════════════════════════════════
+# Factory Version: 4.0.0# ═══════════════════════════════════════════════════════════════════════════════
 
 """
         
         # Check if factory marker already exists
-        if "ANTIGRAVITY AGENT FACTORY INTEGRATION" in existing:
+        if "CURSOR AGENT FACTORY INTEGRATION" in existing:
             # Update existing factory section
             import re
-            pattern = r'# ═+\s*\n# ANTIGRAVITY AGENT FACTORY INTEGRATION.*?# ═+\s*END FACTORY INTEGRATION\s*═+\s*\n'
-            if re.search(pattern, existing, re.DOTALL):
+            pattern = r'# ═+\s*\n# CURSOR AGENT FACTORY INTEGRATION.*?# ═+\s*END FACTORY INTEGRATION\s*═+\s*\n'            if re.search(pattern, existing, re.DOTALL):
                 # Remove old factory section
                 existing = re.sub(pattern, '', existing, flags=re.DOTALL)
         
@@ -1711,8 +1658,7 @@ To render diagrams to PNG, use a Mermaid CLI tool or the diagram rendering scrip
     
     def _onboard_agents(self) -> None:
         """Generate agents in onboarding mode (skip existing)."""
-        agents_dir = self.target_dir / '.agent' / 'agents'
-        
+        agents_dir = self.target_dir / '.agent' / 'agents'        
         for agent_id in self.config.agents:
             # Check if should skip
             if agent_id in self.inventory.existing_agents:
@@ -1753,8 +1699,7 @@ To render diagrams to PNG, use a Mermaid CLI tool or the diagram rendering scrip
                     continue
                 
                 # Backup existing if replacing
-                skill_path = self.target_dir / '.agent' / 'skills' / skill_id / 'SKILL.md'
-                if self.backup_session and skill_path.exists():
+                skill_path = self.target_dir / '.agent' / 'skills' / skill_id / 'SKILL.md'                if self.backup_session and skill_path.exists():
                     self.backup_session.backup_file(skill_path)
                 
                 # Check for rename
@@ -1768,8 +1713,7 @@ To render diagrams to PNG, use a Mermaid CLI tool or the diagram rendering scrip
                 name = pattern.get('frontmatter', {}).get('name', skill_id)
                 if '-factory' in skill_id:
                     name = f"{name}-factory"
-                skill_dir = self.target_dir / '.agent' / 'skills' / name
-                
+                skill_dir = self.target_dir / '.agent' / 'skills' / name                
                 if not self.dry_run:
                     skill_dir.mkdir(parents=True, exist_ok=True)
                 
@@ -1848,8 +1792,7 @@ if __name__ == '__main__':
     # Example usage
     config = ProjectConfig(
         project_name='example-project',
-        project_description='An example Antigravity agent project',
-        primary_language='python',
+        project_description='An example Antigravity agent project',        primary_language='python',
         agents=['code-reviewer', 'test-generator'],
         skills=['bugfix-workflow', 'feature-workflow', 'tdd'],
         triggers=['jira', 'confluence']

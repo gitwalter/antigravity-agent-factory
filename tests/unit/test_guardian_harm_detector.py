@@ -54,17 +54,15 @@ class TestAnalyzeFileOperation:
         assert not report.safe
         assert report.level >= 2
 
-    def test_agentrules_modification(self):
-        """Modifying Agentrules should trigger caution."""
-        report = analyze_file_operation("write", ".agentrules")
-        assert not report.safe
+    def test_cursorrules_modification(self):
+        """Modifying .agentrules should trigger caution."""
+        report = analyze_file_operation("write", ".agentrules")        assert not report.safe
         assert report.level >= 2
         assert "agent behavior" in str(report.details).lower() or "caution" in str(report.details).lower()
 
     def test_file_with_secrets(self):
         """File content with secrets should be flagged."""
-        content = 'api_key = "sk-" + "1234567890abcdefghijklmnopqrstuv"'
-        report = analyze_file_operation("write", "config.py", content)
+        content = 'api_key = "sk-1234567890abcdefghijklmnopqrstuv"'        report = analyze_file_operation("write", "config.py", content)
         assert not report.safe
         assert report.level >= 3  # High severity secret
 
@@ -95,8 +93,7 @@ class TestAnalyzeContent:
 
     def test_content_with_secrets(self):
         """Content with secrets should be flagged."""
-        content = 'API_KEY = "sk-" + "1234567890abcdefghijklmnopqrstuv"'
-        report = analyze_content(content)
+        content = 'API_KEY = "sk-1234567890abcdefghijklmnopqrstuv"'        report = analyze_content(content)
         assert not report.safe
         assert "secret" in str(report.details).lower()
 
@@ -136,14 +133,12 @@ class TestComprehensiveCheck:
 
     def test_content_only(self):
         """Content-only check should work."""
-        content = 'secret = "sk-" + "1234567890abcdefghijklmnopqrstuv"'
-        report = comprehensive_check(content=content)
+        content = 'secret = "sk-1234567890abcdefghijklmnopqrstuv"'        report = comprehensive_check(content=content)
         assert not report.safe
 
     def test_combined_check(self):
         """Combined check should find highest severity."""
-        content = 'api_key = "sk-" + "1234567890abcdefghijklmnopqrstuv"'
-        report = comprehensive_check(
+        content = 'api_key = "sk-1234567890abcdefghijklmnopqrstuv"'        report = comprehensive_check(
             command="ls -la",  # Safe
             file_path="config.py",
             file_operation="write",

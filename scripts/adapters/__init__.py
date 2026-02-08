@@ -23,8 +23,7 @@ Usage:
     # Create adapter by name
     adapter = create_adapter("github", config)
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 from typing import Dict, Type, Optional

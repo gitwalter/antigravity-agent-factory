@@ -1,0 +1,418 @@
+{
+  "$schema": "../learning-workshop-pattern.json",
+  "workshopId": "L17_anthropic_tool_agents",
+  "name": "Anthropic Claude Agents with Tool Use",
+  "technology": {
+    "category": "ai_framework",
+    "stack": "Anthropic Claude + MCP",
+    "language": "Python",
+    "version": "Claude 3.5+"
+  },
+  "level": "intermediate",
+  "prerequisites": {
+    "workshops": [],
+    "knowledge": [
+      "Python programming (async/await, classes, dict manipulation)",
+      "Understanding of LLMs and API basics",
+      "JSON Schema fundamentals",
+      "Basic understanding of agent architectures"
+    ],
+    "tools": [
+      "Python 3.10+",
+      "Anthropic API key",
+      "anthropic SDK (pip install anthropic)",
+      "mcp SDK (pip install mcp)",
+      "VS Code or similar IDE"
+    ]
+  },
+  "duration": {
+    "total_hours": 2.5,
+    "concept_minutes": 30,
+    "demo_minutes": 30,
+    "exercise_minutes": 45,
+    "challenge_minutes": 30,
+    "reflection_minutes": 15
+  },
+  "learning_objectives": [
+    {
+      "objective": "Understand Anthropic's philosophy on safe, helpful AI agents",
+      "bloom_level": "understand",
+      "verification": "Can explain Anthropic's approach to AI safety, helpfulness, and tool use principles"
+    },
+    {
+      "objective": "Implement tool use with Claude's native tool calling API",
+      "bloom_level": "apply",
+      "verification": "Creates tools with proper JSON Schema input_schema and handles tool_use blocks correctly"
+    },
+    {
+      "objective": "Build agentic loops with proper error handling and retries",
+      "bloom_level": "apply",
+      "verification": "Implements complete agent loop: tool_use → tool_result → continue, with error handling and retry logic"
+    },
+    {
+      "objective": "Integrate Model Context Protocol (MCP) servers for extended capabilities",
+      "bloom_level": "apply",
+      "verification": "Creates MCP server with tools/resources and connects it to Claude agent"
+    },
+    {
+      "objective": "Apply best practices: system prompts, tool descriptions, structured outputs",
+      "bloom_level": "apply",
+      "verification": "Designs effective system prompts, writes clear tool descriptions, and uses tool_choice for structured outputs"
+    }
+  ],
+  "knowledge_files": [
+    "anthropic-patterns.json",
+    "mcp-patterns.json",
+    "tool-use-patterns.json"
+  ],
+  "phases": [
+    {
+      "phaseId": "concept",
+      "name": "Anthropic Agent Philosophy and Tool Use Architecture",
+      "type": "concept",
+      "duration_minutes": 30,
+      "description": "Understanding Anthropic's approach to AI agents and tool use",
+      "content": {
+        "topics": [
+          "Anthropic's AI safety principles: helpful, harmless, honest",
+          "Tool use as structured output: input_schema with JSON Schema",
+          "Agentic loop: tool_use → tool_result → continue",
+          "System prompts for agent behavior and safety",
+          "Model Context Protocol (MCP) overview and architecture",
+          "Tool descriptions: clarity and specificity",
+          "tool_choice parameter: auto, required, or specific tool",
+          "Error handling and retry strategies",
+          "Graceful degradation when tools fail"
+        ],
+        "diagrams": [
+          "Anthropic tool use flow diagram",
+          "Agentic loop state machine",
+          "MCP server-client architecture",
+          "Tool calling sequence diagram",
+          "Error handling flow"
+        ],
+        "key_points": [
+          "Anthropic emphasizes safety and helpfulness in agent design",
+          "Tools are defined with JSON Schema input_schema",
+          "Claude returns tool_use blocks that must be executed",
+          "System prompts guide agent behavior and tool selection",
+          "MCP provides standardized protocol for tool integration",
+          "Clear tool descriptions improve tool selection accuracy",
+          "Always implement error handling and retries",
+          "Graceful degradation maintains user experience"
+        ]
+      },
+      "facilitator_notes": "Emphasize Anthropic's safety-first approach. Show how tool use differs from function calling in other frameworks. Explain MCP's role in standardization.",
+      "common_questions": [
+        "What's the difference between Anthropic's tool use and OpenAI's function calling?",
+        "How do I handle multiple tool calls in one response?",
+        "When should I use tool_choice vs auto?",
+        "How does MCP differ from direct API integration?",
+        "What happens if a tool call fails?"
+      ]
+    },
+    {
+      "phaseId": "demo",
+      "name": "Building a Research Agent with Multiple Tools",
+      "type": "demo",
+      "duration_minutes": 30,
+      "description": "Live coding a research agent with search, calculator, and file read tools",
+      "content": {
+        "topics": [
+          "Define tools with JSON Schema input_schema",
+          "Create system prompt for agent behavior",
+          "Implement tool execution functions",
+          "Build agentic loop: handle tool_use blocks",
+          "Process tool_result and continue conversation",
+          "Handle multiple tool calls in one response",
+          "Implement error handling and retries",
+          "Add graceful degradation"
+        ],
+        "code_examples": [
+          "Tool definition with input_schema",
+          "System prompt for research agent",
+          "Agentic loop implementation",
+          "Tool execution and result handling",
+          "Error handling and retry logic"
+        ],
+        "key_points": [
+          "JSON Schema must match tool function parameters exactly",
+          "System prompts guide tool selection and usage",
+          "Each tool_use block requires a tool_result response",
+          "Continue conversation with tool results in context",
+          "Handle errors gracefully and retry transient failures"
+        ]
+      },
+      "facilitator_notes": "Show real execution with multiple tool calls. Demonstrate error handling. Explain how system prompts affect tool selection."
+    },
+    {
+      "phaseId": "exercise_1",
+      "name": "Tool Calling with Proper Schemas and Error Handling",
+      "type": "exercise",
+      "duration_minutes": 20,
+      "description": "Implement tool calling with proper JSON Schema and error handling",
+      "content": {
+        "topics": [
+          "Define tools with comprehensive input_schema",
+          "Implement tool execution functions",
+          "Build agentic loop",
+          "Add error handling and retries",
+          "Handle edge cases"
+        ]
+      }
+    },
+    {
+      "phaseId": "exercise_2",
+      "name": "Create MCP Server and Connect to Claude",
+      "type": "exercise",
+      "duration_minutes": 25,
+      "description": "Create an MCP server and integrate it with Claude agent",
+      "content": {
+        "topics": [
+          "Create MCP server with tools",
+          "Define tool handlers",
+          "Connect MCP client to Claude",
+          "Execute tools through MCP",
+          "Handle MCP errors"
+        ]
+      }
+    },
+    {
+      "phaseId": "challenge",
+      "name": "Multi-Tool Agent with Graceful Degradation",
+      "type": "challenge",
+      "duration_minutes": 30,
+      "description": "Build a robust agent that handles tool failures gracefully",
+      "content": {
+        "topics": [
+          "Design multi-tool agent",
+          "Implement fallback strategies",
+          "Handle partial tool failures",
+          "Provide meaningful error messages",
+          "Maintain user experience during failures"
+        ]
+      }
+    },
+    {
+      "phaseId": "reflection",
+      "name": "Safety Considerations and Prompt Engineering",
+      "type": "reflection",
+      "duration_minutes": 15,
+      "description": "Consolidate learning and discuss production considerations",
+      "content": {
+        "topics": [
+          "Anthropic safety principles in practice",
+          "Prompt engineering for agents",
+          "Tool selection strategies",
+          "Production deployment considerations",
+          "Monitoring and observability",
+          "Resources for continued learning"
+        ],
+        "key_points": [
+          "Safety should be built into system prompts and tool design",
+          "Clear tool descriptions improve reliability",
+          "Error handling is critical for production",
+          "Monitor tool usage and success rates",
+          "MCP enables standardized tool integration",
+          "Structured outputs via tool_choice improve reliability"
+        ]
+      }
+    }
+  ],
+  "exercises": [
+    {
+      "exerciseId": "ex1_tool_calling",
+      "name": "Tool Calling with Proper Schemas and Error Handling",
+      "type": "guided",
+      "difficulty": "medium",
+      "duration_minutes": 20,
+      "description": "Implement tool calling with proper JSON Schema and comprehensive error handling",
+      "starter_code": "import anthropic\nimport json\nfrom typing import Dict, Any, List\n\nclient = anthropic.Anthropic(api_key='your-api-key')\n\n# TODO: Define tools with proper JSON Schema input_schema\ntools = [\n    {\n        'name': 'calculate',\n        'description': 'Perform mathematical calculations',\n        'input_schema': {\n            'type': 'object',\n            'properties': {\n                # TODO: Add expression (string) and precision (integer, optional)\n            },\n            'required': []\n        }\n    },\n    {\n        'name': 'search_knowledge',\n        'description': 'Search knowledge base',\n        'input_schema': {\n            'type': 'object',\n            'properties': {\n                # TODO: Add query (string) and max_results (integer, optional)\n            },\n            'required': []\n        }\n    }\n]\n\n# TODO: Implement tool execution functions\ndef execute_calculate(expression: str, precision: int = 2) -> str:\n    \"\"\"Execute calculation safely.\"\"\"\n    # TODO: Evaluate expression safely, handle errors, format result\n    pass\n\ndef execute_search(query: str, max_results: int = 5) -> str:\n    \"\"\"Search knowledge base.\"\"\"\n    # TODO: Implement search (simulate if needed), handle errors\n    pass\n\n# TODO: Build agentic loop\ndef run_agent(user_message: str, max_iterations: int = 10) -> str:\n    \"\"\"Run agent with tool calling.\"\"\"\n    messages = [{'role': 'user', 'content': user_message}]\n    \n    for iteration in range(max_iterations):\n        # TODO: Call Claude with tools\n        response = None\n        \n        # TODO: Check for tool_use blocks\n        # TODO: Execute tools and add tool_result messages\n        # TODO: Continue conversation\n        # TODO: Handle final response\n        \n        # TODO: Add error handling\n        pass\n    \n    return \"Agent completed\"\n\n# Test\nresult = run_agent(\"Calculate 15 * 23 and search for 'Python best practices'\")\nprint(result)",
+      "solution_code": "import anthropic\nimport json\nimport re\nfrom typing import Dict, Any, List\nfrom tenacity import retry, stop_after_attempt, wait_exponential\n\nclient = anthropic.Anthropic(api_key='your-api-key')\n\n# Define tools with proper JSON Schema\ntools = [\n    {\n        'name': 'calculate',\n        'description': 'Perform mathematical calculations. Supports basic arithmetic (+, -, *, /), parentheses, and decimal numbers.',\n        'input_schema': {\n            'type': 'object',\n            'properties': {\n                'expression': {\n                    'type': 'string',\n                    'description': 'Mathematical expression to evaluate (e.g., \"15 * 23\" or \"(10 + 5) / 3\")'\n                },\n                'precision': {\n                    'type': 'integer',\n                    'description': 'Number of decimal places (default: 2)',\n                    'default': 2,\n                    'minimum': 0,\n                    'maximum': 10\n                }\n            },\n            'required': ['expression']\n        }\n    },\n    {\n        'name': 'search_knowledge',\n        'description': 'Search knowledge base for information. Returns relevant results matching the query.',\n        'input_schema': {\n            'type': 'object',\n            'properties': {\n                'query': {\n                    'type': 'string',\n                    'description': 'Search query'\n                },\n                'max_results': {\n                    'type': 'integer',\n                    'description': 'Maximum number of results (default: 5)',\n                    'default': 5,\n                    'minimum': 1,\n                    'maximum': 20\n                }\n            },\n            'required': ['query']\n        }\n    }\n]\n\n# Tool execution functions\ndef execute_calculate(expression: str, precision: int = 2) -> str:\n    \"\"\"Execute calculation safely.\"\"\"\n    try:\n        # Sanitize: only allow numbers, operators, parentheses, spaces, decimal points\n        if not re.match(r'^[0-9+\\-*/().\\s]+$', expression):\n            return json.dumps({'error': 'Invalid characters in expression'})\n        \n        # Evaluate safely\n        result = eval(expression, {\"__builtins__\": {}}, {})\n        \n        # Format with precision\n        if isinstance(result, float):\n            result = round(result, precision)\n        \n        return json.dumps({'result': result, 'expression': expression})\n    except ZeroDivisionError:\n        return json.dumps({'error': 'Division by zero'})\n    except Exception as e:\n        return json.dumps({'error': f'Calculation error: {str(e)}'})\n\ndef execute_search(query: str, max_results: int = 5) -> str:\n    \"\"\"Search knowledge base (simulated).\"\"\"\n    try:\n        # Simulate search results\n        results = [\n            f\"Result {i+1}: Information about '{query}' - This is simulated content.\"\n            for i in range(min(max_results, 3))\n        ]\n        return json.dumps({\n            'query': query,\n            'results': results,\n            'count': len(results)\n        })\n    except Exception as e:\n        return json.dumps({'error': f'Search error: {str(e)}'})\n\n@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))\ndef call_claude(messages: List[Dict], tools: List[Dict] = None) -> Dict:\n    \"\"\"Call Claude with retry logic.\"\"\"\n    try:\n        response = client.messages.create(\n            model='claude-3-5-sonnet-20241022',\n            max_tokens=1024,\n            tools=tools,\n            messages=messages,\n            system=\"You are a helpful assistant that uses tools to answer questions accurately. Always use tools when appropriate.\"\n        )\n        return response\n    except anthropic.APIError as e:\n        if e.status_code == 429:\n            raise  # Retry will handle rate limits\n        raise\n\n# Build agentic loop\ndef run_agent(user_message: str, max_iterations: int = 10) -> str:\n    \"\"\"Run agent with tool calling.\"\"\"\n    messages = [{'role': 'user', 'content': user_message}]\n    \n    for iteration in range(max_iterations):\n        try:\n            # Call Claude\n            response = call_claude(messages, tools)\n            \n            # Check for tool_use blocks\n            tool_results = []\n            for block in response.content:\n                if block.type == 'text':\n                    # Final text response\n                    return block.text\n                elif block.type == 'tool_use':\n                    # Execute tool\n                    tool_id = block.id\n                    tool_name = block.name\n                    tool_input = block.input\n                    \n                    # Execute appropriate tool\n                    if tool_name == 'calculate':\n                        result = execute_calculate(\n                            tool_input.get('expression'),\n                            tool_input.get('precision', 2)\n                        )\n                    elif tool_name == 'search_knowledge':\n                        result = execute_search(\n                            tool_input.get('query'),\n                            tool_input.get('max_results', 5)\n                        )\n                    else:\n                        result = json.dumps({'error': f'Unknown tool: {tool_name}'})\n                    \n                    # Add tool result\n                    tool_results.append({\n                        'type': 'tool_result',\n                        'tool_use_id': tool_id,\n                        'content': result\n                    })\n            \n            # Add assistant message with tool_use blocks\n            assistant_content = [\n                block.model_dump() for block in response.content\n            ]\n            messages.append({\n                'role': 'assistant',\n                'content': assistant_content\n            })\n            \n            # Add tool results\n            if tool_results:\n                messages.extend(tool_results)\n            else:\n                # No tools used, return text response\n                for block in response.content:\n                    if block.type == 'text':\n                        return block.text\n            \n        except Exception as e:\n            return f\"Error: {str(e)}\"\n    \n    return \"Maximum iterations reached\"\n\n# Test\nif __name__ == '__main__':\n    result = run_agent(\"Calculate 15 * 23 and search for 'Python best practices'\")\n    print(result)",
+      "hints": [
+        "Use JSON Schema for input_schema with type, properties, required fields",
+        "Check response.content for tool_use blocks",
+        "Each tool_use block needs a corresponding tool_result message",
+        "Continue conversation by adding tool results to messages",
+        "Use retry decorator for transient API errors",
+        "Validate tool inputs before execution"
+      ],
+      "verification": "Agent successfully calls tools, handles errors, and returns final response",
+      "common_mistakes": [
+        "Missing required fields in input_schema",
+        "Not handling multiple tool_use blocks",
+        "Forgetting to add tool_result messages",
+        "Not continuing conversation after tool execution",
+        "Missing error handling for tool execution",
+        "Incorrect JSON Schema format"
+      ]
+    },
+    {
+      "exerciseId": "ex2_mcp_integration",
+      "name": "Create MCP Server and Connect to Claude",
+      "type": "guided",
+      "difficulty": "hard",
+      "duration_minutes": 25,
+      "description": "Create an MCP server with tools and integrate it with Claude agent",
+      "starter_code": "import asyncio\nfrom mcp.server import Server\nfrom mcp.types import Tool\nimport anthropic\n\n# TODO: Create MCP server\nserver = Server('research-server')\n\n# TODO: Define tools\n@server.list_tools()\nasync def list_tools() -> list[Tool]:\n    # TODO: Return list of Tool objects with name, description, inputSchema\n    return []\n\n# TODO: Implement tool handlers\n@server.call_tool()\nasync def call_tool(name: str, arguments: dict) -> list[dict]:\n    # TODO: Handle tool calls (file_read, calculator, etc.)\n    # Return format: [{'type': 'text', 'text': 'result'}]\n    pass\n\n# TODO: Connect MCP to Claude\nasync def run_mcp_agent(user_message: str):\n    \"\"\"Run Claude agent with MCP tools.\"\"\"\n    # TODO: Get tools from MCP server\n    # TODO: Call Claude with tools\n    # TODO: Execute tool calls through MCP\n    # TODO: Continue agentic loop\n    pass\n\n# TODO: Run server and agent\n# asyncio.run(run_mcp_agent(\"Read file.txt and calculate 10 * 5\"))",
+      "solution_code": "import asyncio\nimport json\nfrom mcp.server import Server\nfrom mcp.types import Tool\nfrom mcp.server.stdio import stdio_server\nimport anthropic\nfrom pathlib import Path\n\n# Create MCP server\nserver = Server('research-server')\n\n# Define tools\n@server.list_tools()\nasync def list_tools() -> list[Tool]:\n    return [\n        Tool(\n            name='read_file',\n            description='Read contents of a file',\n            inputSchema={\n                'type': 'object',\n                'properties': {\n                    'path': {\n                        'type': 'string',\n                        'description': 'Path to file to read'\n                    }\n                },\n                'required': ['path']\n            }\n        ),\n        Tool(\n            name='calculate',\n            description='Perform mathematical calculation',\n            inputSchema={\n                'type': 'object',\n                'properties': {\n                    'expression': {\n                        'type': 'string',\n                        'description': 'Mathematical expression'\n                    }\n                },\n                'required': ['expression']\n            }\n        )\n    ]\n\n# Implement tool handlers\n@server.call_tool()\nasync def call_tool(name: str, arguments: dict) -> list[dict]:\n    try:\n        if name == 'read_file':\n            file_path = Path(arguments.get('path', ''))\n            if not file_path.exists():\n                return [{\n                    'type': 'text',\n                    'text': json.dumps({'error': f'File not found: {file_path}'})\n                }]\n            \n            content = file_path.read_text(encoding='utf-8')\n            return [{\n                'type': 'text',\n                'text': json.dumps({'content': content, 'path': str(file_path)})\n            }]\n        \n        elif name == 'calculate':\n            expression = arguments.get('expression', '')\n            try:\n                result = eval(expression, {\"__builtins__\": {}}, {})\n                return [{\n                    'type': 'text',\n                    'text': json.dumps({'result': result, 'expression': expression})\n                }]\n            except Exception as e:\n                return [{\n                    'type': 'text',\n                    'text': json.dumps({'error': f'Calculation error: {str(e)}'})\n                }]\n        \n        else:\n            return [{\n                'type': 'text',\n                'text': json.dumps({'error': f'Unknown tool: {name}'})\n            }]\n    \n    except Exception as e:\n        return [{\n            'type': 'text',\n            'text': json.dumps({'error': f'Tool execution error: {str(e)}'})\n        }]\n\n# MCP client for Claude integration\nclass MCPClient:\n    def __init__(self, server):\n        self.server = server\n    \n    async def get_tools(self) -> list[dict]:\n        \"\"\"Get tools from MCP server in Anthropic format.\"\"\"\n        mcp_tools = await self.server.list_tools()\n        \n        anthropic_tools = []\n        for tool in mcp_tools:\n            anthropic_tools.append({\n                'name': tool.name,\n                'description': tool.description,\n                'input_schema': tool.inputSchema\n            })\n        \n        return anthropic_tools\n    \n    async def execute_tool(self, name: str, arguments: dict) -> str:\n        \"\"\"Execute tool through MCP.\"\"\"\n        results = await self.server.call_tool(name, arguments)\n        \n        # Combine results\n        combined = []\n        for result in results:\n            if result.get('type') == 'text':\n                combined.append(result.get('text', ''))\n        \n        return '\\n'.join(combined)\n\n# Connect MCP to Claude\nasync def run_mcp_agent(user_message: str):\n    \"\"\"Run Claude agent with MCP tools.\"\"\"\n    client = anthropic.Anthropic(api_key='your-api-key')\n    mcp_client = MCPClient(server)\n    \n    # Get tools from MCP\n    tools = await mcp_client.get_tools()\n    \n    messages = [{'role': 'user', 'content': user_message}]\n    max_iterations = 10\n    \n    for iteration in range(max_iterations):\n        # Call Claude\n        response = client.messages.create(\n            model='claude-3-5-sonnet-20241022',\n            max_tokens=1024,\n            tools=tools,\n            messages=messages,\n            system=\"You are a helpful assistant with access to file reading and calculation tools.\"\n        )\n        \n        # Process response\n        tool_results = []\n        assistant_content = []\n        \n        for block in response.content:\n            if block.type == 'text':\n                return block.text\n            elif block.type == 'tool_use':\n                assistant_content.append(block.model_dump())\n                \n                # Execute tool through MCP\n                result = await mcp_client.execute_tool(\n                    block.name,\n                    block.input\n                )\n                \n                tool_results.append({\n                    'type': 'tool_result',\n                    'tool_use_id': block.id,\n                    'content': result\n                })\n        \n        # Add assistant message\n        if assistant_content:\n            messages.append({\n                'role': 'assistant',\n                'content': assistant_content\n            })\n        \n        # Add tool results\n        if tool_results:\n            messages.extend(tool_results)\n        else:\n            break\n    \n    return \"Agent completed\"\n\n# Run server (for stdio transport)\nasync def main():\n    async with stdio_server() as (read_stream, write_stream):\n        await server.run(\n            read_stream,\n            write_stream,\n            server.create_initialization_options()\n        )\n\n# For direct integration (not stdio)\nif __name__ == '__main__':\n    # Test agent\n    result = asyncio.run(run_mcp_agent(\"Read file.txt and calculate 10 * 5\"))\n    print(result)",
+      "hints": [
+        "MCP tools use inputSchema (camelCase) vs Anthropic's input_schema (snake_case)",
+        "Convert MCP Tool format to Anthropic tool format",
+        "Use async/await for MCP server operations",
+        "MCP call_tool returns list of result dicts",
+        "Combine multiple result blocks into single response",
+        "Handle errors in tool execution"
+      ],
+      "verification": "MCP server provides tools to Claude and executes them correctly",
+      "common_mistakes": [
+        "Not converting MCP tool format to Anthropic format",
+        "Forgetting async/await in MCP operations",
+        "Not handling MCP result list format",
+        "Missing error handling in tool execution",
+        "Incorrect inputSchema vs input_schema naming"
+      ]
+    }
+  ],
+  "challenges": [
+    {
+      "challengeId": "multi_tool_graceful_degradation",
+      "name": "Multi-Tool Agent with Graceful Degradation",
+      "description": "Build a robust agent that handles tool failures gracefully and maintains user experience",
+      "requirements": [
+        "Create agent with at least 3 tools (search, calculator, file operations)",
+        "Implement fallback strategies when tools fail",
+        "Handle partial tool failures (some tools work, others don't)",
+        "Provide meaningful error messages to users",
+        "Continue operation even when non-critical tools fail",
+        "Implement retry logic with exponential backoff",
+        "Log tool usage and failures for monitoring",
+        "Use structured outputs via tool_choice when appropriate"
+      ],
+      "evaluation_criteria": [
+        "Agent continues operating when tools fail",
+        "Error messages are helpful and actionable",
+        "Fallback strategies work correctly",
+        "Retry logic handles transient failures",
+        "Tool usage is logged appropriately",
+        "User experience remains smooth during failures",
+        "Structured outputs work correctly"
+      ],
+      "stretch_goals": [
+        "Implement tool health checks",
+        "Add circuit breaker pattern for failing tools",
+        "Create tool usage analytics dashboard",
+        "Implement tool versioning",
+        "Add tool usage rate limiting",
+        "Create tool testing framework"
+      ]
+    }
+  ],
+  "resources": {
+    "official_docs": [
+      "https://docs.anthropic.com/claude/docs/tool-use",
+      "https://docs.anthropic.com/claude/docs/system-prompts",
+      "https://modelcontextprotocol.io/",
+      "https://github.com/modelcontextprotocol/python-sdk"
+    ],
+    "tutorials": [
+      "Anthropic Tool Use Guide",
+      "Building Agents with Claude - Anthropic Blog",
+      "MCP Server Development Guide",
+      "Anthropic API Python SDK Documentation"
+    ],
+    "videos": [
+      "Anthropic Tool Use Tutorial",
+      "Building AI Agents with Claude - Conference Talk",
+      "MCP Protocol Deep Dive"
+    ],
+    "community": [
+      "Anthropic Discord",
+      "Anthropic GitHub Discussions",
+      "MCP Community",
+      "Stack Overflow - anthropic tag"
+    ]
+  },
+  "assessment": {
+    "knowledge_check": [
+      {
+        "question": "What are Anthropic's core principles for AI agents?",
+        "type": "short_answer",
+        "answer": "Anthropic emphasizes three core principles: helpful (assist users effectively), harmless (avoid causing harm), and honest (be truthful and transparent). These principles guide agent design and tool use.",
+        "explanation": "These principles form the foundation of Anthropic's approach to AI safety"
+      },
+      {
+        "question": "How does Claude's tool use differ from function calling in other frameworks?",
+        "type": "short_answer",
+        "answer": "Claude uses structured tool_use blocks in responses that must be executed, with corresponding tool_result messages. Tools are defined with JSON Schema input_schema. The agentic loop requires explicit handling: tool_use → execution → tool_result → continue.",
+        "explanation": "Claude's approach is more explicit and requires proper loop management"
+      },
+      {
+        "question": "What is the Model Context Protocol (MCP) and why is it useful?",
+        "type": "short_answer",
+        "answer": "MCP is a standardized protocol for connecting AI models to external tools and data sources. It provides a common interface for tools and resources, enabling interoperability between different AI systems and tool providers.",
+        "explanation": "MCP standardizes tool integration across different AI frameworks"
+      },
+      {
+        "question": "What is the purpose of tool_choice parameter?",
+        "type": "multiple_choice",
+        "answer": "tool_choice controls whether Claude must use a tool, can use tools automatically, or must use a specific tool. Options: 'auto' (default), 'required', or {'type': 'tool', 'name': 'tool_name'}.",
+        "explanation": "tool_choice enables structured outputs and forced tool usage"
+      },
+      {
+        "question": "How should you handle errors in an agentic loop?",
+        "type": "short_answer",
+        "answer": "Implement comprehensive error handling: validate tool inputs, catch execution errors, provide meaningful error messages in tool_result, implement retry logic for transient failures, and gracefully degrade when tools fail. Always continue the conversation even after errors.",
+        "explanation": "Error handling is critical for production agent systems"
+      }
+    ],
+    "practical_assessment": "Build a working multi-tool agent using Anthropic Claude that successfully handles tool calls, errors, and retries, with graceful degradation when tools fail",
+    "self_assessment": [
+      "Can I explain Anthropic's safety principles?",
+      "Do I understand how tool_use blocks work?",
+      "Can I implement a complete agentic loop?",
+      "Do I know how to create and integrate MCP servers?",
+      "Can I write effective system prompts for agents?",
+      "Do I understand error handling and retry strategies?",
+      "Can I implement graceful degradation?"
+    ]
+  },
+  "next_steps": {
+    "next_workshop": "L18_advanced_agent_patterns",
+    "practice_projects": [
+      "Build a research assistant with multiple data sources",
+      "Create a code analysis agent with file operations",
+      "Implement a customer support agent with knowledge base",
+      "Build a data analysis agent with calculation tools"
+    ],
+    "deeper_learning": [
+      "Advanced prompt engineering for agents",
+      "Multi-agent orchestration with Claude",
+      "Production deployment and monitoring",
+      "Tool versioning and migration strategies",
+      "Advanced MCP patterns (gateways, load balancing)"
+    ]
+  },
+  "axiom_zero_integration": {
+    "love_moments": [
+      "Celebrating successful tool integrations",
+      "Patient debugging of agentic loops",
+      "Encouraging experimentation with different tool designs",
+      "Supporting learners through complex error handling scenarios"
+    ],
+    "truth_moments": [
+      "Honest discussion of tool reliability and failure modes",
+      "Clear explanation of when NOT to use tools",
+      "Accurate expectations for agent performance",
+      "Transparent about API costs and rate limits",
+      "Verified code examples that work with current SDK versions"
+    ],
+    "beauty_moments": [
+      "Elegant agentic loop implementations",
+      "Clean tool schema definitions",
+      "Beautiful error handling patterns",
+      "The satisfaction of seeing tools work seamlessly",
+      "Well-structured system prompts that guide behavior effectively"
+    ]
+  }
+}

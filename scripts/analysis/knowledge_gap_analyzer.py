@@ -14,8 +14,7 @@ Axiom Alignment:
     - A10 (Learning): Identifies opportunities for knowledge improvement
     - A1 (Verifiability): Provides evidence for each identified gap
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 import json

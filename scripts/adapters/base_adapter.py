@@ -16,14 +16,12 @@ Axiom Alignment:
     - A3 (Transparency): Sources and reasoning are documented
     - A10 (Learning): System evolves from multiple knowledge sources
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum
+from datetime import datetime, timezonefrom enum import Enum
 from typing import Any, Dict, List, Optional
 import hashlib
 import json
@@ -106,8 +104,7 @@ class UpdateSource:
     identifier: str
     version: Optional[str] = None
     url: Optional[str] = None
-    fetched_at: datetime = field(default_factory=datetime.utcnow)
-    trust_level: TrustLevel = TrustLevel.COMMUNITY
+    fetched_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))    trust_level: TrustLevel = TrustLevel.COMMUNITY
     raw_data: Optional[Dict[str, Any]] = None
 
 
@@ -355,8 +352,7 @@ class BaseAdapter(ABC):
         if "timestamp" not in cached:
             return True
         
-        cache_age = datetime.utcnow() - cached["timestamp"]
-        cache_ttl = self.config.cache_ttl_hours * 3600
+        cache_age = datetime.now(timezone.utc) - cached["timestamp"]        cache_ttl = self.config.cache_ttl_hours * 3600
         
         return cache_age.total_seconds() > cache_ttl
     
@@ -382,8 +378,7 @@ class BaseAdapter(ABC):
         """
         self._cache[cache_key] = {
             "data": data,
-            "timestamp": datetime.utcnow(),
-        }
+            "timestamp": datetime.now(timezone.utc),        }
     
     def __repr__(self) -> str:
         """String representation of the adapter."""

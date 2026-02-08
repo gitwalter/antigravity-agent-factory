@@ -1,0 +1,430 @@
+"""
+{{ graph_name }} - Human-in-the-Loop Graph
+
+Implements human-in-the-loop pattern:
+- Proposal node generates action proposal
+- Interrupt point for human approval
+- Execution node performs approved actions
+- Checkpointing for state persistence
+
+Axiom Alignment:
+- A2 (User Primacy): Human approval required for consequential actions
+- A3 (Transparency): Approval requests are explicit
+"""
+
+from typing import TypedDict, Annotated, List, Optional, Literal
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.message import add_messages
+from langgraph.checkpoint.memory import MemorySaver
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from langchain_openai import ChatOpenAI
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# State Definition
+# =============================================================================
+
+class {{ state_class }}(TypedDict):
+    """
+    State for human-in-the-loop workflow.
+    
+    Attributes:
+        messages: Conversation messages
+        input: Original user input
+        proposal: Proposed action/output
+        human_feedback: Human approval/rejection
+        approved: Whether proposal is approved
+        final_output: Final approved output
+        status: Workflow status
+    """
+    messages: Annotated[List[BaseMessage], add_messages]
+    input: str
+    proposal: Optional[str]
+    human_feedback: Optional[str]
+    approved: bool
+    final_output: Optional[str]
+    status: Literal["proposing", "awaiting_approval", "approved", "rejected", "completed", "executing"]
+
+
+# =============================================================================
+# Node Definitions
+# =============================================================================
+
+def proposal_node(state: {{ state_class }}) -> dict:
+    """
+    Generate proposal based on input.
+    
+    Implements A3 (Transparency) by making proposal explicit.
+    
+    Args:
+        state: Current workflow state
+        
+    Returns:
+        Updated state with proposal
+    """
+    logger.info("Generating proposal...")
+    
+    input_text = state["input"]
+    
+    # TODO: Implement proposal generation logic
+    # This could use an LLM to generate a proposal
+    
+    proposal = f"Proposal for: {input_text}"
+    
+    logger.info(f"Proposal generated: {proposal[:100]}...")
+    
+    return {
+        "proposal": proposal,
+        "status": "proposing",
+        "messages": state["messages"] + [
+            AIMessage(content=f"Proposal: {proposal}")
+        ]
+    }
+
+
+def interrupt_node(state: {{ state_class }}) -> dict:
+    """
+    Interrupt point - request human approval.
+    
+    Implements A2 (User Primacy) by requiring explicit approval.
+    This node creates an interrupt that pauses execution.
+    
+    Args:
+        state: Current workflow state
+        
+    Returns:
+        Updated state awaiting approval
+    """
+    logger.info("Requesting human approval...")
+    
+    approval_message = f"""{{ approval_message|default('Please review and approve the following proposal:') }}
+
+Proposal:
+{state["proposal"]}
+
+Please review and provide feedback. Respond with:
+- "APPROVE" to approve
+- "REJECT" to reject
+- Or provide specific feedback for improvements
+"""
+    
+    return {
+        "status": "awaiting_approval",
+        "messages": state["messages"] + [
+            AIMessage(content=approval_message)
+        ]
+    }
+
+
+def execution_node(state: {{ state_class }}) -> dict:
+    """
+    Execute approved proposal.
+    
+    Implements A1 (Verifiability) by logging execution.
+    
+    Args:
+        state: Current workflow state
+        
+    Returns:
+        Updated state with execution results
+    """
+    logger.info("Executing approved proposal...")
+    
+    if not state.get("approved", False):
+        return {
+            "status": "rejected",
+            "final_output": "Proposal was not approved.",
+            "messages": state["messages"] + [
+                AIMessage(content="Execution cancelled - proposal not approved")
+            ]
+        }
+    
+    # TODO: Implement execution logic
+    # This is where the actual work happens after approval
+    
+    final_output = f"Executed: {state['proposal']}"
+    
+    return {
+        "final_output": final_output,
+        "status": "completed",
+        "messages": state["messages"] + [
+            AIMessage(content=f"Execution completed: {final_output}")
+        ]
+    }
+
+
+# =============================================================================
+# Routing Functions
+# =============================================================================
+
+def route_after_proposal(state: {{ state_class }}) -> str:
+    """
+    Route after proposal generation.
+    
+    Checks if approval is needed (A2 - User Primacy).
+    
+    Args:
+        state: Current state
+        
+    Returns:
+        Next node name
+    """
+    # Check if this requires approval
+    requires_approval = check_approval_required(state.get("proposal", ""))
+    
+    if requires_approval:
+        return "interrupt"
+    else:
+        # Auto-approve or doesn't need approval
+        return "execute"
+
+
+def check_approval_required(proposal: str) -> bool:
+    """
+    Check if proposal requires human approval (A2).
+    
+    Args:
+        proposal: Generated proposal
+        
+    Returns:
+        True if approval is needed
+    """
+    # Keywords that indicate approval is needed
+    approval_keywords = [
+        "delete", "remove", "modify", "change", "update",
+        "create", "generate", "send", "publish", "execute"
+    ]
+    
+    proposal_lower = proposal.lower()
+    return any(keyword in proposal_lower for keyword in approval_keywords)
+
+
+def route_after_approval(state: {{ state_class }}) -> str:
+    """
+    Route based on human feedback.
+    
+    Args:
+        state: Current state
+        
+    Returns:
+        Next node name
+    """
+    feedback = state.get("human_feedback", "").upper()
+    
+    if feedback == "APPROVE":
+        return "execute"
+    elif feedback == "REJECT":
+        return "end"  # End with rejection
+    else:
+        # Has feedback to incorporate - could loop back to proposal
+        return "execute"  # For now, proceed to execution
+
+
+# =============================================================================
+# Graph Construction
+# =============================================================================
+
+def create_{{ graph_name|lower|replace(' ', '_') }}_graph() -> StateGraph:
+    """
+    Create the {{ graph_name }} human-in-the-loop graph.
+    
+    Returns:
+        Compiled LangGraph workflow
+    """
+    graph = StateGraph({{ state_class }})
+    
+    # Add nodes
+    graph.add_node("proposal", proposal_node)
+    graph.add_node("interrupt", interrupt_node)
+    graph.add_node("execute", execution_node)
+    
+    # Add edges
+    graph.add_edge(START, "proposal")
+    
+    # Conditional routing after proposal
+    graph.add_conditional_edges(
+        "proposal",
+        route_after_proposal,
+        {
+            "interrupt": "interrupt",
+            "execute": "execute"
+        }
+    )
+    
+    # Conditional routing after approval request
+    graph.add_conditional_edges(
+        "interrupt",
+        route_after_approval,
+        {
+            "execute": "execute",
+            "end": END
+        }
+    )
+    
+    graph.add_edge("execute", END)
+    
+    return graph
+
+
+def compile_{{ graph_name|lower|replace(' ', '_') }}(use_checkpointing: bool = True):
+    """
+    Compile the human-in-the-loop workflow with checkpointing.
+    
+    Checkpointing is essential for HITL workflows to allow pause/resume.
+    
+    Args:
+        use_checkpointing: Whether to enable checkpointing (recommended: True)
+        
+    Returns:
+        Compiled workflow
+    """
+    graph = create_{{ graph_name|lower|replace(' ', '_') }}_graph()
+    
+    if use_checkpointing:
+        checkpointer = MemorySaver()
+        return graph.compile(checkpointer=checkpointer)
+    
+    return graph.compile()
+
+
+# =============================================================================
+# Workflow Execution
+# =============================================================================
+
+class {{ graph_name|replace(' ', '') }}HITL:
+    """
+    {{ graph_name }} human-in-the-loop workflow executor.
+    
+    Example:
+        >>> workflow = {{ graph_name|replace(' ', '') }}HITL()
+        >>> result = workflow.run("Generate a report")
+        >>> if result["status"] == "awaiting_approval":
+        >>>     workflow.approve(thread_id, "APPROVE")
+    """
+    
+    def __init__(
+        self,
+        model_name: str = "{{ model_name|default('gpt-4') }}",
+        temperature: float = {{ temperature|default(0.7) }},
+        use_checkpointing: bool = True  # Required for interrupts
+    ):
+        """
+        Initialize human-in-the-loop workflow.
+        
+        Args:
+            model_name: LLM model identifier
+            temperature: Sampling temperature
+            use_checkpointing: Enable checkpointing (required for interrupts)
+        """
+        self.model_name = model_name
+        self.temperature = temperature
+        
+        # Initialize LLM (optional - only if using LLM for proposals)
+        # self.llm = ChatOpenAI(model=model_name, temperature=temperature)
+        
+        self.app = compile_{{ graph_name|lower|replace(' ', '_') }}(use_checkpointing)
+        
+        logger.info(f"Initialized {{ graph_name }} workflow")
+    
+    def run(
+        self,
+        input_text: str,
+        thread_id: Optional[str] = None
+    ) -> {{ state_class }}:
+        """
+        Run the workflow.
+        
+        Args:
+            input_text: User input
+            thread_id: Thread ID (required for checkpointing/interrupts)
+            
+        Returns:
+            Workflow state
+        """
+        logger.info(f"Running workflow with input: {input_text[:100]}...")
+        
+        initial_state: {{ state_class }} = {
+            "messages": [HumanMessage(content=input_text)],
+            "input": input_text,
+            "proposal": None,
+            "human_feedback": None,
+            "approved": False,
+            "final_output": None,
+            "status": "proposing"
+        }
+        
+        config = {}
+        if thread_id:
+            config = {"configurable": {"thread_id": thread_id}}
+        
+        result = self.app.invoke(initial_state, config)
+        
+        logger.info(f"Workflow status: {result['status']}")
+        return result
+    
+    def approve(
+        self,
+        thread_id: str,
+        feedback: str = "APPROVE"
+    ) -> {{ state_class }}:
+        """
+        Provide approval feedback.
+        
+        Args:
+            thread_id: Thread ID
+            feedback: Approval feedback ("APPROVE", "REJECT", or custom feedback)
+            
+        Returns:
+            Updated state
+        """
+        logger.info(f"Providing approval: {feedback[:50]}...")
+        
+        # Get current state
+        config = {"configurable": {"thread_id": thread_id}}
+        current_state = self.app.get_state(config)
+        
+        # Update with feedback
+        updated_state = {
+            "human_feedback": feedback,
+            "approved": feedback.upper() == "APPROVE"
+        }
+        
+        # Continue workflow
+        result = self.app.invoke(updated_state, config)
+        
+        return result
+    
+    def visualize(self) -> str:
+        """Generate Mermaid diagram."""
+        return self.app.get_graph().draw_mermaid()
+
+
+# =============================================================================
+# Example Usage
+# =============================================================================
+
+if __name__ == "__main__":
+    # Create workflow
+    workflow = {{ graph_name|replace(' ', '') }}HITL(use_checkpointing=True)
+    
+    # Visualize
+    print("Workflow Structure:")
+    print(workflow.visualize())
+    print()
+    
+    # Run with thread ID for checkpointing
+    thread_id = "example_thread_123"
+    result = workflow.run("{{ example_input|default('Generate a report') }}", thread_id=thread_id)
+    
+    print(f"Status: {result['status']}")
+    if result["status"] == "awaiting_approval":
+        print(f"Proposal: {result['proposal']}")
+        print("\nProviding approval...")
+        # In real usage, get feedback from user
+        result = workflow.approve(thread_id, "APPROVE")
+        print(f"Final status: {result['status']}")
+        print(f"Final output: {result.get('final_output')}")

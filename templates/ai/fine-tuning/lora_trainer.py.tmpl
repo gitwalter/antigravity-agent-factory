@@ -1,0 +1,434 @@
+"""
+{{TRAINER_NAME}} - LoRA Fine-Tuning Trainer
+
+Purpose: {{TRAINER_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Training process is logged and reproducible
+- A3 (Transparency): Model changes are tracked and explainable
+"""
+
+from typing import Optional, Dict, Any, List, Union
+from pathlib import Path
+import torch
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    TrainingArguments,
+    Trainer,
+    DataCollatorForLanguageModeling,
+)
+from peft import (
+    LoraConfig,
+    get_peft_model,
+    prepare_model_for_kbit_training,
+    TaskType,
+)
+from datasets import Dataset
+import logging
+from pydantic import BaseModel, Field
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class LoRATrainingConfig(BaseModel):
+    """Configuration for LoRA fine-tuning."""
+    base_model_name: str = Field(description="Base model identifier")
+    output_dir: str = Field(description="Output directory for checkpoints")
+    lora_r: int = Field(default={{LORA_R}}, description="LoRA rank")
+    lora_alpha: int = Field(default={{LORA_ALPHA}}, description="LoRA alpha scaling")
+    lora_dropout: float = Field(default={{LORA_DROPOUT}}, description="LoRA dropout")
+    target_modules: List[str] = Field(
+        default={{TARGET_MODULES}},
+        description="Target modules for LoRA adaptation"
+    )
+    task_type: str = Field(default="CAUSAL_LM", description="Task type")
+    bias: str = Field(default="none", description="Bias type")
+
+
+class {{TRAINER_CLASS_NAME}}:
+    """
+    {{TRAINER_NAME}} - LoRA Fine-Tuning Trainer
+    
+    Fine-tunes language models using Low-Rank Adaptation (LoRA) for efficient
+    parameter-efficient fine-tuning. LoRA reduces trainable parameters while
+    maintaining model performance.
+    
+    Example:
+        >>> trainer = {{TRAINER_CLASS_NAME}}(
+        ...     base_model_name="meta-llama/Llama-2-7b-hf",
+        ...     output_dir="./models/lora-llama2"
+        ... )
+        >>> trainer.train(
+        ...     train_dataset=dataset,
+        ...     num_epochs=3,
+        ...     per_device_train_batch_size=4
+        ... )
+    """
+    
+    def __init__(
+        self,
+        base_model_name: str = "{{BASE_MODEL_NAME}}",
+        output_dir: str = "{{OUTPUT_DIR}}",
+        lora_r: int = {{LORA_R}},
+        lora_alpha: int = {{LORA_ALPHA}},
+        lora_dropout: float = {{LORA_DROPOUT}},
+        target_modules: Optional[List[str]] = None,
+        use_cache: bool = False,
+        device_map: str = "auto",
+        torch_dtype: torch.dtype = torch.float16,
+        load_in_8bit: bool = False,
+        load_in_4bit: bool = False,
+    ):
+        """
+        Initialize LoRA trainer.
+        
+        Args:
+            base_model_name: HuggingFace model identifier
+            output_dir: Directory to save checkpoints and final model
+            lora_r: LoRA rank (lower = fewer parameters)
+            lora_alpha: LoRA alpha scaling parameter
+            lora_dropout: LoRA dropout rate
+            target_modules: Modules to apply LoRA to (default: ["q_proj", "v_proj"])
+            use_cache: Whether to use KV cache during training
+            device_map: Device mapping strategy
+            torch_dtype: Data type for model weights
+            load_in_8bit: Load model in 8-bit mode
+            load_in_4bit: Load model in 4-bit mode (use QLoRA instead)
+        """
+        self.base_model_name = base_model_name
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        
+        self.lora_r = lora_r
+        self.lora_alpha = lora_alpha
+        self.lora_dropout = lora_dropout
+        
+        # Default target modules for common architectures
+        if target_modules is None:
+            target_modules = {{TARGET_MODULES}}
+        self.target_modules = target_modules
+        
+        self.use_cache = use_cache
+        self.device_map = device_map
+        self.torch_dtype = torch_dtype
+        self.load_in_8bit = load_in_8bit
+        self.load_in_4bit = load_in_4bit
+        
+        # Initialize model and tokenizer
+        logger.info(f"Loading base model: {base_model_name}")
+        self.tokenizer = AutoTokenizer.from_pretrained(base_model_name)
+        
+        # Set padding token if not present
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+        
+        # Load model
+        model_kwargs = {
+            "device_map": device_map,
+            "torch_dtype": torch_dtype,
+            "use_cache": use_cache,
+        }
+        
+        if load_in_8bit:
+            model_kwargs["load_in_8bit"] = True
+        elif load_in_4bit:
+            model_kwargs["load_in_4bit"] = True
+        
+        self.model = AutoModelForCausalLM.from_pretrained(
+            base_model_name,
+            **model_kwargs
+        )
+        
+        # Prepare model for training if using quantization
+        if load_in_4bit or load_in_8bit:
+            logger.info("Preparing model for k-bit training...")
+            self.model = prepare_model_for_kbit_training(self.model)
+        
+        # Configure LoRA
+        self.lora_config = LoraConfig(
+            r=lora_r,
+            lora_alpha=lora_alpha,
+            target_modules=target_modules,
+            lora_dropout=lora_dropout,
+            bias="none",
+            task_type=TaskType.CAUSAL_LM,
+        )
+        
+        # Apply LoRA to model
+        logger.info("Applying LoRA adapters...")
+        self.model = get_peft_model(self.model, self.lora_config)
+        
+        # Print trainable parameters
+        trainable_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+        total_params = sum(p.numel() for p in self.model.parameters())
+        logger.info(
+            f"Trainable parameters: {trainable_params:,} ({100 * trainable_params / total_params:.2f}%)"
+        )
+        
+        self.trainer: Optional[Trainer] = None
+    
+    def prepare_dataset(
+        self,
+        dataset: Union[Dataset, List[Dict[str, str]]],
+        text_column: str = "{{TEXT_COLUMN}}",
+        max_length: int = {{MAX_LENGTH}},
+    ) -> Dataset:
+        """
+        Prepare dataset for training.
+        
+        Args:
+            dataset: Dataset or list of dictionaries with text data
+            text_column: Column name containing text
+            max_length: Maximum sequence length
+            
+        Returns:
+            Tokenized dataset ready for training
+            
+        Example:
+            >>> dataset = trainer.prepare_dataset(
+            ...     [{"text": "Example text..."}],
+            ...     max_length=512
+            ... )
+        """
+        logger.info("Preparing dataset...")
+        
+        if isinstance(dataset, list):
+            dataset = Dataset.from_list(dataset)
+        
+        def tokenize_function(examples):
+            """Tokenize text examples."""
+            texts = examples[text_column]
+            tokenized = self.tokenizer(
+                texts,
+                truncation=True,
+                padding="max_length",
+                max_length=max_length,
+                return_tensors="pt",
+            )
+            tokenized["labels"] = tokenized["input_ids"].clone()
+            return tokenized
+        
+        tokenized_dataset = dataset.map(
+            tokenize_function,
+            batched=True,
+            remove_columns=dataset.column_names,
+        )
+        
+        logger.info(f"Prepared dataset with {len(tokenized_dataset)} examples")
+        return tokenized_dataset
+    
+    def train(
+        self,
+        train_dataset: Dataset,
+        num_epochs: int = {{NUM_EPOCHS}},
+        per_device_train_batch_size: int = {{BATCH_SIZE}},
+        gradient_accumulation_steps: int = {{GRADIENT_ACCUMULATION_STEPS}},
+        learning_rate: float = {{LEARNING_RATE}},
+        warmup_steps: int = {{WARMUP_STEPS}},
+        logging_steps: int = {{LOGGING_STEPS}},
+        save_steps: int = {{SAVE_STEPS}},
+        eval_dataset: Optional[Dataset] = None,
+        per_device_eval_batch_size: Optional[int] = None,
+        save_total_limit: int = {{SAVE_TOTAL_LIMIT}},
+        fp16: bool = {{FP16}},
+        bf16: bool = {{BF16}},
+        dataloader_num_workers: int = {{DATALOADER_NUM_WORKERS}},
+    ) -> None:
+        """
+        Train the model with LoRA.
+        
+        Args:
+            train_dataset: Training dataset
+            num_epochs: Number of training epochs
+            per_device_train_batch_size: Batch size per device
+            gradient_accumulation_steps: Gradient accumulation steps
+            learning_rate: Learning rate
+            warmup_steps: Number of warmup steps
+            logging_steps: Logging frequency
+            save_steps: Checkpoint saving frequency
+            eval_dataset: Optional evaluation dataset
+            per_device_eval_batch_size: Evaluation batch size
+            save_total_limit: Maximum number of checkpoints to keep
+            fp16: Use FP16 mixed precision
+            bf16: Use BF16 mixed precision
+            dataloader_num_workers: Number of dataloader workers
+            
+        Example:
+            >>> trainer.train(
+            ...     train_dataset=tokenized_train,
+            ...     num_epochs=3,
+            ...     learning_rate=2e-4
+            ... )
+        """
+        logger.info("Starting LoRA fine-tuning...")
+        
+        # Training arguments
+        training_args = TrainingArguments(
+            output_dir=str(self.output_dir),
+            num_train_epochs=num_epochs,
+            per_device_train_batch_size=per_device_train_batch_size,
+            gradient_accumulation_steps=gradient_accumulation_steps,
+            learning_rate=learning_rate,
+            warmup_steps=warmup_steps,
+            logging_steps=logging_steps,
+            save_steps=save_steps,
+            save_total_limit=save_total_limit,
+            fp16=fp16,
+            bf16=bf16,
+            dataloader_num_workers=dataloader_num_workers,
+            remove_unused_columns=False,
+            report_to="none",  # Set to "tensorboard" or "wandb" for logging
+        )
+        
+        # Data collator
+        data_collator = DataCollatorForLanguageModeling(
+            tokenizer=self.tokenizer,
+            mlm=False,  # Causal LM, not masked LM
+        )
+        
+        # Create trainer
+        self.trainer = Trainer(
+            model=self.model,
+            args=training_args,
+            train_dataset=train_dataset,
+            eval_dataset=eval_dataset,
+            data_collator=data_collator,
+        )
+        
+        # Train
+        logger.info("Training started...")
+        train_result = self.trainer.train()
+        
+        logger.info(f"Training completed. Loss: {train_result.training_loss:.4f}")
+        
+        # Save final model
+        self.save_model()
+    
+    def save_model(self, save_path: Optional[str] = None) -> None:
+        """
+        Save the fine-tuned model and tokenizer.
+        
+        Args:
+            save_path: Optional custom save path (defaults to output_dir)
+            
+        Example:
+            >>> trainer.save_model("./models/my-lora-model")
+        """
+        save_path = save_path or str(self.output_dir)
+        save_path = Path(save_path)
+        save_path.mkdir(parents=True, exist_ok=True)
+        
+        logger.info(f"Saving model to {save_path}...")
+        
+        # Save PEFT model (LoRA adapters)
+        self.model.save_pretrained(save_path)
+        
+        # Save tokenizer
+        self.tokenizer.save_pretrained(save_path)
+        
+        logger.info("Model saved successfully")
+    
+    def load_model(self, model_path: str) -> None:
+        """
+        Load a fine-tuned LoRA model.
+        
+        Args:
+            model_path: Path to saved model
+            
+        Example:
+            >>> trainer.load_model("./models/my-lora-model")
+        """
+        logger.info(f"Loading model from {model_path}...")
+        
+        from peft import PeftModel
+        
+        # Load base model
+        self.model = AutoModelForCausalLM.from_pretrained(
+            self.base_model_name,
+            device_map=self.device_map,
+            torch_dtype=self.torch_dtype,
+        )
+        
+        # Load LoRA adapters
+        self.model = PeftModel.from_pretrained(self.model, model_path)
+        
+        # Load tokenizer
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path)
+        
+        logger.info("Model loaded successfully")
+    
+    def generate(
+        self,
+        prompt: str,
+        max_new_tokens: int = {{MAX_NEW_TOKENS}},
+        temperature: float = {{TEMPERATURE}},
+        top_p: float = {{TOP_P}},
+        do_sample: bool = True,
+    ) -> str:
+        """
+        Generate text using the fine-tuned model.
+        
+        Args:
+            prompt: Input prompt text
+            max_new_tokens: Maximum tokens to generate
+            temperature: Sampling temperature
+            top_p: Nucleus sampling parameter
+            do_sample: Whether to use sampling
+            
+        Returns:
+            Generated text
+            
+        Example:
+            >>> output = trainer.generate("The future of AI is", max_new_tokens=100)
+            >>> print(output)
+        """
+        inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
+        
+        with torch.no_grad():
+            outputs = self.model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                temperature=temperature,
+                top_p=top_p,
+                do_sample=do_sample,
+                pad_token_id=self.tokenizer.eos_token_id,
+            )
+        
+        generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        return generated_text
+
+
+# Example usage
+if __name__ == "__main__":
+    from datasets import load_dataset
+    
+    # Initialize trainer
+    trainer = {{TRAINER_CLASS_NAME}}(
+        base_model_name="{{BASE_MODEL_NAME}}",
+        output_dir="{{OUTPUT_DIR}}",
+        lora_r={{LORA_R}},
+        lora_alpha={{LORA_ALPHA}},
+    )
+    
+    # Prepare dataset (example with dummy data)
+    train_data = [
+        {"text": "{{EXAMPLE_TEXT_1}}"},
+        {"text": "{{EXAMPLE_TEXT_2}}"},
+    ]
+    train_dataset = trainer.prepare_dataset(train_data, max_length={{MAX_LENGTH}})
+    
+    # Train
+    trainer.train(
+        train_dataset=train_dataset,
+        num_epochs={{NUM_EPOCHS}},
+        per_device_train_batch_size={{BATCH_SIZE}},
+        learning_rate={{LEARNING_RATE}},
+    )
+    
+    # Generate text
+    output = trainer.generate("{{EXAMPLE_PROMPT}}")
+    print(f"Generated: {output}")

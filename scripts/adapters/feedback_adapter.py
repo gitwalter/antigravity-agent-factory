@@ -13,13 +13,11 @@ Features:
 Note: This adapter works with local feedback data. Production use would
 integrate with analytics or feedback collection systems.
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
-from pathlib import Path
+from datetime import datetime, timezonefrom pathlib import Path
 from typing import Any, Dict, List, Optional
 import json
 
@@ -50,8 +48,7 @@ class ProjectFeedback:
     """
     project_id: str
     blueprint_used: str
-    timestamp: datetime = field(default_factory=datetime.utcnow)
-    success_metrics: Dict[str, Any] = field(default_factory=dict)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))    success_metrics: Dict[str, Any] = field(default_factory=dict)
     issues: List[Dict[str, str]] = field(default_factory=list)
     suggestions: List[str] = field(default_factory=list)
     knowledge_files_used: List[str] = field(default_factory=list)
@@ -145,8 +142,7 @@ class FeedbackAdapter(BaseAdapter):
                     priority=UpdatePriority.LOW,
                     source=self.create_source(
                         identifier="user_feedback",
-                        version=datetime.utcnow().strftime("%Y%m%d"),
-                    ),
+                        version=datetime.now(timezone.utc).strftime("%Y%m%d"),                    ),
                     changes=changes,
                     new_version="1.0.0",  # Version determined by update engine
                     breaking=False,
@@ -176,8 +172,11 @@ class FeedbackAdapter(BaseAdapter):
                 with open(feedback_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
                 
-                timestamp = datetime.fromisoformat(data.get("timestamp", datetime.utcnow().isoformat()))
-                
+                timestamp_str = data.get("timestamp", datetime.now(timezone.utc).isoformat())
+                timestamp = datetime.fromisoformat(timestamp_str)
+                # Ensure timezone-aware
+                if timestamp.tzinfo is None:
+                    timestamp = timestamp.replace(tzinfo=timezone.utc)                
                 if since and timestamp < since:
                     continue
                 

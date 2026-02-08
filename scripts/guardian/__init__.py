@@ -31,7 +31,6 @@ Usage:
 
 __version__ = "1.0.0"
 __author__ = "Antigravity Agent Factory"
-
 from pathlib import Path
 
 # Guardian script directory

@@ -1,0 +1,435 @@
+"""
+{{GENERATION_NAME}} - Image Generation with DALL-E and Stable Diffusion
+
+Purpose: {{GENERATION_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Generated images include metadata and generation parameters
+- A3 (Transparency): Generation process and prompts are logged
+
+This module provides image generation capabilities:
+- Text-to-image generation with DALL-E
+- Text-to-image generation with Stable Diffusion
+- Image variation and editing
+- Prompt engineering for better results
+"""
+
+from typing import List, Optional, Dict, Any, Union
+from pathlib import Path
+from pydantic import BaseModel, Field
+import logging
+from datetime import datetime
+
+try:
+    from openai import OpenAI
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+    logger.warning("OpenAI not available. Install with: pip install openai")
+
+try:
+    import torch
+    from diffusers import StableDiffusionPipeline, StableDiffusionXLPipeline
+    from PIL import Image
+    STABLE_DIFFUSION_AVAILABLE = True
+except ImportError:
+    STABLE_DIFFUSION_AVAILABLE = False
+    logger.warning("Stable Diffusion not available. Install with: pip install diffusers torch pillow")
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class GenerationResult(BaseModel):
+    """Result from image generation."""
+    image_path: Optional[str] = Field(default=None, description="Path to generated image")
+    image_url: Optional[str] = Field(default=None, description="URL of generated image (DALL-E)")
+    prompt: str = Field(description="Prompt used for generation")
+    model_used: str = Field(description="Model used for generation")
+    parameters: Dict[str, Any] = Field(default_factory=dict, description="Generation parameters")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+
+
+class GenerationConfig(BaseModel):
+    """Configuration for image generation."""
+    provider: str = Field(default="{{PROVIDER}}", description="Provider: 'openai' or 'stable-diffusion'")
+    model_name: str = Field(default="{{MODEL_NAME}}", description="Model name")
+    size: str = Field(default="{{SIZE}}", description="Image size (e.g., '1024x1024')")
+    quality: str = Field(default="{{QUALITY}}", description="Quality: 'standard' or 'hd' (DALL-E)")
+    style: Optional[str] = Field(default=None, description="Style: 'vivid' or 'natural' (DALL-E)")
+    num_images: int = Field(default=1, ge=1, le=10, description="Number of images to generate")
+    guidance_scale: float = Field(default={{GUIDANCE_SCALE}}, description="Guidance scale (Stable Diffusion)")
+    num_inference_steps: int = Field(default={{NUM_STEPS}}, description="Number of inference steps (Stable Diffusion)")
+    seed: Optional[int] = Field(default=None, description="Random seed for reproducibility")
+
+
+class {{GENERATION_CLASS_NAME}}:
+    """
+    {{GENERATION_NAME}} - Image Generation with DALL-E and Stable Diffusion
+    
+    Generates images from text prompts using DALL-E or Stable Diffusion models.
+    Supports multiple providers and generation parameters.
+    
+    Features:
+    - Text-to-image generation
+    - Image variation
+    - Prompt optimization
+    - Batch generation
+    - Custom parameters
+    
+    Example:
+        >>> generator = {{GENERATION_CLASS_NAME}}(
+        ...     provider="openai",
+        ...     model_name="dall-e-3"
+        ... )
+        >>> result = generator.generate("A futuristic cityscape at sunset")
+        >>> print(f"Generated: {result.image_url}")
+    """
+    
+    def __init__(self, config: Optional[GenerationConfig] = None):
+        """
+        Initialize image generator.
+        
+        Args:
+            config: Generation configuration
+        """
+        self.config = config or GenerationConfig()
+        self.output_dir = Path("{{OUTPUT_DIR}}")
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Initialize provider
+        if self.config.provider == "openai":
+            if not OPENAI_AVAILABLE:
+                raise ImportError("OpenAI package not installed. Install with: pip install openai")
+            self.client = OpenAI(api_key="{{OPENAI_API_KEY}}")
+            self.model = self.config.model_name or "dall-e-3"
+            self.pipeline = None
+        elif self.config.provider == "stable-diffusion":
+            if not STABLE_DIFFUSION_AVAILABLE:
+                raise ImportError("Stable Diffusion packages not installed. Install with: pip install diffusers torch")
+            self.client = None
+            self.model = self.config.model_name or "runwayml/stable-diffusion-v1-5"
+            self.pipeline = self._load_stable_diffusion_pipeline()
+        else:
+            raise ValueError(f"Unsupported provider: {self.config.provider}")
+        
+        logger.info(f"Initialized {{GENERATION_NAME}} with {self.config.provider}/{self.model}")
+    
+    def _load_stable_diffusion_pipeline(self):
+        """Load Stable Diffusion pipeline."""
+        logger.info(f"Loading Stable Diffusion model: {self.model}")
+        
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        
+        if "xl" in self.model.lower():
+            pipeline = StableDiffusionXLPipeline.from_pretrained(
+                self.model,
+                torch_dtype=torch.float16 if device == "cuda" else torch.float32
+            )
+        else:
+            pipeline = StableDiffusionPipeline.from_pretrained(
+                self.model,
+                torch_dtype=torch.float16 if device == "cuda" else torch.float32
+            )
+        
+        pipeline = pipeline.to(device)
+        
+        if device == "cpu":
+            pipeline.enable_attention_slicing()
+        
+        logger.info(f"Model loaded on {device}")
+        return pipeline
+    
+    def _optimize_prompt(self, prompt: str) -> str:
+        """
+        Optimize prompt for better generation results.
+        
+        Args:
+            prompt: Original prompt
+            
+        Returns:
+            Optimized prompt
+        """
+        # Add quality modifiers if not present
+        quality_keywords = ["high quality", "detailed", "professional", "4k", "8k"]
+        prompt_lower = prompt.lower()
+        
+        if not any(keyword in prompt_lower for keyword in quality_keywords):
+            prompt = f"high quality, detailed, {prompt}"
+        
+        return prompt
+    
+    def generate(
+        self,
+        prompt: str,
+        save_path: Optional[Union[str, Path]] = None
+    ) -> GenerationResult:
+        """
+        Generate image from text prompt.
+        
+        Args:
+            prompt: Text description of the image
+            save_path: Optional path to save the image
+            
+        Returns:
+            GenerationResult with image details
+            
+        Example:
+            >>> result = generator.generate("A serene mountain landscape")
+            >>> print(f"Image URL: {result.image_url}")
+        """
+        logger.info(f"Generating image with prompt: {prompt[:100]}...")
+        
+        optimized_prompt = self._optimize_prompt(prompt)
+        
+        try:
+            if self.config.provider == "openai":
+                return self._generate_dalle(optimized_prompt, save_path)
+            else:  # stable-diffusion
+                return self._generate_stable_diffusion(optimized_prompt, save_path)
+        except Exception as e:
+            logger.error(f"Error generating image: {e}")
+            raise
+    
+    def _generate_dalle(
+        self,
+        prompt: str,
+        save_path: Optional[Union[str, Path]] = None
+    ) -> GenerationResult:
+        """Generate image using DALL-E."""
+        # Parse size
+        size_map = {
+            "1024x1024": "1024x1024",
+            "1792x1024": "1792x1024",
+            "1024x1792": "1024x1792",
+            "512x512": "512x512" if self.model == "dall-e-2" else "1024x1024"
+        }
+        size = size_map.get(self.config.size, "1024x1024")
+        
+        # DALL-E 3 only supports certain sizes
+        if self.model == "dall-e-3":
+            if size not in ["1024x1024", "1792x1024", "1024x1792"]:
+                size = "1024x1024"
+        
+        response = self.client.images.generate(
+            model=self.model,
+            prompt=prompt,
+            size=size,
+            quality=self.config.quality if self.model == "dall-e-3" else None,
+            style=self.config.style if self.model == "dall-e-3" else None,
+            n=1 if self.model == "dall-e-3" else self.config.num_images
+        )
+        
+        image_url = response.data[0].url
+        revised_prompt = getattr(response.data[0], 'revised_prompt', prompt)
+        
+        # Download and save image if path provided
+        if save_path:
+            import requests
+            img_response = requests.get(image_url)
+            img_path = Path(save_path)
+            img_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(img_path, "wb") as f:
+                f.write(img_response.content)
+            image_path = str(img_path)
+        else:
+            # Auto-save to output directory
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"generated_{timestamp}.png"
+            img_path = self.output_dir / filename
+            
+            import requests
+            img_response = requests.get(image_url)
+            with open(img_path, "wb") as f:
+                f.write(img_response.content)
+            image_path = str(img_path)
+        
+        return GenerationResult(
+            image_path=image_path,
+            image_url=image_url,
+            prompt=revised_prompt,
+            model_used=self.model,
+            parameters={
+                "size": size,
+                "quality": self.config.quality if self.model == "dall-e-3" else None,
+                "style": self.config.style if self.model == "dall-e-3" else None
+            },
+            metadata={
+                "provider": "openai",
+                "original_prompt": prompt,
+                "revised_prompt": revised_prompt
+            }
+        )
+    
+    def _generate_stable_diffusion(
+        self,
+        prompt: str,
+        save_path: Optional[Union[str, Path]] = None
+    ) -> GenerationResult:
+        """Generate image using Stable Diffusion."""
+        if self.pipeline is None:
+            raise ValueError("Stable Diffusion pipeline not initialized")
+        
+        # Generate image
+        negative_prompt = "{{NEGATIVE_PROMPT}}"  # Can be configured
+        
+        images = self.pipeline(
+            prompt=prompt,
+            negative_prompt=negative_prompt if negative_prompt else None,
+            num_images_per_prompt=self.config.num_images,
+            guidance_scale=self.config.guidance_scale,
+            num_inference_steps=self.config.num_inference_steps,
+            generator=torch.Generator(device=self.pipeline.device).manual_seed(
+                self.config.seed
+            ) if self.config.seed else None
+        ).images
+        
+        # Save images
+        image_paths = []
+        for i, image in enumerate(images):
+            if save_path:
+                img_path = Path(save_path)
+                if len(images) > 1:
+                    img_path = img_path.parent / f"{img_path.stem}_{i}{img_path.suffix}"
+            else:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f"generated_{timestamp}_{i}.png"
+                img_path = self.output_dir / filename
+            
+            img_path.parent.mkdir(parents=True, exist_ok=True)
+            image.save(img_path)
+            image_paths.append(str(img_path))
+        
+        return GenerationResult(
+            image_path=image_paths[0] if len(image_paths) == 1 else image_paths,
+            image_url=None,
+            prompt=prompt,
+            model_used=self.model,
+            parameters={
+                "guidance_scale": self.config.guidance_scale,
+                "num_inference_steps": self.config.num_inference_steps,
+                "seed": self.config.seed,
+                "negative_prompt": negative_prompt
+            },
+            metadata={
+                "provider": "stable-diffusion",
+                "num_images": len(images),
+                "device": str(self.pipeline.device)
+            }
+        )
+    
+    def generate_variation(
+        self,
+        image_path: Union[str, Path],
+        num_variations: int = 1
+    ) -> List[GenerationResult]:
+        """
+        Generate variations of an existing image (DALL-E 2 only).
+        
+        Args:
+            image_path: Path to source image
+            num_variations: Number of variations to generate
+            
+        Returns:
+            List of GenerationResult for each variation
+        """
+        if self.config.provider != "openai" or self.model != "dall-e-2":
+            raise ValueError("Image variation only supported for DALL-E 2")
+        
+        logger.info(f"Generating {num_variations} variations of {image_path}")
+        
+        with open(image_path, "rb") as image_file:
+            response = self.client.images.create_variation(
+                image=image_file,
+                n=num_variations,
+                size=self.config.size
+            )
+        
+        results = []
+        for i, data in enumerate(response.data):
+            image_url = data.url
+            
+            # Save variation
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"variation_{timestamp}_{i}.png"
+            img_path = self.output_dir / filename
+            
+            import requests
+            img_response = requests.get(image_url)
+            with open(img_path, "wb") as f:
+                f.write(img_response.content)
+            
+            results.append(GenerationResult(
+                image_path=str(img_path),
+                image_url=image_url,
+                prompt=f"Variation of {image_path}",
+                model_used=self.model,
+                parameters={"size": self.config.size},
+                metadata={"source_image": str(image_path), "variation_index": i}
+            ))
+        
+        return results
+    
+    def batch_generate(
+        self,
+        prompts: List[str],
+        output_dir: Optional[Union[str, Path]] = None
+    ) -> List[GenerationResult]:
+        """
+        Generate multiple images from a list of prompts.
+        
+        Args:
+            prompts: List of text prompts
+            output_dir: Optional output directory
+            
+        Returns:
+            List of GenerationResult for each generated image
+        """
+        logger.info(f"Batch generating {len(prompts)} images")
+        
+        if output_dir:
+            self.output_dir = Path(output_dir)
+            self.output_dir.mkdir(parents=True, exist_ok=True)
+        
+        results = []
+        for i, prompt in enumerate(prompts):
+            try:
+                result = self.generate(prompt)
+                results.append(result)
+                logger.info(f"Generated image {i+1}/{len(prompts)}")
+            except Exception as e:
+                logger.error(f"Error generating image {i+1}: {e}")
+                continue
+        
+        return results
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create generator
+    config = GenerationConfig(
+        provider="{{PROVIDER}}",
+        model_name="{{MODEL_NAME}}",
+        size="{{SIZE}}",
+        quality="{{QUALITY}}",
+        num_images={{NUM_IMAGES}}
+    )
+    
+    generator = {{GENERATION_CLASS_NAME}}(config=config)
+    
+    # Generate single image
+    # result = generator.generate("{{EXAMPLE_PROMPT}}")
+    # print(f"Generated: {result.image_path}")
+    # print(f"URL: {result.image_url}")
+    
+    # Batch generation
+    # prompts = ["{{PROMPT1}}", "{{PROMPT2}}", "{{PROMPT3}}"]
+    # results = generator.batch_generate(prompts)
+    # print(f"Generated {len(results)} images")
+    
+    # Generate variation (DALL-E 2 only)
+    # if config.provider == "openai" and config.model_name == "dall-e-2":
+    #     variations = generator.generate_variation("{{SOURCE_IMAGE_PATH}}", num_variations=3)
+    #     print(f"Generated {len(variations)} variations")

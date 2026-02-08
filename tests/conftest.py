@@ -1,6 +1,5 @@
 """
 Shared pytest fixtures for Antigravity Agent Factory tests.
-
 This module provides common fixtures used across unit, integration,
 and validation tests.
 

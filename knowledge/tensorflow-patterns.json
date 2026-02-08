@@ -1,0 +1,257 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TensorFlow Patterns",
+  "description": "Best practices and patterns for TensorFlow and Keras deep learning workflows",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns include validation splits and evaluation metrics",
+    "A3_transparency": "All patterns emphasize reproducible training and model inspection"
+  },
+  "model_building_patterns": {
+    "sequential_api": {
+      "description": "Linear stack of layers using Sequential API",
+      "use_when": "Simple feedforward networks",
+      "code_example": "import tensorflow as tf\nfrom tensorflow import keras\nfrom tensorflow.keras import layers\n\n# Sequential model\nmodel = keras.Sequential([\n    layers.Dense(128, activation='relu', input_shape=(784,)),\n    layers.Dropout(0.2),\n    layers.Dense(64, activation='relu'),\n    layers.Dropout(0.2),\n    layers.Dense(10, activation='softmax')\n])\n\n# Compile model\nmodel.compile(\n    optimizer='adam',\n    loss='sparse_categorical_crossentropy',\n    metrics=['accuracy']\n)\n\n# Model summary\nmodel.summary()",
+      "best_practices": [
+        "Use Sequential for linear architectures",
+        "Specify input_shape in first layer",
+        "Use Dropout for regularization",
+        "Choose activation functions appropriately"
+      ]
+    },
+    "functional_api": {
+      "description": "Build complex models with Functional API",
+      "use_when": "Multi-input, multi-output, or shared layers",
+      "code_example": "from tensorflow.keras import Input, Model\nfrom tensorflow.keras.layers import Dense, Concatenate\n\n# Input layer\ninput_layer = Input(shape=(784,), name='input')\n\n# Hidden layers\nx = Dense(128, activation='relu', name='hidden1')(input_layer)\nx = Dense(64, activation='relu', name='hidden2')(x)\n\n# Output layer\noutput = Dense(10, activation='softmax', name='output')(x)\n\n# Create model\nmodel = Model(inputs=input_layer, outputs=output)\n\n# Multi-input example\ninput1 = Input(shape=(100,), name='input1')\ninput2 = Input(shape=(50,), name='input2')\n\nx1 = Dense(64, activation='relu')(input1)\nx2 = Dense(32, activation='relu')(input2)\n\nmerged = Concatenate()([x1, x2])\noutput = Dense(10, activation='softmax')(merged)\n\nmodel = Model(inputs=[input1, input2], outputs=output)",
+      "best_practices": [
+        "Use Functional API for complex architectures",
+        "Name layers for easier debugging",
+        "Functional API enables model inspection",
+        "Supports shared layers and multiple inputs/outputs"
+      ]
+    },
+    "subclassing_api": {
+      "description": "Custom models using Model subclassing",
+      "use_when": "Need full control over forward pass",
+      "code_example": "from tensorflow.keras import Model\nfrom tensorflow.keras.layers import Dense\n\nclass MyModel(Model):\n    def __init__(self):\n        super(MyModel, self).__init__()\n        self.dense1 = Dense(128, activation='relu')\n        self.dense2 = Dense(64, activation='relu')\n        self.dense3 = Dense(10, activation='softmax')\n    \n    def call(self, inputs):\n        x = self.dense1(inputs)\n        x = self.dense2(x)\n        return self.dense3(x)\n\n# Create and compile\nmodel = MyModel()\nmodel.compile(\n    optimizer='adam',\n    loss='sparse_categorical_crossentropy',\n    metrics=['accuracy']\n)",
+      "best_practices": [
+        "Use subclassing for custom logic",
+        "Override call() method for forward pass",
+        "More flexible but less convenient",
+        "Use for research and experimentation"
+      ]
+    },
+    "transfer_learning": {
+      "description": "Use pre-trained models for transfer learning",
+      "use_when": "Limited data, similar problem domain",
+      "code_example": "from tensorflow.keras.applications import ResNet50\nfrom tensorflow.keras.layers import Dense, GlobalAveragePooling2D\nfrom tensorflow.keras import Model\n\n# Load pre-trained model (without top)\nbase_model = ResNet50(\n    weights='imagenet',\n    include_top=False,\n    input_shape=(224, 224, 3)\n)\n\n# Freeze base model\nbase_model.trainable = False\n\n# Add custom classifier\nx = base_model.output\nx = GlobalAveragePooling2D()(x)\nx = Dense(128, activation='relu')(x)\noutput = Dense(10, activation='softmax')(x)\n\nmodel = Model(inputs=base_model.input, outputs=output)\n\n# Fine-tuning: unfreeze some layers\nbase_model.trainable = True\nfor layer in base_model.layers[:-10]:\n    layer.trainable = False",
+      "best_practices": [
+        "Freeze base model initially",
+        "Add custom classifier head",
+        "Fine-tune top layers after initial training",
+        "Use appropriate pre-trained model for domain"
+      ]
+    }
+  },
+  "training_patterns": {
+    "basic_training": {
+      "description": "Basic model training with fit()",
+      "use_when": "Standard training workflow",
+      "code_example": "from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint\n\n# Train model\nhistory = model.fit(\n    X_train, y_train,\n    batch_size=32,\n    epochs=100,\n    validation_data=(X_val, y_val),\n    callbacks=[\n        EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True),\n        ModelCheckpoint('best_model.h5', monitor='val_loss', save_best_only=True)\n    ],\n    verbose=1\n)\n\n# Access training history\nprint(history.history['loss'])\nprint(history.history['val_loss'])",
+      "best_practices": [
+        "Always use validation_data",
+        "Use EarlyStopping to prevent overfitting",
+        "Save best model with ModelCheckpoint",
+        "Monitor training history"
+      ]
+    },
+    "data_generators": {
+      "description": "Use data generators for large datasets",
+      "use_when": "Dataset doesn't fit in memory",
+      "code_example": "from tensorflow.keras.preprocessing.image import ImageDataGenerator\n\n# Data augmentation\ntrain_datagen = ImageDataGenerator(\n    rescale=1./255,\n    rotation_range=20,\n    width_shift_range=0.2,\n    height_shift_range=0.2,\n    horizontal_flip=True,\n    zoom_range=0.2\n)\n\nval_datagen = ImageDataGenerator(rescale=1./255)\n\n# Create generators\ntrain_generator = train_datagen.flow_from_directory(\n    'data/train',\n    target_size=(224, 224),\n    batch_size=32,\n    class_mode='categorical'\n)\n\nval_generator = val_datagen.flow_from_directory(\n    'data/val',\n    target_size=(224, 224),\n    batch_size=32,\n    class_mode='categorical'\n)\n\n# Train with generators\nmodel.fit(\n    train_generator,\n    steps_per_epoch=len(train_generator),\n    epochs=50,\n    validation_data=val_generator,\n    validation_steps=len(val_generator)\n)",
+      "best_practices": [
+        "Use generators for large datasets",
+        "Apply data augmentation to training only",
+        "Set appropriate batch_size",
+        "Calculate steps_per_epoch correctly"
+      ]
+    },
+    "custom_training_loop": {
+      "description": "Custom training loop with GradientTape",
+      "use_when": "Need fine-grained control over training",
+      "code_example": "import tensorflow as tf\n\n@tf.function\ndef train_step(x, y):\n    with tf.GradientTape() as tape:\n        predictions = model(x, training=True)\n        loss = loss_fn(y, predictions)\n    \n    gradients = tape.gradient(loss, model.trainable_variables)\n    optimizer.apply_gradients(zip(gradients, model.trainable_variables))\n    \n    train_loss(loss)\n    train_accuracy(y, predictions)\n    return loss\n\n# Training loop\nfor epoch in range(epochs):\n    train_loss.reset_states()\n    train_accuracy.reset_states()\n    \n    for batch_x, batch_y in train_dataset:\n        loss = train_step(batch_x, batch_y)\n    \n    print(f'Epoch {epoch}, Loss: {train_loss.result()}, Accuracy: {train_accuracy.result()}')",
+      "best_practices": [
+        "Use @tf.function for performance",
+        "Reset metrics each epoch",
+        "Use GradientTape for gradients",
+        "More flexible than fit()"
+      ]
+    },
+    "mixed_precision": {
+      "description": "Use mixed precision for faster training",
+      "use_when": "Training on modern GPUs (V100, A100, etc.)",
+      "code_example": "from tensorflow.keras.mixed_precision import set_global_policy\n\n# Enable mixed precision\nset_global_policy('mixed_float16')\n\n# Build model (use float32 for last layer)\nmodel = keras.Sequential([\n    layers.Dense(128, activation='relu'),\n    layers.Dense(64, activation='relu'),\n    layers.Dense(10, dtype='float32')  # float32 for output\n])\n\n# Compile with loss scaling\nmodel.compile(\n    optimizer=keras.optimizers.Adam(),\n    loss=keras.losses.SparseCategoricalCrossentropy(),\n    metrics=['accuracy']\n)",
+      "best_practices": [
+        "Use mixed precision on modern GPUs",
+        "Keep output layer in float32",
+        "Automatic loss scaling handles underflow",
+        "Can speed up training 2x"
+      ]
+    }
+  },
+  "distributed_training": {
+    "multi_gpu": {
+      "description": "Train on multiple GPUs using MirroredStrategy",
+      "use_when": "Multiple GPUs available on single machine",
+      "code_example": "import tensorflow as tf\n\n# Create strategy\nstrategy = tf.distribute.MirroredStrategy()\n\nprint(f'Number of devices: {strategy.num_replicas_in_sync}')\n\n# Build model within strategy scope\nwith strategy.scope():\n    model = keras.Sequential([\n        layers.Dense(128, activation='relu'),\n        layers.Dense(10, activation='softmax')\n    ])\n    \n    model.compile(\n        optimizer='adam',\n        loss='sparse_categorical_crossentropy',\n        metrics=['accuracy']\n    )\n\n# Training automatically uses all GPUs\nmodel.fit(X_train, y_train, batch_size=32 * strategy.num_replicas_in_sync)",
+      "best_practices": [
+        "Use MirroredStrategy for single machine",
+        "Scale batch_size by number of GPUs",
+        "Model and optimizer created in strategy scope",
+        "Automatic gradient synchronization"
+      ]
+    },
+    "tpu_training": {
+      "description": "Train on TPUs using TPUStrategy",
+      "use_when": "TPU available (Google Colab, GCP)",
+      "code_example": "import tensorflow as tf\n\n# Connect to TPU\ntpu = tf.distribute.cluster_resolver.TPUClusterResolver()\ntf.config.experimental_connect_to_cluster(tpu)\ntf.tpu.experimental.initialize_tpu_system(tpu)\n\n# Create TPU strategy\nstrategy = tf.distribute.TPUStrategy(tpu)\n\n# Build model in strategy scope\nwith strategy.scope():\n    model = create_model()\n    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy')\n\n# Use tf.data for TPU\ntrain_dataset = strategy.experimental_distribute_dataset(train_dataset)\nmodel.fit(train_dataset, epochs=10)",
+      "best_practices": [
+        "Use TPUStrategy for TPU clusters",
+        "Use tf.data.Dataset for TPU",
+        "Batch size should be multiple of 8",
+        "TPUs excel at large batch training"
+      ]
+    },
+    "parameter_server": {
+      "description": "Distributed training across multiple machines",
+      "use_when": "Multi-machine training setup",
+      "code_example": "import tensorflow as tf\n\n# Configure cluster\ncluster_resolver = tf.distribute.cluster_resolver.TFConfigClusterResolver()\n\n# Create strategy\nstrategy = tf.distribute.experimental.ParameterServerStrategy(cluster_resolver)\n\n# Build model in strategy scope\nwith strategy.scope():\n    model = create_model()\n    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy')\n\n# Train\nmodel.fit(train_dataset, epochs=10)",
+      "best_practices": [
+        "Use ParameterServerStrategy for multi-machine",
+        "Configure cluster properly",
+        "Use tf.data for data loading",
+        "Suitable for very large models"
+      ]
+    }
+  },
+  "tensorflow_serving": {
+    "model_saving": {
+      "description": "Save models in SavedModel format for serving",
+      "use_when": "Deploying models to production",
+      "code_example": "import tensorflow as tf\n\n# Save entire model\nmodel.save('saved_model/my_model')\n\n# Save only weights\nmodel.save_weights('model_weights.h5')\n\n# Save in SavedModel format (for TensorFlow Serving)\nmodel.export('saved_model_path')\n\n# Load model\nloaded_model = tf.keras.models.load_model('saved_model/my_model')\n\n# Load weights\nmodel.load_weights('model_weights.h5')",
+      "best_practices": [
+        "Use SavedModel format for serving",
+        "Save entire model for easy loading",
+        "Save weights for transfer learning",
+        "Test loading after saving"
+      ]
+    },
+    "signature_def": {
+      "description": "Define input/output signatures for serving",
+      "use_when": "Need explicit input/output specification",
+      "code_example": "import tensorflow as tf\n\n# Define signature\n@tf.function(input_signature=[tf.TensorSpec(shape=[None, 784], dtype=tf.float32)])\ndef predict(x):\n    return model(x)\n\n# Save with signature\nmodel.save('saved_model/my_model', signatures={'serving_default': predict})",
+      "best_practices": [
+        "Define signatures for clarity",
+        "Use TensorSpec for input specification",
+        "Helps with serving and versioning"
+      ]
+    },
+    "tensorflow_serving_setup": {
+      "description": "Serve models with TensorFlow Serving",
+      "use_when": "Production model serving",
+      "code_example": "# Save model\nmodel.save('models/my_model/1')\n\n# Docker command to serve\n# docker run -p 8501:8501 --mount type=bind,source=/path/to/models,target=/models/my_model -e MODEL_NAME=my_model -t tensorflow/serving\n\n# Client code\nimport requests\nimport json\n\n# Prepare data\ndata = {'instances': X_test[:3].tolist()}\n\n# Make prediction request\nresponse = requests.post(\n    'http://localhost:8501/v1/models/my_model:predict',\n    data=json.dumps(data)\n)\n\npredictions = json.loads(response.text)['predictions']",
+      "best_practices": [
+        "Use TensorFlow Serving for production",
+        "Version models in directory structure",
+        "Use REST or gRPC API",
+        "Monitor serving performance"
+      ]
+    }
+  },
+  "keras_patterns": {
+    "callbacks": {
+      "description": "Use callbacks for training control",
+      "use_when": "Need to customize training behavior",
+      "code_example": "from tensorflow.keras.callbacks import (\n    EarlyStopping, ModelCheckpoint, ReduceLROnPlateau,\n    TensorBoard, CSVLogger\n)\n\ncallbacks = [\n    EarlyStopping(\n        monitor='val_loss',\n        patience=10,\n        restore_best_weights=True,\n        verbose=1\n    ),\n    ModelCheckpoint(\n        'best_model.h5',\n        monitor='val_loss',\n        save_best_only=True,\n        verbose=1\n    ),\n    ReduceLROnPlateau(\n        monitor='val_loss',\n        factor=0.5,\n        patience=5,\n        min_lr=1e-7,\n        verbose=1\n    ),\n    TensorBoard(\n        log_dir='./logs',\n        histogram_freq=1\n    ),\n    CSVLogger('training.log')\n]\n\nmodel.fit(X_train, y_train, callbacks=callbacks, validation_data=(X_val, y_val))",
+      "best_practices": [
+        "Use EarlyStopping to prevent overfitting",
+        "Save best model with ModelCheckpoint",
+        "Use ReduceLROnPlateau for learning rate scheduling",
+        "Use TensorBoard for visualization",
+        "Log training to CSV for analysis"
+      ]
+    },
+    "custom_metrics": {
+      "description": "Define custom metrics for evaluation",
+      "use_when": "Standard metrics don't fit problem",
+      "code_example": "from tensorflow.keras.metrics import Metric\nimport tensorflow as tf\n\nclass F1Score(Metric):\n    def __init__(self, name='f1_score', **kwargs):\n        super(F1Score, self).__init__(name=name, **kwargs)\n        self.true_positives = self.add_weight(name='tp', initializer='zeros')\n        self.false_positives = self.add_weight(name='fp', initializer='zeros')\n        self.false_negatives = self.add_weight(name='fn', initializer='zeros')\n    \n    def update_state(self, y_true, y_pred, sample_weight=None):\n        y_pred = tf.argmax(y_pred, axis=1)\n        y_true = tf.cast(y_true, tf.int64)\n        \n        tp = tf.reduce_sum(tf.cast(y_true == y_pred, tf.float32))\n        fp = tf.reduce_sum(tf.cast(y_pred != y_true, tf.float32))\n        fn = tf.reduce_sum(tf.cast(y_true != y_pred, tf.float32))\n        \n        self.true_positives.assign_add(tp)\n        self.false_positives.assign_add(fp)\n        self.false_negatives.assign_add(fn)\n    \n    def result(self):\n        precision = self.true_positives / (self.true_positives + self.false_positives + tf.keras.backend.epsilon())\n        recall = self.true_positives / (self.true_positives + self.false_negatives + tf.keras.backend.epsilon())\n        return 2 * ((precision * recall) / (precision + recall + tf.keras.backend.epsilon()))\n    \n    def reset_states(self):\n        self.true_positives.assign(0)\n        self.false_positives.assign(0)\n        self.false_negatives.assign(0)\n\n# Use custom metric\nmodel.compile(\n    optimizer='adam',\n    loss='sparse_categorical_crossentropy',\n    metrics=['accuracy', F1Score()]\n)",
+      "best_practices": [
+        "Inherit from Metric class",
+        "Implement update_state() and result()",
+        "Reset states in reset_states()",
+        "Use for domain-specific metrics"
+      ]
+    },
+    "custom_layers": {
+      "description": "Create custom layers",
+      "use_when": "Standard layers don't meet requirements",
+      "code_example": "from tensorflow.keras.layers import Layer\nimport tensorflow as tf\n\nclass MyDenseLayer(Layer):\n    def __init__(self, units, **kwargs):\n        super(MyDenseLayer, self).__init__(**kwargs)\n        self.units = units\n    \n    def build(self, input_shape):\n        self.kernel = self.add_weight(\n            'kernel',\n            shape=[input_shape[-1], self.units]\n        )\n        self.bias = self.add_weight(\n            'bias',\n            shape=[self.units]\n        )\n    \n    def call(self, inputs):\n        return tf.matmul(inputs, self.kernel) + self.bias\n\n# Use custom layer\nmodel = keras.Sequential([\n    MyDenseLayer(128, activation='relu'),\n    MyDenseLayer(10, activation='softmax')\n])",
+      "best_practices": [
+        "Inherit from Layer class",
+        "Define weights in build()",
+        "Implement forward pass in call()",
+        "Use for custom operations"
+      ]
+    },
+    "model_ensembling": {
+      "description": "Combine multiple models for better performance",
+      "use_when": "Want to improve prediction accuracy",
+      "code_example": "import numpy as np\n\n# Train multiple models\nmodels = []\nfor i in range(5):\n    model = create_model()\n    model.fit(X_train, y_train, epochs=10)\n    models.append(model)\n\n# Ensemble predictions\ndef ensemble_predict(models, X):\n    predictions = [model.predict(X) for model in models]\n    # Average predictions\n    ensemble_pred = np.mean(predictions, axis=0)\n    return np.argmax(ensemble_pred, axis=1)\n\n# Or weighted average\nweights = [0.2, 0.2, 0.2, 0.2, 0.2]\nensemble_pred = np.average(predictions, axis=0, weights=weights)",
+      "best_practices": [
+        "Train diverse models",
+        "Average predictions for regression",
+        "Vote or average probabilities for classification",
+        "Can improve performance significantly"
+      ]
+    }
+  },
+  "anti_patterns": {
+    "no_validation_split": {
+      "description": "Training without validation data",
+      "problem": "Can't detect overfitting",
+      "solution": "Always use validation_data or validation_split"
+    },
+    "data_leakage": {
+      "description": "Leaking information from test set",
+      "problem": "Overly optimistic performance",
+      "solution": "Keep test set completely separate, don't use for validation"
+    },
+    "overfitting": {
+      "description": "Model memorizes training data",
+      "problem": "Poor generalization",
+      "solution": "Use dropout, regularization, early stopping, more data"
+    },
+    "wrong_loss_function": {
+      "description": "Using inappropriate loss function",
+      "problem": "Poor training dynamics",
+      "solution": "Match loss to problem type (classification vs regression)"
+    },
+    "no_checkpointing": {
+      "description": "Not saving model checkpoints",
+      "problem": "Lose progress on failure",
+      "solution": "Use ModelCheckpoint callback"
+    }
+  },
+  "best_practices_summary": [
+    "Always use validation data during training",
+    "Use callbacks (EarlyStopping, ModelCheckpoint)",
+    "Save models in SavedModel format",
+    "Use data generators for large datasets",
+    "Enable mixed precision on modern GPUs",
+    "Use distributed strategies for multi-GPU/TPU",
+    "Monitor training with TensorBoard",
+    "Use appropriate loss functions",
+    "Regularize models to prevent overfitting",
+    "Test model loading after saving"
+  ]
+}

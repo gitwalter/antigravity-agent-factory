@@ -1,0 +1,92 @@
+{
+  "id": "tool-patterns",
+  "name": "Tool Design and Usage Patterns",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "description": "Patterns for designing, implementing, and managing tools in LangChain/LangGraph agents",
+  "patterns": {
+    "tool_design": {
+      "basic_tool": {
+        "description": "Simple tool with @tool decorator",
+        "example": "@tool\ndef my_tool(arg: str) -> str:\n    \"\"\"Clear docstring for LLM.\"\"\"\n    return result",
+        "best_practices": [
+          "Write detailed docstrings - LLM uses these",
+          "Use type hints for all parameters",
+          "Return strings or structured data",
+          "Handle errors gracefully"
+        ]
+      },
+      "structured_tool": {
+        "description": "Tool with Pydantic input schema",
+        "example": "StructuredTool.from_function(func=fn, args_schema=InputModel)",
+        "use_when": [
+          "Complex input validation needed",
+          "Multiple optional parameters",
+          "Need detailed parameter descriptions"
+        ]
+      },
+      "async_tool": {
+        "description": "Async tool for I/O operations",
+        "example": "@tool\nasync def fetch_data(url: str) -> str:\n    async with httpx.AsyncClient() as client:\n        return (await client.get(url)).text",
+        "use_when": ["API calls", "Database queries", "File I/O"]
+      }
+    },
+    "tool_binding": {
+      "bind_to_llm": {
+        "description": "Attach tools to LLM for calling",
+        "example": "llm_with_tools = llm.bind_tools([tool1, tool2])",
+        "notes": "Returns AIMessage with tool_calls attribute"
+      },
+      "tool_execution": {
+        "description": "Execute tool calls from LLM response",
+        "pattern": "Build tools_map, iterate tool_calls, invoke each, return ToolMessages"
+      }
+    },
+    "error_handling": {
+      "retry_pattern": {
+        "description": "Retry on transient failures",
+        "library": "tenacity",
+        "example": "@retry(stop=stop_after_attempt(3), wait=wait_exponential())"
+      },
+      "graceful_failure": {
+        "description": "Return error message instead of raising",
+        "example": "try:\n    return result\nexcept Exception as e:\n    return f'Error: {e}'"
+      }
+    },
+    "security": {
+      "input_validation": {
+        "description": "Validate and sanitize inputs",
+        "patterns": ["Path validation", "SQL injection prevention", "Rate limiting"]
+      },
+      "permission_checking": {
+        "description": "Check permissions before execution",
+        "levels": ["READ", "WRITE", "EXECUTE", "NETWORK"]
+      }
+    }
+  },
+  "tool_categories": {
+    "data_retrieval": ["web_search", "database_query", "api_fetch", "file_read"],
+    "computation": ["calculate", "analyze", "transform", "validate"],
+    "io_operations": ["read_file", "write_file", "upload", "download"],
+    "external_services": ["send_email", "create_ticket", "notify", "webhook"],
+    "system": ["execute_command", "manage_process", "monitor"]
+  },
+  "anti_patterns": [
+    {
+      "name": "Vague docstrings",
+      "problem": "LLM can't understand tool purpose",
+      "fix": "Write detailed, specific docstrings"
+    },
+    {
+      "name": "No error handling",
+      "problem": "Exceptions break agent loop",
+      "fix": "Catch and return error messages"
+    },
+    {
+      "name": "Sync I/O in async context",
+      "problem": "Blocks event loop",
+      "fix": "Use async for all I/O operations"
+    }
+  ],
+  "related_skills": ["tool-usage", "mcp-integration", "langchain-usage"]
+}

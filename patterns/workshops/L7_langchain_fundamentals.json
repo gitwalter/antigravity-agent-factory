@@ -1,0 +1,336 @@
+{
+  "$schema": "../learning-workshop-pattern.json",
+  "workshopId": "L7_langchain_fundamentals",
+  "name": "LangChain Agent Development Fundamentals",
+  "technology": {
+    "category": "ai_framework",
+    "stack": "LangChain + LangGraph",
+    "language": "Python",
+    "version": "LangChain 0.3+"
+  },
+  "level": "fundamentals",
+  "prerequisites": {
+    "workshops": [],
+    "knowledge": [
+      "Python programming (functions, classes, async)",
+      "Basic understanding of LLMs and prompts",
+      "HTTP APIs and JSON"
+    ],
+    "tools": [
+      "Python 3.10+",
+      "OpenAI API key (or other LLM provider)",
+      "VS Code or similar IDE"
+    ]
+  },
+  "duration": {
+    "total_hours": 2.5,
+    "concept_minutes": 30,
+    "demo_minutes": 30,
+    "exercise_minutes": 45,
+    "challenge_minutes": 30,
+    "reflection_minutes": 15
+  },
+  "learning_objectives": [
+    {
+      "objective": "Understand LangChain's architecture: models, prompts, chains, and agents",
+      "bloom_level": "understand",
+      "verification": "Can explain when to use chains vs agents"
+    },
+    {
+      "objective": "Create chains using LCEL (LangChain Expression Language)",
+      "bloom_level": "apply",
+      "verification": "Can compose chains with pipe operator"
+    },
+    {
+      "objective": "Build tools and integrate them with agents",
+      "bloom_level": "apply",
+      "verification": "Creates custom tool with proper schema"
+    },
+    {
+      "objective": "Implement a RAG (Retrieval Augmented Generation) pipeline",
+      "bloom_level": "apply",
+      "verification": "Working RAG that answers questions from documents"
+    },
+    {
+      "objective": "Apply best practices for prompt engineering and error handling",
+      "bloom_level": "apply",
+      "verification": "Code includes proper error handling and structured outputs"
+    }
+  ],
+  "knowledge_files": [
+    "langchain-patterns.json",
+    "rag-patterns.json",
+    "prompt-engineering-patterns.json"
+  ],
+  "phases": [
+    {
+      "phaseId": "concept",
+      "name": "LangChain Architecture Overview",
+      "type": "concept",
+      "duration_minutes": 30,
+      "description": "Understand the building blocks of LangChain applications",
+      "content": {
+        "topics": [
+          "Chat Models vs Completion Models",
+          "Prompt Templates and Message Types",
+          "LCEL: Runnables and Composition",
+          "Chains vs Agents: When to use each",
+          "Tools and Tool Calling",
+          "Memory and State Management"
+        ],
+        "diagrams": [
+          "LCEL chain composition",
+          "Agent reasoning loop",
+          "RAG pipeline architecture"
+        ],
+        "key_points": [
+          "LCEL uses pipe operator for readable chain composition",
+          "Agents decide which tools to use; chains follow fixed paths",
+          "Structured outputs enable reliable parsing",
+          "Memory enables conversational context"
+        ]
+      },
+      "facilitator_notes": "Start with simple examples before showing complex compositions. Emphasize the declarative nature of LCEL.",
+      "common_questions": [
+        "When should I use an agent vs a chain?",
+        "How do I handle API rate limits?",
+        "What's the difference between chat and completion models?"
+      ]
+    },
+    {
+      "phaseId": "demo",
+      "name": "Building a Research Assistant",
+      "type": "demo",
+      "duration_minutes": 30,
+      "description": "Live coding a practical LangChain application",
+      "content": {
+        "topics": [
+          "Setting up LangChain with OpenAI",
+          "Creating prompt templates",
+          "Building chains with LCEL",
+          "Adding tools for web search",
+          "Implementing structured output",
+          "Adding observability with LangSmith"
+        ],
+        "code_examples": [
+          "Basic chat completion",
+          "Chain with prompt | llm | parser",
+          "Tool-calling agent with search"
+        ],
+        "key_points": [
+          "Always use structured outputs for reliability",
+          "Enable tracing for debugging",
+          "Handle errors gracefully with fallbacks"
+        ]
+      },
+      "facilitator_notes": "Show real API calls and explain token usage and costs."
+    },
+    {
+      "phaseId": "exercise_1",
+      "name": "Building Your First Chain",
+      "type": "exercise",
+      "duration_minutes": 20,
+      "description": "Create a multi-step processing chain",
+      "content": {
+        "topics": [
+          "Create a text summarization chain",
+          "Add translation as second step",
+          "Implement parallel processing with RunnableParallel",
+          "Add error handling"
+        ]
+      }
+    },
+    {
+      "phaseId": "exercise_2",
+      "name": "Creating Custom Tools",
+      "type": "exercise",
+      "duration_minutes": 25,
+      "description": "Build tools and integrate with an agent",
+      "content": {
+        "topics": [
+          "Define tool with @tool decorator",
+          "Add Pydantic schema for inputs",
+          "Create agent with tools",
+          "Test tool calling"
+        ]
+      }
+    },
+    {
+      "phaseId": "challenge",
+      "name": "Document Q&A System",
+      "type": "challenge",
+      "duration_minutes": 30,
+      "description": "Build a complete RAG application",
+      "content": {
+        "topics": [
+          "Load and split documents",
+          "Create embeddings and vector store",
+          "Build retrieval chain",
+          "Add conversation memory",
+          "Handle follow-up questions"
+        ]
+      }
+    },
+    {
+      "phaseId": "reflection",
+      "name": "Key Takeaways and Production Considerations",
+      "type": "reflection",
+      "duration_minutes": 15,
+      "description": "Consolidate learning and discuss production deployment",
+      "content": {
+        "topics": [
+          "Summary of LangChain patterns",
+          "Production considerations (rate limits, caching, monitoring)",
+          "Security (prompt injection, data privacy)",
+          "Resources for continued learning"
+        ],
+        "key_points": [
+          "Use structured outputs for reliability",
+          "Implement proper error handling and retries",
+          "Monitor with LangSmith or similar",
+          "Be aware of prompt injection risks"
+        ]
+      }
+    }
+  ],
+  "exercises": [
+    {
+      "exerciseId": "ex1_chain",
+      "name": "Multi-Step Processing Chain",
+      "type": "guided",
+      "difficulty": "easy",
+      "duration_minutes": 20,
+      "description": "Build a chain that summarizes and translates text",
+      "starter_code": "from langchain_openai import ChatOpenAI\nfrom langchain_core.prompts import ChatPromptTemplate\nfrom langchain_core.output_parsers import StrOutputParser\n\nllm = ChatOpenAI(model=\"gpt-4o-mini\", temperature=0)\n\n# TODO: Create summarization prompt\nsummarize_prompt = ChatPromptTemplate.from_template(\n    # Your prompt here\n)\n\n# TODO: Create translation prompt\ntranslate_prompt = ChatPromptTemplate.from_template(\n    # Your prompt here\n)\n\n# TODO: Compose the chain using LCEL\nchain = # summarize_prompt | llm | ... | translate_prompt | llm | ...\n\n# Test\nresult = chain.invoke({\"text\": \"Your long text here...\", \"language\": \"Spanish\"})\nprint(result)",
+      "solution_code": "from langchain_openai import ChatOpenAI\nfrom langchain_core.prompts import ChatPromptTemplate\nfrom langchain_core.output_parsers import StrOutputParser\nfrom langchain_core.runnables import RunnablePassthrough\n\nllm = ChatOpenAI(model=\"gpt-4o-mini\", temperature=0)\n\nsummarize_prompt = ChatPromptTemplate.from_template(\n    \"Summarize the following text in 2-3 sentences:\\n\\n{text}\"\n)\n\ntranslate_prompt = ChatPromptTemplate.from_template(\n    \"Translate the following text to {language}:\\n\\n{summary}\"\n)\n\n# Chain: summarize, then translate\nchain = (\n    {\"summary\": summarize_prompt | llm | StrOutputParser(), \n     \"language\": lambda x: x[\"language\"]}\n    | translate_prompt\n    | llm\n    | StrOutputParser()\n)\n\nresult = chain.invoke({\n    \"text\": \"LangChain is a framework for developing applications powered by language models...\",\n    \"language\": \"Spanish\"\n})\nprint(result)",
+      "hints": [
+        "Use StrOutputParser() to get text from LLM response",
+        "Pass through the language parameter for the second step",
+        "Dictionary syntax creates RunnableParallel for multiple values"
+      ],
+      "verification": "Chain returns translated summary",
+      "common_mistakes": [
+        "Forgetting output parser between steps",
+        "Not passing language to second prompt",
+        "Invoking with wrong input keys"
+      ]
+    },
+    {
+      "exerciseId": "ex2_tools",
+      "name": "Custom Tool Agent",
+      "type": "guided",
+      "difficulty": "medium",
+      "duration_minutes": 25,
+      "description": "Create an agent with custom tools",
+      "starter_code": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\nfrom langchain.agents import create_tool_calling_agent, AgentExecutor\nfrom langchain_core.prompts import ChatPromptTemplate\nfrom pydantic import BaseModel, Field\n\n# TODO: Define a calculator tool with Pydantic schema\nclass CalculatorInput(BaseModel):\n    expression: str = Field(description=\"Mathematical expression to evaluate\")\n\n@tool(args_schema=CalculatorInput)\ndef calculator(expression: str) -> str:\n    \"\"\"Evaluate a mathematical expression.\"\"\"\n    # TODO: Implement safely\n    pass\n\n# TODO: Create agent with tools\nllm = ChatOpenAI(model=\"gpt-4o-mini\")\ntools = [calculator]\nprompt = ChatPromptTemplate.from_messages([\n    (\"system\", \"You are a helpful assistant with access to tools.\"),\n    (\"placeholder\", \"{chat_history}\"),\n    (\"human\", \"{input}\"),\n    (\"placeholder\", \"{agent_scratchpad}\")\n])\n\n# Create and run agent\nagent = # TODO\nexecutor = # TODO\n\nresult = executor.invoke({\"input\": \"What is 25 * 4 + 10?\"})\nprint(result[\"output\"])",
+      "solution_code": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\nfrom langchain.agents import create_tool_calling_agent, AgentExecutor\nfrom langchain_core.prompts import ChatPromptTemplate\nfrom pydantic import BaseModel, Field\nimport ast\nimport operator\n\nclass CalculatorInput(BaseModel):\n    expression: str = Field(description=\"Mathematical expression to evaluate\")\n\n@tool(args_schema=CalculatorInput)\ndef calculator(expression: str) -> str:\n    \"\"\"Safely evaluate a mathematical expression.\"\"\"\n    try:\n        # Safe evaluation using ast\n        allowed_operators = {\n            ast.Add: operator.add,\n            ast.Sub: operator.sub,\n            ast.Mult: operator.mul,\n            ast.Div: operator.truediv,\n            ast.Pow: operator.pow,\n        }\n        \n        def eval_node(node):\n            if isinstance(node, ast.Num):\n                return node.n\n            elif isinstance(node, ast.BinOp):\n                left = eval_node(node.left)\n                right = eval_node(node.right)\n                return allowed_operators[type(node.op)](left, right)\n            else:\n                raise ValueError(\"Unsupported operation\")\n        \n        tree = ast.parse(expression, mode='eval')\n        result = eval_node(tree.body)\n        return str(result)\n    except Exception as e:\n        return f\"Error: {str(e)}\"\n\nllm = ChatOpenAI(model=\"gpt-4o-mini\")\ntools = [calculator]\n\nprompt = ChatPromptTemplate.from_messages([\n    (\"system\", \"You are a helpful assistant with access to a calculator tool.\"),\n    (\"placeholder\", \"{chat_history}\"),\n    (\"human\", \"{input}\"),\n    (\"placeholder\", \"{agent_scratchpad}\")\n])\n\nagent = create_tool_calling_agent(llm, tools, prompt)\nexecutor = AgentExecutor(agent=agent, tools=tools, verbose=True)\n\nresult = executor.invoke({\"input\": \"What is 25 * 4 + 10?\", \"chat_history\": []})\nprint(result[\"output\"])",
+      "verification": "Agent correctly uses calculator tool to compute result",
+      "common_mistakes": [
+        "Using eval() which is unsafe",
+        "Missing agent_scratchpad placeholder",
+        "Not including chat_history in invoke"
+      ]
+    }
+  ],
+  "challenges": [
+    {
+      "challengeId": "rag_system",
+      "name": "Document Q&A System",
+      "description": "Build a complete RAG system that can answer questions about documents",
+      "requirements": [
+        "Load and process PDF or text documents",
+        "Split into chunks with appropriate overlap",
+        "Create embeddings and store in vector database",
+        "Build retrieval chain with context injection",
+        "Add conversation memory for follow-up questions",
+        "Include source citations in responses"
+      ],
+      "evaluation_criteria": [
+        "Successfully loads and indexes documents",
+        "Retrieves relevant chunks for questions",
+        "Answers are grounded in document content",
+        "Handles follow-up questions with context",
+        "Includes source citations"
+      ],
+      "stretch_goals": [
+        "Add multi-query retrieval for complex questions",
+        "Implement hybrid search (vector + keyword)",
+        "Add streaming responses",
+        "Deploy as web API with FastAPI"
+      ]
+    }
+  ],
+  "resources": {
+    "official_docs": [
+      "https://python.langchain.com/docs/",
+      "https://langchain-ai.github.io/langgraph/"
+    ],
+    "tutorials": [
+      "https://python.langchain.com/docs/tutorials/",
+      "https://www.deeplearning.ai/short-courses/langchain-for-llm-application-development/"
+    ],
+    "community": [
+      "LangChain Discord",
+      "GitHub Discussions"
+    ]
+  },
+  "assessment": {
+    "knowledge_check": [
+      {
+        "question": "When should you use an agent instead of a chain?",
+        "type": "short_answer",
+        "answer": "Use an agent when the workflow requires dynamic decision-making about which tools to use or when the path isn't predetermined. Use chains when the processing steps are fixed and known in advance.",
+        "explanation": "Agents add flexibility but also complexity and potential for errors"
+      },
+      {
+        "question": "What is LCEL and why is it useful?",
+        "type": "short_answer",
+        "answer": "LangChain Expression Language is a declarative way to compose chains using the pipe operator. It provides streaming, async, and batching capabilities automatically.",
+        "explanation": "LCEL makes chains readable and provides performance optimizations"
+      },
+      {
+        "question": "What are the key components of a RAG system?",
+        "type": "multiple_choice",
+        "answer": "Document loader, text splitter, embeddings, vector store, retriever, and LLM",
+        "explanation": "Each component handles a specific part of the retrieval and generation pipeline"
+      }
+    ],
+    "practical_assessment": "Build a working RAG system that can answer questions about provided documents",
+    "self_assessment": [
+      "Can I explain the difference between chains and agents?",
+      "Do I understand how to create and use custom tools?",
+      "Can I implement a basic RAG pipeline?",
+      "Do I know how to handle errors and add observability?"
+    ]
+  },
+  "next_steps": {
+    "next_workshop": "L8_langgraph_workflows",
+    "practice_projects": [
+      "Customer support chatbot with knowledge base",
+      "Code review assistant with GitHub integration",
+      "Research assistant with web search and citation"
+    ],
+    "deeper_learning": [
+      "LangGraph for complex workflows",
+      "Fine-tuning and embeddings optimization",
+      "Production deployment patterns"
+    ]
+  },
+  "axiom_zero_integration": {
+    "love_moments": [
+      "Encouraging experimentation with different prompts",
+      "Celebrating successful tool integrations",
+      "Patient debugging of chain errors"
+    ],
+    "truth_moments": [
+      "Honest discussion of LLM limitations",
+      "Clear explanations of token costs",
+      "Acknowledging when simpler solutions work better"
+    ],
+    "beauty_moments": [
+      "Elegant LCEL chain compositions",
+      "The joy of seeing an agent reason through a problem",
+      "Clean, well-structured code that's easy to maintain"
+    ]
+  }
+}

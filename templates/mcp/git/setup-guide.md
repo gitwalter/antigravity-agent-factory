@@ -21,7 +21,6 @@ npx @modelcontextprotocol/server-git --repository /path/to/repo
 ## Configuration
 
 ### Antigravity MCP Config (`.agent/mcp.json`)
-
 ```json
 {
   "mcpServers": {
@@ -82,8 +81,7 @@ npx @modelcontextprotocol/server-git --repository /path/to/repo
 Test the server is working:
 
 1. Add configuration to `.agent/mcp.json`
-2. Restart Antigravity
-3. Ask the AI "show git status" or "show recent commits"
+2. Restart Antigravity3. Ask the AI "show git status" or "show recent commits"
 
 ## Troubleshooting
 

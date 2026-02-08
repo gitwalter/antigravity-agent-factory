@@ -91,13 +91,11 @@ class StructureValidator:
     
     def scan_agents(self) -> dict:
         """
-        Scan .agent/agents/ directory.
-        
+        Scan .agent/agents/ directory.        
         Returns:
             Dictionary with agent count and list of agent names.
         """
-        agents_dir = self.root_path / ".agent" / "agents"
-        if not agents_dir.exists():
+        agents_dir = self.root_path / ".agent" / "agents"        if not agents_dir.exists():
             return {"count": 0, "agents": []}
         
         agents = sorted([
@@ -108,13 +106,11 @@ class StructureValidator:
     
     def scan_skills(self) -> dict:
         """
-        Scan .agent/skills/ directory.
-        
+        Scan .agent/skills/ directory.        
         Returns:
             Dictionary with skill count and list of skill names.
         """
-        skills_dir = self.root_path / ".agent" / "skills"
-        if not skills_dir.exists():
+        skills_dir = self.root_path / ".agent" / "skills"        if not skills_dir.exists():
             return {"count": 0, "skills": []}
         
         skills = sorted([
@@ -237,9 +233,8 @@ class StructureValidator:
         templates_threshold = self._round_to_threshold(data["templates"]["total_files"])
         
         structure = f'''```
-antigravity-agent-factory/
-├── .agent/
-│   ├── agents/                  # Factory's own agents ({data["agents"]["count"]} agents)
+cursor-agent-factory/
+├── .agent/│   ├── agents/                  # Factory's own agents ({data["agents"]["count"]} agents)
 │   │   └── *.md                 # {", ".join(data["agents"]["agents"][:3])}, etc.
 │   └── skills/                  # Factory's own skills ({data["skills"]["count"]} skills)
 {chr(10).join(skills_list)}
@@ -275,8 +270,7 @@ antigravity-agent-factory/
 ├── knowledge/                   # Reference data ({knowledge_threshold}+ files)
 │   └── *.json                   # Stack, workflow, MCP, security, AI patterns
 ├── templates/                   # Code and document templates ({templates_threshold}+ files)
-│   ├── factory/                 # Factory templates (agentrules, PURPOSE.md, etc.)
-│   ├── ai/                      # AI agent templates
+│   ├── factory/                 # Factory templates (cursorrules, PURPOSE.md, etc.)│   ├── ai/                      # AI agent templates
 │   ├── python/                  # Python templates (FastAPI, Streamlit)
 │   ├── typescript/              # TypeScript templates (Next.js)
 │   ├── java/                    # Java Spring templates
@@ -304,8 +298,7 @@ antigravity-agent-factory/
 │   └── fixtures/
 ├── .github/
 │   └── workflows/               # CI/CD workflows
-├── .agentrules                 # Factory behavior rules
-├── CHANGELOG.md                 # Version history
+├── .agentrules                 # Factory behavior rules├── CHANGELOG.md                 # Version history
 └── README.md                    # This file
 ```'''
         return structure

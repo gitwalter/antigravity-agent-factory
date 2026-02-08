@@ -1,0 +1,264 @@
+{
+  "id": "database-agent-patterns",
+  "name": "Database Agent Patterns",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "description": "Patterns for building AI agents that interact with databases through natural language, generating and optimizing SQL queries",
+  "patterns": {
+    "text_to_sql": {
+      "basic_generation": {
+        "description": "Generate SQL queries from natural language questions",
+        "example": "Question: 'How many users are in the database?' -> SQL: 'SELECT COUNT(*) FROM users'",
+        "components": [
+          "Schema introspection",
+          "LLM prompt engineering",
+          "SQL extraction from LLM response"
+        ],
+        "best_practices": [
+          "Include full database schema in prompt",
+          "Use structured output parsers",
+          "Extract SQL from markdown code blocks",
+          "Validate SQL syntax before execution"
+        ]
+      },
+      "schema_aware": {
+        "description": "Generate SQL with awareness of schema relationships",
+        "components": [
+          "Foreign key relationships",
+          "Table aliases",
+          "JOIN optimization",
+          "Index awareness"
+        ],
+        "example": "Question: 'Show orders with customer names' -> SQL with proper JOINs based on foreign keys"
+      },
+      "structured_output": {
+        "description": "Use Pydantic models for structured SQL generation",
+        "example": "class SQLQuery(BaseModel):\n    query: str\n    explanation: str\n    confidence: float",
+        "benefits": [
+          "Type safety",
+          "Confidence scoring",
+          "Better error handling"
+        ]
+      }
+    },
+    "schema_introspection": {
+      "extraction": {
+        "description": "Extract database schema information using SQLAlchemy inspector",
+        "components": [
+          "Table names",
+          "Column definitions (name, type, nullable)",
+          "Foreign key relationships",
+          "Indexes"
+        ],
+        "example": "inspector = inspect(engine)\nfor table_name in inspector.get_table_names():\n    columns = inspector.get_columns(table_name)"
+      },
+      "formatting": {
+        "description": "Format schema as text for LLM prompts",
+        "format": "Table: {name}\nColumns:\n  - {col_name} ({type}) {nullable}\nForeign Keys:\n  - {cols} -> {ref_table}.{ref_cols}",
+        "best_practices": [
+          "Include column types",
+          "Show nullable constraints",
+          "List foreign key relationships",
+          "Include index information"
+        ]
+      },
+      "sample_data": {
+        "description": "Include sample data rows to help LLM understand data",
+        "use_when": [
+          "Complex data types",
+          "Unclear column meanings",
+          "Need for better context"
+        ]
+      }
+    },
+    "query_optimization": {
+      "execution_plan_analysis": {
+        "description": "Analyze query execution plans for optimization",
+        "approach": [
+          "Use EXPLAIN ANALYZE",
+          "Identify full table scans",
+          "Find missing indexes",
+          "Detect inefficient JOINs"
+        ]
+      },
+      "optimization_prompt": {
+        "description": "Use LLM to optimize SQL queries",
+        "goals": [
+          "Reduce execution time",
+          "Minimize data scanned",
+          "Use indexes effectively",
+          "Avoid unnecessary JOINs",
+          "Optimize WHERE clause order"
+        ],
+        "example": "Prompt LLM with original query, schema, and execution plan to generate optimized version"
+      },
+      "index_awareness": {
+        "description": "Consider indexes when generating queries",
+        "best_practices": [
+          "Filter on indexed columns first",
+          "Use covering indexes when possible",
+          "Avoid functions on indexed columns in WHERE clauses"
+        ]
+      }
+    },
+    "error_handling": {
+      "sql_validation": {
+        "description": "Validate SQL before execution",
+        "checks": [
+          "Only SELECT queries allowed",
+          "Syntax validation",
+          "Schema validation (table/column existence)",
+          "LIMIT clause enforcement"
+        ],
+        "example": "query_upper = query.strip().upper()\nif not query_upper.startswith('SELECT'):\n    raise ValueError('Only SELECT queries allowed')"
+      },
+      "execution_errors": {
+        "description": "Handle SQL execution errors gracefully",
+        "patterns": [
+          "Catch database exceptions",
+          "Return structured error responses",
+          "Include original query in error response",
+          "Provide helpful error messages"
+        ],
+        "example": "try:\n    result = conn.execute(text(query))\n    return {'error': None, 'rows': result.fetchall()}\nexcept Exception as e:\n    return {'error': str(e), 'rows': None}"
+      },
+      "result_limiting": {
+        "description": "Enforce result set limits",
+        "approach": [
+          "Add LIMIT if not present",
+          "Set maximum LIMIT value",
+          "Warn on large result sets",
+          "Implement pagination for large queries"
+        ]
+      }
+    },
+    "security": {
+      "query_restriction": {
+        "description": "Restrict to read-only operations",
+        "rules": [
+          "Only allow SELECT queries",
+          "Block DML (INSERT, UPDATE, DELETE)",
+          "Block DDL (CREATE, DROP, ALTER)",
+          "Block stored procedure calls"
+        ]
+      },
+      "sql_injection_prevention": {
+        "description": "Prevent SQL injection attacks",
+        "methods": [
+          "Use parameterized queries when possible",
+          "Validate table/column names against schema",
+          "Sanitize user inputs",
+          "Avoid string concatenation for SQL"
+        ]
+      },
+      "access_control": {
+        "description": "Control database access",
+        "patterns": [
+          "Use read-only database users",
+          "Limit to specific schemas/databases",
+          "Implement row-level security",
+          "Audit all queries"
+        ]
+      }
+    },
+    "pipeline": {
+      "complete_flow": {
+        "description": "End-to-end text-to-SQL pipeline",
+        "steps": [
+          "1. Schema introspection",
+          "2. Natural language question",
+          "3. SQL generation with LLM",
+          "4. SQL validation",
+          "5. Query execution",
+          "6. Result formatting",
+          "7. Natural language summary"
+        ],
+        "example": "DatabaseAgent.query(question) -> SQL -> Results -> Summary"
+      },
+      "result_summarization": {
+        "description": "Generate natural language summaries of query results",
+        "use_when": [
+          "Large result sets",
+          "Aggregate queries",
+          "Complex analytical queries"
+        ],
+        "approach": "Use LLM to summarize results in context of original question"
+      }
+    }
+  },
+  "best_practices": [
+    "Always validate and sanitize generated SQL",
+    "Restrict to SELECT queries only",
+    "Use schema introspection for accurate queries",
+    "Add LIMIT clauses to prevent large result sets",
+    "Implement query result caching",
+    "Log all generated queries for auditing",
+    "Provide confidence scores for generated queries",
+    "Handle SQL errors gracefully",
+    "Use parameterized queries when possible",
+    "Consider query optimization suggestions",
+    "Include foreign key relationships in schema",
+    "Format schema clearly for LLM consumption",
+    "Use structured output parsers for reliability",
+    "Implement retry logic for transient failures",
+    "Monitor query performance and optimize"
+  ],
+  "anti_patterns": [
+    {
+      "name": "No SQL validation",
+      "problem": "Malformed or dangerous queries can execute",
+      "fix": "Validate syntax and restrict to SELECT only"
+    },
+    {
+      "name": "Allowing DML/DDL",
+      "problem": "Agents can modify or delete data",
+      "fix": "Restrict to SELECT queries only"
+    },
+    {
+      "name": "No LIMIT clauses",
+      "problem": "Large result sets can cause memory issues",
+      "fix": "Always add LIMIT for safety"
+    },
+    {
+      "name": "Ignoring schema",
+      "problem": "Generated queries reference non-existent tables/columns",
+      "fix": "Use schema introspection and include in prompts"
+    },
+    {
+      "name": "No error handling",
+      "problem": "SQL errors break agent loop",
+      "fix": "Wrap execution in try/except and return structured errors"
+    },
+    {
+      "name": "Hardcoded queries",
+      "problem": "Not flexible, doesn't adapt to schema changes",
+      "fix": "Generate dynamically from schema"
+    },
+    {
+      "name": "No query logging",
+      "problem": "Cannot debug or audit agent behavior",
+      "fix": "Log all generated queries with metadata"
+    },
+    {
+      "name": "Ignoring indexes",
+      "problem": "Inefficient queries, slow performance",
+      "fix": "Consider indexes in optimization and generation"
+    },
+    {
+      "name": "String concatenation for SQL",
+      "problem": "SQL injection vulnerability",
+      "fix": "Use parameterized queries or validate inputs"
+    },
+    {
+      "name": "No confidence scoring",
+      "problem": "Cannot assess query reliability",
+      "fix": "Include confidence scores in structured output"
+    }
+  ],
+  "related_skills": [
+    "database-agents",
+    "langchain-usage",
+    "tool-usage",
+    "mcp-integration"
+  ]
+}

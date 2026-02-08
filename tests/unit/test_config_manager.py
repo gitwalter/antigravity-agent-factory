@@ -7,8 +7,7 @@ Tests the configuration management system including:
 - Tool path resolution
 - Knowledge evolution configuration
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 import json
@@ -32,12 +31,11 @@ def temp_factory_root():
     temp_dir = tempfile.mkdtemp()
     
     # Create required directory structure
-    agent_config = Path(temp_dir) / ".agent" / "config"
-    agent_config.mkdir(parents=True)
+    cursor_config = Path(temp_dir) / ".agent" / "config"
+    cursor_config.mkdir(parents=True)
     
-    # Create a minimal Agentrules to identify as factory root
-    (Path(temp_dir) / ".agentrules").touch()
-    
+    # Create a minimal .agentrules to identify as factory root
+    (Path(temp_dir) / ".agentrules").touch()    
     yield Path(temp_dir)
     
     # Cleanup
@@ -63,8 +61,7 @@ class TestConfigManagerInitialization:
     
     def test_creates_default_settings(self, config_manager, temp_factory_root):
         """Test that default settings are created when none exist."""
-        settings_path = temp_factory_root / ".agent" / "config" / "settings.json"
-        
+        settings_path = temp_factory_root / ".agent" / "config" / "settings.json"        
         assert settings_path.exists()
         
         with open(settings_path) as f:
@@ -247,8 +244,7 @@ class TestLegacyMigration:
         ConfigManager.reset_instance()
         
         # Create legacy tools.json
-        legacy_path = temp_factory_root / ".agent" / "config" / "tools.json"
-        legacy_path.parent.mkdir(parents=True, exist_ok=True)
+        legacy_path = temp_factory_root / ".agent" / "config" / "tools.json"        legacy_path.parent.mkdir(parents=True, exist_ok=True)
         
         legacy_content = {
             "version": "1.0.0",

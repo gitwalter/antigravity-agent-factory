@@ -247,8 +247,7 @@ def generate_markdown(workshop: dict[str, Any]) -> str:
     # Footer
     lines.append("---")
     lines.append("")
-    lines.append("*Part of the Antigravity Agent Factory Learning Workshop Ecosystem*")
-    lines.append("")
+    lines.append("*Part of the Antigravity Agent Factory Learning Workshop Ecosystem*")    lines.append("")
     lines.append(f"**Workshop Definition:** `patterns/workshops/{workshop.get('workshopId', 'unknown')}.json`")
     
     return '\n'.join(lines)
@@ -262,8 +261,7 @@ def generate_index(workshops: list[dict[str, Any]]) -> str:
     lines.append("")
     lines.append("> **Philosophy:** Learning is a journey of transformation. Through structured exploration and hands-on practice, developers grow in skill and wisdom.")
     lines.append("")
-    lines.append(f"This folder contains readable documentation for all **{len(workshops)} learning workshops** in the Antigravity Agent Factory.")
-    lines.append("")
+    lines.append(f"This folder contains readable documentation for all **{len(workshops)} learning workshops** in the Antigravity Agent Factory.")    lines.append("")
     
     # Group by category
     categories = {}
@@ -323,8 +321,7 @@ def generate_index(workshops: list[dict[str, Any]]) -> str:
     
     lines.append("---")
     lines.append("")
-    lines.append("*Part of the Antigravity Agent Factory — Building with Love, Truth, and Beauty*")
-    
+    lines.append("*Part of the Antigravity Agent Factory — Building with Love, Truth, and Beauty*")    
     return '\n'.join(lines)
 
 

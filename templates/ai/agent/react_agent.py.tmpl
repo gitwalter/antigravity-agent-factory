@@ -1,0 +1,470 @@
+"""
+{{AGENT_NAME}} - ReAct Agent Implementation
+
+Purpose: {{AGENT_PURPOSE}}
+Stakeholders: {{PRIMARY_STAKEHOLDERS}}
+
+Axiom Alignment:
+- A1 (Verifiability): All reasoning steps and tool calls are logged
+- A2 (User Primacy): Confirms before consequential actions
+- A3 (Transparency): Reasoning process is explicit and traceable
+- A4 (Non-Harm): Validates tool inputs and outputs
+- A5 (Consistency): Maintains consistent reasoning patterns
+
+ReAct Pattern: Reasoning and Acting agent that alternates between:
+1. Reasoning: Think about what to do next
+2. Acting: Execute tools based on reasoning
+"""
+
+from typing import List, Dict, Any, Optional, Sequence
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.tools import tool, Tool
+from langchain_openai import ChatOpenAI
+from langchain.agents import create_react_agent, AgentExecutor
+from langchain_core.prompts import PromptTemplate
+from pydantic import BaseModel, Field
+import logging
+
+# Configure logging for transparency (A3)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class ReActStep(BaseModel):
+    """A single ReAct reasoning and acting step."""
+    thought: str = Field(description="Reasoning about what to do")
+    action: Optional[str] = Field(default=None, description="Action/tool to take")
+    action_input: Optional[Dict[str, Any]] = Field(default=None, description="Input to action")
+    observation: Optional[str] = Field(default=None, description="Observation from action")
+
+
+class {{AGENT_CLASS_NAME}}Output(BaseModel):
+    """
+    Structured output for {{AGENT_NAME}} ReAct agent.
+    
+    Using structured output ensures verifiability (A1).
+    """
+    final_answer: str = Field(description="Final answer to the user's query")
+    reasoning_steps: List[ReActStep] = Field(
+        default_factory=list,
+        description="Step-by-step reasoning and acting process"
+    )
+    tool_calls: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="All tool calls made during execution"
+    )
+    iterations: int = Field(description="Number of reasoning-acting cycles")
+    confidence: float = Field(ge=0, le=1, description="Confidence in final answer (0-1)")
+    requires_confirmation: bool = Field(
+        default=False,
+        description="Whether this action requires user confirmation (A2)"
+    )
+
+
+# Example tool definitions
+@tool
+def {{TOOL_FUNCTION_NAME}}(query: str) -> str:
+    """
+    {{TOOL_DESCRIPTION}}
+    
+    Args:
+        query: Input query to process
+    
+    Returns:
+        Tool output result
+    
+    Example:
+        >>> result = {{TOOL_FUNCTION_NAME}}("example query")
+        >>> print(result)
+    """
+    logger.info(f"Tool {{TOOL_FUNCTION_NAME}} called with: {query[:100]}...")
+    # Tool implementation here
+    return f"Tool result for: {query}"
+
+
+class {{AGENT_CLASS_NAME}}:
+    """
+    {{AGENT_NAME}} - ReAct (Reasoning and Acting) Agent
+    
+    Implements the ReAct pattern where the agent:
+    1. Reasons about the current situation
+    2. Acts by selecting and executing tools
+    3. Observes the results
+    4. Repeats until task completion
+    
+    This agent follows the 5-layer architecture:
+    - Layer 0: Respects core axioms (A1-A5)
+    - Layer 1: Serves purpose of {{AGENT_PURPOSE}}
+    - Layer 2: Follows quality standards and ethical boundaries
+    - Layer 3: Works within {{METHODOLOGY}} methodology
+    - Layer 4: Uses {{TECH_STACK}} stack
+    
+    Example:
+        >>> agent = {{AGENT_CLASS_NAME}}()
+        >>> result = agent.run("{{EXAMPLE_QUERY}}")
+        >>> print(result.final_answer)
+        >>> for step in result.reasoning_steps:
+        ...     print(f"Thought: {step.thought}")
+        ...     print(f"Action: {step.action}")
+    """
+    
+    # Configuration
+    MODEL_NAME = "{{LLM_MODEL}}"
+    TEMPERATURE = {{TEMPERATURE}}
+    MAX_ITERATIONS = 15  # Prevent infinite loops (A4)
+    
+    def __init__(
+        self,
+        model_name: Optional[str] = None,
+        temperature: Optional[float] = None,
+        tools: Optional[List[Tool]] = None,
+        max_iterations: Optional[int] = None,
+        verbose: bool = True
+    ):
+        """
+        Initialize the {{AGENT_NAME}} ReAct agent.
+        
+        Args:
+            model_name: LLM model to use (default: {{LLM_MODEL}})
+            temperature: Sampling temperature (default: {{TEMPERATURE}})
+            tools: List of tools available to the agent
+            max_iterations: Maximum reasoning-acting cycles (default: 15)
+            verbose: Enable verbose logging
+        """
+        self.model_name = model_name or self.MODEL_NAME
+        self.temperature = temperature if temperature is not None else self.TEMPERATURE
+        self.max_iterations = max_iterations or self.MAX_ITERATIONS
+        self.verbose = verbose
+        
+        # Initialize LLM
+        self.llm = ChatOpenAI(
+            model=self.model_name,
+            temperature=self.temperature
+        )
+        
+        # Default tools if none provided
+        self.tools = tools or [{{TOOL_FUNCTION_NAME}}]
+        
+        # Create ReAct prompt template
+        self.prompt = self._create_react_prompt()
+        
+        # Create ReAct agent
+        self.agent = create_react_agent(
+            llm=self.llm,
+            tools=self.tools,
+            prompt=self.prompt
+        )
+        
+        # Create executor
+        self.executor = AgentExecutor(
+            agent=self.agent,
+            tools=self.tools,
+            verbose=verbose,
+            max_iterations=self.max_iterations,
+            handle_parsing_errors=True,
+            return_intermediate_steps=True
+        )
+        
+        logger.info(f"Initialized {{AGENT_NAME}} ReAct agent with model {self.model_name}")
+        logger.info(f"Available tools: {[tool.name for tool in self.tools]}")
+    
+    def _create_react_prompt(self) -> PromptTemplate:
+        """
+        Create the ReAct prompt template.
+        
+        The ReAct prompt follows this structure:
+        - Question: User's query
+        - Thought: Agent's reasoning
+        - Action: Tool to use
+        - Action Input: Input to tool
+        - Observation: Tool output
+        - (Repeat Thought-Action-Observation)
+        - Final Answer: Final response
+        """
+        react_prompt = """{{SYSTEM_PROMPT}}
+
+You are {{AGENT_NAME}}, a helpful AI assistant that uses the ReAct (Reasoning and Acting) pattern.
+
+## Core Principles
+- VERIFIABILITY (A1): Log all reasoning steps and tool calls
+- USER PRIMACY (A2): Confirm before consequential actions
+- TRANSPARENCY (A3): Make your reasoning explicit at each step
+- NON-HARM (A4): Validate tool inputs and outputs
+- CONSISTENCY (A5): Follow consistent reasoning patterns
+
+## ReAct Pattern
+Follow this pattern for each step:
+1. **Thought**: Reason about what you need to do
+2. **Action**: Select the appropriate tool
+3. **Action Input**: Provide input to the tool
+4. **Observation**: Analyze the tool's output
+5. Repeat until you have enough information
+6. **Final Answer**: Provide your final response
+
+## Available Tools
+You have access to the following tools:
+{{TOOL_DESCRIPTIONS}}
+
+## Instructions
+- Think step by step before taking action
+- Use tools to gather information when needed
+- Explain your reasoning at each step
+- If an action could have significant consequences, ask for user confirmation first (A2)
+- When you have enough information, provide a clear final answer
+
+Use the following format:
+
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action: the action to take, should be one of [{{TOOL_NAMES}}]
+Action Input: the input to the action
+Observation: the result of the action
+... (this Thought/Action/Action Input/Observation can repeat N times)
+Thought: I now know the final answer
+Final Answer: the final answer to the original input question
+
+Begin!
+
+Question: {input}
+Thought: {agent_scratchpad}
+"""
+        
+        return PromptTemplate.from_template(react_prompt)
+    
+    def run(
+        self,
+        query: str,
+        chat_history: Optional[Sequence[BaseMessage]] = None
+    ) -> {{AGENT_CLASS_NAME}}Output:
+        """
+        Run the ReAct agent with a query.
+        
+        Args:
+            query: User's query/question
+            chat_history: Optional conversation history
+            
+        Returns:
+            Structured output with reasoning steps and final answer
+            
+        Example:
+            >>> result = agent.run("What is the weather in San Francisco?")
+            >>> print(result.final_answer)
+            >>> print(f"Used {result.iterations} reasoning steps")
+        """
+        logger.info(f"Processing query: {query[:100]}...")
+        
+        try:
+            # Prepare input
+            agent_input = {
+                "input": query,
+                "chat_history": chat_history or []
+            }
+            
+            # Execute agent
+            result = self.executor.invoke(agent_input)
+            
+            # Extract intermediate steps for reasoning trace
+            reasoning_steps = []
+            tool_calls = []
+            
+            if "intermediate_steps" in result:
+                for step in result["intermediate_steps"]:
+                    agent_action = step[0]
+                    tool_output = step[1]
+                    
+                    # Extract thought from agent action log
+                    thought = getattr(agent_action, 'log', '')
+                    
+                    reasoning_step = ReActStep(
+                        thought=thought,
+                        action=agent_action.tool if hasattr(agent_action, 'tool') else None,
+                        action_input=agent_action.tool_input if hasattr(agent_action, 'tool_input') else None,
+                        observation=str(tool_output)[:500]  # Truncate long observations
+                    )
+                    reasoning_steps.append(reasoning_step)
+                    
+                    tool_calls.append({
+                        "tool": agent_action.tool if hasattr(agent_action, 'tool') else 'unknown',
+                        "input": agent_action.tool_input if hasattr(agent_action, 'tool_input') else {},
+                        "output": str(tool_output)[:200]
+                    })
+            
+            # Check if confirmation is needed (A2)
+            requires_confirmation = self._check_confirmation_needed(result.get("output", ""))
+            
+            # Estimate confidence based on iterations and tool usage
+            confidence = self._estimate_confidence(len(reasoning_steps), result.get("output", ""))
+            
+            output = {{AGENT_CLASS_NAME}}Output(
+                final_answer=result.get("output", "No answer generated"),
+                reasoning_steps=reasoning_steps,
+                tool_calls=tool_calls,
+                iterations=len(reasoning_steps),
+                confidence=confidence,
+                requires_confirmation=requires_confirmation
+            )
+            
+            logger.info(f"ReAct agent completed in {len(reasoning_steps)} iterations")
+            logger.info(f"Final answer confidence: {confidence:.2f}")
+            
+            return output
+            
+        except Exception as e:
+            logger.error(f"Error during ReAct agent execution: {e}", exc_info=True)
+            return {{AGENT_CLASS_NAME}}Output(
+                final_answer=f"Error: {str(e)}. Please try rephrasing your query.",
+                reasoning_steps=[],
+                tool_calls=[],
+                iterations=0,
+                confidence=0.0,
+                requires_confirmation=False
+            )
+    
+    def _check_confirmation_needed(self, output: str) -> bool:
+        """
+        Check if output indicates confirmation is needed (A2).
+        
+        Args:
+            output: Agent output text
+            
+        Returns:
+            True if confirmation is needed
+        """
+        confirmation_keywords = [
+            "confirm", "approval", "permission", "proceed",
+            "delete", "remove", "modify", "change", "update",
+            "execute", "run", "install"
+        ]
+        return any(keyword in output.lower() for keyword in confirmation_keywords)
+    
+    def _estimate_confidence(self, iterations: int, output: str) -> float:
+        """
+        Estimate confidence in the final answer.
+        
+        Args:
+            iterations: Number of reasoning steps
+            output: Final answer text
+            
+        Returns:
+            Confidence score between 0 and 1
+        """
+        # Base confidence
+        confidence = 0.7
+        
+        # Adjust based on iterations (too few or too many reduces confidence)
+        if iterations == 0:
+            confidence = 0.3
+        elif 1 <= iterations <= 5:
+            confidence = 0.8
+        elif iterations > 10:
+            confidence = 0.6
+        
+        # Adjust based on output quality indicators
+        if "error" in output.lower() or "unable" in output.lower():
+            confidence *= 0.5
+        if "?" in output or "uncertain" in output.lower():
+            confidence *= 0.8
+        
+        return min(confidence, 1.0)
+    
+    async def arun(
+        self,
+        query: str,
+        chat_history: Optional[Sequence[BaseMessage]] = None
+    ) -> {{AGENT_CLASS_NAME}}Output:
+        """
+        Async version of run.
+        
+        Args:
+            query: User's query/question
+            chat_history: Optional conversation history
+            
+        Returns:
+            Structured output with reasoning steps and final answer
+        """
+        logger.info(f"Processing query (async): {query[:100]}...")
+        
+        try:
+            agent_input = {
+                "input": query,
+                "chat_history": chat_history or []
+            }
+            
+            result = await self.executor.ainvoke(agent_input)
+            
+            reasoning_steps = []
+            tool_calls = []
+            
+            if "intermediate_steps" in result:
+                for step in result["intermediate_steps"]:
+                    agent_action = step[0]
+                    tool_output = step[1]
+                    
+                    thought = getattr(agent_action, 'log', '')
+                    
+                    reasoning_step = ReActStep(
+                        thought=thought,
+                        action=agent_action.tool if hasattr(agent_action, 'tool') else None,
+                        action_input=agent_action.tool_input if hasattr(agent_action, 'tool_input') else None,
+                        observation=str(tool_output)[:500]
+                    )
+                    reasoning_steps.append(reasoning_step)
+                    
+                    tool_calls.append({
+                        "tool": agent_action.tool if hasattr(agent_action, 'tool') else 'unknown',
+                        "input": agent_action.tool_input if hasattr(agent_action, 'tool_input') else {},
+                        "output": str(tool_output)[:200]
+                    })
+            
+            requires_confirmation = self._check_confirmation_needed(result.get("output", ""))
+            confidence = self._estimate_confidence(len(reasoning_steps), result.get("output", ""))
+            
+            return {{AGENT_CLASS_NAME}}Output(
+                final_answer=result.get("output", "No answer generated"),
+                reasoning_steps=reasoning_steps,
+                tool_calls=tool_calls,
+                iterations=len(reasoning_steps),
+                confidence=confidence,
+                requires_confirmation=requires_confirmation
+            )
+            
+        except Exception as e:
+            logger.error(f"Error during async ReAct agent execution: {e}")
+            return {{AGENT_CLASS_NAME}}Output(
+                final_answer=f"Error: {str(e)}",
+                reasoning_steps=[],
+                tool_calls=[],
+                iterations=0,
+                confidence=0.0,
+                requires_confirmation=False
+            )
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create ReAct agent
+    agent = {{AGENT_CLASS_NAME}}(
+        model_name="{{LLM_MODEL}}",
+        verbose=True
+    )
+    
+    # Run agent
+    result = agent.run("{{EXAMPLE_QUERY}}")
+    
+    print(f"\n{'='*60}")
+    print(f"Final Answer: {result.final_answer}")
+    print(f"{'='*60}")
+    print(f"\nReasoning Steps ({result.iterations}):")
+    for i, step in enumerate(result.reasoning_steps, 1):
+        print(f"\nStep {i}:")
+        print(f"  Thought: {step.thought[:200]}...")
+        if step.action:
+            print(f"  Action: {step.action}")
+            print(f"  Input: {step.action_input}")
+        if step.observation:
+            print(f"  Observation: {step.observation[:200]}...")
+    
+    print(f"\nConfidence: {result.confidence:.2%}")
+    if result.requires_confirmation:
+        print("⚠️  This action requires user confirmation")

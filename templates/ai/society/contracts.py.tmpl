@@ -1,0 +1,223 @@
+"""
+Agent Contracts for {{ project_name }}.
+
+This module provides common contract patterns for multi-agent coordination.
+Contracts enforce predictable agent behavior through formal agreements.
+
+Value: Contracts enforce what documentation hopes.
+
+SDG - Love - Truth - Beauty
+"""
+
+from lib.society import (
+    AgentContract,
+    Party,
+    Capability,
+    Obligation,
+    Prohibition
+)
+from lib.society.simple import SimpleSociety
+
+
+def create_delegation_contract(
+    society: SimpleSociety,
+    delegator_id: str,
+    executor_id: str,
+    task_type: str,
+    timeout_seconds: int = 60,
+    allow_modification: bool = False
+) -> AgentContract:
+    """
+    Create a task delegation contract.
+    
+    The delegator can assign tasks to the executor, who must
+    respond within the timeout and follow modification rules.
+    
+    Args:
+        society: The society to register the contract with.
+        delegator_id: ID of the delegating agent.
+        executor_id: ID of the executing agent.
+        task_type: Type of task being delegated.
+        timeout_seconds: Maximum response time.
+        allow_modification: Whether executor can modify files/state.
+        
+    Returns:
+        Signed AgentContract.
+        
+    Example:
+        contract = create_delegation_contract(
+            society, "orchestrator", "code_analyzer", "analyze_code"
+        )
+    """
+    prohibitions = []
+    if not allow_modification:
+        prohibitions.append((executor_id, "modify_files"))
+    
+    return society.create_contract(
+        contract_id=f"delegation-{delegator_id}-{executor_id}-{task_type}",
+        parties=[
+            (delegator_id, "delegator"),
+            (executor_id, "executor")
+        ],
+        capabilities=[
+            (delegator_id, f"delegate_{task_type}"),
+            (executor_id, task_type),
+            (executor_id, "report_results")
+        ],
+        obligations=[
+            (executor_id, "respond_within", {"timeout": timeout_seconds}),
+            (executor_id, "report_completion", {}),
+            (delegator_id, "provide_context", {})
+        ],
+        prohibitions=prohibitions
+    )
+
+
+def create_collaboration_contract(
+    society: SimpleSociety,
+    collaborator_ids: list[str],
+    shared_resource: str,
+    max_concurrent: int = 1
+) -> AgentContract:
+    """
+    Create a resource sharing contract between collaborators.
+    
+    All collaborators agree to fair resource access and
+    conflict resolution through the society.
+    
+    Args:
+        society: The society to register the contract with.
+        collaborator_ids: List of collaborating agent IDs.
+        shared_resource: Name of the shared resource.
+        max_concurrent: Maximum concurrent access allowed.
+        
+    Returns:
+        Signed AgentContract.
+    """
+    return society.create_contract(
+        contract_id=f"collab-{shared_resource}-{'-'.join(collaborator_ids[:3])}",
+        parties=[(cid, "collaborator") for cid in collaborator_ids],
+        capabilities=[
+            (cid, f"access_{shared_resource}") for cid in collaborator_ids
+        ],
+        obligations=[
+            (cid, "release_resource_when_done", {"resource": shared_resource})
+            for cid in collaborator_ids
+        ] + [
+            (cid, "respect_concurrent_limit", {"max": max_concurrent})
+            for cid in collaborator_ids
+        ],
+        prohibitions=[
+            (cid, f"exclusive_lock_{shared_resource}")
+            for cid in collaborator_ids
+        ]
+    )
+
+
+def create_review_contract(
+    society: SimpleSociety,
+    author_id: str,
+    reviewer_ids: list[str],
+    artifact_type: str,
+    require_all_approvals: bool = False
+) -> AgentContract:
+    """
+    Create a review/approval contract.
+    
+    Author submits artifacts for review, reviewers provide
+    feedback and approval decisions.
+    
+    Args:
+        society: The society to register the contract with.
+        author_id: ID of the authoring agent.
+        reviewer_ids: List of reviewer agent IDs.
+        artifact_type: Type of artifact being reviewed.
+        require_all_approvals: If True, all reviewers must approve.
+        
+    Returns:
+        Signed AgentContract.
+    """
+    parties = [(author_id, "author")]
+    parties.extend((rid, "reviewer") for rid in reviewer_ids)
+    
+    capabilities = [(author_id, f"submit_{artifact_type}")]
+    capabilities.extend((rid, "review") for rid in reviewer_ids)
+    capabilities.extend((rid, "approve") for rid in reviewer_ids)
+    capabilities.extend((rid, "reject") for rid in reviewer_ids)
+    
+    obligations = [(rid, "provide_feedback", {}) for rid in reviewer_ids]
+    obligations.append((author_id, "address_feedback", {}))
+    
+    if require_all_approvals:
+        obligations.extend(
+            (rid, "vote_required", {}) for rid in reviewer_ids
+        )
+    
+    return society.create_contract(
+        contract_id=f"review-{artifact_type}-{author_id}",
+        parties=parties,
+        capabilities=capabilities,
+        obligations=obligations,
+        prohibitions=[
+            (author_id, "self_approve"),
+            (author_id, "bypass_review")
+        ]
+    )
+
+
+def create_pipeline_contract(
+    society: SimpleSociety,
+    stage_ids: list[str],
+    pipeline_name: str
+) -> AgentContract:
+    """
+    Create a sequential pipeline contract.
+    
+    Each stage must complete before the next can begin.
+    Stages cannot skip or reorder.
+    
+    Args:
+        society: The society to register the contract with.
+        stage_ids: Ordered list of stage agent IDs.
+        pipeline_name: Name of the pipeline.
+        
+    Returns:
+        Signed AgentContract.
+    """
+    parties = []
+    capabilities = []
+    obligations = []
+    
+    for i, stage_id in enumerate(stage_ids):
+        parties.append((stage_id, f"stage_{i}"))
+        capabilities.append((stage_id, "process"))
+        
+        if i < len(stage_ids) - 1:
+            capabilities.append((stage_id, "handoff"))
+            obligations.append((stage_id, "handoff_on_complete", {
+                "next_stage": stage_ids[i + 1]
+            }))
+        
+        if i > 0:
+            obligations.append((stage_id, "wait_for_input", {
+                "previous_stage": stage_ids[i - 1]
+            }))
+    
+    return society.create_contract(
+        contract_id=f"pipeline-{pipeline_name}",
+        parties=parties,
+        capabilities=capabilities,
+        obligations=obligations,
+        prohibitions=[
+            (stage_id, "skip_stage") for stage_id in stage_ids
+        ]
+    )
+
+
+# Common contract templates for {{ project_name }}
+
+{% if contract_templates %}
+{% for template in contract_templates %}
+{{ template }}
+{% endfor %}
+{% endif %}

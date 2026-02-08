@@ -1,0 +1,378 @@
+"""
+{{TRAINER_NAME}} - Supervised Fine-Tuning Trainer with TRL
+
+Purpose: {{TRAINER_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Training process is logged and reproducible
+- A3 (Transparency): Model changes are tracked and explainable
+"""
+
+from typing import Optional, Dict, Any, List, Union
+from pathlib import Path
+import torch
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    TrainingArguments,
+    BitsAndBytesConfig,
+)
+from peft import (
+    LoraConfig,
+    get_peft_model,
+    prepare_model_for_kbit_training,
+    TaskType,
+)
+from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
+from datasets import Dataset
+import logging
+from pydantic import BaseModel, Field
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class SFTTrainingConfig(BaseModel):
+    """Configuration for Supervised Fine-Tuning."""
+    base_model_name: str = Field(description="Base model identifier")
+    output_dir: str = Field(description="Output directory for checkpoints")
+    dataset_text_field: str = Field(default="{{TEXT_COLUMN}}", description="Text field in dataset")
+    max_seq_length: int = Field(default={{MAX_LENGTH}}, description="Maximum sequence length")
+    packing: bool = Field(default={{PACKING}}, description="Use packing for efficiency")
+    lora_r: int = Field(default={{LORA_R}}, description="LoRA rank")
+    lora_alpha: int = Field(default={{LORA_ALPHA}}, description="LoRA alpha")
+
+
+class {{TRAINER_CLASS_NAME}}:
+    """
+    {{TRAINER_NAME}} - Supervised Fine-Tuning Trainer with TRL
+    
+    Fine-tunes language models using Supervised Fine-Tuning (SFT) with the
+    TRL (Transformer Reinforcement Learning) library. Supports instruction
+    tuning, chat fine-tuning, and general text completion tasks.
+    
+    Example:
+        >>> trainer = {{TRAINER_CLASS_NAME}}(
+        ...     base_model_name="meta-llama/Llama-2-7b-hf",
+        ...     output_dir="./models/sft-llama2"
+        ... )
+        >>> trainer.train(
+        ...     train_dataset=dataset,
+        ...     num_epochs=3,
+        ...     per_device_train_batch_size=4
+        ... )
+    """
+    
+    def __init__(
+        self,
+        base_model_name: str = "{{BASE_MODEL_NAME}}",
+        output_dir: str = "{{OUTPUT_DIR}}",
+        dataset_text_field: str = "{{TEXT_COLUMN}}",
+        max_seq_length: int = {{MAX_LENGTH}},
+        packing: bool = {{PACKING}},
+        lora_r: int = {{LORA_R}},
+        lora_alpha: int = {{LORA_ALPHA}},
+        lora_dropout: float = {{LORA_DROPOUT}},
+        target_modules: Optional[List[str]] = None,
+        use_4bit: bool = {{USE_4BIT}},
+        bnb_4bit_compute_dtype: torch.dtype = torch.float16,
+        bnb_4bit_quant_type: str = "nf4",
+        use_nested_quant: bool = False,
+        device_map: str = "auto",
+        trust_remote_code: bool = {{TRUST_REMOTE_CODE}},
+    ):
+        """
+        Initialize SFT trainer.
+        
+        Args:
+            base_model_name: HuggingFace model identifier
+            output_dir: Directory to save checkpoints and final model
+            dataset_text_field: Field name in dataset containing text
+            max_seq_length: Maximum sequence length
+            packing: Use packing to combine multiple sequences
+            lora_r: LoRA rank
+            lora_alpha: LoRA alpha scaling parameter
+            lora_dropout: LoRA dropout rate
+            target_modules: Modules to apply LoRA to
+            use_4bit: Use 4-bit quantization (QLoRA)
+            bnb_4bit_compute_dtype: Compute dtype for 4-bit
+            bnb_4bit_quant_type: Quantization type ("nf4" or "fp4")
+            use_nested_quant: Use nested quantization
+            device_map: Device mapping strategy
+            trust_remote_code: Trust remote code in model
+        """
+        self.base_model_name = base_model_name
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        
+        self.dataset_text_field = dataset_text_field
+        self.max_seq_length = max_seq_length
+        self.packing = packing
+        
+        if target_modules is None:
+            target_modules = {{TARGET_MODULES}}
+        
+        logger.info(f"Loading tokenizer: {base_model_name}")
+        self.tokenizer = AutoTokenizer.from_pretrained(base_model_name)
+        
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+        
+        quantization_config = None
+        if use_4bit:
+            logger.info("Configuring 4-bit quantization...")
+            quantization_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_compute_dtype=bnb_4bit_compute_dtype,
+                bnb_4bit_quant_type=bnb_4bit_quant_type,
+                bnb_4bit_use_double_quant=use_nested_quant,
+            )
+        
+        logger.info(f"Loading base model: {base_model_name}")
+        model_kwargs = {
+            "device_map": device_map,
+            "trust_remote_code": trust_remote_code,
+        }
+        
+        if quantization_config:
+            model_kwargs["quantization_config"] = quantization_config
+        else:
+            model_kwargs["torch_dtype"] = torch.float16
+        
+        self.model = AutoModelForCausalLM.from_pretrained(
+            base_model_name,
+            **model_kwargs
+        )
+        
+        if use_4bit:
+            logger.info("Preparing model for k-bit training...")
+            self.model = prepare_model_for_kbit_training(self.model)
+        
+        self.lora_config = LoraConfig(
+            r=lora_r,
+            lora_alpha=lora_alpha,
+            target_modules=target_modules,
+            lora_dropout=lora_dropout,
+            bias="none",
+            task_type=TaskType.CAUSAL_LM,
+        )
+        
+        logger.info("Applying LoRA adapters...")
+        self.model = get_peft_model(self.model, self.lora_config)
+        
+        trainable_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+        total_params = sum(p.numel() for p in self.model.parameters())
+        logger.info(
+            f"Trainable parameters: {trainable_params:,} ({100 * trainable_params / total_params:.2f}%)"
+        )
+        
+        self.trainer: Optional[SFTTrainer] = None
+    
+    def train(
+        self,
+        train_dataset: Dataset,
+        num_epochs: int = {{NUM_EPOCHS}},
+        per_device_train_batch_size: int = {{BATCH_SIZE}},
+        gradient_accumulation_steps: int = {{GRADIENT_ACCUMULATION_STEPS}},
+        learning_rate: float = {{LEARNING_RATE}},
+        warmup_steps: int = {{WARMUP_STEPS}},
+        logging_steps: int = {{LOGGING_STEPS}},
+        save_steps: int = {{SAVE_STEPS}},
+        eval_dataset: Optional[Dataset] = None,
+        per_device_eval_batch_size: Optional[int] = None,
+        save_total_limit: int = {{SAVE_TOTAL_LIMIT}},
+        fp16: bool = {{FP16}},
+        bf16: bool = {{BF16}},
+        dataloader_num_workers: int = {{DATALOADER_NUM_WORKERS}},
+        gradient_checkpointing: bool = True,
+        response_template: Optional[str] = None,
+    ) -> None:
+        """
+        Train the model with Supervised Fine-Tuning.
+        
+        Args:
+            train_dataset: Training dataset
+            num_epochs: Number of training epochs
+            per_device_train_batch_size: Batch size per device
+            gradient_accumulation_steps: Gradient accumulation steps
+            learning_rate: Learning rate
+            warmup_steps: Number of warmup steps
+            logging_steps: Logging frequency
+            save_steps: Checkpoint saving frequency
+            eval_dataset: Optional evaluation dataset
+            per_device_eval_batch_size: Evaluation batch size
+            save_total_limit: Maximum number of checkpoints to keep
+            fp16: Use FP16 mixed precision
+            bf16: Use BF16 mixed precision
+            dataloader_num_workers: Number of dataloader workers
+            gradient_checkpointing: Enable gradient checkpointing
+            response_template: Template for response extraction (e.g., "### Response:")
+            
+        Example:
+            >>> trainer.train(
+            ...     train_dataset=dataset,
+            ...     num_epochs=3,
+            ...     learning_rate=2e-4,
+            ...     response_template="### Response:"
+            ... )
+        """
+        logger.info("Starting Supervised Fine-Tuning...")
+        
+        if gradient_checkpointing:
+            self.model.gradient_checkpointing_enable()
+        
+        training_args = TrainingArguments(
+            output_dir=str(self.output_dir),
+            num_train_epochs=num_epochs,
+            per_device_train_batch_size=per_device_train_batch_size,
+            gradient_accumulation_steps=gradient_accumulation_steps,
+            learning_rate=learning_rate,
+            warmup_steps=warmup_steps,
+            logging_steps=logging_steps,
+            save_steps=save_steps,
+            save_total_limit=save_total_limit,
+            fp16=fp16,
+            bf16=bf16,
+            dataloader_num_workers=dataloader_num_workers,
+            gradient_checkpointing=gradient_checkpointing,
+            report_to="none",
+        )
+        
+        data_collator = None
+        if response_template:
+            data_collator = DataCollatorForCompletionOnlyLM(
+                response_template=response_template,
+                tokenizer=self.tokenizer,
+                mlm=False,
+            )
+        
+        self.trainer = SFTTrainer(
+            model=self.model,
+            args=training_args,
+            train_dataset=train_dataset,
+            eval_dataset=eval_dataset,
+            dataset_text_field=self.dataset_text_field,
+            max_seq_length=self.max_seq_length,
+            packing=self.packing,
+            tokenizer=self.tokenizer,
+            data_collator=data_collator,
+        )
+        
+        logger.info("Training started...")
+        train_result = self.trainer.train()
+        
+        logger.info(f"Training completed. Loss: {train_result.training_loss:.4f}")
+        
+        self.save_model()
+    
+    def save_model(self, save_path: Optional[str] = None) -> None:
+        """
+        Save the fine-tuned model and tokenizer.
+        
+        Args:
+            save_path: Optional custom save path (defaults to output_dir)
+        """
+        save_path = save_path or str(self.output_dir)
+        save_path = Path(save_path)
+        save_path.mkdir(parents=True, exist_ok=True)
+        
+        logger.info(f"Saving model to {save_path}...")
+        
+        self.model.save_pretrained(save_path)
+        self.tokenizer.save_pretrained(save_path)
+        
+        logger.info("Model saved successfully")
+    
+    def load_model(self, model_path: str) -> None:
+        """
+        Load a fine-tuned SFT model.
+        
+        Args:
+            model_path: Path to saved model
+        """
+        logger.info(f"Loading model from {model_path}...")
+        
+        from peft import PeftModel
+        
+        self.model = AutoModelForCausalLM.from_pretrained(
+            self.base_model_name,
+            device_map="auto",
+            torch_dtype=torch.float16,
+        )
+        
+        self.model = PeftModel.from_pretrained(self.model, model_path)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path)
+        
+        logger.info("Model loaded successfully")
+    
+    def generate(
+        self,
+        prompt: str,
+        max_new_tokens: int = {{MAX_NEW_TOKENS}},
+        temperature: float = {{TEMPERATURE}},
+        top_p: float = {{TOP_P}},
+        do_sample: bool = True,
+    ) -> str:
+        """
+        Generate text using the fine-tuned model.
+        
+        Args:
+            prompt: Input prompt text
+            max_new_tokens: Maximum tokens to generate
+            temperature: Sampling temperature
+            top_p: Nucleus sampling parameter
+            do_sample: Whether to use sampling
+            
+        Returns:
+            Generated text
+        """
+        inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
+        
+        with torch.no_grad():
+            outputs = self.model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                temperature=temperature,
+                top_p=top_p,
+                do_sample=do_sample,
+                pad_token_id=self.tokenizer.eos_token_id,
+            )
+        
+        generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        return generated_text
+
+
+# Example usage
+if __name__ == "__main__":
+    from datasets import load_dataset
+    
+    trainer = {{TRAINER_CLASS_NAME}}(
+        base_model_name="{{BASE_MODEL_NAME}}",
+        output_dir="{{OUTPUT_DIR}}",
+        dataset_text_field="{{TEXT_COLUMN}}",
+        max_seq_length={{MAX_LENGTH}},
+        use_4bit={{USE_4BIT}},
+    )
+    
+    train_data = [
+        {
+            "{{TEXT_COLUMN}}": "### Instruction:\n{{EXAMPLE_INSTRUCTION_1}}\n\n### Response:\n{{EXAMPLE_RESPONSE_1}}"
+        },
+        {
+            "{{TEXT_COLUMN}}": "### Instruction:\n{{EXAMPLE_INSTRUCTION_2}}\n\n### Response:\n{{EXAMPLE_RESPONSE_2}}"
+        },
+    ]
+    train_dataset = Dataset.from_list(train_data)
+    
+    trainer.train(
+        train_dataset=train_dataset,
+        num_epochs={{NUM_EPOCHS}},
+        per_device_train_batch_size={{BATCH_SIZE}},
+        learning_rate={{LEARNING_RATE}},
+        response_template="### Response:",
+    )
+    
+    output = trainer.generate("{{EXAMPLE_PROMPT}}")
+    print(f"Generated: {output}")

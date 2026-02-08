@@ -1,0 +1,553 @@
+"""
+{{INGESTION_NAME}} - Document Ingestion Pipeline
+
+Purpose: {{INGESTION_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Documents are tracked with metadata and sources
+- A3 (Transparency): Ingestion process is logged and traceable
+"""
+
+from typing import List, Dict, Any, Optional, Union
+from pathlib import Path
+from langchain_core.documents import Document
+from langchain_community.document_loaders import (
+    TextLoader,
+    PyPDFLoader,
+    CSVLoader,
+    JSONLoader,
+    WebBaseLoader,
+    UnstructuredFileLoader,
+)
+from langchain_text_splitters import (
+    RecursiveCharacterTextSplitter,
+    TokenTextSplitter,
+    MarkdownHeaderTextSplitter,
+)
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma, FAISS
+from pydantic import BaseModel, Field
+import logging
+import hashlib
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class DocumentMetadata(BaseModel):
+    """Metadata for a document."""
+    source: str = Field(description="Source file path or URL")
+    document_id: str = Field(description="Unique document identifier")
+    file_type: str = Field(description="Type of file (pdf, txt, csv, etc.)")
+    chunk_count: int = Field(description="Number of chunks created")
+    ingestion_timestamp: str = Field(description="Timestamp of ingestion")
+
+
+class IngestionResult(BaseModel):
+    """Result from document ingestion."""
+    documents: List[Document] = Field(description="Ingested document chunks")
+    metadata: DocumentMetadata = Field(description="Document metadata")
+    total_chunks: int = Field(description="Total number of chunks created")
+    vector_store: Optional[Any] = Field(description="Vector store instance")
+
+
+class {{INGESTION_CLASS_NAME}}:
+    """
+    {{INGESTION_NAME}} - Document Ingestion Pipeline
+    
+    Handles loading, processing, chunking, and indexing documents for RAG systems.
+    Supports multiple file formats and chunking strategies.
+    
+    Example:
+        >>> ingester = {{INGESTION_CLASS_NAME}}(
+        ...     chunk_size=1000,
+        ...     chunk_overlap=200
+        ... )
+        >>> result = ingester.ingest_file("documents/example.pdf")
+        >>> print(f"Ingested {result.total_chunks} chunks")
+    """
+    
+    def __init__(
+        self,
+        chunk_size: int = {{CHUNK_SIZE}},
+        chunk_overlap: int = {{CHUNK_OVERLAP}},
+        chunking_strategy: str = "recursive",  # "recursive", "token", "markdown"
+        embedding_model: str = "{{EMBEDDING_MODEL}}",
+        vector_store_type: str = "chroma",  # "chroma" or "faiss"
+        persist_directory: Optional[str] = None,
+        collection_name: str = "{{COLLECTION_NAME}}",
+        add_metadata: bool = True,
+    ):
+        """
+        Initialize document ingestion pipeline.
+        
+        Args:
+            chunk_size: Size of text chunks in characters
+            chunk_overlap: Overlap between chunks in characters
+            chunking_strategy: Strategy for chunking ("recursive", "token", "markdown")
+            embedding_model: Embedding model name
+            vector_store_type: Type of vector store ("chroma" or "faiss")
+            persist_directory: Directory to persist vector store (optional)
+            collection_name: Name of the collection/index
+            add_metadata: Whether to add metadata to chunks
+        """
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
+        self.chunking_strategy = chunking_strategy
+        self.vector_store_type = vector_store_type
+        self.persist_directory = persist_directory
+        self.collection_name = collection_name
+        self.add_metadata = add_metadata
+        
+        # Initialize embeddings
+        self.embeddings = OpenAIEmbeddings(model=embedding_model)
+        
+        # Initialize text splitter based on strategy
+        self.text_splitter = self._create_text_splitter()
+        
+        # Initialize vector store (will be created on first ingestion)
+        self.vector_store: Optional[Any] = None
+        
+        logger.info(
+            f"Initialized {{INGESTION_NAME}} with {chunking_strategy} chunking, "
+            f"chunk_size={chunk_size}, chunk_overlap={chunk_overlap}"
+        )
+    
+    def _create_text_splitter(self):
+        """Create text splitter based on strategy."""
+        if self.chunking_strategy == "recursive":
+            return RecursiveCharacterTextSplitter(
+                chunk_size=self.chunk_size,
+                chunk_overlap=self.chunk_overlap,
+                separators=["\n\n", "\n", ". ", " ", ""],
+                length_function=len,
+            )
+        elif self.chunking_strategy == "token":
+            return TokenTextSplitter(
+                chunk_size=self.chunk_size,
+                chunk_overlap=self.chunk_overlap,
+                encoding_name="cl100k_base",  # GPT tokenizer
+            )
+        elif self.chunking_strategy == "markdown":
+            return MarkdownHeaderTextSplitter(
+                headers_to_split_on=[
+                    ("#", "Header 1"),
+                    ("##", "Header 2"),
+                    ("###", "Header 3"),
+                ]
+            )
+        else:
+            raise ValueError(f"Unknown chunking strategy: {self.chunking_strategy}")
+    
+    def _get_file_loader(self, file_path: str):
+        """
+        Get appropriate document loader for file type.
+        
+        Args:
+            file_path: Path to the file
+            
+        Returns:
+            Document loader instance
+        """
+        path = Path(file_path)
+        suffix = path.suffix.lower()
+        
+        loader_map = {
+            ".txt": TextLoader,
+            ".pdf": PyPDFLoader,
+            ".csv": CSVLoader,
+            ".json": JSONLoader,
+            ".md": TextLoader,
+        }
+        
+        if suffix in loader_map:
+            loader_class = loader_map[suffix]
+            if suffix == ".csv":
+                return loader_class(file_path, encoding="utf-8")
+            elif suffix == ".json":
+                # JSONLoader requires jq_schema - adjust as needed
+                return loader_class(
+                    file_path,
+                    jq_schema=".[]",
+                    text_content=False,
+                )
+            else:
+                return loader_class(file_path, encoding="utf-8")
+        else:
+            # Fallback to unstructured loader
+            logger.warning(f"Using UnstructuredFileLoader for {suffix}")
+            return UnstructuredFileLoader(file_path)
+    
+    def _generate_document_id(self, source: str) -> str:
+        """Generate unique document ID from source path."""
+        return hashlib.md5(source.encode()).hexdigest()
+    
+    def _enrich_metadata(
+        self, documents: List[Document], source: str, file_type: str
+    ) -> List[Document]:
+        """
+        Enrich documents with metadata.
+        
+        Args:
+            documents: List of document chunks
+            source: Source file path
+            file_type: Type of file
+            
+        Returns:
+            Documents with enriched metadata
+        """
+        if not self.add_metadata:
+            return documents
+        
+        doc_id = self._generate_document_id(source)
+        
+        enriched = []
+        for i, doc in enumerate(documents):
+            metadata = {
+                **doc.metadata,
+                "source": source,
+                "document_id": doc_id,
+                "file_type": file_type,
+                "chunk_index": i,
+                "total_chunks": len(documents),
+            }
+            enriched.append(
+                Document(page_content=doc.page_content, metadata=metadata)
+            )
+        
+        return enriched
+    
+    def load_documents(self, file_path: str) -> List[Document]:
+        """
+        Load documents from a file.
+        
+        Args:
+            file_path: Path to the file
+            
+        Returns:
+            List of loaded documents
+            
+        Example:
+            >>> docs = ingester.load_documents("documents/example.pdf")
+            >>> print(f"Loaded {len(docs)} pages")
+        """
+        logger.info(f"Loading documents from {file_path}")
+        
+        try:
+            loader = self._get_file_loader(file_path)
+            documents = loader.load()
+            logger.info(f"Loaded {len(documents)} documents from {file_path}")
+            return documents
+        except Exception as e:
+            logger.error(f"Error loading documents from {file_path}: {e}")
+            raise
+    
+    def chunk_documents(self, documents: List[Document]) -> List[Document]:
+        """
+        Split documents into chunks.
+        
+        Args:
+            documents: List of documents to chunk
+            
+        Returns:
+            List of document chunks
+            
+        Example:
+            >>> chunks = ingester.chunk_documents(documents)
+            >>> print(f"Created {len(chunks)} chunks")
+        """
+        logger.info(f"Chunking {len(documents)} documents...")
+        
+        try:
+            if self.chunking_strategy == "markdown":
+                chunks = []
+                for doc in documents:
+                    doc_chunks = self.text_splitter.split_text(doc.page_content)
+                    for chunk_text, metadata in doc_chunks:
+                        chunks.append(
+                            Document(
+                                page_content=chunk_text,
+                                metadata={**doc.metadata, **metadata},
+                            )
+                        )
+            else:
+                chunks = self.text_splitter.split_documents(documents)
+            
+            logger.info(f"Created {len(chunks)} chunks")
+            return chunks
+        except Exception as e:
+            logger.error(f"Error chunking documents: {e}")
+            raise
+    
+    def _get_or_create_vector_store(self) -> Any:
+        """Get existing vector store or create a new one."""
+        if self.vector_store is None:
+            if self.vector_store_type == "chroma":
+                if self.persist_directory:
+                    self.vector_store = Chroma(
+                        persist_directory=self.persist_directory,
+                        embedding_function=self.embeddings,
+                        collection_name=self.collection_name,
+                    )
+                else:
+                    # In-memory store
+                    self.vector_store = Chroma(
+                        embedding_function=self.embeddings,
+                        collection_name=self.collection_name,
+                    )
+            elif self.vector_store_type == "faiss":
+                # FAISS requires documents to initialize, so we'll create it later
+                pass
+            else:
+                raise ValueError(
+                    f"Unknown vector store type: {self.vector_store_type}"
+                )
+        
+        return self.vector_store
+    
+    def add_to_vector_store(self, chunks: List[Document]) -> None:
+        """
+        Add document chunks to vector store.
+        
+        Args:
+            chunks: List of document chunks to add
+            
+        Example:
+            >>> ingester.add_to_vector_store(chunks)
+        """
+        logger.info(f"Adding {len(chunks)} chunks to vector store...")
+        
+        try:
+            if self.vector_store_type == "chroma":
+                store = self._get_or_create_vector_store()
+                store.add_documents(chunks)
+                if self.persist_directory:
+                    store.persist()
+            elif self.vector_store_type == "faiss":
+                if self.vector_store is None:
+                    # Create FAISS store with first batch
+                    self.vector_store = FAISS.from_documents(
+                        chunks, self.embeddings
+                    )
+                    if self.persist_directory:
+                        self.vector_store.save_local(self.persist_directory)
+                else:
+                    # Add to existing store
+                    self.vector_store.add_documents(chunks)
+                    if self.persist_directory:
+                        self.vector_store.save_local(self.persist_directory)
+            
+            logger.info("Chunks added to vector store successfully")
+        except Exception as e:
+            logger.error(f"Error adding chunks to vector store: {e}")
+            raise
+    
+    def ingest_file(
+        self, file_path: str, add_to_store: bool = True
+    ) -> IngestionResult:
+        """
+        Complete ingestion pipeline: load, chunk, and optionally index.
+        
+        Args:
+            file_path: Path to the file to ingest
+            add_to_store: Whether to add chunks to vector store
+            
+        Returns:
+            IngestionResult with documents and metadata
+            
+        Example:
+            >>> result = ingester.ingest_file("documents/example.pdf")
+            >>> print(f"Ingested {result.total_chunks} chunks")
+            >>> print(f"Document ID: {result.metadata.document_id}")
+        """
+        logger.info(f"Starting ingestion pipeline for {file_path}")
+        
+        try:
+            # Load documents
+            documents = self.load_documents(file_path)
+            
+            # Determine file type
+            file_type = Path(file_path).suffix.lower().lstrip(".")
+            
+            # Chunk documents
+            chunks = self.chunk_documents(documents)
+            
+            # Enrich with metadata
+            enriched_chunks = self._enrich_metadata(
+                chunks, file_path, file_type
+            )
+            
+            # Add to vector store if requested
+            if add_to_store:
+                self.add_to_vector_store(enriched_chunks)
+            
+            # Create metadata
+            doc_id = self._generate_document_id(file_path)
+            metadata = DocumentMetadata(
+                source=file_path,
+                document_id=doc_id,
+                file_type=file_type,
+                chunk_count=len(enriched_chunks),
+                ingestion_timestamp="{{TIMESTAMP}}",  # Replace with actual timestamp
+            )
+            
+            result = IngestionResult(
+                documents=enriched_chunks,
+                metadata=metadata,
+                total_chunks=len(enriched_chunks),
+                vector_store=self.vector_store if add_to_store else None,
+            )
+            
+            logger.info(
+                f"Ingestion complete: {result.total_chunks} chunks from {file_path}"
+            )
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in ingestion pipeline: {e}")
+            raise
+    
+    def ingest_directory(
+        self, directory_path: str, pattern: str = "**/*", add_to_store: bool = True
+    ) -> List[IngestionResult]:
+        """
+        Ingest all files in a directory.
+        
+        Args:
+            directory_path: Path to directory
+            pattern: Glob pattern for file matching
+            add_to_store: Whether to add chunks to vector store
+            
+        Returns:
+            List of IngestionResult for each file
+            
+        Example:
+            >>> results = ingester.ingest_directory("documents/", pattern="*.pdf")
+            >>> total_chunks = sum(r.total_chunks for r in results)
+            >>> print(f"Total chunks ingested: {total_chunks}")
+        """
+        logger.info(f"Ingesting directory: {directory_path}")
+        
+        directory = Path(directory_path)
+        files = list(directory.glob(pattern))
+        
+        results = []
+        for file_path in files:
+            if file_path.is_file():
+                try:
+                    result = self.ingest_file(str(file_path), add_to_store=add_to_store)
+                    results.append(result)
+                except Exception as e:
+                    logger.error(f"Failed to ingest {file_path}: {e}")
+                    continue
+        
+        logger.info(f"Ingested {len(results)} files from {directory_path}")
+        return results
+    
+    def ingest_url(self, url: str, add_to_store: bool = True) -> IngestionResult:
+        """
+        Ingest documents from a URL.
+        
+        Args:
+            url: URL to load documents from
+            add_to_store: Whether to add chunks to vector store
+            
+        Returns:
+            IngestionResult with documents and metadata
+            
+        Example:
+            >>> result = ingester.ingest_url("https://example.com/article")
+            >>> print(f"Ingested {result.total_chunks} chunks")
+        """
+        logger.info(f"Ingesting URL: {url}")
+        
+        try:
+            loader = WebBaseLoader([url])
+            documents = loader.load()
+            
+            # Chunk documents
+            chunks = self.chunk_documents(documents)
+            
+            # Enrich with metadata
+            enriched_chunks = self._enrich_metadata(chunks, url, "web")
+            
+            # Add to vector store if requested
+            if add_to_store:
+                self.add_to_vector_store(enriched_chunks)
+            
+            # Create metadata
+            doc_id = self._generate_document_id(url)
+            metadata = DocumentMetadata(
+                source=url,
+                document_id=doc_id,
+                file_type="web",
+                chunk_count=len(enriched_chunks),
+                ingestion_timestamp="{{TIMESTAMP}}",
+            )
+            
+            result = IngestionResult(
+                documents=enriched_chunks,
+                metadata=metadata,
+                total_chunks=len(enriched_chunks),
+                vector_store=self.vector_store if add_to_store else None,
+            )
+            
+            logger.info(f"Ingestion complete: {result.total_chunks} chunks from {url}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error ingesting URL {url}: {e}")
+            raise
+    
+    def get_retriever(self, k: int = 4, search_type: str = "similarity"):
+        """
+        Get retriever from vector store.
+        
+        Args:
+            k: Number of documents to retrieve
+            search_type: Type of search ("similarity" or "mmr")
+            
+        Returns:
+            Retriever instance
+            
+        Example:
+            >>> retriever = ingester.get_retriever(k=5)
+            >>> docs = retriever.invoke("query text")
+        """
+        if self.vector_store is None:
+            raise ValueError(
+                "No vector store available. Ingest documents first."
+            )
+        
+        return self.vector_store.as_retriever(
+            search_type=search_type,
+            search_kwargs={"k": k},
+        )
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create ingestion pipeline
+    ingester = {{INGESTION_CLASS_NAME}}(
+        chunk_size={{CHUNK_SIZE}},
+        chunk_overlap={{CHUNK_OVERLAP}},
+        chunking_strategy="recursive",
+        persist_directory="{{PERSIST_DIRECTORY}}",
+    )
+    
+    # Ingest a single file
+    result = ingester.ingest_file("{{EXAMPLE_FILE_PATH}}")
+    print(f"Ingested {result.total_chunks} chunks")
+    print(f"Document ID: {result.metadata.document_id}")
+    
+    # Ingest a directory
+    # results = ingester.ingest_directory("documents/", pattern="*.pdf")
+    # total_chunks = sum(r.total_chunks for r in results)
+    # print(f"Total chunks: {total_chunks}")
+    
+    # Get retriever
+    retriever = ingester.get_retriever(k=5)
+    docs = retriever.invoke("{{EXAMPLE_QUERY}}")
+    print(f"Retrieved {len(docs)} documents")

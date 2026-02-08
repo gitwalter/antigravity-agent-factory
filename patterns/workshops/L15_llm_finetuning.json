@@ -1,0 +1,399 @@
+{
+  "$schema": "../learning-workshop-pattern.json",
+  "workshopId": "L15_llm_finetuning",
+  "name": "LLM Fine-Tuning Techniques",
+  "technology": {
+    "category": "data_ml",
+    "stack": "Hugging Face + PEFT",
+    "language": "Python",
+    "version": "Transformers 4.40+"
+  },
+  "level": "intermediate",
+  "prerequisites": {
+    "workshops": [],
+    "knowledge": [
+      "Python programming (classes, decorators, context managers)",
+      "Understanding of transformer architecture basics",
+      "Familiarity with PyTorch (tensors, models, training loops)",
+      "Basic NLP concepts (tokenization, embeddings, attention)"
+    ],
+    "tools": [
+      "Python 3.8+",
+      "transformers library (4.40+)",
+      "peft library",
+      "datasets library",
+      "CUDA-capable GPU (required for training)",
+      "Hugging Face account and token"
+    ]
+  },
+  "duration": {
+    "total_hours": 2.5,
+    "concept_minutes": 30,
+    "demo_minutes": 30,
+    "exercise_minutes": 45,
+    "challenge_minutes": 30,
+    "reflection_minutes": 15
+  },
+  "learning_objectives": [
+    {
+      "objective": "Understand when to fine-tune vs prompt engineering and the trade-offs",
+      "bloom_level": "understand",
+      "verification": "Can explain scenarios where fine-tuning is preferred over prompt engineering and vice versa"
+    },
+    {
+      "objective": "Prepare datasets for instruction tuning with proper formatting",
+      "bloom_level": "apply",
+      "verification": "Can create instruction-following datasets with prompt-response pairs in correct format"
+    },
+    {
+      "objective": "Implement LoRA and QLoRA fine-tuning for parameter-efficient training",
+      "bloom_level": "apply",
+      "verification": "Can set up LoRA/QLoRA adapters and train models with reduced memory requirements"
+    },
+    {
+      "objective": "Use SFTTrainer for supervised fine-tuning workflows",
+      "bloom_level": "apply",
+      "verification": "Can configure and run SFTTrainer with proper data collation and training arguments"
+    },
+    {
+      "objective": "Evaluate fine-tuned models using appropriate metrics and benchmarks",
+      "bloom_level": "analyze",
+      "verification": "Can assess model performance, compare before/after fine-tuning, and identify improvements"
+    }
+  ],
+  "knowledge_files": [
+    "llm-fine-tuning-patterns.json",
+    "huggingface-patterns.json"
+  ],
+  "phases": [
+    {
+      "phaseId": "concept",
+      "name": "Fine-Tuning Landscape and LoRA Theory",
+      "type": "concept",
+      "duration_minutes": 30,
+      "description": "Understanding when and how to fine-tune LLMs efficiently",
+      "content": {
+        "topics": [
+          "Fine-tuning vs prompt engineering: when to use each",
+          "Full fine-tuning vs parameter-efficient methods",
+          "LoRA (Low-Rank Adaptation): theory and benefits",
+          "QLoRA: quantized LoRA for memory efficiency",
+          "Instruction tuning: dataset format and best practices",
+          "Evaluation metrics: perplexity, BLEU, ROUGE, human evaluation"
+        ],
+        "diagrams": [
+          "Full fine-tuning vs LoRA parameter comparison",
+          "LoRA adapter architecture diagram",
+          "Instruction tuning data format",
+          "Fine-tuning workflow pipeline",
+          "Memory usage comparison (full vs LoRA vs QLoRA)"
+        ],
+        "key_points": [
+          "Fine-tuning is expensive but provides task-specific adaptation",
+          "LoRA trains only small adapter matrices, reducing parameters by 100-1000x",
+          "QLoRA uses 4-bit quantization + LoRA for even more memory savings",
+          "Instruction tuning requires prompt-response pairs in specific format",
+          "Always evaluate on held-out test set",
+          "Fine-tuning can cause catastrophic forgetting - use LoRA to mitigate"
+        ]
+      },
+      "facilitator_notes": "Start with use cases: when fine-tuning makes sense vs prompt engineering. Explain LoRA mathematically (low-rank decomposition). Show memory savings with concrete numbers.",
+      "common_questions": [
+        "When should I fine-tune instead of using prompts?",
+        "How much memory do I need for fine-tuning?",
+        "What's the difference between LoRA and full fine-tuning?",
+        "How do I format my data for instruction tuning?",
+        "Can I fine-tune on a single GPU?",
+        "How do I prevent overfitting?"
+      ]
+    },
+    {
+      "phaseId": "demo",
+      "name": "QLoRA Setup and Fine-Tuning",
+      "type": "demo",
+      "duration_minutes": 30,
+      "description": "Live coding a complete QLoRA fine-tuning setup",
+      "content": {
+        "topics": [
+          "Loading base model with BitsAndBytes quantization",
+          "Setting up LoRA config with PEFT",
+          "Preparing instruction dataset",
+          "Configuring SFTTrainer",
+          "Training with gradient checkpointing",
+          "Saving and loading adapters"
+        ],
+        "code_examples": [
+          "BitsAndBytesConfig for 4-bit quantization",
+          "LoraConfig setup",
+          "Dataset formatting function",
+          "SFTTrainer initialization",
+          "Adapter save/load"
+        ],
+        "key_points": [
+          "Use 4-bit quantization for memory efficiency",
+          "LoRA rank (r) controls adapter size vs expressiveness trade-off",
+          "Format data as chat templates",
+          "Use gradient checkpointing to save memory",
+          "Save only adapters, not full model"
+        ]
+      },
+      "facilitator_notes": "Show actual memory usage before/after. Demonstrate loading quantized model. Explain each parameter in LoraConfig. Show how to format data correctly."
+    },
+    {
+      "phaseId": "exercise_1",
+      "name": "Dataset Preparation for Instruction Tuning",
+      "type": "exercise",
+      "duration_minutes": 20,
+      "description": "Format a dataset for instruction fine-tuning",
+      "content": {
+        "topics": [
+          "Load dataset from Hugging Face or local files",
+          "Format as instruction-response pairs",
+          "Apply chat template formatting",
+          "Tokenize and prepare for training"
+        ]
+      }
+    },
+    {
+      "phaseId": "exercise_2",
+      "name": "LoRA Fine-Tuning Setup",
+      "type": "exercise",
+      "duration_minutes": 25,
+      "description": "Set up and run LoRA fine-tuning on a small model",
+      "content": {
+        "topics": [
+          "Load base model",
+          "Configure LoRA adapters",
+          "Set up training arguments",
+          "Run training loop",
+          "Save adapters"
+        ]
+      }
+    },
+    {
+      "phaseId": "challenge",
+      "name": "Custom Instruction Dataset Fine-Tuning",
+      "type": "challenge",
+      "duration_minutes": 30,
+      "description": "Fine-tune a model on a custom domain-specific dataset",
+      "content": {
+        "topics": [
+          "Create custom instruction dataset",
+          "Implement QLoRA fine-tuning",
+          "Evaluate model performance",
+          "Compare before/after fine-tuning",
+          "Deploy fine-tuned model for inference"
+        ]
+      }
+    },
+    {
+      "phaseId": "reflection",
+      "name": "Key Takeaways and Production Considerations",
+      "type": "reflection",
+      "duration_minutes": 15,
+      "description": "Consolidate learning and discuss deployment strategies",
+      "content": {
+        "topics": [
+          "Summary of fine-tuning approaches",
+          "Memory and compute requirements",
+          "Evaluation strategies",
+          "Deployment considerations",
+          "Resources for advanced techniques"
+        ],
+        "key_points": [
+          "LoRA/QLoRA make fine-tuning accessible on consumer hardware",
+          "Instruction tuning requires high-quality, diverse datasets",
+          "Always evaluate on held-out test set",
+          "Monitor training loss to detect overfitting",
+          "Save adapters separately for easy model switching",
+          "Consider inference speed when choosing quantization"
+        ]
+      }
+    }
+  ],
+  "exercises": [
+    {
+      "exerciseId": "ex1_dataset_preparation",
+      "name": "Dataset Preparation for Instruction Tuning",
+      "type": "guided",
+      "difficulty": "medium",
+      "duration_minutes": 20,
+      "description": "Format a dataset for instruction fine-tuning with proper chat template",
+      "starter_code": "from datasets import load_dataset\nfrom transformers import AutoTokenizer\n\n# TODO: Load a dataset (e.g., \"alpaca\" or custom data)\n# dataset = load_dataset(\"tatsu-lab/alpaca\", split=\"train\")\n\n# TODO: Initialize tokenizer\n# tokenizer = AutoTokenizer.from_pretrained(\"meta-llama/Llama-2-7b-hf\")\n# tokenizer.pad_token = tokenizer.eos_token\n\ndef format_instruction(example):\n    \"\"\"\n    Format example as instruction-response pair.\n    Expected format:\n    {\n        \"instruction\": \"...\",\n        \"input\": \"...\",  # optional\n        \"output\": \"...\"\n    }\n    \"\"\"\n    # TODO: Format as instruction prompt\n    # Hint: Combine instruction and input, then add response\n    prompt = None\n    response = None\n    \n    return {\"text\": prompt + response}\n\ndef format_chat_template(example):\n    \"\"\"Format using chat template.\"\"\"\n    # TODO: Use tokenizer.apply_chat_template()\n    # Format: [{\"role\": \"user\", \"content\": prompt}, {\"role\": \"assistant\", \"content\": response}]\n    messages = None\n    formatted = None\n    \n    return {\"text\": formatted}\n\n# TODO: Apply formatting\n# formatted_dataset = dataset.map(format_chat_template, remove_columns=dataset.column_names)\n\n# TODO: Tokenize\n# def tokenize_function(examples):\n#     return tokenizer(examples[\"text\"], truncation=True, max_length=512)\n# \n# tokenized_dataset = formatted_dataset.map(tokenize_function, batched=True)",
+      "solution_code": "from datasets import load_dataset\nfrom transformers import AutoTokenizer\n\n# Load dataset\n# Using alpaca as example - replace with your dataset\ndataset = load_dataset(\"tatsu-lab/alpaca\", split=\"train[:100]\")  # Small subset for demo\n\n# Initialize tokenizer\ntokenizer = AutoTokenizer.from_pretrained(\"meta-llama/Llama-2-7b-hf\")\nif tokenizer.pad_token is None:\n    tokenizer.pad_token = tokenizer.eos_token\n\ndef format_instruction(example):\n    \"\"\"\n    Format example as instruction-response pair.\n    \"\"\"\n    instruction = example.get(\"instruction\", \"\")\n    input_text = example.get(\"input\", \"\")\n    output = example.get(\"output\", \"\")\n    \n    # Combine instruction and input\n    if input_text:\n        prompt = f\"{instruction}\\n\\nInput: {input_text}\\n\\nResponse:\"\n    else:\n        prompt = f\"{instruction}\\n\\nResponse:\"\n    \n    # Format as chat messages\n    messages = [\n        {\"role\": \"user\", \"content\": prompt},\n        {\"role\": \"assistant\", \"content\": output}\n    ]\n    \n    # Apply chat template\n    formatted = tokenizer.apply_chat_template(\n        messages,\n        tokenize=False,\n        add_generation_prompt=False\n    )\n    \n    return {\"text\": formatted}\n\n# Apply formatting\nformatted_dataset = dataset.map(\n    format_instruction,\n    remove_columns=dataset.column_names\n)\n\n# Tokenize\ndef tokenize_function(examples):\n    return tokenizer(\n        examples[\"text\"],\n        truncation=True,\n        max_length=512,\n        padding=\"max_length\"\n    )\n\ntokenized_dataset = formatted_dataset.map(\n    tokenize_function,\n    batched=True,\n    remove_columns=[\"text\"]\n)\n\n# Verify\nprint(\"Sample formatted text:\")\nprint(formatted_dataset[0][\"text\"][:200])\nprint(\"\\nDataset ready for training!\")",
+      "hints": [
+        "Use tokenizer.apply_chat_template() for proper formatting",
+        "Chat format: list of dicts with \"role\" and \"content\"",
+        "Set add_generation_prompt=False for training data",
+        "Use padding=\"max_length\" for consistent batch shapes",
+        "Remove original columns after formatting"
+      ],
+      "verification": "Dataset is properly formatted and tokenized, ready for SFTTrainer",
+      "common_mistakes": [
+        "Not using chat template (model-specific format)",
+        "Including generation prompt in training data",
+        "Forgetting to set pad_token",
+        "Not truncating long sequences",
+        "Wrong message format (not list of dicts)"
+      ]
+    },
+    {
+      "exerciseId": "ex2_lora_finetuning",
+      "name": "LoRA Fine-Tuning Setup",
+      "type": "guided",
+      "difficulty": "medium",
+      "duration_minutes": 25,
+      "description": "Set up and run LoRA fine-tuning using PEFT and SFTTrainer",
+      "starter_code": "from transformers import (\n    AutoModelForCausalLM,\n    AutoTokenizer,\n    TrainingArguments,\n    BitsAndBytesConfig\n)\nfrom peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training\nfrom trl import SFTTrainer\nfrom datasets import load_dataset\n\n# TODO: Configure 4-bit quantization\n# bnb_config = BitsAndBytesConfig(...)\n\n# TODO: Load model with quantization\n# model = AutoModelForCausalLM.from_pretrained(\n#     \"meta-llama/Llama-2-7b-hf\",\n#     quantization_config=bnb_config,\n#     device_map=\"auto\"\n# )\n\n# TODO: Prepare model for training\n# model = prepare_model_for_kbit_training(model)\n\n# TODO: Configure LoRA\n# lora_config = LoraConfig(...)\n\n# TODO: Apply LoRA to model\n# model = get_peft_model(model, lora_config)\n\n# TODO: Load tokenizer\n# tokenizer = AutoTokenizer.from_pretrained(\"meta-llama/Llama-2-7b-hf\")\n# tokenizer.pad_token = tokenizer.eos_token\n\n# TODO: Load and format dataset (from previous exercise)\n# dataset = load_dataset(...)\n\n# TODO: Configure training arguments\n# training_args = TrainingArguments(\n#     output_dir=\"./results\",\n#     num_train_epochs=3,\n#     per_device_train_batch_size=4,\n#     gradient_accumulation_steps=4,\n#     learning_rate=2e-4,\n#     fp16=True,\n#     logging_steps=10,\n#     save_steps=100,\n# )\n\n# TODO: Create trainer\n# trainer = SFTTrainer(\n#     model=model,\n#     train_dataset=dataset,\n#     tokenizer=tokenizer,\n#     args=training_args,\n#     packing=False,\n# )\n\n# TODO: Train\n# trainer.train()\n\n# TODO: Save adapter\n# model.save_pretrained(\"./adapter\")",
+      "solution_code": "from transformers import (\n    AutoModelForCausalLM,\n    AutoTokenizer,\n    TrainingArguments,\n    BitsAndBytesConfig\n)\nfrom peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training\nfrom trl import SFTTrainer\nfrom datasets import load_dataset\nimport torch\n\n# Configure 4-bit quantization\nbnb_config = BitsAndBytesConfig(\n    load_in_4bit=True,\n    bnb_4bit_quant_type=\"nf4\",\n    bnb_4bit_compute_dtype=torch.float16,\n    bnb_4bit_use_double_quant=True,\n)\n\n# Load model with quantization\nmodel = AutoModelForCausalLM.from_pretrained(\n    \"meta-llama/Llama-2-7b-hf\",\n    quantization_config=bnb_config,\n    device_map=\"auto\",\n    trust_remote_code=True\n)\n\n# Prepare model for training\nmodel = prepare_model_for_kbit_training(model)\n\n# Configure LoRA\nlora_config = LoraConfig(\n    r=16,  # Rank - controls adapter size\n    lora_alpha=32,  # Scaling factor\n    target_modules=[\"q_proj\", \"k_proj\", \"v_proj\", \"o_proj\"],  # Which layers to adapt\n    lora_dropout=0.05,\n    bias=\"none\",\n    task_type=\"CAUSAL_LM\",\n)\n\n# Apply LoRA to model\nmodel = get_peft_model(model, lora_config)\n\n# Load tokenizer\ntokenizer = AutoTokenizer.from_pretrained(\"meta-llama/Llama-2-7b-hf\")\ntokenizer.pad_token = tokenizer.eos_token\n\n# Load and format dataset (simplified - use your formatted dataset from ex1)\ndataset = load_dataset(\"tatsu-lab/alpaca\", split=\"train[:100]\")\n\ndef format_instruction(example):\n    instruction = example.get(\"instruction\", \"\")\n    input_text = example.get(\"input\", \"\")\n    output = example.get(\"output\", \"\")\n    \n    if input_text:\n        prompt = f\"{instruction}\\n\\nInput: {input_text}\\n\\nResponse:\"\n    else:\n        prompt = f\"{instruction}\\n\\nResponse:\"\n    \n    messages = [\n        {\"role\": \"user\", \"content\": prompt},\n        {\"role\": \"assistant\", \"content\": output}\n    ]\n    \n    formatted = tokenizer.apply_chat_template(\n        messages,\n        tokenize=False,\n        add_generation_prompt=False\n    )\n    \n    return {\"text\": formatted}\n\nformatted_dataset = dataset.map(format_instruction, remove_columns=dataset.column_names)\n\ndef tokenize_function(examples):\n    return tokenizer(\n        examples[\"text\"],\n        truncation=True,\n        max_length=512,\n        padding=\"max_length\"\n    )\n\ntokenized_dataset = formatted_dataset.map(\n    tokenize_function,\n    batched=True,\n    remove_columns=[\"text\"]\n)\n\n# Configure training arguments\ntraining_args = TrainingArguments(\n    output_dir=\"./results\",\n    num_train_epochs=3,\n    per_device_train_batch_size=4,\n    gradient_accumulation_steps=4,\n    learning_rate=2e-4,\n    fp16=True,\n    logging_steps=10,\n    save_steps=100,\n    save_total_limit=3,\n    optim=\"paged_adamw_32bit\",  # Memory-efficient optimizer\n    gradient_checkpointing=True,  # Save memory\n    warmup_steps=10,\n)\n\n# Create trainer\ntrainer = SFTTrainer(\n    model=model,\n    train_dataset=tokenized_dataset,\n    tokenizer=tokenizer,\n    args=training_args,\n    packing=False,  # Don't pack multiple sequences\n    max_seq_length=512,\n)\n\n# Train\nprint(\"Starting training...\")\ntrainer.train()\n\n# Save adapter (only saves LoRA weights, not full model)\nmodel.save_pretrained(\"./adapter\")\ntokenizer.save_pretrained(\"./adapter\")\nprint(\"Adapter saved!\")",
+      "hints": [
+        "Use BitsAndBytesConfig for 4-bit quantization",
+        "prepare_model_for_kbit_training() enables gradient checkpointing",
+        "LoRA rank (r) typically 8-64, alpha usually 2*r",
+        "target_modules should match model architecture",
+        "Use gradient_checkpointing=True to save memory",
+        "optim=\"paged_adamw_32bit\" is memory-efficient"
+      ],
+      "verification": "Training runs successfully and adapter weights are saved",
+      "common_mistakes": [
+        "Not preparing model for k-bit training",
+        "Wrong target_modules for model architecture",
+        "Forgetting gradient_checkpointing (runs out of memory)",
+        "Not using gradient_accumulation_steps",
+        "Saving full model instead of just adapter",
+        "Wrong task_type in LoraConfig"
+      ]
+    }
+  ],
+  "challenges": [
+    {
+      "challengeId": "custom_instruction_dataset",
+      "name": "Custom Instruction Dataset Fine-Tuning",
+      "description": "Fine-tune a model on a custom domain-specific instruction dataset",
+      "requirements": [
+        "Create or collect domain-specific instruction dataset (100+ examples)",
+        "Format dataset with proper chat template",
+        "Implement QLoRA fine-tuning with optimal hyperparameters",
+        "Evaluate model on test set with appropriate metrics",
+        "Compare model outputs before and after fine-tuning",
+        "Save and load adapter for inference",
+        "Demonstrate improvement on domain-specific tasks"
+      ],
+      "evaluation_criteria": [
+        "Dataset is properly formatted and diverse",
+        "QLoRA training completes without errors",
+        "Model shows improvement on domain tasks",
+        "Evaluation metrics show positive change",
+        "Adapter can be loaded and used for inference",
+        "Before/after comparison demonstrates value"
+      ],
+      "stretch_goals": [
+        "Implement evaluation with multiple metrics (BLEU, ROUGE, human eval)",
+        "Fine-tune with different LoRA ranks and compare",
+        "Create a simple web interface for model inference",
+        "Implement continuous learning with additional data",
+        "Optimize inference speed with quantization"
+      ]
+    }
+  ],
+  "resources": {
+    "official_docs": [
+      "https://huggingface.co/docs/transformers/",
+      "https://huggingface.co/docs/peft/",
+      "https://huggingface.co/docs/trl/",
+      "https://huggingface.co/docs/datasets/"
+    ],
+    "tutorials": [
+      "https://huggingface.co/docs/peft/tutorial/peft_lora",
+      "https://huggingface.co/docs/trl/tutorials/sft_trainer",
+      "https://huggingface.co/blog/4bit-transformers-bitsandbytes",
+      "https://huggingface.co/blog/llama2"
+    ],
+    "videos": [
+      "Hugging Face Course on Fine-tuning",
+      "QLoRA: Efficient Finetuning of Quantized LLMs"
+    ],
+    "books": [
+      "Natural Language Processing with Transformers by Hugging Face",
+      "Hands-On Large Language Models by Jay Alammar"
+    ],
+    "community": [
+      "Hugging Face Forums: https://discuss.huggingface.co/",
+      "Hugging Face Discord",
+      "r/LocalLLaMA on Reddit"
+    ]
+  },
+  "assessment": {
+    "knowledge_check": [
+      {
+        "question": "When should you fine-tune a model instead of using prompt engineering?",
+        "type": "short_answer",
+        "answer": "Fine-tune when you need domain-specific knowledge, consistent formatting, or behavior that's difficult to achieve with prompts. Also when you have sufficient high-quality data and compute resources.",
+        "explanation": "Fine-tuning is expensive but provides persistent adaptation"
+      },
+      {
+        "question": "What is the main advantage of LoRA over full fine-tuning?",
+        "type": "short_answer",
+        "answer": "LoRA trains only small adapter matrices (typically <1% of parameters) instead of all model weights, dramatically reducing memory requirements, training time, and storage while maintaining performance.",
+        "explanation": "LoRA makes fine-tuning accessible on consumer hardware"
+      },
+      {
+        "question": "What does QLoRA add to LoRA?",
+        "type": "multiple_choice",
+        "answer": "4-bit quantization of the base model, reducing memory even further while maintaining performance through careful quantization techniques",
+        "explanation": "QLoRA combines quantization with LoRA for maximum efficiency"
+      },
+      {
+        "question": "Why is instruction tuning format important?",
+        "type": "short_answer",
+        "answer": "Instruction tuning teaches models to follow prompts and respond in desired formats. Proper formatting ensures the model learns the correct input-output structure and improves generalization.",
+        "explanation": "Format consistency is crucial for model learning"
+      }
+    ],
+    "practical_assessment": "Fine-tune a model using QLoRA on a custom instruction dataset and demonstrate measurable improvement on domain-specific tasks",
+    "self_assessment": [
+      "Can I explain when fine-tuning is preferable to prompt engineering?",
+      "Do I understand how LoRA reduces parameters while maintaining performance?",
+      "Can I format datasets correctly for instruction tuning?",
+      "Can I set up and run QLoRA fine-tuning?",
+      "Do I know how to evaluate fine-tuned models effectively?"
+    ]
+  },
+  "next_steps": {
+    "next_workshop": "L16_advanced_llm_techniques",
+    "practice_projects": [
+      "Fine-tune model for code generation",
+      "Create domain-specific chatbot (legal, medical, etc.)",
+      "Fine-tune for structured output generation",
+      "Multi-task fine-tuning with different adapters"
+    ],
+    "deeper_learning": [
+      "RLHF (Reinforcement Learning from Human Feedback)",
+      "Advanced PEFT methods (AdaLoRA, DoRA)",
+      "Model merging and ensemble techniques",
+      "Efficient inference optimization"
+    ]
+  },
+  "axiom_zero_integration": {
+    "love_moments": [
+      "Patient guidance through memory errors and debugging",
+      "Celebrating successful fine-tuning runs",
+      "Encouraging experimentation with different LoRA configurations",
+      "Supporting learners through complex setup processes"
+    ],
+    "truth_moments": [
+      "Honest discussion of GPU memory requirements",
+      "Clear explanation of when fine-tuning isn't worth it",
+      "Accurate expectations for training times and costs",
+      "Transparent about evaluation challenges",
+      "Verified code examples that work with current library versions"
+    ],
+    "beauty_moments": [
+      "Elegant LoRA adapter architecture",
+      "The efficiency of parameter-efficient fine-tuning",
+      "Clean dataset formatting and preprocessing",
+      "Beautiful model outputs after fine-tuning",
+      "Elegant use of quantization and adapters together"
+    ]
+  }
+}

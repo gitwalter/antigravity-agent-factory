@@ -1,0 +1,290 @@
+{
+  "id": "agentic-loop-patterns",
+  "name": "Agentic Loop Patterns",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "description": "Core patterns for building agentic loops including ReAct, reflection, planning, and iterative refinement patterns",
+  "patterns": {
+    "react_pattern": {
+      "description": "Reasoning and Acting pattern - alternates between reasoning and tool execution",
+      "structure": {
+        "steps": [
+          "Thought: Reason about what to do",
+          "Action: Select appropriate tool",
+          "Action Input: Provide input to tool",
+          "Observation: Analyze tool output",
+          "Repeat until sufficient information",
+          "Final Answer: Provide response"
+        ]
+      },
+      "implementation": {
+        "framework": "langchain.agents.create_react_agent",
+        "components": ["ChatModel", "Tools", "Prompt", "AgentExecutor"],
+        "example": "from langchain.agents import create_react_agent, AgentExecutor\nfrom langchain_openai import ChatOpenAI\nfrom langchain_core.tools import tool\n\n@tool\ndef get_weather(location: str) -> str:\n    '''Get the current weather for a location.'''\n    return f'Weather in {location}: Sunny, 72°F'\n\ntools = [get_weather]\nllm = ChatOpenAI(model='gpt-4', temperature=0)\nagent = create_react_agent(llm, tools, prompt)\nexecutor = AgentExecutor(agent=agent, tools=tools, verbose=True, max_iterations=15)"
+      },
+      "use_when": [
+        "Agent needs to reason about actions step-by-step",
+        "Multi-step problem solving",
+        "Tool-based workflows",
+        "Transparent reasoning required"
+      ],
+      "best_practices": [
+        "Keep tool descriptions clear and specific",
+        "Use structured outputs for consistent parsing",
+        "Implement proper error handling for tool failures",
+        "Add observability with LangSmith tracing",
+        "Set max_iterations to prevent infinite loops",
+        "Log reasoning steps for transparency"
+      ],
+      "axiom_alignment": {
+        "A1": "Verifiability - All reasoning steps and tool calls are logged",
+        "A2": "User Primacy - Confirms before consequential actions",
+        "A3": "Transparency - Reasoning process is explicit and traceable",
+        "A4": "Non-Harm - Validates tool inputs and outputs",
+        "A5": "Consistency - Maintains consistent reasoning patterns"
+      }
+    },
+    "reflection_patterns": {
+      "self_critique": {
+        "description": "Agent reviews and improves its own output",
+        "structure": "generate -> reflect -> revise (loop until satisfactory)",
+        "pattern": "Generate output -> Evaluate quality -> If insufficient, reflect and revise -> Repeat",
+        "use_when": [
+          "Quality improvement needed",
+          "Self-correction required",
+          "Iterative refinement"
+        ],
+        "implementation": {
+          "langgraph_example": "def should_continue(state: State) -> str:\n    if state['iteration'] >= 3:\n        return 'end'\n    if state['quality_score'] >= 0.9:\n        return 'end'\n    return 'reflect'\n\ngraph.add_conditional_edges('revise', should_continue, {'end': END, 'reflect': 'reflect'})"
+        },
+        "best_practices": [
+          "Set maximum iteration limits",
+          "Define clear quality criteria",
+          "Track improvement across iterations",
+          "Use scoring functions for quality assessment"
+        ]
+      },
+      "critic_agent": {
+        "description": "Separate critic agent reviews generator agent output",
+        "pattern": "Generator -> Critic -> Feedback -> Generator (revise)",
+        "use_when": [
+          "Specialized critique needed",
+          "Separation of concerns",
+          "Multi-agent systems"
+        ]
+      },
+      "iterative_refinement": {
+        "description": "Multiple passes to refine output quality",
+        "pattern": "Initial generation -> Refinement pass 1 -> Refinement pass 2 -> Final output",
+        "use_when": [
+          "High-quality output required",
+          "Complex content generation",
+          "Code generation"
+        ]
+      }
+    },
+    "planning_patterns": {
+      "hierarchical_planning": {
+        "description": "Break down high-level plan into sub-plans",
+        "pattern": "High-level plan -> Sub-plans -> Actions -> Execute",
+        "use_when": [
+          "Complex multi-step tasks",
+          "Long-horizon planning",
+          "Structured problem solving"
+        ],
+        "best_practices": [
+          "Plan at appropriate abstraction levels",
+          "Validate plan feasibility",
+          "Adjust plan based on execution results"
+        ]
+      },
+      "replanning": {
+        "description": "Revise plan based on execution feedback",
+        "pattern": "Create plan -> Execute -> Evaluate -> Replan if needed",
+        "use_when": [
+          "Dynamic environments",
+          "Uncertain outcomes",
+          "Adaptive workflows"
+        ]
+      },
+      "plan_execute": {
+        "description": "Separate planning phase from execution phase",
+        "pattern": "Plan all steps -> Execute plan -> Report results",
+        "use_when": [
+          "Well-defined problems",
+          "Batch processing",
+          "Offline planning"
+        ]
+      },
+      "reactive_planning": {
+        "description": "Plan incrementally as execution progresses",
+        "pattern": "Plan next step -> Execute -> Plan next step -> Repeat",
+        "use_when": [
+          "Dynamic environments",
+          "Real-time adaptation",
+          "Uncertain conditions"
+        ]
+      }
+    },
+    "iterative_refinement": {
+      "multi_pass_refinement": {
+        "description": "Multiple passes to improve output",
+        "pattern": "Pass 1: Generate -> Pass 2: Refine -> Pass 3: Polish -> Final",
+        "use_when": [
+          "Content generation",
+          "Code writing",
+          "Analysis refinement"
+        ],
+        "best_practices": [
+          "Limit number of passes",
+          "Define refinement criteria",
+          "Track improvement metrics"
+        ]
+      },
+      "feedback_loop": {
+        "description": "Use feedback to guide refinement",
+        "pattern": "Generate -> Get feedback -> Refine based on feedback -> Repeat",
+        "feedback_sources": [
+          "Self-evaluation",
+          "External critic",
+          "User feedback",
+          "Automated metrics"
+        ]
+      },
+      "progressive_enhancement": {
+        "description": "Start simple and add complexity iteratively",
+        "pattern": "Basic version -> Add features -> Refine -> Enhance",
+        "use_when": [
+          "Complex outputs",
+          "Incremental development",
+          "Risk mitigation"
+        ]
+      }
+    },
+    "loop_control": {
+      "iteration_limits": {
+        "description": "Set maximum iterations to prevent infinite loops",
+        "pattern": "Check iteration count -> Stop if limit reached",
+        "best_practices": [
+          "Set reasonable limits",
+          "Log when limit reached",
+          "Return partial results if needed"
+        ]
+      },
+      "termination_conditions": {
+        "description": "Define clear conditions for loop termination",
+        "conditions": [
+          "Task completion",
+          "Quality threshold met",
+          "Maximum iterations",
+          "Error threshold exceeded",
+          "User cancellation"
+        ]
+      },
+      "early_stopping": {
+        "description": "Stop loop early when goal achieved",
+        "pattern": "Check completion criteria -> Stop if met -> Continue otherwise",
+        "benefits": [
+          "Reduced cost",
+          "Faster response",
+          "Better user experience"
+        ]
+      }
+    },
+    "error_recovery": {
+      "retry_on_failure": {
+        "description": "Retry failed operations with backoff",
+        "pattern": "Execute -> On failure -> Wait -> Retry -> Max attempts",
+        "use_when": [
+          "Transient failures",
+          "Network issues",
+          "Temporary errors"
+        ]
+      },
+      "fallback_strategies": {
+        "description": "Use alternative approaches when primary fails",
+        "pattern": "Try primary -> On failure -> Try fallback -> Report",
+        "use_when": [
+          "Critical operations",
+          "High reliability needed",
+          "Multiple options available"
+        ]
+      },
+      "error_propagation": {
+        "description": "Handle and report errors appropriately",
+        "pattern": "Catch error -> Log -> Report to user -> Continue or abort",
+        "best_practices": [
+          "Don't silently fail",
+          "Provide error context",
+          "Allow recovery when possible"
+        ]
+      }
+    }
+  },
+  "best_practices": [
+    "Set maximum iteration limits to prevent infinite loops",
+    "Define clear termination conditions",
+    "Log all reasoning steps for transparency",
+    "Handle tool execution errors gracefully",
+    "Implement early stopping when goals are met",
+    "Use reflection for quality improvement",
+    "Plan at appropriate abstraction levels",
+    "Validate plans before execution",
+    "Track improvement metrics across iterations",
+    "Implement retry strategies for transient failures",
+    "Use structured outputs for consistent parsing",
+    "Add observability with tracing",
+    "Monitor loop performance and costs",
+    "Test with various inputs and edge cases",
+    "Provide clear error messages and recovery options"
+  ],
+  "anti_patterns": [
+    {
+      "name": "No iteration limits",
+      "problem": "Infinite loops and resource exhaustion",
+      "fix": "Set max_iterations in all loops"
+    },
+    {
+      "name": "No termination conditions",
+      "problem": "Loops run indefinitely",
+      "fix": "Define clear completion criteria"
+    },
+    {
+      "name": "Silent failures",
+      "problem": "Errors go unnoticed",
+      "fix": "Log and report all errors"
+    },
+    {
+      "name": "No reflection mechanism",
+      "problem": "Poor quality outputs",
+      "fix": "Implement self-critique or external review"
+    },
+    {
+      "name": "Over-planning",
+      "problem": "Delays execution unnecessarily",
+      "fix": "Balance planning depth with execution speed"
+    },
+    {
+      "name": "No error recovery",
+      "problem": "Single failures break entire loop",
+      "fix": "Implement retry and fallback strategies"
+    },
+    {
+      "name": "Ignoring tool errors",
+      "problem": "Incorrect results from failed tools",
+      "fix": "Handle and report tool errors"
+    },
+    {
+      "name": "No quality metrics",
+      "problem": "Can't measure improvement",
+      "fix": "Define and track quality scores"
+    }
+  ],
+  "related_skills": [
+    "langchain-usage",
+    "langgraph-agent-building",
+    "tool-usage",
+    "anthropic-patterns",
+    "memory-management"
+  ]
+}

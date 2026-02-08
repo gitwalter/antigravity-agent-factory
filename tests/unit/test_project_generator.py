@@ -5,8 +5,7 @@ Tests cover:
 - Directory creation
 - Blueprint and pattern loading
 - Agent and skill rendering from patterns
--Agentrules generation with variable substitution
-- File writing and tracking
+- Antigravityrules generation with variable substitution- File writing and tracking
 """
 
 import sys
@@ -48,8 +47,7 @@ class TestDirectoryCreation:
         
         expected_dirs = [
             ".agent/agents",
-            ".agent/skills",
-            "knowledge",
+            ".agent/skills",            "knowledge",
             "templates",
             "workflows",
             "scripts",
@@ -69,7 +67,6 @@ class TestDirectoryCreation:
         sample_generator._create_directories()  # Should not raise
         
         assert (temp_output_dir / ".agent" / "agents").exists()
-
 
 class TestBlueprintLoading:
     """Tests for _load_blueprint method."""
@@ -248,11 +245,10 @@ class TestFileWriting:
         assert test_path.read_text(encoding='utf-8') == content
 
 
-class TestAgentrulesGeneration:
-    """Tests for agentrules generation with variable substitution."""
+class TestAntigravityrulesGeneration:
+    """Tests for cursorrules generation with variable substitution."""
     
-    def test_agentrules_variable_substitution(self, sample_config, temp_output_dir):
-        """Test that variables are correctly substituted."""
+    def test_cursorrules_variable_substitution(self, sample_config, temp_output_dir):        """Test that variables are correctly substituted."""
         sample_config.project_name = "test-substitution"
         sample_config.project_description = "Test description for substitution"
         sample_config.primary_language = "typescript"
@@ -260,24 +256,22 @@ class TestAgentrulesGeneration:
         
         generator = ProjectGenerator(sample_config, str(temp_output_dir))
         generator._create_directories()
-        generator._generate_agentrules(None)
+        generator._generate_cursorrules(None)
         
-        agentrules_path = temp_output_dir / ".agentrules"
-        content = agentrules_path.read_text(encoding='utf-8')
-        
+        cursorrules_path = temp_output_dir / ".agentrules"
+        content = cursorrules_path.read_text(encoding='utf-8')        
         assert "test-substitution" in content
         assert "Test description for substitution" in content
         assert "typescript" in content
         assert "web-testing" in content
     
-    def test_agentrules_no_placeholder_remnants(self, sample_generator, temp_output_dir):
+    def test_cursorrules_no_placeholder_remnants(self, sample_generator, temp_output_dir):
         """Test that no unreplaced placeholders remain."""
         sample_generator._create_directories()
-        sample_generator._generate_agentrules(None)
+        sample_generator._generate_cursorrules(None)
         
-        agentrules_path = temp_output_dir / ".agentrules"
-        content = agentrules_path.read_text(encoding='utf-8')
-        
+        cursorrules_path = temp_output_dir / ".agentrules"
+        content = cursorrules_path.read_text(encoding='utf-8')        
         # Check that common placeholders are replaced
         assert "{PROJECT_NAME}" not in content
         assert "{PROJECT_DESCRIPTION}" not in content
@@ -332,8 +326,7 @@ class TestFullGeneration:
         result = sample_generator.generate()
         
         assert result["success"]
-        assert (temp_output_dir / ".agentrules").exists()
-        assert (temp_output_dir / "README.md").exists()
+        assert (temp_output_dir / ".agentrules").exists()        assert (temp_output_dir / "README.md").exists()
         assert (temp_output_dir / "workflows" / "README.md").exists()
     
     def test_generate_tracks_all_files(self, sample_generator):

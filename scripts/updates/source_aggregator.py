@@ -17,8 +17,7 @@ Design Patterns:
     - Strategy: Different aggregation strategies
     - Observer: Source health monitoring
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 import asyncio
@@ -77,10 +76,42 @@ class AggregationResult:
     @property
     def by_priority(self) -> Dict[UpdatePriority, List[KnowledgeUpdate]]:
         """Group updates by priority."""
-        result = {p: [] for p in UpdatePriority}
+        # Initialize result with all UpdatePriority values as keys
+        result: Dict[UpdatePriority, List[KnowledgeUpdate]] = {}
+        # Ensure we have all UpdatePriority keys initialized
+        for p in UpdatePriority:
+            result[p] = []
+        
+        # Group updates by their priority
+        if not hasattr(self, 'updates') or self.updates is None:
+            return result
+            
         for update in self.updates:
-            result[update.priority].append(update)
-        return result
+            if not hasattr(update, 'priority') or update.priority is None:
+                continue
+                
+            priority = update.priority
+            
+            # Direct enum comparison - this should work for UpdatePriority enums
+            if priority in result:
+                result[priority].append(update)
+            else:
+                # Fallback: try to match by value or name
+                try:
+                    priority_value = getattr(priority, 'value', None)
+                    priority_name = getattr(priority, 'name', None)
+                    
+                    for p in UpdatePriority:
+                        if priority_value is not None and p.value == priority_value:
+                            result[p].append(update)
+                            break
+                        elif priority_name is not None and p.name == priority_name:
+                            result[p].append(update)
+                            break
+                except (AttributeError, TypeError):
+                    pass
+        
+        # Always return a dict with all UpdatePriority keys, even if empty        return result
     
     @property
     def by_file(self) -> Dict[str, List[KnowledgeUpdate]]:
@@ -101,8 +132,17 @@ class AggregationResult:
         Returns:
             New AggregationResult with filtered updates
         """
-        if not patterns or patterns == ["*"]:
-            return self
+        if not patterns:
+            # Empty patterns means no matches
+            return AggregationResult(
+                updates=[],
+                source_health=self.source_health,
+                total_fetched=self.total_fetched,
+                fetch_time_seconds=self.fetch_time_seconds,
+                errors=self.errors,
+            )
+        
+        if patterns == ["*"]:            return self
         
         filtered = []
         for update in self.updates:

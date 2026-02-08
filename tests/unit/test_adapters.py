@@ -7,8 +7,7 @@ Tests the source adapters including:
 - PyPI adapter
 - NPM adapter
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 import pytest

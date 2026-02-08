@@ -1,0 +1,197 @@
+"""{{ agent_name }} - {{ description }} - CrewAI agent with role and backstory"""
+from typing import List, Optional, Dict, Any
+from pydantic import BaseModel, Field
+from crewai import Agent
+from crewai.tools import tool
+import logging
+
+logger = logging.getLogger(__name__)
+
+class {{ agent_class }}Config(BaseModel):
+    """Configuration for {{ agent_name }}."""
+    model: str = "google:gemini-2.5-flash"
+    temperature: float = 0.7
+    max_tokens: int = 4096
+    verbose: bool = True
+    allow_delegation: bool = {{ allow_delegation | default(false) }}
+    max_iter: int = {{ max_iter | default(3) }}
+    memory: bool = {{ memory | default(true) }}
+
+class {{ agent_class }}:
+    """CrewAI agent for {{ agent_name }}."""
+    
+    def __init__(
+        self,
+        config: {{ agent_class }}Config = None,
+        role: Optional[str] = None,
+        goal: Optional[str] = None,
+        backstory: Optional[str] = None,
+        tools: Optional[List] = None
+    ):
+        """
+        Initialize CrewAI agent.
+        
+        Args:
+            config: Agent configuration
+            role: Agent role (e.g., "Senior Research Analyst")
+            goal: Agent goal (e.g., "Conduct thorough research")
+            backstory: Agent backstory that shapes behavior
+            tools: List of tools available to the agent
+        """
+        self.config = config or {{ agent_class }}Config()
+        self.role = role or "{{ role | default('AI Assistant') }}"
+        self.goal = goal or "{{ goal | default('Help users accomplish their tasks') }}"
+        self.backstory = backstory or """{{ backstory | default('You are a helpful AI assistant with expertise in various domains.') }}"""
+        
+        # Initialize tools
+        self.tools = tools or []
+        self._initialize_tools()
+        
+        # Create CrewAI agent
+        self.agent = self._create_agent()
+    
+    def _initialize_tools(self):
+        """Initialize tools for the agent."""
+        {% if tools %}
+        {% for tool_def in tools %}
+        @tool("{{ tool_def.name }}")
+        def {{ tool_def.function_name }}({{ tool_def.parameters }}):
+            """{{ tool_def.description }}"""
+            # Tool implementation
+            {{ tool_def.implementation | default("pass") }}
+        
+        self.tools.append({{ tool_def.function_name }})
+        {% endfor %}
+        {% else %}
+        # Add custom tools here
+        # Example:
+        # @tool("example_tool")
+        # def example_tool(input_text: str) -> str:
+        #     """Example tool description."""
+        #     return f"Processed: {input_text}"
+        # self.tools.append(example_tool)
+        {% endif %}
+    
+    def _create_agent(self) -> Agent:
+        """Create the CrewAI agent instance."""
+        # Import LLM if custom model specified
+        llm = None
+        if self.config.model:
+            try:
+                from langchain_google_genai import ChatGoogleGenerativeAI
+                llm = ChatGoogleGenerativeAI(
+                    model=self.config.model,
+                    temperature=self.config.temperature,
+                    max_tokens=self.config.max_tokens
+                )
+            except ImportError:
+                logger.warning("langchain_google_genai not available. Using default LLM.")
+        
+        # Create agent with role, goal, and backstory
+        agent = Agent(
+            role=self.role,
+            goal=self.goal,
+            backstory=f"""{self.backstory}
+
+## Core Principles
+- VERIFIABILITY (A1): Provide reasoning for decisions
+- USER PRIMACY (A2): Prioritize user goals
+- TRANSPARENCY (A3): Be explicit about actions
+- NON-HARM (A4): Avoid harmful actions
+- CONSISTENCY (A5): Ensure responses align with these principles""",
+            verbose=self.config.verbose,
+            allow_delegation=self.config.allow_delegation,
+            max_iter=self.config.max_iter,
+            memory=self.config.memory,
+            tools=self.tools if self.tools else None,
+            llm=llm
+        )
+        
+        logger.info(f"Created CrewAI agent: {self.role}")
+        return agent
+    
+    async def run(self, input_data: dict) -> dict:
+        """
+        Execute the agent with a task.
+        
+        Args:
+            input_data: Input dictionary with 'task' or 'description' key
+            
+        Returns:
+            Dictionary with 'response' and 'agent_info' keys
+        """
+        task_description = input_data.get("task") or input_data.get("description", "")
+        
+        if not task_description:
+            return {"error": "No task or description provided"}
+        
+        logger.info(f"Agent {self.role} executing task: {task_description[:100]}...")
+        
+        try:
+            # Create a task for the agent
+            from crewai import Task
+            
+            task = Task(
+                description=task_description,
+                agent=self.agent,
+                expected_output=input_data.get("expected_output", "Detailed response to the task")
+            )
+            
+            # Execute task
+            result = await self.agent.execute_task(task) if hasattr(self.agent, "execute_task") else self.agent.execute(task)
+            
+            return {
+                "response": str(result),
+                "agent_info": {
+                    "role": self.role,
+                    "goal": self.goal,
+                    "task": task_description
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Error during agent execution: {e}")
+            return {
+                "error": str(e),
+                "agent_info": {
+                    "role": self.role,
+                    "goal": self.goal
+                }
+            }
+    
+    def get_role(self) -> str:
+        """Get agent role."""
+        return self.role
+    
+    def get_goal(self) -> str:
+        """Get agent goal."""
+        return self.goal
+    
+    def get_backstory(self) -> str:
+        """Get agent backstory."""
+        return self.backstory
+    
+    def add_tool(self, tool_func):
+        """Add a tool to the agent."""
+        self.tools.append(tool_func)
+        # Recreate agent with updated tools
+        self.agent = self._create_agent()
+        logger.info(f"Added tool: {tool_func.name if hasattr(tool_func, 'name') else 'unknown'}")
+    
+    def update_role(self, role: str):
+        """Update agent role."""
+        self.role = role
+        self.agent = self._create_agent()
+        logger.info(f"Updated role to: {role}")
+    
+    def update_goal(self, goal: str):
+        """Update agent goal."""
+        self.goal = goal
+        self.agent = self._create_agent()
+        logger.info(f"Updated goal to: {goal}")
+    
+    def update_backstory(self, backstory: str):
+        """Update agent backstory."""
+        self.backstory = backstory
+        self.agent = self._create_agent()
+        logger.info("Updated backstory")

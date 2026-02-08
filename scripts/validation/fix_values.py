@@ -27,8 +27,7 @@ class ValuesFixer:
         # Guardian agents to add to all blueprints
         self.guardian_agents = [
             {"patternId": "knowledge-extender", "required": True, "description": "Extend knowledge base during development"},
-            {"patternId": "factory-updates", "required": True, "description": "Receive updates from the Antigravity Agent Factory"}
-        ]
+            {"patternId": "factory-updates", "required": True, "description": "Receive updates from the Antigravity Agent Factory"}        ]
         
         # Value-propagating skills to add
         self.value_skills = [

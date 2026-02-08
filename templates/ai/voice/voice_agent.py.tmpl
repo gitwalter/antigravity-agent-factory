@@ -1,0 +1,407 @@
+"""
+{{VOICE_AGENT_CLASS_NAME}} - Voice-Enabled AI Agent
+
+Purpose: {{VOICE_AGENT_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+This module provides a complete voice-enabled AI agent:
+- Real-time speech-to-text transcription
+- AI agent processing
+- Text-to-speech response generation
+- Full voice conversation loop
+- Streaming support for low latency
+- Conversation history management
+"""
+
+from typing import Optional, Callable, Dict, Any, List
+from pathlib import Path
+import logging
+import asyncio
+from dataclasses import dataclass, field
+from enum import Enum
+
+# Import voice components (adjust imports based on your structure)
+# from .speech_to_text import {{STT_CLASS_NAME}}, STTConfig
+# from .text_to_speech import {{TTS_CLASS_NAME}}, TTSConfig
+# from .realtime_audio import {{REALTIME_AUDIO_CLASS_NAME}}, AudioConfig
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class ConversationState(Enum):
+    """Conversation state enumeration."""
+    IDLE = "idle"
+    LISTENING = "listening"
+    PROCESSING = "processing"
+    SPEAKING = "speaking"
+    ERROR = "error"
+
+
+@dataclass
+class ConversationTurn:
+    """
+    A single turn in the conversation.
+    
+    Attributes:
+        user_text: User's transcribed text
+        agent_response: Agent's text response
+        user_audio: User's audio data (optional)
+        agent_audio: Agent's audio data (optional)
+        timestamp: Timestamp of the turn
+        metadata: Additional metadata
+    """
+    user_text: str
+    agent_response: str
+    user_audio: Optional[bytes] = None
+    agent_audio: Optional[bytes] = None
+    timestamp: float = field(default_factory=lambda: __import__('time').time())
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class VoiceAgentConfig:
+    """
+    Configuration for voice-enabled agent.
+    
+    Attributes:
+        stt_config: Speech-to-text configuration
+        tts_config: Text-to-speech configuration
+        audio_config: Audio streaming configuration
+        agent_model: AI agent model name/identifier
+        agent_temperature: Temperature for agent responses
+        max_conversation_history: Maximum conversation turns to keep
+        enable_streaming: Enable streaming mode for lower latency
+        wake_word: Optional wake word for activation
+        silence_threshold: Silence threshold for VAD (voice activity detection)
+    """
+    stt_config: Any = None  # STTConfig
+    tts_config: Any = None  # TTSConfig
+    audio_config: Any = None  # AudioConfig
+    agent_model: str = "{{AGENT_MODEL}}"
+    agent_temperature: float = {{AGENT_TEMPERATURE}}
+    max_conversation_history: int = {{MAX_CONVERSATION_HISTORY}}
+    enable_streaming: bool = {{ENABLE_STREAMING}}
+    wake_word: Optional[str] = {{WAKE_WORD}}
+    silence_threshold: float = {{SILENCE_THRESHOLD}}
+
+
+class {{VOICE_AGENT_CLASS_NAME}}:
+    """
+    {{VOICE_AGENT_CLASS_NAME}} - Complete voice-enabled AI agent.
+    
+    Provides a full voice conversation interface combining:
+    - Real-time speech-to-text
+    - AI agent processing
+    - Text-to-speech synthesis
+    - Conversation management
+    
+    Features:
+    - Real-time voice conversations
+    - Streaming for low latency
+    - Conversation history
+    - Wake word support
+    - Voice activity detection
+    - Error handling and recovery
+    
+    Example:
+        >>> agent = {{VOICE_AGENT_CLASS_NAME}}()
+        >>> agent.start_conversation()
+        >>> # Agent listens, processes, and responds
+        >>> agent.stop_conversation()
+    """
+    
+    def __init__(
+        self,
+        config: Optional[VoiceAgentConfig] = None,
+        agent_callback: Optional[Callable[[str, List[ConversationTurn]], str]] = None
+    ):
+        """
+        Initialize the voice-enabled agent.
+        
+        Args:
+            config: Agent configuration (uses defaults if None)
+            agent_callback: Callback function for agent processing.
+                          Takes (user_text, history) and returns response text.
+                          If None, uses default LLM-based processing.
+        """
+        self.config = config or VoiceAgentConfig()
+        self.agent_callback = agent_callback
+        
+        # Initialize components
+        # self.stt = {{STT_CLASS_NAME}}(config=self.config.stt_config)
+        # self.tts = {{TTS_CLASS_NAME}}(config=self.config.tts_config)
+        # self.audio = {{REALTIME_AUDIO_CLASS_NAME}}(config=self.config.audio_config)
+        
+        # Conversation state
+        self.state = ConversationState.IDLE
+        self.conversation_history: List[ConversationTurn] = []
+        self._is_active = False
+        self._conversation_task: Optional[asyncio.Task] = None
+        
+        logger.info(f"Initialized {{VOICE_AGENT_CLASS_NAME}} "
+                   f"(model={self.config.agent_model}, "
+                   f"streaming={self.config.enable_streaming})")
+    
+    def _process_with_agent(
+        self,
+        user_text: str,
+        history: List[ConversationTurn]
+    ) -> str:
+        """
+        Process user input with AI agent.
+        
+        Args:
+            user_text: User's transcribed text
+            history: Conversation history
+            
+        Returns:
+            Agent's text response
+        """
+        if self.agent_callback:
+            return self.agent_callback(user_text, history)
+        
+        # Default processing (implement your LLM integration here)
+        # This is a placeholder - replace with your actual agent implementation
+        logger.info(f"Processing user input: {user_text}")
+        
+        # Example: Simple echo for demonstration
+        # In production, integrate with your LLM/agent framework
+        response = f"I heard you say: {user_text}. This is a placeholder response."
+        
+        return response
+    
+    async def _conversation_loop(self):
+        """Main conversation loop (async)."""
+        logger.info("Starting conversation loop")
+        
+        try:
+            # Start audio capture
+            # self.audio.start_capture()
+            
+            while self._is_active:
+                self.state = ConversationState.LISTENING
+                
+                # Wait for user speech
+                # In streaming mode, continuously process audio chunks
+                # In non-streaming mode, wait for silence/VAD
+                
+                # For now, placeholder implementation
+                await asyncio.sleep(0.1)
+                
+                # TODO: Implement actual audio capture and processing
+                # 1. Capture audio chunk
+                # 2. Detect voice activity
+                # 3. Accumulate audio until silence
+                # 4. Transcribe with STT
+                # 5. Process with agent
+                # 6. Synthesize response with TTS
+                # 7. Play response
+                
+        except Exception as e:
+            logger.error(f"Error in conversation loop: {e}")
+            self.state = ConversationState.ERROR
+        finally:
+            # self.audio.stop_capture()
+            self.state = ConversationState.IDLE
+    
+    def start_conversation(self) -> None:
+        """
+        Start the voice conversation.
+        
+        Begins listening for user input and processing responses.
+        """
+        if self._is_active:
+            logger.warning("Conversation already active")
+            return
+        
+        self._is_active = True
+        
+        # Start async conversation loop
+        loop = asyncio.get_event_loop()
+        self._conversation_task = loop.create_task(self._conversation_loop())
+        
+        logger.info("Started voice conversation")
+    
+    def stop_conversation(self) -> None:
+        """Stop the voice conversation."""
+        if not self._is_active:
+            return
+        
+        self._is_active = False
+        
+        if self._conversation_task:
+            self._conversation_task.cancel()
+            try:
+                asyncio.get_event_loop().run_until_complete(
+                    asyncio.wait_for(self._conversation_task, timeout=1.0)
+                )
+            except (asyncio.CancelledError, asyncio.TimeoutError):
+                pass
+        
+        logger.info("Stopped voice conversation")
+    
+    def process_user_input(self, user_text: str) -> str:
+        """
+        Process user text input and return response.
+        
+        Args:
+            user_text: User's text input
+            
+        Returns:
+            Agent's text response
+            
+        Example:
+            >>> response = agent.process_user_input("Hello!")
+            >>> print(response)
+        """
+        self.state = ConversationState.PROCESSING
+        
+        # Get agent response
+        response_text = self._process_with_agent(user_text, self.conversation_history)
+        
+        # Create conversation turn
+        turn = ConversationTurn(
+            user_text=user_text,
+            agent_response=response_text
+        )
+        
+        # Add to history
+        self.conversation_history.append(turn)
+        
+        # Trim history if needed
+        if len(self.conversation_history) > self.config.max_conversation_history:
+            self.conversation_history = self.conversation_history[
+                -self.config.max_conversation_history:
+            ]
+        
+        self.state = ConversationState.IDLE
+        
+        return response_text
+    
+    async def process_user_input_async(self, user_text: str) -> str:
+        """
+        Async version of process_user_input.
+        
+        Args:
+            user_text: User's text input
+            
+        Returns:
+            Agent's text response
+        """
+        return self.process_user_input(user_text)
+    
+    def speak_response(self, text: str) -> None:
+        """
+        Synthesize and speak a text response.
+        
+        Args:
+            text: Text to speak
+            
+        Example:
+            >>> agent.speak_response("Hello, how can I help you?")
+        """
+        self.state = ConversationState.SPEAKING
+        
+        try:
+            # Synthesize with TTS
+            # result = self.tts.synthesize(text)
+            
+            # Play audio
+            # self.audio.start_playback()
+            # for chunk in self.tts.synthesize_stream(text):
+            #     self.audio.write_audio_chunk(chunk)
+            # self.audio.stop_playback()
+            
+            logger.info(f"Spoke response: {text[:50]}...")
+            
+        except Exception as e:
+            logger.error(f"Error speaking response: {e}")
+            self.state = ConversationState.ERROR
+        finally:
+            self.state = ConversationState.IDLE
+    
+    def get_conversation_history(self) -> List[ConversationTurn]:
+        """
+        Get conversation history.
+        
+        Returns:
+            List of conversation turns
+        """
+        return self.conversation_history.copy()
+    
+    def clear_history(self) -> None:
+        """Clear conversation history."""
+        self.conversation_history.clear()
+        logger.info("Cleared conversation history")
+    
+    def get_state(self) -> ConversationState:
+        """Get current conversation state."""
+        return self.state
+    
+    def is_active(self) -> bool:
+        """Check if conversation is active."""
+        return self._is_active
+    
+    def set_agent_callback(
+        self,
+        callback: Callable[[str, List[ConversationTurn]], str]
+    ) -> None:
+        """
+        Set custom agent processing callback.
+        
+        Args:
+            callback: Function that takes (user_text, history) and returns response
+        """
+        self.agent_callback = callback
+        logger.info("Updated agent callback")
+    
+    def __enter__(self):
+        """Context manager entry."""
+        self.start_conversation()
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit."""
+        self.stop_conversation()
+
+
+# Example usage
+if __name__ == "__main__":
+    # Initialize voice agent
+    config = VoiceAgentConfig(
+        agent_model="{{AGENT_MODEL}}",
+        agent_temperature={{AGENT_TEMPERATURE}},
+        enable_streaming={{ENABLE_STREAMING}}
+    )
+    
+    # Custom agent callback (optional)
+    def my_agent_callback(user_text: str, history: List[ConversationTurn]) -> str:
+        """Custom agent processing."""
+        # Integrate with your LLM/agent framework here
+        return f"Agent response to: {user_text}"
+    
+    agent = {{VOICE_AGENT_CLASS_NAME}}(
+        config=config,
+        agent_callback=my_agent_callback
+    )
+    
+    # Process text input
+    # response = agent.process_user_input("{{EXAMPLE_INPUT}}")
+    # print(f"Response: {response}")
+    
+    # Speak response
+    # agent.speak_response(response)
+    
+    # Start full conversation loop
+    # agent.start_conversation()
+    # # Conversation runs until stopped
+    # time.sleep(60)  # Run for 60 seconds
+    # agent.stop_conversation()
+    
+    # With context manager
+    # with agent:
+    #     # Conversation active
+    #     time.sleep(60)
+    # # Automatically stops on exit

@@ -1,21 +1,18 @@
 # Atlassian MCP Server Setup Guide
 
 This guide walks you through setting up the Atlassian MCP server for Antigravity, supporting both Atlassian Cloud and self-hosted instances.
-
 ## Prerequisites
 
 - Node.js 18+ installed
 - An Atlassian account (Cloud) or access to Atlassian Server/Data Center
 - Antigravity IDE installed
-
 ## Step 1: Generate an API Token
 
 ### For Atlassian Cloud
 
 1. Go to [Atlassian Account Settings > Security > API tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
 2. Click **Create API token**
-3. Give your token a label (e.g., "Antigravity MCP Atlassian")
-4. Click **Create**
+3. Give your token a label (e.g., "Antigravity MCP Atlassian")4. Click **Create**
 5. **Copy the token immediately** - you won't be able to see it again!
 
 ### For Self-Hosted/Server Instances
@@ -71,7 +68,6 @@ npm install -g @modelcontextprotocol/server-atlassian
    - **Windows**: `%APPDATA%\Antigravity\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json`
    - **macOS**: `~/Library/Application Support/Antigravity/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
    - **Linux**: `~/.config/Antigravity/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
-
 4. Copy the contents of your chosen config template (`mcp-config-cloud.json.tmpl` or `mcp-config-local.json.tmpl`)
 5. Replace the placeholder variables:
    - `${ATLASSIAN_DOMAIN}` → Your Atlassian domain
@@ -85,7 +81,6 @@ npm install -g @modelcontextprotocol/server-atlassian
 2. Open the MCP panel or check the status indicator
 3. The Atlassian MCP server should appear as connected
 4. Try using Atlassian-related commands in Antigravity (e.g., query Jira issues)
-
 ## Troubleshooting
 
 ### Server Not Connecting
@@ -95,7 +90,6 @@ npm install -g @modelcontextprotocol/server-atlassian
 - Verify your domain/base URL is correct
 - Ensure your API token is valid and not expired
 - Check Antigravity's MCP logs for error messages
-
 ### Authentication Errors
 
 - Verify your email matches your Atlassian account

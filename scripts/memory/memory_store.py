@@ -1,6 +1,5 @@
 """
 Hybrid Memory Store for Antigravity Agent Factory
-
 Provides persistent memory storage using ChromaDB for vector search
 and JSON for structured data. Includes proposal queue for user-validated
 memory creation.

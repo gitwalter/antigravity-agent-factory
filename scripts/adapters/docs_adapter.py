@@ -14,8 +14,7 @@ Features:
 Note: This is a foundational implementation. Full documentation parsing
 would require framework-specific handling or use of documentation APIs.
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 from dataclasses import dataclass
@@ -132,8 +131,7 @@ class DocsAdapter(BaseAdapter):
         
         if self._session is None or self._session.closed:
             self._session = aiohttp.ClientSession(
-                headers={"User-Agent": "Antigravity-Agent-Factory/1.0"},
-                timeout=aiohttp.ClientTimeout(total=self.config.timeout_seconds)
+                headers={"User-Agent": "Antigravity-Agent-Factory/1.0"},                timeout=aiohttp.ClientTimeout(total=self.config.timeout_seconds)
             )
         
         return self._session

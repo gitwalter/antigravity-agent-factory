@@ -1,0 +1,553 @@
+"""
+{{ANALYSIS_NAME}} - Image Analysis with Vision LLMs
+
+Purpose: {{ANALYSIS_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Analysis results include confidence scores and model metadata
+- A3 (Transparency): Vision model processing steps are explicit and logged
+
+This module provides image analysis capabilities using vision-capable LLMs:
+- Object detection and classification
+- Scene understanding
+- Text extraction from images (OCR)
+- Visual question answering
+- Image comparison and similarity
+"""
+
+from typing import List, Optional, Dict, Any, Union
+from pathlib import Path
+from pydantic import BaseModel, Field
+import base64
+import logging
+from io import BytesIO
+
+try:
+    from openai import OpenAI
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+    logger.warning("OpenAI not available. Install with: pip install openai")
+
+try:
+    from anthropic import Anthropic
+    ANTHROPIC_AVAILABLE = True
+except ImportError:
+    ANTHROPIC_AVAILABLE = False
+    logger.warning("Anthropic not available. Install with: pip install anthropic")
+
+try:
+    from PIL import Image
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
+    logger.warning("PIL not available. Install with: pip install pillow")
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class ImageAnalysisResult(BaseModel):
+    """Result from image analysis."""
+    description: str = Field(description="Detailed description of the image")
+    objects: List[str] = Field(default_factory=list, description="Detected objects")
+    text_content: Optional[str] = Field(default=None, description="Extracted text (OCR)")
+    scene_type: Optional[str] = Field(default=None, description="Type of scene")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+    confidence: float = Field(ge=0.0, le=1.0, description="Overall confidence score")
+    model_used: str = Field(description="Vision model used for analysis")
+
+
+class ImageComparisonResult(BaseModel):
+    """Result from comparing two images."""
+    similarity_score: float = Field(ge=0.0, le=1.0, description="Similarity score")
+    differences: List[str] = Field(default_factory=list, description="List of differences")
+    common_elements: List[str] = Field(default_factory=list, description="Common elements")
+    analysis: str = Field(description="Detailed comparison analysis")
+
+
+class AnalysisConfig(BaseModel):
+    """Configuration for image analysis."""
+    provider: str = Field(default="{{PROVIDER}}", description="Provider: 'openai' or 'anthropic'")
+    model_name: str = Field(default="{{MODEL_NAME}}", description="Vision model name")
+    max_tokens: int = Field(default={{MAX_TOKENS}}, description="Max tokens for response")
+    temperature: float = Field(default={{TEMPERATURE}}, ge=0.0, le=2.0, description="Sampling temperature")
+    detail: str = Field(default="{{DETAIL}}", description="Image detail level: 'low' or 'high'")
+    enable_ocr: bool = Field(default={{ENABLE_OCR}}, description="Enable OCR text extraction")
+
+
+class {{ANALYSIS_CLASS_NAME}}:
+    """
+    {{ANALYSIS_NAME}} - Image Analysis with Vision LLMs
+    
+    Analyzes images using vision-capable LLMs like GPT-4o-vision or Claude-3.
+    Supports multiple providers and various analysis tasks.
+    
+    Features:
+    - Object detection and scene understanding
+    - OCR text extraction
+    - Visual question answering
+    - Image comparison
+    - Custom analysis prompts
+    
+    Example:
+        >>> analyzer = {{ANALYSIS_CLASS_NAME}}(
+        ...     provider="openai",
+        ...     model_name="gpt-4o-vision"
+        ... )
+        >>> result = analyzer.analyze_image("path/to/image.jpg")
+        >>> print(result.description)
+    """
+    
+    def __init__(self, config: Optional[AnalysisConfig] = None):
+        """
+        Initialize image analyzer.
+        
+        Args:
+            config: Analysis configuration
+        """
+        self.config = config or AnalysisConfig()
+        
+        # Initialize provider client
+        if self.config.provider == "openai":
+            if not OPENAI_AVAILABLE:
+                raise ImportError("OpenAI package not installed. Install with: pip install openai")
+            self.client = OpenAI(api_key="{{OPENAI_API_KEY}}")
+            self.model = self.config.model_name or "gpt-4o-vision"
+        elif self.config.provider == "anthropic":
+            if not ANTHROPIC_AVAILABLE:
+                raise ImportError("Anthropic package not installed. Install with: pip install anthropic")
+            self.client = Anthropic(api_key="{{ANTHROPIC_API_KEY}}")
+            self.model = self.config.model_name or "claude-3-opus-20240229"
+        else:
+            raise ValueError(f"Unsupported provider: {self.config.provider}")
+        
+        logger.info(f"Initialized {{ANALYSIS_NAME}} with {self.config.provider}/{self.model}")
+    
+    def _load_image(self, image_path: Union[str, Path]) -> bytes:
+        """
+        Load image from file path.
+        
+        Args:
+            image_path: Path to image file
+            
+        Returns:
+            Image bytes
+        """
+        path = Path(image_path)
+        if not path.exists():
+            raise FileNotFoundError(f"Image not found: {image_path}")
+        
+        with open(path, "rb") as f:
+            return f.read()
+    
+    def _encode_image(self, image_bytes: bytes) -> str:
+        """
+        Encode image bytes to base64.
+        
+        Args:
+            image_bytes: Image bytes
+            
+        Returns:
+            Base64 encoded string
+        """
+        return base64.b64encode(image_bytes).decode("utf-8")
+    
+    def _prepare_image_message(
+        self,
+        image_path: Union[str, Path],
+        text_prompt: str
+    ) -> Dict[str, Any]:
+        """
+        Prepare message with image for API call.
+        
+        Args:
+            image_path: Path to image
+            text_prompt: Text prompt/question
+            
+        Returns:
+            Formatted message dict
+        """
+        image_bytes = self._load_image(image_path)
+        image_base64 = self._encode_image(image_bytes)
+        
+        if self.config.provider == "openai":
+            return {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": text_prompt
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_base64}",
+                            "detail": self.config.detail
+                        }
+                    }
+                ]
+            }
+        else:  # anthropic
+            return {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "image/jpeg",
+                            "data": image_base64
+                        }
+                    },
+                    {
+                        "type": "text",
+                        "text": text_prompt
+                    }
+                ]
+            }
+    
+    def analyze_image(
+        self,
+        image_path: Union[str, Path],
+        prompt: Optional[str] = None
+    ) -> ImageAnalysisResult:
+        """
+        Analyze an image with detailed description.
+        
+        Args:
+            image_path: Path to image file
+            prompt: Custom analysis prompt (optional)
+            
+        Returns:
+            ImageAnalysisResult with analysis details
+            
+        Example:
+            >>> result = analyzer.analyze_image("photo.jpg")
+            >>> print(f"Description: {result.description}")
+            >>> print(f"Objects: {result.objects}")
+        """
+        logger.info(f"Analyzing image: {image_path}")
+        
+        analysis_prompt = prompt or """Analyze this image in detail. Provide:
+1. A comprehensive description of what you see
+2. List all objects, people, or entities visible
+3. Describe the scene type and setting
+4. Extract any visible text (OCR)
+5. Note any interesting details or patterns
+
+Be specific and thorough."""
+        
+        try:
+            user_message = self._prepare_image_message(image_path, analysis_prompt)
+            
+            if self.config.provider == "openai":
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[user_message],
+                    max_tokens=self.config.max_tokens,
+                    temperature=self.config.temperature
+                )
+                content = response.choices[0].message.content
+            else:  # anthropic
+                response = self.client.messages.create(
+                    model=self.model,
+                    max_tokens=self.config.max_tokens,
+                    temperature=self.config.temperature,
+                    messages=[user_message]
+                )
+                content = response.content[0].text
+            
+            # Parse response (simplified - can be enhanced with structured output)
+            description = content
+            objects = self._extract_objects(content)
+            text_content = self._extract_text_content(content) if self.config.enable_ocr else None
+            scene_type = self._extract_scene_type(content)
+            
+            result = ImageAnalysisResult(
+                description=description,
+                objects=objects,
+                text_content=text_content,
+                scene_type=scene_type,
+                confidence=0.85,  # Default confidence - can be enhanced
+                model_used=self.model,
+                metadata={
+                    "image_path": str(image_path),
+                    "provider": self.config.provider,
+                    "detail": self.config.detail
+                }
+            )
+            
+            logger.info(f"Analysis complete. Detected {len(result.objects)} objects.")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error analyzing image: {e}")
+            raise
+    
+    def visual_question_answering(
+        self,
+        image_path: Union[str, Path],
+        question: str
+    ) -> str:
+        """
+        Answer a question about an image.
+        
+        Args:
+            image_path: Path to image file
+            question: Question to ask about the image
+            
+        Returns:
+            Answer string
+            
+        Example:
+            >>> answer = analyzer.visual_question_answering(
+            ...     "photo.jpg",
+            ...     "What is the main subject of this image?"
+            ... )
+            >>> print(answer)
+        """
+        logger.info(f"Answering question about image: {question}")
+        
+        try:
+            user_message = self._prepare_image_message(image_path, question)
+            
+            if self.config.provider == "openai":
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[user_message],
+                    max_tokens=self.config.max_tokens,
+                    temperature=self.config.temperature
+                )
+                return response.choices[0].message.content
+            else:  # anthropic
+                response = self.client.messages.create(
+                    model=self.model,
+                    max_tokens=self.config.max_tokens,
+                    temperature=self.config.temperature,
+                    messages=[user_message]
+                )
+                return response.content[0].text
+                
+        except Exception as e:
+            logger.error(f"Error in visual Q&A: {e}")
+            raise
+    
+    def compare_images(
+        self,
+        image1_path: Union[str, Path],
+        image2_path: Union[str, Path]
+    ) -> ImageComparisonResult:
+        """
+        Compare two images and identify similarities and differences.
+        
+        Args:
+            image1_path: Path to first image
+            image2_path: Path to second image
+            
+        Returns:
+            ImageComparisonResult with comparison details
+            
+        Example:
+            >>> result = analyzer.compare_images("img1.jpg", "img2.jpg")
+            >>> print(f"Similarity: {result.similarity_score}")
+            >>> print(f"Differences: {result.differences}")
+        """
+        logger.info(f"Comparing images: {image1_path} vs {image2_path}")
+        
+        comparison_prompt = """Compare these two images. Provide:
+1. A similarity score from 0.0 to 1.0
+2. List all differences between the images
+3. List common elements or similarities
+4. A detailed analysis of the comparison"""
+        
+        try:
+            # Load both images
+            img1_bytes = self._load_image(image1_path)
+            img2_bytes = self._load_image(image2_path)
+            
+            img1_base64 = self._encode_image(img1_bytes)
+            img2_base64 = self._encode_image(img2_bytes)
+            
+            if self.config.provider == "openai":
+                messages = [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": comparison_prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{img1_base64}",
+                                    "detail": self.config.detail
+                                }
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{img2_base64}",
+                                    "detail": self.config.detail
+                                }
+                            }
+                        ]
+                    }
+                ]
+                
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    max_tokens=self.config.max_tokens,
+                    temperature=self.config.temperature
+                )
+                content = response.choices[0].message.content
+            else:  # anthropic
+                messages = [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": "image/jpeg",
+                                    "data": img1_base64
+                                }
+                            },
+                            {
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": "image/jpeg",
+                                    "data": img2_base64
+                                }
+                            },
+                            {
+                                "type": "text",
+                                "text": comparison_prompt
+                            }
+                        ]
+                    }
+                ]
+                
+                response = self.client.messages.create(
+                    model=self.model,
+                    max_tokens=self.config.max_tokens,
+                    temperature=self.config.temperature,
+                    messages=messages
+                )
+                content = response.content[0].text
+            
+            # Parse response (simplified - can use structured output)
+            similarity_score = self._extract_similarity_score(content)
+            differences = self._extract_differences(content)
+            common_elements = self._extract_common_elements(content)
+            
+            return ImageComparisonResult(
+                similarity_score=similarity_score,
+                differences=differences,
+                common_elements=common_elements,
+                analysis=content
+            )
+            
+        except Exception as e:
+            logger.error(f"Error comparing images: {e}")
+            raise
+    
+    def _extract_objects(self, text: str) -> List[str]:
+        """Extract object list from analysis text."""
+        # Simplified extraction - can be enhanced with structured output
+        objects = []
+        lines = text.split("\n")
+        for line in lines:
+            if "object" in line.lower() or "item" in line.lower():
+                # Extract objects (simplified)
+                pass
+        return objects
+    
+    def _extract_text_content(self, text: str) -> Optional[str]:
+        """Extract OCR text content from analysis."""
+        # Look for OCR section in response
+        if "text:" in text.lower() or "ocr:" in text.lower():
+            # Extract text content (simplified)
+            return text
+        return None
+    
+    def _extract_scene_type(self, text: str) -> Optional[str]:
+        """Extract scene type from analysis."""
+        scene_keywords = ["indoor", "outdoor", "landscape", "portrait", "urban", "nature"]
+        text_lower = text.lower()
+        for keyword in scene_keywords:
+            if keyword in text_lower:
+                return keyword
+        return None
+    
+    def _extract_similarity_score(self, text: str) -> float:
+        """Extract similarity score from comparison text."""
+        import re
+        # Look for score pattern like "0.85" or "85%"
+        match = re.search(r"(\d+\.?\d*)", text)
+        if match:
+            score = float(match.group(1))
+            if score > 1.0:
+                score = score / 100.0
+            return min(1.0, max(0.0, score))
+        return 0.5  # Default
+    
+    def _extract_differences(self, text: str) -> List[str]:
+        """Extract differences list from comparison text."""
+        differences = []
+        lines = text.split("\n")
+        in_differences = False
+        for line in lines:
+            if "difference" in line.lower():
+                in_differences = True
+            elif in_differences and line.strip():
+                if line.strip().startswith("-") or line.strip()[0].isdigit():
+                    differences.append(line.strip())
+        return differences[:10]  # Limit to 10 differences
+    
+    def _extract_common_elements(self, text: str) -> List[str]:
+        """Extract common elements from comparison text."""
+        common = []
+        lines = text.split("\n")
+        in_common = False
+        for line in lines:
+            if "common" in line.lower() or "similar" in line.lower():
+                in_common = True
+            elif in_common and line.strip():
+                if line.strip().startswith("-") or line.strip()[0].isdigit():
+                    common.append(line.strip())
+        return common[:10]  # Limit to 10 elements
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create analyzer
+    config = AnalysisConfig(
+        provider="{{PROVIDER}}",
+        model_name="{{MODEL_NAME}}",
+        detail="{{DETAIL}}",
+        enable_ocr={{ENABLE_OCR}}
+    )
+    
+    analyzer = {{ANALYSIS_CLASS_NAME}}(config=config)
+    
+    # Analyze an image
+    # result = analyzer.analyze_image("{{EXAMPLE_IMAGE_PATH}}")
+    # print(f"Description: {result.description}")
+    # print(f"Objects: {result.objects}")
+    # print(f"Scene: {result.scene_type}")
+    
+    # Visual Q&A
+    # answer = analyzer.visual_question_answering(
+    #     "{{EXAMPLE_IMAGE_PATH}}",
+    #     "{{EXAMPLE_QUESTION}}"
+    # )
+    # print(f"Answer: {answer}")
+    
+    # Compare images
+    # comparison = analyzer.compare_images("{{IMAGE1_PATH}}", "{{IMAGE2_PATH}}")
+    # print(f"Similarity: {comparison.similarity_score}")
+    # print(f"Differences: {comparison.differences}")

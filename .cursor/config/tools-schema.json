@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cursor-agent-factory/schemas/tools.json",
+  "title": "Tool Configuration Schema",
+  "description": "Schema for tool path configuration in Cursor Agent Factory",
+  "type": "object",
+  "required": ["tools"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the configuration file"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Configuration version (semver)"
+    },
+    "tools": {
+      "type": "object",
+      "description": "Tool definitions with paths and metadata",
+      "additionalProperties": {
+        "$ref": "#/definitions/tool"
+      }
+    },
+    "platforms": {
+      "type": "object",
+      "description": "Platform-specific configuration",
+      "properties": {
+        "windows": { "$ref": "#/definitions/platform" },
+        "linux": { "$ref": "#/definitions/platform" },
+        "darwin": { "$ref": "#/definitions/platform" }
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "description": "Platform-specific default paths",
+      "properties": {
+        "linux": { "$ref": "#/definitions/defaultPaths" },
+        "darwin": { "$ref": "#/definitions/defaultPaths" }
+      }
+    }
+  },
+  "definitions": {
+    "tool": {
+      "type": "object",
+      "required": ["path", "description"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Full path to the tool executable"
+        },
+        "env_var": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "description": "Environment variable name for override"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the tool"
+        },
+        "docs": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to tool documentation"
+        },
+        "version_command": {
+          "type": "string",
+          "description": "Command to check tool version (e.g., '--version')"
+        }
+      }
+    },
+    "platform": {
+      "type": "object",
+      "properties": {
+        "shell": {
+          "type": "string",
+          "description": "Default shell for the platform"
+        },
+        "path_separator": {
+          "type": "string",
+          "enum": ["/", "\\"],
+          "description": "Path separator character"
+        },
+        "env_syntax": {
+          "type": "string",
+          "description": "Syntax for environment variable references"
+        }
+      }
+    },
+    "defaultPaths": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Default tool paths for a platform"
+    }
+  }
+}

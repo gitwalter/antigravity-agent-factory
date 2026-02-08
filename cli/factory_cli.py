@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 Antigravity Agent Factory - Command Line Interface
-
 CLI for generating Cursor agent development systems.
 
 Usage:
@@ -10,8 +9,7 @@ Usage:
     python factory_cli.py --interactive --output C:\\Projects\\my-project
     python factory_cli.py --list-blueprints
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 import argparse
@@ -39,8 +37,7 @@ def display_welcome() -> None:
     """Display warm welcome message."""
     print()
     print("=" * 60)
-    print("  Welcome to Antigravity Agent Factory!")
-    print("=" * 60)
+    print("  Welcome to Antigravity Agent Factory!")    print("=" * 60)
     print()
     print("We're excited to show you what's possible.")
     print("Let's create something amazing together...")
@@ -65,13 +62,11 @@ def display_tour(output_dir: str, files_created: int) -> None:
     print("  .agentrules    Your AI guidance system (the brain)")
     print("  PURPOSE.md      Your project's mission (the heart)")
     print("  .agent/agents/ Specialized AI assistants (your team)")
-    print("  .agent/skills/ Reusable capabilities")
-    print("  workflows/      Development methodology")
+    print("  .agent/skills/ Reusable capabilities")    print("  workflows/      Development methodology")
     print("  knowledge/      Domain knowledge files")
     print()
     print("Ready to try it out?")
-    print(f"  1. Open {output_dir} in Antigravity IDE")
-    print('  2. Ask: "Help me understand this project"')
+    print(f"  1. Open {output_dir} in Antigravity IDE")    print('  2. Ask: "Help me understand this project"')
     print('  3. Ask: "Create a new task endpoint"')
     print()
     print("When you're ready to build your own:")
@@ -209,8 +204,7 @@ def interactive_mode(output_dir: str) -> None:
     Args:
         output_dir: Target output directory.
     """
-    print("\n=== Antigravity Agent Factory - Interactive Mode ===\n")
-    print("=" * 60)
+    print("\n=== Antigravity Agent Factory - Interactive Mode ===\n")    print("=" * 60)
     print("Let's gather requirements for your new agent system.\n")
     
     # Phase 1: Project Context
@@ -351,8 +345,8 @@ def interactive_mode(output_dir: str) -> None:
         'brave-search': {'name': 'brave-search', 'command': 'npx', 'args': ['-y', '@anthropics/mcp-server-brave-search'], 'env': {'BRAVE_API_KEY': '${BRAVE_API_KEY}'}, 'purpose': 'Web search'},
         'notion': {'name': 'notion', 'url': 'https://mcp.notion.so/mcp', 'purpose': 'Notion docs'},
         'figma': {'name': 'figma', 'url': 'https://mcp.figma.com', 'purpose': 'Design extraction'},
-        'sap-documentation': {'name': 'sap-documentation', 'url': 'https://mcp-sap-docs.marianzeis.de/mcp', 'purpose': 'SAP Help Portal'}
-    }
+        'sap-documentation': {'name': 'sap-documentation', 'url': 'https://mcp-sap-docs.marianzeis.de/mcp', 'purpose': 'SAP Help Portal'},
+        'sap-abap-documentation': {'name': 'sap-abap-documentation', 'url': 'https://mcp-abap.marianzeis.de/mcp', 'purpose': 'ABAP keywords, DSAG guidelines, Clean ABAP'}    }
     
     # Step 1: Ask about starter pack
     print("   Choose a starter pack or custom selection:\n")
@@ -528,8 +522,7 @@ def interactive_mode(output_dir: str) -> None:
         print(f"   Files created: {len(result['files_created'])}")
         print("\n   Next steps:")
         print("   1. Open the project in Antigravity IDE")
-        print("   2. The .agentrules will configure agent behavior")
-        print("   3. Start developing with AI assistance!")
+        print("   2. The .agentrules will configure agent behavior")        print("   3. Start developing with AI assistance!")
     else:
         print("\n[ERROR] Generation failed:")
         for error in result['errors']:
@@ -723,8 +716,7 @@ def onboard_repository(
     pm_doc_backend: str = None,
     pm_methodology: str = None
 ) -> None:
-    """Onboard an existing repository with Antigravity Agent Factory.
-    
+    """Onboard an existing repository with Antigravity Agent Factory.    
     Args:
         repo_path: Path to repository to onboard.
         blueprint_id: Optional blueprint to use.
@@ -1245,8 +1237,7 @@ def extend_knowledge_topic(
     Uses artifacts:
     - Template: templates/knowledge/knowledge-file.tmpl
     - Pattern: patterns/knowledge/knowledge-schema.json
-    - Skill: .agent/skills/extend-knowledge/SKILL.md
-    
+    - Skill: .agent/skills/extend-knowledge/SKILL.md    
     Args:
         topic_name: Topic to extend
         auto_apply: Not used
@@ -1303,8 +1294,7 @@ def extend_knowledge_topic(
         print("  2. PATTERN: patterns/knowledge/knowledge-schema.json")
         print("     Read this for validation rules (min 3 patterns, etc.)")
         print()
-        print("  3. SKILL: .agent/skills/extend-knowledge/SKILL.md")
-        print("     Follow this step-by-step process")
+        print("  3. SKILL: .agent/skills/extend-knowledge/SKILL.md")        print("     Follow this step-by-step process")
         print()
         
         # Show instructions
@@ -1536,8 +1526,7 @@ def export_dependency_graph(output_file: str) -> None:
 def main():
     """Main entry point for the CLI."""
     parser = argparse.ArgumentParser(
-        description='Antigravity Agent Factory - Generate Cursor agent development systems',
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description='Antigravity Agent Factory - Generate Antigravity agent development systems',        formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
 Examples:
   # Quick Start - See it work in 5 minutes!
@@ -1632,8 +1621,7 @@ Examples:
     parser.add_argument(
         '--version',
         action='version',
-        version='Antigravity Agent Factory 2.0.0'
-    )
+        version='Antigravity Agent Factory 2.0.0'    )
     
     # Onboarding commands
     parser.add_argument(

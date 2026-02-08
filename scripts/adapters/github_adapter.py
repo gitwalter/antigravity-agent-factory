@@ -18,15 +18,13 @@ Dependencies:
     - aiohttp: Async HTTP client
     - GitHub API v4 (GraphQL) for efficient queries
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 import asyncio
 import re
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+from datetime import datetime, timezonefrom typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
 
 try:
@@ -205,8 +203,7 @@ class GitHubAdapter(BaseAdapter):
         if self._session is None or self._session.closed:
             headers = {
                 "Accept": "application/vnd.github.v3+json",
-                "User-Agent": "Antigravity-Agent-Factory/1.0",
-            }
+                "User-Agent": "Antigravity-Agent-Factory/1.0",            }
             if self.config.api_key:
                 headers["Authorization"] = f"token {self.config.api_key}"
             
@@ -242,8 +239,11 @@ class GitHubAdapter(BaseAdapter):
         """
         # Check rate limit
         if self._rate_limit_remaining <= 0 and self._rate_limit_reset:
-            wait_time = (self._rate_limit_reset - datetime.utcnow()).total_seconds()
-            if wait_time > 0:
+            now = datetime.now(timezone.utc)
+            # Ensure rate_limit_reset is timezone-aware
+            if self._rate_limit_reset.tzinfo is None:
+                self._rate_limit_reset = self._rate_limit_reset.replace(tzinfo=timezone.utc)
+            wait_time = (self._rate_limit_reset - now).total_seconds()            if wait_time > 0:
                 await asyncio.sleep(min(wait_time, 60))  # Max 60s wait
         
         session = await self._get_session()
@@ -255,8 +255,8 @@ class GitHubAdapter(BaseAdapter):
                 self._rate_limit_remaining = int(response.headers.get("X-RateLimit-Remaining", 5000))
                 reset_ts = response.headers.get("X-RateLimit-Reset")
                 if reset_ts:
-                    self._rate_limit_reset = datetime.fromtimestamp(int(reset_ts))
-                
+                    # Use timezone-aware datetime for consistency
+                    self._rate_limit_reset = datetime.fromtimestamp(int(reset_ts), tz=timezone.utc)                
                 if response.status == 200:
                     return await response.json()
                 elif response.status == 403:
@@ -285,8 +285,7 @@ class GitHubAdapter(BaseAdapter):
         Returns:
             ISO timestamp string
         """
-        return datetime.utcnow().isoformat()
-    
+        return datetime.now(timezone.utc).isoformat()    
     async def fetch_updates(
         self,
         target_files: Optional[List[str]] = None,

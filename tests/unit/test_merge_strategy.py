@@ -26,8 +26,7 @@ from scripts.git.merge_strategy import (
     merge_json_files,
     _deep_merge,
 )
-from scripts.analysis.repo_analyzer import RepoInventory, AgentruleAnalysis, McpAnalysis
-
+from scripts.analysis.repo_analyzer import RepoInventory, AntigravityruleAnalysis, McpAnalysis
 
 class TestConflictResolution:
     """Tests for ConflictResolution enum."""
@@ -46,8 +45,7 @@ class TestArtifactType:
     
     def test_artifact_type_values(self):
         """Test artifact type values."""
-        assert ArtifactType.AGENTRULES.value == "agentrules"
-        assert ArtifactType.AGENT.value == "agent"
+        assert ArtifactType.CURSORRULES.value == "cursorrules"        assert ArtifactType.AGENT.value == "agent"
         assert ArtifactType.SKILL.value == "skill"
         assert ArtifactType.MCP_CONFIG.value == "mcp_config"
         assert ArtifactType.KNOWLEDGE.value == "knowledge"
@@ -67,10 +65,9 @@ class TestMergeStrategy:
 class TestDefaultStrategies:
     """Tests for default strategy mappings."""
     
-    def test_agentrules_strategy(self):
-        """Test default strategy for agentrules."""
-        assert DEFAULT_STRATEGIES[ArtifactType.AGENTRULES] == MergeStrategy.MERGE
-    
+    def test_cursorrules_strategy(self):
+        """Test default strategy for cursorrules."""
+        assert DEFAULT_STRATEGIES[ArtifactType.CURSORRULES] == MergeStrategy.MERGE    
     def test_agent_strategy(self):
         """Test default strategy for agents."""
         assert DEFAULT_STRATEGIES[ArtifactType.AGENT] == MergeStrategy.ADD
@@ -92,8 +89,7 @@ class TestConflict:
         conflict = Conflict(
             artifact_type=ArtifactType.AGENT,
             artifact_name="code-reviewer",
-            existing_path=Path("/repo/.agent/agents/code-reviewer.md"),
-            new_content="# New content",
+            existing_path=Path("/repo/.agent/agents/code-reviewer.md"),            new_content="# New content",
         )
         
         assert conflict.artifact_type == ArtifactType.AGENT
@@ -133,10 +129,9 @@ class TestConflictPrompt:
     def test_format_prompt(self):
         """Test formatting a conflict prompt."""
         conflict = Conflict(
-            artifact_type=ArtifactType.AGENTRULES,
+            artifact_type=ArtifactType.CURSORRULES,
             artifact_name=".agentrules",
-            existing_path=Path("/repo/Agentrules"),
-            new_content="New rules",
+            existing_path=Path("/repo/.agentrules"),            new_content="New rules",
             diff_summary="+50 lines, -10 lines",
         )
         
@@ -153,9 +148,8 @@ class TestConflictPrompt:
         
         formatted = prompt.format_prompt()
         
-        assert "CONFLICT: agentrules" in formatted
-        assert ".agentrules" in formatted
-        assert "Recommendation: merge" in formatted
+        assert "CONFLICT: cursorrules" in formatted
+        assert ".agentrules" in formatted        assert "Recommendation: merge" in formatted
         assert "[1] keep" in formatted
         assert "[2] replace" in formatted
         assert "[3] merge" in formatted
@@ -193,8 +187,7 @@ class TestMergeEngine:
         """Helper to create a test inventory."""
         return RepoInventory(
             path=tmpdir,
-            agentrules=AgentruleAnalysis(exists=True, content="# Existing rules"),
-            mcp=McpAnalysis(exists=True, servers=["filesystem"]),
+            cursorrules=AntigravityruleAnalysis(exists=True, content="# Existing rules"),            mcp=McpAnalysis(exists=True, servers=["filesystem"]),
             existing_agents=["code-reviewer"],
             existing_skills=["tdd"],
             existing_knowledge=["patterns.json"],
@@ -209,17 +202,16 @@ class TestMergeEngine:
             assert engine.inventory == inventory
             assert engine.resolutions == {}
     
-    def test_detect_agentrules_conflict(self):
-        """Test detecting agentrules conflict."""
+    def test_detect_cursorrules_conflict(self):
+        """Test detecting cursorrules conflict."""
         with tempfile.TemporaryDirectory() as tmpdir:
             repo_path = Path(tmpdir)
-            agentrules = repo_path / ".agentrules"
-            agentrules.write_text("# Existing rules")
+            cursorrules = repo_path / ".agentrules"
+            cursorrules.write_text("# Existing rules")
             
             inventory = RepoInventory(
                 path=repo_path,
-                agentrules=AgentruleAnalysis(
-                    exists=True,
+                cursorrules=AntigravityruleAnalysis(                    exists=True,
                     content="# Existing rules"
                 ),
             )
@@ -229,18 +221,16 @@ class TestMergeEngine:
                 desired_agents=[],
                 desired_skills=[],
                 desired_knowledge=[],
-                new_agentrules="# New rules\n# Different content",
+                new_cursorrules="# New rules\n# Different content",
             )
             
             assert len(conflicts) == 1
-            assert conflicts[0].artifact_type == ArtifactType.AGENTRULES
-    
+            assert conflicts[0].artifact_type == ArtifactType.CURSORRULES    
     def test_detect_agent_conflict(self):
         """Test detecting agent conflict."""
         with tempfile.TemporaryDirectory() as tmpdir:
             repo_path = Path(tmpdir)
-            agents_dir = repo_path / ".agent" / "agents"
-            agents_dir.mkdir(parents=True)
+            agents_dir = repo_path / ".agent" / "agents"            agents_dir.mkdir(parents=True)
             (agents_dir / "code-reviewer.md").write_text("# Existing agent")
             
             # Create factory patterns dir
@@ -269,8 +259,7 @@ class TestMergeEngine:
         """Test detecting skill conflict."""
         with tempfile.TemporaryDirectory() as tmpdir:
             repo_path = Path(tmpdir)
-            skill_dir = repo_path / ".agent" / "skills" / "tdd"
-            skill_dir.mkdir(parents=True)
+            skill_dir = repo_path / ".agent" / "skills" / "tdd"            skill_dir.mkdir(parents=True)
             (skill_dir / "SKILL.md").write_text("# Existing skill")
             
             inventory = RepoInventory(
@@ -292,10 +281,9 @@ class TestMergeEngine:
         """Test detecting MCP configuration conflict."""
         with tempfile.TemporaryDirectory() as tmpdir:
             repo_path = Path(tmpdir)
-            agent_dir = repo_path / ".agent"
-            agent_dir.mkdir()
-            (agent_dir / "mcp.json").write_text('{"mcpServers": {"git": {}}}')
-            
+            cursor_dir = repo_path / ".agent"
+            cursor_dir.mkdir()
+            (cursor_dir / "mcp.json").write_text('{"mcpServers": {"git": {}}}')            
             inventory = RepoInventory(
                 path=repo_path,
                 mcp=McpAnalysis(exists=True, servers=["git"]),
@@ -317,36 +305,32 @@ class TestMergeEngine:
         """Test no conflict when content is identical."""
         with tempfile.TemporaryDirectory() as tmpdir:
             repo_path = Path(tmpdir)
-            agentrules = repo_path / ".agentrules"
+            cursorrules = repo_path / ".agentrules"
             content = "# Same content"
-            agentrules.write_text(content)
+            cursorrules.write_text(content)
             
             inventory = RepoInventory(
                 path=repo_path,
-                agentrules=AgentruleAnalysis(exists=True, content=content),
-            )
+                cursorrules=AntigravityruleAnalysis(exists=True, content=content),            )
             
             engine = MergeEngine(inventory)
             conflicts = engine.detect_conflicts(
                 desired_agents=[],
                 desired_skills=[],
                 desired_knowledge=[],
-                new_agentrules=content,
-            )
+                new_cursorrules=content,            )
             
             assert len(conflicts) == 0
     
-    def test_get_conflict_prompt_agentrules(self):
-        """Test getting prompt for agentrules conflict."""
-        with tempfile.TemporaryDirectory() as tmpdir:
+    def test_get_conflict_prompt_cursorrules(self):
+        """Test getting prompt for cursorrules conflict."""        with tempfile.TemporaryDirectory() as tmpdir:
             inventory = RepoInventory(path=Path(tmpdir))
             engine = MergeEngine(inventory)
             
             conflict = Conflict(
-                artifact_type=ArtifactType.AGENTRULES,
+                artifact_type=ArtifactType.CURSORRULES,
                 artifact_name=".agentrules",
-                existing_path=Path(tmpdir) / ".agentrules",
-                new_content="New content",
+                existing_path=Path(tmpdir) / ".agentrules",                new_content="New content",
             )
             
             prompt = engine.get_conflict_prompt(conflict)
@@ -363,8 +347,7 @@ class TestMergeEngine:
             conflict = Conflict(
                 artifact_type=ArtifactType.COMMAND,
                 artifact_name="my-command",
-                existing_path=Path(tmpdir) / ".agent" / "commands" / "my-command.md",
-                new_content="New content",
+                existing_path=Path(tmpdir) / ".agent" / "commands" / "my-command.md",                new_content="New content",
             )
             
             prompt = engine.get_conflict_prompt(conflict)

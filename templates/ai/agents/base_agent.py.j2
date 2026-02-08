@@ -1,0 +1,29 @@
+"""{{ agent_name }} - {{ description }}"""
+from abc import ABC, abstractmethod
+from pydantic import BaseModel
+import aisuite as ai
+
+class {{ agent_class }}Config(BaseModel):
+    """Configuration for {{ agent_name }}."""
+    model: str = "google:gemini-2.5-flash"
+    temperature: float = 0.7
+    max_tokens: int = 4096
+
+class {{ agent_class }}(ABC):
+    """Base class for {{ agent_name }}."""
+    
+    def __init__(self, config: {{ agent_class }}Config = None):
+        self.config = config or {{ agent_class }}Config()
+        self.client = ai.Client()
+        self.tools = []
+    
+    @property
+    @abstractmethod
+    def system_prompt(self) -> str:
+        """Return the system prompt."""
+        pass
+    
+    @abstractmethod
+    async def run(self, input_data: dict) -> dict:
+        """Execute the agent."""
+        pass

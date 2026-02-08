@@ -1,171 +1,164 @@
 {
-  "metadata": {
-    "name": "Integration Security Patterns",
-    "description": "OAuth, certificates, encryption, and security patterns for SAP integrations",
-    "version": "1.0.0",
-    "lastUpdated": "2026-01-30"
-  },
-  "authentication": {
-    "basicAuth": {
-      "description": "Username/password authentication",
-      "useCase": "Legacy systems, internal APIs",
-      "security": "Use only over HTTPS, rotate credentials regularly",
-      "cpiConfiguration": "Credential store with User Credentials artifact"
-    },
-    "oauth2": {
-      "description": "OAuth 2.0 token-based authentication",
-      "grantTypes": {
-        "clientCredentials": {
-          "description": "Machine-to-machine authentication",
-          "flow": "Client ID + Secret → Token endpoint → Access token",
-          "useCase": "API integrations, service accounts"
-        },
-        "authorizationCode": {
-          "description": "User-delegated authorization",
-          "flow": "User consent → Authorization code → Access token",
-          "useCase": "User-context integrations"
-        },
-        "saml2Bearer": {
-          "description": "SAML assertion exchange for OAuth token",
-          "flow": "SAML assertion → Token endpoint → Access token",
-          "useCase": "SAP Principal Propagation"
-        }
+  "id": "security-patterns",
+  "name": "Security Patterns",
+  "version": "2.0.0",
+  "category": "agent-development",
+  "description": "Security patterns for agent systems including input validation, output filtering, sandboxing, and permission management",
+  "patterns": {
+    "input_validation": {
+      "pydantic_validation": {
+        "description": "Validate inputs using Pydantic schemas",
+        "example": "from pydantic import BaseModel, Field, field_validator\n\nclass UserInput(BaseModel):\n    query: str = Field(min_length=1, max_length=1000)\n    user_id: str = Field(pattern=r\"^[a-zA-Z0-9_-]+$\")\n    \n    @field_validator(\"query\")\n    @classmethod\n    def validate_query(cls, v: str):\n        # Remove dangerous characters\n        v = re.sub(r'[<>\"\\']', '', v)\n        # Check for SQL injection\n        if re.search(r'(\\bOR\\b|\\bAND\\b).*=', v, re.IGNORECASE):\n            raise ValueError(\"Invalid input detected\")\n        return v.strip()",
+        "use_when": ["User inputs", "API parameters", "Tool arguments"]
       },
-      "tokenManagement": {
-        "caching": "Cache tokens until expiry minus buffer",
-        "refresh": "Use refresh tokens when available",
-        "retry": "Retry with new token on 401 response"
+      "size_limits": {
+        "description": "Enforce input size limits",
+        "example": "class SizeLimitedInput(BaseModel):\n    query: str = Field(max_length=1000)\n    \n    @field_validator(\"query\")\n    @classmethod\n    def validate_size(cls, v: str):\n        if len(v) > 10000:\n            raise ValueError(\"Input too large\")\n        estimated_tokens = len(v) / 4\n        if estimated_tokens > 2000:\n            raise ValueError(\"Input exceeds token limit\")\n        return v",
+        "use_when": ["Preventing DoS", "Resource limits", "Cost control"]
+      },
+      "content_moderation": {
+        "description": "Moderate input content for harmful patterns",
+        "example": "class ContentModerator:\n    def __init__(self):\n        self.blocked_patterns = [\n            r'<script[^>]*>.*?</script>',\n            r'javascript:',\n            r'on\\w+\\s*='\n        ]\n    \n    def moderate_input(self, text: str) -> tuple[bool, Optional[str]]:\n        for pattern in self.blocked_patterns:\n            if re.search(pattern, text, re.IGNORECASE):\n                return False, f\"Blocked pattern: {pattern}\"\n        return True, None",
+        "use_when": ["XSS prevention", "Malicious content", "User-generated content"]
+      },
+      "sql_injection_prevention": {
+        "description": "Prevent SQL injection attacks",
+        "example": "def validate_sql_input(input: str):\n    sql_patterns = [\n        r'(\\bOR\\b|\\bAND\\b).*=',\n        r';\\s*(DROP|DELETE|UPDATE)',\n        r'UNION\\s+SELECT'\n    ]\n    for pattern in sql_patterns:\n        if re.search(pattern, input, re.IGNORECASE):\n            raise ValueError(\"SQL injection attempt detected\")\n    return input",
+        "use_when": ["Database queries", "SQL generation", "User inputs"]
       }
     },
-    "clientCertificate": {
-      "description": "Mutual TLS (mTLS) authentication",
-      "configuration": {
-        "keystore": "Store client certificate and private key",
-        "truststore": "Store CA certificates"
+    "output_filtering": {
+      "html_sanitization": {
+        "description": "Sanitize HTML in outputs",
+        "example": "import html\n\ndef sanitize_html(text: str) -> str:\n    return html.escape(text)",
+        "use_when": ["Web outputs", "User-facing content", "XSS prevention"]
       },
-      "useCase": "High-security B2B, banking, healthcare"
-    },
-    "sapPrincipalPropagation": {
-      "description": "Propagate SAP user identity",
-      "methods": ["SAML assertion", "JWT token", "Technical user"],
-      "useCase": "End-to-end user context in SAP landscapes"
-    }
-  },
-  "encryption": {
-    "transportLevel": {
-      "description": "TLS/SSL encryption",
-      "protocols": ["TLS 1.2", "TLS 1.3"],
-      "requirements": ["Valid certificates", "Strong cipher suites", "Certificate validation"]
-    },
-    "messageLevel": {
-      "description": "Encrypt message payload",
-      "standards": ["S/MIME", "PGP", "XML Encryption"],
-      "cpiSupport": {
-        "encryptor": "Encryptor step with recipient certificate",
-        "decryptor": "Decryptor step with private key"
+      "code_block_removal": {
+        "description": "Remove executable code blocks from outputs",
+        "example": "def remove_code_blocks(text: str) -> str:\n    text = re.sub(r'```[\\s\\S]*?```', '[Code block removed]', text)\n    text = re.sub(r'`[^`]+`', '[Code removed]', text)\n    return text",
+        "use_when": ["Restricted environments", "Code execution prevention"]
+      },
+      "secret_filtering": {
+        "description": "Filter potential secrets from outputs",
+        "example": "def filter_secrets(text: str) -> str:\n    # API keys\n    text = re.sub(r'[A-Za-z0-9]{32,}', '[Potential secret removed]', text)\n    # Email addresses\n    text = re.sub(r'\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b', '[Email removed]', text)\n    return text",
+        "use_when": ["Logging", "Public outputs", "Privacy protection"]
+      },
+      "comprehensive_sanitization": {
+        "description": "Comprehensive output sanitization",
+        "example": "class OutputFilter:\n    @staticmethod\n    def sanitize_output(text: str, strict: bool = False) -> str:\n        text = html.escape(text)\n        \n        if strict:\n            text = remove_code_blocks(text)\n            text = filter_secrets(text)\n        \n        # Remove control characters\n        text = re.sub(r'[\\x00-\\x1f\\x7f-\\x9f]', '', text)\n        \n        return text",
+        "use_when": ["General output filtering", "Multi-layer security"]
       }
     },
-    "fieldLevel": {
-      "description": "Encrypt specific sensitive fields",
-      "pattern": "import javax.crypto.Cipher\nimport javax.crypto.spec.SecretKeySpec\n// AES encryption for sensitive fields",
-      "useCase": "PII, payment data, credentials"
+    "sandboxing": {
+      "restricted_python": {
+        "description": "Execute Python code in restricted environment",
+        "example": "from RestrictedPython import compile_restricted\nfrom RestrictedPython.Guards import safe_builtins\n\nclass SafeCodeExecutor:\n    def __init__(self):\n        self.allowed_builtins = {'abs', 'all', 'any', 'bool', 'dict', 'len'}\n        self.restricted_builtins = {\n            name: getattr(safe_builtins, name)\n            for name in self.allowed_builtins\n            if hasattr(safe_builtins, name)\n        }\n    \n    def execute(self, code: str) -> tuple[bool, any, str]:\n        try:\n            byte_code = compile_restricted(code, '<inline>', 'exec')\n            exec(byte_code, {'__builtins__': self.restricted_builtins})\n            return True, restricted_globals.get('_result'), None\n        except Exception as e:\n            return False, None, f\"Execution error: {e}\"",
+        "use_when": ["Code execution tools", "User-provided code", "Safe evaluation"]
+      },
+      "docker_sandboxing": {
+        "description": "Execute code in Docker containers",
+        "example": "import docker\n\ndef execute_in_sandbox(code: str, timeout: int = 30):\n    client = docker.from_env()\n    \n    container = client.containers.run(\n        'python:3.9-slim',\n        command=f'python -c \"{code}\"',\n        detach=True,\n        mem_limit='128m',\n        cpu_period=100000,\n        cpu_quota=50000,\n        network_disabled=True\n    )\n    \n    try:\n        result = container.wait(timeout=timeout)\n        logs = container.logs().decode('utf-8')\n        return logs\n    finally:\n        container.remove()",
+        "use_when": ["Untrusted code", "Isolated execution", "Resource limits"]
+      },
+      "path_sandboxing": {
+        "description": "Restrict file system access",
+        "example": "class SandboxedFileTool:\n    def __init__(self, allowed_paths: Set[str]):\n        self.allowed_paths = {os.path.abspath(p) for p in allowed_paths}\n    \n    def read_file(self, path: str) -> str:\n        abs_path = os.path.abspath(path)\n        \n        if not any(abs_path.startswith(allowed) for allowed in self.allowed_paths):\n            raise PermissionError(f\"Path not allowed: {path}\")\n        \n        with open(abs_path, 'r') as f:\n            return f.read()",
+        "use_when": ["File operations", "Directory access", "Path validation"]
+      }
+    },
+    "permission_management": {
+      "permission_system": {
+        "description": "Role-based permission system",
+        "example": "from enum import Enum\nfrom typing import Set\n\nclass Permission(str, Enum):\n    READ_FILE = \"read_file\"\n    WRITE_FILE = \"write_file\"\n    EXECUTE_CODE = \"execute_code\"\n    NETWORK_ACCESS = \"network_access\"\n\n@dataclass\nclass AgentPermissions:\n    user_id: str\n    permissions: Set[Permission]\n    allowed_paths: Set[str] = None\n    \n    def has_permission(self, permission: Permission) -> bool:\n        return permission in self.permissions\n    \n    def can_access_path(self, path: str) -> bool:\n        abs_path = os.path.abspath(path)\n        return any(abs_path.startswith(os.path.abspath(p)) for p in self.allowed_paths)",
+        "use_when": ["Multi-user systems", "Access control", "Role management"]
+      },
+      "permission_manager": {
+        "description": "Centralized permission management",
+        "example": "class PermissionManager:\n    def __init__(self):\n        self.permissions: dict[str, AgentPermissions] = {}\n    \n    def grant(self, user_id: str, permission: Permission):\n        if user_id not in self.permissions:\n            self.permissions[user_id] = AgentPermissions(user_id, set())\n        self.permissions[user_id].permissions.add(permission)\n    \n    def check(self, user_id: str, permission: Permission) -> bool:\n        if user_id not in self.permissions:\n            return False\n        return self.permissions[user_id].has_permission(permission)",
+        "use_when": ["Permission checking", "Access control", "Security enforcement"]
+      },
+      "tool_permission_wrapper": {
+        "description": "Wrap tools with permission checks",
+        "example": "class SandboxedTool:\n    def __init__(self, tool_func, required_permission: Permission):\n        self.tool_func = tool_func\n        self.required_permission = required_permission\n    \n    async def execute(self, user_id: str, *args, **kwargs):\n        if not permission_manager.check(user_id, self.required_permission):\n            raise PermissionError(f\"User {user_id} lacks permission: {self.required_permission}\")\n        return await self.tool_func(*args, **kwargs)",
+        "use_when": ["Tool security", "Permission enforcement", "Access control"]
+      }
+    },
+    "rate_limiting": {
+      "basic_rate_limiter": {
+        "description": "Rate limiting to prevent abuse",
+        "example": "from datetime import datetime, timedelta\nfrom collections import defaultdict\n\nclass RateLimiter:\n    def __init__(self, max_requests: int = 100, window_seconds: int = 60):\n        self.max_requests = max_requests\n        self.window = timedelta(seconds=window_seconds)\n        self.requests: dict[str, list[datetime]] = defaultdict(list)\n    \n    def is_allowed(self, user_id: str) -> bool:\n        now = datetime.now()\n        cutoff = now - self.window\n        \n        self.requests[user_id] = [\n            req_time for req_time in self.requests[user_id]\n            if req_time > cutoff\n        ]\n        \n        if len(self.requests[user_id]) >= self.max_requests:\n            return False\n        \n        self.requests[user_id].append(now)\n        return True",
+        "use_when": ["API protection", "DoS prevention", "Resource management"]
+      }
+    },
+    "security_monitoring": {
+      "audit_logging": {
+        "description": "Log security events for audit",
+        "example": "def log_security_event(\n    event_type: str,\n    user_id: str,\n    details: dict\n):\n    logger.info(\n        \"Security event\",\n        extra={\n            \"event_type\": event_type,\n            \"user_id\": user_id,\n            \"timestamp\": datetime.now().isoformat(),\n            **details\n        }\n    )",
+        "use_when": ["Compliance", "Forensics", "Security monitoring"]
+      },
+      "anomaly_detection": {
+        "description": "Detect anomalous behavior patterns",
+        "example": "def detect_anomalies(user_id: str, action: str):\n    recent_actions = get_recent_actions(user_id, minutes=5)\n    \n    # Check for suspicious patterns\n    if len(recent_actions) > 100:\n        log_security_event(\"rate_limit_exceeded\", user_id, {\"actions\": len(recent_actions)})\n        return True\n    \n    if action in blocked_actions:\n        log_security_event(\"blocked_action\", user_id, {\"action\": action})\n        return True\n    \n    return False",
+        "use_when": ["Threat detection", "Behavioral analysis", "Security alerts"]
+      }
     }
   },
-  "digitalSignatures": {
-    "xmlSignature": {
-      "description": "Sign XML documents",
-      "standards": ["XMLDSig", "XAdES"],
-      "cpiSupport": "XML Signer step"
-    },
-    "pkcs7": {
-      "description": "PKCS#7/CMS signatures",
-      "useCase": "General document signing",
-      "cpiSupport": "PKCS7 Signer step"
-    },
-    "verification": {
-      "description": "Verify received signatures",
-      "steps": ["Validate certificate chain", "Check signature algorithm", "Verify digest", "Check timestamp"]
-    }
-  },
-  "credentialManagement": {
-    "secureParameter": {
-      "description": "CPI Secure Parameter Store",
-      "useCase": "Store sensitive configuration values",
-      "access": "message.getProperty('credential')"
-    },
-    "credentialStore": {
-      "description": "User Credentials artifact",
-      "types": ["User Credentials", "OAuth2 Credentials", "Secure Parameter"],
-      "deployment": "Deployed separately from iFlow"
-    },
-    "keystore": {
-      "description": "Certificate and key storage",
-      "types": ["System keystore", "Tenant keystore"],
-      "operations": ["Store certificates", "Store key pairs", "Certificate rotation"]
-    },
-    "rotation": {
-      "description": "Credential rotation best practices",
-      "frequency": "90 days for passwords, annually for certificates",
-      "process": ["Deploy new credential", "Update configurations", "Verify functionality", "Remove old credential"]
-    }
-  },
-  "dataMasking": {
-    "description": "Mask sensitive data in logs",
-    "techniques": {
-      "fullMasking": "Replace with ****",
-      "partialMasking": "Show last 4 digits: ****1234",
-      "hashing": "One-way hash for correlation"
-    },
-    "sensitiveFields": ["Passwords", "Credit cards", "SSN", "Bank accounts", "API keys"]
-  },
-  "accessControl": {
-    "roleBasedAccess": {
-      "description": "Control access based on roles",
-      "implementation": "XSUAA role collections, iFlow permissions"
-    },
-    "ipWhitelisting": {
-      "description": "Restrict access by IP address",
-      "useCase": "Partner connections, internal systems"
-    },
-    "apiManagement": {
-      "description": "API gateway security",
-      "features": ["Rate limiting", "Quota management", "API key validation", "OAuth verification"]
-    }
-  },
-  "compliancePatterns": {
-    "auditLogging": {
-      "description": "Log security events for compliance",
-      "events": ["Authentication attempts", "Authorization decisions", "Data access", "Configuration changes"]
-    },
-    "dataResidency": {
-      "description": "Ensure data stays in required regions",
-      "implementation": "Region-specific endpoints, data filtering"
-    },
-    "gdprCompliance": {
-      "description": "GDPR data protection",
-      "requirements": ["Consent management", "Data minimization", "Right to erasure", "Data portability"]
-    }
-  },
-  "bestPractices": [
-    "Never hardcode credentials in scripts",
-    "Use OAuth 2.0 over Basic Auth when possible",
-    "Implement certificate rotation procedures",
-    "Enable TLS 1.2 or higher for all connections",
-    "Mask sensitive data in all logs",
-    "Use separate credentials per environment",
-    "Implement proper error handling without exposing security details",
-    "Regularly audit security configurations",
-    "Document all security requirements and implementations",
-    "Test security configurations before production deployment"
+  "best_practices": [
+    "Validate all inputs with Pydantic schemas",
+    "Sanitize all outputs before returning to users",
+    "Use sandboxed execution for code execution tools",
+    "Implement least-privilege permission model",
+    "Set rate limits per user and endpoint",
+    "Log all security events for audit",
+    "Monitor for suspicious patterns",
+    "Keep security libraries updated",
+    "Use HTTPS for all network communication",
+    "Never hardcode secrets or credentials",
+    "Implement input size limits",
+    "Filter sensitive data from logs",
+    "Use environment variables for configuration",
+    "Regular security audits and penetration testing"
   ],
-  "antiPatterns": [
-    "Storing credentials in plain text",
-    "Using weak encryption algorithms",
-    "Disabling certificate validation",
-    "Logging sensitive data",
-    "Sharing credentials across environments",
-    "Not rotating credentials regularly",
-    "Ignoring security headers",
-    "Using self-signed certificates in production"
-  ]
-}
+  "anti_patterns": [
+    {
+      "name": "Trusting user input",
+      "problem": "Security vulnerabilities, injection attacks",
+      "fix": "Always validate and sanitize user inputs"
+    },
+    {
+      "name": "No output filtering",
+      "problem": "XSS attacks, code injection",
+      "fix": "Sanitize all outputs before returning"
+    },
+    {
+      "name": "Unsafe code execution",
+      "problem": "Arbitrary code execution, system compromise",
+      "fix": "Use RestrictedPython or Docker sandboxing"
+    },
+    {
+      "name": "No permission checks",
+      "problem": "Unauthorized access, privilege escalation",
+      "fix": "Implement permission system and check before operations"
+    },
+    {
+      "name": "No rate limiting",
+      "problem": "DoS attacks, resource exhaustion",
+      "fix": "Implement rate limiting per user and endpoint"
+    },
+    {
+      "name": "Hardcoded secrets",
+      "problem": "Credential exposure, security breaches",
+      "fix": "Use environment variables or secret management systems"
+    },
+    {
+      "name": "Logging sensitive data",
+      "problem": "Privacy violations, credential exposure",
+      "fix": "Filter secrets and PII from logs"
+    },
+    {
+      "name": "No security monitoring",
+      "problem": "Undetected attacks, delayed response",
+      "fix": "Implement audit logging and anomaly detection"
+    }
+  ],
+  "related_skills": ["security-sandboxing", "error-handling-patterns", "logging-monitoring", "tool-usage"]}

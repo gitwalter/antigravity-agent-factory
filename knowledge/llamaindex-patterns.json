@@ -1,0 +1,250 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LlamaIndex Patterns",
+  "description": "Best practices and patterns for LlamaIndex 0.12+ for building RAG and agent applications",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns include source citations and retrieval verification",
+    "A3_transparency": "Query engines and agents provide explainable behavior"
+  },
+  "import_structure": {
+    "description": "LlamaIndex 0.12+ uses modular packages",
+    "core": "llama_index.core - Core abstractions (nodes, indices, query engines)",
+    "integrations": {
+      "openai": "llama_index.llms.openai - OpenAI LLMs",
+      "anthropic": "llama_index.llms.anthropic - Anthropic Claude",
+      "embeddings": "llama_index.embeddings.openai - OpenAI embeddings",
+      "vector_stores": "llama_index.vector_stores.chroma - Vector store integrations"
+    },
+    "note": "Use llama_index for high-level APIs, llama_index.core for core components"
+  },
+  "data_ingestion_patterns": {
+    "document_loaders": {
+      "description": "Load documents from various sources",
+      "code_example": "from llama_index.core import SimpleDirectoryReader\nfrom llama_index.readers.file import PDFReader\nfrom llama_index.readers.web import BeautifulSoupWebReader\n\n# Simple directory reader\nreader = SimpleDirectoryReader(\n    input_dir='./documents',\n    recursive=True,\n    required_exts=['.pdf', '.txt', '.md']\n)\ndocuments = reader.load_data()\n\n# PDF reader with custom settings\npdf_reader = PDFReader()\ndocuments = pdf_reader.load_data(file='document.pdf')\n\n# Web reader\nweb_reader = BeautifulSoupWebReader()\ndocuments = web_reader.load_data(urls=['https://example.com'])\n\n# Custom loader\nfrom llama_index.core import Document\n\ndoc = Document(\n    text='Document content',\n    metadata={'source': 'custom', 'date': '2024-01-01'}\n)",
+      "best_practices": [
+        "Use SimpleDirectoryReader for local files",
+        "Specify required_exts to filter file types",
+        "Add metadata at load time for better tracking",
+        "Handle encoding issues for text files"
+      ]
+    },
+    "node_parsing": {
+      "description": "Parse documents into nodes with metadata",
+      "code_example": "from llama_index.core.node_parser import SimpleNodeParser, SentenceSplitter\nfrom llama_index.core import Document\n\n# Simple node parser\nparser = SimpleNodeParser.from_defaults(\n    chunk_size=1024,\n    chunk_overlap=200\n)\n\n# Sentence splitter for better semantic boundaries\nsentence_parser = SentenceSplitter(\n    chunk_size=1024,\n    chunk_overlap=200,\n    separator=' '\n)\n\n# Parse documents\nnodes = parser.get_nodes_from_documents(documents)\n\n# Custom node parser\nfrom llama_index.core.node_parser import TextSplitter\nfrom llama_index.core.schema import NodeWithScore\n\nclass CustomNodeParser(TextSplitter):\n    def split_text(self, text: str) -> List[str]:\n        # Custom splitting logic\n        return text.split('\\n\\n')\n\ncustom_parser = CustomNodeParser(chunk_size=1024, chunk_overlap=200)\nnodes = custom_parser.get_nodes_from_documents(documents)",
+      "best_practices": [
+        "Use SentenceSplitter for better semantic boundaries",
+        "Set chunk_size based on embedding model context",
+        "Use 10-20% overlap for context preservation",
+        "Store metadata in nodes for filtering"
+      ]
+    },
+    "indexing": {
+      "description": "Create and populate vector indices",
+      "code_example": "from llama_index.core import VectorStoreIndex, StorageContext\nfrom llama_index.vector_stores.chroma import ChromaVectorStore\nfrom llama_index.embeddings.openai import OpenAIEmbedding\nimport chromadb\n\n# Create embedding model\nembed_model = OpenAIEmbedding(model='text-embedding-3-small')\n\n# Create vector store\nchroma_client = chromadb.PersistentClient(path='./chroma_db')\nchroma_collection = chroma_client.get_or_create_collection('documents')\nvector_store = ChromaVectorStore(chroma_collection=chroma_collection)\nstorage_context = StorageContext.from_defaults(vector_store=vector_store)\n\n# Create index\nindex = VectorStoreIndex.from_documents(\n    documents,\n    storage_context=storage_context,\n    embed_model=embed_model,\n    show_progress=True\n)\n\n# Load existing index\nindex = VectorStoreIndex.from_vector_store(\n    vector_store=vector_store,\n    embed_model=embed_model\n)",
+      "best_practices": [
+        "Use persistent storage for production",
+        "Set show_progress=True for large document sets",
+        "Use same embed_model for indexing and querying",
+        "Store index metadata for versioning"
+      ]
+    },
+    "metadata_indexing": {
+      "description": "Index documents with rich metadata for filtering",
+      "code_example": "from llama_index.core import VectorStoreIndex\nfrom llama_index.core.schema import Document\n\n# Documents with metadata\ndocuments = [\n    Document(\n        text='Content 1',\n        metadata={\n            'source': 'report.pdf',\n            'page': 1,\n            'category': 'financial',\n            'date': '2024-01-01'\n        }\n    ),\n    Document(\n        text='Content 2',\n        metadata={\n            'source': 'report.pdf',\n            'page': 2,\n            'category': 'technical',\n            'date': '2024-01-01'\n        }\n    )\n]\n\n# Create index with metadata\nindex = VectorStoreIndex.from_documents(\n    documents,\n    embed_model=embed_model\n)\n\n# Metadata is preserved in nodes\nnodes = index.storage_context.docstore.get_nodes(list(index.storage_context.index_struct.nodes_dict.keys()))\nfor node in nodes:\n    print(f'Metadata: {node.metadata}')",
+      "best_practices": [
+        "Include source, page, date in metadata",
+        "Use consistent metadata keys across documents",
+        "Store metadata that will be used for filtering",
+        "Consider using metadata extractors for automatic extraction"
+      ]
+    }
+  },
+  "query_engine_patterns": {
+    "basic_query_engine": {
+      "description": "Simple query engine for RAG",
+      "code_example": "from llama_index.core import VectorStoreIndex\n\n# Create query engine\nquery_engine = index.as_query_engine(\n    similarity_top_k=5,\n    response_mode='compact'\n)\n\n# Query\nresponse = query_engine.query('What is the main topic?')\nprint(response)\nprint(f'Source nodes: {response.source_nodes}')",
+      "best_practices": [
+        "Set similarity_top_k based on context window",
+        "Use response_mode='compact' for concise answers",
+        "Access source_nodes for citations"
+      ]
+    },
+    "retrieval_query_engine": {
+      "description": "Query engine with custom retrieval settings",
+      "code_example": "from llama_index.core import VectorStoreIndex\nfrom llama_index.core.retrievers import VectorIndexRetriever\nfrom llama_index.core.query_engine import RetrieverQueryEngine\nfrom llama_index.core.response_synthesizers import ResponseSynthesizer\n\n# Create retriever\nretriever = VectorIndexRetriever(\n    index=index,\n    similarity_top_k=10,\n    filters={'source': 'report.pdf'}\n)\n\n# Create response synthesizer\nresponse_synthesizer = ResponseSynthesizer.from_args(\n    response_mode='tree_summarize',\n    use_async=True\n)\n\n# Create query engine\nquery_engine = RetrieverQueryEngine(\n    retriever=retriever,\n    response_synthesizer=response_synthesizer\n)\n\nresponse = query_engine.query('What are the key findings?')",
+      "best_practices": [
+        "Use tree_summarize for complex queries",
+        "Set similarity_top_k higher than final response",
+        "Use filters to narrow retrieval scope",
+        "Enable async for better performance"
+      ]
+    },
+    "router_query_engine": {
+      "description": "Route queries to different query engines",
+      "code_example": "from llama_index.core.query_engine import RouterQueryEngine\nfrom llama_index.core.selectors import LLMSingleSelector\nfrom llama_index.core.tools import QueryEngineTool\n\n# Create multiple query engines\nsummary_engine = index.as_query_engine(response_mode='summarize')\ncompact_engine = index.as_query_engine(response_mode='compact')\n\n# Create tools\nsummary_tool = QueryEngineTool.from_defaults(\n    query_engine=summary_engine,\n    description='Useful for summarization queries'\n)\n\ncompact_tool = QueryEngineTool.from_defaults(\n    query_engine=compact_engine,\n    description='Useful for specific fact-finding queries'\n)\n\n# Create router\nrouter_query_engine = RouterQueryEngine.from_defaults(\n    selector=LLMSingleSelector.from_defaults(),\n    query_engine_tools=[summary_tool, compact_tool]\n)\n\nresponse = router_query_engine.query('Summarize the document')",
+      "best_practices": [
+        "Use router for different query types",
+        "Provide clear descriptions for each tool",
+        "Test routing accuracy with sample queries"
+      ]
+    },
+    "sub_question_query_engine": {
+      "description": "Break complex queries into sub-questions",
+      "code_example": "from llama_index.core.query_engine import SubQuestionQueryEngine\nfrom llama_index.core.tools import QueryEngineTool\n\n# Create query engine tool\nquery_engine_tool = QueryEngineTool.from_defaults(\n    query_engine=index.as_query_engine(),\n    description='Useful for answering questions about documents'\n)\n\n# Create sub-question engine\nsub_question_engine = SubQuestionQueryEngine.from_defaults(\n    query_engine_tools=[query_engine_tool],\n    use_async=True\n)\n\n# Complex query broken into sub-questions\nresponse = sub_question_engine.query(\n    'What are the main topics and how do they relate to each other?'\n)",
+      "best_practices": [
+        "Use for complex multi-part queries",
+        "Enable async for parallel sub-question processing",
+        "Monitor sub-question generation quality"
+      ]
+    },
+    "retrieval_augmented_query_engine": {
+      "description": "Query engine with retrieval augmentation",
+      "code_example": "from llama_index.core.query_engine import RetrieverQueryEngine\nfrom llama_index.core.retrievers import VectorIndexRetriever\nfrom llama_index.core.postprocessor import SimilarityPostprocessor\n\n# Create retriever with post-processing\nretriever = VectorIndexRetriever(\n    index=index,\n    similarity_top_k=20\n)\n\n# Post-processor to filter by similarity threshold\npostprocessor = SimilarityPostprocessor(similarity_cutoff=0.7)\n\n# Create query engine\nquery_engine = RetrieverQueryEngine.from_args(\n    retriever=retriever,\n    node_postprocessors=[postprocessor],\n    response_mode='compact'\n)\n\nresponse = query_engine.query('What is machine learning?')",
+      "best_practices": [
+        "Use post-processors to filter low-quality results",
+        "Set similarity_cutoff based on your data",
+        "Retrieve more nodes than needed, then filter"
+      ]
+    }
+  },
+  "rag_patterns": {
+    "basic_rag": {
+      "description": "Simple RAG pipeline",
+      "code_example": "from llama_index.core import VectorStoreIndex, SimpleDirectoryReader\nfrom llama_index.llms.openai import OpenAI\nfrom llama_index.embeddings.openai import OpenAIEmbedding\n\n# Load documents\nreader = SimpleDirectoryReader('./documents')\ndocuments = reader.load_data()\n\n# Create LLM and embedding model\nllm = OpenAI(model='gpt-4', temperature=0)\nembed_model = OpenAIEmbedding(model='text-embedding-3-small')\n\n# Create index\nindex = VectorStoreIndex.from_documents(\n    documents,\n    embed_model=embed_model\n)\n\n# Create query engine\nquery_engine = index.as_query_engine(llm=llm)\n\n# Query\nresponse = query_engine.query('What is the main topic?')\nprint(response)\nprint(f'Sources: {[node.node_id for node in response.source_nodes]}')",
+      "best_practices": [
+        "Use temperature=0 for deterministic responses",
+        "Access source_nodes for citations",
+        "Set similarity_top_k appropriately"
+      ]
+    },
+    "streaming_rag": {
+      "description": "Stream RAG responses token by token",
+      "code_example": "from llama_index.core import VectorStoreIndex\n\n# Create streaming query engine\nquery_engine = index.as_query_engine(\n    llm=llm,\n    streaming=True\n)\n\n# Stream response\nstreaming_response = query_engine.query('Tell me about the document')\n\nfor token in streaming_response.response_gen:\n    print(token, end='', flush=True)",
+      "best_practices": [
+        "Use streaming for better UX",
+        "Handle streaming errors gracefully",
+        "Consider rate limiting for production"
+      ]
+    },
+    "chat_rag": {
+      "description": "RAG with conversation history",
+      "code_example": "from llama_index.core import VectorStoreIndex\nfrom llama_index.core.memory import ChatMemoryBuffer\nfrom llama_index.core.chat_engine import ContextChatEngine\n\n# Create memory\nmemory = ChatMemoryBuffer.from_defaults(token_limit=3000)\n\n# Create chat engine\nchat_engine = index.as_chat_engine(\n    llm=llm,\n    memory=memory,\n    similarity_top_k=5\n)\n\n# Chat with history\nresponse = chat_engine.chat('What is the main topic?')\nprint(response)\n\n# Follow-up question\nresponse = chat_engine.chat('Tell me more about that')\nprint(response)",
+      "best_practices": [
+        "Set token_limit based on model context window",
+        "Use ContextChatEngine for better context handling",
+        "Clear memory for new conversations"
+      ]
+    },
+    "multi_document_rag": {
+      "description": "RAG across multiple document collections",
+      "code_example": "from llama_index.core import VectorStoreIndex\nfrom llama_index.core.tools import QueryEngineTool\nfrom llama_index.core.query_engine import RouterQueryEngine\nfrom llama_index.core.selectors import LLMSingleSelector\n\n# Create indices for different document sets\nfinancial_index = VectorStoreIndex.from_documents(financial_docs)\ntechnical_index = VectorStoreIndex.from_documents(technical_docs)\n\n# Create query engines\nfinancial_engine = financial_index.as_query_engine()\ntechnical_engine = technical_index.as_query_engine()\n\n# Create tools\nfinancial_tool = QueryEngineTool.from_defaults(\n    query_engine=financial_engine,\n    description='Useful for financial questions'\n)\n\ntechnical_tool = QueryEngineTool.from_defaults(\n    query_engine=technical_engine,\n    description='Useful for technical questions'\n)\n\n# Create router\nrouter_engine = RouterQueryEngine.from_defaults(\n    selector=LLMSingleSelector.from_defaults(),\n    query_engine_tools=[financial_tool, technical_tool]\n)\n\nresponse = router_engine.query('What are the financial projections?')",
+      "best_practices": [
+        "Use router for multiple document collections",
+        "Provide clear descriptions for routing",
+        "Consider ensemble retrieval for cross-collection queries"
+      ]
+    }
+  },
+  "agent_patterns": {
+    "openai_agent": {
+      "description": "Create agent with OpenAI function calling",
+      "code_example": "from llama_index.agent.openai import OpenAIAgent\nfrom llama_index.core.tools import FunctionTool\nfrom llama_index.core.query_engine import RetrieverQueryEngine\n\n# Create query engine tool\nquery_engine = index.as_query_engine()\nquery_tool = QueryEngineTool.from_defaults(\n    query_engine=query_engine,\n    description='Search documents for information'\n)\n\n# Create custom tool\n@FunctionTool.from_defaults()\ndef calculator(expression: str) -> str:\n    '''Evaluate a mathematical expression.'''\n    return str(eval(expression))\n\n# Create agent\nagent = OpenAIAgent.from_tools(\n    tools=[query_tool, calculator],\n    llm=llm,\n    verbose=True\n)\n\n# Use agent\nresponse = agent.chat('What is 15*23 and what does the document say about AI?')",
+      "best_practices": [
+        "Use OpenAIAgent for GPT-4 with function calling",
+        "Provide clear tool descriptions",
+        "Set verbose=True for debugging",
+        "Handle tool errors gracefully"
+      ]
+    },
+    "react_agent": {
+      "description": "ReAct agent pattern",
+      "code_example": "from llama_index.core.agent import ReActAgent\nfrom llama_index.core.tools import QueryEngineTool\n\n# Create tools\nquery_tool = QueryEngineTool.from_defaults(\n    query_engine=index.as_query_engine(),\n    description='Search documents'\n)\n\n# Create ReAct agent\nagent = ReActAgent.from_tools(\n    tools=[query_tool],\n    llm=llm,\n    verbose=True,\n    max_iterations=10\n)\n\nresponse = agent.chat('What is the main topic?')",
+      "best_practices": [
+        "Set max_iterations to prevent infinite loops",
+        "Use for models without native function calling",
+        "Monitor reasoning steps for debugging"
+      ]
+    },
+    "custom_tools": {
+      "description": "Create custom tools for agents",
+      "code_example": "from llama_index.core.tools import FunctionTool\nfrom typing import List\n\n# Simple function tool\n@FunctionTool.from_defaults()\ndef get_weather(location: str) -> str:\n    '''Get the current weather for a location.'''\n    return f'Weather in {location}: Sunny, 72°F'\n\n# Tool with Pydantic schema\nfrom pydantic import BaseModel, Field\n\nclass SearchInput(BaseModel):\n    query: str = Field(description='Search query')\n    max_results: int = Field(default=5, ge=1, le=20)\n\n@FunctionTool.from_defaults()\ndef search_documents(query: str, max_results: int = 5) -> str:\n    '''Search documents with query and max results.'''\n    results = retriever.retrieve(query)\n    return '\\n'.join([node.text for node in results[:max_results]])\n\n# Use in agent\ntools = [get_weather, search_documents]\nagent = OpenAIAgent.from_tools(tools=tools, llm=llm)",
+      "best_practices": [
+        "Use FunctionTool for simple functions",
+        "Add Pydantic schemas for complex inputs",
+        "Provide clear docstrings for tool descriptions",
+        "Return structured outputs when possible"
+      ]
+    },
+    "agent_with_memory": {
+      "description": "Agent with conversation memory",
+      "code_example": "from llama_index.core.agent import ReActAgent\nfrom llama_index.core.memory import ChatMemoryBuffer\n\n# Create memory\nmemory = ChatMemoryBuffer.from_defaults(token_limit=3000)\n\n# Create agent with memory\nagent = ReActAgent.from_tools(\n    tools=[query_tool],\n    llm=llm,\n    memory=memory,\n    verbose=True\n)\n\n# Chat with memory\nresponse1 = agent.chat('What is machine learning?')\nresponse2 = agent.chat('Tell me more about that')  # Uses context from previous",
+      "best_practices": [
+        "Set token_limit based on model context",
+        "Clear memory for new conversations",
+        "Monitor memory usage"
+      ]
+    }
+  },
+  "callbacks_observability": {
+    "callback_handlers": {
+      "description": "Add callbacks for observability",
+      "code_example": "from llama_index.core.callbacks import CallbackManager, LlamaDebugHandler\nfrom llama_index.core import Settings\n\n# Create debug handler\ndebug_handler = LlamaDebugHandler()\n\n# Set global callback manager\nSettings.callback_manager = CallbackManager([debug_handler])\n\n# All operations will be traced\nquery_engine = index.as_query_engine()\nresponse = query_engine.query('What is the topic?')\n\n# Access trace\nprint(debug_handler.get_llm_inputs_outputs())",
+      "best_practices": [
+        "Use LlamaDebugHandler for development",
+        "Set callback_manager globally for consistency",
+        "Access traces for debugging"
+      ]
+    },
+    "langsmith_integration": {
+      "description": "Integrate with LangSmith for tracing",
+      "code_example": "from llama_index.core.callbacks import CallbackManager\nfrom llama_index.core import Settings\nimport os\n\n# Set LangSmith environment variables\nos.environ['LANGCHAIN_TRACING_V2'] = 'true'\nos.environ['LANGCHAIN_API_KEY'] = 'your-key'\nos.environ['LANGCHAIN_PROJECT'] = 'llamaindex-project'\n\n# LangSmith tracing is automatic when env vars are set\nquery_engine = index.as_query_engine()\nresponse = query_engine.query('What is the topic?')",
+      "best_practices": [
+        "Set LANGCHAIN_PROJECT for organization",
+        "Enable tracing in all environments",
+        "Add metadata to traces for filtering"
+      ]
+    },
+    "custom_callbacks": {
+      "description": "Create custom callback handlers",
+      "code_example": "from llama_index.core.callbacks import BaseCallbackHandler\nfrom llama_index.core.callbacks.schema import CBEventType, EventPayload\n\nclass CustomCallbackHandler(BaseCallbackHandler):\n    def on_event_start(self, event_type, payload=None, event_id=None, parent_id=None, **kwargs):\n        if event_type == CBEventType.QUERY:\n            print(f'Query started: {payload.get(EventPayload.QUERY_STR)}')\n    \n    def on_event_end(self, event_type, payload=None, event_id=None, **kwargs):\n        if event_type == CBEventType.RETRIEVE:\n            nodes = payload.get(EventPayload.NODES)\n            print(f'Retrieved {len(nodes)} nodes')\n\ncustom_handler = CustomCallbackHandler()\nSettings.callback_manager = CallbackManager([custom_handler])",
+      "best_practices": [
+        "Implement only needed callback methods",
+        "Keep callbacks lightweight",
+        "Use for logging and monitoring"
+      ]
+    }
+  },
+  "anti_patterns": {
+    "mismatched_embeddings": {
+      "description": "Using different embedding models for indexing and querying",
+      "problem": "Poor retrieval quality",
+      "solution": "Use same embed_model for both indexing and querying"
+    },
+    "no_source_citations": {
+      "description": "Not accessing source_nodes for citations",
+      "problem": "Cannot verify answers",
+      "solution": "Always access response.source_nodes and include in output"
+    },
+    "too_many_nodes": {
+      "description": "Retrieving too many nodes for context",
+      "problem": "Token limit issues, slower responses",
+      "solution": "Set similarity_top_k appropriately (5-10 typically)"
+    },
+    "no_metadata_filtering": {
+      "description": "Not using metadata filters for retrieval",
+      "problem": "Irrelevant results, poor precision",
+      "solution": "Use metadata filters in retriever to narrow search"
+    }
+  },
+  "best_practices_summary": [
+    "Use same embed_model for indexing and querying",
+    "Set similarity_top_k based on context window",
+    "Access source_nodes for citations",
+    "Use metadata filters for better retrieval",
+    "Enable callbacks for observability",
+    "Use streaming for better UX",
+    "Set temperature=0 for deterministic responses",
+    "Monitor token usage and memory"
+  ]
+}

@@ -1,0 +1,458 @@
+"""
+Triton Inference Server Configuration - Model serving configuration
+
+Purpose: Generate Triton Inference Server model repository configuration
+Author: {{AUTHOR}}
+Created: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Explicit model versioning and configuration
+- A3 (Transparency): Clear model metadata and serving parameters
+- A4 (Non-Harm): Resource limits and safety constraints
+
+This module provides:
+- Triton model repository structure
+- Model configuration (config.pbtxt)
+- Ensemble model configurations
+- Dynamic batching configuration
+- GPU/CPU instance group configuration
+"""
+
+from typing import Dict, List, Optional, Any
+from dataclasses import dataclass, field
+from pathlib import Path
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class TritonInput:
+    """Triton model input specification."""
+    name: str
+    data_type: str  # e.g., "TYPE_FP32", "TYPE_INT64", "TYPE_STRING"
+    dims: List[int]  # -1 for dynamic dimension
+    optional: bool = False
+    format: Optional[str] = None  # "FORMAT_NCHW", "FORMAT_NHWC", etc.
+
+
+@dataclass
+class TritonOutput:
+    """Triton model output specification."""
+    name: str
+    data_type: str
+    dims: List[int]
+    label_filename: Optional[str] = None  # For classification models
+
+
+@dataclass
+class InstanceGroup:
+    """Triton instance group configuration."""
+    count: int = 1
+    kind: str = "KIND_GPU"  # "KIND_GPU" or "KIND_CPU"
+    gpus: List[int] = field(default_factory=list)  # GPU IDs for this group
+
+
+@dataclass
+class DynamicBatching:
+    """Dynamic batching configuration."""
+    preferred_batch_size: List[int] = field(default_factory=list)
+    max_queue_delay_microseconds: int = 0
+    max_batch_size: int = 1
+    preserve_ordering: bool = False
+
+
+@dataclass
+class ModelConfig:
+    """Triton model configuration."""
+    name: str
+    platform: str  # "tensorrt_plan", "onnxruntime_onnx", "pytorch_libtorch", "python", etc.
+    backend: Optional[str] = None  # For Python backend
+    default_model_filename: str = "model.plan"  # or "model.onnx", "model.pt", etc.
+    max_batch_size: int = 1
+    inputs: List[TritonInput] = field(default_factory=list)
+    outputs: List[TritonOutput] = field(default_factory=list)
+    instance_groups: List[InstanceGroup] = field(default_factory=list)
+    dynamic_batching: Optional[DynamicBatching] = None
+    version_policy: Optional[Dict[str, Any]] = None  # {"all": {}} or {"specific": {"versions": [1, 2]}}
+    optimization: Optional[Dict[str, Any]] = None
+    model_warmup: List[Dict[str, Any]] = field(default_factory=list)
+    parameters: Dict[str, str] = field(default_factory=dict)
+
+
+class TritonConfigGenerator:
+    """
+    Generator for Triton Inference Server model configurations.
+    
+    This class helps create config.pbtxt files for Triton model repository.
+    
+    Example:
+        >>> generator = TritonConfigGenerator()
+        >>> config = ModelConfig(
+        ...     name="my_model",
+        ...     platform="onnxruntime_onnx",
+        ...     inputs=[TritonInput("input", "TYPE_FP32", [-1, 224, 224, 3])],
+        ...     outputs=[TritonOutput("output", "TYPE_FP32", [-1, 1000])]
+        ... )
+        >>> generator.generate_config(config, "models/my_model/1/config.pbtxt")
+    """
+    
+    TYPE_MAP = {
+        "float32": "TYPE_FP32",
+        "float16": "TYPE_FP16",
+        "int32": "TYPE_INT32",
+        "int64": "TYPE_INT64",
+        "uint8": "TYPE_UINT8",
+        "bool": "TYPE_BOOL",
+        "string": "TYPE_STRING",
+    }
+    
+    def __init__(self):
+        """Initialize the config generator."""
+        pass
+    
+    def generate_config(
+        self,
+        config: ModelConfig,
+        output_path: str,
+        version: int = 1
+    ) -> None:
+        """
+        Generate Triton config.pbtxt file.
+        
+        Args:
+            config: Model configuration
+            output_path: Path to write config.pbtxt
+            version: Model version (default: 1)
+        """
+        path = Path(output_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        
+        config_text = self._build_config_text(config, version)
+        
+        with open(path, "w") as f:
+            f.write(config_text)
+        
+        logger.info(f"Generated Triton config: {output_path}")
+    
+    def _build_config_text(self, config: ModelConfig, version: int) -> str:
+        """Build config.pbtxt text content."""
+        lines = []
+        
+        # Model name
+        lines.append(f'name: "{config.name}"')
+        lines.append(f'platform: "{config.platform}"')
+        
+        if config.backend:
+            lines.append(f'backend: "{config.backend}"')
+        
+        lines.append(f'default_model_filename: "{config.default_model_filename}"')
+        lines.append(f'max_batch_size: {config.max_batch_size}')
+        lines.append("")
+        
+        # Version policy
+        if config.version_policy:
+            lines.append("version_policy: {")
+            if "all" in config.version_policy:
+                lines.append("  all: {}")
+            elif "specific" in config.version_policy:
+                versions = config.version_policy["specific"].get("versions", [])
+                lines.append("  specific: {")
+                lines.append(f'    versions: [{", ".join(map(str, versions))}]')
+                lines.append("  }")
+            elif "latest" in config.version_policy:
+                num_versions = config.version_policy["latest"].get("num_versions", 1)
+                lines.append("  latest: {")
+                lines.append(f"    num_versions: {num_versions}")
+                lines.append("  }")
+            lines.append("}")
+            lines.append("")
+        
+        # Inputs
+        if config.inputs:
+            lines.append("input [")
+            for inp in config.inputs:
+                lines.append("  {")
+                lines.append(f'    name: "{inp.name}"')
+                lines.append(f'    data_type: {inp.data_type}')
+                lines.append(f'    dims: [{", ".join(map(str, inp.dims))}]')
+                if inp.optional:
+                    lines.append(f"    optional: true")
+                if inp.format:
+                    lines.append(f'    format: {inp.format}')
+                lines.append("  }")
+            lines.append("]")
+            lines.append("")
+        
+        # Outputs
+        if config.outputs:
+            lines.append("output [")
+            for out in config.outputs:
+                lines.append("  {")
+                lines.append(f'    name: "{out.name}"')
+                lines.append(f'    data_type: {out.data_type}')
+                lines.append(f'    dims: [{", ".join(map(str, out.dims))}]')
+                if out.label_filename:
+                    lines.append(f'    label_filename: "{out.label_filename}"')
+                lines.append("  }")
+            lines.append("]")
+            lines.append("")
+        
+        # Instance groups
+        if config.instance_groups:
+            lines.append("instance_group [")
+            for group in config.instance_groups:
+                lines.append("  {")
+                lines.append(f'    count: {group.count}')
+                lines.append(f'    kind: {group.kind}')
+                if group.gpus:
+                    lines.append(f'    gpus: [{", ".join(map(str, group.gpus))}]')
+                lines.append("  }")
+            lines.append("]")
+            lines.append("")
+        
+        # Dynamic batching
+        if config.dynamic_batching:
+            db = config.dynamic_batching
+            lines.append("dynamic_batching {")
+            if db.preferred_batch_size:
+                lines.append(f'  preferred_batch_size: [{", ".join(map(str, db.preferred_batch_size))}]')
+            if db.max_queue_delay_microseconds > 0:
+                lines.append(f"  max_queue_delay_microseconds: {db.max_queue_delay_microseconds}")
+            if db.max_batch_size > 1:
+                lines.append(f"  max_batch_size: {db.max_batch_size}")
+            if db.preserve_ordering:
+                lines.append("  preserve_ordering: true")
+            lines.append("}")
+            lines.append("")
+        
+        # Optimization
+        if config.optimization:
+            lines.append("optimization {")
+            opt = config.optimization
+            if "priority" in opt:
+                lines.append(f'  priority: {opt["priority"]}')
+            if "execution_accelerators" in opt:
+                lines.append("  execution_accelerators {")
+                if "gpu_execution_accelerator" in opt["execution_accelerators"]:
+                    lines.append("    gpu_execution_accelerator [")
+                    for acc in opt["execution_accelerators"]["gpu_execution_accelerator"]:
+                        lines.append("      {")
+                        for k, v in acc.items():
+                            lines.append(f'        {k}: "{v}"')
+                        lines.append("      }")
+                    lines.append("    ]")
+                lines.append("  }")
+            lines.append("}")
+            lines.append("")
+        
+        # Model warmup
+        if config.model_warmup:
+            lines.append("model_warmup [")
+            for warmup in config.model_warmup:
+                lines.append("  {")
+                if "name" in warmup:
+                    lines.append(f'    name: "{warmup["name"]}"')
+                if "batch_size" in warmup:
+                    lines.append(f'    batch_size: {warmup["batch_size"]}')
+                if "inputs" in warmup:
+                    lines.append("    inputs {")
+                    for inp_name, inp_data in warmup["inputs"].items():
+                        lines.append(f'      "{inp_name}": {{')
+                        if "dtype" in inp_data:
+                            lines.append(f'        data_type: {inp_data["dtype"]}')
+                        if "dims" in inp_data:
+                            lines.append(f'        dims: [{", ".join(map(str, inp_data["dims"]))}]')
+                        if "zero_data" in inp_data:
+                            lines.append(f'        zero_data: {str(inp_data["zero_data"]).lower()}')
+                        lines.append("      }")
+                    lines.append("    }")
+                lines.append("  }")
+            lines.append("]")
+            lines.append("")
+        
+        # Parameters
+        if config.parameters:
+            lines.append("parameters {")
+            for key, value in config.parameters.items():
+                lines.append(f'  {key}: {{')
+                lines.append(f'    string_value: "{value}"')
+                lines.append("  }")
+            lines.append("}")
+        
+        return "\n".join(lines)
+    
+    def create_model_repository(
+        self,
+        model_name: str,
+        model_path: str,
+        config: ModelConfig,
+        version: int = 1
+    ) -> Path:
+        """
+        Create Triton model repository structure.
+        
+        Args:
+            model_name: Name of the model
+            model_path: Path to model file
+            config: Model configuration
+            version: Model version
+            
+        Returns:
+            Path to created model directory
+        """
+        repo_path = Path("{{MODEL_REPOSITORY_PATH}}") / model_name / str(version)
+        repo_path.mkdir(parents=True, exist_ok=True)
+        
+        # Copy model file
+        import shutil
+        model_file = Path(model_path)
+        target_model = repo_path / config.default_model_filename
+        shutil.copy(model_file, target_model)
+        
+        # Generate config
+        config_path = repo_path / "config.pbtxt"
+        self.generate_config(config, str(config_path), version)
+        
+        logger.info(f"Created model repository: {repo_path}")
+        return repo_path
+
+
+# Example configurations for common model types
+
+def create_onnx_config(
+    model_name: str,
+    input_shape: List[int],
+    output_shape: List[int],
+    input_dtype: str = "TYPE_FP32",
+    output_dtype: str = "TYPE_FP32",
+    max_batch_size: int = 1
+) -> ModelConfig:
+    """
+    Create configuration for ONNX model.
+    
+    Args:
+        model_name: Model name
+        input_shape: Input shape (with batch dimension as -1)
+        output_shape: Output shape (with batch dimension as -1)
+        input_dtype: Input data type
+        output_dtype: Output data type
+        max_batch_size: Maximum batch size
+        
+    Returns:
+        ModelConfig for ONNX model
+    """
+    return ModelConfig(
+        name=model_name,
+        platform="onnxruntime_onnx",
+        default_model_filename="model.onnx",
+        max_batch_size=max_batch_size,
+        inputs=[TritonInput("input", input_dtype, input_shape)],
+        outputs=[TritonOutput("output", output_dtype, output_shape)],
+        instance_groups=[InstanceGroup(count={{INSTANCE_COUNT}}, kind="{{INSTANCE_KIND}}")],
+        dynamic_batching=DynamicBatching(
+            max_batch_size=max_batch_size,
+            preferred_batch_size=[1, 4, 8] if max_batch_size >= 8 else [1]
+        ) if max_batch_size > 1 else None
+    )
+
+
+def create_pytorch_config(
+    model_name: str,
+    input_shape: List[int],
+    output_shape: List[int],
+    input_dtype: str = "TYPE_FP32",
+    output_dtype: str = "TYPE_FP32",
+    max_batch_size: int = 1
+) -> ModelConfig:
+    """
+    Create configuration for PyTorch model.
+    
+    Args:
+        model_name: Model name
+        input_shape: Input shape (with batch dimension as -1)
+        output_shape: Output shape (with batch dimension as -1)
+        input_dtype: Input data type
+        output_dtype: Output data type
+        max_batch_size: Maximum batch size
+        
+    Returns:
+        ModelConfig for PyTorch model
+    """
+    return ModelConfig(
+        name=model_name,
+        platform="pytorch_libtorch",
+        default_model_filename="model.pt",
+        max_batch_size=max_batch_size,
+        inputs=[TritonInput("INPUT__0", input_dtype, input_shape)],
+        outputs=[TritonOutput("OUTPUT__0", output_dtype, output_shape)],
+        instance_groups=[InstanceGroup(count={{INSTANCE_COUNT}}, kind="{{INSTANCE_KIND}}")],
+        dynamic_batching=DynamicBatching(
+            max_batch_size=max_batch_size,
+            preferred_batch_size=[1, 4, 8] if max_batch_size >= 8 else [1]
+        ) if max_batch_size > 1 else None
+    )
+
+
+def create_tensorrt_config(
+    model_name: str,
+    input_shape: List[int],
+    output_shape: List[int],
+    input_dtype: str = "TYPE_FP32",
+    output_dtype: str = "TYPE_FP32",
+    max_batch_size: int = 1
+) -> ModelConfig:
+    """
+    Create configuration for TensorRT model.
+    
+    Args:
+        model_name: Model name
+        input_shape: Input shape (with batch dimension as -1)
+        output_shape: Output shape (with batch dimension as -1)
+        input_dtype: Input data type
+        output_dtype: Output data type
+        max_batch_size: Maximum batch size
+        
+    Returns:
+        ModelConfig for TensorRT model
+    """
+    return ModelConfig(
+        name=model_name,
+        platform="tensorrt_plan",
+        default_model_filename="model.plan",
+        max_batch_size=max_batch_size,
+        inputs=[TritonInput("INPUT", input_dtype, input_shape)],
+        outputs=[TritonOutput("OUTPUT", output_dtype, output_shape)],
+        instance_groups=[InstanceGroup(count={{INSTANCE_COUNT}}, kind="KIND_GPU")],
+        dynamic_batching=DynamicBatching(
+            max_batch_size=max_batch_size,
+            preferred_batch_size=[1, 4, 8] if max_batch_size >= 8 else [1]
+        ) if max_batch_size > 1 else None,
+        optimization={
+            "priority": "PRIORITY_MAX",
+            "execution_accelerators": {
+                "gpu_execution_accelerator": [{"name": "tensorrt"}]
+            }
+        }
+    )
+
+
+# Example usage
+if __name__ == "__main__":
+    generator = TritonConfigGenerator()
+    
+    # Example: ONNX model
+    config = create_onnx_config(
+        model_name="{{MODEL_NAME}}",
+        input_shape=[-1, 224, 224, 3],
+        output_shape=[-1, 1000],
+        max_batch_size={{MAX_BATCH_SIZE}}
+    )
+    
+    generator.generate_config(
+        config,
+        "{{MODEL_REPOSITORY_PATH}}/{{MODEL_NAME}}/1/config.pbtxt",
+        version=1
+    )
+    
+    print(f"Generated Triton config for {{MODEL_NAME}}")

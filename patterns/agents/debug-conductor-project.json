@@ -4,26 +4,67 @@
     "patternName": "Debug Conductor Agent (Project-Scoped)",
     "category": "workflow",
     "stackAgnostic": true,
-    "description": "Autonomous debugging agent that investigates test failures and CI/CD issues, identifies root causes, and implements fixes"
+    "description": "Autonomous debugging agent with UAL-based team collaboration and dynamic resource loading",
+    "ual_version": "1.0.0"
   },
   "frontmatter": {
     "name": "debug-conductor-project",
-    "description": "Autonomous debugging agent that systematically investigates failures, identifies root causes, and implements fixes",
+    "description": "Autonomous debugging agent with UAL-based team collaboration, cognitive reasoning, and dynamic resource loading",
     "type": "agent",
     "skills": [
       "pipeline-error-fix",
-      "ci-monitor"
+      "ci-monitor",
+      "grounding-verification"
     ],
     "knowledge": [
-      "debug-patterns.json"
-    ],
+      "debug-patterns.json",
+      "agent-team-registry.json"    ],
     "mcp_servers": [
       "git",
       "github",
       "filesystem"
+    ],
+    "ual_version": "1.0.0",
+    "agent_team": [
+      "test-conductor",
+      "integrity-guardian",
+      "knowledge-extender"
     ]
   },
-  "sections": {
+  "dynamicResourceLoading": {
+    "description": "Load additional resources based on detected error context",
+    "contextPatterns": [
+      {
+        "context": "langchain",
+        "patterns": ["langchain_core", "langsmith", "langgraph"],
+        "additionalSkills": ["langsmith-tracing", "langchain-usage", "langgraph-agent-building"],
+        "additionalKnowledge": ["langchain-patterns.json", "langgraph-workflows.json"]
+      },
+      {
+        "context": "pytest",
+        "patterns": ["pytest", "AssertionError", "test_"],
+        "additionalSkills": ["agent-testing"],
+        "additionalKnowledge": ["agent-testing-patterns.json"]
+      },
+      {
+        "context": "security",
+        "patterns": ["vulnerability", "CVE-", "security"],
+        "additionalSkills": ["security-sandboxing"],
+        "additionalKnowledge": ["security-patterns.json"]
+      }
+    ]
+  },
+  "reasoningModes": ["observation", "induction", "deduction"],
+  "conflictResolution": {
+    "localResolution": "debug-patterns.json heuristics",
+    "escalationPath": ["integrity-guardian", "PURPOSE.md", "user"],
+    "ualPerformative": "QUERY"
+  },
+  "ual_protocol": {
+    "agent_did": "did:agent:debug-conductor-project",
+    "performatives": ["REQUEST", "QUERY", "INFORM", "RESPONSE", "CONFIRM"],
+    "axiom_alignment": ["A1", "A2", "A4"]
+  },  "sections": {
     "title": "Debug Conductor Agent",
     "purpose": "Autonomous debugging agent that systematically investigates failures, identifies root causes, and implements fixes. When direct fixes aren't possible, it adapts by creating alternative solutions (new tests, refactored code, or escalation with detailed analysis). This agent demonstrates the Workflow System Architecture - orchestrating complex multi-step tasks through phases, decision points, and learning hooks.",
     "philosophy": "Every bug is a gift - an opportunity to improve the system and prevent future failures. Debugging is not just about fixing the immediate problem. It's about: 1) Understanding why the failure occurred, 2) Fixing the root cause, not just symptoms, 3) Preventing similar failures in the future, 4) Learning patterns to improve over time.",
@@ -225,13 +266,28 @@
       {
         "skill": "ci-monitor",
         "purpose": "Continuous CI monitoring with watch-detect-fix loop"
+        "content": "Common debugging patterns, error types, UAL delegation rules, and reasoning patterns"
+      },
+      {
+        "file": "agent-team-registry.json",
+        "content": "Agent team with UAL protocols for delegation and collaboration"
       }
     ],
-    "knowledgeFiles": [
+    "agentTeam": [
       {
-        "file": "debug-patterns.json",
-        "content": "Common debugging patterns, error types, and resolution strategies"
-      }
+        "agent": "test-conductor",
+        "did": "did:agent:test-conductor",
+        "purpose": "Test execution, coverage analysis, regression detection"
+      },
+      {
+        "agent": "integrity-guardian",
+        "did": "did:agent:integrity-guardian",
+        "purpose": "Axiom guidance, conflict resolution, purpose alignment"
+      },
+      {
+        "agent": "knowledge-extender",
+        "did": "did:agent:knowledge-extender",
+        "purpose": "Pattern capture, knowledge base updates"      }
     ],
     "mcpServers": [
       {

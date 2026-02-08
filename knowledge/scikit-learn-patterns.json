@@ -1,0 +1,324 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "scikit-learn Patterns",
+  "description": "Best practices and patterns for scikit-learn machine learning workflows",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns include cross-validation and model evaluation for verification",
+    "A3_transparency": "All patterns emphasize reproducible pipelines and explainable models"
+  },
+  "data_preprocessing": {
+    "scaling": {
+      "description": "Standardize features to zero mean and unit variance",
+      "use_when": "Features have different scales, using distance-based algorithms",
+      "code_example": "from sklearn.preprocessing import StandardScaler\nimport numpy as np\n\n# Fit on training data only\nscaler = StandardScaler()\nX_train_scaled = scaler.fit_transform(X_train)\nX_test_scaled = scaler.transform(X_test)\n\n# For pipelines\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.linear_model import LogisticRegression\n\npipeline = Pipeline([\n    ('scaler', StandardScaler()),\n    ('classifier', LogisticRegression())\n])",
+      "best_practices": [
+        "Always fit scaler on training data only",
+        "Transform test data using fitted scaler",
+        "Use in Pipeline to prevent data leakage",
+        "StandardScaler for normal distributions, MinMaxScaler for bounded ranges"
+      ]
+    },
+    "encoding_categorical": {
+      "description": "Convert categorical variables to numerical",
+      "use_when": "Categorical features need to be encoded",
+      "code_example": "from sklearn.preprocessing import OneHotEncoder, LabelEncoder, OrdinalEncoder\nfrom sklearn.compose import ColumnTransformer\n\n# One-hot encoding (for nominal categories)\nonehot = OneHotEncoder(drop='first', sparse_output=False)\nX_encoded = onehot.fit_transform(X_categorical)\n\n# Label encoding (for ordinal categories)\nlabel_encoder = LabelEncoder()\ny_encoded = label_encoder.fit_transform(y)\n\n# Column transformer for mixed data types\npreprocessor = ColumnTransformer(\n    transformers=[\n        ('num', StandardScaler(), ['age', 'income']),\n        ('cat', OneHotEncoder(drop='first'), ['city', 'category'])\n    ]\n)",
+      "best_practices": [
+        "Use OneHotEncoder for nominal categories",
+        "Use OrdinalEncoder for ordinal categories with known order",
+        "Use ColumnTransformer for mixed data types",
+        "Set drop='first' to avoid multicollinearity",
+        "Handle unknown categories in test data"
+      ]
+    },
+    "handling_missing_values": {
+      "description": "Impute missing values in datasets",
+      "use_when": "Dataset contains NaN or missing values",
+      "code_example": "from sklearn.impute import SimpleImputer, KNNImputer\nfrom sklearn.pipeline import Pipeline\n\n# Simple imputation (mean, median, most_frequent)\nmean_imputer = SimpleImputer(strategy='mean')\nX_imputed = mean_imputer.fit_transform(X)\n\n# KNN imputation (more sophisticated)\nknn_imputer = KNNImputer(n_neighbors=5)\nX_imputed = knn_imputer.fit_transform(X)\n\n# In pipeline\npipeline = Pipeline([\n    ('imputer', SimpleImputer(strategy='median')),\n    ('scaler', StandardScaler()),\n    ('classifier', LogisticRegression())\n])",
+      "best_practices": [
+        "Use median for skewed distributions",
+        "Use mean for normal distributions",
+        "Use most_frequent for categorical data",
+        "Consider KNN imputation for better accuracy",
+        "Always fit imputer on training data only"
+      ]
+    },
+    "feature_selection": {
+      "description": "Select most relevant features",
+      "use_when": "High-dimensional data, need to reduce features",
+      "code_example": "from sklearn.feature_selection import (\n    SelectKBest, f_classif, RFE, SelectFromModel\n)\nfrom sklearn.ensemble import RandomForestClassifier\n\n# Univariate feature selection\nselector = SelectKBest(score_func=f_classif, k=10)\nX_selected = selector.fit_transform(X_train, y_train)\n\n# Recursive feature elimination\nestimator = LogisticRegression()\nrfe = RFE(estimator, n_features_to_select=10)\nX_selected = rfe.fit_transform(X_train, y_train)\n\n# Model-based selection\nrf = RandomForestClassifier()\nrf.fit(X_train, y_train)\nselector = SelectFromModel(rf, prefit=True, max_features=10)\nX_selected = selector.transform(X_train)",
+      "best_practices": [
+        "Use SelectKBest for univariate selection",
+        "Use RFE for multivariate selection",
+        "Use SelectFromModel with tree-based models",
+        "Validate feature selection in cross-validation",
+        "Consider feature importance from models"
+      ]
+    },
+    "polynomial_features": {
+      "description": "Create polynomial features for non-linear relationships",
+      "use_when": "Need to capture non-linear patterns",
+      "code_example": "from sklearn.preprocessing import PolynomialFeatures\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.linear_model import LinearRegression\n\n# Create polynomial features\npoly = PolynomialFeatures(degree=2, include_bias=False)\nX_poly = poly.fit_transform(X)\n\n# In pipeline\npipeline = Pipeline([\n    ('poly', PolynomialFeatures(degree=2)),\n    ('scaler', StandardScaler()),\n    ('regressor', LinearRegression())\n])",
+      "best_practices": [
+        "Start with degree=2, increase if needed",
+        "Use StandardScaler after polynomial features",
+        "Be aware of feature explosion (n_features^degree)",
+        "Consider interaction_only=True for interaction terms only"
+      ]
+    }
+  },
+  "model_selection": {
+    "train_test_split": {
+      "description": "Split data into training and testing sets",
+      "use_when": "Need to evaluate model performance",
+      "code_example": "from sklearn.model_selection import train_test_split\n\n# Basic split\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42, stratify=y\n)\n\n# With stratification for classification\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42, stratify=y\n)",
+      "best_practices": [
+        "Use stratify=y for classification to maintain class distribution",
+        "Set random_state for reproducibility",
+        "Typical split: 80/20 or 70/30",
+        "Consider validation set for hyperparameter tuning"
+      ]
+    },
+    "choosing_algorithms": {
+      "description": "Select appropriate algorithm for problem type",
+      "use_when": "Starting a new ML project",
+      "code_example": "# Classification\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier\nfrom sklearn.svm import SVC\nfrom sklearn.neighbors import KNeighborsClassifier\n\n# Regression\nfrom sklearn.linear_model import LinearRegression, Ridge, Lasso\nfrom sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor\nfrom sklearn.svm import SVR\n\n# Clustering\nfrom sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering",
+      "guidelines": {
+        "classification": {
+          "linear": "LogisticRegression for interpretability",
+          "tree_based": "RandomForestClassifier for good performance",
+          "gradient_boosting": "GradientBoostingClassifier for best accuracy",
+          "svm": "SVC for small datasets with clear margins",
+          "knn": "KNeighborsClassifier for non-parametric approach"
+        },
+        "regression": {
+          "linear": "LinearRegression/Ridge/Lasso for interpretability",
+          "tree_based": "RandomForestRegressor for good performance",
+          "gradient_boosting": "GradientBoostingRegressor for best accuracy"
+        },
+        "clustering": {
+          "kmeans": "KMeans for spherical clusters, known k",
+          "dbscan": "DBSCAN for arbitrary shapes, unknown k",
+          "hierarchical": "AgglomerativeClustering for hierarchical structure"
+        }
+      }
+    },
+    "baseline_model": {
+      "description": "Start with simple baseline model",
+      "use_when": "Establishing performance baseline",
+      "code_example": "from sklearn.dummy import DummyClassifier, DummyRegressor\nfrom sklearn.metrics import accuracy_score\n\n# Classification baseline\nbaseline = DummyClassifier(strategy='most_frequent')\nbaseline.fit(X_train, y_train)\nbaseline_score = baseline.score(X_test, y_test)\n\n# Regression baseline\nbaseline_reg = DummyRegressor(strategy='mean')\nbaseline_reg.fit(X_train, y_train)\nbaseline_score = baseline_reg.score(X_test, y_test)",
+      "best_practices": [
+        "Always establish baseline first",
+        "Use DummyClassifier/DummyRegressor",
+        "Compare all models against baseline",
+        "Baseline helps identify if problem is solvable"
+      ]
+    }
+  },
+  "pipeline_patterns": {
+    "basic_pipeline": {
+      "description": "Chain preprocessing and model in single pipeline",
+      "use_when": "Need to prevent data leakage and simplify workflow",
+      "code_example": "from sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.impute import SimpleImputer\nfrom sklearn.linear_model import LogisticRegression\n\npipeline = Pipeline([\n    ('imputer', SimpleImputer(strategy='mean')),\n    ('scaler', StandardScaler()),\n    ('classifier', LogisticRegression(random_state=42))\n])\n\n# Fit and predict\npipeline.fit(X_train, y_train)\npredictions = pipeline.predict(X_test)\n\n# Access steps\nscaler = pipeline.named_steps['scaler']\nclassifier = pipeline.named_steps['classifier']",
+      "best_practices": [
+        "Use Pipeline to prevent data leakage",
+        "All preprocessing happens in pipeline",
+        "Pipeline can be used in cross-validation",
+        "Access individual steps using named_steps"
+      ]
+    },
+    "column_transformer": {
+      "description": "Apply different transformers to different columns",
+      "use_when": "Mixed data types (numeric and categorical)",
+      "code_example": "from sklearn.compose import ColumnTransformer\nfrom sklearn.preprocessing import StandardScaler, OneHotEncoder\nfrom sklearn.impute import SimpleImputer\n\n# Define column groups\nnumeric_features = ['age', 'income', 'score']\ncategorical_features = ['city', 'category']\n\n# Create column transformer\npreprocessor = ColumnTransformer(\n    transformers=[\n        ('num', Pipeline([\n            ('imputer', SimpleImputer(strategy='median')),\n            ('scaler', StandardScaler())\n        ]), numeric_features),\n        ('cat', Pipeline([\n            ('imputer', SimpleImputer(strategy='most_frequent')),\n            ('encoder', OneHotEncoder(drop='first', sparse_output=False))\n        ]), categorical_features)\n    ],\n    remainder='drop'  # or 'passthrough'\n)\n\n# Use in full pipeline\npipeline = Pipeline([\n    ('preprocessor', preprocessor),\n    ('classifier', LogisticRegression())\n])",
+      "best_practices": [
+        "Use ColumnTransformer for mixed data types",
+        "Nest Pipelines within ColumnTransformer",
+        "Set remainder='passthrough' to keep other columns",
+        "Use remainder='drop' to exclude other columns"
+      ]
+    },
+    "feature_union": {
+      "description": "Combine multiple feature extraction methods",
+      "use_when": "Need to combine different feature sets",
+      "code_example": "from sklearn.pipeline import FeatureUnion\nfrom sklearn.decomposition import PCA\nfrom sklearn.feature_selection import SelectKBest\n\n# Combine PCA and feature selection\nfeature_union = FeatureUnion([\n    ('pca', PCA(n_components=10)),\n    ('select', SelectKBest(k=5))\n])\n\n# Use in pipeline\npipeline = Pipeline([\n    ('features', feature_union),\n    ('scaler', StandardScaler()),\n    ('classifier', LogisticRegression())\n])",
+      "best_practices": [
+        "Use FeatureUnion to combine feature sets",
+        "Each transformer operates on same input",
+        "Outputs are concatenated horizontally",
+        "Useful for ensemble feature extraction"
+      ]
+    }
+  },
+  "cross_validation": {
+    "k_fold": {
+      "description": "K-fold cross-validation for robust evaluation",
+      "use_when": "Need reliable performance estimate",
+      "code_example": "from sklearn.model_selection import cross_val_score, KFold\nfrom sklearn.ensemble import RandomForestClassifier\n\n# Create model\nmodel = RandomForestClassifier(n_estimators=100, random_state=42)\n\n# K-fold CV\nkfold = KFold(n_splits=5, shuffle=True, random_state=42)\nscores = cross_val_score(model, X, y, cv=kfold, scoring='accuracy')\n\nprint(f'Mean accuracy: {scores.mean():.3f} (+/- {scores.std() * 2:.3f})')",
+      "best_practices": [
+        "Use k=5 or k=10 folds",
+        "Set shuffle=True for better distribution",
+        "Use random_state for reproducibility",
+        "Report mean and std of scores"
+      ]
+    },
+    "stratified_kfold": {
+      "description": "Stratified K-fold for classification",
+      "use_when": "Classification with imbalanced classes",
+      "code_example": "from sklearn.model_selection import StratifiedKFold, cross_val_score\n\n# Stratified K-fold\nstratified_kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)\nscores = cross_val_score(model, X, y, cv=stratified_kfold, scoring='accuracy')",
+      "best_practices": [
+        "Always use StratifiedKFold for classification",
+        "Maintains class distribution in each fold",
+        "More reliable than regular KFold for imbalanced data"
+      ]
+    },
+    "time_series_split": {
+      "description": "Time series cross-validation",
+      "use_when": "Time series data with temporal dependencies",
+      "code_example": "from sklearn.model_selection import TimeSeriesSplit\n\n# Time series split\ntscv = TimeSeriesSplit(n_splits=5)\nscores = cross_val_score(model, X, y, cv=tscv, scoring='neg_mean_squared_error')",
+      "best_practices": [
+        "Use TimeSeriesSplit for temporal data",
+        "Respects temporal order",
+        "Prevents future data leakage"
+      ]
+    },
+    "cross_validate": {
+      "description": "Cross-validation with multiple metrics",
+      "use_when": "Need multiple evaluation metrics",
+      "code_example": "from sklearn.model_selection import cross_validate\n\n# Multiple metrics\nscoring = ['accuracy', 'precision', 'recall', 'f1']\nresults = cross_validate(\n    model, X, y, cv=5, scoring=scoring, return_train_score=True\n)\n\nprint(f\"Test accuracy: {results['test_accuracy'].mean():.3f}\")\nprint(f\"Test precision: {results['test_precision'].mean():.3f}\")\nprint(f\"Test recall: {results['test_recall'].mean():.3f}\")",
+      "best_practices": [
+        "Use cross_validate for multiple metrics",
+        "Set return_train_score=True to check overfitting",
+        "Compare train vs test scores"
+      ]
+    }
+  },
+  "hyperparameter_tuning": {
+    "grid_search": {
+      "description": "Exhaustive search over parameter grid",
+      "use_when": "Small parameter space, need best parameters",
+      "code_example": "from sklearn.model_selection import GridSearchCV\nfrom sklearn.ensemble import RandomForestClassifier\n\n# Define parameter grid\nparam_grid = {\n    'n_estimators': [50, 100, 200],\n    'max_depth': [3, 5, 7, None],\n    'min_samples_split': [2, 5, 10]\n}\n\n# Create model\nrf = RandomForestClassifier(random_state=42)\n\n# Grid search\ngrid_search = GridSearchCV(\n    rf, param_grid, cv=5, scoring='accuracy', n_jobs=-1\n)\ngrid_search.fit(X_train, y_train)\n\n# Best parameters\nprint(f'Best parameters: {grid_search.best_params_}')\nprint(f'Best score: {grid_search.best_score_:.3f}')\n\n# Use best model\nbest_model = grid_search.best_estimator_",
+      "best_practices": [
+        "Use GridSearchCV for small parameter spaces",
+        "Set n_jobs=-1 for parallel processing",
+        "Use cv parameter for cross-validation",
+        "Access best_estimator_ for predictions"
+      ]
+    },
+    "random_search": {
+      "description": "Random search over parameter space",
+      "use_when": "Large parameter space, faster than grid search",
+      "code_example": "from sklearn.model_selection import RandomizedSearchCV\nfrom scipy.stats import randint, uniform\n\n# Define parameter distributions\nparam_distributions = {\n    'n_estimators': randint(50, 300),\n    'max_depth': randint(3, 20),\n    'min_samples_split': randint(2, 20),\n    'max_features': uniform(0.1, 0.9)\n}\n\n# Random search\nrandom_search = RandomizedSearchCV(\n    rf, param_distributions, n_iter=50, cv=5, \n    scoring='accuracy', n_jobs=-1, random_state=42\n)\nrandom_search.fit(X_train, y_train)",
+      "best_practices": [
+        "Use RandomizedSearchCV for large spaces",
+        "Set n_iter based on time budget",
+        "Use scipy.stats distributions",
+        "Often finds good parameters faster than grid search"
+      ]
+    },
+    "pipeline_tuning": {
+      "description": "Tune parameters across pipeline steps",
+      "use_when": "Need to tune preprocessing and model parameters",
+      "code_example": "from sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.svm import SVC\n\n# Create pipeline\npipeline = Pipeline([\n    ('scaler', StandardScaler()),\n    ('svm', SVC())\n])\n\n# Parameter grid with step prefixes\nparam_grid = {\n    'svm__C': [0.1, 1, 10, 100],\n    'svm__gamma': ['scale', 'auto', 0.001, 0.01],\n    'svm__kernel': ['linear', 'rbf']\n}\n\n# Grid search on pipeline\ngrid_search = GridSearchCV(\n    pipeline, param_grid, cv=5, scoring='accuracy'\n)\ngrid_search.fit(X_train, y_train)",
+      "best_practices": [
+        "Use double underscore (__) to specify pipeline steps",
+        "Can tune parameters at any pipeline step",
+        "Prevents data leakage automatically"
+      ]
+    },
+    "bayesian_optimization": {
+      "description": "Bayesian optimization for hyperparameter tuning",
+      "use_when": "Want efficient parameter search",
+      "code_example": "from skopt import BayesSearchCV\nfrom skopt.space import Real, Integer\n\n# Define search space\nsearch_space = {\n    'n_estimators': Integer(50, 300),\n    'max_depth': Integer(3, 20),\n    'min_samples_split': Integer(2, 20),\n    'max_features': Real(0.1, 1.0)\n}\n\n# Bayesian search\nbayes_search = BayesSearchCV(\n    rf, search_space, n_iter=50, cv=5, \n    scoring='accuracy', n_jobs=-1\n)\nbayes_search.fit(X_train, y_train)",
+      "best_practices": [
+        "Use BayesSearchCV for efficient search",
+        "Requires scikit-optimize (skopt)",
+        "More efficient than random search",
+        "Good for expensive evaluations"
+      ]
+    }
+  },
+  "model_evaluation": {
+    "classification_metrics": {
+      "description": "Metrics for classification tasks",
+      "code_example": "from sklearn.metrics import (\n    accuracy_score, precision_score, recall_score,\n    f1_score, confusion_matrix, classification_report,\n    roc_auc_score, roc_curve\n)\n\n# Basic metrics\ny_pred = model.predict(X_test)\naccuracy = accuracy_score(y_test, y_pred)\nprecision = precision_score(y_test, y_pred, average='weighted')\nrecall = recall_score(y_test, y_pred, average='weighted')\nf1 = f1_score(y_test, y_pred, average='weighted')\n\n# Confusion matrix\ncm = confusion_matrix(y_test, y_pred)\n\n# Classification report\nreport = classification_report(y_test, y_pred)\n\n# ROC AUC (for binary classification)\ny_proba = model.predict_proba(X_test)[:, 1]\nroc_auc = roc_auc_score(y_test, y_proba)",
+      "best_practices": [
+        "Use accuracy for balanced classes",
+        "Use precision/recall/F1 for imbalanced classes",
+        "Use ROC AUC for binary classification",
+        "Use confusion_matrix for detailed analysis",
+        "Use classification_report for summary"
+      ]
+    },
+    "regression_metrics": {
+      "description": "Metrics for regression tasks",
+      "code_example": "from sklearn.metrics import (\n    mean_squared_error, mean_absolute_error,\n    r2_score, explained_variance_score\n)\n\ny_pred = model.predict(X_test)\n\n# MSE (penalizes large errors)\nmse = mean_squared_error(y_test, y_pred)\nrmse = np.sqrt(mse)\n\n# MAE (robust to outliers)\nmae = mean_absolute_error(y_test, y_pred)\n\n# R-squared\nr2 = r2_score(y_test, y_pred)\n\n# Explained variance\nexplained_var = explained_variance_score(y_test, y_pred)",
+      "best_practices": [
+        "Use RMSE for same units as target",
+        "Use MAE for robustness to outliers",
+        "Use R² for proportion of variance explained",
+        "Compare multiple metrics"
+      ]
+    },
+    "learning_curves": {
+      "description": "Plot learning curves to diagnose model",
+      "use_when": "Need to understand model behavior",
+      "code_example": "from sklearn.model_selection import learning_curve\nimport matplotlib.pyplot as plt\n\n# Generate learning curve data\ntrain_sizes, train_scores, val_scores = learning_curve(\n    model, X_train, y_train, cv=5, n_jobs=-1,\n    train_sizes=np.linspace(0.1, 1.0, 10)\n)\n\n# Plot\nplt.figure(figsize=(10, 6))\nplt.plot(train_sizes, train_scores.mean(axis=1), label='Training score')\nplt.plot(train_sizes, val_scores.mean(axis=1), label='Validation score')\nplt.xlabel('Training Set Size')\nplt.ylabel('Score')\nplt.legend()\nplt.title('Learning Curves')\nplt.show()",
+      "best_practices": [
+        "Use learning_curve to diagnose bias/variance",
+        "Gap between train/val indicates overfitting",
+        "Both curves low indicates underfitting",
+        "Use to determine if more data helps"
+      ]
+    },
+    "validation_curves": {
+      "description": "Plot validation curves for hyperparameters",
+      "use_when": "Tuning specific hyperparameters",
+      "code_example": "from sklearn.model_selection import validation_curve\n\n# Generate validation curve data\ntrain_scores, val_scores = validation_curve(\n    model, X_train, y_train, param_name='max_depth',\n    param_range=[1, 3, 5, 7, 9, 11], cv=5\n)\n\n# Plot\nplt.figure(figsize=(10, 6))\nplt.plot(param_range, train_scores.mean(axis=1), label='Training score')\nplt.plot(param_range, val_scores.mean(axis=1), label='Validation score')\nplt.xlabel('Max Depth')\nplt.ylabel('Score')\nplt.legend()\nplt.title('Validation Curves')\nplt.show()",
+      "best_practices": [
+        "Use validation_curve for hyperparameter analysis",
+        "Shows optimal parameter value",
+        "Helps identify overfitting regions"
+      ]
+    }
+  },
+  "anti_patterns": {
+    "data_leakage": {
+      "description": "Fitting preprocessing on entire dataset",
+      "problem": "Test set information leaks into training",
+      "solution": "Always fit transformers on training data only, use Pipeline"
+    },
+    "no_cross_validation": {
+      "description": "Evaluating only on single train/test split",
+      "problem": "Unreliable performance estimate",
+      "solution": "Use cross-validation for robust evaluation"
+    },
+    "overfitting": {
+      "description": "Model performs well on train but poorly on test",
+      "problem": "Model memorizes training data",
+      "solution": "Use regularization, cross-validation, more data, simpler models"
+    },
+    "ignoring_class_imbalance": {
+      "description": "Not handling imbalanced classes",
+      "problem": "Poor performance on minority class",
+      "solution": "Use class_weight, SMOTE, or stratified sampling"
+    },
+    "wrong_scoring_metric": {
+      "description": "Using inappropriate metric for problem",
+      "problem": "Misleading model evaluation",
+      "solution": "Choose metric based on business objective (precision vs recall)"
+    }
+  },
+  "best_practices_summary": [
+    "Always use Pipeline to prevent data leakage",
+    "Fit transformers only on training data",
+    "Use cross-validation for reliable evaluation",
+    "Start with simple baseline model",
+    "Use appropriate metrics for problem type",
+    "Tune hyperparameters systematically",
+    "Check for overfitting with learning curves",
+    "Handle missing values and categorical data properly",
+    "Scale features for distance-based algorithms",
+    "Use StratifiedKFold for classification"
+  ]
+}

@@ -36,7 +36,6 @@ BRAVE_API_KEY=your-brave-api-key-here
 ```
 
 ### Antigravity MCP Config (`.agent/mcp.json`)
-
 ```json
 {
   "mcpServers": {
@@ -105,8 +104,7 @@ Test the server is working:
 
 1. Set BRAVE_API_KEY in your environment
 2. Add configuration to `.agent/mcp.json`
-3. Restart Antigravity
-4. Ask the AI to "search for MCP server documentation"
+3. Restart Antigravity4. Ask the AI to "search for MCP server documentation"
 
 ## Troubleshooting
 

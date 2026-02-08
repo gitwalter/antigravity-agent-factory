@@ -1,0 +1,185 @@
+{
+  "id": "caching-patterns",
+  "name": "Caching Patterns for LLM Systems",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "description": "Patterns for caching LLM responses, embeddings, and semantic caching strategies",
+  "patterns": {
+    "llm_caching": {
+      "sqlite_cache": {
+        "description": "Cache LLM responses using SQLite",
+        "code_example": "from langchain.cache import SQLiteCache\nfrom langchain.globals import set_llm_cache\n\n# Set global LLM cache\nset_llm_cache(SQLiteCache(database_path='.langchain.db'))\n\n# All LLM calls automatically cached\nfrom langchain_openai import ChatOpenAI\nllm = ChatOpenAI(model='gpt-4o')\nresponse = llm.invoke('What is Python?')  # Cached automatically",
+        "best_practices": [
+          "Use SQLite for development",
+          "Use Redis for production",
+          "Set appropriate TTL",
+          "Monitor cache hit rates"
+        ]
+      },
+      "redis_cache": {
+        "description": "Cache LLM responses using Redis",
+        "code_example": "from langchain.cache import RedisCache\nimport redis\n\nredis_client = redis.Redis(host='localhost', port=6379, db=0)\nset_llm_cache(RedisCache(redis_client))\n\n# Distributed caching for production\nllm = ChatOpenAI(model='gpt-4o')\nresponse = llm.invoke('What is Python?')  # Cached in Redis",
+        "best_practices": [
+          "Use Redis for distributed systems",
+          "Set TTL based on data freshness needs",
+          "Use connection pooling",
+          "Handle Redis failures gracefully"
+        ]
+      },
+      "in_memory_cache": {
+        "description": "In-memory caching for single-process applications",
+        "code_example": "from langchain.cache import InMemoryCache\n\nset_llm_cache(InMemoryCache())\n\n# Fast but not persistent\nllm = ChatOpenAI(model='gpt-4o')\nresponse = llm.invoke('What is Python?')",
+        "use_when": [
+          "Single process applications",
+          "Development/testing",
+          "Short-lived caches"
+        ]
+      }
+    },
+    "embedding_caching": {
+      "cache_backed_embeddings": {
+        "description": "Cache embeddings to avoid recomputation",
+        "code_example": "from langchain.embeddings import CacheBackedEmbeddings\nfrom langchain.storage import LocalFileStore\nfrom langchain_openai import OpenAIEmbeddings\n\n# Create underlying embeddings\nunderlying_embeddings = OpenAIEmbeddings(model='text-embedding-3-small')\n\n# Create cache store\nstore = LocalFileStore('./embedding_cache')\n\n# Create cached embeddings\ncached_embeddings = CacheBackedEmbeddings.from_bytes_store(\n    underlying_embeddings=underlying_embeddings,\n    document_embedding_cache=store,\n    namespace='embeddings'\n)\n\n# Use cached embeddings\nembeddings = cached_embeddings.embed_documents(['Text 1', 'Text 2'])",
+        "best_practices": [
+          "Cache embeddings for documents",
+          "Use persistent storage",
+          "Namespace by model/version",
+          "Invalidate on document updates"
+        ]
+      },
+      "redis_embedding_cache": {
+        "description": "Cache embeddings in Redis",
+        "code_example": "from langchain.storage import RedisStore\nimport redis\n\nredis_client = redis.Redis(host='localhost', port=6379, db=1)\nstore = RedisStore(client=redis_client, namespace='embeddings')\n\ncached_embeddings = CacheBackedEmbeddings.from_bytes_store(\n    underlying_embeddings=embeddings,\n    document_embedding_cache=store,\n    namespace='text-embedding-3-small'\n)",
+        "best_practices": [
+          "Use Redis for distributed systems",
+          "Set appropriate TTL",
+          "Serialize embeddings efficiently",
+          "Monitor memory usage"
+        ]
+      }
+    },
+    "semantic_caching": {
+      "similarity_based_cache": {
+        "description": "Cache based on semantic similarity of queries",
+        "code_example": "from langchain.cache import SemanticCache\nfrom langchain_openai import OpenAIEmbeddings\n\nembeddings = OpenAIEmbeddings(model='text-embedding-3-small')\n\nsemantic_cache = SemanticCache(\n    embedding=embeddings,\n    similarity_threshold=0.95  # Cache hit if similarity > 0.95\n)\n\nset_llm_cache(semantic_cache)\n\n# Similar queries return cached results\nllm = ChatOpenAI(model='gpt-4o')\nresponse1 = llm.invoke('What is Python?')\nresponse2 = llm.invoke('Tell me about Python')  # May use cache",
+        "best_practices": [
+          "Set appropriate similarity threshold",
+          "Use semantic caching for similar queries",
+          "Monitor false positives",
+          "Combine with exact cache"
+        ]
+      },
+      "hybrid_cache": {
+        "description": "Combine exact and semantic caching",
+        "code_example": "from langchain.cache import SQLiteCache, SemanticCache\nfrom langchain.cache import Cache\n\nclass HybridCache(Cache):\n    def __init__(self, exact_cache, semantic_cache):\n        self.exact_cache = exact_cache\n        self.semantic_cache = semantic_cache\n    \n    def lookup(self, prompt: str, llm_string: str) -> str:\n        # Try exact cache first\n        result = self.exact_cache.lookup(prompt, llm_string)\n        if result:\n            return result\n        \n        # Try semantic cache\n        return self.semantic_cache.lookup(prompt, llm_string)\n    \n    def update(self, prompt: str, llm_string: str, return_val: str) -> None:\n        self.exact_cache.update(prompt, llm_string, return_val)\n        self.semantic_cache.update(prompt, llm_string, return_val)\n\nhybrid = HybridCache(SQLiteCache(), SemanticCache(embeddings))\nset_llm_cache(hybrid)",
+        "best_practices": [
+          "Use exact cache for identical queries",
+          "Use semantic cache for similar queries",
+          "Layer caches for best performance",
+          "Monitor both cache hit rates"
+        ]
+      }
+    },
+    "invalidation_strategies": {
+      "ttl_based": {
+        "description": "Time-to-live based invalidation",
+        "code_example": "from datetime import datetime, timedelta\nfrom langchain.cache import SQLiteCache\n\nclass TTLCache(SQLiteCache):\n    def __init__(self, database_path: str, ttl_seconds: int = 3600):\n        super().__init__(database_path=database_path)\n        self.ttl_seconds = ttl_seconds\n    \n    def lookup(self, prompt: str, llm_string: str) -> str:\n        result = super().lookup(prompt, llm_string)\n        if result:\n            # Check TTL\n            # ...\n            return result\n        return None",
+        "best_practices": [
+          "Set TTL based on data freshness needs",
+          "Use shorter TTL for dynamic content",
+          "Use longer TTL for static content",
+          "Implement TTL checking"
+        ]
+      },
+      "manual_invalidation": {
+        "description": "Manually invalidate cache entries",
+        "code_example": "class CacheManager:\n    def __init__(self, cache):\n        self.cache = cache\n    \n    def invalidate_pattern(self, pattern: str):\n        # Invalidate entries matching pattern\n        # ...\n    \n    def invalidate_all(self):\n        # Clear entire cache\n        # ...\n    \n    def invalidate_by_key(self, key: str):\n        # Invalidate specific key\n        # ...",
+        "best_practices": [
+          "Invalidate on data updates",
+          "Support pattern-based invalidation",
+          "Log invalidation events",
+          "Provide clear invalidation API"
+        ]
+      },
+      "version_based": {
+        "description": "Invalidate cache based on version changes",
+        "code_example": "class VersionedCache:\n    def __init__(self, cache, version: str):\n        self.cache = cache\n        self.version = version\n    \n    def lookup(self, prompt: str, llm_string: str) -> str:\n        # Include version in cache key\n        versioned_key = f'{self.version}:{prompt}:{llm_string}'\n        return self.cache.lookup(versioned_key)\n    \n    def update(self, prompt: str, llm_string: str, return_val: str):\n        versioned_key = f'{self.version}:{prompt}:{llm_string}'\n        self.cache.update(versioned_key, return_val)",
+        "best_practices": [
+          "Version cache keys",
+          "Invalidate on model version changes",
+          "Invalidate on prompt template changes",
+          "Track version in metadata"
+        ]
+      }
+    },
+    "cache_metrics": {
+      "hit_rate_tracking": {
+        "description": "Track cache hit rates",
+        "code_example": "class MetricsCache:\n    def __init__(self, cache):\n        self.cache = cache\n        self.hits = 0\n        self.misses = 0\n    \n    def lookup(self, prompt: str, llm_string: str) -> str:\n        result = self.cache.lookup(prompt, llm_string)\n        if result:\n            self.hits += 1\n        else:\n            self.misses += 1\n        return result\n    \n    def get_hit_rate(self) -> float:\n        total = self.hits + self.misses\n        return self.hits / total if total > 0 else 0.0",
+        "best_practices": [
+          "Track hit and miss counts",
+          "Calculate hit rate",
+          "Monitor cache performance",
+          "Alert on low hit rates"
+        ]
+      }
+    }
+  },
+  "best_practices": [
+    "Cache LLM responses to reduce API costs",
+    "Cache embeddings to avoid recomputation",
+    "Use semantic caching for similar queries",
+    "Set appropriate TTL based on data freshness",
+    "Invalidate cache on data updates",
+    "Monitor cache hit rates",
+    "Use Redis for distributed systems",
+    "Use SQLite for single-process applications",
+    "Namespace cache keys by model/version",
+    "Combine exact and semantic caching",
+    "Handle cache failures gracefully",
+    "Log cache operations for debugging"
+  ],
+  "anti_patterns": [
+    {
+      "name": "No caching",
+      "problem": "High API costs, slow responses",
+      "fix": "Implement caching for LLM calls and embeddings"
+    },
+    {
+      "name": "Caching everything forever",
+      "problem": "Stale data, memory issues",
+      "fix": "Set appropriate TTL, implement invalidation"
+    },
+    {
+      "name": "No cache invalidation",
+      "problem": "Stale responses, incorrect data",
+      "fix": "Implement TTL and manual invalidation"
+    },
+    {
+      "name": "Ignoring cache hit rates",
+      "problem": "Don't know if caching is effective",
+      "fix": "Track and monitor cache hit rates"
+    },
+    {
+      "name": "Using wrong cache type",
+      "problem": "Poor performance, not distributed",
+      "fix": "Use Redis for distributed, SQLite for single-process"
+    },
+    {
+      "name": "No namespace separation",
+      "problem": "Cache collisions, wrong results",
+      "fix": "Namespace cache keys by model, version, context"
+    },
+    {
+      "name": "Caching sensitive data",
+      "problem": "Security and privacy issues",
+      "fix": "Don't cache sensitive data, encrypt if necessary"
+    },
+    {
+      "name": "No error handling",
+      "problem": "Crashes when cache fails",
+      "fix": "Handle cache failures gracefully, fallback to direct calls"
+    }
+  ],
+  "related_skills": ["rag-patterns", "memory-management", "langchain-usage", "tool-usage"]
+}

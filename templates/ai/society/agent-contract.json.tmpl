@@ -1,0 +1,268 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "{{ project_name | default('Project') }} Agent Contract",
+  "description": "Formal agreement defining agent capabilities, obligations, and prohibitions",
+  "type": "object",
+  "required": [
+    "contract_id",
+    "version",
+    "created",
+    "parties",
+    "capabilities",
+    "axiom_requirements",
+    "signatures"
+  ],
+  "properties": {
+    "contract_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique contract identifier"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the contract"
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Contract creation timestamp"
+    },
+    "expires": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional expiration timestamp"
+    },
+    "parties": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["agent_id", "role", "public_key"],
+        "properties": {
+          "agent_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Agent's unique identifier"
+          },
+          "role": {
+            "type": "string",
+            "description": "Agent's role in this contract (e.g., service_provider, service_consumer)"
+          },
+          "public_key": {
+            "type": "string",
+            "pattern": "^ed25519:[a-f0-9]{64}$",
+            "description": "Ed25519 public key for signature verification"
+          }
+        }
+      },
+      "description": "Parties to the contract"
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "description": "Actions each role is permitted to perform (role_name -> [actions])"
+    },
+    "obligations": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["trigger", "action"],
+          "properties": {
+            "trigger": {
+              "type": "string",
+              "description": "Event that activates this obligation"
+            },
+            "action": {
+              "type": "string",
+              "description": "Required action when triggered"
+            },
+            "parameters": {
+              "type": "object",
+              "description": "Action-specific parameters (e.g., timeout_ms)"
+            }
+          }
+        }
+      },
+      "description": "Obligations for each role (role_name -> [obligations])"
+    },
+    "prohibitions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "description": "Forbidden actions (role_name or 'all_parties' -> [actions])"
+    },
+    "axiom_requirements": {
+      "type": "object",
+      "properties": {
+        "A0_sdg": {
+          "type": "string",
+          "description": "How contract serves sustainable development"
+        },
+        "A1_love": {
+          "type": "string",
+          "description": "How contract prioritizes user wellbeing"
+        },
+        "A2_truth": {
+          "type": "string",
+          "description": "How contract ensures honesty and transparency"
+        },
+        "A3_beauty": {
+          "type": "string",
+          "description": "How contract maintains simplicity and elegance"
+        },
+        "A4_guardian": {
+          "type": "string",
+          "description": "How contract supports guardian protocol"
+        },
+        "A5_memory": {
+          "type": "string",
+          "description": "How contract respects memory consent requirements"
+        }
+      },
+      "description": "Axiom alignment declarations"
+    },
+    "dispute_resolution": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": [
+            "escalate_to_supervisor",
+            "consensus_vote",
+            "human_review",
+            "blockchain_arbitration"
+          ],
+          "description": "Primary dispute resolution method"
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1000,
+          "description": "Time allowed before escalation"
+        },
+        "fallback": {
+          "type": "string",
+          "description": "Fallback method if primary fails"
+        }
+      },
+      "description": "How disputes are resolved"
+    },
+    "signatures": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^ed25519:[a-f0-9]{128}$"
+      },
+      "description": "Cryptographic signatures from all parties (agent_id -> signature)"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable contract name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Contract purpose and scope"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tags for contract categorization"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "contract_id": "550e8400-e29b-41d4-a716-446655440000",
+      "version": "1.0.0",
+      "created": "2026-02-05T00:00:00Z",
+      "expires": "2026-12-31T23:59:59Z",
+      "parties": [
+        {
+          "agent_id": "660e8400-e29b-41d4-a716-446655440001",
+          "role": "service_provider",
+          "public_key": "ed25519:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+        },
+        {
+          "agent_id": "770e8400-e29b-41d4-a716-446655440002",
+          "role": "service_consumer",
+          "public_key": "ed25519:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+        }
+      ],
+      "capabilities": {
+        "service_provider": [
+          "process_request",
+          "return_result",
+          "report_error"
+        ],
+        "service_consumer": [
+          "send_request",
+          "receive_result",
+          "acknowledge"
+        ]
+      },
+      "obligations": {
+        "service_provider": [
+          {
+            "trigger": "receive_request",
+            "action": "respond_within",
+            "parameters": {
+              "timeout_ms": 5000
+            }
+          }
+        ],
+        "service_consumer": [
+          {
+            "trigger": "receive_result",
+            "action": "acknowledge_within",
+            "parameters": {
+              "timeout_ms": 1000
+            }
+          }
+        ]
+      },
+      "prohibitions": {
+        "all_parties": [
+          "modify_contract_unilaterally",
+          "share_private_data_without_consent",
+          "exceed_rate_limits"
+        ]
+      },
+      "axiom_requirements": {
+        "A1_love": "All interactions prioritize user wellbeing",
+        "A2_truth": "No deceptive messages or hidden behaviors",
+        "A4_guardian": "Escalate harmful requests to guardian"
+      },
+      "dispute_resolution": {
+        "method": "escalate_to_supervisor",
+        "timeout_ms": 30000,
+        "fallback": "human_review"
+      },
+      "signatures": {
+        "660e8400-e29b-41d4-a716-446655440001": "ed25519:1111111111111111111111111111111111111111111111111111111111111111222222222222222222222222222222222222222222222222222222222222222",
+        "770e8400-e29b-41d4-a716-446655440002": "ed25519:3333333333333333333333333333333333333333333333333333333333333333444444444444444444444444444444444444444444444444444444444444444"
+      },
+      "metadata": {
+        "name": "Data Processing Service Contract",
+        "description": "Agreement for processing user data requests",
+        "tags": ["data-processing", "service-agreement"]
+      }
+    }
+  ]
+}

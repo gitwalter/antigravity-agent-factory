@@ -1,0 +1,166 @@
+{
+  "id": "advanced-rag-patterns",
+  "name": "Advanced RAG Patterns",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "description": "Advanced RAG patterns including multi-index systems, query decomposition, contextual compression, and graph RAG",
+  "patterns": {
+    "multi_index_rag": {
+      "specialized_indices": {
+        "description": "Multiple specialized indices for different domains",
+        "code_example": "from langchain_community.vectorstores import Chroma, FAISS\nfrom langchain_community.embeddings import HuggingFaceEmbeddings\nfrom typing import List, Dict\n\nclass MultiIndexRAG:\n    def __init__(self):\n        self.embeddings = HuggingFaceEmbeddings(model_name='all-MiniLM-L6-v2')\n        self.indices = {}\n    \n    def create_index(self, name: str, documents: List[Document], index_type: str = 'chroma'):\n        if index_type == 'chroma':\n            vectorstore = Chroma.from_documents(documents=documents, embedding=self.embeddings, collection_name=name)\n        else:\n            vectorstore = FAISS.from_documents(documents=documents, embedding=self.embeddings)\n            vectorstore.save_local(f'./faiss_{name}')\n        \n        self.indices[name] = {\n            'vectorstore': vectorstore,\n            'retriever': vectorstore.as_retriever(search_kwargs={'k': 5})\n        }\n    \n    def route_query(self, query: str) -> List[str]:\n        # Use LLM to route query to relevant indices\n        index_names = list(self.indices.keys())\n        # ... routing logic\n        return relevant_indices\n    \n    def retrieve_multi_index(self, query: str, max_results: int = 10) -> List[Document]:\n        relevant_indices = self.route_query(query)\n        all_results = []\n        for index_name in relevant_indices:\n            retriever = self.indices[index_name]['retriever']\n            docs = retriever.get_relevant_documents(query)\n            all_results.extend(docs)\n        return all_results[:max_results]",
+        "best_practices": [
+          "Use multi-index for clearly separated domains",
+          "Route queries intelligently",
+          "Deduplicate results across indices",
+          "Track index sources in metadata"
+        ]
+      }
+    },
+    "query_decomposition": {
+      "sub_query_generation": {
+        "description": "Break complex queries into simpler sub-queries",
+        "code_example": "from langchain_google_genai import ChatGoogleGenerativeAI\nfrom langchain.prompts import PromptTemplate\nfrom typing import List\n\nclass QueryDecomposer:\n    def __init__(self):\n        self.llm = ChatGoogleGenerativeAI(model='gemini-2.5-flash')\n    \n    def decompose(self, query: str) -> List[str]:\n        prompt = PromptTemplate(\n            template='Break down this query into simpler sub-queries:\\n\\nQuery: {query}\\n\\nReturn only the sub-queries, one per line.',\n            input_variables=['query']\n        )\n        \n        chain = prompt | self.llm\n        response = chain.invoke({'query': query})\n        \n        sub_queries = [q.strip() for q in response.content.split('\\n') if q.strip()]\n        return sub_queries if sub_queries else [query]",
+        "best_practices": [
+          "Decompose complex queries into simpler parts",
+          "Retrieve for each sub-query",
+          "Combine and deduplicate results",
+          "Track which sub-query found each document"
+        ]
+      },
+      "decomposed_retriever": {
+        "description": "Retriever that uses query decomposition",
+        "code_example": "class DecomposedRetriever:\n    def __init__(self, base_retriever):\n        self.base_retriever = base_retriever\n        self.decomposer = QueryDecomposer()\n    \n    def get_relevant_documents(self, query: str) -> List[Document]:\n        sub_queries = self.decomposer.decompose(query)\n        all_docs = []\n        for sub_query in sub_queries:\n            docs = self.base_retriever.get_relevant_documents(sub_query)\n            all_docs.extend(docs)\n        \n        # Deduplicate\n        seen = set()\n        unique_docs = []\n        for doc in all_docs:\n            content_id = hash(doc.page_content[:100])\n            if content_id not in seen:\n                seen.add(content_id)\n                unique_docs.append(doc)\n        \n        return unique_docs",
+        "use_when": [
+          "Complex multi-part queries",
+          "Need better recall",
+          "Query spans multiple topics"
+        ]
+      }
+    },
+    "contextual_compression": {
+      "llm_extraction": {
+        "description": "Extract relevant parts from retrieved documents",
+        "code_example": "from langchain.retrievers import ContextualCompressionRetriever\nfrom langchain.retrievers.document_compressors import LLMChainExtractor\n\nclass CompressedRetriever:\n    def __init__(self, base_retriever, llm):\n        compressor = LLMChainExtractor.from_llm(llm)\n        self.compressed_retriever = ContextualCompressionRetriever(\n            base_compressor=compressor,\n            base_retriever=base_retriever\n        )\n    \n    def get_relevant_documents(self, query: str) -> List[Document]:\n        return self.compressed_retriever.get_relevant_documents(query)",
+        "best_practices": [
+          "Compress long documents to focus on relevant parts",
+          "Use LLM extraction for semantic relevance",
+          "Combine with redundant filter",
+          "Preserve metadata"
+        ]
+      },
+      "redundant_filter": {
+        "description": "Remove redundant documents",
+        "code_example": "from langchain.retrievers.document_compressors import EmbeddingsRedundantFilter\nfrom langchain.retrievers.document_compressors import DocumentCompressorPipeline\n\nembeddings = HuggingFaceEmbeddings()\nredundant_filter = EmbeddingsRedundantFilter(embeddings=embeddings)\nrelevant_extractor = LLMChainExtractor.from_llm(llm)\n\npipeline_compressor = DocumentCompressorPipeline(\n    transformers=[redundant_filter, relevant_extractor]\n)",
+        "best_practices": [
+          "Remove redundant documents first",
+          "Then extract relevant parts",
+          "Use embedding similarity for redundancy detection"
+        ]
+      }
+    },
+    "graph_rag": {
+      "entity_extraction": {
+        "description": "Extract entities and relationships for graph RAG",
+        "code_example": "from pydantic import BaseModel\nfrom typing import List\n\nclass Entity(BaseModel):\n    name: str\n    type: str\n    description: str = None\n\nclass Relationship(BaseModel):\n    source: str\n    target: str\n    relationship_type: str\n\nclass KnowledgeGraph(BaseModel):\n    entities: List[Entity]\n    relationships: List[Relationship]\n\nclass EntityExtractor:\n    def extract_from_text(self, text: str) -> KnowledgeGraph:\n        # Use LLM to extract entities and relationships\n        # ...",
+        "best_practices": [
+          "Extract entities with LLMs",
+          "Store relationships explicitly",
+          "Resolve duplicate entities",
+          "Use graph databases (Neo4j) for storage"
+        ]
+      },
+      "subgraph_retrieval": {
+        "description": "Retrieve subgraph around query entities",
+        "code_example": "class GraphRAG:\n    def extract_query_entities(self, query: str) -> List[str]:\n        # Extract entity names from query\n        # ...\n    \n    def retrieve_subgraph(self, entity_names: List[str], depth: int = 2) -> Dict:\n        # Retrieve entities and relationships around query entities\n        # ...\n    \n    def answer_with_graph(self, query: str) -> Dict:\n        entities = self.extract_query_entities(query)\n        subgraph = self.retrieve_subgraph(entities)\n        # Format context and generate answer\n        # ...",
+        "best_practices": [
+          "Extract entities from query",
+          "Retrieve subgraph around entities",
+          "Use graph structure for context",
+          "Combine with vector retrieval"
+        ]
+      }
+    },
+    "self_querying": {
+      "metadata_filtering": {
+        "description": "LLM generates metadata filters from query",
+        "code_example": "from langchain.retrievers.self_query.base import SelfQueryRetriever\nfrom langchain.chains.query_constructor.base import AttributeInfo\n\nmetadata_field_info = [\n    AttributeInfo(name='source', description='Document source', type='string'),\n    AttributeInfo(name='date', description='Publication date', type='date'),\n    AttributeInfo(name='category', description='Category', type='string')\n]\n\nretriever = SelfQueryRetriever.from_llm(\n    llm=llm,\n    vectorstore=vectorstore,\n    document_contents='Technical documentation',\n    metadata_field_info=metadata_field_info\n)",
+        "best_practices": [
+          "Define clear metadata fields",
+          "Use structured metadata",
+          "LLM automatically generates filters",
+          "Combine with semantic search"
+        ]
+      }
+    },
+    "adaptive_retrieval": {
+      "method_selection": {
+        "description": "Select best retrieval method based on query",
+        "code_example": "class AdaptiveRetriever:\n    def select_retrieval_method(self, query: str) -> str:\n        # Use LLM to analyze query and select method:\n        # - semantic: conceptual queries\n        # - keyword: specific term matching\n        # - ensemble: complex queries\n        # ...\n    \n    def get_relevant_documents(self, query: str) -> List[Document]:\n        method = self.select_retrieval_method(query)\n        if method == 'semantic':\n            return self.semantic_retriever.get_relevant_documents(query)\n        elif method == 'keyword':\n            return self.bm25_retriever.get_relevant_documents(query)\n        else:\n            return self.ensemble_retriever.get_relevant_documents(query)",
+        "best_practices": [
+          "Analyze query characteristics",
+          "Select appropriate method",
+          "Use ensemble for complex queries",
+          "Cache method selection"
+        ]
+      }
+    }
+  },
+  "best_practices": [
+    "Use multi-index for clearly separated domains",
+    "Decompose complex queries into simpler sub-queries",
+    "Compress long documents to focus on relevant parts",
+    "Add structured metadata for self-querying",
+    "Combine multiple retrieval methods (ensemble)",
+    "Cache retrieval results when possible",
+    "Monitor retrieval quality and adjust weights",
+    "Use appropriate chunk sizes for your use case",
+    "Extract entities and relationships for graph RAG",
+    "Use graph databases for structured knowledge",
+    "Deduplicate results across retrieval methods",
+    "Track retrieval sources for debugging"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Single retrieval method",
+      "problem": "Misses relevant documents, poor recall",
+      "fix": "Use ensemble or adaptive retrieval"
+    },
+    {
+      "name": "No query decomposition",
+      "problem": "Complex queries miss relevant documents",
+      "fix": "Break down complex queries into sub-queries"
+    },
+    {
+      "name": "Ignoring metadata",
+      "problem": "Can't filter by metadata, poor precision",
+      "fix": "Add and use structured metadata, implement self-querying"
+    },
+    {
+      "name": "No compression",
+      "problem": "Long documents dilute context",
+      "fix": "Compress long documents to relevant parts"
+    },
+    {
+      "name": "Fixed retrieval weights",
+      "problem": "Suboptimal performance",
+      "fix": "Tune weights based on performance metrics"
+    },
+    {
+      "name": "No deduplication",
+      "problem": "Duplicate results waste tokens",
+      "fix": "Remove duplicate results across methods"
+    },
+    {
+      "name": "Ignoring query type",
+      "problem": "Using wrong method for query",
+      "fix": "Adapt method to query characteristics"
+    },
+    {
+      "name": "No graph structure",
+      "problem": "Misses entity relationships",
+      "fix": "Use graph RAG for entity-heavy queries"
+    }
+  ],
+  "related_skills": ["advanced-retrieval", "rag-patterns", "knowledge-graphs", "memory-management"]
+}

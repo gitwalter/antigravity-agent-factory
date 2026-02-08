@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 Dependency Graph Validator for Antigravity Agent Factory.
-
 Validates dependencies between Factory artifacts using:
 - graphlib.TopologicalSorter (stdlib) for cycle detection and ordering
 - packaging (PyPA standard) for version constraint validation
@@ -12,8 +11,7 @@ enabling validation, impact analysis, and dependency ordering.
 Node Types:
 - knowledge:<filename> - Knowledge JSON files
 - skill:<name> - Skills defined in .agent/skills/
-- agent:<name> - Agents defined in .agent/agents/
-- blueprint:<id> - Blueprints in blueprints/
+- agent:<name> - Agents defined in .agent/agents/- blueprint:<id> - Blueprints in blueprints/
 - template:<path> - Templates in templates/
 - pattern:<path> - Patterns in patterns/
 
@@ -31,8 +29,7 @@ Usage:
     python scripts/validation/dependency_validator.py --dependents skill:grounding
     python scripts/validation/dependency_validator.py --order      # Installation order
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 from __future__ import annotations
@@ -159,8 +156,7 @@ class DependencyValidator:
         Scans:
         - knowledge/manifest.json for knowledge file dependencies
         - .agent/skills/*/SKILL.md for skill dependencies
-        - .agent/agents/*.md for agent dependencies
-        - blueprints/*/blueprint.json for blueprint references
+        - .agent/agents/*.md for agent dependencies        - blueprints/*/blueprint.json for blueprint references
         """
         self._scan_knowledge_files()
         self._scan_skills()
@@ -217,14 +213,12 @@ class DependencyValidator:
                     ))
     
     def _scan_skills(self) -> None:
-        """Scan .agent/skills/*/SKILL.md for skill dependencies.
-        
+        """Scan .agent/skills/*/SKILL.md for skill dependencies.        
         Note: Many skills don't have YAML frontmatter. In those cases,
         we use the directory name as the skill name and still register
         the skill as a node to enable proper dependency tracking.
         """
-        skills_dir = self.factory_root / ".agent" / "skills"
-        if not skills_dir.exists():
+        skills_dir = self.factory_root / ".agent" / "skills"        if not skills_dir.exists():
             return
         
         # Recursively find all SKILL.md files (handles nested pm/ skills)
@@ -297,8 +291,7 @@ class DependencyValidator:
     
     def _scan_agents(self) -> None:
         """Scan .agent/agents/*.md for agent dependencies."""
-        agents_dir = self.factory_root / ".agent" / "agents"
-        if not agents_dir.exists():
+        agents_dir = self.factory_root / ".agent" / "agents"        if not agents_dir.exists():
             return
         
         for agent_file in agents_dir.rglob("*.md"):
@@ -825,8 +818,7 @@ def main():
             print(f"  - {warn}")
     
     if exit_code == 0:
-        print(f"✓ Dependency graph valid ({len(validator.nodes)} nodes, {len(validator.edges)} edges)")
-    
+        print(f"[OK] Dependency graph valid ({len(validator.nodes)} nodes, {len(validator.edges)} edges)")    
     return exit_code
 
 

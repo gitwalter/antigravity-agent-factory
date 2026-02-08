@@ -1,0 +1,94 @@
+{
+  "id": "state-patterns",
+  "name": "LangGraph State Management Patterns",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "description": "Patterns for managing state in LangGraph workflows",
+  "state_schema": {
+    "typed_dict": {
+      "description": "Define state with TypedDict",
+      "example": "class AgentState(TypedDict):\n    messages: Annotated[list, add_messages]\n    step: str"
+    },
+    "annotations": {
+      "description": "Use Annotated with reducers for accumulation",
+      "built_in_reducers": {
+        "add_messages": "Accumulate messages",
+        "operator.add": "Sum numeric values"
+      },
+      "custom_reducers": {
+        "merge_dicts": "Merge dictionaries",
+        "append_unique": "Append only unique items"
+      }
+    }
+  },
+  "reducers": {
+    "add_messages": {
+      "description": "Built-in for message accumulation",
+      "import": "from langgraph.graph.message import add_messages"
+    },
+    "operator_add": {
+      "description": "Sum values",
+      "import": "from operator import add"
+    },
+    "custom": {
+      "description": "Custom reducer function",
+      "signature": "def reducer(left: T, right: T) -> T"
+    }
+  },
+  "checkpointing": {
+    "memory_saver": {
+      "class": "MemorySaver",
+      "use_case": "Development",
+      "persistence": false
+    },
+    "redis": {
+      "description": "Redis-backed checkpointer",
+      "use_case": "Production, distributed",
+      "features": ["TTL", "Fast", "Distributed"]
+    },
+    "postgres": {
+      "description": "PostgreSQL-backed checkpointer",
+      "use_case": "Production, durability",
+      "features": ["Durable", "Queryable", "ACID"]
+    },
+    "sqlite": {
+      "description": "SQLite-backed checkpointer",
+      "use_case": "Local production",
+      "features": ["Simple", "Durable", "Single node"]
+    }
+  },
+  "patterns": {
+    "thread_management": {
+      "description": "Use thread_id for multi-user scenarios",
+      "config": {"configurable": {"thread_id": "unique_id"}}
+    },
+    "interrupt_points": {
+      "description": "Pause execution for human input",
+      "options": ["interrupt_before", "interrupt_after"]
+    },
+    "state_update": {
+      "description": "Nodes return partial state updates",
+      "rule": "Return dict with only fields to update"
+    }
+  },
+  "best_practices": [
+    "Define clear state schemas with TypedDict",
+    "Use appropriate reducers for each field",
+    "Implement checkpointing for production",
+    "Use thread IDs for multi-user scenarios",
+    "Clean up old checkpoints periodically"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Mutable state",
+      "problem": "Side effects and bugs",
+      "fix": "Return new state dict from nodes"
+    },
+    {
+      "name": "No checkpointing",
+      "problem": "Can't resume workflows",
+      "fix": "Add MemorySaver minimum"
+    }
+  ],
+  "related_skills": ["state-management", "langgraph-agent-building", "memory-management"]
+}

@@ -17,8 +17,7 @@ Dependencies:
     - aiohttp: Async HTTP client
     - NPM Registry API
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 from dataclasses import dataclass
@@ -130,8 +129,7 @@ class NPMAdapter(BaseAdapter):
         if self._session is None or self._session.closed:
             headers = {
                 "Accept": "application/json",
-                "User-Agent": "Antigravity-Agent-Factory/1.0",
-            }
+                "User-Agent": "Antigravity-Agent-Factory/1.0",            }
             if self.config.api_key:
                 headers["Authorization"] = f"Bearer {self.config.api_key}"
             

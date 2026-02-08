@@ -1,0 +1,178 @@
+{
+  "id": "ocr-patterns",
+  "name": "OCR and Document Processing Patterns",
+  "version": "1.0.0",
+  "category": "document-processing",
+  "description": "Patterns for extracting text from images and PDFs using multiple OCR engines, recognizing tables, and analyzing document layouts",
+  "patterns": {
+    "ocr_engines": {
+      "tesseract": {
+        "description": "Tesseract OCR - open source, supports 100+ languages",
+        "use_when": ["Offline processing", "Multi-language support", "Cost-sensitive applications"],
+        "pros": ["Free", "Wide language support", "Local processing"],
+        "cons": ["Lower accuracy than cloud APIs", "Requires preprocessing"]
+      },
+      "easyocr": {
+        "description": "EasyOCR - deep learning based, often more accurate than Tesseract",
+        "use_when": ["Better accuracy needed", "Multiple languages", "GPU available"],
+        "pros": ["Higher accuracy", "Easy to use", "Free"],
+        "cons": ["Slower than Tesseract", "GPU recommended"]
+      },
+      "cloud_apis": {
+        "description": "Cloud OCR APIs (Google Vision, AWS Textract, Azure Vision)",
+        "use_when": ["Highest accuracy required", "Large volume processing", "Budget available"],
+        "pros": ["Very high accuracy", "Fast processing", "Advanced features"],
+        "cons": ["Cost per page", "Requires internet", "API rate limits"]
+      }
+    },
+    "pdf_processing": {
+      "native_extraction": {
+        "description": "Extract text from PDF text layer (fast, but only works if PDF has text)",
+        "use_when": ["PDF has selectable text", "Speed is priority"],
+        "library": "PyMuPDF (fitz)"
+      },
+      "ocr_fallback": {
+        "description": "Use OCR when native text extraction yields sparse results",
+        "pattern": "Try native first, check text length, fallback to OCR if < threshold",
+        "use_when": ["Mixed PDF types", "Uncertain if scanned"]
+      },
+      "hybrid_approach": {
+        "description": "Combine native extraction with OCR for scanned pages",
+        "pattern": "Extract native text, convert pages to images, OCR if needed"
+      }
+    },
+    "table_extraction": {
+      "opencv_detection": {
+        "description": "Detect table boundaries using OpenCV morphological operations",
+        "pattern": "Detect horizontal/vertical lines, find contours, extract bounding boxes"
+      },
+      "unstructured_library": {
+        "description": "Use unstructured library for better table structure recognition",
+        "pattern": "partition_pdf with infer_table_structure=True, extract HTML tables",
+        "pros": ["Preserves structure", "Handles complex layouts"]
+      },
+      "cell_extraction": {
+        "description": "Extract text from individual table cells",
+        "pattern": "Crop table region, use OCR with table-specific PSM mode"
+      }
+    },
+    "layout_analysis": {
+      "element_detection": {
+        "description": "Detect document elements (titles, paragraphs, tables, headers)",
+        "library": "unstructured.partition",
+        "elements": ["Title", "NarrativeText", "Table", "PageBreak"]
+      },
+      "section_chunking": {
+        "description": "Chunk documents by sections using title detection",
+        "pattern": "Detect headers, group content under headers, chunk by title",
+        "use_when": ["Preserving document structure", "RAG systems"]
+      },
+      "metadata_preservation": {
+        "description": "Preserve page numbers, source, and element types",
+        "pattern": "Track page breaks, store metadata with each element"
+      }
+    },
+    "image_preprocessing": {
+      "grayscale_conversion": {
+        "description": "Convert color images to grayscale for better OCR",
+        "pattern": "cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)"
+      },
+      "thresholding": {
+        "description": "Apply thresholding to improve text contrast",
+        "pattern": "cv2.threshold with THRESH_BINARY + THRESH_OTSU"
+      },
+      "denoising": {
+        "description": "Remove noise from images before OCR",
+        "pattern": "cv2.fastNlMeansDenoising",
+        "use_when": ["Low quality scans", "Noisy images"]
+      }
+    }
+  },
+  "engine_comparison": {
+    "tesseract": {
+      "accuracy": "Medium",
+      "speed": "Fast",
+      "languages": "100+",
+      "cost": "Free",
+      "offline": true
+    },
+    "easyocr": {
+      "accuracy": "High",
+      "speed": "Medium",
+      "languages": "80+",
+      "cost": "Free",
+      "offline": true
+    },
+    "google_vision": {
+      "accuracy": "Very High",
+      "speed": "Fast",
+      "languages": "50+",
+      "cost": "Paid",
+      "offline": false
+    },
+    "aws_textract": {
+      "accuracy": "Very High",
+      "speed": "Fast",
+      "languages": "50+",
+      "cost": "Paid",
+      "offline": false
+    },
+    "azure_vision": {
+      "accuracy": "Very High",
+      "speed": "Fast",
+      "languages": "50+",
+      "cost": "Paid",
+      "offline": false
+    }
+  },
+  "best_practices": [
+    "Preprocess images (grayscale, thresholding, denoising) before OCR",
+    "Use native PDF text extraction when available, OCR as fallback",
+    "Set appropriate DPI (300+) when converting PDFs to images",
+    "Filter low-confidence detections to reduce noise",
+    "Use layout analysis to preserve document structure",
+    "Cache OCR results for repeated processing",
+    "Choose engine based on accuracy needs vs. cost constraints",
+    "Handle multi-language documents with language detection",
+    "Crop to regions of interest instead of processing entire page",
+    "Use structured extraction tools for tables and complex layouts"
+  ],
+  "anti_patterns": [
+    {
+      "name": "OCR without preprocessing",
+      "problem": "Lower accuracy, wasted processing",
+      "fix": "Apply grayscale, thresholding, denoising before OCR"
+    },
+    {
+      "name": "Low DPI PDF conversion",
+      "problem": "Poor OCR accuracy",
+      "fix": "Use 300+ DPI for better accuracy"
+    },
+    {
+      "name": "Ignoring confidence scores",
+      "problem": "Noisy results, incorrect text",
+      "fix": "Filter results below confidence threshold"
+    },
+    {
+      "name": "No fallback for native PDF",
+      "problem": "Fails on scanned PDFs",
+      "fix": "Try native first, OCR if text is sparse"
+    },
+    {
+      "name": "Processing entire page",
+      "problem": "Slower, less accurate",
+      "fix": "Crop to regions of interest"
+    },
+    {
+      "name": "No layout preservation",
+      "problem": "Lost document structure",
+      "fix": "Use structured extraction tools"
+    },
+    {
+      "name": "Single language assumption",
+      "problem": "Poor accuracy on multilingual docs",
+      "fix": "Detect and specify language codes"
+    }
+  ],
+  "related_skills": ["ocr-processing", "vision-agents", "rag-patterns", "advanced-retrieval"]
+}

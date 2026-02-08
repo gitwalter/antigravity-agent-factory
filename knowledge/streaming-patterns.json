@@ -1,0 +1,107 @@
+{
+  "id": "streaming-patterns",
+  "name": "Streaming Patterns",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "description": "Patterns for implementing streaming responses, event-based architectures, and real-time agent interactions",
+  "patterns": {
+    "token_streaming": {
+      "basic_streaming": {
+        "description": "Stream LLM tokens token-by-token",
+        "example": "async for chunk in chain.astream({\"input\": query}):\n    if chunk.content:\n        print(chunk.content, end=\"\", flush=True)",
+        "use_when": ["Chat interfaces", "Long responses", "Real-time feedback"]
+      },
+      "sse_streaming": {
+        "description": "Server-Sent Events for HTTP streaming",
+        "example": "from sse_starlette.sse import EventSourceResponse\n\nasync def event_generator():\n    async for chunk in chain.astream({\"input\": query}):\n        if chunk.content:\n            yield {\"event\": \"token\", \"data\": json.dumps({\"content\": chunk.content})}\n    yield {\"event\": \"done\", \"data\": json.dumps({\"status\": \"complete\"})}\n\nreturn EventSourceResponse(event_generator())",
+        "use_when": ["HTTP APIs", "Browser clients", "One-way streaming"]
+      },
+      "websocket_streaming": {
+        "description": "Bidirectional WebSocket streaming",
+        "example": "@app.websocket(\"/ws/chat\")\nasync def websocket_chat(websocket: WebSocket):\n    await websocket.accept()\n    async for chunk in chain.astream({\"input\": message}):\n        if chunk.content:\n            await websocket.send_json({\"type\": \"token\", \"content\": chunk.content})",
+        "use_when": ["Real-time chat", "Bidirectional communication", "Interactive agents"]
+      }
+    },
+    "event_streaming": {
+      "astream_events": {
+        "description": "Stream detailed execution events from chains",
+        "example": "async for event in chain.astream_events(input_data, version=\"v2\"):\n    kind = event[\"event\"]\n    if kind == \"on_chat_model_stream\":\n        # Token streaming\n        yield event[\"data\"][\"chunk\"]\n    elif kind == \"on_tool_start\":\n        # Tool execution started\n        yield {\"type\": \"tool_start\", \"name\": event[\"name\"]}",
+        "use_when": ["Debugging", "Monitoring", "Detailed execution tracking"]
+      },
+      "event_filtering": {
+        "description": "Filter events by component name or type",
+        "example": "async for event in chain.astream_events(\n    input_data,\n    version=\"v2\",\n    include_names=[\"ChatGoogleGenerativeAI\", \"ToolExecutor\"]\n):",
+        "use_when": ["Selective monitoring", "Performance analysis"]
+      }
+    },
+    "state_streaming": {
+      "real_time_updates": {
+        "description": "Stream agent state updates in real-time",
+        "example": "async def stream_with_state(chain, input_data, websocket):\n    state = {\"status\": \"starting\", \"tokens_received\": 0}\n    await websocket.send_json({\"type\": \"state\", \"data\": state})\n    \n    async for event in chain.astream_events(input_data, version=\"v2\"):\n        if event[\"event\"] == \"on_chat_model_stream\":\n            state[\"tokens_received\"] += len(event[\"data\"][\"chunk\"].content)\n            await websocket.send_json({\"type\": \"state\", \"data\": state})",
+        "use_when": ["Real-time UI updates", "Progress tracking", "Agent monitoring"]
+      },
+      "memory_streaming": {
+        "description": "Stream responses with conversation memory",
+        "example": "chain_with_memory = RunnableWithMessageHistory(\n    chain,\n    get_session_history,\n    input_messages_key=\"input\"\n)\n\nasync for chunk in chain_with_memory.astream(\n    {\"input\": query},\n    config={\"configurable\": {\"session_id\": session_id}}\n):",
+        "use_when": ["Multi-turn conversations", "Context-aware streaming"]
+      }
+    },
+    "tool_streaming": {
+      "streaming_tool_results": {
+        "description": "Stream results from long-running tools",
+        "example": "@tool\nasync def stream_search(query: str) -> str:\n    async for result in search_api.stream(query):\n        yield result  # Stream partial results\n    return \"\\n\".join(results)",
+        "use_when": ["Long-running operations", "Progressive result display"]
+      }
+    }
+  },
+  "best_practices": [
+    "Always use streaming=True for LLM initialization",
+    "Use async generators for streaming endpoints",
+    "Implement proper error handling in streams",
+    "Send heartbeat messages for long streams",
+    "Use WebSocket for bidirectional communication",
+    "Stream state updates for better UX",
+    "Handle client disconnections gracefully",
+    "Buffer tokens for better performance",
+    "Use EventSourceResponse for HTTP streaming",
+    "Filter events to reduce overhead"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Blocking streams",
+      "problem": "Blocks event loop, poor performance",
+      "fix": "Use async generators with astream"
+    },
+    {
+      "name": "No error handling",
+      "problem": "Stream failures crash the connection",
+      "fix": "Wrap streams in try/except blocks"
+    },
+    {
+      "name": "Missing heartbeats",
+      "problem": "Clients timeout on long streams",
+      "fix": "Send periodic ping/heartbeat messages"
+    },
+    {
+      "name": "Unbuffered tokens",
+      "problem": "Too many small messages, poor performance",
+      "fix": "Buffer tokens and flush in chunks"
+    },
+    {
+      "name": "No disconnection handling",
+      "problem": "Resources leak when clients disconnect",
+      "fix": "Handle WebSocketDisconnect exceptions"
+    },
+    {
+      "name": "Sync in async context",
+      "problem": "Blocks event loop",
+      "fix": "Use astream not stream in async contexts"
+    },
+    {
+      "name": "Memory leaks in sessions",
+      "problem": "Session data accumulates",
+      "fix": "Clean up session data on disconnect"
+    }
+  ],
+  "related_skills": ["streaming-realtime", "langchain-usage", "langgraph-agent-building", "logging-monitoring"]
+}

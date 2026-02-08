@@ -11,8 +11,7 @@ Features:
     - Update digest generation
     - Notification history
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 from dataclasses import dataclass, field
@@ -214,8 +213,12 @@ class NotificationSystem:
             with open(self.config.file_path, "a", encoding="utf-8") as f:
                 f.write(json.dumps(notification.to_dict()) + "\n")
         except Exception as e:
-            print(f"Failed to write notification to file: {e}")
-    
+            # Print error so it's visible in tests
+            import sys
+            error_msg = f"Failed to write notification to file: {e}"
+            print(error_msg, file=sys.stderr)
+            # Also print to stdout for compatibility with test capture
+            print(f"Error: {error_msg}")    
     def _add_to_history(self, notification: Notification) -> None:
         """Add notification to history.
         

@@ -1,13 +1,11 @@
 # Azure DevOps MCP Server Setup Guide
 
 This guide walks you through setting up the Azure DevOps MCP server for Antigravity.
-
 ## Prerequisites
 
 - Node.js 18+ installed
 - An Azure DevOps account and organization
 - Antigravity IDE installed
-
 ## Step 1: Generate a Personal Access Token (PAT)
 
 1. Sign in to [Azure DevOps](https://dev.azure.com)
@@ -15,8 +13,7 @@ This guide walks you through setting up the Azure DevOps MCP server for Antigrav
 3. Select **Personal access tokens**
 4. Click **+ New Token**
 5. Configure your token:
-   - **Name**: Give it a descriptive name (e.g., "Antigravity MCP Azure DevOps")
-   - **Organization**: Select your organization
+   - **Name**: Give it a descriptive name (e.g., "Antigravity MCP Azure DevOps")   - **Organization**: Select your organization
    - **Expiration**: Set expiration date (recommended: 90 days)
    - **Scopes**: Select the following:
      - **Code**: Read & Write (for repository access)
@@ -51,7 +48,6 @@ AZURE_DEVOPS_PROJECT=yourproject
    - **Windows**: `%APPDATA%\Antigravity\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json`
    - **macOS**: `~/Library/Application Support/Antigravity/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
    - **Linux**: `~/.config/Antigravity/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
-
 4. Copy the contents of `mcp-config.json.tmpl` into your MCP config
 5. Replace the placeholder variables:
    - `${AZURE_DEVOPS_PAT}` → Your Personal Access Token
@@ -64,7 +60,6 @@ AZURE_DEVOPS_PROJECT=yourproject
 2. Open the MCP panel or check the status indicator
 3. The Azure DevOps MCP server should appear as connected
 4. Try using Azure DevOps-related commands in Antigravity (e.g., query work items, list repositories)
-
 ## Troubleshooting
 
 ### Server Not Connecting
@@ -74,7 +69,6 @@ AZURE_DEVOPS_PROJECT=yourproject
 - Ensure your PAT is valid and not expired
 - Verify your organization name is correct (case-sensitive)
 - Check Antigravity's MCP logs for error messages
-
 ### Authentication Errors
 
 - Verify your PAT is correct (regenerate if needed)

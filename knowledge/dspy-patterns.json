@@ -1,0 +1,433 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DSPy Patterns",
+  "description": "Best practices and patterns for DSPy (Declarative Self-improving Python) library for building and optimizing language model pipelines",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "DSPy enables systematic evaluation and optimization of LM pipelines",
+    "A3_transparency": "Signatures and modules provide clear, declarative specifications"
+  },
+  "import_structure": {
+    "description": "DSPy uses a unified import structure",
+    "core": "import dspy - Main DSPy module",
+    "modules": "dspy.Predict, dspy.ChainOfThought, dspy.ReAct, etc.",
+    "optimizers": "dspy.BootstrapFewShot, dspy.MIPRO, dspy.Copro, etc.",
+    "retrieval": "dspy.Retrieve, dspy.ColBERTv2",
+    "assertions": "dspy.Suggest, dspy.Assert (deprecated, use dspy.Refine)"
+  },
+  "signature_patterns": {
+    "basic_signature": {
+      "description": "Simple string-based signature definition",
+      "use_when": "Quick prototyping, simple input-output mappings",
+      "code_example": "import dspy\n\n# String-based signature\nclassify = dspy.Predict('sentence -> sentiment: bool')\nresponse = classify(sentence=\"it's a charming and often affecting journey.\")\nprint(response.sentiment)  # Output: True",
+      "best_practices": [
+        "Use arrow notation (->) to separate inputs from outputs",
+        "Add type hints for better validation",
+        "Keep signatures concise and semantic"
+      ]
+    },
+    "complex_signature": {
+      "description": "Class-based signature with detailed field descriptions",
+      "use_when": "Need multiple inputs/outputs, detailed descriptions, or validation",
+      "code_example": "import dspy\nfrom typing import List\n\nclass GenerateAnswer(dspy.Signature):\n    \"\"\"Answer questions with short factoid answers.\"\"\"\n    context = dspy.InputField(desc=\"may contain relevant facts\")\n    question = dspy.InputField(desc=\"the question to answer\")\n    answer = dspy.OutputField(desc=\"often between 1 and 5 words\")\n\nclass AnalyzeDocument(dspy.Signature):\n    \"\"\"Analyze a document and extract key information.\"\"\"\n    document = dspy.InputField(desc=\"the document to analyze\")\n    summary = dspy.OutputField(desc=\"brief summary of the document\")\n    key_points = dspy.OutputField(desc=\"list of main points\", type=List[str])\n    sentiment = dspy.OutputField(desc=\"overall sentiment: positive, negative, or neutral\")\n\n# Use with modules\nqa_module = dspy.ChainOfThought(GenerateAnswer)\nresponse = qa_module(context=\"Python is a programming language\", question=\"What is Python?\")\nprint(response.answer)",
+      "best_practices": [
+        "Use InputField and OutputField for clarity",
+        "Provide detailed descriptions for better prompt generation",
+        "Specify types for structured outputs",
+        "Use docstrings to describe the signature purpose"
+      ]
+    },
+    "multi_input_output": {
+      "description": "Signatures with multiple inputs and outputs",
+      "use_when": "Complex tasks requiring multiple inputs or producing structured outputs",
+      "code_example": "import dspy\nfrom typing import List\n\nclass MultiTaskAnalysis(dspy.Signature):\n    \"\"\"Perform comprehensive analysis on multiple inputs.\"\"\"\n    text = dspy.InputField(desc=\"text to analyze\")\n    domain = dspy.InputField(desc=\"domain context\")\n    \n    summary = dspy.OutputField(desc=\"brief summary\")\n    topics = dspy.OutputField(desc=\"list of topics\", type=List[str])\n    confidence = dspy.OutputField(desc=\"confidence score 0-1\", type=float)\n\nmodule = dspy.Predict(MultiTaskAnalysis)\nresult = module(text=\"Machine learning is transforming industries\", domain=\"technology\")\nprint(f\"Summary: {result.summary}\")\nprint(f\"Topics: {result.topics}\")\nprint(f\"Confidence: {result.confidence}\")",
+      "best_practices": [
+        "Group related inputs/outputs logically",
+        "Use descriptive field names",
+        "Specify types for better validation"
+      ]
+    }
+  },
+  "module_patterns": {
+    "predict": {
+      "description": "Fundamental module for basic predictions",
+      "use_when": "Simple input-output transformations without reasoning",
+      "code_example": "import dspy\n\n# Basic Predict\nclassify = dspy.Predict('sentence -> sentiment: bool')\nresponse = classify(sentence=\"I love this product!\")\nprint(response.sentiment)\n\n# Predict with multiple outputs\nanalyze = dspy.Predict('text -> summary, topics: list')\nresult = analyze(text=\"Long document content...\")\nprint(result.summary)\nprint(result.topics)",
+      "best_practices": [
+        "Use for straightforward mappings",
+        "Fastest and most cost-effective module",
+        "Good baseline before adding complexity"
+      ]
+    },
+    "chain_of_thought": {
+      "description": "Module that reasons step-by-step before producing output",
+      "use_when": "Need explicit reasoning steps, complex reasoning tasks",
+      "code_example": "import dspy\n\nclass MathProblem(dspy.Signature):\n    \"\"\"Solve math problems step by step.\"\"\"\n    problem = dspy.InputField()\n    reasoning = dspy.OutputField(desc=\"step-by-step reasoning\")\n    answer = dspy.OutputField(desc=\"final numerical answer\")\n\nsolve = dspy.ChainOfThought(MathProblem)\nresponse = solve(problem=\"If a train travels 120 miles in 2 hours, what is its speed?\")\nprint(f\"Reasoning: {response.reasoning}\")\nprint(f\"Answer: {response.answer}\")\n\n# ChainOfThought automatically injects reasoning field\nclass SimpleQA(dspy.Signature):\n    question = dspy.InputField()\n    answer = dspy.OutputField()\n\nqa = dspy.ChainOfThought(SimpleQA)\nresult = qa(question=\"What is the capital of France?\")\n# Access reasoning even though not in signature\nprint(result.reasoning)  # Automatically added\nprint(result.answer)",
+      "best_practices": [
+        "Use for tasks requiring multi-step reasoning",
+        "Automatically injects reasoning field",
+        "More expensive than Predict but often more accurate",
+        "Good for explainable AI requirements"
+      ]
+    },
+    "react": {
+      "description": "Reasoning and Acting module for tool-using agents",
+      "use_when": "Building agents that need to use tools, multi-step tool calling",
+      "code_example": "import dspy\n\ndef get_weather(city: str) -> str:\n    \"\"\"Get current weather for a city.\"\"\"\n    return f\"The weather in {city} is sunny, 72°F.\"\n\ndef search_documents(query: str) -> str:\n    \"\"\"Search document database.\"\"\"\n    return f\"Found documents about: {query}\"\n\nclass AgentTask(dspy.Signature):\n    \"\"\"Complete tasks using available tools.\"\"\"\n    question = dspy.InputField()\n    answer = dspy.OutputField()\n\nreact = dspy.ReAct(\n    signature=AgentTask,\n    tools=[get_weather, search_documents],\n    max_iters=10\n)\n\npred = react(question=\"What is the weather in Tokyo and find documents about Python?\")\nprint(pred.answer)",
+      "best_practices": [
+        "Provide clear tool descriptions",
+        "Set appropriate max_iters to prevent infinite loops",
+        "Tools should return strings",
+        "Use for complex multi-step agent tasks"
+      ]
+    },
+    "custom_module": {
+      "description": "Create custom modules by composing other modules",
+      "use_when": "Building complex pipelines, reusable components",
+      "code_example": "import dspy\n\nclass RAG(dspy.Module):\n    \"\"\"Retrieval-Augmented Generation module.\"\"\"\n    \n    def __init__(self, k=3):\n        super().__init__()\n        self.retrieve = dspy.Retrieve(k=k)\n        self.generate_answer = dspy.ChainOfThought(GenerateAnswer)\n    \n    def forward(self, question):\n        # Retrieve relevant context\n        retrieval_result = self.retrieve(question)\n        context = retrieval_result.passages\n        \n        # Generate answer with context\n        prediction = self.generate_answer(\n            context=context,\n            question=question\n        )\n        return prediction\n\nclass MultiStepQA(dspy.Module):\n    \"\"\"Multi-step question answering with verification.\"\"\"\n    \n    def __init__(self):\n        super().__init__()\n        self.generate = dspy.ChainOfThought('question -> answer')\n        self.verify = dspy.Predict('question, answer -> is_correct: bool')\n    \n    def forward(self, question):\n        # Generate answer\n        answer = self.generate(question=question)\n        \n        # Verify answer\n        verification = self.verify(\n            question=question,\n            answer=answer.answer\n        )\n        \n        if not verification.is_correct:\n            # Regenerate if incorrect\n            answer = self.generate(question=question)\n        \n        return answer",
+      "best_practices": [
+        "Inherit from dspy.Module",
+        "Initialize sub-modules in __init__",
+        "Implement forward() method for inference",
+        "Compose simpler modules into complex ones",
+        "Make modules reusable and testable"
+      ]
+    }
+  },
+  "optimizer_patterns": {
+    "bootstrap_fewshot": {
+      "description": "Automatically generate optimized few-shot examples",
+      "use_when": "Have labeled examples, want to improve prompt with demonstrations",
+      "code_example": "import dspy\n\n# Define metric\ndef accuracy_metric(example, pred, trace=None):\n    return example.answer.lower() == pred.answer.lower()\n\n# Training examples\ntrainset = [\n    dspy.Example(question=\"What is Python?\", answer=\"programming language\").with_inputs(\"question\"),\n    dspy.Example(question=\"What is ML?\", answer=\"machine learning\").with_inputs(\"question\")\n]\n\n# Define program\nclass QA(dspy.Module):\n    def __init__(self):\n        self.generate_answer = dspy.ChainOfThought('question -> answer')\n    \n    def forward(self, question):\n        return self.generate_answer(question=question)\n\nprogram = QA()\n\n# Optimize with BootstrapFewShot\noptimizer = dspy.BootstrapFewShot(\n    max_bootstrapped_demos=4,\n    max_labeled_demos=16,\n    metric=accuracy_metric,\n    max_rounds=1\n)\n\noptimized_program = optimizer.compile(\n    program,\n    trainset=trainset\n)\n\n# Use optimized program\nresult = optimized_program(question=\"What is DSPy?\")\nprint(result.answer)",
+      "best_practices": [
+        "Start with 5-10 training examples minimum",
+        "Use 20% training / 80% validation split",
+        "Set max_bootstrapped_demos based on context window",
+        "Define clear, measurable metrics",
+        "Monitor for overfitting on training set"
+      ]
+    },
+    "mipro": {
+      "description": "Multi-prompt instruction optimization for improving prompts",
+      "use_when": "Want to optimize instruction text, have training data",
+      "code_example": "import dspy\n\n# Define metric\ndef metric(example, pred, trace=None):\n    return example.answer.lower() in pred.answer.lower()\n\ntrainset = [\n    dspy.Example(question=\"What is AI?\", answer=\"artificial intelligence\").with_inputs(\"question\"),\n    dspy.Example(question=\"What is NLP?\", answer=\"natural language processing\").with_inputs(\"question\")\n]\n\nclass QA(dspy.Module):\n    def __init__(self):\n        self.generate = dspy.ChainOfThought('question -> answer')\n    \n    def forward(self, question):\n        return self.generate(question=question)\n\nprogram = QA()\n\n# Optimize with MIPRO\noptimizer = dspy.MIPRO(\n    num_candidates=10,\n    init_temperature=1.0,\n    metric=metric\n)\n\noptimized_program = optimizer.compile(\n    program,\n    trainset=trainset\n)\n\nresult = optimized_program(question=\"What is machine learning?\")\nprint(result.answer)",
+      "best_practices": [
+        "MIPRO works in three stages: bootstrapping, proposal, search",
+        "More compute-intensive than BootstrapFewShot",
+        "Better for complex tasks requiring instruction optimization",
+        "Use with sufficient training examples (10-50+)",
+        "Can be combined with other optimizers"
+      ]
+    },
+    "copro": {
+      "description": "Collaborative prompt optimization using multiple models",
+      "use_when": "Want to leverage multiple models for optimization",
+      "code_example": "import dspy\n\n# Configure multiple models\nturbo = dspy.OpenAI(model='gpt-3.5-turbo')\ngpt4 = dspy.OpenAI(model='gpt-4')\n\n# Define metric\ndef metric(example, pred, trace=None):\n    return len(pred.answer.split()) > 0\n\ntrainset = [\n    dspy.Example(question=\"Explain AI\", answer=\"AI is artificial intelligence\").with_inputs(\"question\")\n]\n\nclass QA(dspy.Module):\n    def __init__(self):\n        self.generate = dspy.ChainOfThought('question -> answer')\n    \n    def forward(self, question):\n        return self.generate(question=question)\n\nprogram = QA()\n\n# Optimize with Copro (if available)\n# Note: Copro may require specific DSPy versions\noptimizer = dspy.Copro(\n    metric=metric,\n    num_candidates=5\n)\n\noptimized_program = optimizer.compile(\n    program,\n    trainset=trainset\n)",
+      "best_practices": [
+        "Use when you have access to multiple models",
+        "Can improve robustness across different models",
+        "More expensive due to multiple model calls",
+        "Check DSPy version for availability"
+      ]
+    },
+    "composite_optimization": {
+      "description": "Chain multiple optimizers for better results",
+      "use_when": "Want to combine different optimization strategies",
+      "code_example": "import dspy\n\ndef metric(example, pred, trace=None):\n    return example.answer.lower() == pred.answer.lower()\n\ntrainset = [...]\nvalidset = [...]\n\nclass QA(dspy.Module):\n    def __init__(self):\n        self.generate = dspy.ChainOfThought('question -> answer')\n    \n    def forward(self, question):\n        return self.generate(question=question)\n\nprogram = QA()\n\n# First optimize instructions with MIPRO\nmipro_optimizer = dspy.MIPRO(metric=metric)\nprogram = mipro_optimizer.compile(program, trainset=trainset)\n\n# Then optimize few-shot examples\nbootstrap_optimizer = dspy.BootstrapFewShot(metric=metric)\nprogram = bootstrap_optimizer.compile(program, trainset=trainset)\n\n# Evaluate on validation set\nfrom dspy.evaluate import Evaluate\nevaluator = Evaluate(metric=metric, num_threads=4)\nscore = evaluator(program, validset=validset)\nprint(f\"Validation score: {score}\")",
+      "best_practices": [
+        "Start with simpler optimizers, add complexity as needed",
+        "Use validation set to prevent overfitting",
+        "Monitor performance at each optimization stage",
+        "Consider ensemble of top candidates",
+        "Document optimization strategy for reproducibility"
+      ]
+    }
+  },
+  "metrics_and_evaluation": {
+    "custom_metrics": {
+      "description": "Define custom evaluation metrics",
+      "use_when": "Standard metrics don't fit your task",
+      "code_example": "import dspy\nfrom dspy.evaluate import Evaluate\n\n# Simple exact match\ndef exact_match(example, pred, trace=None):\n    return example.answer.lower().strip() == pred.answer.lower().strip()\n\n# Partial match\ndef partial_match(example, pred, trace=None):\n    return example.answer.lower() in pred.answer.lower()\n\n# Semantic similarity (requires additional library)\ndef semantic_similarity(example, pred, trace=None):\n    # Use embedding similarity\n    from sentence_transformers import SentenceTransformer\n    model = SentenceTransformer('all-MiniLM-L6-v2')\n    \n    emb1 = model.encode(example.answer)\n    emb2 = model.encode(pred.answer)\n    \n    from sklearn.metrics.pairwise import cosine_similarity\n    similarity = cosine_similarity([emb1], [emb2])[0][0]\n    return similarity > 0.8\n\n# Multi-criteria metric\ndef comprehensive_metric(example, pred, trace=None):\n    \"\"\"Evaluate on multiple criteria.\"\"\"\n    scores = {\n        'exact_match': exact_match(example, pred),\n        'partial_match': partial_match(example, pred),\n        'length_ok': 10 <= len(pred.answer.split()) <= 100,\n        'has_keywords': any(kw in pred.answer.lower() for kw in example.keywords)\n    }\n    return sum(scores.values()) / len(scores)\n\n# Evaluate program\nevaluator = Evaluate(\n    metric=comprehensive_metric,\n    num_threads=4\n)\n\nscore = evaluator(program, validset=validset)\nprint(f\"Score: {score}\")",
+      "best_practices": [
+        "Make metrics deterministic and reproducible",
+        "Return boolean or float (0-1) for consistency",
+        "Consider multiple evaluation criteria",
+        "Use validation set for optimization, test set for final evaluation",
+        "Log metric values for analysis"
+      ]
+    },
+    "evaluation_framework": {
+      "description": "Systematic evaluation of DSPy programs",
+      "use_when": "Comparing different programs, tracking improvements",
+      "code_example": "import dspy\nfrom dspy.evaluate import Evaluate\n\n# Prepare datasets\ntrainset = [\n    dspy.Example(question=\"Q1\", answer=\"A1\").with_inputs(\"question\"),\n    dspy.Example(question=\"Q2\", answer=\"A2\").with_inputs(\"question\")\n]\n\nvalidset = [\n    dspy.Example(question=\"Q3\", answer=\"A3\").with_inputs(\"question\"),\n    dspy.Example(question=\"Q4\", answer=\"A4\").with_inputs(\"question\")\n]\n\ndef metric(example, pred, trace=None):\n    return example.answer.lower() == pred.answer.lower()\n\n# Create program\nclass QA(dspy.Module):\n    def __init__(self):\n        self.generate = dspy.ChainOfThought('question -> answer')\n    \n    def forward(self, question):\n        return self.generate(question=question)\n\nprogram = QA()\n\n# Evaluate baseline\nevaluator = Evaluate(metric=metric, num_threads=4)\nbaseline_score = evaluator(program, validset=validset)\nprint(f\"Baseline: {baseline_score}\")\n\n# Optimize\noptimizer = dspy.BootstrapFewShot(metric=metric)\noptimized_program = optimizer.compile(program, trainset=trainset)\n\n# Evaluate optimized\noptimized_score = evaluator(optimized_program, validset=validset)\nprint(f\"Optimized: {optimized_score}\")\nprint(f\"Improvement: {optimized_score - baseline_score}\")",
+      "best_practices": [
+        "Always use separate train/validation/test sets",
+        "Report metrics on test set only after final optimization",
+        "Use num_threads for parallel evaluation",
+        "Compare baseline vs optimized performance",
+        "Track metrics over time"
+      ]
+    }
+  },
+  "retrieval_augmented_patterns": {
+    "basic_rag": {
+      "description": "Retrieval-Augmented Generation with DSPy",
+      "use_when": "Need to ground answers in external knowledge base",
+      "code_example": "import dspy\n\n# Configure retrieval model\nturbo = dspy.OpenAI(model='gpt-3.5-turbo')\ncolbertv2 = dspy.ColBERTv2(url='http://20.102.90.50:2017/wiki17_abstracts')\n\ndspy.settings.configure(lm=turbo, rm=colbertv2)\n\n# Define signature\nclass GenerateAnswer(dspy.Signature):\n    \"\"\"Answer questions with short factoid answers.\"\"\"\n    context = dspy.InputField(desc=\"may contain relevant facts\")\n    question = dspy.InputField()\n    answer = dspy.OutputField(desc=\"often between 1 and 5 words\")\n\n# Build RAG module\nclass RAG(dspy.Module):\n    def __init__(self, k=3):\n        super().__init__()\n        self.retrieve = dspy.Retrieve(k=k)\n        self.generate_answer = dspy.ChainOfThought(GenerateAnswer)\n    \n    def forward(self, question):\n        # Retrieve relevant passages\n        retrieval_result = self.retrieve(question)\n        context = retrieval_result.passages\n        \n        # Generate answer\n        prediction = self.generate_answer(\n            context=context,\n            question=question\n        )\n        return prediction\n\n# Use RAG\nrag = RAG(k=5)\nresult = rag(question=\"What is machine learning?\")\nprint(f\"Answer: {result.answer}\")\nprint(f\"Retrieved passages: {len(context)} passages\")",
+      "best_practices": [
+        "Configure both language model (lm) and retrieval model (rm)",
+        "Set k based on context window and task complexity",
+        "Include context in signature for transparency",
+        "Consider retrieval quality when optimizing"
+      ]
+    },
+    "multi_hop_retrieval": {
+      "description": "Multi-hop retrieval for complex queries",
+      "use_when": "Queries require information from multiple sources",
+      "code_example": "import dspy\n\nclass RAGMultiHop(dspy.Module):\n    \"\"\"Multi-hop RAG that retrieves and reasons iteratively.\"\"\"\n    \n    def __init__(self, k=3, max_hops=2):\n        super().__init__()\n        self.retrieve = dspy.Retrieve(k=k)\n        self.generate_query = dspy.ChainOfThought('question, context -> next_query')\n        self.generate_answer = dspy.ChainOfThought('question, context -> answer')\n        self.max_hops = max_hops\n    \n    def forward(self, question):\n        all_context = []\n        current_query = question\n        \n        for hop in range(self.max_hops):\n            # Retrieve for current query\n            retrieval_result = self.retrieve(current_query)\n            hop_context = retrieval_result.passages\n            all_context.extend(hop_context)\n            \n            # Generate next query if not last hop\n            if hop < self.max_hops - 1:\n                query_result = self.generate_query(\n                    question=question,\n                    context='\\n'.join(all_context)\n                )\n                current_query = query_result.next_query\n        \n        # Generate final answer\n        answer = self.generate_answer(\n            question=question,\n            context='\\n'.join(all_context)\n        )\n        return answer\n\nrag_multi = RAGMultiHop(k=3, max_hops=2)\nresult = rag_multi(question=\"What are the similarities between X and Y?\")",
+      "best_practices": [
+        "Limit max_hops to prevent excessive retrieval",
+        "Track retrieved context across hops",
+        "Use reasoning to generate better follow-up queries",
+        "Consider cost implications of multiple retrievals"
+      ]
+    },
+    "retrieval_with_reranking": {
+      "description": "Retrieve more, then rerank for better precision",
+      "use_when": "Need high precision, can afford additional computation",
+      "code_example": "import dspy\n\nclass RAGRerank(dspy.Module):\n    \"\"\"RAG with retrieval and reranking.\"\"\"\n    \n    def __init__(self, retrieve_k=10, final_k=3):\n        super().__init__()\n        self.retrieve = dspy.Retrieve(k=retrieve_k)\n        self.rerank = dspy.ChainOfThought('question, passages -> top_passages')\n        self.generate_answer = dspy.ChainOfThought('question, context -> answer')\n        self.final_k = final_k\n    \n    def forward(self, question):\n        # Retrieve more candidates\n        retrieval_result = self.retrieve(question)\n        all_passages = retrieval_result.passages\n        \n        # Rerank to get top k\n        rerank_result = self.rerank(\n            question=question,\n            passages='\\n'.join(all_passages)\n        )\n        \n        # Use top k for answer generation\n        top_passages = all_passages[:self.final_k]  # Simplified\n        \n        answer = self.generate_answer(\n            question=question,\n            context='\\n'.join(top_passages)\n        )\n        return answer",
+      "best_practices": [
+        "Retrieve 3-5x more than needed, then rerank",
+        "Use reranking for precision-critical tasks",
+        "Consider cost vs benefit of reranking",
+        "Can use external reranking models"
+      ]
+    }
+  },
+  "assertions_and_suggestions": {
+    "suggest": {
+      "description": "Soft constraints that log but don't halt execution",
+      "use_when": "Want guidance during evaluation, best-effort constraints",
+      "code_example": "import dspy\n\nclass QAWithSuggestions(dspy.Module):\n    def __init__(self):\n        self.generate = dspy.ChainOfThought('question -> answer')\n    \n    def forward(self, question):\n        prediction = self.generate(question=question)\n        \n        # Soft suggestions\n        dspy.Suggest(\n            len(prediction.answer.split()) >= 5,\n            \"Answer should be at least 5 words\",\n            target_module=self.generate\n        )\n        \n        dspy.Suggest(\n            '?' not in prediction.answer,\n            \"Answer should not contain questions\",\n            target_module=self.generate\n        )\n        \n        return prediction\n\nprogram = QAWithSuggestions()\nresult = program(question=\"What is AI?\")\n# Suggestions logged but execution continues",
+      "best_practices": [
+        "Use during evaluation for guidance",
+        "Don't halt execution on failures",
+        "Log suggestions for analysis",
+        "Use for soft quality constraints"
+      ]
+    },
+    "refine": {
+      "description": "Self-refinement with backtracking (replaces Assert)",
+      "use_when": "Need hard constraints with automatic retry",
+      "code_example": "import dspy\n\nclass QAWithRefinement(dspy.Module):\n    def __init__(self):\n        self.generate = dspy.ChainOfThought('question -> answer')\n    \n    def forward(self, question):\n        prediction = self.generate(question=question)\n        \n        # Refine if answer is too short\n        if len(prediction.answer.split()) < 10:\n            # Backtrack and regenerate\n            prediction = self.generate(\n                question=question,\n                reasoning=\"Provide a more detailed answer with at least 10 words.\"\n            )\n        \n        return prediction\n\n# Alternative using dspy.Refine (if available)\nclass RefinedQA(dspy.Module):\n    def __init__(self):\n        self.generate = dspy.ChainOfThought('question -> answer')\n        self.refine = dspy.Refine(\n            'question, answer -> improved_answer',\n            max_backtracking_attempts=3\n        )\n    \n    def forward(self, question):\n        answer = self.generate(question=question)\n        \n        # Refine answer\n        refined = self.refine(\n            question=question,\n            answer=answer.answer\n        )\n        \n        return refined",
+      "best_practices": [
+        "Use Refine instead of deprecated Assert",
+        "Set max_backtracking_attempts appropriately",
+        "Use for hard constraints that must be satisfied",
+        "Monitor backtracking frequency"
+      ]
+    },
+    "validation_patterns": {
+      "description": "Patterns for validating outputs",
+      "use_when": "Need to ensure output quality and correctness",
+      "code_example": "import dspy\nfrom typing import List\n\nclass ValidatedQA(dspy.Module):\n    def __init__(self):\n        self.generate = dspy.ChainOfThought('question -> answer')\n        self.validate = dspy.Predict('question, answer -> is_valid: bool, issues: list')\n    \n    def forward(self, question):\n        max_attempts = 3\n        \n        for attempt in range(max_attempts):\n            answer = self.generate(question=question)\n            \n            validation = self.validate(\n                question=question,\n                answer=answer.answer\n            )\n            \n            if validation.is_valid:\n                return answer\n            \n            # Use issues to improve\n            if attempt < max_attempts - 1:\n                answer = self.generate(\n                    question=question,\n                    reasoning=f\"Previous attempt had issues: {validation.issues}\"\n                )\n        \n        return answer  # Return last attempt\n\nprogram = ValidatedQA()\nresult = program(question=\"Explain quantum computing\")\nprint(result.answer)",
+      "best_practices": [
+        "Validate critical outputs",
+        "Use validation feedback to improve",
+        "Set maximum retry attempts",
+        "Log validation failures for analysis"
+      ]
+    }
+  },
+  "multi_model_configuration": {
+    "model_selection": {
+      "description": "Configure and switch between different language models",
+      "use_when": "Want to use different models for different tasks, A/B testing",
+      "code_example": "import dspy\n\n# Configure different models\nturbo = dspy.OpenAI(model='gpt-3.5-turbo', api_key='your-key')\ngpt4 = dspy.OpenAI(model='gpt-4', api_key='your-key')\nclaude = dspy.Claude(model='claude-3-opus', api_key='your-key')\n\n# Global configuration\ndspy.settings.configure(lm=turbo)\n\n# Per-module configuration\nclass MultiModelQA(dspy.Module):\n    def __init__(self):\n        # Use GPT-4 for complex reasoning\n        self.complex_reasoning = dspy.ChainOfThought(\n            'question -> answer',\n            lm=gpt4\n        )\n        \n        # Use GPT-3.5 for simple tasks\n        self.simple_answer = dspy.Predict(\n            'question -> answer',\n            lm=turbo\n        )\n    \n    def forward(self, question):\n        # Route based on complexity\n        if self.is_complex(question):\n            return self.complex_reasoning(question=question)\n        else:\n            return self.simple_answer(question=question)\n    \n    def is_complex(self, question):\n        return len(question.split()) > 10\n\n# Temporary model override\nwith dspy.context(lm=gpt4):\n    result = program(question=\"Complex question here\")\n\n# Model-specific optimizers\noptimizer_turbo = dspy.BootstrapFewShot(lm=turbo)\noptimizer_gpt4 = dspy.BootstrapFewShot(lm=gpt4)",
+      "best_practices": [
+        "Use faster/cheaper models for simple tasks",
+        "Use more capable models for complex reasoning",
+        "Specify models per-module when needed",
+        "Use context managers for temporary overrides",
+        "Consider cost vs quality trade-offs"
+      ]
+    },
+    "model_ensemble": {
+      "description": "Combine predictions from multiple models",
+      "use_when": "Want robustness, higher accuracy",
+      "code_example": "import dspy\nfrom collections import Counter\n\nclass EnsembleQA(dspy.Module):\n    def __init__(self):\n        self.turbo_qa = dspy.ChainOfThought('question -> answer', lm=turbo)\n        self.gpt4_qa = dspy.ChainOfThought('question -> answer', lm=gpt4)\n        self.claude_qa = dspy.ChainOfThought('question -> answer', lm=claude)\n        self.aggregate = dspy.ChainOfThought('answers -> final_answer')\n    \n    def forward(self, question):\n        # Get predictions from all models\n        turbo_result = self.turbo_qa(question=question)\n        gpt4_result = self.gpt4_qa(question=question)\n        claude_result = self.claude_qa(question=question)\n        \n        # Aggregate (simple voting or LLM-based)\n        answers = [\n            turbo_result.answer,\n            gpt4_result.answer,\n            claude_result.answer\n        ]\n        \n        # Majority vote (simple)\n        answer_counts = Counter(answers)\n        most_common = answer_counts.most_common(1)[0][0]\n        \n        # Or use LLM to aggregate\n        aggregated = self.aggregate(answers='\\n'.join(answers))\n        \n        return dspy.Prediction(answer=aggregated.final_answer)\n\nensemble = EnsembleQA()\nresult = ensemble(question=\"What is machine learning?\")",
+      "best_practices": [
+        "Use diverse models for better ensemble",
+        "Consider cost of multiple model calls",
+        "Use voting or LLM-based aggregation",
+        "Monitor agreement between models",
+        "Use for critical applications"
+      ]
+    }
+  },
+  "best_practices": {
+    "signature_design": [
+      "Keep signatures semantic and declarative",
+      "Use descriptive field names",
+      "Provide detailed field descriptions",
+      "Specify types for better validation",
+      "Start simple, add complexity as needed"
+    ],
+    "module_composition": [
+      "Build complex modules from simple ones",
+      "Make modules reusable and testable",
+      "Document module purpose and usage",
+      "Use forward() for inference logic",
+      "Initialize sub-modules in __init__"
+    ],
+    "optimization_strategy": [
+      "Start with baseline (no optimization)",
+      "Use 20% training / 80% validation split",
+      "Begin with BootstrapFewShot for few-shot examples",
+      "Add MIPRO for instruction optimization if needed",
+      "Evaluate on held-out test set",
+      "Monitor for overfitting",
+      "Document optimization process"
+    ],
+    "evaluation": [
+      "Define clear, measurable metrics",
+      "Use separate train/validation/test sets",
+      "Report test set metrics only after final optimization",
+      "Compare baseline vs optimized performance",
+      "Track metrics over time",
+      "Use parallel evaluation (num_threads) for speed"
+    ],
+    "retrieval": [
+      "Configure both lm and rm in settings",
+      "Set k based on context window and task",
+      "Consider multi-hop for complex queries",
+      "Use reranking for precision-critical tasks",
+      "Monitor retrieval quality"
+    ],
+    "production": [
+      "Cache expensive operations when possible",
+      "Set appropriate timeouts",
+      "Handle errors gracefully",
+      "Log important operations",
+      "Monitor costs and performance",
+      "Use assertions/suggestions for quality control"
+    ]
+  },
+  "comparison_with_frameworks": {
+    "vs_langchain": {
+      "description": "DSPy vs LangChain comparison",
+      "differences": {
+        "prompting": "DSPy uses declarative signatures vs LangChain's imperative prompts",
+        "optimization": "DSPy has built-in optimizers vs LangChain requires manual tuning",
+        "abstraction": "DSPy focuses on LM pipelines vs LangChain's broader agent framework",
+        "evaluation": "DSPy emphasizes systematic evaluation vs LangChain's flexible evaluation",
+        "learning": "DSPy programs improve automatically vs LangChain's static prompts"
+      },
+      "when_to_use_dspy": [
+        "Need automatic prompt optimization",
+        "Want systematic evaluation framework",
+        "Building LM pipelines (not full agents)",
+        "Have labeled training data",
+        "Want reproducible, data-driven improvements"
+      ],
+      "when_to_use_langchain": [
+        "Need full agent framework with tools",
+        "Want maximum flexibility",
+        "Building complex multi-agent systems",
+        "Need extensive integrations",
+        "Prefer manual prompt control"
+      ]
+    },
+    "vs_llamaindex": {
+      "description": "DSPy vs LlamaIndex comparison",
+      "differences": {
+        "focus": "DSPy focuses on optimization vs LlamaIndex focuses on data ingestion",
+        "rag": "DSPy provides RAG modules vs LlamaIndex provides RAG framework",
+        "optimization": "DSPy optimizes prompts vs LlamaIndex optimizes retrieval",
+        "evaluation": "Both support evaluation but DSPy emphasizes it more"
+      },
+      "when_to_use_dspy": [
+        "Want to optimize prompt quality",
+        "Have training data for optimization",
+        "Need systematic evaluation",
+        "Building custom RAG pipelines"
+      ],
+      "when_to_use_llamaindex": [
+        "Need extensive data connectors",
+        "Want pre-built RAG patterns",
+        "Focus on data ingestion",
+        "Need document management features"
+      ]
+    },
+    "vs_guidance": {
+      "description": "DSPy vs Guidance comparison",
+      "differences": {
+        "approach": "DSPy uses signatures vs Guidance uses grammars",
+        "optimization": "DSPy has optimizers vs Guidance requires manual tuning",
+        "structure": "DSPy is declarative vs Guidance is more imperative",
+        "constraints": "DSPy uses assertions vs Guidance uses grammar constraints"
+      },
+      "when_to_use_dspy": [
+        "Want automatic optimization",
+        "Need systematic evaluation",
+        "Prefer declarative approach",
+        "Have training data"
+      ],
+      "when_to_use_guidance": [
+        "Need strict output format control",
+        "Want grammar-based constraints",
+        "Prefer imperative control flow",
+        "Need guaranteed format compliance"
+      ]
+    }
+  },
+  "anti_patterns": {
+    "over_optimization": {
+      "description": "Overfitting to training set",
+      "problem": "Program performs well on training but poorly on validation",
+      "solution": "Use proper train/validation split, monitor validation metrics, use regularization"
+    },
+    "ignoring_metrics": {
+      "description": "Not defining clear evaluation metrics",
+      "problem": "Can't measure improvement, optimization is directionless",
+      "solution": "Define measurable metrics upfront, use validation set"
+    },
+    "complex_signatures": {
+      "description": "Making signatures too complex initially",
+      "problem": "Hard to debug, optimization struggles",
+      "solution": "Start simple, add complexity incrementally"
+    },
+    "no_baseline": {
+      "description": "Optimizing without baseline comparison",
+      "problem": "Don't know if optimization helped",
+      "solution": "Always evaluate baseline first, compare improvements"
+    },
+    "wrong_optimizer": {
+      "description": "Using wrong optimizer for task",
+      "problem": "Inefficient optimization, poor results",
+      "solution": "Start with BootstrapFewShot, add MIPRO for instruction optimization if needed"
+    }
+  },
+  "testing_strategies": {
+    "unit_testing": {
+      "description": "Test individual modules in isolation",
+      "code_example": "import dspy\nimport unittest\nfrom unittest.mock import Mock\n\nclass TestQA(unittest.TestCase):\n    def setUp(self):\n        self.module = dspy.Predict('question -> answer')\n    \n    def test_basic_qa(self):\n        result = self.module(question=\"What is Python?\")\n        self.assertIn('answer', result)\n        self.assertIsNotNone(result.answer)\n    \n    def test_with_mock_lm(self):\n        # Mock LM for deterministic testing\n        mock_lm = Mock()\n        mock_lm.return_value = dspy.Prediction(answer=\"test answer\")\n        \n        with dspy.context(lm=mock_lm):\n            result = self.module(question=\"test\")\n            self.assertEqual(result.answer, \"test answer\")",
+      "best_practices": [
+        "Test modules independently",
+        "Mock LM for deterministic tests",
+        "Test signature parsing",
+        "Verify output structure"
+      ]
+    },
+    "integration_testing": {
+      "description": "Test full pipeline end-to-end",
+      "code_example": "import dspy\n\ndef test_rag_pipeline():\n    # Configure with test models\n    turbo = dspy.OpenAI(model='gpt-3.5-turbo')\n    dspy.settings.configure(lm=turbo)\n    \n    # Create RAG program\n    rag = RAG(k=3)\n    \n    # Test with sample question\n    result = rag(question=\"What is machine learning?\")\n    \n    # Verify output\n    assert 'answer' in result\n    assert len(result.answer) > 0\n    \n    return result\n\ndef test_optimization():\n    # Test optimization process\n    program = QA()\n    trainset = [...]\n    \n    optimizer = dspy.BootstrapFewShot(metric=accuracy_metric)\n    optimized = optimizer.compile(program, trainset=trainset)\n    \n    # Verify optimization improved performance\n    baseline_score = evaluate(program, validset)\n    optimized_score = evaluate(optimized, validset)\n    \n    assert optimized_score >= baseline_score",
+      "best_practices": [
+        "Test with real models (use cheaper models for tests)",
+        "Verify end-to-end flow",
+        "Test optimization process",
+        "Compare before/after optimization"
+      ]
+    }
+  }
+}

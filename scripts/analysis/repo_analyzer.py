@@ -2,8 +2,7 @@
 """
 Antigravity Agent Factory - Repository Analyzer
 
-Analyzes existing repositories to detect Antigravity artifacts, tech stack,
-and determine the appropriate onboarding scenario.
+Analyzes existing repositories to detect Antigravity artifacts, tech stack,and determine the appropriate onboarding scenario.
 
 Usage:
     from scripts.analysis.repo_analyzer import RepoAnalyzer
@@ -12,8 +11,7 @@ Usage:
     inventory = analyzer.analyze()
     print(inventory.scenario)
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 import json
@@ -30,8 +28,7 @@ class OnboardingScenario(Enum):
     
     Attributes:
         FRESH: No Antigravity artifacts exist - full generation needed.
-        MINIMAL: Only .agentrules exists - augment with agents, skills, etc.
-        PARTIAL: Some artifacts exist but others are missing.
+        MINIMAL: Only .agentrules exists - augment with agents, skills, etc.        PARTIAL: Some artifacts exist but others are missing.
         UPGRADE: Old factory version detected - offer upgrade.
         COMPLETE: Fully configured repository - report status only.
     """
@@ -43,9 +40,8 @@ class OnboardingScenario(Enum):
 
 
 @dataclass
-class AgentruleAnalysis:
-    """Analysis of an existing .agentrules file.
-    
+class AntigravityruleAnalysis:
+    """Analysis of an existing .agentrules file.    
     Attributes:
         exists: Whether the file exists.
         content: Raw content of the file.
@@ -96,8 +92,7 @@ class TechStackDetection:
 
 @dataclass
 class RepoInventory:
-    """Complete inventory of Antigravity artifacts in a repository.
-    
+    """Complete inventory of Antigravity artifacts in a repository.    
     This dataclass contains all information gathered during repository
     analysis, including existing artifacts, detected tech stack, and
     the determined onboarding scenario.
@@ -105,14 +100,13 @@ class RepoInventory:
     Attributes:
         path: Path to the repository.
         scenario: Detected onboarding scenario.
-        agentrules: Analysis of .agentrules file.
+        cursorrules: Analysis of .agentrules file.
         mcp: Analysis of MCP configuration.
         tech_stack: Detected technology stack.
         existing_agents: Agent names from .agent/agents/.
         existing_skills: Skill names from .agent/skills/.
         existing_commands: Command names from .agent/commands/.
-        existing_rules: Rule file names from .agent/rules/.
-        existing_knowledge: Knowledge file names from knowledge/.
+        existing_rules: Rule file names from .agent/rules/.        existing_knowledge: Knowledge file names from knowledge/.
         existing_templates: Template file names from templates/.
         existing_workflows: Workflow file names from workflows/.
         has_purpose_md: Whether PURPOSE.md exists.
@@ -125,12 +119,11 @@ class RepoInventory:
     scenario: OnboardingScenario = OnboardingScenario.FRESH
     
     # Detailed analysis
-    agentrules: AgentruleAnalysis = field(default_factory=AgentruleAnalysis)
+    cursorrules: AntigravityruleAnalysis = field(default_factory=AntigravityruleAnalysis)
     mcp: McpAnalysis = field(default_factory=McpAnalysis)
     tech_stack: TechStackDetection = field(default_factory=TechStackDetection)
     
-    # .agent/ folder contents
-    existing_agents: List[str] = field(default_factory=list)
+    # .agent/ folder contents    existing_agents: List[str] = field(default_factory=list)
     existing_skills: List[str] = field(default_factory=list)
     existing_commands: List[str] = field(default_factory=list)
     existing_rules: List[str] = field(default_factory=list)
@@ -157,15 +150,14 @@ class RepoInventory:
             f"Repository: {self.path}",
             f"Scenario: {self.scenario.value.upper()}",
             "",
-            "=== Agent Artifacts ===",
-            f"Agentrules: {'Yes' if self.agentrules.exists else 'No'}",
+            "=== Antigravity Artifacts ===",
+            f".agentrules: {'Yes' if self.agentrules.exists else 'No'}",
         ]
         
         if self.agentrules.exists:
             lines.append(f"  - Lines: {self.agentrules.line_count}")
             lines.append(f"  - Layers: {self.agentrules.layers_present}")
-            lines.append(f"  - Factory version: {self.agentrules.version or 'Unknown'}")
-        
+            lines.append(f"  - Factory version: {self.agentrules.version or 'Unknown'}")        
         lines.extend([
             f"Agents: {len(self.existing_agents)} ({', '.join(self.existing_agents) or 'None'})",
             f"Skills: {len(self.existing_skills)} ({', '.join(self.existing_skills) or 'None'})",
@@ -193,8 +185,7 @@ class RepoInventory:
 class RepoAnalyzer:
     """Analyzes existing repositories for Antigravity artifacts and tech stack.
     
-    This class scans a repository to detect existing Antigravity Agent Factory
-    artifacts, determine the technology stack, and recommend an onboarding
+    This class scans a repository to detect existing Antigravity Agent Factory    artifacts, determine the technology stack, and recommend an onboarding
     scenario.
     
     Attributes:
@@ -265,8 +256,7 @@ class RepoAnalyzer:
     
     # Factory version pattern in .agentrules
     FACTORY_VERSION_PATTERN = re.compile(
-        r"Generated by[:\s]+Antigravity Agent Factory.*?v?(\d+\.\d+(?:\.\d+)?)",
-        re.IGNORECASE
+        r"Generated by[:\s]+Antigravity Agent Factory.*?v?(\d+\.\d+(?:\.\d+)?)",        re.IGNORECASE
     )
     
     # Layer detection patterns
@@ -303,11 +293,10 @@ class RepoAnalyzer:
         inventory.is_git_repo = (self.repo_path / ".git").exists()
         
         # Analyze .agentrules
-        inventory.agentrules = self._analyze_agentrules()
+        inventory.agentrules = self._analyze_cursorrules()
         
         # Analyze .agent/ folder
-        self._analyze_agent_folder(inventory)
-        
+        self._analyze_cursor_folder(inventory)        
         # Analyze project-level artifacts
         self._analyze_project_artifacts(inventory)
         
@@ -319,28 +308,25 @@ class RepoAnalyzer:
         
         return inventory
     
-    def _analyze_agentrules(self) -> AgentruleAnalysis:
+    def _analyze_cursorrules(self) -> AntigravityruleAnalysis:
         """Analyze the .agentrules file if it exists.
         
         Returns:
-            AgentruleAnalysis with file details.
+            AntigravityruleAnalysis with file details.
         """
-        analysis = AgentruleAnalysis()
-        agentrules_path = self.repo_path / ".agentrules"
+        analysis = AntigravityruleAnalysis()
+        cursorrules_path = self.repo_path / ".agentrules"
         
-        if not agentrules_path.exists():
-            return analysis
+        if not cursorrules_path.exists():            return analysis
         
         analysis.exists = True
         
         try:
-            content = agentrules_path.read_text(encoding="utf-8")
-            analysis.content = content
+            content = cursorrules_path.read_text(encoding="utf-8")            analysis.content = content
             analysis.line_count = len(content.splitlines())
             
             # Check for factory marker
-            analysis.has_factory_marker = "Antigravity Agent Factory" in content
-            
+            analysis.has_factory_marker = "Antigravity Agent Factory" in content            
             # Extract version
             version_match = self.FACTORY_VERSION_PATTERN.search(content)
             if version_match:
@@ -358,49 +344,43 @@ class RepoAnalyzer:
         
         return analysis
     
-    def _analyze_agent_folder(self, inventory: RepoInventory) -> None:
-        """Analyze the .agent/ folder contents.
-        
+    def _analyze_cursor_folder(self, inventory: RepoInventory) -> None:
+        """Analyze the .agent/ folder contents.        
         Args:
             inventory: RepoInventory to populate with findings.
         """
-        agent_path = self.repo_path / ".agent"
+        cursor_path = self.repo_path / ".agent"
         
-        if not agent_path.exists():
+        if not cursor_path.exists():
             return
         
         # Analyze agents
-        agents_path = agent_path / "agents"
-        if agents_path.exists():
+        agents_path = cursor_path / "agents"        if agents_path.exists():
             inventory.existing_agents = [
                 f.stem for f in agents_path.glob("*.md")
             ]
         
         # Analyze skills
-        skills_path = agent_path / "skills"
-        if skills_path.exists():
+        skills_path = cursor_path / "skills"        if skills_path.exists():
             inventory.existing_skills = [
                 d.name for d in skills_path.iterdir()
                 if d.is_dir() and (d / "SKILL.md").exists()
             ]
         
         # Analyze commands
-        commands_path = agent_path / "commands"
-        if commands_path.exists():
+        commands_path = cursor_path / "commands"        if commands_path.exists():
             inventory.existing_commands = [
                 f.stem for f in commands_path.glob("*.md")
             ]
         
         # Analyze rules
-        rules_path = agent_path / "rules"
-        if rules_path.exists():
+        rules_path = cursor_path / "rules"        if rules_path.exists():
             inventory.existing_rules = [
                 f.name for f in rules_path.glob("*.mdc")
             ]
         
         # Analyze MCP configuration
-        mcp_path = agent_path / "mcp.json"
-        if mcp_path.exists():
+        mcp_path = cursor_path / "mcp.json"        if mcp_path.exists():
             inventory.mcp = self._analyze_mcp(mcp_path)
     
     def _analyze_mcp(self, mcp_path: Path) -> McpAnalysis:
@@ -608,9 +588,8 @@ class RepoAnalyzer:
         Returns:
             Appropriate OnboardingScenario.
         """
-        has_agentrules = inventory.agentrules.exists
-        has_agent_folder = bool(
-            inventory.existing_agents or
+        has_cursorrules = inventory.agentrules.exists
+        has_cursor_folder = bool(            inventory.existing_agents or
             inventory.existing_skills or
             inventory.existing_commands or
             inventory.existing_rules or
@@ -624,11 +603,11 @@ class RepoAnalyzer:
         )
         
         # FRESH: No Antigravity artifacts at all
-        if not has_agentrules and not has_agent_folder and not has_project_artifacts:
+        if not has_cursorrules and not has_cursor_folder and not has_project_artifacts:
             return OnboardingScenario.FRESH
         
         # MINIMAL: Only .agentrules exists
-        if has_agentrules and not has_agent_folder and not has_project_artifacts:
+        if has_cursorrules and not has_cursor_folder and not has_project_artifacts:
             return OnboardingScenario.MINIMAL
         
         # Check for UPGRADE scenario
@@ -636,16 +615,14 @@ class RepoAnalyzer:
             # If there's a version and it's old, suggest upgrade
             if inventory.agentrules.version:
                 try:
-                    major = int(inventory.agentrules.version.split(".")[0])
-                    if major < 2:  # Current version is 2.x
+                    major = int(inventory.agentrules.version.split(".")[0])                    if major < 2:  # Current version is 2.x
                         return OnboardingScenario.UPGRADE
                 except ValueError:
                     pass
         
         # COMPLETE: Has all major components
         complete_indicators = [
-            has_agentrules,
-            len(inventory.existing_agents) >= 3,
+            has_cursorrules,            len(inventory.existing_agents) >= 3,
             len(inventory.existing_skills) >= 3,
             inventory.has_purpose_md,
             inventory.has_practices_yaml or inventory.has_methodology_yaml,

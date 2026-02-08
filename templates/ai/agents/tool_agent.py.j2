@@ -1,0 +1,162 @@
+"""{{ agent_name }} - {{ description }} - Tool-calling agent"""
+from typing import List, Optional, Dict, Any
+from pydantic import BaseModel, Field
+import aisuite as ai
+from aisuite.tools import Tool
+import asyncio
+import logging
+
+logger = logging.getLogger(__name__)
+
+class {{ agent_class }}Config(BaseModel):
+    """Configuration for {{ agent_name }}."""
+    model: str = "google:gemini-2.5-flash"
+    temperature: float = 0.7
+    max_tokens: int = 4096
+    max_iterations: int = 10
+
+class {{ agent_class }}:
+    """Tool-calling agent for {{ agent_name }}."""
+    
+    def __init__(self, config: {{ agent_class }}Config = None):
+        self.config = config or {{ agent_class }}Config()
+        self.client = ai.Client()
+        self.tools: List[Tool] = []
+        self._initialize_tools()
+    
+    def _initialize_tools(self):
+        """Initialize tools for the agent."""
+        # Add your tools here
+        {% if tools %}
+        {% for tool in tools %}
+        self.tools.append({{ tool }})
+        {% endfor %}
+        {% else %}
+        # Example: self.tools.append(ai.Tool(name="example_tool", func=self._example_tool))
+        {% endif %}
+    
+    @property
+    def system_prompt(self) -> str:
+        """Return the system prompt."""
+        return """{{ system_prompt | default("You are a helpful AI assistant with access to tools. Use tools when needed to complete tasks.") }}
+
+Available tools:
+{% for tool in tools %}
+- {{ tool.name }}: {{ tool.description | default("Tool description") }}
+{% endfor %}
+
+When using tools:
+1. Choose the appropriate tool for the task
+2. Provide correct parameters
+3. Handle tool errors gracefully
+4. Use tool results to inform your response"""
+    
+    def bind_tools(self):
+        """Bind tools to the LLM."""
+        if not self.tools:
+            logger.warning("No tools available to bind")
+            return self.client
+        
+        return self.client.bind_tools(self.tools)
+    
+    async def run(self, input_data: dict) -> dict:
+        """
+        Execute the agent with tool calling.
+        
+        Args:
+            input_data: Input dictionary with 'message' or 'query' key
+            
+        Returns:
+            Dictionary with 'response' and optional 'tool_calls' keys
+        """
+        message = input_data.get("message") or input_data.get("query", "")
+        
+        if not message:
+            return {"error": "No message or query provided"}
+        
+        logger.info(f"Processing message: {message[:100]}...")
+        
+        # Bind tools to client
+        client_with_tools = self.bind_tools()
+        
+        # Create conversation
+        conversation = client_with_tools.create_conversation(
+            model=self.config.model,
+            temperature=self.config.temperature,
+            max_tokens=self.config.max_tokens
+        )
+        
+        # Add system prompt
+        conversation.add_system_message(self.system_prompt)
+        
+        # Add user message
+        conversation.add_user_message(message)
+        
+        # Get response (may include tool calls)
+        response = await conversation.get_response()
+        
+        result = {
+            "response": response.content if hasattr(response, "content") else str(response),
+            "tool_calls": []
+        }
+        
+        # Handle tool calls if present
+        if hasattr(response, "tool_calls") and response.tool_calls:
+            logger.info(f"Processing {len(response.tool_calls)} tool calls")
+            
+            tool_results = []
+            for tool_call in response.tool_calls:
+                tool_name = tool_call.get("name")
+                tool_args = tool_call.get("args", {})
+                
+                # Find and execute tool
+                tool = next((t for t in self.tools if t.name == tool_name), None)
+                if tool:
+                    try:
+                        if hasattr(tool, "func"):
+                            if asyncio.iscoroutinefunction(tool.func):
+                                tool_result = await tool.func(**tool_args)
+                            else:
+                                tool_result = tool.func(**tool_args)
+                        else:
+                            tool_result = await tool(**tool_args)
+                        
+                        tool_results.append({
+                            "tool": tool_name,
+                            "args": tool_args,
+                            "result": tool_result
+                        })
+                        
+                        # Add tool result to conversation
+                        conversation.add_tool_message(
+                            tool_name=tool_name,
+                            content=str(tool_result)
+                        )
+                        
+                    except Exception as e:
+                        logger.error(f"Error executing tool {tool_name}: {e}")
+                        tool_results.append({
+                            "tool": tool_name,
+                            "args": tool_args,
+                            "error": str(e)
+                        })
+                else:
+                    logger.warning(f"Unknown tool: {tool_name}")
+            
+            result["tool_calls"] = tool_results
+            
+            # Get final response after tool execution
+            final_response = await conversation.get_response()
+            result["response"] = final_response.content if hasattr(final_response, "content") else str(final_response)
+        
+        return result
+    
+    def add_tool(self, tool: Tool):
+        """Add a tool to the agent."""
+        self.tools.append(tool)
+        logger.info(f"Added tool: {tool.name}")
+    
+    def remove_tool(self, tool_name: str):
+        """Remove a tool from the agent."""
+        self.tools = [t for t in self.tools if t.name != tool_name]
+        logger.info(f"Removed tool: {tool_name}")

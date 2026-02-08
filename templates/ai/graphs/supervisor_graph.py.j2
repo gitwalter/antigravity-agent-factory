@@ -1,0 +1,337 @@
+"""
+{{ graph_name }} - Supervisor Pattern Graph
+
+Implements supervisor pattern where:
+- Supervisor node routes tasks to workers
+- Worker nodes perform specialized tasks
+- Conditional routing based on supervisor decisions
+
+Axiom Alignment:
+- A1 (Verifiability): Supervisor decisions are logged
+- A2 (User Primacy): Supervisor prioritizes user intent
+- A3 (Transparency): Routing logic is explicit
+"""
+
+from typing import TypedDict, Annotated, List, Optional, Literal
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.message import add_messages
+from langgraph.checkpoint.memory import MemorySaver
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
+from langchain_openai import ChatOpenAI
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# State Definition
+# =============================================================================
+
+class {{ state_class }}(TypedDict):
+    """
+    State for {{ graph_name }} supervisor graph.
+    
+    Attributes:
+        messages: Conversation messages
+        next_agent: Next agent to route to
+        worker_results: Results from worker agents
+        supervisor_decision: Supervisor's routing decision
+        iteration: Current iteration count
+        status: Current status
+    """
+    messages: Annotated[List[BaseMessage], add_messages]
+    next_agent: Optional[str]
+    worker_results: dict
+    supervisor_decision: Optional[str]
+    iteration: int
+    status: Literal["routing", "working", "completed", "error"]
+
+
+# =============================================================================
+# Node Definitions
+# =============================================================================
+
+def supervisor_node(state: {{ state_class }}) -> dict:
+    """
+    Supervisor node - routes tasks to workers.
+    
+    Implements A3 (Transparency) by logging routing decisions.
+    
+    Args:
+        state: Current workflow state
+        
+    Returns:
+        Updated state with routing decision
+    """
+    logger.info("Supervisor node executing...")
+    
+    # Check iteration limit (A4 - Non-Harm)
+    max_iterations = {{ max_iterations|default(10) }}
+    if state.get("iteration", 0) >= max_iterations:
+        logger.warning("Maximum iterations reached")
+        return {
+            "supervisor_decision": "end",
+            "next_agent": None,
+            "status": "completed",
+            "messages": state["messages"] + [
+                AIMessage(content="Maximum iterations reached. Task complete.")
+            ]
+        }
+    
+    # Get last message
+    last_message = state["messages"][-1] if state["messages"] else None
+    
+    if not last_message or isinstance(last_message, AIMessage):
+        # No new user input, check if we should continue
+        if state.get("worker_results"):
+            # Workers have completed, decide next step
+            return {
+                "supervisor_decision": "end",
+                "next_agent": None,
+                "status": "completed"
+            }
+        return {"supervisor_decision": "end", "next_agent": None, "status": "completed"}
+    
+    # Supervisor decides which worker to use
+    # TODO: Implement supervisor routing logic
+    # This could use an LLM to decide which worker to route to
+    
+    # For now, simple example routing
+    decision = "{{ workers[0].name|default('worker_1') }}"  # Default routing
+    
+    logger.info(f"Supervisor decision: {decision}")
+    
+    return {
+        "supervisor_decision": decision,
+        "next_agent": decision,
+        "iteration": state.get("iteration", 0) + 1,
+        "status": "routing"
+    }
+
+
+{% for worker in workers %}
+def {{ worker.name }}(state: {{ state_class }}) -> dict:
+    """
+    {{ worker.description|default(worker.name + ' worker node') }}
+    
+    Implements A1 (Verifiability) by logging work performed.
+    
+    Args:
+        state: Current workflow state
+        
+    Returns:
+        Updated state with worker results
+    """
+    logger.info("{{ worker.name }} worker executing...")
+    
+    last_message = state["messages"][-1] if state["messages"] else None
+    if not last_message:
+        return {}
+    
+    # Worker processes the task
+    # TODO: Implement {{ worker.name }} logic
+    
+    result = {
+        "worker_results": {
+            **state.get("worker_results", {}),
+            "{{ worker.name }}": "Result from {{ worker.name }}"
+        },
+        "messages": state["messages"] + [
+            AIMessage(content=f"[{{ worker.name }}] Task completed")
+        ],
+        "status": "working"
+    }
+    
+    logger.info("{{ worker.name }} completed")
+    return result
+
+{% endfor %}
+
+
+# =============================================================================
+# Routing Functions
+# =============================================================================
+
+def route_supervisor(state: {{ state_class }}) -> str:
+    """
+    Route based on supervisor decision.
+    
+    Args:
+        state: Current state
+        
+    Returns:
+        Next node name
+    """
+    decision = state.get("supervisor_decision", "").lower()
+    
+    {% for worker in workers %}
+    if decision == "{{ worker.name }}":
+        return "{{ worker.name }}"
+    {% endfor %}
+    
+    return "end"
+
+
+# =============================================================================
+# Graph Construction
+# =============================================================================
+
+def create_{{ graph_name|lower|replace(' ', '_') }}_graph() -> StateGraph:
+    """
+    Create the {{ graph_name }} supervisor graph.
+    
+    Returns:
+        Compiled LangGraph workflow
+    """
+    graph = StateGraph({{ state_class }})
+    
+    # Add nodes
+    graph.add_node("supervisor", supervisor_node)
+    {% for worker in workers %}
+    graph.add_node("{{ worker.name }}", {{ worker.name }})
+    {% endfor %}
+    
+    # Add edges
+    graph.add_edge(START, "supervisor")
+    
+    # Conditional routing from supervisor
+    graph.add_conditional_edges(
+        "supervisor",
+        route_supervisor,
+        {
+            {% for worker in workers %}
+            "{{ worker.name }}": "{{ worker.name }}",
+            {% endfor %}
+            "end": END
+        }
+    )
+    
+    # Workers route back to supervisor
+    {% for worker in workers %}
+    graph.add_edge("{{ worker.name }}", "supervisor")
+    {% endfor %}
+    
+    return graph
+
+
+def compile_{{ graph_name|lower|replace(' ', '_') }}(use_checkpointing: bool = True):
+    """
+    Compile the supervisor workflow with optional checkpointing.
+    
+    Args:
+        use_checkpointing: Whether to enable checkpointing
+        
+    Returns:
+        Compiled workflow
+    """
+    graph = create_{{ graph_name|lower|replace(' ', '_') }}_graph()
+    
+    if use_checkpointing:
+        checkpointer = MemorySaver()
+        return graph.compile(checkpointer=checkpointer)
+    
+    return graph.compile()
+
+
+# =============================================================================
+# Workflow Execution
+# =============================================================================
+
+class {{ graph_name|replace(' ', '') }}Supervisor:
+    """
+    {{ graph_name }} supervisor workflow executor.
+    
+    Example:
+        >>> supervisor = {{ graph_name|replace(' ', '') }}Supervisor()
+        >>> result = supervisor.run("Analyze this task")
+        >>> print(result["worker_results"])
+    """
+    
+    def __init__(
+        self,
+        supervisor_model: str = "{{ supervisor_model|default('gpt-4') }}",
+        worker_model: str = "{{ worker_model|default('gpt-3.5-turbo') }}",
+        temperature: float = {{ temperature|default(0.7) }},
+        use_checkpointing: bool = True
+    ):
+        """
+        Initialize supervisor graph.
+        
+        Args:
+            supervisor_model: LLM model for supervisor
+            worker_model: LLM model for workers
+            temperature: Sampling temperature
+            use_checkpointing: Whether to use checkpointing
+        """
+        self.supervisor_model = supervisor_model
+        self.worker_model = worker_model
+        self.temperature = temperature
+        
+        # Initialize LLMs (optional - only if using LLM-based routing)
+        # self.supervisor_llm = ChatOpenAI(model=supervisor_model, temperature=temperature)
+        # self.worker_llm = ChatOpenAI(model=worker_model, temperature=temperature)
+        
+        self.app = compile_{{ graph_name|lower|replace(' ', '_') }}(use_checkpointing)
+        
+        logger.info(f"Initialized {{ graph_name }} supervisor graph")
+    
+    def run(
+        self,
+        input_text: str,
+        thread_id: Optional[str] = None
+    ) -> {{ state_class }}:
+        """
+        Run the supervisor graph.
+        
+        Args:
+            input_text: User input
+            thread_id: Optional thread ID for conversation tracking
+            
+        Returns:
+            Final state
+        """
+        logger.info(f"Running graph with input: {input_text[:100]}...")
+        
+        initial_state: {{ state_class }} = {
+            "messages": [HumanMessage(content=input_text)],
+            "next_agent": None,
+            "worker_results": {},
+            "supervisor_decision": None,
+            "iteration": 0,
+            "status": "routing"
+        }
+        
+        config = {}
+        if thread_id:
+            config = {"configurable": {"thread_id": thread_id}}
+        
+        result = self.app.invoke(initial_state, config)
+        
+        logger.info(f"Graph completed. Iterations: {result.get('iteration', 0)}")
+        return result
+    
+    def visualize(self) -> str:
+        """Generate Mermaid diagram of the graph."""
+        return self.app.get_graph().draw_mermaid()
+
+
+# =============================================================================
+# Example Usage
+# =============================================================================
+
+if __name__ == "__main__":
+    # Create supervisor
+    supervisor = {{ graph_name|replace(' ', '') }}Supervisor()
+    
+    # Visualize
+    print("Graph Structure:")
+    print(supervisor.visualize())
+    print()
+    
+    # Run
+    result = supervisor.run("{{ example_input|default('Example task') }}")
+    
+    print(f"Iterations: {result.get('iteration', 0)}")
+    print(f"Worker Results: {list(result.get('worker_results', {}).keys())}")
+    print(f"Status: {result.get('status')}")

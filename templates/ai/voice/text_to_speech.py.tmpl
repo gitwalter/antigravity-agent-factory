@@ -1,0 +1,405 @@
+"""
+{{TTS_CLASS_NAME}} - Text-to-Speech with ElevenLabs
+
+Purpose: {{TTS_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+This module provides text-to-speech synthesis using ElevenLabs API:
+- Natural-sounding voice synthesis
+- Multiple voice options
+- Voice cloning support
+- Streaming audio generation
+- Multiple output formats
+- Voice settings customization
+"""
+
+from typing import Optional, Union, BinaryIO, Dict, Any, Iterator
+from pathlib import Path
+import io
+import logging
+import requests
+from pydantic import BaseModel, Field
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class VoiceSettings(BaseModel):
+    """
+    Voice generation settings for ElevenLabs.
+    
+    Attributes:
+        stability: Stability setting (0.0-1.0) - controls consistency
+        similarity_boost: Similarity boost (0.0-1.0) - controls similarity to original voice
+        style: Style setting (0.0-1.0) - controls expressiveness
+        use_speaker_boost: Whether to use speaker boost for clarity
+    """
+    stability: float = Field(default={{STABILITY}}, ge=0.0, le=1.0, description="Voice stability")
+    similarity_boost: float = Field(default={{SIMILARITY_BOOST}}, ge=0.0, le=1.0, description="Similarity boost")
+    style: float = Field(default={{STYLE}}, ge=0.0, le=1.0, description="Voice style")
+    use_speaker_boost: bool = Field(default={{USE_SPEAKER_BOOST}}, description="Use speaker boost")
+
+
+class TTSConfig(BaseModel):
+    """
+    Configuration for Text-to-Speech service.
+    
+    Attributes:
+        api_key: ElevenLabs API key
+        voice_id: Voice ID to use (default or custom)
+        model_id: Model ID (eleven_multilingual_v2, eleven_monolingual_v1, etc.)
+        voice_settings: Voice generation settings
+        output_format: Output audio format (mp3_44100_128, mp3_44100_192, pcm_16000, etc.)
+    """
+    api_key: str = Field(description="ElevenLabs API key")
+    voice_id: str = Field(default="{{VOICE_ID}}", description="Voice ID")
+    model_id: str = Field(default="{{MODEL_ID}}", description="Model ID")
+    voice_settings: VoiceSettings = Field(default_factory=VoiceSettings, description="Voice settings")
+    output_format: str = Field(default="{{OUTPUT_FORMAT}}", description="Output audio format")
+
+
+class TTSResult:
+    """
+    Result from text-to-speech synthesis.
+    
+    Attributes:
+        audio_data: Generated audio data (bytes)
+        audio_format: Format of the audio data
+        text_length: Length of input text
+        audio_duration: Estimated audio duration in seconds
+        metadata: Additional metadata
+    """
+    
+    def __init__(
+        self,
+        audio_data: bytes,
+        audio_format: str,
+        text_length: int,
+        audio_duration: Optional[float] = None,
+        metadata: Optional[Dict[str, Any]] = None
+    ):
+        self.audio_data = audio_data
+        self.audio_format = audio_format
+        self.text_length = text_length
+        self.audio_duration = audio_duration
+        self.metadata = metadata or {}
+    
+    def save(self, file_path: Union[str, Path]) -> None:
+        """
+        Save audio data to file.
+        
+        Args:
+            file_path: Path where to save the audio file
+        """
+        with open(file_path, "wb") as f:
+            f.write(self.audio_data)
+        logger.info(f"Audio saved to {file_path}")
+    
+    def to_bytes(self) -> bytes:
+        """Get audio data as bytes."""
+        return self.audio_data
+
+
+class {{TTS_CLASS_NAME}}:
+    """
+    {{TTS_CLASS_NAME}} - Text-to-Speech synthesis using ElevenLabs API.
+    
+    Provides high-quality, natural-sounding voice synthesis with support for
+    multiple voices, languages, and customization options.
+    
+    Features:
+    - Natural voice synthesis
+    - Multiple voice options
+    - Voice cloning support
+    - Streaming audio generation
+    - Customizable voice settings
+    - Multiple output formats
+    
+    Example:
+        >>> tts = {{TTS_CLASS_NAME}}(api_key="your-api-key")
+        >>> result = tts.synthesize("Hello, world!")
+        >>> result.save("output.mp3")
+    """
+    
+    BASE_URL = "https://api.elevenlabs.io/v1"
+    
+    def __init__(self, config: Optional[TTSConfig] = None, api_key: Optional[str] = None):
+        """
+        Initialize the Text-to-Speech service.
+        
+        Args:
+            config: Configuration object (uses defaults if None)
+            api_key: ElevenLabs API key (can be provided directly or via config)
+        """
+        if config:
+            self.config = config
+        else:
+            api_key = api_key or "{{API_KEY}}"
+            if not api_key or api_key == "{{API_KEY}}":
+                raise ValueError(
+                    "ElevenLabs API key is required. "
+                    "Provide it via config or api_key parameter, "
+                    "or set ELEVENLABS_API_KEY environment variable."
+                )
+            self.config = TTSConfig(api_key=api_key)
+        
+        # Override API key from environment if available
+        import os
+        env_key = os.getenv("ELEVENLABS_API_KEY")
+        if env_key:
+            self.config.api_key = env_key
+        
+        self.session = requests.Session()
+        self.session.headers.update({
+            "xi-api-key": self.config.api_key
+        })
+        
+        logger.info(f"Initialized {{TTS_CLASS_NAME}} with voice: {self.config.voice_id}")
+    
+    def _get_voice_url(self, voice_id: Optional[str] = None) -> str:
+        """Get API URL for voice endpoint."""
+        voice = voice_id or self.config.voice_id
+        return f"{self.BASE_URL}/text-to-speech/{voice}"
+    
+    def synthesize(
+        self,
+        text: str,
+        voice_id: Optional[str] = None,
+        voice_settings: Optional[VoiceSettings] = None,
+        model_id: Optional[str] = None,
+        output_format: Optional[str] = None,
+        **kwargs
+    ) -> TTSResult:
+        """
+        Synthesize text to speech.
+        
+        Args:
+            text: Text to synthesize
+            voice_id: Voice ID (overrides config)
+            voice_settings: Voice settings (overrides config)
+            model_id: Model ID (overrides config)
+            output_format: Output format (overrides config)
+            **kwargs: Additional API parameters
+            
+        Returns:
+            TTSResult with generated audio data
+            
+        Example:
+            >>> result = tts.synthesize("Hello, how are you?")
+            >>> result.save("greeting.mp3")
+        """
+        if not text or not text.strip():
+            raise ValueError("Text cannot be empty")
+        
+        url = self._get_voice_url(voice_id)
+        
+        # Use provided settings or config defaults
+        settings = voice_settings or self.config.voice_settings
+        model = model_id or self.config.model_id
+        format_type = output_format or self.config.output_format
+        
+        payload = {
+            "text": text,
+            "model_id": model,
+            "voice_settings": settings.dict(),
+            **kwargs
+        }
+        
+        if format_type:
+            payload["output_format"] = format_type
+        
+        logger.info(f"Synthesizing text (length: {len(text)} chars)")
+        
+        try:
+            response = self.session.post(url, json=payload, timeout=30)
+            response.raise_for_status()
+            
+            audio_data = response.content
+            
+            # Estimate duration (rough calculation: ~150 words per minute)
+            words = len(text.split())
+            estimated_duration = (words / 150) * 60  # seconds
+            
+            result = TTSResult(
+                audio_data=audio_data,
+                audio_format=format_type or "mp3_44100_128",
+                text_length=len(text),
+                audio_duration=estimated_duration,
+                metadata={
+                    "voice_id": voice_id or self.config.voice_id,
+                    "model_id": model,
+                    "settings": settings.dict()
+                }
+            )
+            
+            logger.info(f"Synthesis completed. Audio size: {len(audio_data)} bytes")
+            return result
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"API request failed: {e}")
+            if hasattr(e.response, 'text'):
+                logger.error(f"Response: {e.response.text}")
+            raise RuntimeError(f"TTS synthesis failed: {e}")
+    
+    def synthesize_stream(
+        self,
+        text: str,
+        voice_id: Optional[str] = None,
+        voice_settings: Optional[VoiceSettings] = None,
+        model_id: Optional[str] = None,
+        **kwargs
+    ) -> Iterator[bytes]:
+        """
+        Synthesize text to speech with streaming output.
+        
+        Args:
+            text: Text to synthesize
+            voice_id: Voice ID (overrides config)
+            voice_settings: Voice settings (overrides config)
+            model_id: Model ID (overrides config)
+            **kwargs: Additional API parameters
+            
+        Yields:
+            Audio data chunks (bytes)
+            
+        Example:
+            >>> for chunk in tts.synthesize_stream("Long text here..."):
+            ...     audio_file.write(chunk)
+        """
+        url = self._get_voice_url(voice_id)
+        
+        settings = voice_settings or self.config.voice_settings
+        model = model_id or self.config.model_id
+        
+        payload = {
+            "text": text,
+            "model_id": model,
+            "voice_settings": settings.dict(),
+            **kwargs
+        }
+        
+        logger.info(f"Streaming synthesis for text (length: {len(text)} chars)")
+        
+        try:
+            response = self.session.post(
+                url,
+                json=payload,
+                stream=True,
+                timeout=30
+            )
+            response.raise_for_status()
+            
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    yield chunk
+                    
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Streaming API request failed: {e}")
+            raise RuntimeError(f"TTS streaming failed: {e}")
+    
+    def get_voices(self) -> list[Dict[str, Any]]:
+        """
+        Get list of available voices.
+        
+        Returns:
+            List of voice dictionaries with id, name, and other metadata
+            
+        Example:
+            >>> voices = tts.get_voices()
+            >>> for voice in voices:
+            ...     print(f"{voice['name']}: {voice['voice_id']}")
+        """
+        url = f"{self.BASE_URL}/voices"
+        
+        try:
+            response = self.session.get(url, timeout=10)
+            response.raise_for_status()
+            
+            data = response.json()
+            voices = data.get("voices", [])
+            
+            logger.info(f"Retrieved {len(voices)} voices")
+            return voices
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to get voices: {e}")
+            raise RuntimeError(f"Failed to retrieve voices: {e}")
+    
+    def get_voice_by_name(self, name: str) -> Optional[Dict[str, Any]]:
+        """
+        Get voice by name.
+        
+        Args:
+            name: Voice name (case-insensitive)
+            
+        Returns:
+            Voice dictionary or None if not found
+        """
+        voices = self.get_voices()
+        
+        for voice in voices:
+            if voice.get("name", "").lower() == name.lower():
+                return voice
+        
+        return None
+    
+    def synthesize_to_file(
+        self,
+        text: str,
+        output_path: Union[str, Path],
+        voice_id: Optional[str] = None,
+        **kwargs
+    ) -> TTSResult:
+        """
+        Synthesize text and save directly to file.
+        
+        Args:
+            text: Text to synthesize
+            output_path: Path where to save the audio file
+            voice_id: Voice ID (overrides config)
+            **kwargs: Additional synthesis parameters
+            
+        Returns:
+            TTSResult object
+            
+        Example:
+            >>> result = tts.synthesize_to_file("Hello!", "output.mp3")
+        """
+        result = self.synthesize(text, voice_id=voice_id, **kwargs)
+        result.save(output_path)
+        return result
+
+
+# Example usage
+if __name__ == "__main__":
+    # Initialize TTS service
+    # Option 1: With API key directly
+    # tts = {{TTS_CLASS_NAME}}(api_key="{{API_KEY}}")
+    
+    # Option 2: With config
+    # config = TTSConfig(
+    #     api_key="{{API_KEY}}",
+    #     voice_id="{{VOICE_ID}}",
+    #     model_id="{{MODEL_ID}}",
+    #     voice_settings=VoiceSettings(
+    #         stability={{STABILITY}},
+    #         similarity_boost={{SIMILARITY_BOOST}}
+    #     )
+    # )
+    # tts = {{TTS_CLASS_NAME}}(config=config)
+    
+    # Synthesize text
+    # result = tts.synthesize("{{EXAMPLE_TEXT}}")
+    # result.save("{{OUTPUT_FILE}}")
+    
+    # Get available voices
+    # voices = tts.get_voices()
+    # print(f"Available voices: {len(voices)}")
+    # for voice in voices[:5]:  # Show first 5
+    #     print(f"  - {voice['name']}: {voice['voice_id']}")
+    
+    # Stream synthesis
+    # with open("streamed_output.mp3", "wb") as f:
+    #     for chunk in tts.synthesize_stream("{{LONG_TEXT}}"):
+    #         f.write(chunk)

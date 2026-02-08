@@ -1,0 +1,510 @@
+"""
+{{VECTOR_STORE_NAME}} - Vector Store Setup and Management
+
+Purpose: {{VECTOR_STORE_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Vector stores maintain source attribution
+- A3 (Transparency): Search parameters and indexing are explicit
+
+This module provides vector store implementations for:
+- ChromaDB (embedded/local)
+- Qdrant (production-ready)
+- FAISS (in-memory)
+"""
+
+from typing import List, Optional, Dict, Any, Union
+from langchain_core.documents import Document
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import (
+    Chroma,
+    Qdrant,
+    FAISS
+)
+from qdrant_client import QdrantClient
+from qdrant_client.models import (
+    Distance,
+    VectorParams,
+    PointStruct,
+    Filter,
+    FieldCondition,
+    MatchValue
+)
+from pydantic import BaseModel, Field
+import logging
+import os
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class VectorStoreConfig(BaseModel):
+    """Configuration for vector store."""
+    store_type: str = Field(default="{{STORE_TYPE}}", description="Type: 'chroma', 'qdrant', or 'faiss'")
+    collection_name: str = Field(default="{{COLLECTION_NAME}}", description="Collection/index name")
+    embedding_model: str = Field(default="{{EMBEDDING_MODEL}}", description="Embedding model name")
+    persist_directory: Optional[str] = Field(default="{{PERSIST_DIRECTORY}}", description="Persist directory path")
+    distance_metric: str = Field(default="cosine", description="Distance metric: 'cosine', 'euclidean', 'dot'")
+    
+    # Qdrant-specific
+    qdrant_url: Optional[str] = Field(default="{{QDRANT_URL}}", description="Qdrant server URL")
+    qdrant_api_key: Optional[str] = Field(default=None, description="Qdrant API key (for cloud)")
+    
+    # ChromaDB-specific
+    chroma_client_type: str = Field(default="persistent", description="'persistent' or 'http'")
+
+
+class VectorStoreResult(BaseModel):
+    """Result from vector store operation."""
+    success: bool = Field(description="Whether operation succeeded")
+    message: str = Field(description="Result message")
+    num_documents: Optional[int] = Field(default=None, description="Number of documents")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+
+
+class {{VECTOR_STORE_CLASS_NAME}}:
+    """
+    {{VECTOR_STORE_NAME}} - Vector Store Manager
+    
+    Manages vector stores for RAG systems with support for multiple backends.
+    
+    Supported Stores:
+    1. ChromaDB: Easy setup, good for prototyping
+    2. Qdrant: Production-ready, advanced features
+    3. FAISS: Fast in-memory search
+    
+    Example:
+        >>> store = {{VECTOR_STORE_CLASS_NAME}}(config=VectorStoreConfig(store_type="chroma"))
+        >>> store.add_documents(documents)
+        >>> results = store.similarity_search("query", k=5)
+    """
+    
+    def __init__(self, config: Optional[VectorStoreConfig] = None):
+        """
+        Initialize vector store.
+        
+        Args:
+            config: Vector store configuration
+        """
+        self.config = config or VectorStoreConfig()
+        self.embeddings = OpenAIEmbeddings(model=self.config.embedding_model)
+        self.vector_store: Optional[Union[Chroma, Qdrant, FAISS]] = None
+        self._initialize_store()
+        
+        logger.info(f"Initialized {{VECTOR_STORE_NAME}} with {self.config.store_type}")
+    
+    def _initialize_store(self) -> None:
+        """Initialize the vector store based on configuration."""
+        if self.config.store_type == "chroma":
+            self._init_chroma()
+        elif self.config.store_type == "qdrant":
+            self._init_qdrant()
+        elif self.config.store_type == "faiss":
+            self._init_faiss()
+        else:
+            raise ValueError(f"Unknown store type: {self.config.store_type}")
+    
+    def _init_chroma(self) -> None:
+        """Initialize ChromaDB vector store."""
+        persist_dir = self.config.persist_directory or "./chroma_db"
+        
+        # Check if collection exists
+        if os.path.exists(persist_dir) and os.listdir(persist_dir):
+            logger.info(f"Loading existing ChromaDB collection from {persist_dir}")
+            self.vector_store = Chroma(
+                persist_directory=persist_dir,
+                embedding_function=self.embeddings,
+                collection_name=self.config.collection_name
+            )
+        else:
+            logger.info(f"Creating new ChromaDB collection at {persist_dir}")
+            # Will be created when documents are added
+            self.vector_store = None
+    
+    def _init_qdrant(self) -> None:
+        """Initialize Qdrant vector store."""
+        # Determine Qdrant client
+        if self.config.qdrant_url:
+            if self.config.qdrant_api_key:
+                # Cloud Qdrant
+                client = QdrantClient(
+                    url=self.config.qdrant_url,
+                    api_key=self.config.qdrant_api_key
+                )
+            else:
+                # Local Qdrant server
+                client = QdrantClient(url=self.config.qdrant_url)
+        else:
+            # Local file-based Qdrant
+            persist_dir = self.config.persist_directory or "./qdrant_db"
+            client = QdrantClient(path=persist_dir)
+        
+        # Check if collection exists
+        try:
+            collection_info = client.get_collection(self.config.collection_name)
+            logger.info(f"Using existing Qdrant collection: {self.config.collection_name}")
+        except Exception:
+            # Create collection
+            logger.info(f"Creating new Qdrant collection: {self.config.collection_name}")
+            vector_size = 1536  # OpenAI default, adjust if needed
+            
+            distance_map = {
+                "cosine": Distance.COSINE,
+                "euclidean": Distance.EUCLID,
+                "dot": Distance.DOT
+            }
+            
+            client.create_collection(
+                collection_name=self.config.collection_name,
+                vectors_config=VectorParams(
+                    size=vector_size,
+                    distance=distance_map.get(self.config.distance_metric, Distance.COSINE)
+                )
+            )
+        
+        # Initialize LangChain Qdrant wrapper
+        self.vector_store = Qdrant(
+            client=client,
+            collection_name=self.config.collection_name,
+            embeddings=self.embeddings
+        )
+    
+    def _init_faiss(self) -> None:
+        """Initialize FAISS vector store."""
+        # FAISS is in-memory, will be created when documents are added
+        logger.info("FAISS store will be created when documents are added")
+        self.vector_store = None
+    
+    def add_documents(
+        self,
+        documents: List[Document],
+        ids: Optional[List[str]] = None
+    ) -> VectorStoreResult:
+        """
+        Add documents to the vector store.
+        
+        Args:
+            documents: List of documents to add
+            ids: Optional list of document IDs
+        
+        Returns:
+            VectorStoreResult with operation status
+            
+        Example:
+            >>> result = store.add_documents(docs)
+            >>> print(f"Added {result.num_documents} documents")
+        """
+        if not documents:
+            return VectorStoreResult(
+                success=False,
+                message="No documents provided",
+                num_documents=0
+            )
+        
+        try:
+            if self.config.store_type == "chroma":
+                if self.vector_store is None:
+                    persist_dir = self.config.persist_directory or "./chroma_db"
+                    self.vector_store = Chroma.from_documents(
+                        documents=documents,
+                        embedding=self.embeddings,
+                        persist_directory=persist_dir,
+                        collection_name=self.config.collection_name,
+                        ids=ids
+                    )
+                else:
+                    self.vector_store.add_documents(documents, ids=ids)
+            
+            elif self.config.store_type == "qdrant":
+                if self.vector_store is None:
+                    raise ValueError("Qdrant store not initialized")
+                self.vector_store.add_documents(documents, ids=ids)
+            
+            elif self.config.store_type == "faiss":
+                if self.vector_store is None:
+                    self.vector_store = FAISS.from_documents(
+                        documents=documents,
+                        embedding=self.embeddings
+                    )
+                else:
+                    self.vector_store.add_documents(documents, ids=ids)
+            
+            num_docs = len(documents)
+            logger.info(f"Added {num_docs} documents to {self.config.store_type}")
+            
+            return VectorStoreResult(
+                success=True,
+                message=f"Successfully added {num_docs} documents",
+                num_documents=num_docs
+            )
+            
+        except Exception as e:
+            logger.error(f"Error adding documents: {e}")
+            return VectorStoreResult(
+                success=False,
+                message=f"Error: {str(e)}",
+                num_documents=0
+            )
+    
+    def similarity_search(
+        self,
+        query: str,
+        k: int = 4,
+        filter: Optional[Dict[str, Any]] = None
+    ) -> List[Document]:
+        """
+        Perform similarity search.
+        
+        Args:
+            query: Search query text
+            k: Number of results to return
+            filter: Optional metadata filter
+        
+        Returns:
+            List of similar documents
+            
+        Example:
+            >>> results = store.similarity_search("machine learning", k=5)
+            >>> for doc in results:
+            ...     print(doc.page_content[:100])
+        """
+        if self.vector_store is None:
+            raise ValueError("Vector store not initialized. Add documents first.")
+        
+        if filter:
+            return self.vector_store.similarity_search(
+                query=query,
+                k=k,
+                filter=filter
+            )
+        else:
+            return self.vector_store.similarity_search(query=query, k=k)
+    
+    def similarity_search_with_score(
+        self,
+        query: str,
+        k: int = 4,
+        filter: Optional[Dict[str, Any]] = None
+    ) -> List[tuple[Document, float]]:
+        """
+        Perform similarity search with scores.
+        
+        Args:
+            query: Search query text
+            k: Number of results to return
+            filter: Optional metadata filter
+        
+        Returns:
+            List of (document, score) tuples
+            
+        Example:
+            >>> results = store.similarity_search_with_score("query", k=5)
+            >>> for doc, score in results:
+            ...     print(f"Score: {score:.4f}, Content: {doc.page_content[:50]}")
+        """
+        if self.vector_store is None:
+            raise ValueError("Vector store not initialized. Add documents first.")
+        
+        if filter:
+            return self.vector_store.similarity_search_with_score(
+                query=query,
+                k=k,
+                filter=filter
+            )
+        else:
+            return self.vector_store.similarity_search_with_score(query=query, k=k)
+    
+    def max_marginal_relevance_search(
+        self,
+        query: str,
+        k: int = 4,
+        fetch_k: int = 20,
+        lambda_mult: float = 0.5
+    ) -> List[Document]:
+        """
+        Perform MMR (Maximum Marginal Relevance) search for diversity.
+        
+        Args:
+            query: Search query text
+            k: Number of results to return
+            fetch_k: Number of candidates to fetch before diversifying
+            lambda_mult: Diversity parameter (0=max diversity, 1=max relevance)
+        
+        Returns:
+            List of diverse documents
+            
+        Example:
+            >>> results = store.max_marginal_relevance_search("query", k=5, lambda_mult=0.5)
+        """
+        if self.vector_store is None:
+            raise ValueError("Vector store not initialized. Add documents first.")
+        
+        return self.vector_store.max_marginal_relevance_search(
+            query=query,
+            k=k,
+            fetch_k=fetch_k,
+            lambda_mult=lambda_mult
+        )
+    
+    def as_retriever(
+        self,
+        search_type: str = "similarity",
+        search_kwargs: Optional[Dict[str, Any]] = None
+    ):
+        """
+        Get a retriever interface for LangChain chains.
+        
+        Args:
+            search_type: "similarity" or "mmr"
+            search_kwargs: Additional search parameters
+        
+        Returns:
+            Retriever object
+            
+        Example:
+            >>> retriever = store.as_retriever(search_kwargs={"k": 5})
+            >>> docs = retriever.invoke("query")
+        """
+        if self.vector_store is None:
+            raise ValueError("Vector store not initialized. Add documents first.")
+        
+        return self.vector_store.as_retriever(
+            search_type=search_type,
+            search_kwargs=search_kwargs or {}
+        )
+    
+    def delete_collection(self) -> VectorStoreResult:
+        """
+        Delete the collection/index.
+        
+        Returns:
+            VectorStoreResult with operation status
+            
+        Warning:
+            This permanently deletes all data in the collection!
+        """
+        try:
+            if self.config.store_type == "chroma":
+                # ChromaDB deletion
+                if self.vector_store:
+                    # Delete collection
+                    import chromadb
+                    client = chromadb.PersistentClient(
+                        path=self.config.persist_directory or "./chroma_db"
+                    )
+                    client.delete_collection(name=self.config.collection_name)
+                    self.vector_store = None
+            
+            elif self.config.store_type == "qdrant":
+                # Qdrant deletion
+                if self.vector_store and hasattr(self.vector_store, "client"):
+                    self.vector_store.client.delete_collection(
+                        collection_name=self.config.collection_name
+                    )
+                    self.vector_store = None
+            
+            elif self.config.store_type == "faiss":
+                # FAISS is in-memory, just reset
+                self.vector_store = None
+            
+            logger.warning(f"Deleted collection: {self.config.collection_name}")
+            
+            return VectorStoreResult(
+                success=True,
+                message=f"Collection {self.config.collection_name} deleted"
+            )
+            
+        except Exception as e:
+            logger.error(f"Error deleting collection: {e}")
+            return VectorStoreResult(
+                success=False,
+                message=f"Error: {str(e)}"
+            )
+    
+    def get_collection_info(self) -> Dict[str, Any]:
+        """
+        Get information about the collection.
+        
+        Returns:
+            Dictionary with collection metadata
+        """
+        info = {
+            "store_type": self.config.store_type,
+            "collection_name": self.config.collection_name,
+            "embedding_model": self.config.embedding_model
+        }
+        
+        if self.vector_store:
+            try:
+                if self.config.store_type == "chroma":
+                    # Get collection count
+                    collection = self.vector_store._collection
+                    info["num_documents"] = collection.count()
+                
+                elif self.config.store_type == "qdrant":
+                    # Get Qdrant collection info
+                    if hasattr(self.vector_store, "client"):
+                        collection_info = self.vector_store.client.get_collection(
+                            self.config.collection_name
+                        )
+                        info["num_vectors"] = collection_info.vectors_count
+                        info["indexed"] = collection_info.indexed_vectors_count
+                
+                elif self.config.store_type == "faiss":
+                    if hasattr(self.vector_store, "index"):
+                        info["num_vectors"] = self.vector_store.index.ntotal
+            
+            except Exception as e:
+                logger.warning(f"Could not get collection info: {e}")
+                info["error"] = str(e)
+        
+        return info
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create vector store
+    config = VectorStoreConfig(
+        store_type="{{STORE_TYPE}}",
+        collection_name="{{COLLECTION_NAME}}",
+        persist_directory="{{PERSIST_DIRECTORY}}"
+    )
+    
+    store = {{VECTOR_STORE_CLASS_NAME}}(config=config)
+    
+    # Add documents
+    documents = [
+        Document(
+            page_content="{{EXAMPLE_DOCUMENT_1}}",
+            metadata={"source": "doc1.txt", "page": 1}
+        ),
+        Document(
+            page_content="{{EXAMPLE_DOCUMENT_2}}",
+            metadata={"source": "doc2.txt", "page": 1}
+        )
+    ]
+    
+    result = store.add_documents(documents)
+    print(f"Add result: {result.message}")
+    
+    # Search
+    print("\n=== Similarity Search ===")
+    results = store.similarity_search("{{EXAMPLE_QUERY}}", k=3)
+    for i, doc in enumerate(results):
+        print(f"\nResult {i+1}:")
+        print(f"Source: {doc.metadata.get('source', 'unknown')}")
+        print(f"Content: {doc.page_content[:100]}...")
+    
+    # Search with scores
+    print("\n=== Similarity Search with Scores ===")
+    results_with_scores = store.similarity_search_with_score("{{EXAMPLE_QUERY}}", k=3)
+    for doc, score in results_with_scores:
+        print(f"Score: {score:.4f} - {doc.page_content[:50]}...")
+    
+    # Collection info
+    print("\n=== Collection Info ===")
+    info = store.get_collection_info()
+    for key, value in info.items():
+        print(f"{key}: {value}")

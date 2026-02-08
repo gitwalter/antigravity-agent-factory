@@ -1,0 +1,517 @@
+"""
+{{CONTEXT_BUILDER_NAME}} - Context Construction for RAG
+
+Purpose: {{CONTEXT_BUILDER_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Context includes source attribution
+- A3 (Transparency): Context construction process is explicit
+
+This module provides context building strategies:
+- Basic context formatting
+- Hierarchical context (parent-child)
+- Sliding window context
+- Context compression and summarization
+"""
+
+from typing import List, Optional, Dict, Any, Callable
+from langchain_core.documents import Document
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from pydantic import BaseModel, Field
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class ContextConfig(BaseModel):
+    """Configuration for context building."""
+    max_context_length: int = Field(default={{MAX_CONTEXT_LENGTH}}, description="Max characters in context")
+    include_metadata: bool = Field(default={{INCLUDE_METADATA}}, description="Include metadata in context")
+    citation_format: str = Field(default="[Source {i}]", description="Citation format")
+    separator: str = Field(default="\n\n", description="Separator between chunks")
+    max_chunks: Optional[int] = Field(default=None, description="Max number of chunks to include")
+
+
+class ContextResult(BaseModel):
+    """Result from context building."""
+    context: str = Field(description="Formatted context string")
+    num_chunks: int = Field(description="Number of chunks included")
+    total_length: int = Field(description="Total character length")
+    sources: List[str] = Field(description="Source identifiers")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+
+
+class {{CONTEXT_BUILDER_CLASS_NAME}}:
+    """
+    {{CONTEXT_BUILDER_NAME}} - Context Construction for RAG
+    
+    Builds context strings from retrieved documents with various strategies
+    for formatting, compression, and organization.
+    
+    Strategies:
+    1. Basic: Simple concatenation with citations
+    2. Hierarchical: Parent-child context structure
+    3. Sliding Window: Overlapping context windows
+    4. Compressed: Summarized context
+    
+    Example:
+        >>> builder = {{CONTEXT_BUILDER_CLASS_NAME}}()
+        >>> result = builder.build_context(documents)
+        >>> print(result.context)
+    """
+    
+    def __init__(self, config: Optional[ContextConfig] = None):
+        """
+        Initialize context builder.
+        
+        Args:
+            config: Context building configuration
+        """
+        self.config = config or ContextConfig()
+        self.llm: Optional[ChatOpenAI] = None
+        
+        logger.info(f"Initialized {{CONTEXT_BUILDER_NAME}} with max_length={self.config.max_context_length}")
+    
+    def build_context(
+        self,
+        documents: List[Document],
+        query: Optional[str] = None
+    ) -> ContextResult:
+        """
+        Build context from documents using basic strategy.
+        
+        Args:
+            documents: List of retrieved documents
+            query: Optional query for relevance-based ordering
+        
+        Returns:
+            ContextResult with formatted context
+            
+        Example:
+            >>> result = builder.build_context(docs, query="machine learning")
+            >>> context = result.context
+        """
+        if not documents:
+            return ContextResult(
+                context="",
+                num_chunks=0,
+                total_length=0,
+                sources=[],
+                metadata={"strategy": "basic"}
+            )
+        
+        # Limit chunks if specified
+        docs_to_use = documents
+        if self.config.max_chunks:
+            docs_to_use = documents[:self.config.max_chunks]
+        
+        # Build context with citations
+        context_parts = []
+        sources = []
+        
+        for i, doc in enumerate(docs_to_use):
+            source = doc.metadata.get("source", f"Document {i+1}")
+            sources.append(source)
+            
+            citation = self.config.citation_format.format(i=i+1, source=source)
+            
+            # Build chunk text
+            chunk_text = doc.page_content
+            
+            if self.config.include_metadata:
+                metadata_str = ", ".join([
+                    f"{k}: {v}" for k, v in doc.metadata.items()
+                    if k != "source"
+                ])
+                if metadata_str:
+                    chunk_text = f"{chunk_text}\n(Metadata: {metadata_str})"
+            
+            context_parts.append(f"{citation}\n{chunk_text}")
+        
+        context = self.config.separator.join(context_parts)
+        
+        # Truncate if too long
+        if len(context) > self.config.max_context_length:
+            context = context[:self.config.max_context_length]
+            context = context.rsplit(self.config.separator, 1)[0]  # Keep complete chunks
+            logger.warning(f"Context truncated to {len(context)} characters")
+        
+        return ContextResult(
+            context=context,
+            num_chunks=len(docs_to_use),
+            total_length=len(context),
+            sources=sources,
+            metadata={"strategy": "basic"}
+        )
+    
+    def build_hierarchical_context(
+        self,
+        documents: List[Document],
+        parent_docs: Optional[List[Document]] = None
+    ) -> ContextResult:
+        """
+        Build hierarchical context with parent-child structure.
+        
+        Args:
+            documents: Child documents (retrieved chunks)
+            parent_docs: Parent documents (broader context)
+        
+        Returns:
+            ContextResult with hierarchical context
+            
+        Example:
+            >>> result = builder.build_hierarchical_context(child_docs, parent_docs)
+        """
+        if not documents:
+            return ContextResult(
+                context="",
+                num_chunks=0,
+                total_length=0,
+                sources=[],
+                metadata={"strategy": "hierarchical"}
+            )
+        
+        context_parts = []
+        sources = []
+        
+        # Add child documents first (more specific)
+        for i, doc in enumerate(documents):
+            source = doc.metadata.get("source", f"Document {i+1}")
+            parent_id = doc.metadata.get("parent_id", "unknown")
+            
+            sources.append(source)
+            citation = self.config.citation_format.format(i=i+1, source=source)
+            
+            context_parts.append(
+                f"{citation} (from {parent_id})\n{doc.page_content}"
+            )
+        
+        # Add parent documents for broader context
+        if parent_docs:
+            context_parts.append("\n--- Broader Context ---")
+            for i, parent_doc in enumerate(parent_docs[:3]):  # Limit parents
+                parent_source = parent_doc.metadata.get("source", f"Parent {i+1}")
+                context_parts.append(
+                    f"[Parent {i+1}] ({parent_source})\n{parent_doc.page_content[:500]}..."
+                )
+        
+        context = self.config.separator.join(context_parts)
+        
+        # Truncate if needed
+        if len(context) > self.config.max_context_length:
+            context = context[:self.config.max_context_length]
+            context = context.rsplit(self.config.separator, 1)[0]
+        
+        return ContextResult(
+            context=context,
+            num_chunks=len(documents) + (len(parent_docs) if parent_docs else 0),
+            total_length=len(context),
+            sources=sources,
+            metadata={
+                "strategy": "hierarchical",
+                "num_children": len(documents),
+                "num_parents": len(parent_docs) if parent_docs else 0
+            }
+        )
+    
+    def build_sliding_window_context(
+        self,
+        documents: List[Document],
+        window_size: int = 3,
+        overlap: int = 1
+    ) -> ContextResult:
+        """
+        Build context with sliding window approach.
+        
+        Creates overlapping windows of context for better continuity.
+        
+        Args:
+            documents: List of documents
+            window_size: Number of documents per window
+            overlap: Number of overlapping documents between windows
+        
+        Returns:
+            ContextResult with sliding window context
+            
+        Example:
+            >>> result = builder.build_sliding_window_context(docs, window_size=3, overlap=1)
+        """
+        if not documents:
+            return ContextResult(
+                context="",
+                num_chunks=0,
+                total_length=0,
+                sources=[],
+                metadata={"strategy": "sliding_window"}
+            )
+        
+        context_parts = []
+        sources = []
+        
+        # Create sliding windows
+        i = 0
+        window_num = 1
+        
+        while i < len(documents):
+            window_docs = documents[i:i+window_size]
+            
+            window_parts = []
+            for j, doc in enumerate(window_docs):
+                source = doc.metadata.get("source", f"Doc {i+j+1}")
+                if source not in sources:
+                    sources.append(source)
+                
+                citation = self.config.citation_format.format(
+                    i=i+j+1,
+                    source=source
+                )
+                window_parts.append(f"{citation}\n{doc.page_content}")
+            
+            context_parts.append(
+                f"--- Window {window_num} ---\n"
+                + self.config.separator.join(window_parts)
+            )
+            
+            i += window_size - overlap
+            window_num += 1
+            
+            if i >= len(documents):
+                break
+        
+        context = self.config.separator.join(context_parts)
+        
+        if len(context) > self.config.max_context_length:
+            context = context[:self.config.max_context_length]
+            context = context.rsplit(self.config.separator, 1)[0]
+        
+        return ContextResult(
+            context=context,
+            num_chunks=len(documents),
+            total_length=len(context),
+            sources=sources,
+            metadata={
+                "strategy": "sliding_window",
+                "window_size": window_size,
+                "overlap": overlap,
+                "num_windows": window_num - 1
+            }
+        )
+    
+    def build_compressed_context(
+        self,
+        documents: List[Document],
+        query: str,
+        compression_ratio: float = 0.5
+    ) -> ContextResult:
+        """
+        Build compressed context by summarizing documents.
+        
+        Uses LLM to summarize and compress context while preserving key information.
+        
+        Args:
+            documents: List of documents to compress
+            query: Query for relevance-guided compression
+            compression_ratio: Target compression ratio (0.0-1.0)
+        
+        Returns:
+            ContextResult with compressed context
+            
+        Example:
+            >>> result = builder.build_compressed_context(docs, query="machine learning", compression_ratio=0.6)
+        """
+        if not documents:
+            return ContextResult(
+                context="",
+                num_chunks=0,
+                total_length=0,
+                sources=[],
+                metadata={"strategy": "compressed"}
+            )
+        
+        if self.llm is None:
+            self.llm = ChatOpenAI(model="{{MODEL_NAME}}", temperature=0)
+        
+        # Build initial context
+        initial_context = self.build_context(documents, query)
+        
+        # Compress if needed
+        if len(initial_context.context) <= self.config.max_context_length:
+            return initial_context
+        
+        # Summarize each document
+        summarize_prompt = ChatPromptTemplate.from_template("""
+Summarize the following document, focusing on information relevant to the query.
+Keep the summary concise but preserve key facts and details.
+
+Query: {query}
+
+Document:
+{document}
+
+Summary:""")
+        
+        compressed_parts = []
+        sources = []
+        
+        for i, doc in enumerate(documents):
+            source = doc.metadata.get("source", f"Document {i+1}")
+            sources.append(source)
+            
+            summary_chain = summarize_prompt | self.llm
+            summary = summary_chain.invoke({
+                "query": query,
+                "document": doc.page_content
+            }).content
+            
+            citation = self.config.citation_format.format(i=i+1, source=source)
+            compressed_parts.append(f"{citation}\n{summary}")
+        
+        context = self.config.separator.join(compressed_parts)
+        
+        # Further truncate if still too long
+        if len(context) > self.config.max_context_length:
+            target_length = int(self.config.max_context_length * compression_ratio)
+            context = context[:target_length]
+            context = context.rsplit(self.config.separator, 1)[0]
+        
+        return ContextResult(
+            context=context,
+            num_chunks=len(documents),
+            total_length=len(context),
+            sources=sources,
+            metadata={
+                "strategy": "compressed",
+                "compression_ratio": compression_ratio,
+                "original_length": len(initial_context.context)
+            }
+        )
+    
+    def build_relevance_ordered_context(
+        self,
+        documents: List[Document],
+        query: str,
+        scores: Optional[List[float]] = None
+    ) -> ContextResult:
+        """
+        Build context ordered by relevance scores.
+        
+        Args:
+            documents: List of documents
+            query: Query string
+            scores: Optional relevance scores (if None, uses document order)
+        
+        Returns:
+            ContextResult with relevance-ordered context
+            
+        Example:
+            >>> result = builder.build_relevance_ordered_context(docs, query, scores=[0.9, 0.7, 0.5])
+        """
+        if not documents:
+            return ContextResult(
+                context="",
+                num_chunks=0,
+                total_length=0,
+                sources=[],
+                metadata={"strategy": "relevance_ordered"}
+            )
+        
+        # Sort by scores if provided
+        if scores and len(scores) == len(documents):
+            sorted_docs = sorted(
+                zip(documents, scores),
+                key=lambda x: x[1],
+                reverse=True
+            )
+            documents = [doc for doc, score in sorted_docs]
+            scores = [score for doc, score in sorted_docs]
+        else:
+            scores = [1.0] * len(documents)
+        
+        context_parts = []
+        sources = []
+        
+        for i, (doc, score) in enumerate(zip(documents, scores)):
+            source = doc.metadata.get("source", f"Document {i+1}")
+            sources.append(source)
+            
+            citation = self.config.citation_format.format(i=i+1, source=source)
+            relevance_note = f" (Relevance: {score:.3f})" if scores else ""
+            
+            context_parts.append(
+                f"{citation}{relevance_note}\n{doc.page_content}"
+            )
+        
+        context = self.config.separator.join(context_parts)
+        
+        if len(context) > self.config.max_context_length:
+            context = context[:self.config.max_context_length]
+            context = context.rsplit(self.config.separator, 1)[0]
+        
+        return ContextResult(
+            context=context,
+            num_chunks=len(documents),
+            total_length=len(context),
+            sources=sources,
+            metadata={
+                "strategy": "relevance_ordered",
+                "scores": scores[:len(documents)]
+            }
+        )
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create context builder
+    config = ContextConfig(
+        max_context_length={{MAX_CONTEXT_LENGTH}},
+        include_metadata={{INCLUDE_METADATA}},
+        citation_format="[Source {i}]"
+    )
+    
+    builder = {{CONTEXT_BUILDER_CLASS_NAME}}(config=config)
+    
+    # Example documents
+    documents = [
+        Document(
+            page_content="{{EXAMPLE_CHUNK_1}}",
+            metadata={"source": "doc1.txt", "page": 1}
+        ),
+        Document(
+            page_content="{{EXAMPLE_CHUNK_2}}",
+            metadata={"source": "doc2.txt", "page": 2}
+        ),
+        Document(
+            page_content="{{EXAMPLE_CHUNK_3}}",
+            metadata={"source": "doc3.txt", "page": 3}
+        )
+    ]
+    
+    # Test different strategies
+    print("=== Basic Context ===")
+    result1 = builder.build_context(documents, query="{{EXAMPLE_QUERY}}")
+    print(f"Context length: {result1.total_length}")
+    print(f"Number of chunks: {result1.num_chunks}")
+    print(f"Sources: {result1.sources}")
+    print(f"\nContext preview:\n{result1.context[:200]}...")
+    
+    print("\n=== Relevance Ordered Context ===")
+    scores = [0.9, 0.7, 0.5]
+    result2 = builder.build_relevance_ordered_context(
+        documents,
+        query="{{EXAMPLE_QUERY}}",
+        scores=scores
+    )
+    print(f"Context with relevance scores")
+    print(f"Metadata: {result2.metadata}")
+    
+    print("\n=== Sliding Window Context ===")
+    result3 = builder.build_sliding_window_context(
+        documents,
+        window_size=2,
+        overlap=1
+    )
+    print(f"Created {result3.metadata['num_windows']} windows")

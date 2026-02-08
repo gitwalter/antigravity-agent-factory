@@ -1,0 +1,213 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Data Engineering Patterns",
+  "description": "Best practices and patterns for data engineering pipelines, ETL workflows, and data quality",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns include data validation and quality checks",
+    "A3_transparency": "All patterns emphasize reproducible pipelines and data lineage"
+  },
+  "etl_patterns": {
+    "extract_patterns": {
+      "description": "Extract data from various sources",
+      "use_when": "Building data ingestion pipelines",
+      "code_example": "import pandas as pd\nfrom sqlalchemy import create_engine\nimport requests\nimport json\n\n# Extract from database\ndef extract_from_db(query, connection_string):\n    engine = create_engine(connection_string)\n    df = pd.read_sql(query, con=engine)\n    engine.dispose()\n    return df\n\n# Extract from API\ndef extract_from_api(url, params=None):\n    response = requests.get(url, params=params)\n    response.raise_for_status()\n    return response.json()\n\n# Extract from file\ndef extract_from_file(file_path, file_type='csv'):\n    if file_type == 'csv':\n        return pd.read_csv(file_path)\n    elif file_type == 'json':\n        return pd.read_json(file_path)\n    elif file_type == 'parquet':\n        return pd.read_parquet(file_path)\n    else:\n        raise ValueError(f'Unsupported file type: {file_type}')\n\n# Extract from S3\ndef extract_from_s3(bucket, key):\n    import boto3\n    s3 = boto3.client('s3')\n    obj = s3.get_object(Bucket=bucket, Key=key)\n    return pd.read_parquet(obj['Body'])",
+      "best_practices": [
+        "Handle connection errors gracefully",
+        "Use connection pooling for databases",
+        "Implement retry logic for API calls",
+        "Validate extracted data structure",
+        "Log extraction metadata"
+      ]
+    },
+    "transform_patterns": {
+      "description": "Transform data according to business rules",
+      "use_when": "Cleaning, enriching, or reshaping data",
+      "code_example": "import pandas as pd\nimport numpy as np\n\ndef transform_data(df):\n    \"\"\"Apply transformations to data\"\"\"\n    # Clean data\n    df_clean = df.copy()\n    \n    # Remove duplicates\n    df_clean = df_clean.drop_duplicates()\n    \n    # Handle missing values\n    df_clean['col'] = df_clean['col'].fillna(df_clean['col'].median())\n    \n    # Type conversions\n    df_clean['date'] = pd.to_datetime(df_clean['date'])\n    df_clean['amount'] = pd.to_numeric(df_clean['amount'], errors='coerce')\n    \n    # Derived columns\n    df_clean['year'] = df_clean['date'].dt.year\n    df_clean['month'] = df_clean['date'].dt.month\n    \n    # Aggregations\n    df_agg = df_clean.groupby('category').agg({\n        'amount': ['sum', 'mean', 'count']\n    })\n    \n    return df_clean, df_agg\n\n# Chained transformations\ndef pipeline_transform(df):\n    return (\n        df\n        .pipe(lambda x: x.drop_duplicates())\n        .pipe(lambda x: x.fillna(x.median()))\n        .pipe(lambda x: x.astype({'col': 'int64'}))\n        .pipe(lambda x: x.query('value > 0'))\n    )",
+      "best_practices": [
+        "Keep transformations idempotent",
+        "Use pipe() for chained transformations",
+        "Validate transformations",
+        "Handle errors gracefully",
+        "Document transformation logic"
+      ]
+    },
+    "load_patterns": {
+      "description": "Load transformed data to destination",
+      "use_when": "Storing processed data",
+      "code_example": "import pandas as pd\nfrom sqlalchemy import create_engine\nimport boto3\n\n# Load to database\ndef load_to_db(df, table_name, connection_string, if_exists='replace'):\n    engine = create_engine(connection_string)\n    df.to_sql(\n        table_name,\n        con=engine,\n        if_exists=if_exists,\n        index=False,\n        method='multi'\n    )\n    engine.dispose()\n\n# Load to S3\ndef load_to_s3(df, bucket, key, file_format='parquet'):\n    import boto3\n    s3 = boto3.client('s3')\n    \n    if file_format == 'parquet':\n        buffer = df.to_parquet()\n    elif file_format == 'csv':\n        buffer = df.to_csv(index=False).encode()\n    \n    s3.put_object(Bucket=bucket, Key=key, Body=buffer)\n\n# Load to file\ndef load_to_file(df, file_path, file_format='parquet'):\n    if file_format == 'parquet':\n        df.to_parquet(file_path, index=False)\n    elif file_format == 'csv':\n        df.to_csv(file_path, index=False)\n    elif file_format == 'json':\n        df.to_json(file_path, orient='records', indent=2)",
+      "best_practices": [
+        "Use appropriate file formats (Parquet for analytics)",
+        "Handle load failures gracefully",
+        "Implement upsert logic when needed",
+        "Validate data before loading",
+        "Log load metadata"
+      ]
+    },
+    "etl_pipeline": {
+      "description": "Complete ETL pipeline orchestration",
+      "use_when": "Building end-to-end data pipelines",
+      "code_example": "import logging\nfrom datetime import datetime\n\nlogging.basicConfig(level=logging.INFO)\nlogger = logging.getLogger(__name__)\n\nclass ETLPipeline:\n    def __init__(self, config):\n        self.config = config\n        self.run_id = datetime.now().strftime('%Y%m%d_%H%M%S')\n    \n    def extract(self):\n        logger.info(f'[{self.run_id}] Starting extraction')\n        try:\n            # Extract logic\n            data = extract_from_db(self.config['source_query'], self.config['source_db'])\n            logger.info(f'[{self.run_id}] Extracted {len(data)} rows')\n            return data\n        except Exception as e:\n            logger.error(f'[{self.run_id}] Extraction failed: {e}')\n            raise\n    \n    def transform(self, data):\n        logger.info(f'[{self.run_id}] Starting transformation')\n        try:\n            transformed = transform_data(data)\n            logger.info(f'[{self.run_id}] Transformation complete')\n            return transformed\n        except Exception as e:\n            logger.error(f'[{self.run_id}] Transformation failed: {e}')\n            raise\n    \n    def load(self, data):\n        logger.info(f'[{self.run_id}] Starting load')\n        try:\n            load_to_db(data, self.config['target_table'], self.config['target_db'])\n            logger.info(f'[{self.run_id}] Load complete')\n        except Exception as e:\n            logger.error(f'[{self.run_id}] Load failed: {e}')\n            raise\n    \n    def run(self):\n        try:\n            data = self.extract()\n            transformed = self.transform(data)\n            self.load(transformed)\n            logger.info(f'[{self.run_id}] Pipeline completed successfully')\n        except Exception as e:\n            logger.error(f'[{self.run_id}] Pipeline failed: {e}')\n            raise\n\n# Usage\nconfig = {\n    'source_query': 'SELECT * FROM source_table',\n    'source_db': 'postgresql://...',\n    'target_table': 'target_table',\n    'target_db': 'postgresql://...'\n}\n\npipeline = ETLPipeline(config)\npipeline.run()",
+      "best_practices": [
+        "Implement comprehensive logging",
+        "Handle errors at each stage",
+        "Use run IDs for tracking",
+        "Make pipeline idempotent",
+        "Validate data between stages"
+      ]
+    }
+  },
+  "data_validation": {
+    "schema_validation": {
+      "description": "Validate data against schema",
+      "use_when": "Ensuring data structure and types",
+      "code_example": "import pandas as pd\nfrom pandera import DataFrameSchema, Column, Check\nimport pandera as pa\n\n# Define schema\nschema = DataFrameSchema({\n    'id': Column(int, checks=Check.greater_than(0), nullable=False),\n    'name': Column(str, checks=Check.str_length(min_value=1, max_value=100)),\n    'email': Column(str, checks=Check.str_matches(r'^[\\w\\.-]+@[\\w\\.-]+\\.[a-zA-Z]{2,}$')),\n    'age': Column(int, checks=Check.in_range(0, 150), nullable=True),\n    'amount': Column(float, checks=Check.greater_than_or_equal_to(0)),\n    'date': Column(pd.Timestamp, nullable=False)\n})\n\n# Validate dataframe\ntry:\n    validated_df = schema.validate(df)\n    print('Validation passed')\nexcept pa.errors.SchemaError as e:\n    print(f'Validation failed: {e}')\n    raise\n\n# Using Great Expectations\nfrom great_expectations import expect\n\n# Define expectations\nexpectation_suite = {\n    'expect_column_to_exist': {'column': 'id'},\n    'expect_column_values_to_be_between': {\n        'column': 'age',\n        'min_value': 0,\n        'max_value': 150\n    },\n    'expect_column_values_to_not_be_null': {'column': 'email'}\n}\n\n# Validate\nexpectations = expect(df, expectation_suite)",
+      "best_practices": [
+        "Define schemas explicitly",
+        "Validate early in pipeline",
+        "Use libraries like pandera or Great Expectations",
+        "Document validation rules",
+        "Handle validation errors appropriately"
+      ]
+    },
+    "data_quality_checks": {
+      "description": "Perform data quality checks",
+      "use_when": "Ensuring data quality standards",
+      "code_example": "import pandas as pd\nimport numpy as np\n\nclass DataQualityChecker:\n    def __init__(self, df):\n        self.df = df\n        self.checks = []\n    \n    def check_completeness(self, threshold=0.95):\n        \"\"\"Check if data completeness meets threshold\"\"\"\n        completeness = 1 - (self.df.isnull().sum().sum() / (len(self.df) * len(self.df.columns)))\n        passed = completeness >= threshold\n        self.checks.append({\n            'check': 'completeness',\n            'value': completeness,\n            'threshold': threshold,\n            'passed': passed\n        })\n        return passed\n    \n    def check_uniqueness(self, column):\n        \"\"\"Check uniqueness of column\"\"\"\n        uniqueness = self.df[column].nunique() / len(self.df)\n        passed = uniqueness >= 0.95\n        self.checks.append({\n            'check': f'uniqueness_{column}',\n            'value': uniqueness,\n            'passed': passed\n        })\n        return passed\n    \n    def check_validity(self, column, valid_values=None):\n        \"\"\"Check if values are valid\"\"\"\n        if valid_values:\n            invalid = ~self.df[column].isin(valid_values)\n            validity = 1 - (invalid.sum() / len(self.df))\n        else:\n            validity = 1.0\n        \n        passed = validity >= 0.95\n        self.checks.append({\n            'check': f'validity_{column}',\n            'value': validity,\n            'passed': passed\n        })\n        return passed\n    \n    def check_consistency(self, column1, column2, relationship='equals'):\n        \"\"\"Check consistency between columns\"\"\"\n        if relationship == 'equals':\n            consistent = (self.df[column1] == self.df[column2]).sum() / len(self.df)\n        elif relationship == 'greater_than':\n            consistent = (self.df[column1] > self.df[column2]).sum() / len(self.df)\n        \n        passed = consistent >= 0.95\n        self.checks.append({\n            'check': f'consistency_{column1}_{column2}',\n            'value': consistent,\n            'passed': passed\n        })\n        return passed\n    \n    def get_report(self):\n        \"\"\"Get data quality report\"\"\"\n        return pd.DataFrame(self.checks)\n\n# Usage\nchecker = DataQualityChecker(df)\nchecker.check_completeness(threshold=0.95)\nchecker.check_uniqueness('id')\nchecker.check_validity('status', valid_values=['active', 'inactive', 'pending'])\nreport = checker.get_report()",
+      "best_practices": [
+        "Define quality thresholds",
+        "Check completeness, uniqueness, validity, consistency",
+        "Generate quality reports",
+        "Fail pipeline on critical quality issues",
+        "Monitor quality over time"
+      ]
+    },
+    "anomaly_detection": {
+      "description": "Detect anomalies in data",
+      "use_when": "Identifying unusual patterns or outliers",
+      "code_example": "import pandas as pd\nimport numpy as np\nfrom scipy import stats\n\nclass AnomalyDetector:\n    def __init__(self, df):\n        self.df = df\n    \n    def detect_statistical_outliers(self, column, method='zscore', threshold=3):\n        \"\"\"Detect statistical outliers\"\"\"\n        if method == 'zscore':\n            z_scores = np.abs(stats.zscore(self.df[column]))\n            outliers = self.df[z_scores > threshold]\n        elif method == 'iqr':\n            Q1 = self.df[column].quantile(0.25)\n            Q3 = self.df[column].quantile(0.75)\n            IQR = Q3 - Q1\n            lower_bound = Q1 - 1.5 * IQR\n            upper_bound = Q3 + 1.5 * IQR\n            outliers = self.df[(self.df[column] < lower_bound) | (self.df[column] > upper_bound)]\n        \n        return outliers\n    \n    def detect_missing_patterns(self):\n        \"\"\"Detect patterns in missing data\"\"\"\n        missing_patterns = self.df.isnull().sum()\n        return missing_patterns[missing_patterns > 0]\n    \n    def detect_duplicates(self):\n        \"\"\"Detect duplicate records\"\"\"\n        duplicates = self.df[self.df.duplicated(keep=False)]\n        return duplicates\n\n# Usage\ndetector = AnomalyDetector(df)\noutliers = detector.detect_statistical_outliers('amount', method='iqr')\nmissing = detector.detect_missing_patterns()\nduplicates = detector.detect_duplicates()",
+      "best_practices": [
+        "Use appropriate detection methods",
+        "Understand domain context",
+        "Flag anomalies for review",
+        "Don't automatically remove all anomalies",
+        "Track anomaly rates over time"
+      ]
+    }
+  },
+  "pipeline_orchestration": {
+    "airflow_patterns": {
+      "description": "Orchestrate pipelines with Apache Airflow",
+      "use_when": "Complex workflows with dependencies",
+      "code_example": "from airflow import DAG\nfrom airflow.operators.python import PythonOperator\nfrom airflow.operators.bash import BashOperator\nfrom datetime import datetime, timedelta\n\ndef extract_data():\n    # Extraction logic\n    pass\n\ndef transform_data():\n    # Transformation logic\n    pass\n\ndef load_data():\n    # Load logic\n    pass\n\ndefault_args = {\n    'owner': 'data_engineer',\n    'depends_on_past': False,\n    'start_date': datetime(2024, 1, 1),\n    'email_on_failure': True,\n    'email_on_retry': False,\n    'retries': 3,\n    'retry_delay': timedelta(minutes=5)\n}\n\ndag = DAG(\n    'etl_pipeline',\n    default_args=default_args,\n    description='ETL pipeline DAG',\n    schedule_interval=timedelta(hours=1),\n    catchup=False\n)\n\n# Define tasks\nextract_task = PythonOperator(\n    task_id='extract',\n    python_callable=extract_data,\n    dag=dag\n)\n\ntransform_task = PythonOperator(\n    task_id='transform',\n    python_callable=transform_data,\n    dag=dag\n)\n\nload_task = PythonOperator(\n    task_id='load',\n    python_callable=load_data,\n    dag=dag\n)\n\n# Define dependencies\nextract_task >> transform_task >> load_task",
+      "best_practices": [
+        "Use DAGs for workflow definition",
+        "Set appropriate retry policies",
+        "Use task dependencies",
+        "Monitor DAG runs",
+        "Handle failures gracefully"
+      ]
+    },
+    "prefect_patterns": {
+      "description": "Orchestrate pipelines with Prefect",
+      "use_when": "Modern Python-first orchestration",
+      "code_example": "from prefect import flow, task\nfrom prefect.tasks import task_input_hash\nfrom datetime import timedelta\n\n@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(hours=1))\ndef extract_data():\n    # Extraction logic\n    return data\n\n@task\ndef transform_data(data):\n    # Transformation logic\n    return transformed_data\n\n@task\ndef load_data(data):\n    # Load logic\n    pass\n\n@flow(name='etl_pipeline')\ndef etl_pipeline():\n    data = extract_data()\n    transformed = transform_data(data)\n    load_data(transformed)\n\n# Run flow\nif __name__ == '__main__':\n    etl_pipeline()",
+      "best_practices": [
+        "Use @flow for pipeline definition",
+        "Use @task for individual steps",
+        "Leverage caching for idempotency",
+        "Use Prefect Cloud for monitoring",
+        "Handle retries and failures"
+      ]
+    },
+    "dagster_patterns": {
+      "description": "Orchestrate pipelines with Dagster",
+      "use_when": "Data-aware orchestration",
+      "code_example": "from dagster import op, job, In, Out\nimport pandas as pd\n\n@op(out=Out(pd.DataFrame))\ndef extract_data(context):\n    # Extraction logic\n    return df\n\n@op(ins={'data': In(pd.DataFrame)}, out=Out(pd.DataFrame))\ndef transform_data(context, data):\n    # Transformation logic\n    return transformed_df\n\n@op(ins={'data': In(pd.DataFrame)})\ndef load_data(context, data):\n    # Load logic\n    pass\n\n@job\ndef etl_pipeline():\n    data = extract_data()\n    transformed = transform_data(data)\n    load_data(transformed)",
+      "best_practices": [
+        "Use ops for pipeline steps",
+        "Define data dependencies",
+        "Leverage Dagster's data lineage",
+        "Use assets for data products",
+        "Monitor with Dagster UI"
+      ]
+    }
+  },
+  "data_quality": {
+    "profiling": {
+      "description": "Profile data to understand characteristics",
+      "use_when": "Understanding new datasets",
+      "code_example": "import pandas as pd\nimport pandas_profiling\n\n# Basic profiling\ndef profile_data(df):\n    profile = df.describe()\n    \n    # Custom profiling\n    profile_info = {\n        'shape': df.shape,\n        'memory_usage': df.memory_usage(deep=True).sum(),\n        'dtypes': df.dtypes.to_dict(),\n        'null_counts': df.isnull().sum().to_dict(),\n        'unique_counts': df.nunique().to_dict(),\n        'numeric_stats': df.describe().to_dict()\n    }\n    \n    return profile_info\n\n# Using pandas_profiling\nprofile = pandas_profiling.ProfileReport(df)\nprofile.to_file('profile.html')\n\n# Using ydata_profiling (successor)\nfrom ydata_profiling import ProfileReport\n\nprofile = ProfileReport(df, title='Data Profile')\nprofile.to_file('profile.html')",
+      "best_practices": [
+        "Profile data before processing",
+        "Use automated profiling tools",
+        "Document data characteristics",
+        "Compare profiles over time",
+        "Share profiles with stakeholders"
+      ]
+    },
+    "monitoring": {
+      "description": "Monitor data quality over time",
+      "use_when": "Ensuring ongoing data quality",
+      "code_example": "import pandas as pd\nfrom datetime import datetime\nimport json\n\nclass DataQualityMonitor:\n    def __init__(self):\n        self.metrics_history = []\n    \n    def record_metrics(self, df, run_id):\n        \"\"\"Record quality metrics\"\"\"\n        metrics = {\n            'run_id': run_id,\n            'timestamp': datetime.now().isoformat(),\n            'row_count': len(df),\n            'column_count': len(df.columns),\n            'null_percentage': (df.isnull().sum().sum() / (len(df) * len(df.columns))) * 100,\n            'duplicate_percentage': (df.duplicated().sum() / len(df)) * 100,\n            'completeness': 1 - (df.isnull().sum().sum() / (len(df) * len(df.columns)))\n        }\n        \n        self.metrics_history.append(metrics)\n        return metrics\n    \n    def check_thresholds(self, metrics, thresholds):\n        \"\"\"Check if metrics meet thresholds\"\"\"\n        alerts = []\n        \n        if metrics['null_percentage'] > thresholds.get('max_null_percentage', 10):\n            alerts.append('High null percentage')\n        \n        if metrics['duplicate_percentage'] > thresholds.get('max_duplicate_percentage', 5):\n            alerts.append('High duplicate percentage')\n        \n        return alerts\n    \n    def get_trends(self):\n        \"\"\"Analyze quality trends\"\"\"\n        df_metrics = pd.DataFrame(self.metrics_history)\n        return df_metrics.describe()\n\n# Usage\nmonitor = DataQualityMonitor()\nmetrics = monitor.record_metrics(df, run_id='20240101_001')\nalerts = monitor.check_thresholds(metrics, {'max_null_percentage': 5})\nif alerts:\n    print(f'Alerts: {alerts}')",
+      "best_practices": [
+        "Track quality metrics over time",
+        "Set appropriate thresholds",
+        "Alert on quality degradation",
+        "Analyze trends",
+        "Automate quality monitoring"
+      ]
+    },
+    "testing": {
+      "description": "Test data quality programmatically",
+      "use_when": "Automated quality assurance",
+      "code_example": "import pytest\nimport pandas as pd\n\nclass TestDataQuality:\n    def test_no_null_ids(self, df):\n        \"\"\"Test that ID column has no nulls\"\"\"\n        assert df['id'].isnull().sum() == 0\n    \n    def test_unique_ids(self, df):\n        \"\"\"Test that IDs are unique\"\"\"\n        assert df['id'].nunique() == len(df)\n    \n    def test_date_range(self, df):\n        \"\"\"Test that dates are in valid range\"\"\"\n        assert df['date'].min() >= pd.Timestamp('2020-01-01')\n        assert df['date'].max() <= pd.Timestamp('2024-12-31')\n    \n    def test_amount_positive(self, df):\n        \"\"\"Test that amounts are positive\"\"\"\n        assert (df['amount'] >= 0).all()\n    \n    def test_referential_integrity(self, df, reference_df):\n        \"\"\"Test referential integrity\"\"\"\n        assert df['foreign_key'].isin(reference_df['id']).all()\n\n# Run tests\npytest.main(['-v', 'test_data_quality.py'])",
+      "best_practices": [
+        "Write tests for critical quality rules",
+        "Run tests in CI/CD pipeline",
+        "Fail pipeline on test failures",
+        "Document test cases",
+        "Keep tests maintainable"
+      ]
+    }
+  },
+  "anti_patterns": {
+    "no_error_handling": {
+      "description": "Not handling errors in pipelines",
+      "problem": "Pipeline failures cause data loss",
+      "solution": "Implement comprehensive error handling and retries"
+    },
+    "no_data_validation": {
+      "description": "Not validating data before processing",
+      "problem": "Bad data propagates through pipeline",
+      "solution": "Validate data at entry points"
+    },
+    "hardcoded_configurations": {
+      "description": "Hardcoding configuration values",
+      "problem": "Inflexible, hard to maintain",
+      "solution": "Use configuration files or environment variables"
+    },
+    "no_logging": {
+      "description": "Not logging pipeline execution",
+      "problem": "Difficult to debug and monitor",
+      "solution": "Implement comprehensive logging"
+    },
+    "ignoring_data_lineage": {
+      "description": "Not tracking data lineage",
+      "problem": "Can't trace data origins",
+      "solution": "Track data lineage and metadata"
+    }
+  },
+  "best_practices_summary": [
+    "Validate data at pipeline entry points",
+    "Implement comprehensive error handling",
+    "Use orchestration tools for complex workflows",
+    "Monitor data quality over time",
+    "Log all pipeline operations",
+    "Make pipelines idempotent",
+    "Use configuration files, not hardcoded values",
+    "Test data quality programmatically",
+    "Track data lineage",
+    "Document pipeline logic and transformations"
+  ]
+}

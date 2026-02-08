@@ -4,15 +4,13 @@ Antigravity Agent Factory - Jinja2 Template Engine
 
 This module provides a Jinja2-based template rendering engine with custom
 filters, globals, and macros for generating Antigravity agent projects.
-
 Usage:
     from scripts.core.template_engine import TemplateEngine
     
     engine = TemplateEngine(template_dirs=[Path('templates')])
     content = engine.render('factory/agent.md.tmpl', {'agent_name': 'code-reviewer'})
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 import re
@@ -401,8 +399,7 @@ def range_list(start: int, end: int, step: int = 1) -> List[int]:
 
 class TemplateEngine:
     """
-    Jinja2-based template rendering engine for Antigravity Agent Factory.
-    
+    Jinja2-based template rendering engine for Antigravity Agent Factory.    
     Features:
     - Custom filters for case conversion, pluralization, etc.
     - Custom globals for datetime, environment variables
@@ -506,8 +503,7 @@ class TemplateEngine:
         
         Supports two legacy formats:
         1. {{UPPERCASE}} - double curly braces (legacy Factory templates)
-        2. {UPPERCASE} - single curly braces (agentrules templates)
-        
+        2. {UPPERCASE} - single curly braces (cursorrules templates)        
         This provides backward compatibility with existing templates.
         
         Args:

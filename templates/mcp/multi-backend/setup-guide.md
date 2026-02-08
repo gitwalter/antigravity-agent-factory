@@ -5,13 +5,11 @@ This guide walks you through setting up multiple MCP servers simultaneously in A
 ## Overview
 
 The multi-backend configuration allows you to use multiple MCP servers at once, giving you access to tools and resources from different platforms within Antigravity. This is useful when your workflow spans multiple services.
-
 ## Prerequisites
 
 - Node.js 18+ installed
 - Accounts for the services you want to integrate
-- Antigravity IDE installed
-- API tokens/keys for each service
+- Antigravity IDE installed- API tokens/keys for each service
 
 ## Step 1: Gather All Required Credentials
 
@@ -69,7 +67,6 @@ LINEAR_API_KEY=lin_api_your_linear_key_here
    - **Windows**: `%APPDATA%\Antigravity\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json`
    - **macOS**: `~/Library/Application Support/Antigravity/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
    - **Linux**: `~/.config/Antigravity/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
-
 4. Copy the contents of `combined-config.json.tmpl` into your MCP config
 5. Replace all placeholder variables with your actual credentials
 
@@ -124,8 +121,7 @@ Mix and match servers based on your needs. Each server is independent and can be
 
 ## Step 5: Verify Installation
 
-1. Restart Antigravity
-2. Open the MCP panel or check the status indicator
+1. Restart Antigravity2. Open the MCP panel or check the status indicator
 3. All configured MCP servers should appear as connected
 4. Test each service:
    - Try GitHub commands (e.g., list repositories)
@@ -143,14 +139,12 @@ If one server fails to connect:
 2. Verify its credentials are correct
 3. Review that server's setup guide for troubleshooting
 4. Check Antigravity's MCP logs for specific error messages
-
 ### Environment Variable Issues
 
 - Ensure all variables are set in your `.env` file
 - Verify variable names match exactly (case-sensitive)
 - Check that your `.env` file is in the correct location
 - Some systems may require restarting Antigravity after changing `.env`
-
 ### Performance Considerations
 
 - Running multiple MCP servers may increase resource usage
@@ -234,4 +228,4 @@ If you need multiple instances of the same service (e.g., two GitHub accounts):
 
 - Individual setup guides in each service's directory
 - [MCP Protocol Documentation](https://modelcontextprotocol.io)
-- [Antigravity MCP Documentation](https://Antigravity.sh/docs/mcp)
+- [Antigravity MCP Documentation](https://cursor.sh/docs/mcp)

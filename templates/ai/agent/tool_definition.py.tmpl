@@ -1,0 +1,413 @@
+"""
+{{TOOLS_NAME}} - Custom Tool Definitions
+
+Purpose: {{TOOLS_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Tool outputs are traceable and logged
+- A4 (Non-Harm): Tool inputs are validated before execution
+
+This template provides tool definitions compatible with:
+- LangChain 1.x agents
+- CrewAI 1.x agents
+- Standalone tool usage
+
+Tools can be used with both frameworks for maximum flexibility.
+"""
+
+from typing import List, Dict, Any, Optional, Union
+from langchain_core.tools import tool, StructuredTool, BaseTool
+from crewai.tools import tool as crewai_tool
+from pydantic import BaseModel, Field, field_validator
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+# ===== Input Schemas =====
+
+class {{TOOL_1_INPUT_SCHEMA}}(BaseModel):
+    """
+    Input schema for {{TOOL_1_NAME}}.
+    
+    Provides type safety and validation (A4 - Non-Harm).
+    """
+    input_text: str = Field(
+        description="Input text to process",
+        min_length=1,
+        max_length={{MAX_INPUT_LENGTH}}
+    )
+    options: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Optional configuration dictionary"
+    )
+    
+    @field_validator('input_text')
+    @classmethod
+    def validate_input_text(cls, v: str) -> str:
+        """Validate input text is not empty."""
+        if not v or not v.strip():
+            raise ValueError("Input text cannot be empty")
+        return v.strip()
+
+
+class {{TOOL_2_INPUT_SCHEMA}}(BaseModel):
+    """
+    Input schema for {{TOOL_2_NAME}}.
+    
+    Provides type safety and validation (A4 - Non-Harm).
+    """
+    query: str = Field(
+        description="Search or query string",
+        min_length=1
+    )
+    max_results: int = Field(
+        default={{DEFAULT_MAX_RESULTS}},
+        ge=1,
+        le={{MAX_RESULTS_LIMIT}},
+        description="Maximum number of results to return"
+    )
+    filters: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Optional filter criteria"
+    )
+
+
+# ===== LangChain Tool Definitions =====
+
+@tool
+def {{TOOL_1_FUNCTION_NAME}}_langchain(
+    input_text: str,
+    options: Optional[Dict[str, Any]] = None
+) -> str:
+    """
+    {{TOOL_1_DESCRIPTION}} (LangChain version)
+    
+    This tool implements A1 (Verifiability) by logging all operations.
+    This tool implements A4 (Non-Harm) by validating inputs.
+    
+    Args:
+        input_text: Input text to process (required)
+        options: Optional configuration dictionary
+    
+    Returns:
+        Processed output string
+    
+    Example:
+        >>> result = {{TOOL_1_FUNCTION_NAME}}_langchain("Process this", {"option": "value"})
+        >>> print(result)
+    """
+    logger.info(f"{{TOOL_1_NAME}} (LangChain) called with: {input_text[:100]}...")
+    
+    # Validate input (A4)
+    if not input_text or len(input_text.strip()) == 0:
+        raise ValueError("Input text cannot be empty")
+    
+    # Process input
+    try:
+        # Tool implementation here
+        # Replace this with your actual tool logic
+        result = f"Processed: {input_text}"
+        
+        if options:
+            logger.debug(f"Options: {options}")
+            # Apply options to processing
+        
+        logger.info("{{TOOL_1_NAME}} (LangChain) completed successfully")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error in {{TOOL_1_NAME}} (LangChain): {e}")
+        raise
+
+
+@tool
+def {{TOOL_2_FUNCTION_NAME}}_langchain(
+    query: str,
+    max_results: int = {{DEFAULT_MAX_RESULTS}}
+) -> str:
+    """
+    {{TOOL_2_DESCRIPTION}} (LangChain version)
+    
+    This tool implements A1 (Verifiability) by logging search operations.
+    This tool implements A4 (Non-Harm) by validating query parameters.
+    
+    Args:
+        query: Search query string (required)
+        max_results: Maximum number of results (1-{{MAX_RESULTS_LIMIT}})
+    
+    Returns:
+        Search results as formatted string
+    
+    Example:
+        >>> results = {{TOOL_2_FUNCTION_NAME}}_langchain("AI research", max_results=5)
+        >>> print(results)
+    """
+    logger.info(f"{{TOOL_2_NAME}} (LangChain) called with query: {query[:100]}...")
+    
+    # Validate input (A4)
+    if not query or len(query.strip()) == 0:
+        raise ValueError("Query cannot be empty")
+    
+    if max_results < 1 or max_results > {{MAX_RESULTS_LIMIT}}:
+        raise ValueError(f"max_results must be between 1 and {{MAX_RESULTS_LIMIT}}")
+    
+    # Perform search/query
+    try:
+        # Tool implementation here
+        # Replace this with your actual search logic
+        results = [
+            f"Result {i+1}: Related to '{query}'"
+            for i in range(min(max_results, 5))
+        ]
+        
+        result_str = "\n".join(results)
+        logger.info(f"{{TOOL_2_NAME}} (LangChain) found {len(results)} results")
+        
+        return result_str
+        
+    except Exception as e:
+        logger.error(f"Error in {{TOOL_2_NAME}} (LangChain): {e}")
+        raise
+
+
+# ===== CrewAI Tool Definitions =====
+
+@crewai_tool("{{TOOL_1_NAME}}")
+def {{TOOL_1_FUNCTION_NAME}}_crewai(
+    input_text: str,
+    options: Optional[Dict[str, Any]] = None
+) -> str:
+    """
+    {{TOOL_1_DESCRIPTION}} (CrewAI version)
+    
+    This tool implements A1 (Verifiability) by logging all operations.
+    This tool implements A4 (Non-Harm) by validating inputs.
+    
+    Args:
+        input_text: Input text to process (required)
+        options: Optional configuration dictionary
+    
+    Returns:
+        Processed output string
+    """
+    logger.info(f"{{TOOL_1_NAME}} (CrewAI) called with: {input_text[:100]}...")
+    
+    # Validate input (A4)
+    if not input_text or len(input_text.strip()) == 0:
+        raise ValueError("Input text cannot be empty")
+    
+    try:
+        # Tool implementation here (same as LangChain version)
+        result = f"Processed: {input_text}"
+        
+        if options:
+            logger.debug(f"Options: {options}")
+        
+        logger.info("{{TOOL_1_NAME}} (CrewAI) completed successfully")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error in {{TOOL_1_NAME}} (CrewAI): {e}")
+        raise
+
+
+@crewai_tool("{{TOOL_2_NAME}}")
+def {{TOOL_2_FUNCTION_NAME}}_crewai(
+    query: str,
+    max_results: int = {{DEFAULT_MAX_RESULTS}}
+) -> str:
+    """
+    {{TOOL_2_DESCRIPTION}} (CrewAI version)
+    
+    This tool implements A1 (Verifiability) by logging search operations.
+    This tool implements A4 (Non-Harm) by validating query parameters.
+    
+    Args:
+        query: Search query string (required)
+        max_results: Maximum number of results (1-{{MAX_RESULTS_LIMIT}})
+    
+    Returns:
+        Search results as formatted string
+    """
+    logger.info(f"{{TOOL_2_NAME}} (CrewAI) called with query: {query[:100]}...")
+    
+    # Validate input (A4)
+    if not query or len(query.strip()) == 0:
+        raise ValueError("Query cannot be empty")
+    
+    if max_results < 1 or max_results > {{MAX_RESULTS_LIMIT}}:
+        raise ValueError(f"max_results must be between 1 and {{MAX_RESULTS_LIMIT}}")
+    
+    try:
+        # Tool implementation here (same as LangChain version)
+        results = [
+            f"Result {i+1}: Related to '{query}'"
+            for i in range(min(max_results, 5))
+        ]
+        
+        result_str = "\n".join(results)
+        logger.info(f"{{TOOL_2_NAME}} (CrewAI) found {len(results)} results")
+        
+        return result_str
+        
+    except Exception as e:
+        logger.error(f"Error in {{TOOL_2_NAME}} (CrewAI): {e}")
+        raise
+
+
+# ===== Unified Tool Collection =====
+
+class {{TOOLS_CLASS_NAME}}:
+    """
+    {{TOOLS_NAME}} - Collection of Custom Tools
+    
+    Provides unified access to tools compatible with both LangChain and CrewAI.
+    Tools are available in both frameworks for maximum flexibility.
+    
+    Example:
+        >>> tools = {{TOOLS_CLASS_NAME}}()
+        >>> langchain_tools = tools.get_langchain_tools()
+        >>> crewai_tools = tools.get_crewai_tools()
+    """
+    
+    def __init__(self):
+        """Initialize tools collection."""
+        self.langchain_tools = [
+            {{TOOL_1_FUNCTION_NAME}}_langchain,
+            {{TOOL_2_FUNCTION_NAME}}_langchain
+            # Add more LangChain tools as needed
+        ]
+        
+        self.crewai_tools = [
+            {{TOOL_1_FUNCTION_NAME}}_crewai,
+            {{TOOL_2_FUNCTION_NAME}}_crewai
+            # Add more CrewAI tools as needed
+        ]
+        
+        logger.info(
+            f"Initialized {{TOOLS_NAME}} with "
+            f"{len(self.langchain_tools)} LangChain tools and "
+            f"{len(self.crewai_tools)} CrewAI tools"
+        )
+    
+    def get_langchain_tools(self) -> List[BaseTool]:
+        """
+        Get all LangChain-compatible tools.
+        
+        Returns:
+            List of LangChain tool instances
+        """
+        return self.langchain_tools
+    
+    def get_crewai_tools(self) -> List:
+        """
+        Get all CrewAI-compatible tools.
+        
+        Returns:
+            List of CrewAI tool instances
+        """
+        return self.crewai_tools
+    
+    def get_all_tools(self) -> Dict[str, List]:
+        """
+        Get all tools organized by framework.
+        
+        Returns:
+            Dictionary with 'langchain' and 'crewai' keys
+        """
+        return {
+            "langchain": self.langchain_tools,
+            "crewai": self.crewai_tools
+        }
+    
+    def get_tool_by_name(
+        self,
+        name: str,
+        framework: str = "langchain"
+    ) -> Optional[Union[BaseTool, Any]]:
+        """
+        Get a specific tool by name.
+        
+        Args:
+            name: Tool name (function name or tool name)
+            framework: Framework to search ("langchain" or "crewai")
+        
+        Returns:
+            Tool function or None
+        """
+        tools = (
+            self.langchain_tools if framework == "langchain"
+            else self.crewai_tools
+        )
+        
+        for tool_func in tools:
+            # Check function name
+            if tool_func.__name__ == name:
+                return tool_func
+            
+            # Check tool name attribute
+            if hasattr(tool_func, 'name') and tool_func.name == name:
+                return tool_func
+        
+        return None
+    
+    def list_tool_names(self, framework: Optional[str] = None) -> Union[List[str], Dict[str, List[str]]]:
+        """
+        List all tool names.
+        
+        Args:
+            framework: Framework to list ("langchain", "crewai", or None for both)
+        
+        Returns:
+            List of tool names or dict with framework keys
+        """
+        def get_names(tools: List) -> List[str]:
+            names = []
+            for tool_func in tools:
+                if hasattr(tool_func, 'name'):
+                    names.append(tool_func.name)
+                else:
+                    names.append(tool_func.__name__)
+            return names
+        
+        if framework == "langchain":
+            return get_names(self.langchain_tools)
+        elif framework == "crewai":
+            return get_names(self.crewai_tools)
+        else:
+            return {
+                "langchain": get_names(self.langchain_tools),
+                "crewai": get_names(self.crewai_tools)
+            }
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create tools collection
+    tools = {{TOOLS_CLASS_NAME}}()
+    
+    # List all tools
+    print("Available tools:")
+    all_tools = tools.list_tool_names()
+    print(f"  LangChain: {all_tools['langchain']}")
+    print(f"  CrewAI: {all_tools['crewai']}")
+    
+    # Use LangChain tool
+    print("\nUsing {{TOOL_1_NAME}} (LangChain):")
+    result = {{TOOL_1_FUNCTION_NAME}}_langchain("{{EXAMPLE_INPUT}}")
+    print(f"Result: {result}")
+    
+    # Use CrewAI tool
+    print("\nUsing {{TOOL_2_NAME}} (CrewAI):")
+    results = {{TOOL_2_FUNCTION_NAME}}_crewai("{{EXAMPLE_QUERY}}", max_results=5)
+    print(f"Results:\n{results}")
+    
+    # Get tools for specific framework
+    print("\nLangChain tools for agent:")
+    langchain_tools = tools.get_langchain_tools()
+    for tool in langchain_tools:
+        print(f"  - {tool.name if hasattr(tool, 'name') else tool.__name__}")

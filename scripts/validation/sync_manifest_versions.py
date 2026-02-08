@@ -12,10 +12,9 @@ Synced Locations:
 - docs/GETTING_STARTED.md → Footer (*Antigravity Agent Factory vX.X.X*)
 - docs/ONBOARDING_GUIDE.md → Footer (*Antigravity Agent Factory vX.X.X*)
 - scripts/core/generate_project.py → Comment (# Factory Version: X.X.X)
-- templates/factory/agentrules-template.md → Header (**Version**: X.X)
+- templates/factory/cursorrules-template.md → Header (**Version**: X.X)
 - templates/knowledge/guardian-protocol.json.tmpl → source_factory_version
 - .agentrules → Footer (*Antigravity Agent Factory vX.X.X*)
-
 Usage:
     python scripts/validation/sync_manifest_versions.py          # Check only
     python scripts/validation/sync_manifest_versions.py --sync   # Auto-fix
@@ -25,8 +24,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Callable, Optional
-
+from typing import Callable
 def get_changelog_version() -> str:
     """Extract latest version from CHANGELOG.md (source of truth for factory version)."""
     changelog_path = Path('CHANGELOG.md')
@@ -62,14 +60,19 @@ VERSION_LOCATIONS = [
         "replacement": lambda v: f'*Antigravity Agent Factory v{v}*',
     },
     {
-        "file": "docs/USER_GUIDE.md",
-        "name": "USER_GUIDE.md footer",
+        "file": "docs/GETTING_STARTED.md",
+        "name": "GETTING_STARTED.md footer",
         "pattern": r'\*Antigravity Agent Factory v[\d.]+\*',
         "replacement": lambda v: f'*Antigravity Agent Factory v{v}*',
         "extract_pattern": r'\*Antigravity Agent Factory v([\d.]+)\*',
     },
-
     {
+        "file": "docs/ONBOARDING_GUIDE.md",
+        "name": "ONBOARDING_GUIDE.md footer",
+        "pattern": r'\*Antigravity Agent Factory v[\d.]+\*',
+        "replacement": lambda v: f'*Antigravity Agent Factory v{v}*',
+        "extract_pattern": r'\*Antigravity Agent Factory v([\d.]+)\*',
+    },    {
         "file": "scripts/core/generate_project.py",
         "name": "generate_project.py comment",
         "pattern": r'# Factory Version: [\d.]+',
@@ -77,9 +80,8 @@ VERSION_LOCATIONS = [
         "extract_pattern": r'# Factory Version: ([\d.]+)',
     },
     {
-        "file": "templates/factory/agentrules-template.md",
-        "name": "agentrules-template.md header",
-        "pattern": r'\*\*Version\*\*: [\d.]+ \(5-Layer',
+        "file": "templates/factory/cursorrules-template.md",
+        "name": "cursorrules-template.md header",        "pattern": r'\*\*Version\*\*: [\d.]+ \(5-Layer',
         "replacement": lambda v: f'**Version**: {v} (5-Layer',
         "extract_pattern": r'\*\*Version\*\*: ([\d.]+)',
     },
@@ -95,13 +97,11 @@ VERSION_LOCATIONS = [
         "name": ".agentrules footer",
         "pattern": r'\*Antigravity Agent Factory v[\d.]+\*',
         "replacement": lambda v: f'*Antigravity Agent Factory v{v}*',
-        "extract_pattern": r'\*Antigravity Agent Factory v([\d.]+)\*',
-    },
+        "extract_pattern": r'\*Antigravity Agent Factory v([\d.]+)\*',    },
 ]
 
 
-def get_file_version_generic(filepath: Path, pattern: str) -> Optional[str]:
-    """Extract version from a file using a regex pattern."""
+def get_file_version_generic(filepath: Path, pattern: str) -> str | None:    """Extract version from a file using a regex pattern."""
     if not filepath.exists():
         return None
     content = filepath.read_text(encoding='utf-8')
@@ -138,8 +138,7 @@ def sync_file_version(
     
     return True
 
-def get_file_version(filepath: Path) -> Optional[str]:
-    """Extract version from a knowledge JSON file."""
+def get_file_version(filepath: Path) -> str | None:    """Extract version from a knowledge JSON file."""
     try:
         data = json.loads(filepath.read_text(encoding='utf-8'))
         return data.get('version')

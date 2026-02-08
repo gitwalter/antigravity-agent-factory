@@ -1,0 +1,428 @@
+"""
+{{CHUNKING_MODULE_NAME}} - Document Chunking Strategies
+
+Purpose: {{CHUNKING_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): Chunks maintain source attribution
+- A3 (Transparency): Chunking strategy is explicit and configurable
+
+This module provides various chunking strategies for RAG systems:
+- Recursive Character Splitting
+- Semantic Chunking
+- Parent-Child Chunking
+- Fixed-Size Chunking
+"""
+
+from typing import List, Optional, Dict, Any
+from langchain_core.documents import Document
+from langchain.text_splitter import (
+    RecursiveCharacterTextSplitter,
+    CharacterTextSplitter,
+    TokenTextSplitter
+)
+from langchain_experimental.text_splitter import SemanticChunker
+from langchain_openai import OpenAIEmbeddings
+from pydantic import BaseModel, Field
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class ChunkingConfig(BaseModel):
+    """Configuration for chunking strategies."""
+    chunk_size: int = Field(default={{CHUNK_SIZE}}, description="Target chunk size in characters/tokens")
+    chunk_overlap: int = Field(default={{CHUNK_OVERLAP}}, description="Overlap between chunks")
+    separators: List[str] = Field(
+        default_factory=lambda: ["\n\n", "\n", ". ", " ", ""],
+        description="Separators for recursive splitting (order matters)"
+    )
+    length_function: Any = Field(default=len, description="Function to measure text length")
+
+
+class ChunkingResult(BaseModel):
+    """Result from chunking operation."""
+    chunks: List[Document] = Field(description="List of chunked documents")
+    num_chunks: int = Field(description="Total number of chunks created")
+    strategy: str = Field(description="Chunking strategy used")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+
+
+class {{CHUNKING_CLASS_NAME}}:
+    """
+    {{CHUNKING_MODULE_NAME}} - Multiple Chunking Strategies
+    
+    Provides various chunking approaches for different document types and use cases.
+    
+    Strategies:
+    1. Recursive Character: General purpose, hierarchical splitting
+    2. Semantic: Split based on semantic similarity (requires embeddings)
+    3. Parent-Child: Store small chunks, retrieve larger parents
+    4. Fixed-Size: Simple fixed-size chunks
+    
+    Example:
+        >>> chunker = {{CHUNKING_CLASS_NAME}}()
+        >>> docs = [Document(page_content="Long document...")]
+        >>> result = chunker.recursive_character_split(docs)
+        >>> print(f"Created {result.num_chunks} chunks")
+    """
+    
+    def __init__(
+        self,
+        config: Optional[ChunkingConfig] = None,
+        embedding_model: str = "{{EMBEDDING_MODEL}}"
+    ):
+        """
+        Initialize chunking strategies.
+        
+        Args:
+            config: Chunking configuration (uses defaults if None)
+            embedding_model: Embedding model for semantic chunking
+        """
+        self.config = config or ChunkingConfig()
+        self.embedding_model = embedding_model
+        self.embeddings: Optional[OpenAIEmbeddings] = None
+        
+        logger.info(f"Initialized {{CHUNKING_CLASS_NAME}} with chunk_size={self.config.chunk_size}")
+    
+    def recursive_character_split(
+        self,
+        documents: List[Document],
+        **kwargs
+    ) -> ChunkingResult:
+        """
+        Split documents using recursive character text splitter.
+        
+        This is the most common strategy - splits by trying separators in order
+        (paragraphs, sentences, words) until chunks are the right size.
+        
+        Args:
+            documents: List of documents to chunk
+            **kwargs: Override config parameters (chunk_size, chunk_overlap, separators)
+        
+        Returns:
+            ChunkingResult with chunks and metadata
+            
+        Example:
+            >>> result = chunker.recursive_character_split(docs, chunk_size=1000)
+            >>> for chunk in result.chunks:
+            ...     print(chunk.page_content[:100])
+        """
+        chunk_size = kwargs.get("chunk_size", self.config.chunk_size)
+        chunk_overlap = kwargs.get("chunk_overlap", self.config.chunk_overlap)
+        separators = kwargs.get("separators", self.config.separators)
+        
+        splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            separators=separators,
+            length_function=self.config.length_function
+        )
+        
+        chunks = splitter.split_documents(documents)
+        
+        logger.info(f"Recursive character split: {len(documents)} docs -> {len(chunks)} chunks")
+        
+        return ChunkingResult(
+            chunks=chunks,
+            num_chunks=len(chunks),
+            strategy="recursive_character",
+            metadata={
+                "chunk_size": chunk_size,
+                "chunk_overlap": chunk_overlap,
+                "separators": separators
+            }
+        )
+    
+    def semantic_split(
+        self,
+        documents: List[Document],
+        breakpoint_threshold_type: str = "percentile",
+        breakpoint_threshold_amount: float = 95.0,
+        **kwargs
+    ) -> ChunkingResult:
+        """
+        Split documents based on semantic similarity.
+        
+        Creates chunks that are semantically coherent by detecting
+        semantic boundaries in the text.
+        
+        Args:
+            documents: List of documents to chunk
+            breakpoint_threshold_type: "percentile" or "standard_deviation"
+            breakpoint_threshold_amount: Threshold value (95.0 for 95th percentile)
+            **kwargs: Additional parameters
+        
+        Returns:
+            ChunkingResult with semantically coherent chunks
+            
+        Example:
+            >>> result = chunker.semantic_split(docs, breakpoint_threshold_amount=90.0)
+            >>> # Chunks will be semantically coherent
+        """
+        if self.embeddings is None:
+            self.embeddings = OpenAIEmbeddings(model=self.embedding_model)
+        
+        chunker = SemanticChunker(
+            self.embeddings,
+            breakpoint_threshold_type=breakpoint_threshold_type,
+            breakpoint_threshold_amount=breakpoint_threshold_amount
+        )
+        
+        # Combine all documents into single text for semantic chunking
+        all_text = "\n\n".join([doc.page_content for doc in documents])
+        chunks = chunker.split_text(all_text)
+        
+        # Convert back to Document objects with metadata
+        chunk_docs = []
+        for i, chunk_text in enumerate(chunks):
+            # Preserve metadata from first document (can be enhanced)
+            base_metadata = documents[0].metadata.copy() if documents else {}
+            chunk_docs.append(
+                Document(
+                    page_content=chunk_text,
+                    metadata={
+                        **base_metadata,
+                        "chunk_index": i,
+                        "chunking_strategy": "semantic"
+                    }
+                )
+            )
+        
+        logger.info(f"Semantic split: {len(documents)} docs -> {len(chunk_docs)} chunks")
+        
+        return ChunkingResult(
+            chunks=chunk_docs,
+            num_chunks=len(chunk_docs),
+            strategy="semantic",
+            metadata={
+                "breakpoint_threshold_type": breakpoint_threshold_type,
+                "breakpoint_threshold_amount": breakpoint_threshold_amount
+            }
+        )
+    
+    def parent_child_split(
+        self,
+        documents: List[Document],
+        parent_chunk_size: int = {{PARENT_CHUNK_SIZE}},
+        child_chunk_size: int = {{CHILD_CHUNK_SIZE}},
+        parent_overlap: int = {{PARENT_OVERLAP}},
+        child_overlap: int = {{CHILD_OVERLAP}}
+    ) -> ChunkingResult:
+        """
+        Create parent-child chunking structure.
+        
+        Creates larger parent chunks and smaller child chunks from them.
+        Useful for precise retrieval (children) with broader context (parents).
+        
+        Args:
+            documents: List of documents to chunk
+            parent_chunk_size: Size of parent chunks
+            child_chunk_size: Size of child chunks (should be smaller)
+            parent_overlap: Overlap for parent chunks
+            child_overlap: Overlap for child chunks
+        
+        Returns:
+            ChunkingResult with both parent and child chunks
+            
+        Example:
+            >>> result = chunker.parent_child_split(docs)
+            >>> # Retrieve children for precision, fetch parents for context
+        """
+        parent_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=parent_chunk_size,
+            chunk_overlap=parent_overlap
+        )
+        
+        child_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=child_chunk_size,
+            chunk_overlap=child_overlap
+        )
+        
+        all_chunks = []
+        
+        for doc_idx, doc in enumerate(documents):
+            # Create parent chunks
+            parent_chunks = parent_splitter.split_text(doc.page_content)
+            
+            for parent_idx, parent_text in enumerate(parent_chunks):
+                parent_id = f"doc_{doc_idx}_parent_{parent_idx}"
+                
+                # Create child chunks from parent
+                child_chunks = child_splitter.split_text(parent_text)
+                
+                # Add child chunks
+                for child_idx, child_text in enumerate(child_chunks):
+                    child_id = f"{parent_id}_child_{child_idx}"
+                    all_chunks.append(
+                        Document(
+                            page_content=child_text,
+                            metadata={
+                                **doc.metadata,
+                                "parent_id": parent_id,
+                                "child_id": child_id,
+                                "child_index": child_idx,
+                                "total_children": len(child_chunks),
+                                "is_child": True
+                            }
+                        )
+                    )
+                
+                # Add parent chunk
+                all_chunks.append(
+                    Document(
+                        page_content=parent_text,
+                        metadata={
+                            **doc.metadata,
+                            "parent_id": parent_id,
+                            "is_parent": True,
+                            "num_children": len(child_chunks)
+                        }
+                    )
+                )
+        
+        logger.info(f"Parent-child split: {len(documents)} docs -> {len(all_chunks)} chunks")
+        
+        return ChunkingResult(
+            chunks=all_chunks,
+            num_chunks=len(all_chunks),
+            strategy="parent_child",
+            metadata={
+                "parent_chunk_size": parent_chunk_size,
+                "child_chunk_size": child_chunk_size,
+                "num_parents": len([c for c in all_chunks if c.metadata.get("is_parent")]),
+                "num_children": len([c for c in all_chunks if c.metadata.get("is_child")])
+            }
+        )
+    
+    def fixed_size_split(
+        self,
+        documents: List[Document],
+        chunk_size: Optional[int] = None,
+        chunk_overlap: Optional[int] = None
+    ) -> ChunkingResult:
+        """
+        Split documents into fixed-size chunks.
+        
+        Simple strategy that splits text into fixed-size chunks.
+        Less sophisticated than recursive but faster.
+        
+        Args:
+            documents: List of documents to chunk
+            chunk_size: Size of chunks (defaults to config)
+            chunk_overlap: Overlap between chunks (defaults to config)
+        
+        Returns:
+            ChunkingResult with fixed-size chunks
+            
+        Example:
+            >>> result = chunker.fixed_size_split(docs, chunk_size=500)
+        """
+        chunk_size = chunk_size or self.config.chunk_size
+        chunk_overlap = chunk_overlap or self.config.chunk_overlap
+        
+        splitter = CharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            separator="\n\n"  # Simple separator
+        )
+        
+        chunks = splitter.split_documents(documents)
+        
+        logger.info(f"Fixed-size split: {len(documents)} docs -> {len(chunks)} chunks")
+        
+        return ChunkingResult(
+            chunks=chunks,
+            num_chunks=len(chunks),
+            strategy="fixed_size",
+            metadata={
+                "chunk_size": chunk_size,
+                "chunk_overlap": chunk_overlap
+            }
+        )
+    
+    def token_based_split(
+        self,
+        documents: List[Document],
+        chunk_size: Optional[int] = None,
+        chunk_overlap: Optional[int] = None,
+        encoding_name: str = "{{TOKENIZER_NAME}}"
+    ) -> ChunkingResult:
+        """
+        Split documents based on token count.
+        
+        Useful when you need precise token-based chunking (e.g., for LLM context windows).
+        
+        Args:
+            documents: List of documents to chunk
+            chunk_size: Number of tokens per chunk
+            chunk_overlap: Number of overlapping tokens
+            encoding_name: Tokenizer name (e.g., "cl100k_base" for GPT-4)
+        
+        Returns:
+            ChunkingResult with token-based chunks
+            
+        Example:
+            >>> result = chunker.token_based_split(docs, chunk_size=1000)
+        """
+        chunk_size = chunk_size or self.config.chunk_size
+        chunk_overlap = chunk_overlap or self.config.chunk_overlap
+        
+        splitter = TokenTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            encoding_name=encoding_name
+        )
+        
+        chunks = splitter.split_documents(documents)
+        
+        logger.info(f"Token-based split: {len(documents)} docs -> {len(chunks)} chunks")
+        
+        return ChunkingResult(
+            chunks=chunks,
+            num_chunks=len(chunks),
+            strategy="token_based",
+            metadata={
+                "chunk_size": chunk_size,
+                "chunk_overlap": chunk_overlap,
+                "encoding_name": encoding_name
+            }
+        )
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create chunker
+    chunker = {{CHUNKING_CLASS_NAME}}(
+        config=ChunkingConfig(
+            chunk_size={{CHUNK_SIZE}},
+            chunk_overlap={{CHUNK_OVERLAP}}
+        )
+    )
+    
+    # Example documents
+    documents = [
+        Document(
+            page_content="{{EXAMPLE_DOCUMENT}}",
+            metadata={"source": "example.txt", "page": 1}
+        )
+    ]
+    
+    # Test different strategies
+    print("=== Recursive Character Split ===")
+    result1 = chunker.recursive_character_split(documents)
+    print(f"Created {result1.num_chunks} chunks")
+    print(f"First chunk: {result1.chunks[0].page_content[:100]}...")
+    
+    print("\n=== Fixed-Size Split ===")
+    result2 = chunker.fixed_size_split(documents, chunk_size=500)
+    print(f"Created {result2.num_chunks} chunks")
+    
+    print("\n=== Parent-Child Split ===")
+    result3 = chunker.parent_child_split(documents)
+    print(f"Created {result3.num_chunks} chunks")
+    print(f"Parents: {result3.metadata['num_parents']}")
+    print(f"Children: {result3.metadata['num_children']}")

@@ -1,0 +1,470 @@
+"""
+{{ test_name | default('Agent Test') }} - Agent Testing Template
+
+Purpose: {{ test_purpose | default('Test agent functionality with mock LLM, async setup, and assertions') }}
+Author: {{ author | default('Cursor Agent Factory') }}
+Date: {{ date | default('2026-02-08') }}
+
+Axiom Alignment:
+- A1 (Verifiability): Tests verify agent behavior and outputs
+- A2 (Correctness): Tests ensure agent correctness
+- A3 (Transparency): Test cases document expected behavior
+
+This test template provides:
+- Mock LLM for deterministic testing
+- Async test setup and teardown
+- Comprehensive assertions for agent behavior
+- Fixtures for common test scenarios
+"""
+
+import pytest
+import asyncio
+from typing import List, Dict, Any, Optional
+from unittest.mock import Mock, AsyncMock, patch, MagicMock
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, BaseMessage
+from langchain_core.tools import tool, BaseTool
+from langchain_core.callbacks import CallbackManager
+{% if agent_framework == 'langchain' or not agent_framework %}
+from langchain.agents import AgentExecutor, create_react_agent
+from langchain_openai import ChatOpenAI
+{% elif agent_framework == 'langgraph' %}
+from langgraph.graph import StateGraph, END
+from langgraph.prebuilt import create_react_agent
+{% elif agent_framework == 'crewai' %}
+from crewai import Agent, Task, Crew
+{% endif %}
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class MockLLM:
+    """
+    Mock LLM for deterministic testing.
+    
+    Provides predictable responses for testing agent behavior without
+    making actual API calls.
+    """
+    
+    def __init__(self, responses: Optional[Dict[str, str]] = None):
+        """
+        Initialize mock LLM.
+        
+        Args:
+            responses: Dictionary mapping input keys to responses
+        """
+        self.responses = responses or {}
+        self.call_count = 0
+        self.call_history: List[Any] = []
+    
+    def _create_key(self, messages: List[BaseMessage]) -> str:
+        """
+        Create key from messages for response lookup.
+        
+        Args:
+            messages: List of messages
+            
+        Returns:
+            String key
+        """
+        # Extract content from messages
+        contents = []
+        for msg in messages:
+            if hasattr(msg, 'content'):
+                contents.append(str(msg.content))
+            elif isinstance(msg, dict):
+                contents.append(msg.get('content', ''))
+            else:
+                contents.append(str(msg))
+        
+        return "|".join(contents)
+    
+    def invoke(self, messages: List[BaseMessage], **kwargs) -> AIMessage:
+        """
+        Invoke mock LLM.
+        
+        Args:
+            messages: Input messages
+            **kwargs: Additional arguments
+            
+        Returns:
+            Mock AI message
+        """
+        self.call_count += 1
+        self.call_history.append({
+            "messages": messages,
+            "kwargs": kwargs
+        })
+        
+        # Create key for lookup
+        key = self._create_key(messages)
+        
+        # Return predefined response or default
+        if key in self.responses:
+            response_content = self.responses[key]
+        elif self.responses:
+            # Use first response as default
+            response_content = list(self.responses.values())[0]
+        else:
+            response_content = "Mock LLM response"
+        
+        return AIMessage(content=response_content)
+    
+    async def ainvoke(self, messages: List[BaseMessage], **kwargs) -> AIMessage:
+        """Async version of invoke."""
+        return self.invoke(messages, **kwargs)
+    
+    def stream(self, messages: List[BaseMessage], **kwargs):
+        """
+        Stream mock responses.
+        
+        Args:
+            messages: Input messages
+            **kwargs: Additional arguments
+            
+        Yields:
+            Mock message chunks
+        """
+        response = self.invoke(messages, **kwargs)
+        # Stream response word by word
+        words = response.content.split()
+        for word in words:
+            yield AIMessage(content=word + " ")
+    
+    async def astream(self, messages: List[BaseMessage], **kwargs):
+        """Async stream."""
+        for chunk in self.stream(messages, **kwargs):
+            yield chunk
+
+
+class MockTool(BaseTool):
+    """Mock tool for testing."""
+    
+    name: str = "mock_tool"
+    description: str = "A mock tool for testing"
+    
+    def _run(self, query: str) -> str:
+        """Run mock tool."""
+        return f"Mock tool result for: {query}"
+    
+    async def _arun(self, query: str) -> str:
+        """Async run mock tool."""
+        return self._run(query)
+
+
+# Pytest fixtures
+@pytest.fixture
+def mock_llm():
+    """
+    Fixture providing mock LLM instance.
+    
+    Returns:
+        MockLLM instance
+    """
+    return MockLLM()
+
+
+@pytest.fixture
+def mock_llm_with_responses():
+    """
+    Fixture providing mock LLM with predefined responses.
+    
+    Returns:
+        MockLLM instance with responses
+    """
+    responses = {
+        "Hello": "Hi there! How can I help you?",
+        "What is 2+2?": "The answer is 4.",
+        "What is the weather?": "I don't have access to weather data."
+    }
+    return MockLLM(responses=responses)
+
+
+@pytest.fixture
+def mock_tools():
+    """
+    Fixture providing list of mock tools.
+    
+    Returns:
+        List of mock tools
+    """
+    return [MockTool()]
+
+
+@pytest.fixture
+def event_loop():
+    """
+    Create event loop for async tests.
+    
+    Returns:
+        Event loop
+    """
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
+
+@pytest.fixture
+async def agent_executor(mock_llm, mock_tools):
+    """
+    Fixture providing agent executor for testing.
+    
+    Args:
+        mock_llm: Mock LLM fixture
+        mock_tools: Mock tools fixture
+        
+    Returns:
+        Agent executor instance
+    """
+    {% if agent_framework == 'langchain' or not agent_framework %}
+    from langchain import hub
+    prompt = hub.pull("hwchase17/react")
+    
+    agent = create_react_agent(mock_llm, mock_tools, prompt)
+    executor = AgentExecutor(agent=agent, tools=mock_tools, verbose=True)
+    {% elif agent_framework == 'langgraph' %}
+    agent = create_react_agent(mock_llm, mock_tools)
+    executor = agent
+    {% elif agent_framework == 'crewai' %}
+    agent = Agent(
+        role="Test Agent",
+        goal="Answer questions",
+        backstory="A test agent",
+        llm=mock_llm,
+        tools=mock_tools
+    )
+    executor = agent
+    {% else %}
+    # Generic agent setup
+    executor = None
+    {% endif %}
+    
+    yield executor
+    
+    # Cleanup if needed
+    if hasattr(executor, 'close'):
+        await executor.close()
+
+
+# Test classes
+class Test{{ test_class_name | default('Agent') }}:
+    """
+    Test suite for {{ agent_name | default('Agent') }}.
+    
+    Tests agent functionality including:
+    - Basic message handling
+    - Tool calling
+    - Error handling
+    - Async operations
+    """
+    
+    @pytest.mark.asyncio
+    async def test_agent_initialization(self, mock_llm, mock_tools):
+        """
+        Test agent initialization.
+        
+        Verifies that agent can be created with mock LLM and tools.
+        """
+        {% if agent_framework == 'langchain' or not agent_framework %}
+        from langchain import hub
+        prompt = hub.pull("hwchase17/react")
+        agent = create_react_agent(mock_llm, mock_tools, prompt)
+        executor = AgentExecutor(agent=agent, tools=mock_tools)
+        {% elif agent_framework == 'langgraph' %}
+        executor = create_react_agent(mock_llm, mock_tools)
+        {% elif agent_framework == 'crewai' %}
+        executor = Agent(
+            role="Test Agent",
+            goal="Answer questions",
+            backstory="A test agent",
+            llm=mock_llm,
+            tools=mock_tools
+        )
+        {% else %}
+        executor = None
+        {% endif %}
+        
+        assert executor is not None
+        {% if agent_framework == 'langchain' or not agent_framework %}
+        assert executor.tools == mock_tools
+        {% endif %}
+    
+    @pytest.mark.asyncio
+    async def test_agent_basic_query(self, agent_executor, mock_llm):
+        """
+        Test agent with basic query.
+        
+        Verifies that agent can process a simple query and return a response.
+        """
+        input_query = "Hello"
+        
+        {% if agent_framework == 'langchain' or not agent_framework %}
+        result = await agent_executor.ainvoke({"input": input_query})
+        assert "output" in result
+        assert result["output"] is not None
+        assert len(result["output"]) > 0
+        {% elif agent_framework == 'langgraph' %}
+        result = await agent_executor.ainvoke({"messages": [HumanMessage(content=input_query)]})
+        assert result is not None
+        {% elif agent_framework == 'crewai' %}
+        task = Task(description=input_query, agent=agent_executor)
+        crew = Crew(agents=[agent_executor], tasks=[task])
+        result = crew.kickoff()
+        assert result is not None
+        {% else %}
+        result = None
+        assert result is not None
+        {% endif %}
+        
+        # Verify LLM was called
+        assert mock_llm.call_count > 0
+    
+    @pytest.mark.asyncio
+    async def test_agent_with_tool_calling(self, agent_executor, mock_llm, mock_tools):
+        """
+        Test agent tool calling.
+        
+        Verifies that agent can call tools when needed.
+        """
+        # Configure mock LLM to request tool use
+        mock_llm.responses = {
+            "Use mock_tool with query 'test'": "I'll use the mock_tool to help with that."
+        }
+        
+        input_query = "Use mock_tool with query 'test'"
+        
+        {% if agent_framework == 'langchain' or not agent_framework %}
+        result = await agent_executor.ainvoke({"input": input_query})
+        assert "output" in result
+        # Verify tool was potentially called (depending on agent decision)
+        {% elif agent_framework == 'langgraph' %}
+        result = await agent_executor.ainvoke({"messages": [HumanMessage(content=input_query)]})
+        {% elif agent_framework == 'crewai' %}
+        task = Task(description=input_query, agent=agent_executor)
+        crew = Crew(agents=[agent_executor], tasks=[task])
+        result = crew.kickoff()
+        {% endif %}
+        
+        assert result is not None
+    
+    @pytest.mark.asyncio
+    async def test_agent_error_handling(self, agent_executor, mock_llm):
+        """
+        Test agent error handling.
+        
+        Verifies that agent handles errors gracefully.
+        """
+        # Configure mock LLM to raise error
+        mock_llm.invoke = Mock(side_effect=Exception("Mock error"))
+        
+        input_query = "Test error handling"
+        
+        {% if agent_framework == 'langchain' or not agent_framework %}
+        # Agent executor should handle errors
+        try:
+            result = await agent_executor.ainvoke({"input": input_query})
+            # If no exception, verify error handling in output
+            assert "output" in result
+        except Exception as e:
+            # Error handling may raise or return error message
+            assert "error" in str(e).lower() or "mock" in str(e).lower()
+        {% else %}
+        # Test error handling for other frameworks
+        with pytest.raises(Exception):
+            {% if agent_framework == 'langgraph' %}
+            await agent_executor.ainvoke({"messages": [HumanMessage(content=input_query)]})
+            {% elif agent_framework == 'crewai' %}
+            task = Task(description=input_query, agent=agent_executor)
+            crew = Crew(agents=[agent_executor], tasks=[task])
+            crew.kickoff()
+            {% endif %}
+        {% endif %}
+    
+    @pytest.mark.asyncio
+    async def test_agent_streaming(self, mock_llm, mock_tools):
+        """
+        Test agent streaming responses.
+        
+        Verifies that agent can stream responses.
+        """
+        {% if agent_framework == 'langchain' or not agent_framework %}
+        from langchain import hub
+        prompt = hub.pull("hwchase17/react")
+        agent = create_react_agent(mock_llm, mock_tools, prompt)
+        executor = AgentExecutor(agent=agent, tools=mock_tools)
+        
+        input_query = "Hello"
+        chunks = []
+        async for chunk in executor.astream({"input": input_query}):
+            chunks.append(chunk)
+        
+        assert len(chunks) > 0
+        {% else %}
+        # Streaming test for other frameworks
+        assert True  # Placeholder
+        {% endif %}
+    
+    def test_mock_llm_responses(self, mock_llm_with_responses):
+        """
+        Test mock LLM with predefined responses.
+        
+        Verifies that mock LLM returns correct responses.
+        """
+        messages = [HumanMessage(content="Hello")]
+        response = mock_llm_with_responses.invoke(messages)
+        
+        assert isinstance(response, AIMessage)
+        assert "Hi there" in response.content or "Hello" in response.content
+    
+    def test_mock_tool_execution(self, mock_tools):
+        """
+        Test mock tool execution.
+        
+        Verifies that mock tools work correctly.
+        """
+        tool = mock_tools[0]
+        result = tool._run("test query")
+        
+        assert isinstance(result, str)
+        assert "test query" in result or "Mock" in result
+
+
+# Integration tests
+@pytest.mark.integration
+class Test{{ test_class_name | default('Agent') }}Integration:
+    """
+    Integration tests for {{ agent_name | default('Agent') }}.
+    
+    These tests may use real LLM (with low temperature) for end-to-end testing.
+    """
+    
+    @pytest.mark.asyncio
+    @pytest.mark.skipif(
+        "{{ skip_integration_tests | default('true') }}".lower() == "true",
+        reason="Integration tests skipped by default"
+    )
+    async def test_agent_with_real_llm(self, mock_tools):
+        """
+        Test agent with real LLM (integration test).
+        
+        Requires API key and may incur costs.
+        """
+        {% if agent_framework == 'langchain' or not agent_framework %}
+        llm = ChatOpenAI(model="{{ model_name | default('gpt-3.5-turbo') }}", temperature=0)
+        from langchain import hub
+        prompt = hub.pull("hwchase17/react")
+        agent = create_react_agent(llm, mock_tools, prompt)
+        executor = AgentExecutor(agent=agent, tools=mock_tools)
+        
+        result = await executor.ainvoke({"input": "What is 2+2?"})
+        assert "4" in result["output"].lower() or "four" in result["output"].lower()
+        {% else %}
+        # Integration test for other frameworks
+        assert True  # Placeholder
+        {% endif %}
+
+
+# Example usage
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

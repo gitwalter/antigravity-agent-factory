@@ -259,8 +259,7 @@ class TestProjectComponentsExist:
     def test_skills_directory_exists(self, project_root):
         """Test that .agent/skills directory exists."""
         skills_dir = project_root / ".agent" / "skills"
-        assert skills_dir.exists(), ".agent/skills directory should exist"
-    
+        assert skills_dir.exists(), ".agent/skills directory should exist"    
     def test_blueprints_directory_exists(self, project_root):
         """Test that blueprints directory exists."""
         blueprints_dir = project_root / "blueprints"

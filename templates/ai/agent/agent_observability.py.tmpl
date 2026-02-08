@@ -1,0 +1,512 @@
+"""
+{{AGENT_NAME}} - Agent with LangFuse Observability
+
+Purpose: {{AGENT_PURPOSE}}
+Stakeholders: {{PRIMARY_STAKEHOLDERS}}
+
+Axiom Alignment:
+- A1 (Verifiability): All agent actions are traced and logged via LangFuse
+- A2 (User Primacy): User interactions are tracked for analysis
+- A3 (Transparency): Observability data provides full transparency
+- A4 (Non-Harm): Monitoring enables detection of harmful patterns
+- A5 (Consistency): Consistent observability across all operations
+
+Observability Pattern: Comprehensive tracing, monitoring, and evaluation using LangFuse
+"""
+
+from typing import List, Dict, Any, Optional, TypedDict
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_openai import ChatOpenAI
+from langchain_core.tools import tool, Tool
+from langfuse import Langfuse
+from langfuse.decorators import langfuse_context, observe
+from langfuse.client import Langfuse
+from pydantic import BaseModel, Field
+import logging
+import os
+from datetime import datetime
+
+# Configure logging for transparency (A3)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class ObservabilityConfig(BaseModel):
+    """Configuration for LangFuse observability."""
+    enabled: bool = Field(default=True, description="Enable observability")
+    public_key: Optional[str] = Field(default=None, description="LangFuse public key")
+    secret_key: Optional[str] = Field(default=None, description="LangFuse secret key")
+    host: Optional[str] = Field(default="https://cloud.langfuse.com", description="LangFuse host")
+    session_id: Optional[str] = Field(default=None, description="Session identifier")
+    user_id: Optional[str] = Field(default=None, description="User identifier")
+    release: Optional[str] = Field(default=None, description="Release version")
+    environment: str = Field(default="development", description="Environment")
+
+
+class {{AGENT_CLASS_NAME}}Output(BaseModel):
+    """
+    Structured output for {{AGENT_NAME}} with observability.
+    
+    Using structured output ensures verifiability (A1).
+    """
+    response: str = Field(description="Agent response")
+    reasoning: str = Field(description="Reasoning process")
+    trace_id: Optional[str] = Field(default=None, description="LangFuse trace ID")
+    generation_id: Optional[str] = Field(default=None, description="LangFuse generation ID")
+    latency_ms: float = Field(description="Response latency in milliseconds")
+    tokens_used: Optional[int] = Field(default=None, description="Tokens used")
+    cost: Optional[float] = Field(default=None, description="Estimated cost")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+
+
+class {{AGENT_CLASS_NAME}}:
+    """
+    {{AGENT_NAME}} - Agent with LangFuse Observability
+    
+    Implements comprehensive observability including:
+    - Tracing: Full trace of agent execution
+    - Monitoring: Performance metrics and costs
+    - Evaluation: Quality metrics and feedback
+    - Debugging: Detailed logs and error tracking
+    
+    This agent follows the 5-layer architecture:
+    - Layer 0: Respects core axioms (A1-A5)
+    - Layer 1: Serves purpose of {{AGENT_PURPOSE}}
+    - Layer 2: Follows quality standards and ethical boundaries
+    - Layer 3: Works within {{METHODOLOGY}} methodology
+    - Layer 4: Uses {{TECH_STACK}} stack
+    
+    Example:
+        >>> agent = {{AGENT_CLASS_NAME}}()
+        >>> result = agent.invoke("{{EXAMPLE_QUERY}}")
+        >>> print(result.response)
+        >>> print(f"Trace ID: {result.trace_id}")
+        >>> print(f"Latency: {result.latency_ms}ms")
+    """
+    
+    # Configuration
+    MODEL_NAME = "{{LLM_MODEL}}"
+    TEMPERATURE = {{TEMPERATURE}}
+    
+    def __init__(
+        self,
+        model_name: Optional[str] = None,
+        temperature: Optional[float] = None,
+        tools: Optional[List[Tool]] = None,
+        observability_config: Optional[ObservabilityConfig] = None
+    ):
+        """
+        Initialize the agent with LangFuse observability.
+        
+        Args:
+            model_name: LLM model to use (default: {{LLM_MODEL}})
+            temperature: Sampling temperature (default: {{TEMPERATURE}})
+            tools: Tools available to the agent
+            observability_config: Observability configuration
+            
+        Environment Variables:
+            LANGFUSE_PUBLIC_KEY: LangFuse public key
+            LANGFUSE_SECRET_KEY: LangFuse secret key
+            LANGFUSE_HOST: LangFuse host (default: https://cloud.langfuse.com)
+        """
+        self.model_name = model_name or self.MODEL_NAME
+        self.temperature = temperature if temperature is not None else self.TEMPERATURE
+        self.tools = tools or []
+        
+        # Initialize observability
+        self.observability_config = observability_config or ObservabilityConfig(
+            public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
+            secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
+            host=os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com"),
+            environment=os.getenv("ENVIRONMENT", "development")
+        )
+        
+        # Initialize LangFuse client
+        if self.observability_config.enabled:
+            try:
+                self.langfuse = Langfuse(
+                    public_key=self.observability_config.public_key,
+                    secret_key=self.observability_config.secret_key,
+                    host=self.observability_config.host
+                )
+                logger.info("LangFuse observability enabled")
+            except Exception as e:
+                logger.warning(f"Failed to initialize LangFuse: {e}. Continuing without observability.")
+                self.observability_config.enabled = False
+                self.langfuse = None
+        else:
+            self.langfuse = None
+            logger.info("LangFuse observability disabled")
+        
+        # Initialize LLM with LangFuse callback
+        self.llm = ChatOpenAI(
+            model=self.model_name,
+            temperature=self.temperature
+        )
+        
+        # Create prompt template
+        self.prompt = self._create_prompt()
+        
+        logger.info(f"Initialized {{AGENT_NAME}} with model {self.model_name}")
+    
+    def _create_prompt(self) -> ChatPromptTemplate:
+        """Create prompt template for the agent."""
+        system_message = """{{SYSTEM_PROMPT}}
+
+You are {{AGENT_NAME}}, a helpful AI assistant.
+
+## Core Principles
+- VERIFIABILITY (A1): All actions are traced and logged
+- USER PRIMACY (A2): Prioritize user intent
+- TRANSPARENCY (A3): Be explicit about your reasoning
+- NON-HARM (A4): Refuse harmful requests
+- CONSISTENCY (A5): Maintain consistent behavior
+
+## Observability
+Your actions are being monitored for:
+- Performance optimization
+- Quality assurance
+- Error detection
+- Cost tracking
+
+Provide clear, helpful responses.
+"""
+        
+        return ChatPromptTemplate.from_messages([
+            ("system", system_message),
+            MessagesPlaceholder(variable_name="messages"),
+            ("human", "{input}")
+        ])
+    
+    @observe(name="{{AGENT_NAME}}_invoke")
+    def invoke(
+        self,
+        input_text: str,
+        context: Optional[str] = None,
+        user_id: Optional[str] = None,
+        session_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> {{AGENT_CLASS_NAME}}Output:
+        """
+        Invoke the agent with observability tracing.
+        
+        Args:
+            input_text: User's input/question
+            context: Optional additional context
+            user_id: User identifier for tracking
+            session_id: Session identifier for tracking
+            metadata: Additional metadata to attach to trace
+            
+        Returns:
+            Structured output with response and observability data
+            
+        Example:
+            >>> result = agent.invoke(
+            ...     "Analyze this code",
+            ...     context="Python web app",
+            ...     user_id="user-123",
+            ...     metadata={"feature": "code-analysis"}
+            ... )
+        """
+        start_time = datetime.now()
+        logger.info(f"Processing input: {input_text[:100]}...")
+        
+        # Set LangFuse context
+        if self.langfuse:
+            langfuse_context.update_current_trace(
+                user_id=user_id or self.observability_config.user_id,
+                session_id=session_id or self.observability_config.session_id,
+                release=self.observability_config.release,
+                metadata=metadata or {}
+            )
+        
+        try:
+            # Build messages
+            messages = []
+            if context:
+                messages.append(HumanMessage(content=f"Context: {context}"))
+            
+            # Create chain with observability
+            chain = self.prompt | self.llm
+            
+            # Invoke with tracing
+            if self.langfuse:
+                # LangFuse automatically traces LangChain calls when callback is configured
+                # For manual tracing, use @observe decorator
+                result = chain.invoke({
+                    "messages": messages,
+                    "input": input_text
+                })
+            else:
+                result = chain.invoke({
+                    "messages": messages,
+                    "input": input_text
+                })
+            
+            # Extract response
+            response_text = result.content if hasattr(result, 'content') else str(result)
+            
+            # Calculate latency
+            latency_ms = (datetime.now() - start_time).total_seconds() * 1000
+            
+            # Get trace information
+            trace_id = None
+            generation_id = None
+            tokens_used = None
+            cost = None
+            
+            if self.langfuse:
+                current_trace = langfuse_context.get_current_trace()
+                if current_trace:
+                    trace_id = current_trace.id
+                
+                # Extract generation info if available
+                # This would be populated by LangChain's LangFuse callback
+                if hasattr(result, 'response_metadata'):
+                    metadata_dict = result.response_metadata
+                    generation_id = metadata_dict.get('langfuse_generation_id')
+                    tokens_used = metadata_dict.get('token_usage', {}).get('total_tokens')
+            
+            output = {{AGENT_CLASS_NAME}}Output(
+                response=response_text,
+                reasoning=f"Processed query: {input_text[:100]}...",
+                trace_id=trace_id,
+                generation_id=generation_id,
+                latency_ms=latency_ms,
+                tokens_used=tokens_used,
+                cost=cost,
+                metadata={
+                    "model": self.model_name,
+                    "temperature": self.temperature,
+                    "context_provided": context is not None,
+                    **(metadata or {})
+                }
+            )
+            
+            logger.info(f"Response generated in {latency_ms:.2f}ms")
+            if trace_id:
+                logger.info(f"Trace ID: {trace_id}")
+            
+            return output
+            
+        except Exception as e:
+            logger.error(f"Error during invocation: {e}", exc_info=True)
+            
+            # Log error to LangFuse
+            if self.langfuse:
+                langfuse_context.score(
+                    name="error",
+                    value=1,
+                    comment=str(e)
+                )
+            
+            latency_ms = (datetime.now() - start_time).total_seconds() * 1000
+            
+            return {{AGENT_CLASS_NAME}}Output(
+                response=f"I encountered an error: {str(e)}. Please try again.",
+                reasoning="Error occurred during processing",
+                trace_id=langfuse_context.get_current_trace().id if self.langfuse else None,
+                generation_id=None,
+                latency_ms=latency_ms,
+                tokens_used=None,
+                cost=None,
+                metadata={"error": str(e), **(metadata or {})}
+            )
+    
+    async def ainvoke(
+        self,
+        input_text: str,
+        context: Optional[str] = None,
+        user_id: Optional[str] = None,
+        session_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> {{AGENT_CLASS_NAME}}Output:
+        """
+        Async version of invoke with observability.
+        
+        Args:
+            input_text: User's input/question
+            context: Optional additional context
+            user_id: User identifier for tracking
+            session_id: Session identifier for tracking
+            metadata: Additional metadata
+            
+        Returns:
+            Structured output with response and observability data
+        """
+        start_time = datetime.now()
+        logger.info(f"Processing input (async): {input_text[:100]}...")
+        
+        if self.langfuse:
+            langfuse_context.update_current_trace(
+                user_id=user_id or self.observability_config.user_id,
+                session_id=session_id or self.observability_config.session_id,
+                release=self.observability_config.release,
+                metadata=metadata or {}
+            )
+        
+        try:
+            messages = []
+            if context:
+                messages.append(HumanMessage(content=f"Context: {context}"))
+            
+            chain = self.prompt | self.llm
+            
+            if self.langfuse:
+                result = await chain.ainvoke({
+                    "messages": messages,
+                    "input": input_text
+                })
+            else:
+                result = await chain.ainvoke({
+                    "messages": messages,
+                    "input": input_text
+                })
+            
+            response_text = result.content if hasattr(result, 'content') else str(result)
+            latency_ms = (datetime.now() - start_time).total_seconds() * 1000
+            
+            trace_id = None
+            generation_id = None
+            tokens_used = None
+            
+            if self.langfuse:
+                current_trace = langfuse_context.get_current_trace()
+                if current_trace:
+                    trace_id = current_trace.id
+            
+            return {{AGENT_CLASS_NAME}}Output(
+                response=response_text,
+                reasoning=f"Processed query: {input_text[:100]}...",
+                trace_id=trace_id,
+                generation_id=generation_id,
+                latency_ms=latency_ms,
+                tokens_used=tokens_used,
+                cost=None,
+                metadata={
+                    "model": self.model_name,
+                    "temperature": self.temperature,
+                    "context_provided": context is not None,
+                    **(metadata or {})
+                }
+            )
+            
+        except Exception as e:
+            logger.error(f"Error during async invocation: {e}")
+            latency_ms = (datetime.now() - start_time).total_seconds() * 1000
+            
+            return {{AGENT_CLASS_NAME}}Output(
+                response=f"Error: {str(e)}",
+                reasoning="Error occurred",
+                trace_id=None,
+                generation_id=None,
+                latency_ms=latency_ms,
+                tokens_used=None,
+                cost=None,
+                metadata={"error": str(e), **(metadata or {})}
+            )
+    
+    def score(
+        self,
+        trace_id: str,
+        name: str,
+        value: float,
+        comment: Optional[str] = None
+    ) -> None:
+        """
+        Add a score/evaluation to a trace.
+        
+        Args:
+            trace_id: Trace ID to score
+            name: Score name (e.g., "quality", "helpfulness")
+            value: Score value (typically 0-1)
+            comment: Optional comment
+            
+        Example:
+            >>> agent.score(
+            ...     trace_id="trace-123",
+            ...     name="helpfulness",
+            ...     value=0.9,
+            ...     comment="Very helpful response"
+            ... )
+        """
+        if self.langfuse:
+            try:
+                self.langfuse.score(
+                    trace_id=trace_id,
+                    name=name,
+                    value=value,
+                    comment=comment
+                )
+                logger.info(f"Added score '{name}' = {value} to trace {trace_id}")
+            except Exception as e:
+                logger.error(f"Failed to add score: {e}")
+        else:
+            logger.warning("LangFuse not enabled, cannot add score")
+    
+    def get_trace_url(self, trace_id: str) -> Optional[str]:
+        """
+        Get URL to view trace in LangFuse UI.
+        
+        Args:
+            trace_id: Trace ID
+            
+        Returns:
+            URL to trace or None if observability disabled
+        """
+        if self.langfuse and self.observability_config.host:
+            return f"{self.observability_config.host}/traces/{trace_id}"
+        return None
+
+
+# Example usage
+if __name__ == "__main__":
+    import os
+    
+    # Set up environment variables (or use ObservabilityConfig)
+    # os.environ["LANGFUSE_PUBLIC_KEY"] = "your-public-key"
+    # os.environ["LANGFUSE_SECRET_KEY"] = "your-secret-key"
+    
+    # Create agent with observability
+    agent = {{AGENT_CLASS_NAME}}(
+        model_name="{{LLM_MODEL}}",
+        observability_config=ObservabilityConfig(
+            enabled=True,
+            environment="development"
+        )
+    )
+    
+    # Invoke agent
+    result = agent.invoke(
+        "{{EXAMPLE_QUERY}}",
+        user_id="user-123",
+        session_id="session-456",
+        metadata={"feature": "example"}
+    )
+    
+    print(f"\n{'='*60}")
+    print(f"Response: {result.response}")
+    print(f"{'='*60}")
+    print(f"\nObservability Data:")
+    print(f"  Trace ID: {result.trace_id}")
+    print(f"  Generation ID: {result.generation_id}")
+    print(f"  Latency: {result.latency_ms:.2f}ms")
+    if result.tokens_used:
+        print(f"  Tokens Used: {result.tokens_used}")
+    if result.cost:
+        print(f"  Estimated Cost: ${result.cost:.4f}")
+    
+    if result.trace_id:
+        trace_url = agent.get_trace_url(result.trace_id)
+        if trace_url:
+            print(f"\nView trace: {trace_url}")
+    
+    # Add evaluation score
+    if result.trace_id:
+        agent.score(
+            trace_id=result.trace_id,
+            name="helpfulness",
+            value=0.9,
+            comment="Helpful response"
+        )

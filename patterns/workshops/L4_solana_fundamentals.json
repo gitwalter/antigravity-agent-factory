@@ -1,0 +1,329 @@
+{
+  "$schema": "../learning-workshop-pattern.json",
+  "workshopId": "L4_solana_fundamentals",
+  "name": "Solana Program Development Fundamentals",
+  "technology": {
+    "category": "blockchain",
+    "stack": "Solana + Anchor",
+    "language": "Rust",
+    "version": "Anchor 0.30+"
+  },
+  "level": "fundamentals",
+  "prerequisites": {
+    "workshops": [],
+    "knowledge": [
+      "Basic Rust syntax (ownership, borrowing, structs, enums)",
+      "Understanding of blockchain concepts (transactions, accounts)",
+      "Command-line proficiency"
+    ],
+    "tools": [
+      "Rust and Cargo installed",
+      "Solana CLI installed",
+      "Anchor CLI installed",
+      "Node.js 18+ for testing"
+    ]
+  },
+  "duration": {
+    "total_hours": 2.5,
+    "concept_minutes": 30,
+    "demo_minutes": 30,
+    "exercise_minutes": 45,
+    "challenge_minutes": 30,
+    "reflection_minutes": 15
+  },
+  "learning_objectives": [
+    {
+      "objective": "Understand Solana's account model and how it differs from Ethereum's state model",
+      "bloom_level": "understand",
+      "verification": "Can explain account ownership, PDAs, and data storage"
+    },
+    {
+      "objective": "Create a basic Anchor program with initialization and update instructions",
+      "bloom_level": "apply",
+      "verification": "Successfully deploy a working program to devnet"
+    },
+    {
+      "objective": "Implement proper account validation using Anchor constraints",
+      "bloom_level": "apply",
+      "verification": "Code includes correct has_one, seeds, bump constraints"
+    },
+    {
+      "objective": "Write and run TypeScript tests for Solana programs",
+      "bloom_level": "apply",
+      "verification": "Test suite passes with success and failure cases"
+    },
+    {
+      "objective": "Identify common security vulnerabilities in Solana programs",
+      "bloom_level": "analyze",
+      "verification": "Can spot missing owner checks and signer validation"
+    }
+  ],
+  "knowledge_files": [
+    "solana-patterns.json",
+    "anchor-patterns.json",
+    "solana-security.json"
+  ],
+  "phases": [
+    {
+      "phaseId": "concept",
+      "name": "Solana Architecture Deep Dive",
+      "type": "concept",
+      "duration_minutes": 30,
+      "description": "Understand the fundamental architecture that makes Solana unique",
+      "content": {
+        "topics": [
+          "Account Model vs State Model",
+          "Programs are stateless - all state in accounts",
+          "Account structure: owner, data, lamports, rent",
+          "Program Derived Addresses (PDAs)",
+          "Cross-Program Invocation (CPI)",
+          "Sealevel parallel execution"
+        ],
+        "diagrams": [
+          "Account ownership diagram",
+          "PDA derivation flow",
+          "Transaction structure"
+        ],
+        "key_points": [
+          "Programs don't store data - accounts do",
+          "Every account has an owner program",
+          "PDAs are addresses without private keys",
+          "Transactions declare all accounts upfront for parallel execution"
+        ]
+      },
+      "facilitator_notes": "Use visual diagrams to show account relationships. Compare to Ethereum for those with prior blockchain experience.",
+      "common_questions": [
+        "Why use accounts instead of contract storage?",
+        "How do PDAs enable program-controlled accounts?",
+        "What happens if rent isn't paid?"
+      ]
+    },
+    {
+      "phaseId": "demo",
+      "name": "Building a Counter Program",
+      "type": "demo",
+      "duration_minutes": 30,
+      "description": "Live coding a simple Anchor program from scratch",
+      "content": {
+        "topics": [
+          "Anchor project structure",
+          "#[program] and #[account] macros",
+          "Account constraints (init, mut, signer)",
+          "Error handling with custom errors",
+          "TypeScript client generation"
+        ],
+        "code_examples": [
+          "anchor init counter",
+          "Basic counter program with initialize and increment",
+          "Adding PDA-based counter per user"
+        ],
+        "key_points": [
+          "Anchor generates boilerplate for account validation",
+          "The IDL enables type-safe clients",
+          "Constraints are checked at runtime automatically"
+        ]
+      },
+      "facilitator_notes": "Type code live, explain each line. Show errors and how to fix them."
+    },
+    {
+      "phaseId": "exercise_1",
+      "name": "Your First Solana Program",
+      "type": "exercise",
+      "duration_minutes": 25,
+      "description": "Build a simple note-taking program",
+      "content": {
+        "topics": [
+          "Create NoteAccount with content and author",
+          "Implement create_note instruction",
+          "Add update_note with authority check",
+          "Deploy to localnet"
+        ]
+      }
+    },
+    {
+      "phaseId": "exercise_2",
+      "name": "Testing Your Program",
+      "type": "exercise",
+      "duration_minutes": 20,
+      "description": "Write comprehensive tests",
+      "content": {
+        "topics": [
+          "Setting up Anchor test environment",
+          "Testing happy path",
+          "Testing error conditions",
+          "Verifying account state"
+        ]
+      }
+    },
+    {
+      "phaseId": "challenge",
+      "name": "Secure Voting System",
+      "type": "challenge",
+      "duration_minutes": 30,
+      "description": "Apply all concepts to build a secure voting program",
+      "content": {
+        "topics": [
+          "Create Poll and Vote accounts",
+          "Implement voting with one-vote-per-user (PDA)",
+          "Add security: prevent double voting, verify authority",
+          "Bonus: add time-locked voting period"
+        ]
+      }
+    },
+    {
+      "phaseId": "reflection",
+      "name": "Key Takeaways and Next Steps",
+      "type": "reflection",
+      "duration_minutes": 15,
+      "description": "Consolidate learning and plan continued growth",
+      "content": {
+        "topics": [
+          "Summary of Solana's account model",
+          "Anchor's role in simplifying development",
+          "Security considerations",
+          "Resources for continued learning"
+        ],
+        "key_points": [
+          "Always validate account ownership",
+          "Store bump seeds for PDAs",
+          "Use checked arithmetic",
+          "Test both success and failure paths"
+        ]
+      }
+    }
+  ],
+  "exercises": [
+    {
+      "exerciseId": "ex1_note_program",
+      "name": "Note-Taking Program",
+      "type": "guided",
+      "difficulty": "easy",
+      "duration_minutes": 25,
+      "description": "Create a program to store personal notes on-chain",
+      "starter_code": "use anchor_lang::prelude::*;\n\ndeclare_id!(\"YOUR_PROGRAM_ID\");\n\n#[program]\npub mod notes {\n    use super::*;\n\n    pub fn create_note(ctx: Context<CreateNote>, content: String) -> Result<()> {\n        // TODO: Implement\n        Ok(())\n    }\n}\n\n#[derive(Accounts)]\npub struct CreateNote<'info> {\n    // TODO: Define accounts\n}\n\n#[account]\npub struct NoteAccount {\n    // TODO: Define fields\n}",
+      "solution_code": "use anchor_lang::prelude::*;\n\ndeclare_id!(\"YOUR_PROGRAM_ID\");\n\n#[program]\npub mod notes {\n    use super::*;\n\n    pub fn create_note(ctx: Context<CreateNote>, content: String) -> Result<()> {\n        let note = &mut ctx.accounts.note;\n        note.author = ctx.accounts.author.key();\n        note.content = content;\n        note.bump = ctx.bumps.note;\n        Ok(())\n    }\n\n    pub fn update_note(ctx: Context<UpdateNote>, new_content: String) -> Result<()> {\n        ctx.accounts.note.content = new_content;\n        Ok(())\n    }\n}\n\n#[derive(Accounts)]\n#[instruction(content: String)]\npub struct CreateNote<'info> {\n    #[account(\n        init,\n        payer = author,\n        space = 8 + 32 + 4 + 280 + 1,\n        seeds = [b\"note\", author.key().as_ref()],\n        bump\n    )]\n    pub note: Account<'info, NoteAccount>,\n    #[account(mut)]\n    pub author: Signer<'info>,\n    pub system_program: Program<'info, System>,\n}\n\n#[derive(Accounts)]\npub struct UpdateNote<'info> {\n    #[account(mut, has_one = author)]\n    pub note: Account<'info, NoteAccount>,\n    pub author: Signer<'info>,\n}\n\n#[account]\npub struct NoteAccount {\n    pub author: Pubkey,\n    pub content: String,\n    pub bump: u8,\n}",
+      "hints": [
+        "Use seeds with author's public key for per-user notes",
+        "Include bump in account data for efficient re-derivation",
+        "has_one constraint validates author matches"
+      ],
+      "verification": "Program deploys and create_note instruction succeeds",
+      "common_mistakes": [
+        "Forgetting system_program in CreateNote",
+        "Wrong space calculation for String",
+        "Missing #[account(mut)] on payer"
+      ]
+    },
+    {
+      "exerciseId": "ex2_testing",
+      "name": "Testing the Note Program",
+      "type": "guided",
+      "difficulty": "medium",
+      "duration_minutes": 20,
+      "description": "Write tests for the note program",
+      "starter_code": "import * as anchor from \"@coral-xyz/anchor\";\nimport { Program } from \"@coral-xyz/anchor\";\nimport { Notes } from \"../target/types/notes\";\nimport { expect } from \"chai\";\n\ndescribe(\"notes\", () => {\n  const provider = anchor.AnchorProvider.env();\n  anchor.setProvider(provider);\n  const program = anchor.workspace.Notes as Program<Notes>;\n\n  it(\"Creates a note\", async () => {\n    // TODO: Implement test\n  });\n\n  it(\"Updates a note\", async () => {\n    // TODO: Implement test\n  });\n\n  it(\"Fails when non-author tries to update\", async () => {\n    // TODO: Implement test\n  });\n});",
+      "verification": "All three tests pass",
+      "common_mistakes": [
+        "Not deriving PDA correctly in test",
+        "Forgetting to catch expected errors",
+        "Not verifying account state after operations"
+      ]
+    }
+  ],
+  "challenges": [
+    {
+      "challengeId": "voting_system",
+      "name": "Secure Voting System",
+      "description": "Build a decentralized voting system with security guarantees",
+      "requirements": [
+        "Poll account: title, options (array), vote counts, creator, end_time",
+        "Vote PDA per user per poll: prevents double voting",
+        "Only poll creator can close polling",
+        "Votes only counted before end_time"
+      ],
+      "evaluation_criteria": [
+        "Program compiles and deploys",
+        "One vote per user enforced via PDA",
+        "Authority checks on admin functions",
+        "Time-based constraints work correctly"
+      ],
+      "stretch_goals": [
+        "Add weighted voting based on token holdings",
+        "Implement vote delegation",
+        "Add vote result verification"
+      ]
+    }
+  ],
+  "resources": {
+    "official_docs": [
+      "https://solana.com/docs",
+      "https://www.anchor-lang.com/docs"
+    ],
+    "tutorials": [
+      "https://solana.com/developers/guides",
+      "https://www.rareskills.io/solana-tutorial"
+    ],
+    "community": [
+      "Solana Stack Exchange",
+      "Anchor Discord"
+    ]
+  },
+  "assessment": {
+    "knowledge_check": [
+      {
+        "question": "What is the main difference between Solana's account model and Ethereum's state model?",
+        "type": "short_answer",
+        "answer": "Solana programs are stateless - all state is stored in separate accounts that programs receive as inputs. Ethereum contracts own and store their own state.",
+        "explanation": "This architectural difference enables Solana's parallel transaction execution"
+      },
+      {
+        "question": "What is a PDA and why is it useful?",
+        "type": "short_answer",
+        "answer": "A Program Derived Address is a deterministic address without a private key, derived from seeds and a program ID. It allows programs to 'own' and sign for accounts.",
+        "explanation": "PDAs enable program-controlled accounts for vaults, escrows, etc."
+      },
+      {
+        "question": "Which Anchor constraint ensures only the owner can modify an account?",
+        "type": "multiple_choice",
+        "answer": "has_one = owner combined with owner: Signer<'info>",
+        "explanation": "has_one validates the account field matches, Signer ensures they signed"
+      }
+    ],
+    "practical_assessment": "Deploy a working voting program to devnet with tests",
+    "self_assessment": [
+      "Can I explain how accounts, programs, and PDAs work together?",
+      "Do I understand why Anchor constraints are important for security?",
+      "Can I write tests that verify both success and failure paths?"
+    ]
+  },
+  "next_steps": {
+    "next_workshop": "L5_solana_tokens_nfts",
+    "practice_projects": [
+      "Escrow program with PDA vaults",
+      "Simple DEX with token swaps",
+      "NFT minting program"
+    ],
+    "deeper_learning": [
+      "Solana security audit checklist",
+      "Token-2022 program features",
+      "Cross-program invocation patterns"
+    ]
+  },
+  "axiom_zero_integration": {
+    "love_moments": [
+      "Patient explanation of unfamiliar concepts",
+      "Encouraging messages when exercises get challenging",
+      "Celebrating successful deployments"
+    ],
+    "truth_moments": [
+      "Honest discussion of Solana tradeoffs",
+      "Clear security warnings about common vulnerabilities",
+      "Accurate error messages and debugging guidance"
+    ],
+    "beauty_moments": [
+      "Appreciation for Solana's elegant parallel architecture",
+      "Clean, well-structured code examples",
+      "The satisfaction of a working on-chain program"
+    ]
+  }
+}

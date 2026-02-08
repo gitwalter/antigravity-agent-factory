@@ -279,8 +279,7 @@ class TestBackupManager:
             manager = BackupManager(repo_path)
             
             assert manager.repo_path == repo_path
-            assert manager.backup_root == repo_path / ".agent-factory-backup"
-    
+            assert manager.backup_root == repo_path / ".agent-factory-backup"    
     def test_create_session(self):
         """Test creating a backup session."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -478,8 +477,7 @@ class TestEnsureGitignoreExcludesBackup:
             assert result is True
             gitignore = repo_path / ".gitignore"
             assert gitignore.exists()
-            assert ".agent-factory-backup/" in gitignore.read_text()
-    
+            assert ".agent-factory-backup/" in gitignore.read_text()    
     def test_appends_to_existing_gitignore(self):
         """Test that function appends to existing .gitignore."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -492,21 +490,18 @@ class TestEnsureGitignoreExcludesBackup:
             assert result is True
             content = gitignore.read_text()
             assert "*.pyc" in content
-            assert ".agent-factory-backup/" in content
-    
+            assert ".agent-factory-backup/" in content    
     def test_does_not_duplicate_entry(self):
         """Test that function doesn't add duplicate entries."""
         with tempfile.TemporaryDirectory() as tmpdir:
             repo_path = Path(tmpdir)
             gitignore = repo_path / ".gitignore"
-            gitignore.write_text(".agent-factory-backup/\n")
-            
+            gitignore.write_text(".agent-factory-backup/\n")            
             result = ensure_gitignore_excludes_backup(repo_path)
             
             assert result is True
             content = gitignore.read_text()
             assert content.count(".agent-factory-backup") == 1
-
 
 class TestMainEntry:
     """Tests for command-line interface."""

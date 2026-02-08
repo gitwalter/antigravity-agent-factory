@@ -8,8 +8,7 @@ Execution time: <10ms for typical operations.
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Dict, Any
-from pathlib import Path
+from typing import List, Optional, Dict, Anyfrom pathlib import Path
 
 
 class AxiomViolation(Enum):
@@ -95,8 +94,7 @@ def check_command(command: str) -> CheckResult:
     Returns:
         CheckResult with violation details if any
     """
-
-    
+    command_lower = command.lower()    
     # Check for destructive patterns (A4)
     for pattern, description in DESTRUCTIVE_PATTERNS:
         if re.search(pattern, command, re.IGNORECASE):

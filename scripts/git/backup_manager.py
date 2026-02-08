@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 Antigravity Agent Factory - Backup Manager
-
 Handles backup creation, manifest tracking, and rollback functionality
 for the onboarding process.
 
@@ -14,8 +13,7 @@ Usage:
     # ... make changes ...
     session.rollback()  # If needed
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 import json
@@ -302,13 +300,11 @@ class BackupManager:
     Example:
         >>> manager = BackupManager(Path("C:/Projects/my-repo"))
         >>> session = manager.create_session("Onboarding with python-fastapi blueprint")
-        >>> session.backup_file(Path("C:/Projects/my-repo/.agentrules"))
-        >>> # ... modify files ...
+        >>> session.backup_file(Path("C:/Projects/my-repo/.agentrules"))        >>> # ... modify files ...
         >>> session.complete()  # Or session.rollback() if needed
     """
     
-    BACKUP_DIR_NAME = ".agent-factory-backup"
-    
+    BACKUP_DIR_NAME = ".agent-factory-backup"    
     def __init__(self, repo_path: Path):
         """Initialize the backup manager.
         
@@ -479,8 +475,7 @@ def ensure_gitignore_excludes_backup(repo_path: Path) -> bool:
     if not content.endswith("\n") and content:
         content += "\n"
     
-    content += f"\n# Antigravity Agent Factory backup directory\n{backup_pattern}\n"
-    
+    content += f"\n# Antigravity Agent Factory backup directory\n{backup_pattern}\n"    
     try:
         gitignore_path.write_text(content, encoding="utf-8")
         return True

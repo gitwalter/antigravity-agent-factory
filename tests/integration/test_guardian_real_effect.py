@@ -47,8 +47,7 @@ class GuardedAgent:
     """
     An agent that uses the Guardian to protect its actions.
     
-    This simulates how a real Antigravity agent would use the Guardian
-    to decide whether to proceed with an action.
+    This simulates how a real Antigravity agent would use the Guardian    to decide whether to proceed with an action.
     """
     
     def __init__(self):
@@ -212,8 +211,7 @@ class TestGuardianActuallyPreventsHarm:
         
         secret_content = '''
         # Config
-        API_KEY = "sk-" + "1234567890abcdefghijklmnopqrstuv"
-        '''
+        API_KEY = "sk-1234567890abcdefghijklmnopqrstuv"        '''
         
         action = AgentAction(
             action_type='file_write',
@@ -264,19 +262,17 @@ class TestGuardianPauseRequiresConfirmation:
         result2 = agent2.execute_with_guardian(action, user_confirms=True)
         assert result2.action_taken, ".env write should proceed WITH confirmation"
     
-    def test_agentrules_modification_requires_confirmation(self):
+    def test_cursorrules_modification_requires_confirmation(self):
         """Modifying .agentrules requires confirmation."""
         agent = GuardedAgent()
         action = AgentAction(
             action_type='file_write', 
-            target='.agentrules',
-            content='# Modified rules'
+            target='.agentrules',            content='# Modified rules'
         )
         
         result = agent.execute_with_guardian(action, user_confirms=False)
         
-        assert not result.action_taken, ".agentrules change needs confirmation"
-        assert result.level >= 2, "Should be at least Level 2"
+        assert not result.action_taken, ".agentrules change needs confirmation"        assert result.level >= 2, "Should be at least Level 2"
 
 
 class TestGuardianWithRealFiles:
@@ -302,8 +298,7 @@ class TestGuardianWithRealFiles:
         
         with tempfile.TemporaryDirectory() as tmpdir:
             secret_file = os.path.join(tmpdir, "secrets.py")
-            secret_content = 'OPENAI_KEY = "sk-" + "realkey1234567890abcdefghijklmn"'
-            
+            secret_content = 'OPENAI_KEY = "sk-realkey1234567890abcdefghijklmn"'            
             action = AgentAction(
                 action_type='file_write',
                 target=secret_file,
@@ -375,8 +370,7 @@ class TestGuardianPreCommitScenario:
         """Commit containing secrets should be BLOCKED."""
         files = {
             'main.py': 'print("hello")',
-            'config.py': 'API_KEY = "sk-" + "1234567890abcdefghijklmnopqrstuv"',
-        }
+            'config.py': 'API_KEY = "sk-1234567890abcdefghijklmnopqrstuv"',        }
         
         allowed, issues = self.simulate_pre_commit(files)
         
@@ -423,8 +417,7 @@ class TestGuardianStatistics:
             AgentAction('command', 'rm -rf /'),
             AgentAction('command', 'DROP DATABASE users'),
             AgentAction('command', 'DELETE FROM orders'),
-            AgentAction('file_write', 'config.py', 'KEY="sk-" + "1234567890abcdefghijklmnop"'),
-            AgentAction('command', 'format C:'),
+            AgentAction('file_write', 'config.py', 'KEY="sk-1234567890abcdefghijklmnop"'),            AgentAction('command', 'format C:'),
         ]
         
         blocked = 0
@@ -486,8 +479,7 @@ class TestGuardianEndToEnd:
             (AgentAction('command', 'rm -rf /'), False, "DANGEROUS - should block"),
             
             # Secret in code - should block (realistic OpenAI key length)
-            (AgentAction('file_write', 'config.py', 'KEY="sk-" + "1234567890abcdefghijklmnopqrstuv"'), False, "Secret in code"),
-        ]
+            (AgentAction('file_write', 'config.py', 'KEY="sk-1234567890abcdefghijklmnopqrstuv"'), False, "Secret in code"),        ]
         
         results = []
         for action, should_succeed, description in workflow:

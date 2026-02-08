@@ -13,8 +13,7 @@ Features:
 Note: This is a foundational implementation. Production use would require
 additional parsing for specific community sources.
 
-Author: Antigravity Agent Factory
-Version: 1.0.0
+Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 from dataclasses import dataclass
@@ -138,8 +137,7 @@ class CommunityAdapter(BaseAdapter):
         
         if self._session is None or self._session.closed:
             headers = {
-                "User-Agent": "Antigravity-Agent-Factory/1.0",
-                "Accept": "application/vnd.github.v3+json",
+                "User-Agent": "Antigravity-Agent-Factory/1.0",                "Accept": "application/vnd.github.v3+json",
             }
             if self.config.api_key:
                 headers["Authorization"] = f"token {self.config.api_key}"

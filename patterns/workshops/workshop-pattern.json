@@ -1,0 +1,163 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Workshop Pattern Schema",
+  "description": "Schema for team workshop patterns - structured collaborative sessions that generate artifacts and build alignment",
+  "version": "1.0.0",
+  "philosophy": "Workshops are journeys of collective discovery. Through structured play and discussion, teams find their shared truth.",
+  "axiom_alignment": ["A0_love_truth_beauty", "A2_user_primacy", "A3_transparency"],
+  "type": "object",
+  "required": ["workshopId", "name", "purpose", "duration", "phases", "outputs"],
+  "properties": {
+    "workshopId": {
+      "type": "string",
+      "pattern": "^W[0-9]+_[a-z_]+$",
+      "description": "Unique identifier following pattern W{number}_{name}",
+      "examples": ["W1_vision_quest", "W2_ethics_arena"]
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name for the workshop"
+    },
+    "purpose": {
+      "type": "string",
+      "description": "What this workshop achieves and why it matters"
+    },
+    "position_in_series": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Order in the workshop series (1-5)"
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Workshops or artifacts that must exist before this one"
+    },
+    "duration": {
+      "type": "object",
+      "properties": {
+        "min_hours": {"type": "number"},
+        "max_hours": {"type": "number"},
+        "recommended_hours": {"type": "number"}
+      },
+      "description": "Time requirements for the workshop"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["synchronous", "asynchronous", "hybrid"],
+      "description": "How participants engage - all together, independently, or mix"
+    },
+    "team_size_range": {
+      "type": "object",
+      "properties": {
+        "min": {"type": "integer"},
+        "max": {"type": "integer"},
+        "optimal": {"type": "integer"}
+      }
+    },
+    "facilitator_requirements": {
+      "type": "object",
+      "properties": {
+        "ai_facilitated_sections": {"type": "array", "items": {"type": "string"}},
+        "human_facilitated_sections": {"type": "array", "items": {"type": "string"}},
+        "facilitation_notes": {"type": "string"}
+      }
+    },
+    "phases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phaseId": {"type": "string"},
+          "name": {"type": "string"},
+          "duration_minutes": {"type": "integer"},
+          "type": {
+            "type": "string",
+            "enum": ["opening", "game", "discussion", "questionnaire", "synthesis", "closing", "break"]
+          },
+          "facilitator": {
+            "type": "string",
+            "enum": ["ai", "human", "self-guided"]
+          },
+          "description": {"type": "string"},
+          "activities": {"type": "array", "items": {"type": "string"}},
+          "game_reference": {"type": "string"},
+          "ai_prompts": {"type": "array", "items": {"type": "string"}},
+          "outputs": {"type": "array", "items": {"type": "string"}}
+        }
+      },
+      "description": "Sequential phases of the workshop"
+    },
+    "games": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "References to games used in this workshop (game IDs)"
+    },
+    "questionnaires": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "question": {"type": "string"},
+                "type": {
+                  "type": "string",
+                  "enum": ["open", "multiple_choice", "scale", "ranking"]
+                },
+                "options": {"type": "array", "items": {"type": "string"}},
+                "purpose": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "discussion_formats": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "description": {"type": "string"},
+          "when_to_use": {"type": "string"},
+          "facilitation_guide": {"type": "string"}
+        }
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Artifacts and outcomes produced by this workshop"
+    },
+    "artifacts_template": {
+      "type": "object",
+      "description": "Template structure for generated artifacts"
+    },
+    "success_indicators": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "How to know the workshop achieved its purpose"
+    },
+    "integration_points": {
+      "type": "object",
+      "properties": {
+        "inputs_from": {"type": "array", "items": {"type": "string"}},
+        "outputs_to": {"type": "array", "items": {"type": "string"}},
+        "generated_files": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "axiom_zero_integration": {
+      "type": "object",
+      "properties": {
+        "opening_ritual": {"type": "string"},
+        "closing_ritual": {"type": "string"},
+        "love_truth_beauty_moments": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

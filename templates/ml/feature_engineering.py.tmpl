@@ -1,0 +1,444 @@
+"""
+{{MODULE_NAME}} - Feature Engineering Utilities
+
+Purpose: Advanced feature engineering utilities for machine learning
+Author: {{AUTHOR}}
+Created: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): All feature transformations are reproducible
+- A3 (Transparency): Clear documentation of feature creation logic
+- A4 (Non-Harm): Validates feature quality and prevents data leakage
+"""
+
+from typing import List, Optional, Dict, Any, Tuple, Callable, Union
+import numpy as np
+import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import PolynomialFeatures
+from scipy import stats
+import logging
+from datetime import datetime, timedelta
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class FeatureEngineer(BaseEstimator, TransformerMixin):
+    """
+    Feature engineering transformer for creating advanced features.
+    
+    Provides utilities for creating polynomial features, interaction terms,
+    statistical features, time-based features, and domain-specific transformations.
+    
+    Example:
+        >>> engineer = FeatureEngineer(
+        ...     create_polynomial=True,
+        ...     polynomial_degree=2,
+        ...     create_interactions=True
+        ... )
+        >>> X_engineered = engineer.fit_transform(X)
+    """
+    
+    def __init__(
+        self,
+        create_polynomial: bool = {{CREATE_POLYNOMIAL}},
+        polynomial_degree: int = {{POLYNOMIAL_DEGREE}},
+        create_interactions: bool = {{CREATE_INTERACTIONS}},
+        interaction_pairs: Optional[List[Tuple[str, str]]] = None,
+        create_statistical: bool = {{CREATE_STATISTICAL}},
+        create_time_features: bool = {{CREATE_TIME_FEATURES}},
+        date_columns: Optional[List[str]] = None,
+        custom_transformations: Optional[Dict[str, Callable]] = None
+    ):
+        """
+        Initialize feature engineer.
+        
+        Args:
+            create_polynomial: Whether to create polynomial features
+            polynomial_degree: Degree of polynomial features
+            create_interactions: Whether to create interaction terms
+            interaction_pairs: Specific pairs of columns to create interactions
+            create_statistical: Whether to create statistical features
+            create_time_features: Whether to extract time-based features
+            date_columns: List of date/datetime column names
+            custom_transformations: Dictionary of custom transformation functions
+        """
+        self.create_polynomial = create_polynomial
+        self.polynomial_degree = polynomial_degree
+        self.create_interactions = create_interactions
+        self.interaction_pairs = interaction_pairs
+        self.create_statistical = create_statistical
+        self.create_time_features = create_time_features
+        self.date_columns = date_columns or []
+        self.custom_transformations = custom_transformations or {}
+        
+        self.poly_features_ = None
+        self.feature_names_ = []
+        self.is_fitted_ = False
+        
+        logger.info("Initialized FeatureEngineer")
+    
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> 'FeatureEngineer':
+        """
+        Fit the feature engineer on training data.
+        
+        Args:
+            X: Feature dataframe
+            y: Optional target series
+            
+        Returns:
+            Self for method chaining
+        """
+        logger.info(f"Fitting feature engineer on {len(X)} samples")
+        
+        # Store original feature names
+        self.original_features_ = X.columns.tolist()
+        
+        # Fit polynomial features if needed
+        if self.create_polynomial:
+            numerical_cols = X.select_dtypes(include=[np.number]).columns.tolist()
+            if numerical_cols:
+                self.poly_features_ = PolynomialFeatures(
+                    degree=self.polynomial_degree,
+                    include_bias=False,
+                    interaction_only=False
+                )
+                self.poly_features_.fit(X[numerical_cols])
+        
+        self.is_fitted_ = True
+        logger.info("Feature engineer fitted successfully")
+        return self
+    
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Transform data by creating new features.
+        
+        Args:
+            X: Feature dataframe
+            
+        Returns:
+            Dataframe with engineered features
+            
+        Raises:
+            ValueError: If transformer is not fitted
+        """
+        if not self.is_fitted_:
+            raise ValueError("FeatureEngineer must be fitted before transform")
+        
+        logger.info(f"Transforming {len(X)} samples")
+        
+        X_engineered = X.copy()
+        
+        # Create polynomial features
+        if self.create_polynomial and self.poly_features_:
+            numerical_cols = X.select_dtypes(include=[np.number]).columns.tolist()
+            if numerical_cols:
+                poly_features = self.poly_features_.transform(X[numerical_cols])
+                poly_df = pd.DataFrame(
+                    poly_features,
+                    columns=self.poly_features_.get_feature_names_out(numerical_cols),
+                    index=X.index
+                )
+                X_engineered = pd.concat([X_engineered, poly_df], axis=1)
+        
+        # Create interaction features
+        if self.create_interactions:
+            X_engineered = self._create_interactions(X_engineered)
+        
+        # Create statistical features
+        if self.create_statistical:
+            X_engineered = self._create_statistical_features(X_engineered)
+        
+        # Create time-based features
+        if self.create_time_features:
+            X_engineered = self._create_time_features(X_engineered)
+        
+        # Apply custom transformations
+        if self.custom_transformations:
+            X_engineered = self._apply_custom_transformations(X_engineered)
+        
+        self.feature_names_ = X_engineered.columns.tolist()
+        logger.info(f"Created {len(self.feature_names_) - len(self.original_features_)} new features")
+        
+        return X_engineered
+    
+    def fit_transform(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> pd.DataFrame:
+        """
+        Fit and transform data in one step.
+        
+        Args:
+            X: Feature dataframe
+            y: Optional target series
+            
+        Returns:
+            Dataframe with engineered features
+        """
+        return self.fit(X, y).transform(X)
+    
+    def _create_interactions(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Create interaction features between columns."""
+        X_interactions = X.copy()
+        
+        if self.interaction_pairs:
+            # Create specific interactions
+            for col1, col2 in self.interaction_pairs:
+                if col1 in X.columns and col2 in X.columns:
+                    interaction_name = f"{col1}_x_{col2}"
+                    X_interactions[interaction_name] = X[col1] * X[col2]
+        else:
+            # Create interactions for all numerical pairs
+            numerical_cols = X.select_dtypes(include=[np.number]).columns.tolist()
+            if len(numerical_cols) > 1:
+                for i, col1 in enumerate(numerical_cols):
+                    for col2 in numerical_cols[i+1:]:
+                        interaction_name = f"{col1}_x_{col2}"
+                        X_interactions[interaction_name] = X[col1] * X[col2]
+        
+        return X_interactions
+    
+    def _create_statistical_features(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Create statistical features (rolling stats, ratios, etc.)."""
+        X_stats = X.copy()
+        numerical_cols = X.select_dtypes(include=[np.number]).columns.tolist()
+        
+        if len(numerical_cols) >= 2:
+            # Create ratio features
+            for i, col1 in enumerate(numerical_cols):
+                for col2 in numerical_cols[i+1:]:
+                    ratio_name = f"{col1}_div_{col2}"
+                    # Avoid division by zero
+                    X_stats[ratio_name] = np.where(
+                        X[col2] != 0,
+                        X[col1] / (X[col2] + 1e-8),
+                        0
+                    )
+            
+            # Create sum and difference features
+            if len(numerical_cols) >= 2:
+                X_stats['sum_features'] = X[numerical_cols].sum(axis=1)
+                X_stats['mean_features'] = X[numerical_cols].mean(axis=1)
+                X_stats['std_features'] = X[numerical_cols].std(axis=1)
+                X_stats['max_features'] = X[numerical_cols].max(axis=1)
+                X_stats['min_features'] = X[numerical_cols].min(axis=1)
+        
+        return X_stats
+    
+    def _create_time_features(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Extract time-based features from date columns."""
+        X_time = X.copy()
+        
+        for col in self.date_columns:
+            if col in X.columns:
+                # Convert to datetime if not already
+                if not pd.api.types.is_datetime64_any_dtype(X[col]):
+                    X_time[col] = pd.to_datetime(X[col], errors='coerce')
+                
+                # Extract time features
+                X_time[f"{col}_year"] = X_time[col].dt.year
+                X_time[f"{col}_month"] = X_time[col].dt.month
+                X_time[f"{col}_day"] = X_time[col].dt.day
+                X_time[f"{col}_dayofweek"] = X_time[col].dt.dayofweek
+                X_time[f"{col}_dayofyear"] = X_time[col].dt.dayofyear
+                X_time[f"{col}_week"] = X_time[col].dt.isocalendar().week
+                X_time[f"{col}_quarter"] = X_time[col].dt.quarter
+                X_time[f"{col}_is_weekend"] = (X_time[col].dt.dayofweek >= 5).astype(int)
+        
+        return X_time
+    
+    def _apply_custom_transformations(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Apply custom transformation functions."""
+        X_custom = X.copy()
+        
+        for feature_name, transform_func in self.custom_transformations.items():
+            try:
+                X_custom[feature_name] = transform_func(X)
+            except Exception as e:
+                logger.warning(f"Error applying custom transformation {feature_name}: {e}")
+        
+        return X_custom
+    
+    def get_feature_names(self) -> List[str]:
+        """
+        Get names of all engineered features.
+        
+        Returns:
+            List of feature names
+        """
+        return self.feature_names_ if self.feature_names_ else []
+
+
+class TargetEncoder(BaseEstimator, TransformerMixin):
+    """
+    Target encoding for categorical variables.
+    
+    Encodes categorical variables using target mean encoding with
+    regularization to prevent overfitting.
+    
+    Example:
+        >>> encoder = TargetEncoder(smoothing=10.0)
+        >>> X_encoded = encoder.fit_transform(X, y)
+    """
+    
+    def __init__(self, smoothing: float = {{SMOOTHING}}):
+        """
+        Initialize target encoder.
+        
+        Args:
+            smoothing: Smoothing parameter for regularization
+        """
+        self.smoothing = smoothing
+        self.encodings_ = {}
+        self.global_mean_ = None
+    
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> 'TargetEncoder':
+        """
+        Fit target encoder.
+        
+        Args:
+            X: Feature dataframe
+            y: Target series
+            
+        Returns:
+            Self for method chaining
+        """
+        self.global_mean_ = y.mean()
+        categorical_cols = X.select_dtypes(include=['object', 'category']).columns
+        
+        for col in categorical_cols:
+            category_means = X.groupby(col)[y.name if hasattr(y, 'name') else 'target'].mean()
+            category_counts = X.groupby(col)[y.name if hasattr(y, 'name') else 'target'].count()
+            
+            # Regularized encoding
+            self.encodings_[col] = (
+                category_means * category_counts + self.global_mean_ * self.smoothing
+            ) / (category_counts + self.smoothing)
+        
+        return self
+    
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Transform using target encoding.
+        
+        Args:
+            X: Feature dataframe
+            
+        Returns:
+            Dataframe with target-encoded features
+        """
+        X_encoded = X.copy()
+        
+        for col, encoding in self.encodings_.items():
+            if col in X.columns:
+                X_encoded[col] = X[col].map(encoding).fillna(self.global_mean_)
+        
+        return X_encoded
+    
+    def fit_transform(self, X: pd.DataFrame, y: pd.Series) -> pd.DataFrame:
+        """Fit and transform in one step."""
+        return self.fit(X, y).transform(X)
+
+
+class FeatureSelector:
+    """
+    Feature selection utilities.
+    
+    Provides methods for selecting important features using various
+    statistical and model-based techniques.
+    """
+    
+    @staticmethod
+    def select_by_correlation(
+        X: pd.DataFrame,
+        threshold: float = {{CORRELATION_THRESHOLD}},
+        method: str = 'pearson'
+    ) -> List[str]:
+        """
+        Select features by removing highly correlated ones.
+        
+        Args:
+            X: Feature dataframe
+            threshold: Correlation threshold for removal
+            method: Correlation method ('pearson', 'spearman', 'kendall')
+            
+        Returns:
+            List of selected feature names
+        """
+        corr_matrix = X.select_dtypes(include=[np.number]).corr(method=method).abs()
+        
+        # Find pairs with high correlation
+        upper_triangle = corr_matrix.where(
+            np.triu(np.ones(corr_matrix.shape), k=1).astype(bool)
+        )
+        
+        # Find features to drop
+        to_drop = [column for column in upper_triangle.columns 
+                  if any(upper_triangle[column] > threshold)]
+        
+        selected = [col for col in X.columns if col not in to_drop]
+        logger.info(f"Selected {len(selected)} features from {len(X.columns)} "
+                   f"(removed {len(to_drop)} highly correlated)")
+        
+        return selected
+    
+    @staticmethod
+    def select_by_variance(
+        X: pd.DataFrame,
+        threshold: float = {{VARIANCE_THRESHOLD}}
+    ) -> List[str]:
+        """
+        Select features by variance threshold.
+        
+        Args:
+            X: Feature dataframe
+            threshold: Minimum variance threshold
+            
+        Returns:
+            List of selected feature names
+        """
+        numerical_cols = X.select_dtypes(include=[np.number]).columns
+        variances = X[numerical_cols].var()
+        
+        selected = variances[variances >= threshold].index.tolist()
+        logger.info(f"Selected {len(selected)} features with variance >= {threshold}")
+        
+        return selected
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create sample data
+    np.random.seed(42)
+    n_samples = 1000
+    
+    data = {
+        'feature1': np.random.normal(0, 1, n_samples),
+        'feature2': np.random.normal(5, 2, n_samples),
+        'feature3': np.random.normal(10, 3, n_samples),
+        'category': np.random.choice(['A', 'B', 'C'], n_samples),
+        'date': pd.date_range('2020-01-01', periods=n_samples, freq='D')
+    }
+    
+    df = pd.DataFrame(data)
+    y = pd.Series(np.random.normal(0, 1, n_samples), name='target')
+    
+    print("Original features:", df.columns.tolist())
+    
+    # Feature engineering
+    engineer = FeatureEngineer(
+        create_polynomial=True,
+        polynomial_degree=2,
+        create_interactions=True,
+        create_statistical=True,
+        create_time_features=True,
+        date_columns=['date']
+    )
+    
+    X_engineered = engineer.fit_transform(df)
+    print(f"\nEngineered features: {len(X_engineered.columns)}")
+    print(f"New features: {X_engineered.columns.tolist()[:10]}...")
+    
+    # Feature selection
+    numerical_df = X_engineered.select_dtypes(include=[np.number])
+    selected = FeatureSelector.select_by_correlation(numerical_df, threshold=0.95)
+    print(f"\nSelected {len(selected)} features after correlation filtering")

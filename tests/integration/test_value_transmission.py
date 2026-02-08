@@ -40,46 +40,40 @@ class TestValueTransmission:
             skills=["bugfix-workflow"]
         )
     
-    def test_agentrules_has_axiom_zero(self, temp_dir, basic_config):
-        """Test that generated .agentrules contains Axiom Zero."""
-        generator = ProjectGenerator(basic_config, str(temp_dir))
+    def test_cursorrules_has_axiom_zero(self, temp_dir, basic_config):
+        """Test that generated .agentrules contains Axiom Zero."""        generator = ProjectGenerator(basic_config, str(temp_dir))
         result = generator.generate()
         
         assert result['success'], f"Generation failed: {result['errors']}"
         
-        agentrules = temp_dir / '.agentrules'
-        assert agentrules.exists(), ".agentrules not created"
+        cursorrules = temp_dir / '.agentrules'
+        assert cursorrules.exists(), ".agentrules not created"
         
-        content = agentrules.read_text(encoding='utf-8')
-        
+        content = cursorrules.read_text(encoding='utf-8')        
         # Check for Axiom Zero section
         assert "Axiom Zero" in content, "Axiom Zero section missing"
         assert "love is the root of everything" in content.lower(), "Love root statement missing"
     
-    def test_agentrules_has_eternal_values(self, temp_dir, basic_config):
-        """Test that generated .agentrules contains eternal values."""
-        generator = ProjectGenerator(basic_config, str(temp_dir))
+    def test_cursorrules_has_eternal_values(self, temp_dir, basic_config):
+        """Test that generated .agentrules contains eternal values."""        generator = ProjectGenerator(basic_config, str(temp_dir))
         result = generator.generate()
         
         assert result['success']
         
-        content = (temp_dir / '.agentrules').read_text(encoding='utf-8')
-        
+        content = (temp_dir / '.agentrules').read_text(encoding='utf-8')        
         # Check for all eternal values
         assert "Love" in content, "Love value missing"
         assert "Truth" in content, "Truth value missing"
         assert "Beauty" in content, "Beauty value missing"
         assert "Flourishing" in content, "Flourishing value missing"
     
-    def test_agentrules_has_wu_wei(self, temp_dir, basic_config):
-        """Test that generated .agentrules contains Wu Wei protocol."""
-        generator = ProjectGenerator(basic_config, str(temp_dir))
+    def test_cursorrules_has_wu_wei(self, temp_dir, basic_config):
+        """Test that generated .agentrules contains Wu Wei protocol."""        generator = ProjectGenerator(basic_config, str(temp_dir))
         result = generator.generate()
         
         assert result['success']
         
-        content = (temp_dir / '.agentrules').read_text(encoding='utf-8')
-        
+        content = (temp_dir / '.agentrules').read_text(encoding='utf-8')        
         # Check for Wu Wei
         assert "Wu Wei" in content, "Wu Wei protocol missing"
         assert "Like water" in content or "return to love" in content.lower(), "Wu Wei wisdom missing"
@@ -150,13 +144,11 @@ class TestValueTransmission:
         
         # Check essential directories exist
         assert (temp_dir / '.agent' / 'agents').exists(), "Agents directory missing"
-        assert (temp_dir / '.agent' / 'skills').exists(), "Skills directory missing"
-        assert (temp_dir / 'knowledge').exists(), "Knowledge directory missing"
+        assert (temp_dir / '.agent' / 'skills').exists(), "Skills directory missing"        assert (temp_dir / 'knowledge').exists(), "Knowledge directory missing"
         assert (temp_dir / 'workflows').exists(), "Workflows directory missing"
         
         # Check essential files exist
-        assert (temp_dir / '.agentrules').exists(), ".agentrules missing"
-        assert (temp_dir / 'README.md').exists(), "README.md missing"
+        assert (temp_dir / '.agentrules').exists(), ".agentrules missing"        assert (temp_dir / 'README.md').exists(), "README.md missing"
         assert (temp_dir / 'knowledge' / 'guardian-protocol.json').exists(), "guardian-protocol.json missing"
     
     def test_values_are_not_empty_strings(self, temp_dir, basic_config):
@@ -198,8 +190,7 @@ class TestAxiomConsistency:
         )
     
     def test_all_five_axioms_present(self, temp_dir, config):
-        """Test that all 5 core axioms are present in .agentrules."""
-        generator = ProjectGenerator(config, str(temp_dir))
+        """Test that all 5 core axioms are present in .agentrules."""        generator = ProjectGenerator(config, str(temp_dir))
         result = generator.generate()
         
         assert result['success']
@@ -208,8 +199,7 @@ class TestAxiomConsistency:
         
         axioms = ['A1', 'A2', 'A3', 'A4', 'A5']
         for axiom in axioms:
-            assert axiom in content, f"Axiom {axiom} missing from .agentrules"
-    
+            assert axiom in content, f"Axiom {axiom} missing from .agentrules"    
     def test_axiom_meanings_present(self, temp_dir, config):
         """Test that axiom meanings are explained."""
         generator = ProjectGenerator(config, str(temp_dir))
@@ -217,15 +207,13 @@ class TestAxiomConsistency:
         
         assert result['success']
         
-        content = (temp_dir / '.agentrules').read_text(encoding='utf-8')
-        
+        content = (temp_dir / '.agentrules').read_text(encoding='utf-8')        
         meanings = ['Verifiability', 'User Primacy', 'Transparency', 'Non-Harm', 'Consistency']
         for meaning in meanings:
             assert meaning in content, f"Axiom meaning '{meaning}' missing"
     
     def test_guardian_protocol_axioms_match(self, temp_dir, config):
-        """Test that guardian-protocol.json axioms match .agentrules."""
-        generator = ProjectGenerator(config, str(temp_dir))
+        """Test that guardian-protocol.json axioms match .agentrules."""        generator = ProjectGenerator(config, str(temp_dir))
         result = generator.generate()
         
         assert result['success']
@@ -270,8 +258,7 @@ class TestWuWeiProtocol:
         
         assert result['success']
         
-        content = (temp_dir / '.agentrules').read_text(encoding='utf-8')
-        
+        content = (temp_dir / '.agentrules').read_text(encoding='utf-8')        
         levels = ['Flow', 'Nudge', 'Pause', 'Block', 'Protect']
         for level in levels:
             assert level in content, f"Wu Wei level '{level}' missing"

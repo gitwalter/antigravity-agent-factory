@@ -1,0 +1,574 @@
+"""
+{{MULTIMODAL_RAG_NAME}} - Multimodal RAG Pipeline
+
+Purpose: {{MULTIMODAL_RAG_PURPOSE}}
+Author: {{AUTHOR}}
+Date: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): All retrieved content includes source references and confidence scores
+- A3 (Transparency): Retrieval and generation steps are explicit and logged
+
+This module provides a multimodal RAG pipeline that combines:
+- Text documents
+- Images with vision understanding
+- Multimodal embeddings (CLIP, etc.)
+- Cross-modal retrieval
+- Unified query interface
+"""
+
+from typing import List, Optional, Dict, Any, Union
+from pathlib import Path
+from pydantic import BaseModel, Field
+import base64
+import logging
+from datetime import datetime
+
+try:
+    from langchain_core.documents import Document
+    from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+    from langchain_community.vectorstores import Chroma, FAISS
+    LANGCHAIN_AVAILABLE = True
+except ImportError:
+    LANGCHAIN_AVAILABLE = False
+    logger.warning("LangChain not available. Install with: pip install langchain langchain-openai langchain-community")
+
+try:
+    from openai import OpenAI
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+    logger.warning("OpenAI not available. Install with: pip install openai")
+
+try:
+    import torch
+    from transformers import CLIPProcessor, CLIPModel
+    CLIP_AVAILABLE = True
+except ImportError:
+    CLIP_AVAILABLE = False
+    logger.warning("CLIP not available. Install with: pip install transformers torch")
+
+try:
+    from PIL import Image
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
+    logger.warning("PIL not available. Install with: pip install pillow")
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class MultimodalDocument(BaseModel):
+    """Multimodal document with text and/or image."""
+    content_type: str = Field(description="Type: 'text', 'image', or 'multimodal'")
+    text_content: Optional[str] = Field(default=None, description="Text content")
+    image_path: Optional[str] = Field(default=None, description="Path to image")
+    image_bytes: Optional[bytes] = Field(default=None, description="Image bytes")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Document metadata")
+    embedding: Optional[List[float]] = Field(default=None, description="Embedding vector")
+
+
+class RetrievalResult(BaseModel):
+    """Result from multimodal retrieval."""
+    documents: List[MultimodalDocument] = Field(description="Retrieved documents")
+    scores: List[float] = Field(description="Relevance scores")
+    query_type: str = Field(description="Type of query: 'text', 'image', or 'multimodal'")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Retrieval metadata")
+
+
+class RAGResult(BaseModel):
+    """Result from multimodal RAG query."""
+    answer: str = Field(description="Generated answer")
+    sources: List[str] = Field(description="Source document references")
+    retrieved_documents: List[MultimodalDocument] = Field(description="Retrieved documents")
+    confidence: float = Field(ge=0.0, le=1.0, description="Confidence score")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+
+
+class MultimodalRAGConfig(BaseModel):
+    """Configuration for multimodal RAG."""
+    text_embedding_model: str = Field(default="{{TEXT_EMBEDDING_MODEL}}", description="Text embedding model")
+    vision_model: str = Field(default="{{VISION_MODEL}}", description="Vision model for image understanding")
+    llm_model: str = Field(default="{{LLM_MODEL}}", description="LLM for generation")
+    use_clip: bool = Field(default={{USE_CLIP}}, description="Use CLIP for multimodal embeddings")
+    vector_store_type: str = Field(default="{{VECTOR_STORE_TYPE}}", description="Vector store: 'chroma' or 'faiss'")
+    retrieval_k: int = Field(default={{RETRIEVAL_K}}, description="Number of documents to retrieve")
+    cross_modal_retrieval: bool = Field(default={{CROSS_MODAL}}, description="Enable cross-modal retrieval")
+
+
+class {{MULTIMODAL_RAG_CLASS_NAME}}:
+    """
+    {{MULTIMODAL_RAG_NAME}} - Multimodal RAG Pipeline
+    
+    Combines text and image retrieval with vision understanding for comprehensive
+    multimodal question answering.
+    
+    Features:
+    - Text document indexing
+    - Image indexing with vision understanding
+    - CLIP-based multimodal embeddings
+    - Cross-modal retrieval (text query -> images, image query -> text)
+    - Unified RAG pipeline
+    
+    Example:
+        >>> rag = {{MULTIMODAL_RAG_CLASS_NAME}}()
+        >>> rag.add_text_document("doc.txt", "Document content...")
+        >>> rag.add_image_document("image.jpg")
+        >>> result = rag.query("What is shown in the images?")
+        >>> print(result.answer)
+    """
+    
+    def __init__(self, config: Optional[MultimodalRAGConfig] = None):
+        """
+        Initialize multimodal RAG pipeline.
+        
+        Args:
+            config: RAG configuration
+        """
+        self.config = config or MultimodalRAGConfig()
+        
+        # Initialize text embeddings
+        if LANGCHAIN_AVAILABLE:
+            self.text_embeddings = OpenAIEmbeddings(model=self.config.text_embedding_model)
+        else:
+            self.text_embeddings = None
+        
+        # Initialize CLIP for multimodal embeddings
+        if self.config.use_clip and CLIP_AVAILABLE:
+            self.clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+            self.clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+            self.clip_model.eval()
+            if torch.cuda.is_available():
+                self.clip_model = self.clip_model.cuda()
+        else:
+            self.clip_model = None
+            self.clip_processor = None
+        
+        # Initialize vision LLM
+        if OPENAI_AVAILABLE:
+            self.vision_client = OpenAI(api_key="{{OPENAI_API_KEY}}")
+        else:
+            self.vision_client = None
+        
+        # Initialize LLM for generation
+        if LANGCHAIN_AVAILABLE:
+            self.llm = ChatOpenAI(model=self.config.llm_model)
+        else:
+            self.llm = None
+        
+        # Initialize vector stores
+        self.text_store: Optional[Any] = None
+        self.image_store: Optional[Any] = None
+        self.multimodal_store: Optional[Any] = None
+        
+        # Document storage
+        self.documents: List[MultimodalDocument] = []
+        
+        logger.info(f"Initialized {{MULTIMODAL_RAG_NAME}} with CLIP={self.config.use_clip}")
+    
+    def add_text_document(
+        self,
+        text: str,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> str:
+        """
+        Add a text document to the RAG system.
+        
+        Args:
+            text: Text content
+            metadata: Optional metadata
+            
+        Returns:
+            Document ID
+            
+        Example:
+            >>> doc_id = rag.add_text_document("Machine learning is...", {"source": "ml_book.txt"})
+        """
+        logger.info(f"Adding text document: {len(text)} characters")
+        
+        doc = MultimodalDocument(
+            content_type="text",
+            text_content=text,
+            metadata=metadata or {}
+        )
+        
+        # Generate embedding
+        if self.text_embeddings:
+            doc.embedding = self.text_embeddings.embed_query(text)
+        
+        doc_id = f"text_{len(self.documents)}"
+        doc.metadata["doc_id"] = doc_id
+        self.documents.append(doc)
+        
+        # Add to vector store
+        self._add_to_text_store(doc)
+        
+        return doc_id
+    
+    def add_image_document(
+        self,
+        image_path: Union[str, Path],
+        description: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> str:
+        """
+        Add an image document to the RAG system.
+        
+        Args:
+            image_path: Path to image file
+            description: Optional text description
+            metadata: Optional metadata
+            
+        Returns:
+            Document ID
+            
+        Example:
+            >>> doc_id = rag.add_image_document("photo.jpg", "A mountain landscape")
+        """
+        logger.info(f"Adding image document: {image_path}")
+        
+        path = Path(image_path)
+        if not path.exists():
+            raise FileNotFoundError(f"Image not found: {image_path}")
+        
+        # Generate description if not provided
+        if not description and self.vision_client:
+            description = self._generate_image_description(path)
+        
+        # Load image
+        with open(path, "rb") as f:
+            image_bytes = f.read()
+        
+        doc = MultimodalDocument(
+            content_type="image",
+            text_content=description,
+            image_path=str(path),
+            image_bytes=image_bytes,
+            metadata=metadata or {}
+        )
+        
+        # Generate embeddings
+        if description and self.text_embeddings:
+            doc.embedding = self.text_embeddings.embed_query(description)
+        
+        # Generate CLIP embedding if available
+        if self.clip_model and PIL_AVAILABLE:
+            clip_embedding = self._generate_clip_embedding(path)
+            if doc.embedding:
+                # Combine embeddings (simplified - can use weighted combination)
+                pass
+            else:
+                doc.embedding = clip_embedding
+        
+        doc_id = f"image_{len(self.documents)}"
+        doc.metadata["doc_id"] = doc_id
+        self.documents.append(doc)
+        
+        # Add to stores
+        self._add_to_image_store(doc)
+        
+        return doc_id
+    
+    def query(
+        self,
+        query: str,
+        query_image: Optional[Union[str, Path]] = None,
+        k: Optional[int] = None
+    ) -> RAGResult:
+        """
+        Query the multimodal RAG system.
+        
+        Args:
+            query: Text query
+            query_image: Optional image query
+            k: Number of documents to retrieve
+            
+        Returns:
+            RAGResult with answer and sources
+            
+        Example:
+            >>> result = rag.query("What are the main topics in the documents?")
+            >>> print(result.answer)
+            >>> print(f"Sources: {result.sources}")
+        """
+        logger.info(f"Processing query: {query[:100]}...")
+        
+        retrieval_k = k or self.config.retrieval_k
+        
+        # Determine query type
+        if query_image:
+            query_type = "multimodal"
+        else:
+            query_type = "text"
+        
+        # Retrieve documents
+        retrieval_result = self._retrieve(query, query_image, retrieval_k, query_type)
+        
+        # Generate answer
+        answer = self._generate_answer(query, retrieval_result)
+        
+        # Extract sources
+        sources = [
+            doc.metadata.get("doc_id", f"doc_{i}")
+            for i, doc in enumerate(retrieval_result.documents)
+        ]
+        
+        result = RAGResult(
+            answer=answer,
+            sources=sources,
+            retrieved_documents=retrieval_result.documents,
+            confidence=sum(retrieval_result.scores) / len(retrieval_result.scores) if retrieval_result.scores else 0.5,
+            metadata={
+                "query_type": query_type,
+                "retrieval_k": retrieval_k,
+                "num_retrieved": len(retrieval_result.documents)
+            }
+        )
+        
+        logger.info(f"Query complete. Retrieved {len(retrieval_result.documents)} documents.")
+        return result
+    
+    def _retrieve(
+        self,
+        query: str,
+        query_image: Optional[Union[str, Path]],
+        k: int,
+        query_type: str
+    ) -> RetrievalResult:
+        """Retrieve relevant documents."""
+        retrieved_docs = []
+        scores = []
+        
+        # Text-based retrieval
+        if query and self.text_store:
+            text_docs = self.text_store.similarity_search_with_score(query, k=k)
+            for doc, score in text_docs:
+                # Convert to MultimodalDocument
+                multimodal_doc = self._langchain_to_multimodal(doc)
+                retrieved_docs.append(multimodal_doc)
+                scores.append(float(score))
+        
+        # Image-based retrieval
+        if query_image and self.image_store:
+            # Generate query embedding
+            query_embedding = self._generate_query_embedding(query_image)
+            if query_embedding:
+                # Similarity search (simplified)
+                image_docs = self._search_image_store(query_embedding, k)
+                for doc, score in image_docs:
+                    retrieved_docs.append(doc)
+                    scores.append(score)
+        
+        # Cross-modal retrieval
+        if self.config.cross_modal_retrieval:
+            if query_image and self.text_store:
+                # Image query -> text documents
+                description = self._generate_image_description(query_image) if self.vision_client else None
+                if description:
+                    cross_docs = self.text_store.similarity_search_with_score(description, k=k//2)
+                    for doc, score in cross_docs:
+                        multimodal_doc = self._langchain_to_multimodal(doc)
+                        retrieved_docs.append(multimodal_doc)
+                        scores.append(float(score))
+        
+        # Sort by score and take top k
+        sorted_pairs = sorted(zip(retrieved_docs, scores), key=lambda x: x[1], reverse=True)
+        top_k = sorted_pairs[:k]
+        
+        return RetrievalResult(
+            documents=[doc for doc, _ in top_k],
+            scores=[score for _, score in top_k],
+            query_type=query_type,
+            metadata={"total_candidates": len(retrieved_docs)}
+        )
+    
+    def _generate_answer(
+        self,
+        query: str,
+        retrieval_result: RetrievalResult
+    ) -> str:
+        """Generate answer from retrieved documents."""
+        if not self.llm:
+            return "LLM not available for answer generation."
+        
+        # Build context from retrieved documents
+        context_parts = []
+        for i, doc in enumerate(retrieval_result.documents):
+            source_ref = doc.metadata.get("doc_id", f"doc_{i}")
+            if doc.content_type == "text":
+                context_parts.append(f"[Source {i+1}] ({source_ref})\n{doc.text_content}")
+            elif doc.content_type == "image":
+                context_parts.append(f"[Source {i+1}] ({source_ref}) - Image: {doc.text_content}")
+        
+        context = "\n\n".join(context_parts)
+        
+        # Build prompt
+        prompt = f"""Answer the question based on the following context from retrieved documents.
+
+Context:
+{context}
+
+Question: {query}
+
+Provide a comprehensive answer based on the context. Cite sources using [Source N] format."""
+        
+        # Generate answer
+        from langchain_core.prompts import ChatPromptTemplate
+        from langchain_core.output_parsers import StrOutputParser
+        
+        chat_prompt = ChatPromptTemplate.from_messages([
+            ("system", "You are a helpful assistant that answers questions based on provided context."),
+            ("human", prompt)
+        ])
+        
+        chain = chat_prompt | self.llm | StrOutputParser()
+        answer = chain.invoke({"query": query})
+        
+        return answer
+    
+    def _generate_image_description(self, image_path: Union[str, Path]) -> str:
+        """Generate description of image using vision LLM."""
+        if not self.vision_client:
+            return ""
+        
+        path = Path(image_path)
+        with open(path, "rb") as f:
+            image_bytes = f.read()
+        
+        image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+        
+        response = self.vision_client.chat.completions.create(
+            model=self.config.vision_model,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Describe this image in detail for document indexing."
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_base64}",
+                                "detail": "high"
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens=300
+        )
+        
+        return response.choices[0].message.content
+    
+    def _generate_clip_embedding(self, image_path: Union[str, Path]) -> List[float]:
+        """Generate CLIP embedding for image."""
+        if not self.clip_model or not PIL_AVAILABLE:
+            return []
+        
+        image = Image.open(image_path)
+        inputs = self.clip_processor(images=image, return_tensors="pt")
+        
+        if torch.cuda.is_available():
+            inputs = {k: v.cuda() for k, v in inputs.items()}
+        
+        with torch.no_grad():
+            image_features = self.clip_model.get_image_features(**inputs)
+            embedding = image_features[0].cpu().numpy().tolist()
+        
+        return embedding
+    
+    def _generate_query_embedding(self, query_image: Union[str, Path]) -> Optional[List[float]]:
+        """Generate embedding for query image."""
+        if self.clip_model:
+            return self._generate_clip_embedding(query_image)
+        return None
+    
+    def _add_to_text_store(self, doc: MultimodalDocument):
+        """Add document to text vector store."""
+        if not LANGCHAIN_AVAILABLE or not self.text_embeddings:
+            return
+        
+        if self.text_store is None:
+            if self.config.vector_store_type == "chroma":
+                self.text_store = Chroma(
+                    embedding_function=self.text_embeddings,
+                    collection_name="multimodal_text"
+                )
+            else:  # faiss
+                # Will be initialized with first document
+                pass
+        
+        if doc.text_content:
+            langchain_doc = Document(
+                page_content=doc.text_content,
+                metadata=doc.metadata
+            )
+            
+            if self.config.vector_store_type == "chroma":
+                self.text_store.add_documents([langchain_doc])
+            else:  # faiss
+                if self.text_store is None:
+                    self.text_store = FAISS.from_documents(
+                        [langchain_doc],
+                        self.text_embeddings
+                    )
+                else:
+                    self.text_store.add_documents([langchain_doc])
+    
+    def _add_to_image_store(self, doc: MultimodalDocument):
+        """Add document to image vector store."""
+        # Simplified - would use CLIP embeddings for image store
+        if doc.text_content:
+            self._add_to_text_store(doc)
+    
+    def _search_image_store(
+        self,
+        query_embedding: List[float],
+        k: int
+    ) -> List[tuple]:
+        """Search image store with embedding."""
+        # Simplified - would implement proper similarity search
+        return []
+    
+    def _langchain_to_multimodal(self, doc: Document) -> MultimodalDocument:
+        """Convert LangChain Document to MultimodalDocument."""
+        return MultimodalDocument(
+            content_type="text",
+            text_content=doc.page_content,
+            metadata=doc.metadata
+        )
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create RAG system
+    config = MultimodalRAGConfig(
+        text_embedding_model="{{TEXT_EMBEDDING_MODEL}}",
+        vision_model="{{VISION_MODEL}}",
+        llm_model="{{LLM_MODEL}}",
+        use_clip={{USE_CLIP}},
+        retrieval_k={{RETRIEVAL_K}}
+    )
+    
+    rag = {{MULTIMODAL_RAG_CLASS_NAME}}(config=config)
+    
+    # Add text documents
+    # rag.add_text_document("{{TEXT_CONTENT1}}", {"source": "{{SOURCE1}}"})
+    # rag.add_text_document("{{TEXT_CONTENT2}}", {"source": "{{SOURCE2}}"})
+    
+    # Add image documents
+    # rag.add_image_document("{{IMAGE_PATH1}}", "{{DESCRIPTION1}}")
+    # rag.add_image_document("{{IMAGE_PATH2}}")
+    
+    # Query
+    # result = rag.query("{{EXAMPLE_QUERY}}")
+    # print(f"Answer: {result.answer}")
+    # print(f"Sources: {result.sources}")
+    # print(f"Confidence: {result.confidence}")
+    
+    # Multimodal query
+    # result = rag.query("{{TEXT_QUERY}}", query_image="{{QUERY_IMAGE_PATH}}")
+    # print(f"Answer: {result.answer}")

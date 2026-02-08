@@ -1,0 +1,55 @@
+#!/bin/bash
+# =============================================================================
+# {{ project_name }} - Proof Verification Script
+# =============================================================================
+#
+# Verify all Lean 4 proofs type-check.
+#
+# Usage:
+#   ./scripts/verify_proofs.sh
+#
+# =============================================================================
+
+set -e
+
+BLUE='\033[0;34m'
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROOFS_DIR="$PROJECT_ROOT/proofs"
+
+echo -e "${BLUE}"
+echo "======================================================================="
+echo "           {{ project_name }} - Proof Verification"
+echo "                    SDG - Love - Truth - Beauty"
+echo "======================================================================="
+echo -e "${NC}"
+
+# Check Lean 4
+if ! command -v lake &> /dev/null; then
+    echo -e "${RED}ERROR: Lean 4 (lake) not found.${NC}"
+    echo "Install: curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh"
+    exit 1
+fi
+
+# Build proofs
+cd "$PROOFS_DIR"
+echo "Building proofs..."
+lake build
+
+echo ""
+echo -e "${GREEN}=======================================================================${NC}"
+echo -e "${GREEN}                    VERIFICATION SUCCESSFUL                            ${NC}"
+echo -e "${GREEN}=======================================================================${NC}"
+echo ""
+echo "Properties verified:"
+echo "  - Axioms (A0-A5) defined"
+echo "  - Guardian state machine"
+echo "  - Memory consent"
+echo "  - Layer protection"
+echo "  - Project state machines"
+echo ""
+echo -e "${BLUE}Trust verified. Truth freely available.${NC}"

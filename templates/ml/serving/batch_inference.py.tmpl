@@ -1,0 +1,417 @@
+"""
+Batch Inference Pipeline - Process large datasets efficiently
+
+Purpose: Run batch inference on datasets with batching, parallelization, and progress tracking
+Author: {{AUTHOR}}
+Created: {{DATE}}
+
+Axiom Alignment:
+- A1 (Verifiability): All predictions are logged with metadata
+- A3 (Transparency): Progress tracking and detailed logging
+- A4 (Non-Harm): Resource limits and error handling
+
+This module provides:
+- Batch processing with configurable batch sizes
+- Parallel processing support
+- Progress tracking and resumability
+- Error handling and retry logic
+- Result saving and checkpointing
+"""
+
+from typing import List, Dict, Any, Optional, Iterator, Callable, Union
+from dataclasses import dataclass, field
+from pathlib import Path
+import logging
+import json
+import pickle
+import asyncio
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
+from datetime import datetime
+import pandas as pd
+import numpy as np
+from tqdm import tqdm
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class BatchConfig:
+    """Configuration for batch inference."""
+    batch_size: int = {{BATCH_SIZE}}
+    num_workers: int = {{NUM_WORKERS}}
+    max_retries: int = {{MAX_RETRIES}}
+    retry_delay: float = {{RETRY_DELAY}}
+    checkpoint_interval: int = {{CHECKPOINT_INTERVAL}}  # Save checkpoint every N batches
+    output_format: str = "{{OUTPUT_FORMAT}}"  # "json", "csv", "parquet", "pickle"
+    output_dir: str = "{{OUTPUT_DIR}}"
+    resume_from_checkpoint: bool = {{RESUME_FROM_CHECKPOINT}}
+    use_multiprocessing: bool = {{USE_MULTIPROCESSING}}
+    progress_bar: bool = {{PROGRESS_BAR}}
+
+
+@dataclass
+class InferenceResult:
+    """Result from a single inference."""
+    input_id: Union[str, int]
+    prediction: Any
+    confidence: Optional[float] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
+    error: Optional[str] = None
+    processing_time: Optional[float] = None
+
+
+class BatchInferencePipeline:
+    """
+    Pipeline for batch inference processing.
+    
+    This class handles batch inference with:
+    - Configurable batching and parallelization
+    - Progress tracking and checkpointing
+    - Error handling and retries
+    - Multiple output formats
+    
+    Example:
+        >>> pipeline = BatchInferencePipeline(
+        ...     model=my_model,
+        ...     config=BatchConfig(batch_size=32, num_workers=4)
+        ... )
+        >>> results = pipeline.process_dataset(dataset)
+        >>> pipeline.save_results(results, "results.json")
+    """
+    
+    def __init__(
+        self,
+        model: Any,
+        config: BatchConfig,
+        preprocess_fn: Optional[Callable] = None,
+        postprocess_fn: Optional[Callable] = None
+    ):
+        """
+        Initialize batch inference pipeline.
+        
+        Args:
+            model: Model instance or callable for inference
+            config: Batch configuration
+            preprocess_fn: Optional preprocessing function
+            postprocess_fn: Optional postprocessing function
+        """
+        self.model = model
+        self.config = config
+        self.preprocess_fn = preprocess_fn
+        self.postprocess_fn = postprocess_fn
+        
+        # Create output directory
+        Path(config.output_dir).mkdir(parents=True, exist_ok=True)
+        
+        # Checkpoint tracking
+        self.checkpoint_path = Path(config.output_dir) / "checkpoint.pkl"
+        self.results_path = Path(config.output_dir) / "results"
+        self.results_path.mkdir(exist_ok=True)
+        
+        logger.info(f"Initialized BatchInferencePipeline with batch_size={config.batch_size}")
+    
+    def process_dataset(
+        self,
+        dataset: Union[List[Any], pd.DataFrame, Iterator[Any]],
+        input_id_column: Optional[str] = None
+    ) -> List[InferenceResult]:
+        """
+        Process entire dataset with batching.
+        
+        Args:
+            dataset: Dataset to process (list, DataFrame, or iterator)
+            input_id_column: Column name for input IDs (if DataFrame)
+            
+        Returns:
+            List of inference results
+        """
+        # Convert dataset to list of items
+        items = self._prepare_dataset(dataset, input_id_column)
+        
+        # Load checkpoint if resuming
+        start_idx = 0
+        results = []
+        if self.config.resume_from_checkpoint and self.checkpoint_path.exists():
+            logger.info("Resuming from checkpoint")
+            checkpoint_data = self._load_checkpoint()
+            start_idx = checkpoint_data["last_processed_idx"] + 1
+            results = checkpoint_data.get("results", [])
+            logger.info(f"Resuming from index {start_idx}")
+        
+        # Process in batches
+        total_batches = (len(items) - start_idx + self.config.batch_size - 1) // self.config.batch_size
+        
+        with tqdm(total=total_batches, disable=not self.config.progress_bar) as pbar:
+            for batch_idx in range(start_idx, len(items), self.config.batch_size):
+                batch = items[batch_idx:batch_idx + self.config.batch_size]
+                batch_results = self._process_batch(batch, batch_idx)
+                results.extend(batch_results)
+                
+                # Save checkpoint
+                if (batch_idx // self.config.batch_size + 1) % self.config.checkpoint_interval == 0:
+                    self._save_checkpoint(results, batch_idx)
+                
+                pbar.update(1)
+        
+        # Final checkpoint
+        self._save_checkpoint(results, len(items) - 1)
+        
+        logger.info(f"Processed {len(items)} items, {len(results)} results")
+        return results
+    
+    def _prepare_dataset(
+        self,
+        dataset: Union[List[Any], pd.DataFrame, Iterator[Any]],
+        input_id_column: Optional[str]
+    ) -> List[Dict[str, Any]]:
+        """Prepare dataset for processing."""
+        if isinstance(dataset, pd.DataFrame):
+            items = []
+            id_col = input_id_column or "id"
+            for idx, row in dataset.iterrows():
+                item_id = row.get(id_col, idx)
+                items.append({
+                    "id": item_id,
+                    "data": row.to_dict()
+                })
+            return items
+        elif isinstance(dataset, Iterator):
+            return [{"id": i, "data": item} for i, item in enumerate(dataset)]
+        else:
+            return [{"id": i, "data": item} for i, item in enumerate(dataset)]
+    
+    def _process_batch(
+        self,
+        batch: List[Dict[str, Any]],
+        batch_start_idx: int
+    ) -> List[InferenceResult]:
+        """
+        Process a single batch.
+        
+        Args:
+            batch: Batch of items to process
+            batch_start_idx: Starting index of batch
+            
+        Returns:
+            List of inference results
+        """
+        if self.config.num_workers > 1:
+            return self._process_batch_parallel(batch, batch_start_idx)
+        else:
+            return self._process_batch_sequential(batch, batch_start_idx)
+    
+    def _process_batch_sequential(
+        self,
+        batch: List[Dict[str, Any]],
+        batch_start_idx: int
+    ) -> List[InferenceResult]:
+        """Process batch sequentially."""
+        results = []
+        
+        for item in batch:
+            result = self._process_item(item["id"], item["data"])
+            results.append(result)
+        
+        return results
+    
+    def _process_batch_parallel(
+        self,
+        batch: List[Dict[str, Any]],
+        batch_start_idx: int
+    ) -> List[InferenceResult]:
+        """Process batch in parallel."""
+        executor_class = ProcessPoolExecutor if self.config.use_multiprocessing else ThreadPoolExecutor
+        
+        results = []
+        with executor_class(max_workers=self.config.num_workers) as executor:
+            futures = {
+                executor.submit(self._process_item, item["id"], item["data"]): item
+                for item in batch
+            }
+            
+            for future in as_completed(futures):
+                try:
+                    result = future.result()
+                    results.append(result)
+                except Exception as e:
+                    item = futures[future]
+                    logger.error(f"Error processing item {item['id']}: {e}")
+                    results.append(InferenceResult(
+                        input_id=item["id"],
+                        prediction=None,
+                        error=str(e)
+                    ))
+        
+        return results
+    
+    def _process_item(
+        self,
+        item_id: Union[str, int],
+        item_data: Any,
+        retry_count: int = 0
+    ) -> InferenceResult:
+        """
+        Process a single item with retry logic.
+        
+        Args:
+            item_id: Item identifier
+            item_data: Item data
+            retry_count: Current retry count
+            
+        Returns:
+            Inference result
+        """
+        start_time = datetime.now()
+        
+        try:
+            # Preprocess
+            if self.preprocess_fn:
+                processed_data = self.preprocess_fn(item_data)
+            else:
+                processed_data = item_data
+            
+            # Inference
+            if callable(self.model):
+                prediction = self.model(processed_data)
+            else:
+                # Assume model has predict method
+                prediction = self.model.predict(processed_data)
+            
+            # Postprocess
+            if self.postprocess_fn:
+                prediction = self.postprocess_fn(prediction)
+            
+            processing_time = (datetime.now() - start_time).total_seconds()
+            
+            # Extract confidence if available
+            confidence = None
+            if isinstance(prediction, dict):
+                confidence = prediction.get("confidence")
+                prediction = prediction.get("prediction", prediction)
+            
+            return InferenceResult(
+                input_id=item_id,
+                prediction=prediction,
+                confidence=confidence,
+                processing_time=processing_time,
+                metadata={"retry_count": retry_count}
+            )
+            
+        except Exception as e:
+            if retry_count < self.config.max_retries:
+                logger.warning(f"Retrying item {item_id} (attempt {retry_count + 1})")
+                import time
+                time.sleep(self.config.retry_delay)
+                return self._process_item(item_id, item_data, retry_count + 1)
+            else:
+                logger.error(f"Failed to process item {item_id} after {retry_count + 1} attempts: {e}")
+                return InferenceResult(
+                    input_id=item_id,
+                    prediction=None,
+                    error=str(e),
+                    processing_time=(datetime.now() - start_time).total_seconds(),
+                    metadata={"retry_count": retry_count}
+                )
+    
+    def _save_checkpoint(self, results: List[InferenceResult], last_idx: int) -> None:
+        """Save checkpoint."""
+        checkpoint_data = {
+            "last_processed_idx": last_idx,
+            "results": results,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        with open(self.checkpoint_path, "wb") as f:
+            pickle.dump(checkpoint_data, f)
+        
+        logger.debug(f"Saved checkpoint at index {last_idx}")
+    
+    def _load_checkpoint(self) -> Dict[str, Any]:
+        """Load checkpoint."""
+        with open(self.checkpoint_path, "rb") as f:
+            return pickle.load(f)
+    
+    def save_results(
+        self,
+        results: List[InferenceResult],
+        filename: Optional[str] = None
+    ) -> Path:
+        """
+        Save results to file.
+        
+        Args:
+            results: List of inference results
+            filename: Output filename (optional)
+            
+        Returns:
+            Path to saved file
+        """
+        if filename is None:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"results_{timestamp}.{self.config.output_format}"
+        
+        output_path = self.results_path / filename
+        
+        # Convert results to serializable format
+        serializable_results = []
+        for result in results:
+            serializable_results.append({
+                "input_id": result.input_id,
+                "prediction": self._serialize_value(result.prediction),
+                "confidence": result.confidence,
+                "error": result.error,
+                "processing_time": result.processing_time,
+                "metadata": result.metadata
+            })
+        
+        # Save based on format
+        if self.config.output_format == "json":
+            with open(output_path, "w") as f:
+                json.dump(serializable_results, f, indent=2, default=str)
+        elif self.config.output_format == "csv":
+            df = pd.DataFrame(serializable_results)
+            df.to_csv(output_path, index=False)
+        elif self.config.output_format == "parquet":
+            df = pd.DataFrame(serializable_results)
+            df.to_parquet(output_path, index=False)
+        elif self.config.output_format == "pickle":
+            with open(output_path, "wb") as f:
+                pickle.dump(results, f)
+        else:
+            raise ValueError(f"Unsupported output format: {self.config.output_format}")
+        
+        logger.info(f"Saved {len(results)} results to {output_path}")
+        return output_path
+    
+    def _serialize_value(self, value: Any) -> Any:
+        """Serialize value for JSON output."""
+        if isinstance(value, (np.ndarray, np.generic)):
+            return value.tolist()
+        elif isinstance(value, (np.integer, np.floating)):
+            return value.item()
+        elif isinstance(value, (datetime, pd.Timestamp)):
+            return value.isoformat()
+        else:
+            return value
+
+
+# Example usage
+if __name__ == "__main__":
+    # Example: Process a dataset
+    config = BatchConfig(
+        batch_size={{BATCH_SIZE}},
+        num_workers={{NUM_WORKERS}},
+        output_dir="{{OUTPUT_DIR}}",
+        checkpoint_interval={{CHECKPOINT_INTERVAL}}
+    )
+    
+    # pipeline = BatchInferencePipeline(
+    #     model={{MODEL_INSTANCE}},
+    #     config=config
+    # )
+    
+    # dataset = {{DATASET}}  # Your dataset here
+    # results = pipeline.process_dataset(dataset)
+    # pipeline.save_results(results)
+    
+    print("Batch inference pipeline ready")
