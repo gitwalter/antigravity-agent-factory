@@ -3,7 +3,7 @@ name: git-specialist
 description: Expert in Git version control, GitHub CLI operations, and CI/CD pipelines
 type: agent
 skills: [commit-release, ci-monitor, shell-platform, extend-knowledge]
-knowledge: [../config/tools.json, maintenance-procedures.md, best-practices.json]
+knowledge: [../config/tools.json, maintenance-procedures.json, best-practices.json]
 mcp_servers: [git, github, filesystem]
 ---
 
