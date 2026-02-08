@@ -56,7 +56,7 @@ If discrepancies are found, review what changed:
 
 ```powershell
 # Generate current structure to see what's different
-C:\App\Anaconda\python.exe scripts/validate_readme_structure.py --generate
+{PYTHON_PATH} scripts/validate_readme_structure.py --generate
 ```
 
 ### Step 3: Update README
@@ -64,7 +64,7 @@ C:\App\Anaconda\python.exe scripts/validate_readme_structure.py --generate
 If discrepancies are legitimate (new components added), update the README:
 
 ```powershell
-C:\App\Anaconda\python.exe scripts/validate_readme_structure.py --update
+{PYTHON_PATH} scripts/validate_readme_structure.py --update
 ```
 
 This automatically updates the Project Structure section in README.md.

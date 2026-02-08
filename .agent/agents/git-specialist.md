@@ -23,27 +23,36 @@ To provide expert handling of version control operations, GitHub CI/CD pipeline 
 
 ## Standard Operating Procedures
 
-### 1. Smart Commit Strategy
-**Before any commit**, you MUST execute the full synchronization suite to ensure the repository state is consistent.
+## 1. Commit Procedure
+**Before any commit**, you MUST execute the full synchronization and validation suite to ensure the repository remains consistent, secure, and self-documenting.
 
-#### Required Pre-Commit Scripts
-Run these commands in order:
+### Phase 1: Automated Writing (The "Sync" Suite)
+Run these commands in order (using `;` to chain in PowerShell):
+1. **Unified Artifact Sync**: `{PYTHON_PATH} scripts/validation/sync_artifacts.py --sync`
+2. **Test Catalog**: `{PYTHON_PATH} scripts/validation/sync_artifacts.py --sync tests`
+3. **README Sync**: `{PYTHON_PATH} scripts/validation/validate_readme_structure.py --update`
+4. **Agent Catalog**: `{PYTHON_PATH} scripts/generate_catalog.py`
+5. **Search Index**: `{PYTHON_PATH} scripts/validation/update_index.py --full`
 
-1.  **Sync Versions**: `python scripts/validation/sync_manifest_versions.py --sync`
-2.  **Sync Knowledge**: `python scripts/validation/sync_knowledge_counts.py --sync`
-3.  **Update README**: `python scripts/validation/validate_readme_structure.py --update`
-4.  **Sync Artifacts**: `python scripts/validation/sync_artifacts.py --sync`
-5.  **Generate Catalog**: `python scripts/generate_catalog.py`
-6.  **Update Index**: `python scripts/validation/update_index.py --full`
+**Standard Chain**: 
+`{PYTHON_PATH} scripts/validation/sync_artifacts.py --sync ; {PYTHON_PATH} scripts/validation/sync_artifacts.py --sync tests ; {PYTHON_PATH} scripts/validation/validate_readme_structure.py --update ; {PYTHON_PATH} scripts/generate_catalog.py`
 
-Check `git status` after running these. If files changed, include them in your commit.
+### Phase 2: Integrity Validation (The "Check" Suite)
+Validate staged changes before finalizing the commit:
+1. **JSON Syntax**: `{PYTHON_PATH} scripts/validation/validate_json_syntax.py --staged`
+2. **YAML Frontmatter**: `{PYTHON_PATH} scripts/validation/validate_yaml_frontmatter.py`
+3. **Dependencies**: `{PYTHON_PATH} scripts/validation/dependency_validator.py --broken`
+4. **Link Integrity**: `{PYTHON_PATH} scripts/verify_catalog_links.py`
+5. **Secrets**: `{PYTHON_PATH} scripts/validation/scan_secrets.py --staged`
+
+> [!TIP]
+> **DYNAMIC EXECUTION**: Always use the configuration variables for executables (e.g., `{PYTHON_PATH}`, `{GIT_PATH}`). These MUST be resolved from the configuration files at runtime. Chain commands with `;` in PowerShell.
 
 ### 2. CI/CD Monitoring
 When a push fails or upon request:
 1.  Use `gh run list` to find the most recent run.
 2.  Use `gh run view <run-id> --log` to inspect failures.
-3.  Analyze logs for root causes (linting, tests, etc.).
-4.  Propose fixes.
+3.  Analyze logs for root causes.
 
 ### 3. Knowledge Extension
 If you discover new tools, paths, or recurring issues:

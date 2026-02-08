@@ -304,7 +304,7 @@ Based on all collected information, generate the PM configuration:
     },
     "metrics": {
       "tracked": ["velocity", "burndown", "cycle_time", "defect_rate"],
-      "dashboard": "https://my-company.atlassian.net/secure/Dashboard.jspa"
+      "dashboard": "{JIRA_BASE_URL}/secure/Dashboard.jspa"
     },
     "integration": {
       "mcpServers": ["atlassian"],
@@ -354,7 +354,7 @@ Based on all collected information, generate the PM configuration:
     },
     "metrics": {
       "tracked": ["lead_time", "cycle_time", "throughput"],
-      "dashboard": "https://linear.app/my-workspace/insights"
+      "dashboard": "{LINEAR_BASE_URL}/my-workspace/insights"
     },
     "integration": {
       "mcpServers": [],
@@ -674,16 +674,16 @@ Which feels right?"
 
 ```bash
 # Test PM backend connection
-python cli/factory_cli.py --test-pm-connection
+{PYTHON_PATH} cli/factory_cli.py --test-pm-connection
 
 # Generate PM configuration interactively
-python cli/factory_cli.py --configure-pm
+{PYTHON_PATH} cli/factory_cli.py --configure-pm
 
 # Validate PM configuration
-python cli/factory_cli.py --validate-pm-config pm-config.json
+{PYTHON_PATH} cli/factory_cli.py --validate-pm-config pm-config.json
 
 # Sync workflows with PM backend
-python cli/factory_cli.py --sync-pm-workflows
+{PYTHON_PATH} cli/factory_cli.py --sync-pm-workflows
 ```
 
 ## References

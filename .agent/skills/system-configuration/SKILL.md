@@ -118,14 +118,14 @@ tool_configuration:
 credential_configuration:
   github_token:
     question: "Enter GitHub Personal Access Token for knowledge updates"
-    hint: "Create at https://github.com/settings/tokens"
+    hint: "Create at {GITHUB_TOKENS_URL}"
     required_scopes: [public_repo, read:org]
     storage: Environment variable reference (${GITHUB_TOKEN})
     validation: Test API access
   
   npm_token:
     question: "Enter NPM token (optional, for JS/TS package updates)"
-    hint: "Create at https://www.npmjs.com/settings/tokens"
+    hint: "Create at {NPM_TOKENS_URL}"
     optional: true
     storage: Environment variable reference (${NPM_TOKEN})
 ```
@@ -240,13 +240,13 @@ The skill creates/updates `.agent/config/settings.json`:
   },
   "tools": {
     "python": {
-      "path": "C:\\App\\Anaconda\\envs\\cursor-factory\\python.exe",
+      "path": "{PYTHON_PATH}",
       "env_var": "PYTHON_PATH",
       "min_version": "3.10",
       "description": "Python 3.10+ interpreter"
     },
     "git": {
-      "path": "C:\\Program Files\\Git\\bin\\git.exe",
+      "path": "{GIT_PATH}",
       "env_var": "GIT_PATH",
       "description": "Git version control"
     }

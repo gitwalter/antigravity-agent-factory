@@ -153,7 +153,7 @@ Agent:
 
 ### User-Provided Link
 ```
-User: Add knowledge from https://docs.anthropic.com/claude/mcp
+User: Add knowledge from {ANTHROPIC_MCP_DOCS_URL}
 
 Agent:
 [web_search("site:docs.anthropic.com MCP patterns")]
@@ -236,7 +236,7 @@ Would you like me to create an agent that uses this skill?
 
 ### Example 3: From User Link
 ```
-User: Add knowledge from this: https://langchain.dev/docs/agents
+User: Add knowledge from this: {LANGCHAIN_AGENTS_DOCS_URL}
 
 Agent: I'll incorporate knowledge from LangChain's agent documentation.
 
@@ -249,7 +249,7 @@ Extracting patterns...
 
 ✓ Updated: knowledge/langchain-patterns.json
   - Added 4 new patterns from langchain.dev
-  - Source cited: https://langchain.dev/docs/agents
+  - Source cited: {LANGCHAIN_AGENTS_DOCS_URL}
 ```
 
 ### Example 4: From Local Document

@@ -73,7 +73,7 @@ Create skill directory structure:
 **CRITICAL:** When creating skills in the Antigravity Agent Factory itself, ALWAYS run:
 
 ```powershell
-C:\App\Anaconda\python.exe scripts/validation/validate_readme_structure.py --update
+{PYTHON_PATH} scripts/validation/validate_readme_structure.py --update
 ```
 
 This updates the skill count in README.md to prevent CI failures.

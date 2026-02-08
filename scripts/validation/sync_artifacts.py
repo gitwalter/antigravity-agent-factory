@@ -20,6 +20,7 @@ Usage:
     python scripts/validation/sync_artifacts.py --dirs .agent/agents blueprints  # Sync by dirs
 """
 
+import ast
 import json
 import re
 import subprocess
@@ -301,6 +302,62 @@ class ArtifactScanner:
         else:
             return path.stem
 
+    def scan_test_details(self, test_dir: str = "tests") -> list[dict]:
+        """Scan test files and extract detailed test case metadata using AST.
+        
+        Returns:
+            List of dicts containing:
+            - file: Path relative to root
+            - class: Class name (if any)
+            - name: Function/Method name
+            - docstring: First line of docstring (or empty)
+        """
+        tests_path = self.root_path / test_dir
+        if not tests_path.exists():
+            return []
+            
+        test_cases = []
+        
+        for py_file in tests_path.rglob("test_*.py"):
+            try:
+                tree = ast.parse(py_file.read_text(encoding='utf-8', errors='ignore'))
+                rel_path = str(py_file.relative_to(self.root_path)).replace('\\', '/')
+                
+                for node in ast.walk(tree):
+                    if isinstance(node, ast.FunctionDef) and node.name.startswith("test_"):
+                        # Find parent class if any
+                        parent_class = ""
+                        # Note: Simple walk doesn't give parent context easily, 
+                        # but for our purpose we can iterate through body
+                        pass # handled below with better iteration
+                        
+                # Improved iteration to capture class context
+                for node in tree.body:
+                    if isinstance(node, ast.ClassDef):
+                        class_name = node.name
+                        for item in node.body:
+                            if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)) and item.name.startswith("test_"):
+                                doc = ast.get_docstring(item)
+                                test_cases.append({
+                                    "file": rel_path,
+                                    "class": class_name,
+                                    "name": item.name,
+                                    "docstring": doc.split('\n')[0] if doc else ""
+                                })
+                    elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test_"):
+                        doc = ast.get_docstring(node)
+                        test_cases.append({
+                            "file": rel_path,
+                            "class": "",
+                            "name": node.name,
+                            "docstring": doc.split('\n')[0] if doc else ""
+                        })
+                        
+            except Exception:
+                continue
+                
+        return sorted(test_cases, key=lambda x: (x["file"], x["class"], x["name"]))
+
 
 # =============================================================================
 # SYNC STRATEGIES
@@ -541,7 +598,11 @@ class MarkdownTableSyncStrategy(SyncStrategy):
         separator = "| " + " | ".join(["---"] * len(target.columns)) + " |"
         
         rows = []
-        for artifact in sorted(artifacts, key=lambda a: a.id):
+        # STABLE SORT: Sort by ID first, then by Path to ensure determinism 
+        # especially when multiple files have the same ID (stem) in different dirs.
+        sorted_artifacts = sorted(artifacts, key=lambda a: (a.id, str(a.path)))
+        
+        for artifact in sorted_artifacts:
             row_data = []
             for col in target.columns:
                 if col == target.id_column:
@@ -626,9 +687,73 @@ class MarkdownTableSyncStrategy(SyncStrategy):
             file_path.write_text(new_content, encoding='utf-8')
             
         return SyncResult(
-            artifact="", target_file=target.file, target_type="markdown_table",
+            artifact="", target_file=target_file, target_type="markdown_table",
             changed=True, old_value="?", new_value=len(rows),
             message=f"Table updated ({len(rows)} rows)"
+        )
+
+
+class CatalogSyncStrategy(SyncStrategy):
+    """Syncs a comprehensive test catalog into a markdown file."""
+    
+    def __init__(self, root_path: Path, scanner: ArtifactScanner):
+        super().__init__(root_path)
+        self.scanner = scanner
+        
+    def sync(self, target: SyncTarget, count: int, artifacts: list[ArtifactInfo],
+             dry_run: bool = True) -> SyncResult:
+        file_path = self.root_path / target.file
+        if not file_path.exists():
+            return SyncResult(
+                artifact="", target_file=target.file, target_type="catalog",
+                changed=False, old_value=None, new_value=None,
+                message=f"File not found: {target.file}"
+            )
+            
+        test_cases = self.scanner.scan_test_details()
+        
+        # Generate Markdown
+        lines = [
+            "<!-- SYNC_START -->",
+            "| File | Class | Test Case | Description |",
+            "| --- | --- | --- | --- |"
+        ]
+        
+        for tc in test_cases:
+            file_link = f"[{Path(tc['file']).name}](file:///{tc['file']})"
+            doc = tc['docstring'].replace("|", "\\|")
+            lines.append(f"| {file_link} | {tc['class']} | `{tc['name']}` | {doc} |")
+            
+        lines.append("<!-- SYNC_END -->")
+        new_catalog = "\n".join(lines)
+        
+        content = file_path.read_text(encoding='utf-8')
+        
+        # Replace between markers
+        marker_start = "<!-- SYNC_START -->"
+        marker_end = "<!-- SYNC_END -->"
+        
+        if marker_start in content and marker_end in content:
+            pattern = f"{marker_start}.*?{marker_end}"
+            new_content = re.sub(pattern, new_catalog, content, flags=re.DOTALL)
+        else:
+            # If markers missing, append or replace entirely
+            new_content = content + "\n\n" + new_catalog
+            
+        if new_content == content:
+            return SyncResult(
+                artifact="", target_file=target.file, target_type="catalog",
+                changed=False, old_value=len(test_cases), new_value=len(test_cases),
+                message="Already in sync"
+            )
+            
+        if not dry_run:
+            file_path.write_text(new_content, encoding='utf-8')
+            
+        return SyncResult(
+            artifact="", target_file=target.file, target_type="catalog",
+            changed=True, old_value="?", new_value=len(test_cases),
+            message=f"Catalog updated ({len(test_cases)} tests)"
         )
 
 
@@ -654,6 +779,7 @@ class SyncEngine:
             "category_counts": CategoryCountsSyncStrategy(root_path, self.scanner),
             "tree_annotation": TreeAnnotationSyncStrategy(root_path),
             "markdown_table": MarkdownTableSyncStrategy(root_path),
+            "catalog": CatalogSyncStrategy(root_path, self.scanner),
         }
     
     def _load_config(self) -> dict[str, ArtifactConfig]:

@@ -22,8 +22,8 @@ Build production-ready trading systems with proper backtesting, risk management,
 
 ## Prerequisites
 
-```bash
-pip install yfinance pandas-ta vectorbt backtrader scipy numpy
+```powershell
+{PYTHON_PATH} -m pip install yfinance pandas-ta vectorbt backtrader scipy numpy
 ```
 
 ## Process

@@ -198,14 +198,39 @@ These standards are REQUIRED and derive from axioms:
 
 ### Configuration Variables
 
-Tool paths are configurable via `.agent/config/tools.json` or environment variables.
-See [Configuration Guide](docs/CONFIGURATION.md) for details.
+Tool paths are MANDATORY and must be resolved from configuration (`.agent/config/tools.json`) or session cache (`.agent/cache/session-paths.json`).
 
+```powershell
+# Variables resolved at runtime from configuration
+PYTHON_PATH      = {PYTHON_PATH}
+PIP_PATH         = {PIP_PATH}
+CONDA_PATH       = {CONDA_PATH}
+PYTEST_PATH      = {PYTEST_PATH}
+GIT_PATH         = {GIT_PATH}
+GH_CLI_PATH      = {GH_CLI_PATH}
+ATLASSIAN_MCP_URL = {ATLASSIAN_MCP_URL}
+JIRA_BASE_URL    = {JIRA_BASE_URL}
+LINEAR_BASE_URL  = {LINEAR_BASE_URL}
+GITHUB_TOKENS_URL = {GITHUB_TOKENS_URL}
+NPM_TOKENS_URL   = {NPM_TOKENS_URL}
+ANTHROPIC_MCP_DOCS_URL = {ANTHROPIC_MCP_DOCS_URL}
+PYTHEA_REPO_URL        = {PYTHEA_REPO_URL}
+LANGCHAIN_AGENTS_DOCS_URL = {LANGCHAIN_AGENTS_DOCS_URL}
 ```
-# Default paths (override via environment variables or config file)
-PYTHON_PATH = ${PYTHON_PATH:-python}
-PIP_PATH = ${PIP_PATH:-pip}
-```
+
+### Refined Shell Execution Protocol (REQUIRED)
+
+All agents MUST adhere to these shell execution standards for reliability and reproducibility on Windows:
+
+1. **Dynamic Path Resolution**: ALWAYS use the absolute path resolved from configuration (e.g., `{PYTHON_PATH}`) rather than relying on the system `PATH`.
+2. **No Hardcoding**: NEVER hardcode absolute paths in instructions or code. Always refer to the configuration variable.
+3. **Command Concatenation**: ALWAYS use the semi-colon (`;`) for chaining multiple commands in PowerShell.
+4. **Encoding Awareness**: Ensure input/output redirection (e.g., `> out.txt`) handles UTF-8 correctly where possible.
+5. **Shell Consistency**: Consistently use PowerShell syntax when interacting with the system.
+
+**Example Standard**:
+`{PYTHON_PATH} script1.py ; {PYTHON_PATH} script2.py`
+
 
 ### Available Agents
 

@@ -53,7 +53,7 @@ Invoke the `onboarding-flow` skill to analyze the repository:
 - Suggest appropriate blueprint
 
 **Actions:**
-- Run `python cli/factory_cli.py --analyze <path>`
+- Run `{PYTHON_PATH} cli/factory_cli.py --analyze <path>`
 - Parse and summarize results for user
 - Highlight any potential concerns
 
@@ -203,7 +203,7 @@ I've successfully integrated Antigravity Agent Factory into your repository.
 3. The new skills are available - mention 'bugfix workflow' to use it
 
 If anything doesn't look right, run:
-python cli/factory_cli.py --rollback <path>"
+{PYTHON_PATH} cli/factory_cli.py --rollback <path>"
 ```
 
 ### Error Response

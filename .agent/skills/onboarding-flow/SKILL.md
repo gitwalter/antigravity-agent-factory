@@ -72,7 +72,7 @@ Validate the path exists and is a directory.
 Run the repository analyzer to detect existing artifacts:
 
 ```bash
-python cli/factory_cli.py --analyze <repo_path>
+{PYTHON_PATH} cli/factory_cli.py --analyze <repo_path>
 ```
 
 **MCP Tools:** None required (local operation)
@@ -138,7 +138,7 @@ If user selects "No":
 Before making any changes, show what will be modified:
 
 ```bash
-python cli/factory_cli.py --onboard <repo_path> --blueprint <blueprint_id> --dry-run
+{PYTHON_PATH} cli/factory_cli.py --onboard <repo_path> --blueprint <blueprint_id> --dry-run
 ```
 
 Present the preview:
@@ -165,7 +165,7 @@ Default behavior: **Preserve existing** (ask for each conflict)
 With user confirmation, execute the onboarding:
 
 ```bash
-python cli/factory_cli.py --onboard <repo_path> --blueprint <blueprint_id>
+{PYTHON_PATH} cli/factory_cli.py --onboard <repo_path> --blueprint <blueprint_id>
 ```
 
 The process will:
@@ -203,7 +203,7 @@ Next steps:
 5. Configure PM backend credentials (if PM was enabled)
 
 If anything looks wrong, you can rollback:
-python cli/factory_cli.py --rollback <repo_path>
+{PYTHON_PATH} cli/factory_cli.py --rollback <repo_path>
 "
 ```
 
@@ -253,6 +253,7 @@ python cli/factory_cli.py --rollback <repo_path>
 | `agent-generation` | Used for generating missing agents |
 | `skill-generation` | Used for generating missing skills |
 | `pm-configuration` | Invoked in Step 3.5 if user wants PM system setup |
+| `config-onboarding` | Used for migrating hardcoded paths to SPoT during onboarding |
 | `team-workshop-onboarding` | Alternative for team onboarding with collaborative workshops |
 
 ## Team Onboarding Alternative
@@ -286,19 +287,19 @@ If they choose team workshops, hand off to `team-workshop-onboarding` skill.
 
 ```bash
 # Analyze repository (no changes)
-python cli/factory_cli.py --analyze C:\Projects\my-repo
+{PYTHON_PATH} cli/factory_cli.py --analyze C:\Projects\my-repo
 
 # Preview onboarding (dry run)
-python cli/factory_cli.py --onboard C:\Projects\my-repo --dry-run
+{PYTHON_PATH} cli/factory_cli.py --onboard C:\Projects\my-repo --dry-run
 
 # Onboard with auto-detected blueprint
-python cli/factory_cli.py --onboard C:\Projects\my-repo
+{PYTHON_PATH} cli/factory_cli.py --onboard C:\Projects\my-repo
 
 # Onboard with specific blueprint
-python cli/factory_cli.py --onboard C:\Projects\my-repo --blueprint csharp-dotnet
+{PYTHON_PATH} cli/factory_cli.py --onboard C:\Projects\my-repo --blueprint csharp-dotnet
 
 # Rollback last onboarding
-python cli/factory_cli.py --rollback C:\Projects\my-repo
+{PYTHON_PATH} cli/factory_cli.py --rollback C:\Projects\my-repo
 ```
 
 ## Example Conversation

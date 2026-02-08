@@ -2,49 +2,71 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Maintenance Procedures",
     "description": "Standard procedures for maintaining the Antigravity Agent Factory repository",
-    "version": "1.0.0",
-    "preCommitSynchronization": {
-        "description": "To keep documentation, artifacts, and counts in sync, the following scripts MUST be run before committing changes.",
-        "steps": [
-            {
-                "id": "1",
-                "name": "Version Synchronization",
-                "description": "Ensures the factory version from CHANGELOG.md is propagated to all relevant files.",
-                "command": "python scripts/validation/sync_manifest_versions.py --sync"
-            },
-            {
-                "id": "2",
-                "name": "Knowledge Counts",
-                "description": "Updates knowledge file counts in manifest.json and documentation.",
-                "command": "python scripts/validation/sync_knowledge_counts.py --sync"
-            },
-            {
-                "id": "3",
-                "name": "README Structure",
-                "description": "Validates and updates the project structure and counts in README.md.",
-                "command": "python scripts/validation/validate_readme_structure.py --update"
-            },
-            {
-                "id": "4",
-                "name": "Unified Artifact Sync",
-                "description": "Runs the configuration-driven sync system for various artifacts and tables.",
-                "command": "python scripts/validation/sync_artifacts.py --sync"
-            },
-            {
-                "id": "5",
-                "name": "Catalog Generation",
-                "description": "Regenerates the CATALOG.md to include any new agents, skills, or blueprints.",
-                "command": "python scripts/generate_catalog.py"
-            },
-            {
-                "id": "6",
-                "name": "Artifact Index Update",
-                "description": "Updates the fast-lookup cache for artifacts. Optional but recommended.",
-                "command": "python scripts/validation/update_index.py --full"
-            }
-        ]
+    "version": "1.3.0",
+    "preCommitProcedure": {
+        "description": "The Commit Procedure ensures repository integrity, security, and document coverage before every commit.",
+        "sycnSuite": {
+            "description": "Automated writing tasks to keep all documentation and manifests in sync with the filesystem.",
+            "steps": [
+                {
+                    "id": "S1",
+                    "name": "Unified Artifact Sync",
+                    "command": "{PYTHON_PATH} scripts/validation/sync_artifacts.py --sync"
+                },
+                {
+                    "id": "S2",
+                    "name": "Test Catalog Update",
+                    "command": "{PYTHON_PATH} scripts/validation/sync_artifacts.py --sync tests"
+                },
+                {
+                    "id": "S3",
+                    "name": "README Synchronization",
+                    "command": "{PYTHON_PATH} scripts/validation/validate_readme_structure.py --update"
+                },
+                {
+                    "id": "S4",
+                    "name": "Agent Catalog Generation",
+                    "command": "{PYTHON_PATH} scripts/generate_catalog.py"
+                },
+                {
+                    "id": "S5",
+                    "name": "Search Index Update",
+                    "command": "{PYTHON_PATH} scripts/validation/update_index.py --full"
+                }
+            ]
+        },
+        "checkSuite": {
+            "description": "Validation tasks to ensure no broken files or secrets are committed.",
+            "steps": [
+                {
+                    "id": "C1",
+                    "name": "JSON Syntax Validation",
+                    "command": "{PYTHON_PATH} scripts/validation/validate_json_syntax.py --staged"
+                },
+                {
+                    "id": "C2",
+                    "name": "YAML Frontmatter Validation",
+                    "command": "{PYTHON_PATH} scripts/validation/validate_yaml_frontmatter.py"
+                },
+                {
+                    "id": "C3",
+                    "name": "Dependency Verification",
+                    "command": "{PYTHON_PATH} scripts/validation/dependency_validator.py --broken"
+                },
+                {
+                    "id": "C4",
+                    "name": "Link Integrity Check",
+                    "command": "{PYTHON_PATH} scripts/verify_catalog_links.py"
+                },
+                {
+                    "id": "C5",
+                    "name": "Secret Scanning",
+                    "command": "{PYTHON_PATH} scripts/validation/scan_secrets.py --staged"
+                }
+            ]
+        }
     },
     "verification": {
-        "description": "After running these scripts, run `git status` to see if any files were modified. If so, include them in your commit."
+        "description": "Run the Sync Suite FIRST, then the Check Suite. All files MUST pass the Check Suite before committing. Include all auto-generated changes in your commit."
     }
 }

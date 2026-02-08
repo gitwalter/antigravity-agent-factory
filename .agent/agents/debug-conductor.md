@@ -260,8 +260,8 @@ flowchart TD
 **Steps:**
 
 1. **Run Full Test Suite**
-   ```bash
-   pytest tests/ -v --tb=short
+   ```powershell
+   {PYTHON_PATH} -m pytest tests/ -v --tb=short
    ```
 
 2. **Check for Regressions**
@@ -408,7 +408,7 @@ Hypothesis: README.md is out of sync with actual artifact counts
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Running sync script...
-> python scripts/validation/sync_artifacts.py --sync
+> {PYTHON_PATH} scripts/validation/sync_artifacts.py --sync
 
 Updated:
 - README.md: skills count 34 → 43
@@ -420,7 +420,7 @@ Updated:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Running test suite...
-> pytest tests/unit/test_sync_artifacts.py -v
+> {PYTHON_PATH} -m pytest tests/unit/test_sync_artifacts.py -v
 
 Result: 12 passed ✅
 

@@ -61,7 +61,7 @@ workflows:
   patterns: ["bugfix-workflow", "feature-workflow"]
   mcpServers:
     - name: "atlassian"
-      url: "https://mcp.atlassian.com/v1/sse"
+      url: "{ATLASSIAN_MCP_URL}"
       purpose: "Jira/Confluence integration"
 ```
 

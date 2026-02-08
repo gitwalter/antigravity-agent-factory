@@ -64,6 +64,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [axiom-selection](.agent/skills/axiom-selection/SKILL.md) | Axiom Selection Skill |
 | [ci-monitor](.agent/skills/ci-monitor/SKILL.md) | CI Monitor Skill |
 | [commit-release](.agent/skills/commit-release/SKILL.md) | Commit Release Skill |
+| [config-onboarding](.agent/skills/config-onboarding/SKILL.md) | Config Onboarding Skill |
 | [crewai-workflow](.agent/skills/crewai-workflow/SKILL.md) | CrewAI Workflow Skill |
 | [cursorrules-generation](.agent/skills/cursorrules-generation/SKILL.md) | Cursorrules Generation Skill |
 | [enforcement-selection](.agent/skills/enforcement-selection/SKILL.md) | Enforcement Selection Skill |
@@ -145,6 +146,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | llm-evaluation-patterns | [`knowledge/llm-evaluation-patterns.json`](knowledge/llm-evaluation-patterns.json) |
 | llm-fine-tuning-patterns | [`knowledge/llm-fine-tuning-patterns.json`](knowledge/llm-fine-tuning-patterns.json) |
 | llm-provider-comparison | [`knowledge/llm-provider-comparison.json`](knowledge/llm-provider-comparison.json) |
+| maintenance-procedures | [`knowledge/maintenance-procedures.json`](knowledge/maintenance-procedures.json) |
 | manifest | [`knowledge/manifest.json`](knowledge/manifest.json) |
 | mapping-patterns | [`knowledge/mapping-patterns.json`](knowledge/mapping-patterns.json) |
 | mcp-patterns | [`knowledge/mcp-patterns.json`](knowledge/mcp-patterns.json) |

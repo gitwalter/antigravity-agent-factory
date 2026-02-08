@@ -155,14 +155,14 @@ This file contains **verified working paths** for the current machine. Reading t
 ```json
 {
   "paths": {
-    "python": "D:\\Anaconda\\python.exe",
-    "pip": "D:\\Anaconda\\Scripts\\pip.exe",
-    "conda": "D:\\Anaconda\\Scripts\\conda.exe",
-    "pytest": "D:\\Anaconda\\Scripts\\pytest.exe",
-    "git": null
+    "python": "{PYTHON_PATH}",
+    "pip": "{PIP_PATH}",
+    "conda": "{CONDA_PATH}",
+    "pytest": "{PYTEST_PATH}",
+    "git": "{GIT_PATH}"
   },
   "workspace": {
-    "root": "D:\\Users\\wpoga\\Documents\\Python Scripts\\cursor-agent-factory",
+    "root": "{WORKSPACE_ROOT}",
     "shell": "powershell"
   }
 }
@@ -171,27 +171,26 @@ This file contains **verified working paths** for the current machine. Reading t
 **Usage in Commands:**
 ```powershell
 # Read from cache - path is already verified
-D:\Anaconda\python.exe scripts/validation/validate_yaml_frontmatter.py
+{PYTHON_PATH} scripts/validation/validate_yaml_frontmatter.py
 ```
 
 ### Default Tool Paths (Windows)
 
-| Tool | Default Path | Env Variable | Notes |
-|------|--------------|--------------|-------|
-| **Python** | `C:\App\Anaconda\python.exe` | `PYTHON_PATH` | Anaconda installation |
-| **Pip** | `C:\App\Anaconda\Scripts\pip.exe` | `PIP_PATH` | Anaconda pip |
-| **Conda** | `C:\App\Anaconda\Scripts\conda.exe` | `CONDA_PATH` | Anaconda conda |
-| **GitHub CLI** | `C:\App\gh\bin\gh.exe` | `GH_CLI_PATH` | **CONFIGURABLE** |
-| **Pytest** | `C:\App\Anaconda\Scripts\pytest.exe` | `PYTEST_PATH` | Anaconda pytest |
+| Tool | Default (Fallback) | Configuration Variable |
+|------|-------------------|----------------------|
+| **Python** | `C:\App\Anaconda\python.exe` | `{PYTHON_PATH}` |
+| **Pip** | `C:\App\Anaconda\Scripts\pip.exe` | `{PIP_PATH}` |
+| **Conda** | `C:\App\Anaconda\Scripts\conda.exe` | `{CONDA_PATH}` |
+| **GitHub CLI** | `C:\App\gh\bin\gh.exe` | `{GH_CLI_PATH}` |
+| **Pytest** | `C:\App\Anaconda\Scripts\pytest.exe` | `{PYTEST_PATH}` |
+| **Git** | `C:\Program Files\Git\cmd\git.exe` | `{GIT_PATH}` |
 
-### GitHub CLI Configuration
-
-The GitHub CLI (`gh`) is installed at `C:\App\gh` on this machine.
+The GitHub CLI (`gh`) path is defined in configuration.
 
 **Usage:**
 ```powershell
-# Full path (always works)
-C:\App\gh\bin\gh.exe pr list
+# Resolved path (always works)
+{GH_CLI_PATH} pr list
 
 # Or via environment variable
 & $env:GH_CLI_PATH pr list
@@ -200,19 +199,19 @@ C:\App\gh\bin\gh.exe pr list
 **Common Commands:**
 ```powershell
 # List recent workflow runs
-C:\App\gh\bin\gh.exe run list --limit 5
+{GH_CLI_PATH} run list --limit 5
 
 # View specific run
-C:\App\gh\bin\gh.exe run view <run-id> --json jobs
+{GH_CLI_PATH} run view <run-id> --json jobs
 
 # Create pull request
-C:\App\gh\bin\gh.exe pr create --title "Title" --body "Description"
+{GH_CLI_PATH} pr create --title "Title" --body "Description"
 
 # List issues
-C:\App\gh\bin\gh.exe issue list
+{GH_CLI_PATH} issue list
 
 # Create repository
-C:\App\gh\bin\gh.exe repo create my-repo --public
+{GH_CLI_PATH} repo create my-repo --public
 ```
 
 ### Updating the Session Cache
@@ -220,7 +219,7 @@ C:\App\gh\bin\gh.exe repo create my-repo --public
 When a path is verified to work, update the cache:
 
 ```powershell
-# After verifying D:\Anaconda\python.exe works, update cache
+# After verifying {PYTHON_PATH} works, update cache
 # The agent should read_file, modify, and write back
 ```
 
@@ -230,20 +229,20 @@ When a path is verified to work, update the cache:
 # Using environment variable (recommended)
 & $env:GH_CLI_PATH run list --limit 5
 
-# Or with default path
-C:\App\gh\bin\gh.exe run list --limit 5
+# Or with resolved path
+{GH_CLI_PATH} run list --limit 5
 
 # View specific run details
-C:\App\gh\bin\gh.exe run view <run-id> --json jobs
+{GH_CLI_PATH} run view <run-id> --json jobs
 
 # Check job status
-C:\App\gh\bin\gh.exe run view <run-id> --json jobs --jq ".jobs[] | {name, conclusion}"
+{GH_CLI_PATH} run view <run-id> --json jobs --jq ".jobs[] | {name, conclusion}"
 
 # Create a pull request
-C:\App\gh\bin\gh.exe pr create --title "Title" --body "Description"
+{GH_CLI_PATH} pr create --title "Title" --body "Description"
 
 # List open issues
-C:\App\gh\bin\gh.exe issue list
+{GH_CLI_PATH} issue list
 ```
 
 ### Cross-Platform Paths
