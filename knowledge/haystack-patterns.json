@@ -1,0 +1,425 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "haystack-patterns",
+  "name": "Haystack Patterns",
+  "title": "Haystack Patterns",
+  "description": "Best practices and patterns for deepset Haystack RAG pipeline development",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A3_transparency": "Haystack pipelines provide traceability and explainability for RAG systems"
+  },
+  "pipeline_patterns": {
+    "basic_pipeline": {
+      "description": "Create basic Haystack pipeline",
+      "use_when": "Building RAG system with Haystack",
+      "code_example": "from haystack import Pipeline\nfrom haystack.components.builders import PromptBuilder\nfrom haystack.components.generators import OpenAIGenerator\nfrom haystack.components.retrievers import InMemoryEmbeddingRetriever\n\n# Create pipeline\npipeline = Pipeline()\n\n# Add components\npipeline.add_component('retriever', InMemoryEmbeddingRetriever(...))\npipeline.add_component('prompt_builder', PromptBuilder(template=prompt_template))\npipeline.add_component('llm', OpenAIGenerator(...))\n\n# Connect components\npipeline.connect('retriever', 'prompt_builder')\npipeline.connect('prompt_builder', 'llm')\n\n# Run pipeline\nresult = pipeline.run({\n    'retriever': {'query': 'What is AI?'},\n    'prompt_builder': {'query': 'What is AI?'}\n})",
+      "best_practices": [
+        "Create Pipeline instance",
+        "Add components with unique names",
+        "Connect components explicitly",
+        "Use descriptive component names",
+        "Test pipeline with sample inputs"
+      ],
+      "key_properties": {
+        "add_component": "Add component to pipeline",
+        "connect": "Connect component outputs to inputs",
+        "run": "Execute pipeline with inputs"
+      }
+    },
+    "component_connections": {
+      "description": "Connect pipeline components",
+      "use_when": "Building multi-component pipelines",
+      "code_example": "from haystack import Pipeline\n\npipeline = Pipeline()\n\n# Add components\npipeline.add_component('retriever', retriever)\npipeline.add_component('reranker', reranker)\npipeline.add_component('prompt_builder', prompt_builder)\npipeline.add_component('llm', llm)\n\n# Connect: retriever -> reranker -> prompt_builder -> llm\npipeline.connect('retriever.documents', 'reranker.documents')\npipeline.connect('retriever.documents', 'reranker.query')\npipeline.connect('reranker.documents', 'prompt_builder.documents')\npipeline.connect('prompt_builder.prompt', 'llm.prompt')\n\n# Run\nresult = pipeline.run({'retriever': {'query': 'question'}})",
+      "best_practices": [
+        "Connect components in logical order",
+        "Use dot notation for specific outputs (component.output)",
+        "Ensure output types match input types",
+        "Test connections with sample data",
+        "Document pipeline flow"
+      ]
+    },
+    "pipeline_serialization": {
+      "description": "Save and load pipelines",
+      "use_when": "Need to persist pipeline configurations",
+      "code_example": "from haystack import Pipeline\nimport json\n\n# Create pipeline\npipeline = Pipeline()\npipeline.add_component('retriever', retriever)\npipeline.add_component('llm', llm)\npipeline.connect('retriever', 'llm')\n\n# Save pipeline\npipeline_dict = pipeline.to_dict()\nwith open('pipeline.json', 'w') as f:\n    json.dump(pipeline_dict, f, indent=2)\n\n# Load pipeline\nwith open('pipeline.json', 'r') as f:\n    pipeline_dict = json.load(f)\nloaded_pipeline = Pipeline.from_dict(pipeline_dict)",
+      "best_practices": [
+        "Use to_dict() to serialize",
+        "Save to JSON for human readability",
+        "Use from_dict() to deserialize",
+        "Version control pipeline configs",
+        "Test loaded pipelines"
+      ]
+    },
+    "conditional_pipeline": {
+      "description": "Create conditional pipeline branches",
+      "use_when": "Need different paths based on conditions",
+      "code_example": "from haystack import Pipeline\nfrom haystack.components.routers import ConditionalRouter\n\npipeline = Pipeline()\n\n# Add router\nrouter = ConditionalRouter(\n    routes=[\n        {'condition': '{{query|length > 50}}', 'output': 'complex_query', 'output_name': 'complex'},\n        {'condition': '{{query|length <= 50}}', 'output': 'simple_query', 'output_name': 'simple'}\n    ]\n)\n\npipeline.add_component('router', router)\npipeline.add_component('complex_processor', complex_processor)\npipeline.add_component('simple_processor', simple_processor)\n\n# Connect based on route\npipeline.connect('router.complex', 'complex_processor')\npipeline.connect('router.simple', 'simple_processor')",
+      "best_practices": [
+        "Use ConditionalRouter for branching",
+        "Define clear conditions",
+        "Handle all possible routes",
+        "Test each branch",
+        "Document routing logic"
+      ]
+    }
+  },
+  "retriever_patterns": {
+    "bm25_retriever": {
+      "description": "Use BM25 keyword-based retriever",
+      "use_when": "Need keyword matching retrieval",
+      "code_example": "from haystack import Document\nfrom haystack.document_stores import InMemoryDocumentStore\nfrom haystack.components.retrievers import BM25Retriever\n\n# Create document store\ndocument_store = InMemoryDocumentStore()\n\n# Add documents\ndocuments = [\n    Document(content='AI is artificial intelligence'),\n    Document(content='ML is machine learning')\n]\ndocument_store.write_documents(documents)\n\n# Create BM25 retriever\nretriever = BM25Retriever(document_store=document_store)\n\n# Retrieve\nresults = retriever.run(query='What is AI?', top_k=5)",
+      "best_practices": [
+        "Use BM25 for keyword-based search",
+        "Good for exact term matching",
+        "Fast retrieval",
+        "Set appropriate top_k",
+        "Works well with sparse queries"
+      ]
+    },
+    "embedding_retriever": {
+      "description": "Use embedding-based semantic retriever",
+      "use_when": "Need semantic similarity search",
+      "code_example": "from haystack import Document\nfrom haystack.document_stores import InMemoryDocumentStore\nfrom haystack.components.retrievers import InMemoryEmbeddingRetriever\nfrom haystack.components.embedders import SentenceTransformersDocumentEmbedder\n\n# Create document store\ndocument_store = InMemoryDocumentStore()\n\n# Add documents\ndocuments = [Document(content='AI is artificial intelligence')]\ndocument_store.write_documents(documents)\n\n# Create embedder\nembedder = SentenceTransformersDocumentEmbedder(\n    model='sentence-transformers/all-MiniLM-L6-v2'\n)\n\n# Embed documents\nembedded_docs = embedder.run(documents=documents)\n\n# Create retriever\nretriever = InMemoryEmbeddingRetriever(\n    document_store=document_store,\n    embedding_model='sentence-transformers/all-MiniLM-L6-v2'\n)\n\n# Retrieve\nresults = retriever.run(query='What is artificial intelligence?', top_k=5)",
+      "best_practices": [
+        "Use embedding retriever for semantic search",
+        "Choose appropriate embedding model",
+        "Embed documents before retrieval",
+        "Set top_k appropriately",
+        "Use same model for embedding and retrieval"
+      ]
+    },
+    "hybrid_retriever": {
+      "description": "Combine BM25 and embedding retrievers",
+      "use_when": "Want both keyword and semantic matching",
+      "code_example": "from haystack.components.retrievers import (\n    BM25Retriever,\n    InMemoryEmbeddingRetriever\n)\nfrom haystack.components.joiners import DocumentJoiner\n\n# Create retrievers\nbm25_retriever = BM25Retriever(document_store=document_store)\nembedding_retriever = InMemoryEmbeddingRetriever(\n    document_store=document_store,\n    embedding_model='sentence-transformers/all-MiniLM-L6-v2'\n)\n\n# Create joiner\njoiner = DocumentJoiner(join_mode='reciprocal_rank_fusion')\n\n# Build pipeline\npipeline = Pipeline()\npipeline.add_component('bm25', bm25_retriever)\npipeline.add_component('embedding', embedding_retriever)\npipeline.add_component('joiner', joiner)\n\npipeline.connect('bm25.documents', 'joiner.documents')\npipeline.connect('embedding.documents', 'joiner.documents')\n\n# Run\nresult = pipeline.run({\n    'bm25': {'query': 'AI'},\n    'embedding': {'query': 'AI'}\n})",
+      "best_practices": [
+        "Use hybrid for best of both worlds",
+        "Combine BM25 and embedding results",
+        "Use DocumentJoiner for merging",
+        "Try different join modes (reciprocal_rank_fusion, merge)",
+        "Tune weights if needed"
+      ]
+    },
+    "multi_modal_retriever": {
+      "description": "Retrieve across multiple modalities",
+      "use_when": "Have text, images, or other modalities",
+      "code_example": "from haystack import Document\nfrom haystack.components.retrievers import MultiModalRetriever\n\n# Create multi-modal documents\ndocuments = [\n    Document(content='Text about AI', meta={'image_path': 'ai_image.jpg'}),\n    Document(content='Text about ML', meta={'image_path': 'ml_image.jpg'})\n]\n\n# Create multi-modal retriever\nretriever = MultiModalRetriever(\n    document_store=document_store,\n    query_embedding_model='sentence-transformers/all-MiniLM-L6-v2',\n    image_embedding_model='clip-ViT-B-32'\n)\n\n# Retrieve with text query\nresults = retriever.run(query='Show me AI images', top_k=5)",
+      "best_practices": [
+        "Use for multi-modal search",
+        "Configure appropriate embedding models per modality",
+        "Store modality metadata in documents",
+        "Handle different input types",
+        "Test with various queries"
+      ]
+    }
+  },
+  "generator_patterns": {
+    "openai_generator": {
+      "description": "Use OpenAI as generator",
+      "use_when": "Need high-quality text generation",
+      "code_example": "from haystack.components.generators import OpenAIGenerator\n\n# Create OpenAI generator\ngenerator = OpenAIGenerator(\n    api_key=os.getenv('OPENAI_API_KEY'),\n    model='gpt-4',\n    generation_kwargs={\n        'temperature': 0.7,\n        'max_tokens': 500\n    }\n)\n\n# Generate\nresult = generator.run(\n    prompt='Answer this question: What is AI?',\n    generation_kwargs={'temperature': 0.5}\n)\n\nanswer = result['replies'][0]",
+      "best_practices": [
+        "Use OpenAI for high-quality generation",
+        "Configure model appropriately",
+        "Set generation_kwargs",
+        "Handle API errors",
+        "Monitor token usage"
+      ]
+    },
+    "anthropic_generator": {
+      "description": "Use Anthropic Claude as generator",
+      "use_when": "Prefer Claude for generation",
+      "code_example": "from haystack.components.generators import AnthropicGenerator\n\n# Create Anthropic generator\ngenerator = AnthropicGenerator(\n    api_key=os.getenv('ANTHROPIC_API_KEY'),\n    model='claude-3-opus-20240229',\n    generation_kwargs={\n        'max_tokens': 1000,\n        'temperature': 0.7\n    }\n)\n\n# Generate\nresult = generator.run(prompt='Explain AI')\nanswer = result['replies'][0]",
+      "best_practices": [
+        "Use Anthropic for Claude models",
+        "Configure API key",
+        "Choose appropriate Claude model",
+        "Set generation parameters",
+        "Handle API responses"
+      ]
+    },
+    "huggingface_generator": {
+      "description": "Use Hugging Face models as generator",
+      "use_when": "Need local or open-source models",
+      "code_example": "from haystack.components.generators import HuggingFaceTGIGenerator\n\n# Create Hugging Face generator\ngenerator = HuggingFaceTGIGenerator(\n    model='meta-llama/Llama-2-7b-chat-hf',\n    token=os.getenv('HUGGINGFACE_API_TOKEN'),\n    generation_kwargs={\n        'max_new_tokens': 512,\n        'temperature': 0.7\n    }\n)\n\n# Generate\nresult = generator.run(prompt='What is AI?')\nanswer = result['replies'][0]",
+      "best_practices": [
+        "Use for local/open-source models",
+        "Configure model name",
+        "Set API token if using Hugging Face API",
+        "Use appropriate generation_kwargs",
+        "Handle model loading time"
+      ]
+    },
+    "local_generator": {
+      "description": "Use local model as generator",
+      "use_when": "Need privacy or offline generation",
+      "code_example": "from haystack.components.generators import HuggingFaceLocalGenerator\n\n# Create local generator\ngenerator = HuggingFaceLocalGenerator(\n    model='meta-llama/Llama-2-7b-chat-hf',\n    device='cuda',  # or 'cpu'\n    generation_kwargs={\n        'max_new_tokens': 512,\n        'temperature': 0.7\n    }\n)\n\n# Generate\nresult = generator.run(prompt='What is AI?')\nanswer = result['replies'][0]",
+      "best_practices": [
+        "Use for privacy-sensitive applications",
+        "Requires model download",
+        "Configure device (cuda/cpu)",
+        "Monitor memory usage",
+        "Handle slower generation"
+      ]
+    }
+  },
+  "rag_patterns": {
+    "indexing_pipeline": {
+      "description": "Create pipeline for indexing documents",
+      "use_when": "Need to index documents for RAG",
+      "code_example": "from haystack import Pipeline, Document\nfrom haystack.components.converters import PyPDFToDocument\nfrom haystack.components.preprocessors import DocumentSplitter\nfrom haystack.components.embedders import SentenceTransformersDocumentEmbedder\nfrom haystack.document_stores import InMemoryDocumentStore\n\n# Create indexing pipeline\nindexing_pipeline = Pipeline()\n\n# Add components\nindexing_pipeline.add_component('converter', PyPDFToDocument())\nindexing_pipeline.add_component('splitter', DocumentSplitter(split_by='sentence', split_length=200))\nindexing_pipeline.add_component('embedder', SentenceTransformersDocumentEmbedder(\n    model='sentence-transformers/all-MiniLM-L6-v2'\n))\nindexing_pipeline.add_component('writer', InMemoryDocumentStore())\n\n# Connect\nindexing_pipeline.connect('converter', 'splitter')\nindexing_pipeline.connect('splitter', 'embedder')\nindexing_pipeline.connect('embedder', 'writer')\n\n# Index documents\nresult = indexing_pipeline.run({\n    'converter': {'sources': ['document.pdf']}\n})",
+      "best_practices": [
+        "Create separate indexing pipeline",
+        "Convert documents first",
+        "Split into appropriate chunks",
+        "Embed chunks",
+        "Write to document store"
+      ]
+    },
+    "querying_pipeline": {
+      "description": "Create pipeline for querying RAG system",
+      "use_when": "Building RAG query interface",
+      "code_example": "from haystack import Pipeline\nfrom haystack.components.builders import PromptBuilder\nfrom haystack.components.retrievers import InMemoryEmbeddingRetriever\nfrom haystack.components.generators import OpenAIGenerator\n\n# Create querying pipeline\nquery_pipeline = Pipeline()\n\n# Add components\nquery_pipeline.add_component('retriever', InMemoryEmbeddingRetriever(...))\nquery_pipeline.add_component('prompt_builder', PromptBuilder(\n    template='''Given the following information, answer the question.\n    \n    Information:\n    {% for document in documents %}\n        {{ document.content }}\n    {% endfor %}\n    \n    Question: {{ query }}\n    Answer:'''\n))\nquery_pipeline.add_component('llm', OpenAIGenerator(...))\n\n# Connect\nquery_pipeline.connect('retriever', 'prompt_builder')\nquery_pipeline.connect('prompt_builder', 'llm')\n\n# Query\nresult = query_pipeline.run({\n    'retriever': {'query': 'What is AI?'},\n    'prompt_builder': {'query': 'What is AI?'}\n})\n\nanswer = result['llm']['replies'][0]",
+      "best_practices": [
+        "Separate indexing and querying pipelines",
+        "Use PromptBuilder for prompt templates",
+        "Include retrieved documents in prompt",
+        "Configure retriever top_k",
+        "Handle empty retrieval results"
+      ]
+    },
+    "evaluation_pipeline": {
+      "description": "Evaluate RAG pipeline performance",
+      "use_when": "Need to measure RAG quality",
+      "code_example": "from haystack import Pipeline\nfrom haystack.evaluation import EvaluationRun\nfrom haystack.evaluation.metrics import (\n    FaithfulnessMetric,\n    AnswerRelevanceMetric,\n    ContextRelevanceMetric\n)\n\n# Create evaluation pipeline\n# ... (same as querying pipeline) ...\n\n# Create evaluation run\neval_run = EvaluationRun(\n    pipeline=query_pipeline,\n    inputs=[\n        {'query': 'What is AI?', 'ground_truth': 'AI is artificial intelligence'},\n        {'query': 'What is ML?', 'ground_truth': 'ML is machine learning'}\n    ],\n    metrics=[\n        FaithfulnessMetric(),\n        AnswerRelevanceMetric(),\n        ContextRelevanceMetric()\n    ]\n)\n\n# Run evaluation\nresults = eval_run.run()\nprint(results)",
+      "best_practices": [
+        "Use EvaluationRun for evaluation",
+        "Provide ground truth answers",
+        "Use multiple metrics",
+        "Test with diverse queries",
+        "Analyze results for improvement"
+      ]
+    },
+    "ragas_integration": {
+      "description": "Use RAGAS for RAG evaluation",
+      "use_when": "Need comprehensive RAG evaluation",
+      "code_example": "from haystack import Pipeline\nfrom haystack.evaluation import EvaluationRun\nfrom haystack.evaluation.metrics import RAGASMetric\n\n# Create RAGAS metric\nragas_metric = RAGASMetric(\n    metrics=['faithfulness', 'answer_relevance', 'context_relevance']\n)\n\n# Create evaluation run\neval_run = EvaluationRun(\n    pipeline=query_pipeline,\n    inputs=[\n        {\n            'query': 'What is AI?',\n            'ground_truth': 'AI is artificial intelligence',\n            'contexts': ['AI document content']\n        }\n    ],\n    metrics=[ragas_metric]\n)\n\n# Run evaluation\nresults = eval_run.run()",
+      "best_practices": [
+        "Use RAGAS for comprehensive evaluation",
+        "Provide query, ground_truth, and contexts",
+        "Select appropriate RAGAS metrics",
+        "Interpret RAGAS scores",
+        "Use for continuous evaluation"
+      ]
+    }
+  },
+  "document_store_patterns": {
+    "inmemory_store": {
+      "description": "Use in-memory document store",
+      "use_when": "Development or small datasets",
+      "code_example": "from haystack.document_stores import InMemoryDocumentStore\nfrom haystack import Document\n\n# Create in-memory store\ndocument_store = InMemoryDocumentStore()\n\n# Write documents\ndocuments = [Document(content='AI content')]\ndocument_store.write_documents(documents)\n\n# Query\ndocument_store.filter_documents(filters={'meta_field': 'value'})",
+      "best_practices": [
+        "Use for development and testing",
+        "Fast but not persistent",
+        "Limited by memory",
+        "Good for prototyping",
+        "Not for production at scale"
+      ]
+    },
+    "elasticsearch_store": {
+      "description": "Use Elasticsearch document store",
+      "use_when": "Need scalable, production-ready storage",
+      "code_example": "from haystack.document_stores import ElasticsearchDocumentStore\n\n# Create Elasticsearch store\ndocument_store = ElasticsearchDocumentStore(\n    hosts='http://localhost:9200',\n    index='documents',\n    embedding_dim=384\n)\n\n# Write documents\ndocument_store.write_documents(documents)\n\n# Query\ndocument_store.filter_documents(filters={'meta_field': 'value'})",
+      "best_practices": [
+        "Use for production deployments",
+        "Configure hosts and index",
+        "Set embedding_dim correctly",
+        "Handle connection errors",
+        "Monitor Elasticsearch performance"
+      ]
+    },
+    "qdrant_store": {
+      "description": "Use Qdrant vector store",
+      "use_when": "Need high-performance vector search",
+      "code_example": "from haystack.document_stores import QdrantDocumentStore\n\n# Create Qdrant store\ndocument_store = QdrantDocumentStore(\n    url='http://localhost:6333',\n    index='documents',\n    embedding_dim=384\n)\n\n# Write documents\ndocument_store.write_documents(documents)\n\n# Query\ndocument_store.filter_documents(filters={'meta_field': 'value'})",
+      "best_practices": [
+        "Use for vector-heavy workloads",
+        "Configure Qdrant server URL",
+        "Set embedding_dim",
+        "Handle Qdrant connection",
+        "Monitor vector search performance"
+      ]
+    },
+    "weaviate_store": {
+      "description": "Use Weaviate vector database",
+      "use_when": "Need Weaviate integration",
+      "code_example": "from haystack.document_stores import WeaviateDocumentStore\n\n# Create Weaviate store\ndocument_store = WeaviateDocumentStore(\n    url='http://localhost:8080',\n    index='Documents',\n    embedding_dim=384\n)\n\n# Write documents\ndocument_store.write_documents(documents)",
+      "best_practices": [
+        "Use for Weaviate deployments",
+        "Configure Weaviate URL",
+        "Set embedding dimensions",
+        "Handle Weaviate schema",
+        "Monitor Weaviate performance"
+      ]
+    },
+    "chromadb_store": {
+      "description": "Use ChromaDB document store",
+      "use_when": "Need ChromaDB integration",
+      "code_example": "from haystack.document_stores import ChromaDocumentStore\n\n# Create ChromaDB store\ndocument_store = ChromaDocumentStore(\n    collection_name='documents',\n    embedding_dim=384\n)\n\n# Write documents\ndocument_store.write_documents(documents)",
+      "best_practices": [
+        "Use for ChromaDB deployments",
+        "Configure collection name",
+        "Set embedding dimensions",
+        "Handle ChromaDB persistence",
+        "Monitor ChromaDB performance"
+      ]
+    },
+    "pinecone_store": {
+      "description": "Use Pinecone vector database",
+      "use_when": "Need managed vector database",
+      "code_example": "from haystack.document_stores import PineconeDocumentStore\n\n# Create Pinecone store\ndocument_store = PineconeDocumentStore(\n    api_key=os.getenv('PINECONE_API_KEY'),\n    environment='us-east1-gcp',\n    index='documents',\n    embedding_dim=384\n)\n\n# Write documents\ndocument_store.write_documents(documents)",
+      "best_practices": [
+        "Use for managed vector database",
+        "Configure API key and environment",
+        "Set embedding dimensions",
+        "Handle Pinecone API limits",
+        "Monitor Pinecone usage"
+      ]
+    }
+  },
+  "converter_patterns": {
+    "pdf_converter": {
+      "description": "Convert PDF documents",
+      "use_when": "Need to process PDF files",
+      "code_example": "from haystack.components.converters import PyPDFToDocument\n\n# Create PDF converter\nconverter = PyPDFToDocument()\n\n# Convert PDF\nresult = converter.run(sources=['document.pdf'])\ndocuments = result['documents']",
+      "best_practices": [
+        "Use PyPDFToDocument for PDFs",
+        "Handle PDF parsing errors",
+        "Extract text and metadata",
+        "Process multi-page PDFs",
+        "Handle encrypted PDFs"
+      ]
+    },
+    "html_converter": {
+      "description": "Convert HTML documents",
+      "use_when": "Need to process HTML files",
+      "code_example": "from haystack.components.converters import HTMLToDocument\n\n# Create HTML converter\nconverter = HTMLToDocument()\n\n# Convert HTML\nresult = converter.run(sources=['page.html'])\ndocuments = result['documents']",
+      "best_practices": [
+        "Use HTMLToDocument for HTML",
+        "Extract text content",
+        "Handle HTML structure",
+        "Preserve links if needed",
+        "Clean HTML tags"
+      ]
+    },
+    "markdown_converter": {
+      "description": "Convert Markdown documents",
+      "use_when": "Need to process Markdown files",
+      "code_example": "from haystack.components.converters import MarkdownToDocument\n\n# Create Markdown converter\nconverter = MarkdownToDocument()\n\n# Convert Markdown\nresult = converter.run(sources=['document.md'])\ndocuments = result['documents']",
+      "best_practices": [
+        "Use MarkdownToDocument for Markdown",
+        "Preserve Markdown structure",
+        "Handle code blocks",
+        "Extract metadata",
+        "Process frontmatter"
+      ]
+    },
+    "audio_converter": {
+      "description": "Convert audio to text using Whisper",
+      "use_when": "Need to process audio files",
+      "code_example": "from haystack.components.converters import WhisperTranscriber\n\n# Create Whisper transcriber\nconverter = WhisperTranscriber(\n    model='openai/whisper-base',\n    device='cuda'\n)\n\n# Transcribe audio\nresult = converter.run(sources=['audio.mp3'])\ndocuments = result['documents']",
+      "best_practices": [
+        "Use WhisperTranscriber for audio",
+        "Choose appropriate Whisper model",
+        "Configure device (cuda/cpu)",
+        "Handle long audio files",
+        "Process audio segments"
+      ]
+    }
+  },
+  "custom_component_patterns": {
+    "custom_node": {
+      "description": "Create custom pipeline component",
+      "use_when": "Need custom processing logic",
+      "code_example": "from haystack import component\nfrom haystack.dataclasses import Document\nfrom typing import List\n\n@component\nclass CustomProcessor:\n    @component.output_types(documents=List[Document])\n    def run(self, documents: List[Document]) -> dict:\n        # Custom processing\n        processed_docs = []\n        for doc in documents:\n            # Process document\n            processed_content = process_content(doc.content)\n            processed_doc = Document(\n                content=processed_content,\n                meta=doc.meta\n            )\n            processed_docs.append(processed_doc)\n        \n        return {'documents': processed_docs}\n\n# Use in pipeline\npipeline = Pipeline()\ncustom_processor = CustomProcessor()\npipeline.add_component('processor', custom_processor)\npipeline.connect('retriever', 'processor')\npipeline.connect('processor', 'llm')",
+      "best_practices": [
+        "Use @component decorator",
+        "Define input/output types",
+        "Implement run() method",
+        "Return dictionary with outputs",
+        "Handle errors gracefully"
+      ]
+    },
+    "component_with_state": {
+      "description": "Create stateful component",
+      "use_when": "Component needs to maintain state",
+      "code_example": "from haystack import component\n\n@component\nclass StatefulProcessor:\n    def __init__(self):\n        self.cache = {}\n        self.call_count = 0\n    \n    @component.output_types(result=str)\n    def run(self, input: str) -> dict:\n        self.call_count += 1\n        \n        # Check cache\n        if input in self.cache:\n            return {'result': self.cache[input]}\n        \n        # Process and cache\n        result = process(input)\n        self.cache[input] = result\n        \n        return {'result': result}",
+      "best_practices": [
+        "Initialize state in __init__",
+        "Manage state carefully",
+        "Consider thread safety",
+        "Reset state if needed",
+        "Document state behavior"
+      ]
+    }
+  },
+  "best_practices": [
+    "Create separate pipelines for indexing and querying",
+    "Use appropriate document store: InMemory for dev, Elasticsearch/Qdrant for production",
+    "Choose retriever based on use case: BM25 for keywords, Embedding for semantic, Hybrid for both",
+    "Split documents into appropriate chunks (200-500 tokens typically)",
+    "Use PromptBuilder for maintainable prompt templates",
+    "Embed documents with same model used for query embedding",
+    "Set appropriate top_k for retrieval (typically 3-10)",
+    "Handle empty retrieval results gracefully",
+    "Use evaluation pipelines to measure RAG quality",
+    "Test pipelines with diverse queries and documents"
+  ],
+  "anti_patterns": [
+    {
+      "name": "no_document_splitting",
+      "description": "Not splitting documents into chunks",
+      "problem": "Poor retrieval and context management",
+      "solution": "Always split documents into appropriate chunks"
+    },
+    {
+      "name": "mismatched_embeddings",
+      "description": "Using different embedding models for indexing and querying",
+      "problem": "Poor retrieval quality",
+      "solution": "Use same embedding model for both indexing and querying"
+    },
+    {
+      "name": "no_error_handling",
+      "description": "Not handling errors in pipelines",
+      "problem": "Pipelines crash on errors",
+      "solution": "Add error handling in custom components and pipeline execution"
+    },
+    {
+      "name": "inmemory_production",
+      "description": "Using InMemoryDocumentStore in production",
+      "problem": "Data loss and scalability issues",
+      "solution": "Use persistent document stores (Elasticsearch, Qdrant) in production"
+    }
+  ],
+  "patterns": {
+    "pipeline_patterns": {
+      "basic_pipeline": {
+        "description": "Create basic Haystack pipeline",
+        "code_example": "from haystack import Pipeline\n\npipeline = Pipeline()\npipeline.add_component('retriever', retriever)\npipeline.add_component('llm', llm)\npipeline.connect('retriever', 'llm')\nresult = pipeline.run({'retriever': {'query': 'question'}})"
+      }
+    },
+    "retriever_patterns": {
+      "embedding_retriever": {
+        "description": "Use embedding-based semantic retriever",
+        "code_example": "from haystack.components.retrievers import InMemoryEmbeddingRetriever\n\nretriever = InMemoryEmbeddingRetriever(\n    document_store=document_store,\n    embedding_model='sentence-transformers/all-MiniLM-L6-v2'\n)\nresults = retriever.run(query='question', top_k=5)"
+      }
+    },
+    "rag_patterns": {
+      "querying_pipeline": {
+        "description": "Create pipeline for querying RAG system",
+        "code_example": "from haystack import Pipeline\nfrom haystack.components.builders import PromptBuilder\n\npipeline = Pipeline()\npipeline.add_component('retriever', retriever)\npipeline.add_component('prompt_builder', PromptBuilder(template=template))\npipeline.add_component('llm', llm)\npipeline.connect('retriever', 'prompt_builder')\npipeline.connect('prompt_builder', 'llm')"
+      }
+    }
+  }
+}

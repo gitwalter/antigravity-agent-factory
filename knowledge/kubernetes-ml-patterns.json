@@ -1,0 +1,214 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "kubernetes-ml-patterns",
+  "name": "Kubernetes ML Patterns",
+  "title": "Kubernetes ML Model Deployment Patterns",
+  "description": "Patterns for deploying ML models on Kubernetes including GPU scheduling, model serving, and autoscaling",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "K8s configs enable reproducible ML deployments",
+    "A3_transparency": "Resource definitions make ML infrastructure explicit",
+    "A4_adaptability": "K8s supports scaling ML workloads"
+  },
+  "gpu_scheduling": {
+    "description": "GPU scheduling in Kubernetes",
+    "device_plugins": {
+      "nvidia": "NVIDIA device plugin",
+      "amd": "AMD device plugin"
+    },
+    "resource_requests": "resources:\n  limits:\n    nvidia.com/gpu: 1",
+    "best_practices": [
+      "Request GPUs explicitly",
+      "Use device plugins",
+      "Monitor GPU usage",
+      "Handle GPU failures"
+    ]
+  },
+  "kueue": {
+    "description": "Kubernetes job queueing system",
+    "features": [
+      "Job queueing",
+      "Resource quotas",
+      "Fair scheduling",
+      "Preemption"
+    ],
+    "use_cases": [
+      "Training jobs",
+      "Batch inference",
+      "Resource management"
+    ]
+  },
+  "volcano": {
+    "description": "Volcano batch scheduling system",
+    "features": [
+      "Gang scheduling",
+      "Job management",
+      "Resource allocation",
+      "Preemption"
+    ],
+    "use_cases": [
+      "Distributed training",
+      "Batch jobs",
+      "Multi-job coordination"
+    ]
+  },
+  "mig_mps": {
+    "description": "Multi-Instance GPU and Multi-Process Service",
+    "mig": {
+      "description": "Partition GPU into instances",
+      "use_when": "Share GPU among multiple workloads"
+    },
+    "mps": {
+      "description": "Share GPU among processes",
+      "use_when": "Multiple processes need GPU"
+    }
+  },
+  "gang_scheduling": {
+    "description": "Schedule all pods together",
+    "use_cases": [
+      "Distributed training",
+      "Multi-pod jobs",
+      "Synchronized workloads"
+    ],
+    "implementation": "Use Volcano or Kueue for gang scheduling"
+  },
+  "training_operator": {
+    "description": "Kubeflow Training Operator",
+    "operators": {
+      "pytorch_job": "PyTorch distributed training",
+      "tensorflow_job": "TensorFlow distributed training",
+      "mpi_job": "MPI-based training",
+      "xgboost_job": "XGBoost training"
+    },
+    "usage": "apiVersion: kubeflow.org/v1\nkind: PyTorchJob\nmetadata:\n  name: pytorch-training\nspec:\n  pytorchReplicaSpecs:\n    Master:\n      replicas: 1\n      template:\n        spec:\n          containers:\n          - name: pytorch\n            image: pytorch:latest",
+    "best_practices": [
+      "Use appropriate operator",
+      "Configure resources",
+      "Handle failures",
+      "Monitor training"
+    ]
+  },
+  "ray_on_k8s": {
+    "description": "Ray distributed computing on Kubernetes",
+    "features": [
+      "Distributed training",
+      "Hyperparameter tuning",
+      "Distributed inference",
+      "Auto-scaling"
+    ],
+    "deployment": "apiVersion: ray.io/v1\nkind: RayCluster\nmetadata:\n  name: ray-cluster\nspec:\n  headGroupSpec:\n    serviceType: ClusterIP\n    template:\n      spec:\n        containers:\n        - name: ray-head\n          image: rayproject/ray:latest",
+    "best_practices": [
+      "Configure autoscaling",
+      "Monitor Ray dashboard",
+      "Handle node failures",
+      "Optimize resource usage"
+    ]
+  },
+  "triton_on_k8s": {
+    "description": "NVIDIA Triton Inference Server on Kubernetes",
+    "features": [
+      "Multi-framework support",
+      "Dynamic batching",
+      "Model ensemble",
+      "GPU optimization"
+    ],
+    "deployment": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: triton-server\nspec:\n  replicas: 2\n  template:\n    spec:\n      containers:\n      - name: triton\n        image: nvcr.io/nvidia/tritonserver:latest\n        resources:\n          limits:\n            nvidia.com/gpu: 1",
+    "best_practices": [
+      "Use dynamic batching",
+      "Configure model repository",
+      "Monitor performance",
+      "Scale horizontally"
+    ]
+  },
+  "model_serving_autoscaling": {
+    "description": "Autoscale model serving",
+    "hpa_config": "apiVersion: autoscaling/v2\nkind: HorizontalPodAutoscaler\nmetadata:\n  name: model-hpa\nspec:\n  scaleTargetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: model-serving\n  minReplicas: 2\n  maxReplicas: 10\n  metrics:\n  - type: Resource\n    resource:\n      name: cpu\n      target:\n        type: Utilization\n        averageUtilization: 70\n  - type: Pods\n    pods:\n      metric:\n        name: request_latency\n      target:\n        type: AverageValue\n        averageValue: '100'",
+    "custom_metrics": {
+      "request_latency": "Average request latency",
+      "queue_length": "Request queue length",
+      "gpu_utilization": "GPU utilization"
+    },
+    "best_practices": [
+      "Use multiple metrics",
+      "Set appropriate thresholds",
+      "Monitor scaling behavior",
+      "Handle cold starts"
+    ]
+  },
+  "model_storage": {
+    "description": "Store models in Kubernetes",
+    "options": {
+      "configmaps": "Small models",
+      "persistent_volumes": "Large models",
+      "object_storage": "S3, GCS, Azure Blob",
+      "model_registry": "MLflow, Weights & Biases"
+    },
+    "best_practices": [
+      "Use object storage for large models",
+      "Cache models locally",
+      "Version models",
+      "Handle model updates"
+    ]
+  },
+  "inference_patterns": {
+    "description": "Inference deployment patterns",
+    "patterns": {
+      "single_model": "One model per pod",
+      "multi_model": "Multiple models per pod",
+      "model_ensemble": "Combine multiple models",
+      "pipeline": "Sequential model execution"
+    },
+    "best_practices": [
+      "Choose appropriate pattern",
+      "Optimize resource usage",
+      "Handle model loading",
+      "Monitor inference latency"
+    ]
+  },
+  "patterns": {
+    "gpu_sharing": "Share GPU among workloads",
+    "distributed_training": "Distributed training on K8s",
+    "model_serving": "Serve models on K8s",
+    "autoscaling": "Auto-scale ML workloads"
+  },
+  "best_practices": [
+    "Use device plugins for GPUs",
+    "Configure resource requests",
+    "Use training operators",
+    "Implement autoscaling",
+    "Monitor GPU usage",
+    "Handle failures gracefully",
+    "Use gang scheduling for distributed training",
+    "Optimize model serving",
+    "Cache models",
+    "Version models",
+    "Use persistent storage",
+    "Monitor inference latency",
+    "Set up alerts",
+    "Test scaling behavior",
+    "Document deployment"
+  ],
+  "anti_patterns": [
+    {
+      "name": "No GPU Resource Requests",
+      "problem": "Can't schedule GPU workloads",
+      "solution": "Request GPUs explicitly"
+    },
+    {
+      "name": "No Autoscaling",
+      "problem": "Poor resource utilization",
+      "solution": "Configure HPA"
+    },
+    {
+      "name": "Storing Models in ConfigMaps",
+      "problem": "Size limits, slow updates",
+      "solution": "Use object storage"
+    },
+    {
+      "name": "No Gang Scheduling",
+      "problem": "Inefficient distributed training",
+      "solution": "Use Volcano or Kueue"
+    }
+  ]
+}

@@ -1,0 +1,386 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "id": "sap-fiori-patterns",
+  "name": "SAP Fiori Patterns",
+  "version": "1.0.0",
+  "description": "Fiori Elements annotations, UI patterns, and best practices for Fiori app development",
+  "category": "sap",
+  "last_updated": "2026-02-09",
+  "axiomAlignment": {
+    "love": "Create intuitive, user-friendly interfaces that delight users",
+    "truth": "Based on SAP Fiori Design Guidelines and Fiori Elements framework",
+    "beauty": "Clean, consistent UI patterns that follow design principles"
+  },
+  "patterns": {
+    "fiori-list-report": {
+      "id": "fiori-list-report",
+      "name": "List Report Pattern",
+      "description": "Standard list report with filtering, sorting, and search",
+      "scenario": "Master data, transactional data lists",
+      "annotations": {
+        "@UI.lineItem": "[{ position: 10, importance: #HIGH }]",
+        "@UI.selectionField": "[{ position: 10 }]",
+        "@UI.identification": "[{ position: 10 }]"
+      },
+      "bestPractices": [
+        "Use @UI.lineItem for list columns",
+        "Configure @UI.selectionField for filters",
+        "Set importance: #HIGH for key fields",
+        "Use @UI.identification for key identification"
+      ]
+    },
+    "fiori-object-page": {
+      "id": "fiori-object-page",
+      "name": "Object Page Pattern",
+      "description": "Detail page for single entity with tabs and field groups",
+      "scenario": "Entity detail views, editing forms",
+      "annotations": {
+        "@UI.headerInfo": "{\n  typeName: 'Entity',\n  typeNamePlural: 'Entities',\n  title: { type: #STANDARD, value: 'EntityID' }\n}",
+        "@UI.facet": "[{\n  id: 'GeneralInfo',\n  type: #COLLECTION,\n  label: 'General Information',\n  position: 10\n}]",
+        "@UI.fieldGroup": "[{ qualifier: 'General', position: 10 }]"
+      },
+      "bestPractices": [
+        "Use @UI.headerInfo for page header",
+        "Organize fields into facets and field groups",
+        "Use meaningful labels for facets",
+        "Set proper positions for field ordering"
+      ]
+    },
+    "fiori-worklist": {
+      "id": "fiori-worklist",
+      "name": "Worklist Pattern",
+      "description": "Task-based list for approval workflows",
+      "scenario": "Approval workflows, task management",
+      "annotations": {
+        "@UI.lineItem": "[{\n  position: 10,\n  type: #AS_STATUS,\n  criticality: 'StatusCriticality'\n}]"
+      },
+      "bestPractices": [
+        "Use status indicators for task status",
+        "Configure criticality for visual feedback",
+        "Add action buttons for task operations",
+        "Use worklist for approval scenarios"
+      ]
+    },
+    "fiori-overview-page": {
+      "id": "fiori-overview-page",
+      "name": "Overview Page Pattern",
+      "description": "Analytical dashboard with KPIs and charts",
+      "scenario": "Dashboards, analytics, KPIs",
+      "annotations": {
+        "@UI.chart": "[{\n  title: 'Chart Title',\n  chartType: #COLUMN,\n  dimensions: ['Dimension'],\n  measures: ['Measure']\n}]"
+      },
+      "bestPractices": [
+        "Use charts for analytical data",
+        "Configure proper chart types",
+        "Set dimensions and measures correctly",
+        "Use cards for KPI display"
+      ]
+    },
+    "fiori-value-help": {
+      "id": "fiori-value-help",
+      "name": "Value Help Pattern",
+      "description": "Value help configuration for foreign key fields",
+      "scenario": "All foreign key fields",
+      "annotations": {
+        "@Consumption.valueHelpDefinition": "[{\n  entity: { name: 'ZC_Entity', element: 'EntityID' },\n  useForValidation: true\n}]"
+      },
+      "bestPractices": [
+        "Always provide value helps for foreign keys",
+        "Use useForValidation: true",
+        "Configure additional binding for related fields",
+        "Test value help functionality"
+      ]
+    },
+    "fiori-draft-enabled": {
+      "id": "fiori-draft-enabled",
+      "name": "Draft-Enabled UI Pattern",
+      "description": "Enable draft functionality in Fiori Elements",
+      "scenario": "Complex editing scenarios",
+      "annotations": {
+        "bdef": "with draft;",
+        "cds": "%isDraft"
+      },
+      "bestPractices": [
+        "Enable draft in behavior definition",
+        "Use %isDraft in CDS view",
+        "Configure draft actions",
+        "Handle draft validation"
+      ]
+    },
+    "fiori-actions": {
+      "id": "fiori-actions",
+      "name": "Actions Pattern",
+      "description": "Configure actions and data actions in UI",
+      "scenario": "Custom operations, approval workflows",
+      "annotations": {
+        "@UI.lineItem": "[{\n  position: 10,\n  type: #FOR_ACTION,\n  dataAction: 'submit',\n  label: 'Submit'\n}]",
+        "@UI.headerInfo": "{\n  actions: [{\n    type: #FOR_ACTION,\n    dataAction: 'submit',\n    label: 'Submit'\n  }]\n}"
+      },
+      "bestPractices": [
+        "Use dataAction for RAP actions",
+        "Configure actions in lineItem and headerInfo",
+        "Provide meaningful labels",
+        "Test action functionality"
+      ]
+    },
+    "fiori-criticality": {
+      "id": "fiori-criticality",
+      "name": "Criticality Pattern",
+      "description": "Visual status indicators using criticality",
+      "scenario": "Status fields, priority indicators",
+      "annotations": {
+        "@UI.lineItem": "[{\n  position: 10,\n  type: #AS_STATUS,\n  criticality: 'StatusCriticality'\n}]"
+      },
+      "code": {
+        "cds": "@EndUserText.label: 'Status Criticality'\ncase\n  when Status = 'A' then 3\n  when Status = 'P' then 2\n  when Status = 'C' then 1\n  else 0\nend as StatusCriticality"
+      },
+      "bestPractices": [
+        "Use criticality for visual feedback",
+        "Map status values to criticality (1=positive, 2=neutral, 3=negative)",
+        "Use #AS_STATUS type",
+        "Test criticality display"
+      ]
+    },
+    "fiori-field-groups": {
+      "id": "fiori-field-groups",
+      "name": "Field Groups Pattern",
+      "description": "Organize fields into logical groups",
+      "scenario": "Object Page organization",
+      "annotations": {
+        "@UI.fieldGroup": "[{\n  qualifier: 'General',\n  position: 10,\n  label: 'General Information'\n}]",
+        "@UI.facet": "[{\n  id: 'GeneralInfo',\n  type: #FIELDGROUP_REFERENCE,\n  targetQualifier: 'General'\n}]"
+      },
+      "bestPractices": [
+        "Use field groups for organization",
+        "Reference field groups in facets",
+        "Set meaningful qualifiers",
+        "Order fields by position"
+      ]
+    },
+    "fiori-semantic-objects": {
+      "id": "fiori-semantic-objects",
+      "name": "Semantic Objects Pattern",
+      "description": "Navigation using semantic objects",
+      "scenario": "Cross-app navigation",
+      "annotations": {
+        "@UI.lineItem": "[{\n  position: 10,\n  type: #AS_LINK,\n  semanticObjectAction: 'display'\n}]"
+      },
+      "bestPractices": [
+        "Use semantic objects for navigation",
+        "Configure semanticObjectAction",
+        "Use #AS_LINK type",
+        "Test navigation functionality"
+      ]
+    },
+    "fiori-charts": {
+      "id": "fiori-charts",
+      "name": "Charts Pattern",
+      "description": "Analytical charts in Fiori Elements",
+      "scenario": "Analytics, dashboards",
+      "annotations": {
+        "@UI.chart": "[{\n  title: 'Chart Title',\n  description: 'Chart Description',\n  chartType: #COLUMN,\n  dimensions: ['Dimension'],\n  measures: ['Measure'],\n  qualifier: 'ChartQualifier'\n}]"
+      },
+      "bestPractices": [
+        "Use @Aggregation.default for measures",
+        "Configure proper chart types",
+        "Set dimensions and measures",
+        "Use qualifiers for multiple charts"
+      ]
+    },
+    "fiori-selection-fields": {
+      "id": "fiori-selection-fields",
+      "name": "Selection Fields Pattern",
+      "description": "Configure filter fields in list report",
+      "scenario": "List report filtering",
+      "annotations": {
+        "@UI.selectionField": "[{ position: 10 }]"
+      },
+      "bestPractices": [
+        "Use @UI.selectionField for filters",
+        "Set appropriate positions",
+        "Provide value helps for filter fields",
+        "Test filter functionality"
+      ]
+    },
+    "fiori-identification": {
+      "id": "fiori-identification",
+      "name": "Identification Pattern",
+      "description": "Key identification fields",
+      "scenario": "Entity identification",
+      "annotations": {
+        "@UI.identification": "[{ position: 10, label: 'Entity ID' }]"
+      },
+      "bestPractices": [
+        "Use @UI.identification for key fields",
+        "Set proper positions",
+        "Provide meaningful labels",
+        "Use for entity identification"
+      ]
+    },
+    "fiori-line-items": {
+      "id": "fiori-line-items",
+      "name": "Line Items Pattern",
+      "description": "Configure list report columns",
+      "scenario": "List report display",
+      "annotations": {
+        "@UI.lineItem": "[{\n  position: 10,\n  importance: #HIGH,\n  type: #AS_DATETIME\n}]"
+      },
+      "bestPractices": [
+        "Use @UI.lineItem for columns",
+        "Set importance for key fields",
+        "Use appropriate types (#AS_DATETIME, #AS_NUMERIC)",
+        "Order by position"
+      ]
+    },
+    "fiori-header-info": {
+      "id": "fiori-header-info",
+      "name": "Header Info Pattern",
+      "description": "Object Page header configuration",
+      "scenario": "Object Page display",
+      "annotations": {
+        "@UI.headerInfo": "{\n  typeName: 'Entity',\n  typeNamePlural: 'Entities',\n  title: { type: #STANDARD, value: 'EntityID' },\n  description: { type: #STANDARD, value: 'Description' }\n}"
+      },
+      "bestPractices": [
+        "Configure typeName and typeNamePlural",
+        "Set title and description fields",
+        "Use #STANDARD type",
+        "Test header display"
+      ]
+    },
+    "fiori-facets": {
+      "id": "fiori-facets",
+      "name": "Facets Pattern",
+      "description": "Organize Object Page into sections",
+      "scenario": "Object Page organization",
+      "annotations": {
+        "@UI.facet": "[\n  {\n    id: 'GeneralInfo',\n    type: #COLLECTION,\n    label: 'General Information',\n    position: 10\n  },\n  {\n    id: 'Details',\n    parentId: 'GeneralInfo',\n    type: #FIELDGROUP_REFERENCE,\n    targetQualifier: 'Details',\n    position: 10\n  }\n]"
+      },
+      "bestPractices": [
+        "Use facets for page organization",
+        "Use #COLLECTION for top-level facets",
+        "Use #FIELDGROUP_REFERENCE for field groups",
+        "Set parentId for nested facets"
+      ]
+    },
+    "fiori-presentation-variant": {
+      "id": "fiori-presentation-variant",
+      "name": "Presentation Variant Pattern",
+      "description": "Default sorting and filtering",
+      "scenario": "List report defaults",
+      "annotations": {
+        "@UI.presentationVariant": "[{\n  sortOrder: [{\n    by: 'FieldName',\n    direction: #DESC\n  }]\n}]"
+      },
+      "bestPractices": [
+        "Use presentationVariant for defaults",
+        "Configure sortOrder",
+        "Set filter defaults",
+        "Test default behavior"
+      ]
+    },
+    "fiori-format-options": {
+      "id": "fiori-format-options",
+      "name": "Format Options Pattern",
+      "description": "Field formatting configuration",
+      "scenario": "Date, number, currency formatting",
+      "annotations": {
+        "@UI.lineItem": "[{\n  position: 10,\n  type: #AS_DATETIME,\n  formatOptions: { displayMode: #DATE_ONLY }\n}]"
+      },
+      "bestPractices": [
+        "Use formatOptions for field formatting",
+        "Configure displayMode for dates",
+        "Use unit for numeric fields",
+        "Test format display"
+      ]
+    },
+    "fiori-search": {
+      "id": "fiori-search",
+      "name": "Search Pattern",
+      "description": "Enable search functionality",
+      "scenario": "List report search",
+      "annotations": {
+        "@Search.searchable": "true"
+      },
+      "bestPractices": [
+        "Enable @Search.searchable",
+        "Configure searchable fields",
+        "Test search functionality",
+        "Use for text fields"
+      ]
+    },
+    "fiori-metadata-extensions": {
+      "id": "fiori-metadata-extensions",
+      "name": "Metadata Extensions Pattern",
+      "description": "Extend existing views with annotations",
+      "scenario": "Extending standard views",
+      "annotations": {
+        "@Metadata.allowExtensions": "true"
+      },
+      "code": {
+        "cds": "@Metadata.allowExtensions: true\ndefine view entity ZC_Entity\n  as projection on ZI_Entity\n{\n  // Extend with annotations\n}"
+      },
+      "bestPractices": [
+        "Use metadata extensions for standard views",
+        "Set @Metadata.allowExtensions: true",
+        "Add annotations in projection view",
+        "Test extension functionality"
+      ]
+    },
+    "fiori-launchpad-integration": {
+      "id": "fiori-launchpad-integration",
+      "name": "Launchpad Integration Pattern",
+      "description": "Register Fiori app in Launchpad",
+      "scenario": "App deployment",
+      "code": {
+        "manifest": "{\n  \"sap.app\": {\n    \"id\": \"sap.app.id\",\n    \"type\": \"application\"\n  },\n  \"sap.portal\": {\n    \"registrationIds\": [\"sap.app.id\"]\n  }\n}"
+      },
+      "bestPractices": [
+        "Register app in Launchpad",
+        "Configure semantic objects",
+        "Set up target mappings",
+        "Test Launchpad integration"
+      ]
+    }
+  },
+  "templateTypes": {
+    "ListReport": "Standard list with filtering and sorting",
+    "ObjectPage": "Detail page for single entity",
+    "Worklist": "Task-based list for workflows",
+    "OverviewPage": "Analytical dashboard with KPIs"
+  },
+  "best_practices": [
+    "Always use semantic annotations (@EndUserText.label)",
+    "Configure proper field groups for Object Page organization",
+    "Use value helps for all foreign key fields",
+    "Enable draft handling for complex editing scenarios",
+    "Use proper field types (@UI.type) for better UX",
+    "Configure criticality for status fields",
+    "Use identification annotations for key fields",
+    "Configure proper sorting and filtering",
+    "Use charts for analytical data",
+    "Test service binding before Fiori app development",
+    "Use Page Map editor in Fiori Tools for visual configuration",
+    "Follow Fiori design guidelines"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Missing value helps for foreign keys",
+      "problem": "Poor user experience, manual entry errors",
+      "solution": "Always provide value helps for foreign key fields"
+    },
+    {
+      "name": "Not using field groups",
+      "problem": "Disorganized Object Page",
+      "solution": "Use field groups for logical organization"
+    },
+    {
+      "name": "Missing semantic annotations",
+      "problem": "Poor accessibility and maintainability",
+      "solution": "Always add @EndUserText.label annotations"
+    },
+    {
+      "name": "Not enabling draft for complex editing",
+      "problem": "Risk of data loss",
+      "solution": "Enable draft handling for complex editing scenarios"
+    }
+  ]
+}

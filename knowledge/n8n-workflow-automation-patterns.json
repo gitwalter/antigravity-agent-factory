@@ -1,0 +1,436 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "n8n-patterns",
+  "name": "n8n Workflow Automation Patterns",
+  "title": "n8n Workflow Automation Patterns",
+  "description": "Comprehensive patterns for n8n workflow automation including triggers, nodes, AI integration, error handling, and integration with LangChain/agents",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Workflow definitions provide verifiable automation logic",
+    "A3_transparency": "Visual workflows make automation processes explicit",
+    "A4_adaptability": "Workflows can be easily modified and extended"
+  },
+  "core_concepts": {
+    "workflow_structure": {
+      "description": "n8n workflows consist of nodes connected by connections",
+      "components": [
+        "Trigger nodes (start of workflow)",
+        "Action nodes (process data)",
+        "Logic nodes (conditionals, loops)",
+        "Data transformation nodes"
+      ]
+    },
+    "trigger_types": {
+      "description": "Different ways to start a workflow",
+      "types": [
+        "Webhook (HTTP requests)",
+        "Schedule (cron-based)",
+        "Manual (on-demand)",
+        "Event-based (file watchers, database triggers)"
+      ]
+    },
+    "node_types": {
+      "description": "Categories of nodes available in n8n",
+      "categories": [
+        "Core nodes (Set, IF, Switch, Code)",
+        "AI nodes (OpenAI, Anthropic, local models)",
+        "HTTP nodes (REST APIs)",
+        "Database nodes",
+        "File system nodes",
+        "Custom nodes"
+      ]
+    },
+    "ai_integration": {
+      "description": "Integrating AI models into workflows",
+      "capabilities": [
+        "Text generation",
+        "Text analysis",
+        "Image generation",
+        "Embeddings",
+        "Function calling"
+      ]
+    },
+    "error_handling": {
+      "description": "Strategies for handling errors in workflows",
+      "patterns": [
+        "Error triggers",
+        "Retry logic",
+        "Fallback actions",
+        "Error notifications"
+      ]
+    },
+    "sub_workflow_patterns": {
+      "description": "Reusable sub-workflows for common tasks",
+      "benefits": [
+        "DRY principle",
+        "Maintainability",
+        "Reusability",
+        "Testing"
+      ]
+    },
+    "credential_management": {
+      "description": "Secure credential storage and usage",
+      "features": [
+        "Encrypted storage",
+        "Credential types",
+        "OAuth support",
+        "API key management"
+      ]
+    },
+    "langchain_integration": {
+      "description": "Integrating n8n with LangChain and agent systems",
+      "use_cases": [
+        "Agent orchestration",
+        "Tool execution",
+        "Memory management",
+        "Chain composition"
+      ]
+    }
+  },
+  "patterns": {
+    "webhook_trigger": {
+      "description": "Trigger workflow via HTTP webhook",
+      "use_when": "External systems need to trigger workflows",
+      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {},\n      \"id\": \"webhook-trigger\",\n      \"name\": \"Webhook\",\n      \"type\": \"n8n-nodes-base.webhook\",\n      \"typeVersion\": 1,\n      \"position\": [250, 300],\n      \"webhookId\": \"webhook-id\",\n      \"settings\": {\n        \"httpMethod\": \"POST\",\n        \"path\": \"trigger-workflow\",\n        \"responseMode\": \"responseNode\",\n        \"options\": {}\n      }\n    },\n    {\n      \"parameters\": {\n        \"conditions\": {\n          \"string\": [\n            {\n              \"value1\": \"={{ $json.body.event_type }}\",\n              \"operation\": \"equals\",\n              \"value2\": \"user.created\"\n            }\n          ]\n        }\n      },\n      \"id\": \"if-node\",\n      \"name\": \"IF\",\n      \"type\": \"n8n-nodes-base.if\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300]\n    },\n    {\n      \"parameters\": {\n        \"respondWith\": \"json\",\n        \"responseBody\": \"={{ { \\\"status\\\": \\\"success\\\", \\\"message\\\": \\\"Workflow triggered\\\" } }}\"\n      },\n      \"id\": \"respond-node\",\n      \"name\": \"Respond to Webhook\",\n      \"type\": \"n8n-nodes-base.respondToWebhook\",\n      \"typeVersion\": 1,\n      \"position\": [650, 300]\n    }\n  ],\n  \"connections\": {\n    \"Webhook\": {\n      \"main\": [[node-if-type-main-index-0]]\n    },\n    \"IF\": {\n      \"main\": [[node-respond-to-webhook-type-main-index-0]]\n    }\n  }\n}",
+      "best_practices": [
+        "Validate webhook payload",
+        "Use HTTPS in production",
+        "Implement webhook signature verification",
+        "Set appropriate timeout",
+        "Return meaningful responses"
+      ],
+      "webhook_validation": {
+        "description": "Validate webhook requests for security",
+        "example": "// Code node for webhook validation\nconst crypto = require('crypto');\n\nconst secret = $env.WEBHOOK_SECRET;\nconst signature = $input.first().headers['x-signature'];\nconst payload = JSON.stringify($input.first().body);\n\nconst expectedSignature = crypto\n  .createHmac('sha256', secret)\n  .update(payload)\n  .digest('hex');\n\nif (signature !== `sha256=${expectedSignature}`) {\n  throw new Error('Invalid webhook signature');\n}\n\nreturn $input.all();"
+      }
+    },
+    "schedule_trigger": {
+      "description": "Trigger workflow on a schedule",
+      "use_when": "Periodic tasks, data synchronization, reports",
+      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"rule\": {\n          \"interval\": [\n            {\n              \"field\": \"hours\",\n              \"hoursInterval\": 1\n            }\n          ]\n        }\n      },\n      \"id\": \"schedule-trigger\",\n      \"name\": \"Schedule Trigger\",\n      \"type\": \"n8n-nodes-base.scheduleTrigger\",\n      \"typeVersion\": 1,\n      \"position\": [250, 300]\n    },\n    {\n      \"parameters\": {\n        \"operation\": \"executeQuery\",\n        \"query\": \"SELECT * FROM users WHERE created_at > NOW() - INTERVAL '1 hour'\"\n      },\n      \"id\": \"postgres-node\",\n      \"name\": \"Get New Users\",\n      \"type\": \"n8n-nodes-base.postgres\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300]\n    }\n  ],\n  \"connections\": {\n    \"Schedule Trigger\": {\n      \"main\": [[node-get-new-users-type-main-index-0]]\n    }\n  }\n}",
+      "best_practices": [
+        "Use appropriate intervals",
+        "Consider timezone settings",
+        "Handle long-running workflows",
+        "Monitor execution times",
+        "Use cron expressions for complex schedules"
+      ],
+      "cron_examples": {
+        "every_minute": "*/1 * * * *",
+        "every_hour": "0 * * * *",
+        "daily_at_midnight": "0 0 * * *",
+        "weekdays_at_9am": "0 9 * * 1-5",
+        "first_day_of_month": "0 0 1 * *"
+      }
+    },
+    "ai_node_openai": {
+      "description": "Using OpenAI nodes for AI capabilities",
+      "use_when": "Need text generation, analysis, or embeddings",
+      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"operation\": \"complete\",\n        \"model\": \"gpt-4\",\n        \"options\": {\n          \"temperature\": 0.7,\n          \"maxTokens\": 500\n        },\n        \"text\": \"={{ $json.email_content }}\",\n        \"prompt\": \"Analyze this email and extract: 1) Sentiment, 2) Key topics, 3) Action items. Format as JSON.\"\n      },\n      \"id\": \"openai-node\",\n      \"name\": \"Analyze Email with OpenAI\",\n      \"type\": \"n8n-nodes-base.openAi\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300],\n      \"credentials\": {\n        \"openAiApi\": {\n          \"id\": \"1\",\n          \"name\": \"OpenAI API\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"assignments\": {\n          \"assignments\": [\n            {\n              \"id\": \"sentiment\",\n              \"name\": \"sentiment\",\n              \"value\": \"={{ JSON.parse($json.text).sentiment }}\",\n              \"type\": \"string\"\n            },\n            {\n              \"id\": \"topics\",\n              \"name\": \"topics\",\n              \"value\": \"={{ JSON.parse($json.text).topics }}\",\n              \"type\": \"array\"\n            }\n          ]\n        }\n      },\n      \"id\": \"set-node\",\n      \"name\": \"Extract Analysis\",\n      \"type\": \"n8n-nodes-base.set\",\n      \"typeVersion\": 1,\n      \"position\": [650, 300]\n    }\n  ]\n}",
+      "best_practices": [
+        "Use appropriate models for tasks",
+        "Set temperature based on use case",
+        "Implement token limits",
+        "Handle API errors gracefully",
+        "Cache responses when possible",
+        "Monitor API usage and costs"
+      ],
+      "model_selection": {
+        "text_generation": "gpt-4, gpt-3.5-turbo",
+        "embeddings": "text-embedding-ada-002",
+        "function_calling": "gpt-4, gpt-3.5-turbo",
+        "code_generation": "gpt-4"
+      }
+    },
+    "ai_node_anthropic": {
+      "description": "Using Anthropic Claude nodes",
+      "use_when": "Need Claude's capabilities for analysis or generation",
+      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"model\": \"claude-3-opus-20240229\",\n        \"text\": \"={{ $json.document }}\",\n        \"options\": {\n          \"maxTokens\": 4096,\n          \"temperature\": 0.7\n        },\n        \"prompt\": \"Summarize this document in 3 bullet points:\"\n      },\n      \"id\": \"anthropic-node\",\n      \"name\": \"Claude Summarization\",\n      \"type\": \"n8n-nodes-base.anthropic\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300],\n      \"credentials\": {\n        \"anthropicApi\": {\n          \"id\": \"1\",\n          \"name\": \"Anthropic API\"\n        }\n      }\n    }\n  ]\n}",
+      "best_practices": [
+        "Use appropriate Claude model version",
+        "Leverage Claude's long context window",
+        "Use system prompts effectively",
+        "Handle rate limits",
+        "Monitor token usage"
+      ]
+    },
+    "code_node_javascript": {
+      "description": "JavaScript code node for custom logic",
+      "use_when": "Need custom data transformation or logic",
+      "code_example": "// Process array of items\nconst items = $input.all();\n\nconst processed = items.map(item => {\n  const data = item.json;\n  \n  // Transform data\n  return {\n    json: {\n      id: data.id,\n      fullName: `${data.firstName} ${data.lastName}`,\n      email: data.email.toLowerCase().trim(),\n      createdAt: new Date(data.created_at).toISOString(),\n      metadata: {\n        source: 'n8n-workflow',\n        processedAt: new Date().toISOString()\n      }\n    }\n  };\n});\n\n// Filter items\nconst filtered = processed.filter(item => {\n  return item.json.email.includes('@example.com');\n});\n\n// Aggregate data\nconst summary = {\n  total: filtered.length,\n  emails: filtered.map(item => item.json.email),\n  averageNameLength: filtered.reduce((sum, item) => \n    sum + item.json.fullName.length, 0) / filtered.length\n};\n\nreturn filtered.concat([{ json: { summary } }]);",
+      "best_practices": [
+        "Use $input.all() for batch processing",
+        "Return array of items",
+        "Handle errors with try-catch",
+        "Use async/await for promises",
+        "Validate input data",
+        "Keep code readable and documented"
+      ],
+      "common_patterns": {
+        "data_transformation": "Map items to new structure",
+        "filtering": "Filter items based on conditions",
+        "aggregation": "Calculate sums, averages, etc.",
+        "api_calls": "Make HTTP requests",
+        "date_manipulation": "Parse and format dates"
+      }
+    },
+    "code_node_python": {
+      "description": "Python code node for data processing",
+      "use_when": "Need Python libraries or complex data processing",
+      "code_example": "import pandas as pd\nimport json\nfrom datetime import datetime\n\n# Get input items\nitems = $input.all()\n\n# Convert to DataFrame\nif items:\n    df = pd.DataFrame([item['json'] for item in items])\n    \n    # Data processing\n    df['full_name'] = df['first_name'] + ' ' + df['last_name']\n    df['email_domain'] = df['email'].str.split('@').str[1]\n    df['created_at'] = pd.to_datetime(df['created_at'])\n    df['days_since_creation'] = (datetime.now() - df['created_at']).dt.days\n    \n    # Aggregations\n    summary = {\n        'total_users': len(df),\n        'unique_domains': df['email_domain'].nunique(),\n        'average_age': df['age'].mean() if 'age' in df.columns else None,\n        'domains': df['email_domain'].value_counts().to_dict()\n    }\n    \n    # Convert back to n8n format\n    result = df.to_dict('records')\n    return [{'json': item} for item in result] + [{'json': {'summary': summary}}]\nelse:\n    return []",
+      "best_practices": [
+        "Import libraries at the top",
+        "Handle empty inputs",
+        "Use pandas for complex data operations",
+        "Convert back to n8n format",
+        "Handle exceptions",
+        "Use type hints when possible"
+      ],
+      "available_libraries": [
+        "pandas",
+        "numpy",
+        "requests",
+        "beautifulsoup4",
+        "python-dateutil"
+      ]
+    },
+    "error_handling_patterns": {
+      "description": "Error handling and retry strategies",
+      "use_when": "Need robust error handling",
+      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"continueOnFail\": true,\n        \"retryOnFail\": true,\n        \"maxTries\": 3,\n        \"waitBetweenTries\": 5000,\n        \"options\": {\n          \"retry\": {\n            \"maxRetries\": 3,\n            \"retryDelay\": 5000\n          }\n        }\n      },\n      \"id\": \"http-node\",\n      \"name\": \"HTTP Request with Retry\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300]\n    },\n    {\n      \"parameters\": {\n        \"conditions\": {\n          \"options\": {\n            \"caseSensitive\": true,\n            \"leftValue\": \"\",\n            \"typeValidation\": \"strict\"\n          },\n          \"conditions\": [\n            {\n              \"id\": \"error-check\",\n              \"leftValue\": \"={{ $json.error }}\",\n              \"rightValue\": \"\",\n              \"operator\": {\n                \"type\": \"string\",\n                \"operation\": \"notEmpty\"\n              }\n            }\n          ]\n        }\n      },\n      \"id\": \"if-error\",\n      \"name\": \"Check for Error\",\n      \"type\": \"n8n-nodes-base.if\",\n      \"typeVersion\": 1,\n      \"position\": [650, 300]\n    },\n    {\n      \"parameters\": {\n        \"assignments\": {\n          \"assignments\": [\n            {\n              \"id\": \"error_message\",\n              \"name\": \"error_message\",\n              \"value\": \"={{ $json.error }}\",\n              \"type\": \"string\"\n            },\n            {\n              \"id\": \"timestamp\",\n              \"name\": \"timestamp\",\n              \"value\": \"={{ $now }}\",\n              \"type\": \"dateTime\"\n            }\n          ]\n        }\n      },\n      \"id\": \"log-error\",\n      \"name\": \"Log Error\",\n      \"type\": \"n8n-nodes-base.set\",\n      \"typeVersion\": 1,\n      \"position\": [850, 300]\n    },\n    {\n      \"parameters\": {\n        \"url\": \"https://hooks.slack.com/services/YOUR/WEBHOOK/URL\",\n        \"sendBody\": true,\n        \"specifyBody\": \"json\",\n        \"jsonBody\": \"={{ { \\\"text\\\": \\\"Workflow Error: \\\" + $json.error_message } }}\",\n        \"options\": {}\n      },\n      \"id\": \"notify-slack\",\n      \"name\": \"Notify Slack\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 1,\n      \"position\": [1050, 300]\n    }\n  ],\n  \"connections\": {\n    \"HTTP Request with Retry\": {\n      \"main\": [[node-check-for-error-type-main-index-0]]\n    },\n    \"Check for Error\": {\n      \"main\": [[node-log-error-type-main-index-0]]\n    },\n    \"Log Error\": {\n      \"main\": [[node-notify-slack-type-main-index-0]]\n    }\n  }\n}",
+      "retry_with_exponential_backoff": {
+        "description": "Exponential backoff retry pattern",
+        "code_example": "// Code node for exponential backoff\nasync function retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000) {\n  for (let attempt = 0; attempt < maxRetries; attempt++) {\n    try {\n      return await fn();\n    } catch (error) {\n      if (attempt === maxRetries - 1) throw error;\n      \n      const delay = baseDelay * Math.pow(2, attempt);\n      await new Promise(resolve => setTimeout(resolve, delay));\n    }\n  }\n}\n\n// Usage\nconst result = await retryWithBackoff(async () => {\n  const response = await $http.request({\n    method: 'GET',\n    url: 'https://api.example.com/data'\n  });\n  return response;\n}, 3, 1000);\n\nreturn [{ json: result }];"
+      },
+      "best_practices": [
+        "Use continueOnFail for non-critical nodes",
+        "Implement retry logic with exponential backoff",
+        "Log errors for debugging",
+        "Notify on critical failures",
+        "Set appropriate retry limits",
+        "Handle partial failures gracefully"
+      ]
+    },
+    "sub_workflow_pattern": {
+      "description": "Reusable sub-workflows",
+      "use_when": "Common functionality needed in multiple workflows",
+      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"workflowId\": \"sub-workflow-id\",\n        \"options\": {}\n      },\n      \"id\": \"execute-sub-workflow\",\n      \"name\": \"Execute Sub-Workflow\",\n      \"type\": \"n8n-nodes-base.executeWorkflow\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300]\n    }\n  ]\n}",
+      "sub_workflow_example": {
+        "name": "Send Notification",
+        "description": "Reusable workflow for sending notifications",
+        "inputs": [
+          "recipient",
+          "message",
+          "channel"
+        ],
+        "outputs": [
+          "success",
+          "message_id"
+        ]
+      },
+      "best_practices": [
+        "Define clear inputs and outputs",
+        "Document sub-workflow purpose",
+        "Use descriptive names",
+        "Test sub-workflows independently",
+        "Version sub-workflows",
+        "Handle errors in sub-workflows"
+      ]
+    },
+    "credential_management": {
+      "description": "Secure credential storage and usage",
+      "use_when": "Need to authenticate with external services",
+      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"authentication\": \"genericCredentialType\",\n        \"genericAuthType\": \"httpHeaderAuth\",\n        \"options\": {}\n      },\n      \"id\": \"http-node\",\n      \"name\": \"Authenticated Request\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300],\n      \"credentials\": {\n        \"httpHeaderAuth\": {\n          \"id\": \"1\",\n          \"name\": \"API Credentials\"\n        }\n      }\n    }\n  ]\n}",
+      "credential_types": {
+        "api_key": "Simple API key authentication",
+        "oauth2": "OAuth 2.0 authentication",
+        "basic_auth": "HTTP Basic Authentication",
+        "custom": "Custom credential types"
+      },
+      "best_practices": [
+        "Never hardcode credentials",
+        "Use n8n credential store",
+        "Rotate credentials regularly",
+        "Use least privilege principle",
+        "Encrypt sensitive data",
+        "Use environment variables for local development"
+      ]
+    },
+    "langchain_integration": {
+      "description": "Integrating n8n with LangChain and agent systems",
+      "use_when": "Need agent orchestration or LangChain capabilities",
+      "code_example": "// Code node for LangChain integration\nconst { ChatOpenAI } = require('@langchain/openai');\nconst { HumanMessage, SystemMessage } = require('@langchain/core/messages');\nconst { AgentExecutor, createOpenAIFunctionsAgent } = require('langchain/agents');\nconst { DynamicStructuredTool } = require('@langchain/core/tools');\n\n// Initialize LLM\nconst model = new ChatOpenAI({\n  modelName: 'gpt-4',\n  temperature: 0.7,\n  openAIApiKey: $env.OPENAI_API_KEY\n});\n\n// Define tools\nconst tools = [\n  new DynamicStructuredTool({\n    name: 'get_user_info',\n    description: 'Get user information by ID',\n    schema: {\n      type: 'object',\n      properties: {\n        userId: { type: 'string', description: 'User ID' }\n      },\n      required: ['userId']\n    },\n    func: async ({ userId }) => {\n      // Call your API or database\n      const response = await $http.request({\n        method: 'GET',\n        url: `https://api.example.com/users/${userId}`\n      });\n      return JSON.stringify(response);\n    }\n  }),\n  new DynamicStructuredTool({\n    name: 'send_notification',\n    description: 'Send notification to user',\n    schema: {\n      type: 'object',\n      properties: {\n        userId: { type: 'string' },\n        message: { type: 'string' }\n      },\n      required: ['userId', 'message']\n    },\n    func: async ({ userId, message }) => {\n      // Send notification logic\n      return `Notification sent to user ${userId}`;\n    }\n  })\n];\n\n// Create agent\nconst agent = await createOpenAIFunctionsAgent({\n  llm: model,\n  tools: tools,\n  prompt: `You are a helpful assistant that can get user information and send notifications.`\n});\n\nconst executor = new AgentExecutor({\n  agent,\n  tools,\n  verbose: true\n});\n\n// Execute agent\nconst input = $input.first().json.user_query;\nconst result = await executor.invoke({\n  input: input\n});\n\nreturn [{ json: { response: result.output, steps: result.intermediateSteps } }];",
+      "use_cases": {
+        "agent_orchestration": "Coordinate multiple agents",
+        "tool_execution": "Execute tools based on user queries",
+        "memory_management": "Maintain conversation context",
+        "chain_composition": "Compose LangChain chains"
+      },
+      "best_practices": [
+        "Use appropriate LangChain components",
+        "Handle tool execution errors",
+        "Implement memory for conversations",
+        "Monitor agent execution",
+        "Set token limits",
+        "Use streaming for long responses"
+      ]
+    },
+    "batch_processing": {
+      "description": "Process items in batches",
+      "use_when": "Dealing with large datasets or rate limits",
+      "code_example": "// Code node for batch processing\nconst items = $input.all();\nconst batchSize = 10;\nconst batches = [];\n\n// Split into batches\nfor (let i = 0; i < items.length; i += batchSize) {\n  batches.push(items.slice(i, i + batchSize));\n}\n\n// Process each batch\nconst results = [];\nfor (const batch of batches) {\n  try {\n    // Process batch\n    const batchResults = await Promise.all(\n      batch.map(async (item) => {\n        const response = await $http.request({\n          method: 'POST',\n          url: 'https://api.example.com/process',\n          body: item.json\n        });\n        return { json: response };\n      })\n    );\n    \n    results.push(...batchResults);\n    \n    // Rate limiting delay\n    await new Promise(resolve => setTimeout(resolve, 1000));\n  } catch (error) {\n    console.error(`Batch failed: ${error.message}`);\n    // Continue with next batch\n  }\n}\n\nreturn results;",
+      "best_practices": [
+        "Use appropriate batch sizes",
+        "Handle batch failures gracefully",
+        "Implement rate limiting",
+        "Process batches in parallel when possible",
+        "Monitor batch processing progress",
+        "Retry failed batches"
+      ]
+    },
+    "data_transformation": {
+      "description": "Transform data between formats",
+      "use_when": "Need to convert or reshape data",
+      "code_example": "// Code node for data transformation\nconst items = $input.all();\n\nconst transformed = items.map(item => {\n  const data = item.json;\n  \n  // Flatten nested objects\n  const flattened = {\n    id: data.id,\n    'user.name': data.user?.name,\n    'user.email': data.user?.email,\n    'address.street': data.address?.street,\n    'address.city': data.address?.city\n  };\n  \n  // Convert to CSV-like structure\n  return {\n    json: {\n      ...flattened,\n      // Add computed fields\n      fullAddress: `${data.address?.street}, ${data.address?.city}`,\n      // Normalize dates\n      createdAt: new Date(data.created_at).toISOString(),\n      // Transform arrays\n      tags: Array.isArray(data.tags) ? data.tags.join(', ') : ''\n    }\n  };\n});\n\nreturn transformed;",
+      "transformation_patterns": {
+        "flattening": "Flatten nested objects",
+        "normalization": "Normalize data formats",
+        "enrichment": "Add computed fields",
+        "filtering": "Filter based on conditions",
+        "aggregation": "Aggregate data"
+      },
+      "best_practices": [
+        "Validate input data",
+        "Handle missing fields",
+        "Preserve data types",
+        "Document transformations",
+        "Test transformation logic",
+        "Handle edge cases"
+      ]
+    }
+  },
+  "best_practices": [
+    "Keep workflows focused and single-purpose - one workflow, one responsibility",
+    "Use descriptive node names - make purpose clear",
+    "Document complex logic - use node notes and descriptions",
+    "Test workflows thoroughly - test all branches and error cases",
+    "Use sub-workflows for reusability - DRY principle",
+    "Version control workflows - track changes in Git",
+    "Organize workflows by function - group related workflows",
+    "Use tags and folders for organization",
+    "Use batch processing for large datasets - process in chunks",
+    "Implement caching where appropriate - cache API responses",
+    "Optimize API calls - reduce unnecessary requests",
+    "Use parallel execution - process items in parallel when possible",
+    "Monitor execution times - identify bottlenecks",
+    "Handle rate limits - implement delays and backoff",
+    "Use appropriate batch sizes - balance speed and memory",
+    "Optimize data transformations - use efficient code nodes",
+    "Implement retry logic - use node retry settings",
+    "Use error triggers - handle errors explicitly",
+    "Log errors appropriately - use logging nodes",
+    "Notify on critical failures - send alerts",
+    "Handle partial failures - continue processing other items",
+    "Implement fallback actions - provide alternative paths",
+    "Use continueOnFail for non-critical nodes",
+    "Validate inputs before processing",
+    "Use credential management - never hardcode credentials",
+    "Validate webhook signatures - verify request authenticity",
+    "Sanitize inputs - clean user-provided data",
+    "Use HTTPS - encrypt connections",
+    "Limit webhook access - use authentication",
+    "Rotate credentials regularly - update credentials periodically",
+    "Use environment variables for sensitive data",
+    "Implement proper authentication for API calls",
+    "Use sub-workflows - extract common functionality",
+    "Document workflows - add descriptions and notes",
+    "Use consistent naming - follow naming conventions",
+    "Keep workflows DRY - don't repeat yourself",
+    "Test changes - verify before deploying",
+    "Version workflows - track changes",
+    "Use templates for common patterns",
+    "Review workflows regularly for optimization"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Hardcoded Credentials",
+      "problem": "Security vulnerability, hard to rotate, exposed in workflow definitions",
+      "solution": "Use n8n credential management - store credentials securely"
+    },
+    {
+      "name": "No Error Handling",
+      "problem": "Workflows fail silently or unpredictably, no visibility into issues",
+      "solution": "Implement error handling and retries - use error triggers and retry settings"
+    },
+    {
+      "name": "Monolithic Workflows",
+      "problem": "Hard to maintain, test, and debug - violates single responsibility",
+      "solution": "Break into smaller workflows and sub-workflows - use Execute Workflow node"
+    },
+    {
+      "name": "Missing Input Validation",
+      "problem": "Security issues, unexpected failures, data corruption",
+      "solution": "Validate all inputs and responses - check types, required fields, formats"
+    },
+    {
+      "name": "Synchronous Sequential Processing",
+      "problem": "Slow execution, inefficient, wastes time",
+      "solution": "Use batch processing and parallel execution - process multiple items at once"
+    },
+    {
+      "name": "Ignoring API Rate Limits",
+      "problem": "API calls fail, potential service disruption, may get blocked",
+      "solution": "Implement rate limiting and backoff - add delays between requests"
+    },
+    {
+      "name": "Missing Webhook Signature Validation",
+      "problem": "Security vulnerability - anyone can trigger workflow",
+      "solution": "Validate webhook signatures - verify HMAC signatures in code node"
+    }
+  ],
+  "integration_examples": {
+    "webhook_to_database": {
+      "description": "Receive webhook, validate, store in database",
+      "workflow": [
+        "Webhook Trigger",
+        "Validate Payload",
+        "Transform Data",
+        "Store in Database"
+      ]
+    },
+    "scheduled_report": {
+      "description": "Generate and send scheduled reports",
+      "workflow": [
+        "Schedule Trigger",
+        "Query Database",
+        "Generate Report",
+        "Send Email"
+      ]
+    },
+    "ai_content_generation": {
+      "description": "Generate content using AI",
+      "workflow": [
+        "Webhook Trigger",
+        "AI Node (OpenAI)",
+        "Format Output",
+        "Store Result"
+      ]
+    },
+    "data_synchronization": {
+      "description": "Sync data between systems",
+      "workflow": [
+        "Schedule Trigger",
+        "Fetch Source Data",
+        "Transform",
+        "Update Destination"
+      ]
+    }
+  },
+  "tools_and_resources": {
+    "n8n_documentation": "https://docs.n8n.io",
+    "node_reference": "https://docs.n8n.io/integrations/",
+    "community_workflows": "https://n8n.io/workflows",
+    "api_documentation": "https://docs.n8n.io/api/"
+  }
+}

@@ -1,0 +1,314 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "openai-assistants-patterns",
+  "name": "OpenAI Assistants Patterns",
+  "title": "OpenAI Assistants Patterns",
+  "description": "Best practices and patterns for OpenAI Assistants API and Swarm multi-agent orchestration",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A2_user_primacy": "Assistants API preserves user intent through threads and runs",
+    "A3_transparency": "Runs and messages provide full traceability"
+  },
+  "assistants_api": {
+    "create_assistant": {
+      "description": "Create an assistant with configuration",
+      "use_when": "Setting up a new assistant",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\n# Create assistant\nassistant = client.beta.assistants.create(\n    name='Math Tutor',\n    instructions='''You are a helpful math tutor.\n    Explain concepts clearly and provide examples.''',\n    model='gpt-4-turbo-preview',\n    tools=[\n        {'type': 'code_interpreter'},\n        {'type': 'function', 'function': {\n            'name': 'calculate',\n            'description': 'Calculate mathematical expressions',\n            'parameters': {\n                'type': 'object',\n                'properties': {\n                    'expression': {'type': 'string'}\n                },\n                'required': ['expression']\n            }\n        }}\n    ],\n    temperature=0.7\n)\n\nprint(f'Assistant ID: {assistant.id}')",
+      "best_practices": [
+        "Provide clear, specific instructions",
+        "Choose appropriate model",
+        "Select relevant tools",
+        "Set temperature appropriately",
+        "Store assistant ID for reuse"
+      ],
+      "key_properties": {
+        "name": "Assistant name",
+        "instructions": "System instructions",
+        "model": "Model to use",
+        "tools": "List of available tools",
+        "temperature": "Creativity level"
+      }
+    },
+    "create_thread": {
+      "description": "Create a conversation thread",
+      "use_when": "Starting a new conversation",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\n# Create thread\nthread = client.beta.threads.create(\n    messages=[\n        {\n            'role': 'user',\n            'content': 'Hello, I need help with algebra.'\n        }\n    ]\n)\n\nprint(f'Thread ID: {thread.id}')",
+      "best_practices": [
+        "Create thread per conversation",
+        "Optionally initialize with messages",
+        "Store thread ID for continuation",
+        "Manage thread lifecycle",
+        "Clean up old threads"
+      ]
+    },
+    "add_message": {
+      "description": "Add message to thread",
+      "use_when": "User sends a message",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\n# Add message to thread\nmessage = client.beta.threads.messages.create(\n    thread_id=thread_id,\n    role='user',\n    content='Solve x^2 + 5x + 6 = 0'\n)\n\nprint(f'Message ID: {message.id}')",
+      "best_practices": [
+        "Use correct thread_id",
+        "Set role to 'user' or 'assistant'",
+        "Provide clear content",
+        "Handle message creation errors",
+        "Store message IDs if needed"
+      ]
+    },
+    "create_run": {
+      "description": "Create and execute a run",
+      "use_when": "Want assistant to process thread",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\n# Create run\nrun = client.beta.threads.runs.create(\n    thread_id=thread_id,\n    assistant_id=assistant_id,\n    instructions='Focus on step-by-step explanations',\n    additional_instructions='Use code interpreter for calculations'\n)\n\nprint(f'Run ID: {run.id}')\nprint(f'Status: {run.status}')",
+      "best_practices": [
+        "Use correct thread_id and assistant_id",
+        "Optionally override instructions",
+        "Monitor run status",
+        "Handle run completion",
+        "Poll for status updates"
+      ]
+    },
+    "poll_run_status": {
+      "description": "Poll run until completion",
+      "use_when": "Need to wait for run completion",
+      "code_example": "from openai import OpenAI\nimport time\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\n# Create run\nrun = client.beta.threads.runs.create(\n    thread_id=thread_id,\n    assistant_id=assistant_id\n)\n\n# Poll until complete\nwhile run.status in ['queued', 'in_progress']:\n    time.sleep(1)\n    run = client.beta.threads.runs.retrieve(\n        thread_id=thread_id,\n        run_id=run.id\n    )\n    print(f'Status: {run.status}')\n\nif run.status == 'completed':\n    # Get messages\n    messages = client.beta.threads.messages.list(\n        thread_id=thread_id\n    )\n    print(messages.data[0].content[0].text.value)\nelif run.status == 'failed':\n    print(f'Error: {run.last_error}')",
+      "best_practices": [
+        "Poll with appropriate interval",
+        "Handle all status states",
+        "Check for errors",
+        "Retrieve messages on completion",
+        "Handle timeouts"
+      ]
+    },
+    "streaming_runs": {
+      "description": "Stream run events in real-time",
+      "use_when": "Need real-time updates",
+      "code_example": "from openai import OpenAI\nfrom openai import Stream\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\n# Create run with streaming\nwith client.beta.threads.runs.create_and_stream(\n    thread_id=thread_id,\n    assistant_id=assistant_id\n) as stream:\n    for event in stream:\n        if event.event == 'thread.message.delta':\n            # Handle message delta\n            delta = event.data.delta\n            if delta.content:\n                print(delta.content[0].text.value, end='', flush=True)\n        elif event.event == 'thread.run.completed':\n            # Run completed\n            print('\\nRun completed')\n        elif event.event == 'thread.run.requires_action':\n            # Handle function calling\n            tool_calls = event.data.required_action.submit_tool_outputs.tool_calls\n            # Submit tool outputs\n            client.beta.threads.runs.submit_tool_outputs(\n                thread_id=thread_id,\n                run_id=event.data.id,\n                tool_outputs=[...]\n            )",
+      "best_practices": [
+        "Use create_and_stream for streaming",
+        "Handle different event types",
+        "Process message deltas incrementally",
+        "Handle function calling in stream",
+        "Provide user feedback during streaming"
+      ]
+    },
+    "list_assistants": {
+      "description": "List and manage assistants",
+      "use_when": "Need to retrieve or manage assistants",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\n# List assistants\nassistants = client.beta.assistants.list(\n    limit=20,\n    order='desc'\n)\n\nfor assistant in assistants.data:\n    print(f'{assistant.name}: {assistant.id}')\n\n# Retrieve specific assistant\nassistant = client.beta.assistants.retrieve(\n    assistant_id='asst_xxx'\n)\n\n# Update assistant\nupdated = client.beta.assistants.update(\n    assistant_id='asst_xxx',\n    instructions='Updated instructions'\n)\n\n# Delete assistant\nclient.beta.assistants.delete(assistant_id='asst_xxx')",
+      "best_practices": [
+        "List assistants to find existing ones",
+        "Use pagination for large lists",
+        "Update assistants as needed",
+        "Delete unused assistants",
+        "Store assistant IDs"
+      ]
+    }
+  },
+  "tools_patterns": {
+    "code_interpreter": {
+      "description": "Enable code interpreter tool",
+      "use_when": "Assistant needs to run code",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\n# Create assistant with code interpreter\nassistant = client.beta.assistants.create(\n    name='Data Analyst',\n    instructions='''You are a data analyst.\n    Use code interpreter to analyze data and create visualizations.''',\n    model='gpt-4-turbo-preview',\n    tools=[{'type': 'code_interpreter'}]\n)\n\n# When run requires action, handle code execution\nrun = client.beta.threads.runs.retrieve(\n    thread_id=thread_id,\n    run_id=run_id\n)\n\nif run.status == 'requires_action':\n    tool_calls = run.required_action.submit_tool_outputs.tool_calls\n    \n    tool_outputs = []\n    for tool_call in tool_calls:\n        if tool_call.type == 'code_interpreter':\n            # Code interpreter runs automatically\n            # Just submit the outputs\n            tool_outputs.append({\n                'tool_call_id': tool_call.id,\n                'output': 'Code executed successfully'\n            })\n    \n    # Submit outputs\n    client.beta.threads.runs.submit_tool_outputs(\n        thread_id=thread_id,\n        run_id=run_id,\n        tool_outputs=tool_outputs\n    )",
+      "best_practices": [
+        "Enable code_interpreter for code execution",
+        "Code runs in sandboxed environment",
+        "Handle code execution results",
+        "Review generated code",
+        "Monitor code execution"
+      ]
+    },
+    "file_search": {
+      "description": "Enable file search tool",
+      "use_when": "Assistant needs to search files",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\n# Upload file to vector store\nfile = client.files.create(\n    file=open('document.pdf', 'rb'),\n    purpose='assistants'\n)\n\n# Create vector store\nvector_store = client.beta.vector_stores.create(\n    name='Documents',\n    file_ids=[file.id]\n)\n\n# Create assistant with file search\nassistant = client.beta.assistants.create(\n    name='Document Assistant',\n    instructions='Search documents to answer questions.',\n    model='gpt-4-turbo-preview',\n    tools=[{'type': 'file_search'}],\n    tool_resources={\n        'file_search': {\n            'vector_store_ids': [vector_store.id]\n        }\n    }\n)",
+      "best_practices": [
+        "Upload files before creating assistant",
+        "Create vector store for file search",
+        "Associate vector store with assistant",
+        "File search happens automatically",
+        "Monitor file search usage"
+      ]
+    },
+    "function_calling": {
+      "description": "Use function calling with assistants",
+      "use_when": "Assistant needs custom functions",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\n# Define function\ndef get_weather(location: str) -> str:\n    '''Get weather for location.'''\n    # Implementation\n    return f'Weather in {location}: Sunny, 72\u00b0F'\n\n# Create assistant with function\nassistant = client.beta.assistants.create(\n    name='Weather Assistant',\n    instructions='Use get_weather function to get weather.',\n    model='gpt-4-turbo-preview',\n    tools=[{\n        'type': 'function',\n        'function': {\n            'name': 'get_weather',\n            'description': 'Get weather for a location',\n            'parameters': {\n                'type': 'object',\n                'properties': {\n                    'location': {\n                        'type': 'string',\n                        'description': 'City name'\n                    }\n                },\n                'required': ['location']\n            }\n        }\n    }]\n)\n\n# Handle function calling\nrun = client.beta.threads.runs.retrieve(\n    thread_id=thread_id,\n    run_id=run_id\n)\n\nif run.status == 'requires_action':\n    tool_calls = run.required_action.submit_tool_outputs.tool_calls\n    \n    tool_outputs = []\n    for tool_call in tool_calls:\n        if tool_call.function.name == 'get_weather':\n            import json\n            args = json.loads(tool_call.function.arguments)\n            result = get_weather(args['location'])\n            tool_outputs.append({\n                'tool_call_id': tool_call.id,\n                'output': result\n            })\n    \n    # Submit outputs\n    client.beta.threads.runs.submit_tool_outputs(\n        thread_id=thread_id,\n        run_id=run_id,\n        tool_outputs=tool_outputs\n    )",
+      "best_practices": [
+        "Define function schemas clearly",
+        "Handle function arguments",
+        "Execute functions server-side",
+        "Return function results",
+        "Handle function errors"
+      ]
+    },
+    "multiple_tools": {
+      "description": "Use multiple tools together",
+      "use_when": "Assistant needs multiple capabilities",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\n# Create assistant with multiple tools\nassistant = client.beta.assistants.create(\n    name='Multi-tool Assistant',\n    instructions='Use appropriate tools as needed.',\n    model='gpt-4-turbo-preview',\n    tools=[\n        {'type': 'code_interpreter'},\n        {'type': 'file_search'},\n        {\n            'type': 'function',\n            'function': {\n                'name': 'calculate',\n                'description': 'Calculate expressions',\n                'parameters': {...}\n            }\n        }\n    ]\n)",
+      "best_practices": [
+        "Combine tools as needed",
+        "Provide clear tool descriptions",
+        "Handle multiple tool calls",
+        "Prioritize tool selection",
+        "Test tool combinations"
+      ]
+    }
+  },
+  "file_handling_patterns": {
+    "upload_file": {
+      "description": "Upload file for assistant use",
+      "use_when": "Need to provide files to assistant",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\n# Upload file\nfile = client.files.create(\n    file=open('document.pdf', 'rb'),\n    purpose='assistants'\n)\n\nprint(f'File ID: {file.id}')\n\n# Add file to message\nmessage = client.beta.threads.messages.create(\n    thread_id=thread_id,\n    role='user',\n    content='Analyze this document',\n    file_ids=[file.id]\n)",
+      "best_practices": [
+        "Use purpose='assistants' for assistant files",
+        "Store file IDs",
+        "Attach files to messages",
+        "Handle file upload errors",
+        "Clean up unused files"
+      ]
+    },
+    "vector_store": {
+      "description": "Create and manage vector stores",
+      "use_when": "Using file_search tool",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\n# Upload files\nfile1 = client.files.create(file=open('doc1.pdf', 'rb'), purpose='assistants')\nfile2 = client.files.create(file=open('doc2.pdf', 'rb'), purpose='assistants')\n\n# Create vector store\nvector_store = client.beta.vector_stores.create(\n    name='Document Library',\n    file_ids=[file1.id, file2.id]\n)\n\n# Wait for processing\nimport time\nwhile True:\n    vs = client.beta.vector_stores.retrieve(vector_store.id)\n    if vs.status == 'completed':\n        break\n    time.sleep(1)\n\n# Associate with assistant\nassistant = client.beta.assistants.update(\n    assistant_id=assistant_id,\n    tool_resources={\n        'file_search': {\n            'vector_store_ids': [vector_store.id]\n        }\n    }\n)",
+      "best_practices": [
+        "Create vector store for file search",
+        "Wait for vector store processing",
+        "Associate with assistant",
+        "Add files to vector store",
+        "Monitor vector store status"
+      ]
+    },
+    "file_annotations": {
+      "description": "Handle file annotations in messages",
+      "use_when": "Assistant references files",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\n# Retrieve messages\nmessages = client.beta.threads.messages.list(\n    thread_id=thread_id\n)\n\nfor message in messages.data:\n    if message.role == 'assistant':\n        for content in message.content:\n            if content.type == 'text':\n                text = content.text.value\n                \n                # Handle annotations\n                annotations = content.text.annotations\n                for annotation in annotations:\n                    if annotation.type == 'file_path':\n                        file_id = annotation.file_path.file_id\n                        # Retrieve file\n                        file = client.files.retrieve(file_id)\n                        print(f'Referenced file: {file.filename}')",
+      "best_practices": [
+        "Check for annotations in messages",
+        "Handle file_path annotations",
+        "Retrieve referenced files",
+        "Display file references",
+        "Handle annotation types"
+      ]
+    }
+  },
+  "swarm_patterns": {
+    "multi_agent_setup": {
+      "description": "Set up multi-agent swarm",
+      "use_when": "Need multiple assistants working together",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\n# Create multiple assistants\nresearcher = client.beta.assistants.create(\n    name='Researcher',\n    instructions='Research topics thoroughly.',\n    model='gpt-4-turbo-preview'\n)\n\nwriter = client.beta.assistants.create(\n    name='Writer',\n    instructions='Write clear, engaging content.',\n    model='gpt-4-turbo-preview'\n)\n\nreviewer = client.beta.assistants.create(\n    name='Reviewer',\n    instructions='Review and improve content.',\n    model='gpt-4-turbo-preview'\n)\n\n# Store assistant IDs\nassistant_ids = {\n    'researcher': researcher.id,\n    'writer': writer.id,\n    'reviewer': reviewer.id\n}",
+      "best_practices": [
+        "Create specialized assistants",
+        "Store assistant IDs",
+        "Define clear roles",
+        "Coordinate between assistants",
+        "Manage assistant lifecycle"
+      ]
+    },
+    "agent_handoff": {
+      "description": "Hand off work between agents",
+      "use_when": "One agent completes task for another",
+      "code_example": "from openai import OpenAI\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\n# Researcher completes task\nresearch_thread = client.beta.threads.create()\nclient.beta.threads.messages.create(\n    thread_id=research_thread.id,\n    role='user',\n    content='Research AI trends'\n)\n\nresearch_run = client.beta.threads.runs.create(\n    thread_id=research_thread.id,\n    assistant_id=researcher_id\n)\n\n# Wait for completion\nwhile research_run.status != 'completed':\n    research_run = client.beta.threads.runs.retrieve(\n        thread_id=research_thread.id,\n        run_id=research_run.id\n    )\n\n# Get research results\nresearch_messages = client.beta.threads.messages.list(\n    thread_id=research_thread.id\n)\nresearch_content = research_messages.data[0].content[0].text.value\n\n# Hand off to writer\nwriter_thread = client.beta.threads.create()\nclient.beta.threads.messages.create(\n    thread_id=writer_thread.id,\n    role='user',\n    content=f'Write article based on: {research_content}'\n)\n\nwriter_run = client.beta.threads.runs.create(\n    thread_id=writer_thread.id,\n    assistant_id=writer_id\n)",
+      "best_practices": [
+        "Complete first agent task",
+        "Extract results from thread",
+        "Pass results to next agent",
+        "Create new thread for handoff",
+        "Track handoff chain"
+      ]
+    },
+    "swarm_routines": {
+      "description": "Define reusable swarm routines",
+      "use_when": "Have common multi-agent workflows",
+      "code_example": "from openai import OpenAI\nfrom typing import Dict, List\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\nclass SwarmRoutine:\n    def __init__(self, client: OpenAI, assistants: Dict[str, str]):\n        self.client = client\n        self.assistants = assistants\n    \n    async def research_and_write(self, topic: str) -> str:\n        # Research phase\n        research_thread = self.client.beta.threads.create()\n        self.client.beta.threads.messages.create(\n            thread_id=research_thread.id,\n            role='user',\n            content=f'Research: {topic}'\n        )\n        \n        research_run = self.client.beta.threads.runs.create(\n            thread_id=research_thread.id,\n            assistant_id=self.assistants['researcher']\n        )\n        \n        # Wait and get results\n        research_content = await self._wait_for_completion(\n            research_thread.id, research_run.id\n        )\n        \n        # Write phase\n        writer_thread = self.client.beta.threads.create()\n        self.client.beta.threads.messages.create(\n            thread_id=writer_thread.id,\n            role='user',\n            content=f'Write article: {research_content}'\n        )\n        \n        writer_run = self.client.beta.threads.runs.create(\n            thread_id=writer_thread.id,\n            assistant_id=self.assistants['writer']\n        )\n        \n        article = await self._wait_for_completion(\n            writer_thread.id, writer_run.id\n        )\n        \n        return article\n    \n    async def _wait_for_completion(self, thread_id: str, run_id: str) -> str:\n        # Poll until complete\n        # Return message content\n        pass\n\n# Use routine\nroutine = SwarmRoutine(client, assistant_ids)\narticle = await routine.research_and_write('AI Trends')",
+      "best_practices": [
+        "Create reusable routine classes",
+        "Define clear workflow steps",
+        "Handle async operations",
+        "Extract reusable logic",
+        "Test routines independently"
+      ]
+    },
+    "context_variables": {
+      "description": "Share context between agents",
+      "use_when": "Agents need shared context",
+      "code_example": "from openai import OpenAI\nfrom typing import Dict\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\nclass SwarmContext:\n    def __init__(self):\n        self.variables: Dict[str, any] = {}\n    \n    def set(self, key: str, value: any):\n        self.variables[key] = value\n    \n    def get(self, key: str) -> any:\n        return self.variables.get(key)\n    \n    def build_prompt(self, base_prompt: str) -> str:\n        # Inject context variables\n        prompt = base_prompt\n        for key, value in self.variables.items():\n            prompt = prompt.replace(f'{{{{{key}}}}}', str(value))\n        return prompt\n\n# Use context\ncontext = SwarmContext()\ncontext.set('user_name', 'Alice')\ncontext.set('topic', 'AI')\n\n# Use in assistant prompts\nprompt = context.build_prompt(\n    'Hello {user_name}, let\\'s discuss {topic}'\n)",
+      "best_practices": [
+        "Create context management class",
+        "Store shared variables",
+        "Inject context into prompts",
+        "Update context as needed",
+        "Share context between agents"
+      ]
+    }
+  },
+  "best_practices": [
+    "Store assistant IDs and thread IDs for reuse",
+    "Poll run status with appropriate intervals (1-2 seconds)",
+    "Handle all run statuses: queued, in_progress, completed, failed, requires_action",
+    "Use streaming for real-time user feedback",
+    "Submit tool outputs when run status is requires_action",
+    "Clean up unused threads and files to manage costs",
+    "Use vector stores for file_search with multiple files",
+    "Provide clear, specific assistant instructions",
+    "Handle function calling errors gracefully",
+    "Monitor token usage and costs"
+  ],
+  "anti_patterns": [
+    {
+      "name": "not_polling_status",
+      "description": "Not polling run status",
+      "problem": "Don't know when run completes",
+      "solution": "Always poll run status until completion"
+    },
+    {
+      "name": "not_handling_tool_calls",
+      "description": "Not handling requires_action status",
+      "problem": "Runs stuck waiting for tool outputs",
+      "solution": "Check for requires_action and submit tool outputs"
+    },
+    {
+      "name": "hardcoded_ids",
+      "description": "Hardcoding assistant/thread IDs",
+      "problem": "Inflexible and error-prone",
+      "solution": "Store IDs in configuration or database"
+    },
+    {
+      "name": "no_error_handling",
+      "description": "Not handling API errors",
+      "problem": "Application crashes on errors",
+      "solution": "Wrap API calls in try/except blocks"
+    }
+  ],
+  "migration_patterns": {
+    "from_chat_completions": {
+      "description": "Migrate from Chat Completions to Assistants API",
+      "use_when": "Upgrading from Chat Completions",
+      "code_example": "# Before: Chat Completions\nfrom openai import OpenAI\n\nclient = OpenAI()\nresponse = client.chat.completions.create(\n    model='gpt-4',\n    messages=[\n        {'role': 'system', 'content': 'You are a helpful assistant.'},\n        {'role': 'user', 'content': 'Hello'}\n    ]\n)\n\n# After: Assistants API\nclient = OpenAI()\n\n# Create assistant (one-time)\nassistant = client.beta.assistants.create(\n    name='Assistant',\n    instructions='You are a helpful assistant.',\n    model='gpt-4'\n)\n\n# Create thread\nthread = client.beta.threads.create()\n\n# Add message\nclient.beta.threads.messages.create(\n    thread_id=thread.id,\n    role='user',\n    content='Hello'\n)\n\n# Create run\nrun = client.beta.threads.runs.create(\n    thread_id=thread.id,\n    assistant_id=assistant.id\n)\n\n# Get response\nmessages = client.beta.threads.messages.list(thread_id=thread.id)",
+      "best_practices": [
+        "Create assistant once, reuse",
+        "Use threads for conversations",
+        "Poll for run completion",
+        "Retrieve messages for responses",
+        "Handle migration gradually"
+      ]
+    }
+  },
+  "patterns": {
+    "assistants_api": {
+      "create_assistant": {
+        "description": "Create an assistant with configuration",
+        "code_example": "from openai import OpenAI\n\nclient = OpenAI()\nassistant = client.beta.assistants.create(\n    name='Assistant',\n    instructions='Instructions',\n    model='gpt-4-turbo-preview'\n)"
+      },
+      "create_run": {
+        "description": "Create and execute a run",
+        "code_example": "run = client.beta.threads.runs.create(\n    thread_id=thread_id,\n    assistant_id=assistant_id\n)"
+      }
+    },
+    "swarm_patterns": {
+      "multi_agent_setup": {
+        "description": "Set up multi-agent swarm",
+        "code_example": "researcher = client.beta.assistants.create(...)\nwriter = client.beta.assistants.create(...)\n# Coordinate between assistants"
+      }
+    }
+  }
+}

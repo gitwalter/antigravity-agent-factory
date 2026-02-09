@@ -322,7 +322,8 @@ class RepoAnalyzer:
         analysis.exists = True
         
         try:
-            content = cursorrules_path.read_text(encoding="utf-8")            analysis.content = content
+            content = cursorrules_path.read_text(encoding="utf-8")
+            analysis.content = content
             analysis.line_count = len(content.splitlines())
             
             # Check for factory marker
@@ -355,32 +356,37 @@ class RepoAnalyzer:
             return
         
         # Analyze agents
-        agents_path = cursor_path / "agents"        if agents_path.exists():
+        agents_path = cursor_path / "agents"
+        if agents_path.exists():
             inventory.existing_agents = [
                 f.stem for f in agents_path.glob("*.md")
             ]
         
         # Analyze skills
-        skills_path = cursor_path / "skills"        if skills_path.exists():
+        skills_path = cursor_path / "skills"
+        if skills_path.exists():
             inventory.existing_skills = [
                 d.name for d in skills_path.iterdir()
                 if d.is_dir() and (d / "SKILL.md").exists()
             ]
         
         # Analyze commands
-        commands_path = cursor_path / "commands"        if commands_path.exists():
+        commands_path = cursor_path / "commands"
+        if commands_path.exists():
             inventory.existing_commands = [
                 f.stem for f in commands_path.glob("*.md")
             ]
         
         # Analyze rules
-        rules_path = cursor_path / "rules"        if rules_path.exists():
+        rules_path = cursor_path / "rules"
+        if rules_path.exists():
             inventory.existing_rules = [
                 f.name for f in rules_path.glob("*.mdc")
             ]
         
         # Analyze MCP configuration
-        mcp_path = cursor_path / "mcp.json"        if mcp_path.exists():
+        mcp_path = cursor_path / "mcp.json"
+        if mcp_path.exists():
             inventory.mcp = self._analyze_mcp(mcp_path)
     
     def _analyze_mcp(self, mcp_path: Path) -> McpAnalysis:
@@ -615,7 +621,8 @@ class RepoAnalyzer:
             # If there's a version and it's old, suggest upgrade
             if inventory.agentrules.version:
                 try:
-                    major = int(inventory.agentrules.version.split(".")[0])                    if major < 2:  # Current version is 2.x
+                    major = int(inventory.agentrules.version.split(".")[0])
+                    if major < 2:  # Current version is 2.x
                         return OnboardingScenario.UPGRADE
                 except ValueError:
                     pass

@@ -1,0 +1,121 @@
+{
+  "id": "hitl-patterns",
+  "name": "Human-in-the-Loop Patterns",
+  "description": "Patterns for human oversight and approval in agent workflows",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "patterns": {
+    "interrupt_before": {
+      "description": "Pause before executing action",
+      "use_case": "Review before high-stakes actions",
+      "implementation": "graph.compile(interrupt_before=['node_name'])"
+    },
+    "interrupt_after": {
+      "description": "Pause after generating proposal",
+      "use_case": "Review generated content",
+      "implementation": "graph.compile(interrupt_after=['node_name'])"
+    },
+    "confirmation_levels": {
+      "INFO": "Notify only, no response needed",
+      "CONFIRM": "Simple yes/no approval",
+      "VERIFY": "Type confirmation phrase"
+    },
+    "escalation": {
+      "levels": [
+        "agent",
+        "senior_agent",
+        "human",
+        "manager"
+      ],
+      "triggers": [
+        "low confidence",
+        "error",
+        "sensitive operation"
+      ],
+      "pattern": "Progressive escalation based on criteria"
+    },
+    "feedback_collection": {
+      "types": [
+        "correctness",
+        "helpfulness",
+        "safety"
+      ],
+      "storage": "LangSmith feedback API",
+      "use": "Continuous improvement"
+    }
+  },
+  "workflow_patterns": {
+    "single_approval": {
+      "description": "One approval point before execution",
+      "flow": "propose -> interrupt -> execute"
+    },
+    "multi_step": {
+      "description": "Approval at each step",
+      "flow": "step1 -> approve -> step2 -> approve -> ..."
+    },
+    "conditional_approval": {
+      "description": "Approval only for certain actions",
+      "criteria": [
+        "cost > threshold",
+        "irreversible",
+        "external"
+      ]
+    }
+  },
+  "implementation": {
+    "checkpointing": {
+      "required": true,
+      "reason": "Resume after human response"
+    },
+    "thread_id": {
+      "required": true,
+      "reason": "Identify workflow instance"
+    },
+    "timeout": {
+      "recommended": true,
+      "pattern": "Expire pending approvals after duration"
+    }
+  },
+  "best_practices": [
+    "Use checkpointing (Redis/PostgreSQL) for resumable workflows so human approvals don't block system restarts or require re-execution",
+    "Implement timeouts for human responses (e.g., 24-48 hours) with escalation or auto-rejection to prevent workflows from hanging indefinitely",
+    "Log all human decisions with timestamps, user IDs, and context for audit trails and compliance requirements",
+    "Provide clear context for decisions including proposed action, current state, potential impact, and alternatives to enable informed choices",
+    "Allow humans to modify proposals, not just approve/reject, enabling iterative refinement and better outcomes",
+    "Design for async human response using interrupt points rather than blocking calls, allowing other workflows to continue processing",
+    "Use appropriate confirmation levels (INFO/CONFIRM/VERIFY) based on risk: INFO for low-risk, VERIFY with confirmation phrase for high-risk actions",
+    "Implement progressive escalation (agent -> senior_agent -> human -> manager) based on confidence levels, error rates, or sensitivity of operations"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Blocking sync input",
+      "problem": "Synchronous input() calls block the event loop, preventing other workflows from executing and causing system-wide hangs",
+      "solution": "Use async interrupt points with LangGraph's interrupt_before/interrupt_after, implement async approval handlers with timeouts"
+    },
+    {
+      "name": "No context for decisions",
+      "problem": "Humans receive approval requests without sufficient context, leading to poor decisions or unnecessary rejections",
+      "solution": "Include full workflow state, proposed changes, impact analysis, and alternatives in approval requests for informed decision-making"
+    },
+    {
+      "name": "Binary approval only",
+      "problem": "Only approve/reject options prevent humans from refining proposals, leading to suboptimal outcomes or repeated iterations",
+      "solution": "Allow humans to edit proposals, provide feedback, or request modifications before final approval or rejection"
+    },
+    {
+      "name": "No timeout handling",
+      "problem": "Workflows wait indefinitely for human responses, blocking resources and preventing completion",
+      "solution": "Implement configurable timeouts (e.g., 24-48 hours), auto-escalate or auto-reject after timeout, notify users of pending approvals"
+    },
+    {
+      "name": "Missing checkpointing",
+      "problem": "Workflows cannot resume after human approval if system restarts, losing progress and requiring full re-execution",
+      "solution": "Require checkpointing (MemorySaver minimum, Redis/PostgreSQL for production) before implementing human-in-the-loop patterns"
+    }
+  ],
+  "related_skills": [
+    "human-in-the-loop",
+    "state-management",
+    "langgraph-agent-building"
+  ]
+}

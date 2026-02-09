@@ -1,54 +1,56 @@
 ---
-name: ci-monitor
 description: Continuous CI/CD pipeline monitoring with automatic error detection and fix loop
-type: skill
-category: workflow
-agents: [debug-conductor]
-knowledge: [debug-patterns.json, workflow-patterns.json, mcp-servers-catalog.json]
-mcp_servers: [github, git, filesystem]
 ---
 
+# Ci Monitor
+
+Continuous CI/CD pipeline monitoring with automatic error detection and fix loop
+
+## 
+# CI Monitor Skill
+
+## 
 # CI Monitor Skill
 
 ## Purpose
-
 Continuously monitor CI/CD pipeline status and automatically detect, analyze, and fix errors. This skill implements a **watch-detect-fix loop** that runs until the pipeline is green.
 
 ## Philosophy
-
 > "A watched pipeline never fails... and if it does, we fix it immediately."
 
 Traditional debugging is reactive - wait for failure, then investigate. This skill is **proactive** - continuously monitoring and fixing as issues appear.
 
-## When to Use
-
-| Trigger | Example |
-|---------|---------|
-| After push | "Watch the pipeline until it's green" |
-| CI failure | "Fix the pipeline and keep trying until green" |
-| Deployment | "Monitor the deployment pipeline" |
-| Background | "Watch CI in background, alert on failure" |
-
-## Prerequisites
-
-### Required Tools
-
-| Tool | Purpose | Installation |
-|------|---------|--------------|
-| `gh` CLI | GitHub Actions access | `winget install GitHub.cli` |
-| `git` | Local repository access | Pre-installed |
-| Python | Script execution | Anaconda environment |
-| `ruff` | Linting | `pip install ruff` |
-
-### Authentication
-
-```bash
-# GitHub CLI authentication (one-time setup)
-gh auth login
-# Choose: GitHub.com → HTTPS → Authenticate with browser
-```
-
 ## Workflow
+```mermaid
+flowchart TD
+    Start([Start Monitoring]) --> CheckStatus[Check CI Status]
+    CheckStatus --> IsComplete{Run Complete?}
+    
+    IsComplete -->|No| Wait[Wait 30s]
+    Wait --> CheckStatus
+    
+    IsComplete -->|Yes| IsSuccess{Success?}
+    
+    IsSuccess -->|Yes| Complete([Pipeline Green ✅])
+    IsSuccess -->|No| FetchLogs[Fetch Error Logs]
+    
+    FetchLogs --> ParseErrors[Parse All Errors]
+    ParseErrors --> Categorize[Categorize Errors]
+    
+    Categorize --> FixLoop[For Each Error]
+    FixLoop --> Analyze[Analyze Root Cause]
+    Analyze --> Fix[Implement Fix]
+    Fix --> MoreErrors{More Errors?}
+    
+    MoreErrors -->|Yes| FixLoop
+    MoreErrors -->|No| LocalTest[Run Local Tests]
+    
+    LocalTest --> TestPass{Tests Pass?}
+    TestPass -->|No| FixLoop
+    TestPass -->|Yes| Commit[Commit & Push]
+    
+    Commit --> CheckStatus
+```
 
 ```mermaid
 flowchart TD
@@ -82,7 +84,6 @@ flowchart TD
 ```
 
 ## Execution Steps
-
 ### Step 1: Initialize Monitoring
 
 ```bash
@@ -183,8 +184,64 @@ git push
 
 Return to Step 1 and continue monitoring until green.
 
-## Error Categories and Strategies
+```bash
+# Check GitHub CLI is authenticated
+gh auth status
 
+# Get latest CI run
+gh run list --repo {owner}/{repo} --limit 1
+```
+
+```bash
+# Poll until complete (30-second intervals)
+while true; do
+    status=$(gh run list --limit 1 --json status --jq '.[0].status')
+    if [ "$status" = "completed" ]; then break; fi
+    sleep 30
+done
+```
+
+```bash
+# Get conclusion
+conclusion=$(gh run list --limit 1 --json conclusion --jq '.[0].conclusion')
+if [ "$conclusion" = "success" ]; then
+    echo "Pipeline green!"
+    exit 0
+fi
+```
+
+```bash
+# Get run ID and fetch failed job logs
+runId=$(gh run list --limit 1 --json databaseId --jq '.[0].databaseId')
+gh run view $runId --log-failed 2>&1 | \
+    grep -E "ERROR|FAILED|AssertionError|error:" > errors.txt
+```
+
+```bash
+ruff check --fix .
+git add -A
+```
+
+```bash
+python scripts/validation/sync_artifacts.py --sync
+git add README.md docs/TESTING.md docs/reference/*.md knowledge/manifest.json
+```
+
+```bash
+# Run fast tests locally
+pytest tests/unit tests/validation -x --tb=short
+
+# Run linter
+ruff check .
+```
+
+```bash
+git add -A
+git commit -m "fix: <description of fixes>"
+git push
+```
+
+## Error Categories and Strategies
 ### Linter Errors (ruff)
 
 | Code | Meaning | Auto-Fix |
@@ -212,7 +269,6 @@ Return to Step 1 and continue monitoring until green.
 | skill-catalog.json | Add new skill entries |
 
 ## Monitoring Modes
-
 ### Active Mode (Foreground)
 
 ```
@@ -271,8 +327,61 @@ CI Monitor:
 Would you like me to fix these automatically? [Y/n]
 ```
 
-## Integration with Debug Conductor
+```
+User: Watch the pipeline until it's green
 
+CI Monitor:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 MONITORING: Run #21551915327
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[22:24:30] Status: in_progress
+[22:25:00] Status: in_progress
+[22:25:30] Status: completed ❌
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔬 ERRORS DETECTED: 3
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. [LINTER] F401: Unused import 'json' in adapter.py
+2. [SYNC] Out of sync: skills count 35 -> 44
+3. [TEST] AssertionError in test_artifacts.py
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔧 FIXING...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Fixed F401: Removed unused import
+✓ Fixed sync: Updated README.md counts
+✓ Verified: Local tests pass
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📤 PUSHING FIX...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Commit: fix: Resolve linter and sync errors
+Pushed to: main
+
+[Returning to monitoring...]
+```
+
+```
+User: Monitor CI in background, alert on failure
+
+CI Monitor:
+[Background] Monitoring run #21551915327...
+[Background] Will alert on completion or failure.
+
+... (user continues working) ...
+
+[ALERT] 🔴 CI Failed: 2 errors detected
+  - F401 in adapter.py
+  - Sync drift in README.md
+  
+Would you like me to fix these automatically? [Y/n]
+```
+
+## Integration with Debug Conductor
 The `ci-monitor` skill is used by the `debug-conductor` agent:
 
 ```yaml
@@ -286,7 +395,28 @@ When debug-conductor receives "fix the pipeline":
 3. On failure, invokes `pipeline-error-fix` skill
 4. Loops until green
 
+```yaml
+# In debug-conductor.md
+skills: [pipeline-error-fix, ci-monitor, extend-workflow, grounding-verification]
+```
+
 ## Commands Reference
+```bash
+# Check CI status
+gh run list --repo {owner}/{repo} --limit 5
+
+# Get run details
+gh run view {run_id} --repo {owner}/{repo}
+
+# Get failed job logs
+gh run view {run_id} --repo {owner}/{repo} --log-failed
+
+# Watch run in real-time
+gh run watch {run_id} --repo {owner}/{repo}
+
+# Re-run failed jobs
+gh run rerun {run_id} --repo {owner}/{repo} --failed
+```
 
 ```bash
 # Check CI status
@@ -306,7 +436,6 @@ gh run rerun {run_id} --repo {owner}/{repo} --failed
 ```
 
 ## Escalation
-
 | Condition | Action |
 |-----------|--------|
 | > 3 fix attempts | Escalate to user with analysis |
@@ -315,7 +444,6 @@ gh run rerun {run_id} --repo {owner}/{repo} --failed
 | External dependency | Note and suggest workaround |
 
 ## Learning Hooks
-
 After each fix cycle, capture:
 
 1. **Error pattern** - What type of error?
@@ -325,9 +453,22 @@ After each fix cycle, capture:
 
 Store in `knowledge/debug-patterns.json` for future reference.
 
-## Related Artifacts
+## Best Practices
+- Monitor CI immediately after pushing changes rather than waiting for failures - proactive monitoring catches issues faster
+- Categorize errors systematically (linter, test, sync, dependency) to apply targeted fixes efficiently
+- Always run local tests before pushing fixes to avoid creating new failures - verify fixes locally first
+- Document error patterns and fixes in `knowledge/debug-patterns.json` to build institutional knowledge and prevent recurrence
+- Escalate after 3 failed fix attempts rather than continuing to loop - some issues require human intervention or architectural changes
+- Use passive monitoring mode for background watching, but switch to active mode when actively debugging to see real-time progress
 
-- **Agent**: `.agent/agents/debug-conductor.md`
-- **Skill**: `.agent/skills/pipeline-error-fix/SKILL.md`
+## Related Artifacts
+- **Agent**: `.cursor/agents/debug-conductor.md`
+- **Skill**: `.cursor/skills/pipeline-error-fix/SKILL.md`
 - **Knowledge**: `knowledge/debug-patterns.json`
 - **Workflow**: `workflows/operations/debug-pipeline.md`
+
+## Prerequisites
+> [!IMPORTANT]
+> Requirements:
+> - Packages: ruff`
+> - Knowledge: debug-patterns.json, workflow-patterns.json, mcp-servers-catalog.json

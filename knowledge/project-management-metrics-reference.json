@@ -1,0 +1,594 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "pm-metrics",
+  "name": "Project Management Metrics Reference",
+  "title": "Project Management Metrics Reference",
+  "description": "Comprehensive metrics definitions for velocity, flow, quality, predictive, and team health tracking",
+  "version": "1.0.0",
+  "category": "reference",
+  "axiomAlignment": {
+    "A1_verifiability": "Metrics provide verifiable data on team performance and project health",
+    "A3_transparency": "Metrics make team performance and bottlenecks transparent",
+    "A4_adaptability": "Metrics enable data-driven adaptation of processes"
+  },
+  "metrics": {
+    "velocity": {
+      "id": "velocity",
+      "name": "Velocity",
+      "description": "Average story points completed per sprint",
+      "formula": "SUM(completed_story_points) / number_of_sprints",
+      "unit": "points",
+      "interpretation": {
+        "good": "Consistent velocity indicates predictable delivery",
+        "bad": "High variance suggests estimation issues or external factors",
+        "thresholds": {
+          "excellent": "Variance < 15%",
+          "good": "Variance < 25%",
+          "warning": "Variance > 25%"
+        }
+      },
+      "source": "sprint_completion_data",
+      "category": "velocity",
+      "calculation_period": "sprint",
+      "requires_history": true,
+      "min_sprints": 3
+    },
+    "velocity_trend": {
+      "id": "velocity_trend",
+      "name": "Velocity Trend",
+      "description": "Directional change in velocity over time",
+      "formula": "linear_regression_slope(velocity_values)",
+      "unit": "points_per_sprint",
+      "interpretation": {
+        "good": "Positive trend indicates improving capacity",
+        "bad": "Negative trend suggests declining capacity or increasing complexity",
+        "thresholds": {
+          "excellent": "Trend > +2 points/sprint",
+          "good": "Trend > 0",
+          "warning": "Trend < -2 points/sprint"
+        }
+      },
+      "source": "historical_velocity_data",
+      "category": "velocity",
+      "calculation_period": "sprint",
+      "requires_history": true,
+      "min_sprints": 5
+    },
+    "completion_rate": {
+      "id": "completion_rate",
+      "name": "Sprint Completion Rate",
+      "description": "Percentage of committed work completed per sprint",
+      "formula": "(completed_story_points / committed_story_points) * 100",
+      "unit": "percentage",
+      "interpretation": {
+        "good": "85-100% indicates realistic commitment",
+        "bad": "< 70% suggests overcommitment, > 100% suggests undercommitment",
+        "thresholds": {
+          "excellent": "85-100%",
+          "good": "75-110%",
+          "warning": "< 70% or > 120%"
+        }
+      },
+      "source": "sprint_commitment_completion",
+      "category": "velocity",
+      "calculation_period": "sprint",
+      "requires_history": false
+    },
+    "carry_over": {
+      "id": "carry_over",
+      "name": "Carry Over Rate",
+      "description": "Percentage of sprint work carried to next sprint",
+      "formula": "(carried_over_story_points / sprint_total_story_points) * 100",
+      "unit": "percentage",
+      "interpretation": {
+        "good": "< 10% indicates good sprint closure",
+        "bad": "> 20% suggests planning or execution issues",
+        "thresholds": {
+          "excellent": "< 5%",
+          "good": "< 10%",
+          "warning": "> 20%"
+        }
+      },
+      "source": "sprint_carry_over_data",
+      "category": "velocity",
+      "calculation_period": "sprint",
+      "requires_history": false
+    },
+    "lead_time": {
+      "id": "lead_time",
+      "name": "Lead Time",
+      "description": "Time from work item creation to completion",
+      "formula": "AVG(completion_date - creation_date)",
+      "unit": "days",
+      "interpretation": {
+        "good": "Lower lead time indicates faster delivery",
+        "bad": "Increasing lead time suggests bottlenecks",
+        "thresholds": {
+          "excellent": "< 7 days",
+          "good": "< 14 days",
+          "warning": "> 21 days"
+        }
+      },
+      "source": "work_item_cycle_data",
+      "category": "flow",
+      "calculation_period": "continuous",
+      "requires_history": true,
+      "min_items": 10
+    },
+    "cycle_time": {
+      "id": "cycle_time",
+      "name": "Cycle Time",
+      "description": "Time from work start to completion (in progress to done)",
+      "formula": "AVG(completion_date - start_date)",
+      "unit": "days",
+      "interpretation": {
+        "good": "Lower cycle time indicates efficient execution",
+        "bad": "Increasing cycle time suggests process inefficiencies",
+        "thresholds": {
+          "excellent": "< 3 days",
+          "good": "< 7 days",
+          "warning": "> 14 days"
+        }
+      },
+      "source": "work_item_cycle_data",
+      "category": "flow",
+      "calculation_period": "continuous",
+      "requires_history": true,
+      "min_items": 10
+    },
+    "throughput": {
+      "id": "throughput",
+      "name": "Throughput",
+      "description": "Number of work items completed per unit time",
+      "formula": "COUNT(completed_items) / time_period",
+      "unit": "count",
+      "interpretation": {
+        "good": "Consistent or increasing throughput indicates stable capacity",
+        "bad": "Decreasing throughput suggests capacity constraints",
+        "thresholds": {
+          "excellent": "Trend > 0",
+          "good": "Stable",
+          "warning": "Trend < -10%"
+        }
+      },
+      "source": "work_item_completion_data",
+      "category": "flow",
+      "calculation_period": "week",
+      "requires_history": true,
+      "min_periods": 4
+    },
+    "wip": {
+      "id": "wip",
+      "name": "Work In Progress",
+      "description": "Number of work items currently in progress",
+      "formula": "COUNT(items WHERE status = 'in_progress')",
+      "unit": "count",
+      "interpretation": {
+        "good": "WIP within team capacity indicates good flow",
+        "bad": "High WIP suggests context switching and bottlenecks",
+        "thresholds": {
+          "excellent": "WIP <= team_size",
+          "good": "WIP <= team_size * 1.5",
+          "warning": "WIP > team_size * 2"
+        }
+      },
+      "source": "current_work_item_status",
+      "category": "flow",
+      "calculation_period": "continuous",
+      "requires_history": false
+    },
+    "bug_ratio": {
+      "id": "bug_ratio",
+      "name": "Bug Ratio",
+      "description": "Percentage of work items that are bugs",
+      "formula": "(bug_count / total_work_items) * 100",
+      "unit": "percentage",
+      "interpretation": {
+        "good": "< 20% indicates good quality",
+        "bad": "> 30% suggests quality issues",
+        "thresholds": {
+          "excellent": "< 10%",
+          "good": "< 20%",
+          "warning": "> 30%"
+        }
+      },
+      "source": "work_item_type_distribution",
+      "category": "quality",
+      "calculation_period": "sprint",
+      "requires_history": false
+    },
+    "rework_rate": {
+      "id": "rework_rate",
+      "name": "Rework Rate",
+      "description": "Percentage of work items requiring rework",
+      "formula": "(reworked_items / total_completed_items) * 100",
+      "unit": "percentage",
+      "interpretation": {
+        "good": "< 10% indicates good first-time quality",
+        "bad": "> 20% suggests requirements or quality issues",
+        "thresholds": {
+          "excellent": "< 5%",
+          "good": "< 10%",
+          "warning": "> 20%"
+        }
+      },
+      "source": "work_item_rework_tracking",
+      "category": "quality",
+      "calculation_period": "sprint",
+      "requires_history": true,
+      "min_sprints": 3
+    },
+    "escaped_defects": {
+      "id": "escaped_defects",
+      "name": "Escaped Defects",
+      "description": "Number of defects found in production",
+      "formula": "COUNT(defects WHERE found_in = 'production')",
+      "unit": "count",
+      "interpretation": {
+        "good": "0-1 per sprint indicates good quality gates",
+        "bad": "> 3 per sprint suggests testing gaps",
+        "thresholds": {
+          "excellent": "0",
+          "good": "<= 1",
+          "warning": "> 3"
+        }
+      },
+      "source": "defect_tracking",
+      "category": "quality",
+      "calculation_period": "sprint",
+      "requires_history": false
+    },
+    "sprint_forecast": {
+      "id": "sprint_forecast",
+      "name": "Sprint Forecast",
+      "description": "Predicted story points for next sprint based on historical velocity",
+      "formula": "AVG(historical_velocity) * confidence_factor",
+      "unit": "points",
+      "interpretation": {
+        "good": "Forecast within 15% of actual indicates good predictability",
+        "bad": "Forecast variance > 25% suggests estimation issues",
+        "thresholds": {
+          "excellent": "Variance < 10%",
+          "good": "Variance < 15%",
+          "warning": "Variance > 25%"
+        }
+      },
+      "source": "velocity_forecasting",
+      "category": "predictive",
+      "calculation_period": "sprint",
+      "requires_history": true,
+      "min_sprints": 3
+    },
+    "release_prediction": {
+      "id": "release_prediction",
+      "name": "Release Prediction",
+      "description": "Predicted release date based on velocity and remaining work",
+      "formula": "current_date + (remaining_story_points / average_velocity) * sprint_duration",
+      "unit": "date",
+      "interpretation": {
+        "good": "Prediction within 1 sprint indicates good planning",
+        "bad": "Prediction variance > 2 sprints suggests scope or velocity issues",
+        "thresholds": {
+          "excellent": "Variance < 0.5 sprints",
+          "good": "Variance < 1 sprint",
+          "warning": "Variance > 2 sprints"
+        }
+      },
+      "source": "release_planning_data",
+      "category": "predictive",
+      "calculation_period": "continuous",
+      "requires_history": true,
+      "min_sprints": 5
+    },
+    "risk_score": {
+      "id": "risk_score",
+      "name": "Risk Score",
+      "description": "Composite risk score based on multiple factors",
+      "formula": "weighted_sum(blocker_frequency, stale_items, velocity_variance, bug_ratio)",
+      "unit": "score",
+      "interpretation": {
+        "good": "Score < 30 indicates low risk",
+        "bad": "Score > 60 suggests high risk",
+        "thresholds": {
+          "excellent": "< 20",
+          "good": "< 30",
+          "warning": "> 60"
+        }
+      },
+      "source": "composite_risk_calculation",
+      "category": "predictive",
+      "calculation_period": "sprint",
+      "requires_history": true,
+      "min_sprints": 3
+    },
+    "blocker_frequency": {
+      "id": "blocker_frequency",
+      "name": "Blocker Frequency",
+      "description": "Average number of blockers per sprint",
+      "formula": "AVG(blocker_count_per_sprint)",
+      "unit": "count",
+      "interpretation": {
+        "good": "< 2 blockers per sprint indicates good flow",
+        "bad": "> 4 blockers per sprint suggests dependency or resource issues",
+        "thresholds": {
+          "excellent": "< 1",
+          "good": "< 2",
+          "warning": "> 4"
+        }
+      },
+      "source": "blocker_tracking",
+      "category": "health",
+      "calculation_period": "sprint",
+      "requires_history": true,
+      "min_sprints": 3
+    },
+    "stale_items": {
+      "id": "stale_items",
+      "name": "Stale Items",
+      "description": "Number of work items without activity for threshold period",
+      "formula": "COUNT(items WHERE last_updated < current_date - stale_threshold)",
+      "unit": "count",
+      "interpretation": {
+        "good": "< 2 stale items indicates active work",
+        "bad": "> 5 stale items suggests abandonment or bottlenecks",
+        "thresholds": {
+          "excellent": "0",
+          "good": "< 2",
+          "warning": "> 5"
+        }
+      },
+      "source": "work_item_activity_tracking",
+      "category": "health",
+      "calculation_period": "continuous",
+      "requires_history": false,
+      "stale_threshold_days": 7
+    },
+    "assignment_balance": {
+      "id": "assignment_balance",
+      "name": "Assignment Balance",
+      "description": "Distribution of work across team members",
+      "formula": "standard_deviation(work_items_per_person) / mean(work_items_per_person)",
+      "unit": "coefficient_of_variation",
+      "interpretation": {
+        "good": "CV < 0.3 indicates balanced workload",
+        "bad": "CV > 0.5 suggests imbalanced distribution",
+        "thresholds": {
+          "excellent": "< 0.2",
+          "good": "< 0.3",
+          "warning": "> 0.5"
+        }
+      },
+      "source": "work_item_assignment_data",
+      "category": "health",
+      "calculation_period": "sprint",
+      "requires_history": false
+    }
+  },
+  "metric_categories": {
+    "velocity": {
+      "description": "Metrics related to team delivery speed and consistency",
+      "metrics": [
+        "velocity",
+        "velocity_trend",
+        "completion_rate",
+        "carry_over"
+      ],
+      "use_cases": [
+        "Sprint planning",
+        "Capacity planning",
+        "Predictability assessment"
+      ]
+    },
+    "flow": {
+      "description": "Metrics related to work item movement through the system",
+      "metrics": [
+        "lead_time",
+        "cycle_time",
+        "throughput",
+        "wip"
+      ],
+      "use_cases": [
+        "Bottleneck identification",
+        "Process optimization",
+        "Flow efficiency measurement"
+      ]
+    },
+    "quality": {
+      "description": "Metrics related to work quality and defect rates",
+      "metrics": [
+        "bug_ratio",
+        "rework_rate",
+        "escaped_defects"
+      ],
+      "use_cases": [
+        "Quality assessment",
+        "Testing effectiveness",
+        "Process improvement"
+      ]
+    },
+    "predictive": {
+      "description": "Metrics for forecasting and risk assessment",
+      "metrics": [
+        "sprint_forecast",
+        "release_prediction",
+        "risk_score"
+      ],
+      "use_cases": [
+        "Sprint planning",
+        "Release planning",
+        "Risk management"
+      ]
+    },
+    "health": {
+      "description": "Metrics related to team and process health",
+      "metrics": [
+        "blocker_frequency",
+        "stale_items",
+        "assignment_balance"
+      ],
+      "use_cases": [
+        "Team health monitoring",
+        "Process health assessment",
+        "Resource allocation"
+      ]
+    }
+  },
+  "backend_operations": {
+    "sprint_completion_data": {
+      "description": "Retrieve completed story points per sprint",
+      "required_fields": [
+        "sprint_id",
+        "completed_story_points",
+        "sprint_end_date"
+      ]
+    },
+    "historical_velocity_data": {
+      "description": "Retrieve historical velocity values",
+      "required_fields": [
+        "sprint_id",
+        "velocity",
+        "sprint_end_date"
+      ]
+    },
+    "sprint_commitment_completion": {
+      "description": "Retrieve committed vs completed story points",
+      "required_fields": [
+        "sprint_id",
+        "committed_story_points",
+        "completed_story_points"
+      ]
+    },
+    "sprint_carry_over_data": {
+      "description": "Retrieve work items carried to next sprint",
+      "required_fields": [
+        "sprint_id",
+        "carried_over_story_points",
+        "sprint_total_story_points"
+      ]
+    },
+    "work_item_cycle_data": {
+      "description": "Retrieve work item creation, start, and completion dates",
+      "required_fields": [
+        "work_item_id",
+        "creation_date",
+        "start_date",
+        "completion_date"
+      ]
+    },
+    "work_item_completion_data": {
+      "description": "Retrieve completed work items with timestamps",
+      "required_fields": [
+        "work_item_id",
+        "completion_date"
+      ]
+    },
+    "current_work_item_status": {
+      "description": "Retrieve current status of all work items",
+      "required_fields": [
+        "work_item_id",
+        "status"
+      ]
+    },
+    "work_item_type_distribution": {
+      "description": "Retrieve work items by type (feature, bug, etc.)",
+      "required_fields": [
+        "work_item_id",
+        "type"
+      ]
+    },
+    "work_item_rework_tracking": {
+      "description": "Track work items that required rework",
+      "required_fields": [
+        "work_item_id",
+        "rework_count",
+        "completion_date"
+      ]
+    },
+    "defect_tracking": {
+      "description": "Track defects found in production",
+      "required_fields": [
+        "defect_id",
+        "found_in",
+        "found_date",
+        "severity"
+      ]
+    },
+    "velocity_forecasting": {
+      "description": "Calculate velocity-based forecasts",
+      "required_fields": [
+        "historical_velocity",
+        "confidence_factor"
+      ]
+    },
+    "release_planning_data": {
+      "description": "Retrieve release scope and progress",
+      "required_fields": [
+        "release_id",
+        "remaining_story_points",
+        "average_velocity"
+      ]
+    },
+    "composite_risk_calculation": {
+      "description": "Calculate composite risk from multiple metrics",
+      "required_fields": [
+        "blocker_frequency",
+        "stale_items",
+        "velocity_variance",
+        "bug_ratio"
+      ]
+    },
+    "blocker_tracking": {
+      "description": "Track blockers per sprint",
+      "required_fields": [
+        "sprint_id",
+        "blocker_count",
+        "blocker_resolution_time"
+      ]
+    },
+    "work_item_activity_tracking": {
+      "description": "Track last activity date for work items",
+      "required_fields": [
+        "work_item_id",
+        "last_updated",
+        "status"
+      ]
+    },
+    "work_item_assignment_data": {
+      "description": "Retrieve work item assignments per team member",
+      "required_fields": [
+        "work_item_id",
+        "assigned_to",
+        "story_points"
+      ]
+    }
+  },
+  "reporting_templates": {
+    "burndown": "templates/pm-backends/metrics/burndown-template.md.tmpl",
+    "velocity": "templates/pm-backends/metrics/velocity-template.md.tmpl",
+    "health": "templates/pm-backends/metrics/health-template.md.tmpl",
+    "forecast": "templates/pm-backends/metrics/forecast-template.md.tmpl"
+  },
+  "best_practices": [
+    "Collect metrics consistently using automated data collection from project management backends to ensure accuracy and reduce manual effort",
+    "Focus on trends over single data points - analyze velocity trends, lead time changes, and quality patterns over multiple sprints",
+    "Use clear thresholds (excellent/good/warning) to interpret metrics - establish team-specific baselines rather than industry averages",
+    "Combine multiple metrics for holistic assessment - use composite scores like risk_score that weight multiple factors together",
+    "Report metrics with actionable insights - present visualizations, highlight concerning trends, and provide specific improvement recommendations",
+    "Validate data quality before calculation - check for missing data, outliers, and inconsistencies that could skew results",
+    "Consider context when interpreting metrics - account for team size, project phase, holidays, and external factors before making judgments",
+    "Document metric definitions, calculation methods, and data sources to ensure consistent understanding across the team"
+  ],
+  "patterns": {
+    "general": {
+      "description": "Comprehensive metrics definitions for velocity, flow, quality, predictive, and team health tracking",
+      "usage": "See detailed sections below"
+    }
+  },
+  "anti_patterns": [
+    {
+      "name": "Ignoring documentation",
+      "problem": "Leads to misuse",
+      "solution": "Always read docs first"
+    }
+  ]
+}

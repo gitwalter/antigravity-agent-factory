@@ -1,0 +1,176 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "memory-config",
+  "name": "Memory System Configuration",
+  "title": "Memory System Configuration",
+  "description": "Configuration for the inductive memory system that enables user-validated learning",
+  "version": "1.0.0",
+  "category": "reference",
+  "axiomAlignment": {
+    "A2_user_primacy": "All memory creation requires explicit user approval",
+    "A3_transparency": "Memory source and confidence are always displayed",
+    "A5_consistency": "Protected layers (L0-L2) cannot be modified"
+  },
+  "embedding": {
+    "model": "all-MiniLM-L6-v2",
+    "description": "Sentence-transformers model for local embeddings (no API required)",
+    "dimension": 384,
+    "cache_dir": "data/models"
+  },
+  "storage": {
+    "vector_db": "chromadb",
+    "persist_dir": "data/memory",
+    "json_knowledge": "knowledge/",
+    "collections": [
+      {
+        "name": "semantic",
+        "description": "User-approved long-term memories"
+      },
+      {
+        "name": "episodic",
+        "description": "Session-based observations"
+      },
+      {
+        "name": "pending",
+        "description": "Proposals awaiting user approval"
+      },
+      {
+        "name": "rejected",
+        "description": "Rejected proposals (to avoid re-proposing)"
+      }
+    ]
+  },
+  "protection": {
+    "immutable_layers": [
+      "L0",
+      "L1",
+      "L2"
+    ],
+    "protected_paths": [
+      ".cursorrules",
+      "patterns/axioms/",
+      "patterns/principles/",
+      "patterns/enforcement/",
+      "PURPOSE.md"
+    ],
+    "mutable_paths": [
+      "knowledge/*.json",
+      "patterns/stacks/",
+      "blueprints/",
+      "templates/",
+      "data/"
+    ]
+  },
+  "proposals": {
+    "require_user_approval": true,
+    "show_confidence": true,
+    "show_source": true,
+    "rejection_similarity_threshold": 0.9,
+    "min_content_length": 10
+  },
+  "observation_types": {
+    "user_correction": {
+      "description": "User corrected the agent's behavior",
+      "confidence": 0.95,
+      "scope": "global"
+    },
+    "explicit_teaching": {
+      "description": "User explicitly taught something",
+      "confidence": 1.0,
+      "scope": "global"
+    },
+    "successful_pattern": {
+      "description": "A pattern that worked well",
+      "confidence": 0.7,
+      "scope": "project"
+    },
+    "error_resolution": {
+      "description": "How an error was resolved",
+      "confidence": 0.8,
+      "scope": "global"
+    },
+    "preference": {
+      "description": "User preference detected",
+      "confidence": 0.85,
+      "scope": "global"
+    }
+  },
+  "phase": {
+    "current": 1,
+    "description": "Phase 1: Conservative (user-validated). Phase 2 requires explicit enablement.",
+    "phase1": {
+      "require_user_approval": true,
+      "auto_apply": false
+    },
+    "phase2": {
+      "enabled": false,
+      "confidence_threshold": 0.95,
+      "requires_validation": true,
+      "validation_period_days": 14
+    }
+  },
+  "first_run": {
+    "message": "I don't have any memories yet. I'll learn from our interactions.",
+    "create_directories": true,
+    "download_model": true
+  },
+  "patterns": {
+    "user_validated_learning": {
+      "description": "All memory proposals require explicit user approval before storage",
+      "implementation": "Store proposals in 'pending' collection, present to user with confidence scores and sources, move to 'semantic' collection on approval"
+    },
+    "confidence_based_proposals": {
+      "description": "Use observation type confidence scores to prioritize proposals",
+      "implementation": "Higher confidence observations (explicit_teaching=1.0, user_correction=0.95) are presented first, lower confidence (successful_pattern=0.7) require more context"
+    },
+    "rejection_tracking": {
+      "description": "Track rejected proposals to avoid re-proposing similar content",
+      "implementation": "Store rejected proposals in 'rejected' collection, check similarity threshold (0.9) before proposing new memories"
+    },
+    "protected_layer_enforcement": {
+      "description": "Prevent modification of immutable layers (L0-L2) containing core axioms and principles",
+      "implementation": "Check protected_paths before any write operations, reject modifications to immutable layers"
+    },
+    "phase_gated_learning": {
+      "description": "Phase 1 requires user approval, Phase 2 enables auto-apply for high-confidence memories",
+      "implementation": "Phase 1: require_user_approval=true, auto_apply=false. Phase 2: enabled only after explicit enablement, confidence_threshold=0.95"
+    }
+  },
+  "best_practices": [
+    "Always require user approval for memory creation in Phase 1 to ensure user primacy and prevent unwanted memory storage",
+    "Display confidence scores and source context when presenting memory proposals so users can make informed decisions",
+    "Use similarity threshold (0.9) to prevent re-proposing rejected memories, reducing user friction and improving proposal quality",
+    "Enforce protected layer immutability by checking protected_paths before write operations to maintain system integrity",
+    "Namespace embedding cache by model version to prevent cross-version contamination and ensure consistent semantic search",
+    "Store episodic observations separately from semantic memories to enable temporal analysis and pattern detection",
+    "Implement minimum content length validation (10 chars) to filter out noise and ensure meaningful memory proposals",
+    "Use local embedding models (all-MiniLM-L6-v2) for privacy-sensitive applications, avoiding API calls for embedding generation"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Auto-creating memories without approval",
+      "problem": "Violates user primacy axiom, stores unwanted information, reduces user trust and control",
+      "solution": "Always require explicit user approval in Phase 1, use require_user_approval=true, present proposals with context before storage"
+    },
+    {
+      "name": "Not showing memory sources",
+      "problem": "Users cannot verify memory accuracy or understand context, violating transparency axiom",
+      "solution": "Always display source context and confidence scores (show_source=true, show_confidence=true) when presenting proposals"
+    },
+    {
+      "name": "Modifying protected layers",
+      "problem": "Corrupts core system axioms and principles, breaks system consistency and trust",
+      "solution": "Enforce immutable_layers protection, check protected_paths before writes, reject modifications to L0-L2 layers"
+    },
+    {
+      "name": "Re-proposing rejected memories",
+      "problem": "Frustrates users with repeated proposals, wastes system resources, reduces proposal quality",
+      "solution": "Store rejected proposals in 'rejected' collection, check similarity threshold (0.9) before proposing, avoid re-proposing similar content"
+    },
+    {
+      "name": "Enabling Phase 2 without validation",
+      "problem": "Auto-applies memories without sufficient confidence validation, risks storing incorrect information",
+      "solution": "Require explicit enablement, set high confidence_threshold (0.95), implement validation_period_days (14) before full activation"
+    }
+  ]
+}

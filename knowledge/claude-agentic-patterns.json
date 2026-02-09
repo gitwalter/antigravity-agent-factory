@@ -1,0 +1,263 @@
+{
+  "id": "anthropic-agentic",
+  "name": "Claude Agentic Patterns",
+  "description": "Patterns for building Claude-powered agents using Anthropic's agentic loop, extended thinking, safety guidelines, and prompt engineering best practices",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "patterns": {
+    "agentic_loop": {
+      "tool_use_until_done": {
+        "description": "Continue tool-use loop until Claude indicates completion",
+        "pattern": "Loop while tool_calls exist, execute tools, append ToolMessages, repeat until no tool_calls",
+        "example": "while iteration < max_iterations:\n    response = await llm_with_tools.ainvoke(messages)\n    if not response.tool_calls:\n        return response.content\n    # Execute tools and continue",
+        "use_when": [
+          "Multi-step tasks",
+          "Complex workflows",
+          "Data gathering"
+        ],
+        "best_practices": [
+          "Set max_iterations to prevent infinite loops",
+          "Handle tool execution errors gracefully",
+          "Log each iteration for debugging"
+        ]
+      },
+      "iterative_refinement": {
+        "description": "Multiple passes with feedback for quality improvement",
+        "pattern": "Generate -> Evaluate -> Refine -> Repeat",
+        "use_when": [
+          "Content generation",
+          "Code writing",
+          "Analysis refinement"
+        ]
+      },
+      "parallel_tool_execution": {
+        "description": "Execute multiple tools simultaneously when independent",
+        "pattern": "Use asyncio.gather() for concurrent tool calls",
+        "use_when": [
+          "Independent data gathering",
+          "Parallel API calls"
+        ]
+      },
+      "conditional_tool_use": {
+        "description": "Use tools based on conditions and context",
+        "pattern": "Evaluate context -> Select appropriate tools -> Execute",
+        "use_when": [
+          "Adaptive workflows",
+          "Context-dependent actions"
+        ]
+      }
+    },
+    "extended_thinking": {
+      "enabled_thinking": {
+        "description": "Enable Claude's extended thinking for complex reasoning",
+        "configuration": {
+          "type": "enabled",
+          "budget_tokens": 10000
+        },
+        "example": "ChatAnthropic(model='claude-3-5-sonnet-20241022', thinking={'type': 'enabled', 'budget_tokens': 10000})",
+        "use_when": [
+          "Complex problem solving",
+          "Multi-step reasoning",
+          "Design tasks",
+          "Analysis requiring deep thought"
+        ],
+        "best_practices": [
+          "Set appropriate token budget",
+          "Use for tasks requiring extended reasoning",
+          "Monitor token usage"
+        ]
+      },
+      "thinking_access": {
+        "description": "Access Claude's thinking process if available",
+        "pattern": "Check response.thinking attribute for reasoning process",
+        "use_when": [
+          "Debugging",
+          "Understanding reasoning",
+          "Transparency requirements"
+        ]
+      }
+    },
+    "safety_patterns": {
+      "system_prompts": {
+        "description": "Define clear safety guidelines in system prompts",
+        "example": "SystemMessage with safety guidelines: never provide harmful info, protect privacy, be honest about limitations",
+        "best_practices": [
+          "Define clear boundaries",
+          "Include ethical guidelines",
+          "Specify limitations"
+        ]
+      },
+      "temperature_control": {
+        "description": "Use lower temperature (0.3-0.5) for consistent, safe behavior",
+        "use_when": [
+          "Production systems",
+          "Structured outputs",
+          "Consistent behavior needed"
+        ],
+        "temperature_ranges": {
+          "creative": "0.7-1.0",
+          "balanced": "0.5-0.7",
+          "consistent": "0.3-0.5",
+          "deterministic": "0.0-0.3"
+        }
+      },
+      "output_validation": {
+        "description": "Check responses for unsafe content",
+        "pattern": "Validate response content against safety criteria before returning",
+        "implementation": "Custom validation function checking for unsafe keywords, content filters"
+      },
+      "rate_limiting": {
+        "description": "Implement rate limits to prevent abuse",
+        "best_practices": [
+          "Set per-user limits",
+          "Implement exponential backoff",
+          "Monitor usage patterns"
+        ]
+      }
+    },
+    "prompt_engineering": {
+      "claude_specific": {
+        "description": "Prompt engineering optimized for Claude models",
+        "best_practices": [
+          "Use clear, structured prompts",
+          "Provide examples when helpful",
+          "Use XML tags for structure",
+          "Be explicit about desired format",
+          "Leverage Claude's long context window"
+        ]
+      },
+      "structured_outputs": {
+        "description": "Use Claude with structured output schemas",
+        "pattern": "llm.with_structured_output(PydanticModel)",
+        "example": "structured_llm = claude.with_structured_output(AnalysisResult)",
+        "use_when": [
+          "Data extraction",
+          "API responses",
+          "Consistent formats"
+        ],
+        "temperature": "Use 0.3-0.5 for structured outputs"
+      },
+      "multi_turn_conversation": {
+        "description": "Maintain context across conversation turns",
+        "pattern": "Use RunnableWithMessageHistory for conversation memory",
+        "use_when": [
+          "Chat applications",
+          "Multi-step interactions",
+          "Context-dependent tasks"
+        ]
+      }
+    },
+    "langchain_integration": {
+      "chat_anthropic": {
+        "description": "Integrate Claude with LangChain workflows",
+        "pattern": "Use ChatAnthropic in LangChain chains and agents",
+        "example": "chain = prompt | ChatAnthropic(model='claude-3-5-sonnet-20241022') | parser"
+      },
+      "tool_binding": {
+        "description": "Bind tools to Claude for agentic loops",
+        "pattern": "llm_with_tools = claude.bind_tools(tools)",
+        "best_practices": [
+          "Provide clear tool docstrings",
+          "Use type hints in tool functions",
+          "Handle tool errors gracefully"
+        ]
+      },
+      "streaming": {
+        "description": "Stream Claude responses for better UX",
+        "pattern": "async for chunk in llm_with_tools.astream(messages)",
+        "use_when": [
+          "Interactive applications",
+          "Long responses",
+          "Real-time feedback"
+        ]
+      }
+    }
+  },
+  "model_variants": {
+    "claude_3_5_sonnet": {
+      "model_id": "claude-3-5-sonnet-20241022",
+      "best_for": "General purpose, balanced performance",
+      "context_window": "200K tokens",
+      "strengths": [
+        "Balanced capability and cost",
+        "Extended thinking",
+        "Tool use"
+      ]
+    },
+    "claude_3_opus": {
+      "model_id": "claude-3-opus-20240229",
+      "best_for": "Complex reasoning tasks",
+      "context_window": "200K tokens",
+      "strengths": [
+        "Deep reasoning",
+        "Complex problem solving"
+      ]
+    },
+    "claude_3_haiku": {
+      "model_id": "claude-3-haiku-20240307",
+      "best_for": "Fast, cost-effective tasks",
+      "context_window": "200K tokens",
+      "strengths": [
+        "Speed",
+        "Cost efficiency",
+        "Simple tasks"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use claude-3-5-sonnet for best balance of capability and cost",
+    "Implement proper tool error handling in agentic loops",
+    "Set appropriate max_iterations to prevent infinite loops",
+    "Use extended thinking for complex reasoning tasks",
+    "Enable streaming for better user experience",
+    "Implement safety checks and validation",
+    "Use structured outputs for reliable data extraction",
+    "Maintain conversation context with memory",
+    "Monitor token usage and costs",
+    "Test agentic loops with various inputs",
+    "Use lower temperature (0.3-0.5) for structured outputs",
+    "Provide clear, detailed tool docstrings",
+    "Handle tool execution errors and report to Claude",
+    "Use async/await for I/O operations",
+    "Implement rate limiting and abuse prevention"
+  ],
+  "anti_patterns": [
+    {
+      "name": "No iteration limit",
+      "problem": "Agentic loops can run indefinitely, causing runaway costs and blocking execution",
+      "solution": "Set max_iterations in all agentic loops, typically 5-15 depending on task complexity"
+    },
+    {
+      "name": "Ignoring tool errors",
+      "problem": "Tool failures break agent flow and prevent task completion",
+      "solution": "Handle and report tool errors to Claude with clear error messages, allowing the agent to retry or choose alternative approaches"
+    },
+    {
+      "name": "No safety checks",
+      "problem": "Unsafe or harmful content may be generated without validation",
+      "solution": "Implement safety validation checks before returning responses, filter unsafe keywords, and use Claude's built-in safety features"
+    },
+    {
+      "name": "High temperature for structured outputs",
+      "problem": "Inconsistent structured data extraction and parsing failures",
+      "solution": "Use temperature 0.3-0.5 for structured outputs to ensure consistent, deterministic results"
+    },
+    {
+      "name": "No memory for multi-turn",
+      "problem": "Context lost between conversation turns, requiring users to repeat information",
+      "solution": "Use RunnableWithMessageHistory or InMemoryChatMessageHistory to maintain conversation context across turns"
+    },
+    {
+      "name": "Synchronous tool calls",
+      "problem": "Blocks event loop in async contexts, reducing throughput and scalability",
+      "solution": "Use async/await (ainvoke, astream) for I/O-bound operations and tool calls in async code"
+    }
+  ],
+  "related_skills": [
+    "anthropic-patterns",
+    "langchain-usage",
+    "tool-usage",
+    "memory-management",
+    "streaming-realtime"
+  ]
+}

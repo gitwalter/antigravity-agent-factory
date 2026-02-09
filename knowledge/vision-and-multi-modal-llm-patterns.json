@@ -1,0 +1,179 @@
+{
+  "id": "vision-patterns",
+  "name": "Vision and Multi-Modal LLM Patterns",
+  "description": "Patterns for image analysis with multi-modal LLMs, object detection, and visual question answering",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "patterns": {
+    "multi_modal_llm": {
+      "gpt4v_analysis": {
+        "description": "Image analysis using GPT-4 Vision",
+        "code_example": "from langchain_openai import ChatOpenAI\nfrom langchain_core.messages import HumanMessage\nfrom PIL import Image\nimport base64\n\ndef analyze_image_gpt4v(image_path: str, prompt: str) -> str:\n    llm = ChatOpenAI(model='gpt-4-vision-preview', max_tokens=500)\n    \n    message = HumanMessage(\n        content=[\n            {'type': 'text', 'text': prompt},\n            {'type': 'image_url', 'image_url': image_path}\n        ]\n    )\n    \n    response = llm.invoke([message])\n    return response.content",
+        "best_practices": [
+          "Resize images to reasonable size (1024px max)",
+          "Use appropriate max_tokens",
+          "Provide clear, specific prompts",
+          "Handle API rate limits"
+        ]
+      },
+      "gemini_vision": {
+        "description": "Image analysis using Google Gemini Vision",
+        "code_example": "from langchain_google_genai import ChatGoogleGenerativeAI\nfrom langchain_core.messages import HumanMessage\nfrom PIL import Image\n\ndef analyze_image_gemini(image_path: str, prompt: str) -> str:\n    llm = ChatGoogleGenerativeAI(model='gemini-1.5-pro')\n    image = Image.open(image_path)\n    \n    message = HumanMessage(\n        content=[\n            {'type': 'text', 'text': prompt},\n            {'type': 'image_url', 'image_url': image}\n        ]\n    )\n    \n    response = llm.invoke([message])\n    return response.content",
+        "best_practices": [
+          "Gemini supports multiple images",
+          "Use gemini-1.5-pro for best quality",
+          "Preprocess images before sending",
+          "Handle multi-image contexts"
+        ]
+      },
+      "multi_image_comparison": {
+        "description": "Compare multiple images",
+        "code_example": "def compare_images(image_paths: list[str], prompt: str) -> str:\n    llm = ChatGoogleGenerativeAI(model='gemini-1.5-pro')\n    images = [Image.open(path) for path in image_paths]\n    \n    content = [{'type': 'text', 'text': prompt}]\n    for img in images:\n        content.append({'type': 'image_url', 'image_url': img})\n    \n    message = HumanMessage(content=content)\n    response = llm.invoke([message])\n    return response.content",
+        "use_when": [
+          "Comparing similar images",
+          "Finding differences",
+          "Analyzing sequences"
+        ]
+      }
+    },
+    "object_detection": {
+      "yolo_integration": {
+        "description": "Object detection with YOLO",
+        "code_example": "from ultralytics import YOLO\nimport cv2\nfrom PIL import Image\n\nclass VisionAgent:\n    def __init__(self, yolo_model_path: str = 'yolov8n.pt'):\n        self.detector = YOLO(yolo_model_path)\n    \n    def detect_objects(self, image_path: str, confidence: float = 0.5) -> list:\n        results = self.detector(image_path, conf=confidence)\n        detections = []\n        for result in results:\n            boxes = result.boxes\n            for box in boxes:\n                detections.append({\n                    'class': self.detector.names[int(box.cls[0])],\n                    'confidence': float(box.conf[0]),\n                    'bbox': box.xyxy[0].tolist()\n                })\n        return detections",
+        "best_practices": [
+          "Use appropriate confidence threshold",
+          "Filter detections by relevance",
+          "Combine with LLM for context",
+          "Cache model loading"
+        ]
+      },
+      "detection_with_llm": {
+        "description": "Combine object detection with LLM reasoning",
+        "code_example": "def analyze_with_context(image_path: str, question: str) -> str:\n    # Detect objects\n    detections = detect_objects(image_path)\n    objects_str = ', '.join([d['class'] for d in detections])\n    context = f'Detected objects: {objects_str}'\n    \n    # Analyze with LLM\n    image = Image.open(image_path)\n    message = HumanMessage(\n        content=[\n            {'type': 'text', 'text': f'{context}\\n\\nQuestion: {question}'},\n            {'type': 'image_url', 'image_url': image}\n        ]\n    )\n    \n    response = llm.invoke([message])\n    return response.content",
+        "best_practices": [
+          "Provide detection context to LLM",
+          "Filter irrelevant detections",
+          "Use detection confidence scores",
+          "Combine multiple detection models"
+        ]
+      }
+    },
+    "visual_question_answering": {
+      "basic_vqa": {
+        "description": "Answer questions about images",
+        "code_example": "class VisualQA:\n    def __init__(self, model: str = 'gemini-1.5-pro'):\n        self.llm = ChatGoogleGenerativeAI(model=model)\n    \n    def answer_question(self, image_path: str, question: str, context: str = None) -> dict:\n        image = Image.open(image_path)\n        prompt = question\n        if context:\n            prompt = f'Context: {context}\\n\\nQuestion: {question}'\n        \n        message = HumanMessage(\n            content=[\n                {'type': 'text', 'text': prompt},\n                {'type': 'image_url', 'image_url': image}\n            ]\n        )\n        \n        response = self.llm.invoke([message])\n        return {\n            'question': question,\n            'answer': response.content,\n            'image': image_path\n        }",
+        "best_practices": [
+          "Provide context when available",
+          "Ask specific questions",
+          "Handle multiple questions efficiently",
+          "Cache image descriptions"
+        ]
+      },
+      "multi_question_vqa": {
+        "description": "Answer multiple questions about an image",
+        "code_example": "def multi_question(image_path: str, questions: list[str]) -> list:\n    vqa = VisualQA()\n    results = []\n    image = Image.open(image_path)\n    \n    # Batch questions in single request\n    prompt = 'Answer these questions:\\n' + '\\n'.join([f'{i+1}. {q}' for i, q in enumerate(questions)])\n    \n    message = HumanMessage(\n        content=[\n            {'type': 'text', 'text': prompt},\n            {'type': 'image_url', 'image_url': image}\n        ]\n    )\n    \n    response = llm.invoke([message])\n    return response.content",
+        "best_practices": [
+          "Batch questions when possible",
+          "Structure output for parsing",
+          "Use structured output for multiple answers"
+        ]
+      }
+    },
+    "image_generation": {
+      "stable_diffusion": {
+        "description": "Generate images with Stable Diffusion",
+        "code_example": "from diffusers import StableDiffusionPipeline\nimport torch\n\nclass ImageGenerator:\n    def __init__(self, model_id: str = 'runwayml/stable-diffusion-v1-5'):\n        self.pipe = StableDiffusionPipeline.from_pretrained(\n            model_id,\n            torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32\n        )\n        if torch.cuda.is_available():\n            self.pipe = self.pipe.to('cuda')\n    \n    def generate(self, prompt: str, negative_prompt: str = '', num_images: int = 1) -> list:\n        images = self.pipe(\n            prompt=prompt,\n            negative_prompt=negative_prompt,\n            num_images_per_prompt=num_images,\n            num_inference_steps=50\n        ).images\n        return images",
+        "best_practices": [
+          "Use negative prompts for better control",
+          "Adjust inference steps for quality/speed",
+          "Use GPU when available",
+          "Cache model loading"
+        ]
+      },
+      "dalle_integration": {
+        "description": "Generate images with DALL-E",
+        "code_example": "from openai import OpenAI\n\ndef generate_dalle(prompt: str, api_key: str, size: str = '1024x1024') -> str:\n    client = OpenAI(api_key=api_key)\n    response = client.images.generate(\n        model='dall-e-3',\n        prompt=prompt,\n        size=size,\n        quality='standard',\n        n=1\n    )\n    return response.data[0].url",
+        "best_practices": [
+          "Use appropriate image sizes",
+          "Handle API rate limits",
+          "Cache generated images",
+          "Validate prompts"
+        ]
+      }
+    },
+    "multi_modal_rag": {
+      "image_rag": {
+        "description": "RAG system with image support",
+        "code_example": "class MultiModalRAG:\n    def __init__(self):\n        self.llm = ChatGoogleGenerativeAI(model='gemini-1.5-pro')\n        self.vectorstore = None\n    \n    def add_image_document(self, image_path: str, description: str = None, metadata: dict = None):\n        if not description:\n            image = Image.open(image_path)\n            message = HumanMessage(\n                content=[\n                    {'type': 'text', 'text': 'Describe this image in detail.'},\n                    {'type': 'image_url', 'image_url': image}\n                ]\n            )\n            description = self.llm.invoke([message]).content\n        \n        # Store description in vector store\n        # ...\n    \n    def retrieve_and_answer(self, query: str, image_path: str = None) -> str:\n        # Retrieve text context\n        # ...\n        \n        content = [{'type': 'text', 'text': prompt}]\n        if image_path:\n            image = Image.open(image_path)\n            content.append({'type': 'image_url', 'image_url': image})\n        \n        message = HumanMessage(content=content)\n        response = self.llm.invoke([message])\n        return response.content",
+        "best_practices": [
+          "Generate descriptions for images",
+          "Store descriptions in vector DB",
+          "Retrieve relevant image descriptions",
+          "Combine text and image context"
+        ]
+      }
+    }
+  },
+  "best_practices": [
+    "Resize images to reasonable size (1024px max width/height) before sending to vision APIs to reduce costs, improve latency, and stay within API limits while maintaining quality",
+    "Preprocess images before analysis by normalizing pixel values, converting formats (RGB for most models), and ensuring proper aspect ratios for best model performance",
+    "Combine object detection (YOLO, Detectron2) with LLM reasoning by providing detection results as context to vision LLMs for more accurate and contextual analysis",
+    "Cache image descriptions and analysis results for RAG systems using image hashes as keys to avoid redundant API calls and reduce costs",
+    "Use negative prompts in image generation (Stable Diffusion, DALL-E) to exclude unwanted elements and improve control over generated content",
+    "Handle multiple images in context when comparing or analyzing sequences - Gemini 1.5 Pro supports up to 20 images, GPT-4V supports multiple images",
+    "Specify image formats (JPEG, PNG) and sizes (1024x1024, 512x512) according to API requirements - most vision APIs prefer JPEG for smaller file sizes",
+    "Implement error handling for API rate limits with exponential backoff retry logic and proper error messages to gracefully handle quota exhaustion",
+    "Use structured output (Pydantic models, JSON Schema) for complex extractions to ensure consistent, validated results from vision LLM responses",
+    "Monitor API costs and usage by tracking image count, resolution, and model usage - vision APIs can be expensive, especially at high volumes",
+    "Choose appropriate vision models - GPT-4V for general analysis, Gemini 1.5 Pro for multi-image and long context, YOLO for fast object detection",
+    "Validate image files before processing by checking format, size, and corruption to prevent API errors and wasted credits"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Sending full-resolution images",
+      "problem": "High API costs, slow processing",
+      "fix": "Resize to reasonable size (1024px max) before sending"
+    },
+    {
+      "name": "No image preprocessing",
+      "problem": "Poor results, API errors",
+      "fix": "Normalize, resize, and validate images before analysis"
+    },
+    {
+      "name": "Ignoring API costs",
+      "problem": "Unexpected expenses",
+      "fix": "Cache results, use smaller models when possible, monitor usage"
+    },
+    {
+      "name": "Single image context",
+      "problem": "Misses comparison opportunities",
+      "fix": "Use multi-image when comparing or analyzing sequences"
+    },
+    {
+      "name": "No error handling",
+      "problem": "Crashes on API failures",
+      "fix": "Handle API failures gracefully, implement retries"
+    },
+    {
+      "name": "Hardcoded prompts",
+      "problem": "Not flexible, poor results",
+      "fix": "Make prompts configurable, use prompt templates"
+    },
+    {
+      "name": "No object detection context",
+      "problem": "Misses structured information",
+      "fix": "Combine detection with LLM analysis for better context"
+    },
+    {
+      "name": "Ignoring model capabilities",
+      "problem": "Using wrong model for task",
+      "fix": "Choose appropriate model: GPT-4V for general, Gemini for multi-image, YOLO for detection"
+    }
+  ],
+  "related_skills": [
+    "vision-agents",
+    "ocr-processing",
+    "rag-patterns",
+    "advanced-retrieval"
+  ]
+}

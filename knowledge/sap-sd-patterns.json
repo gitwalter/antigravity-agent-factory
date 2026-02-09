@@ -1,0 +1,88 @@
+{
+  "id": "sap-sd-patterns",
+  "name": "SAP SD Patterns",
+  "description": "Sales & Distribution document flow, tables, billing. S/4 on-prem and R/3/ECC.",
+  "version": "1.0.0",
+  "category": "patterns",
+  "patterns": {
+    "sales_document": {
+      "description": "Sales document header and items",
+      "coreTables": {
+        "VBAK": {
+          "purpose": "Sales document header",
+          "keyFields": [
+            "MANDT",
+            "VBELN"
+          ]
+        },
+        "VBAP": {
+          "purpose": "Sales document item",
+          "keyFields": [
+            "MANDT",
+            "VBELN",
+            "POSNR"
+          ]
+        },
+        "VBUK": {
+          "purpose": "Sales document status"
+        },
+        "VBEP": {
+          "purpose": "Schedule lines"
+        }
+      }
+    },
+    "billing": {
+      "description": "Billing document header and items",
+      "coreTables": {
+        "VBRK": {
+          "purpose": "Billing header"
+        },
+        "VBRP": {
+          "purpose": "Billing item"
+        }
+      }
+    },
+    "document_flow": {
+      "description": "SD document flow: Sales Order \u2192 Delivery \u2192 Billing",
+      "documentFlow": {
+        "VA": "Sales order",
+        "VL": "Delivery",
+        "VF": "Billing"
+      }
+    },
+    "integration": {
+      "description": "Integration with FI for billing and revenue",
+      "integration": [
+        "FI (billing, revenue)"
+      ]
+    }
+  },
+  "best_practices": [
+    "Follow document flow: Sales Order (VA) \u2192 Delivery (VL) \u2192 Billing (VF)",
+    "Use VBAK/VBAP for sales orders",
+    "Use VBRK/VBRP for billing documents",
+    "Verify table/field via SAP Help MCP",
+    "Check document status in VBUK",
+    "Understand integration with FI for revenue recognition"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Not following document flow",
+      "problem": "Cannot create delivery or billing without sales order",
+      "fix": "Follow complete flow: Sales Order \u2192 Delivery \u2192 Billing"
+    },
+    {
+      "name": "Ignoring document status",
+      "problem": "Processing incomplete documents",
+      "fix": "Check VBUK status fields before processing"
+    },
+    {
+      "name": "Not linking billing to sales order",
+      "problem": "Missing revenue recognition",
+      "fix": "Ensure billing documents (VBRK/VBRP) link to sales orders (VBAK/VBAP)"
+    }
+  ],
+  "related_skills": [
+    "s4-process-guide"
+  ]
+}

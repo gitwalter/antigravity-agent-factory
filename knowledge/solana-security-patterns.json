@@ -1,0 +1,285 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "solana-security",
+  "name": "Solana Security Patterns",
+  "title": "Solana Security Patterns",
+  "description": "Security vulnerabilities, attack vectors, and mitigations for Solana programs",
+  "version": "1.0.0",
+  "category": "security",
+  "sources": [
+    "https://www.anchor-lang.com/docs/references/security-exploits",
+    "https://github.com/coral-xyz/sealevel-attacks",
+    "https://owasp.org/www-project-solana-programs-top-10/",
+    "https://solana.com/docs/toolkit/test-suite/security-scanner"
+  ],
+  "axiomAlignment": {
+    "A4_non_harm": "All patterns focus on preventing financial loss and protecting users",
+    "A1_verifiability": "Include testing strategies to verify security measures"
+  },
+  "vulnerability_categories": {
+    "account_validation": {
+      "missing_owner_check": {
+        "severity": "Critical",
+        "description": "Trusting account data without verifying the program that owns it",
+        "attack_vector": "Attacker creates account with same data layout but different owner",
+        "vulnerable_code": "// VULNERABLE: No owner check\nlet account_data = Account::try_from_slice(&account.data.borrow())?;\n// Using account_data without verifying owner...",
+        "secure_code": "// SECURE: Using Anchor's Account type\n#[derive(Accounts)]\npub struct Secure<'info> {\n    // Anchor verifies owner == program_id\n    pub my_account: Account<'info, MyData>,\n}",
+        "anchor_protection": "Account<'info, T> automatically verifies owner matches program ID"
+      },
+      "missing_signer_check": {
+        "severity": "Critical",
+        "description": "Not verifying that required accounts have signed the transaction",
+        "attack_vector": "Unauthorized user executes privileged operations",
+        "vulnerable_code": "// VULNERABLE: authority not checked as signer\npub fn withdraw(ctx: Context<Withdraw>) -> Result<()> {\n    // Anyone can call this!\n}",
+        "secure_code": "#[derive(Accounts)]\npub struct Withdraw<'info> {\n    #[account(mut, has_one = authority)]\n    pub vault: Account<'info, Vault>,\n    pub authority: Signer<'info>, // MUST be signer\n}",
+        "anchor_protection": "Signer<'info> type enforces is_signer = true"
+      },
+      "account_type_confusion": {
+        "severity": "High",
+        "description": "Accepting wrong account type due to missing discriminator check",
+        "attack_vector": "Pass account of type A where type B is expected",
+        "anchor_protection": "Anchor adds 8-byte discriminator to all accounts, automatically verified"
+      },
+      "account_data_matching": {
+        "severity": "High",
+        "description": "Not verifying relationships between accounts",
+        "example": "Token account doesn't belong to expected mint",
+        "secure_pattern": "#[account(\n    constraint = token_account.mint == mint.key(),\n    constraint = token_account.owner == owner.key()\n)]\npub token_account: Account<'info, TokenAccount>,"
+      }
+    },
+    "pda_vulnerabilities": {
+      "seed_collision": {
+        "severity": "High",
+        "description": "Multiple users derive same PDA due to insufficient seeds",
+        "vulnerable_code": "// VULNERABLE: No user-specific seed\nseeds = [b\"global_account\"]",
+        "secure_code": "// SECURE: Include user pubkey in seeds\nseeds = [b\"user_account\", user.key().as_ref()]",
+        "best_practice": "Always include unique identifiers (user pubkey, mint, etc.) in seeds"
+      },
+      "bump_manipulation": {
+        "severity": "Medium",
+        "description": "Using provided bump instead of canonical bump",
+        "vulnerable_code": "// VULNERABLE: Accepting bump as instruction argument\npub fn init(ctx: Context<Init>, bump: u8) -> Result<()> {\n    // Attacker could provide non-canonical bump\n}",
+        "secure_code": "// SECURE: Use Anchor's bump derivation\n#[account(\n    seeds = [b\"account\", user.key().as_ref()],\n    bump // Anchor derives canonical bump\n)]\npub pda: Account<'info, MyAccount>,\n\n// Store in account\naccount.bump = ctx.bumps.pda;",
+        "anchor_protection": "Use bump constraint to auto-derive, access via ctx.bumps"
+      },
+      "missing_pda_verification": {
+        "severity": "Critical",
+        "description": "Not verifying PDA was derived correctly",
+        "attack_vector": "Attacker passes regular keypair account instead of PDA",
+        "anchor_protection": "seeds constraint verifies PDA derivation"
+      }
+    },
+    "arithmetic_vulnerabilities": {
+      "integer_overflow": {
+        "severity": "High",
+        "description": "Arithmetic operations exceeding type bounds",
+        "vulnerable_code": "// In release mode without overflow checks\nlet new_balance = balance + amount; // Could wrap!",
+        "secure_code": "let new_balance = balance\n    .checked_add(amount)\n    .ok_or(ErrorCode::MathOverflow)?;",
+        "best_practice": "Always use checked_add, checked_sub, checked_mul, checked_div"
+      },
+      "precision_loss": {
+        "severity": "Medium",
+        "description": "Loss of precision in division or conversion",
+        "example": "fee = amount * rate / 10000 loses precision if amount * rate is small",
+        "mitigation": "Multiply before dividing, use sufficient precision, consider fixed-point libraries"
+      },
+      "rounding_errors": {
+        "severity": "Medium",
+        "description": "Accumulating rounding errors benefiting attacker",
+        "mitigation": "Round in favor of the protocol, not the user"
+      }
+    },
+    "cpi_vulnerabilities": {
+      "arbitrary_cpi": {
+        "severity": "Critical",
+        "description": "Invoking arbitrary program without verification",
+        "vulnerable_code": "// VULNERABLE: program_id from untrusted source\ninvoke(&instruction, accounts)?;",
+        "secure_code": "// SECURE: Verify program ID\nrequire_keys_eq!(\n    ctx.accounts.token_program.key(),\n    token::ID,\n    ErrorCode::InvalidProgram\n);",
+        "anchor_protection": "Program<'info, T> verifies program ID"
+      },
+      "cpi_reentrancy": {
+        "severity": "High",
+        "description": "Malicious program callback during CPI",
+        "attack_vector": "Called program invokes back into caller before state is finalized",
+        "mitigation": "Update state before CPI, use reentrancy guards",
+        "pattern": "// Update state BEFORE CPI\naccount.balance = 0;\n// Then invoke\ninvoke(&transfer_instruction, accounts)?;"
+      },
+      "remaining_accounts_injection": {
+        "severity": "High",
+        "description": "Not validating accounts in remaining_accounts",
+        "mitigation": "Validate all remaining_accounts if used for CPI"
+      }
+    },
+    "initialization_vulnerabilities": {
+      "reinitialization": {
+        "severity": "Critical",
+        "description": "Account can be initialized multiple times, resetting state",
+        "vulnerable_code": "// VULNERABLE: No initialization check\npub fn initialize(ctx: Context<Init>, data: u64) -> Result<()> {\n    ctx.accounts.my_account.data = data;\n    Ok(())\n}",
+        "secure_code": "// SECURE: Anchor's init constraint\n#[account(init, payer = payer, space = 8 + MyAccount::INIT_SPACE)]\npub my_account: Account<'info, MyAccount>,\n\n// OR manual check\nrequire!(!account.is_initialized, ErrorCode::AlreadyInitialized);",
+        "anchor_protection": "init constraint creates fresh account, fails if exists"
+      },
+      "init_if_needed_risks": {
+        "severity": "Medium",
+        "description": "init_if_needed can allow unexpected reinitialization",
+        "mitigation": "Only use when truly needed, add is_initialized checks"
+      }
+    },
+    "account_closing_vulnerabilities": {
+      "lamport_drain": {
+        "severity": "Medium",
+        "description": "Account closed but not zeroed, allowing revival attacks",
+        "secure_pattern": "// Anchor's close constraint handles this correctly\n#[account(mut, close = receiver)]\npub closing_account: Account<'info, MyAccount>,",
+        "anchor_protection": "close constraint zeros data and transfers lamports"
+      },
+      "same_transaction_revival": {
+        "severity": "Medium",
+        "description": "Account closed and recreated in same transaction",
+        "mitigation": "Add guards or use separate transactions"
+      }
+    },
+    "signature_vulnerabilities": {
+      "missing_nonce": {
+        "severity": "High",
+        "description": "Signed message can be replayed",
+        "secure_pattern": "Include nonce (sequence number) in signed data, increment after use"
+      },
+      "missing_chain_id": {
+        "severity": "Medium",
+        "description": "Signature valid across different clusters/chains",
+        "secure_pattern": "Include cluster/chain identifier in signed data"
+      }
+    }
+  },
+  "security_tools": {
+    "static_analysis": [
+      {
+        "name": "Radar",
+        "description": "Static analyzer for Anchor programs",
+        "usage": "radar .",
+        "detects": [
+          "Common vulnerabilities",
+          "Missing checks"
+        ]
+      },
+      {
+        "name": "Xray",
+        "description": "Security scanner for Solana/Rust",
+        "usage": "Part of Solana toolkit",
+        "detects": [
+          "Account validation issues",
+          "Arithmetic problems"
+        ]
+      }
+    ],
+    "testing": [
+      {
+        "name": "Trident",
+        "description": "Fuzzer for Anchor programs",
+        "purpose": "Find edge cases and vulnerabilities through fuzzing"
+      },
+      {
+        "name": "LiteSVM / Mollusk",
+        "description": "Fast local testing frameworks",
+        "purpose": "Unit and integration testing"
+      }
+    ],
+    "auditing": [
+      {
+        "name": "Sealevel Attacks Repo",
+        "url": "https://github.com/coral-xyz/sealevel-attacks",
+        "description": "Reference implementations of common attacks and fixes"
+      }
+    ]
+  },
+  "audit_checklist": {
+    "critical": [
+      "All accounts have owner verification (use Anchor's Account<T>)",
+      "All authority accounts use Signer<'info>",
+      "PDAs verified with seeds constraint",
+      "No arbitrary CPI (verify program IDs)",
+      "Initialization protected (init or is_initialized check)"
+    ],
+    "high": [
+      "All arithmetic uses checked operations",
+      "Account relationships validated (has_one, constraints)",
+      "Bump seeds stored and verified",
+      "No reinitialization possible",
+      "CPI accounts validated"
+    ],
+    "medium": [
+      "Events emitted for state changes",
+      "Proper error messages with require!",
+      "Account closing handled correctly",
+      "Remaining accounts validated if used",
+      "Rent exemption maintained"
+    ],
+    "low": [
+      "Code follows Anchor conventions",
+      "Comprehensive test coverage",
+      "Documentation for all instructions",
+      "/// CHECK: comments for UncheckedAccount"
+    ]
+  },
+  "anchor_security_features": {
+    "automatic_protections": [
+      "Account discriminator validation",
+      "Program ownership verification",
+      "Signer verification for Signer<'info>",
+      "PDA derivation with seeds constraint",
+      "Account initialization with init",
+      "Account closing with close"
+    ],
+    "constraints_for_security": {
+      "has_one": "Verify account field matches pubkey",
+      "constraint": "Custom validation logic",
+      "address": "Verify specific address",
+      "owner": "Verify owning program",
+      "seeds/bump": "Verify PDA derivation"
+    }
+  },
+  "best_practices": [
+    "Use Anchor's typed accounts instead of AccountInfo",
+    "Store bump in account data for efficient re-derivation",
+    "Use checked arithmetic everywhere",
+    "Update state before external calls (CEI pattern)",
+    "Validate all account relationships explicitly",
+    "Emit events for all state changes",
+    "Write tests for both success and failure cases",
+    "Get security audits before mainnet deployment",
+    "Use established libraries (SPL, OpenBook patterns)",
+    "Follow principle of least privilege for authorities"
+  ],
+  "patterns": {
+    "general": {
+      "description": "Security vulnerabilities, attack vectors, and mitigations for Solana programs",
+      "usage": "See detailed sections below"
+    }
+  },
+  "anti_patterns": [
+    {
+      "name": "Missing owner verification on accounts",
+      "problem": "Trusting account data without verifying owner allows attackers to pass fake accounts with malicious data, bypassing security checks",
+      "solution": "Always use Anchor's Account<'info, T> type which automatically verifies owner matches program ID, never trust AccountInfo without verification"
+    },
+    {
+      "name": "Missing signer check on authority accounts",
+      "problem": "Not verifying that authority accounts have signed the transaction allows unauthorized users to execute privileged operations",
+      "solution": "Use Anchor's Signer<'info> type or manually verify account.is_signer before using account for authorization checks"
+    },
+    {
+      "name": "PDA seed collision from insufficient seeds",
+      "problem": "Using predictable or non-unique PDA seeds allows multiple users to derive the same PDA, causing conflicts and potential fund loss",
+      "solution": "Always include unique identifiers like user pubkey in PDA seeds: seeds = [b\"user_account\", user.key().as_ref()]"
+    },
+    {
+      "name": "Arbitrary cross-program invocation without validation",
+      "problem": "Invoking programs without verifying program_id allows attackers to substitute malicious programs, leading to fund loss",
+      "solution": "Verify program_id matches expected value before CPI, use Anchor's Program<'info, T> type for type-safe program references"
+    },
+    {
+      "name": "Integer overflow from unchecked arithmetic",
+      "problem": "Using unchecked arithmetic operations can cause integer overflow, leading to incorrect calculations and potential fund loss",
+      "solution": "Always use checked arithmetic operations (checked_add, checked_sub, checked_mul, checked_div) and handle overflow errors appropriately"
+    }
+  ]
+}

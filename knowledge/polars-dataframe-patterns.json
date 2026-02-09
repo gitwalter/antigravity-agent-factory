@@ -1,0 +1,291 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "polars-patterns",
+  "name": "Polars DataFrame Patterns",
+  "title": "Polars Patterns",
+  "description": "Patterns and best practices for Polars - fast DataFrame library with lazy evaluation, expressions, and high-performance operations",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Type-safe operations enable compile-time verification",
+    "A3_transparency": "Explicit lazy evaluation makes query plans transparent",
+    "A4_adaptability": "Modular expression API supports easy refactoring"
+  },
+  "core_concepts": {
+    "lazy_evaluation": {
+      "description": "Polars uses lazy evaluation for optimization",
+      "features": [
+        "Query planning before execution",
+        "Automatic optimization",
+        "Predicate pushdown",
+        "Projection pushdown"
+      ]
+    },
+    "expressions": {
+      "description": "Expression-based API",
+      "features": [
+        "Chainable operations",
+        "Type-safe operations",
+        "Parallel execution",
+        "Vectorized operations"
+      ]
+    },
+    "performance": {
+      "description": "High-performance features",
+      "features": [
+        "Rust-based core",
+        "Parallel execution",
+        "Memory efficiency",
+        "Streaming for large datasets"
+      ]
+    }
+  },
+  "patterns": {
+    "dataframe_creation": {
+      "description": "Create DataFrames from various sources",
+      "use_when": "Loading data into Polars",
+      "code_example": "import polars as pl\n\n# From dictionary\n df = pl.DataFrame({\n     'name': ['Alice', 'Bob', 'Charlie'],\n     'age': [25, 30, 35],\n     'city': ['New York', 'London', 'Tokyo']\n })\n\n# From list of dictionaries\n data = [\n     {'name': 'Alice', 'age': 25},\n     {'name': 'Bob', 'age': 30}\n ]\n df = pl.DataFrame(data)\n\n# From CSV\n df = pl.read_csv('data.csv')\n\n# From Parquet\n df = pl.read_parquet('data.parquet')\n\n# From Arrow\n import pyarrow as pa\n arrow_table = pa.table({'col': [1, 2, 3]})\n df = pl.from_arrow(arrow_table)\n\n# From pandas (if needed)\n import pandas as pd\n pandas_df = pd.DataFrame({'col': [1, 2, 3]})\n df = pl.from_pandas(pandas_df)\n\n# With schema specification\n df = pl.DataFrame(\n     {'col1': [1, 2, 3], 'col2': ['a', 'b', 'c']},\n     schema={'col1': pl.Int64, 'col2': pl.Utf8}\n )",
+      "best_practices": [
+        "Use read_csv/read_parquet for file I/O",
+        "Specify schemas when possible",
+        "Prefer Parquet for columnar data",
+        "Use from_arrow for Arrow integration"
+      ]
+    },
+    "select_expressions": {
+      "description": "Select and transform columns with expressions",
+      "use_when": "Selecting or transforming columns",
+      "code_example": "import polars as pl\n\n df = pl.DataFrame({\n     'a': [1, 2, 3, 4, 5],\n     'b': [10, 20, 30, 40, 50],\n     'c': ['x', 'y', 'z', 'x', 'y']\n })\n\n# Select columns\n df.select(['a', 'b'])\n\n# Select with expressions\n df.select([\n     pl.col('a'),\n     pl.col('b') * 2,\n     (pl.col('a') + pl.col('b')).alias('sum')\n ])\n\n# Select all except some columns\n df.select(pl.exclude('c'))\n\n# Select by data type\n df.select(pl.col(pl.Int64))\n\n# Select with regex\n df.select(pl.col('^a|b$'))\n\n# Select and rename\n df.select([\n     pl.col('a').alias('column_a'),\n     pl.col('b').alias('column_b')\n ])\n\n# Select with conditional logic\n df.select([\n     pl.when(pl.col('a') > 2)\n     .then(pl.col('a') * 2)\n     .otherwise(pl.col('a'))\n     .alias('doubled_if_gt_2')\n ])",
+      "best_practices": [
+        "Use pl.col() for column references",
+        "Chain expressions for readability",
+        "Use alias() for renamed columns",
+        "Leverage expression functions"
+      ]
+    },
+    "filter_expressions": {
+      "description": "Filter rows with expressions",
+      "use_when": "Filtering data based on conditions",
+      "code_example": "import polars as pl\n\n df = pl.DataFrame({\n     'name': ['Alice', 'Bob', 'Charlie', 'David'],\n     'age': [25, 30, 35, 40],\n     'score': [85, 90, 75, 95]\n })\n\n# Simple filter\n df.filter(pl.col('age') > 30)\n\n# Multiple conditions (AND)\n df.filter(\n     (pl.col('age') > 30) & (pl.col('score') > 80)\n )\n\n# Multiple conditions (OR)\n df.filter(\n     (pl.col('age') < 25) | (pl.col('age') > 35)\n )\n\n# Filter with is_in\n df.filter(pl.col('name').is_in(['Alice', 'Bob']))\n\n# Filter with is_null/is_not_null\n df.filter(pl.col('age').is_not_null())\n\n# Filter with string operations\n df.filter(pl.col('name').str.starts_with('A'))\n\n# Filter with between\n df.filter(pl.col('age').is_between(25, 35))\n\n# Complex filter\n df.filter(\n     (pl.col('age') > 25) &\n     (pl.col('score') > 80) &\n     (pl.col('name').str.len_chars() > 3)\n )",
+      "best_practices": [
+        "Use & for AND, | for OR",
+        "Parenthesize complex conditions",
+        "Use expression methods for readability",
+        "Combine filter with select for efficiency"
+      ]
+    },
+    "with_columns_pattern": {
+      "description": "Add or modify columns with with_columns",
+      "use_when": "Adding computed columns or modifying existing ones",
+      "code_example": "import polars as pl\n\n df = pl.DataFrame({\n     'x': [1, 2, 3, 4],\n     'y': [10, 20, 30, 40]\n })\n\n# Add new column\n df.with_columns([\n     (pl.col('x') + pl.col('y')).alias('sum')\n ])\n\n# Modify existing column\n df.with_columns([\n     (pl.col('x') * 2).alias('x')  # Overwrites 'x'\n ])\n\n# Add multiple columns\n df.with_columns([\n     (pl.col('x') + pl.col('y')).alias('sum'),\n     (pl.col('x') * pl.col('y')).alias('product'),\n     (pl.col('x') ** 2).alias('x_squared')\n ])\n\n# Conditional column\n df.with_columns([\n     pl.when(pl.col('x') > 2)\n     .then(pl.lit('high'))\n     .otherwise(pl.lit('low'))\n     .alias('category')\n ])\n\n# String operations\n df.with_columns([\n     pl.col('name').str.to_uppercase().alias('name_upper'),\n     pl.col('name').str.len_chars().alias('name_length')\n ])\n\n# Date operations\n df.with_columns([\n     pl.col('date').dt.year().alias('year'),\n     pl.col('date').dt.month().alias('month')\n ])",
+      "best_practices": [
+        "Use with_columns for adding/modifying columns",
+        "Chain multiple with_columns calls",
+        "Use alias() for new column names",
+        "Overwrite columns by using same name in alias"
+      ]
+    },
+    "group_by_patterns": {
+      "description": "Group and aggregate data",
+      "use_when": "Performing aggregations by groups",
+      "code_example": "import polars as pl\n\n df = pl.DataFrame({\n     'category': ['A', 'A', 'B', 'B', 'A'],\n     'value': [10, 20, 30, 40, 50],\n     'score': [1, 2, 3, 4, 5]\n })\n\n# Basic group by\n df.group_by('category').agg([\n     pl.col('value').sum(),\n     pl.col('value').mean(),\n     pl.col('value').count()\n ])\n\n# Multiple aggregations\n df.group_by('category').agg([\n     pl.col('value').sum().alias('total'),\n     pl.col('value').mean().alias('average'),\n     pl.col('value').min().alias('minimum'),\n     pl.col('value').max().alias('maximum'),\n     pl.col('value').std().alias('std_dev')\n ])\n\n# Group by multiple columns\n df.group_by(['category', 'subcategory']).agg([\n     pl.col('value').sum()\n ])\n\n# Group by with expressions\n df.group_by('category').agg([\n     (pl.col('value') * pl.col('score')).sum().alias('weighted_sum')\n ])\n\n# Group by with filter\n df.group_by('category').agg([\n     pl.col('value').filter(pl.col('value') > 20).sum()\n ])\n\n# Group by with multiple functions\n df.group_by('category').agg([\n     pl.col('value').sum(),\n     pl.col('score').mean(),\n     pl.col('value').first(),\n     pl.col('value').last()\n ])\n\n# Maintain group order\n df.group_by('category', maintain_order=True).agg([\n     pl.col('value').sum()\n ])",
+      "best_practices": [
+        "Use maintain_order=True if order matters",
+        "Combine multiple aggregations in one call",
+        "Use alias() for clear column names",
+        "Filter before grouping when possible"
+      ]
+    },
+    "window_functions": {
+      "description": "Use window functions with over()",
+      "use_when": "Computing aggregations over windows of rows",
+      "code_example": "import polars as pl\n\n df = pl.DataFrame({\n     'category': ['A', 'A', 'B', 'B', 'A'],\n     'value': [10, 20, 30, 40, 50],\n     'date': ['2024-01-01', '2024-01-02', '2024-01-01', '2024-01-02', '2024-01-03']\n })\n\n# Window function over category\n df.with_columns([\n     pl.col('value').sum().over('category').alias('category_sum'),\n     pl.col('value').mean().over('category').alias('category_mean')\n ])\n\n# Multiple window functions\n df.with_columns([\n     pl.col('value').sum().over('category').alias('sum'),\n     pl.col('value').rank().over('category').alias('rank'),\n     pl.col('value').first().over('category').alias('first_value')\n ])\n\n# Window with ordering\n df.with_columns([\n     pl.col('value')\n     .cumsum()\n     .over('category', order_by='date')\n     .alias('cumulative_sum')\n ])\n\n# Row number over partition\n df.with_columns([\n     pl.int_range(pl.len()).over('category').alias('row_number')\n ])\n\n# Lag and lead\n df.with_columns([\n     pl.col('value').shift(1).over('category').alias('previous_value'),\n     pl.col('value').shift(-1).over('category').alias('next_value')\n ])\n\n# Percentile over window\n df.with_columns([\n     pl.col('value').quantile(0.5).over('category').alias('median')\n ])\n\n# Window with multiple partitions\n df.with_columns([\n     pl.col('value').sum().over(['category', 'subcategory']).alias('group_sum')\n ])",
+      "best_practices": [
+        "Use over() for window functions",
+        "Specify order_by for ordered windows",
+        "Combine with partition_by for groups",
+        "Use for running totals and rankings"
+      ]
+    },
+    "lazy_evaluation_basics": {
+      "description": "Use lazy evaluation for optimization",
+      "use_when": "Working with large datasets or complex queries",
+      "code_example": "import polars as pl\n\n# Create lazy frame\n lazy_df = pl.scan_csv('large_file.csv')\n\n# Build query plan (not executed yet)\n query = (\n     lazy_df\n     .filter(pl.col('age') > 25)\n     .select(['name', 'age', 'score'])\n     .group_by('category')\n     .agg([pl.col('score').mean()])\n )\n\n# Execute query\n result = query.collect()\n\n# View query plan\n print(query.explain())\n\n# Optimize query plan\n optimized = query.optimize()\n print(optimized.explain())\n\n# Lazy operations are composable\n lazy_df1 = pl.scan_csv('file1.csv')\n lazy_df2 = pl.scan_csv('file2.csv')\n\n combined = (\n     pl.concat([lazy_df1, lazy_df2])\n     .filter(pl.col('value') > 0)\n     .collect()\n )",
+      "best_practices": [
+        "Use scan_* for lazy loading",
+        "Build query before collecting",
+        "Use explain() to understand plans",
+        "Let Polars optimize automatically"
+      ]
+    },
+    "lazy_scan_patterns": {
+      "description": "Scan files lazily",
+      "use_when": "Loading large files without loading into memory",
+      "code_example": "import polars as pl\n\n# Scan CSV lazily\n lazy_df = pl.scan_csv(\n     'large_file.csv',\n     has_header=True,\n     separator=',',\n     infer_schema_length=10000\n )\n\n# Scan Parquet lazily\n lazy_df = pl.scan_parquet('large_file.parquet')\n\n# Scan with schema\n schema = {\n     'id': pl.Int64,\n     'name': pl.Utf8,\n     'value': pl.Float64\n }\n lazy_df = pl.scan_csv('file.csv', schema=schema)\n\n# Scan with predicate pushdown\n lazy_df = pl.scan_parquet('data.parquet')\n filtered = lazy_df.filter(pl.col('date') > '2024-01-01')\n\n# Scan multiple files\n files = ['file1.parquet', 'file2.parquet', 'file3.parquet']\n lazy_dfs = [pl.scan_parquet(f) for f in files]\n combined = pl.concat(lazy_dfs)\n\n# Scan with projection pushdown\n lazy_df = pl.scan_csv('large_file.csv')\n projected = lazy_df.select(['col1', 'col2'])  # Only reads these columns\n\n# Collect when ready\n result = projected.collect()",
+      "best_practices": [
+        "Use scan_* for large files",
+        "Specify schema when known",
+        "Let predicate pushdown filter early",
+        "Use projection pushdown to read fewer columns"
+      ]
+    },
+    "explain_query_plan": {
+      "description": "Understand and optimize query plans",
+      "use_when": "Debugging performance or understanding query execution",
+      "code_example": "import polars as pl\n\n lazy_df = pl.scan_csv('data.csv')\n\n query = (\n     lazy_df\n     .filter(pl.col('age') > 25)\n     .select(['name', 'age'])\n     .group_by('category')\n     .agg([pl.col('age').mean()])\n )\n\n# View query plan\n print(query.explain())\n\n# Optimized plan\n optimized = query.optimize()\n print(optimized.explain())\n\n# Compare plans\n print('Original plan:')\n print(query.explain())\n print('\\nOptimized plan:')\n print(optimized.explain())\n\n# Plan shows:\n# - Filter pushdown\n# - Projection pushdown\n# - Aggregation optimization\n# - Join strategies",
+      "best_practices": [
+        "Use explain() to understand queries",
+        "Check for predicate pushdown",
+        "Verify projection pushdown",
+        "Compare before/after optimization"
+      ]
+    },
+    "string_operations": {
+      "description": "String manipulation with str namespace",
+      "use_when": "Working with string columns",
+      "code_example": "import polars as pl\n\n df = pl.DataFrame({\n     'name': ['Alice Smith', 'Bob Jones', 'Charlie Brown'],\n     'email': ['alice@example.com', 'bob@test.com', 'charlie@demo.com']\n })\n\n# String transformations\n df.with_columns([\n     pl.col('name').str.to_uppercase().alias('name_upper'),\n     pl.col('name').str.to_lowercase().alias('name_lower'),\n     pl.col('name').str.to_titlecase().alias('name_title')\n ])\n\n# String slicing\n df.with_columns([\n     pl.col('name').str.slice(0, 5).alias('first_5_chars'),\n     pl.col('name').str.slice(-5).alias('last_5_chars')\n ])\n\n# String contains\n df.filter(pl.col('name').str.contains('Smith'))\n\n# String starts/ends with\n df.filter(pl.col('email').str.ends_with('.com'))\n\n# String replace\n df.with_columns([\n     pl.col('name').str.replace(' ', '_').alias('name_underscore')\n ])\n\n# String split\n df.with_columns([\n     pl.col('name').str.split(' ').alias('name_parts')\n ])\n\n# Extract with regex\n df.with_columns([\n     pl.col('email').str.extract(r'@(.+)', 1).alias('domain')\n ])\n\n# String length\n df.with_columns([\n     pl.col('name').str.len_chars().alias('name_length')\n ])",
+      "best_practices": [
+        "Use str namespace for string operations",
+        "Chain string operations",
+        "Use regex for complex patterns",
+        "Handle nulls appropriately"
+      ]
+    },
+    "datetime_operations": {
+      "description": "Date and time operations",
+      "use_when": "Working with temporal data",
+      "code_example": "import polars as pl\nfrom datetime import datetime\n\n df = pl.DataFrame({\n     'date_str': ['2024-01-01', '2024-02-15', '2024-03-20'],\n     'datetime_str': ['2024-01-01 10:30:00', '2024-02-15 14:45:00', '2024-03-20 09:15:00']\n })\n\n# Parse dates\n df = df.with_columns([\n     pl.col('date_str').str.to_date().alias('date'),\n     pl.col('datetime_str').str.to_datetime().alias('datetime')\n ])\n\n# Extract date components\n df.with_columns([\n     pl.col('date').dt.year().alias('year'),\n     pl.col('date').dt.month().alias('month'),\n     pl.col('date').dt.day().alias('day'),\n     pl.col('date').dt.weekday().alias('weekday'),\n     pl.col('date').dt.quarter().alias('quarter')\n ])\n\n# Date arithmetic\n df.with_columns([\n     (pl.col('date') + pl.duration(days=30)).alias('date_plus_30_days'),\n     (pl.col('date') - pl.duration(weeks=2)).alias('date_minus_2_weeks')\n ])\n\n# Date difference\n df.with_columns([\n     (pl.col('date') - pl.date(2024, 1, 1)).dt.total_days().alias('days_since_start')\n ])\n\n# Date truncation\n df.with_columns([\n     pl.col('datetime').dt.truncate('1d').alias('date_truncated'),\n     pl.col('datetime').dt.truncate('1h').alias('hour_truncated')\n ])\n\n# Format dates\n df.with_columns([\n     pl.col('date').dt.strftime('%Y-%m-%d').alias('date_formatted')\n ])",
+      "best_practices": [
+        "Parse dates early in pipeline",
+        "Use dt namespace for date operations",
+        "Use duration for date arithmetic",
+        "Truncate for grouping by time periods"
+      ]
+    },
+    "parallel_execution": {
+      "description": "Leverage parallel execution",
+      "use_when": "Processing large datasets",
+      "code_example": "import polars as pl\n\n# Polars automatically uses parallel execution\n# Configure thread pool\n pl.set_global_string_cache()\n\n# Enable all CPU cores (default)\n lazy_df = pl.scan_csv('large_file.csv')\n result = lazy_df.collect()\n\n# Explicit parallel operations\n df = pl.DataFrame({'col': range(1000000)})\n\n# Operations run in parallel automatically\n result = (\n     df\n     .filter(pl.col('col') % 2 == 0)\n     .with_columns([\n         (pl.col('col') * 2).alias('doubled')\n     ])\n     .group_by('col')\n     .agg([pl.col('doubled').sum()])\n )\n\n# Streaming for very large datasets\n lazy_df = pl.scan_csv('very_large_file.csv')\n result = lazy_df.collect(streaming=True)\n\n# Parallel file reading\n files = [f'file_{i}.parquet' for i in range(10)]\n lazy_dfs = [pl.scan_parquet(f) for f in files]\n combined = pl.concat(lazy_dfs).collect()",
+      "best_practices": [
+        "Let Polars handle parallelism automatically",
+        "Use streaming for very large datasets",
+        "Read multiple files in parallel",
+        "Monitor CPU usage"
+      ]
+    },
+    "memory_efficiency": {
+      "description": "Write memory-efficient Polars code",
+      "use_when": "Working with large datasets in limited memory",
+      "code_example": "import polars as pl\n\n# Use lazy evaluation\n lazy_df = pl.scan_csv('large_file.csv')\n\n# Filter early to reduce memory\n filtered = lazy_df.filter(pl.col('date') > '2024-01-01')\n\n# Select only needed columns\n projected = filtered.select(['col1', 'col2', 'col3'])\n\n# Aggregate before collecting\n aggregated = (\n     projected\n     .group_by('category')\n     .agg([pl.col('col1').sum()])\n )\n\n# Collect only final result\n result = aggregated.collect()\n\n# Use streaming for very large files\n result = lazy_df.collect(streaming=True)\n\n# Use appropriate data types\n df = df.with_columns([\n     pl.col('int_col').cast(pl.Int32),  # Instead of Int64\n     pl.col('float_col').cast(pl.Float32)  # Instead of Float64\n ])\n\n# Process in chunks\n chunk_size = 100000\n for chunk in lazy_df.collect(streaming=True).iter_slices(chunk_size):\n     process_chunk(chunk)",
+      "best_practices": [
+        "Filter and project early",
+        "Use lazy evaluation",
+        "Use streaming for large datasets",
+        "Choose appropriate data types",
+        "Process in chunks if needed"
+      ]
+    },
+    "streaming_patterns": {
+      "description": "Use streaming for very large datasets",
+      "use_when": "Processing datasets larger than available memory",
+      "code_example": "import polars as pl\n\n# Enable streaming\n lazy_df = pl.scan_csv('very_large_file.csv')\n\n# Streaming collect\n result = lazy_df.collect(streaming=True)\n\n# Streaming with operations\n result = (\n     lazy_df\n     .filter(pl.col('value') > 100)\n     .group_by('category')\n     .agg([pl.col('value').sum()])\n     .collect(streaming=True)\n )\n\n# Streaming multiple files\n files = ['file1.parquet', 'file2.parquet', 'file3.parquet']\n lazy_dfs = [pl.scan_parquet(f) for f in files]\n\n combined = (\n     pl.concat(lazy_dfs)\n     .filter(pl.col('date') > '2024-01-01')\n     .collect(streaming=True)\n )\n\n# Streaming with joins\n df1 = pl.scan_parquet('large1.parquet')\n df2 = pl.scan_parquet('large2.parquet')\n\n joined = (\n     df1\n     .join(df2, on='id', how='inner')\n     .collect(streaming=True)\n )",
+      "best_practices": [
+        "Use streaming=True for large datasets",
+        "Streaming works with all operations",
+        "Monitor memory usage",
+        "Use with lazy evaluation"
+      ]
+    },
+    "pandas_migration": {
+      "description": "Migrate from pandas to Polars",
+      "use_when": "Converting pandas code to Polars",
+      "code_example": "# Pandas code\n# df = pd.read_csv('data.csv')\n# result = df[df['age'] > 25][[name-age]].groupby('category').mean()\n\n# Polars equivalent\n df = pl.read_csv('data.csv')\n result = (\n     df\n     .filter(pl.col('age') > 25)\n     .select(['name', 'age'])\n     .group_by('category')\n     .agg([pl.col('age').mean()])\n )\n\n# Pandas: df['new_col'] = df['col1'] + df['col2']\n# Polars:\n df = df.with_columns([\n     (pl.col('col1') + pl.col('col2')).alias('new_col')\n ])\n\n# Pandas: df.groupby('cat').agg({'val': 'sum'})\n# Polars:\n df.group_by('cat').agg([pl.col('val').sum()])\n\n# Pandas: df.apply(lambda x: x * 2)\n# Polars:\n df.with_columns([pl.col('col').map_elements(lambda x: x * 2)])\n\n# Convert Polars to pandas if needed\n pandas_df = df.to_pandas()\n\n# Convert pandas to Polars\n polars_df = pl.from_pandas(pandas_df)",
+      "best_practices": [
+        "Use expression API instead of apply",
+        "Chain operations instead of intermediate variables",
+        "Use lazy evaluation for large datasets",
+        "Convert to pandas only when necessary"
+      ]
+    },
+    "scikit_learn_integration": {
+      "description": "Use Polars with scikit-learn",
+      "use_when": "Machine learning workflows",
+      "code_example": "import polars as pl\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.ensemble import RandomForestClassifier\n\n# Load data with Polars\n df = pl.read_csv('data.csv')\n\n# Prepare features\n features = df.select(['feature1', 'feature2', 'feature3'])\n target = df.select('target')\n\n# Convert to numpy for sklearn\n X = features.to_numpy()\n y = target.to_numpy().ravel()\n\n# Train/test split\n X_train, X_test, y_train, y_test = train_test_split(\n     X, y, test_size=0.2, random_state=42\n )\n\n# Train model\n model = RandomForestClassifier()\n model.fit(X_train, y_train)\n\n# Predict\n predictions = model.predict(X_test)\n\n# Add predictions back to Polars DataFrame\n results_df = pl.DataFrame({\n     'actual': y_test,\n     'predicted': predictions\n })\n\n# Analyze results with Polars\n results_df.with_columns([\n     (pl.col('actual') == pl.col('predicted')).alias('correct')\n ]).select([\n     pl.col('correct').sum().alias('correct_count'),\n     pl.col('correct').mean().alias('accuracy')\n ])",
+      "best_practices": [
+        "Use Polars for data preparation",
+        "Convert to numpy for sklearn",
+        "Use Polars for result analysis",
+        "Leverage Polars performance for ETL"
+      ]
+    },
+    "pytorch_integration": {
+      "description": "Use Polars with PyTorch",
+      "use_when": "Deep learning workflows",
+      "code_example": "import polars as pl\nimport torch\nfrom torch.utils.data import Dataset, DataLoader\n\n# Load data with Polars\n df = pl.read_csv('data.csv')\n\n# Prepare features and targets\n features = df.select(['feature1', 'feature2', 'feature3'])\n targets = df.select('target')\n\n# Convert to tensors\n X = torch.tensor(features.to_numpy(), dtype=torch.float32)\n y = torch.tensor(targets.to_numpy(), dtype=torch.float32)\n\n# Create dataset\n class PolarsDataset(Dataset):\n     def __init__(self, features, targets):\n         self.features = features\n         self.targets = targets\n     \n     def __len__(self):\n         return len(self.features)\n     \n     def __getitem__(self, idx):\n         return self.features[idx], self.targets[idx]\n\n dataset = PolarsDataset(X, y)\n dataloader = DataLoader(dataset, batch_size=32, shuffle=True)\n\n# Training loop\n for batch_features, batch_targets in dataloader:\n     # Training code\n     pass",
+      "best_practices": [
+        "Use Polars for data loading",
+        "Convert to tensors efficiently",
+        "Create custom datasets",
+        "Leverage Polars for preprocessing"
+      ]
+    },
+    "arrow_integration": {
+      "description": "Integrate with Apache Arrow",
+      "use_when": "Working with Arrow-based systems",
+      "code_example": "import polars as pl\nimport pyarrow as pa\nimport pyarrow.parquet as pq\n\n# Polars to Arrow\n df = pl.DataFrame({'col': [1, 2, 3]})\n arrow_table = df.to_arrow()\n\n# Arrow to Polars\n arrow_table = pa.table({'col': [1, 2, 3]})\n df = pl.from_arrow(arrow_table)\n\n# Read Arrow file\n arrow_table = pq.read_table('data.parquet')\n df = pl.from_arrow(arrow_table)\n\n# Write Arrow file\n df.to_arrow()\n pq.write_table(arrow_table, 'output.parquet')\n\n# Arrow dataset\n import pyarrow.dataset as ds\n\n dataset = ds.dataset('data.parquet', format='parquet')\n\n# Convert Arrow dataset to Polars lazy frame\n # (conceptual - actual API may vary)\n # lazy_df = pl.scan_arrow_dataset(dataset)\n\n# Zero-copy conversion\n arrow_array = pa.array([1, 2, 3, 4, 5])\n polars_series = pl.from_arrow(arrow_array)",
+      "best_practices": [
+        "Use Arrow for interoperability",
+        "Leverage zero-copy when possible",
+        "Use Parquet for efficient storage",
+        "Convert formats as needed"
+      ]
+    },
+    "join_patterns": {
+      "description": "Join DataFrames efficiently",
+      "use_when": "Combining data from multiple sources",
+      "code_example": "import polars as pl\n\n df1 = pl.DataFrame({\n     'id': [1, 2, 3],\n     'name': ['Alice', 'Bob', 'Charlie']\n })\n\n df2 = pl.DataFrame({\n     'id': [1, 2, 4],\n     'score': [85, 90, 95]\n })\n\n# Inner join\n result = df1.join(df2, on='id', how='inner')\n\n# Left join\n result = df1.join(df2, on='id', how='left')\n\n# Outer join\n result = df1.join(df2, on='id', how='outer')\n\n# Join on multiple columns\n result = df1.join(df2, on=['id', 'category'], how='inner')\n\n# Join with different column names\n result = df1.join(\n     df2,\n     left_on='id',\n     right_on='user_id',\n     how='inner'\n )\n\n# Join with suffix\n result = df1.join(df2, on='id', suffix='_right')\n\n# Lazy join\n lazy_df1 = pl.scan_csv('file1.csv')\n lazy_df2 = pl.scan_csv('file2.csv')\n\n joined = lazy_df1.join(lazy_df2, on='id', how='inner')\n result = joined.collect()",
+      "best_practices": [
+        "Use appropriate join type",
+        "Join on indexed columns when possible",
+        "Use lazy joins for large datasets",
+        "Specify suffixes to avoid conflicts"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use lazy evaluation (scan_* + collect) for large datasets to enable automatic query optimization",
+    "Prefer expressions (pl.col, pl.when) over apply/map_elements for vectorized, parallel execution",
+    "Specify schemas explicitly when loading data to avoid inference overhead and ensure type safety",
+    "Use Parquet format for storage as it enables predicate and projection pushdown with Polars",
+    "Filter and select columns early in the pipeline to minimize memory usage",
+    "Use streaming (collect(streaming=True)) for datasets larger than available memory",
+    "Choose appropriate numeric types (Int32 vs Int64, Float32 vs Float64) to reduce memory footprint",
+    "Use group_by with maintain_order=True only when order is required, as unordered is faster"
+  ],
+  "anti_patterns": [
+    {
+      "name": "pandas_style_indexing",
+      "description": "Using pandas-style df['col'] indexing instead of Polars expressions",
+      "problem": "Misses Polars optimizations and parallel execution capabilities",
+      "solution": "Use pl.col('col') expressions with select, filter, and with_columns"
+    },
+    {
+      "name": "eager_collect_on_large_data",
+      "description": "Using read_csv instead of scan_csv for large files",
+      "problem": "Loads entire dataset into memory before any filtering or selection",
+      "solution": "Use scan_csv/scan_parquet with lazy evaluation and collect at the end"
+    },
+    {
+      "name": "excessive_map_elements",
+      "description": "Using map_elements (Python lambdas) for operations available as expressions",
+      "problem": "Disables Polars parallel execution and vectorization, orders of magnitude slower",
+      "solution": "Use built-in expression methods (str, dt, arithmetic) instead of Python callbacks"
+    },
+    {
+      "name": "unnecessary_to_pandas",
+      "description": "Converting to pandas for operations available in Polars",
+      "problem": "Unnecessary memory copy and loss of Polars performance benefits",
+      "solution": "Use Polars native API; convert to pandas only for library compatibility (e.g., sklearn)"
+    }
+  ]
+}

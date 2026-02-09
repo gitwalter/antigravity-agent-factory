@@ -1,0 +1,312 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "gradient-boosting-patterns",
+  "name": "Gradient Boosting Patterns",
+  "title": "Gradient Boosting Patterns",
+  "description": "Comprehensive patterns for XGBoost, LightGBM, and CatBoost with tuning, feature importance, and integration patterns",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns include cross-validation and evaluation metrics",
+    "A3_transparency": "Feature importance and model explanations are included"
+  },
+  "xgboost_patterns": {
+    "basic_training": {
+      "description": "Basic XGBoost training pattern",
+      "use_when": "Training XGBoost models for classification or regression",
+      "code_example": "import xgboost as xgb\nimport pandas as pd\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.metrics import accuracy_score\n\n# Prepare data\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42\n)\n\n# Create DMatrix (XGBoost's optimized data structure)\ndtrain = xgb.DMatrix(X_train, label=y_train)\ndtest = xgb.DMatrix(X_test, label=y_test)\n\n# Set parameters\nparams = {\n    'objective': 'binary:logistic',  # or 'multi:softprob', 'reg:squarederror'\n    'eval_metric': 'logloss',  # or 'mlogloss', 'rmse', 'mae'\n    'max_depth': 6,\n    'learning_rate': 0.1,\n    'subsample': 0.8,\n    'colsample_bytree': 0.8,\n    'min_child_weight': 1,\n    'gamma': 0,\n    'reg_alpha': 0,\n    'reg_lambda': 1\n}\n\n# Train model\nnum_rounds = 100\nmodel = xgb.train(\n    params,\n    dtrain,\n    num_boost_round=num_rounds,\n    evals=[(dtrain, 'train'), (dtest, 'eval')],\n    early_stopping_rounds=10,\n    verbose_eval=10\n)\n\n# Predict\npredictions = model.predict(dtest)\npredictions_binary = (predictions > 0.5).astype(int)\n\n# Evaluate\naccuracy = accuracy_score(y_test, predictions_binary)",
+      "best_practices": [
+        "Use DMatrix for better performance",
+        "Set appropriate objective and eval_metric",
+        "Use early_stopping_rounds to prevent overfitting",
+        "Monitor training with evals parameter"
+      ]
+    },
+    "sklearn_api": {
+      "description": "Using XGBoost with scikit-learn API",
+      "use_when": "Integrating with scikit-learn pipelines",
+      "code_example": "from xgboost import XGBClassifier, XGBRegressor\nfrom sklearn.model_selection import cross_val_score\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\n\n# Classification\nmodel = XGBClassifier(\n    n_estimators=100,\n    max_depth=6,\n    learning_rate=0.1,\n    subsample=0.8,\n    colsample_bytree=0.8,\n    random_state=42,\n    eval_metric='logloss',\n    use_label_encoder=False\n)\n\n# Regression\nmodel = XGBRegressor(\n    n_estimators=100,\n    max_depth=6,\n    learning_rate=0.1,\n    random_state=42,\n    eval_metric='rmse'\n)\n\n# Fit\nmodel.fit(X_train, y_train)\n\n# Predict\npredictions = model.predict(X_test)\npredict_proba = model.predict_proba(X_test)\n\n# Cross-validation\nscores = cross_val_score(model, X, y, cv=5, scoring='accuracy')\n\n# Pipeline\npipeline = Pipeline([\n    ('scaler', StandardScaler()),\n    ('xgb', XGBClassifier())\n])\npipeline.fit(X_train, y_train)",
+      "best_practices": [
+        "Use sklearn API for pipeline integration",
+        "Set use_label_encoder=False for newer versions",
+        "Use cross_val_score for evaluation",
+        "Works seamlessly with sklearn tools"
+      ]
+    },
+    "parameter_tuning": {
+      "description": "Hyperparameter tuning for XGBoost",
+      "use_when": "Optimizing model performance",
+      "code_example": "from xgboost import XGBClassifier\nfrom sklearn.model_selection import GridSearchCV, RandomizedSearchCV\nimport optuna\n\n# Grid search\nparam_grid = {\n    'max_depth': [3, 5, 7],\n    'learning_rate': [0.01, 0.1, 0.2],\n    'n_estimators': [100, 200, 300],\n    'subsample': [0.8, 0.9, 1.0],\n    'colsample_bytree': [0.8, 0.9, 1.0]\n}\n\ngrid_search = GridSearchCV(\n    XGBClassifier(random_state=42),\n    param_grid,\n    cv=5,\n    scoring='accuracy',\n    n_jobs=-1\n)\ngrid_search.fit(X_train, y_train)\nbest_params = grid_search.best_params_\n\n# Randomized search (faster)\nrandom_search = RandomizedSearchCV(\n    XGBClassifier(random_state=42),\n    param_distributions=param_grid,\n    n_iter=50,\n    cv=5,\n    scoring='accuracy',\n    n_jobs=-1,\n    random_state=42\n)\nrandom_search.fit(X_train, y_train)\n\n# Optuna (Bayesian optimization)\ndef objective(trial):\n    params = {\n        'max_depth': trial.suggest_int('max_depth', 3, 10),\n        'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3),\n        'n_estimators': trial.suggest_int('n_estimators', 100, 500),\n        'subsample': trial.suggest_float('subsample', 0.6, 1.0),\n        'colsample_bytree': trial.suggest_float('colsample_bytree', 0.6, 1.0),\n        'reg_alpha': trial.suggest_float('reg_alpha', 0, 10),\n        'reg_lambda': trial.suggest_float('reg_lambda', 0, 10)\n    }\n    model = XGBClassifier(**params, random_state=42)\n    scores = cross_val_score(model, X_train, y_train, cv=5, scoring='accuracy')\n    return scores.mean()\n\nstudy = optuna.create_study(direction='maximize')\nstudy.optimize(objective, n_trials=100)\nbest_params = study.best_params",
+      "best_practices": [
+        "Start with learning_rate and n_estimators",
+        "Use RandomizedSearchCV for large search spaces",
+        "Use Optuna for efficient Bayesian optimization",
+        "Tune regularization parameters (reg_alpha, reg_lambda)"
+      ]
+    },
+    "feature_importance": {
+      "description": "Extract and visualize feature importance",
+      "use_when": "Understanding model decisions",
+      "code_example": "import xgboost as xgb\nimport matplotlib.pyplot as plt\nimport pandas as pd\n\n# Train model\nmodel = xgb.XGBClassifier()\nmodel.fit(X_train, y_train)\n\n# Get feature importance\nimportance = model.feature_importances_\nfeature_names = X_train.columns\n\n# Create DataFrame\nimportance_df = pd.DataFrame({\n    'feature': feature_names,\n    'importance': importance\n}).sort_values('importance', ascending=False)\n\n# Plot\nplt.figure(figsize=(10, 6))\nplt.barh(importance_df['feature'], importance_df['importance'])\nplt.xlabel('Importance')\nplt.title('XGBoost Feature Importance')\nplt.gca().invert_yaxis()\nplt.tight_layout()\nplt.show()\n\n# Using XGBoost's built-in plot\nxgb.plot_importance(model, max_num_features=20)\nplt.show()\n\n# Plot tree\nxgb.plot_tree(model, num_trees=0)\nplt.show()",
+      "best_practices": [
+        "Use feature_importances_ attribute",
+        "Visualize top features",
+        "Compare with other importance metrics",
+        "Use plot_tree for interpretability"
+      ]
+    },
+    "gpu_training": {
+      "description": "Train XGBoost on GPU",
+      "use_when": "Have GPU available and large datasets",
+      "code_example": "import xgboost as xgb\n\n# GPU parameters\nparams = {\n    'tree_method': 'gpu_hist',  # or 'hist' for CPU\n    'predictor': 'gpu_predictor',\n    'objective': 'binary:logistic',\n    'eval_metric': 'logloss'\n}\n\n# For sklearn API\nmodel = xgb.XGBClassifier(\n    tree_method='gpu_hist',\n    predictor='gpu_predictor',\n    n_estimators=1000,\n    max_depth=6\n)\n\n# Check GPU availability\nprint(xgb.get_config())\n\n# Note: Requires CUDA and XGBoost GPU support",
+      "best_practices": [
+        "Use gpu_hist for large datasets",
+        "GPU provides 10-50x speedup",
+        "Requires CUDA installation",
+        "Use CPU for small datasets"
+      ]
+    },
+    "early_stopping": {
+      "description": "Implement early stopping to prevent overfitting",
+      "use_when": "Training models and monitoring validation performance",
+      "code_example": "from xgboost import XGBClassifier\nfrom sklearn.model_selection import train_test_split\n\n# Split data\nX_train, X_val, y_train, y_val = train_test_split(\n    X_train_full, y_train_full, test_size=0.2, random_state=42\n)\n\n# With early stopping\nmodel = XGBClassifier(\n    n_estimators=1000,  # Set high\n    early_stopping_rounds=10,  # Stop if no improvement for 10 rounds\n    eval_set=[(X_val, y_val)],\n    eval_metric='logloss',\n    verbose=True\n)\nmodel.fit(X_train, y_train)\n\n# Get best iteration\nbest_iteration = model.best_iteration\nprint(f'Best iteration: {best_iteration}')\n\n# Using native API\nimport xgboost as xgb\n\ndtrain = xgb.DMatrix(X_train, label=y_train)\ndval = xgb.DMatrix(X_val, label=y_val)\n\nmodel = xgb.train(\n    params,\n    dtrain,\n    num_boost_round=1000,\n    evals=[(dtrain, 'train'), (dval, 'eval')],\n    early_stopping_rounds=10,\n    verbose_eval=10\n)",
+      "best_practices": [
+        "Always use early stopping",
+        "Set n_estimators high, let early stopping decide",
+        "Monitor validation set performance",
+        "Use separate validation set"
+      ]
+    }
+  },
+  "lightgbm_patterns": {
+    "basic_training": {
+      "description": "Basic LightGBM training pattern",
+      "use_when": "Training LightGBM models",
+      "code_example": "import lightgbm as lgb\nimport pandas as pd\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.metrics import accuracy_score\n\n# Prepare data\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42\n)\n\n# Create Dataset (LightGBM's data structure)\ntrain_data = lgb.Dataset(X_train, label=y_train)\ntest_data = lgb.Dataset(X_test, label=y_test, reference=train_data)\n\n# Set parameters\nparams = {\n    'objective': 'binary',  # or 'multiclass', 'regression'\n    'metric': 'binary_logloss',  # or 'multi_logloss', 'rmse'\n    'boosting_type': 'gbdt',  # or 'dart', 'goss'\n    'num_leaves': 31,\n    'learning_rate': 0.05,\n    'feature_fraction': 0.9,\n    'bagging_fraction': 0.8,\n    'bagging_freq': 5,\n    'verbose': 0\n}\n\n# Train\nnum_round = 100\nmodel = lgb.train(\n    params,\n    train_data,\n    num_boost_round=num_round,\n    valid_sets=[train_data, test_data],\n    valid_names=['train', 'eval'],\n    callbacks=[lgb.early_stopping(10), lgb.log_evaluation(10)]\n)\n\n# Predict\npredictions = model.predict(X_test, num_iteration=model.best_iteration)\npredictions_binary = (predictions > 0.5).astype(int)\n\n# Evaluate\naccuracy = accuracy_score(y_test, predictions_binary)",
+      "best_practices": [
+        "Use Dataset for better performance",
+        "Set reference for test data",
+        "Use early_stopping callback",
+        "LightGBM is faster than XGBoost"
+      ]
+    },
+    "sklearn_api": {
+      "description": "Using LightGBM with scikit-learn API",
+      "use_when": "Integrating with scikit-learn pipelines",
+      "code_example": "from lightgbm import LGBMClassifier, LGBMRegressor\nfrom sklearn.model_selection import cross_val_score\nfrom sklearn.pipeline import Pipeline\n\n# Classification\nmodel = LGBMClassifier(\n    n_estimators=100,\n    num_leaves=31,\n    learning_rate=0.05,\n    feature_fraction=0.9,\n    bagging_fraction=0.8,\n    bagging_freq=5,\n    random_state=42,\n    verbose=-1\n)\n\n# Regression\nmodel = LGBMRegressor(\n    n_estimators=100,\n    num_leaves=31,\n    learning_rate=0.05,\n    random_state=42,\n    verbose=-1\n)\n\n# Fit\nmodel.fit(X_train, y_train)\n\n# Predict\npredictions = model.predict(X_test)\npredict_proba = model.predict_proba(X_test)\n\n# Cross-validation\nscores = cross_val_score(model, X, y, cv=5, scoring='accuracy')",
+      "best_practices": [
+        "Use sklearn API for pipeline integration",
+        "Set verbose=-1 to suppress output",
+        "Works seamlessly with sklearn tools",
+        "Faster than XGBoost for large datasets"
+      ]
+    },
+    "categorical_features": {
+      "description": "Handle categorical features efficiently",
+      "use_when": "Dataset contains categorical variables",
+      "code_example": "import lightgbm as lgb\nimport pandas as pd\n\n# Method 1: Specify categorical columns\ncategorical_features = ['category_col1', 'category_col2']\n\nmodel = lgb.LGBMClassifier()\nmodel.fit(\n    X_train, y_train,\n    categorical_feature=categorical_features\n)\n\n# Method 2: Convert to category dtype\nfor col in categorical_features:\n    X_train[col] = X_train[col].astype('category')\n    X_test[col] = X_test[col].astype('category')\n\nmodel = lgb.LGBMClassifier()\nmodel.fit(X_train, y_train)  # Automatically detects categories\n\n# Method 3: Using Dataset\ncategorical_indices = [X_train.columns.get_loc(col) for col in categorical_features]\ntrain_data = lgb.Dataset(\n    X_train, label=y_train,\n    categorical_feature=categorical_indices\n)",
+      "best_practices": [
+        "LightGBM handles categories efficiently",
+        "Convert to category dtype",
+        "No need for one-hot encoding",
+        "Faster training with categorical features"
+      ]
+    },
+    "dart_mode": {
+      "description": "Use DART (Dropouts meet Multiple Additive Regression Trees) mode",
+      "use_when": "Need regularization and preventing overfitting",
+      "code_example": "import lightgbm as lgb\n\n# DART parameters\nparams = {\n    'boosting_type': 'dart',\n    'objective': 'binary',\n    'metric': 'binary_logloss',\n    'drop_rate': 0.1,  # Dropout rate\n    'max_drop': 50,  # Maximum number of dropped trees\n    'skip_drop': 0.5,  # Probability of skipping dropout\n    'uniform_drop': False,\n    'xgboost_dart_mode': False,\n    'num_leaves': 31,\n    'learning_rate': 0.05\n}\n\nmodel = lgb.LGBMClassifier(**params)\nmodel.fit(X_train, y_train)\n\n# Note: DART can be slower but often more accurate",
+      "best_practices": [
+        "Use DART for regularization",
+        "Tune drop_rate parameter",
+        "Can be slower than gbdt",
+        "Good for preventing overfitting"
+      ]
+    },
+    "parallel_training": {
+      "description": "Train LightGBM in parallel",
+      "use_when": "Have multiple CPU cores",
+      "code_example": "import lightgbm as lgb\n\n# Set number of threads\nparams = {\n    'num_threads': 4,  # Use 4 threads\n    'objective': 'binary',\n    'metric': 'binary_logloss'\n}\n\n# Or in sklearn API\nmodel = lgb.LGBMClassifier(\n    n_jobs=4,  # Use 4 threads\n    n_estimators=100\n)\n\n# For maximum performance\nmodel = lgb.LGBMClassifier(\n    n_jobs=-1,  # Use all available cores\n    n_estimators=100\n)",
+      "best_practices": [
+        "Use n_jobs=-1 for all cores",
+        "LightGBM parallelizes well",
+        "More threads = faster training",
+        "Consider memory usage"
+      ]
+    }
+  },
+  "catboost_patterns": {
+    "basic_training": {
+      "description": "Basic CatBoost training pattern",
+      "use_when": "Training CatBoost models",
+      "code_example": "from catboost import CatBoostClassifier, CatBoostRegressor\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.metrics import accuracy_score\n\n# Prepare data\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42\n)\n\n# Classification\nmodel = CatBoostClassifier(\n    iterations=100,\n    learning_rate=0.1,\n    depth=6,\n    loss_function='Logloss',  # or 'MultiClass', 'RMSE'\n    eval_metric='Logloss',\n    random_seed=42,\n    verbose=False\n)\n\n# Regression\nmodel = CatBoostRegressor(\n    iterations=100,\n    learning_rate=0.1,\n    depth=6,\n    loss_function='RMSE',\n    eval_metric='RMSE',\n    random_seed=42,\n    verbose=False\n)\n\n# Fit with validation\nmodel.fit(\n    X_train, y_train,\n    eval_set=(X_test, y_test),\n    early_stopping_rounds=10,\n    verbose=10\n)\n\n# Predict\npredictions = model.predict(X_test)\npredict_proba = model.predict_proba(X_test)",
+      "best_practices": [
+        "CatBoost handles categories automatically",
+        "Use early_stopping_rounds",
+        "Set verbose=False for production",
+        "Very robust to overfitting"
+      ]
+    },
+    "categorical_handling": {
+      "description": "Handle categorical features (CatBoost's strength)",
+      "use_when": "Dataset has many categorical features",
+      "code_example": "from catboost import CatBoostClassifier\nimport pandas as pd\n\n# Method 1: Specify categorical indices\ncategorical_indices = [0, 2, 5]  # Column indices\n\nmodel = CatBoostClassifier(\n    iterations=100,\n    cat_features=categorical_indices\n)\nmodel.fit(X_train, y_train)\n\n# Method 2: Specify column names\ncategorical_features = ['category_col1', 'category_col2']\n\nmodel = CatBoostClassifier(\n    iterations=100,\n    cat_features=categorical_features\n)\nmodel.fit(X_train, y_train)\n\n# Method 3: Auto-detect (if using pandas)\n# CatBoost automatically detects string columns\nmodel = CatBoostClassifier(iterations=100)\nmodel.fit(X_train, y_train)\n\n# No need for one-hot encoding!",
+      "best_practices": [
+        "CatBoost excels with categorical features",
+        "No need for one-hot encoding",
+        "Specify cat_features explicitly",
+        "Handles high cardinality well"
+      ]
+    },
+    "gpu_training": {
+      "description": "Train CatBoost on GPU",
+      "use_when": "Have GPU available",
+      "code_example": "from catboost import CatBoostClassifier\n\n# GPU training\nmodel = CatBoostClassifier(\n    iterations=100,\n    task_type='GPU',  # Use GPU\n    devices='0',  # GPU device ID\n    learning_rate=0.1\n)\n\n# Multiple GPUs\nmodel = CatBoostClassifier(\n    iterations=100,\n    task_type='GPU',\n    devices='0:1',  # Use GPUs 0 and 1\n    learning_rate=0.1\n)\n\n# CPU fallback\nmodel = CatBoostClassifier(\n    iterations=100,\n    task_type='GPU',\n    devices='0',\n    allow_writing_files=False  # Required for some GPU setups\n)",
+      "best_practices": [
+        "GPU provides significant speedup",
+        "Requires CUDA",
+        "Use devices parameter for multi-GPU",
+        "Check GPU availability first"
+      ]
+    },
+    "text_features": {
+      "description": "Handle text features with CatBoost",
+      "use_when": "Dataset contains text columns",
+      "code_example": "from catboost import CatBoostClassifier\nimport pandas as pd\n\n# Prepare data with text\nX_train = pd.DataFrame({\n    'numeric_col': [1, 2, 3],\n    'text_col': ['text1', 'text2', 'text3'],\n    'category_col': ['A', 'B', 'C']\n})\n\n# Specify text features\nmodel = CatBoostClassifier(\n    iterations=100,\n    text_features=['text_col'],\n    cat_features=['category_col']\n)\n\nmodel.fit(X_train, y_train)\n\n# CatBoost automatically processes text features",
+      "best_practices": [
+        "CatBoost can handle text features",
+        "Specify text_features parameter",
+        "No manual preprocessing needed",
+        "Good for mixed data types"
+      ]
+    }
+  },
+  "tuning_patterns": {
+    "cross_validation": {
+      "description": "Cross-validation for gradient boosting models",
+      "use_when": "Evaluating model performance robustly",
+      "code_example": "from xgboost import XGBClassifier\nfrom lightgbm import LGBMClassifier\nfrom catboost import CatBoostClassifier\nfrom sklearn.model_selection import cross_val_score, StratifiedKFold\n\n# XGBoost\nxgb_model = XGBClassifier(random_state=42)\nscores = cross_val_score(xgb_model, X, y, cv=5, scoring='accuracy')\nprint(f'Mean CV Score: {scores.mean():.4f} (+/- {scores.std() * 2:.4f})')\n\n# LightGBM\nlgb_model = LGBMClassifier(random_state=42, verbose=-1)\nscores = cross_val_score(lgb_model, X, y, cv=5, scoring='accuracy')\n\n# CatBoost\ncat_model = CatBoostClassifier(random_seed=42, verbose=False)\nscores = cross_val_score(cat_model, X, y, cv=5, scoring='accuracy')\n\n# Stratified K-Fold (for imbalanced data)\nskf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)\nscores = cross_val_score(xgb_model, X, y, cv=skf, scoring='accuracy')",
+      "best_practices": [
+        "Always use cross-validation",
+        "Use StratifiedKFold for classification",
+        "Shuffle data in K-Fold",
+        "Report mean and std of scores"
+      ]
+    },
+    "hyperparameter_tuning": {
+      "description": "Systematic hyperparameter tuning",
+      "use_when": "Optimizing model performance",
+      "code_example": "import optuna\nfrom xgboost import XGBClassifier\nfrom sklearn.model_selection import cross_val_score\n\n# XGBoost tuning\ndef xgb_objective(trial):\n    params = {\n        'max_depth': trial.suggest_int('max_depth', 3, 10),\n        'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3),\n        'n_estimators': trial.suggest_int('n_estimators', 100, 1000),\n        'subsample': trial.suggest_float('subsample', 0.6, 1.0),\n        'colsample_bytree': trial.suggest_float('colsample_bytree', 0.6, 1.0),\n        'reg_alpha': trial.suggest_float('reg_alpha', 0, 10),\n        'reg_lambda': trial.suggest_float('reg_lambda', 0, 10),\n        'min_child_weight': trial.suggest_int('min_child_weight', 1, 10)\n    }\n    model = XGBClassifier(**params, random_state=42)\n    scores = cross_val_score(model, X_train, y_train, cv=5, scoring='accuracy')\n    return scores.mean()\n\nstudy = optuna.create_study(direction='maximize')\nstudy.optimize(xgb_objective, n_trials=100)\nbest_params = study.best_params\n\n# LightGBM tuning\ndef lgb_objective(trial):\n    params = {\n        'num_leaves': trial.suggest_int('num_leaves', 10, 300),\n        'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3),\n        'n_estimators': trial.suggest_int('n_estimators', 100, 1000),\n        'feature_fraction': trial.suggest_float('feature_fraction', 0.4, 1.0),\n        'bagging_fraction': trial.suggest_float('bagging_fraction', 0.4, 1.0),\n        'bagging_freq': trial.suggest_int('bagging_freq', 1, 7),\n        'min_child_samples': trial.suggest_int('min_child_samples', 5, 100)\n    }\n    model = LGBMClassifier(**params, random_state=42, verbose=-1)\n    scores = cross_val_score(model, X_train, y_train, cv=5, scoring='accuracy')\n    return scores.mean()",
+      "best_practices": [
+        "Use Optuna for efficient tuning",
+        "Start with learning_rate and n_estimators",
+        "Tune regularization parameters",
+        "Use early stopping during tuning"
+      ]
+    },
+    "feature_selection": {
+      "description": "Feature selection using gradient boosting",
+      "use_when": "Reducing feature space",
+      "code_example": "from xgboost import XGBClassifier\nfrom sklearn.feature_selection import SelectFromModel\nimport pandas as pd\n\n# Train model\nmodel = XGBClassifier()\nmodel.fit(X_train, y_train)\n\n# Get feature importance\nimportance = model.feature_importances_\nfeature_names = X_train.columns\n\n# Create importance DataFrame\nimportance_df = pd.DataFrame({\n    'feature': feature_names,\n    'importance': importance\n}).sort_values('importance', ascending=False)\n\n# Select top features\nthreshold = 0.01  # Minimum importance\nselector = SelectFromModel(model, threshold=threshold, prefit=True)\nX_train_selected = selector.transform(X_train)\nX_test_selected = selector.transform(X_test)\n\n# Get selected feature names\nselected_features = [feature_names[i] for i in range(len(feature_names)) \n                     if selector.get_support()[i]]\n\n# Train new model on selected features\nmodel_selected = XGBClassifier()\nmodel_selected.fit(X_train_selected, y_train)",
+      "best_practices": [
+        "Use feature importance for selection",
+        "Set appropriate threshold",
+        "Retrain model on selected features",
+        "Compare performance before/after"
+      ]
+    }
+  },
+  "explanation_patterns": {
+    "shap_explanations": {
+      "description": "SHAP explanations for gradient boosting models",
+      "use_when": "Need model interpretability",
+      "code_example": "import shap\nfrom xgboost import XGBClassifier\n\n# Train model\nmodel = XGBClassifier()\nmodel.fit(X_train, y_train)\n\n# Create SHAP explainer\nexplainer = shap.TreeExplainer(model)\nshap_values = explainer.shap_values(X_test)\n\n# Summary plot\nshap.summary_plot(shap_values, X_test)\n\n# Waterfall plot for single prediction\nshap.waterfall_plot(shap.Explanation(\n    values=shap_values[0],\n    base_values=explainer.expected_value,\n    data=X_test.iloc[0],\n    feature_names=X_test.columns\n))\n\n# Force plot\nshap.force_plot(\n    explainer.expected_value,\n    shap_values[0],\n    X_test.iloc[0]\n)\n\n# Dependence plot\nshap.dependence_plot('feature_name', shap_values, X_test)",
+      "best_practices": [
+        "Use TreeExplainer for tree models",
+        "Visualize global and local explanations",
+        "SHAP values sum to prediction difference",
+        "Use for model debugging"
+      ]
+    },
+    "feature_importance_comparison": {
+      "description": "Compare feature importance across models",
+      "use_when": "Understanding different models",
+      "code_example": "import pandas as pd\nimport matplotlib.pyplot as plt\nfrom xgboost import XGBClassifier\nfrom lightgbm import LGBMClassifier\nfrom catboost import CatBoostClassifier\n\n# Train models\nxgb_model = XGBClassifier().fit(X_train, y_train)\nlgb_model = LGBMClassifier().fit(X_train, y_train)\ncat_model = CatBoostClassifier(verbose=False).fit(X_train, y_train)\n\n# Get importance\nimportance_df = pd.DataFrame({\n    'feature': X_train.columns,\n    'XGBoost': xgb_model.feature_importances_,\n    'LightGBM': lgb_model.feature_importances_,\n    'CatBoost': cat_model.feature_importances_\n})\n\n# Normalize\nfor col in ['XGBoost', 'LightGBM', 'CatBoost']:\n    importance_df[col] = importance_df[col] / importance_df[col].sum()\n\n# Plot comparison\nimportance_df.set_index('feature').plot(kind='barh', figsize=(10, 8))\nplt.xlabel('Normalized Importance')\nplt.title('Feature Importance Comparison')\nplt.tight_layout()\nplt.show()",
+      "best_practices": [
+        "Normalize importance for comparison",
+        "Visualize side-by-side",
+        "Identify consistent important features",
+        "Use for feature engineering insights"
+      ]
+    }
+  },
+  "comparison": {
+    "when_to_use": {
+      "description": "Guidelines for choosing between XGBoost, LightGBM, and CatBoost",
+      "use_when": "Selecting appropriate gradient boosting library",
+      "code_example": "# XGBoost: Best for\n# - General purpose, well-documented\n# - Need fine-grained control\n# - Small to medium datasets\n# - Extensive hyperparameter tuning\n\n# LightGBM: Best for\n# - Large datasets (faster training)\n# - Many features\n# - Need speed\n# - Memory constraints\n\n# CatBoost: Best for\n# - Many categorical features\n# - Need minimal preprocessing\n# - Robust to overfitting\n# - Less hyperparameter tuning needed\n\n# Performance comparison\nimport time\nfrom xgboost import XGBClassifier\nfrom lightgbm import LGBMClassifier\nfrom catboost import CatBoostClassifier\n\n# Time XGBoost\nstart = time.time()\nxgb_model = XGBClassifier(n_estimators=100).fit(X_train, y_train)\nxgb_time = time.time() - start\n\n# Time LightGBM\nstart = time.time()\nlgb_model = LGBMClassifier(n_estimators=100, verbose=-1).fit(X_train, y_train)\nlgb_time = time.time() - start\n\n# Time CatBoost\nstart = time.time()\ncat_model = CatBoostClassifier(iterations=100, verbose=False).fit(X_train, y_train)\ncat_time = time.time() - start\n\nprint(f'XGBoost: {xgb_time:.2f}s')\nprint(f'LightGBM: {lgb_time:.2f}s')\nprint(f'CatBoost: {cat_time:.2f}s')",
+      "best_practices": [
+        "XGBoost: General purpose, well-documented",
+        "LightGBM: Faster, better for large datasets",
+        "CatBoost: Best for categorical features",
+        "Benchmark on your specific data"
+      ]
+    }
+  },
+  "anti_patterns": [
+    {
+      "name": "Not using early stopping",
+      "problem": "Models overfit, waste training time, poor generalization",
+      "solution": "Always use early_stopping_rounds parameter with validation set"
+    },
+    {
+      "name": "Setting learning_rate too high",
+      "problem": "Model doesn't converge, poor performance, unstable training",
+      "solution": "Start with learning_rate=0.1, reduce to 0.01-0.05 for better results"
+    },
+    {
+      "name": "Ignoring categorical features",
+      "problem": "Poor performance, wasted memory on one-hot encoding, slower training",
+      "solution": "Specify categorical features explicitly, let libraries handle them efficiently"
+    },
+    {
+      "name": "Not tuning hyperparameters",
+      "problem": "Suboptimal performance, missing potential improvements",
+      "solution": "Use Optuna or RandomizedSearchCV to tune key parameters: learning_rate, max_depth, n_estimators"
+    },
+    {
+      "name": "Using too many trees without early stopping",
+      "problem": "Overfitting, slow training, wasted resources",
+      "solution": "Set n_estimators high (1000+) but use early_stopping_rounds to stop when validation doesn't improve"
+    }
+  ],
+  "best_practices": [
+    "Always use early stopping with validation set - prevents overfitting and saves time",
+    "Start with learning_rate=0.1, reduce to 0.01-0.05 for better final performance",
+    "Specify categorical features explicitly - let libraries handle them efficiently",
+    "Use cross-validation for robust evaluation - don't rely on single train/test split",
+    "Tune key hyperparameters: learning_rate, max_depth, n_estimators, regularization",
+    "Use feature importance to understand model decisions and select features",
+    "Set n_estimators high (1000+) with early stopping - let algorithm decide when to stop",
+    "Use GPU training for large datasets - 10-50x speedup available",
+    "Compare multiple libraries (XGBoost, LightGBM, CatBoost) on your data",
+    "Use SHAP for model interpretability - understand why model makes predictions"
+  ],
+  "patterns": {
+    "xgboost_patterns": {
+      "description": "XGBoost training, sklearn API, parameter tuning, feature importance, GPU training"
+    },
+    "lightgbm_patterns": {
+      "description": "LightGBM training, categorical features, DART mode, parallel training"
+    },
+    "catboost_patterns": {
+      "description": "CatBoost training, categorical handling, GPU training, text features"
+    },
+    "tuning_patterns": {
+      "description": "Cross-validation, hyperparameter tuning with Optuna, feature selection"
+    },
+    "explanation_patterns": {
+      "description": "SHAP explanations and feature importance comparison"
+    }
+  }
+}

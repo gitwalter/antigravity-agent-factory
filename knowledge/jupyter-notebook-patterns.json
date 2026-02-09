@@ -1,0 +1,291 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "jupyter-patterns",
+  "name": "Jupyter Notebook Patterns",
+  "title": "Jupyter Notebook Patterns",
+  "description": "Best practices and patterns for Jupyter notebooks - magic commands, widgets, productivity, collaboration, testing, and extensions",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Notebook testing with testbook enables verification",
+    "A3_transparency": "Clear code organization and documentation improve transparency",
+    "A4_adaptability": "Modular notebook structure supports easy refactoring"
+  },
+  "core_concepts": {
+    "magic_commands": {
+      "description": "IPython magic commands for enhanced functionality",
+      "types": [
+        "Line magics: %command",
+        "Cell magics: %%command",
+        "Built-in magics: %timeit, %matplotlib, %%sql",
+        "Extension magics: %load_ext"
+      ]
+    },
+    "widgets": {
+      "description": "Interactive widgets for notebooks",
+      "features": [
+        "ipywidgets for interactive plots",
+        "Sliders, dropdowns, buttons",
+        "Real-time updates",
+        "Widget state management"
+      ]
+    },
+    "productivity": {
+      "description": "Productivity enhancements",
+      "features": [
+        "Autoreload for code changes",
+        "Debugging with %debug",
+        "Profiling with %prun, %lprun",
+        "Timing with %time, %timeit"
+      ]
+    }
+  },
+  "patterns": {
+    "timeit_magic": {
+      "description": "Use %timeit for performance benchmarking",
+      "use_when": "Comparing performance of different implementations",
+      "code_example": "# Basic timing\n%timeit sum(range(1000))\n\n# Compare multiple approaches\nimport numpy as np\n\n# Python list comprehension\n%timeit [x**2 for x in range(1000)]\n\n# NumPy array\n%timeit np.arange(1000)**2\n\n# With custom parameters\n%timeit -n 100 -r 5 sum(range(1000))  # 100 loops, 5 runs\n\n# Time a single execution\n%time sum(range(1000000))",
+      "best_practices": [
+        "Use %timeit for accurate timing (runs multiple times)",
+        "Use %time for single execution timing",
+        "Specify -n and -r for custom runs",
+        "Compare similar operations fairly"
+      ]
+    },
+    "matplotlib_inline": {
+      "description": "Configure matplotlib for inline display",
+      "use_when": "Creating plots and visualizations",
+      "code_example": "# Standard inline backend\n%matplotlib inline\nimport matplotlib.pyplot as plt\n\nplt.plot([1, 2, 3, 4])\nplt.ylabel('some numbers')\nplt.show()\n\n# Interactive backend (for JupyterLab)\n%matplotlib widget\nimport matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\nax.plot([1, 2, 3, 4])\nplt.show()\n\n# Notebook backend (for classic Jupyter)\n%matplotlib notebook\n\n# High-resolution plots\n%config InlineBackend.figure_format = 'retina'\n%matplotlib inline",
+      "best_practices": [
+        "Use 'inline' for static plots",
+        "Use 'widget' for interactive plots in JupyterLab",
+        "Set figure format for high DPI displays",
+        "Close figures to free memory"
+      ]
+    },
+    "sql_magic": {
+      "description": "Use %%sql for database queries",
+      "use_when": "Querying databases directly from notebooks",
+      "code_example": "# Load SQL extension\n%load_ext sql\n\n# Set database connection\n%sql postgresql://user:password@localhost/dbname\n\n# Or use connection string\n%sql sqlite:///example.db\n\n# Single line query\n%sql SELECT * FROM users LIMIT 5\n\n# Multi-line query\n%%sql\nSELECT u.name, COUNT(o.id) as order_count\nFROM users u\nLEFT JOIN orders o ON u.id = o.user_id\nGROUP BY u.id, u.name\nORDER BY order_count DESC\nLIMIT 10\n\n# Store result in variable\nresult = %sql SELECT * FROM products WHERE price > 100\nprint(result)\n\n# Use with pandas\nimport pandas as pd\ndf = %sql SELECT * FROM users\n# Returns pandas DataFrame",
+      "best_practices": [
+        "Load sql extension at notebook start",
+        "Use parameterized queries for security",
+        "Store connection strings securely",
+        "Convert results to pandas for analysis"
+      ]
+    },
+    "load_ext_magic": {
+      "description": "Load IPython extensions",
+      "use_when": "Using third-party extensions or custom magics",
+      "code_example": "# Load autoreload extension\n%load_ext autoreload\n%autoreload 2\n\n# Load SQL extension\n%load_ext sql\n\n# Load custom extension\n%load_ext my_custom_extension\n\n# Check available extensions\n%lsmagic\n\n# Reload extension after changes\n%reload_ext autoreload\n\n# Example: Load watermark for environment info\n%load_ext watermark\n%watermark -v -m -p numpy,pandas,matplotlib",
+      "best_practices": [
+        "Load extensions at the top of notebook",
+        "Use autoreload during development",
+        "Document required extensions",
+        "Check extension availability before loading"
+      ]
+    },
+    "interactive_widgets": {
+      "description": "Create interactive plots with ipywidgets",
+      "use_when": "Building interactive visualizations and parameter exploration",
+      "code_example": "import ipywidgets as widgets\nfrom IPython.display import display\nimport matplotlib.pyplot as plt\nimport numpy as np\n\n# Simple slider\nslider = widgets.IntSlider(\n    value=10,\n    min=0,\n    max=100,\n    step=1,\n    description='Value:'\n)\n\ndisplay(slider)\n\n# Interactive plot\n@widgets.interact(freq=(0.1, 5.0, 0.1), amplitude=(0.1, 2.0, 0.1))\ndef plot_wave(freq=1.0, amplitude=1.0):\n    x = np.linspace(0, 10, 1000)\n    y = amplitude * np.sin(2 * np.pi * freq * x)\n    \n    plt.figure(figsize=(10, 4))\n    plt.plot(x, y)\n    plt.xlabel('Time')\n    plt.ylabel('Amplitude')\n    plt.title(f'Sine Wave: freq={freq}, amp={amplitude}')\n    plt.grid(True)\n    plt.show()\n\n# Custom widget layout\nfreq_slider = widgets.FloatSlider(value=1.0, min=0.1, max=5.0, step=0.1, description='Frequency')\namp_slider = widgets.FloatSlider(value=1.0, min=0.1, max=2.0, step=0.1, description='Amplitude')\nphase_slider = widgets.FloatSlider(value=0.0, min=0, max=2*np.pi, step=0.1, description='Phase')\n\nout = widgets.interactive_output(\n    plot_wave,\n    {'freq': freq_slider, 'amplitude': amp_slider, 'phase': phase_slider}\n)\n\nwidgets.VBox([widgets.HBox([freq_slider, amp_slider, phase_slider]), out])",
+      "best_practices": [
+        "Use @widgets.interact for quick prototypes",
+        "Create custom layouts for complex UIs",
+        "Link widgets to update functions",
+        "Store widget state for reproducibility"
+      ]
+    },
+    "widget_dropdown": {
+      "description": "Use dropdown widgets for selection",
+      "use_when": "Selecting from predefined options",
+      "code_example": "import ipywidgets as widgets\nfrom IPython.display import display\n\n# Simple dropdown\nmodel_dropdown = widgets.Dropdown(\n    options=['Linear Regression', 'Random Forest', 'SVM', 'Neural Network'],\n    value='Linear Regression',\n    description='Model:',\n    style={'description_width': 'initial'}\n)\n\ndisplay(model_dropdown)\n\n# Dropdown with callback\nmodel_dropdown = widgets.Dropdown(\n    options={\n        'Linear Regression': 'lr',\n        'Random Forest': 'rf',\n        'Support Vector Machine': 'svm',\n        'Neural Network': 'nn'\n    },\n    value='lr',\n    description='Model Type:'\n)\n\ndef on_model_change(change):\n    print(f'Selected model: {change[\"new\"]}')\n    # Train model or update UI\n\nmodel_dropdown.observe(on_model_change, names='value')\ndisplay(model_dropdown)\n\n# Multiple linked dropdowns\ndataset_dropdown = widgets.Dropdown(\n    options=['Iris', 'Boston Housing', 'Wine Quality'],\n    value='Iris',\n    description='Dataset:'\n)\n\nfeature_dropdown = widgets.Dropdown(\n    options=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'],\n    description='Feature:'\n)\n\ndef update_features(change):\n    dataset = change['new']\n    # Update feature_dropdown options based on dataset\n    if dataset == 'Iris':\n        feature_dropdown.options = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']\n    elif dataset == 'Boston Housing':\n        feature_dropdown.options = ['crim', 'zn', 'indus', 'chas', 'nox']\n\ndataset_dropdown.observe(update_features, names='value')\ndisplay(widgets.VBox([dataset_dropdown, feature_dropdown]))",
+      "best_practices": [
+        "Use descriptive option labels",
+        "Link dropdowns for dependent selections",
+        "Observe changes for dynamic updates",
+        "Store selected values for reproducibility"
+      ]
+    },
+    "autoreload_pattern": {
+      "description": "Enable autoreload for development",
+      "use_when": "Developing modules that are imported in notebooks",
+      "code_example": "# Enable autoreload at notebook start\n%load_ext autoreload\n%autoreload 2\n\n# Now import your modules\nimport my_module\nfrom my_package import my_function\n\n# Edit my_module.py or my_package.py\n# Changes are automatically reloaded on next execution\n\n# Autoreload modes:\n# 0 - disabled\n# 1 - reload modules imported with %aimport\n# 2 - reload all modules (except those excluded)\n\n# Exclude specific modules from autoreload\n%aimport -my_heavy_module\n\n# Check what will be reloaded\n%autoreload?\n\n# Example workflow:\n# 1. Start notebook\n# 2. Load autoreload\n# 3. Import your modules\n# 4. Edit modules in external editor\n# 5. Re-run cells - changes are automatic",
+      "best_practices": [
+        "Use autoreload during development only",
+        "Set to mode 2 for full reload",
+        "Exclude heavy modules that don't change",
+        "Disable in production notebooks"
+      ]
+    },
+    "debugging_patterns": {
+      "description": "Debug code in notebooks",
+      "use_when": "Troubleshooting errors and understanding execution flow",
+      "code_example": "# Post-mortem debugging\n%pdb on  # Enable automatic debugger on exception\n\n# Or use %debug after exception\n\ndef problematic_function(x, y):\n    result = x / y  # Will raise ZeroDivisionError if y == 0\n    return result\n\n# Run with debugging\nresult = problematic_function(10, 0)\n# Automatically enters debugger\n\n# Manual debugging\n%debug\n\n# Step through code\n%pdb on\n\n# Debug specific function\nfrom IPython.core.debugger import Pdb\n\ndef debug_function():\n    pdb = Pdb()\n    pdb.set_trace()  # Breakpoint\n    # Code execution pauses here\n\n# Use %xmode for exception verbosity\n%xmode Verbose  # Most detailed\n%xmode Context  # Default\n%xmode Plain    # Minimal\n\n# Debug with %run\n%run -d script.py  # Run script in debugger\n\n# Debug magic\n%debug  # Enter debugger for last exception",
+      "best_practices": [
+        "Use %pdb on for automatic debugging",
+        "Use %debug after exceptions",
+        "Set breakpoints with pdb.set_trace()",
+        "Use %xmode Verbose for detailed errors"
+      ]
+    },
+    "profiling_patterns": {
+      "description": "Profile code performance",
+      "use_when": "Identifying performance bottlenecks",
+      "code_example": "# Line-by-line profiling\n%load_ext line_profiler\n\ndef slow_function(data):\n    result = []\n    for item in data:\n        processed = item * 2\n        result.append(processed)\n    return result\n\n# Profile function\n%lprun -f slow_function slow_function(range(1000))\n\n# Memory profiling\n%load_ext memory_profiler\n\n@profile\ndef memory_intensive_function():\n    large_list = list(range(1000000))\n    processed = [x**2 for x in large_list]\n    return processed\n\n# Run with memory profiler\n%mprun -f memory_intensive_function memory_intensive_function()\n\n# Time profiling\n%prun slow_function(range(1000))\n\n# Profile entire cell\n%%prun\nresult = []\nfor i in range(1000):\n    result.append(i**2)\n\n# Combined profiling\n%load_ext line_profiler\n%load_ext memory_profiler\n\n@profile\ndef complex_function(data):\n    result = []\n    for item in data:\n        processed = item * 2\n        result.append(processed)\n    return result\n\n# Profile both time and memory\n%lprun -f complex_function complex_function(range(1000))",
+      "best_practices": [
+        "Use line_profiler for line-by-line timing",
+        "Use memory_profiler for memory usage",
+        "Profile before optimizing",
+        "Focus on bottlenecks"
+      ]
+    },
+    "nbconvert_patterns": {
+      "description": "Convert notebooks to other formats",
+      "use_when": "Sharing notebooks or generating reports",
+      "code_example": "# Convert to HTML\n!jupyter nbconvert notebook.ipynb --to html\n\n# Convert to PDF (requires LaTeX)\n!jupyter nbconvert notebook.ipynb --to pdf\n\n# Convert to Python script\n!jupyter nbconvert notebook.ipynb --to script\n\n# Convert to Markdown\n!jupyter nbconvert notebook.ipynb --to markdown\n\n# Convert with template\n!jupyter nbconvert notebook.ipynb --to html --template classic\n\n# Execute before converting\n!jupyter nbconvert notebook.ipynb --to html --execute\n\n# Exclude input cells\n!jupyter nbconvert notebook.ipynb --to html --no-input\n\n# Exclude prompts\n!jupyter nbconvert notebook.ipynb --to html --no-prompt\n\n# Custom output filename\n!jupyter nbconvert notebook.ipynb --to html --output report.html\n\n# Programmatic conversion\nfrom nbconvert import HTMLExporter\nimport nbformat\n\nwith open('notebook.ipynb') as f:\n    nb = nbformat.read(f, as_version=4)\n\nexporter = HTMLExporter()\n(body, resources) = exporter.from_notebook_node(nb)\n\nwith open('output.html', 'w') as f:\n    f.write(body)",
+      "best_practices": [
+        "Execute notebooks before converting",
+        "Use templates for consistent formatting",
+        "Exclude code cells for presentations",
+        "Test converted outputs"
+      ]
+    },
+    "papermill_patterns": {
+      "description": "Parameterize and execute notebooks with Papermill",
+      "use_when": "Running notebooks with different parameters or in batch",
+      "code_example": "# Install: pip install papermill\n\n# In notebook, define parameters cell with tag 'parameters'\n# Cell with tag 'parameters':\nparam1 = 'default_value'\nparam2 = 42\n\n# Execute notebook with parameters\nimport papermill as pm\n\npm.execute_notebook(\n    'input_notebook.ipynb',\n    'output_notebook.ipynb',\n    parameters={'param1': 'new_value', 'param2': 100}\n)\n\n# Execute from command line\n# papermill input.ipynb output.ipynb -p param1 value1 -p param2 42\n\n# Execute with YAML parameters\n# papermill input.ipynb output.ipynb -f parameters.yaml\n\n# Execute multiple notebooks\nimport glob\n\nfor notebook in glob.glob('notebooks/*.ipynb'):\n    pm.execute_notebook(\n        notebook,\n        f'outputs/{notebook}',\n        parameters={'batch_id': '2024-01-01'}\n    )\n\n# Execute with different engines\npm.execute_notebook(\n    'notebook.ipynb',\n    'output.ipynb',\n    engine_name='papermill',\n    parameters={'param': 'value'}\n)",
+      "best_practices": [
+        "Tag parameters cell appropriately",
+        "Use descriptive parameter names",
+        "Validate parameters before execution",
+        "Store outputs with unique names"
+      ]
+    },
+    "nbstripout_patterns": {
+      "description": "Clean notebook outputs for git",
+      "use_when": "Version controlling notebooks with git",
+      "code_example": "# Install: pip install nbstripout\n\n# Configure git filter\nnbstripout --install --attributes .gitattributes\n\n# Or install as git filter\nnbstripout --install\n\n# Strip outputs from notebook\nnbstripout notebook.ipynb\n\n# Strip from all notebooks\nfind . -name '*.ipynb' -exec nbstripout {} \\;\n\n# Configure to preserve certain outputs\n# Create .gitattributes:\n*.ipynb filter=nbstripout\n\n# Or configure in .gitconfig:\n# [filter \"nbstripout\"]\n#     clean = \"python -m nbstripout\"\n#     smudge = cat\n#     required = true\n\n# Preserve specific output types\nnbstripout --keep-output --keep-count notebook.ipynb\n\n# Preserve markdown cells\nnbstripout --keep-count notebook.ipynb\n\n# Dry run (see what would be removed)\nnbstripout --dry-run notebook.ipynb",
+      "best_practices": [
+        "Install nbstripout as git filter",
+        "Strip outputs before committing",
+        "Preserve important outputs if needed",
+        "Use in CI/CD pipelines"
+      ]
+    },
+    "testbook_patterns": {
+      "description": "Test notebooks programmatically",
+      "use_when": "Writing tests for notebook code",
+      "code_example": "# Install: pip install testbook\n\nimport pytest\nfrom testbook import testbook\n\n# Test notebook execution\n@testbook('notebook.ipynb')\ndef test_notebook_executes(tb):\n    tb.execute()\n    assert tb.cell_output(0) == 'expected_output'\n\n# Test specific cells\n@testbook('notebook.ipynb')\ndef test_function_in_notebook(tb):\n    # Execute up to cell 5\n    tb.execute_cell(range(5))\n    \n    # Call function defined in notebook\n    result = tb.ref('my_function')('input')\n    assert result == 'expected'\n\n# Test with mocked dependencies\n@testbook('notebook.ipynb')\ndef test_with_mock(tb):\n    # Mock external dependency\n    tb.inject('import mock_module', before=5)\n    \n    # Execute\n    tb.execute_cell(5)\n    \n    # Verify\n    assert tb.cell_output(5) == 'expected'\n\n# Test notebook parameters\n@testbook('notebook.ipynb')\ndef test_with_parameters(tb):\n    # Set parameters\n    tb.inject('param1 = \"test_value\"', before=0)\n    \n    # Execute\n    tb.execute()\n    \n    # Verify results\n    assert tb.ref('result_variable') == 'expected'\n\n# Integration test\n@pytest.fixture\ndef notebook():\n    with testbook('notebook.ipynb') as tb:\n        yield tb\n\ndef test_notebook_integration(notebook):\n    notebook.execute()\n    # Assertions",
+      "best_practices": [
+        "Test critical notebook logic",
+        "Mock external dependencies",
+        "Test with different parameters",
+        "Use fixtures for setup"
+      ]
+    },
+    "code_organization": {
+      "description": "Organize code in notebooks",
+      "use_when": "Building maintainable notebooks",
+      "code_example": "# Notebook structure:\n# 1. Imports and setup\nimport pandas as pd\nimport numpy as np\nimport matplotlib.pyplot as plt\n\n%load_ext autoreload\n%autoreload 2\n\n# 2. Configuration\nDATA_PATH = 'data/input.csv'\nOUTPUT_PATH = 'data/output.csv'\nRANDOM_STATE = 42\n\n# 3. Helper functions\ndef load_data(path):\n    \"\"\"Load data from CSV.\"\"\"\n    return pd.read_csv(path)\n\ndef process_data(df):\n    \"\"\"Process dataframe.\"\"\"\n    # Processing logic\n    return df\n\n# 4. Data loading\nraw_data = load_data(DATA_PATH)\nprint(f'Loaded {len(raw_data)} rows')\n\n# 5. Data processing\nprocessed_data = process_data(raw_data)\n\n# 6. Analysis\nsummary = processed_data.describe()\nprint(summary)\n\n# 7. Visualization\nplt.figure(figsize=(10, 6))\nplt.plot(processed_data['x'], processed_data['y'])\nplt.show()\n\n# 8. Results and conclusions\n# Markdown cell with findings\n\n# Use markdown cells for documentation\n# Separate code cells by logical sections\n# Keep cells focused on single tasks",
+      "best_practices": [
+        "Group related code in cells",
+        "Use markdown cells for documentation",
+        "Keep cells focused and small",
+        "Separate data loading, processing, and visualization"
+      ]
+    },
+    "documentation_patterns": {
+      "description": "Document analysis in notebooks",
+      "use_when": "Creating reproducible and understandable analyses",
+      "code_example": "# Use markdown cells for documentation\n\n# Title cell (markdown)\n# # Analysis Title\n\n## Introduction\nThis notebook analyzes [topic].\n\n## Objectives\n1. Objective 1\n2. Objective 2\n\n## Methodology\nWe use [method] to [purpose].\n\n# Code cell with docstrings\ndef analyze_data(df):\n    \"\"\"\n    Analyze dataset and return summary statistics.\n    \n    Parameters:\n    -----------\n    df : pandas.DataFrame\n        Input dataframe\n    \n    Returns:\n    --------\n    dict\n        Dictionary with summary statistics\n    \"\"\"\n    return {\n        'mean': df.mean(),\n        'std': df.std(),\n        'count': len(df)\n    }\n\n# Results section (markdown)\n## Results\n\n### Finding 1\n[Explanation]\n\n### Finding 2\n[Explanation]\n\n# Conclusion (markdown)\n## Conclusion\n[Summary of findings]\n\n# Use comments in code\n# Load data\n# Process missing values\n# Calculate statistics",
+      "best_practices": [
+        "Use markdown cells liberally",
+        "Document methodology clearly",
+        "Explain findings in context",
+        "Include conclusions and next steps"
+      ]
+    },
+    "reproducibility_patterns": {
+      "description": "Ensure notebook reproducibility",
+      "use_when": "Creating notebooks that should produce consistent results",
+      "code_example": "# Set random seeds\nimport random\nimport numpy as np\n\nRANDOM_STATE = 42\nrandom.seed(RANDOM_STATE)\nnp.random.seed(RANDOM_STATE)\n\n# Set environment variables\nimport os\nos.environ['PYTHONHASHSEED'] = '0'\n\n# Pin package versions\n# requirements.txt:\n# pandas==2.0.0\n# numpy==1.24.0\n# matplotlib==3.7.0\n\n# Document versions\n%load_ext watermark\n%watermark -v -m -p pandas,numpy,matplotlib,scikit-learn\n\n# Save data versions\nimport hashlib\n\ndef get_file_hash(filepath):\n    with open(filepath, 'rb') as f:\n        return hashlib.md5(f.read()).hexdigest()\n\ndata_hash = get_file_hash('data/input.csv')\nprint(f'Data hash: {data_hash}')\n\n# Save parameters\nPARAMS = {\n    'random_state': 42,\n    'test_size': 0.2,\n    'n_estimators': 100\n}\n\n# Save results with metadata\nimport json\nfrom datetime import datetime\n\nresults = {\n    'timestamp': datetime.now().isoformat(),\n    'parameters': PARAMS,\n    'data_hash': data_hash,\n    'results': {'accuracy': 0.95}\n}\n\nwith open('results.json', 'w') as f:\n    json.dump(results, f, indent=2)",
+      "best_practices": [
+        "Set random seeds at start",
+        "Document package versions",
+        "Save data hashes",
+        "Record parameters and results",
+        "Use version control"
+      ]
+    },
+    "jupyterlab_extensions": {
+      "description": "Use JupyterLab extensions",
+      "use_when": "Extending JupyterLab functionality",
+      "code_example": "# Install extensions\n# jupyter labextension install @jupyter-widgets/jupyterlab-manager\n# jupyter labextension install @jupyterlab/git\n# jupyter labextension install @jupyterlab/toc\n\n# List installed extensions\n# jupyter labextension list\n\n# Enable/disable extensions\n# jupyter labextension enable @jupyterlab/toc\n# jupyter labextension disable @jupyterlab/toc\n\n# Build JupyterLab after installing extensions\n# jupyter lab build\n\n# Popular extensions:\n# - @jupyterlab/git: Git integration\n# - @jupyterlab/toc: Table of contents\n# - @jupyter-widgets/jupyterlab-manager: Widget support\n# - @jupyterlab/debugger: Debugger\n# - @jupyterlab/lsp: Language Server Protocol\n\n# Use extension features\n# Git extension: Commit, push, pull from UI\n# TOC extension: Auto-generates table of contents\n# Debugger: Step through code\n# LSP: Code completion and diagnostics",
+      "best_practices": [
+        "Install extensions via jupyter labextension",
+        "Rebuild after installing extensions",
+        "Document required extensions",
+        "Keep extensions updated"
+      ]
+    },
+    "vscode_notebooks": {
+      "description": "Work with notebooks in VS Code",
+      "use_when": "Using VS Code for notebook development",
+      "code_example": "# VS Code supports .ipynb files natively\n\n# Open notebook in VS Code\n# File -> Open -> notebook.ipynb\n\n# Execute cells\n# Shift+Enter: Run cell and move to next\n# Ctrl+Enter: Run cell\n# Alt+Enter: Run cell and insert below\n\n# VS Code notebook features:\n# - Integrated terminal\n# - Git integration\n# - Extension support\n# - Debugging\n# - IntelliSense\n\n# Configure VS Code for notebooks\n# settings.json:\n{\n    \"jupyter.interactiveWindow.textEditor.executeSelection\": true,\n    \"jupyter.sendSelectionToInteractiveWindow\": true,\n    \"python.defaultInterpreterPath\": \"/path/to/python\"\n}\n\n# Use Python Interactive Window\n# Select code and press Shift+Enter\n# Code runs in interactive window\n\n# Debug notebook\n# Set breakpoints in code cells\n# Use VS Code debugger\n\n# Use extensions\n# - Python extension\n# - Jupyter extension\n# - Pylance for IntelliSense",
+      "best_practices": [
+        "Use VS Code for better IDE features",
+        "Configure Python interpreter",
+        "Use interactive window for quick tests",
+        "Leverage debugging capabilities"
+      ]
+    },
+    "colab_specifics": {
+      "description": "Google Colab-specific patterns",
+      "use_when": "Working in Google Colab environment",
+      "code_example": "# Mount Google Drive\nfrom google.colab import drive\ndrive.mount('/content/drive')\n\n# Install packages\n!pip install package_name\n\n# Use Colab-specific magics\n# %tensorflow_version 2.x\n\n# Access files\n# Files uploaded via UI are in /content/\n\n# Use Colab forms\n# @title Section title\nparam1 = 'value'  # @param\nparam2 = 42  # @param {type:\"slider\", min:0, max:100}\n\n# Use Colab widgets\nfrom google.colab import widgets\n\n# File upload widget\nfrom google.colab import files\nuploaded = files.upload()\n\n# Download files\nfiles.download('file.txt')\n\n# Use GPU/TPU\n# Runtime -> Change runtime type -> GPU/TPU\n\n# Check GPU\n!nvidia-smi\n\n# Use TPU\nimport tensorflow as tf\nresolver = tf.distribute.cluster_resolver.TPUClusterResolver()\ntf.config.experimental_connect_to_cluster(resolver)\ntf.tpu.experimental.initialize_tpu_system(resolver)\n\n# Share notebook\n# File -> Share -> Get shareable link\n\n# Save to GitHub\n# File -> Save a copy in GitHub",
+      "best_practices": [
+        "Mount Drive for persistent storage",
+        "Use Colab forms for parameters",
+        "Leverage free GPU/TPU",
+        "Save important work to Drive or GitHub"
+      ]
+    }
+  },
+  "best_practices": [
+    "Structure notebooks with clear sections: imports, configuration, data loading, processing, visualization, and conclusions",
+    "Use %load_ext autoreload with %autoreload 2 during development to auto-reload imported modules",
+    "Set random seeds and document package versions (watermark) for reproducibility",
+    "Use nbstripout as a git filter to strip outputs before committing notebooks to version control",
+    "Keep cells small and focused on a single logical operation for readability and debugging",
+    "Use Papermill for parameterized batch execution of notebooks in production pipelines",
+    "Write tests for notebook logic using testbook to ensure correctness over time",
+    "Use markdown cells liberally to document methodology, findings, and conclusions"
+  ],
+  "anti_patterns": [
+    {
+      "name": "notebook_as_production_code",
+      "description": "Running Jupyter notebooks directly as production services",
+      "problem": "Notebooks lack proper error handling, logging, and deployment patterns",
+      "solution": "Extract production logic into Python modules and use notebooks for exploration only"
+    },
+    {
+      "name": "hidden_state_dependencies",
+      "description": "Cells that depend on execution order not reflected in the notebook layout",
+      "problem": "Notebook fails when run top-to-bottom (Restart & Run All)",
+      "solution": "Ensure all cells can execute sequentially; use Restart & Run All to verify"
+    },
+    {
+      "name": "committing_outputs",
+      "description": "Committing notebook outputs (plots, data) to version control",
+      "problem": "Large diffs, merge conflicts, repository bloat",
+      "solution": "Use nbstripout to strip outputs before commits; store results separately"
+    },
+    {
+      "name": "monolithic_notebook",
+      "description": "Single massive notebook with hundreds of cells",
+      "problem": "Hard to navigate, debug, and collaborate on",
+      "solution": "Split into focused notebooks or extract reusable code into Python modules"
+    }
+  ]
+}

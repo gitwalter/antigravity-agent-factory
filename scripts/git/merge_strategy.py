@@ -56,7 +56,8 @@ class ArtifactType(Enum):
         PRACTICES: practices.yaml file.
         METHODOLOGY: workflows/methodology.yaml file.
     """
-    CURSORRULES = "cursorrules"    AGENT = "agent"
+    CURSORRULES = "cursorrules"
+    AGENT = "agent"
     SKILL = "skill"
     COMMAND = "command"
     RULE = "rule"

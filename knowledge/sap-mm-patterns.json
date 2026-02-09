@@ -1,0 +1,88 @@
+{
+  "id": "sap-mm-patterns",
+  "name": "SAP MM Patterns",
+  "description": "Materials Management procurement, inventory, movement types, tables. S/4 on-prem and R/3/ECC.",
+  "version": "1.0.0",
+  "category": "patterns",
+  "patterns": {
+    "purchase_order": {
+      "description": "Purchase order header and items",
+      "coreTables": {
+        "EKKO": {
+          "purpose": "Purchase order header",
+          "keyFields": [
+            "MANDT",
+            "EBELN"
+          ]
+        },
+        "EKPO": {
+          "purpose": "Purchase order item",
+          "keyFields": [
+            "MANDT",
+            "EBELN",
+            "EBELP"
+          ]
+        },
+        "EKKN": {
+          "purpose": "Account assignment in purchasing document"
+        }
+      }
+    },
+    "material_document": {
+      "description": "Material document for goods movements",
+      "coreTables": {
+        "MKPF": {
+          "purpose": "Material document header"
+        },
+        "MSEG": {
+          "purpose": "Material document item"
+        }
+      }
+    },
+    "invoice_receipt": {
+      "description": "Invoice receipt in MM-IV",
+      "coreTables": {
+        "RSEG": {
+          "purpose": "Invoice receipt (MM-IV)"
+        }
+      }
+    },
+    "procurement_process": {
+      "description": "Procurement process flow: PO \u2192 GR \u2192 Invoice verification",
+      "process": {
+        "procurement": "PO \u2192 GR \u2192 Invoice verification",
+        "integration": [
+          "FI",
+          "EWM"
+        ]
+      }
+    }
+  },
+  "best_practices": [
+    "Follow procurement process: Purchase Order \u2192 Goods Receipt \u2192 Invoice Verification",
+    "Use EKKO/EKPO for purchase orders",
+    "Use MKPF/MSEG for material documents",
+    "Verify table/field via SAP Help MCP",
+    "Understand integration with FI (postings) and EWM (warehouse movements)"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Not following procurement process",
+      "problem": "Missing goods receipt or invoice verification",
+      "fix": "Follow complete flow: PO \u2192 GR \u2192 Invoice \u2192 FI Posting"
+    },
+    {
+      "name": "Ignoring account assignment",
+      "problem": "Missing cost center or G/L account assignment",
+      "fix": "Use EKKN for account assignment in purchase orders"
+    },
+    {
+      "name": "Not verifying material document",
+      "problem": "Stock discrepancies",
+      "fix": "Always verify material documents (MKPF/MSEG) match purchase orders"
+    }
+  ],
+  "related_skills": [
+    "s4-process-guide"
+  ]
+}

@@ -1,25 +1,22 @@
 ---
-name: analyze-knowledge-gaps
 description: Analyze Factory knowledge base to identify missing, shallow, or stale content
-type: skill
-agents: [knowledge-extender, knowledge-evolution]
-knowledge: [manifest.json, agent-taxonomy]
 ---
 
+# Analyze Knowledge Gaps
+
+Analyze Factory knowledge base to identify missing, shallow, or stale content
+
+## 
 # Analyze Knowledge Gaps Skill
 
 Systematically analyze the Factory's knowledge base against the topic taxonomy to identify gaps, shallow coverage, stale content, and cross-reference issues. Produces prioritized recommendations for knowledge extension.
 
-## When to Use
+## 
+# Analyze Knowledge Gaps Skill
 
-- Before extending knowledge to understand what's missing
-- During blueprint development to check topic coverage
-- Periodically to assess knowledge base health
-- When users ask "what knowledge is missing?"
-- After adding new blueprints to identify required knowledge
+Systematically analyze the Factory's knowledge base against the topic taxonomy to identify gaps, shallow coverage, stale content, and cross-reference issues. Produces prioritized recommendations for knowledge extension.
 
 ## Gap Types
-
 | Gap Type | Description | Priority |
 |----------|-------------|----------|
 | **Missing** | Topic not covered at all | Critical |
@@ -29,7 +26,6 @@ Systematically analyze the Factory's knowledge base against the topic taxonomy t
 | **Cross-Reference** | Mentioned but no dedicated knowledge | Low |
 
 ## Process
-
 ### Step 1: Run CLI Gap Analysis
 
 Use the Factory CLI to get a structured gap report:
@@ -99,8 +95,47 @@ Based on gap analysis, prioritize by:
 3. **Blueprint alignment** - Gaps in popular blueprints
 4. **User requests** - Topics users have asked about
 
-## Using the Python API
+```bash
+python cli/factory_cli.py --analyze-gaps
+```
 
+```bash
+# Analyze gaps for a specific blueprint
+python cli/factory_cli.py --analyze-gaps --gap-scope blueprint --gap-filter python-fastapi
+
+# Analyze gaps for a domain
+python cli/factory_cli.py --analyze-gaps --gap-scope domain --gap-filter ai_development
+
+# Analyze a specific topic
+python cli/factory_cli.py --analyze-gaps --gap-scope topic --gap-filter constitutional_ai
+```
+
+```
+Gap Analysis Results
+====================
+
+CRITICAL (Missing):
+  - constitutional_ai (ai_development > safety_alignment)
+    Required depth: 3, Current: 0
+    Recommendation: Create knowledge/constitutional-ai-patterns.json
+
+HIGH (Shallow):
+  - prompt_injection (ai_development > safety_alignment)
+    Required depth: 2, Current: 1
+    Source: security-patterns.json (1 mention)
+    Recommendation: Expand with dedicated section
+
+MEDIUM (Incomplete):
+  - function_calling (ai_development > tool_use)
+    Required depth: 2, Current: 1
+    Missing: error handling, parallel execution
+```
+
+```bash
+python cli/factory_cli.py --coverage-report ai-agent-development
+```
+
+## Using the Python API
 For programmatic access:
 
 ```python
@@ -128,13 +163,37 @@ for gap in critical_gaps:
     print(f"  Target file: knowledge/{gap.topic.name.replace('_', '-')}-patterns.json")
 ```
 
-## Output Format
+```python
+from scripts.analysis.knowledge_gap_analyzer import KnowledgeGapAnalyzer, GapPriority
+from pathlib import Path
 
+# Initialize analyzer
+factory_root = Path(".")
+analyzer = KnowledgeGapAnalyzer(
+    knowledge_dir=factory_root / "knowledge",
+    taxonomy_dir=factory_root / "scripts" / "taxonomy"
+)
+
+# Run full analysis
+result = analyzer.analyze("agent_taxonomy.json")
+
+# Get gaps by priority
+critical_gaps = [g for g in result.gaps if g.priority == GapPriority.CRITICAL]
+high_gaps = [g for g in result.gaps if g.priority == GapPriority.HIGH]
+
+# Show what's missing
+for gap in critical_gaps:
+    print(f"{gap.topic.name}: {gap.gap_type.value}")
+    print(f"  Required depth: {gap.coverage.required_depth}")
+    print(f"  Target file: knowledge/{gap.topic.name.replace('_', '-')}-patterns.json")
+```
+
+## Output Format
 When reporting gaps to the user:
 
 ```markdown
-## Knowledge Gap Analysis
 
+## Knowledge Gap Analysis
 ### Summary
 - **Total topics analyzed**: 45
 - **Adequate coverage**: 32 (71%)
@@ -161,7 +220,6 @@ When reporting gaps to the user:
 ```
 
 ## Integration with extend-knowledge
-
 After gap analysis, trigger the `extend-knowledge` skill:
 
 ```
@@ -173,8 +231,16 @@ Identified gap: constitutional_ai (priority: CRITICAL)
 → Update manifest and documentation
 ```
 
-## Fallback Procedures
+```
+Identified gap: constitutional_ai (priority: CRITICAL)
 
+→ Invoke extend-knowledge skill with topic "constitutional_ai"
+→ Use web search to gather current best practices
+→ Create knowledge/constitutional-ai-patterns.json
+→ Update manifest and documentation
+```
+
+## Fallback Procedures
 | Scenario | Fallback |
 |----------|----------|
 | Taxonomy file not found | Use default taxonomy embedded in analyzer |
@@ -182,9 +248,21 @@ Identified gap: constitutional_ai (priority: CRITICAL)
 | No gaps found | Report healthy status, suggest maintenance |
 | Python analyzer fails | Fall back to manual file inspection |
 
-## References
+## Best Practices
+- Run gap analysis before extending knowledge to prioritize what's most critical - focus on missing topics that block blueprint functionality first
+- Use scoped analysis (`--gap-scope`) when investigating specific blueprints or domains rather than analyzing everything at once
+- Prioritize gaps by impact: critical missing topics > high-priority shallow coverage > medium-priority stale content
+- Cross-reference gap analysis with user requests and blueprint requirements to ensure alignment with actual needs
+- Review gap analysis results periodically (monthly) to maintain knowledge base health and catch drift early
+- After identifying gaps, immediately invoke `extend-knowledge` skill to fill critical gaps before they accumulate
 
+## References
 - `scripts/analysis/knowledge_gap_analyzer.py` - Core analyzer implementation
 - `scripts/taxonomy/agent_taxonomy.json` - Topic definitions and required depths
 - `knowledge/manifest.json` - Current knowledge file registry
-- `.agent/skills/extend-knowledge/SKILL.md` - Follow-up skill for gap filling
+- `.cursor/skills/extend-knowledge/SKILL.md` - Follow-up skill for gap filling
+
+## Prerequisites
+> [!IMPORTANT]
+> Requirements:
+> - Knowledge: manifest.json, agent-taxonomy

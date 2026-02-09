@@ -1,0 +1,409 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "dotnet-auth-patterns",
+  "name": ".NET Authentication Patterns",
+  "title": ".NET Authentication and Authorization Patterns",
+  "description": "Best practices and patterns for implementing authentication and authorization in .NET applications",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns include security testing and verification strategies",
+    "A3_transparency": "All patterns emphasize audit logging and security transparency"
+  },
+  "aspnet_identity": {
+    "description": "ASP.NET Core Identity for user management",
+    "features": {
+      "user_management": "Create, update, delete users",
+      "password_hashing": "PBKDF2 with salt",
+      "role_management": "Assign roles to users",
+      "claim_management": "Store user claims",
+      "two_factor": "Two-factor authentication support",
+      "lockout": "Account lockout after failed attempts",
+      "email_confirmation": "Email verification",
+      "password_reset": "Password reset functionality"
+    },
+    "storage_providers": {
+      "entity_framework": "SQL Server, PostgreSQL, etc.",
+      "mongodb": "MongoDB storage",
+      "cosmos_db": "Azure Cosmos DB",
+      "custom": "Custom storage providers"
+    },
+    "best_practices": [
+      "Use strong password requirements",
+      "Enable account lockout",
+      "Require email confirmation",
+      "Implement password reset",
+      "Use secure password hashing (default PBKDF2)",
+      "Store sensitive data encrypted",
+      "Implement proper session management",
+      "Log authentication events"
+    ]
+  },
+  "jwt_authentication": {
+    "description": "JSON Web Token authentication",
+    "components": {
+      "issuer": "Token issuer (your application)",
+      "audience": "Token audience (intended recipient)",
+      "claims": "User information in token",
+      "signing_key": "Key to sign and verify tokens",
+      "expiration": "Token expiration time"
+    },
+    "token_types": {
+      "access_token": {
+        "description": "Short-lived token for API access",
+        "lifetime": "15 minutes to 1 hour",
+        "use_when": "API authentication"
+      },
+      "refresh_token": {
+        "description": "Long-lived token to obtain new access tokens",
+        "lifetime": "Days to weeks",
+        "use_when": "Maintain user sessions",
+        "storage": "Secure storage (HttpOnly cookie or database)"
+      }
+    },
+    "best_practices": [
+      "Use short-lived access tokens (15-60 minutes)",
+      "Use refresh tokens for long sessions",
+      "Store refresh tokens securely",
+      "Validate token signature, expiration, issuer, audience",
+      "Use HTTPS only",
+      "Rotate refresh tokens",
+      "Implement token revocation",
+      "Include minimal claims in token",
+      "Use strong signing keys",
+      "Log token generation and validation"
+    ],
+    "security_considerations": [
+      "Never store sensitive data in token",
+      "Use appropriate token expiration",
+      "Implement token blacklisting for logout",
+      "Validate token on every request",
+      "Use secure key storage",
+      "Implement rate limiting for token endpoints"
+    ]
+  },
+  "oauth2_oidc": {
+    "description": "OAuth 2.0 and OpenID Connect",
+    "oauth2_flows": {
+      "authorization_code": {
+        "description": "Server-side web applications",
+        "use_when": "Web applications with server",
+        "security": "Most secure flow"
+      },
+      "client_credentials": {
+        "description": "Service-to-service authentication",
+        "use_when": "API to API communication",
+        "security": "No user involved"
+      },
+      "implicit": {
+        "description": "Deprecated, use authorization code with PKCE",
+        "status": "Not recommended"
+      },
+      "resource_owner_password": {
+        "description": "Direct username/password exchange",
+        "use_when": "Trusted applications only",
+        "security": "Less secure, avoid if possible"
+      }
+    },
+    "openid_connect": {
+      "description": "Authentication layer on top of OAuth 2.0",
+      "features": [
+        "User authentication",
+        "Identity information",
+        "Standard claims"
+      ],
+      "id_token": "Contains user identity information",
+      "userinfo_endpoint": "Get additional user information"
+    },
+    "identity_servers": {
+      "duende_identityserver": {
+        "description": "Open-source IdentityServer",
+        "features": [
+          "Full OAuth 2.0/OIDC",
+          "Customizable",
+          "Self-hosted"
+        ],
+        "use_when": "Need full control, self-hosted"
+      },
+      "azure_ad": {
+        "description": "Microsoft's managed identity provider",
+        "features": [
+          "Managed service",
+          "Enterprise features",
+          "Azure integration"
+        ],
+        "use_when": "Microsoft ecosystem, managed solution"
+      },
+      "okta": {
+        "description": "Cloud identity provider",
+        "features": [
+          "Managed service",
+          "Enterprise features"
+        ],
+        "use_when": "Need managed solution"
+      }
+    },
+    "best_practices": [
+      "Use authorization code flow with PKCE",
+      "Validate ID tokens properly",
+      "Use state parameter for CSRF protection",
+      "Implement proper redirect URI validation",
+      "Store tokens securely",
+      "Handle token refresh",
+      "Implement logout properly",
+      "Use nonce for ID token validation"
+    ]
+  },
+  "authorization": {
+    "role_based": {
+      "description": "Authorization based on user roles",
+      "implementation": "[Authorize(Roles = \"Admin\")]",
+      "use_when": "Simple role-based access control",
+      "limitations": [
+        "Less flexible",
+        "Role explosion"
+      ]
+    },
+    "policy_based": {
+      "description": "Authorization based on policies",
+      "implementation": "AddAuthorization with policy definitions",
+      "use_when": "Complex authorization rules",
+      "benefits": [
+        "Flexible",
+        "Reusable",
+        "Testable"
+      ],
+      "best_practices": [
+        "Define clear policies",
+        "Use requirements and handlers",
+        "Test policies independently",
+        "Document policy purposes"
+      ]
+    },
+    "claim_based": {
+      "description": "Authorization based on claims",
+      "implementation": "RequireClaim() in policies",
+      "use_when": "Fine-grained access control",
+      "benefits": [
+        "Flexible",
+        "Granular control"
+      ]
+    },
+    "resource_based": {
+      "description": "Authorization based on resource ownership",
+      "implementation": "IAuthorizationHandler with resource",
+      "use_when": "Resource ownership matters",
+      "benefits": [
+        "Fine-grained control",
+        "Dynamic authorization"
+      ],
+      "best_practices": [
+        "Check resource ownership",
+        "Handle authorization failures",
+        "Log authorization decisions"
+      ]
+    }
+  },
+  "azure_ad_entra_id": {
+    "description": "Microsoft Azure AD / Entra ID integration",
+    "features": {
+      "single_sign_on": "SSO across Microsoft services",
+      "multi_tenant": "Multi-tenant application support",
+      "conditional_access": "Policy-based access control",
+      "managed_identity": "Service-to-service authentication",
+      "app_roles": "Application-defined roles",
+      "groups": "Azure AD groups as roles"
+    },
+    "integration_patterns": {
+      "web_app": "Web application authentication",
+      "api": "API authentication with tokens",
+      "daemon": "Service-to-service authentication",
+      "spa": "Single-page application authentication"
+    },
+    "best_practices": [
+      "Use Microsoft.Identity.Web library",
+      "Configure token validation properly",
+      "Use managed identity for service-to-service",
+      "Implement proper error handling",
+      "Handle token refresh",
+      "Use app roles for authorization",
+      "Configure conditional access policies",
+      "Monitor authentication events"
+    ]
+  },
+  "api_key_authentication": {
+    "description": "Simple API key authentication",
+    "use_when": "Service-to-service, simple scenarios",
+    "implementation": "Custom authentication handler",
+    "security_considerations": [
+      "Store keys securely",
+      "Rotate keys regularly",
+      "Use HTTPS only",
+      "Implement rate limiting",
+      "Log API key usage",
+      "Revoke compromised keys"
+    ],
+    "best_practices": [
+      "Use for service-to-service only",
+      "Store keys in Key Vault",
+      "Implement key rotation",
+      "Monitor key usage",
+      "Use short-lived keys when possible"
+    ]
+  },
+  "multi_tenant": {
+    "description": "Support multiple tenants in single application",
+    "patterns": {
+      "shared_database": "All tenants in same database",
+      "separate_database": "Each tenant has own database",
+      "hybrid": "Mix of shared and separate"
+    },
+    "tenant_identification": {
+      "subdomain": "tenant1.example.com",
+      "path": "example.com/tenant1",
+      "header": "X-Tenant-Id header",
+      "claim": "Tenant ID in token"
+    },
+    "best_practices": [
+      "Isolate tenant data properly",
+      "Validate tenant access",
+      "Use tenant-specific connection strings",
+      "Implement tenant switching securely",
+      "Log tenant-specific actions",
+      "Handle tenant not found scenarios"
+    ]
+  },
+  "security_best_practices": {
+    "password_security": [
+      "Use strong password requirements",
+      "Hash passwords with salt (PBKDF2, Argon2)",
+      "Never store plain text passwords",
+      "Implement password complexity rules",
+      "Use password history to prevent reuse",
+      "Implement account lockout"
+    ],
+    "session_management": [
+      "Use secure session cookies",
+      "Set appropriate session timeout",
+      "Implement session invalidation on logout",
+      "Use HttpOnly and Secure cookie flags",
+      "Implement CSRF protection",
+      "Rotate session IDs"
+    ],
+    "token_security": [
+      "Use short-lived access tokens",
+      "Store refresh tokens securely",
+      "Implement token revocation",
+      "Validate tokens on every request",
+      "Use strong signing keys",
+      "Rotate signing keys",
+      "Implement token blacklisting"
+    ],
+    "network_security": [
+      "Use HTTPS only",
+      "Implement HSTS",
+      "Use secure headers",
+      "Validate certificates",
+      "Implement rate limiting",
+      "Monitor for suspicious activity"
+    ],
+    "audit_logging": [
+      "Log authentication events",
+      "Log authorization decisions",
+      "Log token generation",
+      "Log failed authentication attempts",
+      "Log password changes",
+      "Log role changes",
+      "Include user context in logs"
+    ]
+  },
+  "error_handling": {
+    "description": "Handle authentication and authorization errors",
+    "patterns": {
+      "generic_errors": "Don't reveal if user exists",
+      "rate_limiting": "Limit failed attempts",
+      "account_lockout": "Lock account after failures",
+      "error_logging": "Log security events"
+    },
+    "best_practices": [
+      "Don't reveal if username exists",
+      "Use generic error messages",
+      "Implement rate limiting",
+      "Log security events",
+      "Handle token expiration gracefully",
+      "Provide clear error messages for users"
+    ]
+  },
+  "testing": {
+    "unit_testing": {
+      "description": "Test authentication logic",
+      "approaches": {
+        "mock_authentication": "Mock authentication context",
+        "test_identity": "Create test user identity",
+        "integration_tests": "Test with real identity provider"
+      },
+      "best_practices": [
+        "Test authentication flows",
+        "Test authorization policies",
+        "Test error scenarios",
+        "Test token validation",
+        "Use test identity providers"
+      ]
+    }
+  },
+  "patterns": {
+    "claims_transformation": {
+      "description": "Transform claims after authentication",
+      "use_when": "Need to modify or add claims",
+      "implementation": "IClaimsTransformation",
+      "best_practices": [
+        "Transform claims early in pipeline",
+        "Cache transformed claims",
+        "Document transformation logic"
+      ]
+    },
+    "authentication_schemes": {
+      "description": "Support multiple authentication methods",
+      "use_when": "Need multiple auth methods",
+      "implementation": "Multiple authentication schemes",
+      "best_practices": [
+        "Define clear scheme names",
+        "Use appropriate default scheme",
+        "Handle scheme selection properly"
+      ]
+    },
+    "challenge_response": {
+      "description": "Challenge unauthenticated requests",
+      "implementation": "ChallengeAsync()",
+      "use_when": "Need to redirect to login",
+      "best_practices": [
+        "Set appropriate redirect URI",
+        "Handle return URL",
+        "Preserve original request"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use HTTPS in production",
+    "Store secrets in Key Vault or secure configuration",
+    "Implement token refresh for long-lived sessions",
+    "Use short-lived access tokens with refresh tokens",
+    "Validate tokens on every request",
+    "Implement proper CORS configuration",
+    "Use role-based or policy-based authorization",
+    "Implement resource-based authorization for fine-grained control",
+    "Log authentication events for security monitoring",
+    "Use secure password hashing (PBKDF2, Argon2)",
+    "Implement account lockout to prevent brute force attacks",
+    "Use multi-factor authentication (MFA) for sensitive operations",
+    "Implement proper session management",
+    "Use managed identity for service-to-service authentication",
+    "Implement rate limiting for authentication endpoints",
+    "Handle authentication errors gracefully",
+    "Test authentication and authorization thoroughly",
+    "Monitor authentication and authorization events",
+    "Implement proper error messages (don't reveal user existence)",
+    "Use strong signing keys and rotate them regularly"
+  ],
+  "anti_patterns": []
+}

@@ -1,0 +1,392 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "ray-patterns",
+  "name": "Ray Patterns",
+  "title": "Ray Patterns",
+  "description": "Best practices and patterns for Ray distributed computing ecosystem",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A3_transparency": "Ray provides observability and tracing for distributed workloads"
+  },
+  "core_patterns": {
+    "remote_functions": {
+      "description": "Execute functions remotely across cluster",
+      "use_when": "Need to parallelize independent function calls",
+      "code_example": "import ray\n\nray.init()\n\n@ray.remote\ndef process_data(data_chunk):\n    # Process data chunk\n    return processed_result\n\n# Launch multiple tasks in parallel\nfutures = [process_data.remote(chunk) for chunk in data_chunks]\nresults = ray.get(futures)",
+      "best_practices": [
+        "Use @ray.remote decorator for functions to execute remotely",
+        "Return serializable objects (pickle-compatible)",
+        "Use ray.get() to retrieve results synchronously",
+        "Use ray.wait() for partial results",
+        "Avoid passing large objects as arguments - use object store instead"
+      ],
+      "key_properties": {
+        "num_cpus": "CPU resources per task",
+        "num_gpus": "GPU resources per task",
+        "memory": "Memory requirement",
+        "resources": "Custom resource requirements"
+      }
+    },
+    "remote_class_actors": {
+      "description": "Stateful distributed actors",
+      "use_when": "Need stateful computation or long-running services",
+      "code_example": "import ray\n\nray.init()\n\n@ray.remote\nclass ModelServer:\n    def __init__(self, model_path):\n        self.model = load_model(model_path)\n    \n    def predict(self, data):\n        return self.model.predict(data)\n    \n    def update_model(self, new_model):\n        self.model = new_model\n\n# Create actor instance\nserver = ModelServer.remote(model_path='model.pkl')\n\n# Call methods (non-blocking)\nfutures = [server.predict.remote(data) for data in batch]\npredictions = ray.get(futures)",
+      "best_practices": [
+        "Actors maintain state across method calls",
+        "Actor methods execute sequentially per actor",
+        "Create multiple actor instances for parallelism",
+        "Use actors for stateful services (model servers, databases)",
+        "Monitor actor lifecycle and handle failures"
+      ]
+    },
+    "object_store": {
+      "description": "Distributed object store for sharing data",
+      "use_when": "Need to share large objects between tasks efficiently",
+      "code_example": "import ray\nimport numpy as np\n\nray.init()\n\n# Put large array in object store\nlarge_array = np.random.rand(1000000)\narray_ref = ray.put(large_array)\n\n@ray.remote\ndef process_array(ref):\n    # Retrieve from object store\n    arr = ray.get(ref)\n    return arr.sum()\n\n# Pass reference instead of copying\nfutures = [process_array.remote(array_ref) for _ in range(10)]\nresults = ray.get(futures)",
+      "best_practices": [
+        "Use ray.put() for large objects shared across tasks",
+        "Pass object references instead of copying",
+        "Object store automatically manages memory",
+        "Use for datasets shared by multiple tasks",
+        "Monitor object store memory usage"
+      ]
+    },
+    "task_dag": {
+      "description": "Build task dependency graphs",
+      "use_when": "Tasks have dependencies and need ordered execution",
+      "code_example": "import ray\n\nray.init()\n\n@ray.remote\ndef load_data(): return data\n\n@ray.remote\ndef preprocess(data): return processed_data\n\n@ray.remote\ndef train_model(data): return model\n\n@ray.remote\ndef evaluate(model, data): return metrics\n\n# Build DAG\nraw_data = load_data.remote()\nprocessed = preprocess.remote(raw_data)\nmodel = train_model.remote(processed)\nmetrics = evaluate.remote(model, processed)\n\n# Execute\nfinal_metrics = ray.get(metrics)",
+      "best_practices": [
+        "Ray automatically handles dependencies",
+        "Tasks execute when dependencies are ready",
+        "Use for pipeline workflows",
+        "Monitor DAG execution with Ray Dashboard"
+      ]
+    },
+    "resource_requirements": {
+      "description": "Specify resource requirements for tasks",
+      "use_when": "Need to control CPU, GPU, or memory allocation",
+      "code_example": "import ray\n\nray.init()\n\n@ray.remote(num_cpus=4, num_gpus=1, memory=8 * 1024 * 1024 * 1024)\ndef train_model(data):\n    # Training requires 4 CPUs, 1 GPU, 8GB RAM\n    return model\n\n@ray.remote(num_cpus=1)\ndef preprocess(data):\n    # Lightweight preprocessing\n    return processed_data",
+      "best_practices": [
+        "Specify realistic resource requirements",
+        "Use num_cpus for CPU-bound tasks",
+        "Use num_gpus for GPU tasks",
+        "Specify memory in bytes",
+        "Ray scheduler handles resource allocation"
+      ]
+    }
+  },
+  "tune_patterns": {
+    "grid_search": {
+      "description": "Grid search hyperparameter optimization",
+      "use_when": "Small hyperparameter space to exhaustively search",
+      "code_example": "from ray import tune\nfrom ray.tune.search.grid_search import GridSearchCV\n\nconfig = {\n    'lr': tune.grid_search([0.001, 0.01, 0.1]),\n    'batch_size': tune.grid_search([32, 64, 128]),\n    'hidden_size': tune.grid_search([128, 256, 512])\n}\n\nanalysis = tune.run(\n    train_model,\n    config=config,\n    num_samples=1,  # One sample per grid point\n    metric='accuracy',\n    mode='max'\n)\n\nbest_config = analysis.get_best_config('accuracy', 'max')",
+      "best_practices": [
+        "Use for small, discrete hyperparameter spaces",
+        "Set num_samples=1 for grid search",
+        "Grid search is exhaustive but can be slow",
+        "Use with schedulers like ASHA for early stopping"
+      ]
+    },
+    "random_search": {
+      "description": "Random hyperparameter sampling",
+      "use_when": "Large hyperparameter space or limited budget",
+      "code_example": "from ray import tune\nfrom ray.tune.search.optuna import OptunaSearch\n\nconfig = {\n    'lr': tune.loguniform(1e-4, 1e-1),\n    'batch_size': tune.choice([32, 64, 128, 256]),\n    'hidden_size': tune.randint(64, 512)\n}\n\nanalysis = tune.run(\n    train_model,\n    config=config,\n    num_samples=100,\n    search_alg=OptunaSearch(),\n    metric='accuracy',\n    mode='max'\n)",
+      "best_practices": [
+        "Use for large or continuous spaces",
+        "More efficient than grid search",
+        "Combine with schedulers for better results",
+        "Use appropriate sampling distributions"
+      ]
+    },
+    "bayesian_optimization": {
+      "description": "Bayesian optimization with Optuna or Tune",
+      "use_when": "Expensive evaluations and need efficient search",
+      "code_example": "from ray import tune\nfrom ray.tune.search.optuna import OptunaSearch\nimport optuna\n\ndef optuna_objective(trial):\n    return {\n        'lr': trial.suggest_loguniform('lr', 1e-4, 1e-1),\n        'batch_size': trial.suggest_categorical('batch_size', [32, 64, 128]),\n        'hidden_size': trial.suggest_int('hidden_size', 64, 512)\n    }\n\nsearch_alg = OptunaSearch(space=optuna_objective)\n\nanalysis = tune.run(\n    train_model,\n    search_alg=search_alg,\n    num_samples=50,\n    metric='accuracy',\n    mode='max'\n)",
+      "best_practices": [
+        "Use for expensive model training",
+        "Bayesian optimization learns from previous trials",
+        "More efficient than random search",
+        "Requires fewer samples for good results"
+      ]
+    },
+    "asha_scheduler": {
+      "description": "ASHA scheduler for early stopping",
+      "use_when": "Training takes long and want to stop poor trials early",
+      "code_example": "from ray import tune\nfrom ray.tune.schedulers import ASHAScheduler\n\nscheduler = ASHAScheduler(\n    metric='loss',\n    mode='min',\n    max_t=100,  # Max training iterations\n    grace_period=10,  # Minimum iterations before stopping\n    reduction_factor=2\n)\n\nanalysis = tune.run(\n    train_model,\n    config={\n        'lr': tune.loguniform(1e-4, 1e-1),\n        'batch_size': tune.choice([32, 64, 128])\n    },\n    scheduler=scheduler,\n    num_samples=100,\n    metric='loss',\n    mode='min'\n)",
+      "best_practices": [
+        "ASHA stops poorly performing trials early",
+        "Saves compute resources",
+        "Set grace_period appropriately",
+        "Use reduction_factor to control aggressiveness"
+      ]
+    },
+    "pbt_scheduler": {
+      "description": "Population Based Training for hyperparameter evolution",
+      "use_when": "Want hyperparameters to evolve during training",
+      "code_example": "from ray import tune\nfrom ray.tune.schedulers import PopulationBasedTraining\n\npbt = PopulationBasedTraining(\n    time_attr='training_iteration',\n    metric='accuracy',\n    mode='max',\n    perturbation_interval=10,\n    resample_probability=0.25,\n    hyperparam_mutations={\n        'lr': [1e-4, 1e-1],\n        'batch_size': [32, 64, 128]\n    }\n)\n\nanalysis = tune.run(\n    train_model,\n    config={\n        'lr': 0.01,\n        'batch_size': 64\n    },\n    scheduler=pbt,\n    num_samples=8,\n    metric='accuracy',\n    mode='max'\n)",
+      "best_practices": [
+        "PBT evolves hyperparameters during training",
+        "Use for long training runs",
+        "Set perturbation_interval appropriately",
+        "Define hyperparam_mutations for each parameter"
+      ]
+    },
+    "pytorch_integration": {
+      "description": "Integrate Ray Tune with PyTorch training",
+      "use_when": "Tuning PyTorch model hyperparameters",
+      "code_example": "import torch\nimport torch.nn as nn\nfrom ray import tune\nfrom ray.tune.integration.torch import TorchTrainable\n\nclass Trainable(TorchTrainable):\n    def setup(self, config):\n        self.model = nn.Sequential(\n            nn.Linear(784, config['hidden_size']),\n            nn.ReLU(),\n            nn.Linear(config['hidden_size'], 10)\n        )\n        self.optimizer = torch.optim.Adam(\n            self.model.parameters(),\n            lr=config['lr']\n        )\n    \n    def step(self):\n        # Training step\n        loss = train_one_epoch(self.model, self.optimizer)\n        accuracy = evaluate(self.model)\n        return {'loss': loss, 'accuracy': accuracy}\n\nanalysis = tune.run(\n    Trainable,\n    config={\n        'lr': tune.loguniform(1e-4, 1e-1),\n        'hidden_size': tune.choice([128, 256, 512])\n    },\n    num_samples=20,\n    metric='accuracy',\n    mode='max'\n)",
+      "best_practices": [
+        "Use TorchTrainable for PyTorch models",
+        "Implement setup() and step() methods",
+        "Return metrics dictionary from step()",
+        "Handle checkpointing for long runs"
+      ]
+    },
+    "tensorflow_integration": {
+      "description": "Integrate Ray Tune with TensorFlow/Keras",
+      "use_when": "Tuning TensorFlow model hyperparameters",
+      "code_example": "import tensorflow as tf\nfrom ray import tune\nfrom ray.tune.integration.tensorflow import TensorFlowTrainable\n\nclass Trainable(TensorFlowTrainable):\n    def setup(self, config):\n        self.model = tf.keras.Sequential([\n            tf.keras.layers.Dense(config['hidden_size'], activation='relu'),\n            tf.keras.layers.Dense(10)\n        ])\n        self.model.compile(\n            optimizer=tf.keras.optimizers.Adam(learning_rate=config['lr']),\n            loss='sparse_categorical_crossentropy',\n            metrics=['accuracy']\n        )\n    \n    def step(self):\n        history = self.model.fit(x_train, y_train, epochs=1, verbose=0)\n        return {\n            'loss': history.history['loss'][0],\n            'accuracy': history.history['accuracy'][0]\n        }\n\nanalysis = tune.run(\n    Trainable,\n    config={\n        'lr': tune.loguniform(1e-4, 1e-1),\n        'hidden_size': tune.choice([128, 256, 512])\n    },\n    num_samples=20\n)",
+      "best_practices": [
+        "Use TensorFlowTrainable for TensorFlow models",
+        "Compile model in setup()",
+        "Return metrics from step()",
+        "Handle model checkpointing"
+      ]
+    }
+  },
+  "serve_patterns": {
+    "basic_deployment": {
+      "description": "Deploy model as Ray Serve service",
+      "use_when": "Need to serve ML models at scale",
+      "code_example": "from ray import serve\nfrom ray.serve import Deployment\nimport requests\n\n@serve.deployment\nclass ModelDeployment:\n    def __init__(self):\n        self.model = load_model()\n    \n    def __call__(self, request):\n        data = request.json()\n        return self.model.predict(data)\n\n# Deploy\nserve.start()\nModelDeployment.deploy()\n\n# Query\nresponse = requests.post(\n    'http://localhost:8000/ModelDeployment',\n    json={'input': data}\n)",
+      "best_practices": [
+        "Use @serve.deployment decorator",
+        "Initialize model in __init__",
+        "Handle requests in __call__",
+        "Start serve before deploying",
+        "Use HTTP or Python API for queries"
+      ]
+    },
+    "batching": {
+      "description": "Batch requests for efficient inference",
+      "use_when": "High throughput inference with batching",
+      "code_example": "from ray import serve\nfrom ray.serve import batch\n\n@serve.deployment\nclass BatchedModel:\n    def __init__(self):\n        self.model = load_model()\n    \n    @batch(max_batch_size=32, batch_wait_timeout_s=0.1)\n    async def __call__(self, requests):\n        # requests is a list of Starlette Request objects\n        batch_inputs = [await req.json() for req in requests]\n        batch_results = self.model.predict_batch(batch_inputs)\n        return [{'result': r} for r in batch_results]\n\nserve.start()\nBatchedModel.deploy()",
+      "best_practices": [
+        "Use @batch decorator for batching",
+        "Set max_batch_size appropriately",
+        "Configure batch_wait_timeout_s",
+        "Handle async requests",
+        "Return list of results matching input order"
+      ]
+    },
+    "multi_model_composition": {
+      "description": "Compose multiple models in pipeline",
+      "use_when": "Need to chain multiple models",
+      "code_example": "from ray import serve\n\n@serve.deployment\nclass Preprocessor:\n    def __call__(self, request):\n        data = request.json()\n        return {'processed': preprocess(data)}\n\n@serve.deployment\nclass Model:\n    def __init__(self):\n        self.preprocessor = Preprocessor.get_handle()\n        self.model = load_model()\n    \n    async def __call__(self, request):\n        data = request.json()\n        # Call preprocessor\n        preprocessed = await self.preprocessor.remote(data)\n        # Run model\n        result = self.model.predict(preprocessed['processed'])\n        return {'result': result}\n\nserve.start()\nPreprocessor.deploy()\nModel.deploy()",
+      "best_practices": [
+        "Use get_handle() to get deployment handles",
+        "Call remote() for async calls",
+        "Deploy dependencies first",
+        "Handle errors in composition"
+      ]
+    },
+    "scaling": {
+      "description": "Scale deployments based on load",
+      "use_when": "Need to handle variable load",
+      "code_example": "from ray import serve\n\n@serve.deployment(\n    num_replicas=2,\n    autoscaling_config={\n        'min_replicas': 1,\n        'max_replicas': 10,\n        'target_num_ongoing_requests_per_replica': 10\n    }\n)\nclass ScalableModel:\n    def __init__(self):\n        self.model = load_model()\n    \n    def __call__(self, request):\n        return self.model.predict(request.json())\n\nserve.start()\nScalableModel.deploy()",
+      "best_practices": [
+        "Set num_replicas for initial replicas",
+        "Configure autoscaling_config",
+        "Set min_replicas and max_replicas",
+        "Use target_num_ongoing_requests_per_replica",
+        "Monitor scaling behavior"
+      ]
+    },
+    "gpu_deployment": {
+      "description": "Deploy models on GPU",
+      "use_when": "Model requires GPU for inference",
+      "code_example": "from ray import serve\n\n@serve.deployment(\n    ray_actor_options={'num_gpus': 1}\n)\nclass GPUModel:\n    def __init__(self):\n        import torch\n        self.device = torch.device('cuda')\n        self.model = load_model().to(self.device)\n    \n    def __call__(self, request):\n        data = request.json()\n        input_tensor = torch.tensor(data).to(self.device)\n        with torch.no_grad():\n            result = self.model(input_tensor)\n        return {'result': result.cpu().numpy().tolist()}\n\nserve.start()\nGPUModel.deploy()",
+      "best_practices": [
+        "Set ray_actor_options with num_gpus",
+        "Move model to GPU in __init__",
+        "Move inputs to GPU before inference",
+        "Move outputs back to CPU for serialization",
+        "Use torch.no_grad() for inference"
+      ]
+    }
+  },
+  "data_patterns": {
+    "distributed_processing": {
+      "description": "Process large datasets in parallel",
+      "use_when": "Need to process large datasets efficiently",
+      "code_example": "import ray\nfrom ray.data import Dataset\n\nray.init()\n\n# Read dataset\ndataset = ray.data.read_parquet('s3://bucket/data/*.parquet')\n\n# Transform in parallel\nprocessed = dataset.map(\n    lambda batch: process_batch(batch),\n    num_cpus=2\n)\n\n# Write results\nprocessed.write_parquet('s3://bucket/output/')\n\n# Or collect to memory\nresults = processed.take_all()",
+      "best_practices": [
+        "Use ray.data for distributed processing",
+        "Read from various sources (S3, HDFS, local)",
+        "Use map() for transformations",
+        "Specify num_cpus for parallelism",
+        "Write results or collect to memory"
+      ]
+    },
+    "streaming": {
+      "description": "Stream data processing",
+      "use_when": "Need to process data as it arrives",
+      "code_example": "import ray\nfrom ray.data import Dataset\n\nray.init()\n\n# Create streaming dataset\ndataset = ray.data.read_binary_files(\n    's3://bucket/streaming/*',\n    streaming=True\n)\n\n# Process in batches\nfor batch in dataset.iter_batches(batch_size=1000):\n    process_batch(batch)\n    # Process as data arrives",
+      "best_practices": [
+        "Set streaming=True for streaming",
+        "Use iter_batches() for batch processing",
+        "Handle backpressure",
+        "Monitor streaming performance"
+      ]
+    },
+    "spark_integration": {
+      "description": "Integrate Ray Data with Spark",
+      "use_when": "Need to combine Spark and Ray processing",
+      "code_example": "import ray\nfrom ray.data import Dataset\nfrom pyspark.sql import SparkSession\n\nray.init()\nspark = SparkSession.builder.getOrCreate()\n\n# Read from Spark DataFrame\nspark_df = spark.read.parquet('data.parquet')\n\n# Convert to Ray Dataset\nray_dataset = ray.data.from_spark(spark_df)\n\n# Process with Ray\nprocessed = ray_dataset.map(lambda x: transform(x))\n\n# Convert back to Spark if needed\nspark_df_result = processed.to_spark(spark)",
+      "best_practices": [
+        "Use from_spark() to convert Spark DataFrame",
+        "Use to_spark() to convert back",
+        "Share Spark session",
+        "Handle data format conversions"
+      ]
+    },
+    "ml_training_integration": {
+      "description": "Use Ray Data for ML training data loading",
+      "use_when": "Need efficient data loading for distributed training",
+      "code_example": "import ray\nfrom ray.data import Dataset\nimport torch\nfrom torch.utils.data import DataLoader\n\nray.init()\n\n# Load dataset\ndataset = ray.data.read_parquet('training_data.parquet')\n\n# Convert to PyTorch DataLoader\ndataloader = dataset.to_torch(\n    batch_size=32,\n    label_column='label'\n)\n\n# Use in training loop\nfor batch in dataloader:\n    inputs, labels = batch\n    # Training step\n    loss = train_step(model, inputs, labels)",
+      "best_practices": [
+        "Use to_torch() for PyTorch integration",
+        "Specify label_column for supervised learning",
+        "Set appropriate batch_size",
+        "Handle data preprocessing in map()"
+      ]
+    }
+  },
+  "distributed_training_patterns": {
+    "pytorch_distributed": {
+      "description": "Distributed PyTorch training with Ray",
+      "use_when": "Need to scale PyTorch training across multiple nodes",
+      "code_example": "import ray\nfrom ray.util.sgd import TorchTrainer\nfrom ray.util.sgd.torch import TrainingOperator\nimport torch.nn as nn\n\nray.init()\n\nclass MyTrainingOperator(TrainingOperator):\n    def setup(self, config):\n        model = nn.Sequential(\n            nn.Linear(784, 256),\n            nn.ReLU(),\n            nn.Linear(256, 10)\n        )\n        optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'])\n        criterion = nn.CrossEntropyLoss()\n        \n        self.model, self.optimizer, self.criterion = self.register(\n            models=model,\n            optimizers=optimizer,\n            criterion=criterion\n        )\n    \n    def train_epoch(self, iterator, info):\n        model = self.model\n        optimizer = self.optimizer\n        criterion = self.criterion\n        \n        model.train()\n        for batch in iterator:\n            inputs, labels = batch\n            optimizer.zero_grad()\n            outputs = model(inputs)\n            loss = criterion(outputs, labels)\n            loss.backward()\n            optimizer.step()\n        \n        return {'loss': loss.item()}\n\ntrainer = TorchTrainer(\n    training_operator_cls=MyTrainingOperator,\n    num_workers=4,\n    use_gpu=True,\n    config={'lr': 0.001}\n)\n\nfor i in range(10):\n    stats = trainer.train()\n    print(f'Epoch {i}: {stats}')",
+      "best_practices": [
+        "Use TorchTrainer for distributed training",
+        "Implement TrainingOperator subclass",
+        "Register models, optimizers, criterion",
+        "Set num_workers for parallelism",
+        "Use use_gpu=True for GPU training"
+      ]
+    },
+    "tensorflow_distributed": {
+      "description": "Distributed TensorFlow training with Ray",
+      "use_when": "Need to scale TensorFlow training",
+      "code_example": "import ray\nfrom ray.util.sgd import TFTrainer\nimport tensorflow as tf\n\nray.init()\n\ndef model_creator(config):\n    model = tf.keras.Sequential([\n        tf.keras.layers.Dense(256, activation='relu'),\n        tf.keras.layers.Dense(10)\n    ])\n    model.compile(\n        optimizer=tf.keras.optimizers.Adam(learning_rate=config['lr']),\n        loss='sparse_categorical_crossentropy',\n        metrics=['accuracy']\n    )\n    return model\n\ntrainer = TFTrainer(\n    model_creator=model_creator,\n    data_creator=lambda config: (x_train, y_train),\n    num_workers=4,\n    use_gpu=True,\n    config={'lr': 0.001}\n)\n\nfor i in range(10):\n    stats = trainer.train()\n    print(f'Epoch {i}: {stats}')",
+      "best_practices": [
+        "Use TFTrainer for distributed training",
+        "Implement model_creator function",
+        "Implement data_creator function",
+        "Set num_workers appropriately",
+        "Handle distributed strategy configuration"
+      ]
+    }
+  },
+  "reinforcement_learning_patterns": {
+    "rllib_basic": {
+      "description": "Basic RLlib training setup",
+      "use_when": "Need reinforcement learning training",
+      "code_example": "import ray\nfrom ray.rllib.algorithms.ppo import PPO\n\nray.init()\n\nalgo = PPO(\n    config={\n        'env': 'CartPole-v1',\n        'framework': 'torch',\n        'num_workers': 4,\n        'num_gpus': 0,\n        'lr': 3e-4\n    }\n)\n\n# Train\nfor i in range(100):\n    result = algo.train()\n    print(f'Iteration {i}: {result[\"episode_reward_mean\"]}')\n    \n    if i % 10 == 0:\n        checkpoint = algo.save()\n        print(f'Checkpoint saved: {checkpoint}')",
+      "best_practices": [
+        "Choose appropriate algorithm (PPO, A3C, DQN, etc.)",
+        "Configure environment",
+        "Set num_workers for parallel training",
+        "Save checkpoints regularly",
+        "Monitor training metrics"
+      ]
+    },
+    "custom_environment": {
+      "description": "Use custom RL environment with RLlib",
+      "use_when": "Need custom environment for RL",
+      "code_example": "import gym\nfrom gym import spaces\nimport ray\nfrom ray.rllib.algorithms.ppo import PPO\n\nclass CustomEnv(gym.Env):\n    def __init__(self, config):\n        self.action_space = spaces.Discrete(4)\n        self.observation_space = spaces.Box(\n            low=0, high=1, shape=(10,), dtype=np.float32\n        )\n    \n    def reset(self):\n        self.state = np.random.rand(10)\n        return self.state\n    \n    def step(self, action):\n        # Environment logic\n        reward = compute_reward(self.state, action)\n        self.state = update_state(self.state, action)\n        done = check_done(self.state)\n        return self.state, reward, done, {}\n\nray.init()\n\nalgo = PPO(\n    config={\n        'env': CustomEnv,\n        'framework': 'torch',\n        'num_workers': 4\n    }\n)\n\nalgo.train()",
+      "best_practices": [
+        "Implement gym.Env interface",
+        "Define action_space and observation_space",
+        "Implement reset() and step() methods",
+        "Handle environment configuration",
+        "Test environment independently"
+      ]
+    }
+  },
+  "batch_inference_patterns": {
+    "distributed_inference": {
+      "description": "Run batch inference at scale",
+      "use_when": "Need to run inference on large datasets",
+      "code_example": "import ray\n\nray.init()\n\n@ray.remote(num_gpus=1)\nclass InferenceWorker:\n    def __init__(self):\n        import torch\n        self.device = torch.device('cuda')\n        self.model = load_model().to(self.device)\n    \n    def predict(self, batch):\n        with torch.no_grad():\n            inputs = torch.tensor(batch).to(self.device)\n            outputs = self.model(inputs)\n            return outputs.cpu().numpy()\n\n# Create workers\nworkers = [InferenceWorker.remote() for _ in range(4)]\n\n# Distribute batches\nbatches = split_into_batches(data, batch_size=100)\nfutures = [\n    workers[i % len(workers)].predict.remote(batch)\n    for i, batch in enumerate(batches)\n]\n\n# Collect results\nresults = ray.get(futures)",
+      "best_practices": [
+        "Use remote actors for inference workers",
+        "Load model once per worker",
+        "Distribute batches across workers",
+        "Use GPU workers for GPU models",
+        "Collect results efficiently"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use @ray.remote decorator for functions and classes to execute remotely",
+    "Pass object references (ray.put) instead of copying large objects",
+    "Set appropriate resource requirements (num_cpus, num_gpus, memory) for tasks",
+    "Use Ray Dashboard for monitoring and debugging distributed workloads",
+    "Handle failures gracefully with retries and error handling",
+    "Use Ray Tune schedulers (ASHA, PBT) for efficient hyperparameter optimization",
+    "Configure Ray Serve batching for high-throughput model serving",
+    "Use Ray Data for distributed data processing and ML data loading",
+    "Monitor object store memory usage and cluster resources",
+    "Use appropriate Ray patterns: remote functions for stateless tasks, actors for stateful services"
+  ],
+  "anti_patterns": [
+    {
+      "name": "copying_large_objects",
+      "description": "Passing large objects directly to remote functions",
+      "problem": "Inefficient serialization and network transfer",
+      "solution": "Use ray.put() to store in object store and pass references"
+    },
+    {
+      "name": "no_resource_limits",
+      "description": "Not specifying resource requirements",
+      "problem": "Poor scheduling and resource utilization",
+      "solution": "Always specify num_cpus, num_gpus, and memory requirements"
+    },
+    {
+      "name": "synchronous_waiting",
+      "description": "Using ray.get() on all futures immediately",
+      "problem": "Blocks until all tasks complete",
+      "solution": "Use ray.wait() for partial results or async patterns"
+    }
+  ],
+  "patterns": {
+    "core_patterns": {
+      "remote_functions": {
+        "description": "Execute functions remotely across cluster",
+        "use_when": "Need to parallelize independent function calls",
+        "code_example": "import ray\n\nray.init()\n\n@ray.remote\ndef process_data(data_chunk):\n    # Process data chunk\n    return processed_result\n\n# Launch multiple tasks in parallel\nfutures = [process_data.remote(chunk) for chunk in data_chunks]\nresults = ray.get(futures)"
+      },
+      "remote_class_actors": {
+        "description": "Stateful distributed actors",
+        "use_when": "Need stateful computation or long-running services",
+        "code_example": "import ray\n\nray.init()\n\n@ray.remote\nclass ModelServer:\n    def __init__(self, model_path):\n        self.model = load_model(model_path)\n    \n    def predict(self, data):\n        return self.model.predict(data)\n\nserver = ModelServer.remote(model_path='model.pkl')\nfutures = [server.predict.remote(data) for data in batch]\npredictions = ray.get(futures)"
+      }
+    },
+    "tune_patterns": {
+      "grid_search": {
+        "description": "Grid search hyperparameter optimization",
+        "use_when": "Small hyperparameter space to exhaustively search",
+        "code_example": "from ray import tune\n\nconfig = {\n    'lr': tune.grid_search([0.001, 0.01, 0.1]),\n    'batch_size': tune.grid_search([32, 64, 128])\n}\n\nanalysis = tune.run(train_model, config=config, num_samples=1)"
+      }
+    },
+    "serve_patterns": {
+      "basic_deployment": {
+        "description": "Deploy model as Ray Serve service",
+        "use_when": "Need to serve ML models at scale",
+        "code_example": "from ray import serve\n\n@serve.deployment\nclass ModelDeployment:\n    def __init__(self):\n        self.model = load_model()\n    \n    def __call__(self, request):\n        return self.model.predict(request.json())\n\nserve.start()\nModelDeployment.deploy()"
+      }
+    }
+  }
+}

@@ -1,0 +1,296 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "spring-patterns",
+  "name": "Spring Boot Patterns",
+  "title": "Spring Boot Application Patterns",
+  "description": "Best practices and patterns for Spring Boot applications including REST APIs, dependency injection, configuration, security, and testing",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns include testing and validation for verification",
+    "A3_transparency": "Patterns emphasize logging and observability for transparency"
+  },
+  "patterns": {
+    "rest_api_patterns": {
+      "description": "REST API design and implementation patterns",
+      "controller_patterns": {
+        "rest_controller": "@RestController with @RequestMapping",
+        "http_methods": "@GetMapping, @PostMapping, @PutMapping, @DeleteMapping",
+        "path_variables": "@PathVariable for URL parameters",
+        "request_body": "@RequestBody for JSON payloads",
+        "response_entity": "ResponseEntity for HTTP status and headers"
+      },
+      "dto_patterns": {
+        "description": "Data Transfer Objects for API requests/responses",
+        "best_practices": [
+          "Never expose entities directly",
+          "Use separate DTOs for requests and responses",
+          "Use Bean Validation annotations",
+          "Implement proper equals/hashCode"
+        ]
+      },
+      "best_practices": [
+        "Use @RestController for REST endpoints",
+        "Return ResponseEntity for proper HTTP status codes",
+        "Use DTOs instead of entities",
+        "Implement proper error handling",
+        "Version APIs (/api/v1/)",
+        "Use proper HTTP methods",
+        "Follow RESTful conventions"
+      ]
+    },
+    "dependency_injection": {
+      "description": "Spring dependency injection patterns",
+      "injection_types": {
+        "constructor": "Constructor injection (preferred)",
+        "field": "Field injection with @Autowired (not recommended)",
+        "setter": "Setter injection"
+      },
+      "bean_scopes": {
+        "singleton": "Single instance per container (default)",
+        "prototype": "New instance each time",
+        "request": "One per HTTP request",
+        "session": "One per HTTP session"
+      },
+      "best_practices": [
+        "Use constructor injection",
+        "Avoid field injection",
+        "Use appropriate bean scopes",
+        "Register beans with @Component, @Service, @Repository",
+        "Use @Configuration for configuration classes"
+      ]
+    },
+    "configuration_patterns": {
+      "description": "Application configuration patterns",
+      "properties_files": {
+        "application_yml": "YAML format (preferred)",
+        "application_properties": "Properties format",
+        "profiles": "Environment-specific configs (dev, prod)"
+      },
+      "configuration_properties": {
+        "description": "@ConfigurationProperties for type-safe config",
+        "example": "@ConfigurationProperties(prefix = \"app\")",
+        "validation": "Use @Validated and Bean Validation"
+      },
+      "environment_variables": {
+        "description": "Use environment variables for sensitive config",
+        "pattern": "${ENV_VAR:default-value}",
+        "best_practices": [
+          "Use for secrets",
+          "Provide defaults",
+          "Document required variables"
+        ]
+      },
+      "best_practices": [
+        "Use YAML for complex config",
+        "Use @ConfigurationProperties",
+        "Separate by profiles",
+        "Use environment variables for secrets",
+        "Validate configuration"
+      ]
+    },
+    "transaction_management": {
+      "description": "Transaction management patterns",
+      "declarative": {
+        "description": "@Transactional annotation",
+        "attributes": {
+          "readOnly": "readOnly = true for queries",
+          "propagation": "REQUIRED, REQUIRES_NEW, etc.",
+          "isolation": "READ_COMMITTED, SERIALIZABLE, etc.",
+          "rollbackFor": "Exceptions that trigger rollback"
+        }
+      },
+      "best_practices": [
+        "Use @Transactional on service methods",
+        "Set readOnly = true for queries",
+        "Handle transaction boundaries properly",
+        "Avoid @Transactional on controllers",
+        "Use appropriate propagation"
+      ]
+    },
+    "exception_handling": {
+      "description": "Exception handling patterns",
+      "controller_advice": {
+        "description": "@ControllerAdvice for global exception handling",
+        "exception_handler": "@ExceptionHandler for specific exceptions",
+        "best_practices": [
+          "Create GlobalExceptionHandler",
+          "Handle validation errors",
+          "Return proper error responses",
+          "Log exceptions"
+        ]
+      },
+      "custom_exceptions": {
+        "description": "Create custom exception classes",
+        "pattern": "Extend RuntimeException or checked exceptions",
+        "best_practices": [
+          "Use meaningful names",
+          "Include error codes",
+          "Provide context"
+        ]
+      },
+      "best_practices": [
+        "Use @ControllerAdvice",
+        "Handle all exception types",
+        "Return proper HTTP status codes",
+        "Log exceptions with context",
+        "Don't expose internal details"
+      ]
+    },
+    "validation_patterns": {
+      "description": "Input validation patterns",
+      "bean_validation": {
+        "annotations": {
+          "@NotNull": "Field cannot be null",
+          "@NotBlank": "String cannot be blank",
+          "@Size": "Size constraints",
+          "@Min/@Max": "Numeric constraints",
+          "@Email": "Email validation",
+          "@Pattern": "Regex validation"
+        },
+        "usage": "@Valid on @RequestBody parameters"
+      },
+      "custom_validators": {
+        "description": "Create custom validation annotations",
+        "pattern": "Implement ConstraintValidator interface"
+      },
+      "best_practices": [
+        "Use Bean Validation",
+        "Validate at controller level",
+        "Create custom validators when needed",
+        "Return proper validation errors"
+      ]
+    },
+    "security_patterns": {
+      "description": "Spring Security patterns",
+      "authentication": {
+        "jwt": "JWT token authentication",
+        "oauth2": "OAuth 2.0 authentication",
+        "basic": "HTTP Basic authentication"
+      },
+      "authorization": {
+        "method_security": "@PreAuthorize, @PostAuthorize",
+        "url_security": "HttpSecurity configuration",
+        "roles": "Role-based access control"
+      },
+      "best_practices": [
+        "Use Spring Security",
+        "Implement JWT for stateless auth",
+        "Use method security",
+        "Configure CORS properly",
+        "Use HTTPS in production",
+        "Validate tokens"
+      ]
+    },
+    "testing_patterns": {
+      "description": "Testing patterns for Spring Boot",
+      "unit_tests": {
+        "description": "Test individual components",
+        "tools": [
+          "JUnit 5",
+          "Mockito",
+          "AssertJ"
+        ],
+        "pattern": "@ExtendWith(MockitoExtension.class)"
+      },
+      "integration_tests": {
+        "description": "Test with Spring context",
+        "annotations": {
+          "@SpringBootTest": "Full application context",
+          "@WebMvcTest": "Web layer only",
+          "@DataJpaTest": "Data layer only"
+        },
+        "tools": [
+          "Testcontainers",
+          "MockMvc"
+        ]
+      },
+      "best_practices": [
+        "Write unit tests for services",
+        "Use @SpringBootTest for integration tests",
+        "Use Testcontainers for real databases",
+        "Mock external dependencies",
+        "Test both success and failure scenarios"
+      ]
+    },
+    "logging_patterns": {
+      "description": "Logging patterns",
+      "slf4j": {
+        "description": "SLF4J logging facade",
+        "implementation": "Logback (default)",
+        "usage": "LoggerFactory.getLogger(Class.class)"
+      },
+      "structured_logging": {
+        "description": "JSON logging with Logstash encoder",
+        "pattern": "logback-spring.xml with LogstashEncoder",
+        "mdc": "Mapped Diagnostic Context for correlation IDs"
+      },
+      "best_practices": [
+        "Use SLF4J",
+        "Use structured logging in production",
+        "Add correlation IDs",
+        "Use appropriate log levels",
+        "Don't log sensitive information"
+      ]
+    },
+    "async_patterns": {
+      "description": "Asynchronous processing patterns",
+      "async_annotation": {
+        "description": "@Async for async methods",
+        "configuration": "@EnableAsync",
+        "executor": "Configure ThreadPoolTaskExecutor"
+      },
+      "completable_future": {
+        "description": "CompletableFuture for async operations",
+        "usage": "Return CompletableFuture<T>"
+      },
+      "best_practices": [
+        "Use @Async for long-running operations",
+        "Configure thread pool",
+        "Handle exceptions properly",
+        "Use CompletableFuture for composition"
+      ]
+    },
+    "caching_patterns": {
+      "description": "Caching patterns",
+      "cache_annotation": {
+        "@Cacheable": "Cache method results",
+        "@CacheEvict": "Evict cache entries",
+        "@CachePut": "Update cache",
+        "@Caching": "Multiple cache operations"
+      },
+      "cache_providers": {
+        "caffeine": "Local cache",
+        "redis": "Distributed cache",
+        "ehcache": "Java cache"
+      },
+      "best_practices": [
+        "Use @Cacheable for expensive operations",
+        "Configure cache eviction",
+        "Use Redis for distributed caching",
+        "Monitor cache hit rates"
+      ]
+    },
+    "actuator_patterns": {
+      "description": "Spring Boot Actuator patterns",
+      "endpoints": {
+        "health": "Application health",
+        "metrics": "Application metrics",
+        "info": "Application information",
+        "prometheus": "Prometheus metrics"
+      },
+      "health_indicators": {
+        "description": "Custom health checks",
+        "pattern": "Implement HealthIndicator interface"
+      },
+      "best_practices": [
+        "Enable Actuator endpoints",
+        "Secure sensitive endpoints",
+        "Create custom health indicators",
+        "Use health probes for Kubernetes"
+      ]
+    }
+  },
+  "best_practices": [],
+  "anti_patterns": []
+}

@@ -1,0 +1,409 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "api-design-patterns",
+  "name": "API Design Patterns",
+  "title": "REST API Design Patterns",
+  "description": "Best practices and patterns for designing RESTful APIs, GraphQL, and gRPC services",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "OpenAPI schemas enable API contract verification",
+    "A3_transparency": "Clear API documentation makes interfaces explicit",
+    "A4_adaptability": "Versioning strategies support API evolution"
+  },
+  "patterns": {
+    "rest_conventions": {
+      "resource_naming": {
+        "use_nouns": "Use nouns, not verbs",
+        "plural_collections": "Use plural for collections",
+        "lowercase_hyphens": "Use lowercase with hyphens",
+        "examples": {
+          "good": "/api/v1/users",
+          "bad": "/api/v1/getUsers"
+        }
+      },
+      "http_methods": {
+        "GET": "Retrieve resources",
+        "POST": "Create resources",
+        "PUT": "Replace/update resource",
+        "PATCH": "Partial update",
+        "DELETE": "Delete resource",
+        "HEAD": "Get headers only",
+        "OPTIONS": "Get allowed methods"
+      },
+      "status_codes": {
+        "2xx_success": {
+          "200": "OK - Request succeeded",
+          "201": "Created - Resource created",
+          "202": "Accepted - Request accepted for processing",
+          "204": "No Content - Success with no body"
+        },
+        "4xx_client_error": {
+          "400": "Bad Request - Invalid request",
+          "401": "Unauthorized - Authentication required",
+          "403": "Forbidden - Not authorized",
+          "404": "Not Found - Resource doesn't exist",
+          "409": "Conflict - Resource conflict",
+          "422": "Unprocessable Entity - Validation error",
+          "429": "Too Many Requests - Rate limit exceeded"
+        },
+        "5xx_server_error": {
+          "500": "Internal Server Error",
+          "502": "Bad Gateway",
+          "503": "Service Unavailable",
+          "504": "Gateway Timeout"
+        }
+      }
+    },
+    "versioning": {
+      "url_versioning": {
+        "description": "Version in URL path",
+        "example": "/api/v1/users, /api/v2/users",
+        "pros": [
+          "Clear and explicit",
+          "Easy to cache",
+          "Browser-friendly"
+        ],
+        "cons": [
+          "URLs change",
+          "More endpoints"
+        ]
+      },
+      "header_versioning": {
+        "description": "Version in HTTP header",
+        "example": "API-Version: 1.0",
+        "pros": [
+          "Clean URLs",
+          "Flexible"
+        ],
+        "cons": [
+          "Less discoverable",
+          "Harder to test"
+        ]
+      },
+      "query_versioning": {
+        "description": "Version as query parameter",
+        "example": "/api/users?version=1.0",
+        "pros": [
+          "Simple",
+          "Easy to test"
+        ],
+        "cons": [
+          "Not RESTful",
+          "Can be ignored"
+        ]
+      },
+      "media_type_versioning": {
+        "description": "Version in Accept header",
+        "example": "Accept: application/vnd.api.v1+json",
+        "pros": [
+          "True content negotiation",
+          "Flexible"
+        ],
+        "cons": [
+          "Complex",
+          "Less common"
+        ]
+      }
+    },
+    "pagination": {
+      "offset_based": {
+        "description": "Use page and limit",
+        "example": "?page=1&limit=20",
+        "pros": [
+          "Simple",
+          "Easy to implement",
+          "Jump to any page"
+        ],
+        "cons": [
+          "Performance issues with large offsets",
+          "Inconsistent results if data changes"
+        ]
+      },
+      "cursor_based": {
+        "description": "Use cursor/token",
+        "example": "?cursor=eyJpZCI6MTIzfQ&limit=20",
+        "pros": [
+          "Better performance",
+          "Consistent results",
+          "Works with large datasets"
+        ],
+        "cons": [
+          "Can't jump to specific page",
+          "More complex"
+        ]
+      },
+      "response_format": {
+        "data": "Array of resources",
+        "pagination": {
+          "page": "Current page",
+          "limit": "Items per page",
+          "total": "Total items",
+          "total_pages": "Total pages",
+          "has_next": "Has next page",
+          "has_prev": "Has previous page",
+          "next_cursor": "Next cursor (cursor-based)"
+        }
+      }
+    },
+    "filtering": {
+      "query_parameters": "?status=active&role=admin",
+      "operators": {
+        "equals": "?status=active",
+        "not_equals": "?status=!inactive",
+        "greater_than": "?age=gt:18",
+        "less_than": "?age=lt:65",
+        "contains": "?name=contains:john",
+        "in": "?status=in:active,pending"
+      },
+      "best_practices": [
+        "Document filter parameters",
+        "Validate filter values",
+        "Set maximum filter depth",
+        "Index filtered columns"
+      ]
+    },
+    "sorting": {
+      "query_parameters": "?sort=name&order=asc",
+      "multiple_fields": "?sort=name,created_at&order=asc,desc",
+      "default_sort": "Always have default sort order",
+      "best_practices": [
+        "Document sortable fields",
+        "Validate sort fields",
+        "Index sorted columns",
+        "Limit sort fields"
+      ]
+    },
+    "error_handling": {
+      "error_format": {
+        "error": {
+          "code": "Error code (e.g., USER_NOT_FOUND)",
+          "message": "Human-readable message",
+          "details": "Additional details",
+          "request_id": "Request identifier for tracking"
+        }
+      },
+      "error_codes": {
+        "validation_error": "VALIDATION_ERROR",
+        "not_found": "RESOURCE_NOT_FOUND",
+        "unauthorized": "UNAUTHORIZED",
+        "forbidden": "FORBIDDEN",
+        "rate_limit": "RATE_LIMIT_EXCEEDED"
+      },
+      "best_practices": [
+        "Use consistent error format",
+        "Include request IDs",
+        "Don't expose internal errors",
+        "Provide actionable messages",
+        "Use appropriate HTTP status codes"
+      ]
+    },
+    "hateoas": {
+      "description": "Hypermedia as the Engine of Application State",
+      "benefits": [
+        "Self-documenting APIs",
+        "Client flexibility",
+        "Easier evolution"
+      ],
+      "example": {
+        "data": {
+          "id": 123,
+          "name": "John"
+        },
+        "links": {
+          "self": "/api/v1/users/123",
+          "orders": "/api/v1/users/123/orders",
+          "update": "/api/v1/users/123",
+          "delete": "/api/v1/users/123"
+        }
+      }
+    },
+    "graphql_vs_rest": {
+      "graphql": {
+        "pros": [
+          "Single endpoint",
+          "Client specifies fields",
+          "Strong typing",
+          "Introspection"
+        ],
+        "cons": [
+          "Complexity",
+          "Caching challenges",
+          "N+1 queries",
+          "Over-fetching prevention"
+        ],
+        "use_when": [
+          "Complex data requirements",
+          "Mobile apps",
+          "Real-time updates needed"
+        ]
+      },
+      "rest": {
+        "pros": [
+          "Simple",
+          "Well-understood",
+          "Good caching",
+          "HTTP features"
+        ],
+        "cons": [
+          "Over/under-fetching",
+          "Multiple requests",
+          "Versioning complexity"
+        ],
+        "use_when": [
+          "Simple CRUD",
+          "Web applications",
+          "Standard HTTP features needed"
+        ]
+      }
+    },
+    "grpc_patterns": {
+      "description": "gRPC service patterns",
+      "service_definition": "service UserService {\n  rpc GetUser(GetUserRequest) returns (User);\n  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);\n}",
+      "message_types": {
+        "request": "Input parameters",
+        "response": "Return values",
+        "empty": "No parameters"
+      },
+      "streaming": {
+        "unary": "Single request, single response",
+        "server_streaming": "Single request, stream response",
+        "client_streaming": "Stream request, single response",
+        "bidirectional": "Stream request, stream response"
+      },
+      "best_practices": [
+        "Use proto3",
+        "Version services",
+        "Handle errors with status codes",
+        "Use streaming for large data",
+        "Document services"
+      ]
+    },
+    "websocket_patterns": {
+      "description": "WebSocket API patterns",
+      "use_cases": [
+        "Real-time updates",
+        "Chat applications",
+        "Live data feeds",
+        "Collaborative editing"
+      ],
+      "message_format": {
+        "type": "Message type",
+        "payload": "Message data",
+        "timestamp": "Message timestamp"
+      },
+      "best_practices": [
+        "Use message types",
+        "Handle reconnection",
+        "Implement heartbeat",
+        "Rate limit connections"
+      ]
+    },
+    "rate_limiting": {
+      "description": "API rate limiting",
+      "strategies": {
+        "fixed_window": "Limit per time window",
+        "sliding_window": "Limit over rolling window",
+        "token_bucket": "Tokens refill over time",
+        "leaky_bucket": "Fixed output rate"
+      },
+      "headers": {
+        "X-RateLimit-Limit": "Request limit",
+        "X-RateLimit-Remaining": "Remaining requests",
+        "X-RateLimit-Reset": "Reset timestamp",
+        "Retry-After": "Seconds to wait"
+      },
+      "best_practices": [
+        "Set appropriate limits",
+        "Return 429 status",
+        "Include rate limit headers",
+        "Use different limits per endpoint",
+        "Log rate limit violations"
+      ]
+    },
+    "caching_headers": {
+      "description": "HTTP caching headers",
+      "cache_control": {
+        "public": "Can be cached by any cache",
+        "private": "Only browser can cache",
+        "no_cache": "Revalidate before use",
+        "max_age": "Cache for specified seconds"
+      },
+      "etag": "Entity tag for validation",
+      "last_modified": "Last modification time",
+      "best_practices": [
+        "Use appropriate cache headers",
+        "Implement ETags",
+        "Set max-age appropriately",
+        "Invalidate cache on updates"
+      ]
+    },
+    "openapi_specification": {
+      "description": "OpenAPI/Swagger documentation",
+      "benefits": [
+        "API documentation",
+        "Code generation",
+        "Testing",
+        "Contract validation"
+      ],
+      "structure": {
+        "info": "API metadata",
+        "servers": "Server URLs",
+        "paths": "API endpoints",
+        "components": "Reusable components",
+        "security": "Security schemes"
+      },
+      "best_practices": [
+        "Document all endpoints",
+        "Include examples",
+        "Define error responses",
+        "Version the spec",
+        "Validate against spec"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use nouns for resources",
+    "Use plural nouns for collections",
+    "Use appropriate HTTP methods",
+    "Return proper status codes",
+    "Version APIs explicitly",
+    "Implement pagination",
+    "Support filtering and sorting",
+    "Standardize error responses",
+    "Add rate limiting",
+    "Use HTTPS",
+    "Validate all inputs",
+    "Document APIs",
+    "Include request IDs",
+    "Use consistent naming",
+    "Support content negotiation"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Verbs in URLs",
+      "problem": "Not RESTful",
+      "solution": "Use HTTP methods"
+    },
+    {
+      "name": "Inconsistent Naming",
+      "problem": "Confusing API",
+      "solution": "Follow REST conventions"
+    },
+    {
+      "name": "No Versioning",
+      "problem": "Breaking changes",
+      "solution": "Implement versioning strategy"
+    },
+    {
+      "name": "No Pagination",
+      "problem": "Performance issues",
+      "solution": "Add pagination"
+    },
+    {
+      "name": "Inconsistent Errors",
+      "problem": "Hard to handle",
+      "solution": "Standardize error format"
+    }
+  ]
+}

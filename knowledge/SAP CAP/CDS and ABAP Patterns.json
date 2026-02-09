@@ -1,0 +1,390 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "sap-cap-patterns",
+  "name": "SAP CAP/CDS and ABAP Patterns",
+  "title": "SAP CAP/CDS and ABAP Patterns",
+  "description": "Production-grade patterns for SAP Cloud Application Programming (CAP), CDS, RAP, and ABAP Cloud development",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "CDS views and ABAP Unit tests enable compile-time and runtime verification",
+    "A3_transparency": "Explicit annotations and behavior definitions make business logic clear",
+    "A4_adaptability": "Modular CDS design and RAP patterns support easy refactoring"
+  },
+  "core_concepts": {
+    "cds_modeling": {
+      "description": "Core Data Services (CDS) for declarative data modeling",
+      "features": [
+        "Type-safe entity definitions",
+        "Associations and compositions",
+        "Aspects for reuse",
+        "Annotations for UI and behavior",
+        "Built-in support for temporal data"
+      ]
+    },
+    "rap_framework": {
+      "description": "RESTful ABAP Programming (RAP) for business object development",
+      "features": [
+        "Behavior definitions",
+        "Draft handling",
+        "Authorization checks",
+        "Numbering patterns",
+        "Determinations and validations"
+      ]
+    },
+    "cap_framework": {
+      "description": "Cloud Application Programming model for full-stack development",
+      "features": [
+        "Service definitions",
+        "Event handling",
+        "Multitenancy support",
+        "BTP deployment",
+        "Fiori integration"
+      ]
+    },
+    "abap_cloud": {
+      "description": "ABAP Cloud with restricted APIs for BTP compatibility",
+      "features": [
+        "Released APIs only",
+        "Tier 1 API restrictions",
+        "Cloud-compatible patterns",
+        "Migration support from classic ABAP"
+      ]
+    }
+  },
+  "patterns": {
+    "cds_entity_definitions": {
+      "description": "Define CDS entities with proper structure and annotations",
+      "use_when": "Creating data models for any SAP application",
+      "code_example": "// Basic entity definition\n@EndUserText.label: 'Travel'\n@AbapCatalog.tableCategory: #TRANSPARENT\n@AbapCatalog.preserveKey: true\n@AccessControl.authorizationCheck: #CHECK\n@AccessControl.authorizationCheck: #NOT_REQUIRED\n@Metadata.ignorePropagatedAnnotations: true\n@Metadata.allowExtensions: true\ndefine table ztravel {\n  key travel_id     : abap.numc(8) not null;\n      agency_id      : abap.char(8) not null;\n      customer_id    : abap.char(8) not null;\n      begin_date     : abap.dats not null;\n      end_date       : abap.dats not null;\n      booking_fee    : abap.curr(15,2) not null;\n      total_price    : abap.curr(15,2) not null;\n      currency_code  : abap.cuky(5) not null;\n      description    : abap.char(255);\n      status         : abap.char(1) not null;\n      created_by     : abap.char(12) not null;\n      created_at     : abap.timestampl;\n      last_changed_by: abap.char(12);\n      last_changed_at: abap.timestampl;\n      \n  @Semantics.user.createdBy: true\n  created_by;\n  \n  @Semantics.systemDateTime.createdAt: true\n  created_at;\n  \n  @Semantics.user.lastChangedBy: true\n  last_changed_by;\n  \n  @Semantics.systemDateTime.lastChangedAt: true\n  last_changed_at;\n}",
+      "best_practices": [
+        "Always include @EndUserText.label for user-facing text",
+        "Use proper table categories (#TRANSPARENT, #CLUSTER, #POOL)",
+        "Set @AbapCatalog.preserveKey for key preservation",
+        "Include audit fields (created_by, created_at, etc.)",
+        "Use semantic annotations (@Semantics.*) for metadata",
+        "Define proper access control annotations"
+      ]
+    },
+    "cds_associations": {
+      "description": "Define associations between entities",
+      "use_when": "Modeling relationships between business objects",
+      "code_example": "// Association definition\n@EndUserText.label: 'Travel with Agency'\ndefine view entity ZI_Travel\n  as select from ztravel\n  association [0..1] to ZI_Agency as _Agency on $projection.AgencyId = _Agency.AgencyId\n  association [0..1] to ZI_Customer as _Customer on $projection.CustomerId = _Customer.CustomerId\n{\n  key travel_id     as TravelId,\n      agency_id      as AgencyId,\n      customer_id    as CustomerId,\n      begin_date      as BeginDate,\n      end_date        as EndDate,\n      booking_fee     as BookingFee,\n      total_price     as TotalPrice,\n      currency_code   as CurrencyCode,\n      description     as Description,\n      status          as Status,\n      \n  // Exposed associations\n  _Agency,\n  _Customer\n}\n\n// Composition example\n@EndUserText.label: 'Travel Booking'\ndefine view entity ZI_Booking\n  as select from zbooking\n  composition [0..*] of ZI_BookingItem as _Items\n{\n  key booking_id as BookingId,\n      travel_id   as TravelId,\n      \n  _Items\n}",
+      "best_practices": [
+        "Use [0..1] for optional, [1] for mandatory associations",
+        "Use [0..*] or [1..*] for to-many relationships",
+        "Prefer compositions for dependent entities",
+        "Name associations with underscore prefix (_Agency)",
+        "Expose associations explicitly in projection"
+      ]
+    },
+    "cds_aspects": {
+      "description": "Use aspects for reusable field groups",
+      "use_when": "Common fields appear in multiple entities",
+      "code_example": "// Define aspect\n@EndUserText.label: 'Administrative Data'\ndefine aspect ZI_AdministrativeData {\n  created_by      : abap.char(12) not null;\n  created_at      : abap.timestampl;\n  last_changed_by : abap.char(12);\n  last_changed_at : abap.timestampl;\n  \n  @Semantics.user.createdBy: true\n  created_by;\n  \n  @Semantics.systemDateTime.createdAt: true\n  created_at;\n  \n  @Semantics.user.lastChangedBy: true\n  last_changed_by;\n  \n  @Semantics.systemDateTime.lastChangedAt: true\n  last_changed_at;\n}\n\n// Use aspect in entity\n@EndUserText.label: 'Travel'\ndefine view entity ZI_Travel\n  as select from ztravel\n{\n  key travel_id as TravelId,\n      agency_id  as AgencyId,\n      \n  // Include aspect\n  : ZI_AdministrativeData\n}",
+      "best_practices": [
+        "Create aspects for common field groups",
+        "Use semantic annotations in aspects",
+        "Aspects can include associations",
+        "Promote reuse across entities"
+      ]
+    },
+    "cds_type_definitions": {
+      "description": "Define reusable types and enums",
+      "use_when": "Standardizing data types across the model",
+      "code_example": "// Type definitions\n@EndUserText.label: 'Travel Status'\n@AbapCatalog.valueRangeName: 'Z_TRAVEL_STATUS'\ndefine type ztravel_status : abap.char(1);\n\n// Enum definition\n@EndUserText.label: 'Booking Status'\ndefine type zbooking_status : abap.char(1) enum {\n  @EndUserText.label: 'New'\n  new with value 'N';\n  \n  @EndUserText.label: 'Confirmed'\n  confirmed with value 'C';\n  \n  @EndUserText.label: 'Cancelled'\n  cancelled with value 'X';\n}\n\n// Code list\n@EndUserText.label: 'Currency Code'\n@ObjectModel.dataCategory: #TEXT\n@ObjectModel.textElement: ['CurrencyName']\ndefine type zcurrency_code : abap.cuky(5);\n\n// Use in entity\n@EndUserText.label: 'Travel'\ndefine view entity ZI_Travel\n  as select from ztravel\n{\n  key travel_id     as TravelId,\n      status         as Status : ztravel_status,\n      currency_code   as CurrencyCode : zcurrency_code\n}",
+      "best_practices": [
+        "Define types for domain values",
+        "Use enums for fixed value sets",
+        "Link to value ranges when applicable",
+        "Use code lists for master data references"
+      ]
+    },
+    "cds_projection_views": {
+      "description": "Create projection views for service exposure",
+      "use_when": "Exposing entities via OData or GraphQL services",
+      "code_example": "// Service definition\n@EndUserText.label: 'Travel Service'\ndefine service ZI_TRAVEL_SERVICE {\n  expose ZC_Travel as Travel;\n  expose ZC_Booking as Booking;\n}\n\n// Projection view with UI annotations\n@EndUserText.label: 'Travel'\n@AccessControl.authorizationCheck: #CHECK\n@Metadata.allowExtensions: true\n@Search.searchable: true\ndefine view entity ZC_Travel\n  as projection on ZI_Travel\n{\n  key TravelId,\n      AgencyId,\n      CustomerId,\n      BeginDate,\n      EndDate,\n      BookingFee,\n      TotalPrice,\n      CurrencyCode,\n      Description,\n      Status,\n      \n  // UI Annotations\n  @UI.lineItem: [{\n    position: 10,\n    importance: #HIGH,\n    label: 'Travel ID'\n  }]\n  @UI.identification: [{\n    position: 10,\n    label: 'Travel ID'\n  }]\n  TravelId;\n  \n  @UI.lineItem: [{\n    position: 20,\n    importance: #HIGH\n  }]\n  @UI.identification: [{\n    position: 20\n  }]\n  AgencyId;\n  \n  @UI.lineItem: [{\n    position: 30,\n    importance: #MEDIUM\n  }]\n  CustomerId;\n  \n  // Associations\n  _Agency,\n  _Customer\n}",
+      "best_practices": [
+        "Separate projection views from base views",
+        "Add UI annotations in projection views",
+        "Use service definitions for exposure",
+        "Keep base views annotation-free when possible"
+      ]
+    },
+    "rap_behavior_definitions": {
+      "description": "Define behavior for RAP business objects",
+      "use_when": "Creating RAP business objects with CRUD operations",
+      "code_example": "// Behavior definition\nprojection;\n\ndefine behavior for ZC_Travel alias Travel\n{\n  // Standard operations\n  create;\n  update;\n  delete;\n  \n  // Draft handling\n  draft action Edit;\n  draft action Activate;\n  draft action Discard;\n  draft action Resume;\n  draft determine action Prepare;\n  \n  // Custom actions\n  action ( features: instance ) acceptTravel result [1] $self;\n  action ( features: instance ) rejectTravel result [1] $self;\n  \n  // Validations\n  validation validateDates on save { create; update; }\n  validation validateAgency on save { create; update; }\n  \n  // Determinations\n  determination calculateTotalPrice on save { create; update; }\n  determination setInitialStatus on modify { create; }\n  \n  // Field control\n  field ( readonly ) TravelId;\n  field ( mandatory ) AgencyId, CustomerId, BeginDate, EndDate;\n  \n  // Lock\n  lock master;\n  \n  // Authorization\n  authorization master ( instance );\n  \n  // Association\n  association _Booking { create; update; delete; }\n}\n\n// Child entity behavior\ndefine behavior for ZC_Booking alias Booking\n{\n  create;\n  update;\n  delete;\n  \n  field ( readonly ) BookingId;\n  field ( mandatory ) TravelId, BookingDate;\n  \n  lock dependent by _Travel;\n  \n  authorization dependent ( instance ) by _Travel;\n  \n  association _Travel;\n}",
+      "best_practices": [
+        "Use draft for complex editing scenarios",
+        "Define validations for business rules",
+        "Use determinations for calculated fields",
+        "Set proper field control (readonly, mandatory)",
+        "Configure lock and authorization"
+      ]
+    },
+    "rap_behavior_implementations": {
+      "description": "Implement behavior logic in ABAP classes",
+      "use_when": "Business logic requires ABAP code",
+      "code_example": "// Behavior implementation class\nCLASS zbp_i_travel_u DEFINITION PUBLIC ABSTRACT FINAL\n  FOR BEHAVIOR OF ZI_Travel.\nENDCLASS.\n\nCLASS zbp_i_travel_u IMPLEMENTATION.\n\n  \" Validation implementation\n  METHOD validateDates.\n    READ ENTITIES OF ZI_Travel IN LOCAL MODE\n      ENTITY Travel\n        ALL FIELDS WITH CORRESPONDING #( keys )\n      RESULT DATA(travels).\n    \n    LOOP AT travels INTO DATA(travel).\n      IF travel-BeginDate > travel-EndDate.\n        APPEND VALUE #(\n          %tky = travel-%tky\n          %msg = NEW zcm_travel(\n            severity = if_abap_behv_message=>severity-error\n            textid = zcm_travel=>begin_date_after_end_date\n          )\n        ) TO reported-travel.\n      ENDIF.\n    ENDLOOP.\n  ENDMETHOD.\n  \n  \" Determination implementation\n  METHOD calculateTotalPrice.\n    READ ENTITIES OF ZI_Travel IN LOCAL MODE\n      ENTITY Travel\n        ALL FIELDS WITH CORRESPONDING #( keys )\n      RESULT DATA(travels).\n    \n    \" Read related bookings\n    READ ENTITIES OF ZI_Travel IN LOCAL MODE\n      ENTITY Travel BY \\_Booking\n        ALL FIELDS WITH CORRESPONDING #( travels )\n      RESULT DATA(bookings).\n    \n    LOOP AT travels INTO DATA(travel).\n      DATA(total_price) = travel-BookingFee.\n      \n      LOOP AT bookings INTO DATA(booking)\n        WHERE TravelId = travel-TravelId.\n        total_price = total_price + booking-FlightPrice.\n      ENDLOOP.\n      \n      MODIFY ENTITIES OF ZI_Travel IN LOCAL MODE\n        ENTITY Travel\n          UPDATE FIELDS ( TotalPrice )\n          WITH VALUE #( (\n            %tky = travel-%tky\n            TotalPrice = total_price\n          ) ).\n    ENDLOOP.\n  ENDMETHOD.\n  \n  \" Action implementation\n  METHOD acceptTravel.\n    READ ENTITIES OF ZI_Travel IN LOCAL MODE\n      ENTITY Travel\n        ALL FIELDS WITH CORRESPONDING #( keys )\n      RESULT DATA(travels).\n    \n    LOOP AT travels INTO DATA(travel).\n      IF travel-Status <> 'A'.\n        MODIFY ENTITIES OF ZI_Travel IN LOCAL MODE\n          ENTITY Travel\n            UPDATE FIELDS ( Status )\n            WITH VALUE #( (\n              %tky = travel-%tky\n              Status = 'A'\n            ) ).\n        \n        APPEND VALUE #(\n          %tky = travel-%tky\n          %msg = NEW zcm_travel(\n            severity = if_abap_behv_message=>severity-success\n            textid = zcm_travel=>travel_accepted\n          )\n        ) TO reported-travel.\n      ENDIF.\n    ENDLOOP.\n  ENDMETHOD.\n  \nENDCLASS.",
+      "best_practices": [
+        "Use READ ENTITIES for reading data",
+        "Use MODIFY ENTITIES for updates",
+        "Always use LOCAL MODE for behavior implementations",
+        "Report messages using %msg",
+        "Handle errors gracefully",
+        "Use CORRESPONDING #( keys ) for key mapping"
+      ]
+    },
+    "rap_draft_handling": {
+      "description": "Implement draft-enabled business objects",
+      "use_when": "Complex editing scenarios requiring draft save",
+      "code_example": "// Draft behavior definition\ndefine behavior for ZC_Travel alias Travel\n{\n  draft;\n  \n  draft action Edit;\n  draft action Activate;\n  draft action Discard;\n  draft action Resume;\n  draft determine action Prepare;\n  \n  create;\n  update;\n  delete;\n}\n\n// Draft implementation\nCLASS zbp_i_travel_u IMPLEMENTATION.\n\n  \" Prepare draft - called before draft save\n  METHOD prepare.\n    \" Validate draft data\n    \" Set default values\n    \" Perform calculations\n  ENDMETHOD.\n  \n  \" Activate draft - called when activating\n  METHOD activate.\n    \" Final validations\n    \" Create/update active instance\n    \" Delete draft\n  ENDMETHOD.\n  \n  \" Resume draft - called when resuming editing\n  METHOD resume.\n    \" Load draft data\n    \" Merge with active instance if exists\n  ENDMETHOD.\n  \nENDCLASS.\n\n// Draft table structure\n@EndUserText.label: 'Travel Draft'\ndefine table ztravel_draft {\n  key travel_id : abap.numc(8) not null;\n  \" ... other fields\n  \" Include %draft fields\n  %draft : ztravel_draft;\n}",
+      "best_practices": [
+        "Use draft for complex editing workflows",
+        "Implement prepare for draft validation",
+        "Handle activation carefully",
+        "Support resume for editing continuation",
+        "Store draft in separate table"
+      ]
+    },
+    "rap_authorization": {
+      "description": "Implement authorization checks in RAP",
+      "use_when": "Row-level or field-level authorization required",
+      "code_example": "// Authorization object definition\n@EndUserText.label: 'Travel Authorization'\ndefine abstract entity ZI_TravelAuth\n{\n  TravelId : abap.numc(8);\n  AgencyId : abap.char(8);\n  CustomerId : abap.char(8);\n  \n  @EndUserText.label: 'Authorization'\n  %control : ZI_TravelAuthControl;\n}\n\n// Authorization implementation\nCLASS zbp_i_travel_u IMPLEMENTATION.\n\n  METHOD get_authorizations.\n    \" Read authorization objects\n    AUTHORITY-CHECK OBJECT 'Z_TRAVEL'\n      ID 'ACTVT' FIELD '02'\n      ID 'AGENCY' FIELD agency_id.\n    \n    \" Set authorization results\n    LOOP AT keys INTO DATA(key).\n      APPEND VALUE #(\n        %tky = key-%tky\n        %auth = VALUE #(\n          %update = if_abap_behv=>auth-allowed\n          %delete = COND #(\n            WHEN sy-subrc = 0\n            THEN if_abap_behv=>auth-allowed\n            ELSE if_abap_behv=>auth-unauthorized\n          )\n        )\n      ) TO result.\n    ENDLOOP.\n  ENDMETHOD.\n  \nENDCLASS.\n\n// Behavior definition with authorization\ndefine behavior for ZC_Travel alias Travel\n{\n  authorization master ( instance );\n  \n  \" Field-level authorization\n  field ( features: instance ) TotalPrice;\n}",
+      "best_practices": [
+        "Use AUTHORITY-CHECK for authorization",
+        "Implement get_authorizations method",
+        "Set %auth structure properly",
+        "Support instance-level authorization",
+        "Consider field-level authorization"
+      ]
+    },
+    "rap_numbering": {
+      "description": "Implement automatic numbering",
+      "use_when": "Keys need to be generated automatically",
+      "code_example": "// Numbering implementation\nCLASS zbp_i_travel_u IMPLEMENTATION.\n\n  METHOD setInitialTravelId.\n    \" Read existing travels to get max ID\n    SELECT MAX( travel_id )\n      FROM ztravel\n      INTO @DATA(max_id).\n    \n    \" Read entities to number\n    READ ENTITIES OF ZI_Travel IN LOCAL MODE\n      ENTITY Travel\n        FIELDS ( TravelId )\n        WITH CORRESPONDING #( keys )\n      RESULT DATA(travels).\n    \n    \" Set new IDs\n    LOOP AT travels INTO DATA(travel)\n      WHERE TravelId IS INITIAL.\n      max_id = max_id + 1.\n      \n      MODIFY ENTITIES OF ZI_Travel IN LOCAL MODE\n        ENTITY Travel\n          UPDATE FIELDS ( TravelId )\n          WITH VALUE #( (\n            %tky = travel-%tky\n            TravelId = max_id\n          ) ).\n    ENDLOOP.\n  ENDMETHOD.\n  \nENDCLASS.\n\n// Behavior definition\ndefine behavior for ZC_Travel alias Travel\n{\n  determination setInitialTravelId on modify { create; }\n  \n  field ( readonly ) TravelId;\n}",
+      "best_practices": [
+        "Use determination for numbering",
+        "Handle concurrent access properly",
+        "Consider using number ranges",
+        "Set field to readonly after creation"
+      ]
+    },
+    "cap_service_definitions": {
+      "description": "Define CAP services with OData and GraphQL",
+      "use_when": "Creating CAP applications",
+      "code_example": "// Service definition (CAP)\nusing { \n  TravelService as TravelService from '../db/schema';\n} from '@sap/cds/common';\n\nservice TravelService @(path: '/travel') {\n  entity Travels as projection on TravelService.Travels;\n  entity Bookings as projection on TravelService.Bookings;\n  \n  // Custom actions\n  action acceptTravel(travelId: String) returns Boolean;\n  action rejectTravel(travelId: String) returns Boolean;\n  \n  // Custom functions\n  function getTravelStatistics() returns {\n    totalTravels: Integer;\n    activeTravels: Integer;\n    cancelledTravels: Integer;\n  };\n}\n\n// Service implementation (Node.js)\nmodule.exports = (srv) => {\n  \n  srv.on('acceptTravel', async (req) => {\n    const { travelId } = req.data;\n    \n    await UPDATE(Travels)\n      .set({ status: 'A' })\n      .where({ ID: travelId });\n    \n    return true;\n  });\n  \n  srv.on('getTravelStatistics', async (req) => {\n    const totalTravels = await SELECT.one.from(Travels).count();\n    const activeTravels = await SELECT.one.from(Travels)\n      .where({ status: 'A' }).count();\n    const cancelledTravels = await SELECT.one.from(Travels)\n      .where({ status: 'X' }).count();\n    \n    return {\n      totalTravels,\n      activeTravels,\n      cancelledTravels\n    };\n  });\n};",
+      "best_practices": [
+        "Separate service definitions from implementations",
+        "Use projections for service exposure",
+        "Define actions for state changes",
+        "Use functions for read-only operations",
+        "Handle errors properly"
+      ]
+    },
+    "cap_event_handling": {
+      "description": "Handle events in CAP services",
+      "use_when": "Reacting to data changes or external events",
+      "code_example": "// Event handlers (CAP Node.js)\nmodule.exports = (srv) => {\n  \n  // Before handlers\n  srv.before('CREATE', 'Travels', async (req) => {\n    const { data } = req;\n    \n    // Validation\n    if (!data.agencyId) {\n      req.error(400, 'Agency ID is required');\n    }\n    \n    // Set defaults\n    if (!data.status) {\n      data.status = 'N';\n    }\n    \n    data.createdAt = new Date();\n  });\n  \n  // After handlers\n  srv.after('CREATE', 'Travels', async (req) => {\n    const { data } = req;\n    \n    // Send notification\n    await sendNotification({\n      type: 'TRAVEL_CREATED',\n      travelId: data.ID\n    });\n  });\n  \n  // On handlers (for reads)\n  srv.on('READ', 'Travels', async (req) => {\n    // Custom read logic\n    const travels = await SELECT.from(Travels)\n      .where({ status: 'A' });\n    \n    return travels;\n  });\n  \n  // Custom handlers\n  srv.on('acceptTravel', async (req) => {\n    const { travelId } = req.data;\n    \n    await UPDATE(Travels)\n      .set({ status: 'A' })\n      .where({ ID: travelId });\n    \n    // Emit event\n    await srv.emit('TravelAccepted', { travelId });\n  });\n};",
+      "best_practices": [
+        "Use before handlers for validation",
+        "Use after handlers for side effects",
+        "Use on handlers for custom read logic",
+        "Emit events for async processing",
+        "Handle errors appropriately"
+      ]
+    },
+    "cap_database_patterns": {
+      "description": "Database-specific patterns for CAP",
+      "use_when": "Optimizing for specific database backends",
+      "code_example": "// HANA-specific patterns\n@cds.persistence.exists\nentity Travels {\n  key ID : UUID;\n      AgencyId : String(8);\n      \n  // HANA-specific annotations\n  @cds.persistence.table: 'ZTRAVEL'\n  @cds.persistence.exists: true\n  \n  // Temporal data\n  @cds.valid.from: ValidFrom;\n  @cds.valid.to: ValidTo;\n  ValidFrom : Date;\n  ValidTo : Date;\n}\n\n// SQLite for development\n@cds.persistence.exists\nentity Travels {\n  key ID : UUID;\n  \" ... fields\n}\n\n// PostgreSQL patterns\n@cds.persistence.exists\nentity Travels {\n  key ID : UUID default uuid_generate_v4();\n  \" ... fields\n}\n\n// Database-specific queries\nconst hanaQuery = SELECT.from(Travels)\n  .columns('ID', 'AgencyId')\n  .where({ status: 'A' });\n\n// Use native SQL when needed\nconst nativeQuery = await cds.run(\n  SELECT.from('ZTRAVEL')\n    .where('STATUS = \\'A\\'')\n);",
+      "best_practices": [
+        "Use @cds.persistence.exists for existing tables",
+        "Leverage HANA-specific features when available",
+        "Test with SQLite for development",
+        "Use database-agnostic queries when possible",
+        "Consider temporal data patterns"
+      ]
+    },
+    "fiori_annotations": {
+      "description": "Fiori Elements annotations for UI",
+      "use_when": "Creating Fiori Elements applications",
+      "code_example": "// List Report annotations\n@EndUserText.label: 'Travel'\n@UI.headerInfo: {\n  typeName: 'Travel',\n  typeNamePlural: 'Travels',\n  title: {\n    value: 'TravelId',\n    type: #STANDARD\n  },\n  description: {\n    value: 'Description'\n  }\n}\n@Search.searchable: true\ndefine view entity ZC_Travel\n  as projection on ZI_Travel\n{\n  @UI.lineItem: [{\n    position: 10,\n    importance: #HIGH,\n    label: 'Travel ID'\n  }]\n  @UI.identification: [{\n    position: 10,\n    label: 'Travel ID'\n  }]\n  TravelId;\n  \n  @UI.lineItem: [{\n    position: 20,\n    importance: #HIGH\n  }]\n  @UI.identification: [{\n    position: 20\n  }]\n  AgencyId;\n  \n  @UI.lineItem: [{\n    position: 30,\n    importance: #MEDIUM\n  }]\n  CustomerId;\n  \n  @UI.lineItem: [{\n    position: 40,\n    importance: #MEDIUM\n  }]\n  @UI.dataPoint: {\n    title: 'Total Price',\n    targetValue: '1000'\n  }\n  TotalPrice;\n  \n  @UI.lineItem: [{\n    position: 50,\n    importance: #LOW\n  }]\n  Status;\n}\n\n// Object Page annotations\n@EndUserText.label: 'Travel Details'\ndefine view entity ZC_TravelDetail\n  as projection on ZI_Travel\n{\n  @UI.facet: [{\n    id: 'idTravel',\n    type: #IDENTIFICATION_REFERENCE,\n    label: 'Travel',\n    position: 10\n  }]\n  @UI.identification: [{\n    position: 10,\n    label: 'Travel ID'\n  }]\n  TravelId;\n  \n  @UI.facet: [{\n    id: 'idDates',\n    type: #COLLECTION,\n    label: 'Dates',\n    position: 20\n  }]\n  @UI.identification: [{\n    position: 20,\n    label: 'Begin Date'\n  }]\n  BeginDate;\n  \n  @UI.identification: [{\n    position: 30,\n    label: 'End Date'\n  }]\n  EndDate;\n}",
+      "best_practices": [
+        "Use @UI.lineItem for list reports",
+        "Use @UI.identification for object pages",
+        "Set proper positions and importance",
+        "Use @UI.headerInfo for page headers",
+        "Configure facets for object pages"
+      ]
+    },
+    "clean_abap_naming": {
+      "description": "Clean ABAP naming conventions",
+      "use_when": "Writing ABAP code following Clean ABAP guidelines",
+      "code_example": "// Clean ABAP naming\n\" Classes: ZCL_ prefix, descriptive names\nCLASS zcl_travel_service DEFINITION PUBLIC FINAL.\n  PUBLIC SECTION.\n    \" Methods: verb_noun pattern\n    METHODS:\n      create_travel IMPORTING travel_data TYPE ztravel_data\n                   RETURNING VALUE(result) TYPE ztravel_id\n                   RAISING zcx_travel_error,\n      \n      get_travel IMPORTING travel_id TYPE ztravel_id\n                 RETURNING VALUE(result) TYPE ztravel_data\n                 RAISING zcx_travel_not_found.\n  \n  PRIVATE SECTION.\n    \" Private methods: same pattern\n    METHODS:\n      validate_travel_data IMPORTING travel_data TYPE ztravel_data\n                           RAISING zcx_travel_error,\n      \n      calculate_total_price IMPORTING travel_data TYPE ztravel_data\n                            RETURNING VALUE(result) TYPE abap_curr.\n    \n    \" Attributes: noun pattern\n    DATA:\n      travel_repository TYPE REF TO zif_travel_repository.\nENDCLASS.\n\n\" Interfaces: ZIF_ prefix\nINTERFACE zif_travel_repository.\n  METHODS:\n    get_travel IMPORTING travel_id TYPE ztravel_id\n               RETURNING VALUE(result) TYPE ztravel_data.\nENDINTERFACE.\n\n\" Exceptions: ZCX_ prefix\nCLASS zcx_travel_error DEFINITION INHERITING FROM cx_static_check.\n  PUBLIC SECTION.\n    INTERFACES if_t100_message.\n    METHODS:\n      constructor IMPORTING textid TYPE scx_t100key OPTIONAL\n                            previous TYPE REF TO cx_root OPTIONAL.\nENDCLASS.",
+      "best_practices": [
+        "Use descriptive names (avoid abbreviations)",
+        "Classes: ZCL_ prefix",
+        "Interfaces: ZIF_ prefix",
+        "Exceptions: ZCX_ prefix",
+        "Methods: verb_noun pattern",
+        "Attributes: noun pattern",
+        "Constants: UPPER_SNAKE_CASE",
+        "Avoid Hungarian notation"
+      ]
+    },
+    "abap_error_handling": {
+      "description": "Proper error handling in ABAP",
+      "use_when": "Handling errors in ABAP code",
+      "code_example": "// Exception class definition\nCLASS zcx_travel_error DEFINITION INHERITING FROM cx_static_check.\n  PUBLIC SECTION.\n    INTERFACES if_t100_message.\n    \n    TYPES:\n      BEGIN OF ty_message,\n        msgid TYPE symsgid,\n        msgno TYPE symsgno,\n        msgty TYPE symsgty,\n        msgv1 TYPE symsgv,\n        msgv2 TYPE symsgv,\n        msgv3 TYPE symsgv,\n        msgv4 TYPE symsgv,\n      END OF ty_message.\n    \n    DATA:\n      message TYPE ty_message.\n    \n    METHODS:\n      constructor IMPORTING textid TYPE scx_t100key OPTIONAL\n                            previous TYPE REF TO cx_root OPTIONAL\n                            msgid TYPE symsgid OPTIONAL\n                            msgno TYPE symsgno OPTIONAL\n                            msgty TYPE symsgty OPTIONAL\n                            msgv1 TYPE symsgv OPTIONAL\n                            msgv2 TYPE symsgv OPTIONAL\n                            msgv3 TYPE symsgv OPTIONAL\n                            msgv4 TYPE symsgv OPTIONAL.\nENDCLASS.\n\nCLASS zcx_travel_error IMPLEMENTATION.\n  METHOD constructor.\n    super->constructor( textid = textid previous = previous ).\n    \n    IF msgid IS SUPPLIED.\n      me->message-msgid = msgid.\n      me->message-msgno = msgno.\n      me->message-msgty = msgty.\n      me->message-msgv1 = msgv1.\n      me->message-msgv2 = msgv2.\n      me->message-msgv3 = msgv3.\n      me->message-msgv4 = msgv4.\n      \n      if_t100_message~t100key-msgid = msgid.\n      if_t100_message~t100key-msgno = msgno.\n    ENDIF.\n  ENDMETHOD.\nENDCLASS.\n\n// Usage\nTRY.\n    travel_service->create_travel( travel_data ).\n  CATCH zcx_travel_error INTO DATA(travel_error).\n    \" Handle travel-specific error\n    MESSAGE travel_error->get_text( ) TYPE 'E'.\n  CATCH cx_root INTO DATA(root_error).\n    \" Handle unexpected errors\n    MESSAGE root_error->get_text( ) TYPE 'E'.\nENDTRY.",
+      "best_practices": [
+        "Create exception classes for error types",
+        "Inherit from appropriate base class",
+        "Implement if_t100_message for messages",
+        "Use TRY-CATCH for error handling",
+        "Never use MESSAGE without exception",
+        "Provide meaningful error messages"
+      ]
+    },
+    "abap_unit_testing": {
+      "description": "ABAP Unit testing patterns",
+      "use_when": "Writing unit tests for ABAP code",
+      "code_example": "// Test class\nCLASS zcl_travel_service_test DEFINITION\n  FOR TESTING\n  RISK LEVEL HARMLESS\n  DURATION SHORT.\n  \n  PRIVATE SECTION.\n    DATA:\n      cut TYPE REF TO zcl_travel_service,\n      travel_repository_mock TYPE REF TO zif_travel_repository.\n    \n    METHODS:\n      setup,\n      teardown,\n      \n      \" Test methods\n      create_travel_success FOR TESTING,\n      create_travel_invalid_data FOR TESTING,\n      get_travel_found FOR TESTING,\n      get_travel_not_found FOR TESTING.\nENDCLASS.\n\nCLASS zcl_travel_service_test IMPLEMENTATION.\n  \n  METHOD setup.\n    \" Create mocks\n    CREATE OBJECT travel_repository_mock TYPE zcl_travel_repository_mock.\n    \n    \" Create CUT (Class Under Test)\n    CREATE OBJECT cut\n      EXPORTING\n        travel_repository = travel_repository_mock.\n  ENDMETHOD.\n  \n  METHOD teardown.\n    CLEAR: cut, travel_repository_mock.\n  ENDMETHOD.\n  \n  METHOD create_travel_success.\n    \" Given\n    DATA(travel_data) = VALUE ztravel_data(\n      agency_id = '10000001'\n      customer_id = '10000001'\n      begin_date = '20260101'\n      end_date = '20260110'\n    ).\n    \n    \" When\n    DATA(travel_id) = cut->create_travel( travel_data ).\n    \n    \" Then\n    cl_abap_unit_assert=>assert_not_initial(\n      act = travel_id\n      msg = 'Travel ID should be set'\n    ).\n  ENDMETHOD.\n  \n  METHOD create_travel_invalid_data.\n    \" Given\n    DATA(travel_data) = VALUE ztravel_data(\n      agency_id = '' \" Invalid: empty\n    ).\n    \n    \" When & Then\n    TRY.\n        cut->create_travel( travel_data ).\n        cl_abap_unit_assert=>fail( msg = 'Should raise exception' ).\n      CATCH zcx_travel_error.\n        \" Expected exception\n    ENDTRY.\n  ENDMETHOD.\n  \n  METHOD get_travel_found.\n    \" Given\n    DATA(travel_id) = '00000001'.\n    DATA(expected_travel) = VALUE ztravel_data(\n      travel_id = travel_id\n      agency_id = '10000001'\n    ).\n    \n    \" Mock repository response\n    travel_repository_mock->get_travel( travel_id ) = expected_travel.\n    \n    \" When\n    DATA(actual_travel) = cut->get_travel( travel_id ).\n    \n    \" Then\n    cl_abap_unit_assert=>assert_equals(\n      exp = expected_travel\n      act = actual_travel\n      msg = 'Travel data should match'\n    ).\n  ENDMETHOD.\n  \n  METHOD get_travel_not_found.\n    \" Given\n    DATA(travel_id) = '99999999'.\n    \n    \" Mock repository to raise exception\n    travel_repository_mock->get_travel( travel_id )\n      RAISING zcx_travel_not_found.\n    \n    \" When & Then\n    TRY.\n        cut->get_travel( travel_id ).\n        cl_abap_unit_assert=>fail( msg = 'Should raise exception' ).\n      CATCH zcx_travel_not_found.\n        \" Expected exception\n    ENDTRY.\n  ENDMETHOD.\n  \nENDCLASS.",
+      "best_practices": [
+        "Use FOR TESTING for test methods",
+        "Set RISK LEVEL appropriately",
+        "Use setup and teardown methods",
+        "Follow Given-When-Then pattern",
+        "Use cl_abap_unit_assert for assertions",
+        "Mock dependencies",
+        "Test both success and error cases"
+      ]
+    },
+    "abap_cloud_patterns": {
+      "description": "ABAP Cloud-compatible patterns",
+      "use_when": "Developing for SAP BTP ABAP Environment",
+      "code_example": "// Use released APIs only\n\" \u2705 Allowed: Released API\nDATA(lo_http_client) = cl_web_http_client_manager=>create_by_http_destination(\n  i_destination = 'MY_DESTINATION'\n).\n\n\" \u274c Not allowed: Direct database access\n\" SELECT * FROM ztravel INTO TABLE @DATA(lt_travel).\n\n\" \u2705 Use: Released API for database access\nSELECT FROM ztravel\n  FIELDS *\n  INTO TABLE @DATA(lt_travel).\n\n// Use released function modules\n\" \u2705 Allowed: Released function module\nCALL FUNCTION 'RFC_SYSTEM_INFO'\n  DESTINATION 'BACKEND'\n  IMPORTING\n    rfcsi_export = DATA(ls_rfcsi).\n\n\" \u274c Not allowed: Custom function modules\n\" CALL FUNCTION 'Z_CUSTOM_FUNCTION'.\n\n// Use released classes\n\" \u2705 Allowed: Released class\nDATA(lo_json_writer) = cl_sxml_string_writer=>create( type = if_sxml=>co_xt_json ).\n\n\" \u274c Not allowed: System classes\n\" DATA(lo_system) = cl_system=>get_instance( ).\n\n// Use CDS views instead of direct table access\n\" \u2705 Preferred: CDS view\nSELECT FROM zi_travel\n  FIELDS *\n  INTO TABLE @DATA(lt_travel).\n\n\" \u274c Avoid: Direct table access\n\" SELECT FROM ztravel INTO TABLE @DATA(lt_travel).",
+      "best_practices": [
+        "Only use released APIs",
+        "Check API release status in SAP Help",
+        "Use CDS views instead of direct table access",
+        "Avoid system classes and function modules",
+        "Use released ABAP language features",
+        "Check compatibility before migration"
+      ]
+    },
+    "multitenancy_patterns": {
+      "description": "Multitenancy patterns for CAP",
+      "use_when": "Building SaaS applications on BTP",
+      "code_example": "// Tenant-aware entity\nentity Travels {\n  key ID : UUID;\n      tenant : String(16);\n      AgencyId : String(8);\n      \" ... other fields\n}\n\n// Tenant isolation in service\nmodule.exports = (srv) => {\n  \n  srv.before('READ', 'Travels', async (req) => {\n    \" Add tenant filter automatically\n    req.query.where({ tenant: req.user.tenant });\n  });\n  \n  srv.before('CREATE', 'Travels', async (req) => {\n    \" Set tenant automatically\n    req.data.tenant = req.user.tenant;\n  });\n  \n  srv.before('UPDATE', 'Travels', async (req) => {\n    \" Verify tenant ownership\n    const travel = await SELECT.one.from(Travels)\n      .where({ ID: req.data.ID, tenant: req.user.tenant });\n    \n    if (!travel) {\n      req.error(403, 'Access denied');\n    }\n  });\n};\n\n// Tenant-aware CDS view (RAP)\n@EndUserText.label: 'Travel'\ndefine view entity ZI_Travel\n  as select from ztravel\n  where tenant = $session.client\n{\n  key travel_id as TravelId,\n      tenant     as Tenant,\n      \" ... other fields\n}\n\n// Extensibility patterns\n@EndUserText.label: 'Travel Extension'\n@ObjectModel.usageType.dataClass: #EXTENSIBLE\nextend view ZI_Travel with ZI_TravelExtension {\n  custom_field : abap.char(100);\n}",
+      "best_practices": [
+        "Always filter by tenant",
+        "Set tenant automatically on create",
+        "Verify tenant ownership on update/delete",
+        "Use $session.client for tenant filtering",
+        "Support extensibility for tenants",
+        "Isolate data per tenant"
+      ]
+    },
+    "btp_deployment": {
+      "description": "BTP deployment patterns with MTA",
+      "use_when": "Deploying CAP applications to BTP",
+      "code_example": "// mta.yaml\nID: travel-service\n_schema-version: '3.1'\nversion: 1.0.0\n\nmodules:\n  - name: travel-service\n    type: nodejs\n    path: .\n    requires:\n      - name: travel-service-db\n      - name: travel-service-auth\n    provides:\n      - name: travel-service-api\n        properties:\n          url: ${default-url}\n\nresources:\n  - name: travel-service-db\n    type: com.sap.xs.hdi-container\n    parameters:\n      service: hana\n      service-plan: hdi-shared\n  \n  - name: travel-service-auth\n    type: org.cloudfoundry.managed-service\n    parameters:\n      service: xsuaa\n      service-plan: application\n      config:\n        xsappname: travel-service\n        tenant-mode: shared\n        scopes:\n          - name: $XSAPPNAME.Display\n            description: Display travels\n          - name: $XSAPPNAME.Edit\n            description: Edit travels\n        role-templates:\n          - name: TravelViewer\n            description: Travel viewer\n            scope-references:\n              - $XSAPPNAME.Display\n          - name: TravelEditor\n            description: Travel editor\n            scope-references:\n              - $XSAPPNAME.Display\n              - $XSAPPNAME.Edit\n\n// xs-security.json (for CAP)\n{\n  \"xsappname\": \"travel-service\",\n  \"tenant-mode\": \"shared\",\n  \"scopes\": [\n    {\n      \"name\": \"$XSAPPNAME.Display\",\n      \"description\": \"Display travels\"\n    },\n    {\n      \"name\": \"$XSAPPNAME.Edit\",\n      \"description\": \"Edit travels\"\n    }\n  ],\n  \"role-templates\": [\n    {\n      \"name\": \"TravelViewer\",\n      \"description\": \"Travel viewer\",\n      \"scope-references\": [\n        \"$XSAPPNAME.Display\"\n      ]\n    },\n    {\n      \"name\": \"TravelEditor\",\n      \"description\": \"Travel editor\",\n      \"scope-references\": [\n        \"$XSAPPNAME.Display\",\n        \"$XSAPPNAME.Edit\"\n      ]\n    }\n  ]\n}\n\n// package.json (CAP)\n{\n  \"name\": \"travel-service\",\n  \"version\": \"1.0.0\",\n  \"dependencies\": {\n    \"@sap/cds\": \"^7\",\n    \"@sap/cds-hana\": \"^2\",\n    \"express\": \"^4\"\n  },\n  \"cds\": {\n    \"requires\": {\n      \"db\": {\n        \"kind\": \"sql\"\n      },\n      \"auth\": {\n        \"kind\": \"xsuaa\"\n      }\n    }\n  }\n}",
+      "best_practices": [
+        "Use MTA for multi-module deployments",
+        "Define proper service bindings",
+        "Configure XSUAA for authentication",
+        "Set up destinations for external services",
+        "Use HDI containers for HANA",
+        "Configure proper scopes and roles"
+      ]
+    }
+  },
+  "best_practices": [
+    "Separate base views from projection views",
+    "Use aspects for reusable field groups",
+    "Define proper associations and compositions",
+    "Add semantic annotations for metadata",
+    "Use type definitions for consistency",
+    "Include audit fields in all entities",
+    "Use draft for complex editing scenarios",
+    "Implement proper validations and determinations",
+    "Set field control appropriately",
+    "Configure authorization properly",
+    "Handle numbering correctly",
+    "Test behavior implementations thoroughly",
+    "Separate service definitions from implementations",
+    "Use before/after handlers appropriately",
+    "Emit events for async processing",
+    "Handle errors gracefully",
+    "Support multitenancy from the start",
+    "Use database-agnostic queries when possible",
+    "Only use released APIs",
+    "Check API release status regularly",
+    "Use CDS views instead of direct table access",
+    "Avoid system classes and function modules",
+    "Follow Clean ABAP guidelines",
+    "Write comprehensive unit tests",
+    "Use proper UI annotations",
+    "Configure list reports and object pages",
+    "Set positions and importance correctly",
+    "Use facets for object pages",
+    "Configure search properly",
+    "Test on different devices",
+    "Always implement authorization checks",
+    "Use XSUAA for authentication",
+    "Filter by tenant in multitenant apps",
+    "Validate all inputs",
+    "Never expose sensitive data",
+    "Use secure communication (HTTPS)",
+    "Write ABAP Unit tests for all logic",
+    "Test both success and error cases",
+    "Use mocks for dependencies",
+    "Follow Given-When-Then pattern",
+    "Set appropriate risk levels",
+    "Test authorization scenarios"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Direct Table Access",
+      "problem": "Bypasses authorization, harder to maintain",
+      "solution": "Always use CDS views for data access"
+    },
+    {
+      "name": "Business Logic In Ui",
+      "problem": "Logic not reusable, hard to test",
+      "solution": "Move logic to behavior implementations or service handlers"
+    },
+    {
+      "name": "Missing Authorization",
+      "problem": "Security vulnerability",
+      "solution": "Always implement authorization in behavior definitions"
+    },
+    {
+      "name": "Hardcoded Values",
+      "problem": "Hard to maintain, error-prone",
+      "solution": "Use constants, enums, or value ranges"
+    },
+    {
+      "name": "Ignoring Errors",
+      "problem": "Unclear error messages, potential data corruption",
+      "solution": "Always use TRY-CATCH, create proper exception classes"
+    },
+    {
+      "name": "No Unit Tests",
+      "problem": "No verification, regression risk",
+      "solution": "Write ABAP Unit tests for all business logic"
+    },
+    {
+      "name": "Unreleased Apis",
+      "problem": "Not compatible with BTP, may break",
+      "solution": "Only use released APIs, check compatibility"
+    },
+    {
+      "name": "Missing Tenant Isolation",
+      "problem": "Data leakage between tenants",
+      "solution": "Always filter by tenant, verify ownership"
+    }
+  ]
+}

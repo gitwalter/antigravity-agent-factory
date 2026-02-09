@@ -1,0 +1,341 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "testcontainers-patterns",
+  "name": "Testcontainers Patterns",
+  "title": "Testcontainers Integration Testing Patterns",
+  "description": "Best practices and patterns for using Testcontainers in Spring Boot integration tests",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Testcontainers enable verifiable integration tests with real dependencies",
+    "A3_transparency": "Tests provide transparent verification of application behavior"
+  },
+  "patterns": {
+    "overview": {
+      "description": "Testcontainers provides lightweight, throwaway instances of databases, message brokers, and other services for integration testing",
+      "benefits": [
+        "Real database testing without mocks",
+        "Isolated test environments",
+        "Reproducible tests",
+        "No manual test database setup",
+        "CI/CD friendly"
+      ]
+    },
+    "database_containers": {
+      "postgresql": {
+        "description": "PostgreSQL database container",
+        "setup": "@Container static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(\"postgres:15\")",
+        "configuration": {
+          "withDatabaseName": "Set database name",
+          "withUsername": "Set database username",
+          "withPassword": "Set database password",
+          "withInitScript": "Run initialization script",
+          "withReuse": "Reuse container across tests"
+        },
+        "dynamic_properties": "@DynamicPropertySource to configure Spring datasource",
+        "example": "PostgreSQLContainer with @SpringBootTest and @Testcontainers"
+      },
+      "mysql": {
+        "description": "MySQL database container",
+        "setup": "@Container static MySQLContainer<?> mysql = new MySQLContainer<>(\"mysql:8\")",
+        "configuration": {
+          "withDatabaseName": "Set database name",
+          "withUsername": "Set database username",
+          "withPassword": "Set database password"
+        },
+        "use_when": "Testing MySQL-specific features"
+      },
+      "mariadb": {
+        "description": "MariaDB database container",
+        "setup": "@Container static MariaDBContainer<?> mariadb = new MariaDBContainer<>(\"mariadb:10\")",
+        "use_when": "Testing MariaDB compatibility"
+      },
+      "mongodb": {
+        "description": "MongoDB container",
+        "setup": "@Container static MongoDBContainer mongo = new MongoDBContainer(\"mongo:6\")",
+        "use_when": "Testing MongoDB repositories"
+      },
+      "oracle": {
+        "description": "Oracle database container",
+        "setup": "@Container static OracleContainer oracle = new OracleContainer(\"gvenzl/oracle-xe:21-slim\")",
+        "use_when": "Testing Oracle database compatibility"
+      }
+    },
+    "message_broker_containers": {
+      "kafka": {
+        "description": "Apache Kafka container",
+        "setup": "@Container static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse(\"confluentinc/cp-kafka:latest\"))",
+        "configuration": {
+          "withEnv": "Set Kafka environment variables",
+          "withNetwork": "Join Docker network"
+        },
+        "dynamic_properties": "spring.kafka.bootstrap-servers from kafka.getBootstrapServers()",
+        "use_when": "Testing Kafka producers/consumers"
+      },
+      "rabbitmq": {
+        "description": "RabbitMQ message broker container",
+        "setup": "@Container static RabbitMQContainer rabbitmq = new RabbitMQContainer(\"rabbitmq:3-management\")",
+        "configuration": {
+          "withUser": "Set RabbitMQ username",
+          "withPassword": "Set RabbitMQ password",
+          "withVhost": "Set virtual host"
+        },
+        "dynamic_properties": "spring.rabbitmq.host and spring.rabbitmq.port",
+        "use_when": "Testing RabbitMQ messaging"
+      },
+      "pulsar": {
+        "description": "Apache Pulsar container",
+        "setup": "@Container static PulsarContainer pulsar = new PulsarContainer(\"apachepulsar/pulsar:latest\")",
+        "use_when": "Testing Pulsar messaging"
+      }
+    },
+    "cache_containers": {
+      "redis": {
+        "description": "Redis cache container",
+        "setup": "@Container static GenericContainer<?> redis = new GenericContainer<>(\"redis:7-alpine\").withExposedPorts(6379)",
+        "configuration": {
+          "withExposedPorts": "Expose Redis port",
+          "withCommand": "Set Redis commands"
+        },
+        "dynamic_properties": "spring.data.redis.host and spring.data.redis.port",
+        "use_when": "Testing Redis caching or Spring Session"
+      },
+      "hazelcast": {
+        "description": "Hazelcast container",
+        "setup": "@Container static GenericContainer<?> hazelcast = new GenericContainer<>(\"hazelcast/hazelcast:5\")",
+        "use_when": "Testing Hazelcast distributed cache"
+      }
+    },
+    "search_containers": {
+      "elasticsearch": {
+        "description": "Elasticsearch container",
+        "setup": "@Container static ElasticsearchContainer elasticsearch = new ElasticsearchContainer(\"docker.elastic.co/elasticsearch/elasticsearch:8.8.0\")",
+        "configuration": {
+          "withPassword": "Set Elasticsearch password",
+          "withEnv": "Set environment variables"
+        },
+        "use_when": "Testing Elasticsearch repositories"
+      },
+      "opensearch": {
+        "description": "OpenSearch container",
+        "setup": "@Container static OpenSearchContainer opensearch = new OpenSearchContainer(\"opensearchproject/opensearch:2\")",
+        "use_when": "Testing OpenSearch"
+      }
+    },
+    "test_patterns": {
+      "static_container": {
+        "description": "Container shared across all tests in class",
+        "pattern": "@Container static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(\"postgres:15\")",
+        "use_when": "Container can be reused across tests",
+        "benefits": [
+          "Faster test execution",
+          "Resource efficient"
+        ]
+      },
+      "instance_container": {
+        "description": "New container for each test",
+        "pattern": "@Container PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(\"postgres:15\")",
+        "use_when": "Tests need isolated containers",
+        "benefits": [
+          "Complete isolation",
+          "No test interference"
+        ]
+      },
+      "dynamic_property_source": {
+        "description": "Configure Spring properties from container",
+        "pattern": "@DynamicPropertySource static void configureProperties(DynamicPropertyRegistry registry)",
+        "example": "registry.add(\"spring.datasource.url\", postgres::getJdbcUrl)",
+        "use_when": "Need to configure Spring Boot from container",
+        "best_practices": [
+          "Use method references for dynamic values",
+          "Configure all required properties",
+          "Handle port mapping correctly"
+        ]
+      },
+      "test_configuration": {
+        "description": "Test-specific Spring configuration",
+        "pattern": "@TestConfiguration with @Import",
+        "use_when": "Need test-specific beans",
+        "example": "TestConfiguration with mock beans"
+      },
+      "lifecycle_management": {
+        "description": "Container lifecycle management",
+        "patterns": {
+          "start": "Container starts before tests",
+          "stop": "Container stops after tests",
+          "reuse": "Reuse container across test runs"
+        },
+        "best_practices": [
+          "Use @Container for automatic lifecycle",
+          "Use static containers when possible",
+          "Enable reuse for faster tests"
+        ]
+      }
+    },
+    "spring_boot_integration": {
+      "spring_boot_test": {
+        "description": "Full Spring Boot context with Testcontainers",
+        "pattern": "@SpringBootTest @Testcontainers",
+        "use_when": "Need full application context",
+        "configuration": "@DynamicPropertySource for datasource configuration"
+      },
+      "data_jpa_test": {
+        "description": "JPA slice test with Testcontainers",
+        "pattern": "@DataJpaTest @Testcontainers",
+        "use_when": "Testing only JPA layer",
+        "configuration": "@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)"
+      },
+      "jdbc_test": {
+        "description": "JDBC slice test with Testcontainers",
+        "pattern": "@JdbcTest @Testcontainers",
+        "use_when": "Testing JDBC operations"
+      },
+      "transactional": {
+        "description": "Use @Transactional for test cleanup",
+        "pattern": "@SpringBootTest @Transactional",
+        "benefits": [
+          "Automatic rollback",
+          "Clean test data"
+        ],
+        "use_when": "Need database cleanup between tests"
+      }
+    },
+    "advanced_patterns": {
+      "docker_compose": {
+        "description": "Use Docker Compose for multiple services",
+        "setup": "@Container static DockerComposeContainer<?> compose = new DockerComposeContainer<>(new File(\"docker-compose-test.yml\"))",
+        "use_when": "Need multiple services (database + cache + broker)",
+        "benefits": [
+          "Single configuration",
+          "Service dependencies"
+        ]
+      },
+      "network_isolation": {
+        "description": "Isolate containers in Docker network",
+        "pattern": "Network.newNetwork() and container.withNetwork()",
+        "use_when": "Need network isolation",
+        "benefits": [
+          "Isolated tests",
+          "No port conflicts"
+        ]
+      },
+      "volume_mounts": {
+        "description": "Mount volumes for data persistence",
+        "pattern": "container.withFileSystemBind()",
+        "use_when": "Need to persist test data",
+        "use_cases": [
+          "Database initialization scripts",
+          "Configuration files"
+        ]
+      },
+      "environment_variables": {
+        "description": "Set container environment variables",
+        "pattern": "container.withEnv(\"KEY\", \"value\")",
+        "use_when": "Need to configure container behavior",
+        "examples": [
+          "Database passwords",
+          "Feature flags",
+          "Service URLs"
+        ]
+      },
+      "wait_strategies": {
+        "description": "Wait for container to be ready",
+        "patterns": {
+          "http_wait": "Wait for HTTP endpoint",
+          "log_wait": "Wait for log message",
+          "healthcheck": "Wait for health check"
+        },
+        "use_when": "Container needs time to start",
+        "example": "Wait.forHttp(\"/health\")"
+      }
+    },
+    "testcontainers_cloud": {
+      "description": "Testcontainers Cloud for faster execution",
+      "benefits": [
+        "Faster container startup",
+        "No local Docker required",
+        "Parallel test execution",
+        "CI/CD optimization"
+      ],
+      "setup": "Set TESTCONTAINERS_RYUK_DISABLED and use Testcontainers Cloud",
+      "use_when": "Need faster test execution or CI/CD",
+      "configuration": "Environment variables for cloud access"
+    },
+    "parallel_execution": {
+      "description": "Run tests in parallel with Testcontainers",
+      "patterns": {
+        "junit_parallel": "Use JUnit 5 parallel execution",
+        "testcontainers_reuse": "Reuse containers across tests",
+        "port_allocation": "Dynamic port allocation"
+      },
+      "best_practices": [
+        "Enable container reuse",
+        "Use dynamic port allocation",
+        "Isolate test data",
+        "Monitor resource usage"
+      ],
+      "configuration": "junit.jupiter.execution.parallel.enabled=true"
+    },
+    "common_issues": {
+      "port_conflicts": {
+        "description": "Port already in use",
+        "solution": "Use dynamic port allocation or different ports",
+        "prevention": "Let Testcontainers manage ports"
+      },
+      "slow_startup": {
+        "description": "Containers take long to start",
+        "solution": "Use container reuse or Testcontainers Cloud",
+        "prevention": "Use static containers"
+      },
+      "resource_exhaustion": {
+        "description": "Too many containers running",
+        "solution": "Enable container reuse, clean up properly",
+        "prevention": "Monitor Docker resources"
+      },
+      "network_issues": {
+        "description": "Containers can't communicate",
+        "solution": "Use Docker networks, check firewall",
+        "prevention": "Use Testcontainers network management"
+      }
+    },
+    "ci_cd_integration": {
+      "github_actions": {
+        "description": "Testcontainers in GitHub Actions",
+        "setup": "Use services or Docker-in-Docker",
+        "example": "services: postgres: image: postgres:15"
+      },
+      "gitlab_ci": {
+        "description": "Testcontainers in GitLab CI",
+        "setup": "Use Docker executor or Docker-in-Docker",
+        "example": "services: - docker:dind"
+      },
+      "jenkins": {
+        "description": "Testcontainers in Jenkins",
+        "setup": "Install Docker plugin, configure Docker socket",
+        "requirements": "Docker available in Jenkins agent"
+      },
+      "best_practices": [
+        "Use Docker-in-Docker or Docker socket mounting",
+        "Enable container reuse",
+        "Use Testcontainers Cloud for faster execution",
+        "Clean up containers after pipeline",
+        "Monitor resource usage"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use static containers when possible for performance",
+    "Enable container reuse for faster tests",
+    "Use @DynamicPropertySource for Spring configuration",
+    "Clean up test data with @Transactional or @DirtiesContext",
+    "Use appropriate wait strategies",
+    "Monitor container resource usage",
+    "Use Testcontainers Cloud for CI/CD",
+    "Isolate test data per test",
+    "Use Docker Compose for complex setups",
+    "Configure proper timeouts",
+    "Use health checks for container readiness",
+    "Clean up containers after tests"
+  ],
+  "anti_patterns": []
+}

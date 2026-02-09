@@ -1,0 +1,272 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "huggingface-patterns",
+  "name": "Hugging Face Patterns",
+  "title": "Hugging Face Patterns",
+  "description": "Best practices and patterns for working with Hugging Face Transformers, datasets, and model hub",
+  "version": "1.0.0",
+  "category": "patterns",
+  "sources": [
+    "https://huggingface.co/docs/transformers",
+    "https://huggingface.co/docs/peft",
+    "https://huggingface.co/docs/datasets"
+  ],
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns include evaluation strategies for model verification",
+    "A3_transparency": "Emphasis on model cards and documentation"
+  },
+  "core_patterns": {
+    "model_loading": {
+      "auto_classes": {
+        "description": "Automatically detect and load correct model architecture",
+        "code_example": "from transformers import AutoModelForCausalLM, AutoTokenizer\n\nmodel_name = \"meta-llama/Llama-3.1-8B-Instruct\"\n\ntokenizer = AutoTokenizer.from_pretrained(model_name)\nmodel = AutoModelForCausalLM.from_pretrained(\n    model_name,\n    torch_dtype=torch.bfloat16,\n    device_map=\"auto\"\n)",
+        "best_practices": [
+          "Use Auto* classes for flexibility",
+          "Specify torch_dtype for memory efficiency",
+          "Use device_map='auto' for multi-GPU"
+        ]
+      },
+      "quantization": {
+        "description": "Load models with reduced precision for efficiency",
+        "bitsandbytes": {
+          "code_example": "from transformers import BitsAndBytesConfig\n\nquantization_config = BitsAndBytesConfig(\n    load_in_4bit=True,\n    bnb_4bit_compute_dtype=torch.bfloat16,\n    bnb_4bit_quant_type=\"nf4\",\n    bnb_4bit_use_double_quant=True\n)\n\nmodel = AutoModelForCausalLM.from_pretrained(\n    model_name,\n    quantization_config=quantization_config,\n    device_map=\"auto\"\n)"
+        },
+        "use_cases": {
+          "4bit": "Maximum memory savings, some quality loss",
+          "8bit": "Good balance of memory and quality",
+          "fp16/bf16": "Standard inference, half memory of fp32"
+        }
+      }
+    },
+    "inference_patterns": {
+      "text_generation": {
+        "description": "Generate text with language models",
+        "code_example": "from transformers import pipeline\n\ngenerator = pipeline(\n    \"text-generation\",\n    model=model,\n    tokenizer=tokenizer,\n    max_new_tokens=512,\n    temperature=0.7,\n    top_p=0.95,\n    do_sample=True\n)\n\nresponse = generator(\"Explain quantum computing:\")[0][\"generated_text\"]",
+        "parameters": {
+          "temperature": "Higher = more random (0.0-2.0)",
+          "top_p": "Nucleus sampling threshold (0.0-1.0)",
+          "top_k": "Limit to top K tokens",
+          "max_new_tokens": "Maximum tokens to generate",
+          "repetition_penalty": "Penalize repeated tokens (>1.0)"
+        }
+      },
+      "batch_inference": {
+        "description": "Process multiple inputs efficiently",
+        "code_example": "inputs = tokenizer(\n    [\"Text 1\", \"Text 2\", \"Text 3\"],\n    padding=True,\n    truncation=True,\n    return_tensors=\"pt\"\n).to(model.device)\n\nwith torch.no_grad():\n    outputs = model.generate(**inputs, max_new_tokens=100)\n\nresults = tokenizer.batch_decode(outputs, skip_special_tokens=True)"
+      },
+      "streaming": {
+        "description": "Stream tokens as they're generated",
+        "code_example": "from transformers import TextIteratorStreamer\nfrom threading import Thread\n\nstreamer = TextIteratorStreamer(tokenizer, skip_special_tokens=True)\ngeneration_kwargs = {\n    \"input_ids\": inputs[\"input_ids\"],\n    \"streamer\": streamer,\n    \"max_new_tokens\": 256\n}\n\nthread = Thread(target=model.generate, kwargs=generation_kwargs)\nthread.start()\n\nfor text in streamer:\n    print(text, end=\"\", flush=True)"
+      }
+    },
+    "embeddings": {
+      "sentence_embeddings": {
+        "description": "Generate embeddings for semantic similarity",
+        "code_example": "from sentence_transformers import SentenceTransformer\n\nmodel = SentenceTransformer('all-MiniLM-L6-v2')\n\nsentences = [\n    \"This is an example sentence\",\n    \"Each sentence is converted to a vector\"\n]\n\nembeddings = model.encode(sentences)\n\n# Compute similarity\nfrom sklearn.metrics.pairwise import cosine_similarity\nsimilarity = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]"
+      },
+      "pooling_strategies": {
+        "mean_pooling": "Average all token embeddings",
+        "cls_pooling": "Use [CLS] token embedding",
+        "max_pooling": "Take max of each dimension"
+      }
+    }
+  },
+  "fine_tuning_patterns": {
+    "full_fine_tuning": {
+      "description": "Update all model parameters",
+      "code_example": "from transformers import Trainer, TrainingArguments\n\ntraining_args = TrainingArguments(\n    output_dir=\"./results\",\n    num_train_epochs=3,\n    per_device_train_batch_size=4,\n    gradient_accumulation_steps=8,\n    learning_rate=2e-5,\n    warmup_ratio=0.1,\n    logging_steps=10,\n    save_steps=500,\n    evaluation_strategy=\"steps\",\n    eval_steps=500,\n    fp16=True\n)\n\ntrainer = Trainer(\n    model=model,\n    args=training_args,\n    train_dataset=train_dataset,\n    eval_dataset=eval_dataset,\n    tokenizer=tokenizer\n)\n\ntrainer.train()",
+      "when_to_use": "Small models, abundant compute, need maximum quality"
+    },
+    "peft_lora": {
+      "name": "Low-Rank Adaptation (LoRA)",
+      "description": "Train small adapter matrices instead of full model",
+      "code_example": "from peft import LoraConfig, get_peft_model, TaskType\n\nlora_config = LoraConfig(\n    r=16,  # Rank of update matrices\n    lora_alpha=32,  # Scaling factor\n    target_modules=[\"q_proj\", \"v_proj\", \"k_proj\", \"o_proj\"],\n    lora_dropout=0.05,\n    bias=\"none\",\n    task_type=TaskType.CAUSAL_LM\n)\n\nmodel = get_peft_model(model, lora_config)\nmodel.print_trainable_parameters()\n# trainable params: 4,194,304 || all params: 8,030,261,248 || trainable%: 0.0522",
+      "benefits": [
+        "~100x fewer trainable parameters",
+        "Much lower GPU memory requirement",
+        "Fast training and iteration",
+        "Easy to merge or switch adapters"
+      ],
+      "hyperparameters": {
+        "r": "Rank (4-64, higher = more capacity)",
+        "lora_alpha": "Scaling (typically 2*r)",
+        "target_modules": "Which layers to adapt"
+      }
+    },
+    "qlora": {
+      "name": "Quantized LoRA",
+      "description": "LoRA on 4-bit quantized base model",
+      "code_example": "from peft import prepare_model_for_kbit_training\n\n# Load 4-bit quantized model\nmodel = AutoModelForCausalLM.from_pretrained(\n    model_name,\n    quantization_config=bnb_config,\n    device_map=\"auto\"\n)\n\nmodel = prepare_model_for_kbit_training(model)\nmodel = get_peft_model(model, lora_config)",
+      "benefit": "Fine-tune 65B+ models on single 24GB GPU"
+    },
+    "sft_trainer": {
+      "name": "Supervised Fine-Tuning Trainer",
+      "description": "TRL's trainer for instruction-following",
+      "code_example": "from trl import SFTTrainer\n\ntrainer = SFTTrainer(\n    model=model,\n    train_dataset=dataset,\n    tokenizer=tokenizer,\n    max_seq_length=2048,\n    dataset_text_field=\"text\",\n    peft_config=lora_config,\n    args=training_args\n)\n\ntrainer.train()"
+    }
+  },
+  "dataset_patterns": {
+    "loading_datasets": {
+      "from_hub": {
+        "code_example": "from datasets import load_dataset\n\ndataset = load_dataset(\"databricks/dolly-15k\")\n\n# Streaming for large datasets\ndataset = load_dataset(\"HuggingFaceFW/fineweb\", streaming=True)"
+      },
+      "from_files": {
+        "code_example": "dataset = load_dataset(\n    \"json\",\n    data_files={\"train\": \"train.jsonl\", \"test\": \"test.jsonl\"}\n)\n\n# Or from CSV, Parquet, etc.\ndataset = load_dataset(\"csv\", data_files=\"data.csv\")"
+      }
+    },
+    "preprocessing": {
+      "tokenization": {
+        "code_example": "def tokenize_function(examples):\n    return tokenizer(\n        examples[\"text\"],\n        truncation=True,\n        max_length=512,\n        padding=\"max_length\"\n    )\n\ntokenized_dataset = dataset.map(\n    tokenize_function,\n    batched=True,\n    remove_columns=dataset.column_names\n)"
+      },
+      "chat_formatting": {
+        "code_example": "def format_chat(example):\n    messages = [\n        {\"role\": \"system\", \"content\": \"You are a helpful assistant.\"},\n        {\"role\": \"user\", \"content\": example[\"instruction\"]},\n        {\"role\": \"assistant\", \"content\": example[\"response\"]}\n    ]\n    return {\"text\": tokenizer.apply_chat_template(messages, tokenize=False)}\n\ndataset = dataset.map(format_chat)"
+      }
+    }
+  },
+  "deployment_patterns": {
+    "text_generation_inference": {
+      "description": "HuggingFace's production inference server",
+      "docker_example": "docker run --gpus all \\\n  -v $PWD/models:/models \\\n  ghcr.io/huggingface/text-generation-inference:latest \\\n  --model-id meta-llama/Llama-3.1-8B-Instruct",
+      "features": [
+        "Continuous batching",
+        "Tensor parallelism",
+        "Flash attention",
+        "Quantization support"
+      ]
+    },
+    "inference_endpoints": {
+      "description": "Managed inference on HuggingFace infrastructure",
+      "use_case": "Quick deployment without infrastructure management"
+    },
+    "onnx_export": {
+      "description": "Export to ONNX for cross-platform deployment",
+      "code_example": "from optimum.onnxruntime import ORTModelForCausalLM\n\nmodel = ORTModelForCausalLM.from_pretrained(\n    model_name,\n    export=True\n)\nmodel.save_pretrained(\"./onnx_model\")"
+    }
+  },
+  "evaluation_patterns": {
+    "language_model_evaluation": {
+      "metrics": {
+        "perplexity": "Lower is better - model's 'surprise' at test data",
+        "accuracy": "For classification or multiple choice",
+        "bleu/rouge": "For generation quality vs reference",
+        "pass@k": "For code generation"
+      },
+      "code_example": "from evaluate import load\n\nperplexity = load(\"perplexity\", module_type=\"metric\")\nresults = perplexity.compute(\n    predictions=predictions,\n    model_id=model_name\n)"
+    },
+    "lm_harness": {
+      "description": "Standard benchmark suite for LLMs",
+      "usage": "lm_eval --model hf --model_args pretrained=model_name --tasks hellaswag,arc_easy --batch_size 8"
+    }
+  },
+  "optimization_patterns": {
+    "flash_attention": {
+      "description": "Efficient attention implementation",
+      "code_example": "model = AutoModelForCausalLM.from_pretrained(\n    model_name,\n    torch_dtype=torch.bfloat16,\n    attn_implementation=\"flash_attention_2\"\n)"
+    },
+    "gradient_checkpointing": {
+      "description": "Trade compute for memory during training",
+      "code_example": "model.gradient_checkpointing_enable()"
+    },
+    "mixed_precision": {
+      "description": "Use fp16/bf16 for faster training",
+      "code_example": "training_args = TrainingArguments(\n    ...,\n    fp16=True,  # or bf16=True for newer GPUs\n)"
+    }
+  },
+  "best_practices": [
+    "Always specify torch_dtype (torch.bfloat16 or torch.float16) to avoid fp32 memory waste",
+    "Use quantization (4-bit or 8-bit) for inference on limited GPU memory with BitsAndBytesConfig",
+    "Prefer LoRA/QLoRA for efficient fine-tuning instead of full fine-tuning when possible",
+    "Use streaming datasets for large datasets that don't fit in memory with streaming=True",
+    "Apply chat templates correctly using tokenizer.apply_chat_template() for instruction-tuned models",
+    "Monitor training with wandb or tensorboard to track loss curves and generation quality",
+    "Validate with holdout set to prevent overfitting and tune hyperparameters",
+    "Create model cards for reproducibility and transparency documenting training data and methodology",
+    "Use flash attention (attn_implementation='flash_attention_2') when available for faster training",
+    "Test generation quality before deployment using perplexity, BLEU, or human evaluation"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Loading models in FP32 by default",
+      "problem": "Uses 2x memory unnecessarily, slower inference, wastes GPU resources",
+      "solution": "Specify torch_dtype=torch.bfloat16 or torch.float16 when loading models"
+    },
+    {
+      "name": "No padding token configured for tokenizer",
+      "problem": "Tokenizer fails on batched inputs requiring padding",
+      "solution": "Set tokenizer.pad_token = tokenizer.eos_token or use tokenizer.add_special_tokens()"
+    },
+    {
+      "name": "Wrong chat template for instruction-tuned models",
+      "problem": "Model doesn't follow instructions properly, poor generation quality",
+      "solution": "Use tokenizer.apply_chat_template() with correct message format for chat models"
+    },
+    {
+      "name": "Full fine-tuning without sufficient GPU memory",
+      "problem": "Out of memory errors, cannot train large models",
+      "solution": "Use LoRA or QLoRA for efficient fine-tuning with limited GPU memory"
+    },
+    {
+      "name": "Not using gradient checkpointing for large models",
+      "problem": "Out of memory during training even with small batch sizes",
+      "solution": "Enable gradient_checkpointing_enable() to trade compute for memory"
+    }
+  ],
+  "patterns": {
+    "core_patterns": {
+      "model_loading": {
+        "auto_classes": {
+          "description": "Automatically detect and load correct model architecture",
+          "code_example": "from transformers import AutoModelForCausalLM, AutoTokenizer\n\nmodel_name = \"meta-llama/Llama-3.1-8B-Instruct\"\n\ntokenizer = AutoTokenizer.from_pretrained(model_name)\nmodel = AutoModelForCausalLM.from_pretrained(\n    model_name,\n    torch_dtype=torch.bfloat16,\n    device_map=\"auto\"\n)",
+          "best_practices": [
+            "Use Auto* classes for flexibility",
+            "Specify torch_dtype for memory efficiency",
+            "Use device_map='auto' for multi-GPU"
+          ]
+        },
+        "quantization": {
+          "description": "Load models with reduced precision for efficiency",
+          "bitsandbytes": {
+            "code_example": "from transformers import BitsAndBytesConfig\n\nquantization_config = BitsAndBytesConfig(\n    load_in_4bit=True,\n    bnb_4bit_compute_dtype=torch.bfloat16,\n    bnb_4bit_quant_type=\"nf4\",\n    bnb_4bit_use_double_quant=True\n)\n\nmodel = AutoModelForCausalLM.from_pretrained(\n    model_name,\n    quantization_config=quantization_config,\n    device_map=\"auto\"\n)"
+          },
+          "use_cases": {
+            "4bit": "Maximum memory savings, some quality loss",
+            "8bit": "Good balance of memory and quality",
+            "fp16/bf16": "Standard inference, half memory of fp32"
+          }
+        }
+      },
+      "inference_patterns": {
+        "text_generation": {
+          "description": "Generate text with language models",
+          "code_example": "from transformers import pipeline\n\ngenerator = pipeline(\n    \"text-generation\",\n    model=model,\n    tokenizer=tokenizer,\n    max_new_tokens=512,\n    temperature=0.7,\n    top_p=0.95,\n    do_sample=True\n)\n\nresponse = generator(\"Explain quantum computing:\")[0][\"generated_text\"]",
+          "parameters": {
+            "temperature": "Higher = more random (0.0-2.0)",
+            "top_p": "Nucleus sampling threshold (0.0-1.0)",
+            "top_k": "Limit to top K tokens",
+            "max_new_tokens": "Maximum tokens to generate",
+            "repetition_penalty": "Penalize repeated tokens (>1.0)"
+          }
+        },
+        "batch_inference": {
+          "description": "Process multiple inputs efficiently",
+          "code_example": "inputs = tokenizer(\n    [\"Text 1\", \"Text 2\", \"Text 3\"],\n    padding=True,\n    truncation=True,\n    return_tensors=\"pt\"\n).to(model.device)\n\nwith torch.no_grad():\n    outputs = model.generate(**inputs, max_new_tokens=100)\n\nresults = tokenizer.batch_decode(outputs, skip_special_tokens=True)"
+        },
+        "streaming": {
+          "description": "Stream tokens as they're generated",
+          "code_example": "from transformers import TextIteratorStreamer\nfrom threading import Thread\n\nstreamer = TextIteratorStreamer(tokenizer, skip_special_tokens=True)\ngeneration_kwargs = {\n    \"input_ids\": inputs[\"input_ids\"],\n    \"streamer\": streamer,\n    \"max_new_tokens\": 256\n}\n\nthread = Thread(target=model.generate, kwargs=generation_kwargs)\nthread.start()\n\nfor text in streamer:\n    print(text, end=\"\", flush=True)"
+        }
+      },
+      "embeddings": {
+        "sentence_embeddings": {
+          "description": "Generate embeddings for semantic similarity",
+          "code_example": "from sentence_transformers import SentenceTransformer\n\nmodel = SentenceTransformer('all-MiniLM-L6-v2')\n\nsentences = [\n    \"This is an example sentence\",\n    \"Each sentence is converted to a vector\"\n]\n\nembeddings = model.encode(sentences)\n\n# Compute similarity\nfrom sklearn.metrics.pairwise import cosine_similarity\nsimilarity = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]"
+        },
+        "pooling_strategies": {
+          "mean_pooling": "Average all token embeddings",
+          "cls_pooling": "Use [CLS] token embedding",
+          "max_pooling": "Take max of each dimension"
+        }
+      }
+    }
+  }
+}

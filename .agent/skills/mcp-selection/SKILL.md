@@ -1,18 +1,27 @@
+---
+description: Guide users through selecting appropriate MCP servers during project generation
+---
+
+# Mcp Selection
+
+Guide users through selecting appropriate MCP servers during project generation
+
+## 
+# MCP Server Selection Skill
+
+## 
 # MCP Server Selection Skill
 
 ## Purpose
-
 Guide users through selecting appropriate MCP servers during project generation based on their role, technology stack, and specific needs.
 
 ## Trigger Conditions
-
 - User is generating a new project with the factory
 - User asks about MCP server options or recommendations
 - Phase 6 of interactive project generation
 - User wants to configure MCP servers for existing project
 
 ## Skill Flow
-
 ### Step 1: Determine User Role
 
 Ask the user about their primary role:
@@ -60,6 +69,41 @@ Would you like to start with a pre-configured pack?
 Present servers by category:
 
 ```
+
+```
+What is your primary role?
+1. Full-Stack Developer
+2. Frontend Developer
+3. Backend Developer
+4. Data Scientist
+5. ML Engineer
+6. Agent Developer
+7. DevOps Engineer
+8. SAP Developer
+```
+
+```
+Would you like to start with a pre-configured pack?
+
+1. Minimal Starter (3 servers)
+   - filesystem, git, memory
+   
+2. Web Developer Starter (6 servers)
+   - + github, postgresql, playwright
+   
+3. Data Science Starter (6 servers)
+   - + jupyter, bigquery, pinecone
+   
+4. AI Agent Starter (6 servers)
+   - + langgraph, knowledge-graph, chromadb
+   
+5. Enterprise Starter (7 servers)
+   - + atlassian, slack, sentry
+
+6. Custom Selection
+   - Browse all categories
+```
+
 ## Category 1: Essential/Core Tools (Recommended for ALL)
 [ ] filesystem - File operations
 [ ] git - Git repository operations
@@ -104,18 +148,22 @@ Does your team have custom or local MCP servers?
 
 After selection, generate:
 
-1. **MCP config for project** (`.agent/mcp.json`)
+1. **MCP config for project** (`.cursor/mcp.json`)
 2. **Environment template** (`.env.mcp`)
 3. **Setup checklist** in README
 
-## Reference Data
+```
+### Step 4: Custom/Local Servers
 
+Ask about team-specific servers:
+```
+
+## Reference Data
 Load recommendations from:
 - `knowledge/mcp-servers-catalog.json` - Full server catalog
 - `knowledge/mcp-selection-guide.json` - Role/stack recommendations
 
 ## Smart Suggestions
-
 ### Based on Technology Stack
 
 ```python
@@ -142,8 +190,19 @@ If user selected workflow triggers:
 
 See `roleToServers` in `mcp-selection-guide.json`
 
-## Output Format
+```python
+def suggest_by_stack(stack):
+    suggestions = {
+        "python": ["filesystem", "git", "memory", "github", "postgresql", "sentry"],
+        "typescript": ["filesystem", "git", "memory", "github", "postgresql", "playwright"],
+        "nextjs": ["filesystem", "git", "memory", "github", "playwright", "figma"],
+        "fastapi": ["filesystem", "git", "memory", "github", "postgresql", "openapi"],
+        ...
+    }
+    return suggestions.get(stack, ["filesystem", "git", "memory"])
+```
 
+## Output Format
 ### MCP Configuration File
 
 ```json
@@ -191,8 +250,48 @@ DATABASE_URL=postgresql://user:pass@host:5432/db
 ### README Section
 
 ```markdown
-## MCP Server Configuration
 
+```json
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "${PROJECT_PATH}"]
+    },
+    "git": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-git", "--repository", "."]
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+```bash
+# MCP Server Environment Variables
+# Copy to .env and fill in values
+
+# GitHub (if using github server)
+GITHUB_TOKEN=your-github-token
+
+# Brave Search (if using brave-search server)
+BRAVE_API_KEY=your-brave-api-key
+
+# Database (if using postgresql server)
+DATABASE_URL=postgresql://user:pass@host:5432/db
+```
+
+## MCP Server Configuration
 This project uses the following MCP servers:
 
 | Server | Purpose | Setup Required |
@@ -217,7 +316,6 @@ Ask the AI to verify each server:
 ```
 
 ## Best Practices
-
 1. **Always include core servers** - filesystem, git, memory are recommended for all projects
 2. **Start minimal** - Begin with starter pack, add servers as needed
 3. **Document authentication** - Always include setup instructions for servers requiring auth
@@ -225,14 +323,16 @@ Ask the AI to verify each server:
 5. **Environment separation** - Keep MCP env vars in separate `.env.mcp` file
 
 ## Error Handling
-
 - If server catalog not found, use built-in defaults
 - If authentication fails, provide clear setup instructions
 - If server not responding, suggest troubleshooting steps
 
 ## Related Files
-
 - `knowledge/mcp-servers-catalog.json` - Full catalog
 - `knowledge/mcp-selection-guide.json` - Recommendations
 - `templates/mcp/*/setup-guide.md` - Per-server setup guides
 - `docs/MCP-SERVERS.md` - Comprehensive documentation
+
+## Prerequisites
+> [!IMPORTANT]
+> Requirements:

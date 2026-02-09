@@ -31,6 +31,15 @@ from lib.society.pabp.transfer import (
     TransferMode,
     TransferResult
 )
+from lib.society.pabp.adapters import (
+    PlatformAdapter,
+    AntigravityAdapter,
+    CursorAdapter,
+    GenericAdapter,
+    detect_platform,
+    get_adapter
+)
+from lib.society.pabp.client import PABPClient, UpdateResult
 
 __all__ = [
     # Bundle
@@ -47,4 +56,14 @@ __all__ = [
     "verify_bundle",
     "TransferMode",
     "TransferResult",
+    # Adapters
+    "PlatformAdapter",
+    "AntigravityAdapter",
+    "CursorAdapter",
+    "GenericAdapter",
+    "detect_platform",
+    "get_adapter",
+    # Client
+    "PABPClient",
+    "UpdateResult",
 ]

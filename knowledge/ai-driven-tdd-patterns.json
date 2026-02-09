@@ -1,0 +1,388 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "tdd-patterns",
+  "name": "AI-Driven TDD Patterns",
+  "title": "AI-Driven TDD Patterns",
+  "description": "Test-Driven Development patterns enhanced with AI agents for automated test generation, edge case identification, and test optimization",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "TDD provides executable specifications that verify behavior",
+    "A2_user_primacy": "Tests encode user requirements and acceptance criteria",
+    "A3_transparency": "Test cases make expected behavior explicit and documented",
+    "A4_adaptability": "Refactoring is safe when tests pass, enabling continuous improvement"
+  },
+  "core_concepts": {
+    "red_green_refactor_ai": {
+      "description": "Traditional TDD cycle enhanced with AI assistance at each phase",
+      "phases": {
+        "red": "AI generates failing test cases based on requirements",
+        "green": "AI assists in minimal implementation to pass tests",
+        "refactor": "AI suggests improvements while maintaining test coverage"
+      },
+      "benefits": [
+        "Faster test case generation",
+        "More comprehensive edge case coverage",
+        "Consistent test structure",
+        "Automated refactoring suggestions"
+      ]
+    },
+    "test_generation_patterns": {
+      "description": "AI-powered test generation strategies",
+      "approaches": [
+        "Requirement-based test generation",
+        "Code analysis for test cases",
+        "Similarity-based test templates",
+        "Mutation testing for coverage gaps"
+      ]
+    },
+    "edge_case_identification": {
+      "description": "AI identifies boundary conditions and edge cases",
+      "techniques": [
+        "Static analysis of input ranges",
+        "Historical bug pattern analysis",
+        "Domain knowledge integration",
+        "Property-based test generation"
+      ]
+    },
+    "ai_assisted_fixtures": {
+      "description": "Intelligent test data generation and management",
+      "features": [
+        "Context-aware fixture generation",
+        "Relationship-aware test data",
+        "Realistic data patterns",
+        "Automatic cleanup strategies"
+      ]
+    },
+    "property_based_testing": {
+      "description": "Generate test cases from properties rather than examples",
+      "tools": [
+        "Hypothesis (Python)",
+        "QuickCheck (Haskell)",
+        "fast-check (TypeScript)"
+      ],
+      "use_cases": [
+        "Input validation",
+        "Mathematical properties",
+        "State machine invariants",
+        "API contract verification"
+      ]
+    },
+    "integration_testing_strategies": {
+      "description": "AI-assisted integration test design",
+      "patterns": [
+        "Contract testing",
+        "Test pyramid optimization",
+        "Dependency mocking strategies",
+        "End-to-end test generation"
+      ]
+    },
+    "mock_generation": {
+      "description": "AI generates appropriate mocks and stubs",
+      "benefits": [
+        "Consistent mock interfaces",
+        "Realistic behavior simulation",
+        "Automatic spy/stub generation",
+        "Verification pattern suggestions"
+      ]
+    },
+    "coverage_optimization": {
+      "description": "AI analyzes and improves test coverage",
+      "metrics": [
+        "Line coverage",
+        "Branch coverage",
+        "Function coverage",
+        "Condition coverage"
+      ],
+      "optimization_techniques": [
+        "Gap identification",
+        "Redundant test detection",
+        "Critical path prioritization",
+        "Mutation score analysis"
+      ]
+    }
+  },
+  "patterns": {
+    "ai_red_phase": {
+      "description": "AI generates comprehensive failing tests from requirements",
+      "use_when": "Starting new feature or fixing bugs",
+      "code_example": "# AI prompt: Generate test cases for user registration\n# Requirements: Email validation, password strength, duplicate prevention\n\nimport pytest\nfrom unittest.mock import Mock\nfrom src.services.user_service import UserService\nfrom src.models.user import User\n\nclass TestUserRegistration:\n    \"\"\"AI-generated test suite for user registration\"\"\"\n    \n    @pytest.fixture\n    def user_service(self, db_session):\n        return UserService(db_session)\n    \n    def test_register_user_with_valid_data(self, user_service):\n        \"\"\"Test successful user registration with valid email and password\"\"\"\n        email = \"user@example.com\"\n        password = \"SecurePass123!\"\n        \n        user = user_service.register(email, password)\n        \n        assert user.email == email\n        assert user.id is not None\n        assert user.created_at is not None\n    \n    def test_register_user_with_invalid_email(self, user_service):\n        \"\"\"Test registration fails with invalid email format\"\"\"\n        with pytest.raises(ValueError, match=\"Invalid email format\"):\n            user_service.register(\"invalid-email\", \"Password123!\")\n    \n    def test_register_user_with_weak_password(self, user_service):\n        \"\"\"Test registration fails with weak password\"\"\"\n        weak_passwords = [\"123\", \"password\", \"abc\", \"12345678\"]\n        \n        for weak_password in weak_passwords:\n            with pytest.raises(ValueError, match=\"Password too weak\"):\n                user_service.register(\"user@example.com\", weak_password)\n    \n    def test_register_duplicate_email(self, user_service):\n        \"\"\"Test registration fails when email already exists\"\"\"\n        email = \"duplicate@example.com\"\n        user_service.register(email, \"Password123!\")\n        \n        with pytest.raises(ValueError, match=\"Email already registered\"):\n            user_service.register(email, \"AnotherPassword123!\")\n    \n    def test_register_with_empty_email(self, user_service):\n        \"\"\"Test registration fails with empty email\"\"\"\n        with pytest.raises(ValueError, match=\"Email cannot be empty\"):\n            user_service.register(\"\", \"Password123!\")\n    \n    def test_register_with_empty_password(self, user_service):\n        \"\"\"Test registration fails with empty password\"\"\"\n        with pytest.raises(ValueError, match=\"Password cannot be empty\"):\n            user_service.register(\"user@example.com\", \"\")",
+      "best_practices": [
+        "Generate tests before implementation",
+        "Cover happy path first, then edge cases",
+        "Use descriptive test names",
+        "One assertion per test when possible",
+        "Include boundary conditions"
+      ],
+      "ai_prompts": [
+        "Generate test cases for {feature} covering: {requirements}",
+        "Identify edge cases for {function} with inputs: {input_types}",
+        "Create test fixtures for {model} with relationships: {relations}"
+      ]
+    },
+    "ai_green_phase": {
+      "description": "AI assists in minimal implementation to make tests pass",
+      "use_when": "Implementing code to satisfy failing tests",
+      "code_example": "# AI suggests minimal implementation based on test requirements\n\nfrom sqlalchemy.orm import Session\nfrom sqlalchemy.exc import IntegrityError\nimport re\nfrom datetime import datetime\nfrom .models import User\n\nclass UserService:\n    def __init__(self, db: Session):\n        self.db = db\n    \n    def register(self, email: str, password: str) -> User:\n        \"\"\"Register a new user with email and password validation\"\"\"\n        # Validate email\n        if not email or not email.strip():\n            raise ValueError(\"Email cannot be empty\")\n        \n        if not self._is_valid_email(email):\n            raise ValueError(\"Invalid email format\")\n        \n        # Validate password\n        if not password or not password.strip():\n            raise ValueError(\"Password cannot be empty\")\n        \n        if not self._is_strong_password(password):\n            raise ValueError(\"Password too weak\")\n        \n        # Check for duplicates\n        existing_user = self.db.query(User).filter(User.email == email).first()\n        if existing_user:\n            raise ValueError(\"Email already registered\")\n        \n        # Create user\n        user = User(\n            email=email,\n            hashed_password=self._hash_password(password),\n            created_at=datetime.utcnow()\n        )\n        \n        try:\n            self.db.add(user)\n            self.db.commit()\n            self.db.refresh(user)\n            return user\n        except IntegrityError:\n            self.db.rollback()\n            raise ValueError(\"Email already registered\")\n    \n    def _is_valid_email(self, email: str) -> bool:\n        \"\"\"Validate email format\"\"\"\n        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'\n        return bool(re.match(pattern, email))\n    \n    def _is_strong_password(self, password: str) -> bool:\n        \"\"\"Check password strength\"\"\"\n        if len(password) < 8:\n            return False\n        if not re.search(r'[A-Z]', password):\n            return False\n        if not re.search(r'[a-z]', password):\n            return False\n        if not re.search(r'[0-9]', password):\n            return False\n        if not re.search(r'[!@#$%^&*(),.?\":{}|<>]', password):\n            return False\n        return True\n    \n    def _hash_password(self, password: str) -> str:\n        \"\"\"Hash password using bcrypt\"\"\"\n        from passlib.context import CryptContext\n        pwd_context = CryptContext(schemes=[\"bcrypt\"], deprecated=\"auto\")\n        return pwd_context.hash(password)",
+      "best_practices": [
+        "Write minimal code to pass tests",
+        "Don't add features not covered by tests",
+        "Let tests drive the design",
+        "Keep implementation simple",
+        "Refactor in next phase"
+      ]
+    },
+    "ai_refactor_phase": {
+      "description": "AI suggests refactoring improvements while maintaining test coverage",
+      "use_when": "Tests pass but code needs improvement",
+      "code_example": "# AI suggests refactoring opportunities\n\n# Before: Long method with multiple responsibilities\nclass UserService:\n    def register(self, email: str, password: str) -> User:\n        # 50+ lines of validation and creation logic\n        pass\n\n# After: Extracted validators and separated concerns\nclass EmailValidator:\n    @staticmethod\n    def validate(email: str) -> None:\n        if not email or not email.strip():\n            raise ValueError(\"Email cannot be empty\")\n        if not EmailValidator._is_valid_format(email):\n            raise ValueError(\"Invalid email format\")\n    \n    @staticmethod\n    def _is_valid_format(email: str) -> bool:\n        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'\n        return bool(re.match(pattern, email))\n\nclass PasswordValidator:\n    MIN_LENGTH = 8\n    \n    @staticmethod\n    def validate(password: str) -> None:\n        if not password or not password.strip():\n            raise ValueError(\"Password cannot be empty\")\n        if not PasswordValidator._is_strong(password):\n            raise ValueError(\"Password too weak\")\n    \n    @staticmethod\n    def _is_strong(password: str) -> bool:\n        checks = [\n            len(password) >= PasswordValidator.MIN_LENGTH,\n            re.search(r'[A-Z]', password),\n            re.search(r'[a-z]', password),\n            re.search(r'[0-9]', password),\n            re.search(r'[!@#$%^&*(),.?\":{}|<>]', password)\n        ]\n        return all(checks)\n\nclass UserService:\n    def __init__(self, db: Session, email_validator=None, password_validator=None):\n        self.db = db\n        self.email_validator = email_validator or EmailValidator()\n        self.password_validator = password_validator or PasswordValidator()\n    \n    def register(self, email: str, password: str) -> User:\n        self.email_validator.validate(email)\n        self.password_validator.validate(password)\n        \n        if self._email_exists(email):\n            raise ValueError(\"Email already registered\")\n        \n        return self._create_user(email, password)\n    \n    def _email_exists(self, email: str) -> bool:\n        return self.db.query(User).filter(User.email == email).first() is not None\n    \n    def _create_user(self, email: str, password: str) -> User:\n        user = User(\n            email=email,\n            hashed_password=self._hash_password(password),\n            created_at=datetime.utcnow()\n        )\n        self.db.add(user)\n        self.db.commit()\n        self.db.refresh(user)\n        return user",
+      "best_practices": [
+        "Run tests after each refactoring step",
+        "Extract methods/classes incrementally",
+        "Improve readability without changing behavior",
+        "Remove duplication",
+        "Improve naming"
+      ],
+      "ai_suggestions": [
+        "Extract validation logic into separate classes",
+        "Use dependency injection for testability",
+        "Apply single responsibility principle",
+        "Reduce cyclomatic complexity"
+      ]
+    },
+    "property_based_testing": {
+      "description": "Generate test cases from properties using Hypothesis or similar",
+      "use_when": "Testing functions with mathematical properties or invariants",
+      "code_example": "from hypothesis import given, strategies as st\nfrom hypothesis import assume\nimport pytest\n\nclass TestUserServiceProperties:\n    \"\"\"Property-based tests for user service\"\"\"\n    \n    @given(\n        email=st.emails(),\n        password=st.text(min_size=8, max_size=100).filter(\n            lambda p: any(c.isupper() for c in p) and\n                     any(c.islower() for c in p) and\n                     any(c.isdigit() for c in p) and\n                     any(c in '!@#$%^&*(),.?\":{}|<>' for c in p)\n        )\n    )\n    def test_registered_user_has_valid_email(self, user_service, email, password):\n        \"\"\"Property: Any registered user must have a valid email\"\"\"\n        user = user_service.register(email, password)\n        assert '@' in user.email\n        assert '.' in user.email.split('@')[1]\n    \n    @given(\n        email1=st.emails(),\n        email2=st.emails(),\n        password=st.text(min_size=8)\n    )\n    def test_different_emails_create_different_users(self, user_service, email1, email2, password):\n        \"\"\"Property: Different emails create different user records\"\"\"\n        assume(email1 != email2)\n        \n        user1 = user_service.register(email1, password)\n        user2 = user_service.register(email2, password)\n        \n        assert user1.id != user2.id\n        assert user1.email != user2.email\n    \n    @given(\n        email=st.emails(),\n        password1=st.text(min_size=8),\n        password2=st.text(min_size=8)\n    )\n    def test_password_is_hashed(self, user_service, email, password1, password2):\n        \"\"\"Property: Passwords are never stored in plaintext\"\"\"\n        assume(password1 != password2)\n        \n        user1 = user_service.register(email, password1)\n        \n        # Password should be hashed\n        assert user1.hashed_password != password1\n        assert len(user1.hashed_password) > len(password1)\n        \n        # Same password should produce different hash (due to salt)\n        user2 = user_service.register(\"another@example.com\", password1)\n        assert user1.hashed_password != user2.hashed_password",
+      "best_practices": [
+        "Define clear properties/invariants",
+        "Use appropriate strategies for data generation",
+        "Filter invalid inputs with assume()",
+        "Combine with example-based tests",
+        "Use settings to control test execution time"
+      ],
+      "tools": {
+        "python": "Hypothesis",
+        "javascript": "fast-check",
+        "java": "jqwik",
+        "haskell": "QuickCheck"
+      }
+    },
+    "ai_fixture_generation": {
+      "description": "AI generates context-aware test fixtures",
+      "use_when": "Need realistic test data with relationships",
+      "code_example": "# AI generates fixtures based on model relationships\n\nimport pytest\nfrom faker import Faker\nfrom datetime import datetime, timedelta\n\nfake = Faker()\n\n@pytest.fixture\ndef user_factory(db_session):\n    \"\"\"Factory for creating test users\"\"\"\n    def _create_user(**kwargs):\n        defaults = {\n            'email': fake.email(),\n            'hashed_password': 'hashed_' + fake.password(),\n            'created_at': datetime.utcnow(),\n            'is_active': True,\n            'is_verified': False\n        }\n        defaults.update(kwargs)\n        user = User(**defaults)\n        db_session.add(user)\n        db_session.commit()\n        db_session.refresh(user)\n        return user\n    return _create_user\n\n@pytest.fixture\ndef order_factory(db_session, user_factory):\n    \"\"\"Factory for creating orders with associated user\"\"\"\n    def _create_order(user=None, **kwargs):\n        if user is None:\n            user = user_factory()\n        \n        defaults = {\n            'user_id': user.id,\n            'total_amount': fake.pydecimal(left_digits=3, right_digits=2, positive=True),\n            'status': 'pending',\n            'created_at': datetime.utcnow()\n        }\n        defaults.update(kwargs)\n        order = Order(**defaults)\n        db_session.add(order)\n        db_session.commit()\n        db_session.refresh(order)\n        return order\n    return _create_order\n\n@pytest.fixture\ndef order_with_items_factory(order_factory, db_session):\n    \"\"\"Factory for creating orders with line items\"\"\"\n    def _create_order_with_items(item_count=3, **order_kwargs):\n        order = order_factory(**order_kwargs)\n        \n        for _ in range(item_count):\n            item = OrderItem(\n                order_id=order.id,\n                product_name=fake.word(),\n                quantity=fake.random_int(min=1, max=10),\n                price=fake.pydecimal(left_digits=2, right_digits=2, positive=True)\n            )\n            db_session.add(item)\n        \n        db_session.commit()\n        db_session.refresh(order)\n        return order\n    return _create_order_with_items\n\n# Usage in tests\nclass TestOrderService:\n    def test_calculate_total(self, order_with_items_factory):\n        order = order_with_items_factory(item_count=5)\n        total = sum(item.price * item.quantity for item in order.items)\n        assert order.total_amount == total",
+      "best_practices": [
+        "Use factories for complex objects",
+        "Support override of specific fields",
+        "Handle relationships automatically",
+        "Use Faker for realistic data",
+        "Clean up fixtures properly"
+      ],
+      "ai_capabilities": [
+        "Analyze model relationships",
+        "Generate appropriate defaults",
+        "Create realistic data patterns",
+        "Suggest fixture organization"
+      ]
+    },
+    "integration_test_strategies": {
+      "description": "AI-assisted integration test design and execution",
+      "use_when": "Testing interactions between components",
+      "code_example": "# AI suggests integration test structure\n\nimport pytest\nfrom httpx import AsyncClient\nfrom sqlalchemy.ext.asyncio import AsyncSession\nfrom src.main import app\nfrom src.core.database import get_db\nfrom tests.factories import user_factory\n\n@pytest.fixture\ndef test_db():\n    \"\"\"Create test database\"\"\"\n    # Setup test database\n    yield\n    # Teardown\n\n@pytest.fixture\ndef client(test_db) -> AsyncClient:\n    \"\"\"Create test client with database override\"\"\"\n    async def override_get_db():\n        async with test_db() as session:\n            yield session\n    \n    app.dependency_overrides[get_db] = override_get_db\n    async with AsyncClient(app=app, base_url=\"http://test\") as ac:\n        yield ac\n    app.dependency_overrides.clear()\n\nclass TestUserAPI:\n    \"\"\"Integration tests for user API endpoints\"\"\"\n    \n    @pytest.mark.asyncio\n    async def test_create_user_flow(self, client: AsyncClient, test_db):\n        \"\"\"Test complete user creation flow\"\"\"\n        # 1. Create user\n        response = await client.post(\n            \"/api/v1/users/\",\n            json={\n                \"email\": \"newuser@example.com\",\n                \"password\": \"SecurePass123!\"\n            }\n        )\n        assert response.status_code == 201\n        user_data = response.json()\n        user_id = user_data[\"id\"]\n        \n        # 2. Verify user exists\n        response = await client.get(f\"/api/v1/users/{user_id}\")\n        assert response.status_code == 200\n        assert response.json()[\"email\"] == \"newuser@example.com\"\n        \n        # 3. Test authentication\n        login_response = await client.post(\n            \"/api/v1/auth/login\",\n            json={\n                \"email\": \"newuser@example.com\",\n                \"password\": \"SecurePass123!\"\n            }\n        )\n        assert login_response.status_code == 200\n        assert \"access_token\" in login_response.json()\n    \n    @pytest.mark.asyncio\n    async def test_user_order_flow(self, client: AsyncClient, test_db, user_factory):\n        \"\"\"Test user creating and managing orders\"\"\"\n        user = await user_factory()\n        \n        # Get auth token\n        login = await client.post(\n            \"/api/v1/auth/login\",\n            json={\"email\": user.email, \"password\": \"testpass\"}\n        )\n        token = login.json()[\"access_token\"]\n        headers = {\"Authorization\": f\"Bearer {token}\"}\n        \n        # Create order\n        order_response = await client.post(\n            \"/api/v1/orders/\",\n            headers=headers,\n            json={\"items\": [{\"product_id\": 1, \"quantity\": 2}]}\n        )\n        assert order_response.status_code == 201\n        \n        # Verify order belongs to user\n        order_id = order_response.json()[\"id\"]\n        order_detail = await client.get(\n            f\"/api/v1/orders/{order_id}\",\n            headers=headers\n        )\n        assert order_detail.json()[\"user_id\"] == user.id",
+      "best_practices": [
+        "Test complete user flows",
+        "Use real database for integration tests",
+        "Clean up test data",
+        "Test error scenarios",
+        "Verify side effects",
+        "Use contract testing for external services"
+      ],
+      "ai_assistance": [
+        "Identify critical user flows",
+        "Suggest test scenarios",
+        "Generate test data",
+        "Detect missing test coverage"
+      ]
+    },
+    "mock_generation_patterns": {
+      "description": "AI generates appropriate mocks, stubs, and spies",
+      "use_when": "Isolating units under test",
+      "code_example": "# AI suggests mock patterns based on dependencies\n\nfrom unittest.mock import Mock, AsyncMock, patch, MagicMock\nfrom pytest_mock import MockerFixture\nimport pytest\n\nclass TestPaymentService:\n    \"\"\"Tests for payment service with mocked external dependencies\"\"\"\n    \n    @pytest.fixture\n    def mock_payment_gateway(self, mocker: MockerFixture):\n        \"\"\"Mock payment gateway API\"\"\"\n        gateway = mocker.Mock()\n        gateway.process_payment = AsyncMock(return_value={\n            'transaction_id': 'txn_123',\n            'status': 'succeeded',\n            'amount': 100.00\n        })\n        gateway.refund = AsyncMock(return_value={'status': 'refunded'})\n        return gateway\n    \n    @pytest.fixture\n    def mock_email_service(self, mocker: MockerFixture):\n        \"\"\"Mock email service\"\"\"\n        email_service = mocker.Mock()\n        email_service.send_receipt = AsyncMock(return_value=True)\n        email_service.send_failure_notification = AsyncMock(return_value=True)\n        return email_service\n    \n    @pytest.fixture\n    def payment_service(self, mock_payment_gateway, mock_email_service):\n        \"\"\"Create payment service with mocked dependencies\"\"\"\n        from src.services.payment_service import PaymentService\n        return PaymentService(\n            gateway=mock_payment_gateway,\n            email_service=mock_email_service\n        )\n    \n    @pytest.mark.asyncio\n    async def test_successful_payment_flow(\n        self, \n        payment_service, \n        mock_payment_gateway, \n        mock_email_service\n    ):\n        \"\"\"Test successful payment processing\"\"\"\n        result = await payment_service.process(\n            amount=100.00,\n            card_token='card_123',\n            user_email='user@example.com'\n        )\n        \n        assert result['status'] == 'succeeded'\n        assert result['transaction_id'] == 'txn_123'\n        \n        # Verify gateway was called correctly\n        mock_payment_gateway.process_payment.assert_called_once_with(\n            amount=100.00,\n            card_token='card_123'\n        )\n        \n        # Verify email was sent\n        mock_email_service.send_receipt.assert_called_once_with(\n            email='user@example.com',\n            transaction_id='txn_123',\n            amount=100.00\n        )\n    \n    @pytest.mark.asyncio\n    async def test_payment_failure_handling(\n        self, \n        payment_service, \n        mock_payment_gateway, \n        mock_email_service\n    ):\n        \"\"\"Test payment failure handling\"\"\"\n        # Configure mock to raise exception\n        mock_payment_gateway.process_payment = AsyncMock(\n            side_effect=Exception(\"Insufficient funds\")\n        )\n        \n        with pytest.raises(Exception, match=\"Insufficient funds\"):\n            await payment_service.process(\n                amount=100.00,\n                card_token='card_123',\n                user_email='user@example.com'\n            )\n        \n        # Verify failure notification was sent\n        mock_email_service.send_failure_notification.assert_called_once()\n        \n        # Verify receipt was NOT sent\n        mock_email_service.send_receipt.assert_not_called()\n    \n    @pytest.mark.asyncio\n    async def test_refund_flow(self, payment_service, mock_payment_gateway):\n        \"\"\"Test refund processing\"\"\"\n        result = await payment_service.refund('txn_123')\n        \n        assert result['status'] == 'refunded'\n        mock_payment_gateway.refund.assert_called_once_with('txn_123')",
+      "best_practices": [
+        "Mock external dependencies",
+        "Use AsyncMock for async functions",
+        "Verify mock calls",
+        "Test both success and failure paths",
+        "Use spies for partial mocking",
+        "Keep mocks simple and focused"
+      ],
+      "ai_generation": [
+        "Analyze dependencies automatically",
+        "Generate mock interfaces",
+        "Suggest verification patterns",
+        "Create realistic mock responses"
+      ]
+    },
+    "coverage_optimization": {
+      "description": "AI analyzes test coverage and suggests improvements",
+      "use_when": "Optimizing test suite effectiveness",
+      "code_example": "# AI analyzes coverage and suggests improvements\n\n# Coverage report analysis\n# Current coverage: 75%\n# Missing coverage:\n#   - src/services/payment_service.py:45-60 (error handling)\n#   - src/utils/validators.py:20-35 (edge cases)\n#   - src/api/middleware.py:10-25 (authentication edge cases)\n\n# AI suggests additional tests:\n\nclass TestPaymentServiceErrorHandling:\n    \"\"\"AI-suggested tests for missing error handling coverage\"\"\"\n    \n    def test_payment_timeout_handling(self, payment_service, mock_gateway):\n        \"\"\"Test handling of payment gateway timeout\"\"\"\n        mock_gateway.process_payment = AsyncMock(\n            side_effect=asyncio.TimeoutError(\"Gateway timeout\")\n        )\n        \n        with pytest.raises(PaymentTimeoutError):\n            await payment_service.process(100.00, 'card_123', 'user@example.com')\n    \n    def test_invalid_card_token_handling(self, payment_service, mock_gateway):\n        \"\"\"Test handling of invalid card token\"\"\"\n        mock_gateway.process_payment = AsyncMock(\n            side_effect=InvalidCardTokenError(\"Invalid token\")\n        )\n        \n        with pytest.raises(ValidationError, match=\"Invalid card token\"):\n            await payment_service.process(100.00, 'invalid_token', 'user@example.com')\n\nclass TestValidatorsEdgeCases:\n    \"\"\"AI-suggested tests for validator edge cases\"\"\"\n    \n    def test_email_validation_unicode(self):\n        \"\"\"Test email validation with unicode characters\"\"\"\n        # AI identified missing unicode test case\n        assert is_valid_email(\"test@ex\u00e4mple.com\") == True\n    \n    def test_email_validation_very_long(self):\n        \"\"\"Test email validation with very long addresses\"\"\"\n        long_email = \"a\" * 250 + \"@example.com\"\n        assert is_valid_email(long_email) == False\n\n# Mutation testing to find weak tests\n# AI runs mutation testing and identifies:\n# - Tests that pass even when code is broken\n# - Missing assertions\n# - Incomplete test scenarios",
+      "best_practices": [
+        "Aim for 80-90% coverage (not 100%)",
+        "Focus on critical paths",
+        "Use mutation testing to find weak tests",
+        "Prioritize integration test coverage",
+        "Review coverage reports regularly",
+        "Remove redundant tests"
+      ],
+      "ai_analysis": [
+        "Identify coverage gaps",
+        "Suggest critical missing tests",
+        "Detect redundant tests",
+        "Analyze mutation scores",
+        "Prioritize test improvements"
+      ]
+    }
+  },
+  "best_practices": [
+    "Follow AAA pattern (Arrange, Act, Assert) for clear test organization - separate setup, execution, and verification",
+    "Use descriptive test names that explain what is being tested and expected outcome - format: test_<unit>_should_<expected_behavior>_when_<condition>",
+    "Write tests before implementation for better design and clearer requirements - let tests drive the API design",
+    "One concept per test - each test should verify a single behavior to make failures easy to diagnose",
+    "Keep tests independent - tests should not depend on execution order or shared state between tests",
+    "Use parameterized tests to cover edge cases efficiently with multiple inputs - use @pytest.mark.parametrize or similar",
+    "Use fixtures for setup/teardown to reduce duplication and improve maintainability - prefer function-scoped fixtures over class setup",
+    "Isolate units under test by mocking external dependencies - use mocks for databases, APIs, file systems",
+    "Use AI for test generation, not test execution - always review and understand AI-generated tests before committing",
+    "Review AI-generated tests before committing to ensure they match requirements and follow team conventions",
+    "Combine AI suggestions with domain knowledge - AI provides patterns and templates, you provide business context",
+    "Use AI to identify patterns and edge cases, not replace critical thinking - AI suggests, you decide",
+    "Validate AI-generated test data for realism and correctness - ensure test data matches real-world scenarios",
+    "Use AI to suggest test improvements based on coverage gaps - leverage AI analysis of coverage reports",
+    "Leverage AI for generating test fixtures and mock data - use AI to create realistic test data factories",
+    "Have AI analyze existing tests to identify missing coverage areas - use AI to find untested code paths",
+    "Keep tests simple and readable - if a test is hard to understand, refactor it or add comments explaining why",
+    "Avoid test interdependencies - each test should be able to run in isolation without relying on other tests",
+    "Use factories for test data instead of hardcoding values throughout tests - create test data builders for complex objects",
+    "Refactor tests along with code - treat test code with same care as production code, apply DRY principle",
+    "Document complex test scenarios with clear comments explaining why the test exists and what edge case it covers",
+    "Extract common test setup into reusable fixtures or helper methods - reduce duplication while maintaining clarity",
+    "Use test builders or factory methods for complex object creation - make test data creation declarative and readable",
+    "Keep test data close to tests - use local variables or fixtures rather than shared constants that change unexpectedly",
+    "Use unit tests for fast feedback - they should run in milliseconds, not seconds, to enable frequent test runs",
+    "Minimize database usage in unit tests - use mocks or in-memory databases, reserve real DB for integration tests",
+    "Use parallel test execution to reduce overall test suite runtime - configure pytest-xdist or similar tools",
+    "Cache expensive fixtures that don't change between tests - use session-scoped fixtures for immutable setup",
+    "Profile slow tests to identify bottlenecks and optimize them - use pytest-profiling or similar tools",
+    "Avoid sleeping or waiting in tests - use time mocking or event-based synchronization instead of time.sleep()",
+    "Use test doubles (mocks/stubs) instead of real external services - prevent network calls and external dependencies",
+    "Run fast tests frequently, slow tests less often - separate unit tests from integration/E2E tests in CI pipeline",
+    "Focus on behavior, not lines - aim for meaningful coverage of business logic, not 100% line coverage",
+    "Test edge cases and boundaries - null values, empty collections, max values, negative numbers, boundary conditions",
+    "Test error conditions - verify that errors are handled correctly and appropriate exceptions are raised",
+    "Use property-based testing for invariants and mathematical properties - use Hypothesis or similar tools",
+    "Balance unit and integration tests - more fast unit tests, fewer slow integration tests following test pyramid",
+    "Test the public interface, not implementation details - tests should still pass after refactoring internals",
+    "Prioritize testing critical business logic and user-facing features - focus coverage on high-value code paths",
+    "Use mutation testing to identify weak tests that don't catch bugs - tools like mutmut help find ineffective tests"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Testing Implementation Details",
+      "problem": "Tests break when refactoring, even if behavior is correct",
+      "solution": "Test public interfaces and behavior, not internal implementation"
+    },
+    {
+      "name": "Over Mocking",
+      "problem": "Tests don't catch integration issues, brittle tests",
+      "solution": "Mock external dependencies only, use real objects for internal code"
+    },
+    {
+      "name": "Test Interdependence",
+      "problem": "Tests fail unpredictably, hard to debug",
+      "solution": "Make tests independent, use fixtures for isolation"
+    },
+    {
+      "name": "Ignoring Failing Tests",
+      "problem": "Technical debt accumulates, real bugs go unnoticed",
+      "solution": "Fix or remove failing tests immediately"
+    },
+    {
+      "name": "Testing Too Much",
+      "problem": "Wasted effort, tests don't add value",
+      "solution": "Test your business logic, trust well-tested libraries"
+    },
+    {
+      "name": "Missing Edge Cases",
+      "problem": "Bugs in edge cases go undetected",
+      "solution": "Use AI to identify edge cases, test boundaries and error conditions"
+    }
+  ],
+  "tools_and_frameworks": {
+    "python": {
+      "testing": [
+        "pytest",
+        "unittest",
+        "nose2"
+      ],
+      "mocking": [
+        "unittest.mock",
+        "pytest-mock",
+        "responses"
+      ],
+      "property_based": [
+        "Hypothesis"
+      ],
+      "coverage": [
+        "pytest-cov",
+        "coverage.py"
+      ],
+      "fixtures": [
+        "pytest-fixtures",
+        "factory_boy",
+        "Faker"
+      ]
+    },
+    "javascript": {
+      "testing": [
+        "Jest",
+        "Mocha",
+        "Vitest"
+      ],
+      "mocking": [
+        "Jest mocks",
+        "Sinon"
+      ],
+      "property_based": [
+        "fast-check"
+      ],
+      "coverage": [
+        "Istanbul",
+        "c8"
+      ],
+      "fixtures": [
+        "@faker-js/faker"
+      ]
+    },
+    "java": {
+      "testing": [
+        "JUnit 5",
+        "TestNG"
+      ],
+      "mocking": [
+        "Mockito",
+        "EasyMock"
+      ],
+      "property_based": [
+        "jqwik"
+      ],
+      "coverage": [
+        "JaCoCo"
+      ],
+      "fixtures": [
+        "JUnit fixtures"
+      ]
+    }
+  }
+}

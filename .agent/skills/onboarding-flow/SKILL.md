@@ -1,38 +1,27 @@
 ---
-name: onboarding-flow
-description: Onboard existing repositories into the Antigravity Agent Factory ecosystem
-type: skill
-knowledge: [skill-catalog.json, stack-capabilities.json]
+description: Onboard existing repositories into the Cursor Agent Factory ecosystem
 ---
 
+# Onboarding Flow
+
+Onboard existing repositories into the Cursor Agent Factory ecosystem
+
+## 
 # Onboarding Flow Skill
 
-Integrate Antigravity Agent Factory into existing repositories non-destructively, preserving existing artifacts while adding missing components.
+Integrate Cursor Agent Factory into existing repositories non-destructively, preserving existing artifacts while adding missing components.
+
+## 
+# Onboarding Flow Skill
+
+Integrate Cursor Agent Factory into existing repositories non-destructively, preserving existing artifacts while adding missing components.
 
 ## Philosophy
-
 > Existing repositories have value. Our job is to enhance, not replace.
 
 This skill enables seamless integration of the factory's agent system into repositories that already have code, configurations, and potentially some Cursor artifacts.
 
-## When to Use
-
-- User mentions an existing repository they want to enhance with AI agents
-- User says "onboard my repo", "integrate into existing project", "add agents to my codebase"
-- User provides a path to a local repository
-- User wants to upgrade an older factory-generated setup
-
-**For Team Onboarding:** If the user mentions a team (2+ people), consider suggesting the `team-workshop-onboarding` skill instead, which provides a collaborative workshop series with games and discussions.
-
-## Prerequisites
-
-Before starting the onboarding flow, ensure:
-1. User has provided the repository path
-2. Repository exists and is accessible
-3. User has write permissions to the repository
-
 ## Value Propagation Features
-
 Every onboarded project receives layered capabilities that enable progressive autonomy:
 
 **Layer 0: Foundation**
@@ -55,7 +44,6 @@ Every onboarded project receives layered capabilities that enable progressive au
 - See Step 3.5 for PM setup options
 
 ## Process
-
 ### Step 1: Gather Repository Information
 
 Ask user for the repository path:
@@ -72,7 +60,7 @@ Validate the path exists and is a directory.
 Run the repository analyzer to detect existing artifacts:
 
 ```bash
-{PYTHON_PATH} cli/factory_cli.py --analyze <repo_path>
+python cli/factory_cli.py --analyze <repo_path>
 ```
 
 **MCP Tools:** None required (local operation)
@@ -133,12 +121,51 @@ If user selects "No":
 - Acknowledge and continue to Step 4
 - Note that PM can be added later using the `pm-configuration` skill
 
+### Step 3.6: Tooling Setup (Optional)
+
+After confirming the blueprint (and optionally PM), offer automation tooling:
+
+```
+"Would you like to set up automation tooling for this repository?
+
+This can include:
+- CI/CD pipelines (GitHub Actions)
+- README structure validation and test catalog generation
+- Pre-commit hooks with auto-sync
+- Safe commit wrapper
+- Secret scanning
+
+Options:
+1. [Essential] - CI pipeline, doc sync, .gitignore (recommended)
+2. [Standard]  - Essential + git hooks, safe commit, CD pipeline
+3. [Full]      - Standard + secret scanner, changelog generator
+4. [Custom]    - Pick individual tools
+5. [None]      - Skip for now (can add later via Factory updates)"
+```
+
+If user selects 1-3:
+- Set `tooling_tier` accordingly in the generation config
+- Continue to Step 4
+
+If user selects 4 (Custom):
+- Show the list of individual tools:
+  - README validation, test catalog, CI workflow, PR checks, .gitignore
+  - Pre-commit runner, install hooks, safe commit, CD workflow
+  - Secret scanner, changelog generator
+- Let user select by number
+- Set `tooling_tier` to `custom` with selections
+
+If user selects 5:
+- Set `tooling_tier` to `none`
+- Note that tooling can be added later using Factory updates
+- Continue to Step 4
+
 ### Step 4: Preview Changes (Dry Run)
 
 Before making any changes, show what will be modified:
 
 ```bash
-{PYTHON_PATH} cli/factory_cli.py --onboard <repo_path> --blueprint <blueprint_id> --dry-run
+python cli/factory_cli.py --onboard <repo_path> --blueprint <blueprint_id> --dry-run
 ```
 
 Present the preview:
@@ -154,7 +181,7 @@ For each conflict, ask user for resolution:
 | Conflict Type | Options |
 |---------------|---------|
 | Existing agent with same name | Keep existing / Replace / Rename new |
-| Existing .agentrules | Merge / Replace / Keep existing |
+| Existing .cursorrules | Merge / Replace / Keep existing |
 | Existing knowledge file | Merge / Replace / Keep existing |
 | Existing MCP config | Merge servers / Replace / Keep existing |
 
@@ -165,7 +192,7 @@ Default behavior: **Preserve existing** (ask for each conflict)
 With user confirmation, execute the onboarding:
 
 ```bash
-{PYTHON_PATH} cli/factory_cli.py --onboard <repo_path> --blueprint <blueprint_id>
+python cli/factory_cli.py --onboard <repo_path> --blueprint <blueprint_id>
 ```
 
 The process will:
@@ -173,11 +200,14 @@ The process will:
 2. Generate missing directories
 3. Add missing agents
 4. Add missing skills
-5. Merge or add .agentrules sections
+5. Merge or add .cursorrules sections
 6. Add missing knowledge files
 7. Generate workflow documentation and templates
-8. Generate PM configuration and agents (if PM was selected in Step 3.5)
-9. Report results
+8. Generate automation tooling scripts (based on tooling selection)
+9. Generate CI/CD workflow configurations
+10. Generate .gitignore
+11. Generate PM configuration and agents (if PM was selected in Step 3.5)
+12. Report results
 
 ### Step 7: Provide Summary and Next Steps
 
@@ -191,32 +221,120 @@ Summary:
 - Files created: 8
 - Files merged: 2
 - Skipped (preserved): 3
+- Tooling tier: {TOOLING_TIER}
 - PM configuration: Enabled (if PM was selected in Step 3.5)
 
-A backup was created: .agent-factory-backup/20260129_143022/
+A backup was created: .cursor-factory-backup/20260129_143022/
 
 Next steps:
-1. Review the merged .agentrules file
+1. Review the merged .cursorrules file
 2. Test the new agents by mentioning them
 3. Check the knowledge/ folder for new reference files
 4. Review workflows/ for available workflow templates
-5. Configure PM backend credentials (if PM was enabled)
+5. Run `python scripts/git/install_hooks.py` to activate pre-commit hooks
+6. Run `python scripts/validation/validate_readme_structure.py --check` to verify README
+7. Configure PM backend credentials (if PM was enabled)
 
 If anything looks wrong, you can rollback:
-{PYTHON_PATH} cli/factory_cli.py --rollback <repo_path>
+python cli/factory_cli.py --rollback <repo_path>
+"
+```
+
+```
+"Please provide the path to the repository you want to onboard.
+For example: C:\Projects\my-existing-app"
+```
+
+```bash
+python cli/factory_cli.py --analyze <repo_path>
+```
+
+```
+"I detected the following:
+- Languages: C#, TypeScript
+- Frameworks: ASP.NET Core, React
+- Suggested Blueprint: csharp-dotnet
+
+Would you like to use this blueprint, or choose a different one?"
+```
+
+```
+"Would you like to set up project management for this repository?
+
+This will add:
+- PM agents (Product Owner, Sprint Master, Task Manager, Reporting)
+- Integration with your issue tracker (GitHub, Jira, Azure DevOps, Linear)
+- Sprint/Kanban workflow automation
+- Metrics and reporting capabilities
+
+Options:
+1. [Yes] - Configure full project management
+2. [Minimal] - Just issue tracking, no ceremonies
+3. [No] - Skip for now (can add later with pm-configuration skill)"
+```
+
+```
+"Would you like to set up automation tooling for this repository?
+
+This can include:
+- CI/CD pipelines (GitHub Actions)
+- README structure validation and test catalog generation
+- Pre-commit hooks with auto-sync
+- Safe commit wrapper
+- Secret scanning
+
+Options:
+1. [Essential] - CI pipeline, doc sync, .gitignore (recommended)
+2. [Standard]  - Essential + git hooks, safe commit, CD pipeline
+3. [Full]      - Standard + secret scanner, changelog generator
+4. [Custom]    - Pick individual tools
+5. [None]      - Skip for now (can add later via Factory updates)"
+```
+
+```bash
+python cli/factory_cli.py --onboard <repo_path> --blueprint <blueprint_id> --dry-run
+```
+
+```bash
+python cli/factory_cli.py --onboard <repo_path> --blueprint <blueprint_id>
+```
+
+```
+"Onboarding complete!
+
+Summary:
+- Scenario: PARTIAL
+- Files created: 8
+- Files merged: 2
+- Skipped (preserved): 3
+- Tooling tier: {TOOLING_TIER}
+- PM configuration: Enabled (if PM was selected in Step 3.5)
+
+A backup was created: .cursor-factory-backup/20260129_143022/
+
+Next steps:
+1. Review the merged .cursorrules file
+2. Test the new agents by mentioning them
+3. Check the knowledge/ folder for new reference files
+4. Review workflows/ for available workflow templates
+5. Run `python scripts/git/install_hooks.py` to activate pre-commit hooks
+6. Run `python scripts/validation/validate_readme_structure.py --check` to verify README
+7. Configure PM backend credentials (if PM was enabled)
+
+If anything looks wrong, you can rollback:
+python cli/factory_cli.py --rollback <repo_path>
 "
 ```
 
 ## Scenario Handling
-
 ### FRESH Scenario (No Cursor artifacts)
 - Full generation with all factory components
 - Detect tech stack and suggest blueprint
-- Create complete .agent/ structure
+- Create complete .cursor/ structure
 
-### MINIMAL Scenario (Only .agentrules)
+### MINIMAL Scenario (Only .cursorrules)
 - Augment with agents, skills, knowledge
-- Merge new sections into existing .agentrules
+- Merge new sections into existing .cursorrules
 - Preserve user's custom rules
 
 ### PARTIAL Scenario (Some artifacts missing)
@@ -235,7 +353,6 @@ If anything looks wrong, you can rollback:
 - No changes unless explicitly requested
 
 ## Fallback Procedures
-
 | Condition | Action |
 |-----------|--------|
 | Path not found | Ask user to verify path |
@@ -245,7 +362,6 @@ If anything looks wrong, you can rollback:
 | Conflict with no resolution | Skip artifact, report to user |
 
 ## Integration with Other Skills
-
 | Skill | Integration Point |
 |-------|-------------------|
 | `requirements-gathering` | Use if user wants to customize before onboarding |
@@ -253,11 +369,9 @@ If anything looks wrong, you can rollback:
 | `agent-generation` | Used for generating missing agents |
 | `skill-generation` | Used for generating missing skills |
 | `pm-configuration` | Invoked in Step 3.5 if user wants PM system setup |
-| `config-onboarding` | Used for migrating hardcoded paths to SPoT during onboarding |
 | `team-workshop-onboarding` | Alternative for team onboarding with collaborative workshops |
 
 ## Team Onboarding Alternative
-
 If a team (2+ people) is onboarding together, suggest the Team Workshop Onboarding:
 
 ```
@@ -273,8 +387,18 @@ and more customized results. It's grounded in Axiom 0: Love, Truth, and Beauty."
 
 If they choose team workshops, hand off to `team-workshop-onboarding` skill.
 
-## Important Rules
+```
+"I notice you mentioned a team. Would you like to:
 
+A) Individual Onboarding - I'll analyze and enhance your repo now
+B) Team Workshop Series - Collaborative 5-workshop journey with games 
+   and discussions that builds shared vision, ethics, and custom agents
+
+The workshop series takes more time but creates deeper team alignment
+and more customized results. It's grounded in Axiom 0: Love, Truth, and Beauty."
+```
+
+## Important Rules
 1. **Never overwrite without backup** - Always create backup before any modification
 2. **Preserve user customizations** - Default to keeping existing content
 3. **Ask for conflicts** - Don't make assumptions, ask user for each conflict
@@ -284,26 +408,41 @@ If they choose team workshops, hand off to `team-workshop-onboarding` skill.
 7. **Update CHANGELOG** - After any feature addition or modification, update CHANGELOG.md before committing
 
 ## CLI Quick Reference
+```bash
+# Analyze repository (no changes)
+python cli/factory_cli.py --analyze C:\Projects\my-repo
+
+# Preview onboarding (dry run)
+python cli/factory_cli.py --onboard C:\Projects\my-repo --dry-run
+
+# Onboard with auto-detected blueprint
+python cli/factory_cli.py --onboard C:\Projects\my-repo
+
+# Onboard with specific blueprint
+python cli/factory_cli.py --onboard C:\Projects\my-repo --blueprint csharp-dotnet
+
+# Rollback last onboarding
+python cli/factory_cli.py --rollback C:\Projects\my-repo
+```
 
 ```bash
 # Analyze repository (no changes)
-{PYTHON_PATH} cli/factory_cli.py --analyze C:\Projects\my-repo
+python cli/factory_cli.py --analyze C:\Projects\my-repo
 
 # Preview onboarding (dry run)
-{PYTHON_PATH} cli/factory_cli.py --onboard C:\Projects\my-repo --dry-run
+python cli/factory_cli.py --onboard C:\Projects\my-repo --dry-run
 
 # Onboard with auto-detected blueprint
-{PYTHON_PATH} cli/factory_cli.py --onboard C:\Projects\my-repo
+python cli/factory_cli.py --onboard C:\Projects\my-repo
 
 # Onboard with specific blueprint
-{PYTHON_PATH} cli/factory_cli.py --onboard C:\Projects\my-repo --blueprint csharp-dotnet
+python cli/factory_cli.py --onboard C:\Projects\my-repo --blueprint csharp-dotnet
 
 # Rollback last onboarding
-{PYTHON_PATH} cli/factory_cli.py --rollback C:\Projects\my-repo
+python cli/factory_cli.py --rollback C:\Projects\my-repo
 ```
 
 ## Example Conversation
-
 **User:** "I have an existing C# project at C:\Projects\PaymentService that I want to enhance with Cursor agents"
 
 **Agent:** "I'll analyze your repository to understand what's already configured.
@@ -312,7 +451,7 @@ If they choose team workshops, hand off to `team-workshop-onboarding` skill.
 
 **Analysis Results:**
 - Scenario: PARTIAL
-- Existing: .agentrules, 2 agents (code-reviewer, explorer)
+- Existing: .cursorrules, 2 agents (code-reviewer, explorer)
 - Missing: skills, knowledge files, templates
 - Tech Stack: C# (.NET 8), ASP.NET Core
 - Suggested Blueprint: csharp-dotnet
@@ -353,12 +492,17 @@ Summary:
 - PM configuration: Enabled (Jira backend, Agile Scrum methodology)
 
 Next steps:
-1. Review the merged .agentrules file
+1. Review the merged .cursorrules file
 2. Test the new agents by mentioning them
 3. Check the knowledge/ folder for new reference files
 4. Configure Jira credentials in .env.pm"
 
 ---
 
-*Generated by Antigravity Agent Factory*
+*Generated by Cursor Agent Factory*
 *Skill: onboarding-flow v1.0.0*
+
+## Prerequisites
+> [!IMPORTANT]
+> Requirements:
+> - Knowledge: skill-catalog.json, stack-capabilities.json

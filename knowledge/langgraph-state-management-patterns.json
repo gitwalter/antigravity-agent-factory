@@ -1,0 +1,135 @@
+{
+  "id": "state-patterns",
+  "name": "LangGraph State Management Patterns",
+  "description": "Patterns for managing state in LangGraph workflows",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "state_schema": {
+    "typed_dict": {
+      "description": "Define state with TypedDict",
+      "example": "class AgentState(TypedDict):\n    messages: Annotated[list, add_messages]\n    step: str"
+    },
+    "annotations": {
+      "description": "Use Annotated with reducers for accumulation",
+      "built_in_reducers": {
+        "add_messages": "Accumulate messages",
+        "operator.add": "Sum numeric values"
+      },
+      "custom_reducers": {
+        "merge_dicts": "Merge dictionaries",
+        "append_unique": "Append only unique items"
+      }
+    }
+  },
+  "reducers": {
+    "add_messages": {
+      "description": "Built-in for message accumulation",
+      "import": "from langgraph.graph.message import add_messages"
+    },
+    "operator_add": {
+      "description": "Sum values",
+      "import": "from operator import add"
+    },
+    "custom": {
+      "description": "Custom reducer function",
+      "signature": "def reducer(left: T, right: T) -> T"
+    }
+  },
+  "checkpointing": {
+    "memory_saver": {
+      "class": "MemorySaver",
+      "use_case": "Development",
+      "persistence": false
+    },
+    "redis": {
+      "description": "Redis-backed checkpointer",
+      "use_case": "Production, distributed",
+      "features": [
+        "TTL",
+        "Fast",
+        "Distributed"
+      ]
+    },
+    "postgres": {
+      "description": "PostgreSQL-backed checkpointer",
+      "use_case": "Production, durability",
+      "features": [
+        "Durable",
+        "Queryable",
+        "ACID"
+      ]
+    },
+    "sqlite": {
+      "description": "SQLite-backed checkpointer",
+      "use_case": "Local production",
+      "features": [
+        "Simple",
+        "Durable",
+        "Single node"
+      ]
+    }
+  },
+  "patterns": {
+    "thread_management": {
+      "description": "Use thread_id for multi-user scenarios",
+      "config": {
+        "configurable": {
+          "thread_id": "unique_id"
+        }
+      }
+    },
+    "interrupt_points": {
+      "description": "Pause execution for human input",
+      "options": [
+        "interrupt_before",
+        "interrupt_after"
+      ]
+    },
+    "state_update": {
+      "description": "Nodes return partial state updates",
+      "rule": "Return dict with only fields to update"
+    }
+  },
+  "best_practices": [
+    "Define clear state schemas with TypedDict to enable type checking and IDE autocomplete, improving code reliability",
+    "Use appropriate reducers (add_messages, operator.add, custom reducers) for each state field to ensure correct accumulation behavior",
+    "Implement checkpointing for production workflows using Redis or PostgreSQL backends to enable workflow resumption and recovery",
+    "Use unique thread IDs in config.configurable for multi-user scenarios to isolate state and prevent cross-contamination",
+    "Clean up old checkpoints periodically using TTL or scheduled cleanup jobs to prevent storage bloat and reduce costs",
+    "Return partial state updates from nodes (only fields that changed) rather than full state to improve performance and reduce conflicts",
+    "Use interrupt_before and interrupt_after for human-in-the-loop checkpoints at critical decision points in workflows",
+    "Validate state schema consistency across workflow versions to prevent runtime errors from schema mismatches"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Mutable state",
+      "problem": "Directly mutating state objects causes side effects, race conditions, and makes debugging difficult",
+      "solution": "Always return new state dictionaries from nodes, never mutate existing state objects directly"
+    },
+    {
+      "name": "No checkpointing",
+      "problem": "Workflows cannot be resumed after failures or interruptions, losing progress and requiring full restart",
+      "solution": "Add MemorySaver for development or Redis/PostgreSQL checkpointers for production to enable state persistence"
+    },
+    {
+      "name": "Missing reducers",
+      "problem": "State fields without reducers default to replacement behavior, losing accumulated data when multiple nodes update the same field",
+      "solution": "Define Annotated types with appropriate reducers (add_messages for lists, operator.add for numbers) for all accumulating fields"
+    },
+    {
+      "name": "Reusing thread IDs",
+      "problem": "Reusing thread IDs across different workflows or users causes state contamination and incorrect behavior",
+      "solution": "Generate unique thread IDs per workflow instance or user session, use UUIDs or composite keys (user_id:session_id)"
+    },
+    {
+      "name": "Returning full state",
+      "problem": "Returning complete state from nodes overwrites unchanged fields unnecessarily, causing performance issues and potential conflicts",
+      "solution": "Return only fields that changed in partial state updates, letting LangGraph merge with existing state using reducers"
+    }
+  ],
+  "related_skills": [
+    "state-management",
+    "langgraph-agent-building",
+    "memory-management"
+  ]
+}

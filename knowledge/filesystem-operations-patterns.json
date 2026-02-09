@@ -1,0 +1,159 @@
+{
+  "id": "filesystem-patterns",
+  "name": "Filesystem Operations Patterns",
+  "description": "Patterns for secure file operations, directory traversal, and security sandboxing",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "patterns": {
+    "file_operations": {
+      "basic_read_write": {
+        "description": "Basic file read/write with validation",
+        "code_example": "from pathlib import Path\nfrom typing import Optional, List\n\nclass FileOperations:\n    def __init__(self, allowed_directories: List[str] = None):\n        self.allowed_dirs = [Path(d).resolve() for d in allowed_directories] if allowed_directories else None\n    \n    def _validate_path(self, file_path: str) -> Path:\n        path = Path(file_path).resolve()\n        if self.allowed_dirs:\n            if not any(path.is_relative_to(allowed) for allowed in self.allowed_dirs):\n                raise PermissionError(f'Path {path} not in allowed directories')\n        return path\n    \n    def read_file(self, file_path: str, encoding: str = 'utf-8') -> str:\n        path = self._validate_path(file_path)\n        if not path.exists():\n            raise FileNotFoundError(f'File not found: {path}')\n        if not path.is_file():\n            raise ValueError(f'Path is not a file: {path}')\n        return path.read_text(encoding=encoding)\n    \n    def write_file(self, file_path: str, content: str, encoding: str = 'utf-8') -> None:\n        path = self._validate_path(file_path)\n        path.parent.mkdir(parents=True, exist_ok=True)\n        path.write_text(content, encoding=encoding)",
+        "best_practices": [
+          "Always validate and sanitize file paths",
+          "Use pathlib for cross-platform compatibility",
+          "Handle encoding errors gracefully",
+          "Check file existence before operations"
+        ]
+      },
+      "async_operations": {
+        "description": "Async file operations for large files",
+        "code_example": "import aiofiles\nfrom pathlib import Path\n\nasync def read_file_async(file_path: str) -> str:\n    async with aiofiles.open(file_path, 'r', encoding='utf-8') as f:\n        return await f.read()\n\nasync def write_file_async(file_path: str, content: str) -> None:\n    path = Path(file_path)\n    path.parent.mkdir(parents=True, exist_ok=True)\n    async with aiofiles.open(file_path, 'w', encoding='utf-8') as f:\n        await f.write(content)",
+        "use_when": [
+          "Large files (>10MB)",
+          "High concurrency",
+          "Non-blocking I/O needed"
+        ]
+      }
+    },
+    "directory_traversal": {
+      "recursive_search": {
+        "description": "Recursive directory traversal with filtering",
+        "code_example": "from pathlib import Path\nfrom typing import List, Optional\nimport fnmatch\n\nclass DirectoryOperations:\n    def __init__(self, allowed_directories: List[str] = None, max_depth: int = 10):\n        self.allowed_dirs = [Path(d).resolve() for d in allowed_directories] if allowed_directories else None\n        self.max_depth = max_depth\n    \n    def find_files(self, directory_path: str, pattern: str = '*', file_type: Optional[str] = None, max_results: int = 100) -> List[str]:\n        path = Path(directory_path).resolve()\n        results = []\n        \n        for item in path.rglob(pattern):\n            if item.is_file():\n                if file_type and item.suffix.lower() != f'.{file_type.lower()}':\n                    continue\n                results.append(str(item))\n                if len(results) >= max_results:\n                    break\n        \n        return results",
+        "best_practices": [
+          "Set maximum depth to prevent infinite loops",
+          "Limit results to prevent memory issues",
+          "Filter by file type when possible",
+          "Validate directory paths"
+        ]
+      },
+      "content_search": {
+        "description": "Search for text content in files",
+        "code_example": "def search_content(directory_path: str, search_text: str, file_pattern: str = '*', case_sensitive: bool = False) -> List[dict]:\n    path = Path(directory_path)\n    results = []\n    \n    if not case_sensitive:\n        search_text = search_text.lower()\n    \n    for file_path in path.rglob(file_pattern):\n        if not file_path.is_file():\n            continue\n        \n        try:\n            content = file_path.read_text(encoding='utf-8', errors='ignore')\n            search_content = content if case_sensitive else content.lower()\n            \n            if search_text in search_content:\n                lines = content.split('\\n')\n                matching_lines = [i + 1 for i, line in enumerate(lines) if search_text in (line if case_sensitive else line.lower())]\n                results.append({\n                    'file': str(file_path),\n                    'matches': len(matching_lines),\n                    'lines': matching_lines[:10]\n                })\n        except Exception:\n            continue\n    \n    return results",
+        "best_practices": [
+          "Handle encoding errors gracefully",
+          "Limit line matches per file",
+          "Use case-insensitive search by default",
+          "Skip binary files"
+        ]
+      }
+    },
+    "security_sandboxing": {
+      "sandboxed_filesystem": {
+        "description": "Secure filesystem with sandboxing",
+        "code_example": "from pathlib import Path\nfrom typing import Set\n\nclass SandboxedFilesystem:\n    def __init__(self, base_directory: str, allowed_extensions: Set[str] = None, max_file_size: int = 10 * 1024 * 1024, read_only: bool = False):\n        self.base_dir = Path(base_directory).resolve()\n        self.base_dir.mkdir(parents=True, exist_ok=True)\n        self.allowed_extensions = allowed_extensions\n        self.max_file_size = max_file_size\n        self.read_only = read_only\n    \n    def _sanitize_path(self, file_path: str) -> Path:\n        if Path(file_path).is_absolute():\n            path = Path(file_path).resolve()\n            if not path.is_relative_to(self.base_dir):\n                raise PermissionError(f'Path outside sandbox: {file_path}')\n        else:\n            path = (self.base_dir / file_path).resolve()\n        \n        if not path.is_relative_to(self.base_dir):\n            raise PermissionError(f'Path escape attempt: {file_path}')\n        \n        return path\n    \n    def _validate_file(self, path: Path, for_write: bool = False) -> None:\n        if for_write and self.read_only:\n            raise PermissionError('Filesystem is read-only')\n        \n        if self.allowed_extensions and path.suffix.lower() not in self.allowed_extensions:\n            raise ValueError(f'Extension not allowed: {path.suffix}')\n        \n        if path.exists() and path.is_file():\n            size = path.stat().st_size\n            if size > self.max_file_size:\n                raise ValueError(f'File too large: {size} bytes')\n    \n    def read_file(self, file_path: str) -> str:\n        path = self._sanitize_path(file_path)\n        self._validate_file(path)\n        if not path.exists():\n            raise FileNotFoundError(f'File not found: {path}')\n        return path.read_text(encoding='utf-8', errors='ignore')",
+        "best_practices": [
+          "Always resolve paths relative to base directory",
+          "Prevent directory traversal attacks (..)",
+          "Set file size limits",
+          "Restrict file extensions",
+          "Use read-only mode when possible"
+        ]
+      },
+      "permission_checking": {
+        "description": "Check file permissions before operations",
+        "code_example": "import os\nfrom pathlib import Path\n\nclass PermissionChecker:\n    @staticmethod\n    def can_read(file_path: str) -> bool:\n        return os.access(file_path, os.R_OK)\n    \n    @staticmethod\n    def can_write(file_path: str) -> bool:\n        return os.access(file_path, os.W_OK)\n    \n    @staticmethod\n    def check_permissions(file_path: str, operation: str) -> bool:\n        path = Path(file_path)\n        if operation == 'read':\n            return path.exists() and os.access(file_path, os.R_OK)\n        elif operation == 'write':\n            return os.access(path.parent, os.W_OK)\n        return False",
+        "best_practices": [
+          "Check permissions before operations",
+          "Handle permission errors gracefully",
+          "Log permission denials",
+          "Provide clear error messages"
+        ]
+      }
+    },
+    "file_type_detection": {
+      "mime_type_detection": {
+        "description": "Detect file types using MIME types",
+        "code_example": "import mimetypes\nfrom pathlib import Path\nfrom typing import Dict, Optional\n\nclass FileTypeDetector:\n    def __init__(self):\n        mimetypes.init()\n    \n    def detect_by_extension(self, file_path: str) -> Dict[str, Optional[str]]:\n        path = Path(file_path)\n        ext = path.suffix.lower()\n        mime_type, encoding = mimetypes.guess_type(str(path))\n        \n        return {\n            'extension': ext,\n            'mime_type': mime_type,\n            'encoding': encoding,\n            'category': self._categorize_extension(ext)\n        }\n    \n    def _categorize_extension(self, ext: str) -> str:\n        categories = {\n            '.py': 'code', '.js': 'code', '.ts': 'code',\n            '.html': 'markup', '.xml': 'markup',\n            '.json': 'data', '.csv': 'data',\n            '.pdf': 'document', '.docx': 'document',\n            '.txt': 'text', '.md': 'text',\n            '.jpg': 'image', '.png': 'image',\n            '.mp4': 'video', '.mp3': 'audio'\n        }\n        return categories.get(ext, 'unknown')",
+        "best_practices": [
+          "Use MIME types for content validation",
+          "Categorize files for processing",
+          "Handle unknown file types",
+          "Validate before processing"
+        ]
+      }
+    }
+  },
+  "best_practices": [
+    "Always validate and sanitize file paths",
+    "Use sandboxing for untrusted operations",
+    "Set maximum file size limits",
+    "Restrict allowed file extensions",
+    "Use pathlib for cross-platform compatibility",
+    "Handle encoding errors gracefully",
+    "Implement proper error handling",
+    "Log file operations for auditing",
+    "Use read-only mode when possible",
+    "Validate file types before processing",
+    "Check permissions before operations",
+    "Prevent directory traversal attacks"
+  ],
+  "anti_patterns": [
+    {
+      "name": "No path validation",
+      "problem": "Security vulnerabilities, path traversal attacks",
+      "fix": "Always validate and sanitize paths, resolve relative to base directory"
+    },
+    {
+      "name": "Allowing absolute paths",
+      "problem": "Access to unauthorized directories",
+      "fix": "Resolve all paths relative to base directory"
+    },
+    {
+      "name": "No size limits",
+      "problem": "Memory exhaustion, DoS attacks",
+      "fix": "Set max_file_size limits (e.g., 10MB default)"
+    },
+    {
+      "name": "Ignoring encoding",
+      "problem": "Unicode errors, corrupted data",
+      "fix": "Handle encoding errors, use errors='ignore' or specify encoding"
+    },
+    {
+      "name": "No sandboxing",
+      "problem": "Security risks, unauthorized access",
+      "fix": "Use SandboxedFilesystem for untrusted operations"
+    },
+    {
+      "name": "Synchronous I/O for large files",
+      "problem": "Blocks event loop, poor performance",
+      "fix": "Use async file operations (aiofiles) for large files"
+    },
+    {
+      "name": "No error handling",
+      "problem": "Crashes on file errors",
+      "fix": "Wrap operations in try/except, handle FileNotFoundError, PermissionError"
+    },
+    {
+      "name": "Hardcoded paths",
+      "problem": "Not portable, breaks on different systems",
+      "fix": "Use configurable base directories, pathlib for paths"
+    },
+    {
+      "name": "No permission checks",
+      "problem": "Permission errors at runtime",
+      "fix": "Validate read/write permissions before operations"
+    },
+    {
+      "name": "Ignoring file types",
+      "problem": "Processes binary files as text, security issues",
+      "fix": "Check file types before processing, validate extensions"
+    }
+  ],
+  "related_skills": [
+    "filesystem-ops",
+    "tool-usage",
+    "security-sandboxing",
+    "mcp-integration"
+  ]
+}

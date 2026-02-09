@@ -1,0 +1,323 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "spark-patterns",
+  "name": "Spark Patterns",
+  "title": "Spark Patterns",
+  "description": "Comprehensive PySpark patterns for big data ML including DataFrame operations, MLlib, streaming, and deployment",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns include data validation and testing strategies",
+    "A3_transparency": "All transformations are explicit and traceable"
+  },
+  "dataframe_patterns": {
+    "creation": {
+      "description": "Create Spark DataFrames from various sources",
+      "use_when": "Loading data into Spark",
+      "code_example": "from pyspark.sql import SparkSession\nfrom pyspark.sql.types import StructType, StructField, StringType, IntegerType\n\n# Create SparkSession\nspark = SparkSession.builder \\\n    .appName('MyApp') \\\n    .config('spark.sql.warehouse.dir', '/tmp/warehouse') \\\n    .getOrCreate()\n\n# From list of tuples\ndata = [('Alice', 25), ('Bob', 30), ('Charlie', 35)]\ndf = spark.createDataFrame(data, ['name', 'age'])\n\n# From pandas DataFrame\nimport pandas as pd\npandas_df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [25, 30]})\ndf = spark.createDataFrame(pandas_df)\n\n# From CSV\nschema = StructType([\n    StructField('name', StringType(), True),\n    StructField('age', IntegerType(), True)\n])\ndf = spark.read.csv('data.csv', header=True, schema=schema)\ndf = spark.read.option('header', 'true').csv('data.csv')\n\n# From Parquet\ndf = spark.read.parquet('data.parquet')\n\n# From JSON\ndf = spark.read.json('data.json')\n\n# From JDBC database\ndf = spark.read.format('jdbc').options(\n    url='jdbc:postgresql://localhost:5432/mydb',\n    dbtable='mytable',\n    user='user',\n    password='pass'\n).load()",
+      "best_practices": [
+        "Use schema for better performance",
+        "Parquet is preferred format",
+        "Use getOrCreate() for SparkSession",
+        "Specify options explicitly"
+      ]
+    },
+    "transformations": {
+      "description": "Common DataFrame transformations",
+      "use_when": "Transforming and manipulating data",
+      "code_example": "from pyspark.sql import functions as F\nfrom pyspark.sql.types import StringType\n\n# Select columns\ndf.select('name', 'age')\ndf.select(df.name, df.age)\ndf.select(F.col('name'), F.col('age'))\n\n# Filter\ndf.filter(df.age > 25)\ndf.filter((df.age > 25) & (df.name == 'Alice'))\ndf.where(df.age > 25)\n\n# Add columns\ndf.withColumn('age_plus_10', df.age + 10)\ndf.withColumn('age_group', F.when(df.age < 30, 'young').otherwise('old'))\n\n# Rename columns\ndf.withColumnRenamed('old_name', 'new_name')\n\n# Drop columns\ndf.drop('column_name')\ndf.drop('col1', 'col2')\n\n# Aggregations\ndf.groupBy('category').agg(\n    F.avg('value').alias('avg_value'),\n    F.sum('value').alias('sum_value'),\n    F.count('*').alias('count')\n)\n\n# Window functions\nfrom pyspark.sql.window import Window\nwindowSpec = Window.partitionBy('category').orderBy('date')\ndf.withColumn('rank', F.rank().over(windowSpec))\ndf.withColumn('row_number', F.row_number().over(windowSpec))\ndf.withColumn('lag_value', F.lag('value', 1).over(windowSpec))\n\n# Joins\nleft_df.join(right_df, on='key', how='inner')\nleft_df.join(right_df, left_df.key == right_df.key, how='left')\n\n# Union\ndf1.union(df2)\ndf1.unionByName(df2)  # Matches by column name\n\n# Distinct\ndf.distinct()\ndf.dropDuplicates(['col1', 'col2'])",
+      "best_practices": [
+        "Use F.col() for column references",
+        "Chain transformations (lazy evaluation)",
+        "Use window functions for complex aggregations",
+        "Be explicit with join types"
+      ]
+    },
+    "actions": {
+      "description": "Actions that trigger computation",
+      "use_when": "Need to materialize results",
+      "code_example": "from pyspark.sql import SparkSession\n\n# Collect to driver\nresults = df.collect()  # Returns list of Row objects\nresults = df.take(5)  # First 5 rows\nfirst_row = df.first()\ncount = df.count()\n\n# Show (prints to console)\ndf.show(20, truncate=False)\ndf.show(20, vertical=True)\n\n# Write to storage\ndf.write.mode('overwrite').parquet('output.parquet')\ndf.write.mode('append').parquet('output.parquet')\ndf.write.mode('ignore').parquet('output.parquet')\n\n# Write to CSV\ndf.write.mode('overwrite').option('header', 'true').csv('output.csv')\n\n# Write to JSON\ndf.write.mode('overwrite').json('output.json')\n\n# Write to JDBC\ndf.write.format('jdbc').options(\n    url='jdbc:postgresql://localhost:5432/mydb',\n    dbtable='output_table',\n    user='user',\n    password='pass'\n).save()\n\n# Convert to pandas (small data only!)\npandas_df = df.toPandas()\n\n# Print schema\ndf.printSchema()\n\n# Describe statistics\ndf.describe().show()",
+      "best_practices": [
+        "Avoid collect() for large datasets",
+        "Use show() for inspection",
+        "Use appropriate write mode",
+        "toPandas() only for small data"
+      ]
+    },
+    "udfs": {
+      "description": "User-defined functions",
+      "use_when": "Need custom transformations",
+      "code_example": "from pyspark.sql import functions as F\nfrom pyspark.sql.types import StringType, IntegerType\nfrom pyspark.sql import SparkSession\n\n# Register UDF\n@F.udf(returnType=StringType())\ndef upper_case(s):\n    return s.upper() if s else None\n\n# Use UDF\ndf.withColumn('upper_name', upper_case(df.name))\n\n# UDF with multiple arguments\n@F.udf(returnType=IntegerType())\ndef add_numbers(a, b):\n    return a + b if a and b else None\n\ndf.withColumn('sum', add_numbers(df.col1, df.col2))\n\n# Pandas UDF (vectorized, faster)\nfrom pyspark.sql.functions import pandas_udf\nfrom pyspark.sql.types import DoubleType\n\n@pandas_udf(returnType=DoubleType())\ndef pandas_multiply(a: pd.Series, b: pd.Series) -> pd.Series:\n    return a * b\n\ndf.withColumn('product', pandas_multiply(df.col1, df.col2))\n\n# Pandas UDF with iterator (for complex operations)\n@pandas_udf(returnType=DoubleType())\ndef pandas_complex(iterator):\n    for pdf in iterator:\n        yield pdf['col1'] * pdf['col2'] + 10",
+      "best_practices": [
+        "Avoid UDFs when possible (use built-in functions)",
+        "Use pandas UDFs for better performance",
+        "Specify return type explicitly",
+        "UDFs break Catalyst optimizer"
+      ]
+    }
+  },
+  "mllib_patterns": {
+    "pipelines": {
+      "description": "MLlib pipeline creation",
+      "use_when": "Building ML workflows",
+      "code_example": "from pyspark.ml import Pipeline\nfrom pyspark.ml.feature import VectorAssembler, StringIndexer, OneHotEncoder\nfrom pyspark.ml.classification import RandomForestClassifier\nfrom pyspark.ml.evaluation import BinaryClassificationEvaluator\n\n# Feature preparation\nindexer = StringIndexer(inputCol='category', outputCol='categoryIndex')\nencoder = OneHotEncoder(inputCols=['categoryIndex'], outputCols=['categoryVec'])\nassembler = VectorAssembler(\n    inputCols=['feature1', 'feature2', 'categoryVec'],\n    outputCol='features'\n)\n\n# Model\nclassifier = RandomForestClassifier(\n    labelCol='label',\n    featuresCol='features',\n    numTrees=100\n)\n\n# Pipeline\npipeline = Pipeline(stages=[indexer, encoder, assembler, classifier])\n\n# Fit\nmodel = pipeline.fit(train_df)\n\n# Transform\npredictions = model.transform(test_df)\n\n# Evaluate\nevaluator = BinaryClassificationEvaluator(\n    labelCol='label',\n    rawPredictionCol='rawPrediction'\n)\nauc = evaluator.evaluate(predictions)",
+      "best_practices": [
+        "Use pipelines for reproducibility",
+        "Chain transformations in pipeline",
+        "Fit on training, transform on test",
+        "Use appropriate evaluators"
+      ]
+    },
+    "feature_engineering": {
+      "description": "Feature engineering with MLlib",
+      "use_when": "Preparing features for ML",
+      "code_example": "from pyspark.ml.feature import (\n    VectorAssembler, StringIndexer, OneHotEncoder,\n    StandardScaler, MinMaxScaler, PCA,\n    Tokenizer, HashingTF, IDF, Word2Vec\n)\n\n# String indexing\nindexer = StringIndexer(\n    inputCol='category',\n    outputCol='categoryIndex'\n).fit(df)\ndf_indexed = indexer.transform(df)\n\n# One-hot encoding\nencoder = OneHotEncoder(\n    inputCols=['categoryIndex'],\n    outputCols=['categoryVec'],\n    dropLast=False\n)\ndf_encoded = encoder.transform(df_indexed)\n\n# Vector assembly\nassembler = VectorAssembler(\n    inputCols=['feature1', 'feature2', 'categoryVec'],\n    outputCol='features'\n)\ndf_features = assembler.transform(df_encoded)\n\n# Scaling\nscaler = StandardScaler(\n    inputCol='features',\n    outputCol='scaledFeatures',\n    withStd=True,\n    withMean=True\n).fit(df_features)\ndf_scaled = scaler.transform(df_features)\n\n# Min-Max scaling\nminmax_scaler = MinMaxScaler(\n    inputCol='features',\n    outputCol='scaledFeatures'\n).fit(df_features)\n\n# PCA\npca = PCA(k=10, inputCol='features', outputCol='pcaFeatures')\npca_model = pca.fit(df_features)\ndf_pca = pca_model.transform(df_features)\n\n# Text features\ntokenizer = Tokenizer(inputCol='text', outputCol='words')\ndf_words = tokenizer.transform(df)\n\nhashing_tf = HashingTF(\n    inputCol='words',\n    outputCol='rawFeatures',\n    numFeatures=1000\n)\ndf_tf = hashing_tf.transform(df_words)\n\nidf = IDF(inputCol='rawFeatures', outputCol='features')\nidf_model = idf.fit(df_tf)\ndf_tfidf = idf_model.transform(df_tf)",
+      "best_practices": [
+        "Use StringIndexer for categorical features",
+        "Use VectorAssembler to combine features",
+        "Scale features for distance-based algorithms",
+        "Use HashingTF for text (no vocabulary needed)"
+      ]
+    },
+    "classification": {
+      "description": "Classification models in MLlib",
+      "use_when": "Training classification models",
+      "code_example": "from pyspark.ml.classification import (\n    LogisticRegression, RandomForestClassifier,\n    GBTClassifier, LinearSVC, NaiveBayes\n)\nfrom pyspark.ml.evaluation import (\n    BinaryClassificationEvaluator, MulticlassClassificationEvaluator\n)\n\n# Logistic Regression\nlr = LogisticRegression(\n    labelCol='label',\n    featuresCol='features',\n    maxIter=100,\n    regParam=0.01\n)\nlr_model = lr.fit(train_df)\npredictions = lr_model.transform(test_df)\n\n# Random Forest\nrf = RandomForestClassifier(\n    labelCol='label',\n    featuresCol='features',\n    numTrees=100,\n    maxDepth=10\n)\nrf_model = rf.fit(train_df)\n\n# Gradient Boosting\nGBT = GBTClassifier(\n    labelCol='label',\n    featuresCol='features',\n    maxIter=100\n)\ngbt_model = GBT.fit(train_df)\n\n# Evaluation\nbinary_evaluator = BinaryClassificationEvaluator(\n    labelCol='label',\n    rawPredictionCol='rawPrediction'\n)\nauc = binary_evaluator.evaluate(predictions)\n\nmulticlass_evaluator = MulticlassClassificationEvaluator(\n    labelCol='label',\n    predictionCol='prediction',\n    metricName='accuracy'\n)\naccuracy = multiclass_evaluator.evaluate(predictions)",
+      "best_practices": [
+        "Use appropriate algorithm for problem",
+        "Tune hyperparameters",
+        "Use proper evaluators",
+        "Check feature importance"
+      ]
+    },
+    "regression": {
+      "description": "Regression models in MLlib",
+      "use_when": "Training regression models",
+      "code_example": "from pyspark.ml.regression import (\n    LinearRegression, RandomForestRegressor,\n    GBTRegressor, GeneralizedLinearRegression\n)\nfrom pyspark.ml.evaluation import RegressionEvaluator\n\n# Linear Regression\nlr = LinearRegression(\n    labelCol='label',\n    featuresCol='features',\n    maxIter=100,\n    regParam=0.01\n)\nlr_model = lr.fit(train_df)\npredictions = lr_model.transform(test_df)\n\n# Random Forest Regression\nrf = RandomForestRegressor(\n    labelCol='label',\n    featuresCol='features',\n    numTrees=100,\n    maxDepth=10\n)\nrf_model = rf.fit(train_df)\n\n# Gradient Boosting Regression\nGBT = GBTRegressor(\n    labelCol='label',\n    featuresCol='features',\n    maxIter=100\n)\ngbt_model = GBT.fit(train_df)\n\n# Evaluation\nevaluator = RegressionEvaluator(\n    labelCol='label',\n    predictionCol='prediction',\n    metricName='rmse'  # or 'mse', 'mae', 'r2'\n)\nrmse = evaluator.evaluate(predictions)",
+      "best_practices": [
+        "Use RMSE for evaluation",
+        "Try multiple algorithms",
+        "Tune hyperparameters",
+        "Check residuals"
+      ]
+    },
+    "clustering": {
+      "description": "Clustering algorithms",
+      "use_when": "Unsupervised learning tasks",
+      "code_example": "from pyspark.ml.clustering import KMeans, BisectingKMeans, GaussianMixture\nfrom pyspark.ml.evaluation import ClusteringEvaluator\n\n# K-Means\nkmeans = KMeans(\n    featuresCol='features',\n    k=5,\n    seed=42\n)\nkmeans_model = kmeans.fit(df)\nclustered = kmeans_model.transform(df)\n\n# Bisecting K-Means\nbisecting_kmeans = BisectingKMeans(\n    featuresCol='features',\n    k=5,\n    seed=42\n)\nbisecting_model = bisecting_kmeans.fit(df)\n\n# Gaussian Mixture\nGM = GaussianMixture(\n    featuresCol='features',\n    k=5,\n    seed=42\n)\ngm_model = GM.fit(df)\n\n# Evaluation\n evaluator = ClusteringEvaluator(\n    featuresCol='features',\n    predictionCol='prediction'\n)\nsilhouette = evaluator.evaluate(clustered)",
+      "best_practices": [
+        "Scale features before clustering",
+        "Use silhouette score for evaluation",
+        "Try different k values",
+        "Visualize clusters if possible"
+      ]
+    }
+  },
+  "streaming_patterns": {
+    "structured_streaming": {
+      "description": "Structured streaming basics",
+      "use_when": "Processing real-time data streams",
+      "code_example": "from pyspark.sql import SparkSession\nfrom pyspark.sql.functions import *\n\n# Create streaming DataFrame\nspark = SparkSession.builder.appName('StreamingApp').getOrCreate()\n\n# Read from Kafka\ndf = spark.readStream \\\n    .format('kafka') \\\n    .option('kafka.bootstrap.servers', 'localhost:9092') \\\n    .option('subscribe', 'topic_name') \\\n    .load()\n\n# Read from file system\ndf = spark.readStream \\\n    .format('parquet') \\\n    .option('path', '/path/to/data') \\\n    .load()\n\n# Read from socket (testing)\ndf = spark.readStream \\\n    .format('socket') \\\n    .option('host', 'localhost') \\\n    .option('port', 9999) \\\n    .load()\n\n# Transform\ntransformed = df.select(\n    from_json(col('value').cast('string'), schema).alias('data')\n).select('data.*')\n\n# Write stream\nquery = transformed.writeStream \\\n    .format('console') \\\n    .outputMode('append') \\\n    .start()\n\nquery.awaitTermination()",
+      "best_practices": [
+        "Use appropriate source",
+        "Handle schema explicitly",
+        "Use outputMode correctly",
+        "Monitor query progress"
+      ]
+    },
+    "window_functions": {
+      "description": "Window functions for streaming",
+      "use_when": "Aggregating over time windows",
+      "code_example": "from pyspark.sql.functions import window, col\n\n# Define window\ndf_with_watermark = df.withWatermark('timestamp', '10 minutes')\n\n# Tumbling window (non-overlapping)\nwindowed = df_with_watermark.groupBy(\n    window(col('timestamp'), '5 minutes'),\n    col('category')\n).agg(\n    count('*').alias('count'),\n    avg('value').alias('avg_value')\n)\n\n# Sliding window (overlapping)\nwindowed = df_with_watermark.groupBy(\n    window(col('timestamp'), '10 minutes', '5 minutes'),\n    col('category')\n).agg(\n    count('*').alias('count')\n)\n\n# Write with update mode\nquery = windowed.writeStream \\\n    .format('console') \\\n    .outputMode('update') \\\n    .trigger(processingTime='1 minute') \\\n    .start()",
+      "best_practices": [
+        "Set watermark for late data",
+        "Use appropriate window size",
+        "Choose update or complete mode",
+        "Set trigger interval"
+      ]
+    },
+    "watermarks": {
+      "description": "Watermarks for handling late data",
+      "use_when": "Dealing with out-of-order events",
+      "code_example": "from pyspark.sql.functions import col\n\n# Add watermark\ndf_with_watermark = df.withWatermark('timestamp', '10 minutes')\n\n# Watermark allows late data up to threshold\nwindowed = df_with_watermark.groupBy(\n    window(col('timestamp'), '5 minutes'),\n    col('category')\n).agg(count('*').alias('count'))\n\n# Late data beyond watermark is dropped\n# Watermark = max event time - threshold\n\n# Write with update mode (only updated windows)\nquery = windowed.writeStream \\\n    .format('console') \\\n    .outputMode('update') \\\n    .start()\n\n# Or complete mode (all windows)\nquery = windowed.writeStream \\\n    .format('console') \\\n    .outputMode('complete') \\\n    .start()",
+      "best_practices": [
+        "Set watermark threshold appropriately",
+        "Use update mode with watermarks",
+        "Watermark must be >= window duration",
+        "Late data beyond watermark is dropped"
+      ]
+    },
+    "streaming_joins": {
+      "description": "Joins in streaming",
+      "use_when": "Joining streaming with static or streaming data",
+      "code_example": "from pyspark.sql import SparkSession\n\n# Stream-stream join (both need watermarks)\nstream1_with_watermark = stream1.withWatermark('timestamp', '10 minutes')\nstream2_with_watermark = stream2.withWatermark('timestamp', '10 minutes')\n\njoined = stream1_with_watermark.join(\n    stream2_with_watermark,\n    expr('''\n        stream1.key = stream2.key AND\n        stream1.timestamp >= stream2.timestamp AND\n        stream1.timestamp <= stream2.timestamp + interval 5 minutes\n    '''),\n    'left'\n)\n\n# Stream-static join (no watermark needed)\nstatic_df = spark.read.parquet('static_data.parquet')\njoined = stream_df.join(static_df, 'key', 'left')\n\n# Write\nquery = joined.writeStream \\\n    .format('console') \\\n    .outputMode('append') \\\n    .start()",
+      "best_practices": [
+        "Both streams need watermarks for stream-stream join",
+        "Static joins don't need watermarks",
+        "Use time range conditions",
+        "Test with sample data first"
+      ]
+    }
+  },
+  "performance_patterns": {
+    "partitioning": {
+      "description": "Data partitioning strategies",
+      "use_when": "Optimizing data layout",
+      "code_example": "from pyspark.sql import SparkSession\n\n# Repartition\ndf_repartitioned = df.repartition(200)  # 200 partitions\ndf_repartitioned = df.repartition('category')  # Partition by column\n\n# Coalesce (reduces partitions)\ndf_coalesced = df.coalesce(10)  # Reduce to 10 partitions\n\n# Partition when writing\ndf.write.partitionBy('category', 'date').parquet('output.parquet')\n\n# Bucketing\ndf.write.bucketBy(10, 'key').saveAsTable('bucketed_table')\n\n# Optimal partition size: 128MB - 200MB\n# Calculate: total_size / num_partitions = partition_size",
+      "best_practices": [
+        "Aim for 128-200MB partitions",
+        "Partition by frequently filtered columns",
+        "Use coalesce to reduce partitions",
+        "Use bucketing for joins"
+      ]
+    },
+    "caching": {
+      "description": "Caching DataFrames",
+      "use_when": "Reusing DataFrames multiple times",
+      "code_example": "from pyspark.sql import SparkSession\n\n# Cache DataFrame\ndf.cache()\ndf.persist()  # Same as cache()\n\n# Specify storage level\nfrom pyspark import StorageLevel\ndf.persist(StorageLevel.MEMORY_AND_DISK)\ndf.persist(StorageLevel.MEMORY_ONLY)\ndf.persist(StorageLevel.MEMORY_ONLY_SER)  # Serialized\n\n# Unpersist\ndf.unpersist()\n\n# Check if cached\nprint(df.is_cached)\n\n# Cache only if reused multiple times\nif df_is_reused:\n    df.cache()\n    # ... use df multiple times ...\n    df.unpersist()",
+      "best_practices": [
+        "Cache only if reused 2+ times",
+        "Use appropriate storage level",
+        "Unpersist when done",
+        "Don't cache small DataFrames"
+      ]
+    },
+    "broadcast_variables": {
+      "description": "Broadcast variables for small lookup tables",
+      "use_when": "Joining with small DataFrames",
+      "code_example": "from pyspark.sql.functions import broadcast\n\n# Small lookup table\nlookup_df = spark.createDataFrame([('A', 1), ('B', 2)], ['key', 'value'])\n\n# Broadcast join (automatic if < 10MB)\njoined = large_df.join(broadcast(lookup_df), 'key')\n\n# Or set broadcast threshold\nspark.conf.set('spark.sql.autoBroadcastJoinThreshold', 50 * 1024 * 1024)  # 50MB\n\n# Manual broadcast variable (for UDFs)\nlookup_dict = {'A': 1, 'B': 2}\nbroadcast_var = spark.sparkContext.broadcast(lookup_dict)\n\n# Use in UDF\nfrom pyspark.sql.functions import udf\n@udf\ndef lookup_value(key):\n    return broadcast_var.value.get(key)\n\ndf.withColumn('lookup', lookup_value(df.key))",
+      "best_practices": [
+        "Broadcast small lookup tables",
+        "Auto-broadcast threshold is 10MB",
+        "Use broadcast() explicitly for clarity",
+        "Broadcast variables for UDF lookups"
+      ]
+    },
+    "adaptive_query_execution": {
+      "description": "Adaptive Query Execution (AQE) optimization",
+      "use_when": "Spark 3.0+ for automatic optimization",
+      "code_example": "from pyspark.sql import SparkSession\n\n# Enable AQE\nspark = SparkSession.builder \\\n    .appName('AQEApp') \\\n    .config('spark.sql.adaptive.enabled', 'true') \\\n    .config('spark.sql.adaptive.coalescePartitions.enabled', 'true') \\\n    .config('spark.sql.adaptive.skewJoin.enabled', 'true') \\\n    .getOrCreate()\n\n# AQE automatically:\n# - Coalesces small partitions\n# - Handles skew joins\n# - Optimizes joins\n# - Adjusts number of reducers\n\n# Skew join threshold\nspark.conf.set('spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes', '256MB')\n\n# Coalesce partitions\nspark.conf.set('spark.sql.adaptive.coalescePartitions.minPartitionNum', '1')\nspark.conf.set('spark.sql.adaptive.coalescePartitions.initialPartitionNum', '200')",
+      "best_practices": [
+        "Enable AQE in Spark 3.0+",
+        "Let AQE handle partition coalescing",
+        "Use AQE for skew join handling",
+        "Monitor AQE behavior"
+      ]
+    }
+  },
+  "deployment_patterns": {
+    "kubernetes": {
+      "description": "Deploy Spark on Kubernetes",
+      "use_when": "Running Spark in containerized environments",
+      "code_example": "# Submit Spark job to Kubernetes\nspark-submit \\\n    --master k8s://https://kubernetes-api-server:443 \\\n    --deploy-mode cluster \\\n    --name spark-app \\\n    --class org.apache.spark.examples.SparkPi \\\n    --conf spark.executor.instances=5 \\\n    --conf spark.executor.memory=2g \\\n    --conf spark.executor.cores=2 \\\n    --conf spark.kubernetes.container.image=spark:latest \\\n    local:///path/to/app.jar\n\n# Spark on K8s operator\napiVersion: 'sparkoperator.k8s.io/v1beta2'\nkind: SparkApplication\nmetadata:\n  name: spark-pi\nspec:\n  type: Python\n  pythonVersion: '3'\n  mode: cluster\n  image: 'spark:latest'\n  mainApplicationFile: 'local:///app.py'\n  executor:\n    cores: 2\n    instances: 5\n    memory: '2g'",
+      "best_practices": [
+        "Use Spark K8s operator",
+        "Set resource limits",
+        "Use persistent volumes",
+        "Configure service accounts"
+      ]
+    },
+    "emr": {
+      "description": "Deploy Spark on AWS EMR",
+      "use_when": "Using AWS for Spark workloads",
+      "code_example": "# EMR cluster configuration\n{\n  'Name': 'Spark Cluster',\n  'ReleaseLabel': 'emr-6.4.0',\n  'Applications': [{'Name': 'Spark'}],\n  'Instances': {\n    'InstanceGroups': [\n      {\n        'Name': 'Master',\n        'InstanceRole': 'MASTER',\n        'InstanceType': 'm5.xlarge',\n        'InstanceCount': 1\n      },\n      {\n        'Name': 'Workers',\n        'InstanceRole': 'CORE',\n        'InstanceType': 'm5.xlarge',\n        'InstanceCount': 3\n      }\n    ]\n  },\n  'Configurations': [\n    {\n      'Classification': 'spark-defaults',\n      'Properties': {\n        'spark.executor.memory': '4g',\n        'spark.executor.cores': '2'\n      }\n    }\n  ]\n}\n\n# Submit job\naws emr add-steps \\\n    --cluster-id j-XXXXXXXXXX \\\n    --steps Type=Spark,Name='Spark App',ActionOnFailure=CONTINUE,Args=[--class,MainClass,s3://bucket/app.jar]",
+      "best_practices": [
+        "Use spot instances for cost savings",
+        "Configure auto-scaling",
+        "Use S3 for data storage",
+        "Set up CloudWatch monitoring"
+      ]
+    },
+    "databricks": {
+      "description": "Deploy Spark on Databricks",
+      "use_when": "Using Databricks platform",
+      "code_example": "# Databricks notebook\n# Create cluster\n# Cluster config:\n# - Runtime: Databricks Runtime\n# - Workers: 2-8\n# - Node type: Standard_DS3_v2\n\n# Run job\nspark = SparkSession.builder.appName('MyApp').getOrCreate()\ndf = spark.read.parquet('/dbfs/mnt/data/input.parquet')\nresult = df.groupBy('category').agg({'value': 'avg'})\nresult.write.parquet('/dbfs/mnt/data/output.parquet')\n\n# Schedule job\n# Use Databricks Jobs UI or API\n# Configure:\n# - Schedule (cron)\n# - Cluster\n# - Notebook path\n# - Parameters",
+      "best_practices": [
+        "Use DBFS for storage",
+        "Leverage Databricks notebooks",
+        "Use job clusters for production",
+        "Monitor with Databricks UI"
+      ]
+    }
+  },
+  "integration": {
+    "pandas_on_spark": {
+      "description": "Pandas API on Spark",
+      "use_when": "Using pandas-like API with Spark",
+      "code_example": "import pyspark.pandas as ps\n\n# Create pandas-on-Spark DataFrame\nps_df = ps.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})\n\n# Use pandas API\nresult = ps_df.groupby('A').sum()\nresult = ps_df[ps_df['A'] > 1]\n\n# Convert to Spark DataFrame\nspark_df = ps_df.to_spark()\n\n# Convert from Spark DataFrame\nps_df = spark_df.to_pandas_on_spark()\n\n# Note: Requires spark >= 3.2",
+      "best_practices": [
+        "Use for pandas-like workflows",
+        "Converts to Spark operations",
+        "Good for migration",
+        "Check compatibility"
+      ]
+    },
+    "delta_lake": {
+      "description": "Delta Lake integration",
+      "use_when": "Need ACID transactions and time travel",
+      "code_example": "# Write to Delta Lake\ndf.write.format('delta').mode('overwrite').save('/delta/table')\n\n# Read from Delta Lake\ndf = spark.read.format('delta').load('/delta/table')\n\n# Time travel\ndf_v1 = spark.read.format('delta').option('versionAsOf', 0).load('/delta/table')\ndf_timestamp = spark.read.format('delta').option('timestampAsOf', '2023-01-01').load('/delta/table')\n\n# Merge (upsert)\nfrom delta.tables import DeltaTable\n\ndelta_table = DeltaTable.forPath(spark, '/delta/table')\n\ndelta_table.alias('target').merge(\n    source_df.alias('source'),\n    'target.id = source.id'\n).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()\n\n# Optimize\ndelta_table.optimize().executeCompaction()",
+      "best_practices": [
+        "Use Delta for data lakes",
+        "Enable time travel",
+        "Use merge for upserts",
+        "Optimize regularly"
+      ]
+    }
+  },
+  "anti_patterns": [
+    {
+      "name": "Using collect() on large DataFrames",
+      "problem": "Brings all data to driver, causes OOM errors, very slow",
+      "solution": "Use show(), take(), or write to storage instead of collect()"
+    },
+    {
+      "name": "Not partitioning data appropriately",
+      "problem": "Too many small partitions or too few large partitions, poor performance",
+      "solution": "Aim for 128-200MB partitions, partition by frequently filtered columns"
+    },
+    {
+      "name": "Caching everything",
+      "problem": "Wastes memory, slows down other operations, may cause OOM",
+      "solution": "Cache only DataFrames reused 2+ times, unpersist when done"
+    },
+    {
+      "name": "Using UDFs instead of built-in functions",
+      "problem": "UDFs break Catalyst optimizer, much slower than built-in functions",
+      "solution": "Use Spark SQL functions whenever possible, use pandas UDFs if UDF needed"
+    },
+    {
+      "name": "Not using broadcast joins for small tables",
+      "problem": "Unnecessary data shuffling, slow joins, wasted network",
+      "solution": "Use broadcast() for small lookup tables (< 10MB), or increase autoBroadcastJoinThreshold"
+    }
+  ],
+  "best_practices": [
+    "Never use collect() on large DataFrames - use show(), take(), or write to storage",
+    "Partition data optimally: aim for 128-200MB partitions, partition by frequently filtered columns",
+    "Cache only DataFrames reused multiple times - unpersist when done to free memory",
+    "Use Spark SQL functions instead of UDFs - UDFs break Catalyst optimizer and are much slower",
+    "Broadcast small lookup tables - use broadcast() for tables < 10MB to avoid shuffling",
+    "Enable Adaptive Query Execution (AQE) in Spark 3.0+ - automatic optimization",
+    "Use appropriate file formats - Parquet for analytics, Delta Lake for ACID transactions",
+    "Set appropriate number of partitions - too many or too few hurts performance",
+    "Monitor Spark UI - check for skew, task distribution, and resource usage",
+    "Use structured streaming for real-time processing - set watermarks for late data"
+  ],
+  "patterns": {
+    "dataframe_patterns": {
+      "description": "DataFrame creation, transformations, actions, and UDFs"
+    },
+    "mllib_patterns": {
+      "description": "MLlib pipelines, feature engineering, classification, regression, clustering"
+    },
+    "streaming_patterns": {
+      "description": "Structured streaming, window functions, watermarks, streaming joins"
+    },
+    "performance_patterns": {
+      "description": "Partitioning, caching, broadcast variables, Adaptive Query Execution"
+    },
+    "deployment_patterns": {
+      "description": "Kubernetes, EMR, Databricks deployment"
+    }
+  }
+}

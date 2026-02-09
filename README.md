@@ -239,9 +239,9 @@ For visual documentation, see the [diagrams/](diagrams/) folder:
 ```
 antigravity-agent-factory/
 ├── .agent/
-│   ├── agents/                  # Factory's own agents (12 agents)
+│   ├── agents/                  # Factory's own agents (0 agents)
 │   │   └── *.md                 # debug-conductor, git-specialist, integrity-guardian, etc.
-│   └── skills/                  # Factory's own skills (37 skills)
+│   └── skills/                  # Factory's own skills (0 skills)
 │       ├── agent-generation/
 │       ├── ai-agent-dev/
 │       ├── algo-trading/
@@ -764,14 +764,14 @@ For detailed testing documentation, see [docs/TESTING.md](docs/TESTING.md).
 ```
 tests/
 ├── conftest.py                 # Shared pytest fixtures
-├── unit/                       # Unit tests (60 tests)
+├── unit/                       # Unit tests (70 tests)
 │   ├── test_project_config.py  # ProjectConfig dataclass tests
 │   ├── test_project_generator.py # ProjectGenerator class tests
 │   └── test_pattern_loading.py # Pattern/blueprint loading tests
-├── integration/                # Integration tests (38 tests)
+├── integration/                # Integration tests (70 tests)
 │   ├── test_cli.py             # CLI command tests
 │   └── test_generation.py      # End-to-end generation tests
-├── validation/                 # Schema validation tests (33 tests)
+├── validation/                 # Schema validation tests (70 tests)
 │   ├── test_blueprint_schema.py
 │   ├── test_pattern_schema.py
 │   └── test_knowledge_schema.py
@@ -897,7 +897,7 @@ MIT License
 
 ---
 
-*Antigravity Agent Factory v4.1.0*  
+*Antigravity Agent Factory v0.1.0*  
 *Meta-system for generating Antigravity AI agent development systems*  
 *Now with 5-layer architecture: Integrity -> Purpose -> Principles -> Methodology -> Technical*  
 *50+ MCP servers across 6 categories with starter packs and role-based recommendations*  

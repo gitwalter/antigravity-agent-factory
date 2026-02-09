@@ -1,0 +1,268 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "data-engineering-ml",
+  "name": "Data Engineering for ML",
+  "title": "Data Engineering Patterns for Machine Learning",
+  "description": "Patterns for data preparation, feature engineering, validation, and versioning for ML pipelines",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Data validation enables dataset verification",
+    "A3_transparency": "Data versioning makes datasets explicit",
+    "A4_adaptability": "Feature stores support data reuse"
+  },
+  "feature_stores": {
+    "description": "Feature stores for ML feature management",
+    "tools": {
+      "feast": "Open-source feature store",
+      "tecton": "Enterprise feature store",
+      "hopsworks": "Feature store platform"
+    },
+    "feast_example": "from feast import FeatureStore\n\nfs = FeatureStore(repo_path='.')\nfeatures = fs.get_online_features(\n    features=['user_features:age', 'user_features:city'],\n    entity_rows=[{'user_id': 123}]\n)",
+    "benefits": [
+      "Feature reuse",
+      "Consistency",
+      "Online/offline serving",
+      "Feature versioning"
+    ]
+  },
+  "dvc_versioning": {
+    "description": "Data Version Control with DVC",
+    "features": [
+      "Dataset versioning",
+      "Reproducibility",
+      "Storage backends",
+      "Pipeline management"
+    ],
+    "usage": "dvc add data/raw\ndvc push\ndvc pull",
+    "best_practices": [
+      "Version all datasets",
+      "Use remote storage",
+      "Track data lineage",
+      "Document data changes"
+    ]
+  },
+  "great_expectations": {
+    "description": "Data validation with Great Expectations",
+    "features": [
+      "Data profiling",
+      "Validation",
+      "Documentation",
+      "Data quality monitoring"
+    ],
+    "usage": "import great_expectations as ge\n\ndf = ge.read_csv('data.csv')\nexpectation_suite = df.get_expectation_suite()\nvalidation_result = df.validate(expectation_suite)",
+    "expectations": {
+      "column_exists": "Check column presence",
+      "column_values_not_null": "Check null values",
+      "column_values_between": "Check value ranges",
+      "table_row_count": "Check row count"
+    }
+  },
+  "huggingface_datasets": {
+    "description": "Hugging Face Datasets library",
+    "features": [
+      "Large dataset handling",
+      "Streaming",
+      "Transforms",
+      "Sharing"
+    ],
+    "usage": "from datasets import load_dataset\n\ndataset = load_dataset('squad')\ndataset = dataset.map(preprocess_function)\ndataset = dataset.filter(lambda x: len(x['text']) > 100)",
+    "best_practices": [
+      "Use streaming for large datasets",
+      "Apply transforms efficiently",
+      "Cache processed datasets",
+      "Share datasets publicly"
+    ]
+  },
+  "preprocessing_pipelines": {
+    "description": "Data preprocessing pipelines",
+    "steps": {
+      "loading": "Load raw data",
+      "cleaning": "Remove noise",
+      "transformation": "Transform features",
+      "normalization": "Normalize values",
+      "encoding": "Encode categoricals"
+    },
+    "sklearn_example": "from sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler, OneHotEncoder\n\npipeline = Pipeline([\n    ('scaler', StandardScaler()),\n    ('encoder', OneHotEncoder())\n])",
+    "best_practices": [
+      "Make pipelines reusable",
+      "Save preprocessing steps",
+      "Handle missing values",
+      "Version preprocessing code"
+    ]
+  },
+  "data_augmentation": {
+    "description": "Data augmentation techniques",
+    "image_augmentation": {
+      "techniques": [
+        "Rotation",
+        "Flip",
+        "Crop",
+        "Color jitter",
+        "Noise injection"
+      ],
+      "libraries": [
+        "albumentations",
+        "torchvision.transforms",
+        "imgaug"
+      ]
+    },
+    "text_augmentation": {
+      "techniques": [
+        "Synonym replacement",
+        "Back translation",
+        "Paraphrasing",
+        "Noise injection"
+      ],
+      "libraries": [
+        "nlpaug",
+        "textattack"
+      ]
+    },
+    "best_practices": [
+      "Use appropriate augmentations",
+      "Validate augmented data",
+      "Don't over-augment",
+      "Monitor augmentation effects"
+    ]
+  },
+  "label_management": {
+    "description": "Label management for supervised learning",
+    "tools": {
+      "labelstudio": "Open-source labeling",
+      "prodigy": "Commercial labeling",
+      "doccano": "Text labeling"
+    },
+    "best_practices": [
+      "Define labeling guidelines",
+      "Use multiple annotators",
+      "Calculate inter-annotator agreement",
+      "Version labels",
+      "Handle label conflicts"
+    ]
+  },
+  "data_validation": {
+    "description": "Validate data quality",
+    "checks": {
+      "schema_validation": "Check data schema",
+      "range_validation": "Check value ranges",
+      "completeness": "Check missing values",
+      "consistency": "Check consistency",
+      "uniqueness": "Check duplicates"
+    },
+    "pandera_example": "import pandera as pa\n\nschema = pa.DataFrameSchema({\n    'age': pa.Column(int, checks=pa.Check.ge(0), nullable=False),\n    'email': pa.Column(str, checks=pa.Check.str_matches(r'^[^@]+@[^@]+\\.[^@]+$'))\n})\n\nschema.validate(df)",
+    "best_practices": [
+      "Validate at ingestion",
+      "Validate before training",
+      "Document validation rules",
+      "Handle validation failures"
+    ]
+  },
+  "data_lineage": {
+    "description": "Track data lineage",
+    "benefits": [
+      "Reproducibility",
+      "Debugging",
+      "Compliance",
+      "Impact analysis"
+    ],
+    "tools": [
+      "OpenLineage",
+      "DataHub",
+      "Marquez"
+    ]
+  },
+  "feature_engineering": {
+    "description": "Feature engineering patterns",
+    "techniques": {
+      "numerical": [
+        "Scaling",
+        "Normalization",
+        "Log transformation",
+        "Polynomial features"
+      ],
+      "categorical": [
+        "One-hot encoding",
+        "Label encoding",
+        "Target encoding",
+        "Embedding"
+      ],
+      "temporal": [
+        "Time features",
+        "Lag features",
+        "Rolling statistics"
+      ],
+      "text": [
+        "TF-IDF",
+        "Word embeddings",
+        "Character n-grams"
+      ]
+    },
+    "best_practices": [
+      "Document feature creation",
+      "Version features",
+      "Test feature importance",
+      "Monitor feature drift"
+    ]
+  },
+  "data_versioning": {
+    "description": "Version datasets",
+    "strategies": {
+      "git_lfs": "Git Large File Storage",
+      "dvc": "Data Version Control",
+      "s3_versioning": "S3 object versioning",
+      "custom": "Custom versioning system"
+    },
+    "best_practices": [
+      "Version all datasets",
+      "Tag versions",
+      "Document changes",
+      "Track lineage"
+    ]
+  },
+  "patterns": {
+    "etl_pipeline": "Extract, Transform, Load",
+    "feature_pipeline": "Feature creation pipeline",
+    "validation_pipeline": "Data validation pipeline",
+    "versioning_strategy": "Dataset versioning approach"
+  },
+  "best_practices": [
+    "Version all datasets",
+    "Validate data quality",
+    "Document data sources",
+    "Use feature stores",
+    "Implement data pipelines",
+    "Monitor data drift",
+    "Handle missing values",
+    "Normalize features",
+    "Use appropriate augmentations",
+    "Track data lineage",
+    "Version preprocessing code",
+    "Test data pipelines",
+    "Monitor data quality",
+    "Document feature engineering",
+    "Reproduce data processing"
+  ],
+  "anti_patterns": [
+    {
+      "name": "No Data Versioning",
+      "problem": "Can't reproduce results",
+      "solution": "Use DVC or similar"
+    },
+    {
+      "name": "No Data Validation",
+      "problem": "Poor model quality",
+      "solution": "Validate data at ingestion"
+    },
+    {
+      "name": "Hardcoded Preprocessing",
+      "problem": "Inconsistent processing",
+      "solution": "Use pipelines"
+    },
+    {
+      "name": "No Feature Documentation",
+      "problem": "Hard to understand features",
+      "solution": "Document all features"
+    }
+  ]
+}

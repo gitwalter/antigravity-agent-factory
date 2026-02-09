@@ -1,0 +1,454 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "semantic-kernel-patterns",
+  "name": "Semantic Kernel Patterns",
+  "title": "Semantic Kernel Patterns",
+  "description": "Best practices and patterns for Microsoft Semantic Kernel agent development",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A2_user_primacy": "Semantic Kernel agents prioritize user intent through planners and filters",
+    "A3_transparency": "Kernel execution provides traceability and observability"
+  },
+  "kernel_setup": {
+    "basic_kernel": {
+      "description": "Create and configure basic kernel",
+      "use_when": "Starting a new Semantic Kernel project",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion\nimport os\n\n# Create kernel\nkernel = Kernel()\n\n# Add OpenAI service\nkernel.add_service(\n    OpenAIChatCompletion(\n        service_id='default',\n        ai_model_id='gpt-4',\n        api_key=os.getenv('OPENAI_API_KEY')\n    )\n)",
+      "best_practices": [
+        "Create kernel instance first",
+        "Add AI services before adding plugins",
+        "Use service_id to identify services",
+        "Store API keys in environment variables",
+        "Configure appropriate model for use case"
+      ],
+      "key_properties": {
+        "service_id": "Unique identifier for AI service",
+        "ai_model_id": "Model name (e.g., gpt-4, gpt-3.5-turbo)",
+        "api_key": "API key for service"
+      }
+    },
+    "azure_openai_setup": {
+      "description": "Configure kernel with Azure OpenAI",
+      "use_when": "Using Azure OpenAI Service",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.connectors.ai.open_ai import AzureChatCompletion\nimport os\n\nkernel = Kernel()\n\nkernel.add_service(\n    AzureChatCompletion(\n        service_id='azure_openai',\n        deployment_name='gpt-4',\n        endpoint=os.getenv('AZURE_OPENAI_ENDPOINT'),\n        api_key=os.getenv('AZURE_OPENAI_API_KEY')\n    )\n)",
+      "best_practices": [
+        "Use AzureChatCompletion for Azure OpenAI",
+        "Set deployment_name matching Azure deployment",
+        "Configure endpoint and API key",
+        "Use separate service_id for multiple services"
+      ]
+    },
+    "multiple_services": {
+      "description": "Configure kernel with multiple AI services",
+      "use_when": "Need different models for different tasks",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion\nfrom semantic_kernel.connectors.ai.hugging_face import HuggingFaceChatCompletion\n\nkernel = Kernel()\n\n# Add OpenAI service\nkernel.add_service(\n    OpenAIChatCompletion(\n        service_id='openai_gpt4',\n        ai_model_id='gpt-4',\n        api_key=os.getenv('OPENAI_API_KEY')\n    )\n)\n\n# Add Hugging Face service\nkernel.add_service(\n    HuggingFaceChatCompletion(\n        service_id='huggingface',\n        ai_model_id='microsoft/DialoGPT-medium',\n        hf_api_key=os.getenv('HUGGINGFACE_API_KEY')\n    )\n)",
+      "best_practices": [
+        "Use unique service_id for each service",
+        "Select appropriate models per service",
+        "Use service selection in function calls",
+        "Handle different API requirements"
+      ]
+    },
+    "kernel_configuration": {
+      "description": "Configure kernel settings and options",
+      "use_when": "Need custom kernel behavior",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.kernel_pydantic import KernelSettings\n\n# Configure kernel settings\nsettings = KernelSettings(\n    log_level='INFO',\n    enable_memory=True,\n    enable_plugins=True\n)\n\nkernel = Kernel(settings=settings)\n\n# Or configure via environment\nimport os\nos.environ['LOG_LEVEL'] = 'DEBUG'\n\nkernel = Kernel()",
+      "best_practices": [
+        "Configure logging level appropriately",
+        "Enable memory for stateful applications",
+        "Set up error handling",
+        "Use environment variables for configuration"
+      ]
+    }
+  },
+  "plugin_patterns": {
+    "native_function": {
+      "description": "Create native function plugin",
+      "use_when": "Need Python code as plugin function",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.functions import kernel_function\nfrom typing import Annotated\n\nclass MathPlugin:\n    @kernel_function(\n        name='add',\n        description='Adds two numbers'\n    )\n    def add(\n        self,\n        a: Annotated[float, 'First number'],\n        b: Annotated[float, 'Second number']\n    ) -> float:\n        return a + b\n    \n    @kernel_function(\n        name='multiply',\n        description='Multiplies two numbers'\n    )\n    def multiply(\n        self,\n        a: Annotated[float, 'First number'],\n        b: Annotated[float, 'Second number']\n    ) -> float:\n        return a * b\n\nkernel = Kernel()\nmath_plugin = kernel.add_plugin(MathPlugin(), plugin_name='Math')",
+      "best_practices": [
+        "Use @kernel_function decorator",
+        "Provide clear name and description",
+        "Use Annotated types for parameter descriptions",
+        "Return serializable types",
+        "Handle errors gracefully"
+      ],
+      "key_properties": {
+        "name": "Function name",
+        "description": "Function description for LLM",
+        "Annotated": "Type hints with descriptions"
+      }
+    },
+    "semantic_function": {
+      "description": "Create semantic function with prompt",
+      "use_when": "Need LLM-powered function",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.functions import kernel_function\nfrom semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion\n\nkernel = Kernel()\nkernel.add_service(OpenAIChatCompletion(\n    service_id='default',\n    ai_model_id='gpt-4',\n    api_key=os.getenv('OPENAI_API_KEY')\n))\n\n# Create semantic function\nsummarize_function = kernel.add_function(\n    function_name='summarize',\n    plugin_name='TextPlugin',\n    prompt='''Summarize the following text in 3 sentences:\n{{$input}}\n\nSummary:''',\n    description='Summarizes text'\n)\n\n# Invoke\nresult = await kernel.invoke(\n    summarize_function,\n    input='Long text to summarize...'\n)",
+      "best_practices": [
+        "Write clear, specific prompts",
+        "Use {{$variable}} syntax for inputs",
+        "Provide function descriptions",
+        "Test prompts with different inputs",
+        "Use appropriate model for task"
+      ]
+    },
+    "prompt_template": {
+      "description": "Create reusable prompt templates",
+      "use_when": "Need parameterized prompts",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.contents import ChatPromptTemplate\nfrom semantic_kernel.functions import KernelArguments\n\nkernel = Kernel()\n\n# Create prompt template\ntemplate = ChatPromptTemplate(\n    template='''You are a helpful assistant.\n\nUser: {{$user_input}}\nAssistant:''',\n    template_format='semantic-kernel'\n)\n\nfunction = kernel.add_function(\n    function_name='chat',\n    plugin_name='ChatPlugin',\n    prompt=template\n)\n\n# Invoke with arguments\narguments = KernelArguments(user_input='Hello')\nresult = await kernel.invoke(function, arguments=arguments)",
+      "best_practices": [
+        "Use ChatPromptTemplate for structured prompts",
+        "Define template variables clearly",
+        "Use KernelArguments for inputs",
+        "Test templates with various inputs",
+        "Keep templates maintainable"
+      ]
+    },
+    "openapi_plugin": {
+      "description": "Import OpenAPI plugin",
+      "use_when": "Need to integrate external API",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.connectors.openapi import OpenApiPluginExecutionParameters\n\nkernel = Kernel()\n\n# Import OpenAPI plugin\nopenapi_plugin = await kernel.add_plugin_from_openapi(\n    plugin_name='WeatherAPI',\n    openapi_document_path='weather_api.yaml',\n    execution_settings=OpenApiPluginExecutionParameters(\n        server_url='https://api.weather.com'\n    )\n)\n\n# Use plugin function\nresult = await kernel.invoke(\n    openapi_plugin['get_weather'],\n    location='Seattle',\n    units='metric'\n)",
+      "best_practices": [
+        "Provide valid OpenAPI specification",
+        "Configure server_url appropriately",
+        "Handle authentication if required",
+        "Test API endpoints independently",
+        "Use descriptive plugin names"
+      ]
+    },
+    "plugin_organization": {
+      "description": "Organize functions into plugins",
+      "use_when": "Have multiple related functions",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.functions import kernel_function\n\nclass DataPlugin:\n    @kernel_function(name='query_database', description='Query database')\n    def query_db(self, query: str) -> str:\n        return execute_query(query)\n    \n    @kernel_function(name='update_record', description='Update record')\n    def update(self, table: str, id: int, data: dict) -> str:\n        return update_record(table, id, data)\n\nclass AnalysisPlugin:\n    @kernel_function(name='analyze_data', description='Analyze data')\n    def analyze(self, data: str) -> str:\n        return perform_analysis(data)\n\nkernel = Kernel()\nkernel.add_plugin(DataPlugin(), plugin_name='Data')\nkernel.add_plugin(AnalysisPlugin(), plugin_name='Analysis')",
+      "best_practices": [
+        "Group related functions in plugins",
+        "Use descriptive plugin names",
+        "Keep plugins focused and cohesive",
+        "Document plugin purpose",
+        "Test plugins independently"
+      ]
+    }
+  },
+  "planner_patterns": {
+    "sequential_planner": {
+      "description": "Use sequential planner for step-by-step execution",
+      "use_when": "Need linear execution of functions",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.planners import SequentialPlanner\nfrom semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion\n\nkernel = Kernel()\nkernel.add_service(OpenAIChatCompletion(\n    service_id='default',\n    ai_model_id='gpt-4',\n    api_key=os.getenv('OPENAI_API_KEY')\n))\n\n# Add plugins\nkernel.add_plugin(MathPlugin(), plugin_name='Math')\nkernel.add_plugin(DataPlugin(), plugin_name='Data')\n\n# Create planner\nplanner = SequentialPlanner(kernel=kernel)\n\n# Create plan\nplan = await planner.create_plan(\n    goal='Calculate the sum of 5 and 10, then multiply by 3'\n)\n\n# Execute plan\nresult = await plan.invoke(kernel)",
+      "best_practices": [
+        "Use SequentialPlanner for linear workflows",
+        "Provide clear, specific goals",
+        "Ensure required plugins are available",
+        "Review plan before execution",
+        "Handle plan execution errors"
+      ]
+    },
+    "stepwise_planner": {
+      "description": "Use stepwise planner for complex reasoning",
+      "use_when": "Need iterative planning and execution",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.planners import StepwisePlanner\nfrom semantic_kernel.planners.stepwise_planner import StepwisePlannerConfig\n\nkernel = Kernel()\nkernel.add_service(OpenAIChatCompletion(\n    service_id='default',\n    ai_model_id='gpt-4',\n    api_key=os.getenv('OPENAI_API_KEY')\n))\n\n# Configure planner\nconfig = StepwisePlannerConfig(\n    max_iterations=10,\n    min_iteration_time_ms=1000\n)\n\nplanner = StepwisePlanner(kernel=kernel, config=config)\n\n# Create and execute plan\nplan = await planner.create_plan(\n    goal='Analyze sales data and generate recommendations'\n)\nresult = await plan.invoke(kernel)",
+      "best_practices": [
+        "Use StepwisePlanner for complex tasks",
+        "Set max_iterations to prevent loops",
+        "Configure iteration timing",
+        "Monitor plan execution",
+        "Use for multi-step reasoning"
+      ]
+    },
+    "handlebars_planner": {
+      "description": "Use Handlebars planner for template-based planning",
+      "use_when": "Need structured, predictable plans",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.planners import HandlebarsPlanner\n\nkernel = Kernel()\nkernel.add_service(OpenAIChatCompletion(\n    service_id='default',\n    ai_model_id='gpt-4',\n    api_key=os.getenv('OPENAI_API_KEY')\n))\n\n# Add plugins\nkernel.add_plugin(MathPlugin(), plugin_name='Math')\n\n# Create planner\nplanner = HandlebarsPlanner(kernel=kernel)\n\n# Create plan with Handlebars template\nplan = await planner.create_plan(\n    goal='Calculate (5 + 10) * 3'\n)\n\n# Execute\nresult = await plan.invoke(kernel)",
+      "best_practices": [
+        "Use HandlebarsPlanner for structured plans",
+        "Handlebars provides predictable execution",
+        "Good for well-defined workflows",
+        "Test plan templates",
+        "Use for production reliability"
+      ]
+    },
+    "action_planner": {
+      "description": "Use action planner for function selection",
+      "use_when": "Need to select and execute specific functions",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.planners import ActionPlanner\n\nkernel = Kernel()\nkernel.add_service(OpenAIChatCompletion(\n    service_id='default',\n    ai_model_id='gpt-4',\n    api_key=os.getenv('OPENAI_API_KEY')\n))\n\n# Add plugins with functions\nkernel.add_plugin(MathPlugin(), plugin_name='Math')\nkernel.add_plugin(WeatherPlugin(), plugin_name='Weather')\n\n# Create planner\nplanner = ActionPlanner(kernel=kernel)\n\n# Plan and execute\nplan = await planner.create_plan(\n    goal='What is the weather in Seattle and add 10 to the temperature?'\n)\nresult = await plan.invoke(kernel)",
+      "best_practices": [
+        "Use ActionPlanner for function selection",
+        "Ensure relevant plugins are available",
+        "Provide clear goals",
+        "Review selected functions",
+        "Handle function execution errors"
+      ]
+    }
+  },
+  "memory_patterns": {
+    "embedding_memory": {
+      "description": "Use embedding-based memory storage",
+      "use_when": "Need semantic search over memories",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.memory import MemoryStoreBase, VolatileMemoryStore\nfrom semantic_kernel.connectors.ai.open_ai import OpenAITextEmbedding\n\nkernel = Kernel()\n\n# Add embedding service\nkernel.add_service(\n    OpenAITextEmbedding(\n        service_id='embedding',\n        ai_model_id='text-embedding-ada-002',\n        api_key=os.getenv('OPENAI_API_KEY')\n    )\n)\n\n# Configure memory store\nmemory_store = VolatileMemoryStore()\nkernel.add_memory_storage(memory_store)\n\n# Save memory\nawait kernel.memory.save_information(\n    collection='facts',\n    text='The capital of France is Paris',\n    id='fact1'\n)\n\n# Recall memory\nmemories = await kernel.memory.search(\n    collection='facts',\n    query='What is the capital of France?',\n    limit=1\n)",
+      "best_practices": [
+        "Use embedding service for semantic search",
+        "Organize memories into collections",
+        "Provide unique IDs for memories",
+        "Use appropriate embedding model",
+        "Set limit for search results"
+      ]
+    },
+    "vector_store_memory": {
+      "description": "Use external vector store for memory",
+      "use_when": "Need persistent, scalable memory",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.connectors.memory.azure_cognitive_search import AzureCognitiveSearchMemoryStore\n\nkernel = Kernel()\n\n# Configure Azure Cognitive Search\nmemory_store = AzureCognitiveSearchMemoryStore(\n    vector_size=1536,\n    search_endpoint=os.getenv('AZURE_SEARCH_ENDPOINT'),\n    api_key=os.getenv('AZURE_SEARCH_API_KEY')\n)\n\nkernel.add_memory_storage(memory_store)\n\n# Save and retrieve memories\nawait kernel.memory.save_information(\n    collection='documents',\n    text='Document content...',\n    id='doc1'\n)\n\nresults = await kernel.memory.search(\n    collection='documents',\n    query='Search query',\n    limit=5\n)",
+      "best_practices": [
+        "Use vector stores for production",
+        "Configure vector_size appropriately",
+        "Handle authentication",
+        "Monitor storage usage",
+        "Backup important memories"
+      ]
+    },
+    "semantic_memory": {
+      "description": "Use semantic memory for context",
+      "use_when": "Need to retrieve relevant context for prompts",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.functions import KernelArguments\n\nkernel = Kernel()\n# ... configure kernel and memory ...\n\n# Create function that uses memory\nasync def enhanced_chat(kernel: Kernel, user_input: str):\n    # Search relevant memories\n    relevant_memories = await kernel.memory.search(\n        collection='conversations',\n        query=user_input,\n        limit=3\n    )\n    \n    # Build context\n    context = '\\n'.join([m.text for m in relevant_memories])\n    \n    # Create prompt with context\n    prompt = f'''Previous context:\n{context}\n\nUser: {user_input}\nAssistant:'''\n    \n    # Invoke with context\n    result = await kernel.invoke(\n        chat_function,\n        input=prompt\n    )\n    \n    return result",
+      "best_practices": [
+        "Search memories before generating response",
+        "Limit number of memories retrieved",
+        "Include relevant context in prompts",
+        "Save important interactions to memory",
+        "Update memories as needed"
+      ]
+    }
+  },
+  "agent_patterns": {
+    "chat_completion_agent": {
+      "description": "Create chat completion agent",
+      "use_when": "Need conversational agent",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.agents import ChatCompletionAgent\nfrom semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion\n\nkernel = Kernel()\nkernel.add_service(OpenAIChatCompletion(\n    service_id='default',\n    ai_model_id='gpt-4',\n    api_key=os.getenv('OPENAI_API_KEY')\n))\n\n# Add plugins\nkernel.add_plugin(MathPlugin(), plugin_name='Math')\n\n# Create agent\nagent = ChatCompletionAgent(\n    kernel=kernel,\n    name='Assistant',\n    instructions='You are a helpful assistant that can perform calculations.'\n)\n\n# Chat with agent\nresponse = await agent.invoke('What is 5 + 10?')\nprint(response)",
+      "best_practices": [
+        "Provide clear agent instructions",
+        "Add relevant plugins to kernel",
+        "Use appropriate model for agent",
+        "Handle agent responses",
+        "Monitor agent behavior"
+      ]
+    },
+    "openai_assistant_agent": {
+      "description": "Use OpenAI Assistant API agent",
+      "use_when": "Need OpenAI Assistant API integration",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.agents import OpenAIAssistantAgent\n\nkernel = Kernel()\n\n# Create OpenAI Assistant agent\nagent = OpenAIAssistantAgent(\n    kernel=kernel,\n    assistant_id='asst_xxx',  # Existing assistant ID\n    instructions='You are a helpful assistant.'\n)\n\n# Or create new assistant\nagent = OpenAIAssistantAgent.create(\n    kernel=kernel,\n    name='MyAssistant',\n    instructions='You are a helpful assistant.',\n    model='gpt-4',\n    tools=[],  # Add tools if needed\n    api_key=os.getenv('OPENAI_API_KEY')\n)\n\n# Use agent\nresponse = await agent.invoke('Hello')\nprint(response)",
+      "best_practices": [
+        "Use OpenAI Assistant API for advanced features",
+        "Configure assistant with appropriate tools",
+        "Handle thread management",
+        "Use existing assistant IDs when possible",
+        "Monitor API usage"
+      ]
+    },
+    "agent_with_plugins": {
+      "description": "Agent with access to plugins",
+      "use_when": "Agent needs to use functions",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.agents import ChatCompletionAgent\n\nkernel = Kernel()\nkernel.add_service(OpenAIChatCompletion(...))\n\n# Add plugins\nkernel.add_plugin(MathPlugin(), plugin_name='Math')\nkernel.add_plugin(WeatherPlugin(), plugin_name='Weather')\nkernel.add_plugin(DataPlugin(), plugin_name='Data')\n\n# Create agent with access to plugins\nagent = ChatCompletionAgent(\n    kernel=kernel,\n    name='Assistant',\n    instructions='''You are a helpful assistant with access to:\n    - Math functions for calculations\n    - Weather functions for weather information\n    - Data functions for database queries\n    Use these functions when appropriate.'''\n)\n\n# Agent can use plugins automatically\nresponse = await agent.invoke(\n    'What is the weather in Seattle and add 10 to the temperature?'\n)",
+      "best_practices": [
+        "Document available plugins in instructions",
+        "Ensure plugins are properly registered",
+        "Test agent with various queries",
+        "Monitor plugin usage",
+        "Handle plugin errors gracefully"
+      ]
+    },
+    "agent_with_memory": {
+      "description": "Agent with memory capabilities",
+      "use_when": "Agent needs to remember past interactions",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.agents import ChatCompletionAgent\nfrom semantic_kernel.memory import VolatileMemoryStore\n\nkernel = Kernel()\nkernel.add_service(OpenAIChatCompletion(...))\nkernel.add_service(OpenAITextEmbedding(...))\nkernel.add_memory_storage(VolatileMemoryStore())\n\n# Create agent\nagent = ChatCompletionAgent(\n    kernel=kernel,\n    name='Assistant',\n    instructions='You are a helpful assistant with memory.'\n)\n\n# Save conversation to memory\nawait kernel.memory.save_information(\n    collection='conversations',\n    text='User prefers concise answers',\n    id='pref1'\n)\n\n# Agent can use memory in responses\nresponse = await agent.invoke('Tell me about yourself')",
+      "best_practices": [
+        "Configure memory storage",
+        "Save important information to memory",
+        "Search memory before responding",
+        "Update memory as needed",
+        "Organize memories into collections"
+      ]
+    }
+  },
+  "connector_patterns": {
+    "openai_connector": {
+      "description": "Connect to OpenAI API",
+      "use_when": "Using OpenAI models",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.connectors.ai.open_ai import (\n    OpenAIChatCompletion,\n    OpenAITextEmbedding\n)\n\nkernel = Kernel()\n\n# Chat completion\nkernel.add_service(\n    OpenAIChatCompletion(\n        service_id='chat',\n        ai_model_id='gpt-4',\n        api_key=os.getenv('OPENAI_API_KEY')\n    )\n)\n\n# Text embedding\nkernel.add_service(\n    OpenAITextEmbedding(\n        service_id='embedding',\n        ai_model_id='text-embedding-ada-002',\n        api_key=os.getenv('OPENAI_API_KEY')\n    )\n)",
+      "best_practices": [
+        "Use separate service_id for different services",
+        "Store API keys in environment variables",
+        "Choose appropriate models",
+        "Handle API errors",
+        "Monitor API usage"
+      ]
+    },
+    "azure_openai_connector": {
+      "description": "Connect to Azure OpenAI",
+      "use_when": "Using Azure OpenAI Service",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.connectors.ai.open_ai import AzureChatCompletion\n\nkernel = Kernel()\n\nkernel.add_service(\n    AzureChatCompletion(\n        service_id='azure_chat',\n        deployment_name='gpt-4',\n        endpoint=os.getenv('AZURE_OPENAI_ENDPOINT'),\n        api_key=os.getenv('AZURE_OPENAI_API_KEY'),\n        api_version='2024-02-15-preview'\n    )\n)",
+      "best_practices": [
+        "Use deployment_name matching Azure deployment",
+        "Configure endpoint correctly",
+        "Set appropriate api_version",
+        "Handle Azure-specific errors",
+        "Use Azure AD authentication when possible"
+      ]
+    },
+    "huggingface_connector": {
+      "description": "Connect to Hugging Face models",
+      "use_when": "Using Hugging Face models",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.connectors.ai.hugging_face import HuggingFaceChatCompletion\n\nkernel = Kernel()\n\nkernel.add_service(\n    HuggingFaceChatCompletion(\n        service_id='hf_chat',\n        ai_model_id='microsoft/DialoGPT-medium',\n        hf_api_key=os.getenv('HUGGINGFACE_API_KEY')\n    )\n)",
+      "best_practices": [
+        "Use Hugging Face model IDs",
+        "Configure API key",
+        "Handle model loading time",
+        "Use appropriate models for tasks",
+        "Monitor Hugging Face API usage"
+      ]
+    },
+    "ollama_connector": {
+      "description": "Connect to local Ollama models",
+      "use_when": "Using local Ollama deployment",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.connectors.ai.ollama import OllamaChatCompletion\n\nkernel = Kernel()\n\nkernel.add_service(\n    OllamaChatCompletion(\n        service_id='ollama',\n        ai_model_id='llama2',\n        base_url='http://localhost:11434'\n    )\n)",
+      "best_practices": [
+        "Configure base_url for Ollama server",
+        "Use local models for privacy",
+        "Handle connection errors",
+        "Monitor local resource usage",
+        "Use appropriate local models"
+      ]
+    }
+  },
+  "filter_patterns": {
+    "function_invocation_filter": {
+      "description": "Filter function invocations",
+      "use_when": "Need to intercept or modify function calls",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.filters import FilterTypes\nfrom semantic_kernel.filters.functions import FunctionInvocationFilter\n\nclass LoggingFilter(FunctionInvocationFilter):\n    async def on_invoke(self, function, arguments, kernel, cancellation_token):\n        print(f'Invoking function: {function.name}')\n        print(f'Arguments: {arguments}')\n        \n        # Continue with invocation\n        result = await self.next(function, arguments, kernel, cancellation_token)\n        \n        print(f'Result: {result}')\n        return result\n\nkernel = Kernel()\n\n# Add filter\nkernel.add_filter(FilterTypes.FUNCTION_INVOCATION, LoggingFilter())\n\n# Functions will be logged\nresult = await kernel.invoke(function, input='test')",
+      "best_practices": [
+        "Inherit from FunctionInvocationFilter",
+        "Call self.next() to continue",
+        "Handle errors appropriately",
+        "Use filters for logging, validation, transformation",
+        "Test filters independently"
+      ]
+    },
+    "prompt_render_filter": {
+      "description": "Filter prompt rendering",
+      "use_when": "Need to modify prompts before execution",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.filters import FilterTypes\nfrom semantic_kernel.filters.prompts import PromptRenderFilter\n\nclass SafetyFilter(PromptRenderFilter):\n    async def on_prompt_render(\n        self, prompt, arguments, kernel, cancellation_token\n    ):\n        # Check for unsafe content\n        if 'unsafe_keyword' in str(prompt):\n            raise ValueError('Unsafe content detected')\n        \n        # Modify prompt if needed\n        modified_prompt = str(prompt).replace('old', 'new')\n        \n        # Continue with modified prompt\n        return await self.next(\n            modified_prompt, arguments, kernel, cancellation_token\n        )\n\nkernel = Kernel()\nkernel.add_filter(FilterTypes.PROMPT_RENDER, SafetyFilter())",
+      "best_practices": [
+        "Inherit from PromptRenderFilter",
+        "Validate prompts before rendering",
+        "Modify prompts safely",
+        "Call self.next() to continue",
+        "Handle errors appropriately"
+      ]
+    },
+    "multiple_filters": {
+      "description": "Chain multiple filters",
+      "use_when": "Need multiple filter behaviors",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.filters import FilterTypes\n\nkernel = Kernel()\n\n# Add multiple filters (executed in order)\nkernel.add_filter(FilterTypes.FUNCTION_INVOCATION, LoggingFilter())\nkernel.add_filter(FilterTypes.FUNCTION_INVOCATION, ValidationFilter())\nkernel.add_filter(FilterTypes.FUNCTION_INVOCATION, MetricsFilter())\n\n# All filters execute in sequence\nresult = await kernel.invoke(function, input='test')",
+      "best_practices": [
+        "Filters execute in registration order",
+        "Each filter calls next() to continue",
+        "Order matters - place validation before execution",
+        "Test filter chains",
+        "Monitor filter performance"
+      ]
+    }
+  },
+  "integration_patterns": {
+    "python_sdk": {
+      "description": "Use Semantic Kernel Python SDK",
+      "use_when": "Building Python applications",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion\n\n# Python SDK usage\nkernel = Kernel()\nkernel.add_service(OpenAIChatCompletion(...))\n\n# Async operations\nresult = await kernel.invoke(function, input='test')\n\n# Sync wrapper\nresult = kernel.invoke_sync(function, input='test')",
+      "best_practices": [
+        "Use async/await for async operations",
+        "Use invoke_sync for sync contexts",
+        "Handle exceptions appropriately",
+        "Follow Python best practices",
+        "Use type hints"
+      ]
+    },
+    "dotnet_sdk": {
+      "description": "Use Semantic Kernel .NET SDK",
+      "use_when": "Building .NET applications",
+      "code_example": "using Microsoft.SemanticKernel;\nusing Microsoft.SemanticKernel.Connectors.OpenAI;\n\n// .NET SDK usage\nvar kernel = Kernel.CreateBuilder()\n    .AddOpenAIChatCompletion(\n        modelId: \"gpt-4\",\n        apiKey: Environment.GetEnvironmentVariable(\"OPENAI_API_KEY\")\n    )\n    .Build();\n\n// Invoke function\nvar result = await kernel.InvokeAsync(function, new KernelArguments { [\"input\"] = \"test\" });",
+      "best_practices": [
+        "Use Kernel.CreateBuilder() pattern",
+        "Configure services in builder",
+        "Use async methods",
+        "Handle exceptions",
+        "Follow .NET best practices"
+      ]
+    },
+    "azure_ai_services": {
+      "description": "Integrate with Azure AI Services",
+      "use_when": "Using Azure AI ecosystem",
+      "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.connectors.ai.open_ai import AzureChatCompletion\nfrom semantic_kernel.connectors.memory.azure_cognitive_search import AzureCognitiveSearchMemoryStore\n\nkernel = Kernel()\n\n# Azure OpenAI\nkernel.add_service(AzureChatCompletion(...))\n\n# Azure Cognitive Search for memory\nmemory_store = AzureCognitiveSearchMemoryStore(...)\nkernel.add_memory_storage(memory_store)\n\n# Use Azure services\nresult = await kernel.invoke(function, input='test')",
+      "best_practices": [
+        "Use Azure services for production",
+        "Configure authentication properly",
+        "Monitor Azure service usage",
+        "Handle Azure-specific errors",
+        "Use Azure AD when possible"
+      ]
+    }
+  },
+  "best_practices": [
+    "Create kernel instance and add services before adding plugins",
+    "Use @kernel_function decorator for native functions with clear descriptions",
+    "Organize related functions into plugins with descriptive names",
+    "Use appropriate planner: SequentialPlanner for linear workflows, StepwisePlanner for complex reasoning",
+    "Configure memory storage for stateful applications and semantic search",
+    "Use filters for cross-cutting concerns: logging, validation, transformation",
+    "Store API keys in environment variables, never hardcode",
+    "Handle errors gracefully in functions and filters",
+    "Use async/await for all async operations",
+    "Test plugins, planners, and agents independently before integration"
+  ],
+  "anti_patterns": [
+    {
+      "name": "hardcoded_api_keys",
+      "description": "Hardcoding API keys in code",
+      "problem": "Security vulnerability and inflexibility",
+      "solution": "Always use environment variables for API keys"
+    },
+    {
+      "name": "no_error_handling",
+      "description": "Not handling errors in functions",
+      "problem": "Unhandled exceptions crash application",
+      "solution": "Wrap function calls in try/except blocks"
+    },
+    {
+      "name": "vague_prompts",
+      "description": "Unclear or ambiguous prompts",
+      "problem": "Poor LLM performance and unpredictable results",
+      "solution": "Write clear, specific prompts with examples"
+    },
+    {
+      "name": "no_memory_management",
+      "description": "Not managing memory storage",
+      "problem": "Memory grows unbounded, poor performance",
+      "solution": "Implement memory cleanup and limits"
+    }
+  ],
+  "patterns": {
+    "kernel_setup": {
+      "basic_kernel": {
+        "description": "Create and configure basic kernel",
+        "code_example": "from semantic_kernel import Kernel\nfrom semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion\n\nkernel = Kernel()\nkernel.add_service(OpenAIChatCompletion(\n    service_id='default',\n    ai_model_id='gpt-4',\n    api_key=os.getenv('OPENAI_API_KEY')\n))"
+      }
+    },
+    "plugin_patterns": {
+      "native_function": {
+        "description": "Create native function plugin",
+        "code_example": "from semantic_kernel.functions import kernel_function\n\nclass MathPlugin:\n    @kernel_function(name='add', description='Adds two numbers')\n    def add(self, a: float, b: float) -> float:\n        return a + b"
+      }
+    },
+    "planner_patterns": {
+      "sequential_planner": {
+        "description": "Use sequential planner for step-by-step execution",
+        "code_example": "from semantic_kernel.planners import SequentialPlanner\n\nplanner = SequentialPlanner(kernel=kernel)\nplan = await planner.create_plan(goal='Calculate sum')\nresult = await plan.invoke(kernel)"
+      }
+    }
+  }
+}

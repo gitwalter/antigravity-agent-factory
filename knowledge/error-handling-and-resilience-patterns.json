@@ -1,0 +1,232 @@
+{
+  "id": "error-handling-patterns",
+  "name": "Error Handling and Resilience Patterns",
+  "description": "Patterns for retry strategies, fallbacks, circuit breakers, and error handling in agent systems",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "patterns": {
+    "retry_strategies": {
+      "exponential_backoff": {
+        "description": "Retry with exponentially increasing delays",
+        "code_example": "from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type\nimport httpx\n\n@retry(\n    stop=stop_after_attempt(3),\n    wait=wait_exponential(multiplier=1, min=1, max=10),\n    retry=retry_if_exception_type((httpx.TimeoutException, httpx.HTTPStatusError))\n)\nasync def fetch_with_retry(url: str) -> dict:\n    async with httpx.AsyncClient() as client:\n        response = await client.get(url)\n        response.raise_for_status()\n        return response.json()",
+        "best_practices": [
+          "Use exponential backoff for transient errors",
+          "Set maximum retry attempts",
+          "Add jitter to prevent thundering herd",
+          "Only retry idempotent operations"
+        ]
+      },
+      "fixed_delay": {
+        "description": "Retry with fixed delay between attempts",
+        "code_example": "from tenacity import retry, stop_after_attempt, wait_fixed\n\n@retry(\n    stop=stop_after_attempt(3),\n    wait=wait_fixed(5)  # Wait 5 seconds between retries\n)\ndef operation_with_fixed_retry():\n    # ... operation\n    pass",
+        "use_when": [
+          "Rate limiting",
+          "Known recovery time",
+          "Simple retry logic"
+        ]
+      },
+      "custom_retry_logic": {
+        "description": "Custom retry logic with conditions",
+        "code_example": "from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_result\n\n@retry(\n    stop=stop_after_attempt(5),\n    wait=wait_exponential(multiplier=2, min=1, max=60),\n    retry=retry_if_result(lambda result: result is None)\n)\ndef operation_with_custom_retry() -> dict:\n    result = some_operation()\n    if not result:\n        return None  # Will retry\n    return result",
+        "best_practices": [
+          "Define clear retry conditions",
+          "Log retry attempts",
+          "Track retry metrics",
+          "Set reasonable limits"
+        ]
+      }
+    },
+    "fallback_strategies": {
+      "primary_fallback": {
+        "description": "Fallback to alternative service on failure",
+        "code_example": "async def fetch_with_fallback(url: str, fallback_url: str) -> dict:\n    try:\n        async with httpx.AsyncClient() as client:\n            response = await client.get(url)\n            response.raise_for_status()\n            return response.json()\n    except Exception as e:\n        logger.warning(f'Primary service failed: {e}, using fallback')\n        async with httpx.AsyncClient() as client:\n            response = await client.get(fallback_url)\n            response.raise_for_status()\n            return response.json()",
+        "best_practices": [
+          "Have reliable fallback services",
+          "Log fallback usage",
+          "Monitor fallback frequency",
+          "Ensure fallback data quality"
+        ]
+      },
+      "degraded_mode": {
+        "description": "Degrade functionality instead of failing",
+        "code_example": "async def get_data_with_degradation() -> dict:\n    try:\n        # Try full-featured API\n        return await fetch_full_data()\n    except Exception:\n        logger.warning('Full API unavailable, using cached data')\n        # Return cached or simplified data\n        return get_cached_data() or get_simplified_data()",
+        "best_practices": [
+          "Define clear degraded modes",
+          "Inform users of degraded functionality",
+          "Monitor degradation frequency",
+          "Automatically recover when possible"
+        ]
+      },
+      "default_values": {
+        "description": "Use default values on failure",
+        "code_example": "def get_config_with_defaults(key: str, default: any) -> any:\n    try:\n        return fetch_config(key)\n    except Exception:\n        logger.warning(f'Config fetch failed for {key}, using default')\n        return default",
+        "best_practices": [
+          "Use sensible defaults",
+          "Log default usage",
+          "Validate defaults",
+          "Document default behavior"
+        ]
+      }
+    },
+    "circuit_breakers": {
+      "basic_circuit_breaker": {
+        "description": "Circuit breaker to prevent cascade failures",
+        "code_example": "from circuitbreaker import circuit\n\n@circuit(failure_threshold=5, recovery_timeout=30)\nasync def call_external_service(endpoint: str) -> dict:\n    async with httpx.AsyncClient() as client:\n        response = await client.get(endpoint)\n        response.raise_for_status()\n        return response.json()",
+        "best_practices": [
+          "Set appropriate failure threshold",
+          "Configure recovery timeout",
+          "Monitor circuit breaker state",
+          "Alert on circuit open"
+        ]
+      },
+      "custom_circuit_breaker": {
+        "description": "Custom circuit breaker implementation",
+        "code_example": "from enum import Enum\nfrom datetime import datetime, timedelta\n\nclass CircuitState(Enum):\n    CLOSED = 'closed'\n    OPEN = 'open'\n    HALF_OPEN = 'half_open'\n\nclass CircuitBreaker:\n    def __init__(self, failure_threshold: int = 5, recovery_timeout: int = 60):\n        self.failure_threshold = failure_threshold\n        self.recovery_timeout = recovery_timeout\n        self.failure_count = 0\n        self.last_failure_time = None\n        self.state = CircuitState.CLOSED\n    \n    def call(self, func, *args, **kwargs):\n        if self.state == CircuitState.OPEN:\n            if datetime.now() - self.last_failure_time > timedelta(seconds=self.recovery_timeout):\n                self.state = CircuitState.HALF_OPEN\n            else:\n                raise Exception('Circuit breaker is OPEN')\n        \n        try:\n            result = func(*args, **kwargs)\n            if self.state == CircuitState.HALF_OPEN:\n                self.state = CircuitState.CLOSED\n                self.failure_count = 0\n            return result\n        except Exception as e:\n            self.failure_count += 1\n            self.last_failure_time = datetime.now()\n            if self.failure_count >= self.failure_threshold:\n                self.state = CircuitState.OPEN\n            raise e",
+        "best_practices": [
+          "Track failure counts",
+          "Implement half-open state",
+          "Reset on success",
+          "Log state changes"
+        ]
+      }
+    },
+    "error_categorization": {
+      "transient_errors": {
+        "description": "Handle transient errors with retry",
+        "code_example": "from tenacity import retry, retry_if_exception_type\n\nTRANSIENT_ERRORS = (\n    httpx.TimeoutException,\n    httpx.NetworkError,\n    httpx.HTTPStatusError  # For 5xx errors\n)\n\n@retry(\n    stop=stop_after_attempt(3),\n    retry=retry_if_exception_type(TRANSIENT_ERRORS)\n)\nasync def handle_transient_errors():\n    # ... operation\n    pass",
+        "best_practices": [
+          "Identify transient vs permanent errors",
+          "Retry only transient errors",
+          "Use appropriate retry strategy",
+          "Log error types"
+        ]
+      },
+      "permanent_errors": {
+        "description": "Handle permanent errors without retry",
+        "code_example": "PERMANENT_ERRORS = (\n    httpx.HTTPStatusError,  # For 4xx errors\n    ValueError,\n    TypeError\n)\n\ndef handle_permanent_errors():\n    try:\n        # ... operation\n        pass\n    except PERMANENT_ERRORS as e:\n        logger.error(f'Permanent error: {e}')\n        # Don't retry, handle gracefully\n        return None",
+        "best_practices": [
+          "Don't retry permanent errors",
+          "Log and handle gracefully",
+          "Return appropriate error responses",
+          "Inform users clearly"
+        ]
+      }
+    },
+    "error_logging": {
+      "structured_logging": {
+        "description": "Structured error logging",
+        "code_example": "import structlog\n\nlogger = structlog.get_logger()\n\ntry:\n    result = risky_operation()\nexcept Exception as e:\n    logger.error(\n        'operation_failed',\n        operation='risky_operation',\n        error=str(e),\n        error_type=type(e).__name__,\n        traceback=traceback.format_exc()\n    )\n    raise",
+        "best_practices": [
+          "Use structured logging",
+          "Include context in logs",
+          "Log error types and messages",
+          "Include tracebacks for debugging"
+        ]
+      },
+      "error_metrics": {
+        "description": "Track error metrics",
+        "code_example": "from collections import defaultdict\n\nclass ErrorTracker:\n    def __init__(self):\n        self.error_counts = defaultdict(int)\n        self.error_types = defaultdict(list)\n    \n    def track_error(self, error: Exception, context: dict = None):\n        error_type = type(error).__name__\n        self.error_counts[error_type] += 1\n        self.error_types[error_type].append({\n            'error': str(error),\n            'context': context,\n            'timestamp': datetime.now().isoformat()\n        })\n    \n    def get_error_rate(self, error_type: str) -> float:\n        total = sum(self.error_counts.values())\n        return self.error_counts[error_type] / total if total > 0 else 0.0",
+        "best_practices": [
+          "Track error counts by type",
+          "Calculate error rates",
+          "Monitor error trends",
+          "Alert on high error rates"
+        ]
+      }
+    },
+    "graceful_degradation": {
+      "timeout_handling": {
+        "description": "Handle timeouts gracefully",
+        "code_example": "import asyncio\n\nasync def operation_with_timeout(timeout: int = 30):\n    try:\n        return await asyncio.wait_for(slow_operation(), timeout=timeout)\n    except asyncio.TimeoutError:\n        logger.warning(f'Operation timed out after {timeout}s')\n        return get_fallback_result()",
+        "best_practices": [
+          "Set appropriate timeouts",
+          "Handle timeout exceptions",
+          "Provide fallback on timeout",
+          "Log timeout events"
+        ]
+      },
+      "partial_failure": {
+        "description": "Handle partial failures",
+        "code_example": "async def batch_operation(items: list) -> dict:\n    results = {'success': [], 'failed': []}\n    \n    for item in items:\n        try:\n            result = await process_item(item)\n            results['success'].append(result)\n        except Exception as e:\n            logger.error(f'Failed to process {item}: {e}')\n            results['failed'].append({'item': item, 'error': str(e)})\n    \n    return results",
+        "best_practices": [
+          "Continue processing on partial failures",
+          "Track success and failures",
+          "Return partial results",
+          "Log individual failures"
+        ]
+      }
+    }
+  },
+  "best_practices": [
+    "Retry only transient errors",
+    "Use exponential backoff with jitter",
+    "Set maximum retry attempts",
+    "Implement circuit breakers for external services",
+    "Provide fallback mechanisms",
+    "Log errors with context",
+    "Monitor error rates and patterns",
+    "Handle timeouts gracefully",
+    "Categorize errors appropriately",
+    "Don't retry non-idempotent operations",
+    "Implement graceful degradation",
+    "Alert on critical errors"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Retrying everything",
+      "problem": "Retrying permanent errors (4xx, validation errors) wastes resources, delays failure detection, and prevents proper error handling",
+      "solution": "Only retry transient errors (timeouts, 5xx, network errors), identify error types, and handle permanent errors without retry"
+    },
+    {
+      "name": "No retry limits",
+      "problem": "Infinite retries exhaust resources, overwhelm failing services, and prevent system recovery",
+      "solution": "Set maximum retry attempts (3-5 typically), use stop_after_attempt from tenacity, and fail gracefully after limit reached"
+    },
+    {
+      "name": "No exponential backoff",
+      "problem": "Immediate retries overwhelm failing services, preventing recovery and causing cascade failures",
+      "solution": "Use exponential backoff with jitter (wait_exponential from tenacity) to space out retries and allow services to recover"
+    },
+    {
+      "name": "No circuit breaker",
+      "problem": "Continued calls to failing external services cause cascade failures, system overload, and complete service degradation",
+      "solution": "Implement circuit breakers for external services, opening circuit after failure threshold, preventing calls during outages"
+    },
+    {
+      "name": "No fallback mechanisms",
+      "problem": "Complete system failure when errors occur, no graceful degradation, poor user experience",
+      "solution": "Provide fallbacks (alternative services, cached data, default values), implement degraded modes, and ensure partial functionality"
+    },
+    {
+      "name": "Swallowing exceptions",
+      "problem": "Silent failures make debugging impossible, errors go unnoticed, and issues compound without detection",
+      "solution": "Log all exceptions with context (error type, message, stack trace, request details), re-raise when appropriate, never use bare except"
+    },
+    {
+      "name": "No error categorization",
+      "problem": "Retrying permanent errors wastes resources, delays proper error handling, and prevents user feedback",
+      "solution": "Categorize errors (transient vs permanent, retryable vs non-retryable), handle each category appropriately with different strategies"
+    },
+    {
+      "name": "No timeout handling",
+      "problem": "Operations hang indefinitely waiting for responses, blocking resources and preventing system recovery",
+      "solution": "Set timeouts for all external calls (asyncio.wait_for, httpx timeout), handle TimeoutError exceptions, provide fallback on timeout"
+    },
+    {
+      "name": "No error monitoring",
+      "problem": "Cannot identify error patterns, track error rates, or improve system reliability without visibility",
+      "solution": "Track error metrics (counts by type, error rates, trends), monitor with dashboards, set alerts for high error rates"
+    },
+    {
+      "name": "Retrying non-idempotent operations",
+      "problem": "Duplicate side effects (double charges, duplicate records, data corruption) from retrying non-idempotent operations",
+      "solution": "Only retry idempotent operations (GET, safe operations), use idempotency keys for non-idempotent operations, check for duplicates before retry"
+    }
+  ],
+  "related_skills": [
+    "tool-usage",
+    "api-integration-patterns",
+    "langchain-usage",
+    "logging-monitoring"
+  ]
+}

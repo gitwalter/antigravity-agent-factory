@@ -1,0 +1,155 @@
+{
+  "id": "tool-patterns",
+  "name": "Tool Design and Usage Patterns",
+  "description": "Patterns for designing, implementing, and managing tools in LangChain/LangGraph agents",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "patterns": {
+    "tool_design": {
+      "basic_tool": {
+        "description": "Simple tool with @tool decorator",
+        "example": "@tool\ndef my_tool(arg: str) -> str:\n    \"\"\"Clear docstring for LLM.\"\"\"\n    return result",
+        "best_practices": [
+          "Write detailed docstrings - LLM uses these",
+          "Use type hints for all parameters",
+          "Return strings or structured data",
+          "Handle errors gracefully"
+        ]
+      },
+      "structured_tool": {
+        "description": "Tool with Pydantic input schema",
+        "example": "StructuredTool.from_function(func=fn, args_schema=InputModel)",
+        "use_when": [
+          "Complex input validation needed",
+          "Multiple optional parameters",
+          "Need detailed parameter descriptions"
+        ]
+      },
+      "async_tool": {
+        "description": "Async tool for I/O operations",
+        "example": "@tool\nasync def fetch_data(url: str) -> str:\n    async with httpx.AsyncClient() as client:\n        return (await client.get(url)).text",
+        "use_when": [
+          "API calls",
+          "Database queries",
+          "File I/O"
+        ]
+      }
+    },
+    "tool_binding": {
+      "bind_to_llm": {
+        "description": "Attach tools to LLM for calling",
+        "example": "llm_with_tools = llm.bind_tools([tool1, tool2])",
+        "notes": "Returns AIMessage with tool_calls attribute"
+      },
+      "tool_execution": {
+        "description": "Execute tool calls from LLM response",
+        "pattern": "Build tools_map, iterate tool_calls, invoke each, return ToolMessages"
+      }
+    },
+    "error_handling": {
+      "retry_pattern": {
+        "description": "Retry on transient failures",
+        "library": "tenacity",
+        "example": "@retry(stop=stop_after_attempt(3), wait=wait_exponential())"
+      },
+      "graceful_failure": {
+        "description": "Return error message instead of raising",
+        "example": "try:\n    return result\nexcept Exception as e:\n    return f'Error: {e}'"
+      }
+    },
+    "security": {
+      "input_validation": {
+        "description": "Validate and sanitize inputs",
+        "patterns": [
+          "Path validation",
+          "SQL injection prevention",
+          "Rate limiting"
+        ]
+      },
+      "permission_checking": {
+        "description": "Check permissions before execution",
+        "levels": [
+          "READ",
+          "WRITE",
+          "EXECUTE",
+          "NETWORK"
+        ]
+      }
+    }
+  },
+  "tool_categories": {
+    "data_retrieval": [
+      "web_search",
+      "database_query",
+      "api_fetch",
+      "file_read"
+    ],
+    "computation": [
+      "calculate",
+      "analyze",
+      "transform",
+      "validate"
+    ],
+    "io_operations": [
+      "read_file",
+      "write_file",
+      "upload",
+      "download"
+    ],
+    "external_services": [
+      "send_email",
+      "create_ticket",
+      "notify",
+      "webhook"
+    ],
+    "system": [
+      "execute_command",
+      "manage_process",
+      "monitor"
+    ]
+  },
+  "anti_patterns": [
+    {
+      "name": "Vague or Missing Docstrings",
+      "problem": "LLMs rely on tool docstrings to understand what tools do and when to use them. Vague or missing docstrings cause agents to misuse tools, call wrong tools, or fail to use available functionality.",
+      "solution": "Write detailed docstrings that clearly describe the tool's purpose, all parameters with types and descriptions, return value format, and example usage. Include edge cases and error conditions."
+    },
+    {
+      "name": "No Error Handling",
+      "problem": "Unhandled exceptions in tool execution crash the agent loop, expose stack traces to users, and prevent agents from recovering or trying alternative approaches. Agents cannot distinguish between transient and permanent failures.",
+      "solution": "Wrap all tool execution in try/except blocks. Catch specific exceptions, return structured error messages as strings or dicts instead of raising, and log errors for debugging. Use retry decorators for transient failures."
+    },
+    {
+      "name": "Synchronous I/O in Async Context",
+      "problem": "Using blocking file I/O, HTTP requests, or database queries in async tool handlers blocks the entire event loop, preventing concurrent tool execution and causing poor performance.",
+      "solution": "Use async/await for all I/O operations. Use aiofiles for file I/O, async HTTP clients (httpx, aiohttp), and async database drivers. Never use synchronous I/O libraries (requests, open()) in async handlers."
+    },
+    {
+      "name": "Missing Input Validation",
+      "problem": "Accepting tool inputs without validation allows malicious or malformed data to cause security vulnerabilities (path traversal, SQL injection), crashes, or unexpected behavior.",
+      "solution": "Validate all inputs using Pydantic models or JSON Schema. Check parameter types, ranges, required fields, and format constraints. Sanitize file paths, SQL queries, and shell commands. Reject invalid inputs with clear error messages."
+    },
+    {
+      "name": "Raising Exceptions Instead of Returning Errors",
+      "problem": "Raising exceptions in tools breaks the agent execution flow. Agents cannot handle exceptions gracefully and may retry indefinitely or fail completely instead of trying alternative approaches.",
+      "solution": "Return error information as structured data (strings or dicts) instead of raising exceptions. Use return values like {'error': 'message', 'code': 'ERROR_CODE'} or simple error strings. Let the agent decide how to handle errors."
+    }
+  ],
+  "related_skills": [
+    "tool-usage",
+    "mcp-integration",
+    "langchain-usage"
+  ],
+  "best_practices": [
+    "Write comprehensive docstrings for all tools - LLMs use these to understand tool purpose and parameters",
+    "Use Pydantic schemas for complex tool inputs to enable validation and clear parameter descriptions",
+    "Always return error messages as strings or structured dicts instead of raising exceptions - let agents handle errors",
+    "Use async/await for all I/O operations (file, network, database) - never block the event loop with sync I/O",
+    "Validate and sanitize all inputs before processing - check types, ranges, and format constraints",
+    "Implement retry logic with exponential backoff for transient failures using tenacity decorators",
+    "Check permissions before executing actions - verify READ/WRITE/EXECUTE/NETWORK permissions explicitly",
+    "Use StructuredTool.from_function() for tools with complex inputs requiring validation",
+    "Return structured outputs (dicts with consistent keys) when possible for easier agent parsing",
+    "Log all tool executions with context (agent_id, tool_name, inputs, duration) for debugging and monitoring"
+  ]
+}

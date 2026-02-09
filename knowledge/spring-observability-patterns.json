@@ -1,0 +1,416 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "spring-observability-patterns",
+  "name": "Spring Observability Patterns",
+  "title": "Spring Boot Observability Patterns",
+  "description": "Best practices and patterns for implementing observability in Spring Boot applications using Micrometer, distributed tracing, structured logging, and health monitoring",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Observability enables verification of system behavior through metrics, traces, and logs",
+    "A3_transparency": "Comprehensive observability provides transparency into system operations and performance"
+  },
+  "patterns": {
+    "metrics": {
+      "micrometer": {
+        "description": "Micrometer - metrics facade for Spring Boot",
+        "registries": {
+          "prometheus": "Prometheus registry - most common",
+          "influx": "InfluxDB registry",
+          "cloudwatch": "AWS CloudWatch registry",
+          "datadog": "Datadog registry",
+          "new_relic": "New Relic registry"
+        },
+        "metric_types": {
+          "counter": "Monotonically increasing value (e.g., request count)",
+          "gauge": "Current value that can go up or down (e.g., queue size)",
+          "timer": "Duration of operations (e.g., request latency)",
+          "summary": "Distribution of values (e.g., response sizes)"
+        },
+        "best_practices": [
+          "Use Micrometer for all metrics",
+          "Use appropriate metric types",
+          "Add meaningful tags/labels",
+          "Avoid high cardinality tags",
+          "Export to Prometheus for Kubernetes",
+          "Monitor business metrics, not just technical"
+        ]
+      },
+      "custom_metrics": {
+        "description": "Create custom application metrics",
+        "patterns": {
+          "business_metrics": "Track business KPIs (orders created, revenue)",
+          "performance_metrics": "Track performance (response times, throughput)",
+          "error_metrics": "Track errors (error rates, error types)",
+          "resource_metrics": "Track resource usage (CPU, memory, threads)"
+        },
+        "examples": {
+          "counter": "products.created, orders.completed",
+          "timer": "product.query.duration, order.processing.time",
+          "gauge": "active.users.count, queue.size"
+        }
+      },
+      "spring_boot_metrics": {
+        "description": "Built-in Spring Boot metrics",
+        "metrics": {
+          "http_server_requests": "HTTP request metrics",
+          "jvm_memory": "JVM memory usage",
+          "jvm_gc": "Garbage collection metrics",
+          "jvm_threads": "Thread metrics",
+          "process_cpu": "CPU usage",
+          "hikari_connections": "Database connection pool metrics"
+        },
+        "configuration": "management.metrics.export.prometheus.enabled=true"
+      }
+    },
+    "distributed_tracing": {
+      "micrometer_tracing": {
+        "description": "Micrometer Tracing - Spring-native distributed tracing",
+        "tracers": {
+          "brave": "Brave tracer (Zipkin compatible)",
+          "otel": "OpenTelemetry tracer",
+          "wavefront": "Wavefront tracer"
+        },
+        "features": [
+          "Automatic instrumentation",
+          "Spring integration",
+          "Multiple tracer support",
+          "Context propagation"
+        ],
+        "configuration": "management.tracing.sampling.probability=1.0"
+      },
+      "zipkin": {
+        "description": "Zipkin distributed tracing system",
+        "features": [
+          "Request tracing visualization",
+          "Dependency graph",
+          "Timing analysis",
+          "Service map"
+        ],
+        "configuration": "management.zipkin.tracing.endpoint",
+        "use_when": "Need distributed tracing visualization"
+      },
+      "jaeger": {
+        "description": "Jaeger distributed tracing",
+        "features": [
+          "High performance",
+          "OpenTelemetry support",
+          "UI for visualization",
+          "Sampling strategies"
+        ],
+        "configuration": "management.tracing.export.jaeger.*",
+        "use_when": "Need high-performance tracing"
+      },
+      "trace_concepts": {
+        "trace": "Complete request path across services",
+        "span": "Individual operation within a trace",
+        "span_kind": "SERVER, CLIENT, PRODUCER, CONSUMER",
+        "correlation_id": "Unique ID propagated across services",
+        "baggage": "Context data propagated with trace",
+        "sampling": "Reduce trace volume in high-throughput systems"
+      },
+      "best_practices": [
+        "Use Micrometer Tracing with Spring Boot",
+        "Propagate trace context across service calls",
+        "Add custom spans for business operations",
+        "Use correlation IDs in logs",
+        "Configure appropriate sampling rates",
+        "Monitor trace volume and performance",
+        "Add trace context to error messages",
+        "Use baggage for cross-service context"
+      ]
+    },
+    "structured_logging": {
+      "description": "Logging in structured format (JSON)",
+      "logback": {
+        "description": "Logback with Logstash encoder",
+        "encoder": "net.logstash.logback.encoder.LogstashEncoder",
+        "features": [
+          "JSON format",
+          "Structured fields",
+          "MDC support",
+          "Caller information"
+        ],
+        "configuration": "logback-spring.xml with LogstashEncoder"
+      },
+      "log4j2": {
+        "description": "Log4j2 with JSON layout",
+        "layout": "JsonTemplateLayout",
+        "use_when": "Using Log4j2 instead of Logback"
+      },
+      "mdc": {
+        "description": "Mapped Diagnostic Context - add context to logs",
+        "use_cases": [
+          "Correlation IDs",
+          "User IDs",
+          "Request IDs",
+          "Trace IDs"
+        ],
+        "example": "MDC.put(\"traceId\", traceId)",
+        "best_practices": [
+          "Add correlation IDs",
+          "Clear MDC after request",
+          "Use in async operations",
+          "Propagate across threads"
+        ]
+      },
+      "log_levels": {
+        "trace": "Very detailed debugging",
+        "debug": "Debugging information",
+        "info": "General information",
+        "warn": "Warning messages",
+        "error": "Error messages"
+      },
+      "best_practices": [
+        "Use structured logging (JSON)",
+        "Add correlation IDs",
+        "Use appropriate log levels",
+        "Don't log sensitive information",
+        "Use MDC for context",
+        "Configure different formats per environment",
+        "Monitor log volume",
+        "Use log aggregation (ELK, Loki)"
+      ]
+    },
+    "spring_boot_actuator": {
+      "description": "Spring Boot Actuator - production-ready features",
+      "endpoints": {
+        "health": "Application health status",
+        "info": "Application information",
+        "metrics": "Application metrics",
+        "prometheus": "Prometheus metrics endpoint",
+        "env": "Environment properties",
+        "loggers": "Logger configuration",
+        "httptrace": "HTTP request traces",
+        "threaddump": "Thread dump",
+        "heapdump": "Heap dump"
+      },
+      "health_indicators": {
+        "description": "Custom health checks",
+        "built_in": [
+          "DatabaseHealthIndicator",
+          "DiskSpaceHealthIndicator",
+          "PingHealthIndicator",
+          "RedisHealthIndicator"
+        ],
+        "custom": "Implement HealthIndicator interface",
+        "use_cases": [
+          "Database connectivity",
+          "External service availability",
+          "Disk space",
+          "Custom business health"
+        ]
+      },
+      "configuration": {
+        "exposure": "management.endpoints.web.exposure.include",
+        "base_path": "management.endpoints.web.base-path",
+        "health_details": "management.endpoint.health.show-details"
+      },
+      "health_probes": {
+        "liveness": "Container is alive - /actuator/health/liveness",
+        "readiness": "Container is ready - /actuator/health/readiness",
+        "startup": "Container has started - /actuator/health/startup",
+        "configuration": "management.health.probes.enabled=true"
+      },
+      "best_practices": [
+        "Expose only necessary endpoints",
+        "Secure actuator endpoints",
+        "Use health probes for Kubernetes",
+        "Create custom health indicators",
+        "Monitor actuator metrics",
+        "Use info endpoint for version info"
+      ]
+    },
+    "prometheus": {
+      "description": "Prometheus - metrics collection and alerting",
+      "scraping": {
+        "description": "Prometheus scrapes metrics from applications",
+        "endpoint": "/actuator/prometheus",
+        "interval": "Scrape interval (e.g., 15s)",
+        "configuration": "prometheus.yml scrape_configs"
+      },
+      "metrics_format": {
+        "description": "Prometheus exposition format",
+        "example": "http_server_requests_seconds_count{method=\"GET\",status=\"200\",uri=\"/api/products\"} 1234",
+        "types": {
+          "counter": "Monotonically increasing",
+          "gauge": "Can go up or down",
+          "histogram": "Distribution of values",
+          "summary": "Similar to histogram"
+        }
+      },
+      "query_language": {
+        "description": "PromQL - Prometheus Query Language",
+        "examples": {
+          "rate": "rate(http_server_requests_seconds_count[5m])",
+          "histogram_quantile": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket[5m]))",
+          "sum": "sum(rate(http_server_requests_seconds_count[5m])) by (status)"
+        }
+      },
+      "best_practices": [
+        "Use Prometheus for Kubernetes deployments",
+        "Configure appropriate scrape intervals",
+        "Use service discovery for scraping",
+        "Set up alerting rules",
+        "Monitor Prometheus itself",
+        "Use recording rules for complex queries"
+      ]
+    },
+    "grafana": {
+      "description": "Grafana - metrics visualization",
+      "data_sources": {
+        "prometheus": "Prometheus data source",
+        "loki": "Log aggregation",
+        "jaeger": "Distributed tracing",
+        "elasticsearch": "Log storage"
+      },
+      "dashboards": {
+        "description": "Create dashboards for visualization",
+        "panels": {
+          "graph": "Time series graphs",
+          "stat": "Single stat panels",
+          "table": "Table visualizations",
+          "heatmap": "Heatmap visualizations"
+        },
+        "best_practices": [
+          "Create service-specific dashboards",
+          "Use consistent naming",
+          "Add alerts to dashboards",
+          "Use variables for flexibility",
+          "Share dashboards across teams"
+        ]
+      },
+      "alerting": {
+        "description": "Set up alerts based on metrics",
+        "channels": {
+          "email": "Email notifications",
+          "slack": "Slack notifications",
+          "pagerduty": "PagerDuty integration",
+          "webhook": "Custom webhook"
+        },
+        "best_practices": [
+          "Set up meaningful alerts",
+          "Avoid alert fatigue",
+          "Use alerting rules in Prometheus",
+          "Test alert channels",
+          "Document alert runbooks"
+        ]
+      }
+    },
+    "sli_slo": {
+      "description": "Service Level Indicators and Objectives",
+      "sli": {
+        "description": "Service Level Indicator - measurable metric",
+        "examples": {
+          "availability": "Uptime percentage",
+          "latency": "Response time (p50, p95, p99)",
+          "error_rate": "Percentage of failed requests",
+          "throughput": "Requests per second"
+        }
+      },
+      "slo": {
+        "description": "Service Level Objective - target for SLI",
+        "examples": {
+          "availability": "99.9% uptime",
+          "latency": "95% of requests < 200ms",
+          "error_rate": "< 0.1% errors",
+          "throughput": "> 1000 req/s"
+        }
+      },
+      "sla": {
+        "description": "Service Level Agreement - contract with users",
+        "relationship": "SLA is typically less strict than SLO"
+      },
+      "best_practices": [
+        "Define SLIs based on user experience",
+        "Set realistic SLOs",
+        "Monitor SLI continuously",
+        "Alert when SLO is at risk",
+        "Review and adjust SLOs regularly",
+        "Document SLOs and SLIs"
+      ]
+    },
+    "alerting": {
+      "description": "Alert on important conditions",
+      "alert_types": {
+        "critical": "Immediate attention required",
+        "warning": "Attention needed soon",
+        "info": "Informational alerts"
+      },
+      "alert_rules": {
+        "description": "Define when to alert",
+        "examples": {
+          "high_error_rate": "Error rate > 1% for 5 minutes",
+          "high_latency": "P95 latency > 500ms for 5 minutes",
+          "low_availability": "Availability < 99% for 1 minute",
+          "resource_exhaustion": "Memory usage > 90%"
+        }
+      },
+      "best_practices": [
+        "Alert on symptoms, not causes",
+        "Avoid alert fatigue",
+        "Use alert grouping",
+        "Set appropriate thresholds",
+        "Test alert channels",
+        "Document runbooks",
+        "Review and tune alerts regularly"
+      ]
+    },
+    "correlation_ids": {
+      "description": "Track requests across services",
+      "implementation": {
+        "mdc": "Add to MDC for logging",
+        "http_headers": "Propagate via HTTP headers",
+        "trace_context": "Include in trace context",
+        "messaging": "Include in message headers"
+      },
+      "best_practices": [
+        "Generate at API Gateway",
+        "Propagate across all services",
+        "Include in all logs",
+        "Add to error messages",
+        "Use for debugging",
+        "Store in trace context"
+      ]
+    },
+    "observability_stack": {
+      "description": "Complete observability solution",
+      "components": {
+        "metrics": "Prometheus + Grafana",
+        "logs": "ELK Stack (Elasticsearch, Logstash, Kibana) or Loki",
+        "traces": "Zipkin or Jaeger",
+        "apm": "Application Performance Monitoring (optional)"
+      },
+      "integrations": {
+        "spring_boot": "Micrometer for metrics and tracing",
+        "kubernetes": "Prometheus Operator, ServiceMonitor",
+        "ci_cd": "Observability in deployment pipelines"
+      },
+      "best_practices": [
+        "Use consistent naming conventions",
+        "Correlate metrics, logs, and traces",
+        "Set up dashboards for each service",
+        "Implement alerting",
+        "Monitor the monitoring system",
+        "Regularly review and optimize"
+      ]
+    }
+  },
+  "best_practices": [
+    "Implement the three pillars: metrics, logs, traces",
+    "Use Micrometer for all metrics",
+    "Use structured logging (JSON)",
+    "Add correlation IDs to all requests",
+    "Configure health probes for Kubernetes",
+    "Export metrics to Prometheus",
+    "Create Grafana dashboards",
+    "Set up meaningful alerts",
+    "Define SLIs and SLOs",
+    "Monitor business metrics",
+    "Use distributed tracing",
+    "Correlate metrics, logs, and traces",
+    "Review observability regularly",
+    "Document observability setup"
+  ],
+  "anti_patterns": []
+}

@@ -1,23 +1,22 @@
 ---
-name: skill-generation
 description: Skill definition file generation skill
-type: skill
-knowledge: [best-practices.json]
-templates: [patterns/skills/]
 ---
 
+# Skill Generation
+
+Skill definition file generation skill
+
+## 
 # Skill Generation Skill
 
 Generates skill definition files from patterns for target projects.
 
-## When to Use
+## 
+# Skill Generation Skill
 
-- When generating skills for a new project
-- When customizing skill behavior
-- When creating new skill types
+Generates skill definition files from patterns for target projects.
 
 ## Process
-
 ### Step 1: Load Skill Pattern
 For each requested skill:
 1. Load pattern from `patterns/skills/{skill-id}.json`
@@ -46,9 +45,6 @@ knowledge: [{knowledge}]
 
 {introduction}
 
-## When to Use
-{whenToUse}
-
 ## Process
 {process steps}
 
@@ -63,14 +59,14 @@ knowledge: [{knowledge}]
 Create skill directory structure:
 
 ```
-{TARGET}/.agent/skills/{skill-name}/
+{TARGET}/.cursor/skills/{skill-name}/
 ├── SKILL.md           # Main skill definition
 └── references/        # Optional reference docs
 ```
 
 ### Step 5: Update README Counts (Factory Only)
 
-**CRITICAL:** When creating skills in the Antigravity Agent Factory itself, ALWAYS run:
+**CRITICAL:** When creating skills in the Cursor Agent Factory itself, ALWAYS run:
 
 ```powershell
 {PYTHON_PATH} scripts/validation/validate_readme_structure.py --update
@@ -82,8 +78,18 @@ This updates the skill count in README.md to prevent CI failures.
 
 **Automation:** This step should be automatic - never skip it when adding skills to the factory.
 
-## Output Format
+```
+### Step 4: Create Skill Directory
+Create skill directory structure:
+```
 
+```
+### Step 5: Update README Counts (Factory Only)
+
+**CRITICAL:** When creating skills in the Cursor Agent Factory itself, ALWAYS run:
+```
+
+## Output Format
 Skill markdown file with:
 - YAML frontmatter with metadata
 - Introduction
@@ -93,19 +99,21 @@ Skill markdown file with:
 - Important Rules
 
 ## Fallback Procedures
-
 - **If pattern not found**: Report error, skip skill
 - **If customization fails**: Use default pattern values
 
 ## Important Rules
-
 1. **Always update README counts** when adding skills to the factory
 2. Run `validate_readme_structure.py --update` after creating any new skill
 3. Commit the README update along with the new skill
 4. This prevents CI pipeline failures
 
 ## References
-
 - `patterns/skills/*.json`
 - `knowledge/best-practices.json`
 - `scripts/validation/validate_readme_structure.py`
+
+## Prerequisites
+> [!IMPORTANT]
+> Requirements:
+> - Knowledge: best-practices.json

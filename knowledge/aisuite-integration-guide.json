@@ -1,0 +1,275 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "aisuite-integration",
+  "name": "AISuite Integration Guide",
+  "title": "AISuite Integration Guide",
+  "description": "Configuration and usage guide for Andrew Ng's aisuite - unified LLM interface with MCP support",
+  "version": "1.0.0",
+  "category": "reference",
+  "overview": {
+    "name": "aisuite",
+    "packageVersion": "0.1.14",
+    "pythonRequirement": ">=3.10,<3.13",
+    "author": "Andrew Ng",
+    "repository": "https://github.com/andrewyng/aisuite",
+    "license": "MIT",
+    "stars": "13.4k+",
+    "type": "library",
+    "languages": [
+      "python",
+      "javascript",
+      "typescript"
+    ],
+    "description": "Lightweight library providing unified API for 20+ LLM providers with built-in MCP client support"
+  },
+  "keyFeatures": [
+    "Unified API across multiple LLM providers",
+    "OpenAI-compatible interface for easy adoption",
+    "Built-in agent support with max_turns parameter",
+    "Native MCP client integration for tool calling",
+    "Automatic tool execution and schema generation",
+    "Support for 20+ providers: OpenAI, Anthropic, Google, AWS, Cohere, Mistral, Ollama, etc."
+  ],
+  "installation": {
+    "python": {
+      "base": "pip install aisuite",
+      "withProvider": "pip install 'aisuite[anthropic]'",
+      "all": "pip install 'aisuite[all]'",
+      "withMcp": "pip install 'aisuite[mcp]'"
+    },
+    "javascript": {
+      "base": "npm install aisuite"
+    }
+  },
+  "providers": [
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "envVar": "OPENAI_API_KEY",
+      "models": [
+        "gpt-4o",
+        "gpt-4",
+        "gpt-3.5-turbo"
+      ]
+    },
+    {
+      "id": "anthropic",
+      "name": "Anthropic",
+      "envVar": "ANTHROPIC_API_KEY",
+      "models": [
+        "claude-3-5-sonnet",
+        "claude-3-opus",
+        "claude-3-haiku"
+      ]
+    },
+    {
+      "id": "google",
+      "name": "Google",
+      "envVar": "GOOGLE_API_KEY",
+      "models": [
+        "gemini-pro",
+        "gemini-ultra"
+      ]
+    },
+    {
+      "id": "aws",
+      "name": "AWS Bedrock",
+      "envVar": "AWS_ACCESS_KEY_ID",
+      "models": [
+        "anthropic.claude-3",
+        "amazon.titan"
+      ]
+    },
+    {
+      "id": "azure",
+      "name": "Azure OpenAI",
+      "envVar": "AZURE_OPENAI_API_KEY",
+      "models": [
+        "gpt-4",
+        "gpt-35-turbo"
+      ]
+    },
+    {
+      "id": "cohere",
+      "name": "Cohere",
+      "envVar": "COHERE_API_KEY",
+      "models": [
+        "command-r-plus",
+        "command-r"
+      ]
+    },
+    {
+      "id": "mistral",
+      "name": "Mistral",
+      "envVar": "MISTRAL_API_KEY",
+      "models": [
+        "mistral-large",
+        "mistral-medium"
+      ]
+    },
+    {
+      "id": "groq",
+      "name": "Groq",
+      "envVar": "GROQ_API_KEY",
+      "models": [
+        "llama3-70b",
+        "mixtral-8x7b"
+      ]
+    },
+    {
+      "id": "ollama",
+      "name": "Ollama (Local)",
+      "envVar": null,
+      "models": [
+        "llama3",
+        "mistral",
+        "codellama"
+      ]
+    },
+    {
+      "id": "huggingface",
+      "name": "Hugging Face",
+      "envVar": "HF_TOKEN",
+      "models": [
+        "meta-llama/Llama-3"
+      ]
+    },
+    {
+      "id": "fireworks",
+      "name": "Fireworks AI",
+      "envVar": "FIREWORKS_API_KEY",
+      "models": [
+        "llama-v3-70b"
+      ]
+    },
+    {
+      "id": "together",
+      "name": "Together AI",
+      "envVar": "TOGETHER_API_KEY",
+      "models": [
+        "meta-llama/Llama-3"
+      ]
+    }
+  ],
+  "basicUsage": {
+    "python": "import aisuite as ai\n\nclient = ai.Client()\n\nresponse = client.chat.completions.create(\n    model=\"openai:gpt-4o\",  # Format: provider:model\n    messages=[\n        {\"role\": \"system\", \"content\": \"You are a helpful assistant.\"},\n        {\"role\": \"user\", \"content\": \"Hello!\"}\n    ],\n    temperature=0.7\n)\n\nprint(response.choices[0].message.content)",
+    "multiProvider": "# Same code works across providers\nmodels = [\n    \"openai:gpt-4o\",\n    \"anthropic:claude-3-5-sonnet-20240620\",\n    \"google:gemini-pro\"\n]\n\nfor model in models:\n    response = client.chat.completions.create(\n        model=model,\n        messages=messages\n    )\n    print(f\"{model}: {response.choices[0].message.content}\")"
+  },
+  "mcpIntegration": {
+    "description": "AISuite can consume MCP servers as tools for agentic workflows",
+    "configDictFormat": "# Option 1: Config dict (simple use cases)\nresponse = client.chat.completions.create(\n    model=\"openai:gpt-4o\",\n    messages=[{\"role\": \"user\", \"content\": \"List files in current directory\"}],\n    tools=[{\n        \"type\": \"mcp\",\n        \"name\": \"filesystem\",\n        \"command\": \"npx\",\n        \"args\": [\"-y\", \"@modelcontextprotocol/server-filesystem\", \"/path/to/dir\"]\n    }],\n    max_turns=3\n)",
+    "mcpClientFormat": "# Option 2: MCPClient (advanced use cases)\nfrom aisuite.mcp import MCPClient\n\nmcp = MCPClient(\n    command=\"npx\",\n    args=[\"-y\", \"@modelcontextprotocol/server-filesystem\", \"/path/to/dir\"]\n)\n\nresponse = client.chat.completions.create(\n    model=\"openai:gpt-4o\",\n    messages=[{\"role\": \"user\", \"content\": \"List files\"}],\n    tools=mcp.get_callable_tools(),\n    max_turns=3\n)\n\nmcp.close()  # Clean up"
+  },
+  "agenticWorkflows": {
+    "description": "Use max_turns for automatic tool execution loops",
+    "example": "def get_weather(location: str) -> str:\n    \"\"\"Get weather for a location.\"\"\"\n    return f\"Sunny, 72\u00b0F in {location}\"\n\nresponse = client.chat.completions.create(\n    model=\"openai:gpt-4o\",\n    messages=[{\"role\": \"user\", \"content\": \"What's the weather in NYC?\"}],\n    tools=[get_weather],  # Pass Python functions directly\n    max_turns=3  # Automatic tool execution\n)\n\n# Access intermediate messages\nprint(response.choices[0].intermediate_messages)"
+  },
+  "factoryIntegration": {
+    "recommendation": "Add aisuite as optional dependency for projects requiring multi-provider LLM access",
+    "useCases": [
+      "Comparing responses across LLM providers",
+      "Failover between providers",
+      "Using different models for different tasks",
+      "Local development with Ollama, production with cloud providers"
+    ],
+    "configurationTemplate": {
+      "name": "aisuite",
+      "type": "library",
+      "installation": "pip install 'aisuite[all,mcp]'",
+      "envFile": ".env.aisuite",
+      "envVariables": [
+        "OPENAI_API_KEY",
+        "ANTHROPIC_API_KEY",
+        "GOOGLE_API_KEY"
+      ]
+    }
+  },
+  "setupSteps": [
+    "Install aisuite: pip install 'aisuite[all]' (or with specific providers)",
+    "Set environment variables for desired providers",
+    "For MCP support: pip install 'aisuite[mcp]'",
+    "Import and create client: import aisuite as ai; client = ai.Client()",
+    "Use model format: provider:model-name"
+  ],
+  "documentation": {
+    "github": "https://github.com/andrewyng/aisuite",
+    "examples": "https://github.com/andrewyng/aisuite/tree/main/examples",
+    "guides": "https://github.com/andrewyng/aisuite/tree/main/guides",
+    "mcpDocs": "https://github.com/andrewyng/aisuite/blob/main/docs/mcp-tools.md"
+  },
+  "patterns": {
+    "multi_provider_access": {
+      "description": "Patterns for accessing multiple LLM providers through unified API",
+      "use_when": "Need to compare providers, implement failover, or use different models for different tasks",
+      "best_practices": [
+        "Use provider:model format (e.g., 'openai:gpt-4o') for model specification",
+        "Set environment variables for desired providers before creating client",
+        "Use same code across providers for easy switching and comparison"
+      ]
+    },
+    "mcp_integration": {
+      "description": "Patterns for integrating MCP servers as tools",
+      "use_when": "Need to use MCP servers for agentic workflows with tool calling",
+      "best_practices": [
+        "Use config dict format for simple MCP tool integration",
+        "Use MCPClient for advanced use cases requiring connection management",
+        "Always call mcp.close() to clean up MCP connections properly"
+      ]
+    },
+    "agentic_workflows": {
+      "description": "Patterns for building agentic workflows with automatic tool execution",
+      "use_when": "Building agents that need to use tools in multi-turn conversations",
+      "best_practices": [
+        "Use max_turns parameter for automatic tool execution loops",
+        "Pass Python functions directly as tools for simple integrations",
+        "Access intermediate_messages to inspect tool execution history"
+      ]
+    },
+    "provider_selection": {
+      "description": "Patterns for selecting and switching between providers",
+      "use_when": "Need to optimize for cost, latency, or quality",
+      "best_practices": [
+        "Use local Ollama for development and privacy-sensitive applications",
+        "Use cloud providers (OpenAI, Anthropic) for production with better quality",
+        "Implement failover logic to switch providers on errors"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use provider:model format (e.g., 'openai:gpt-4o', 'anthropic:claude-3-5-sonnet') for consistent model specification",
+    "Set environment variables for desired providers before creating client to avoid runtime errors",
+    "Use max_turns parameter for automatic tool execution in agentic workflows, typically 3-5 turns",
+    "Install provider-specific extras (e.g., 'aisuite[anthropic]') or 'aisuite[all]' for all providers",
+    "Use MCPClient.close() to properly clean up MCP connections and prevent resource leaks",
+    "Access response.choices[0].intermediate_messages to inspect tool execution history for debugging",
+    "Use same code across providers for easy switching, comparison, and failover implementation",
+    "Prefer local Ollama for development and privacy-sensitive applications, cloud providers for production"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Ignoring provider format",
+      "problem": "Using model names without provider prefix causes errors",
+      "solution": "Always use provider:model format (e.g., 'openai:gpt-4o') when specifying models"
+    },
+    {
+      "name": "Missing environment variables",
+      "problem": "Client fails silently or with unclear errors when API keys are missing",
+      "solution": "Set required environment variables (OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.) before creating client"
+    },
+    {
+      "name": "Not closing MCP connections",
+      "problem": "Resource leaks and hanging processes from unclosed MCP connections",
+      "solution": "Always call mcp.close() after using MCPClient, preferably in try/finally blocks"
+    },
+    {
+      "name": "Unbounded max_turns",
+      "problem": "Agentic loops can run indefinitely, causing high costs and blocking execution",
+      "solution": "Set max_turns appropriately (3-5 typically) to prevent infinite loops"
+    },
+    {
+      "name": "Installing unnecessary providers",
+      "problem": "Larger installation size and potential dependency conflicts",
+      "solution": "Install only required providers using 'aisuite[provider]' or specific extras"
+    }
+  ]
+}

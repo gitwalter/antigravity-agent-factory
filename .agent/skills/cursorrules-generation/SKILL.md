@@ -1,26 +1,25 @@
 ---
-name: agentrules-generation
-description: .agentrules file generation skill
-type: skill
-knowledge: [best-practices.json]
-templates: [templates/factory/agentrules-template.md]
+description: .cursorrules file generation skill
 ---
 
+# Cursorrules Generation
+
+.cursorrules file generation skill
+
+## 
 # Cursorrules Generation Skill
 
-Generates the `.agentrules` file that governs AI agent behavior in generated projects.
+Generates the `.cursorrules` file that governs AI agent behavior in generated projects.
 
-## When to Use
+## 
+# Cursorrules Generation Skill
 
-- When generating a new project
-- When updating project configuration
-- When customizing agent behavior rules
+Generates the `.cursorrules` file that governs AI agent behavior in generated projects.
 
 ## Process
-
 ### Step 1: Load Template
-Load the agentrules template from:
-`templates/factory/agentrules-template.md`
+Load the cursorrules template from:
+`templates/factory/cursorrules-template.md`
 
 ### Step 2: Replace Variables
 Replace all template variables with project values:
@@ -65,12 +64,31 @@ Create MCP server configuration:
 
 ### Step 6: Write File
 Write to target location:
-- Path: `{TARGET}/.agentrules`
+- Path: `{TARGET}/.cursorrules`
 - Encoding: UTF-8
 
-## Output
+```markdown
+| Agent | Purpose |
+|-------|---------|
+| `code-reviewer` | Reviews code quality |
+| `test-generator` | Creates test cases |
+```
 
-Complete `.agentrules` file with:
+```markdown
+| Skill | Description |
+|-------|-------------|
+| `bugfix-workflow` | Ticket-based bug fixes |
+| `feature-workflow` | Spec-based features |
+```
+
+```markdown
+| Server | Purpose | URL |
+|--------|---------|-----|
+| `atlassian` | Jira/Confluence | https://mcp.atlassian.com/v1/sse |
+```
+
+## Output
+Complete `.cursorrules` file with:
 - Project Context section
 - Configuration Variables
 - Available Agents table
@@ -80,18 +98,20 @@ Complete `.agentrules` file with:
 - Response Behavior Guidelines
 
 ## Important Rules
-
 1. **Complete variables** - Replace ALL placeholders
 2. **Valid markdown** - Ensure proper formatting
 3. **Working tables** - Tables must render correctly
 4. **Accurate lists** - List actual configured items
 
 ## Fallback Procedures
-
 - **If template not found**: Use embedded default template
 - **If variable undefined**: Use empty or default value
 
 ## References
-
-- `templates/factory/agentrules-template.md`
+- `templates/factory/cursorrules-template.md`
 - `knowledge/best-practices.json`
+
+## Prerequisites
+> [!IMPORTANT]
+> Requirements:
+> - Knowledge: best-practices.json

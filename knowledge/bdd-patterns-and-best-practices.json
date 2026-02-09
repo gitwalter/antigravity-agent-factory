@@ -1,0 +1,350 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "bdd-patterns",
+  "name": "BDD Patterns and Best Practices",
+  "title": "BDD Patterns and Best Practices",
+  "description": "Knowledge file containing Behavior-Driven Development patterns, Gherkin syntax, and framework guidance",
+  "version": "1.0.0",
+  "category": "patterns",
+  "gherkinSyntax": {
+    "keywords": {
+      "feature": {
+        "description": "Describes the business feature being specified",
+        "example": "Feature: User Registration\n  As a new user\n  I want to create an account\n  So that I can access the application"
+      },
+      "background": {
+        "description": "Common setup steps shared by all scenarios in a feature",
+        "example": "Background:\n  Given the registration page is displayed\n  And the database is empty"
+      },
+      "scenario": {
+        "description": "A concrete example of a business rule",
+        "example": "Scenario: Successful registration with valid email\n  Given I am on the registration page\n  When I submit valid registration details\n  Then my account should be created"
+      },
+      "scenarioOutline": {
+        "description": "Template for data-driven scenarios",
+        "example": "Scenario Outline: Email validation\n  Given I enter email \"<email>\"\n  When I submit the form\n  Then I should see \"<message>\"\n\n  Examples:\n    | email           | message         |\n    | valid@email.com | Success         |\n    | invalid         | Invalid email   |"
+      },
+      "given": {
+        "description": "Establishes the initial context or preconditions",
+        "purpose": "Setup the system state before the action"
+      },
+      "when": {
+        "description": "Describes the action or event",
+        "purpose": "Trigger the behavior being tested"
+      },
+      "then": {
+        "description": "Describes the expected outcome",
+        "purpose": "Assert the expected results"
+      },
+      "and": {
+        "description": "Continues the previous step type",
+        "purpose": "Chain multiple steps of same type for readability"
+      },
+      "but": {
+        "description": "Negative continuation",
+        "purpose": "Express exception or negative condition"
+      }
+    },
+    "dataTables": {
+      "description": "Tabular data passed to steps",
+      "example": "Given the following users exist:\n  | name  | email           | role  |\n  | Alice | alice@test.com  | admin |\n  | Bob   | bob@test.com    | user  |"
+    },
+    "docStrings": {
+      "description": "Multi-line text passed to steps",
+      "example": "Given the following JSON payload:\n  \"\"\"\n  {\n    \"name\": \"Test User\",\n    \"email\": \"test@example.com\"\n  }\n  \"\"\""
+    },
+    "tags": {
+      "description": "Metadata for organizing and filtering scenarios",
+      "examples": [
+        "@smoke",
+        "@regression",
+        "@wip",
+        "@skip",
+        "@critical"
+      ],
+      "usage": "@smoke @critical\nScenario: Critical user flow"
+    }
+  },
+  "exampleMapping": {
+    "description": "Collaborative technique for discovering scenarios",
+    "participants": [
+      "Product Owner",
+      "Developer",
+      "Tester"
+    ],
+    "artifacts": {
+      "story": "User story being discussed (yellow card)",
+      "rules": "Business rules discovered (blue cards)",
+      "examples": "Concrete examples of rules (green cards)",
+      "questions": "Open questions needing answers (red cards)"
+    },
+    "process": [
+      "Start with the user story",
+      "Identify business rules",
+      "For each rule, create concrete examples",
+      "Capture questions for follow-up",
+      "Convert examples to Gherkin scenarios"
+    ]
+  },
+  "threeAmigos": {
+    "description": "Collaborative session with three perspectives",
+    "roles": {
+      "business": "Defines WHAT the feature should do (Product Owner)",
+      "development": "Defines HOW to implement (Developer)",
+      "testing": "Defines edge cases and validation (Tester/QA)"
+    },
+    "timing": "Before sprint or iteration planning",
+    "duration": "30-60 minutes per story",
+    "outcomes": [
+      "Shared understanding of requirements",
+      "Identified acceptance criteria",
+      "Discovered edge cases",
+      "Draft Gherkin scenarios"
+    ]
+  },
+  "frameworks": {
+    "python": {
+      "behave": {
+        "description": "Most popular Python BDD framework",
+        "installation": "pip install behave",
+        "structure": {
+          "features": "features/*.feature",
+          "steps": "features/steps/*.py",
+          "environment": "features/environment.py"
+        },
+        "stepDecorators": [
+          "@given",
+          "@when",
+          "@then",
+          "@step"
+        ],
+        "hooks": [
+          "before_all",
+          "after_all",
+          "before_feature",
+          "after_feature",
+          "before_scenario",
+          "after_scenario",
+          "before_step",
+          "after_step"
+        ],
+        "runCommand": "behave"
+      },
+      "pytestBdd": {
+        "description": "BDD plugin for pytest",
+        "installation": "pip install pytest-bdd",
+        "structure": {
+          "features": "tests/features/*.feature",
+          "steps": "tests/step_defs/*.py"
+        },
+        "advantages": [
+          "Integrates with pytest fixtures",
+          "Uses pytest's assertion introspection"
+        ],
+        "runCommand": "pytest --bdd"
+      }
+    },
+    "typescript": {
+      "cucumberJs": {
+        "description": "Official Cucumber implementation for JavaScript/TypeScript",
+        "installation": "npm install @cucumber/cucumber",
+        "structure": {
+          "features": "features/*.feature",
+          "steps": "features/step_definitions/*.ts",
+          "support": "features/support/*.ts"
+        },
+        "stepDecorators": [
+          "Given",
+          "When",
+          "Then",
+          "And",
+          "But"
+        ],
+        "hooks": [
+          "Before",
+          "After",
+          "BeforeAll",
+          "AfterAll",
+          "BeforeStep",
+          "AfterStep"
+        ],
+        "runCommand": "npx cucumber-js"
+      }
+    },
+    "java": {
+      "cucumberJvm": {
+        "description": "Official Cucumber implementation for Java",
+        "installation": "io.cucumber:cucumber-java",
+        "structure": {
+          "features": "src/test/resources/features/*.feature",
+          "steps": "src/test/java/steps/*.java",
+          "runner": "src/test/java/runner/TestRunner.java"
+        },
+        "annotations": [
+          "@Given",
+          "@When",
+          "@Then",
+          "@And",
+          "@But"
+        ],
+        "hooks": [
+          "@Before",
+          "@After",
+          "@BeforeAll",
+          "@AfterAll"
+        ],
+        "runCommand": "mvn test -Dcucumber"
+      }
+    },
+    "csharp": {
+      "specflow": {
+        "description": "BDD framework for .NET",
+        "installation": "SpecFlow.NUnit or SpecFlow.xUnit",
+        "structure": {
+          "features": "Features/*.feature",
+          "steps": "Features/Steps/*.cs",
+          "hooks": "Features/Hooks/*.cs"
+        },
+        "attributes": [
+          "[Given]",
+          "[When]",
+          "[Then]",
+          "[And]",
+          "[But]"
+        ],
+        "hooks": [
+          "[BeforeScenario]",
+          "[AfterScenario]",
+          "[BeforeFeature]",
+          "[AfterFeature]"
+        ],
+        "runCommand": "dotnet test"
+      }
+    },
+    "kotlin": {
+      "cucumberJvm": {
+        "description": "Cucumber with Kotlin DSL",
+        "installation": "io.cucumber:cucumber-java + kotlin stdlib",
+        "structure": {
+          "features": "src/test/resources/features/*.feature",
+          "steps": "src/test/kotlin/steps/*.kt"
+        },
+        "dslStyle": "Given/When/Then as infix functions",
+        "runCommand": "gradle test"
+      }
+    }
+  },
+  "projectStructure": {
+    "recommended": {
+      "features": "Feature files organized by domain",
+      "steps": "Step definitions organized by domain or shared",
+      "support": "Hooks, world/context, utilities",
+      "fixtures": "Test data and factories"
+    },
+    "example": {
+      "python": [
+        "features/",
+        "  user/",
+        "    registration.feature",
+        "    login.feature",
+        "  product/",
+        "    catalog.feature",
+        "  steps/",
+        "    user_steps.py",
+        "    product_steps.py",
+        "    common_steps.py",
+        "  environment.py"
+      ],
+      "typescript": [
+        "features/",
+        "  user/",
+        "    registration.feature",
+        "  step_definitions/",
+        "    user.steps.ts",
+        "    common.steps.ts",
+        "  support/",
+        "    world.ts",
+        "    hooks.ts"
+      ]
+    }
+  },
+  "integrationWithTdd": {
+    "description": "BDD and TDD serve complementary purposes",
+    "layers": {
+      "bdd": "Acceptance tests - stakeholder-visible behavior",
+      "tdd": "Unit tests - developer-focused implementation details"
+    },
+    "testPyramid": {
+      "top": "BDD/E2E (few, slow, high-level)",
+      "middle": "Integration tests (some, medium speed)",
+      "bottom": "Unit tests via TDD (many, fast, low-level)"
+    },
+    "workflow": [
+      "Write BDD scenario (failing acceptance test)",
+      "Use TDD to implement (red-green-refactor cycle)",
+      "BDD scenario passes when implementation complete",
+      "Both test suites maintained going forward"
+    ]
+  },
+  "livingDocumentation": {
+    "description": "Feature files as always-up-to-date documentation",
+    "tools": {
+      "python": "behave --format html --outfile report.html",
+      "cucumber": "cucumber-js --format html:report.html",
+      "specflow": "SpecFlow.Plus.LivingDocPlugin"
+    },
+    "benefits": [
+      "Documentation that cannot become stale",
+      "Stakeholders can review current behavior",
+      "Onboarding material for new team members",
+      "Audit trail for compliance"
+    ]
+  },
+  "best_practices": [
+    "Write scenarios at the business level, not UI interaction level Use: Given I am logged in as a registered user. Avoid: Given I click the login button\nAnd I type 'user@test.com' in the email field\nAnd I type 'password123' in the password field\nAnd I click submit",
+    "Each scenario should test one business rule or behavior",
+    "Scenarios should not depend on state from other scenarios",
+    "Use domain terminology understood by stakeholders Use: When I register a new user account. Avoid: When I POST to /api/v1/users with JSON payload",
+    "Build a library of reusable step definitions Consistent language across features Reduced maintenance burden Faster scenario authoring",
+    "Use Background for common Given steps shared by all scenarios Keep Background short; if complex, consider hooks instead",
+    "Use Scenario Outline for testing same behavior with different data Keep Examples tables focused; too many rows indicate split needed"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Imperativescenarios",
+      "problem": "Brittle, hard to read, maintenance nightmare",
+      "solution": "Abstract to business-level declarative steps"
+    },
+    {
+      "name": "Incidentaldetails",
+      "problem": "Obscures the business intent",
+      "solution": "Include only details essential to the behavior"
+    },
+    {
+      "name": "Featurebloat",
+      "problem": "Hard to navigate, likely mixing concerns",
+      "solution": "Split by business capability, aim for 5-15 scenarios per feature"
+    },
+    {
+      "name": "Coupledscenarios",
+      "problem": "Cannot run in isolation, order-dependent failures",
+      "solution": "Use proper setup in Given steps or Background"
+    },
+    {
+      "name": "Duplicatedsteps",
+      "problem": "Inconsistent behavior, maintenance burden",
+      "solution": "Build reusable step library with parameterized steps"
+    },
+    {
+      "name": "Techspeak",
+      "problem": "Stakeholders cannot understand or validate scenarios",
+      "solution": "Use ubiquitous language from domain-driven design"
+    }
+  ],
+  "patterns": {
+    "general": {
+      "description": "Knowledge file containing Behavior-Driven Development patterns, Gherkin syntax, and framework guidance",
+      "usage": "See detailed sections below"
+    }
+  }
+}

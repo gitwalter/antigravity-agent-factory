@@ -1,0 +1,569 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "artifact-dependencies",
+  "name": "Artifact Dependency Map",
+  "title": "Artifact Dependency Map",
+  "description": "Defines which artifacts must be updated when other artifacts change. Used by post-extension automation.",
+  "version": "1.1.0",
+  "category": "reference",
+  "last_updated": "2026-01-31T14:40:00Z",
+  "update_rules": {
+    "knowledge_file_created": {
+      "description": "When a new knowledge file is created",
+      "must_update": [
+        {
+          "file": "knowledge/manifest.json",
+          "action": "add_entry",
+          "fields": [
+            "version",
+            "category",
+            "title",
+            "description",
+            "tags",
+            "metadata.created",
+            "metadata.updated"
+          ],
+          "also_update": [
+            "statistics.total_files",
+            "statistics.categories.{category}"
+          ]
+        },
+        {
+          "file": "docs/reference/KNOWLEDGE_FILES.md",
+          "action": "add_table_row",
+          "section": "Knowledge File Categories Table",
+          "also_update": [
+            "file_count_in_intro"
+          ]
+        },
+        {
+          "file": "docs/reference/KNOWLEDGE_FILES.md",
+          "action": "add_description",
+          "section": "Category Details"
+        },
+        {
+          "file": "CHANGELOG.md",
+          "action": "add_version_entry"
+        }
+      ],
+      "detection": {
+        "pattern": "write\\(\"knowledge/.*\\.json\"",
+        "exclude": [
+          "manifest.json",
+          "skill-catalog.json",
+          "artifact-dependencies.json",
+          "schemas/*"
+        ]
+      }
+    },
+    "knowledge_file_extended": {
+      "description": "When an existing knowledge file is modified",
+      "must_update": [
+        {
+          "file": "knowledge/manifest.json",
+          "action": "bump_version",
+          "fields": [
+            "version",
+            "metadata.updated",
+            "change_history"
+          ]
+        },
+        {
+          "file": "docs/reference/KNOWLEDGE_FILES.md",
+          "action": "update_description",
+          "condition": "if_description_changed_significantly"
+        },
+        {
+          "file": "CHANGELOG.md",
+          "action": "add_version_entry"
+        }
+      ],
+      "detection": {
+        "pattern": "search_replace\\(\"knowledge/.*\\.json\""
+      }
+    },
+    "skill_created": {
+      "description": "When a new skill is created",
+      "must_update": [
+        {
+          "file": "knowledge/skill-catalog.json",
+          "action": "add_skill_entry",
+          "fields": [
+            "id",
+            "name",
+            "category",
+            "description",
+            "factorySkill",
+            "whenToUse"
+          ]
+        },
+        {
+          "file": "knowledge/skill-catalog.json",
+          "action": "add_to_category_list"
+        },
+        {
+          "file": "CHANGELOG.md",
+          "action": "add_version_entry"
+        }
+      ],
+      "detection": {
+        "pattern": "write\\(\"\\.cursor/skills/.*/SKILL\\.md\""
+      },
+      "conditional_updates": [
+        {
+          "file": "docs/reference/FACTORY_COMPONENTS.md",
+          "condition": "if_factory_skill",
+          "description": "Add to Factory Skills Overview table and add detailed description",
+          "sections": [
+            "Factory Skills Overview table",
+            "Detailed Skill Descriptions",
+            "Agent-Skill Interaction Diagram"
+          ]
+        }
+      ]
+    },
+    "agent_created": {
+      "description": "When a new agent is created",
+      "must_update": [
+        {
+          "file": "CHANGELOG.md",
+          "action": "add_version_entry"
+        }
+      ],
+      "detection": {
+        "pattern": "write\\(\"\\.cursor/agents/.*\\.md\""
+      },
+      "conditional_updates": [
+        {
+          "file": "docs/reference/FACTORY_COMPONENTS.md",
+          "condition": "if_factory_agent",
+          "description": "Add to Factory Agents Overview table and add detailed description",
+          "sections": [
+            "Factory Agents Overview table",
+            "Detailed Agent Descriptions",
+            "Agent-Skill Interaction Diagram",
+            "Key Integration Points"
+          ]
+        }
+      ]
+    },
+    "factory_agent_created": {
+      "description": "When a new Factory agent (not project agent) is created",
+      "must_update": [
+        {
+          "file": "docs/reference/FACTORY_COMPONENTS.md",
+          "action": "add_agent_to_table",
+          "section": "Factory Agents Overview"
+        },
+        {
+          "file": "docs/reference/FACTORY_COMPONENTS.md",
+          "action": "add_agent_description",
+          "section": "Detailed Agent Descriptions"
+        },
+        {
+          "file": "docs/reference/FACTORY_COMPONENTS.md",
+          "action": "update_diagram",
+          "section": "Agent-Skill Interaction Diagram"
+        },
+        {
+          "file": "docs/reference/FACTORY_COMPONENTS.md",
+          "action": "add_integration_point",
+          "section": "Key Integration Points"
+        },
+        {
+          "file": "CHANGELOG.md",
+          "action": "add_version_entry"
+        }
+      ],
+      "detection": {
+        "pattern": "write\\(\"\\.cursor/agents/.*\\.md\"",
+        "condition": "agent is Factory component (requirements-architect, stack-builder, knowledge-extender, etc.)"
+      }
+    },
+    "factory_skill_created": {
+      "description": "When a new Factory skill (not project skill) is created",
+      "must_update": [
+        {
+          "file": "knowledge/skill-catalog.json",
+          "action": "add_skill_entry"
+        },
+        {
+          "file": "docs/reference/FACTORY_COMPONENTS.md",
+          "action": "add_skill_to_table",
+          "section": "Factory Skills Overview"
+        },
+        {
+          "file": "docs/reference/FACTORY_COMPONENTS.md",
+          "action": "add_skill_description",
+          "section": "Detailed Skill Descriptions"
+        },
+        {
+          "file": "docs/reference/FACTORY_COMPONENTS.md",
+          "action": "update_diagram",
+          "section": "Agent-Skill Interaction Diagram"
+        },
+        {
+          "file": "CHANGELOG.md",
+          "action": "add_version_entry"
+        }
+      ],
+      "detection": {
+        "pattern": "write\\(\"\\.cursor/skills/.*/SKILL\\.md\"",
+        "condition": "skill is Factory component (extend-knowledge, requirements-gathering, etc.)"
+      }
+    },
+    "template_created": {
+      "description": "When a new template is created",
+      "must_update": [
+        {
+          "file": "CHANGELOG.md",
+          "action": "add_version_entry"
+        }
+      ],
+      "detection": {
+        "pattern": "write\\(\"templates/.*\\.tmpl\""
+      },
+      "conditional_updates": [
+        {
+          "file": "docs/reference/TEMPLATES.md",
+          "condition": "if_major_template"
+        }
+      ]
+    },
+    "blueprint_created": {
+      "description": "When a new blueprint is created",
+      "must_update": [
+        {
+          "file": "docs/reference/BLUEPRINTS.md",
+          "action": "add_table_row",
+          "section": "Blueprint Comparison Table"
+        },
+        {
+          "file": "docs/reference/BLUEPRINTS.md",
+          "action": "add_description",
+          "section": "Blueprint Details"
+        },
+        {
+          "file": "CHANGELOG.md",
+          "action": "add_version_entry"
+        }
+      ],
+      "detection": {
+        "pattern": "write\\(\"blueprints/.*/blueprint\\.json\""
+      }
+    }
+  },
+  "documentation_map": {
+    "description": "Maps artifact types to their documentation locations for reliable updates",
+    "knowledge_files": {
+      "primary_doc": "docs/reference/KNOWLEDGE_FILES.md",
+      "sections_to_update": [
+        {
+          "name": "intro_count",
+          "pattern": "currently includes \\*\\*[0-9]+ knowledge files\\*\\*"
+        },
+        {
+          "name": "category_table",
+          "pattern": "\\| File \\| Category \\| Description \\|"
+        },
+        {
+          "name": "category_details",
+          "pattern": "## Category Details"
+        }
+      ],
+      "registry": "knowledge/manifest.json"
+    },
+    "factory_agents": {
+      "primary_doc": "docs/reference/FACTORY_COMPONENTS.md",
+      "sections_to_update": [
+        {
+          "name": "agents_table",
+          "pattern": "## 2\\. Factory Agents Overview"
+        },
+        {
+          "name": "agent_details",
+          "pattern": "## 3\\. Detailed Agent Descriptions"
+        },
+        {
+          "name": "interaction_diagram",
+          "pattern": "## 6\\. Agent-Skill Interaction Diagram"
+        },
+        {
+          "name": "integration_points",
+          "pattern": "### Key Integration Points"
+        }
+      ]
+    },
+    "factory_skills": {
+      "primary_doc": "docs/reference/FACTORY_COMPONENTS.md",
+      "sections_to_update": [
+        {
+          "name": "skills_table",
+          "pattern": "## 4\\. Factory Skills Overview"
+        },
+        {
+          "name": "skill_details",
+          "pattern": "## 5\\. Detailed Skill Descriptions"
+        },
+        {
+          "name": "interaction_diagram",
+          "pattern": "## 6\\. Agent-Skill Interaction Diagram"
+        }
+      ],
+      "registry": "knowledge/skill-catalog.json"
+    },
+    "blueprints": {
+      "primary_doc": "docs/reference/BLUEPRINTS.md",
+      "sections_to_update": [
+        {
+          "name": "comparison_table",
+          "pattern": "## Blueprint Comparison"
+        },
+        {
+          "name": "category_table",
+          "pattern": "### By Category"
+        },
+        {
+          "name": "blueprint_details",
+          "pattern": "## Blueprint Details"
+        }
+      ]
+    },
+    "templates": {
+      "primary_doc": "docs/reference/TEMPLATES.md"
+    }
+  },
+  "factory_artifact_detection": {
+    "description": "How to determine if an artifact is a Factory component vs project component",
+    "factory_agents": [
+      "requirements-architect",
+      "stack-builder",
+      "template-generator",
+      "knowledge-manager",
+      "workflow-designer",
+      "onboarding-architect",
+      "workshop-facilitator",
+      "knowledge-extender",
+      "knowledge-evolution",
+      "workflow-architect",
+      "debug-conductor"
+    ],
+    "factory_skills": [
+      "requirements-gathering",
+      "purpose-definition",
+      "axiom-selection",
+      "stack-configuration",
+      "methodology-selection",
+      "agent-generation",
+      "skill-generation",
+      "knowledge-generation",
+      "template-generation",
+      "cursorrules-generation",
+      "workflow-generation",
+      "practice-selection",
+      "enforcement-selection",
+      "alignment-check",
+      "pattern-feedback",
+      "onboarding-flow",
+      "team-workshop-onboarding",
+      "shell-platform",
+      "readme-validation",
+      "extend-knowledge",
+      "update-knowledge",
+      "extend-workflow"
+    ],
+    "detection_rule": "If skill/agent name is in factory_agents or factory_skills list, update FACTORY_COMPONENTS.md"
+  },
+  "reference_scan": {
+    "description": "How to find all files that reference a given artifact",
+    "knowledge_files": {
+      "search_paths": [
+        "knowledge/manifest.json",
+        "knowledge/skill-catalog.json",
+        "docs/reference/KNOWLEDGE_FILES.md",
+        "blueprints/*/blueprint.json",
+        ".cursor/skills/*/SKILL.md",
+        ".cursor/agents/*.md"
+      ],
+      "search_command": "grep -r '{{filename}}' knowledge/ docs/ blueprints/ .cursor/"
+    },
+    "skills": {
+      "search_paths": [
+        "knowledge/skill-catalog.json",
+        ".cursor/agents/*.md",
+        "docs/reference/FACTORY_COMPONENTS.md",
+        "docs/FACTORY_REFERENCE.md"
+      ],
+      "search_command": "grep -r '{{skill-name}}' knowledge/ docs/ .cursor/"
+    },
+    "agents": {
+      "search_paths": [
+        "docs/reference/FACTORY_COMPONENTS.md",
+        "docs/FACTORY_REFERENCE.md",
+        ".cursor/skills/*/SKILL.md"
+      ],
+      "search_command": "grep -r '{{agent-name}}' docs/ .cursor/"
+    }
+  },
+  "validation_commands": {
+    "json_files": "python -c \"import json; json.load(open('{{file}}', encoding='utf-8'))\"",
+    "markdown_structure": "grep -c '## ' '{{file}}'",
+    "table_rows": "grep -c '^|' '{{file}}'",
+    "sync_versions": "python scripts/validation/sync_manifest_versions.py --sync",
+    "check_versions": "python scripts/validation/sync_manifest_versions.py"
+  },
+  "always_validate": [
+    "knowledge/manifest.json",
+    "knowledge/skill-catalog.json",
+    "knowledge/artifact-dependencies.json"
+  ],
+  "post_extension_checklist": {
+    "description": "Complete checklist for post-extension automation (referenced by .cursorrules Rule 6)",
+    "steps": [
+      {
+        "step": 1,
+        "action": "Read artifact-dependencies.json",
+        "purpose": "Determine what must be updated based on artifact type"
+      },
+      {
+        "step": 2,
+        "action": "Update manifest.json",
+        "when": "knowledge file created or extended",
+        "fields": [
+          "version",
+          "metadata.updated",
+          "change_history",
+          "statistics"
+        ]
+      },
+      {
+        "step": 3,
+        "action": "Update skill-catalog.json",
+        "when": "skill created",
+        "fields": [
+          "skills.{id}",
+          "category_lists"
+        ]
+      },
+      {
+        "step": 4,
+        "action": "Update docs/reference/KNOWLEDGE_FILES.md",
+        "when": "knowledge file created or description changed",
+        "sections": [
+          "intro count",
+          "category table",
+          "category details"
+        ]
+      },
+      {
+        "step": 5,
+        "action": "Update docs/reference/FACTORY_COMPONENTS.md",
+        "when": "factory agent or factory skill created",
+        "sections": [
+          "overview table",
+          "detailed descriptions",
+          "interaction diagram",
+          "integration points"
+        ]
+      },
+      {
+        "step": 6,
+        "action": "Update docs/reference/BLUEPRINTS.md",
+        "when": "blueprint created",
+        "sections": [
+          "comparison table",
+          "category groupings",
+          "blueprint details"
+        ]
+      },
+      {
+        "step": 7,
+        "action": "Update CHANGELOG.md",
+        "when": "always",
+        "format": "Semantic version entry with tables"
+      },
+      {
+        "step": 8,
+        "action": "Validate all modified JSON files",
+        "command": "python -c 'import json; json.load(open(file))'"
+      },
+      {
+        "step": 9,
+        "action": "Sync manifest versions from source files",
+        "command": "python scripts/validation/sync_manifest_versions.py --sync",
+        "note": "Single source of truth: file versions and CHANGELOG are authoritative"
+      },
+      {
+        "step": 10,
+        "action": "Validate README structure",
+        "command": "python scripts/validation/validate_readme_structure.py --update"
+      },
+      {
+        "step": 11,
+        "action": "Validate dependency graph",
+        "command": "python cli/factory_cli.py --validate-deps",
+        "note": "Check for circular dependencies and broken references"
+      },
+      {
+        "step": 12,
+        "action": "Ask user before git operations",
+        "format": "Show files, propose commit message, wait for approval"
+      }
+    ]
+  },
+  "patterns": {
+    "update_rule_lookup": {
+      "description": "Query update_rules to determine what must be updated when creating or modifying artifacts",
+      "usage": "Match artifact type (knowledge_file_created, skill_created, etc.) to find corresponding must_update actions"
+    },
+    "post_extension_automation": {
+      "description": "Follow post_extension_checklist steps systematically after creating or modifying Factory artifacts",
+      "usage": "Execute checklist steps in order, validating JSON files and updating documentation at each step"
+    },
+    "factory_component_detection": {
+      "description": "Distinguish Factory components from project components to determine which documentation to update",
+      "usage": "Check factory_artifact_detection.factory_agents or factory_skills lists to identify Factory components"
+    },
+    "reference_scanning": {
+      "description": "Find all files that reference a given artifact using search_paths and search_command patterns",
+      "usage": "Use reference_scan.{artifact_type}.search_command with artifact name to find all references"
+    }
+  },
+  "best_practices": [
+    "Always consult artifact-dependencies.json before creating or modifying Factory artifacts to ensure all dependencies are updated",
+    "Follow post_extension_checklist steps systematically to keep documentation and registries synchronized with artifact changes",
+    "Use factory_artifact_detection rules to determine if artifacts are Factory components requiring FACTORY_COMPONENTS.md updates",
+    "Run validation_commands after each update step to catch JSON syntax errors and broken references early",
+    "Update CHANGELOG.md for every artifact change to maintain project history and enable version tracking",
+    "Use reference_scan patterns to find all files referencing an artifact before renaming or removing it",
+    "Keep update_rules synchronized with actual documentation structure - update when adding new documentation sections",
+    "Validate all modified JSON files using validation_commands.json_files before committing to prevent syntax errors"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Incomplete Post-Extension Updates",
+      "problem": "Creating artifacts without following post_extension_checklist leaves documentation and registries out of sync",
+      "solution": "Always execute complete post_extension_checklist after creating artifacts. Use artifact-dependencies.json as guide"
+    },
+    {
+      "name": "Factory Component Misclassification",
+      "problem": "Not recognizing Factory components leads to missing FACTORY_COMPONENTS.md updates and broken documentation",
+      "solution": "Check factory_artifact_detection lists before creating artifacts. Update FACTORY_COMPONENTS.md for Factory components"
+    },
+    {
+      "name": "Stale Update Rules",
+      "problem": "Update rules not matching actual documentation structure causes incorrect automation and missed updates",
+      "solution": "Keep update_rules synchronized with documentation. Update rules when adding new documentation sections or formats"
+    },
+    {
+      "name": "Missing Validation",
+      "problem": "Skipping validation_commands after updates allows broken JSON and references to enter the codebase",
+      "solution": "Always run validation_commands after modifying JSON files. Use always_validate list for critical files"
+    },
+    {
+      "name": "Orphaned References",
+      "problem": "Removing artifacts without updating references breaks documentation and causes 404s or broken links",
+      "solution": "Use reference_scan to find all references before removing artifacts. Update or remove references systematically"
+    }
+  ]
+}

@@ -943,7 +943,8 @@ Before implementation:
                 pass
         
         return '0.0.0'
-        def _render_template_file(
+    
+    def _render_template_file(
         self,
         template_path: Path,
         context: Dict[str, Any]
@@ -1463,7 +1464,11 @@ To render diagrams to PNG, use a Mermaid CLI tool or the diagram rendering scrip
         
         self._write_file(diagrams_dir / 'README.md', readme_content)
     
-        This method integrates Antigravity Agent Factory into an existing        repository without destroying existing artifacts.
+    def _generate_onboarding(self) -> Dict[str, Any]:
+        """Generate project in onboarding mode.
+        
+        This method integrates Antigravity Agent Factory into an existing
+        repository without destroying existing artifacts.
         
         Returns:
             Dictionary with generation results.
@@ -1530,8 +1535,8 @@ To render diagrams to PNG, use a Mermaid CLI tool or the diagram rendering scrip
                 print(f"\nBackup session created: {self.backup_session.session_id}")
             
             # Step 6: Generate artifacts
-            self._onboard_directories()
-            self._onboard_cursorrules()            self._onboard_agents()
+            self._onboard_cursorrules()
+            self._onboard_agents()
             self._onboard_skills()
             self._onboard_knowledge()
             self._onboard_templates()
@@ -1645,7 +1650,8 @@ To render diagrams to PNG, use a Mermaid CLI tool or the diagram rendering scrip
                 print("Merged .agentrules with factory sections")
                 return
             elif resolution == ConflictResolution.KEEP_EXISTING:
-                print("Keeping existing .agentrules")                return
+                print("Keeping existing .agentrules")
+                return
         
         # Generate new (for FRESH scenario or REPLACE resolution)
         blueprint = self._load_blueprint()
@@ -1664,7 +1670,7 @@ To render diagrams to PNG, use a Mermaid CLI tool or the diagram rendering scrip
 # CURSOR AGENT FACTORY INTEGRATION
 # Generated: {datetime.now().strftime('%Y-%m-%d')}
 # Blueprint: {self.config.blueprint_id or 'custom'}
-# Factory Version: 4.1.0# ═══════════════════════════════════════════════════════════════════════════════
+# Factory Version: 0.1.0# ═══════════════════════════════════════════════════════════════════════════════
 
 """
         
@@ -1672,7 +1678,8 @@ To render diagrams to PNG, use a Mermaid CLI tool or the diagram rendering scrip
         if "CURSOR AGENT FACTORY INTEGRATION" in existing:
             # Update existing factory section
             import re
-            pattern = r'# ═+\s*\n# CURSOR AGENT FACTORY INTEGRATION.*?# ═+\s*END FACTORY INTEGRATION\s*═+\s*\n'            if re.search(pattern, existing, re.DOTALL):
+            pattern = r'# ═+\s*\n# CURSOR AGENT FACTORY INTEGRATION.*?# ═+\s*END FACTORY INTEGRATION\s*═+\s*\n'
+            if re.search(pattern, existing, re.DOTALL):
                 # Remove old factory section
                 existing = re.sub(pattern, '', existing, flags=re.DOTALL)
         
@@ -1739,7 +1746,8 @@ To render diagrams to PNG, use a Mermaid CLI tool or the diagram rendering scrip
                     continue
                 
                 # Backup existing if replacing
-                skill_path = self.target_dir / '.agent' / 'skills' / skill_id / 'SKILL.md'                if self.backup_session and skill_path.exists():
+                skill_path = self.target_dir / '.agent' / 'skills' / skill_id / 'SKILL.md'
+                if self.backup_session and skill_path.exists():
                     self.backup_session.backup_file(skill_path)
                 
                 # Check for rename

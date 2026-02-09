@@ -1,0 +1,295 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "quantitative-finance",
+  "name": "Quantitative Finance Patterns",
+  "title": "Quantitative Finance Patterns",
+  "description": "Risk metrics, portfolio theory, and financial mathematics",
+  "version": "1.0.0",
+  "category": "trading",
+  "risk_metrics": {
+    "return_metrics": {
+      "simple_return": {
+        "description": "Percentage change in price",
+        "formula": "(P_t - P_{t-1}) / P_{t-1}",
+        "code": "returns = prices.pct_change()"
+      },
+      "log_return": {
+        "description": "Logarithmic return (additive over time)",
+        "formula": "ln(P_t / P_{t-1})",
+        "code": "log_returns = np.log(prices / prices.shift(1))",
+        "benefits": [
+          "Additive over time",
+          "Symmetric",
+          "Better for compounding"
+        ]
+      },
+      "annualized_return": {
+        "description": "Return scaled to annual basis",
+        "formula": "(1 + total_return)^(252/days) - 1",
+        "code": "annualized = (1 + total_return) ** (252 / days) - 1"
+      }
+    },
+    "volatility_metrics": {
+      "standard_deviation": {
+        "description": "Dispersion of returns",
+        "code": "volatility = returns.std()",
+        "annualization": "annual_vol = daily_vol * np.sqrt(252)"
+      },
+      "downside_deviation": {
+        "description": "Volatility of negative returns only",
+        "code": "downside = returns[returns < 0].std()",
+        "use_case": "More realistic risk measure for asymmetric returns"
+      },
+      "exponential_volatility": {
+        "description": "Recent-weighted volatility (EWMA)",
+        "code": "ewm_vol = returns.ewm(span=20).std()"
+      }
+    },
+    "drawdown_metrics": {
+      "maximum_drawdown": {
+        "description": "Largest peak-to-trough decline",
+        "code_example": "def max_drawdown(equity_curve: pd.Series) -> float:\n    \"\"\"Calculate maximum drawdown.\"\"\"\n    rolling_max = equity_curve.expanding().max()\n    drawdowns = equity_curve / rolling_max - 1\n    return drawdowns.min()",
+        "interpretation": "Lower is better; -20% means lost 20% from peak"
+      },
+      "average_drawdown": {
+        "description": "Mean of all drawdowns",
+        "use_case": "Typical underwater period"
+      },
+      "drawdown_duration": {
+        "description": "Time to recover from drawdown",
+        "code_example": "def drawdown_duration(equity_curve: pd.Series) -> int:\n    \"\"\"Calculate longest drawdown duration in days.\"\"\"\n    rolling_max = equity_curve.expanding().max()\n    underwater = equity_curve < rolling_max\n    \n    duration = 0\n    max_duration = 0\n    \n    for is_underwater in underwater:\n        if is_underwater:\n            duration += 1\n            max_duration = max(max_duration, duration)\n        else:\n            duration = 0\n    \n    return max_duration"
+      }
+    },
+    "risk_adjusted_returns": {
+      "sharpe_ratio": {
+        "description": "Excess return per unit of risk",
+        "formula": "(R_p - R_f) / \u03c3_p",
+        "code_example": "def sharpe_ratio(\n    returns: pd.Series,\n    risk_free_rate: float = 0.05,\n    periods_per_year: int = 252\n) -> float:\n    \"\"\"Calculate annualized Sharpe ratio.\"\"\"\n    excess_returns = returns - risk_free_rate / periods_per_year\n    return np.sqrt(periods_per_year) * excess_returns.mean() / excess_returns.std()",
+        "interpretation": {
+          "< 1": "Subpar",
+          "1-2": "Good",
+          "2-3": "Very good",
+          "> 3": "Excellent (verify not overfitted)"
+        }
+      },
+      "sortino_ratio": {
+        "description": "Return per unit of downside risk",
+        "formula": "(R_p - R_f) / \u03c3_downside",
+        "code_example": "def sortino_ratio(\n    returns: pd.Series,\n    risk_free_rate: float = 0.05,\n    periods_per_year: int = 252\n) -> float:\n    \"\"\"Calculate Sortino ratio.\"\"\"\n    excess_returns = returns - risk_free_rate / periods_per_year\n    downside = returns[returns < 0].std()\n    return np.sqrt(periods_per_year) * excess_returns.mean() / downside",
+        "benefit": "Doesn't penalize upside volatility"
+      },
+      "calmar_ratio": {
+        "description": "Annual return / Maximum drawdown",
+        "formula": "CAGR / |Max Drawdown|",
+        "interpretation": "Higher is better; 1.0+ is good"
+      },
+      "information_ratio": {
+        "description": "Active return per unit of tracking error",
+        "formula": "(R_p - R_b) / \u03c3(R_p - R_b)",
+        "use_case": "Evaluate active managers vs benchmark"
+      }
+    },
+    "tail_risk_metrics": {
+      "value_at_risk": {
+        "description": "Maximum loss at confidence level",
+        "formula": "VaR_\u03b1 = -quantile(returns, 1-\u03b1)",
+        "code_example": "def value_at_risk(returns: pd.Series, confidence: float = 0.95) -> float:\n    \"\"\"Calculate historical VaR.\"\"\"\n    return -np.percentile(returns, 100 * (1 - confidence))",
+        "methods": [
+          "Historical",
+          "Parametric (Gaussian)",
+          "Monte Carlo"
+        ]
+      },
+      "conditional_var": {
+        "description": "Expected loss beyond VaR (Expected Shortfall)",
+        "formula": "CVaR = E[Loss | Loss > VaR]",
+        "code_example": "def conditional_var(returns: pd.Series, confidence: float = 0.95) -> float:\n    \"\"\"Calculate Conditional VaR (Expected Shortfall).\"\"\"\n    var = value_at_risk(returns, confidence)\n    return -returns[returns <= -var].mean()",
+        "benefit": "Captures tail risk better than VaR"
+      }
+    }
+  },
+  "portfolio_theory": {
+    "mean_variance_optimization": {
+      "description": "Maximize return for given risk (Markowitz)",
+      "code_example": "from scipy.optimize import minimize\nimport numpy as np\n\ndef optimize_portfolio(\n    expected_returns: np.ndarray,\n    cov_matrix: np.ndarray,\n    target_return: float = None\n) -> np.ndarray:\n    \"\"\"Find optimal portfolio weights.\"\"\"\n    n = len(expected_returns)\n    \n    def portfolio_volatility(weights):\n        return np.sqrt(weights @ cov_matrix @ weights)\n    \n    constraints = [{'type': 'eq', 'fun': lambda w: np.sum(w) - 1}]\n    \n    if target_return is not None:\n        constraints.append({\n            'type': 'eq',\n            'fun': lambda w: w @ expected_returns - target_return\n        })\n    \n    bounds = [(0, 1) for _ in range(n)]  # Long only\n    initial = np.ones(n) / n\n    \n    result = minimize(\n        portfolio_volatility,\n        initial,\n        method='SLSQP',\n        bounds=bounds,\n        constraints=constraints\n    )\n    \n    return result.x",
+      "limitations": [
+        "Sensitive to expected return estimates",
+        "Historical covariance may not persist",
+        "Extreme weights without constraints"
+      ]
+    },
+    "risk_parity": {
+      "description": "Equal risk contribution from each asset",
+      "formula": "w_i * (\u03a3w)_i = Risk Budget",
+      "code_example": "def risk_parity_weights(cov_matrix: np.ndarray) -> np.ndarray:\n    \"\"\"Calculate risk parity portfolio weights.\"\"\"\n    n = cov_matrix.shape[0]\n    \n    def risk_budget_objective(weights):\n        portfolio_vol = np.sqrt(weights @ cov_matrix @ weights)\n        marginal_risk = cov_matrix @ weights / portfolio_vol\n        risk_contribution = weights * marginal_risk\n        target_risk = portfolio_vol / n\n        return np.sum((risk_contribution - target_risk) ** 2)\n    \n    constraints = [{'type': 'eq', 'fun': lambda w: np.sum(w) - 1}]\n    bounds = [(0.01, 1) for _ in range(n)]\n    initial = np.ones(n) / n\n    \n    result = minimize(\n        risk_budget_objective,\n        initial,\n        method='SLSQP',\n        bounds=bounds,\n        constraints=constraints\n    )\n    \n    return result.x",
+      "benefits": [
+        "Robust to return estimation errors",
+        "Diversified risk exposure",
+        "Lower turnover"
+      ]
+    },
+    "black_litterman": {
+      "description": "Combine market equilibrium with investor views",
+      "components": [
+        "Market equilibrium returns (from CAPM)",
+        "Investor views with confidence",
+        "Posterior expected returns"
+      ],
+      "use_case": "Blend quantitative models with human insights"
+    }
+  },
+  "statistical_tests": {
+    "stationarity": {
+      "adf_test": {
+        "description": "Augmented Dickey-Fuller test for unit root",
+        "code": "from statsmodels.tsa.stattools import adfuller\nresult = adfuller(series)\np_value = result[1]",
+        "interpretation": "p < 0.05 \u2192 stationary"
+      }
+    },
+    "cointegration": {
+      "engle_granger": {
+        "description": "Test if two series are cointegrated",
+        "code": "from statsmodels.tsa.stattools import coint\nstat, p_value, crit = coint(series1, series2)",
+        "use_case": "Pairs trading validation"
+      }
+    },
+    "normality": {
+      "jarque_bera": {
+        "description": "Test if returns are normally distributed",
+        "code": "from scipy.stats import jarque_bera\nstat, p_value = jarque_bera(returns)",
+        "note": "Financial returns typically NOT normal (fat tails)"
+      }
+    }
+  },
+  "time_series_models": {
+    "ARIMA": {
+      "description": "Autoregressive Integrated Moving Average",
+      "components": [
+        "AR(p): Autoregressive",
+        "I(d): Differencing",
+        "MA(q): Moving Average"
+      ],
+      "code": "from statsmodels.tsa.arima.model import ARIMA\nmodel = ARIMA(series, order=(p, d, q))\nresult = model.fit()"
+    },
+    "GARCH": {
+      "description": "Generalized Autoregressive Conditional Heteroskedasticity",
+      "use_case": "Model time-varying volatility",
+      "code": "from arch import arch_model\nmodel = arch_model(returns, vol='Garch', p=1, q=1)\nresult = model.fit()"
+    }
+  },
+  "performance_reporting": {
+    "required_metrics": [
+      "Total Return",
+      "Annualized Return (CAGR)",
+      "Annualized Volatility",
+      "Sharpe Ratio",
+      "Sortino Ratio",
+      "Maximum Drawdown",
+      "Calmar Ratio",
+      "Win Rate",
+      "Profit Factor",
+      "Number of Trades"
+    ],
+    "code_example": "def performance_report(returns: pd.Series, risk_free: float = 0.05) -> dict:\n    \"\"\"Generate comprehensive performance report.\"\"\"\n    total_return = (1 + returns).prod() - 1\n    annualized = (1 + total_return) ** (252 / len(returns)) - 1\n    volatility = returns.std() * np.sqrt(252)\n    \n    equity_curve = (1 + returns).cumprod()\n    max_dd = max_drawdown(equity_curve)\n    \n    return {\n        'total_return': total_return,\n        'annualized_return': annualized,\n        'annualized_volatility': volatility,\n        'sharpe_ratio': (annualized - risk_free) / volatility,\n        'max_drawdown': max_dd,\n        'calmar_ratio': annualized / abs(max_dd) if max_dd != 0 else np.inf,\n    }"
+  },
+  "patterns": {
+    "risk_metrics_calculation": {
+      "description": "Calculate and interpret risk-adjusted performance metrics",
+      "metrics": [
+        "Sharpe Ratio",
+        "Sortino Ratio",
+        "Calmar Ratio",
+        "Information Ratio"
+      ],
+      "usage": "Compare strategies on risk-adjusted basis, set performance targets",
+      "considerations": "Annualize all metrics, use appropriate risk-free rate"
+    },
+    "portfolio_optimization": {
+      "description": "Construct optimal portfolios using mean-variance or risk parity approaches",
+      "methods": [
+        "Mean-Variance Optimization",
+        "Risk Parity",
+        "Black-Litterman"
+      ],
+      "usage": "Asset allocation, strategy combination, risk budgeting",
+      "considerations": "Sensitive to input estimates, requires regularization or shrinkage"
+    },
+    "drawdown_analysis": {
+      "description": "Measure and manage peak-to-trough declines in equity",
+      "metrics": [
+        "Maximum Drawdown",
+        "Average Drawdown",
+        "Drawdown Duration"
+      ],
+      "usage": "Risk assessment, position sizing during drawdowns, strategy comparison",
+      "considerations": "Calculate from rolling peak, not initial capital"
+    },
+    "time_series_modeling": {
+      "description": "Model and forecast financial time series using ARIMA, GARCH, or other models",
+      "models": [
+        "ARIMA",
+        "GARCH",
+        "State Space Models"
+      ],
+      "usage": "Volatility forecasting, return prediction, regime detection",
+      "considerations": "Test for stationarity, account for heteroskedasticity"
+    },
+    "statistical_testing": {
+      "description": "Validate assumptions and relationships using statistical tests",
+      "tests": [
+        "ADF (stationarity)",
+        "Engle-Granger (cointegration)",
+        "Jarque-Bera (normality)"
+      ],
+      "usage": "Strategy validation, pairs trading setup, model diagnostics",
+      "considerations": "Understand test limitations, use multiple tests for confirmation"
+    },
+    "monte_carlo_simulation": {
+      "description": "Assess strategy robustness through randomized simulations",
+      "applications": [
+        "Equity curve simulation",
+        "VaR estimation",
+        "Stress testing"
+      ],
+      "usage": "Generate confidence intervals, test tail risk, validate strategy stability",
+      "considerations": "Requires sufficient iterations (1000+), preserve return distribution characteristics"
+    }
+  },
+  "best_practices": [
+    "Always annualize returns and volatility using appropriate periods (252 for daily, 52 for weekly, 12 for monthly)",
+    "Use risk-adjusted metrics like Sharpe and Sortino ratios instead of raw returns to compare strategies",
+    "Calculate maximum drawdown from peak equity, not from initial capital, to accurately measure risk",
+    "Use Monte Carlo simulation to assess strategy robustness and generate confidence intervals for performance metrics",
+    "Test for stationarity using ADF test before applying time series models like ARIMA",
+    "Validate cointegration using Engle-Granger test before implementing pairs trading strategies",
+    "Use walk-forward analysis for portfolio optimization to avoid look-ahead bias",
+    "Include transaction costs and slippage in all performance calculations to get realistic expectations"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Comparing non-annualized metrics across different timeframes",
+      "problem": "Daily Sharpe ratio of 0.5 is not comparable to monthly Sharpe of 0.5, leading to incorrect strategy selection",
+      "solution": "Always annualize metrics using sqrt(periods_per_year) for volatility-based metrics and (1 + return)^periods_per_year - 1 for returns"
+    },
+    {
+      "name": "Ignoring tail risk in portfolio construction",
+      "problem": "VaR at 95% confidence misses extreme events that can cause catastrophic losses",
+      "solution": "Use Conditional VaR (Expected Shortfall) to measure tail risk, and stress test portfolios with historical crisis scenarios"
+    },
+    {
+      "name": "Overfitting portfolio optimization to historical data",
+      "problem": "Mean-variance optimization produces extreme weights that fail out-of-sample",
+      "solution": "Use risk parity or Black-Litterman models, apply shrinkage to covariance matrix, and validate on out-of-sample periods"
+    },
+    {
+      "name": "Assuming normal distribution of returns",
+      "problem": "Financial returns have fat tails and skewness, violating normality assumptions",
+      "solution": "Test for normality using Jarque-Bera test, use robust statistics, and model tail risk explicitly"
+    },
+    {
+      "name": "Ignoring non-stationarity in time series",
+      "problem": "Applying ARIMA to non-stationary series produces spurious results and poor forecasts",
+      "solution": "Test for stationarity with ADF test, difference series if needed, or use models designed for non-stationary data"
+    }
+  ]
+}

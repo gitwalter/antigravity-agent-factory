@@ -1,19 +1,21 @@
 ---
-name: update-knowledge
 description: Interactive skill for reviewing, applying, and managing knowledge updates
-type: skill
-skills: [system-configuration]
-knowledge: [manifest.json, mcp-servers-catalog.json]
 ---
 
+# Update Knowledge
+
+Interactive skill for reviewing, applying, and managing knowledge updates
+
+## 
+# Update Knowledge Skill
+
+## 
 # Update Knowledge Skill
 
 ## Overview
-
 This skill provides an interactive interface for reviewing available knowledge updates, previewing changes, applying updates, and managing rollbacks. It respects the knowledge evolution configuration set in settings.json.
 
 ## Purpose
-
 Enable controlled, transparent knowledge evolution that:
 - Shows available updates with changelogs
 - Allows preview before applying
@@ -22,14 +24,12 @@ Enable controlled, transparent knowledge evolution that:
 - Tracks update history
 
 ## Axiom Alignment
-
 - **A1 (Verifiability)**: All updates verified against checksums
 - **A3 (Transparency)**: Full changelog and source attribution
 - **A7 (Reversibility)**: All updates can be rolled back
 - **A10 (Learning)**: System evolves from trusted sources
 
 ## Trigger
-
 This skill is activated when:
 - User says "update knowledge", "check for updates", "refresh patterns"
 - Startup notification shows available updates
@@ -37,7 +37,6 @@ This skill is activated when:
 - Scheduled update check runs (if configured)
 
 ## Process
-
 ### Step 1: Check Configuration
 
 Load and validate knowledge evolution settings:
@@ -45,7 +44,7 @@ Load and validate knowledge evolution settings:
 ```yaml
 configuration_check:
   load_settings:
-    file: .agent/config/settings.json
+    file: .cursor/config/settings.json
     section: knowledge_evolution
   
   validate:
@@ -106,8 +105,63 @@ fetch_updates:
 Show user what updates are available:
 
 ```markdown
-## Knowledge Updates Available
 
+```yaml
+configuration_check:
+  load_settings:
+    file: .cursor/config/settings.json
+    section: knowledge_evolution
+  
+  validate:
+    - mode is valid (stability_first, awareness_hybrid, freshness_first, subscription)
+    - sources are configured
+    - credentials are available (if needed)
+  
+  apply_mode:
+    stability_first:
+      action: Only check, never auto-apply
+      confirmation: Always required
+    awareness_hybrid:
+      action: Check and notify
+      confirmation: Required before apply
+    freshness_first:
+      action: Check and auto-apply with backup
+      confirmation: Only for breaking changes
+    subscription:
+      action: Check subscribed files only
+      confirmation: Required
+```
+
+```yaml
+fetch_updates:
+  parallel_sources:
+    - adapter: github
+      enabled: ${sources.github_trending}
+      action: Check tracked repositories for new releases
+    
+    - adapter: pypi
+      enabled: ${sources.package_registries}
+      action: Check Python packages for updates
+    
+    - adapter: npm
+      enabled: ${sources.package_registries}
+      action: Check NPM packages for updates
+    
+    - adapter: official_docs
+      enabled: ${sources.official_docs}
+      action: Check documentation sources
+    
+    - adapter: community
+      enabled: ${sources.community_curated}
+      action: Check community sources
+  
+  aggregate:
+    action: Combine all updates
+    deduplicate: By target_file + source
+    sort_by: priority (CRITICAL first)
+```
+
+## Knowledge Updates Available
 **Mode**: {knowledge_evolution.mode}
 **Last Check**: {last_check_time}
 
@@ -246,13 +300,30 @@ rollback_options:
       4: Update manifest
 ```
 
-## Update Report Format
+```
+### Step 4: Preview Changes
 
+Allow user to preview specific updates:
+```
+
+```
+### Step 5: Apply Updates
+
+Apply selected or all updates:
+```
+
+```
+### Step 6: Rollback (If Needed)
+
+Support rolling back updates:
+```
+
+## Update Report Format
 After applying updates:
 
 ```markdown
-## Knowledge Update Report
 
+## Knowledge Update Report
 **Timestamp**: {datetime}
 **Mode**: {mode}
 
@@ -285,7 +356,6 @@ After applying updates:
 ```
 
 ## Commands
-
 The skill supports these commands:
 
 | Command | Action |
@@ -298,7 +368,6 @@ The skill supports these commands:
 | `update-knowledge status` | Show current knowledge status |
 
 ## Important Rules
-
 1. **Always backup first** - Never apply without backup
 2. **Respect mode** - Honor configured update mode
 3. **Verify checksums** - Validate update integrity
@@ -306,7 +375,6 @@ The skill supports these commands:
 5. **Document everything** - Full changelog and source tracking
 
 ## Error Handling
-
 | Error | Resolution |
 |-------|------------|
 | Source unavailable | Skip source, continue with others |
@@ -316,7 +384,6 @@ The skill supports these commands:
 | Backup failed | Abort update, preserve current state |
 
 ## Success Criteria
-
 Update process is successful when:
 - [ ] All selected updates applied without errors
 - [ ] Backups created for all changed files
@@ -325,7 +392,6 @@ Update process is successful when:
 - [ ] User receives clear summary
 
 ## Related Skills
-
 - `system-configuration` - Configures update behavior
 - `pattern-feedback` - Generates feedback for improvements
 - `grounding-verification` - Verifies knowledge accuracy
@@ -333,3 +399,8 @@ Update process is successful when:
 ---
 
 *This skill ensures controlled, transparent, and reversible knowledge evolution.*
+
+## Prerequisites
+> [!IMPORTANT]
+> Requirements:
+> - Knowledge: manifest.json, mcp-servers-catalog.json

@@ -1,0 +1,383 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "id": "sap-event-mesh",
+  "name": "SAP Event Mesh Patterns",
+  "version": "1.0.0",
+  "description": "Event-driven integration patterns using SAP Event Mesh, CloudEvents format, and S/4HANA business events",
+  "category": "sap",
+  "last_updated": "2026-02-09",
+  "axiomAlignment": {
+    "love": "Enable decoupled, scalable integrations that respond to business events",
+    "truth": "Based on CloudEvents specification and SAP Event Mesh documentation",
+    "beauty": "Clean, event-driven architectures that scale naturally"
+  },
+  "patterns": {
+    "event-mesh-topic-design": {
+      "id": "event-mesh-topic-design",
+      "name": "Topic Design Pattern",
+      "description": "Design event topics with proper naming and structure",
+      "scenario": "All event-driven integrations",
+      "code": {
+        "topic": "salesorder/created",
+        "naming": "Use format: domain/action (e.g., salesorder/created, customer/updated)"
+      },
+      "bestPractices": [
+        "Use hierarchical topic names",
+        "Follow domain/action pattern",
+        "Use lowercase with slashes",
+        "Document topic purposes"
+      ]
+    },
+    "event-mesh-queue-subscription": {
+      "id": "event-mesh-queue-subscription",
+      "name": "Queue Subscription Pattern",
+      "description": "Subscribe to topics using queues",
+      "scenario": "Reliable message delivery",
+      "code": {
+        "subscription": "{\n  \"subscription\": {\n    \"name\": \"salesorder-subscription\",\n    \"topic\": \"salesorder/created\",\n    \"queue\": \"salesorder-queue\"\n  }\n}"
+      },
+      "bestPractices": [
+        "Use queues for reliable delivery",
+        "Configure proper QoS",
+        "Set up dead letter queues",
+        "Monitor queue depth"
+      ]
+    },
+    "event-mesh-cloudevents-format": {
+      "id": "event-mesh-cloudevents-format",
+      "name": "CloudEvents Format Pattern",
+      "description": "Use CloudEvents standard format",
+      "scenario": "All events",
+      "code": {
+        "cloudevent": "{\n  \"specversion\": \"1.0\",\n  \"type\": \"com.sap.s4hana.salesorder.created\",\n  \"source\": \"/s4hana/salesorder\",\n  \"id\": \"event-id\",\n  \"time\": \"2026-02-09T10:00:00Z\",\n  \"datacontenttype\": \"application/json\",\n  \"data\": {\n    \"orderId\": \"12345\",\n    \"customerId\": \"C001\"\n  }\n}"
+      },
+      "bestPractices": [
+        "Follow CloudEvents specification",
+        "Use proper type and source",
+        "Include unique event ID",
+        "Set datacontenttype"
+      ]
+    },
+    "event-mesh-publish-event": {
+      "id": "event-mesh-publish-event",
+      "name": "Publish Event Pattern",
+      "description": "Publish events to Event Mesh",
+      "scenario": "Event producers",
+      "code": {
+        "javascript": "const axios = require('axios');\nconst event = {\n  specversion: '1.0',\n  type: 'com.sap.s4hana.salesorder.created',\n  source: '/s4hana/salesorder',\n  id: generateUUID(),\n  time: new Date().toISOString(),\n  datacontenttype: 'application/json',\n  data: {\n    orderId: '12345',\n    customerId: 'C001'\n  }\n};\nawait axios.post(eventMeshUrl, event, {\n  headers: { 'Content-Type': 'application/cloudevents+json' }\n});"
+      },
+      "bestPractices": [
+        "Use CloudEvents format",
+        "Set proper headers",
+        "Include unique event ID",
+        "Handle publish errors"
+      ]
+    },
+    "event-mesh-consume-event": {
+      "id": "event-mesh-consume-event",
+      "name": "Consume Event Pattern",
+      "description": "Consume events from Event Mesh",
+      "scenario": "Event consumers",
+      "code": {
+        "javascript": "const mqtt = require('mqtt');\nconst client = mqtt.connect(eventMeshUrl, {\n  username: clientId,\n  password: clientSecret\n});\n\nclient.on('connect', () => {\n  client.subscribe('salesorder/created');\n});\n\nclient.on('message', (topic, message) => {\n  const event = JSON.parse(message.toString());\n  processEvent(event);\n});"
+      },
+      "bestPractices": [
+        "Use MQTT client",
+        "Subscribe to topics",
+        "Parse CloudEvents format",
+        "Handle errors gracefully"
+      ]
+    },
+    "event-mesh-filtering": {
+      "id": "event-mesh-filtering",
+      "name": "Event Filtering Pattern",
+      "description": "Filter events using subscription filters",
+      "scenario": "Selective event consumption",
+      "code": {
+        "filter": "{\n  \"subscription\": {\n    \"name\": \"filtered-subscription\",\n    \"topic\": \"salesorder/created\",\n    \"queue\": \"filtered-queue\",\n    \"filters\": [\n      {\n        \"field\": \"data.customerId\",\n        \"operator\": \"eq\",\n        \"value\": \"C001\"\n      }\n    ]\n  }\n}"
+      },
+      "bestPractices": [
+        "Use filters for selective consumption",
+        "Filter at subscription level",
+        "Use proper operators",
+        "Test filter logic"
+      ]
+    },
+    "event-mesh-error-handling": {
+      "id": "event-mesh-error-handling",
+      "name": "Error Handling Pattern",
+      "description": "Handle event processing errors",
+      "scenario": "All event consumers",
+      "code": {
+        "error": "try {\n  await processEvent(event);\n} catch (error) {\n  log.error('Event processing failed', { event, error });\n  await sendToDeadLetterQueue(event, error);\n}"
+      },
+      "bestPractices": [
+        "Handle errors gracefully",
+        "Log errors with context",
+        "Use dead letter queues",
+        "Retry failed events"
+      ]
+    },
+    "event-mesh-retry-mechanism": {
+      "id": "event-mesh-retry-mechanism",
+      "name": "Retry Mechanism Pattern",
+      "description": "Retry failed event processing",
+      "scenario": "Transient failures",
+      "code": {
+        "retry": "const maxRetries = 3;\nlet retryCount = 0;\nwhile (retryCount < maxRetries) {\n  try {\n    await processEvent(event);\n    break;\n  } catch (error) {\n    retryCount++;\n    if (retryCount >= maxRetries) {\n      await sendToDeadLetterQueue(event, error);\n    } else {\n      await sleep(1000 * retryCount);\n    }\n  }\n}"
+      },
+      "bestPractices": [
+        "Implement retry logic",
+        "Use exponential backoff",
+        "Set maximum retries",
+        "Send to DLQ after max retries"
+      ]
+    },
+    "event-mesh-dead-letter-queue": {
+      "id": "event-mesh-dead-letter-queue",
+      "name": "Dead Letter Queue Pattern",
+      "description": "Handle failed events",
+      "scenario": "Error handling",
+      "code": {
+        "dlq": "const deadLetterQueue = 'failed-events';\nawait publishEvent(deadLetterQueue, {\n  originalEvent: event,\n  error: error.message,\n  timestamp: new Date().toISOString()\n});"
+      },
+      "bestPractices": [
+        "Use DLQ for failed events",
+        "Include original event",
+        "Store error details",
+        "Monitor DLQ regularly"
+      ]
+    },
+    "event-mesh-idempotency": {
+      "id": "event-mesh-idempotency",
+      "name": "Idempotency Pattern",
+      "description": "Ensure idempotent event processing",
+      "scenario": "All event consumers",
+      "code": {
+        "idempotency": "const eventId = event.id;\nconst processed = await checkEventProcessed(eventId);\nif (processed) {\n  log.info('Event already processed', { eventId });\n  return;\n}\nawait markEventProcessed(eventId);\nawait processEvent(event);"
+      },
+      "bestPractices": [
+        "Check event ID before processing",
+        "Store processed event IDs",
+        "Handle duplicate events",
+        "Use event ID for idempotency"
+      ]
+    },
+    "event-mesh-s4hana-integration": {
+      "id": "event-mesh-s4hana-integration",
+      "name": "S/4HANA Business Events Pattern",
+      "description": "Integrate with S/4HANA business events",
+      "scenario": "S/4HANA event consumption",
+      "code": {
+        "s4hana": "Subscribe to S/4HANA business events:\n- Sales Order Created\n- Customer Updated\n- Material Changed\n- Invoice Posted"
+      },
+      "bestPractices": [
+        "Subscribe to S/4HANA events",
+        "Use proper event types",
+        "Handle S/4HANA event format",
+        "Test with S/4HANA system"
+      ]
+    },
+    "event-mesh-event-choreography": {
+      "id": "event-mesh-event-choreography",
+      "name": "Event Choreography Pattern",
+      "description": "Orchestrate workflows using events",
+      "scenario": "Complex workflows",
+      "code": {
+        "choreography": "Event flow:\n1. SalesOrderCreated -> InventoryCheck\n2. InventoryChecked -> PaymentProcessing\n3. PaymentProcessed -> ShipmentCreation"
+      },
+      "bestPractices": [
+        "Design event flows",
+        "Use events for orchestration",
+        "Document event dependencies",
+        "Handle event ordering"
+      ]
+    },
+    "event-mesh-event-sourcing": {
+      "id": "event-mesh-event-sourcing",
+      "name": "Event Sourcing Pattern",
+      "description": "Store events as source of truth",
+      "scenario": "Audit trails, state reconstruction",
+      "code": {
+        "storage": "Store all events:\n- SalesOrderCreated\n- SalesOrderUpdated\n- SalesOrderCancelled\n\nReconstruct state from events"
+      },
+      "bestPractices": [
+        "Store all events",
+        "Use events for state reconstruction",
+        "Implement event replay",
+        "Maintain event history"
+      ]
+    },
+    "event-mesh-pub-sub": {
+      "id": "event-mesh-pub-sub",
+      "name": "Publish-Subscribe Pattern",
+      "description": "Decouple producers and consumers",
+      "scenario": "Loose coupling",
+      "code": {
+        "pattern": "Producer publishes to topic\nMultiple consumers subscribe\nNo direct coupling between producer and consumers"
+      },
+      "bestPractices": [
+        "Use topics for decoupling",
+        "Support multiple consumers",
+        "Avoid direct dependencies",
+        "Scale consumers independently"
+      ]
+    },
+    "event-mesh-event-enrichment": {
+      "id": "event-mesh-event-enrichment",
+      "name": "Event Enrichment Pattern",
+      "description": "Enrich events with additional data",
+      "scenario": "Event transformation",
+      "code": {
+        "enrichment": "const enrichedEvent = {\n  ...event,\n  data: {\n    ...event.data,\n    customerName: await getCustomerName(event.data.customerId),\n    orderTotal: await calculateTotal(event.data.orderId)\n  }\n};"
+      },
+      "bestPractices": [
+        "Enrich events before processing",
+        "Cache enrichment data",
+        "Handle enrichment errors",
+        "Keep enrichment fast"
+      ]
+    },
+    "event-mesh-event-routing": {
+      "id": "event-mesh-event-routing",
+      "name": "Event Routing Pattern",
+      "description": "Route events based on content",
+      "scenario": "Conditional processing",
+      "code": {
+        "routing": "if (event.data.orderType === 'STANDARD') {\n  await publishToTopic('standard-orders', event);\n} else if (event.data.orderType === 'EXPRESS') {\n  await publishToTopic('express-orders', event);\n}"
+      },
+      "bestPractices": [
+        "Route based on event content",
+        "Use multiple topics",
+        "Document routing logic",
+        "Test routing scenarios"
+      ]
+    },
+    "event-mesh-event-aggregation": {
+      "id": "event-mesh-event-aggregation",
+      "name": "Event Aggregation Pattern",
+      "description": "Aggregate multiple events",
+      "scenario": "Batch processing",
+      "code": {
+        "aggregation": "const events = await collectEvents(timeWindow);\nconst aggregated = aggregateEvents(events);\nawait processAggregatedEvent(aggregated);"
+      },
+      "bestPractices": [
+        "Collect events in time windows",
+        "Aggregate efficiently",
+        "Process aggregated events",
+        "Handle partial aggregations"
+      ]
+    },
+    "event-mesh-monitoring": {
+      "id": "event-mesh-monitoring",
+      "name": "Event Monitoring Pattern",
+      "description": "Monitor event processing",
+      "scenario": "All event-driven systems",
+      "code": {
+        "monitoring": "Monitor:\n- Event publish rate\n- Event consumption rate\n- Queue depth\n- Processing latency\n- Error rate"
+      },
+      "bestPractices": [
+        "Monitor event metrics",
+        "Set up alerts",
+        "Track processing times",
+        "Monitor error rates"
+      ]
+    },
+    "event-mesh-security": {
+      "id": "event-mesh-security",
+      "name": "Event Security Pattern",
+      "description": "Secure event communication",
+      "scenario": "All event-driven systems",
+      "code": {
+        "security": "Use:\n- OAuth 2.0 for authentication\n- TLS for encryption\n- Topic-level authorization\n- Event validation"
+      },
+      "bestPractices": [
+        "Use OAuth 2.0",
+        "Enable TLS",
+        "Implement authorization",
+        "Validate event format"
+      ]
+    },
+    "event-mesh-testing": {
+      "id": "event-mesh-testing",
+      "name": "Event Testing Pattern",
+      "description": "Test event-driven systems",
+      "scenario": "All event-driven systems",
+      "code": {
+        "testing": "Test:\n- Event publishing\n- Event consumption\n- Error handling\n- Retry logic\n- Idempotency"
+      },
+      "bestPractices": [
+        "Test event flows",
+        "Mock event producers",
+        "Test error scenarios",
+        "Verify idempotency"
+      ]
+    },
+    "event-mesh-performance": {
+      "id": "event-mesh-performance",
+      "name": "Performance Optimization Pattern",
+      "description": "Optimize event processing",
+      "scenario": "High-volume systems",
+      "code": {
+        "optimization": "Optimize:\n- Batch event processing\n- Parallel consumption\n- Efficient filtering\n- Connection pooling"
+      },
+      "bestPractices": [
+        "Process events in batches",
+        "Use parallel consumers",
+        "Optimize filters",
+        "Pool connections"
+      ]
+    },
+    "event-mesh-schema-evolution": {
+      "id": "event-mesh-schema-evolution",
+      "name": "Schema Evolution Pattern",
+      "description": "Handle event schema changes",
+      "scenario": "Long-lived systems",
+      "code": {
+        "evolution": "Handle schema changes:\n- Version events\n- Support multiple versions\n- Migrate consumers gradually\n- Document changes"
+      },
+      "bestPractices": [
+        "Version event schemas",
+        "Support backward compatibility",
+        "Migrate gradually",
+        "Document schema changes"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use CloudEvents standard format",
+    "Design topics with proper naming (domain/action)",
+    "Use queues for reliable delivery",
+    "Implement idempotency for event processing",
+    "Handle errors with dead letter queues",
+    "Monitor event processing metrics",
+    "Use filters for selective consumption",
+    "Implement retry mechanisms",
+    "Secure event communication",
+    "Test event flows thoroughly",
+    "Document event schemas",
+    "Handle schema evolution"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Not using CloudEvents format",
+      "problem": "Incompatibility with standard tools",
+      "solution": "Always use CloudEvents standard format"
+    },
+    {
+      "name": "Missing idempotency",
+      "problem": "Duplicate event processing",
+      "solution": "Implement idempotency using event IDs"
+    },
+    {
+      "name": "No error handling",
+      "problem": "Lost events and system failures",
+      "solution": "Implement proper error handling and DLQ"
+    },
+    {
+      "name": "Tight coupling",
+      "problem": "Difficult to scale and maintain",
+      "solution": "Use topics for decoupling"
+    }
+  ]
+}

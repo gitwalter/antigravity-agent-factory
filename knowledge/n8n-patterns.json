@@ -89,7 +89,7 @@
     "webhook_trigger": {
       "description": "Trigger workflow via HTTP webhook",
       "use_when": "External systems need to trigger workflows",
-      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {},\n      \"id\": \"webhook-trigger\",\n      \"name\": \"Webhook\",\n      \"type\": \"n8n-nodes-base.webhook\",\n      \"typeVersion\": 1,\n      \"position\": [250, 300],\n      \"webhookId\": \"webhook-id\",\n      \"settings\": {\n        \"httpMethod\": \"POST\",\n        \"path\": \"trigger-workflow\",\n        \"responseMode\": \"responseNode\",\n        \"options\": {}\n      }\n    },\n    {\n      \"parameters\": {\n        \"conditions\": {\n          \"string\": [\n            {\n              \"value1\": \"={{ $json.body.event_type }}\",\n              \"operation\": \"equals\",\n              \"value2\": \"user.created\"\n            }\n          ]\n        }\n      },\n      \"id\": \"if-node\",\n      \"name\": \"IF\",\n      \"type\": \"n8n-nodes-base.if\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300]\n    },\n    {\n      \"parameters\": {\n        \"respondWith\": \"json\",\n        \"responseBody\": \"={{ { \\\"status\\\": \\\"success\\\", \\\"message\\\": \\\"Workflow triggered\\\" } }}\"\n      },\n      \"id\": \"respond-node\",\n      \"name\": \"Respond to Webhook\",\n      \"type\": \"n8n-nodes-base.respondToWebhook\",\n      \"typeVersion\": 1,\n      \"position\": [650, 300]\n    }\n  ],\n  \"connections\": {\n    \"Webhook\": {\n      \"main\": [[{\"node\": \"IF\", \"type\": \"main\", \"index\": 0}]]\n    },\n    \"IF\": {\n      \"main\": [[{\"node\": \"Respond to Webhook\", \"type\": \"main\", \"index\": 0}]]\n    }\n  }\n}",
+      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {},\n      \"id\": \"webhook-trigger\",\n      \"name\": \"Webhook\",\n      \"type\": \"n8n-nodes-base.webhook\",\n      \"typeVersion\": 1,\n      \"position\": [250, 300],\n      \"webhookId\": \"webhook-id\",\n      \"settings\": {\n        \"httpMethod\": \"POST\",\n        \"path\": \"trigger-workflow\",\n        \"responseMode\": \"responseNode\",\n        \"options\": {}\n      }\n    },\n    {\n      \"parameters\": {\n        \"conditions\": {\n          \"string\": [\n            {\n              \"value1\": \"={{ $json.body.event_type }}\",\n              \"operation\": \"equals\",\n              \"value2\": \"user.created\"\n            }\n          ]\n        }\n      },\n      \"id\": \"if-node\",\n      \"name\": \"IF\",\n      \"type\": \"n8n-nodes-base.if\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300]\n    },\n    {\n      \"parameters\": {\n        \"respondWith\": \"json\",\n        \"responseBody\": \"={{ { \\\"status\\\": \\\"success\\\", \\\"message\\\": \\\"Workflow triggered\\\" } }}\"\n      },\n      \"id\": \"respond-node\",\n      \"name\": \"Respond to Webhook\",\n      \"type\": \"n8n-nodes-base.respondToWebhook\",\n      \"typeVersion\": 1,\n      \"position\": [650, 300]\n    }\n  ],\n  \"connections\": {\n    \"Webhook\": {\n      \"main\": [[node-if-type-main-index-0]]\n    },\n    \"IF\": {\n      \"main\": [[node-respond-to-webhook-type-main-index-0]]\n    }\n  }\n}",
       "best_practices": [
         "Validate webhook payload",
         "Use HTTPS in production",
@@ -105,7 +105,7 @@
     "schedule_trigger": {
       "description": "Trigger workflow on a schedule",
       "use_when": "Periodic tasks, data synchronization, reports",
-      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"rule\": {\n          \"interval\": [\n            {\n              \"field\": \"hours\",\n              \"hoursInterval\": 1\n            }\n          ]\n        }\n      },\n      \"id\": \"schedule-trigger\",\n      \"name\": \"Schedule Trigger\",\n      \"type\": \"n8n-nodes-base.scheduleTrigger\",\n      \"typeVersion\": 1,\n      \"position\": [250, 300]\n    },\n    {\n      \"parameters\": {\n        \"operation\": \"executeQuery\",\n        \"query\": \"SELECT * FROM users WHERE created_at > NOW() - INTERVAL '1 hour'\"\n      },\n      \"id\": \"postgres-node\",\n      \"name\": \"Get New Users\",\n      \"type\": \"n8n-nodes-base.postgres\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300]\n    }\n  ],\n  \"connections\": {\n    \"Schedule Trigger\": {\n      \"main\": [[{\"node\": \"Get New Users\", \"type\": \"main\", \"index\": 0}]]\n    }\n  }\n}",
+      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"rule\": {\n          \"interval\": [\n            {\n              \"field\": \"hours\",\n              \"hoursInterval\": 1\n            }\n          ]\n        }\n      },\n      \"id\": \"schedule-trigger\",\n      \"name\": \"Schedule Trigger\",\n      \"type\": \"n8n-nodes-base.scheduleTrigger\",\n      \"typeVersion\": 1,\n      \"position\": [250, 300]\n    },\n    {\n      \"parameters\": {\n        \"operation\": \"executeQuery\",\n        \"query\": \"SELECT * FROM users WHERE created_at > NOW() - INTERVAL '1 hour'\"\n      },\n      \"id\": \"postgres-node\",\n      \"name\": \"Get New Users\",\n      \"type\": \"n8n-nodes-base.postgres\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300]\n    }\n  ],\n  \"connections\": {\n    \"Schedule Trigger\": {\n      \"main\": [[node-get-new-users-type-main-index-0]]\n    }\n  }\n}",
       "best_practices": [
         "Use appropriate intervals",
         "Consider timezone settings",
@@ -195,7 +195,7 @@
     "error_handling_patterns": {
       "description": "Error handling and retry strategies",
       "use_when": "Need robust error handling",
-      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"continueOnFail\": true,\n        \"retryOnFail\": true,\n        \"maxTries\": 3,\n        \"waitBetweenTries\": 5000,\n        \"options\": {\n          \"retry\": {\n            \"maxRetries\": 3,\n            \"retryDelay\": 5000\n          }\n        }\n      },\n      \"id\": \"http-node\",\n      \"name\": \"HTTP Request with Retry\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300]\n    },\n    {\n      \"parameters\": {\n        \"conditions\": {\n          \"options\": {\n            \"caseSensitive\": true,\n            \"leftValue\": \"\",\n            \"typeValidation\": \"strict\"\n          },\n          \"conditions\": [\n            {\n              \"id\": \"error-check\",\n              \"leftValue\": \"={{ $json.error }}\",\n              \"rightValue\": \"\",\n              \"operator\": {\n                \"type\": \"string\",\n                \"operation\": \"notEmpty\"\n              }\n            }\n          ]\n        }\n      },\n      \"id\": \"if-error\",\n      \"name\": \"Check for Error\",\n      \"type\": \"n8n-nodes-base.if\",\n      \"typeVersion\": 1,\n      \"position\": [650, 300]\n    },\n    {\n      \"parameters\": {\n        \"assignments\": {\n          \"assignments\": [\n            {\n              \"id\": \"error_message\",\n              \"name\": \"error_message\",\n              \"value\": \"={{ $json.error }}\",\n              \"type\": \"string\"\n            },\n            {\n              \"id\": \"timestamp\",\n              \"name\": \"timestamp\",\n              \"value\": \"={{ $now }}\",\n              \"type\": \"dateTime\"\n            }\n          ]\n        }\n      },\n      \"id\": \"log-error\",\n      \"name\": \"Log Error\",\n      \"type\": \"n8n-nodes-base.set\",\n      \"typeVersion\": 1,\n      \"position\": [850, 300]\n    },\n    {\n      \"parameters\": {\n        \"url\": \"https://hooks.slack.com/services/YOUR/WEBHOOK/URL\",\n        \"sendBody\": true,\n        \"specifyBody\": \"json\",\n        \"jsonBody\": \"={{ { \\\"text\\\": \\\"Workflow Error: \\\" + $json.error_message } }}\",\n        \"options\": {}\n      },\n      \"id\": \"notify-slack\",\n      \"name\": \"Notify Slack\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 1,\n      \"position\": [1050, 300]\n    }\n  ],\n  \"connections\": {\n    \"HTTP Request with Retry\": {\n      \"main\": [[{\"node\": \"Check for Error\", \"type\": \"main\", \"index\": 0}]]\n    },\n    \"Check for Error\": {\n      \"main\": [[{\"node\": \"Log Error\", \"type\": \"main\", \"index\": 0}]]\n    },\n    \"Log Error\": {\n      \"main\": [[{\"node\": \"Notify Slack\", \"type\": \"main\", \"index\": 0}]]\n    }\n  }\n}",
+      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"continueOnFail\": true,\n        \"retryOnFail\": true,\n        \"maxTries\": 3,\n        \"waitBetweenTries\": 5000,\n        \"options\": {\n          \"retry\": {\n            \"maxRetries\": 3,\n            \"retryDelay\": 5000\n          }\n        }\n      },\n      \"id\": \"http-node\",\n      \"name\": \"HTTP Request with Retry\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300]\n    },\n    {\n      \"parameters\": {\n        \"conditions\": {\n          \"options\": {\n            \"caseSensitive\": true,\n            \"leftValue\": \"\",\n            \"typeValidation\": \"strict\"\n          },\n          \"conditions\": [\n            {\n              \"id\": \"error-check\",\n              \"leftValue\": \"={{ $json.error }}\",\n              \"rightValue\": \"\",\n              \"operator\": {\n                \"type\": \"string\",\n                \"operation\": \"notEmpty\"\n              }\n            }\n          ]\n        }\n      },\n      \"id\": \"if-error\",\n      \"name\": \"Check for Error\",\n      \"type\": \"n8n-nodes-base.if\",\n      \"typeVersion\": 1,\n      \"position\": [650, 300]\n    },\n    {\n      \"parameters\": {\n        \"assignments\": {\n          \"assignments\": [\n            {\n              \"id\": \"error_message\",\n              \"name\": \"error_message\",\n              \"value\": \"={{ $json.error }}\",\n              \"type\": \"string\"\n            },\n            {\n              \"id\": \"timestamp\",\n              \"name\": \"timestamp\",\n              \"value\": \"={{ $now }}\",\n              \"type\": \"dateTime\"\n            }\n          ]\n        }\n      },\n      \"id\": \"log-error\",\n      \"name\": \"Log Error\",\n      \"type\": \"n8n-nodes-base.set\",\n      \"typeVersion\": 1,\n      \"position\": [850, 300]\n    },\n    {\n      \"parameters\": {\n        \"url\": \"https://hooks.slack.com/services/YOUR/WEBHOOK/URL\",\n        \"sendBody\": true,\n        \"specifyBody\": \"json\",\n        \"jsonBody\": \"={{ { \\\"text\\\": \\\"Workflow Error: \\\" + $json.error_message } }}\",\n        \"options\": {}\n      },\n      \"id\": \"notify-slack\",\n      \"name\": \"Notify Slack\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 1,\n      \"position\": [1050, 300]\n    }\n  ],\n  \"connections\": {\n    \"HTTP Request with Retry\": {\n      \"main\": [[node-check-for-error-type-main-index-0]]\n    },\n    \"Check for Error\": {\n      \"main\": [[node-log-error-type-main-index-0]]\n    },\n    \"Log Error\": {\n      \"main\": [[node-notify-slack-type-main-index-0]]\n    }\n  }\n}",
       "retry_with_exponential_backoff": {
         "description": "Exponential backoff retry pattern",
         "code_example": "// Code node for exponential backoff\nasync function retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000) {\n  for (let attempt = 0; attempt < maxRetries; attempt++) {\n    try {\n      return await fn();\n    } catch (error) {\n      if (attempt === maxRetries - 1) throw error;\n      \n      const delay = baseDelay * Math.pow(2, attempt);\n      await new Promise(resolve => setTimeout(resolve, delay));\n    }\n  }\n}\n\n// Usage\nconst result = await retryWithBackoff(async () => {\n  const response = await $http.request({\n    method: 'GET',\n    url: 'https://api.example.com/data'\n  });\n  return response;\n}, 3, 1000);\n\nreturn [{ json: result }];"
@@ -216,8 +216,15 @@
       "sub_workflow_example": {
         "name": "Send Notification",
         "description": "Reusable workflow for sending notifications",
-        "inputs": ["recipient", "message", "channel"],
-        "outputs": ["success", "message_id"]
+        "inputs": [
+          "recipient",
+          "message",
+          "channel"
+        ],
+        "outputs": [
+          "success",
+          "message_id"
+        ]
       },
       "best_practices": [
         "Define clear inputs and outputs",
@@ -383,19 +390,39 @@
   "integration_examples": {
     "webhook_to_database": {
       "description": "Receive webhook, validate, store in database",
-      "workflow": ["Webhook Trigger", "Validate Payload", "Transform Data", "Store in Database"]
+      "workflow": [
+        "Webhook Trigger",
+        "Validate Payload",
+        "Transform Data",
+        "Store in Database"
+      ]
     },
     "scheduled_report": {
       "description": "Generate and send scheduled reports",
-      "workflow": ["Schedule Trigger", "Query Database", "Generate Report", "Send Email"]
+      "workflow": [
+        "Schedule Trigger",
+        "Query Database",
+        "Generate Report",
+        "Send Email"
+      ]
     },
     "ai_content_generation": {
       "description": "Generate content using AI",
-      "workflow": ["Webhook Trigger", "AI Node (OpenAI)", "Format Output", "Store Result"]
+      "workflow": [
+        "Webhook Trigger",
+        "AI Node (OpenAI)",
+        "Format Output",
+        "Store Result"
+      ]
     },
     "data_synchronization": {
       "description": "Sync data between systems",
-      "workflow": ["Schedule Trigger", "Fetch Source Data", "Transform", "Update Destination"]
+      "workflow": [
+        "Schedule Trigger",
+        "Fetch Source Data",
+        "Transform",
+        "Update Destination"
+      ]
     }
   },
   "tools_and_resources": {

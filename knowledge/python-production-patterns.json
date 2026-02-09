@@ -1,0 +1,431 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "python-production-patterns",
+  "name": "Python Production Patterns",
+  "title": "Production-Ready Python Patterns",
+  "description": "Best practices and patterns for deploying Python applications to production",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Type hints and validation enable compile-time verification",
+    "A3_transparency": "Structured logging provides clear observability",
+    "A4_adaptability": "Modular structure supports easy deployment changes"
+  },
+  "application_servers": {
+    "uvicorn": {
+      "description": "ASGI server for FastAPI and async Python apps",
+      "usage": "uvicorn main:app --host 0.0.0.0 --port 8000",
+      "production_config": {
+        "workers": "Use Gunicorn with Uvicorn workers for production",
+        "config": "--workers 4 --worker-class uvicorn.workers.UvicornWorker",
+        "best_practices": [
+          "Use Gunicorn with Uvicorn workers",
+          "Set appropriate worker count (2 * CPU cores + 1)",
+          "Use --reload only in development",
+          "Configure proper timeout values"
+        ]
+      }
+    },
+    "gunicorn": {
+      "description": "WSGI/ASGI server with worker management",
+      "usage": "gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker",
+      "configuration": {
+        "workers": "Number of worker processes",
+        "worker_class": "uvicorn.workers.UvicornWorker for async",
+        "bind": "Host and port to bind",
+        "timeout": "Worker timeout in seconds",
+        "keepalive": "Keep-alive timeout"
+      },
+      "best_practices": [
+        "Use with Uvicorn workers for async apps",
+        "Set workers = 2 * CPU cores + 1",
+        "Configure appropriate timeouts",
+        "Use --preload for faster startup"
+      ]
+    }
+  },
+  "structured_logging": {
+    "structlog": {
+      "description": "Structured logging with structlog",
+      "setup": "import structlog\nlogger = structlog.get_logger()",
+      "configuration": {
+        "processors": [
+          "structlog.processors.TimeStamper()",
+          "structlog.processors.add_log_level",
+          "structlog.processors.JSONRenderer()"
+        ],
+        "contextvars": "Use contextvars for request context",
+        "best_practices": [
+          "Use structured logging (JSON)",
+          "Include request ID in logs",
+          "Log at appropriate levels",
+          "Don't log sensitive information"
+        ]
+      },
+      "code_example": "import structlog\nlogger = structlog.get_logger()\nlogger.info('user_created', user_id=123, email='user@example.com')"
+    },
+    "logging_levels": {
+      "DEBUG": "Detailed information for debugging",
+      "INFO": "General informational messages",
+      "WARNING": "Warning messages",
+      "ERROR": "Error messages",
+      "CRITICAL": "Critical errors"
+    },
+    "log_formatting": {
+      "development": "Human-readable format",
+      "production": "JSON format for log aggregation",
+      "best_practices": [
+        "Use JSON in production",
+        "Include timestamps",
+        "Add request IDs",
+        "Structured fields for filtering"
+      ]
+    }
+  },
+  "graceful_shutdown": {
+    "description": "Graceful shutdown handling",
+    "signal_handling": {
+      "description": "Handle SIGTERM and SIGINT signals",
+      "code_example": "import signal\nimport asyncio\n\nasync def shutdown(sig):\n    logger.info(f'Received {sig}, shutting down gracefully')\n    # Close connections\n    # Finish ongoing requests\n    # Cleanup resources\n\nloop = asyncio.get_event_loop()\nfor sig in (signal.SIGTERM, signal.SIGINT):\n    loop.add_signal_handler(sig, lambda: asyncio.create_task(shutdown(sig)))"
+    },
+    "fastapi_lifespan": {
+      "description": "Use FastAPI lifespan for startup/shutdown",
+      "code_example": "from contextlib import asynccontextmanager\n\n@asynccontextmanager\nasync def lifespan(app: FastAPI):\n    # Startup\n    await startup()\n    yield\n    # Shutdown\n    await shutdown()\n\napp = FastAPI(lifespan=lifespan)"
+    },
+    "best_practices": [
+      "Handle SIGTERM and SIGINT",
+      "Wait for ongoing requests to complete",
+      "Close database connections",
+      "Close HTTP client sessions",
+      "Clean up background tasks",
+      "Set appropriate shutdown timeout"
+    ]
+  },
+  "health_checks": {
+    "description": "Health check endpoints for monitoring",
+    "liveness": {
+      "description": "Liveness probe - is application running?",
+      "endpoint": "/health/live",
+      "response": "200 OK if application is running"
+    },
+    "readiness": {
+      "description": "Readiness probe - is application ready to serve?",
+      "endpoint": "/health/ready",
+      "checks": [
+        "Database connectivity",
+        "External service availability",
+        "Resource availability"
+      ]
+    },
+    "code_example": "@app.get('/health/live')\nasync def liveness():\n    return {'status': 'alive'}\n\n@app.get('/health/ready')\nasync def readiness(db: AsyncSession = Depends(get_db)):\n    try:\n        await db.execute(select(1))\n        return {'status': 'ready'}\n    except Exception:\n        raise HTTPException(status_code=503)"
+  },
+  "secrets_management": {
+    "description": "Secure secrets management",
+    "environment_variables": {
+      "description": "Use environment variables for secrets",
+      "best_practices": [
+        "Never commit secrets to code",
+        "Use .env files for local development",
+        "Use secret management services in production",
+        "Rotate secrets regularly"
+      ]
+    },
+    "pydantic_settings": {
+      "description": "Use Pydantic Settings for configuration",
+      "code_example": "from pydantic_settings import BaseSettings\n\nclass Settings(BaseSettings):\n    secret_key: str\n    database_url: str\n    \n    model_config = SettingsConfigDict(\n        env_file='.env',\n        env_file_encoding='utf-8'\n    )"
+    },
+    "secret_services": {
+      "aws_secrets_manager": "AWS Secrets Manager",
+      "azure_key_vault": "Azure Key Vault",
+      "hashicorp_vault": "HashiCorp Vault",
+      "kubernetes_secrets": "Kubernetes Secrets"
+    },
+    "best_practices": [
+      "Use secret management services",
+      "Never log secrets",
+      "Rotate secrets regularly",
+      "Use different secrets for each environment",
+      "Validate secret format"
+    ]
+  },
+  "rate_limiting": {
+    "description": "Rate limiting for API protection",
+    "slowapi": {
+      "description": "Rate limiting with slowapi",
+      "code_example": "from slowapi import Limiter, _rate_limit_exceeded_handler\nfrom slowapi.util import get_remote_address\n\nlimiter = Limiter(key_func=get_remote_address)\napp.state.limiter = limiter\n\n@app.get('/api/data')\n@limiter.limit('10/minute')\nasync def get_data(request: Request):\n    return {'data': '...'}"
+    },
+    "redis_rate_limiting": {
+      "description": "Distributed rate limiting with Redis",
+      "use_when": "Multiple application instances",
+      "benefits": [
+        "Shared rate limit across instances",
+        "Persistent rate limit state",
+        "Better accuracy"
+      ]
+    },
+    "best_practices": [
+      "Set appropriate limits",
+      "Return 429 status code",
+      "Include Retry-After header",
+      "Log rate limit violations",
+      "Use different limits for different endpoints"
+    ]
+  },
+  "connection_pooling": {
+    "description": "Connection pool management",
+    "database_pools": {
+      "description": "Database connection pooling",
+      "sqlalchemy": {
+        "pool_size": "Number of connections to maintain",
+        "max_overflow": "Additional connections beyond pool_size",
+        "pool_pre_ping": "Verify connections before using",
+        "pool_recycle": "Recycle connections after time"
+      }
+    },
+    "http_pools": {
+      "description": "HTTP client connection pooling",
+      "aiohttp": {
+        "connector": "TCPConnector with limit",
+        "limit": "Maximum number of connections",
+        "limit_per_host": "Connections per host",
+        "best_practices": [
+          "Reuse client sessions",
+          "Set appropriate limits",
+          "Configure timeouts",
+          "Close sessions properly"
+        ]
+      }
+    },
+    "best_practices": [
+      "Configure pool sizes based on load",
+      "Monitor pool usage",
+      "Set appropriate timeouts",
+      "Handle pool exhaustion gracefully"
+    ]
+  },
+  "docker_best_practices": {
+    "description": "Docker best practices for Python",
+    "dockerfile_patterns": {
+      "multi_stage": "Use multi-stage builds",
+      "python_version": "Pin Python version",
+      "dependencies": "Install dependencies in separate layer",
+      "non_root_user": "Run as non-root user",
+      "code_example": "FROM python:3.11-slim as builder\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --user -r requirements.txt\n\nFROM python:3.11-slim\nWORKDIR /app\nCOPY --from=builder /root/.local /root/.local\nCOPY . .\nUSER nobody\nCMD ['python', 'main.py']"
+    },
+    "best_practices": [
+      "Use multi-stage builds",
+      "Pin Python version",
+      "Use .dockerignore",
+      "Run as non-root user",
+      "Set appropriate WORKDIR",
+      "Use specific base images (slim)",
+      "Minimize layers",
+      "Cache dependencies"
+    ]
+  },
+  "monitoring": {
+    "description": "Application monitoring",
+    "metrics": {
+      "prometheus": {
+        "description": "Prometheus metrics",
+        "libraries": [
+          "prometheus-client"
+        ],
+        "metrics_types": [
+          "Counter - incrementing values",
+          "Gauge - current value",
+          "Histogram - distribution",
+          "Summary - quantiles"
+        ]
+      }
+    },
+    "tracing": {
+      "description": "Distributed tracing",
+      "tools": [
+        "OpenTelemetry",
+        "Jaeger",
+        "Zipkin"
+      ]
+    },
+    "apm": {
+      "description": "Application Performance Monitoring",
+      "tools": [
+        "Datadog APM",
+        "New Relic",
+        "Elastic APM"
+      ]
+    }
+  },
+  "error_handling": {
+    "description": "Production error handling",
+    "exception_handlers": {
+      "description": "Global exception handlers",
+      "code_example": "@app.exception_handler(Exception)\nasync def global_exception_handler(request: Request, exc: Exception):\n    logger.error('unhandled_exception', exc_info=exc)\n    return JSONResponse(\n        status_code=500,\n        content={'detail': 'Internal server error'}\n    )"
+    },
+    "error_responses": {
+      "description": "Consistent error response format",
+      "format": {
+        "detail": "Error message",
+        "type": "Error type",
+        "status_code": "HTTP status code"
+      }
+    },
+    "best_practices": [
+      "Log all exceptions",
+      "Don't expose internal errors",
+      "Return consistent error format",
+      "Include error IDs for tracking",
+      "Handle validation errors separately"
+    ]
+  },
+  "caching": {
+    "description": "Caching strategies",
+    "redis_cache": {
+      "description": "Redis for caching",
+      "use_cases": [
+        "API response caching",
+        "Session storage",
+        "Rate limiting",
+        "Distributed locks"
+      ]
+    },
+    "in_memory_cache": {
+      "description": "In-memory caching",
+      "libraries": [
+        "functools.lru_cache",
+        "cachetools"
+      ],
+      "use_when": "Single instance, small cache"
+    },
+    "cache_patterns": {
+      "cache_aside": "Application checks cache, loads from DB if miss",
+      "write_through": "Write to cache and DB simultaneously",
+      "write_back": "Write to cache, flush to DB later"
+    }
+  },
+  "async_patterns": {
+    "description": "Async/await patterns for production",
+    "concurrent_execution": {
+      "description": "Concurrent async operations",
+      "asyncio_gather": "Use asyncio.gather() for parallel operations",
+      "taskgroup": "Use TaskGroup (Python 3.11+) for structured concurrency"
+    },
+    "background_tasks": {
+      "description": "Background task execution",
+      "fastapi_backgroundtasks": "Use BackgroundTasks for simple cases",
+      "celery": "Use Celery for complex/distributed tasks",
+      "apscheduler": "Use APScheduler for scheduled tasks"
+    },
+    "best_practices": [
+      "Use async for I/O operations",
+      "Avoid blocking operations",
+      "Handle timeouts",
+      "Limit concurrency",
+      "Clean up resources"
+    ]
+  },
+  "testing": {
+    "description": "Testing in production-like environments",
+    "test_types": {
+      "unit_tests": "Test individual functions",
+      "integration_tests": "Test component integration",
+      "e2e_tests": "Test full application flow"
+    },
+    "test_containers": {
+      "description": "Use testcontainers for integration tests",
+      "libraries": [
+        "testcontainers-python"
+      ],
+      "benefits": [
+        "Real database instances",
+        "Isolated test environment",
+        "Production-like testing"
+      ]
+    },
+    "best_practices": [
+      "Test in production-like environment",
+      "Use fixtures for test data",
+      "Clean up test data",
+      "Mock external services",
+      "Test error scenarios"
+    ]
+  },
+  "patterns": {
+    "circuit_breaker": {
+      "description": "Circuit breaker pattern for external services",
+      "benefits": [
+        "Prevent cascading failures",
+        "Fail fast",
+        "Automatic recovery"
+      ],
+      "libraries": [
+        "pybreaker"
+      ]
+    },
+    "retry_pattern": {
+      "description": "Retry pattern with exponential backoff",
+      "libraries": [
+        "tenacity"
+      ],
+      "best_practices": [
+        "Use exponential backoff",
+        "Set maximum retries",
+        "Handle specific exceptions",
+        "Log retry attempts"
+      ]
+    },
+    "timeout_pattern": {
+      "description": "Timeout pattern for async operations",
+      "code_example": "await asyncio.wait_for(operation(), timeout=30.0)",
+      "best_practices": [
+        "Set appropriate timeouts",
+        "Handle TimeoutError",
+        "Use different timeouts for different operations"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use Gunicorn with Uvicorn workers for production",
+    "Implement structured logging with structlog",
+    "Handle graceful shutdown",
+    "Add health check endpoints",
+    "Use secret management services",
+    "Implement rate limiting",
+    "Configure connection pooling",
+    "Use Docker multi-stage builds",
+    "Monitor application metrics",
+    "Handle errors gracefully",
+    "Implement caching where appropriate",
+    "Use async patterns for I/O",
+    "Test in production-like environments",
+    "Set appropriate timeouts",
+    "Use circuit breakers for external services"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Running as Root",
+      "problem": "Security risk",
+      "solution": "Use non-root user in Docker"
+    },
+    {
+      "name": "No Health Checks",
+      "problem": "Can't detect application issues",
+      "solution": "Implement liveness and readiness probes"
+    },
+    {
+      "name": "Secrets in Code",
+      "problem": "Security vulnerability",
+      "solution": "Use environment variables or secret management"
+    },
+    {
+      "name": "No Logging",
+      "problem": "Can't debug production issues",
+      "solution": "Implement structured logging"
+    },
+    {
+      "name": "No Rate Limiting",
+      "problem": "Vulnerable to abuse",
+      "solution": "Implement rate limiting"
+    }
+  ]
+}

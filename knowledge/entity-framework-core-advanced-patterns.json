@@ -1,0 +1,471 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "ef-core-advanced",
+  "name": "Entity Framework Core Advanced Patterns",
+  "title": "EF Core Advanced Patterns and Best Practices",
+  "description": "Advanced patterns, optimizations, and best practices for Entity Framework Core",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns include testing strategies and query verification",
+    "A3_transparency": "All patterns emphasize clear data access patterns and change tracking"
+  },
+  "patterns": {
+    "migrations": {
+      "description": "Database schema versioning and management",
+      "workflow": {
+        "create": "dotnet ef migrations add MigrationName",
+        "update": "dotnet ef database update",
+        "script": "dotnet ef migrations script",
+        "remove": "dotnet ef migrations remove"
+      },
+      "best_practices": [
+        "Create migrations for every schema change",
+        "Review generated migrations before applying",
+        "Use descriptive migration names",
+        "Test migrations on staging before production",
+        "Keep migrations small and focused",
+        "Never edit applied migrations",
+        "Use migration scripts for production deployments",
+        "Backup database before applying migrations"
+      ],
+      "patterns": {
+        "data_migrations": {
+          "description": "Migrate data during schema changes",
+          "implementation": "Use migration Up/Down methods",
+          "best_practices": [
+            "Test data migrations thoroughly",
+            "Handle large datasets in batches",
+            "Make data migrations idempotent",
+            "Rollback data changes in Down method"
+          ]
+        },
+        "seed_data": {
+          "description": "Initialize database with default data",
+          "implementation": "HasData() in OnModelCreating or seed migrations",
+          "best_practices": [
+            "Use HasData for static reference data",
+            "Use seed migrations for dynamic data",
+            "Avoid seeding in production",
+            "Make seed data idempotent"
+          ]
+        }
+      }
+    },
+    "query_optimization": {
+      "projections": {
+        "description": "Select only needed columns",
+        "benefits": [
+          "Reduced data transfer",
+          "Better performance",
+          "Lower memory usage"
+        ],
+        "implementation": "Use Select() to project to DTOs",
+        "best_practices": [
+          "Always use projections for read operations",
+          "Avoid selecting entire entities when only need DTOs",
+          "Use anonymous types for simple projections",
+          "Map to DTOs for complex scenarios"
+        ]
+      },
+      "compiled_queries": {
+        "description": "Pre-compile LINQ queries for better performance",
+        "use_when": "Frequently executed queries",
+        "implementation": "EF.CompileAsyncQuery",
+        "benefits": [
+          "Faster execution",
+          "Reduced overhead"
+        ],
+        "limitations": [
+          "Cannot use parameters in some scenarios"
+        ],
+        "best_practices": [
+          "Use for hot path queries",
+          "Cache compiled queries",
+          "Test performance improvement"
+        ]
+      },
+      "split_queries": {
+        "description": "Split single query into multiple queries",
+        "use_when": "Include() causes cartesian explosion",
+        "implementation": "AsSplitQuery() (.NET 8+)",
+        "benefits": [
+          "Avoids cartesian explosion",
+          "Better performance for large datasets"
+        ],
+        "best_practices": [
+          "Use when Include() causes performance issues",
+          "Monitor query count",
+          "Consider impact on database connections"
+        ]
+      },
+      "no_tracking": {
+        "description": "Disable change tracking for read-only queries",
+        "use_when": "Read-only operations, better performance needed",
+        "implementation": "AsNoTracking()",
+        "benefits": [
+          "Better performance",
+          "Lower memory usage",
+          "Faster queries"
+        ],
+        "best_practices": [
+          "Use for all read-only queries",
+          "Don't use when need to update entities",
+          "Combine with projections for best performance"
+        ]
+      },
+      "pagination": {
+        "description": "Limit result sets",
+        "implementation": "Skip() and Take()",
+        "best_practices": [
+          "Always paginate large result sets",
+          "Use cursor-based pagination for very large datasets",
+          "Include total count when needed",
+          "Set reasonable page sizes"
+        ]
+      },
+      "eager_loading": {
+        "description": "Load related data upfront",
+        "implementation": "Include() and ThenInclude()",
+        "best_practices": [
+          "Use Include() for needed related data",
+          "Avoid over-including",
+          "Use projections with Include()",
+          "Consider split queries for complex includes"
+        ]
+      },
+      "explicit_loading": {
+        "description": "Load related data on demand",
+        "implementation": "Load() and LoadAsync()",
+        "use_when": "Don't know if related data is needed",
+        "best_practices": [
+          "Use sparingly",
+          "Prefer eager loading when possible",
+          "Handle null navigation properties"
+        ]
+      },
+      "lazy_loading": {
+        "description": "Automatically load related data on access",
+        "implementation": "Enable lazy loading proxies",
+        "use_when": "Convenience over performance",
+        "best_practices": [
+          "Avoid in high-performance scenarios",
+          "Be aware of N+1 query problems",
+          "Use explicit loading instead when possible"
+        ]
+      }
+    },
+    "bulk_operations": {
+      "description": "Perform operations on large datasets",
+      "methods": {
+        "execute_update": {
+          "description": "Bulk update without loading entities (.NET 7+)",
+          "implementation": "ExecuteUpdateAsync()",
+          "benefits": [
+            "No entity loading",
+            "Better performance",
+            "Lower memory"
+          ],
+          "limitations": [
+            "No change tracking",
+            "No interceptors"
+          ]
+        },
+        "execute_delete": {
+          "description": "Bulk delete without loading entities (.NET 7+)",
+          "implementation": "ExecuteDeleteAsync()",
+          "benefits": [
+            "No entity loading",
+            "Better performance"
+          ],
+          "limitations": [
+            "No change tracking",
+            "No interceptors"
+          ]
+        },
+        "bulk_extensions": {
+          "description": "Third-party library for bulk operations",
+          "library": "Z.EntityFramework.Extensions",
+          "features": [
+            "BulkInsert",
+            "BulkUpdate",
+            "BulkDelete",
+            "BulkMerge"
+          ],
+          "best_practices": [
+            "Use for large datasets",
+            "Consider transaction boundaries",
+            "Handle errors appropriately"
+          ]
+        }
+      },
+      "best_practices": [
+        "Use ExecuteUpdate/ExecuteDelete for simple bulk operations",
+        "Use bulk extensions for complex scenarios",
+        "Process in batches for very large datasets",
+        "Monitor performance and memory usage"
+      ]
+    },
+    "change_tracking": {
+      "description": "Track entity changes for updates",
+      "strategies": {
+        "snapshot": {
+          "description": "Default change tracking",
+          "use_when": "Most scenarios",
+          "benefits": [
+            "Automatic",
+            "Comprehensive"
+          ],
+          "overhead": "Memory and performance"
+        },
+        "no_tracking": {
+          "description": "Disable change tracking",
+          "use_when": "Read-only operations",
+          "benefits": [
+            "Better performance",
+            "Lower memory"
+          ],
+          "limitations": [
+            "No automatic updates"
+          ]
+        },
+        "change_tracking_proxies": {
+          "description": "Use proxy classes for change tracking",
+          "use_when": "Need fine-grained change tracking",
+          "limitations": [
+            "Requires virtual properties",
+            "Performance overhead"
+          ]
+        }
+      },
+      "optimization": {
+        "update_without_loading": {
+          "description": "Update entities without loading first",
+          "implementation": "Attach() and mark properties as modified",
+          "use_when": "Know entity exists and values",
+          "benefits": [
+            "No database query",
+            "Better performance"
+          ]
+        },
+        "selective_updates": {
+          "description": "Update only changed properties",
+          "implementation": "IsModified property",
+          "benefits": [
+            "Reduced SQL",
+            "Better performance"
+          ]
+        }
+      },
+      "best_practices": [
+        "Use AsNoTracking() for read-only queries",
+        "Update entities efficiently",
+        "Avoid unnecessary change tracking",
+        "Use Attach() for updates when entity not loaded"
+      ]
+    },
+    "concurrency": {
+      "description": "Handle concurrent access to data",
+      "strategies": {
+        "optimistic": {
+          "description": "Assume no conflicts, detect on save",
+          "implementation": "Concurrency token (Timestamp, RowVersion)",
+          "use_when": "Low conflict probability",
+          "best_practices": [
+            "Use concurrency tokens",
+            "Handle DbUpdateConcurrencyException",
+            "Implement conflict resolution"
+          ]
+        },
+        "pessimistic": {
+          "description": "Lock data during transaction",
+          "implementation": "Database-level locks",
+          "use_when": "High conflict probability",
+          "limitations": [
+            "Performance impact",
+            "Deadlock risk"
+          ]
+        }
+      },
+      "handling": {
+        "description": "Resolve concurrency conflicts",
+        "strategies": [
+          "Client wins",
+          "Database wins",
+          "Merge",
+          "User resolution"
+        ],
+        "best_practices": [
+          "Use optimistic concurrency by default",
+          "Implement proper conflict resolution",
+          "Inform users of conflicts",
+          "Log concurrency exceptions"
+        ]
+      }
+    },
+    "value_conversions": {
+      "description": "Convert between database and model types",
+      "use_cases": [
+        "Enums as strings",
+        "Encrypted values",
+        "JSON columns",
+        "Custom types"
+      ],
+      "implementation": "HasConversion()",
+      "best_practices": [
+        "Use for type mismatches",
+        "Consider performance impact",
+        "Test conversions thoroughly",
+        "Document conversion logic"
+      ]
+    },
+    "owned_types": {
+      "description": "Value objects owned by entities",
+      "use_when": "Value objects, complex types",
+      "implementation": "OwnsOne() or OwnsMany()",
+      "best_practices": [
+        "Use for value objects",
+        "Keep owned types simple",
+        "Consider table splitting for complex owned types"
+      ]
+    },
+    "table_splitting": {
+      "description": "Split entity across multiple tables",
+      "use_when": "Large entities, different access patterns",
+      "implementation": "ToTable() with same key",
+      "best_practices": [
+        "Use for large entities",
+        "Consider performance implications",
+        "Document table relationships"
+      ]
+    },
+    "temporal_tables": {
+      "description": "Track historical data automatically",
+      "use_when": "Need audit trail, point-in-time queries",
+      "implementation": "IsTemporal()",
+      "benefits": [
+        "Automatic history",
+        "Point-in-time queries",
+        "Audit trail"
+      ],
+      "best_practices": [
+        "Use for audit requirements",
+        "Consider storage implications",
+        "Implement history cleanup",
+        "Document temporal queries"
+      ]
+    },
+    "interceptors": {
+      "description": "Intercept EF Core operations",
+      "types": {
+        "save_changes": "Intercept SaveChanges",
+        "query": "Intercept queries",
+        "connection": "Intercept connections",
+        "transaction": "Intercept transactions"
+      },
+      "use_cases": [
+        "Auditing",
+        "Soft delete",
+        "Multi-tenancy",
+        "Caching"
+      ],
+      "best_practices": [
+        "Use for cross-cutting concerns",
+        "Keep interceptors lightweight",
+        "Test interceptor behavior",
+        "Document interceptor purpose"
+      ]
+    },
+    "testing": {
+      "unit_testing": {
+        "description": "Test data access logic",
+        "approaches": {
+          "in_memory": {
+            "description": "Use in-memory database",
+            "use_when": "Simple scenarios, fast tests",
+            "limitations": [
+              "Not SQL Server",
+              "Limited features"
+            ]
+          },
+          "sqlite": {
+            "description": "Use SQLite in-memory",
+            "use_when": "Need real database features",
+            "benefits": [
+              "Real SQL",
+              "Better coverage"
+            ]
+          },
+          "test_containers": {
+            "description": "Use Docker containers for tests",
+            "use_when": "Need exact database behavior",
+            "benefits": [
+              "Real database",
+              "Accurate tests"
+            ],
+            "overhead": "Slower tests"
+          }
+        },
+        "best_practices": [
+          "Use in-memory for simple unit tests",
+          "Use SQLite for integration tests",
+          "Use test containers for critical scenarios",
+          "Clean up test data",
+          "Use transactions for isolation"
+        ]
+      }
+    },
+    "performance": {
+      "connection_management": {
+        "description": "Manage database connections",
+        "best_practices": [
+          "Use connection pooling",
+          "Dispose DbContext properly",
+          "Avoid long-lived contexts",
+          "Use scoped lifetime in DI"
+        ]
+      },
+      "query_performance": {
+        "description": "Optimize query performance",
+        "techniques": [
+          "Use projections",
+          "Use compiled queries",
+          "Use AsNoTracking()",
+          "Avoid N+1 queries",
+          "Use appropriate indexes",
+          "Monitor query performance"
+        ]
+      },
+      "batching": {
+        "description": "Batch operations for better performance",
+        "implementation": "SaveChanges() batches multiple changes",
+        "best_practices": [
+          "Let EF Core batch automatically",
+          "Consider batch size",
+          "Monitor batch performance"
+        ]
+      }
+    }
+  },
+  "best_practices": [
+    "Use async/await for all database operations",
+    "Register DbContext with Scoped lifetime",
+    "Use migrations for all schema changes",
+    "Use projections to reduce data transfer",
+    "Use AsNoTracking() for read-only queries",
+    "Implement pagination for large result sets",
+    "Use compiled queries for frequently executed queries",
+    "Handle concurrency conflicts properly",
+    "Use bulk operations for large datasets",
+    "Configure indexes for frequently queried columns",
+    "Use split queries to avoid cartesian explosion",
+    "Dispose DbContext properly (handled by DI)",
+    "Monitor query performance",
+    "Test data access logic thoroughly",
+    "Use value conversions for type mismatches",
+    "Implement proper error handling",
+    "Use temporal tables for audit requirements",
+    "Use interceptors for cross-cutting concerns"
+  ],
+  "anti_patterns": []
+}

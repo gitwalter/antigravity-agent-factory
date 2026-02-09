@@ -1,0 +1,317 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "visualization-patterns",
+  "name": "Visualization Patterns",
+  "title": "Visualization Patterns",
+  "description": "Comprehensive visualization patterns for Matplotlib, Seaborn, and Plotly in ML/data science contexts",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Visualizations include clear labels and reproducible code",
+    "A3_transparency": "All plots are clearly labeled and interpretable"
+  },
+  "matplotlib_patterns": {
+    "figure_setup": {
+      "description": "Create and configure matplotlib figures",
+      "use_when": "Setting up plots with custom size and styling",
+      "code_example": "import matplotlib.pyplot as plt\nimport numpy as np\n\n# Create figure with size\nfig, ax = plt.subplots(figsize=(10, 6))\n\n# Multiple subplots\nfig, axes = plt.subplots(2, 2, figsize=(12, 10))\nfig, axes = plt.subplots(2, 2, figsize=(12, 10), sharex=True, sharey=True)\n\n# Set DPI for high-quality output\nfig = plt.figure(figsize=(10, 6), dpi=300)\n\n# Set style\nplt.style.use('seaborn-v0_8-darkgrid')\nplt.style.use('ggplot')\nplt.style.use('default')\n\n# Custom style\nplt.rcParams['font.size'] = 12\nplt.rcParams['axes.labelsize'] = 14\nplt.rcParams['axes.titlesize'] = 16\nplt.rcParams['xtick.labelsize'] = 10\nplt.rcParams['ytick.labelsize'] = 10\nplt.rcParams['legend.fontsize'] = 12",
+      "best_practices": [
+        "Set figure size explicitly",
+        "Use high DPI (300) for publication",
+        "Set style early in script",
+        "Customize rcParams for consistent styling"
+      ]
+    },
+    "basic_plotting": {
+      "description": "Create basic line, scatter, and bar plots",
+      "use_when": "Creating standard plots",
+      "code_example": "import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.linspace(0, 10, 100)\ny = np.sin(x)\n\n# Line plot\nfig, ax = plt.subplots(figsize=(10, 6))\nax.plot(x, y, label='sin(x)', linewidth=2, color='blue')\nax.set_xlabel('X axis')\nax.set_ylabel('Y axis')\nax.set_title('Sine Wave')\nax.legend()\nax.grid(True, alpha=0.3)\nplt.tight_layout()\nplt.show()\n\n# Scatter plot\nx_scatter = np.random.randn(100)\ny_scatter = np.random.randn(100)\nax.scatter(x_scatter, y_scatter, alpha=0.6, s=50, c='red')\n\n# Bar plot\ncategories = ['A', 'B', 'C', 'D']\nvalues = [10, 20, 15, 25]\nax.bar(categories, values, color=['blue', 'green', 'red', 'orange'])\n\n# Histogram\nax.hist(y_scatter, bins=30, alpha=0.7, edgecolor='black')",
+      "best_practices": [
+        "Always label axes and add title",
+        "Use legend for multiple series",
+        "Set alpha for transparency",
+        "Use tight_layout() to prevent clipping"
+      ]
+    },
+    "subplots": {
+      "description": "Create multiple subplots",
+      "use_when": "Need to show multiple plots together",
+      "code_example": "import matplotlib.pyplot as plt\nimport numpy as np\n\n# Create subplots\nfig, axes = plt.subplots(2, 2, figsize=(12, 10))\n\n# Flatten for easy iteration\naxes = axes.flatten()\n\n# Plot on each subplot\naxes[0].plot(x, y, 'b-')\naxes[0].set_title('Plot 1')\n\naxes[1].scatter(x_scatter, y_scatter)\naxes[1].set_title('Plot 2')\n\naxes[2].bar(categories, values)\naxes[2].set_title('Plot 3')\n\naxes[3].hist(y_scatter, bins=30)\naxes[3].set_title('Plot 4')\n\n# Alternative: using gridspec for complex layouts\nfrom matplotlib.gridspec import GridSpec\nfig = plt.figure(figsize=(12, 8))\ngs = GridSpec(2, 2, figure=fig)\nax1 = fig.add_subplot(gs[0, :])  # Full width top\nax2 = fig.add_subplot(gs[1, 0])  # Bottom left\nax3 = fig.add_subplot(gs[1, 1])  # Bottom right\n\nplt.tight_layout()\nplt.show()",
+      "best_practices": [
+        "Use subplots() for regular grids",
+        "Use GridSpec for complex layouts",
+        "Always use tight_layout()",
+        "Set consistent styling across subplots"
+      ]
+    },
+    "styling_customization": {
+      "description": "Customize plot appearance",
+      "use_when": "Need publication-ready or branded plots",
+      "code_example": "import matplotlib.pyplot as plt\nimport numpy as np\n\nfig, ax = plt.subplots(figsize=(10, 6))\n\n# Colors\nax.plot(x, y, color='#2E86AB', linewidth=2, linestyle='--', marker='o', markersize=8)\n\n# Colormap\ncolors = plt.cm.viridis(np.linspace(0, 1, 5))\nfor i, color in enumerate(colors):\n    ax.plot(x, y + i, color=color, label=f'Series {i}')\n\n# Customize axes\nax.set_xlim(0, 10)\nax.set_ylim(-2, 2)\nax.set_xlabel('X Label', fontsize=14, fontweight='bold')\nax.set_ylabel('Y Label', fontsize=14, fontweight='bold')\nax.set_title('Custom Title', fontsize=16, fontweight='bold')\n\n# Grid and spines\nax.grid(True, linestyle='--', alpha=0.5, color='gray')\nax.spines['top'].set_visible(False)\nax.spines['right'].set_visible(False)\n\n# Legend\nax.legend(loc='upper right', frameon=True, fancybox=True, shadow=True)\n\n# Text annotation\nax.text(5, 1, 'Important Point', fontsize=12, bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.5))\nax.annotate('Peak', xy=(np.pi/2, 1), xytext=(np.pi/2 + 1, 1.5),\n            arrowprops=dict(arrowstyle='->', color='red'))",
+      "best_practices": [
+        "Use consistent color palette",
+        "Remove unnecessary spines",
+        "Add meaningful annotations",
+        "Use professional color schemes"
+      ]
+    },
+    "saving_figures": {
+      "description": "Save figures in various formats",
+      "use_when": "Exporting plots for reports or publications",
+      "code_example": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots(figsize=(10, 6))\nax.plot(x, y)\n\n# Save in different formats\nfig.savefig('plot.png', dpi=300, bbox_inches='tight')\nfig.savefig('plot.pdf', bbox_inches='tight')  # Vector format\nfig.savefig('plot.svg', bbox_inches='tight')  # Scalable vector\nfig.savefig('plot.jpg', dpi=300, quality=95, bbox_inches='tight')\n\n# Save with transparent background\nfig.savefig('plot.png', dpi=300, bbox_inches='tight', transparent=True)\n\n# Save with specific facecolor\nfig.savefig('plot.png', dpi=300, bbox_inches='tight', facecolor='white')\n\nplt.close(fig)  # Free memory",
+      "best_practices": [
+        "Use high DPI (300) for publications",
+        "Use bbox_inches='tight' to avoid clipping",
+        "Use PDF/SVG for vector graphics",
+        "Close figures to free memory"
+      ]
+    }
+  },
+  "seaborn_patterns": {
+    "statistical_plots": {
+      "distplot": {
+        "description": "Distribution plots with histograms and KDE",
+        "use_when": "Visualizing data distributions",
+        "code_example": "import seaborn as sns\nimport matplotlib.pyplot as plt\nimport numpy as np\n\n# Set style\nsns.set_style('darkgrid')\nsns.set_palette('husl')\n\n# Distribution plot (deprecated, use displot)\nsns.displot(data, x='column', kind='hist', kde=True, bins=30)\n\n# Histogram with KDE\nsns.histplot(data=data, x='column', kde=True, bins=30)\n\n# Multiple distributions\nsns.histplot(data=data, x='column', hue='category', kde=True)\n\n# Density plot\nsns.kdeplot(data=data, x='column', fill=True)\n\n# Rug plot\nsns.rugplot(data=data, x='column')",
+        "best_practices": [
+          "Use displot/histplot instead of deprecated distplot",
+          "Add KDE for smooth distribution",
+          "Use hue for comparing distributions",
+          "Adjust bins for appropriate detail"
+        ]
+      },
+      "pairplot": {
+        "description": "Pairwise relationships visualization",
+        "use_when": "Exploring relationships between multiple variables",
+        "code_example": "import seaborn as sns\nimport pandas as pd\n\n# Basic pairplot\nsns.pairplot(data, vars=['col1', 'col2', 'col3'])\n\n# With hue\nsns.pairplot(data, vars=['col1', 'col2', 'col3'], hue='category')\n\n# Customize\nsns.pairplot(data, vars=['col1', 'col2', 'col3'], \n             hue='category',\n             diag_kind='kde',\n             plot_kws={'alpha': 0.6},\n             corner=True)  # Show only lower triangle",
+        "best_practices": [
+          "Use for exploring feature relationships",
+          "Use hue to color by category",
+          "Use corner=True to reduce redundancy",
+          "Can be slow for many variables"
+        ]
+      },
+      "heatmap": {
+        "description": "Heatmap for correlation or 2D data",
+        "use_when": "Visualizing correlations or 2D matrices",
+        "code_example": "import seaborn as sns\nimport numpy as np\nimport pandas as pd\n\n# Correlation heatmap\ncorr = data.corr()\nsns.heatmap(corr, annot=True, fmt='.2f', cmap='coolwarm', center=0,\n            square=True, linewidths=0.5, cbar_kws={'shrink': 0.8})\n\n# Custom heatmap\nmatrix = np.random.rand(10, 10)\nsns.heatmap(matrix, annot=True, cmap='viridis', \n            xticklabels=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],\n            yticklabels=['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'])\n\n# Clustered heatmap\nsns.clustermap(corr, method='ward', cmap='coolwarm', center=0)",
+        "best_practices": [
+          "Use annot=True to show values",
+          "Choose appropriate colormap",
+          "Use center=0 for correlation matrices",
+          "Use clustermap for hierarchical clustering"
+        ]
+      },
+      "boxplot_violinplot": {
+        "description": "Box plots and violin plots for distributions",
+        "use_when": "Comparing distributions across categories",
+        "code_example": "import seaborn as sns\n\n# Box plot\nsns.boxplot(data=data, x='category', y='value')\n\n# Horizontal box plot\nsns.boxplot(data=data, y='category', x='value')\n\n# With hue\nsns.boxplot(data=data, x='category', y='value', hue='group')\n\n# Violin plot (shows distribution shape)\nsns.violinplot(data=data, x='category', y='value')\n\n# Swarm plot (shows individual points)\nsns.swarmplot(data=data, x='category', y='value', size=3)\n\n# Combined\nsns.violinplot(data=data, x='category', y='value', inner=None)\nsns.swarmplot(data=data, x='category', y='value', color='black', size=3)",
+        "best_practices": [
+          "Use boxplot for quartiles",
+          "Use violinplot for distribution shape",
+          "Combine with swarmplot for small datasets",
+          "Use hue for additional grouping"
+        ]
+      }
+    },
+    "regression_plots": {
+      "description": "Visualize relationships with regression lines",
+      "use_when": "Exploring relationships between variables",
+      "code_example": "import seaborn as sns\n\n# Scatter plot with regression line\nsns.regplot(data=data, x='x', y='y')\n\n# With confidence interval\nsns.regplot(data=data, x='x', y='y', ci=95)\n\n# Polynomial regression\nsns.regplot(data=data, x='x', y='y', order=2)\n\n# Lowess regression\nsns.regplot(data=data, x='x', y='y', lowess=True)\n\n# Multiple groups\nsns.lmplot(data=data, x='x', y='y', hue='category', col='group')\n\n# Residual plot\nsns.residplot(data=data, x='x', y='y')",
+      "best_practices": [
+        "Use regplot for single plot",
+        "Use lmplot for multiple plots",
+        "Show confidence intervals",
+        "Check residuals for model assumptions"
+      ]
+    }
+  },
+  "plotly_patterns": {
+    "interactive_charts": {
+      "description": "Create interactive charts with Plotly",
+      "use_when": "Need interactive visualizations for dashboards",
+      "code_example": "import plotly.graph_objects as go\nimport plotly.express as px\nimport pandas as pd\n\n# Using Plotly Express (simpler)\ndf = pd.DataFrame({'x': [1, 2, 3, 4, 5], 'y': [2, 4, 1, 5, 3]})\nfig = px.scatter(df, x='x', y='y', title='Interactive Scatter')\nfig.show()\n\n# Using Graph Objects (more control)\nfig = go.Figure()\nfig.add_trace(go.Scatter(x=[1, 2, 3, 4, 5], y=[2, 4, 1, 5, 3],\n                        mode='lines+markers', name='Series 1'))\nfig.update_layout(title='Interactive Plot',\n                  xaxis_title='X Axis',\n                  yaxis_title='Y Axis',\n                  hovermode='closest')\nfig.show()\n\n# 3D scatter\nfig = px.scatter_3d(df, x='x', y='y', z='z', color='category')\nfig.show()",
+      "best_practices": [
+        "Use Plotly Express for simple plots",
+        "Use Graph Objects for complex customization",
+        "Add meaningful hover information",
+        "Export to HTML for sharing"
+      ]
+    },
+    "dash_integration": {
+      "description": "Create interactive dashboards with Dash",
+      "use_when": "Building web-based dashboards",
+      "code_example": "from dash import Dash, dcc, html, Input, Output\nimport plotly.express as px\nimport pandas as pd\n\napp = Dash(__name__)\n\napp.layout = html.Div([\n    html.H1('Dashboard Title'),\n    dcc.Dropdown(\n        id='category-dropdown',\n        options=[{'label': i, 'value': i} for i in categories],\n        value=categories[0]\n    ),\n    dcc.Graph(id='main-graph')\n])\n\n@app.callback(\n    Output('main-graph', 'figure'),\n    Input('category-dropdown', 'value')\n)\ndef update_graph(selected_category):\n    filtered_df = df[df['category'] == selected_category]\n    fig = px.scatter(filtered_df, x='x', y='y')\n    return fig\n\nif __name__ == '__main__':\n    app.run_server(debug=True)",
+      "best_practices": [
+        "Use callbacks for interactivity",
+        "Structure layout clearly",
+        "Add loading states",
+        "Deploy with gunicorn for production"
+      ]
+    },
+    "3d_plots": {
+      "description": "Create 3D visualizations",
+      "use_when": "Visualizing 3D data or surfaces",
+      "code_example": "import plotly.graph_objects as go\nimport numpy as np\n\n# 3D scatter\nfig = go.Figure(data=go.Scatter3d(\n    x=x_data,\n    y=y_data,\n    z=z_data,\n    mode='markers',\n    marker=dict(size=5, color=color_data, colorscale='Viridis')\n))\nfig.show()\n\n# 3D surface\nx = np.linspace(-5, 5, 50)\ny = np.linspace(-5, 5, 50)\nX, Y = np.meshgrid(x, y)\nZ = np.sin(np.sqrt(X**2 + Y**2))\n\nfig = go.Figure(data=go.Surface(z=Z, x=X, y=Y))\nfig.update_layout(title='3D Surface')\nfig.show()",
+      "best_practices": [
+        "Use appropriate colorscale",
+        "Add axis labels",
+        "Enable rotation for exploration",
+        "Consider 2D projections for clarity"
+      ]
+    }
+  },
+  "ml_visualization": {
+    "confusion_matrix": {
+      "description": "Visualize classification performance",
+      "use_when": "Evaluating classification models",
+      "code_example": "import matplotlib.pyplot as plt\nimport seaborn as sns\nfrom sklearn.metrics import confusion_matrix\nimport numpy as np\n\n# Generate confusion matrix\ncm = confusion_matrix(y_true, y_pred)\n\n# Plot with seaborn\nplt.figure(figsize=(10, 8))\nsns.heatmap(cm, annot=True, fmt='d', cmap='Blues',\n            xticklabels=['Class 0', 'Class 1', 'Class 2'],\n            yticklabels=['Class 0', 'Class 1', 'Class 2'])\nplt.ylabel('True Label')\nplt.xlabel('Predicted Label')\nplt.title('Confusion Matrix')\nplt.show()\n\n# Normalized confusion matrix\ncm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]\nsns.heatmap(cm_normalized, annot=True, fmt='.2f', cmap='Blues')",
+      "best_practices": [
+        "Show both counts and percentages",
+        "Use color to highlight patterns",
+        "Label axes clearly",
+        "Normalize for class imbalance"
+      ]
+    },
+    "roc_curves": {
+      "description": "ROC curves and AUC visualization",
+      "use_when": "Evaluating binary classification models",
+      "code_example": "import matplotlib.pyplot as plt\nfrom sklearn.metrics import roc_curve, auc, roc_auc_score\n\n# Calculate ROC curve\nfpr, tpr, thresholds = roc_curve(y_true, y_scores)\nroc_auc = auc(fpr, tpr)\n\n# Plot ROC curve\nplt.figure(figsize=(8, 6))\nplt.plot(fpr, tpr, color='darkorange', lw=2, \n         label=f'ROC curve (AUC = {roc_auc:.2f})')\nplt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--', label='Random')\nplt.xlim([0.0, 1.0])\nplt.ylim([0.0, 1.05])\nplt.xlabel('False Positive Rate')\nplt.ylabel('True Positive Rate')\nplt.title('ROC Curve')\nplt.legend(loc='lower right')\nplt.grid(alpha=0.3)\nplt.show()\n\n# Multiple models\nfor model_name, y_scores in model_scores.items():\n    fpr, tpr, _ = roc_curve(y_true, y_scores)\n    roc_auc = auc(fpr, tpr)\n    plt.plot(fpr, tpr, label=f'{model_name} (AUC = {roc_auc:.2f})')",
+      "best_practices": [
+        "Show AUC score in legend",
+        "Include diagonal reference line",
+        "Compare multiple models",
+        "Use appropriate thresholds"
+      ]
+    },
+    "learning_curves": {
+      "description": "Plot training and validation curves",
+      "use_when": "Monitoring model training and detecting overfitting",
+      "code_example": "import matplotlib.pyplot as plt\nimport numpy as np\n\n# Learning curves\ntrain_sizes = np.linspace(0.1, 1.0, 10)\ntrain_scores_mean = [...]\ntrain_scores_std = [...]\nval_scores_mean = [...]\nval_scores_std = [...]\n\nplt.figure(figsize=(10, 6))\nplt.fill_between(train_sizes, train_scores_mean - train_scores_std,\n                 train_scores_mean + train_scores_std, alpha=0.1, color='blue')\nplt.fill_between(train_sizes, val_scores_mean - val_scores_std,\n                 val_scores_mean + val_scores_std, alpha=0.1, color='red')\nplt.plot(train_sizes, train_scores_mean, 'o-', color='blue', label='Training Score')\nplt.plot(train_sizes, val_scores_mean, 'o-', color='red', label='Validation Score')\nplt.xlabel('Training Set Size')\nplt.ylabel('Score')\nplt.title('Learning Curves')\nplt.legend()\nplt.grid(alpha=0.3)\nplt.show()\n\n# Loss curves during training\nepochs = range(1, len(train_loss) + 1)\nplt.plot(epochs, train_loss, 'b-', label='Training Loss')\nplt.plot(epochs, val_loss, 'r-', label='Validation Loss')\nplt.xlabel('Epoch')\nplt.ylabel('Loss')\nplt.title('Training and Validation Loss')\nplt.legend()\nplt.show()",
+      "best_practices": [
+        "Show both training and validation",
+        "Include error bands (std)",
+        "Identify overfitting/underfitting",
+        "Use consistent colors"
+      ]
+    },
+    "feature_importance": {
+      "description": "Visualize feature importance",
+      "use_when": "Understanding model decisions",
+      "code_example": "import matplotlib.pyplot as plt\nimport pandas as pd\nfrom sklearn.ensemble import RandomForestClassifier\n\n# Train model\nmodel = RandomForestClassifier()\nmodel.fit(X_train, y_train)\n\n# Get feature importance\nfeature_importance = pd.DataFrame({\n    'feature': X_train.columns,\n    'importance': model.feature_importances_\n}).sort_values('importance', ascending=False)\n\n# Plot\nplt.figure(figsize=(10, 6))\nplt.barh(feature_importance['feature'], feature_importance['importance'])\nplt.xlabel('Importance')\nplt.title('Feature Importance')\nplt.gca().invert_yaxis()\nplt.tight_layout()\nplt.show()\n\n# Using SHAP\nimport shap\nshap_values = shap.TreeExplainer(model).shap_values(X_test)\nshap.summary_plot(shap_values, X_test)",
+      "best_practices": [
+        "Sort by importance",
+        "Use horizontal bar chart",
+        "Consider using SHAP for better interpretation",
+        "Show top N features"
+      ]
+    },
+    "loss_curves": {
+      "description": "Plot loss during training",
+      "use_when": "Monitoring deep learning training",
+      "code_example": "import matplotlib.pyplot as plt\n\n# Loss curves\ntrain_losses = [...]\nval_losses = [...]\nepochs = range(1, len(train_losses) + 1)\n\nplt.figure(figsize=(10, 6))\nplt.plot(epochs, train_losses, 'b-', label='Training Loss', linewidth=2)\nplt.plot(epochs, val_losses, 'r-', label='Validation Loss', linewidth=2)\nplt.xlabel('Epoch')\nplt.ylabel('Loss')\nplt.title('Training and Validation Loss')\nplt.legend()\nplt.grid(alpha=0.3)\nplt.show()\n\n# With smoothing\nfrom scipy.ndimage import uniform_filter1d\nsmoothed_train = uniform_filter1d(train_losses, size=5)\nsmoothed_val = uniform_filter1d(val_losses, size=5)\nplt.plot(epochs, smoothed_train, 'b-', alpha=0.3, label='Training (smoothed)')\nplt.plot(epochs, smoothed_val, 'r-', alpha=0.3, label='Validation (smoothed)')",
+      "best_practices": [
+        "Plot both training and validation",
+        "Use smoothing for noisy curves",
+        "Identify convergence",
+        "Save plots during training"
+      ]
+    },
+    "dimensionality_reduction": {
+      "description": "Visualize t-SNE and UMAP embeddings",
+      "use_when": "Exploring high-dimensional data",
+      "code_example": "import matplotlib.pyplot as plt\nfrom sklearn.manifold import TSNE\nimport umap\n\n# t-SNE\nX_embedded = TSNE(n_components=2, random_state=42).fit_transform(X)\n\nplt.figure(figsize=(10, 8))\nscatter = plt.scatter(X_embedded[:, 0], X_embedded[:, 1], \n                     c=y, cmap='viridis', alpha=0.6, s=50)\nplt.colorbar(scatter)\nplt.xlabel('t-SNE 1')\nplt.ylabel('t-SNE 2')\nplt.title('t-SNE Visualization')\nplt.show()\n\n# UMAP\nreducer = umap.UMAP(n_components=2, random_state=42)\nX_embedded = reducer.fit_transform(X)\n\nplt.figure(figsize=(10, 8))\nplt.scatter(X_embedded[:, 0], X_embedded[:, 1], c=y, cmap='viridis', alpha=0.6)\nplt.xlabel('UMAP 1')\nplt.ylabel('UMAP 2')\nplt.title('UMAP Visualization')\nplt.show()",
+      "best_practices": [
+        "Use for exploratory analysis",
+        "Color by labels or clusters",
+        "Adjust perplexity for t-SNE",
+        "UMAP preserves more global structure"
+      ]
+    }
+  },
+  "best_practices_summary": {
+    "color_palettes": {
+      "description": "Choose appropriate color palettes",
+      "code_example": "import matplotlib.pyplot as plt\nimport seaborn as sns\n\n# Colorblind-friendly palettes\nsns.set_palette('colorblind')\nsns.set_palette('Set2')  # Good for categorical\n\n# Sequential palettes (for ordered data)\ncolors = plt.cm.viridis(np.linspace(0, 1, 5))\ncolors = plt.cm.plasma(np.linspace(0, 1, 5))\n\n# Diverging palettes (for data with center)\ncolors = plt.cm.RdYlBu(np.linspace(0, 1, 5))\n\n# Custom palette\ncustom_palette = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']\nsns.set_palette(custom_palette)",
+      "best_practices": [
+        "Use colorblind-friendly palettes",
+        "Sequential for ordered data",
+        "Diverging for data with center",
+        "Limit number of colors"
+      ]
+    },
+    "accessibility": {
+      "description": "Make plots accessible",
+      "code_example": "import matplotlib.pyplot as plt\n\n# High contrast\nplt.rcParams['figure.facecolor'] = 'white'\nplt.rcParams['axes.facecolor'] = 'white'\n\n# Large fonts\nplt.rcParams['font.size'] = 14\nplt.rcParams['axes.labelsize'] = 16\n\n# Clear labels\nax.set_xlabel('Clear X Axis Label', fontsize=16)\nax.set_ylabel('Clear Y Axis Label', fontsize=16)\n\n# Add text descriptions\nfig.text(0.02, 0.98, 'Figure 1: Description of plot', \n         fontsize=12, verticalalignment='top')",
+      "best_practices": [
+        "Use high contrast colors",
+        "Large, readable fonts",
+        "Clear axis labels",
+        "Add figure descriptions"
+      ]
+    },
+    "publication_ready": {
+      "description": "Create publication-quality figures",
+      "code_example": "import matplotlib.pyplot as plt\n\n# Set publication style\nplt.rcParams.update({\n    'font.size': 12,\n    'font.family': 'serif',\n    'axes.labelsize': 14,\n    'axes.titlesize': 16,\n    'xtick.labelsize': 12,\n    'ytick.labelsize': 12,\n    'legend.fontsize': 12,\n    'figure.titlesize': 18,\n    'lines.linewidth': 2,\n    'lines.markersize': 8\n})\n\n# Create figure\nfig, ax = plt.subplots(figsize=(6, 4), dpi=300)\n\n# Plot\nax.plot(x, y, label='Data')\nax.set_xlabel('X Label')\nax.set_ylabel('Y Label')\nax.legend()\nax.grid(True, alpha=0.3)\n\n# Save\nfig.savefig('figure.png', dpi=300, bbox_inches='tight', facecolor='white')",
+      "best_practices": [
+        "Use high DPI (300)",
+        "Consistent font sizes",
+        "Remove unnecessary elements",
+        "Use vector formats (PDF/SVG)"
+      ]
+    }
+  },
+  "anti_patterns": [
+    {
+      "name": "Not labeling axes or adding titles",
+      "problem": "Plots are meaningless without context, cannot be interpreted",
+      "solution": "Always add xlabel, ylabel, and title to every plot"
+    },
+    {
+      "name": "Using default matplotlib style",
+      "problem": "Default style is not publication-ready, looks unprofessional",
+      "solution": "Set style early: plt.style.use('seaborn-v0_8') or customize rcParams"
+    },
+    {
+      "name": "Too many colors or categories in one plot",
+      "problem": "Plot becomes cluttered and unreadable, defeats purpose of visualization",
+      "solution": "Limit to 5-7 categories, use subplots or faceting for more categories"
+    },
+    {
+      "name": "Not using vector formats for publications",
+      "problem": "Raster images (PNG/JPG) become pixelated when scaled, unprofessional",
+      "solution": "Save as PDF or SVG for publications, use high DPI (300) for PNG"
+    },
+    {
+      "name": "Ignoring colorblind accessibility",
+      "problem": "8% of population cannot distinguish certain color combinations",
+      "solution": "Use colorblind-friendly palettes: 'colorblind', 'Set2', or test with colorblind simulators"
+    }
+  ],
+  "best_practices": [
+    "Always label axes and add descriptive titles - plots without context are meaningless",
+    "Use high DPI (300) and vector formats (PDF/SVG) for publication-quality figures",
+    "Choose colorblind-friendly palettes - test with simulators for accessibility",
+    "Limit to 5-7 categories per plot - use subplots or faceting for more",
+    "Use consistent styling throughout document/report - set style early",
+    "Add legends for multiple series - make them clear and positioned appropriately",
+    "Use appropriate plot types - scatter for relationships, bar for categories, line for trends",
+    "Remove unnecessary chartjunk - clean spines, minimal grid, no 3D unless necessary",
+    "Save figures with bbox_inches='tight' to prevent clipping",
+    "Close figures (plt.close()) to free memory when creating many plots"
+  ],
+  "patterns": {
+    "matplotlib_patterns": {
+      "description": "Basic plotting, subplots, styling, and figure management with Matplotlib"
+    },
+    "seaborn_patterns": {
+      "description": "Statistical plots, heatmaps, and distribution visualizations"
+    },
+    "plotly_patterns": {
+      "description": "Interactive charts, dashboards, and 3D visualizations"
+    },
+    "ml_visualization": {
+      "description": "ML-specific visualizations: confusion matrices, ROC curves, learning curves, feature importance"
+    }
+  }
+}

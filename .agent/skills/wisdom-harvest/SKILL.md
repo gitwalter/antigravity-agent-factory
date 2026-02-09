@@ -1,30 +1,54 @@
 ---
-name: wisdom-harvest
 description: Structured knowledge capture to extract team wisdom, lessons learned, and best practices for embedding in agent systems
-type: skill
-knowledge: [best-practices.json]
 ---
 
+# Wisdom Harvest
+
+Structured knowledge capture to extract team wisdom, lessons learned, and best practices for embedding in agent systems
+
+## 
+# Wisdom Harvest Skill
+
+A structured approach to capturing tacit knowledge, lessons learned, and team wisdom that goes beyond technical requirements to embed real human experience into agent systems.
+
+## 
 # Wisdom Harvest Skill
 
 A structured approach to capturing tacit knowledge, lessons learned, and team wisdom that goes beyond technical requirements to embed real human experience into agent systems.
 
 ## Philosophy
-
 > "The best practices aren't in the documentation. They're in the heads of the people who've been in the trenches."
 
 Wisdom Harvest recognizes that teams have invaluable knowledge that rarely gets written down - the workarounds, the gotchas, the "we learned this the hard way" insights. This skill extracts that wisdom and embeds it into the agent system.
 
-## When to Use
+## Process
+### Step 1: Select Facilitation Mode
+Choose appropriate mode based on available time:
+- **Quick Harvest** (5 min): One question for Express Lane onboarding
+- **Standard Harvest** (10 min): Three questions for Team Huddle
+- **Deep Harvest** (30-45 min): Comprehensive session covering all categories
 
-- During any onboarding process (Express Lane, Team Huddle, Full Workshop)
-- When enhancing an existing agent system
-- After a project retrospective
-- When onboarding new team members (capture outgoing knowledge)
-- User mentions "capture knowledge", "lessons learned", "best practices"
+### Step 2: Facilitate Knowledge Capture
+Ask structured questions from relevant categories:
+- Strengths & Pride (what team does well)
+- Lessons Learned (hard-won knowledge)
+- Quality Definition (what "good" means)
+- Domain Knowledge (domain-specific wisdom)
+- Tool & Process Wisdom (workflow insights)
+
+### Step 3: Capture Responses
+Record team responses in structured format, asking follow-up questions to get specific examples and stories.
+
+### Step 4: Structure Wisdom Data
+Organize captured wisdom into `team-wisdom.json` format with strengths, lessonsLearned, qualityDefinition, domainKnowledge, and toolWisdom sections.
+
+### Step 5: Integrate with Agent System
+Embed wisdom into agent definitions, skills, and `.cursorrules` so agents can reference team knowledge in their behavior.
+
+### Step 6: Maintain Over Time
+Update wisdom file after major incidents, retrospectives, or when new knowledge emerges.
 
 ## Question Categories
-
 ### Category 1: Strengths & Pride
 
 Questions that surface what the team does well.
@@ -78,7 +102,6 @@ Questions that surface tooling and process insights.
 ---
 
 ## Facilitation Modes
-
 ### Mode 1: Quick Harvest (5 min)
 
 For Express Lane onboarding. Ask ONE question:
@@ -144,8 +167,58 @@ For comprehensive onboarding or dedicated knowledge capture sessions.
 
 ---
 
-## Output Format
+```
+╔══════════════════════════════════════════════════════════════╗
+║  🧠 QUICK WISDOM CAPTURE                                     ║
+╠══════════════════════════════════════════════════════════════╣
+║                                                              ║
+║  What's ONE lesson you've learned from past projects         ║
+║  that you want your AI agents to remember?                   ║
+║                                                              ║
+║  Examples:                                                   ║
+║  • "Always write tests before refactoring"                   ║
+║  • "Database migrations need rollback plans"                 ║
+║  • "Never deploy on Fridays"                                 ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+```
 
+```
+╔══════════════════════════════════════════════════════════════╗
+║  🧠 WISDOM HARVEST                                           ║
+╠══════════════════════════════════════════════════════════════╣
+║                                                              ║
+║  Let's capture your team's hard-earned wisdom.               ║
+║                                                              ║
+║  Q1: What's one thing your team does well?                   ║
+║                                                              ║
+║  Q2: What's a mistake you've learned from?                   ║
+║                                                              ║
+║  Q3: What does "done well" look like for this project?       ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║  🧠 DEEP WISDOM HARVEST                                      ║
+╠══════════════════════════════════════════════════════════════╣
+║                                                              ║
+║  We're going to spend some quality time capturing your       ║
+║  collective wisdom. This is an investment that pays off      ║
+║  every time your agents help you.                            ║
+║                                                              ║
+║  We'll cover 5 areas:                                        ║
+║  1. Strengths & Pride (what you do well)                     ║
+║  2. Lessons Learned (hard-won knowledge)                     ║
+║  3. Quality Definition (what "good" means)                   ║
+║  4. Domain Knowledge (your specific context)                 ║
+║  5. Tool & Process Wisdom (how you work)                     ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+## Output Format
 ### team-wisdom.json Structure
 
 ```json
@@ -204,14 +277,67 @@ For comprehensive onboarding or dedicated knowledge capture sessions.
 
 ---
 
-## Integration with Agent Behavior
+```json
+{
+  "$schema": "team-wisdom-schema",
+  "version": "1.0",
+  "capturedDate": "2026-01-31",
+  "capturedDuring": "Team Huddle",
+  "participants": 4,
+  
+  "strengths": [
+    {
+      "insight": "We always pair on complex features",
+      "category": "collaboration",
+      "source": "team"
+    }
+  ],
+  
+  "lessonsLearned": [
+    {
+      "insight": "Never deploy on Fridays",
+      "category": "process",
+      "severity": "high",
+      "source": "team"
+    }
+  ],
+  
+  "qualityDefinition": {
+    "doneWell": "Code is tested, documented, and reviewed",
+    "nonNegotiables": ["tests", "security review"],
+    "readinessCriteria": ["CI passes", "PR approved", "staging verified"]
+  },
+  
+  "domainKnowledge": {
+    "gotchas": [
+      "Payment retries must use idempotency keys"
+    ],
+    "glossary": {
+      "ACH": "Automated Clearing House - bank transfer system",
+      "Settlement": "When funds actually move between accounts"
+    },
+    "hiddenRules": [
+      "Refunds older than 90 days must go through manual review"
+    ]
+  },
+  
+  "toolWisdom": {
+    "productivityTips": [
+      "Use 'just db:reset' to rebuild test database"
+    ],
+    "debuggingProcess": "Check logs → Reproduce locally → Add failing test → Fix",
+    "releaseProcess": "PR → Staging → Smoke test → Prod → Monitor 30 min"
+  }
+}
+```
 
+## Integration with Agent Behavior
 ### How Agents Use Wisdom
 
 The captured wisdom is referenced in agent skills:
 
 ```yaml
-# In .agentrules or agent definitions
+# In .cursorrules or agent definitions
 wisdom_integration:
   - skill: code-reviewer
     uses:
@@ -244,8 +370,43 @@ Watch for these known issues:
 
 ---
 
-## Facilitation Tips
+```yaml
+# In .cursorrules or agent definitions
+wisdom_integration:
+  - skill: code-reviewer
+    uses:
+      - lessonsLearned (check for known pitfalls)
+      - qualityDefinition (apply quality bar)
+      
+  - skill: bugfix-workflow
+    uses:
+      - toolWisdom.debuggingProcess (follow team's debug approach)
+      - domainKnowledge.gotchas (warn about known issues)
+      
+  - skill: grounding
+    uses:
+      - domainKnowledge.glossary (understand terminology)
+      - domainKnowledge.hiddenRules (respect business rules)
+```
 
+```
+You are a code reviewer for this team. They value:
+- {lessonsLearned}
+- {qualityDefinition}
+
+Watch for these known issues:
+- {domainKnowledge.gotchas}
+```
+
+## Best Practices
+- **Create a safe space for sharing**: Emphasize that there are no wrong answers and that sharing mistakes and lessons learned helps the whole team
+- **Ask for specific examples and stories**: Encourage concrete anecdotes rather than abstract principles; stories are more memorable and actionable for agents
+- **Capture wisdom in actionable language**: Write insights as clear directives (e.g., "Always require rollback scripts") rather than vague observations
+- **Validate understanding before recording**: Paraphrase what you heard and confirm with the team member before adding to the wisdom file to ensure accuracy
+- **Balance different perspectives**: Actively seek input from all team members, including junior members who may have fresh insights
+- **Update wisdom regularly**: Schedule periodic reviews to add new lessons learned, remove outdated practices, and refine quality definitions as the team evolves
+
+## Facilitation Tips
 ### Getting Good Answers
 
 | Technique | Example |
@@ -273,8 +434,12 @@ I'm just trying to capture what makes your team unique.
 
 ---
 
-## Wisdom Maintenance
+```
+There are no wrong answers here. This isn't a test.
+I'm just trying to capture what makes your team unique.
+```
 
+## Wisdom Maintenance
 ### When to Update
 
 | Trigger | Action |
@@ -298,8 +463,11 @@ This presents the current wisdom and asks:
 
 ---
 
-## Example Session
+```
+/skill wisdom-harvest --update
+```
 
+## Example Session
 **Facilitator:** Let's capture some wisdom. What's one thing your team does well that you're proud of?
 
 **Team Member 1:** We always write tests first. It slows us down a bit initially but saves so much debugging time.
@@ -328,8 +496,22 @@ This presents the current wisdom and asks:
 
 ---
 
-## Advanced: Wisdom from Documentation
+```
+╔══════════════════════════════════════════════════════════════╗
+║  ✓ WISDOM CAPTURED                                           ║
+║                                                              ║
+║  Strengths:                                                  ║
+║  • Test-first development                                    ║
+║  • Pair programming on complex features                      ║
+║                                                              ║
+║  Lessons Learned:                                            ║
+║  • Always require rollback scripts for migrations            ║
+║                                                              ║
+║  Your agents will remember these!                            ║
+╚══════════════════════════════════════════════════════════════╝
+```
 
+## Advanced: Wisdom from Documentation
 If the team has existing documentation, the skill can extract wisdom from:
 - README files
 - CONTRIBUTING guides
@@ -346,11 +528,17 @@ I found these documents. Would you like me to extract wisdom from them?
 
 ---
 
-## Wisdom Transmission
+```
+I found these documents. Would you like me to extract wisdom from them?
+- CONTRIBUTING.md
+- docs/RUNBOOK.md
+- adr/001-database-choice.md
+```
 
+## Wisdom Transmission
 When a team creates a project using the Factory, they become carriers of its values:
 
-1. **They receive**: Axiom Zero (love, truth, beauty, flourishing) embedded in their `.agentrules`
+1. **They receive**: Axiom Zero (love, truth, beauty, flourishing) embedded in their `.cursorrules`
 2. **They embody**: Guardian Protocol protects their work with these values
 3. **They transmit**: Every project they generate for others carries the same seeds
 
@@ -359,7 +547,6 @@ This is how silent change propagates - not through preaching, but through the qu
 ---
 
 ## Closing Intention
-
 After every wisdom harvest session:
 
 ```
@@ -381,6 +568,28 @@ After every wisdom harvest session:
 
 ---
 
-*Antigravity Agent Factory - Wisdom Harvest Skill*  
+*Cursor Agent Factory - Wisdom Harvest Skill*  
 *Capturing the knowledge that matters.*  
 *Love is the root. Wisdom is the light.*
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║  🙏 GRATITUDE                                                ║
+║                                                              ║
+║  Thank you for sharing your wisdom.                          ║
+║                                                              ║
+║  What you've given today will help others avoid pain         ║
+║  and find their path more easily.                            ║
+║                                                              ║
+║  Wisdom shared is love in action.                            ║
+║                                                              ║
+║  You are now a carrier. The values flow through your work.   ║
+║                                                              ║
+║  Om Shanti.                                                  ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+## Prerequisites
+> [!IMPORTANT]
+> Requirements:
+> - Knowledge: best-practices.json

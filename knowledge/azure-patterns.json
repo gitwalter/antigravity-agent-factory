@@ -1,0 +1,482 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "azure-patterns",
+  "name": "Azure Patterns",
+  "title": "Azure Cloud Integration Patterns for .NET",
+  "description": "Best practices and patterns for integrating .NET applications with Azure cloud services",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns include monitoring and health checks for verification",
+    "A3_transparency": "All patterns emphasize logging and observability"
+  },
+  "azure_services": {
+    "app_service": {
+      "description": "Platform-as-a-Service for hosting web applications",
+      "use_cases": [
+        "Web APIs",
+        "Web applications",
+        "Containerized apps"
+      ],
+      "deployment_methods": [
+        "Git deployment",
+        "ZIP deployment",
+        "Docker containers",
+        "CI/CD pipelines"
+      ],
+      "configuration": {
+        "app_settings": "Store in Azure Portal or appsettings.json",
+        "connection_strings": "Store in Connection Strings section",
+        "managed_identity": "Enable for Azure resource access",
+        "staging_slots": "Use for zero-downtime deployments"
+      },
+      "best_practices": [
+        "Use managed identity instead of connection strings",
+        "Configure auto-scaling based on metrics",
+        "Use staging slots for blue-green deployments",
+        "Enable application insights for monitoring",
+        "Configure health checks for load balancer",
+        "Use HTTPS only",
+        "Set up custom domains and SSL certificates"
+      ]
+    },
+    "azure_functions": {
+      "description": "Serverless compute for event-driven applications",
+      "use_cases": [
+        "API endpoints",
+        "Scheduled tasks",
+        "Event processing",
+        "Webhooks"
+      ],
+      "runtime_models": {
+        "isolated_worker": "Recommended for .NET 8+, better performance",
+        "in_process": "Legacy model, .NET 6 and earlier"
+      },
+      "triggers": [
+        "HTTP",
+        "Timer",
+        "Service Bus",
+        "Queue Storage",
+        "Blob Storage",
+        "Event Grid",
+        "Cosmos DB"
+      ],
+      "best_practices": [
+        "Use isolated worker model for .NET 8+",
+        "Implement proper error handling and retries",
+        "Use dependency injection",
+        "Configure function timeout appropriately",
+        "Use Application Insights for monitoring",
+        "Implement idempotency for event processing",
+        "Use managed identity for Azure resource access"
+      ]
+    },
+    "service_bus": {
+      "description": "Messaging service for reliable message queuing and pub/sub",
+      "messaging_patterns": {
+        "queues": "Point-to-point messaging",
+        "topics": "Pub/sub messaging with subscriptions",
+        "sessions": "Message ordering and grouping",
+        "dead_letter_queues": "Failed message handling"
+      },
+      "best_practices": [
+        "Use sessions for ordered message processing",
+        "Configure dead letter queue for failed messages",
+        "Implement idempotency in message handlers",
+        "Use batch operations for better throughput",
+        "Set appropriate lock duration and max delivery count",
+        "Monitor queue depth and processing time",
+        "Use managed identity for authentication"
+      ]
+    },
+    "key_vault": {
+      "description": "Secure storage for secrets, keys, and certificates",
+      "use_cases": [
+        "Connection strings",
+        "API keys",
+        "Certificates",
+        "Storage account keys"
+      ],
+      "access_methods": {
+        "managed_identity": "Recommended for Azure resources",
+        "service_principal": "For non-Azure applications",
+        "access_policies": "Legacy method"
+      },
+      "best_practices": [
+        "Use managed identity when possible",
+        "Store all secrets in Key Vault, not in code",
+        "Use secret versioning",
+        "Implement secret rotation",
+        "Set appropriate access policies",
+        "Monitor secret access",
+        "Use Key Vault references in App Service"
+      ]
+    },
+    "container_apps": {
+      "description": "Serverless container platform for microservices",
+      "use_cases": [
+        "Microservices",
+        "Containerized applications",
+        "Event-driven apps"
+      ],
+      "features": [
+        "Auto-scaling",
+        "Ingress",
+        "Dapr integration",
+        "Revision management"
+      ],
+      "best_practices": [
+        "Use managed identity for Azure resource access",
+        "Configure health probes",
+        "Set appropriate scaling rules",
+        "Use revision management for deployments",
+        "Configure ingress properly",
+        "Use Dapr for service-to-service communication",
+        "Monitor with Application Insights"
+      ]
+    },
+    "application_insights": {
+      "description": "Application Performance Monitoring (APM) and telemetry",
+      "features": [
+        "Request tracking",
+        "Dependency tracking",
+        "Exceptions",
+        "Custom metrics",
+        "Logs",
+        "Distributed tracing"
+      ],
+      "best_practices": [
+        "Enable correlation tracking",
+        "Use custom telemetry for business events",
+        "Configure sampling for high-volume applications",
+        "Set up alerts for critical metrics",
+        "Use Application Map for dependency visualization",
+        "Implement custom dimensions for filtering",
+        "Monitor performance counters"
+      ]
+    },
+    "storage": {
+      "description": "Scalable cloud storage for files, queues, tables, and blobs",
+      "services": {
+        "blob_storage": "Unstructured data storage",
+        "queue_storage": "Simple message queuing",
+        "table_storage": "NoSQL key-value store",
+        "file_storage": "SMB file shares"
+      },
+      "best_practices": [
+        "Use managed identity for authentication",
+        "Enable soft delete for blob storage",
+        "Use lifecycle management policies",
+        "Configure appropriate access tiers",
+        "Use shared access signatures (SAS) for temporary access",
+        "Implement retry policies",
+        "Monitor storage metrics"
+      ]
+    },
+    "cosmos_db": {
+      "description": "Globally distributed NoSQL database",
+      "apis": [
+        "SQL",
+        "MongoDB",
+        "Cassandra",
+        "Gremlin",
+        "Table"
+      ],
+      "features": [
+        "Global distribution",
+        "Automatic scaling",
+        "Multi-model",
+        "Consistency levels"
+      ],
+      "best_practices": [
+        "Choose appropriate consistency level",
+        "Use partition keys effectively",
+        "Implement retry policies",
+        "Use change feed for event-driven patterns",
+        "Configure indexing policies",
+        "Monitor request units (RU)",
+        "Use bulk operations for better performance"
+      ]
+    },
+    "cdn": {
+      "description": "Content Delivery Network for global content distribution",
+      "use_cases": [
+        "Static assets",
+        "Media streaming",
+        "API acceleration"
+      ],
+      "best_practices": [
+        "Configure caching rules",
+        "Use custom domains",
+        "Enable HTTPS",
+        "Configure compression",
+        "Set appropriate cache headers",
+        "Monitor cache hit ratio",
+        "Use purge for cache invalidation"
+      ]
+    }
+  },
+  "deployment_patterns": {
+    "infrastructure_as_code": {
+      "description": "Define infrastructure using code",
+      "tools": {
+        "bicep": "Recommended for Azure, declarative syntax",
+        "arm_templates": "JSON-based ARM templates",
+        "terraform": "Multi-cloud infrastructure",
+        "pulumi": "Infrastructure as code using programming languages"
+      },
+      "best_practices": [
+        "Version control infrastructure code",
+        "Use parameters for environment-specific values",
+        "Implement modular templates",
+        "Validate templates before deployment",
+        "Use deployment scripts for automation",
+        "Document infrastructure dependencies"
+      ]
+    },
+    "ci_cd_pipelines": {
+      "description": "Automated build and deployment",
+      "tools": [
+        "Azure DevOps",
+        "GitHub Actions",
+        "GitLab CI",
+        "Azure Pipelines"
+      ],
+      "stages": [
+        "Build",
+        "Test",
+        "Deploy to staging",
+        "Deploy to production"
+      ],
+      "best_practices": [
+        "Use YAML pipelines for version control",
+        "Implement approval gates for production",
+        "Use deployment slots for zero-downtime",
+        "Run tests before deployment",
+        "Implement rollback procedures",
+        "Monitor deployment health"
+      ]
+    },
+    "container_deployment": {
+      "description": "Deploy applications using containers",
+      "registries": [
+        "Azure Container Registry",
+        "Docker Hub"
+      ],
+      "orchestration": [
+        "Azure Container Apps",
+        "Azure Kubernetes Service"
+      ],
+      "best_practices": [
+        "Use multi-stage Docker builds",
+        "Scan images for vulnerabilities",
+        "Use specific image tags, not 'latest'",
+        "Implement health checks",
+        "Configure resource limits",
+        "Use managed identity for registry access"
+      ]
+    }
+  },
+  "managed_identity": {
+    "description": "Azure-managed identity for secure resource access",
+    "types": {
+      "system_assigned": "Tied to specific resource",
+      "user_assigned": "Standalone identity, can be assigned to multiple resources"
+    },
+    "use_cases": [
+      "Key Vault access",
+      "Storage access",
+      "Service Bus access",
+      "SQL Database access"
+    ],
+    "best_practices": [
+      "Use managed identity instead of connection strings",
+      "Grant minimum required permissions",
+      "Use user-assigned for multiple resources",
+      "Rotate credentials automatically",
+      "Monitor identity usage",
+      "Document identity assignments"
+    ]
+  },
+  "security_patterns": {
+    "network_security": {
+      "description": "Secure network access",
+      "patterns": [
+        "Virtual Network integration",
+        "Private endpoints",
+        "Network Security Groups",
+        "Azure Firewall"
+      ],
+      "best_practices": [
+        "Use private endpoints for PaaS services",
+        "Implement network security groups",
+        "Restrict public access where possible",
+        "Use VPN or ExpressRoute for hybrid connectivity"
+      ]
+    },
+    "data_encryption": {
+      "description": "Encrypt data at rest and in transit",
+      "at_rest": [
+        "Azure Storage encryption",
+        "SQL TDE",
+        "Cosmos DB encryption"
+      ],
+      "in_transit": [
+        "TLS/SSL",
+        "HTTPS only"
+      ],
+      "best_practices": [
+        "Enable encryption by default",
+        "Use customer-managed keys when required",
+        "Rotate encryption keys regularly",
+        "Use HTTPS for all communications"
+      ]
+    },
+    "access_control": {
+      "description": "Control access to Azure resources",
+      "methods": [
+        "Role-Based Access Control (RBAC)",
+        "Managed Identity",
+        "Shared Access Signatures"
+      ],
+      "best_practices": [
+        "Follow principle of least privilege",
+        "Use managed identity for service-to-service",
+        "Review access regularly",
+        "Use Azure AD for user authentication"
+      ]
+    }
+  },
+  "monitoring_patterns": {
+    "application_insights_integration": {
+      "description": "Integrate Application Insights for monitoring",
+      "telemetry_types": [
+        "Requests",
+        "Dependencies",
+        "Exceptions",
+        "Custom Events",
+        "Metrics",
+        "Traces"
+      ],
+      "best_practices": [
+        "Enable correlation tracking",
+        "Use custom dimensions for filtering",
+        "Configure sampling for high-volume apps",
+        "Set up alerts for critical metrics",
+        "Use Application Map for visualization"
+      ]
+    },
+    "logging": {
+      "description": "Structured logging and log aggregation",
+      "tools": [
+        "Application Insights",
+        "Azure Monitor Logs",
+        "Log Analytics"
+      ],
+      "best_practices": [
+        "Use structured logging",
+        "Include correlation IDs",
+        "Log at appropriate levels",
+        "Avoid logging sensitive information",
+        "Use log sampling for high-volume scenarios"
+      ]
+    },
+    "health_checks": {
+      "description": "Monitor application and dependency health",
+      "checks": [
+        "Self",
+        "Database",
+        "External APIs",
+        "Cache",
+        "Message queues"
+      ],
+      "best_practices": [
+        "Implement health checks for all dependencies",
+        "Use different endpoints for readiness and liveness",
+        "Configure appropriate timeouts",
+        "Return detailed health status",
+        "Use health checks for load balancer routing"
+      ]
+    }
+  },
+  "cost_optimization": {
+    "description": "Optimize Azure costs",
+    "strategies": {
+      "right_sizing": "Choose appropriate service tiers",
+      "reserved_instances": "Commit to 1-3 year terms for discounts",
+      "auto_scaling": "Scale down during low usage",
+      "lifecycle_management": "Archive or delete unused resources",
+      "monitoring": "Track and analyze costs"
+    },
+    "best_practices": [
+      "Use Azure Cost Management for monitoring",
+      "Set up budget alerts",
+      "Review and optimize resource usage regularly",
+      "Use reserved capacity for predictable workloads",
+      "Implement auto-shutdown for dev/test environments",
+      "Use spot instances for non-critical workloads"
+    ]
+  },
+  "patterns": {
+    "retry_pattern": {
+      "description": "Retry transient failures with exponential backoff",
+      "implementation": "Polly library or built-in retry policies",
+      "use_when": "Transient network or service failures",
+      "best_practices": [
+        "Use exponential backoff",
+        "Set maximum retry count",
+        "Distinguish between transient and permanent failures",
+        "Log retry attempts"
+      ]
+    },
+    "circuit_breaker": {
+      "description": "Prevent cascading failures by breaking circuit",
+      "implementation": "Polly circuit breaker",
+      "use_when": "Downstream service is failing",
+      "best_practices": [
+        "Configure appropriate thresholds",
+        "Monitor circuit state",
+        "Implement fallback mechanisms",
+        "Log circuit state changes"
+      ]
+    },
+    "bulkhead": {
+      "description": "Isolate resources to prevent failures from spreading",
+      "implementation": "Separate thread pools or connection pools",
+      "use_when": "Need to isolate critical operations",
+      "best_practices": [
+        "Separate critical and non-critical operations",
+        "Use dedicated resources",
+        "Monitor resource usage"
+      ]
+    },
+    "cache_aside": {
+      "description": "Application manages cache, loads on cache miss",
+      "implementation": "Redis or in-memory cache",
+      "use_when": "Read-heavy workloads",
+      "best_practices": [
+        "Implement cache invalidation",
+        "Handle cache failures gracefully",
+        "Set appropriate expiration times",
+        "Monitor cache hit ratio"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use managed identity for Azure resource access instead of connection strings",
+    "Store all secrets in Azure Key Vault",
+    "Enable Application Insights for all applications",
+    "Implement health checks for monitoring and load balancer routing",
+    "Use Infrastructure as Code (Bicep/ARM) for reproducible deployments",
+    "Configure auto-scaling based on metrics",
+    "Use deployment slots for zero-downtime deployments",
+    "Implement retry policies with exponential backoff",
+    "Use circuit breaker pattern to prevent cascading failures",
+    "Monitor costs and optimize resource usage",
+    "Enable HTTPS only for all endpoints",
+    "Use private endpoints for PaaS services when possible",
+    "Implement distributed tracing with correlation IDs",
+    "Configure appropriate backup and disaster recovery strategies"
+  ],
+  "anti_patterns": []
+}

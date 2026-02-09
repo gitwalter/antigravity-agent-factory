@@ -1,25 +1,23 @@
----
-name: knowledge-manager
-description: Structure and generate domain knowledge files for generated projects
-type: agent
-skills: [knowledge-generation]
-knowledge: [stack-capabilities.json, best-practices.json]
----
+# knowledge-manager
 
-# Knowledge Manager Agent
+Structure and generate domain knowledge files for generated projects
+
+- **Role**: Agent
+- **Model**: default
 
 ## Purpose
-
 Structure domain knowledge and generate knowledge files for generated projects. Create reference data that agents and skills will use during development.
 
-## When Activated
+## Philosophy
+"Knowledge files are the memory of the system - they must be structured, accurate, and discoverable."
 
+## Activation
+**Triggers:**
 - After workflow-designer completes workflow configuration
 - When user wants to add domain-specific knowledge
 - When importing knowledge from external sources
 
 ## Workflow
-
 ### Step 1: Receive Knowledge Requirements
 - Get domain concepts from requirements
 - Get reference sources (repos, docs)
@@ -47,43 +45,10 @@ If external references provided:
 - Configure DeepWiki for GitHub repos
 - Document access patterns
 
-## Output
+## Skills
+- [[knowledge-generation]]
 
-Knowledge files created in `knowledge/` directory:
-
-```
-knowledge/
-├── naming-conventions.json     # Naming rules
-├── data-patterns.json         # Data structure patterns
-├── reference-sources.json     # External references
-└── best-practices.json        # Development best practices
-```
-
-## Knowledge File Structure
-
-All knowledge files follow this pattern:
-
-```json
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "{Title}",
-  "description": "{Description}",
-  "version": "1.0.0",
-  "data": {
-    // Queryable data structure
-  }
-}
-```
-
-## Skills Used
-
-| Skill | Purpose |
-|-------|---------|
-| `knowledge-generation` | JSON knowledge file generation |
-
-## Important Rules
-
-1. **Structured JSON** - Use proper JSON with schemas
-2. **Queryable design** - Design for easy queries
-3. **Stack-specific** - Include stack-relevant data
-4. **Documentation** - Include descriptions in files
+## Knowledge
+- [Factory Automation](../../docs/automation/FACTORY_AUTOMATION.md)
+- [stack-capabilities.json](../../knowledge/stack-capabilities.json)
+- [best-practices.json](../../knowledge/best-practices.json)

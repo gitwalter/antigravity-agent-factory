@@ -1,0 +1,263 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "erc-standards",
+  "name": "ERC Token Standards",
+  "title": "ERC Token Standards",
+  "description": "Ethereum Request for Comments token standards and implementation patterns",
+  "version": "1.0.0",
+  "category": "reference",
+  "standards": {
+    "ERC20": {
+      "title": "Fungible Token Standard",
+      "eip": "EIP-20",
+      "description": "Standard interface for fungible tokens",
+      "use_when": "Creating currencies, utility tokens, governance tokens",
+      "required_functions": [
+        "totalSupply() \u2192 uint256",
+        "balanceOf(address) \u2192 uint256",
+        "transfer(address to, uint256 amount) \u2192 bool",
+        "allowance(address owner, address spender) \u2192 uint256",
+        "approve(address spender, uint256 amount) \u2192 bool",
+        "transferFrom(address from, address to, uint256 amount) \u2192 bool"
+      ],
+      "required_events": [
+        "Transfer(address indexed from, address indexed to, uint256 value)",
+        "Approval(address indexed owner, address indexed spender, uint256 value)"
+      ],
+      "code_example": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\nimport \"@openzeppelin/contracts/token/ERC20/ERC20.sol\";\nimport \"@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol\";\nimport \"@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol\";\nimport \"@openzeppelin/contracts/access/Ownable.sol\";\n\ncontract MyToken is ERC20, ERC20Burnable, ERC20Permit, Ownable {\n    constructor(\n        string memory name,\n        string memory symbol,\n        uint256 initialSupply\n    ) ERC20(name, symbol) ERC20Permit(name) Ownable(msg.sender) {\n        _mint(msg.sender, initialSupply * 10 ** decimals());\n    }\n    \n    function mint(address to, uint256 amount) external onlyOwner {\n        _mint(to, amount);\n    }\n}",
+      "extensions": {
+        "ERC20Burnable": "Allows token holders to burn their tokens",
+        "ERC20Capped": "Enforces maximum supply",
+        "ERC20Pausable": "Allows pausing all transfers",
+        "ERC20Permit": "Gasless approvals via signatures (EIP-2612)",
+        "ERC20Votes": "Voting and delegation for governance",
+        "ERC20Snapshot": "Historical balance snapshots",
+        "ERC20FlashMint": "Built-in flash loan capability"
+      },
+      "best_practices": [
+        "Use OpenZeppelin implementation",
+        "Consider adding Permit for gasless approvals",
+        "Emit Transfer event from address(0) for mints",
+        "Emit Transfer event to address(0) for burns"
+      ],
+      "common_issues": [
+        "Missing return values (use SafeERC20 for interactions)",
+        "Rebase tokens break composability",
+        "Fee-on-transfer tokens need special handling"
+      ]
+    },
+    "ERC721": {
+      "title": "Non-Fungible Token Standard",
+      "eip": "EIP-721",
+      "description": "Standard interface for non-fungible tokens (NFTs)",
+      "use_when": "Unique assets, collectibles, art, real estate tokenization",
+      "required_functions": [
+        "balanceOf(address owner) \u2192 uint256",
+        "ownerOf(uint256 tokenId) \u2192 address",
+        "safeTransferFrom(address from, address to, uint256 tokenId, bytes data)",
+        "safeTransferFrom(address from, address to, uint256 tokenId)",
+        "transferFrom(address from, address to, uint256 tokenId)",
+        "approve(address to, uint256 tokenId)",
+        "setApprovalForAll(address operator, bool approved)",
+        "getApproved(uint256 tokenId) \u2192 address",
+        "isApprovedForAll(address owner, address operator) \u2192 bool"
+      ],
+      "required_events": [
+        "Transfer(address indexed from, address indexed to, uint256 indexed tokenId)",
+        "Approval(address indexed owner, address indexed approved, uint256 indexed tokenId)",
+        "ApprovalForAll(address indexed owner, address indexed operator, bool approved)"
+      ],
+      "code_example": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\nimport \"@openzeppelin/contracts/token/ERC721/ERC721.sol\";\nimport \"@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol\";\nimport \"@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol\";\nimport \"@openzeppelin/contracts/token/ERC721/extensions/ERC721Royalty.sol\";\nimport \"@openzeppelin/contracts/access/Ownable.sol\";\n\ncontract MyNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Royalty, Ownable {\n    uint256 private _nextTokenId;\n    uint256 public constant MAX_SUPPLY = 10000;\n    uint256 public mintPrice = 0.01 ether;\n    \n    constructor() ERC721(\"MyNFT\", \"MNFT\") Ownable(msg.sender) {\n        _setDefaultRoyalty(msg.sender, 250); // 2.5% royalty\n    }\n    \n    function mint(address to, string memory uri) external payable {\n        require(msg.value >= mintPrice, \"Insufficient payment\");\n        require(_nextTokenId < MAX_SUPPLY, \"Max supply reached\");\n        \n        uint256 tokenId = _nextTokenId++;\n        _safeMint(to, tokenId);\n        _setTokenURI(tokenId, uri);\n    }\n    \n    // Required overrides\n    function _update(address to, uint256 tokenId, address auth)\n        internal override(ERC721, ERC721Enumerable) returns (address) {\n        return super._update(to, tokenId, auth);\n    }\n    \n    function _increaseBalance(address account, uint128 value)\n        internal override(ERC721, ERC721Enumerable) {\n        super._increaseBalance(account, value);\n    }\n    \n    function tokenURI(uint256 tokenId)\n        public view override(ERC721, ERC721URIStorage) returns (string memory) {\n        return super.tokenURI(tokenId);\n    }\n    \n    function supportsInterface(bytes4 interfaceId)\n        public view override(ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Royalty)\n        returns (bool) {\n        return super.supportsInterface(interfaceId);\n    }\n}",
+      "extensions": {
+        "ERC721Enumerable": "Enumeration of all tokens and per-owner tokens",
+        "ERC721URIStorage": "Storage-based token URI management",
+        "ERC721Burnable": "Allows token holders to burn NFTs",
+        "ERC721Pausable": "Allows pausing all transfers",
+        "ERC721Royalty": "On-chain royalty info (EIP-2981)",
+        "ERC721Votes": "Voting and delegation for governance"
+      },
+      "metadata_standard": {
+        "description": "JSON metadata format for NFTs",
+        "schema": {
+          "name": "Asset name",
+          "description": "Asset description",
+          "image": "URI to image (IPFS recommended)",
+          "external_url": "External link",
+          "attributes": "[{trait_type, value}]"
+        }
+      }
+    },
+    "ERC1155": {
+      "title": "Multi-Token Standard",
+      "eip": "EIP-1155",
+      "description": "Standard for contracts managing multiple token types",
+      "use_when": "Games with multiple item types, mixed fungible/non-fungible tokens",
+      "benefits": [
+        "Single contract for multiple token types",
+        "Batch transfers for gas efficiency",
+        "Mixed fungible and non-fungible tokens"
+      ],
+      "required_functions": [
+        "balanceOf(address account, uint256 id) \u2192 uint256",
+        "balanceOfBatch(address[] accounts, uint256[] ids) \u2192 uint256[]",
+        "setApprovalForAll(address operator, bool approved)",
+        "isApprovedForAll(address account, address operator) \u2192 bool",
+        "safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes data)",
+        "safeBatchTransferFrom(address from, address to, uint256[] ids, uint256[] amounts, bytes data)"
+      ],
+      "code_example": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\nimport \"@openzeppelin/contracts/token/ERC1155/ERC1155.sol\";\nimport \"@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol\";\nimport \"@openzeppelin/contracts/access/Ownable.sol\";\n\ncontract GameItems is ERC1155, ERC1155Supply, Ownable {\n    uint256 public constant GOLD = 0;\n    uint256 public constant SILVER = 1;\n    uint256 public constant SWORD = 2;\n    uint256 public constant SHIELD = 3;\n    \n    constructor() ERC1155(\"https://game.example/api/item/{id}.json\") Ownable(msg.sender) {\n        _mint(msg.sender, GOLD, 10**18, \"\");\n        _mint(msg.sender, SILVER, 10**27, \"\");\n    }\n    \n    function mint(address account, uint256 id, uint256 amount, bytes memory data)\n        external onlyOwner {\n        _mint(account, id, amount, data);\n    }\n    \n    function mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)\n        external onlyOwner {\n        _mintBatch(to, ids, amounts, data);\n    }\n    \n    function _update(address from, address to, uint256[] memory ids, uint256[] memory values)\n        internal override(ERC1155, ERC1155Supply) {\n        super._update(from, to, ids, values);\n    }\n}"
+    },
+    "ERC4626": {
+      "title": "Tokenized Vault Standard",
+      "eip": "EIP-4626",
+      "description": "Standard for tokenized yield-bearing vaults",
+      "use_when": "Yield aggregators, lending pools, staking contracts",
+      "benefits": [
+        "Standardized interface for all yield-bearing tokens",
+        "Easy composability between DeFi protocols",
+        "Built-in share price calculation"
+      ],
+      "required_functions": [
+        "asset() \u2192 address",
+        "totalAssets() \u2192 uint256",
+        "convertToShares(uint256 assets) \u2192 uint256",
+        "convertToAssets(uint256 shares) \u2192 uint256",
+        "maxDeposit(address receiver) \u2192 uint256",
+        "previewDeposit(uint256 assets) \u2192 uint256",
+        "deposit(uint256 assets, address receiver) \u2192 uint256",
+        "maxMint(address receiver) \u2192 uint256",
+        "previewMint(uint256 shares) \u2192 uint256",
+        "mint(uint256 shares, address receiver) \u2192 uint256",
+        "maxWithdraw(address owner) \u2192 uint256",
+        "previewWithdraw(uint256 assets) \u2192 uint256",
+        "withdraw(uint256 assets, address receiver, address owner) \u2192 uint256",
+        "maxRedeem(address owner) \u2192 uint256",
+        "previewRedeem(uint256 shares) \u2192 uint256",
+        "redeem(uint256 shares, address receiver, address owner) \u2192 uint256"
+      ],
+      "code_example": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\nimport \"@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol\";\n\ncontract SimpleVault is ERC4626 {\n    constructor(IERC20 asset_)\n        ERC4626(asset_)\n        ERC20(\"Vault Token\", \"vTKN\")\n    {}\n    \n    function totalAssets() public view override returns (uint256) {\n        return IERC20(asset()).balanceOf(address(this));\n    }\n}",
+      "security_considerations": [
+        "Inflation attack: First depositor manipulation",
+        "Rounding direction: Always round against the user",
+        "Donation attacks: Track internal vs external balances"
+      ]
+    },
+    "ERC2981": {
+      "title": "NFT Royalty Standard",
+      "eip": "EIP-2981",
+      "description": "Standard for retrieving royalty payment information",
+      "use_when": "NFTs with creator royalties",
+      "interface": "royaltyInfo(uint256 tokenId, uint256 salePrice) \u2192 (address receiver, uint256 royaltyAmount)",
+      "note": "Marketplaces must voluntarily respect royalties"
+    },
+    "ERC2612": {
+      "title": "Permit Extension for ERC20",
+      "eip": "EIP-2612",
+      "description": "Gasless token approvals via signatures",
+      "benefits": [
+        "Users don't need ETH for approvals",
+        "One transaction instead of approve + transfer",
+        "Better UX for new users"
+      ],
+      "function": "permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)"
+    }
+  },
+  "implementation_checklist": {
+    "all_tokens": [
+      "Use OpenZeppelin implementations",
+      "Emit all required events",
+      "Implement supportsInterface (EIP-165)",
+      "Add NatSpec documentation",
+      "Write comprehensive tests"
+    ],
+    "ERC20_specific": [
+      "Consider permit for gasless approvals",
+      "Handle decimals correctly (typically 18)",
+      "Consider max supply cap"
+    ],
+    "ERC721_specific": [
+      "Use _safeMint to verify receiver",
+      "Implement proper metadata URI",
+      "Consider royalties (ERC2981)"
+    ],
+    "ERC1155_specific": [
+      "Use batch operations for efficiency",
+      "Implement proper URI with {id} substitution",
+      "Consider supply tracking extension"
+    ]
+  },
+  "patterns": {
+    "openzeppelinFirst": {
+      "description": "Use OpenZeppelin implementations as base",
+      "pattern": "Import and extend OpenZeppelin contracts instead of implementing from scratch",
+      "benefit": "Battle-tested, secure, gas-optimized, follows standards"
+    },
+    "permitPattern": {
+      "description": "Add ERC20Permit for gasless approvals",
+      "pattern": "Extend ERC20 with ERC20Permit to enable signature-based approvals",
+      "benefit": "Better UX, users don't need ETH for approvals, one transaction instead of two"
+    },
+    "accessControlPattern": {
+      "description": "Use OpenZeppelin AccessControl for role-based permissions",
+      "pattern": "Define roles (MINTER_ROLE, BURNER_ROLE) and grant to addresses",
+      "benefit": "Flexible, revocable, standard pattern"
+    },
+    "eventEmissionPattern": {
+      "description": "Always emit required events from zero address for mints",
+      "pattern": "Emit Transfer(from=address(0), to=recipient, value=amount) for mints",
+      "benefit": "Standard compliance, enables indexing and analytics"
+    },
+    "safeTransferPattern": {
+      "description": "Use SafeERC20 wrapper for external token interactions",
+      "pattern": "Use SafeERC20.safeTransfer() instead of direct transfer() calls",
+      "benefit": "Handles non-standard tokens (missing return values, fee-on-transfer)"
+    },
+    "royaltyPattern": {
+      "description": "Implement ERC2981 for NFT royalties",
+      "pattern": "Use ERC721Royalty extension or implement royaltyInfo() manually",
+      "benefit": "On-chain royalty information, marketplace compatibility"
+    },
+    "batchOperationPattern": {
+      "description": "Use batch operations for ERC1155 gas efficiency",
+      "pattern": "Prefer safeBatchTransferFrom() over multiple safeTransferFrom() calls",
+      "benefit": "Significant gas savings for multiple token transfers"
+    }
+  },
+  "best_practices": [
+    "Always use OpenZeppelin implementations as base - they are battle-tested, secure, and gas-optimized",
+    "Emit Transfer events from address(0) for mints and to address(0) for burns to maintain standard compliance",
+    "Add ERC20Permit extension for gasless approvals to improve user experience, especially for new users",
+    "Use SafeERC20 wrapper library when interacting with external ERC20 tokens to handle non-standard implementations",
+    "Implement proper access control using OpenZeppelin's AccessControl for minting, burning, and administrative functions",
+    "Write comprehensive unit tests covering all functions, edge cases, and potential attack vectors before deployment",
+    "Add NatSpec documentation (@title, @notice, @param, @return) to all public functions for better developer experience",
+    "Consider gas optimization: use events for off-chain indexing, batch operations for ERC1155, and permit for ERC20"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Implementing standards from scratch instead of using OpenZeppelin",
+      "problem": "Writing custom ERC20/ERC721 implementations introduces security vulnerabilities, gas inefficiencies, and standard compliance issues that OpenZeppelin has already solved",
+      "solution": "Always import and extend OpenZeppelin contracts (ERC20, ERC721, ERC1155) instead of implementing interfaces from scratch"
+    },
+    {
+      "name": "Not emitting Transfer events for mints and burns",
+      "problem": "Minting or burning tokens without emitting Transfer events breaks standard compliance and prevents proper indexing by wallets and analytics tools",
+      "solution": "Always emit Transfer(from=address(0), to=recipient, value=amount) for mints and Transfer(from=holder, to=address(0), value=amount) for burns"
+    },
+    {
+      "name": "Direct token transfers without SafeERC20 wrapper",
+      "problem": "Calling transfer() directly on external ERC20 tokens fails silently for tokens that don't return bool (like USDT), causing integration issues",
+      "solution": "Use SafeERC20.safeTransfer() and SafeERC20.safeTransferFrom() for all external token interactions"
+    },
+    {
+      "name": "Missing access control on mint/burn functions",
+      "problem": "Public mint() or burn() functions allow anyone to create or destroy unlimited tokens, leading to economic attacks and token supply manipulation",
+      "solution": "Use OpenZeppelin's Ownable or AccessControl to restrict mint() and burn() functions to authorized addresses only"
+    },
+    {
+      "name": "Not handling fee-on-transfer tokens",
+      "problem": "Assuming transferred amount equals received amount breaks integrations with fee-on-transfer tokens (like PAXG), causing accounting errors",
+      "solution": "Check balance before and after transfer, use actual received amount for calculations, or explicitly document that fee-on-transfer tokens are not supported"
+    }
+  ]
+}

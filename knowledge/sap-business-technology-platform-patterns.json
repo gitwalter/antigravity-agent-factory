@@ -1,0 +1,320 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "sap-btp-patterns",
+  "name": "SAP Business Technology Platform Patterns",
+  "title": "SAP BTP Patterns",
+  "description": "Production-grade patterns for SAP Business Technology Platform - Cloud Foundry deployment, service bindings, Kyma/Kubernetes, CAP, Fiori, and integration patterns",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "BTP provides structured deployment and service patterns for verification",
+    "A3_transparency": "Explicit service bindings and configurations make dependencies clear",
+    "A4_adaptability": "Modular BTP architecture supports easy scaling and updates"
+  },
+  "core_concepts": {
+    "cloud_foundry": {
+      "description": "Cloud Foundry runtime for applications",
+      "features": [
+        "manifest.yml configuration",
+        "cf push deployment",
+        "Multi-target apps (MTA)",
+        "Service bindings"
+      ]
+    },
+    "service_bindings": {
+      "description": "BTP services and bindings",
+      "services": [
+        "XSUAA - Authentication and authorization",
+        "Destination service - External system connectivity",
+        "Connectivity service - On-premise connectivity",
+        "HANA Cloud - Database service"
+      ]
+    },
+    "cap_framework": {
+      "description": "Cloud Application Programming model",
+      "features": [
+        "CDS models",
+        "Service handlers",
+        "Authentication integration",
+        "Multi-tenancy"
+      ]
+    }
+  },
+  "patterns": {
+    "manifest_yml_basic": {
+      "description": "Create basic manifest.yml for Cloud Foundry deployment",
+      "use_when": "Deploying applications to Cloud Foundry",
+      "code_example": "# manifest.yml\napplications:\n  - name: my-cap-app\n    path: .\n    memory: 512M\n    disk_quota: 512M\n    instances: 1\n    buildpacks:\n      - nodejs_buildpack\n    env:\n      NODE_ENV: production\n      CDS_ENV: production\n    services:\n      - my-xsuaa-instance\n      - my-destination-instance\n    routes:\n      - route: my-cap-app.cfapps.eu10.hana.ondemand.com\n    health-check-type: http\n    health-check-http-endpoint: /health",
+      "best_practices": [
+        "Specify appropriate memory and disk quotas",
+        "Use environment-specific configurations",
+        "Bind required services",
+        "Set health check endpoints",
+        "Use route configuration for custom domains"
+      ]
+    },
+    "manifest_yml_advanced": {
+      "description": "Advanced manifest.yml with multiple apps and variables",
+      "use_when": "Deploying complex multi-app scenarios",
+      "code_example": "# manifest.yml with variables and multiple apps\napplications:\n  - name: my-cap-app-srv\n    path: ./srv\n    memory: 1G\n    disk_quota: 1G\n    buildpacks:\n      - nodejs_buildpack\n    env:\n      CDS_ENV: production\n      CDS_SERVICE_APPLICATION: true\n    services:\n      - my-xsuaa-instance\n      - my-hana-instance\n    routes:\n      - route: ${app-name}-srv.${domain}\n  \n  - name: my-cap-app-approuter\n    path: ./app\n    memory: 128M\n    disk_quota: 128M\n    buildpacks:\n      - nodejs_buildpack\n    env:\n      NODE_ENV: production\n      destinations: '[{\"name\":\"srv\",\"url\":\"https://my-cap-app-srv.cfapps.eu10.hana.ondemand.com\"}]'\n    services:\n      - my-xsuaa-instance\n    routes:\n      - route: ${app-name}.${domain}\n    health-check-type: http\n    health-check-http-endpoint: /",
+      "best_practices": [
+        "Separate service and approuter apps",
+        "Use variables for environment-specific values",
+        "Configure destinations for approuter",
+        "Set appropriate memory for each app type"
+      ]
+    },
+    "cf_push_deployment": {
+      "description": "Deploy applications with cf push",
+      "use_when": "Deploying to Cloud Foundry",
+      "code_example": "# Login to BTP\ncf login -a https://api.cf.eu10.hana.ondemand.com\n\n# Set target org and space\ncf target -o my-org -s dev\n\n# Deploy application\ncf push\n\n# Deploy with specific manifest\ncf push -f manifest.yml\n\n# Deploy without starting\ncf push --no-start\n\n# Start application\ncf start my-cap-app\n\n# Check application status\ncf apps\ncf app my-cap-app\n\n# View logs\ncf logs my-cap-app --recent\ncf logs my-cap-app\n\n# Scale application\ncf scale my-cap-app -i 2 -m 1G\n\n# Update environment variables\ncf set-env my-cap-app NODE_ENV production\ncf restage my-cap-app\n\n# Delete application\ncf delete my-cap-app",
+      "best_practices": [
+        "Use --no-start for initial deployment",
+        "Check logs after deployment",
+        "Scale appropriately",
+        "Use restage after env changes",
+        "Monitor application health"
+      ]
+    },
+    "mta_deployment": {
+      "description": "Deploy multi-target applications (MTA)",
+      "use_when": "Deploying complex applications with multiple modules",
+      "code_example": "# mta.yaml\n_schema-version: '3.1.0'\nID: my-cap-mta\nversion: 1.0.0\nmodules:\n  - name: srv\n    type: nodejs\n    path: srv\n    parameters:\n      buildpack: nodejs_buildpack\n      memory: 512M\n      disk-quota: 512M\n    requires:\n      - name: my-cap-mta-db\n      - name: my-cap-mta-uaa\n    provides:\n      - name: srv-api\n        properties:\n          srv-url: ${default-url}\n  \n  - name: app\n    type: nodejs\n    path: app\n    requires:\n      - name: srv-api\n      - name: my-cap-mta-uaa\n\nresources:\n  - name: my-cap-mta-db\n    type: com.sap.xs.hdi-container\n    parameters:\n      service: hana\n      service-plan: hdi-shared\n  \n  - name: my-cap-mta-uaa\n    type: org.cloudfoundry.managed-service\n    parameters:\n      service: xsuaa\n      service-plan: application\n      config:\n        xsappname: my-cap-mta\n        tenant-mode: dedicated\n        scopes:\n          - name: $XSAPPNAME.Read\n            description: Read access\n          - name: $XSAPPNAME.Write\n            description: Write access\n\n# Build MTA\nmbt build\n\n# Deploy MTA\ncf deploy mta_archives/my-cap-mta_1.0.0.mtar\n\n# Undeploy MTA\ncf undeploy my-cap-mta",
+      "best_practices": [
+        "Use MTA for complex applications",
+        "Define clear module dependencies",
+        "Configure service resources",
+        "Version MTA archives",
+        "Use MTA for production deployments"
+      ]
+    },
+    "xsuaa_service_binding": {
+      "description": "Configure and bind XSUAA service",
+      "use_when": "Adding authentication and authorization",
+      "code_example": "# Create XSUAA service instance\ncf create-service xsuaa application my-xsuaa-instance -c xs-security.json\n\n# xs-security.json\n{\n  \"xsappname\": \"my-cap-app\",\n  \"tenant-mode\": \"dedicated\",\n  \"scopes\": [\n    {\n      \"name\": \"$XSAPPNAME.Read\",\n      \"description\": \"Read access\"\n    },\n    {\n      \"name\": \"$XSAPPNAME.Write\",\n      \"description\": \"Write access\"\n    }\n  ],\n  \"role-templates\": [\n    {\n      \"name\": \"Viewer\",\n      \"description\": \"Viewer role\",\n      \"scope-references\": [\"$XSAPPNAME.Read\"]\n    },\n    {\n      \"name\": \"Editor\",\n      \"description\": \"Editor role\",\n      \"scope-references\": [\"$XSAPPNAME.Read\", \"$XSAPPNAME.Write\"]\n    }\n  ],\n  \"role-collections\": [\n    {\n      \"name\": \"MyAppViewer\",\n      \"description\": \"Viewer role collection\",\n      \"role-template-references\": [\"$XSAPPNAME.Viewer\"]\n    }\n  ]\n}\n\n# Bind service in manifest.yml\napplications:\n  - name: my-cap-app\n    services:\n      - my-xsuaa-instance\n\n# Access XSUAA in code (Node.js)\nconst xsenv = require('@sap/xsenv');\nconst xssec = require('@sap/xssec');\n\nconst uaa = xsenv.cfServiceCredentials({ tag: 'xsuaa' });\n\n// Verify JWT token\nconst jwt = require('jsonwebtoken');\nconst token = req.headers.authorization?.replace('Bearer ', '');\nconst decoded = jwt.verify(token, uaa.verificationkey);",
+      "best_practices": [
+        "Define scopes and roles clearly",
+        "Use role collections for user assignment",
+        "Configure tenant-mode appropriately",
+        "Store credentials securely",
+        "Verify tokens in service handlers"
+      ]
+    },
+    "destination_service_binding": {
+      "description": "Configure and use destination service",
+      "use_when": "Connecting to external systems",
+      "code_example": "# Create destination service instance\ncf create-service destination lite my-destination-instance\n\n# Configure destination in BTP Cockpit or via API\n# Destination configuration:\n# Name: my-backend-system\n# Type: HTTP\n# URL: https://api.example.com\n# Authentication: BasicAuthentication\n# User: username\n# Password: password\n\n# Access destination in code (Node.js)\nconst destination = require('@sap-cloud-sdk/connectivity');\n\n// Load destination\nconst dest = await destination.getDestination('my-backend-system');\n\n// Make HTTP request\nconst response = await fetch(dest.url + '/api/endpoint', {\n  headers: {\n    'Authorization': `Basic ${Buffer.from(dest.username + ':' + dest.password).toString('base64')}`\n  }\n});\n\n# Or use SAP Cloud SDK\nconst { executeHttpRequest } = require('@sap-cloud-sdk/http-client');\n\nconst response = await executeHttpRequest(\n  { destinationName: 'my-backend-system' },\n  {\n    method: 'GET',\n    url: '/api/endpoint'\n  }\n);",
+      "best_practices": [
+        "Store destinations in BTP Cockpit",
+        "Use destination service for external connectivity",
+        "Handle authentication types appropriately",
+        "Cache destination lookups",
+        "Use SAP Cloud SDK when possible"
+      ]
+    },
+    "connectivity_service_binding": {
+      "description": "Configure connectivity service for on-premise systems",
+      "use_when": "Connecting to on-premise SAP systems",
+      "code_example": "# Create connectivity service instance\ncf create-service connectivity lite my-connectivity-instance\n\n# Create destination with connectivity proxy\n# Destination configuration:\n# Name: my-onprem-system\n# Type: HTTP\n# URL: https://onprem-system.example.com\n# Proxy Type: OnPremise\n# Location ID: <your-location-id>\n# Authentication: BasicAuthentication\n\n# Access on-premise system via connectivity proxy\nconst { executeHttpRequest } = require('@sap-cloud-sdk/http-client');\n\nconst response = await executeHttpRequest(\n  { destinationName: 'my-onprem-system' },\n  {\n    method: 'GET',\n    url: '/sap/opu/odata/sap/ZMY_SERVICE/EntitySet'\n  }\n);\n\n# Configure Cloud Connector\n# 1. Install Cloud Connector on-premise\n# 2. Configure connection to BTP\n# 3. Map on-premise systems\n# 4. Create destinations in BTP",
+      "best_practices": [
+        "Use connectivity service for on-premise access",
+        "Configure Cloud Connector properly",
+        "Map systems with correct location IDs",
+        "Test connectivity before production",
+        "Monitor connectivity service health"
+      ]
+    },
+    "hana_cloud_binding": {
+      "description": "Bind and use HANA Cloud database",
+      "use_when": "Using HANA Cloud as database",
+      "code_example": "# Create HANA Cloud service instance\ncf create-service hana hdi-shared my-hana-instance\n\n# For CAP applications, HDI container is created automatically\n# via mta.yaml or manifest.yml\n\n# Access HANA in CAP (Node.js)\nconst cds = require('@sap/cds');\n\n// CDS automatically connects to HANA\n// Use in service handlers\nmodule.exports = cds.service.impl(async function() {\n  const { Books } = this.entities;\n  \n  // Query HANA\n  const books = await SELECT.from(Books).where({ stock: { '>': 0 } });\n  \n  // Insert\n  await INSERT.into(Books).entries({\n    title: 'New Book',\n    author: 'Author Name',\n    stock: 10\n  });\n});\n\n# Direct HANA access (if needed)\nconst hdb = require('hdb');\nconst xsenv = require('@sap/xsenv');\n\nconst hanaCredentials = xsenv.cfServiceCredentials({ tag: 'hana' });\n\nconst client = hdb.createClient({\n  host: hanaCredentials.host,\n  port: hanaCredentials.port,\n  user: hanaCredentials.user,\n  password: hanaCredentials.password\n});\n\nclient.connect((err) => {\n  if (err) throw err;\n  client.exec('SELECT * FROM MY_TABLE', (err, rows) => {\n    if (err) throw err;\n    console.log(rows);\n  });\n});",
+      "best_practices": [
+        "Use HDI containers for CAP apps",
+        "Let CDS handle database connections",
+        "Use CDS queries instead of raw SQL",
+        "Configure connection pooling",
+        "Monitor database performance"
+      ]
+    },
+    "kyma_deployment": {
+      "description": "Deploy applications to Kyma/Kubernetes",
+      "use_when": "Using Kyma runtime for containerized applications",
+      "code_example": "# deployment.yaml for Kyma\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: my-cap-app\n  namespace: default\nspec:\n  replicas: 2\n  selector:\n    matchLabels:\n      app: my-cap-app\n  template:\n    metadata:\n      labels:\n        app: my-cap-app\n    spec:\n      containers:\n      - name: app\n        image: my-registry/my-cap-app:latest\n        ports:\n        - containerPort: 3000\n        env:\n        - name: NODE_ENV\n          value: production\n        - name: CDS_ENV\n          value: production\n        resources:\n          requests:\n            memory: '512Mi'\n            cpu: '500m'\n          limits:\n            memory: '1Gi'\n            cpu: '1000m'\n---\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-cap-app-service\nspec:\n  selector:\n    app: my-cap-app\n  ports:\n  - port: 80\n    targetPort: 3000\n  type: ClusterIP\n---\napiVersion: networking.istio.io/v1beta1\nkind: VirtualService\nmetadata:\n  name: my-cap-app-vs\nspec:\n  hosts:\n  - my-cap-app.kyma.local\n  http:\n  - match:\n    - uri:\n        prefix: /\n    route:\n    - destination:\n        host: my-cap-app-service\n        port:\n          number: 80",
+      "best_practices": [
+        "Use appropriate resource limits",
+        "Configure health checks",
+        "Set up service mesh (Istio)",
+        "Use ConfigMaps for configuration",
+        "Implement proper logging"
+      ]
+    },
+    "kyma_api_rules": {
+      "description": "Configure API rules in Kyma",
+      "use_when": "Exposing APIs in Kyma",
+      "code_example": "# api-rule.yaml\napiVersion: gateway.kyma-project.io/v1beta1\nkind: APIRule\nmetadata:\n  name: my-cap-app-api\n  namespace: default\nspec:\n  host: my-cap-app-api.kyma.local\n  service:\n    name: my-cap-app-service\n    port: 80\n  rules:\n  - path: /api/v1/*\n    methods: [\"GET\", \"POST\", \"PUT\", \"DELETE\"]\n    accessStrategies:\n    - handler: oauth2_introspection\n      config:\n        required_scope: [\"read\", \"write\"]\n  - path: /health\n    methods: [\"GET\"]\n    accessStrategies:\n    - handler: noop\n  gateway: kyma-gateway.kyma-system.svc.cluster.local",
+      "best_practices": [
+        "Use APIRule for external access",
+        "Configure OAuth2 for protected endpoints",
+        "Use noop handler for public endpoints",
+        "Set appropriate scopes",
+        "Document API endpoints"
+      ]
+    },
+    "cap_service_handlers": {
+      "description": "Implement CAP service handlers",
+      "use_when": "Adding business logic to CAP services",
+      "code_example": "# srv/service.js\nconst cds = require('@sap/cds');\n\nmodule.exports = cds.service.impl(async function() {\n  const { Books, Authors } = this.entities;\n  \n  // Before read\n  this.before('READ', Books, async (req) => {\n    // Add filters, validations\n    if (!req.user.is('authenticated-user')) {\n      req.reject(401, 'Unauthorized');\n    }\n  });\n  \n  // After read\n  this.after('READ', Books, async (books, req) => {\n    // Transform results\n    books.forEach(book => {\n      book.discountPrice = book.price * 0.9;\n    });\n  });\n  \n  // Custom action\n  this.on('checkStock', Books, async (req) => {\n    const book = await SELECT.one.from(Books, req.params[0]);\n    return {\n      available: book.stock > 0,\n      stock: book.stock\n    };\n  });\n  \n  // Custom function\n  this.on('getBookStats', async () => {\n    const stats = await SELECT.one`\n      SELECT \n        COUNT(*) as total,\n        SUM(stock) as totalStock,\n        AVG(price) as avgPrice\n      FROM ${Books}\n    `;\n    return stats;\n  });\n  \n  // Handle errors\n  this.on('error', (err, req) => {\n    console.error('Service error:', err);\n    req.error(500, 'Internal server error');\n  });\n});",
+      "best_practices": [
+        "Use before/after hooks appropriately",
+        "Implement proper error handling",
+        "Validate user permissions",
+        "Use CDS queries",
+        "Keep handlers focused"
+      ]
+    },
+    "cap_authentication": {
+      "description": "Configure authentication in CAP applications",
+      "use_when": "Securing CAP services",
+      "code_example": "# package.json - add passport\n{\n  \"dependencies\": {\n    \"@sap/xssec\": \"^3.x\",\n    \"passport\": \"^0.6.0\",\n    \"@sap/cds\": \"^7.x\"\n  }\n}\n\n# srv/server.js\nconst cds = require('@sap/cds');\nconst xsenv = require('@sap/xssec');\nconst passport = require('passport');\n\n// Configure passport with XSUAA\npassport.use('JWT', new xsenv.JWTStrategy(xsenv.cfServiceCredentials({ tag: 'xsuaa' })));\n\n// Add authentication middleware\ncds.on('bootstrap', (app) => {\n  app.use(passport.initialize());\n  app.use(passport.authenticate('JWT', { session: false }));\n});\n\n# In service handlers\nmodule.exports = cds.service.impl(async function() {\n  const { Books } = this.entities;\n  \n  this.before('*', async (req) => {\n    // req.user contains user info from JWT\n    if (!req.user) {\n      req.reject(401, 'Unauthorized');\n    }\n    \n    // Check scopes\n    if (!req.user.is('$XSAPPNAME.Read')) {\n      req.reject(403, 'Forbidden');\n    }\n  });\n});\n\n# CDS annotations for authorization\n// srv/schema.cds\nentity Books @(requires: 'Read') {\n  key id: UUID;\n  title: String;\n  @requires: 'Write'\n  stock: Integer;\n}",
+      "best_practices": [
+        "Use XSUAA for authentication",
+        "Check user permissions in handlers",
+        "Use CDS annotations for authorization",
+        "Validate JWT tokens",
+        "Handle authentication errors gracefully"
+      ]
+    },
+    "build_workzone_deployment": {
+      "description": "Deploy content to SAP Build Work Zone",
+      "use_when": "Integrating apps with SAP Build Work Zone",
+      "code_example": "# Create HTML5 application repository service\ncf create-service html5-apps-repo app my-html5-repo\n\n# Deploy HTML5 app\ncf create-service-key my-html5-repo my-key\ncf service-key my-html5-repo my-key\n\n# Use HTML5 Application Repository CLI\nnpm install -g @sap/html5-app-deployer\n\n# Deploy app\nhtml5-deployer deploy \\\n  --archive my-app.zip \\\n  --target my-html5-repo \\\n  --credentials my-key-credentials.json\n\n# Configure app in Work Zone\n# 1. Go to BTP Cockpit\n# 2. Navigate to SAP Build Work Zone\n# 3. Add application\n# 4. Configure navigation\n# 5. Assign to role collections\n\n# Content deployment via API\nconst { WorkZoneService } = require('@sap/workzone-client');\n\nconst workzone = new WorkZoneService({\n  url: 'https://workzone-api.cfapps.eu10.hana.ondemand.com',\n  credentials: workzoneCredentials\n});\n\nawait workzone.deployContent({\n  appId: 'my-app',\n  content: appContent\n});",
+      "best_practices": [
+        "Use HTML5 Application Repository",
+        "Version applications",
+        "Configure proper navigation",
+        "Assign to role collections",
+        "Test in Work Zone before production"
+      ]
+    },
+    "managed_approuter": {
+      "description": "Use managed approuter in BTP",
+      "use_when": "Deploying Fiori apps with managed approuter",
+      "code_example": "# Create managed approuter service\ncf create-service approuter managed my-managed-approuter\n\n# Configure approuter\n# xs-app.json\n{\n  \"welcomeFile\": \"/index.html\",\n  \"routes\": [\n    {\n      \"source\": \"/\",\n      \"target\": \"/index.html\",\n      \"authenticationType\": \"xsuaa\"\n    },\n    {\n      \"source\": \"/api\",\n      \"target\": \"/api\",\n      \"destination\": \"srv-backend\",\n      \"authenticationType\": \"xsuaa\",\n      \"csrfProtection\": true\n    }\n  ],\n  \"authenticationMethod\": \"route\"\n}\n\n# Bind to XSUAA\n# manifest.yml\napplications:\n  - name: my-managed-approuter\n    services:\n      - my-xsuaa-instance\n    env:\n      TENANT_HOST_PATTERN: \"^(.*)-myapprouter\\.cfapps\\.eu10\\.hana\\.ondemand\\.com\"\n      destinations: '[{\"name\":\"srv-backend\",\"url\":\"https://my-cap-srv.cfapps.eu10.hana.ondemand.com\"}]'",
+      "best_practices": [
+        "Use managed approuter for simplicity",
+        "Configure routes properly",
+        "Set up destinations",
+        "Enable CSRF protection",
+        "Configure tenant host patterns"
+      ]
+    },
+    "standalone_approuter": {
+      "description": "Deploy standalone approuter",
+      "use_when": "Need more control over approuter configuration",
+      "code_example": "# Install approuter\nnpm install @sap/approuter\n\n# approuter/server.js\nconst approuter = require('@sap/approuter');\n\nconst ar = approuter();\n\nar.start({\n  port: process.env.PORT || 3000\n});\n\n# xs-app.json\n{\n  \"welcomeFile\": \"/index.html\",\n  \"routes\": [\n    {\n      \"source\": \"/\",\n      \"target\": \"/\",\n      \"authenticationType\": \"xsuaa\"\n    },\n    {\n      \"source\": \"/api\",\n      \"target\": \"/api\",\n      \"destination\": \"srv-backend\",\n      \"authenticationType\": \"xsuaa\"\n    }\n  ]\n}\n\n# package.json\n{\n  \"scripts\": {\n    \"start\": \"node server.js\"\n  },\n  \"dependencies\": {\n    \"@sap/approuter\": \"^12.x\"\n  }\n}\n\n# manifest.yml\napplications:\n  - name: my-standalone-approuter\n    path: .\n    memory: 128M\n    services:\n      - my-xsuaa-instance\n    env:\n      destinations: '[{\"name\":\"srv-backend\",\"url\":\"https://my-cap-srv.cfapps.eu10.hana.ondemand.com\"}]'",
+      "best_practices": [
+        "Use for custom routing needs",
+        "Configure destinations properly",
+        "Set appropriate memory",
+        "Handle authentication correctly",
+        "Test routing configuration"
+      ]
+    },
+    "s4hana_connectivity": {
+      "description": "Connect BTP to S/4HANA",
+      "use_when": "Integrating with on-premise or cloud S/4HANA",
+      "code_example": "# Create connectivity service\ncf create-service connectivity lite my-connectivity-instance\n\n# Create destination for S/4HANA\n# Destination configuration:\n# Name: S4HANA\n# Type: HTTP\n# URL: https://s4hana.example.com\n# Proxy Type: OnPremise\n# Location ID: <location-id>\n# Authentication: BasicAuthentication\n# User: <user>\n# Password: <password>\n\n# Use SAP Cloud SDK\nconst { executeHttpRequest } = require('@sap-cloud-sdk/http-client');\n\n// Call S/4HANA OData service\nconst response = await executeHttpRequest(\n  { destinationName: 'S4HANA' },\n  {\n    method: 'GET',\n    url: '/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder'\n  }\n);\n\n# Or use OData client\nconst { ODataRequestBuilder } = require('@sap-cloud-sdk/odata-v2');\n\nconst salesOrders = await ODataRequestBuilder\n  .withEntity('A_SalesOrder', 'SalesOrderService')\n  .withDestination({ destinationName: 'S4HANA' })\n  .build()\n  .execute();",
+      "best_practices": [
+        "Use connectivity service for on-premise",
+        "Configure Cloud Connector properly",
+        "Use SAP Cloud SDK",
+        "Handle authentication securely",
+        "Test connectivity thoroughly"
+      ]
+    },
+    "event_mesh_integration": {
+      "description": "Use Event Mesh for event-driven integration",
+      "use_when": "Building event-driven architectures",
+      "code_example": "# Create Event Mesh service instance\ncf create-service enterprise-messaging default my-event-mesh-instance\n\n# Create service key\ncf create-service-key my-event-mesh-instance my-key\ncf service-key my-event-mesh-instance my-key\n\n# Publish event (Node.js)\nconst amqp = require('amqplib');\nconst xsenv = require('@sap/xsenv');\n\nconst eventMeshCredentials = xsenv.cfServiceCredentials({ tag: 'enterprise-messaging' });\n\nasync function publishEvent(topic, message) {\n  const connection = await amqp.connect(eventMeshCredentials.uri);\n  const channel = await connection.createChannel();\n  \n  await channel.assertExchange(topic, 'topic', { durable: true });\n  channel.publish(topic, 'routing.key', Buffer.from(JSON.stringify(message)));\n  \n  await channel.close();\n  await connection.close();\n}\n\n# Subscribe to events\nasync function subscribeToEvents(topic) {\n  const connection = await amqp.connect(eventMeshCredentials.uri);\n  const channel = await connection.createChannel();\n  \n  await channel.assertExchange(topic, 'topic', { durable: true });\n  const queue = await channel.assertQueue('', { exclusive: true });\n  \n  await channel.bindQueue(queue.queue, topic, 'routing.key');\n  \n  channel.consume(queue.queue, (msg) => {\n    const content = JSON.parse(msg.content.toString());\n    console.log('Received event:', content);\n    channel.ack(msg);\n  });\n}",
+      "best_practices": [
+        "Use Event Mesh for async communication",
+        "Design topic structure carefully",
+        "Handle message acknowledgments",
+        "Implement error handling",
+        "Monitor event flow"
+      ]
+    },
+    "multi_tenancy_patterns": {
+      "description": "Implement multi-tenancy in BTP applications",
+      "use_when": "Building SaaS applications",
+      "code_example": "# Configure tenant mode in xs-security.json\n{\n  \"xsappname\": \"my-multi-tenant-app\",\n  \"tenant-mode\": \"shared\",  // or \"dedicated\"\n  \"scopes\": [\n    {\n      \"name\": \"$XSAPPNAME.Read\",\n      \"description\": \"Read access\"\n    }\n  ]\n}\n\n# Handle tenant context in CAP\nconst cds = require('@sap/cds');\n\nmodule.exports = cds.service.impl(async function() {\n  const { Books } = this.entities;\n  \n  this.before('*', async (req) => {\n    // Get tenant from request\n    const tenant = req.user?.tenant || req.headers['x-tenant-id'];\n    \n    // Add tenant filter\n    req.query.SELECT.where.tenant = tenant;\n  });\n  \n  // Tenant-specific data isolation\n  this.on('READ', Books, async (req) => {\n    const tenant = req.user.tenant;\n    return await SELECT.from(Books).where({ tenant: tenant });\n  });\n});\n\n# Tenant provisioning\nconst provisioning = require('@sap/saas-registry');\n\nasync function subscribeTenant(tenantId) {\n  // Provision tenant resources\n  await provisioning.subscribe(tenantId, {\n    appId: 'my-app',\n    plan: 'standard'\n  });\n}\n\nasync function unsubscribeTenant(tenantId) {\n  // Cleanup tenant resources\n  await provisioning.unsubscribe(tenantId);\n}",
+      "best_practices": [
+        "Choose appropriate tenant mode",
+        "Isolate tenant data",
+        "Handle tenant provisioning",
+        "Implement tenant cleanup",
+        "Test multi-tenancy thoroughly"
+      ]
+    },
+    "blue_green_deployment": {
+      "description": "Implement blue-green deployment strategy",
+      "use_when": "Zero-downtime deployments",
+      "code_example": "# Deploy blue version\ncf push my-app-blue -f manifest-blue.yml\n\n# Map route to blue\ncf map-route my-app-blue my-domain.com --hostname my-app\n\n# Test blue version\n# ...\n\n# Deploy green version\ncf push my-app-green -f manifest-green.yml\n\n# Map route to green\ncf map-route my-app-green my-domain.com --hostname my-app\n\n# Unmap blue\ncf unmap-route my-app-blue my-domain.com --hostname my-app\n\n# Delete blue\ncf delete my-app-blue\n\n# Automated blue-green script\n#!/bin/bash\nCURRENT=$(cf apps | grep my-app | awk '{print $1}')\n\nif [ \"$CURRENT\" == \"my-app-blue\" ]; then\n  NEW=\"my-app-green\"\n  OLD=\"my-app-blue\"\nelse\n  NEW=\"my-app-blue\"\n  OLD=\"my-app-green\"\nfi\n\n# Deploy new version\ncf push $NEW -f manifest.yml\n\n# Switch traffic\ncf map-route $NEW my-domain.com --hostname my-app\ncf unmap-route $OLD my-domain.com --hostname my-app\n\n# Keep old version for rollback\n# cf delete $OLD",
+      "best_practices": [
+        "Test new version before switching",
+        "Keep old version for rollback",
+        "Monitor health after switch",
+        "Automate deployment process",
+        "Use for production deployments"
+      ]
+    },
+    "monitoring_patterns": {
+      "description": "Monitor BTP applications",
+      "use_when": "Production deployments",
+      "code_example": "# View application logs\ncf logs my-app --recent\ncf logs my-app  # Follow logs\n\n# View application metrics\ncf app my-app\n\n# Use Application Logging service\ncf create-service application-logs lite my-logging-instance\n\n# Bind to application\n# manifest.yml\napplications:\n  - name: my-app\n    services:\n      - my-logging-instance\n\n# Structured logging in code\nconst winston = require('winston');\n\nconst logger = winston.createLogger({\n  level: 'info',\n  format: winston.format.json(),\n  transports: [\n    new winston.transports.Console()\n  ]\n});\n\nlogger.info('Application started', { \n  app: 'my-app',\n  version: '1.0.0'\n});\n\n# Health check endpoint\napp.get('/health', (req, res) => {\n  res.json({\n    status: 'healthy',\n    timestamp: new Date().toISOString(),\n    version: process.env.APP_VERSION\n  });\n});\n\n# Use Application Performance Monitoring\n# Create APM service\ncf create-service apm apm-service my-apm-instance\n\n# Monitor application performance\n# View in BTP Cockpit -> Monitoring",
+      "best_practices": [
+        "Set up application logging",
+        "Implement health checks",
+        "Use structured logging",
+        "Monitor application metrics",
+        "Set up alerts"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use MTA (Multi-Target Application) for complex multi-module deployments to manage dependencies declaratively",
+    "Always bind XSUAA for authentication and define scopes, role templates, and role collections clearly",
+    "Use managed approuter for simplicity; switch to standalone approuter only when custom routing is needed",
+    "Leverage SAP Cloud SDK for consuming external and S/4HANA services instead of raw HTTP calls",
+    "Configure health check endpoints and monitoring for all deployed applications",
+    "Use blue-green deployment strategy for zero-downtime production releases",
+    "Store sensitive configuration in BTP services (Destination, Connectivity) rather than in application code",
+    "Use Event Mesh for asynchronous event-driven integration between BTP applications"
+  ],
+  "anti_patterns": [
+    {
+      "name": "hardcoded_credentials",
+      "description": "Storing credentials directly in application code or manifest files",
+      "problem": "Security risk, credentials exposed in version control",
+      "solution": "Use XSUAA service bindings, Destination service, or environment variables for credentials"
+    },
+    {
+      "name": "monolithic_mta",
+      "description": "Deploying everything as a single large MTA module",
+      "problem": "Long deployment times, inability to scale individual components",
+      "solution": "Separate into distinct modules (srv, app, db) with clear boundaries"
+    },
+    {
+      "name": "missing_health_checks",
+      "description": "Deploying applications without health check endpoints",
+      "problem": "Cloud Foundry cannot detect unhealthy instances, leading to serving errors",
+      "solution": "Implement /health endpoints and configure health-check-type in manifest"
+    },
+    {
+      "name": "ignoring_tenant_isolation",
+      "description": "Not isolating tenant data in multi-tenant applications",
+      "problem": "Data leakage between tenants, security and compliance violations",
+      "solution": "Use proper tenant-mode configuration and filter data by tenant context"
+    }
+  ]
+}

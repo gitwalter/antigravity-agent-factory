@@ -1,0 +1,399 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "numpy-patterns",
+  "name": "NumPy Patterns",
+  "title": "NumPy Patterns",
+  "description": "Comprehensive NumPy patterns for array operations, linear algebra, performance optimization, and integration with ML libraries",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns include array validation and shape checking techniques",
+    "A3_transparency": "All operations are explicit and reproducible"
+  },
+  "array_operations": {
+    "array_creation": {
+      "zeros_ones": {
+        "description": "Create arrays filled with zeros or ones",
+        "use_when": "Need initialized arrays with specific values",
+        "code_example": "import numpy as np\n\n# Create arrays filled with zeros\narr = np.zeros(5)  # 1D array\narr = np.zeros((3, 4))  # 2D array\narr = np.zeros((2, 3, 4), dtype=np.float32)  # 3D with dtype\n\n# Create arrays filled with ones\narr = np.ones(5)\narr = np.ones((3, 4))\narr = np.ones_like(existing_array)  # Same shape as existing\n\n# Create empty array (uninitialized, faster)\narr = np.empty((3, 4))\n\n# Create array with specific value\narr = np.full((3, 4), 7.0)  # Fill with 7.0",
+        "best_practices": [
+          "Use zeros() or ones() for initialized arrays",
+          "Use empty() when you'll overwrite all values anyway",
+          "Specify dtype explicitly for memory efficiency",
+          "Use full() for non-zero/one fill values"
+        ]
+      },
+      "arange_linspace": {
+        "description": "Create sequences of numbers",
+        "use_when": "Need evenly spaced sequences",
+        "code_example": "import numpy as np\n\n# arange: similar to range() but returns array\narr = np.arange(10)  # [0, 1, 2, ..., 9]\narr = np.arange(2, 10, 2)  # [2, 4, 6, 8]\narr = np.arange(0, 1, 0.1)  # Floating point step\n\n# linspace: evenly spaced numbers over interval\narr = np.linspace(0, 1, 11)  # 11 points from 0 to 1\narr = np.linspace(0, 1, 11, endpoint=False)  # Exclude endpoint\narr = np.linspace(0, 2*np.pi, 100)  # For plotting\n\n# logspace: logarithmically spaced\narr = np.logspace(0, 2, 10)  # 10 points from 10^0 to 10^2",
+        "best_practices": [
+          "Use arange() for integer sequences with step",
+          "Use linspace() when you need exact number of points",
+          "Use logspace() for logarithmic scales",
+          "Prefer linspace() for floating point ranges"
+        ]
+      },
+      "random_arrays": {
+        "description": "Create arrays with random values",
+        "use_when": "Need random data for testing or initialization",
+        "code_example": "import numpy as np\n\n# Set seed for reproducibility\nnp.random.seed(42)\n\n# Random floats in [0, 1)\narr = np.random.random((3, 4))\narr = np.random.rand(3, 4)  # Same, different syntax\n\n# Random integers\narr = np.random.randint(0, 10, size=(3, 4))  # [0, 10)\narr = np.random.randint(0, 10, size=5)  # 1D\n\n# Random floats from normal distribution\narr = np.random.normal(mean=0, std=1, size=(3, 4))\narr = np.random.randn(3, 4)  # Standard normal (mean=0, std=1)\n\n# Random floats from uniform distribution\narr = np.random.uniform(low=0, high=10, size=(3, 4))\n\n# Random choice from array\narr = np.random.choice([1, 2, 3, 4, 5], size=10)\narr = np.random.choice([1, 2, 3], size=(3, 4), p=[0.5, 0.3, 0.2])",
+        "best_practices": [
+          "Always set random seed for reproducibility",
+          "Use np.random.normal() for normal distributions",
+          "Use np.random.uniform() for uniform distributions",
+          "Use np.random.choice() for sampling from discrete sets"
+        ]
+      },
+      "from_existing": {
+        "description": "Create arrays from existing data",
+        "use_when": "Converting lists or other data structures",
+        "code_example": "import numpy as np\n\n# From Python list\narr = np.array([1, 2, 3, 4, 5])\narr = np.array([[1, 2], [3, 4]])\n\n# From list with explicit dtype\narr = np.array([1, 2, 3], dtype=np.float32)\n\n# From nested lists (ragged arrays become object arrays)\narr = np.array([[1, 2], [3, 4, 5]], dtype=object)\n\n# Copy vs view\noriginal = np.array([1, 2, 3, 4])\ncopy = np.array(original)  # Creates copy\nview = original[:]  # Creates view (shares memory)\n\n# Explicit copy\narr_copy = original.copy()\narr_view = original.view()",
+        "best_practices": [
+          "Use np.array() for converting Python lists",
+          "Specify dtype explicitly when needed",
+          "Understand copy vs view behavior",
+          "Use .copy() when you need independent array"
+        ]
+      }
+    },
+    "indexing_slicing": {
+      "basic_indexing": {
+        "description": "Access array elements and subarrays",
+        "use_when": "Need to extract or modify array elements",
+        "code_example": "import numpy as np\n\narr = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])\n\n# Single element\nval = arr[0, 0]  # First row, first column\nval = arr[0][0]  # Equivalent\n\n# Slicing\nrow = arr[0, :]  # First row\ncol = arr[:, 0]  # First column\nsubarray = arr[0:2, 1:3]  # Rows 0-1, cols 1-2\n\n# Step slicing\narr[::2, ::2]  # Every other row and column\narr[::-1, :]  # Reverse rows\n\n# Negative indices\narr[-1, :]  # Last row\narr[:, -1]  # Last column",
+        "best_practices": [
+          "Use comma-separated indices for multi-dimensional",
+          "Slicing returns views (not copies)",
+          "Use negative indices for end-relative access",
+          "Understand that arr[0, :] is 1D, arr[0:1, :] is 2D"
+        ]
+      },
+      "fancy_indexing": {
+        "description": "Advanced indexing with arrays of indices",
+        "use_when": "Need to select non-contiguous elements",
+        "code_example": "import numpy as np\n\narr = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])\n\n# Integer array indexing\nindices = np.array([0, 2])\nselected = arr[indices]  # Rows 0 and 2\n\n# Multiple dimensions\nrows = np.array([0, 1])\ncols = np.array([1, 2])\nselected = arr[rows, cols]  # [arr[0,1], arr[1,2]]\n\n# Using meshgrid for advanced selection\nrows, cols = np.meshgrid([0, 2], [0, 2])\nselected = arr[rows, cols]\n\n# Fancy indexing creates copies, not views\nselected[0] = 999  # Doesn't modify original arr",
+        "best_practices": [
+          "Fancy indexing creates copies, not views",
+          "Use for non-contiguous element selection",
+          "Can be slower than basic indexing",
+          "Use meshgrid for coordinate-based selection"
+        ]
+      },
+      "boolean_masking": {
+        "description": "Select elements using boolean conditions",
+        "use_when": "Need conditional element selection",
+        "code_example": "import numpy as np\n\narr = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])\n\n# Boolean mask\nmask = arr > 5\nselected = arr[mask]  # [6, 7, 8, 9]\n\n# Multiple conditions\nmask = (arr > 3) & (arr < 7)  # Use &, |, not and, or\nselected = arr[mask]  # [4, 5, 6]\n\n# Modify elements based on condition\narr[arr > 5] = 0  # Set all > 5 to 0\n\n# 2D boolean masking\narr2d = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])\nmask = arr2d > 5\nselected = arr2d[mask]  # Flattened result\n\n# Using np.where\nresult = np.where(arr > 5, arr, 0)  # Keep if > 5, else 0\nresult = np.where(arr > 5, arr, arr * 2)  # Conditional operation",
+        "best_practices": [
+          "Use &, |, ~ for boolean operations (not and, or, not)",
+          "Boolean indexing creates copies",
+          "Use np.where() for conditional element-wise operations",
+          "Boolean masks are very efficient for filtering"
+        ]
+      },
+      "advanced_indexing": {
+        "description": "Combining different indexing methods",
+        "use_when": "Need complex element selection",
+        "code_example": "import numpy as np\n\narr = np.arange(12).reshape(3, 4)\n\n# Combining slicing and fancy indexing\nselected = arr[0:2, [0, 2, 3]]\n\n# Using boolean mask with fancy indexing\nmask = np.array([True, False, True])\nselected = arr[mask, :]\n\n# Ellipsis for higher dimensions\narr3d = np.arange(24).reshape(2, 3, 4)\nselected = arr3d[..., 0]  # Last dimension, first element\n\n# Using np.ix_ for advanced indexing\nrows = np.array([0, 2])\ncols = np.array([1, 3])\nselected = arr[np.ix_(rows, cols)]  # All combinations",
+        "best_practices": [
+          "Use ellipsis (...) for higher dimensions",
+          "np.ix_ creates meshgrid for advanced indexing",
+          "Understand broadcasting rules when combining",
+          "Test indexing on small arrays first"
+        ]
+      }
+    },
+    "array_manipulation": {
+      "reshaping": {
+        "description": "Change array shape without changing data",
+        "use_when": "Need different array dimensions",
+        "code_example": "import numpy as np\n\narr = np.arange(12)\n\n# Reshape\narr2d = arr.reshape(3, 4)\narr2d = arr.reshape(-1, 4)  # -1 means infer dimension\n\n# Flatten\nflat = arr2d.flatten()  # Always returns copy\nflat = arr2d.ravel()  # Returns view when possible\n\n# Resize (modifies in place)\narr.resize(3, 4)  # Modifies original\n\n# Transpose\narr2d.T  # Transpose\narr2d.transpose()  # Same\narr3d.transpose(1, 0, 2)  # Permute axes\n\n# Swap axes\narr3d.swapaxes(0, 1)",
+        "best_practices": [
+          "Use reshape() for new shape (returns view when possible)",
+          "Use flatten() when you need a copy",
+          "Use ravel() when view is acceptable",
+          "Total elements must match original size"
+        ]
+      },
+      "concatenation": {
+        "description": "Combine arrays along axes",
+        "use_when": "Need to join arrays",
+        "code_example": "import numpy as np\n\narr1 = np.array([[1, 2], [3, 4]])\narr2 = np.array([[5, 6], [7, 8]])\n\n# Concatenate along axis\nresult = np.concatenate([arr1, arr2], axis=0)  # Stack vertically\nresult = np.concatenate([arr1, arr2], axis=1)  # Stack horizontally\n\n# Stack (adds new dimension)\nresult = np.stack([arr1, arr2], axis=0)\n\n# vstack (vertical stack)\nresult = np.vstack([arr1, arr2])\n\n# hstack (horizontal stack)\nresult = np.hstack([arr1, arr2])\n\n# dstack (depth stack)\nresult = np.dstack([arr1, arr2])",
+        "best_practices": [
+          "Use concatenate() for general concatenation",
+          "Use vstack/hstack for clarity",
+          "Use stack() when adding new dimension",
+          "Ensure compatible shapes along concatenation axis"
+        ]
+      },
+      "splitting": {
+        "description": "Split arrays into multiple arrays",
+        "use_when": "Need to divide arrays",
+        "code_example": "import numpy as np\n\narr = np.arange(12).reshape(3, 4)\n\n# Split along axis\nresult = np.split(arr, 3, axis=0)  # Split into 3 arrays\nresult = np.split(arr, [1, 2], axis=0)  # Split at indices\n\n# vsplit (vertical split)\nresult = np.vsplit(arr, 3)\n\n# hsplit (horizontal split)\nresult = np.hsplit(arr, 2)\n\n# array_split (allows unequal splits)\nresult = np.array_split(arr, 5, axis=0)  # Creates 5 arrays",
+        "best_practices": [
+          "Use split() for equal-sized splits",
+          "Use array_split() for unequal splits",
+          "Use vsplit/hsplit for clarity",
+          "Specify axis explicitly"
+        ]
+      }
+    }
+  },
+  "linear_algebra": {
+    "matrix_operations": {
+      "dot_product": {
+        "description": "Matrix multiplication and dot products",
+        "use_when": "Need matrix multiplication or vector dot products",
+        "code_example": "import numpy as np\n\n# Dot product of vectors\na = np.array([1, 2, 3])\nb = np.array([4, 5, 6])\nresult = np.dot(a, b)  # 1*4 + 2*5 + 3*6 = 32\nresult = a @ b  # Same, operator syntax\n\n# Matrix multiplication\nA = np.array([[1, 2], [3, 4]])\nB = np.array([[5, 6], [7, 8]])\nresult = np.dot(A, B)\nresult = A @ B  # Same\nresult = np.matmul(A, B)  # Same\n\n# Element-wise multiplication\nresult = A * B  # Not matrix multiplication!\n\n# Outer product\nresult = np.outer(a, b)\n\n# Inner product\nresult = np.inner(a, b)",
+        "best_practices": [
+          "Use @ operator for matrix multiplication (Python 3.5+)",
+          "Use * for element-wise multiplication",
+          "np.dot() handles both vectors and matrices",
+          "Ensure compatible dimensions for matrix multiplication"
+        ]
+      },
+      "matrix_inverse": {
+        "description": "Compute matrix inverse and pseudo-inverse",
+        "use_when": "Need to solve linear systems or invert matrices",
+        "code_example": "import numpy as np\n\nA = np.array([[1, 2], [3, 4]])\n\n# Matrix inverse\nA_inv = np.linalg.inv(A)\n\n# Verify: A @ A_inv should be identity\nidentity = A @ A_inv\n\n# Pseudo-inverse (Moore-Penrose)\nA_pinv = np.linalg.pinv(A)  # Works for non-square matrices\n\n# Solving linear system: Ax = b\nb = np.array([5, 6])\nx = np.linalg.solve(A, b)  # More efficient than inv()\n\n# Using least squares\nx = np.linalg.lstsq(A, b, rcond=None)[0]",
+        "best_practices": [
+          "Use solve() instead of inv() for solving Ax=b",
+          "Use pinv() for non-square or singular matrices",
+          "Check condition number for numerical stability",
+          "Avoid inv() for large matrices"
+        ]
+      },
+      "eigenvalues": {
+        "description": "Compute eigenvalues and eigenvectors",
+        "use_when": "Need eigendecomposition for dimensionality reduction or analysis",
+        "code_example": "import numpy as np\n\nA = np.array([[1, 2], [2, 1]])\n\n# Eigenvalues and eigenvectors\neigenvalues, eigenvectors = np.linalg.eig(A)\n\n# For symmetric matrices (more efficient)\neigenvalues, eigenvectors = np.linalg.eigh(A)\n\n# Verify: A @ v = lambda * v\nfor i in range(len(eigenvalues)):\n    lambda_i = eigenvalues[i]\n    v_i = eigenvectors[:, i]\n    assert np.allclose(A @ v_i, lambda_i * v_i)\n\n# SVD (more general)\nU, s, Vt = np.linalg.svd(A)\n\n# Reconstruct\nA_reconstructed = U @ np.diag(s) @ Vt",
+        "best_practices": [
+          "Use eigh() for symmetric/Hermitian matrices",
+          "Use eig() for general matrices",
+          "Use SVD for more numerical stability",
+          "Check eigenvalues for matrix properties"
+        ]
+      },
+      "matrix_decompositions": {
+        "description": "Various matrix decompositions",
+        "use_when": "Need matrix factorization for analysis or optimization",
+        "code_example": "import numpy as np\n\nA = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])\n\n# SVD (Singular Value Decomposition)\nU, s, Vt = np.linalg.svd(A, full_matrices=False)\n\n# QR decomposition\nQ, R = np.linalg.qr(A)\n\n# Cholesky decomposition (for positive definite)\nA_posdef = A.T @ A  # Make positive definite\nL = np.linalg.cholesky(A_posdef)\n\n# LU decomposition\nP, L, U = scipy.linalg.lu(A)  # Requires scipy",
+        "best_practices": [
+          "SVD is most numerically stable",
+          "Use QR for solving least squares",
+          "Cholesky is fastest for positive definite",
+          "Choose decomposition based on problem"
+        ]
+      }
+    },
+    "vector_operations": {
+      "norms": {
+        "description": "Compute vector and matrix norms",
+        "use_when": "Need to measure vector/matrix size or distance",
+        "code_example": "import numpy as np\n\nv = np.array([3, 4])\n\n# Vector norms\nl2_norm = np.linalg.norm(v)  # Default: L2 norm\nl2_norm = np.linalg.norm(v, ord=2)\nl1_norm = np.linalg.norm(v, ord=1)  # Sum of absolute values\ninf_norm = np.linalg.norm(v, ord=np.inf)  # Max absolute value\n\n# Matrix norms\nA = np.array([[1, 2], [3, 4]])\nfrobenius = np.linalg.norm(A, 'fro')  # Frobenius norm\nspectral = np.linalg.norm(A, ord=2)  # Spectral norm (largest singular value)",
+        "best_practices": [
+          "Default norm is L2 (Euclidean)",
+          "Use appropriate norm for problem",
+          "L2 norm is most common",
+          "Frobenius norm for matrices"
+        ]
+      },
+      "cross_product": {
+        "description": "Cross product of vectors",
+        "use_when": "Working with 3D vectors",
+        "code_example": "import numpy as np\n\na = np.array([1, 2, 3])\nb = np.array([4, 5, 6])\n\n# Cross product\nresult = np.cross(a, b)\n\n# For 2D vectors (treat as 3D with z=0)\na2d = np.array([1, 2])\nb2d = np.array([3, 4])\nresult = np.cross(a2d, b2d)",
+        "best_practices": [
+          "Use for 3D vector operations",
+          "Result is perpendicular to both inputs",
+          "Useful for computing normals"
+        ]
+      }
+    }
+  },
+  "performance": {
+    "vectorization": {
+      "avoid_loops": {
+        "description": "Replace Python loops with vectorized operations",
+        "use_when": "Operations can be applied element-wise to arrays",
+        "code_example": "import numpy as np\n\n# SLOW: Python loop\narr = np.arange(1000000)\nresult = np.zeros_like(arr)\nfor i in range(len(arr)):\n    result[i] = arr[i] * 2 + 1\n\n# FAST: Vectorized\nresult = arr * 2 + 1\n\n# SLOW: Conditional in loop\nresult = np.zeros_like(arr)\nfor i in range(len(arr)):\n    if arr[i] > 500000:\n        result[i] = arr[i] * 2\n    else:\n        result[i] = arr[i]\n\n# FAST: Vectorized with np.where\nresult = np.where(arr > 500000, arr * 2, arr)\n\n# SLOW: Applying function in loop\nresult = np.zeros_like(arr)\nfor i in range(len(arr)):\n    result[i] = np.sin(arr[i])\n\n# FAST: Vectorized\nresult = np.sin(arr)",
+        "best_practices": [
+          "Always prefer vectorized operations over loops",
+          "Use np.where() for conditional operations",
+          "NumPy functions are vectorized by default",
+          "100-1000x speedup is common"
+        ]
+      },
+      "ufuncs": {
+        "description": "Universal functions for element-wise operations",
+        "use_when": "Need fast element-wise operations",
+        "code_example": "import numpy as np\n\narr = np.array([1, 2, 3, 4, 5])\n\n# Mathematical ufuncs\nresult = np.sin(arr)\nresult = np.cos(arr)\nresult = np.exp(arr)\nresult = np.log(arr)\nresult = np.sqrt(arr)\n\n# Comparison ufuncs\nresult = np.greater(arr, 3)\nresult = np.equal(arr, 3)\n\n# Binary ufuncs\nresult = np.add(arr, 10)\nresult = np.multiply(arr, 2)\n\n# Custom ufunc\nfrom numpy import vectorize\n\n@vectorize\ndef custom_func(x):\n    return x * 2 + 1\n\nresult = custom_func(arr)",
+        "best_practices": [
+          "Use NumPy ufuncs instead of Python functions",
+          "Ufuncs are compiled and very fast",
+          "Use @vectorize decorator for custom functions",
+          "Ufuncs support broadcasting"
+        ]
+      }
+    },
+    "memory_layout": {
+      "contiguous_arrays": {
+        "description": "Understand and optimize memory layout",
+        "use_when": "Performance is critical or working with C code",
+        "code_example": "import numpy as np\n\narr = np.arange(12).reshape(3, 4)\n\n# Check if C-contiguous\nprint(arr.flags['C_CONTIGUOUS'])  # True\n\n# Transpose creates non-contiguous view\narr_t = arr.T\nprint(arr_t.flags['C_CONTIGUOUS'])  # False\n\n# Make contiguous (creates copy)\narr_contig = np.ascontiguousarray(arr_t)\n\n# Check memory layout\nprint(arr.flags)\n\n# For better performance with certain operations\narr_f = np.asfortranarray(arr)  # Fortran-contiguous",
+        "best_practices": [
+          "C-contiguous is default (row-major)",
+          "Transpose creates non-contiguous view",
+          "Use ascontiguousarray() when needed",
+          "Contiguous arrays are faster for some operations"
+        ]
+      },
+      "memory_efficient": {
+        "description": "Reduce memory usage",
+        "use_when": "Working with large arrays",
+        "code_example": "import numpy as np\n\n# Use appropriate dtypes\narr_int64 = np.array([1, 2, 3], dtype=np.int64)  # 8 bytes per element\narr_int32 = np.array([1, 2, 3], dtype=np.int32)  # 4 bytes per element\narr_int16 = np.array([1, 2, 3], dtype=np.int16)  # 2 bytes per element\n\n# Check memory usage\nprint(arr_int64.nbytes)  # Total bytes\nprint(arr_int64.itemsize)  # Bytes per element\n\n# Use views instead of copies when possible\narr = np.arange(1000000)\nview = arr[::2]  # View, no copy\ncopy = arr[::2].copy()  # Explicit copy\n\n# Delete arrays when done\narr = None\ndel arr",
+        "best_practices": [
+          "Use smallest dtype that fits your data",
+          "Prefer views over copies when possible",
+          "Delete large arrays when done",
+          "Monitor memory usage with .nbytes"
+        ]
+      }
+    },
+    "broadcasting": {
+      "rules": {
+        "description": "Understand broadcasting rules for efficient operations",
+        "use_when": "Operating on arrays of different shapes",
+        "code_example": "import numpy as np\n\n# Broadcasting rules:\n# 1. Align dimensions from right\n# 2. Dimensions must match or one must be 1\n# 3. Missing dimensions treated as 1\n\n# Example 1: Array + scalar\narr = np.array([[1, 2, 3], [4, 5, 6]])\nresult = arr + 10  # Scalar broadcasts to all elements\n\n# Example 2: Array + 1D array\narr = np.array([[1, 2, 3], [4, 5, 6]])  # Shape: (2, 3)\nvec = np.array([10, 20, 30])  # Shape: (3,)\nresult = arr + vec  # vec broadcasts to (1, 3) then (2, 3)\n\n# Example 3: Array + column vector\narr = np.array([[1, 2, 3], [4, 5, 6]])  # Shape: (2, 3)\nvec = np.array([[10], [20]])  # Shape: (2, 1)\nresult = arr + vec  # vec broadcasts to (2, 3)\n\n# Example 4: Outer product via broadcasting\nvec1 = np.array([1, 2, 3])  # Shape: (3,)\nvec2 = np.array([10, 20])  # Shape: (2,)\nresult = vec1[:, np.newaxis] + vec2  # Shape: (3, 2)\n\n# Explicit broadcasting\nresult = np.broadcast_to(vec, (2, 3))",
+        "best_practices": [
+          "Understand broadcasting rules",
+          "Use np.newaxis to add dimensions",
+          "Broadcasting avoids memory copies",
+          "Be careful with edge cases"
+        ]
+      }
+    }
+  },
+  "integration": {
+    "pandas_integration": {
+      "description": "Convert between NumPy arrays and pandas DataFrames",
+      "use_when": "Working with both NumPy and pandas",
+      "code_example": "import numpy as np\nimport pandas as pd\n\n# DataFrame to NumPy\ndf = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})\narr = df.values  # Returns NumPy array\narr = df.to_numpy()  # Preferred method\n\n# NumPy to DataFrame\narr = np.array([[1, 2, 3], [4, 5, 6]])\ndf = pd.DataFrame(arr, columns=['a', 'b', 'c'])\n\n# Series to NumPy\nseries = pd.Series([1, 2, 3])\narr = series.values\narr = series.to_numpy()\n\n# Using NumPy functions on pandas objects\ndf['new_col'] = np.sqrt(df['a'])\ndf['new_col'] = np.where(df['a'] > 2, 'high', 'low')",
+      "best_practices": [
+        "Use to_numpy() instead of .values",
+        "NumPy functions work on pandas objects",
+        "Be aware of index alignment in pandas",
+        "Convert to NumPy for performance-critical code"
+      ]
+    },
+    "scikit_learn_integration": {
+      "description": "NumPy arrays as input to scikit-learn",
+      "use_when": "Using scikit-learn for machine learning",
+      "code_example": "import numpy as np\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LinearRegression\n\n# Prepare data\nX = np.random.rand(100, 5)  # Features\nY = np.random.rand(100)  # Target\n\n# Train-test split\nX_train, X_test, y_train, y_test = train_test_split(\n    X, Y, test_size=0.2, random_state=42\n)\n\n# Preprocessing\nscaler = StandardScaler()\nX_train_scaled = scaler.fit_transform(X_train)\nX_test_scaled = scaler.transform(X_test)\n\n# Model training\nmodel = LinearRegression()\nmodel.fit(X_train_scaled, y_train)\n\n# Predictions\npredictions = model.predict(X_test_scaled)\n\n# All scikit-learn expects NumPy arrays",
+      "best_practices": [
+        "scikit-learn expects NumPy arrays",
+        "Use 2D arrays for features (n_samples, n_features)",
+        "Use 1D arrays for targets",
+        "Convert pandas DataFrames to NumPy when needed"
+      ]
+    },
+    "pytorch_integration": {
+      "description": "Convert between NumPy arrays and PyTorch tensors",
+      "use_when": "Using PyTorch for deep learning",
+      "code_example": "import numpy as np\nimport torch\n\n# NumPy to PyTorch\narr = np.array([1, 2, 3, 4, 5])\ntensor = torch.from_numpy(arr)  # Shares memory\n\n# Explicit conversion\ntensor = torch.tensor(arr)  # Creates copy\n\n# PyTorch to NumPy\ntensor = torch.tensor([1, 2, 3, 4, 5])\narr = tensor.numpy()  # Shares memory if on CPU\narr = tensor.detach().cpu().numpy()  # Safe conversion\n\n# GPU tensors\nif torch.cuda.is_available():\n    tensor_gpu = tensor.cuda()\n    arr = tensor_gpu.cpu().numpy()  # Must move to CPU first\n\n# Note: Changes to tensor affect numpy array (and vice versa) if sharing memory",
+      "best_practices": [
+        "from_numpy() shares memory (changes affect both)",
+        "tensor() creates copy",
+        "Always move GPU tensors to CPU before numpy()",
+        "Use detach() when gradients are involved"
+      ]
+    }
+  },
+  "common_gotchas": {
+    "copy_vs_view": {
+      "description": "Understanding when operations create copies vs views",
+      "use_when": "Modifying arrays and need to understand side effects",
+      "code_example": "import numpy as np\n\narr = np.array([1, 2, 3, 4, 5])\n\n# Views (share memory)\nview1 = arr[:]  # Slicing creates view\nview2 = arr[1:4]  # Slicing creates view\nview3 = arr.reshape(5, 1)  # Reshape creates view\nview4 = arr.T  # Transpose creates view\n\n# Copies (independent memory)\ncopy1 = arr.copy()  # Explicit copy\ncopy2 = arr[[0-2-4]]  # Fancy indexing creates copy\ncopy3 = arr[arr > 3]  # Boolean indexing creates copy\ncopy4 = arr.reshape(1, 5).copy()  # Explicit copy after reshape\n\n# Test if view or copy\nprint(np.shares_memory(arr, view1))  # True\nprint(np.shares_memory(arr, copy1))  # False\n\n# Modifying view affects original\nview1[0] = 999\nprint(arr[0])  # 999\n\n# Modifying copy doesn't affect original\ncopy1[0] = 888\nprint(arr[0])  # Still 999",
+      "best_practices": [
+        "Slicing creates views",
+        "Fancy/boolean indexing creates copies",
+        "Use .copy() when you need independent array",
+        "Use np.shares_memory() to check"
+      ]
+    },
+    "dtype_promotion": {
+      "description": "Understanding how dtypes are promoted in operations",
+      "use_when": "Mixing different numeric types",
+      "code_example": "import numpy as np\n\n# Integer + float promotes to float\narr_int = np.array([1, 2, 3], dtype=np.int32)\narr_float = np.array([1.0, 2.0, 3.0], dtype=np.float32)\nresult = arr_int + arr_float  # dtype: float64\n\n# Smaller + larger promotes to larger\narr_int16 = np.array([1, 2, 3], dtype=np.int16)\narr_int32 = np.array([1, 2, 3], dtype=np.int32)\nresult = arr_int16 + arr_int32  # dtype: int32\n\n# Unsigned + signed promotes to larger signed\narr_uint = np.array([1, 2, 3], dtype=np.uint8)\narr_int = np.array([1, 2, 3], dtype=np.int8)\nresult = arr_uint + arr_int  # dtype: int16\n\n# Explicit casting\nresult = (arr_int + arr_float).astype(np.float32)\n\n# Safe casting\nresult = np.add(arr_int, arr_float, dtype=np.float32)",
+      "best_practices": [
+        "Understand promotion rules",
+        "Explicitly cast when needed",
+        "Be careful with integer overflow",
+        "Use appropriate dtypes from start"
+      ]
+    },
+    "nan_handling": {
+      "description": "Handling NaN values in operations",
+      "use_when": "Working with missing or invalid data",
+      "code_example": "import numpy as np\n\narr = np.array([1, 2, np.nan, 4, 5])\n\n# Check for NaN\nhas_nan = np.isnan(arr)\nhas_nan = np.isnan(arr).any()\n\n# Operations with NaN\nresult = arr + 10  # NaN propagates\nresult = np.sum(arr)  # Result is NaN\nresult = np.nansum(arr)  # Ignores NaN\n\n# NaN-safe functions\nresult = np.nanmean(arr)\nresult = np.nanstd(arr)\nresult = np.nanmin(arr)\nresult = np.nanmax(arr)\n\n# Replace NaN\narr_filled = np.nan_to_num(arr, nan=0.0)\narr_filled = np.where(np.isnan(arr), 0, arr)\n\n# Comparison with NaN\nresult = arr == np.nan  # Always False!\nresult = np.isnan(arr)  # Correct way",
+      "best_practices": [
+        "Use np.isnan() to check for NaN",
+        "NaN propagates through operations",
+        "Use nan* functions for NaN-safe operations",
+        "Never use == to check for NaN"
+      ]
+    }
+  },
+  "anti_patterns": [
+    {
+      "name": "Using Python loops instead of vectorization",
+      "problem": "100-1000x slower than vectorized operations, defeats purpose of NumPy",
+      "solution": "Always use vectorized operations: arr * 2 instead of [x * 2 for x in arr]"
+    },
+    {
+      "name": "Assuming slicing creates a copy",
+      "problem": "Modifying slice modifies original array, causing unexpected side effects",
+      "solution": "Use .copy() explicitly when you need independent array: arr[1:3].copy()"
+    },
+    {
+      "name": "Using == to check for NaN",
+      "problem": "np.nan == np.nan is always False, check will never work",
+      "solution": "Use np.isnan(arr) or pd.isna() to check for NaN values"
+    },
+    {
+      "name": "Not specifying dtype when creating arrays",
+      "problem": "May use larger dtype than needed, wasting memory, or wrong dtype causing errors",
+      "solution": "Always specify dtype explicitly: np.array([1, 2, 3], dtype=np.int32)"
+    },
+    {
+      "name": "Mixing and/or with boolean arrays",
+      "problem": "Python's 'and'/'or' don't work with arrays, causes ValueError",
+      "solution": "Use &, |, ~ for boolean operations: (arr > 3) & (arr < 7)"
+    }
+  ],
+  "best_practices": [
+    "Always prefer vectorized operations over Python loops - 100-1000x faster",
+    "Use @ operator for matrix multiplication (Python 3.5+): A @ B instead of np.dot(A, B)",
+    "Understand copy vs view: slicing creates views, fancy indexing creates copies",
+    "Use appropriate dtypes to save memory: int32 instead of int64 when possible",
+    "Use np.where() for conditional element-wise operations instead of loops",
+    "Check for NaN using np.isnan(), never use == comparison",
+    "Use broadcasting instead of loops for operations on arrays of different shapes",
+    "Prefer np.linalg.solve() over np.linalg.inv() for solving linear systems",
+    "Use views (slicing) when possible to avoid memory copies",
+    "Set random seed for reproducibility: np.random.seed(42)"
+  ],
+  "patterns": {
+    "array_operations": {
+      "description": "Array creation, indexing, slicing, and manipulation patterns"
+    },
+    "linear_algebra": {
+      "description": "Matrix operations, decompositions, and vector operations"
+    },
+    "performance": {
+      "description": "Vectorization, memory optimization, and broadcasting"
+    },
+    "integration": {
+      "description": "Integration with pandas, scikit-learn, and PyTorch"
+    }
+  }
+}

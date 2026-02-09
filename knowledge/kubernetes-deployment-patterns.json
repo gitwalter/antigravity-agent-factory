@@ -1,0 +1,282 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "kubernetes-deployment-patterns",
+  "name": "Kubernetes Deployment Patterns",
+  "title": "Kubernetes Deployment and Orchestration Patterns",
+  "description": "Best practices and patterns for deploying applications to Kubernetes",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Kubernetes manifests enable declarative deployments",
+    "A3_transparency": "Resource definitions make infrastructure explicit",
+    "A4_adaptability": "Rolling updates support zero-downtime deployments"
+  },
+  "deployment_strategies": {
+    "rolling_update": {
+      "description": "Gradually replace old pods with new ones",
+      "configuration": "strategy:\n  type: RollingUpdate\n  rollingUpdate:\n    maxSurge: 1\n    maxUnavailable: 0",
+      "benefits": [
+        "Zero downtime",
+        "Gradual rollout",
+        "Automatic rollback on failure"
+      ]
+    },
+    "blue_green": {
+      "description": "Deploy new version alongside old, switch traffic",
+      "implementation": "Two deployments, switch service selector",
+      "benefits": [
+        "Instant rollback",
+        "Easy A/B testing",
+        "No traffic mixing"
+      ],
+      "challenges": [
+        "Requires double resources",
+        "Database migration complexity"
+      ]
+    },
+    "canary": {
+      "description": "Deploy new version to subset of users",
+      "implementation": "Use service mesh or ingress for traffic splitting",
+      "benefits": [
+        "Gradual risk reduction",
+        "Real-world testing",
+        "Easy rollback"
+      ],
+      "tools": [
+        "Istio",
+        "Flagger",
+        "Argo Rollouts"
+      ]
+    }
+  },
+  "statefulsets": {
+    "description": "For stateful applications",
+    "use_cases": [
+      "Databases",
+      "Message queues",
+      "Applications requiring stable network identity"
+    ],
+    "features": {
+      "stable_network_id": "Pod name remains constant",
+      "ordered_deployment": "Pods created/deleted in order",
+      "persistent_storage": "Each pod gets its own volume"
+    },
+    "example": "apiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: postgres\nspec:\n  serviceName: postgres\n  replicas: 3\n  selector:\n    matchLabels:\n      app: postgres\n  template:\n    spec:\n      containers:\n      - name: postgres\n        image: postgres:15\n  volumeClaimTemplates:\n  - metadata:\n      name: data\n    spec:\n      accessModes: [\"ReadWriteOnce\"]\n      resources:\n        requests:\n          storage: 10Gi"
+  },
+  "horizontal_pod_autoscaler": {
+    "description": "Automatically scale pods based on metrics",
+    "metrics": {
+      "cpu": "CPU utilization",
+      "memory": "Memory utilization",
+      "custom": "Custom application metrics"
+    },
+    "configuration": "apiVersion: autoscaling/v2\nkind: HorizontalPodAutoscaler\nspec:\n  minReplicas: 2\n  maxReplicas: 10\n  metrics:\n  - type: Resource\n    resource:\n      name: cpu\n      target:\n        type: Utilization\n        averageUtilization: 70",
+    "best_practices": [
+      "Set appropriate min/max replicas",
+      "Use multiple metrics",
+      "Configure stabilization windows",
+      "Monitor scaling behavior"
+    ]
+  },
+  "vertical_pod_autoscaler": {
+    "description": "Automatically adjust resource requests/limits",
+    "modes": {
+      "off": "Only provide recommendations",
+      "initial": "Set resources on pod creation",
+      "recreate": "Recreate pods with new resources",
+      "auto": "Automatically adjust"
+    },
+    "use_cases": [
+      "Workloads with variable resource needs",
+      "Optimizing resource utilization",
+      "Reducing over-provisioning"
+    ]
+  },
+  "ingress": {
+    "description": "Expose HTTP/HTTPS services",
+    "controllers": [
+      "NGINX Ingress",
+      "Traefik",
+      "Istio Gateway",
+      "AWS ALB Ingress"
+    ],
+    "features": {
+      "ssl_termination": "TLS/SSL termination",
+      "load_balancing": "Distribute traffic",
+      "path_based_routing": "Route by URL path",
+      "host_based_routing": "Route by hostname"
+    },
+    "example": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: my-app-ingress\nspec:\n  tls:\n  - hosts:\n    - api.example.com\n    secretName: tls-secret\n  rules:\n  - host: api.example.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: my-app\n            port:\n              number: 80"
+  },
+  "cert_manager": {
+    "description": "Automated certificate management",
+    "features": [
+      "Automatic TLS certificates",
+      "Let's Encrypt integration",
+      "Certificate renewal",
+      "Multiple issuers"
+    ],
+    "cluster_issuer": "apiVersion: cert-manager.io/v1\nkind: ClusterIssuer\nmetadata:\n  name: letsencrypt-prod\nspec:\n  acme:\n    server: https://acme-v02.api.letsencrypt.org/directory\n    email: admin@example.com\n    privateKeySecretRef:\n      name: letsencrypt-prod\n    solvers:\n    - http01:\n        ingress:\n          class: nginx"
+  },
+  "secrets_management": {
+    "description": "Store and manage secrets",
+    "types": {
+      "opaque": "Generic secrets",
+      "tls": "TLS certificates",
+      "docker_registry": "Docker registry credentials",
+      "service_account_token": "Service account tokens"
+    },
+    "best_practices": [
+      "Use external secret operators",
+      "Rotate secrets regularly",
+      "Encrypt secrets at rest",
+      "Limit secret access",
+      "Never commit secrets"
+    ],
+    "external_secrets": {
+      "tools": [
+        "External Secrets Operator",
+        "Sealed Secrets",
+        "Vault",
+        "AWS Secrets Manager"
+      ]
+    }
+  },
+  "resource_quotas": {
+    "description": "Limit resource usage per namespace",
+    "resources": {
+      "cpu": "CPU requests and limits",
+      "memory": "Memory requests and limits",
+      "pods": "Number of pods",
+      "persistent_volume_claims": "Storage claims"
+    },
+    "example": "apiVersion: v1\nkind: ResourceQuota\nmetadata:\n  name: compute-quota\nspec:\n  hard:\n    requests.cpu: \"4\"\n    requests.memory: 8Gi\n    limits.cpu: \"8\"\n    limits.memory: 16Gi\n    pods: \"10\""
+  },
+  "network_policies": {
+    "description": "Control network traffic between pods",
+    "use_cases": [
+      "Microservices isolation",
+      "Security policies",
+      "Compliance requirements"
+    ],
+    "example": "apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: api-policy\nspec:\n  podSelector:\n    matchLabels:\n      app: api\n  policyTypes:\n  - Ingress\n  - Egress\n  ingress:\n  - from:\n    - podSelector:\n        matchLabels:\n          app: frontend\n    ports:\n    - protocol: TCP\n      port: 8080\n  egress:\n  - to:\n    - podSelector:\n        matchLabels:\n          app: database\n    ports:\n    - protocol: TCP\n      port: 5432"
+  },
+  "monitoring": {
+    "description": "Monitor Kubernetes resources",
+    "tools": {
+      "prometheus": "Metrics collection",
+      "grafana": "Metrics visualization",
+      "jaeger": "Distributed tracing",
+      "fluentd": "Log aggregation"
+    },
+    "metrics": {
+      "pod_metrics": "CPU, memory, network",
+      "node_metrics": "Node resource usage",
+      "cluster_metrics": "Cluster-wide metrics"
+    }
+  },
+  "helm_charts": {
+    "description": "Package and manage Kubernetes applications",
+    "benefits": [
+      "Reusable templates",
+      "Version management",
+      "Dependency management",
+      "Easy upgrades/rollbacks"
+    ],
+    "structure": "my-chart/\n  Chart.yaml\n  values.yaml\n  templates/\n    deployment.yaml\n    service.yaml",
+    "best_practices": [
+      "Use values.yaml for configuration",
+      "Template common resources",
+      "Version charts",
+      "Document values"
+    ]
+  },
+  "kustomize": {
+    "description": "Template-free customization of YAML",
+    "benefits": [
+      "No templating language",
+      "Base and overlays",
+      "Native Kubernetes tool",
+      "Easy environment management"
+    ],
+    "structure": "base/\n  kustomization.yaml\n  deployment.yaml\noverlays/\n  production/\n    kustomization.yaml\n    deployment-patch.yaml",
+    "use_cases": [
+      "Environment-specific configs",
+      "Multi-cluster deployments",
+      "Configuration management"
+    ]
+  },
+  "health_probes": {
+    "liveness": {
+      "description": "Container is running",
+      "action_on_failure": "Restart container",
+      "use_when": "Detect deadlocks, unresponsive apps"
+    },
+    "readiness": {
+      "description": "Container is ready to serve",
+      "action_on_failure": "Remove from service",
+      "use_when": "App needs initialization time"
+    },
+    "startup": {
+      "description": "Container has started",
+      "action_on_failure": "Restart container",
+      "use_when": "Slow-starting applications"
+    },
+    "best_practices": [
+      "Use all three probe types",
+      "Set appropriate delays",
+      "Configure timeouts",
+      "Handle probe failures gracefully"
+    ]
+  },
+  "patterns": {
+    "sidecar": "Additional container for support services",
+    "ambassador": "Proxy container for external services",
+    "adapter": "Transform container output",
+    "init_containers": "Containers that run before main container"
+  },
+  "best_practices": [
+    "Always set resource requests and limits",
+    "Use health probes (liveness, readiness, startup)",
+    "Implement rolling updates",
+    "Use ConfigMaps for configuration",
+    "Use Secrets for sensitive data",
+    "Set up HPA for autoscaling",
+    "Use namespaces for isolation",
+    "Implement network policies",
+    "Monitor resource usage",
+    "Use Ingress for external access",
+    "Enable TLS/SSL",
+    "Use Helm or Kustomize",
+    "Set appropriate replica counts",
+    "Use anti-affinity for HA",
+    "Backup persistent volumes"
+  ],
+  "anti_patterns": [
+    {
+      "name": "No Resource Limits",
+      "problem": "Resource exhaustion",
+      "solution": "Set requests and limits"
+    },
+    {
+      "name": "Missing Health Probes",
+      "problem": "Can't detect unhealthy pods",
+      "solution": "Add liveness/readiness probes"
+    },
+    {
+      "name": "Secrets in ConfigMaps",
+      "problem": "Security risk",
+      "solution": "Use Secret resource"
+    },
+    {
+      "name": "Single Replica",
+      "problem": "No high availability",
+      "solution": "Use multiple replicas"
+    },
+    {
+      "name": "No Rolling Update",
+      "problem": "Downtime during updates",
+      "solution": "Configure RollingUpdate strategy"
+    }
+  ]
+}

@@ -1,0 +1,272 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "guardrails-patterns",
+  "name": "AI Guardrails Patterns",
+  "title": "AI Guardrails and Safety Patterns",
+  "description": "Patterns for implementing guardrails, content safety, and prompt injection prevention in AI applications",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Guardrails enable verification of AI behavior",
+    "A3_transparency": "Explicit guardrails make safety measures clear",
+    "A4_adaptability": "Configurable guardrails support different use cases"
+  },
+  "nemo_guardrails": {
+    "description": "NVIDIA NeMo Guardrails framework",
+    "components": {
+      "colang": "Conversation flow language",
+      "flows": "Define conversation flows",
+      "actions": "Python functions for guardrail actions",
+      "models": "LLM models for guardrails"
+    },
+    "colang_examples": {
+      "greeting": "define user express greeting\n  \"hello\"\n  \"hi\"\n  \"hey\"\n\ndefine bot express greeting\n  \"Hello! How can I help you?\"",
+      "restriction": "define user ask about restricted topic\n  \"tell me about confidential information\"\n\ndefine bot refuse\n  \"I'm sorry, I can't discuss that topic.\"",
+      "flow": "define flow main\n  user express greeting\n  bot express greeting\n  user ask question\n  bot provide answer"
+    },
+    "best_practices": [
+      "Define clear conversation flows",
+      "Handle edge cases",
+      "Test guardrails thoroughly",
+      "Monitor guardrail triggers"
+    ]
+  },
+  "guardrails_ai": {
+    "description": "Guardrails AI framework",
+    "validators": {
+      "toxic_language": "Detect toxic content",
+      "pii": "Detect personally identifiable information",
+      "sensitive_topics": "Filter sensitive topics",
+      "prompt_injection": "Detect prompt injection attempts"
+    },
+    "usage": "from guardrails import Guard\nfrom guardrails.hub import DetectPII\n\nguard = Guard().use(DetectPII())\nresult = guard.validate(prompt)",
+    "best_practices": [
+      "Use appropriate validators",
+      "Configure thresholds",
+      "Handle validation failures",
+      "Log guardrail events"
+    ]
+  },
+  "llamaguard": {
+    "description": "Meta's LlamaGuard for content classification",
+    "capabilities": [
+      "Content safety classification",
+      "Multi-category detection",
+      "Customizable policies"
+    ],
+    "use_cases": [
+      "Content moderation",
+      "Chat safety",
+      "API filtering"
+    ],
+    "integration": "from llama_guard import LlamaGuard\n\nguard = LlamaGuard.from_pretrained('meta-llama/LlamaGuard-7b')\nresult = guard.classify(text)"
+  },
+  "presidio_pii": {
+    "description": "Microsoft Presidio for PII detection",
+    "supported_entities": [
+      "EMAIL_ADDRESS",
+      "PHONE_NUMBER",
+      "CREDIT_CARD",
+      "SSN",
+      "IP_ADDRESS",
+      "PERSON",
+      "LOCATION"
+    ],
+    "usage": "from presidio_analyzer import AnalyzerEngine\nfrom presidio_anonymizer import AnonymizerEngine\n\nanalyzer = AnalyzerEngine()\nresults = analyzer.analyze(text=text, language='en')\nanonymizer = AnonymizerEngine()\nanonymized = anonymizer.anonymize(text=text, analyzer_results=results)",
+    "best_practices": [
+      "Configure entity detection",
+      "Anonymize sensitive data",
+      "Validate anonymization",
+      "Handle false positives"
+    ]
+  },
+  "prompt_injection": {
+    "description": "Prompt injection attack patterns and defenses",
+    "attack_types": {
+      "direct_injection": "User input contains instructions",
+      "indirect_injection": "Hidden instructions in data",
+      "jailbreak": "Bypass safety measures",
+      "adversarial_prompts": "Crafted prompts to evade detection"
+    },
+    "defense_layers": {
+      "input_sanitization": "Clean and validate inputs",
+      "prompt_validation": "Check prompt structure",
+      "output_filtering": "Filter model outputs",
+      "context_isolation": "Isolate user context",
+      "system_prompt_hardening": "Strengthen system prompts"
+    },
+    "detection_patterns": {
+      "instruction_keywords": [
+        "ignore",
+        "forget",
+        "system",
+        "admin"
+      ],
+      "encoding_techniques": [
+        "base64",
+        "unicode",
+        "rot13"
+      ],
+      "prompt_leaking": "Attempts to extract system prompt"
+    },
+    "mitigation": {
+      "input_validation": "Validate and sanitize all inputs",
+      "prompt_encoding": "Encode user inputs",
+      "output_validation": "Validate model outputs",
+      "rate_limiting": "Limit prompt attempts",
+      "monitoring": "Monitor for injection patterns"
+    }
+  },
+  "content_safety": {
+    "description": "Content safety classification",
+    "categories": {
+      "hate_speech": "Hateful or discriminatory content",
+      "violence": "Violent or harmful content",
+      "sexual_content": "Sexual or explicit content",
+      "self_harm": "Self-harm or suicide content",
+      "illegal_activities": "Illegal activities"
+    },
+    "tools": {
+      "azure_content_safety": "Azure Content Safety API",
+      "perspective_api": "Google Perspective API",
+      "openai_moderation": "OpenAI Moderation API"
+    },
+    "implementation": "from openai import OpenAI\n\nclient = OpenAI()\nmoderation = client.moderations.create(input=text)\nif moderation.results[0].flagged:\n    # Handle unsafe content\n    pass"
+  },
+  "topic_control": {
+    "description": "Control allowed topics",
+    "whitelist_approach": "Only allow specific topics",
+    "blacklist_approach": "Block specific topics",
+    "hybrid_approach": "Combine whitelist and blacklist",
+    "implementation": "allowed_topics = ['general', 'technology', 'science']\nif topic not in allowed_topics:\n    return 'I can only discuss allowed topics.'"
+  },
+  "output_filtering": {
+    "description": "Filter model outputs",
+    "techniques": {
+      "keyword_filtering": "Filter by keywords",
+      "regex_patterns": "Use regex patterns",
+      "ml_classification": "Use ML models",
+      "rule_based": "Rule-based filtering"
+    },
+    "best_practices": [
+      "Filter before returning to user",
+      "Log filtered content",
+      "Handle false positives",
+      "Provide fallback responses"
+    ]
+  },
+  "defense_layers": {
+    "layer_1_input": {
+      "description": "Input validation and sanitization",
+      "techniques": [
+        "Input length limits",
+        "Character filtering",
+        "Encoding validation",
+        "Structure validation"
+      ]
+    },
+    "layer_2_prompt": {
+      "description": "Prompt protection",
+      "techniques": [
+        "System prompt isolation",
+        "User input encoding",
+        "Prompt structure validation",
+        "Context separation"
+      ]
+    },
+    "layer_3_runtime": {
+      "description": "Runtime monitoring",
+      "techniques": [
+        "Token monitoring",
+        "Behavioral analysis",
+        "Anomaly detection",
+        "Rate limiting"
+      ]
+    },
+    "layer_4_output": {
+      "description": "Output validation",
+      "techniques": [
+        "Content filtering",
+        "PII detection",
+        "Safety classification",
+        "Output sanitization"
+      ]
+    }
+  },
+  "patterns": {
+    "input_sanitization": {
+      "description": "Sanitize user inputs",
+      "steps": [
+        "Validate input format",
+        "Remove dangerous characters",
+        "Encode special characters",
+        "Check for injection patterns"
+      ]
+    },
+    "prompt_encoding": {
+      "description": "Encode user inputs in prompts",
+      "techniques": [
+        "Base64 encoding",
+        "JSON encoding",
+        "XML encoding",
+        "Custom delimiters"
+      ]
+    },
+    "output_validation": {
+      "description": "Validate model outputs",
+      "checks": [
+        "Content safety",
+        "PII detection",
+        "Topic compliance",
+        "Format validation"
+      ]
+    },
+    "fallback_responses": {
+      "description": "Provide safe fallback responses",
+      "use_when": [
+        "Guardrail triggered",
+        "Unsafe content detected",
+        "Validation failure"
+      ]
+    }
+  },
+  "best_practices": [
+    "Implement multiple defense layers",
+    "Validate all inputs",
+    "Filter all outputs",
+    "Monitor guardrail triggers",
+    "Log security events",
+    "Test guardrails regularly",
+    "Update guardrails as threats evolve",
+    "Use multiple detection methods",
+    "Handle edge cases",
+    "Provide clear error messages",
+    "Document guardrail policies",
+    "Review guardrail effectiveness",
+    "Train models on adversarial examples",
+    "Use rate limiting",
+    "Implement audit logging"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Single Layer Defense",
+      "problem": "Easy to bypass",
+      "solution": "Implement multiple defense layers"
+    },
+    {
+      "name": "No Input Validation",
+      "problem": "Vulnerable to injection",
+      "solution": "Validate and sanitize all inputs"
+    },
+    {
+      "name": "Trusting Model Outputs",
+      "problem": "Unsafe content can leak",
+      "solution": "Always filter outputs"
+    },
+    {
+      "name": "Hardcoded Guardrails",
+      "problem": "Not adaptable",
+      "solution": "Make guardrails configurable"
+    }
+  ]
+}
