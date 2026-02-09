@@ -25,7 +25,7 @@ import re
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 # =============================================================================
 # CONSTANTS
@@ -55,7 +55,7 @@ DIRECTORY_MAPPING = {
 class ArtifactIndexManager:
     """Manages the artifact index cache."""
     
-    def __init__(self, root_path: Path | None = None):
+    def __init__(self, root_path: Optional[Path] = None):
         if root_path is None:
             root_path = Path(__file__).parent.parent.parent
         self.root_path = root_path
@@ -94,7 +94,7 @@ class ArtifactIndexManager:
         except (ValueError, KeyError):
             return False
     
-    def detect_artifact_type(self, file_path: str) -> str | None:
+    def detect_artifact_type(self, file_path: str) -> Optional[str]:
         """Detect which artifact type a file belongs to."""
         # Normalize path
         path = file_path.replace("\\", "/")
