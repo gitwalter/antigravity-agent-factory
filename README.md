@@ -241,7 +241,7 @@ antigravity-agent-factory/
 ├── .agent/
 │   ├── agents/                  # Factory's own agents (0 agents)
 │   │   └── *.md                 # debug-conductor, git-specialist, integrity-guardian, etc.
-│   └── skills/                  # Factory's own skills (0 skills)
+│   └── skills/                  # Factory's own skills (116 skills)
 │       ├── agent-generation/
 │       ├── ai-agent-dev/
 │       ├── algo-trading/

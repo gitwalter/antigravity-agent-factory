@@ -222,6 +222,8 @@ class ArtifactScanner:
                 [sys.executable, "-m", "pytest", str(tests_path), "--collect-only", "-q"],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='replace',
                 timeout=120,
                 cwd=self.root_path
             )
@@ -1098,6 +1100,9 @@ def update_testing_md(actual: CategoryTestCounts, dry_run: bool = True,
 
 def main():
     """Main entry point."""
+    if sys.platform == 'win32':
+        sys.stdout.reconfigure(encoding='utf-8')
+
     import argparse
     
     parser = argparse.ArgumentParser(

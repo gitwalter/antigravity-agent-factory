@@ -11,7 +11,7 @@ The test suite is powered by **pytest** and maintains a high degree of coverage 
 
 ### Vital Statistics
 
-The test suite consists of **2022 tests** organized into five specialized categories:
+The test suite consists of **0 tests** organized into five specialized categories:
 
 | Category | Count | Purpose |
 |----------|-------|---------|

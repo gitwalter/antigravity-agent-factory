@@ -31,7 +31,8 @@ from typing import Any
 # CONSTANTS
 # =============================================================================
 
-CACHE_DIR = ".agent/cache"INDEX_FILE = "artifact-index.json"
+CACHE_DIR = ".agent/cache"
+INDEX_FILE = "artifact-index.json"
 STALENESS_THRESHOLD = timedelta(hours=1)
 
 # Directory to artifact type mapping
@@ -54,7 +55,8 @@ DIRECTORY_MAPPING = {
 class ArtifactIndexManager:
     """Manages the artifact index cache."""
     
-    def __init__(self, root_path: Path | None = None):        if root_path is None:
+    def __init__(self, root_path: Path | None = None):
+        if root_path is None:
             root_path = Path(__file__).parent.parent.parent
         self.root_path = root_path
         self.cache_path = root_path / CACHE_DIR / INDEX_FILE
@@ -92,7 +94,8 @@ class ArtifactIndexManager:
         except (ValueError, KeyError):
             return False
     
-    def detect_artifact_type(self, file_path: str) -> str | None:        """Detect which artifact type a file belongs to."""
+    def detect_artifact_type(self, file_path: str) -> str | None:
+        """Detect which artifact type a file belongs to."""
         # Normalize path
         path = file_path.replace("\\", "/")
         
@@ -144,7 +147,8 @@ class ArtifactIndexManager:
     
     def _count_agents(self) -> dict[str, int]:
         """Count agent files."""
-        agents_dir = self.root_path / ".agent" / "agents"        if not agents_dir.exists():
+        agents_dir = self.root_path / ".agent" / "agents"
+        if not agents_dir.exists():
             return {"core": 0, "pm": 0}
         
         core_count = len(list(agents_dir.glob("*.md")))
@@ -155,7 +159,8 @@ class ArtifactIndexManager:
     
     def _count_skills(self) -> dict[str, int]:
         """Count skill directories."""
-        skills_dir = self.root_path / ".agent" / "skills"        if not skills_dir.exists():
+        skills_dir = self.root_path / ".agent" / "skills"
+        if not skills_dir.exists():
             return {"core": 0, "pm": 0}
         
         # Count directories with SKILL.md (excluding pm/)

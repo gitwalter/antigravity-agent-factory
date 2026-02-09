@@ -70,6 +70,8 @@ __all__ = [
 
 def main():
     """Main entry point - delegates to sync_artifacts for test counts."""
+    if sys.platform == 'win32':
+        sys.stdout.reconfigure(encoding='utf-8')
     sync = '--sync' in sys.argv
     
     # Get actual counts

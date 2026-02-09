@@ -92,14 +92,53 @@ class PreCommitRunner:
         Returns:
             ScriptResult object
         """
+        
+        script_name = script_path.name
         cmd = [sys.executable, str(script_path)]
         
+        # Script-specific argument mapping
         if self.sync_mode:
-            cmd.append("--update")
+            # Sync/Update Mode
+            if script_name == "validate_json_syntax.py":
+                cmd.append("--all")
+            elif script_name == "validate_yaml_frontmatter.py":
+                pass # No args = scan repo
+            elif script_name == "update_index.py":
+                cmd.append("--full")
+            elif script_name in [
+                "sync_manifest_versions.py", 
+                "sync_test_counts.py", 
+                "sync_knowledge_counts.py",
+                "sync_artifacts.py"
+            ]:
+                cmd.append("--sync")
+            elif script_name == "validate_readme_structure.py":
+                cmd.append("--update")
+            else:
+                # Default for others
+                cmd.append("--update")
         else:
-            cmd.append("--check")
+            # Check Mode
+            if script_name == "validate_json_syntax.py":
+                cmd.append("--all")
+            elif script_name == "validate_yaml_frontmatter.py":
+                pass # No args = scan repo
+            elif script_name == "update_index.py":
+                cmd.append("--check")
+            elif script_name in [
+                "sync_manifest_versions.py", 
+                "sync_test_counts.py", 
+                "sync_knowledge_counts.py",
+                "sync_artifacts.py"
+            ]:
+                pass # No args = check
+            elif script_name == "validate_readme_structure.py":
+                cmd.append("--check")
+            else:
+                # Default for others
+                cmd.append("--check")
             
-        if self.fast_mode:
+        if self.fast_mode and script_name == "sync_artifacts.py":
             cmd.append("--fast")
             
         try:
@@ -108,6 +147,8 @@ class PreCommitRunner:
                 cwd=self.root_dir,
                 capture_output=True,
                 text=True,
+                encoding='utf-8',  # Force UTF-8 for subprocess output
+                errors='replace',  # Replace invalid characters
                 timeout=300  # 5 minute timeout
             )
             

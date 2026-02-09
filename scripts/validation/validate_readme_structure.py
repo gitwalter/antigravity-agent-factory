@@ -233,6 +233,9 @@ class StructureValidator:
 
 def main():
     """Main entry point."""
+    if sys.platform == 'win32':
+        sys.stdout.reconfigure(encoding='utf-8')
+
     parser = argparse.ArgumentParser(
         description="Validate README.md structure documentation"
     )
