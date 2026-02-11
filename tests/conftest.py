@@ -166,7 +166,7 @@ def blueprints_dir(factory_root: Path) -> Path:
     Returns:
         Path to blueprints directory.
     """
-    return factory_root / "blueprints"
+    return factory_root / ".agent" / "blueprints"
 
 
 @pytest.fixture
@@ -179,7 +179,7 @@ def patterns_dir(factory_root: Path) -> Path:
     Returns:
         Path to patterns directory.
     """
-    return factory_root / "patterns"
+    return factory_root / ".agent" / "patterns"
 
 
 @pytest.fixture
@@ -192,7 +192,7 @@ def knowledge_dir(factory_root: Path) -> Path:
     Returns:
         Path to knowledge directory.
     """
-    return factory_root / "knowledge"
+    return factory_root / ".agent" / "knowledge"
 
 
 @pytest.fixture
@@ -284,7 +284,7 @@ def pm_patterns_dir(factory_root: Path) -> Path:
     Returns:
         Path to PM patterns directory.
     """
-    return factory_root / "patterns" / "products" / "pm-system"
+    return factory_root / ".agent" / "patterns" / "products" / "pm-system"
 
 
 @pytest.fixture
@@ -475,7 +475,7 @@ def extension_templates_dir(factory_root: Path) -> Path:
     Returns:
         Path to factory templates directory.
     """
-    return factory_root / "templates" / "factory"
+    return factory_root / ".agent" / "templates" / "factory"
 
 
 @pytest.fixture
@@ -488,7 +488,7 @@ def knowledge_schema_path(factory_root: Path) -> Path:
     Returns:
         Path to knowledge schema pattern.
     """
-    return factory_root / "patterns" / "knowledge" / "knowledge-schema.json"
+    return factory_root / ".agent" / "patterns" / "knowledge" / "knowledge-schema.json"
 
 
 @pytest.fixture
@@ -501,4 +501,4 @@ def knowledge_template_path(factory_root: Path) -> Path:
     Returns:
         Path to knowledge file template.
     """
-    return factory_root / "templates" / "knowledge" / "knowledge-file.tmpl"
+    return factory_root / ".agent" / "templates" / "knowledge" / "knowledge-file.tmpl"

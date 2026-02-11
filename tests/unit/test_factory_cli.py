@@ -51,7 +51,7 @@ class TestGetFactoryRoot:
     def test_contains_blueprints(self):
         """Test that factory root contains blueprints directory."""
         result = get_factory_root()
-        assert (result / "blueprints").exists()
+        assert (result / ".agent" / "blueprints").exists()
 
 
 class TestDisplayWelcome:

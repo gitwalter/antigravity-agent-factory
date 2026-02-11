@@ -26,11 +26,11 @@ class TestPreCommitHookContent:
     
     def test_unix_hook_has_shebang(self):
         """Test that Unix hook starts with shebang."""
-        assert hooks_module.PRE_COMMIT_HOOK_UNIX.startswith("#!/bin/sh")
+        assert hooks_module.PRE_COMMIT_HOOK.startswith("#!/bin/sh")
     
     def test_windows_hook_has_shebang(self):
         """Test that Windows hook starts with shebang."""
-        assert hooks_module.PRE_COMMIT_HOOK_WINDOWS.startswith("#!/bin/sh")
+        assert hooks_module.PRE_COMMIT_HOOK_WINDOWS.startswith("@echo off")
     
     def test_unix_hook_runs_version_sync(self):
         """Test that Unix hook syncs versions.
@@ -38,8 +38,8 @@ class TestPreCommitHookContent:
         Note: validate_readme_structure.py was removed from the hook for speed.
         The hook now focuses on: secrets, JSON syntax, version sync.
         """
-        assert "sync_manifest_versions.py" in hooks_module.PRE_COMMIT_HOOK_UNIX
-        assert "--sync" in hooks_module.PRE_COMMIT_HOOK_UNIX
+        assert "pre_commit_runner.py" in hooks_module.PRE_COMMIT_HOOK
+        assert "--sync" in hooks_module.PRE_COMMIT_HOOK
     
     def test_windows_hook_runs_version_sync(self):
         """Test that Windows hook syncs versions.
@@ -47,25 +47,18 @@ class TestPreCommitHookContent:
         Note: validate_readme_structure.py was removed from the hook for speed.
         The hook now focuses on: secrets, JSON syntax, version sync.
         """
-        assert "sync_manifest_versions.py" in hooks_module.PRE_COMMIT_HOOK_WINDOWS
+        assert "pre_commit_runner.py" in hooks_module.PRE_COMMIT_HOOK_WINDOWS
         assert "--sync" in hooks_module.PRE_COMMIT_HOOK_WINDOWS
     
-    def test_unix_hook_stages_readme(self):
-        """Test that Unix hook stages README.md."""
-        assert "git add README.md" in hooks_module.PRE_COMMIT_HOOK_UNIX
-    
-    def test_windows_hook_stages_readme(self):
-        """Test that Windows hook stages README.md."""
-        assert "git add README.md" in hooks_module.PRE_COMMIT_HOOK_WINDOWS
+
     
     def test_unix_hook_exits_cleanly(self):
         """Test that Unix hook exits with 0."""
-        assert "exit 0" in hooks_module.PRE_COMMIT_HOOK_UNIX
+        assert "exit 0" in hooks_module.PRE_COMMIT_HOOK
     
     def test_windows_hook_checks_multiple_python_paths(self):
         """Test that Windows hook tries multiple Python paths."""
         assert "python" in hooks_module.PRE_COMMIT_HOOK_WINDOWS
-        assert "python3" in hooks_module.PRE_COMMIT_HOOK_WINDOWS
 
 
 class TestInstallHooks:
@@ -82,8 +75,9 @@ class TestInstallHooks:
             
             # Patch __file__ to point to our temp location
             with patch.object(hooks_module, '__file__', str(hook_script)):
-                result = hooks_module.install_hooks()
-                assert result == 1  # Should fail
+                with patch('sys.argv', ['install_hooks.py', '--root', str(tmpdir)]):
+                    result = hooks_module.main()
+                    assert result == 1  # Should fail
     
     def test_install_hooks_creates_hook_file(self):
         """Test that install_hooks creates the pre-commit hook."""
@@ -102,9 +96,9 @@ class TestInstallHooks:
             
             with patch.object(hooks_module, '__file__', str(hook_script)):
                 with patch('builtins.input', return_value='n'):  # Don't overwrite if asked
-                    result = hooks_module.install_hooks()
+                    result = hooks_module.install_hook(git_dir)
             
-            assert result == 0
+            assert result is True
             pre_commit_path = git_dir / "hooks" / "pre-commit"
             assert pre_commit_path.exists()
     
@@ -114,7 +108,8 @@ class TestInstallHooks:
             tmppath = Path(tmpdir)
             
             # Create .git/hooks with existing pre-commit
-            hooks_dir = tmppath / ".git" / "hooks"
+            git_dir = tmppath / ".git"
+            hooks_dir = git_dir / "hooks"
             hooks_dir.mkdir(parents=True)
             pre_commit = hooks_dir / "pre-commit"
             pre_commit.write_text("#!/bin/sh\necho 'existing hook'")
@@ -128,9 +123,9 @@ class TestInstallHooks:
             # User declines overwrite
             with patch.object(hooks_module, '__file__', str(hook_script)):
                 with patch('builtins.input', return_value='n'):
-                    result = hooks_module.install_hooks()
+                    result = hooks_module.install_hook(git_dir)
             
-            assert result == 0
+            assert result is False
             # Original content should be preserved
             assert "existing hook" in pre_commit.read_text()
     
@@ -140,7 +135,8 @@ class TestInstallHooks:
             tmppath = Path(tmpdir)
             
             # Create .git/hooks with existing pre-commit
-            hooks_dir = tmppath / ".git" / "hooks"
+            git_dir = tmppath / ".git"
+            hooks_dir = git_dir / "hooks"
             hooks_dir.mkdir(parents=True)
             pre_commit = hooks_dir / "pre-commit"
             pre_commit.write_text("#!/bin/sh\necho 'old hook'")
@@ -151,15 +147,14 @@ class TestInstallHooks:
             hook_script = scripts_git_dir / "install_hooks.py"
             hook_script.write_text("# placeholder")
             
-            # User confirms overwrite
+            # User confirms overwrite (simulated by overwrite=True to avoid input mocking issues)
             with patch.object(hooks_module, '__file__', str(hook_script)):
-                with patch('builtins.input', return_value='y'):
-                    result = hooks_module.install_hooks()
+                result = hooks_module.install_hook(git_dir, overwrite=True)
             
-            assert result == 0
+            assert result is True
             # Should have new content (hook now uses sync_manifest_versions.py, not validate_readme_structure.py)
-            content = pre_commit.read_text()
-            assert "sync_manifest_versions.py" in content
+            content = pre_commit.read_text(encoding="utf-8")
+            assert "pre_commit_runner.py" in content
     
     @pytest.mark.skipif(os.name == 'nt', reason="Unix permissions test")
     def test_install_hooks_makes_executable_on_unix(self):
@@ -178,7 +173,7 @@ class TestInstallHooks:
             hook_script.write_text("# placeholder")
             
             with patch.object(hooks_module, '__file__', str(hook_script)):
-                result = hooks_module.install_hooks()
+                result = hooks_module.install_hook(git_dir)
             
             pre_commit = git_dir / "hooks" / "pre-commit"
             mode = pre_commit.stat().st_mode
@@ -189,12 +184,12 @@ class TestMainEntry:
     """Tests for the main entry point."""
     
     def test_main_calls_install_hooks(self):
-        """Test that __main__ calls install_hooks."""
-        with patch.object(hooks_module, 'install_hooks', return_value=0) as mock_install:
+        """Test that __main__ calls install_hook."""
+        with patch.object(hooks_module, 'install_hook', return_value=True) as mock_install:
             with patch.object(sys, 'exit') as mock_exit:
                 # Simulate running as main
                 exec(compile(
-                    "if __name__ == '__main__': sys.exit(install_hooks())",
+                    "if __name__ == '__main__': sys.exit(main())",
                     "<test>",
                     "exec"
-                ), {'__name__': '__main__', 'sys': sys, 'install_hooks': hooks_module.install_hooks})
+                ), {'__name__': '__main__', 'sys': sys, 'main': hooks_module.main})

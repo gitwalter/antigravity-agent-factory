@@ -191,7 +191,7 @@ class TestMergeEngine:
         """Helper to create a test inventory."""
         return RepoInventory(
             path=tmpdir,
-            cursorrules=AntigravityruleAnalysis(exists=True, content="# Existing rules"),
+            agentrules=AntigravityruleAnalysis(exists=True, content="# Existing rules"),
             mcp=McpAnalysis(exists=True, servers=["filesystem"]),
             existing_agents=["code-reviewer"],
             existing_skills=["tdd"],
@@ -216,7 +216,7 @@ class TestMergeEngine:
             
             inventory = RepoInventory(
                 path=repo_path,
-                cursorrules=AntigravityruleAnalysis(                    exists=True,
+                agentrules=AntigravityruleAnalysis(                    exists=True,
                     content="# Existing rules"
                 ),
             )
@@ -318,7 +318,7 @@ class TestMergeEngine:
             
             inventory = RepoInventory(
                 path=repo_path,
-                cursorrules=AntigravityruleAnalysis(exists=True, content=content),            )
+                agentrules=AntigravityruleAnalysis(exists=True, content=content),            )
             
             engine = MergeEngine(inventory)
             conflicts = engine.detect_conflicts(

@@ -47,7 +47,8 @@ class TestDirectoryCreation:
         
         expected_dirs = [
             ".agent/agents",
-            ".agent/skills",            "knowledge",
+            ".agent/skills",
+            "knowledge",
             "templates",
             "workflows",
             "scripts",
@@ -248,7 +249,8 @@ class TestFileWriting:
 class TestAntigravityrulesGeneration:
     """Tests for cursorrules generation with variable substitution."""
     
-    def test_cursorrules_variable_substitution(self, sample_config, temp_output_dir):        """Test that variables are correctly substituted."""
+    def test_cursorrules_variable_substitution(self, sample_config, temp_output_dir):
+        """Test that variables are correctly substituted."""
         sample_config.project_name = "test-substitution"
         sample_config.project_description = "Test description for substitution"
         sample_config.primary_language = "typescript"
@@ -326,7 +328,8 @@ class TestFullGeneration:
         result = sample_generator.generate()
         
         assert result["success"]
-        assert (temp_output_dir / ".agentrules").exists()        assert (temp_output_dir / "README.md").exists()
+        assert (temp_output_dir / ".agentrules").exists()
+        assert (temp_output_dir / "README.md").exists()
         assert (temp_output_dir / "workflows" / "README.md").exists()
     
     def test_generate_tracks_all_files(self, sample_generator):

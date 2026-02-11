@@ -153,7 +153,7 @@ def run_quickstart(output_dir: str = None, blueprint_id: str = None) -> None:
 
 def list_blueprints() -> None:
     """List all available blueprints."""
-    blueprints_dir = get_factory_root() / 'blueprints'
+    blueprints_dir = get_factory_root() / '.agent' / 'blueprints'
     
     print("\n[*] Available Blueprints\n")
     print("-" * 60)
@@ -182,7 +182,7 @@ def list_blueprints() -> None:
 
 def list_patterns() -> None:
     """List all available patterns."""
-    patterns_dir = get_factory_root() / 'patterns'
+    patterns_dir = get_factory_root() / '.agent' / 'patterns'
     
     print("\n[*] Available Patterns\n")
     print("-" * 60)
@@ -554,7 +554,7 @@ def generate_from_blueprint(
         pm_doc_backend: Documentation backend.
         pm_methodology: PM methodology (scrum, kanban, hybrid, waterfall).
     """
-    blueprint_path = get_factory_root() / 'blueprints' / blueprint_id / 'blueprint.json'
+    blueprint_path = get_factory_root() / '.agent' / 'blueprints' / blueprint_id / 'blueprint.json'
     
     if not blueprint_path.exists():
         print(f"[ERROR] Blueprint not found: {blueprint_id}")
@@ -750,7 +750,7 @@ def onboard_repository(
         
         # Load blueprint or use defaults
         if blueprint_id:
-            blueprint_path = get_factory_root() / 'blueprints' / blueprint_id / 'blueprint.json'
+            blueprint_path = get_factory_root() / '.agent' / 'blueprints' / blueprint_id / 'blueprint.json'
             if blueprint_path.exists():
                 with open(blueprint_path, 'r', encoding='utf-8') as f:
                     blueprint = json.load(f)

@@ -122,7 +122,7 @@ class RepoInventory:
     scenario: OnboardingScenario = OnboardingScenario.FRESH
     
     # Detailed analysis
-    cursorrules: AntigravityruleAnalysis = field(default_factory=AntigravityruleAnalysis)
+    agentrules: AntigravityruleAnalysis = field(default_factory=AntigravityruleAnalysis)
     mcp: McpAnalysis = field(default_factory=McpAnalysis)
     tech_stack: TechStackDetection = field(default_factory=TechStackDetection)
     

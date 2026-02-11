@@ -35,24 +35,24 @@ SCAN_CONFIG = {
         "readme_pattern": r"\((\d+)(\+)? skills?\)"
     },
     "blueprints": {
-        "dir": "blueprints",
+        "dir": ".agent/blueprints",
         "count_method": "subdirs_with_file",
         "sentinel": "blueprint.json",
         "readme_pattern": r"\((\d+)(\+)? blueprints?\)"
     },
     "knowledge": {
-        "dir": "knowledge",
+        "dir": ".agent/knowledge",
         "pattern": "*.json",
         "readme_pattern": r"\((\d+)(\+)? (?:JSON )?files?\)"
     },
     "patterns": {
-        "dir": "patterns",
+        "dir": ".agent/patterns",
         "pattern": "*.json",
         "recursive": True,
         "readme_pattern": r"\((\d+)(\+)? patterns?\)"
     },
     "templates": {
-        "dir": "templates",
+        "dir": ".agent/templates",
         "pattern": "*.tmpl",
         "recursive": True,
         "readme_pattern": r"\((\d+)(\+)? templates?\)"

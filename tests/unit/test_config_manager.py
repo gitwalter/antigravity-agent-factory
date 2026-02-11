@@ -244,7 +244,8 @@ class TestLegacyMigration:
         ConfigManager.reset_instance()
         
         # Create legacy tools.json
-        legacy_path = temp_factory_root / ".agent" / "config" / "tools.json"        legacy_path.parent.mkdir(parents=True, exist_ok=True)
+        legacy_path = temp_factory_root / ".agent" / "config" / "tools.json"
+        legacy_path.parent.mkdir(parents=True, exist_ok=True)
         
         legacy_content = {
             "version": "1.0.0",

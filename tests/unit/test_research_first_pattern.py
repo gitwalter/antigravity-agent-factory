@@ -32,7 +32,7 @@ def project_root() -> Path:
 @pytest.fixture
 def knowledge_dir(project_root: Path) -> Path:
     """Get the knowledge directory."""
-    return project_root / "knowledge"
+    return project_root / ".agent" / "knowledge"
 
 
 @pytest.fixture
@@ -250,7 +250,7 @@ class TestIntegrationPoints:
     
     def test_knowledge_file_is_listed_in_manifest(self, project_root: Path):
         """Knowledge file should be discoverable via manifest or directory."""
-        knowledge_dir = project_root / "knowledge"
+        knowledge_dir = project_root / ".agent" / "knowledge"
         pattern_path = knowledge_dir / "research-first-development.json"
         
         # Either file exists in knowledge dir, or is listed in manifest

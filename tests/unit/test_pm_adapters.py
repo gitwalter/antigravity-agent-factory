@@ -27,7 +27,7 @@ def adapters_dir(factory_root):
     Returns:
         Path to PM adapters directory.
     """
-    return factory_root / "patterns" / "products" / "pm-system" / "adapters"
+    return factory_root / ".agent" / "patterns" / "products" / "pm-system" / "adapters"
 
 
 @pytest.fixture

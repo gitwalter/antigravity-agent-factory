@@ -356,7 +356,7 @@ class TestDependencyValidatorScanKnowledge:
     
     def test_scan_knowledge_empty_manifest(self, tmp_path):
         """Test scanning with empty manifest."""
-        manifest_path = tmp_path / "knowledge" / "manifest.json"
+        manifest_path = tmp_path / ".agent" / "knowledge" / "manifest.json"
         manifest_path.parent.mkdir(parents=True)
         manifest_path.write_text("{}")
         
@@ -367,7 +367,7 @@ class TestDependencyValidatorScanKnowledge:
     
     def test_scan_knowledge_simple_dependencies(self, tmp_path):
         """Test scanning knowledge files with simple dependencies."""
-        manifest_path = tmp_path / "knowledge" / "manifest.json"
+        manifest_path = tmp_path / ".agent" / "knowledge" / "manifest.json"
         manifest_path.parent.mkdir(parents=True)
         
         manifest = {
@@ -403,7 +403,7 @@ class TestDependencyValidatorScanKnowledge:
     
     def test_scan_knowledge_complex_dependencies(self, tmp_path):
         """Test scanning knowledge files with complex dependencies."""
-        manifest_path = tmp_path / "knowledge" / "manifest.json"
+        manifest_path = tmp_path / ".agent" / "knowledge" / "manifest.json"
         manifest_path.parent.mkdir(parents=True)
         
         manifest = {
@@ -433,7 +433,7 @@ class TestDependencyValidatorScanKnowledge:
     
     def test_scan_knowledge_dependencies_with_filename_key(self, tmp_path):
         """Test scanning knowledge files with 'filename' key in dependencies."""
-        manifest_path = tmp_path / "knowledge" / "manifest.json"
+        manifest_path = tmp_path / ".agent" / "knowledge" / "manifest.json"
         manifest_path.parent.mkdir(parents=True)
         
         manifest = {
@@ -464,7 +464,7 @@ class TestDependencyValidatorScanKnowledge:
     
     def test_scan_knowledge_invalid_json(self, tmp_path):
         """Test scanning with invalid JSON manifest."""
-        manifest_path = tmp_path / "knowledge" / "manifest.json"
+        manifest_path = tmp_path / ".agent" / "knowledge" / "manifest.json"
         manifest_path.parent.mkdir(parents=True)
         manifest_path.write_text("{ invalid json }")
         
@@ -486,7 +486,7 @@ class TestDependencyValidatorScanSkills:
     
     def test_scan_skills_without_frontmatter(self, tmp_path):
         """Test scanning skills without YAML frontmatter."""
-        skills_dir = tmp_path / ".cursor" / "skills" / "test-skill"
+        skills_dir = tmp_path / ".agent" / "skills" / "test-skill"
         skills_dir.mkdir(parents=True)
         skill_file = skills_dir / "SKILL.md"
         skill_file.write_text("# Test Skill\n\nNo frontmatter here.")
@@ -502,7 +502,7 @@ class TestDependencyValidatorScanSkills:
     
     def test_scan_skills_with_frontmatter(self, tmp_path):
         """Test scanning skills with YAML frontmatter."""
-        skills_dir = tmp_path / ".cursor" / "skills" / "test-skill"
+        skills_dir = tmp_path / ".agent" / "skills" / "test-skill"
         skills_dir.mkdir(parents=True)
         skill_file = skills_dir / "SKILL.md"
         
@@ -536,7 +536,7 @@ Content here.
     
     def test_scan_skills_knowledge_with_json_extension(self, tmp_path):
         """Test scanning skills with knowledge dependencies that already have .json extension."""
-        skills_dir = tmp_path / ".cursor" / "skills" / "test-skill"
+        skills_dir = tmp_path / ".agent" / "skills" / "test-skill"
         skills_dir.mkdir(parents=True)
         skill_file = skills_dir / "SKILL.md"
         
@@ -564,7 +564,7 @@ Content here.
     
     def test_scan_skills_nested_directory(self, tmp_path):
         """Test scanning nested skill directories (e.g., pm/)."""
-        skills_dir = tmp_path / ".cursor" / "skills" / "pm" / "test-skill"
+        skills_dir = tmp_path / ".agent" / "skills" / "pm" / "test-skill"
         skills_dir.mkdir(parents=True)
         skill_file = skills_dir / "SKILL.md"
         skill_file.write_text("# Test Skill")
@@ -577,11 +577,11 @@ Content here.
     
     def test_scan_skills_duplicate_prevention(self, tmp_path):
         """Test that duplicate skills are not registered."""
-        skills_dir1 = tmp_path / ".cursor" / "skills" / "skill-name"
+        skills_dir1 = tmp_path / ".agent" / "skills" / "skill-name"
         skills_dir1.mkdir(parents=True)
         (skills_dir1 / "SKILL.md").write_text("# Skill")
         
-        skills_dir2 = tmp_path / ".cursor" / "skills" / "another" / "skill-name"
+        skills_dir2 = tmp_path / ".agent" / "skills" / "another" / "skill-name"
         skills_dir2.mkdir(parents=True)
         (skills_dir2 / "SKILL.md").write_text("# Skill")
         
@@ -604,7 +604,7 @@ class TestDependencyValidatorScanAgents:
     
     def test_scan_agents_without_frontmatter(self, tmp_path):
         """Test scanning agents without frontmatter (should skip)."""
-        agents_dir = tmp_path / ".cursor" / "agents"
+        agents_dir = tmp_path / ".agent" / "agents"
         agents_dir.mkdir(parents=True)
         agent_file = agents_dir / "test-agent.md"
         agent_file.write_text("# Test Agent\n\nNo frontmatter.")
@@ -616,7 +616,7 @@ class TestDependencyValidatorScanAgents:
     
     def test_scan_agents_with_frontmatter(self, tmp_path):
         """Test scanning agents with frontmatter."""
-        agents_dir = tmp_path / ".cursor" / "agents"
+        agents_dir = tmp_path / ".agent" / "agents"
         agents_dir.mkdir(parents=True)
         agent_file = agents_dir / "test-agent.md"
         
@@ -648,7 +648,7 @@ Content here.
     
     def test_scan_agents_knowledge_with_json_extension(self, tmp_path):
         """Test scanning agents with knowledge dependencies that already have .json extension."""
-        agents_dir = tmp_path / ".cursor" / "agents"
+        agents_dir = tmp_path / ".agent" / "agents"
         agents_dir.mkdir(parents=True)
         agent_file = agents_dir / "test-agent.md"
         
@@ -687,7 +687,7 @@ class TestDependencyValidatorScanBlueprints:
     
     def test_scan_blueprints_valid(self, tmp_path):
         """Test scanning valid blueprints."""
-        bp_dir = tmp_path / "blueprints" / "test-blueprint"
+        bp_dir = tmp_path / ".agent" / "blueprints" / "test-blueprint"
         bp_dir.mkdir(parents=True)
         bp_file = bp_dir / "blueprint.json"
         
@@ -720,7 +720,7 @@ class TestDependencyValidatorScanBlueprints:
     
     def test_scan_blueprints_no_pattern_id(self, tmp_path):
         """Test scanning blueprints with missing patternId."""
-        bp_dir = tmp_path / "blueprints" / "test-blueprint"
+        bp_dir = tmp_path / ".agent" / "blueprints" / "test-blueprint"
         bp_dir.mkdir(parents=True)
         bp_file = bp_dir / "blueprint.json"
         
@@ -747,7 +747,7 @@ class TestDependencyValidatorScanBlueprints:
     
     def test_scan_blueprints_no_filename(self, tmp_path):
         """Test scanning blueprints with missing filename."""
-        bp_dir = tmp_path / "blueprints" / "test-blueprint"
+        bp_dir = tmp_path / ".agent" / "blueprints" / "test-blueprint"
         bp_dir.mkdir(parents=True)
         bp_file = bp_dir / "blueprint.json"
         
@@ -770,7 +770,7 @@ class TestDependencyValidatorScanBlueprints:
     
     def test_scan_blueprints_no_json_file(self, tmp_path):
         """Test scanning blueprint directory without blueprint.json."""
-        bp_dir = tmp_path / "blueprints" / "test-blueprint"
+        bp_dir = tmp_path / ".agent" / "blueprints" / "test-blueprint"
         bp_dir.mkdir(parents=True)
         # No blueprint.json file
         
@@ -781,7 +781,7 @@ class TestDependencyValidatorScanBlueprints:
     
     def test_scan_blueprints_invalid_json(self, tmp_path):
         """Test scanning with invalid JSON blueprint."""
-        bp_dir = tmp_path / "blueprints" / "test-blueprint"
+        bp_dir = tmp_path / ".agent" / "blueprints" / "test-blueprint"
         bp_dir.mkdir(parents=True)
         bp_file = bp_dir / "blueprint.json"
         bp_file.write_text("{ invalid json }")
@@ -793,7 +793,7 @@ class TestDependencyValidatorScanBlueprints:
     
     def test_scan_blueprints_uses_directory_name(self, tmp_path):
         """Test that blueprint uses directory name when blueprintId is missing."""
-        bp_dir = tmp_path / "blueprints" / "my-blueprint"
+        bp_dir = tmp_path / ".agent" / "blueprints" / "my-blueprint"
         bp_dir.mkdir(parents=True)
         bp_file = bp_dir / "blueprint.json"
         
@@ -1516,8 +1516,8 @@ class TestDependencyValidatorScanArtifacts:
     def test_scan_artifacts_full(self, tmp_path):
         """Test scanning all artifacts."""
         # Create knowledge manifest
-        knowledge_dir = tmp_path / "knowledge"
-        knowledge_dir.mkdir()
+        knowledge_dir = tmp_path / ".agent" / "knowledge"
+        knowledge_dir.mkdir(parents=True)
         manifest = {
             "files": {
                 "file1.json": {
@@ -1529,19 +1529,19 @@ class TestDependencyValidatorScanArtifacts:
         (knowledge_dir / "manifest.json").write_text(json.dumps(manifest))
         
         # Create skill
-        skills_dir = tmp_path / ".cursor" / "skills" / "test-skill"
+        skills_dir = tmp_path / ".agent" / "skills" / "test-skill"
         skills_dir.mkdir(parents=True)
         (skills_dir / "SKILL.md").write_text("# Test Skill")
         
         # Create agent
-        agents_dir = tmp_path / ".cursor" / "agents"
-        agents_dir.mkdir()
+        agents_dir = tmp_path / ".agent" / "agents"
+        agents_dir.mkdir(parents=True)
         agent_file = agents_dir / "test-agent.md"
         frontmatter = {"name": "test-agent", "description": "Test"}
         agent_file.write_text(f"---\n{yaml.dump(frontmatter)}\n---\n# Agent")
         
         # Create blueprint
-        bp_dir = tmp_path / "blueprints" / "test-blueprint"
+        bp_dir = tmp_path / ".agent" / "blueprints" / "test-blueprint"
         bp_dir.mkdir(parents=True)
         blueprint = {
             "metadata": {
@@ -1563,8 +1563,8 @@ class TestDependencyValidatorScanArtifacts:
     def test_scan_artifacts_builds_adjacency(self, tmp_path):
         """Test that scan_artifacts builds adjacency lists."""
         # Create knowledge manifest with dependencies
-        knowledge_dir = tmp_path / "knowledge"
-        knowledge_dir.mkdir()
+        knowledge_dir = tmp_path / ".agent" / "knowledge"
+        knowledge_dir.mkdir(parents=True)
         manifest = {
             "files": {
                 "file1.json": {

@@ -202,7 +202,8 @@ class TestIndexUpdates:
         # These mappings should be detected
         test_cases = [
             (".agent/agents/test-agent.md", "agents"),
-            (".agent/skills/test-skill/SKILL.md", "skills"),            ("tests/unit/test_example.py", "tests"),
+            (".agent/skills/test-skill/SKILL.md", "skills"),
+            ("tests/unit/test_example.py", "tests"),
             ("blueprints/python-fastapi/blueprint.json", "blueprints"),
             ("knowledge/new-pattern.json", "knowledge"),
         ]
@@ -282,7 +283,8 @@ class TestDirectoryTriggers:
         
         triggers = engine.get_directory_triggers()
         
-        assert ".agent/agents" in triggers or "agents" in engine.config        # Additional assertions based on sync_config.json
+        assert ".agent/agents" in triggers or "agents" in engine.config
+        # Additional assertions based on sync_config.json
     
     def test_nested_path_triggers_parent(self):
         """Nested paths should trigger parent directory's artifacts."""
@@ -292,7 +294,8 @@ class TestDirectoryTriggers:
         engine = SyncEngine(root_path)
         
         # A file in .agent/agents/ should trigger 'agents' artifact
-        artifacts = engine.get_artifacts_for_dirs([".agent/agents/new-agent.md"])        assert "agents" in artifacts
+        artifacts = engine.get_artifacts_for_dirs([".agent/agents/new-agent.md"])
+        assert "agents" in artifacts
 
 
 # =============================================================================
@@ -309,7 +312,8 @@ def detect_artifact_type(file_path: str) -> str:
     
     if path.startswith(".agent/agents/"):
         return "agents"
-    elif path.startswith(".agent/skills/"):        return "skills"
+    elif path.startswith(".agent/skills/"):
+        return "skills"
     elif path.startswith("tests/"):
         return "tests"
     elif path.startswith("blueprints/"):
@@ -338,7 +342,8 @@ class TestPrecommitIntegration:
     def test_precommit_reads_from_cache_when_fresh(self, tmp_path: Path):
         """Pre-commit should use cached values when cache is fresh."""
         # Setup fresh cache
-        cache_path = tmp_path / ".agent" / "cache" / "artifact-index.json"        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        cache_path = tmp_path / ".agent" / "cache" / "artifact-index.json"
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
         
         cache_data = {
             "schema_version": "1.0.0",
@@ -354,7 +359,8 @@ class TestPrecommitIntegration:
     
     def test_precommit_rebuilds_when_stale(self, tmp_path: Path):
         """Pre-commit should rebuild when cache is stale."""
-        cache_path = tmp_path / ".agent" / "cache" / "artifact-index.json"        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        cache_path = tmp_path / ".agent" / "cache" / "artifact-index.json"
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
         
         # Create stale cache (2 hours old)
         old_time = (datetime.utcnow() - timedelta(hours=2)).isoformat() + "Z"
