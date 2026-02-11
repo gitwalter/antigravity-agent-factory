@@ -2,7 +2,7 @@
 """
 Antigravity Agent Factory - Project Generation Engine
 
-This module generates complete Antigravity agent development systems based onrequirements configuration and blueprint templates.
+This module generates complete Antigravity agent development systems based on requirements configuration and blueprint templates.
 
 Supports two modes:
 1. Fresh generation: Create new project from scratch
@@ -19,7 +19,8 @@ Usage:
     generator = ProjectGenerator(config, target_dir, onboarding_mode=True)
     generator.generate()
 
-Author: Antigravity Agent FactoryVersion: 2.0.0
+Author: Antigravity Agent Factory
+Version: 2.0.0
 """
 
 import json
@@ -55,7 +56,8 @@ except ImportError:
 
 QUICKSTART_CONFIG = {
     "project_name": "TaskMaster Demo",
-    "project_description": "AI-powered task management API - a demo project showcasing Antigravity Agent Factory capabilities",    "domain": "web, productivity, api",
+    "project_description": "AI-powered task management API - a demo project showcasing Antigravity Agent Factory capabilities",
+    "domain": "web, productivity, api",
     "primary_language": "python",
     "frameworks": ["fastapi", "sqlalchemy", "pydantic"],
     "triggers": ["jira", "confluence", "manual"],
@@ -70,14 +72,16 @@ QUICKSTART_CONFIG = {
     ],
     "style_guide": "pep8",
     "blueprint_id": "python-fastapi",
-    "team_context": "Demo project for learning Antigravity Agent Factory"}
+    "team_context": "Demo project for learning Antigravity Agent Factory"
+}
 
 
 def create_quickstart_config() -> 'ProjectConfig':
     """Create a ProjectConfig with sensible quickstart defaults.
     
     This configuration is designed to demonstrate the full capabilities
-    of Antigravity Agent Factory with zero user input required.    
+    of Antigravity Agent Factory with zero user input required.
+
     Returns:
         ProjectConfig instance with demo project settings.
     """
@@ -308,6 +312,17 @@ class ProjectGenerator:
             # Load blueprint if specified
             blueprint = self._load_blueprint()
             
+            # DEBUG LOG
+            import os
+            debug_path = Path("D:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory/generation_debug.log")
+            with open(debug_path, "a", encoding="utf-8") as f:
+                f.write(f"\n[DEBUG] Project: {self.config.project_name}\n")
+                f.write(f"  Target: {self.target_dir}\n")
+                f.write(f"  Blueprint: {blueprint.get('metadata', {}).get('name') if blueprint else 'None'}\n")
+                f.write(f"  Agents: {self.config.agents}\n")
+                f.write(f"  Skills: {self.config.skills}\n")
+            
+            
             # Generate .agentrules
             self._generate_cursorrules(blueprint)            
             # Generate agents
@@ -402,6 +417,13 @@ class ProjectGenerator:
         """
         pattern_path = self.factory_root / 'patterns' / pattern_type / f'{pattern_id}.json'
         
+        # DEBUG LOG
+        debug_path = Path("D:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory/generation_debug.log")
+        with open(debug_path, "a", encoding="utf-8") as f:
+            f.write(f"  [LOAD] {pattern_type}/{pattern_id} from {pattern_path} exists? {pattern_path.exists()}\n")
+            if not pattern_path.exists():
+                f.write(f"    [!] Missing at: {pattern_path.resolve()}\n")
+        
         if not pattern_path.exists():
             return None
             
@@ -409,11 +431,12 @@ class ProjectGenerator:
             return json.load(f)
     
     def _generate_cursorrules(self, blueprint: Optional[Dict[str, Any]]) -> None:
-        """Generate the .agentrules file.        
+        """Generate the .agentrules file.
         Args:
             blueprint: Optional blueprint configuration.
         """
-        template = self._load_cursorrules_template()        
+        template = self._load_cursorrules_template()
+
         # Build template context
         context = self._build_template_context(blueprint)
         
@@ -637,8 +660,18 @@ Before implementation:
                 content = self._render_agent_from_pattern(pattern)
                 name = pattern.get('frontmatter', {}).get('name', agent_id)
                 output_path = agents_dir / f'{name}.md'
+                
+                # DEBUG LOG
+                debug_path = Path("D:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory/generation_debug.log")
+                with open(debug_path, "a", encoding="utf-8") as f:
+                    f.write(f"  [AGENT] Writing {name}.md to {output_path}\n")
+
                 self._write_file(output_path, content)
             else:
+                # DEBUG LOG
+                debug_path = Path("D:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory/generation_debug.log")
+                with open(debug_path, "a", encoding="utf-8") as f:
+                    f.write(f"  [AGENT] FAILED to load pattern for {agent_id}\n")
                 print(f"Warning: Agent pattern {agent_id} not found")
     
     def _render_agent_from_pattern(self, pattern: Dict[str, Any]) -> str:
@@ -731,6 +764,7 @@ Before implementation:
             'alignment-check',
             'research-first-project',
             'ci-monitor-project',
+            'receive-updates', # Enable receiving updates from Factory
         ]
         
         for skill_id in standard_skills:
@@ -746,8 +780,18 @@ Before implementation:
                 skill_dir = self.target_dir / '.agent' / 'skills' / name
                 skill_dir.mkdir(parents=True, exist_ok=True)
                 output_path = skill_dir / 'SKILL.md'
+                
+                # DEBUG LOG
+                debug_path = Path("D:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory/generation_debug.log")
+                with open(debug_path, "a", encoding="utf-8") as f:
+                    f.write(f"  [SKILL] Writing {name}/SKILL.md to {output_path}\n")
+
                 self._write_file(output_path, content)
             else:
+                # DEBUG LOG
+                debug_path = Path("D:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory/generation_debug.log")
+                with open(debug_path, "a", encoding="utf-8") as f:
+                    f.write(f"  [SKILL] FAILED to load pattern for {skill_id}\n")
                 print(f"Warning: Skill pattern {skill_id} not found")
     
     def _render_skill_from_pattern(self, pattern: Dict[str, Any]) -> str:
@@ -833,7 +877,12 @@ Before implementation:
         knowledge_dir = self.target_dir / 'knowledge'
         
         # Generate guardian-protocol.json from template
+        print(f"Generating guardian protocol in {knowledge_dir}...")
         self._generate_guardian_protocol(knowledge_dir)
+        
+        # Generate project-info.json for update system
+        print(f"Generating project info in {knowledge_dir}...")
+        self._generate_project_info(knowledge_dir, blueprint)
         
         # Copy selected knowledge files from factory (not all)
         source_knowledge = self.factory_root / 'knowledge'
@@ -925,6 +974,7 @@ Before implementation:
             content = content.replace(placeholder, value)
         
         output_path = knowledge_dir / 'project-info.json'
+        print(f"Writing project info to {output_path}...")
         self._write_file(output_path, content)
     
     def _get_factory_version(self) -> str:

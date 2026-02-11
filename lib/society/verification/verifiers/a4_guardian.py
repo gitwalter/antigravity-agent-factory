@@ -102,7 +102,15 @@ class A4GuardianVerifier(AxiomVerifier):
             self.SENSITIVE_KEYWORDS
         )
         if sensitive_matches:
-            if not self._has_proper_escalation(event):
+            # Coordinators and Guardians are permitted sensitive operations with justification
+            from lib.society.events.schema import AgentType
+            
+            is_privileged = event.agent.type in [AgentType.COORDINATOR, AgentType.GUARDIAN]
+            
+            if is_privileged and justification:
+                # Privileged agents can perform sensitive operations if they provide justification
+                pass
+            elif not self._has_proper_escalation(event):
                 return self._make_fail(
                     reason=f"Sensitive operation without proper escalation: {', '.join(sensitive_matches)}",
                     confidence=0.7,

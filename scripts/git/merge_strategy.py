@@ -11,7 +11,8 @@ Usage:
     conflicts = engine.detect_conflicts()
     engine.resolve_conflict(conflict, ConflictResolution.KEEP_EXISTING)
 
-Author: Antigravity Agent FactoryVersion: 1.0.0
+Author: Antigravity Agent Factory
+Version: 1.0.0
 """
 
 import difflib
@@ -255,7 +256,8 @@ class MergeEngine:
         
         # Check .agentrules conflict
         if new_cursorrules and self.inventory.agentrules.exists:
-            conflict = self._create_cursorrules_conflict(new_cursorrules)            if conflict:
+            conflict = self._create_cursorrules_conflict(new_cursorrules)
+            if conflict:
                 conflicts.append(conflict)
         
         # Check agent conflicts
@@ -446,7 +448,8 @@ class MergeEngine:
             options = [ConflictResolution.KEEP_EXISTING, ConflictResolution.SKIP]
             recommendation = ConflictResolution.KEEP_EXISTING
             reason = "Custom user artifact - preserving original"
-        elif conflict.artifact_type == ArtifactType.CURSORRULES:            options = [
+        elif conflict.artifact_type == ArtifactType.CURSORRULES:
+            options = [
                 ConflictResolution.KEEP_EXISTING,
                 ConflictResolution.REPLACE,
                 ConflictResolution.MERGE,

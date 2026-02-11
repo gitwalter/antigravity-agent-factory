@@ -38,10 +38,36 @@ COMMIT_TYPES = {
     "revert": "Reverts",
 }
 
+from dataclasses import dataclass, field
+
 # Pattern for conventional commits
 CONVENTIONAL_COMMIT_PATTERN = re.compile(
     r"^(?P<type>\w+)(?:\((?P<scope>[^)]+)\))?:\s*(?P<description>.+)$"
 )
+
+
+@dataclass
+class ChangelogEntry:
+    """Represents a single entry in the changelog."""
+    version: str
+    date: str
+    changes: Dict[str, List[str]]
+    sources: List[str] = field(default_factory=list)
+    breaking: bool = False
+    migration_notes: Optional[str] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert entry to dictionary."""
+        data = {
+            "version": self.version,
+            "date": self.date,
+            "changes": self.changes,
+            "sources": self.sources,
+            "breaking": self.breaking
+        }
+        if self.migration_notes:
+            data["migration"] = {"instructions": self.migration_notes}
+        return data
 
 
 class ChangelogGenerator:

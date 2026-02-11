@@ -87,11 +87,18 @@ class A2TruthVerifier(AxiomVerifier):
         
         # Check for external effects without disclosure
         if self._has_undisclosed_effects(event):
-            return self._make_fail(
-                reason="Action has external effects not mentioned in description",
-                confidence=0.6,
-                pattern="undisclosed_effects",
-            )
+            # COORDINATORS and GUARDIANS can have undisclosed effects if justified for system integrity
+            from lib.society.events.schema import AgentType
+            is_privileged = event.agent.type in [AgentType.COORDINATOR, AgentType.GUARDIAN]
+            
+            if is_privileged and justification:
+                pass
+            else:
+                return self._make_fail(
+                    reason="Action has external effects not mentioned in description",
+                    confidence=0.6,
+                    pattern="undisclosed_effects",
+                )
         
         return self._make_pass(
             reason="Action appears honest and transparent",

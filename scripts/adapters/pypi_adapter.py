@@ -18,11 +18,13 @@ Dependencies:
     - aiohttp: Async HTTP client
     - PyPI JSON API
 
-Author: Antigravity Agent FactoryVersion: 1.0.0
+Author: Antigravity Agent Factory
+Version: 1.0.0
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timezonefrom typing import Any, Dict, List, Optional
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
 try:
     import aiohttp
@@ -142,7 +144,8 @@ class PyPIAdapter(BaseAdapter):
         if self._session is None or self._session.closed:
             headers = {
                 "Accept": "application/json",
-                "User-Agent": "Antigravity-Agent-Factory/1.0",            }
+                "User-Agent": "Antigravity-Agent-Factory/1.0",
+            }
             self._session = aiohttp.ClientSession(
                 headers=headers,
                 timeout=aiohttp.ClientTimeout(total=self.config.timeout_seconds)
@@ -258,7 +261,8 @@ class PyPIAdapter(BaseAdapter):
                     if release_date.tzinfo is None:
                         release_date = release_date.replace(tzinfo=timezone.utc)
                 except ValueError:
-                    pass                break
+                    pass
+                break
         
         # Filter by date if specified
         if since and release_date and release_date < since:

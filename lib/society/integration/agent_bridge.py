@@ -170,11 +170,13 @@ class AgentSocietyBridge:
     def _parse_agent_type(self, type_str: str) -> AgentType:
         """Parse agent type string to enum."""
         type_map = {
-            "guardian": AgentType.GUARDIAN,
-            "worker": AgentType.WORKER,
             "coordinator": AgentType.COORDINATOR,
             "supervisor": AgentType.SUPERVISOR,
+            "executor": AgentType.WORKER,
+            "worker": AgentType.WORKER,
             "specialist": AgentType.SPECIALIST,
+            "analyst": AgentType.SPECIALIST,
+            "guardian": AgentType.GUARDIAN,
         }
         return type_map.get(type_str.lower(), AgentType.WORKER)
     

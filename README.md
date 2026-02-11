@@ -141,7 +141,7 @@ The Factory includes **mathematically proven guarantees** that the core architec
 
 ```bash
 cd proofs && lake build       # Verify all proofs
-scripts/generate_attestation.sh  # Create cryptographic attestation
+scripts/proofs/generate_attestation.sh  # Create cryptographic attestation
 ```
 
 See [docs/VERIFICATION.md](docs/VERIFICATION.md) for complete documentation.
@@ -239,7 +239,7 @@ For visual documentation, see the [diagrams/](diagrams/) folder:
 ```
 antigravity-agent-factory/
 ├── .agent/
-│   ├── agents/                  # Factory's own agents (0 agents)
+│   ├── agents/                  # Factory's own agents (28 agents)
 │   │   └── *.md                 # debug-conductor, git-specialist, integrity-guardian, etc.
 │   └── skills/                  # Factory's own skills (116 skills)
 │       ├── agent-generation/
@@ -248,24 +248,13 @@ antigravity-agent-factory/
 │       ├── alignment-check/
 │       ├── analyze-knowledge-gaps/
 │       ├── axiom-selection/
-│       ├── ci-monitor/
 │       └── ...                       # + more skills
-├── patterns/                    # Reusable patterns (100+ files)
-│   ├── axioms/                  # Layer 0 axiom definitions
-│   ├── principles/              # Layer 2 principle patterns
-│   ├── methodologies/           # Layer 3 methodology templates
-│   ├── enforcement/             # Enforcement patterns
-│   ├── practices/               # Practice patterns
-│   ├── agents/                  # Agent pattern definitions
-│   ├── skills/                  # Skill pattern definitions
-│   ├── games/                   # Workshop game definitions
-│   ├── workshops/               # Workshop pattern definitions
-│   ├── team-formats/            # Team size adaptations
-│   ├── stacks/                  # Stack blueprint patterns
-│   ├── templates/               # Template patterns
-│   └── workflows/               # Workflow patterns
-├── blueprints/                  # Technology stack blueprints (34 blueprints)
-│   ├── python-fastapi/
+│   ├── patterns/                    # Reusable patterns (234+ files)
+│   ├── templates/                   # Code templates (234+ files)
+│   ├── blueprints/                  # Technology stack blueprints (34 blueprints)
+│   ├── knowledge/                   # Knowledge base (234 files)
+│   └── workflows/                   # Workflow definitions
+│       ├── python-fastapi/
 │   ├── python-streamlit/
 │   ├── ai-agent-development/
 │   ├── multi-agent-systems/
@@ -279,9 +268,9 @@ antigravity-agent-factory/
 │   ├── sap-rap/
 │   ├── sap-cap/
 │   └── sap-cpi-pi/
-├── knowledge/                   # Reference data (100+ files)
+├── knowledge/                   # Reference data (234+ files)
 │   └── *.json                   # Stack, workflow, MCP, security, AI patterns
-├── templates/                   # Code and document templates (200+ files)
+├── templates/                   # Code and document templates (234+ files)
 │   ├── factory/                 # Factory templates (cursorrules, PURPOSE.md, etc.)│   ├── ai/                      # AI agent templates
 │   ├── python/                  # Python templates (FastAPI, Streamlit)
 │   ├── typescript/              # TypeScript templates (Next.js)

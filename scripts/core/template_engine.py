@@ -10,7 +10,8 @@ Usage:
     engine = TemplateEngine(template_dirs=[Path('templates')])
     content = engine.render('factory/agent.md.tmpl', {'agent_name': 'code-reviewer'})
 
-Author: Antigravity Agent FactoryVersion: 1.0.0
+Author: Antigravity Agent Factory
+Version: 1.0.0
 """
 
 import re

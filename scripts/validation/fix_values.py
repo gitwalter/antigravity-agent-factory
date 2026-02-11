@@ -200,10 +200,15 @@ class ValuesFixer:
 def main():
     parser = argparse.ArgumentParser(description='Fix value consistency issues')
     parser.add_argument('--dry-run', action='store_true', help='Preview changes without applying')
+    parser.add_argument('--check', action='store_true', help='Check mode (dry run)')
+    parser.add_argument('--update', action='store_true', help='Update mode (apply fixes)')
     args = parser.parse_args()
     
+    # Map --check to dry_run
+    dry_run = args.dry_run or args.check
+    
     factory_root = Path(__file__).parent.parent.parent
-    fixer = ValuesFixer(factory_root, dry_run=args.dry_run)
+    fixer = ValuesFixer(factory_root, dry_run=dry_run)
     fixer.fix_all()
 
 

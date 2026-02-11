@@ -11,9 +11,10 @@ enabling validation, impact analysis, and dependency ordering.
 Node Types:
 - knowledge:<filename> - Knowledge JSON files
 - skill:<name> - Skills defined in .agent/skills/
-- agent:<name> - Agents defined in .agent/agents/- blueprint:<id> - Blueprints in blueprints/
+- agent:<name> - Agents defined in .agent/agents/
+- blueprint:<id> - Blueprints in .agent/blueprints/
 - template:<path> - Templates in templates/
-- pattern:<path> - Patterns in patterns/
+- pattern:<path> - Patterns in .agent/patterns/
 
 Edge Types:
 - requires: Hard dependency (must exist)
@@ -29,7 +30,8 @@ Usage:
     python scripts/validation/dependency_validator.py --dependents skill:grounding
     python scripts/validation/dependency_validator.py --order      # Installation order
 
-Author: Antigravity Agent FactoryVersion: 1.0.0
+Author: Antigravity Agent Factory
+Version: 1.0.0
 """
 
 from __future__ import annotations
@@ -156,17 +158,20 @@ class DependencyValidator:
         Scans:
         - knowledge/manifest.json for knowledge file dependencies
         - .agent/skills/*/SKILL.md for skill dependencies
-        - .agent/agents/*.md for agent dependencies        - blueprints/*/blueprint.json for blueprint references
+        - .agent/agents/*.md for agent dependencies
+        - .agent/blueprints/*/blueprint.json for blueprint references
         """
         self._scan_knowledge_files()
         self._scan_skills()
         self._scan_agents()
         self._scan_blueprints()
+        self._scan_patterns()
+        self._scan_templates()
         self._build_adjacency()
     
     def _scan_knowledge_files(self) -> None:
         """Scan knowledge/manifest.json for knowledge file dependencies."""
-        manifest_path = self.factory_root / "knowledge" / "manifest.json"
+        manifest_path = self.factory_root / ".agent" / "knowledge" / "manifest.json"
         if not manifest_path.exists():
             return
         
@@ -183,7 +188,7 @@ class DependencyValidator:
                 id=node_id,
                 node_type=NodeType.KNOWLEDGE,
                 version=info.get("version"),
-                path=self.factory_root / "knowledge" / filename,
+                path=self.factory_root / ".agent" / "knowledge" / filename,
                 metadata={
                     "category": info.get("category"),
                     "title": info.get("title"),
@@ -213,12 +218,13 @@ class DependencyValidator:
                     ))
     
     def _scan_skills(self) -> None:
-        """Scan .agent/skills/*/SKILL.md for skill dependencies.        
+        """Scan .agent/skills/*/SKILL.md for skill dependencies.
         Note: Many skills don't have YAML frontmatter. In those cases,
         we use the directory name as the skill name and still register
         the skill as a node to enable proper dependency tracking.
         """
-        skills_dir = self.factory_root / ".agent" / "skills"        if not skills_dir.exists():
+        skills_dir = self.factory_root / ".agent" / "skills"
+        if not skills_dir.exists():
             return
         
         # Recursively find all SKILL.md files (handles nested pm/ skills)
@@ -291,7 +297,8 @@ class DependencyValidator:
     
     def _scan_agents(self) -> None:
         """Scan .agent/agents/*.md for agent dependencies."""
-        agents_dir = self.factory_root / ".agent" / "agents"        if not agents_dir.exists():
+        agents_dir = self.factory_root / ".agent" / "agents"
+        if not agents_dir.exists():
             return
         
         for agent_file in agents_dir.rglob("*.md"):
@@ -332,8 +339,8 @@ class DependencyValidator:
                 ))
     
     def _scan_blueprints(self) -> None:
-        """Scan blueprints/*/blueprint.json for blueprint references."""
-        blueprints_dir = self.factory_root / "blueprints"
+        """Scan .agent/blueprints/*/blueprint.json for blueprint references."""
+        blueprints_dir = self.factory_root / ".agent" / "blueprints"
         if not blueprints_dir.exists():
             return
         
@@ -395,6 +402,53 @@ class DependencyValidator:
                         to_node=f"knowledge:{filename}",
                         edge_type=EdgeType.REFERENCES
                     ))
+
+    def _scan_patterns(self) -> None:
+        """Scan .agent/patterns/ for pattern definitions."""
+        patterns_dir = self.factory_root / ".agent" / "patterns"
+        if not patterns_dir.exists():
+            return
+        
+        for pattern_file in patterns_dir.rglob("*.json"):
+            rel_path = pattern_file.relative_to(patterns_dir)
+            pattern_id = rel_path.with_suffix("").as_posix()
+            
+            node_id = f"pattern:{pattern_id}"
+            
+            # Extract metadata if possible
+            metadata = {}
+            try:
+                with open(pattern_file, encoding="utf-8") as f:
+                    content = json.load(f)
+                    metadata["type"] = content.get("type")
+                    metadata["description"] = content.get("description")
+            except (json.JSONDecodeError, IOError):
+                pass
+
+            self.nodes[node_id] = DependencyNode(
+                id=node_id,
+                node_type=NodeType.PATTERN,
+                path=pattern_file,
+                metadata=metadata
+            )
+
+    def _scan_templates(self) -> None:
+        """Scan .agent/templates/ for template files."""
+        templates_dir = self.factory_root / ".agent" / "templates"
+        if not templates_dir.exists():
+            return
+            
+        for template_path in templates_dir.rglob("*"):
+            if template_path.is_file():
+                rel_path = template_path.relative_to(templates_dir)
+                template_id = rel_path.as_posix()
+                
+                node_id = f"template:{template_id}"
+                self.nodes[node_id] = DependencyNode(
+                    id=node_id,
+                    node_type=NodeType.TEMPLATE,
+                    path=template_path
+                )
     
     def _parse_frontmatter(self, filepath: Path) -> Optional[dict]:
         """

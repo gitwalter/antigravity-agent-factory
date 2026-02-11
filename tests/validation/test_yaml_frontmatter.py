@@ -230,12 +230,14 @@ class TestFindMarkdownFiles:
     def test_find_markdown_files_includes_agents(self, project_root):
         """Test that agent files are included."""
         files = find_markdown_files(project_root)
-        agent_files = [f for f in files if ".agent/agents" in str(f) or ".agent\\agents" in str(f)]        assert len(agent_files) > 0, "Should find agent markdown files"
+        agent_files = [f for f in files if ".agent/agents" in str(f) or ".agent\\agents" in str(f)]
+        assert len(agent_files) > 0, "Should find agent markdown files"
     
     def test_find_markdown_files_includes_skills(self, project_root):
         """Test that skill files are included."""
         files = find_markdown_files(project_root)
-        skill_files = [f for f in files if ".agent/skills" in str(f) or ".agent\\skills" in str(f)]        assert len(skill_files) > 0, "Should find skill markdown files"
+        skill_files = [f for f in files if ".agent/skills" in str(f) or ".agent\\skills" in str(f)]
+        assert len(skill_files) > 0, "Should find skill markdown files"
 
 
 class TestAllProjectFilesValid:
@@ -243,7 +245,8 @@ class TestAllProjectFilesValid:
     
     def test_all_agent_files_have_valid_yaml(self, project_root):
         """Test that all agent files have valid YAML frontmatter."""
-        agents_dir = project_root / ".agent" / "agents"        if not agents_dir.exists():
+        agents_dir = project_root / ".agent" / "agents"
+        if not agents_dir.exists():
             pytest.skip("Agents directory not found")
         
         errors = []
@@ -260,7 +263,8 @@ class TestAllProjectFilesValid:
     
     def test_all_skill_files_have_valid_yaml(self, project_root):
         """Test that all skill files have valid YAML frontmatter."""
-        skills_dir = project_root / ".agent" / "skills"        if not skills_dir.exists():
+        skills_dir = project_root / ".agent" / "skills"
+        if not skills_dir.exists():
             pytest.skip("Skills directory not found")
         
         errors = []

@@ -514,7 +514,7 @@ class TestGeneratedProjectUpdateInfrastructure:
     
     def test_factory_updates_agent_generated(self, generated_project_path: Path):
         """Test that factory-updates agent is generated."""
-        agent_path = generated_project_path / ".cursor" / "agents" / "factory-updates.md"
+        agent_path = generated_project_path / ".agent" / "agents" / "factory-updates.md"
         
         # This test will fail until the fix is applied
         assert agent_path.exists(), \
@@ -522,7 +522,7 @@ class TestGeneratedProjectUpdateInfrastructure:
     
     def test_factory_updates_agent_content(self, generated_project_path: Path):
         """Test factory-updates agent has required content."""
-        agent_path = generated_project_path / ".cursor" / "agents" / "factory-updates.md"
+        agent_path = generated_project_path / ".agent" / "agents" / "factory-updates.md"
         
         if agent_path.exists():
             content = agent_path.read_text(encoding='utf-8')
@@ -537,7 +537,7 @@ class TestGeneratedProjectUpdateInfrastructure:
     
     def test_receive_updates_skill_generated(self, generated_project_path: Path):
         """Test that receive-updates skill is generated."""
-        skill_path = generated_project_path / ".cursor" / "skills" / "receive-updates" / "SKILL.md"
+        skill_path = generated_project_path / ".agent" / "skills" / "receive-updates" / "SKILL.md"
         
         # This test will fail until the fix is applied
         assert skill_path.exists(), \
@@ -545,7 +545,7 @@ class TestGeneratedProjectUpdateInfrastructure:
     
     def test_receive_updates_skill_content(self, generated_project_path: Path):
         """Test receive-updates skill has required content."""
-        skill_path = generated_project_path / ".cursor" / "skills" / "receive-updates" / "SKILL.md"
+        skill_path = generated_project_path / ".agent" / "skills" / "receive-updates" / "SKILL.md"
         
         if skill_path.exists():
             content = skill_path.read_text(encoding='utf-8')

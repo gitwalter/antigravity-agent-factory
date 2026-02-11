@@ -99,7 +99,8 @@ class TestSyncFileVersion:
     def test_dry_run_does_not_modify_file(self, tmp_path):
         """Should not modify file when dry_run=True."""
         test_file = tmp_path / "test.md"
-        original_content = "*Antigravity Agent Factory v1.0.0*\n"        test_file.write_text(original_content, encoding='utf-8')
+        original_content = "*Antigravity Agent Factory v1.0.0*\n"
+        test_file.write_text(original_content, encoding='utf-8')
         
         result = sync_file_version(
             test_file,

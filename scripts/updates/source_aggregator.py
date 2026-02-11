@@ -17,7 +17,8 @@ Design Patterns:
     - Strategy: Different aggregation strategies
     - Observer: Source health monitoring
 
-Author: Antigravity Agent FactoryVersion: 1.0.0
+Author: Antigravity Agent Factory
+Version: 1.0.0
 """
 
 import asyncio

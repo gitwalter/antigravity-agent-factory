@@ -147,19 +147,19 @@ class AntigravityAdapter(PlatformAdapter):
         return Path(f".agent/agents/{name}.md")
     
     def knowledge_path(self, name: str) -> Path:
-        return Path(f"knowledge/{name}.json")
+        return Path(f".agent/knowledge/{name}.json")
     
     def workflow_path(self, name: str) -> Path:
-        return Path(f"workflows/{name}.yaml")
+        return Path(f".agent/workflows/{name}.md")
     
     def template_path(self, name: str) -> Path:
-        return Path(f"templates/{name}")
+        return Path(f".agent/templates/{name}")
     
     def protocol_path(self, name: str) -> Path:
         return Path(f"docs/protocol/{name}.md")
         
     def script_path(self, name: str) -> Path:
-        return Path(f"scripts/{name}")
+        return Path(f".agent/scripts/{name}")
     
     def rules_path(self) -> Path:
         return Path(".agentrules")
@@ -298,7 +298,7 @@ class CursorAdapter(PlatformAdapter):
     
     @property
     def workflows_dir(self) -> Path:
-        return Path("patterns/workflows")
+        return Path(".agent/patterns/workflows")
     
     def skill_path(self, name: str) -> Path:
         return self.skills_dir / name / "SKILL.md"

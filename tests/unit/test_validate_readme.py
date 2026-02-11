@@ -206,7 +206,7 @@ class TestScanBlueprints:
         """Test scanning with blueprints present."""
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
-            blueprints_dir = root / "blueprints"
+            blueprints_dir = root / ".agent" / "blueprints"
             
             # Create valid blueprint
             bp = blueprints_dir / "python-fastapi"
@@ -373,14 +373,18 @@ class TestGenerateCountsSummary:
         """Test that all counts are returned."""
         with tempfile.TemporaryDirectory() as tmpdir:
             validator = StructureValidator(Path(tmpdir))
-            result = validator.generate_counts_summary()
-            
-            assert "agents" in result
-            assert "skills" in result
-            assert "blueprints" in result
-            assert "patterns" in result
-            assert "knowledge" in result
-            assert "templates" in result
+            # Use mock_counts to be machine independent
+            mock_counts = {
+                "agents": 5, "skills": 10, "blueprints": 2, 
+                "patterns": 3, "knowledge": 4, "templates": 1, "tests": 0
+            }
+            with patch.object(StructureValidator, 'scan_all', return_value=mock_counts):
+                result = validator.generate_counts_summary()
+                
+                assert result["agents"] == 5
+                assert result["skills"] == 10
+                assert "blueprints" in result
+                assert "knowledge" in result
 
 
 class TestExtractReadmeCounts:
@@ -443,6 +447,17 @@ class TestExtractReadmeCounts:
             assert result["knowledge"]["is_threshold"] is True
             assert result["patterns"]["count"] == 75
             assert result["patterns"]["is_threshold"] is True
+            
+    def test_extract_unconfigured_section(self):
+        """Test extracting section not in config."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            readme = root / "README.md"
+            readme.write_text("## Structure\n(5 unknown)", encoding="utf-8")
+            
+            validator = StructureValidator(root)
+            result = validator.extract_readme_counts()
+            assert "unknown" not in result
 
 
 class TestValidate:
@@ -470,11 +485,10 @@ class TestValidate:
 """, encoding="utf-8")
             
             validator = StructureValidator(root)
-            is_valid, discrepancies = validator.validate()
+            is_valid, messages = validator.validate()
             
-            # May have other discrepancies but agents should match
-            agent_discrepancy = [d for d in discrepancies if "agents" in d.lower() and "2" in d]
-            assert len(agent_discrepancy) == 0
+            # Agents should match correctly (actual 2 vs README 2)
+            assert any("✅ 'agents': 2 (matches README.md)" in m for m in messages)
     
     def test_validate_threshold_passing(self):
         """Test validation with threshold counts that pass."""
@@ -482,7 +496,7 @@ class TestValidate:
             root = Path(tmpdir)
             
             # Create 55 knowledge files
-            knowledge_dir = root / "knowledge"
+            knowledge_dir = root / ".agent" / "knowledge"
             knowledge_dir.mkdir()
             for i in range(55):
                 (knowledge_dir / f"file{i}.json").touch()
@@ -498,11 +512,10 @@ class TestValidate:
 """, encoding="utf-8")
             
             validator = StructureValidator(root)
-            is_valid, discrepancies = validator.validate()
+            is_valid, messages = validator.validate()
             
             # Knowledge should not be in discrepancies (55 >= 50)
-            knowledge_disc = [d for d in discrepancies if "knowledge" in d.lower() and "below minimum" in d]
-            assert len(knowledge_disc) == 0
+            assert any("✅ 'knowledge': 55 (matches README.md threshold 50+)" in m for m in messages)
 
 
 class TestUpdateReadme:
@@ -520,30 +533,16 @@ class TestUpdateReadme:
         """Test updating README with existing structure section."""
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
-            
-            # Create minimal structure for scan_patterns to work
-            patterns_dir = root / "patterns" / "agents"
-            patterns_dir.mkdir(parents=True)
-            (patterns_dir / "test.json").touch()
-            
             readme = root / "README.md"
-            readme.write_text("""# Project
-
-## Project Structure
-
-```
-old structure here
-```
-
-## Other Section
-""", encoding="utf-8")
+            readme.write_text("""## Project Structure\n\n- (5 agents)""", encoding="utf-8")
             
             validator = StructureValidator(root)
-            result = validator.update_readme()
-            
-            assert result is True
-            content = readme.read_text()
-            assert "antigravity-agent-factory/" in content    
+            with patch.object(StructureValidator, 'scan_all', return_value={"agents": 8}):
+                result = validator.update_readme()
+                
+                assert result is True
+                content = readme.read_text(encoding="utf-8")
+                assert "(8 agents)" in content
     def test_update_no_structure_section(self):
         """Test updating README without structure section."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -575,30 +574,29 @@ class TestGenerateStructureMarkdown:
         """Test that markdown is generated."""
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
-            
-            # Create minimal structure including patterns
-            agents_dir = root / ".agent" / "agents"
-            agents_dir.mkdir(parents=True)
-            (agents_dir / "test-agent.md").touch()
-            
-            patterns_dir = root / "patterns" / "agents"
-            patterns_dir.mkdir(parents=True)
-            (patterns_dir / "test.json").touch()
-            
             validator = StructureValidator(root)
-            markdown = validator.generate_structure_markdown()
-            
-            assert "antigravity-agent-factory/" in markdown
-            assert "agents/" in markdown
+            mock_counts = {"agents": 5, "skills": 10}
+            with patch.object(StructureValidator, 'scan_all', return_value=mock_counts):
+                markdown = validator.generate_structure_markdown()
+                
+                assert "# Project Structure" in markdown
+                assert "agents" in markdown.lower()
+                assert "5" in markdown
+                assert "skills" in markdown.lower()
+                assert "10" in markdown
     
     def test_includes_counts(self):
         """Test that counts are included in markdown."""
-        validator = StructureValidator()
-        markdown = validator.generate_structure_markdown()
-        
-        assert "agents" in markdown
-        assert "skills" in markdown
-        assert "blueprints" in markdown
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            validator = StructureValidator(root)
+            mock_counts = {"agents": 28, "skills": 116, "blueprints": 34}
+            with patch.object(StructureValidator, 'scan_all', return_value=mock_counts):
+                markdown = validator.generate_structure_markdown()
+                
+                assert "28" in markdown
+                assert "116" in markdown
+                assert "34" in markdown
 
 
 class TestMain:
@@ -606,30 +604,42 @@ class TestMain:
     
     def test_main_check_mode(self, capsys):
         """Test main with --check."""
-        with patch('sys.argv', ['validate_readme_structure.py', '--check']):
-            result = main()
-            
-            captured = capsys.readouterr()
-            assert "[OK]" in captured.out or "[FAIL]" in captured.out
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            readme = root / "README.md"
+            readme.write_text("# Test\n## Project Structure\n(0 agents)", encoding="utf-8")
+            with patch('sys.argv', ['validate_readme_structure.py', '--check', '--root', str(root)]):
+                result = main()
+                
+                captured = capsys.readouterr()
+                assert "[OK]" in captured.out or "[FAIL]" in captured.out
     
     def test_main_generate_mode(self, capsys):
         """Test main with --generate."""
-        with patch('sys.argv', ['validate_readme_structure.py', '--generate']):
-            result = main()
-            
-            assert result == 0
-            captured = capsys.readouterr()
-            assert "antigravity-agent-factory/" in captured.out    
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            readme = root / "README.md"
+            readme.write_text("# Test\n## Project Structure\n(0 agents)", encoding="utf-8")
+            with patch('sys.argv', ['validate_readme_structure.py', '--generate', '--root', str(root)]):
+                result = main()
+                
+                assert result == 0
+                captured = capsys.readouterr()
+                assert "agents" in captured.out    
     def test_main_json_mode(self, capsys):
         """Test main with --json."""
-        with patch('sys.argv', ['validate_readme_structure.py', '--json']):
-            result = main()
-            
-            assert result == 0
-            captured = capsys.readouterr()
-            # Should be valid JSON
-            data = json.loads(captured.out)
-            assert "agents" in data
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            readme = root / "README.md"
+            readme.write_text("# Test\n## Project Structure\n(0 agents)", encoding="utf-8")
+            with patch('sys.argv', ['validate_readme_structure.py', '--json', '--root', str(root)]):
+                result = main()
+                
+                assert result == 0
+                captured = capsys.readouterr()
+                # Should be valid JSON
+                data = json.loads(captured.out)
+                assert "agents" in data
     
     def test_main_update_mode(self, capsys):
         """Test main with --update."""
@@ -651,8 +661,12 @@ class TestMain:
     
     def test_main_default_is_check(self, capsys):
         """Test that default mode is --check."""
-        with patch('sys.argv', ['validate_readme_structure.py']):
-            result = main()
-            
-            captured = capsys.readouterr()
-            assert "[OK]" in captured.out or "[FAIL]" in captured.out
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            readme = root / "README.md"
+            readme.write_text("# Test\n## Project Structure\n(0 agents)", encoding="utf-8")
+            with patch('sys.argv', ['validate_readme_structure.py', '--root', str(root)]):
+                result = main()
+                
+                captured = capsys.readouterr()
+                assert "[OK]" in captured.out or "[FAIL]" in captured.out

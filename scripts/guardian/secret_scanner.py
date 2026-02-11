@@ -16,10 +16,88 @@ import argparse
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple, NamedTuple, Union
 
 
-# Secret patterns to detect
+class SecretMatch(NamedTuple):
+    """Represents a detected secret."""
+    pattern_name: str
+    matched_text: str
+    line_number: int
+    severity: str
+    masked_text: str
+
+
+def is_false_positive(text: str) -> bool:
+    """Check if text is a known false positive."""
+    path_str = text.lower()
+    for pattern in DEFAULT_EXCLUDE_PATTERNS:
+        if re.search(pattern, path_str):
+            return True
+    
+    # Common placeholders
+    placeholders = ["placeholder", "your-api-key", "example-token", "xxxxxxxxxx", "${", "<your-"]
+    return any(p in path_str for p in placeholders)
+
+
+def redact_secret(text: str) -> str:
+    """Redact sensitive parts of a secret."""
+    if len(text) <= 8:
+        return "*" * len(text)
+    return text[:4] + "*" * (len(text) - 8) + text[-4:]
+
+
+def get_severity_level(matches: List[SecretMatch]) -> int:
+    """Map secret matches to Guardian severity level (0-4)."""
+    if not matches:
+        return 0
+    
+    severity_map = {"high": 4, "medium": 3, "low": 2, "info": 1}
+    max_level = 0
+    for match in matches:
+        level = severity_map.get(match.severity, 1)
+        if level > max_level:
+            max_level = level
+    return max_level
+
+
+def scan_content(content: str) -> List[SecretMatch]:
+    """Top-level scan_content for convenience."""
+    scanner = SecretScanner(Path("."))
+    findings = scanner.scan_content(content)
+    # Convert Tuple to SecretMatch
+    results = []
+    for name, matched, line in findings:
+        severity = "medium"
+        masked = redact_secret(matched)
+        # Determine severity based on pattern name
+        if any(kw in name for kw in ["key", "token", "uri", "secret", "private", "api"]):
+            severity = "high"
+        results.append(SecretMatch(name, matched, line, severity, masked))
+    return results
+
+
+def scan_file(file_path: Union[str, Path]) -> List[SecretMatch]:
+    """Top-level scan_file for convenience."""
+    path = Path(file_path)
+    if not path.exists():
+        return []
+    try:
+        content = path.read_text(encoding="utf-8", errors="ignore")
+        return scan_content(content)
+    except Exception:
+        return []
+
+
+def scan_diff(diff_content: str) -> List[SecretMatch]:
+    """Scan only added lines in a git diff."""
+    added_lines = []
+    for line in diff_content.splitlines():
+        if line.startswith("+") and not line.startswith("+++"):
+            added_lines.append(line[1:])
+    return scan_content("\n".join(added_lines))
+
+
 SECRET_PATTERNS = {
     "aws_access_key": {
         "pattern": r"AKIA[0-9A-Z]{16}",
@@ -30,7 +108,7 @@ SECRET_PATTERNS = {
         "description": "AWS Secret Access Key"
     },
     "openai_key": {
-        "pattern": r"sk-[A-Za-z0-9]{32,}",
+        "pattern": r"sk-(?:proj-)?[A-Za-z0-9-]{20,}",
         "description": "OpenAI API Key"
     },
     "github_token": {
@@ -46,7 +124,7 @@ SECRET_PATTERNS = {
         "description": "Private Key"
     },
     "mongodb_uri": {
-        "pattern": r"mongodb\+srv://[^\s]+",
+        "pattern": r"mongodb(?:\+srv)?://[^\s]+",
         "description": "MongoDB Connection String"
     },
     "postgres_uri": {
@@ -72,6 +150,30 @@ SECRET_PATTERNS = {
     "jwt_secret": {
         "pattern": r"(?i)(jwt[_-]?secret|jwt[_-]?key)\s*[=:]\s*['\"]?([A-Za-z0-9+/=]{32,})['\"]?",
         "description": "JWT Secret"
+    },
+    "google_api": {
+        "pattern": r"AIza[0-9A-Za-z-_]{35}",
+        "description": "Google API Key"
+    },
+    "sendgrid_api": {
+        "pattern": r"SG\.[0-9A-Za-z-_]{22}\.[0-9A-Za-z-_]{43}",
+        "description": "SendGrid API Key"
+    },
+    "gitlab_token": {
+        "pattern": r"glpat-[0-9A-Za-z-]{20}",
+        "description": "GitLab Personal Access Token"
+    },
+    "pgp_private_key": {
+        "pattern": r"-----BEGIN PGP PRIVATE KEY BLOCK-----",
+        "description": "PGP Private Key"
+    },
+    "google_api": {
+        "pattern": r"AIza[0-9A-Za-z-_]{20,}",
+        "description": "Google API Key"
+    },
+    "generic_secret": {
+        "pattern": r"(?i)(?:api_key|secret|password|token|auth_token|access_token)\s*[=:]\s*['\"]([^'\"$\s]{10,})['\"]",
+        "description": "Generic Secret"
     },
 }
 
@@ -133,24 +235,16 @@ class SecretScanner:
                 return True
         return False
     
-    def scan_file(self, file_path: Path) -> List[Tuple[str, str, int]]:
+    def scan_content(self, content: str) -> List[Tuple[str, str, int]]:
         """
-        Scan a single file for secrets.
+        Scan string content for secrets.
         
         Args:
-            file_path: Path to file
+            content: String to scan
             
         Returns:
             List of tuples: (pattern_name, matched_text, line_number)
         """
-        if self.should_exclude(file_path):
-            return []
-        
-        try:
-            content = file_path.read_text(encoding="utf-8", errors="ignore")
-        except Exception:
-            return []
-        
         findings = []
         lines = content.splitlines()
         
@@ -160,14 +254,30 @@ class SecretScanner:
                 matches = re.finditer(pattern, line, re.IGNORECASE)
                 for match in matches:
                     matched_text = match.group(0)
-                    # Mask sensitive parts
-                    if len(matched_text) > 20:
-                        masked = matched_text[:8] + "..." + matched_text[-4:]
-                    else:
-                        masked = matched_text[:4] + "..."
-                    findings.append((pattern_name, masked, line_num))
+                    # Use redact_secret for masking
+                    masked = redact_secret(matched_text)
+                    findings.append((pattern_name, matched_text, line_num))
         
         return findings
+
+    def scan_file(self, file_path: Path) -> List[Tuple[str, str, int]]:
+        """
+        Scan a single file for secrets.
+        
+        Args:
+            file_path: Path to file
+            
+        Returns:
+            List of tuples: (pattern_name, masked_text, line_number)
+        """
+        if self.should_exclude(file_path):
+            return []
+        
+        try:
+            content = file_path.read_text(encoding="utf-8", errors="ignore")
+            return self.scan_content(content)
+        except Exception:
+            return []
     
     def scan_directory(self) -> Dict[Path, List[Tuple[str, str, int]]]:
         """

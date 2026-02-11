@@ -1,0 +1,191 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://cursor-agent-factory.dev/pabp/v1/workflow.schema.json",
+    "title": "PABP Workflow Description",
+    "description": "Structured description of a workflow for cross-system transfer",
+    "type": "object",
+    "required": [
+        "$pabp",
+        "$type",
+        "name",
+        "description"
+    ],
+    "properties": {
+        "$pabp": {
+            "type": "string",
+            "const": "1.0.0"
+        },
+        "$type": {
+            "type": "string",
+            "const": "workflow"
+        },
+        "name": {
+            "type": "string",
+            "description": "Unique workflow identifier"
+        },
+        "description": {
+            "type": "string",
+            "description": "Brief description of the workflow"
+        },
+        "trigger": {
+            "type": "string",
+            "description": "Event or condition that triggers this workflow"
+        },
+        "steps": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "action"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Unique step identifier"
+                    },
+                    "action": {
+                        "type": "string",
+                        "description": "Action to perform in this step"
+                    },
+                    "inputs": {
+                        "type": "object",
+                        "description": "Input parameters for this step"
+                    },
+                    "outputs": {
+                        "type": "object",
+                        "description": "Output values from this step"
+                    }
+                }
+            },
+            "description": "Array of workflow steps"
+        },
+        "connections": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "from": {
+                        "type": "string"
+                    },
+                    "to": {
+                        "type": "string"
+                    },
+                    "condition": {
+                        "type": "string"
+                    }
+                }
+            },
+            "description": "Connections between workflow steps"
+        },
+        "variables": {
+            "type": "object",
+            "description": "Workflow variables and their definitions"
+        },
+        "tooling": {
+            "type": "object",
+            "description": "External dependencies this component requires to function",
+            "properties": {
+                "mcp_servers": {
+                    "type": "array",
+                    "description": "MCP servers this component depends on",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "name"
+                        ],
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "required": {
+                                "type": "boolean",
+                                "default": true
+                            },
+                            "purpose": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "scripts": {
+                    "type": "array",
+                    "description": "Factory scripts this component depends on",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "ref"
+                        ],
+                        "properties": {
+                            "ref": {
+                                "type": "string",
+                                "description": "Registry key from component_registry.json scripts section"
+                            },
+                            "required": {
+                                "type": "boolean",
+                                "default": true
+                            },
+                            "purpose": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "cli_tools": {
+                    "type": "array",
+                    "description": "CLI tools required",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "name"
+                        ],
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Key from tools.json"
+                            },
+                            "min_version": {
+                                "type": "string"
+                            },
+                            "required": {
+                                "type": "boolean",
+                                "default": true
+                            }
+                        }
+                    }
+                },
+                "apis": {
+                    "type": "array",
+                    "description": "External APIs this component calls",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "name"
+                        ],
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "rest",
+                                    "graphql",
+                                    "grpc",
+                                    "mcp"
+                                ]
+                            },
+                            "url_pattern": {
+                                "type": "string"
+                            },
+                            "required": {
+                                "type": "boolean",
+                                "default": false
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

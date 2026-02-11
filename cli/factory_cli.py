@@ -37,7 +37,8 @@ def display_welcome() -> None:
     """Display warm welcome message."""
     print()
     print("=" * 60)
-    print("  Welcome to Antigravity Agent Factory!")    print("=" * 60)
+    print("  Welcome to Antigravity Agent Factory!")
+    print("=" * 60)
     print()
     print("We're excited to show you what's possible.")
     print("Let's create something amazing together...")
@@ -62,11 +63,13 @@ def display_tour(output_dir: str, files_created: int) -> None:
     print("  .agentrules    Your AI guidance system (the brain)")
     print("  PURPOSE.md      Your project's mission (the heart)")
     print("  .agent/agents/ Specialized AI assistants (your team)")
-    print("  .agent/skills/ Reusable capabilities")    print("  workflows/      Development methodology")
+    print("  .agent/skills/ Reusable capabilities")
+    print("  workflows/      Development methodology")
     print("  knowledge/      Domain knowledge files")
     print()
     print("Ready to try it out?")
-    print(f"  1. Open {output_dir} in Antigravity IDE")    print('  2. Ask: "Help me understand this project"')
+    print(f"  1. Open {output_dir} in Antigravity IDE")
+    print('  2. Ask: "Help me understand this project"')
     print('  3. Ask: "Create a new task endpoint"')
     print()
     print("When you're ready to build your own:")
@@ -204,7 +207,8 @@ def interactive_mode(output_dir: str) -> None:
     Args:
         output_dir: Target output directory.
     """
-    print("\n=== Antigravity Agent Factory - Interactive Mode ===\n")    print("=" * 60)
+    print("\n=== Antigravity Agent Factory - Interactive Mode ===\n")
+    print("=" * 60)
     print("Let's gather requirements for your new agent system.\n")
     
     # Phase 1: Project Context
@@ -522,7 +526,8 @@ def interactive_mode(output_dir: str) -> None:
         print(f"   Files created: {len(result['files_created'])}")
         print("\n   Next steps:")
         print("   1. Open the project in Antigravity IDE")
-        print("   2. The .agentrules will configure agent behavior")        print("   3. Start developing with AI assistance!")
+        print("   2. The .agentrules will configure agent behavior")
+        print("   3. Start developing with AI assistance!")
     else:
         print("\n[ERROR] Generation failed:")
         for error in result['errors']:
@@ -716,7 +721,7 @@ def onboard_repository(
     pm_doc_backend: str = None,
     pm_methodology: str = None
 ) -> None:
-    """Onboard an existing repository with Antigravity Agent Factory.    
+    """Onboard an existing repository with Antigravity Agent Factory.
     Args:
         repo_path: Path to repository to onboard.
         blueprint_id: Optional blueprint to use.
@@ -1294,7 +1299,8 @@ def extend_knowledge_topic(
         print("  2. PATTERN: patterns/knowledge/knowledge-schema.json")
         print("     Read this for validation rules (min 3 patterns, etc.)")
         print()
-        print("  3. SKILL: .agent/skills/extend-knowledge/SKILL.md")        print("     Follow this step-by-step process")
+        print("  3. SKILL: .agent/skills/extend-knowledge/SKILL.md")
+        print("     Follow this step-by-step process")
         print()
         
         # Show instructions

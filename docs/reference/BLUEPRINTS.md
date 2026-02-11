@@ -42,40 +42,40 @@ The factory analyzes requirements and matches them to the most appropriate bluep
 
 | Blueprint ID | Primary Language | Key Frameworks | Category | Complexity Level |
 | --- | --- | --- | --- | --- |
-| [ai-agent-development](file:///blueprints/ai-agent-development/blueprint.json) |  |  |  |  |
-| [ai-observability-platform](file:///blueprints/ai-observability-platform/blueprint.json) |  |  |  |  |
-| [csharp-dotnet](file:///blueprints/csharp-dotnet/blueprint.json) |  |  |  |  |
-| [defi-protocols](file:///blueprints/defi-protocols/blueprint.json) |  |  |  |  |
-| [financial-ai-agents](file:///blueprints/financial-ai-agents/blueprint.json) |  |  |  |  |
-| [google-agent-system](file:///blueprints/google-agent-system/blueprint.json) |  |  |  |  |
-| [java-spring](file:///blueprints/java-spring/blueprint.json) |  |  |  |  |
-| [kotlin-spring](file:///blueprints/kotlin-spring/blueprint.json) |  |  |  |  |
-| [langchain-agent-platform](file:///blueprints/langchain-agent-platform/blueprint.json) |  |  |  |  |
-| [llm-inference-optimization](file:///blueprints/llm-inference-optimization/blueprint.json) |  |  |  |  |
-| [multi-agent-systems](file:///blueprints/multi-agent-systems/blueprint.json) |  |  |  |  |
-| [multimodal-ai](file:///blueprints/multimodal-ai/blueprint.json) |  |  |  |  |
-| [n8n-automation](file:///blueprints/n8n-automation/blueprint.json) |  |  |  |  |
-| [nextjs-fullstack](file:///blueprints/nextjs-fullstack/blueprint.json) |  |  |  |  |
-| [python-deep-learning](file:///blueprints/python-deep-learning/blueprint.json) |  |  |  |  |
-| [python-fastapi](file:///blueprints/python-fastapi/blueprint.json) |  |  |  |  |
-| [python-fine-tuning](file:///blueprints/python-fine-tuning/blueprint.json) |  |  |  |  |
-| [python-ml-experimentation](file:///blueprints/python-ml-experimentation/blueprint.json) |  |  |  |  |
-| [python-multi-agent](file:///blueprints/python-multi-agent/blueprint.json) |  |  |  |  |
-| [python-rag-system](file:///blueprints/python-rag-system/blueprint.json) |  |  |  |  |
-| [python-streamlit](file:///blueprints/python-streamlit/blueprint.json) |  |  |  |  |
-| [quantitative-trading](file:///blueprints/quantitative-trading/blueprint.json) |  |  |  |  |
-| [sap-abap](file:///blueprints/sap-abap/blueprint.json) |  |  |  |  |
-| [sap-cap](file:///blueprints/sap-cap/blueprint.json) |  |  |  |  |
-| [sap-cpi-pi](file:///blueprints/sap-cpi-pi/blueprint.json) |  |  |  |  |
-| [sap-rap](file:///blueprints/sap-rap/blueprint.json) |  |  |  |  |
-| [solana-rust](file:///blueprints/solana-rust/blueprint.json) |  |  |  |  |
-| [solidity-ethereum](file:///blueprints/solidity-ethereum/blueprint.json) |  |  |  |  |
-| [starter-chatbot](file:///blueprints/starter-chatbot/blueprint.json) |  |  |  |  |
-| [starter-ml-classification](file:///blueprints/starter-ml-classification/blueprint.json) |  |  |  |  |
-| [starter-rag](file:///blueprints/starter-rag/blueprint.json) |  |  |  |  |
-| [synthetic-data-generation](file:///blueprints/synthetic-data-generation/blueprint.json) |  |  |  |  |
-| [typescript-react](file:///blueprints/typescript-react/blueprint.json) |  |  |  |  |
-| [voice-ai-agents](file:///blueprints/voice-ai-agents/blueprint.json) |  |  |  |  |
+| [ai-agent-development](file:///.agent/blueprints/ai-agent-development/blueprint.json) |  |  |  |  |
+| [ai-observability-platform](file:///.agent/blueprints/ai-observability-platform/blueprint.json) |  |  |  |  |
+| [csharp-dotnet](file:///.agent/blueprints/csharp-dotnet/blueprint.json) |  |  |  |  |
+| [defi-protocols](file:///.agent/blueprints/defi-protocols/blueprint.json) |  |  |  |  |
+| [financial-ai-agents](file:///.agent/blueprints/financial-ai-agents/blueprint.json) |  |  |  |  |
+| [google-agent-system](file:///.agent/blueprints/google-agent-system/blueprint.json) |  |  |  |  |
+| [java-spring](file:///.agent/blueprints/java-spring/blueprint.json) |  |  |  |  |
+| [kotlin-spring](file:///.agent/blueprints/kotlin-spring/blueprint.json) |  |  |  |  |
+| [langchain-agent-platform](file:///.agent/blueprints/langchain-agent-platform/blueprint.json) |  |  |  |  |
+| [llm-inference-optimization](file:///.agent/blueprints/llm-inference-optimization/blueprint.json) |  |  |  |  |
+| [multi-agent-systems](file:///.agent/blueprints/multi-agent-systems/blueprint.json) |  |  |  |  |
+| [multimodal-ai](file:///.agent/blueprints/multimodal-ai/blueprint.json) |  |  |  |  |
+| [n8n-automation](file:///.agent/blueprints/n8n-automation/blueprint.json) |  |  |  |  |
+| [nextjs-fullstack](file:///.agent/blueprints/nextjs-fullstack/blueprint.json) |  |  |  |  |
+| [python-deep-learning](file:///.agent/blueprints/python-deep-learning/blueprint.json) |  |  |  |  |
+| [python-fastapi](file:///.agent/blueprints/python-fastapi/blueprint.json) |  |  |  |  |
+| [python-fine-tuning](file:///.agent/blueprints/python-fine-tuning/blueprint.json) |  |  |  |  |
+| [python-ml-experimentation](file:///.agent/blueprints/python-ml-experimentation/blueprint.json) |  |  |  |  |
+| [python-multi-agent](file:///.agent/blueprints/python-multi-agent/blueprint.json) |  |  |  |  |
+| [python-rag-system](file:///.agent/blueprints/python-rag-system/blueprint.json) |  |  |  |  |
+| [python-streamlit](file:///.agent/blueprints/python-streamlit/blueprint.json) |  |  |  |  |
+| [quantitative-trading](file:///.agent/blueprints/quantitative-trading/blueprint.json) |  |  |  |  |
+| [sap-abap](file:///.agent/blueprints/sap-abap/blueprint.json) |  |  |  |  |
+| [sap-cap](file:///.agent/blueprints/sap-cap/blueprint.json) |  |  |  |  |
+| [sap-cpi-pi](file:///.agent/blueprints/sap-cpi-pi/blueprint.json) |  |  |  |  |
+| [sap-rap](file:///.agent/blueprints/sap-rap/blueprint.json) |  |  |  |  |
+| [solana-rust](file:///.agent/blueprints/solana-rust/blueprint.json) |  |  |  |  |
+| [solidity-ethereum](file:///.agent/blueprints/solidity-ethereum/blueprint.json) |  |  |  |  |
+| [starter-chatbot](file:///.agent/blueprints/starter-chatbot/blueprint.json) |  |  |  |  |
+| [starter-ml-classification](file:///.agent/blueprints/starter-ml-classification/blueprint.json) |  |  |  |  |
+| [starter-rag](file:///.agent/blueprints/starter-rag/blueprint.json) |  |  |  |  |
+| [synthetic-data-generation](file:///.agent/blueprints/synthetic-data-generation/blueprint.json) |  |  |  |  |
+| [typescript-react](file:///.agent/blueprints/typescript-react/blueprint.json) |  |  |  |  |
+| [voice-ai-agents](file:///.agent/blueprints/voice-ai-agents/blueprint.json) |  |  |  |  |
 
 ---
 

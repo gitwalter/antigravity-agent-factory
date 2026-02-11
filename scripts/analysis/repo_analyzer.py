@@ -2,7 +2,7 @@
 """
 Antigravity Agent Factory - Repository Analyzer
 
-Analyzes existing repositories to detect Antigravity artifacts, tech stack,and determine the appropriate onboarding scenario.
+Analyzes existing repositories to detect Antigravity artifacts, tech stack, and determine the appropriate onboarding scenario.
 
 Usage:
     from scripts.analysis.repo_analyzer import RepoAnalyzer
@@ -11,7 +11,8 @@ Usage:
     inventory = analyzer.analyze()
     print(inventory.scenario)
 
-Author: Antigravity Agent FactoryVersion: 1.0.0
+Author: Antigravity Agent Factory
+Version: 1.0.0
 """
 
 import json
@@ -28,7 +29,8 @@ class OnboardingScenario(Enum):
     
     Attributes:
         FRESH: No Antigravity artifacts exist - full generation needed.
-        MINIMAL: Only .agentrules exists - augment with agents, skills, etc.        PARTIAL: Some artifacts exist but others are missing.
+        MINIMAL: Only .agentrules exists - augment with agents, skills, etc.
+        PARTIAL: Some artifacts exist but others are missing.
         UPGRADE: Old factory version detected - offer upgrade.
         COMPLETE: Fully configured repository - report status only.
     """
@@ -106,7 +108,8 @@ class RepoInventory:
         existing_agents: Agent names from .agent/agents/.
         existing_skills: Skill names from .agent/skills/.
         existing_commands: Command names from .agent/commands/.
-        existing_rules: Rule file names from .agent/rules/.        existing_knowledge: Knowledge file names from knowledge/.
+        existing_rules: Rule file names from .agent/rules/.
+        existing_knowledge: Knowledge file names from knowledge/.
         existing_templates: Template file names from templates/.
         existing_workflows: Workflow file names from workflows/.
         has_purpose_md: Whether PURPOSE.md exists.
@@ -123,7 +126,8 @@ class RepoInventory:
     mcp: McpAnalysis = field(default_factory=McpAnalysis)
     tech_stack: TechStackDetection = field(default_factory=TechStackDetection)
     
-    # .agent/ folder contents    existing_agents: List[str] = field(default_factory=list)
+    # .agent/ folder contents
+    existing_agents: List[str] = field(default_factory=list)
     existing_skills: List[str] = field(default_factory=list)
     existing_commands: List[str] = field(default_factory=list)
     existing_rules: List[str] = field(default_factory=list)
@@ -317,7 +321,8 @@ class RepoAnalyzer:
         analysis = AntigravityruleAnalysis()
         cursorrules_path = self.repo_path / ".agentrules"
         
-        if not cursorrules_path.exists():            return analysis
+        if not cursorrules_path.exists():
+            return analysis
         
         analysis.exists = True
         

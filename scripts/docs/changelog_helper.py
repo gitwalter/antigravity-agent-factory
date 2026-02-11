@@ -36,7 +36,7 @@ class ChangelogHelper:
     
     # File patterns that indicate significant changes
     SIGNIFICANT_PATTERNS = {
-        "blueprints/": ("Added", "New blueprint"),
+        ".agent/blueprints/": ("Added", "New blueprint"),
         "knowledge/*.json": ("Added", "New knowledge file"),
         "templates/": ("Added", "New template"),
         ".cursor/agents/": ("Added", "New agent"),
@@ -94,7 +94,7 @@ class ChangelogHelper:
         categories = defaultdict(list)
         
         for file in files:
-            if file.startswith("blueprints/"):
+            if file.startswith(".agent/blueprints/"):
                 categories["blueprints"].append(file)
             elif file.startswith("knowledge/") and file.endswith(".json"):
                 categories["knowledge"].append(file)

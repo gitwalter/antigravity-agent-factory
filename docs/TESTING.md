@@ -11,15 +11,15 @@ The test suite is powered by **pytest** and maintains a high degree of coverage 
 
 ### Vital Statistics
 
-The test suite consists of **0 tests** organized into five specialized categories:
+The test suite consists of **1626 tests** organized into five specialized categories:
 
 | Category | Count | Purpose |
 |----------|-------|---------|
-| | | | Unit Tests | ~0 | | | | Atomic validation of individual functions and classes. |
-| | | | Integration Tests | ~0 | | | | Verification of component interactions and CLI flows. |
-| | | | Validation Tests | ~0 | | | | Ensuring all JSON/Markdown patterns adhere to schemas. |
-| | | | Guardian Tests | ~0 | | | | Testing the active protection and safety engine (A1-A5). |
-| | | | Memory Tests | ~0 | | | | Validating the semantic and episodic memory induction system. |
+| | | | | | | Unit Tests | ~842 | | | | | | | Atomic validation of individual functions and classes. |
+| | | | | | Integration Tests | ~147 | | | | | | Verification of component interactions and CLI flows. |
+| | | | | | Validation Tests | ~182 | | | | | | Ensuring all JSON/Markdown patterns adhere to schemas. |
+| | | | | Guardian Tests | ~9 | | | | | Testing the active protection and safety engine (A1-A5). |
+| | | | | Memory Tests | ~45 | | | | | Validating the semantic and episodic memory induction system. |
 
 ## Test Levels & Rationale
 

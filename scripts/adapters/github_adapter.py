@@ -18,13 +18,15 @@ Dependencies:
     - aiohttp: Async HTTP client
     - GitHub API v4 (GraphQL) for efficient queries
 
-Author: Antigravity Agent FactoryVersion: 1.0.0
+Author: Antigravity Agent Factory
+Version: 1.0.0
 """
 
 import asyncio
 import re
 from dataclasses import dataclass
-from datetime import datetime, timezonefrom typing import Any, Dict, List, Optional
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
 
 try:
@@ -243,7 +245,8 @@ class GitHubAdapter(BaseAdapter):
             # Ensure rate_limit_reset is timezone-aware
             if self._rate_limit_reset.tzinfo is None:
                 self._rate_limit_reset = self._rate_limit_reset.replace(tzinfo=timezone.utc)
-            wait_time = (self._rate_limit_reset - now).total_seconds()            if wait_time > 0:
+            wait_time = (self._rate_limit_reset - now).total_seconds()
+            if wait_time > 0:
                 await asyncio.sleep(min(wait_time, 60))  # Max 60s wait
         
         session = await self._get_session()

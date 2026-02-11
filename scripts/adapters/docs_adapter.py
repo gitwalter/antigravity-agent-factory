@@ -14,7 +14,8 @@ Features:
 Note: This is a foundational implementation. Full documentation parsing
 would require framework-specific handling or use of documentation APIs.
 
-Author: Antigravity Agent FactoryVersion: 1.0.0
+Author: Antigravity Agent Factory
+Version: 1.0.0
 """
 
 from dataclasses import dataclass

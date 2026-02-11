@@ -13,7 +13,8 @@ Features:
 Note: This is a foundational implementation. Production use would require
 additional parsing for specific community sources.
 
-Author: Antigravity Agent FactoryVersion: 1.0.0
+Author: Antigravity Agent Factory
+Version: 1.0.0
 """
 
 from dataclasses import dataclass

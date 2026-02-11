@@ -82,11 +82,18 @@ class A0SDGVerifier(AxiomVerifier):
         # Check payload for resource-intensive operations
         payload = event.action.payload
         if self._is_resource_intensive(payload):
-            return self._make_fail(
-                reason="Action appears resource-intensive without justification",
-                confidence=0.5,
-                pattern="resource_intensive",
-            )
+            # COORDINATORS and GUARDIANS can run intensive tasks with justification
+            from lib.society.events.schema import AgentType
+            is_privileged = event.agent.type in [AgentType.COORDINATOR, AgentType.GUARDIAN]
+            
+            if is_privileged and event.axiom_context.justification:
+                pass
+            else:
+                return self._make_fail(
+                    reason="Action appears resource-intensive without justification",
+                    confidence=0.5,
+                    pattern="resource_intensive",
+                )
         
         return self._make_pass(
             reason="Action appears sustainable",

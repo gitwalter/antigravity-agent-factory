@@ -127,7 +127,7 @@ When you generate a project using the Factory, it includes:
 
 1. **Inherited Proofs**: Core axiom, Guardian, Memory, and Layer proofs
 2. **Project Templates**: Customizable proof templates in `proofs/Project/`
-3. **Verification Script**: `scripts/verify_proofs.sh`
+3. **Verification Script**: `scripts/proofs/verify_proofs.sh`
 
 ### Extending Proofs
 

@@ -247,8 +247,9 @@ def generate_markdown(workshop: dict[str, Any]) -> str:
     # Footer
     lines.append("---")
     lines.append("")
-    lines.append("*Part of the Antigravity Agent Factory Learning Workshop Ecosystem*")    lines.append("")
-    lines.append(f"**Workshop Definition:** `patterns/workshops/{workshop.get('workshopId', 'unknown')}.json`")
+    lines.append("*Part of the Antigravity Agent Factory Learning Workshop Ecosystem*")
+    lines.append("")
+    lines.append(f"**Workshop Definition:** `.agent/patterns/workshops/{workshop.get('workshopId', 'unknown')}.json`")
     
     return '\n'.join(lines)
 
@@ -261,7 +262,8 @@ def generate_index(workshops: list[dict[str, Any]]) -> str:
     lines.append("")
     lines.append("> **Philosophy:** Learning is a journey of transformation. Through structured exploration and hands-on practice, developers grow in skill and wisdom.")
     lines.append("")
-    lines.append(f"This folder contains readable documentation for all **{len(workshops)} learning workshops** in the Antigravity Agent Factory.")    lines.append("")
+    lines.append(f"This folder contains readable documentation for all **{len(workshops)} learning workshops** in the Antigravity Agent Factory.")
+    lines.append("")
     
     # Group by category
     categories = {}
@@ -327,7 +329,13 @@ def generate_index(workshops: list[dict[str, Any]]) -> str:
 
 def main():
     """Main entry point."""
-    workshops_dir = Path('patterns/workshops')
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate workshop documentation")
+    parser.add_argument("--check", action="store_true", help="Check mode")
+    parser.add_argument("--update", action="store_true", help="Update mode")
+    args = parser.parse_args()
+    
+    workshops_dir = Path('.agent/patterns/workshops')
     output_dir = Path('docs/workshops')
     output_dir.mkdir(parents=True, exist_ok=True)
     
@@ -347,18 +355,25 @@ def main():
         
         # Write output
         output_file = output_dir / f"{workshop.get('workshopId', json_file.stem)}.md"
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(markdown)
-        print(f"  -> Created {output_file.name}")
+        
+        if not args.check:
+            with open(output_file, 'w', encoding='utf-8') as f:
+                f.write(markdown)
+            print(f"  -> Created {output_file.name}")
+        else:
+            print(f"  -> Checked {output_file.name}")
     
     # Generate index
     print("\nGenerating index...")
     index_md = generate_index(workshops)
-    with open(output_dir / 'README.md', 'w', encoding='utf-8') as f:
-        f.write(index_md)
-    print(f"  -> Created README.md")
+    if not args.check:
+        with open(output_dir / 'README.md', 'w', encoding='utf-8') as f:
+            f.write(index_md)
+        print(f"  -> Created README.md")
+    else:
+        print(f"  -> Checked README.md")
     
-    print(f"\nDone! Generated {len(workshops)} workshop documents + index in {output_dir}/")
+    print(f"\nDone! Processed {len(workshops)} workshop documents + index in {output_dir}/")
 
 
 if __name__ == '__main__':

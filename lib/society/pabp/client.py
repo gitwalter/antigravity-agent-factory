@@ -24,6 +24,11 @@ from lib.society.pabp.adapters import (
     get_adapter
 )
 from lib.society.pabp.bundle import AgentBundle, BundleComponent, ComponentType
+from lib.society.pabp.renderers import (
+    render_agent_markdown,
+    render_skill_markdown,
+    render_workflow_markdown,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -305,165 +310,41 @@ class PABPClient:
         return safe_name
 
     def _convert_pabp_component(self, data: Dict[str, Any], comp_type: str) -> Optional[str]:
-        """Convert PABP JSON structure to target file format (Markdown/JSON/YAML)."""
+        """Convert PABP JSON structure to target file format (Markdown/JSON/YAML).
+
+        Delegates skill, agent, and workflow rendering to the shared
+        ``lib.society.pabp.renderers`` module which produces
+        Antigravity-native Markdown.
+        """
         if comp_type == "skill":
-            return self._convert_skill(data)
+            return render_skill_markdown(data)
         elif comp_type == "agent":
-            return self._convert_agent(data)
+            return render_agent_markdown(data)
         elif comp_type == "knowledge":
             return json.dumps(data.get("content", {}), indent=2)
         elif comp_type == "workflow":
-            return json.dumps(data, indent=2)
+            return render_workflow_markdown(data)
         elif comp_type == "mcp_config":
-             # Handled separately to extract multiple files, but if singular return main file content
-             # Actually, creating a directory for MCP is better. Return None here and handle in main loop?
-             # Let's modify main loop to handle directory output or just return a descriptive README
-             return self._convert_mcp_config(data)
+            return self._convert_mcp_config(data)
         elif comp_type == "script":
-            # Scripts content is usually raw code
             return data.get("content", "")
         return None
         
     def _convert_skill(self, data: Dict[str, Any]) -> str:
-        """Convert Skill JSON to Antigravity Markdown with Frontmatter."""
-        lines = []
-        
-        # Frontmatter
-        lines.append("---")
-        lines.append(f"description: {data.get('description', data['name'])}")
-        lines.append("---")
-        lines.append("")
-        
-        # Title
-        lines.append(f"# {data.get('title', data['name'].replace('-', ' ').title())}")
-        lines.append("")
-        
-        if data.get("description"):
-            lines.append(data["description"])
-            lines.append("")
-        
-        # Core Capabilities / Sections mapping
-        # PABP sections are generic. Map common titles if possible.
-        
-        for section in data.get("sections", []):
-            title = section['title']
-            content = section['content']
-            
-            # Map specific PABP section titles to Antigravity Ontology if needed
-            # For now, trust the PABP structure but ensure headers are ##
-            lines.append(f"## {title}")
-            lines.append(content)
-            lines.append("")
-            
-            for block in section.get("code_blocks", []):
-                lines.append(f"```{block.get('language', '')}")
-                lines.append(block['code'])
-                lines.append("```")
-                if block.get("description"):
-                    lines.append(f"*{block['description']}*")
-                lines.append("")
-                
-        # Prerequisites
-        if data.get("prerequisites"):
-            lines.append("## Prerequisites") # Or stick to blockquote style if preferred foundation
-            lines.append("> [!IMPORTANT]")
-            lines.append("> Requirements:")
-            prereqs = data["prerequisites"]
-            if isinstance(prereqs, dict):
-                if prereqs.get("packages"):
-                    lines.append(f"> - Packages: {', '.join(prereqs['packages'])}")
-                if prereqs.get("knowledge"):
-                    lines.append(f"> - Knowledge: {', '.join(prereqs['knowledge'])}")
-            lines.append("")
-            
-        return "\n".join(lines)
+        """Convert Skill JSON to Antigravity Markdown with Frontmatter.
+
+        Delegates to ``renderers.render_skill_markdown`` for proper
+        deduplication and format compliance.
+        """
+        return render_skill_markdown(data)
         
     def _convert_agent(self, data: Dict[str, Any]) -> str:
-        """Convert Agent JSON to Markdown."""
-        lines = []
-        lines.append(f"# {data['name']}")
-        lines.append("")
-        lines.append(data.get("description", ""))
-        lines.append("")
-        
-        lines.append(f"- **Role**: {data.get('role', 'Agent')}")
-        lines.append(f"- **Model**: {data.get('model', 'default')}")
-        lines.append("")
-        
-        if data.get("purpose"):
-            lines.append("## Purpose")
-            lines.append(data["purpose"])
-            lines.append("")
+        """Convert Agent JSON to Antigravity Markdown.
 
-        if data.get("philosophy"):
-            lines.append("## Philosophy")
-            lines.append(data["philosophy"])
-            lines.append("")
-
-        if data.get("activation"):
-            lines.append("## Activation")
-            activation = data["activation"]
-            if activation.get("triggers"):
-                lines.append("**Triggers:**")
-                for trigger in activation["triggers"]:
-                    lines.append(f"- {trigger}")
-                lines.append("")
-            if activation.get("contexts"):
-                lines.append("**Contexts:**")
-                for context in activation["contexts"]:
-                    lines.append(f"- {context}")
-                lines.append("")
-
-        if data.get("workflow"):
-            workflow = data["workflow"]
-            if workflow.get("steps"):
-                lines.append("## Workflow")
-                for step in workflow["steps"]:
-                     action = step.get("action", f"Step {step.get('id', '')}")
-                     desc = step.get("description", "").strip()
-                     lines.append(f"### {action}")
-                     if desc:
-                         lines.append(desc)
-                     lines.append("")
-
-        if data.get("constraints"):
-            lines.append("## Constraints")
-            for constraint in data["constraints"]:
-                lines.append(f"- {constraint}")
-            lines.append("")
-
-        if data.get("skills"):
-            lines.append("## Skills")
-            for skill in data["skills"]:
-                lines.append(f"- [[{skill}]]")
-            lines.append("")
-
-        if data.get("knowledge"):
-            lines.append("## Knowledge")
-            # Always inject Factory Automation knowledge
-            lines.append("- [Factory Automation](docs/automation/FACTORY_AUTOMATION.md)")
-            for k in data["knowledge"]:
-                # Knowledge items in PABP are often filenames like 'debug-patterns.json'
-                # We can link to them.
-                lines.append(f"- [{k}](knowledge/{k})")
-            lines.append("")
-            
-        if data.get("tooling"):
-            lines.append("## Tooling")
-            tooling = data["tooling"]
-            if tooling.get("mcp_servers"):
-                lines.append("**MCP Servers:**")
-                for mcp in tooling["mcp_servers"]:
-                    req = "Required" if mcp.get("required") else "Optional"
-                    lines.append(f"- **{mcp['name']}** ({req})")
-            lines.append("")
-            
-        if data.get("system_instructions"):
-            lines.append("## System Instructions")
-            lines.append(data["system_instructions"])
-            lines.append("")
-            
-        return "\n".join(lines)
+        Delegates to ``renderers.render_agent_markdown`` for proper
+        wiki-link skills, relative knowledge paths, and section ordering.
+        """
+        return render_agent_markdown(data)
 
     def _convert_mcp_config(self, data: Dict[str, Any]) -> str:
         """

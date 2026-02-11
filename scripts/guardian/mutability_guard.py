@@ -5,8 +5,9 @@ Extends the Guardian module to enforce protection of Layers 0-2 (Axioms, Purpose
 Principles) from modification by the inductive memory system.
 
 Protection Levels:
-    - L0 (Axioms): .agentrules Layer 0, patterns/axioms/ - IMMUTABLE    - L1 (Purpose): PURPOSE.md, patterns/purpose/ - IMMUTABLE  
-    - L2 (Principles): patterns/principles/, patterns/enforcement/ - IMMUTABLE
+    - L0 (Axioms): .agentrules Layer 0, .agent/patterns/axioms/ - IMMUTABLE
+    - L1 (Purpose): PURPOSE.md, .agent/patterns/purpose/ - IMMUTABLE  
+    - L2 (Principles): .agent/patterns/principles/, .agent/patterns/enforcement/ - IMMUTABLE
     - L3-L4 (Methodology, Technical): Mutable by induction system
 
 Usage:
@@ -62,7 +63,7 @@ PROTECTED_LAYERS: Dict[str, Dict[str, Any]] = {
         "name": "Axioms & Guardian",
         "description": "Core axioms (A1-A5) and Guardian protocol - the foundation",
         "paths": [
-            ".agentrules",  # Contains Layer 0 section            "patterns/axioms/",
+            ".agentrules",  # Contains Layer 0 section            ".agent/patterns/axioms/",
         ],
         "content_patterns": [
             r"# LAYER 0: INTEGRITY GUARDIAN",
@@ -78,7 +79,7 @@ PROTECTED_LAYERS: Dict[str, Dict[str, Any]] = {
         "description": "Mission, stakeholders, success criteria",
         "paths": [
             "PURPOSE.md",
-            "patterns/purpose/",
+            ".agent/patterns/purpose/",
         ],
         "content_patterns": [
             r"## Mission",
@@ -93,8 +94,8 @@ PROTECTED_LAYERS: Dict[str, Dict[str, Any]] = {
         "name": "Principles",
         "description": "Ethical boundaries, quality standards, failure handling",
         "paths": [
-            "patterns/principles/",
-            "patterns/enforcement/",
+            ".agent/patterns/principles/",
+            ".agent/patterns/enforcement/",
         ],
         "content_patterns": [
             r"ethical.?boundaries",
@@ -109,18 +110,18 @@ PROTECTED_LAYERS: Dict[str, Dict[str, Any]] = {
 # Paths that are explicitly mutable (for quick lookup)
 MUTABLE_PATHS: List[str] = [
     "knowledge/",
-    "blueprints/",
-    "patterns/stacks/",
+    ".agent/blueprints/",
+    ".agent/patterns/stacks/",
     "templates/",
     "data/",
 ]
 
 # Files that are never modifiable regardless of path
 NEVER_MODIFY: List[str] = [
-    ".agentrules",    "patterns/axioms/core-axioms.json",
-    "patterns/axioms/axiom-zero.json",
-    "patterns/principles/ethical-boundaries.json",
-    "patterns/enforcement/integrity-enforcement.json",
+    ".agentrules",    ".agent/patterns/axioms/core-axioms.json",
+    ".agent/patterns/axioms/axiom-zero.json",
+    ".agent/patterns/principles/ethical-boundaries.json",
+    ".agent/patterns/enforcement/integrity-enforcement.json",
 ]
 
 
@@ -137,7 +138,7 @@ class MutabilityGuard:
         
     Example:
         >>> guard = MutabilityGuard()
-        >>> result = guard.can_modify("patterns/axioms/core-axioms.json")
+        >>> result = guard.can_modify(".agent/patterns/axioms/core-axioms.json")
         >>> print(result.allowed)  # False
         >>> print(result.reason)   # "Layer 0 (Axioms) is immutable"
     """

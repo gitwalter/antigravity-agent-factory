@@ -18,31 +18,49 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 
 # Customize SCAN_CONFIG for your project layout
 SCAN_CONFIG = {
     "agents": {
-        "dir": ".cursor/agents",
+        "dir": ".agent/agents",
         "pattern": "*.md",
-        "readme_pattern": r"\((\d+) agents?\)"
+        "readme_pattern": r"\((\d+)(\+)? agents?\)"
     },
     "skills": {
-        "dir": ".cursor/skills",
+        "dir": ".agent/skills",
         "count_method": "subdirs_with_file",
         "sentinel": "SKILL.md",
-        "readme_pattern": r"\((\d+) skills?\)"
+        "readme_pattern": r"\((\d+)(\+)? skills?\)"
+    },
+    "blueprints": {
+        "dir": "blueprints",
+        "count_method": "subdirs_with_file",
+        "sentinel": "blueprint.json",
+        "readme_pattern": r"\((\d+)(\+)? blueprints?\)"
     },
     "knowledge": {
         "dir": "knowledge",
         "pattern": "*.json",
-        "readme_pattern": r"\((\d+) (?:JSON )?files?\)"
+        "readme_pattern": r"\((\d+)(\+)? (?:JSON )?files?\)"
+    },
+    "patterns": {
+        "dir": "patterns",
+        "pattern": "*.json",
+        "recursive": True,
+        "readme_pattern": r"\((\d+)(\+)? patterns?\)"
+    },
+    "templates": {
+        "dir": "templates",
+        "pattern": "*.tmpl",
+        "recursive": True,
+        "readme_pattern": r"\((\d+)(\+)? templates?\)"
     },
     "tests": {
         "dir": "tests",
         "pattern": "test_*.py",
-        "readme_pattern": r"\((\d+) tests?\)",
+        "readme_pattern": r"\((\d+)(\+)? tests?\)",
         "recursive": True
     },
 }
@@ -56,7 +74,7 @@ class StructureValidator:
     found in README.md.
     """
     
-    def __init__(self, root_dir: Path, readme_path: Path, scan_config: Dict):
+    def __init__(self, root_dir: Path, readme_path: Optional[Path] = None, scan_config: Optional[Dict] = None):
         """
         Initialize validator.
         
@@ -66,8 +84,8 @@ class StructureValidator:
             scan_config: Configuration dict for scanning sections
         """
         self.root_dir = root_dir.resolve()
-        self.readme_path = readme_path.resolve()
-        self.scan_config = scan_config
+        self.readme_path = (readme_path or (root_dir / "README.md")).resolve()
+        self.scan_config = scan_config or SCAN_CONFIG
         
     def scan_section(self, section_name: str, config: Dict) -> int:
         """
@@ -111,19 +129,46 @@ class StructureValidator:
         Scan all configured sections.
         
         Returns:
-            Dict mapping section names to counts
+            Dict mapping section names to actual counts
         """
         results = {}
         for section_name, config in self.scan_config.items():
             results[section_name] = self.scan_section(section_name, config)
         return results
-    
-    def extract_readme_counts(self) -> Dict[str, Optional[int]]:
+        
+    def generate_counts_summary(self) -> Dict[str, int]:
+        """
+        Generate a summary of all counts.
+        
+        Returns:
+            Dict mapping section names to actual counts
+        """
+        return self.scan_all()
+
+    def _round_to_threshold(self, count: int) -> int:
+        """
+        Round count down to nearest threshold (5, 10, 25, 50, 100, etc.).
+        
+        Args:
+            count: Number to round
+            
+        Returns:
+            Rounded number
+        """
+        if count < 5: return count
+        if count < 10: return 5
+        if count < 25: return 10
+        if count < 50: return 25
+        if count < 100: return 50
+        if count < 500: return 100 * (count // 100)
+        return 500 * (count // 500)
+
+    def extract_readme_counts(self) -> Dict[str, Dict[str, Any]]:
         """
         Extract expected counts from README.md using configured patterns.
         
         Returns:
-            Dict mapping section names to expected counts (None if not found)
+            Dict mapping section names to results info (count and is_threshold)
         """
         if not self.readme_path.exists():
             return {}
@@ -134,14 +179,18 @@ class StructureValidator:
         for section_name, config in self.scan_config.items():
             pattern = config.get("readme_pattern")
             if not pattern:
-                results[section_name] = None
+                results[section_name] = {"count": 0, "is_threshold": False, "found": False}
                 continue
                 
             match = re.search(pattern, content, re.IGNORECASE)
             if match:
-                results[section_name] = int(match.group(1))
+                results[section_name] = {
+                    "count": int(match.group(1)),
+                    "is_threshold": match.group(2) == "+",
+                    "found": True
+                }
             else:
-                results[section_name] = None
+                results[section_name] = {"count": 0, "is_threshold": False, "found": False}
                 
         return results
     
@@ -152,29 +201,35 @@ class StructureValidator:
         Returns:
             Tuple of (is_valid, list_of_messages)
         """
-        actual_counts = self.scan_all()
-        expected_counts = self.extract_readme_counts()
-        
-        messages = []
         is_valid = True
+        messages = []
         
-        for section_name in self.scan_config.keys():
-            actual = actual_counts.get(section_name, 0)
-            expected = expected_counts.get(section_name)
+        actual_counts = self.scan_all()
+        expected_info = self.extract_readme_counts()
+        
+        for section, info in expected_info.items():
+            actual = actual_counts.get(section, 0)
             
-            if expected is None:
-                messages.append(
-                    f"⚠️  {section_name}: Found {actual}, but no pattern match in README.md"
-                )
-            elif actual != expected:
-                is_valid = False
-                messages.append(
-                    f"❌ {section_name}: Expected {expected}, found {actual}"
-                )
+            if not info["found"]:
+                messages.append(f"⚠️  Section '{section}' count not found in README.md")
+                # Don't fail the build for a missing section count in README, just warning
+                continue
+            
+            expected = info["count"]
+            is_threshold = info["is_threshold"]
+                
+            if is_threshold:
+                if actual < expected:
+                    messages.append(f"❌ '{section}' counts below minimum threshold: actual {actual} < expected {expected}+")
+                    is_valid = False
+                else:
+                    messages.append(f"✅ '{section}': {actual} (matches README.md threshold {expected}+)")
             else:
-                messages.append(
-                    f"✅ {section_name}: {actual} (matches README.md)"
-                )
+                if actual != expected:
+                    messages.append(f"❌ '{section}' counts mismatch: actual {actual} vs README {expected}")
+                    is_valid = False
+                else:
+                    messages.append(f"✅ '{section}': {actual} (matches README.md)")
                 
         return is_valid, messages
     
@@ -213,7 +268,7 @@ class StructureValidator:
             return True
         return False
     
-    def generate_markdown(self) -> str:
+    def generate_structure_markdown(self) -> str:
         """
         Generate markdown documentation of current structure.
         
@@ -275,7 +330,7 @@ def main():
     validator = StructureValidator(root_dir, readme_path, SCAN_CONFIG)
     
     if args.generate:
-        print(validator.generate_markdown())
+        print(validator.generate_structure_markdown())
         return 0
         
     if args.update:

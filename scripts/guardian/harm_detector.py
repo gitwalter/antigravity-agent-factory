@@ -56,7 +56,8 @@ HARMFUL_CONTENT_PATTERNS = [
 
 # File patterns that should trigger extra caution
 CAUTION_FILE_PATTERNS = [
-    (r'\.agentrules$', "Modifying agent behavior rules"),    (r'\.env', "Environment/secrets file"),
+    (r'\.agentrules$', "Modifying agent behavior rules"),
+    (r'\.env', "Environment/secrets file"),
     (r'package\.json$', "Package dependencies"),
     (r'requirements\.txt$', "Python dependencies"),
     (r'Gemfile$', "Ruby dependencies"),
@@ -296,7 +297,8 @@ if __name__ == "__main__":
     
     # Test file with secrets
     print("\n2. Testing content with secrets:")
-    test_content = 'api_key = "sk-1234567890abcdefghijklmnopqrstuv"'    report = analyze_content(test_content)
+    test_content = 'api_key = "sk-1234567890abcdefghijklmnopqrstuv"'
+    report = analyze_content(test_content)
     print(f"   {report}")
     for d in report.details:
         print(f"     - {d}")

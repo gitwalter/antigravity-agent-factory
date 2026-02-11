@@ -8,7 +8,8 @@ Execution time: <10ms for typical operations.
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional, Dict, Anyfrom pathlib import Path
+from typing import List, Optional, Dict, Any
+from pathlib import Path
 
 
 class AxiomViolation(Enum):
