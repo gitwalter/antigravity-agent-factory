@@ -22,7 +22,7 @@ class TestWorkflowStructure:
     def workflows_dir(self):
         """Get the workflows directory."""
         project_root = Path(__file__).parent.parent.parent
-        return project_root / "workflows"
+        return project_root / ".agent" / "patterns" / "workflows"
     
     @pytest.fixture
     def all_workflow_files(self, workflows_dir):
@@ -48,10 +48,22 @@ class TestWorkflowStructure:
         errors = []
         
         for workflow_file in all_workflow_files:
+            # Skip placeholders
+            if workflow_file.name == "base-workflow.md" or workflow_file.name.startswith("workflow-"):
+                continue
+
             content = workflow_file.read_text(encoding='utf-8')
             
+            # Remove frontmatter if present
+            cleaned_content = content.strip()
+            if cleaned_content.startswith("---"):
+                parts = cleaned_content.split("---", 2)
+                if len(parts) >= 3:
+                    cleaned_content = parts[2].lstrip()
+
             # Check for H1 title
-            if not content.startswith("# "):                errors.append(f"{workflow_file.name}: Missing H1 title")
+            if not cleaned_content.startswith("# "):
+                errors.append(f"{workflow_file.name}: Missing H1 title")
         
         if errors:
             pytest.fail("\n".join(errors))
@@ -147,7 +159,7 @@ class TestWorkflowCategories:
     def workflows_dir(self):
         """Get the workflows directory."""
         project_root = Path(__file__).parent.parent.parent
-        return project_root / "workflows"
+        return project_root / ".agent" / "patterns" / "workflows"
     
     def test_universal_workflows_exist(self, workflows_dir):
         """Test that universal workflows exist."""
@@ -205,7 +217,7 @@ class TestWorkflowContent:
     def workflows_dir(self):
         """Get the workflows directory."""
         project_root = Path(__file__).parent.parent.parent
-        return project_root / "workflows"
+        return project_root / ".agent" / "patterns" / "workflows"
     
     @pytest.fixture
     def all_workflow_files(self, workflows_dir):
@@ -288,7 +300,7 @@ class TestWorkflowIntegration:
         """Test that workflow-patterns.json exists and is valid JSON."""
         import json
         
-        patterns_file = project_root / "knowledge" / "workflow-patterns.json"
+        patterns_file = project_root / ".agent" / "knowledge" / "workflow-patterns.json"
         assert patterns_file.exists(), "workflow-patterns.json should exist"
         
         # Should be valid JSON
@@ -301,7 +313,7 @@ class TestWorkflowIntegration:
         """Test that workflow patterns reference existing workflows."""
         import json
         
-        patterns_file = project_root / "knowledge" / "workflow-patterns.json"
+        patterns_file = project_root / ".agent" / "knowledge" / "workflow-patterns.json"
         content = patterns_file.read_text(encoding='utf-8')
         data = json.loads(content)
         

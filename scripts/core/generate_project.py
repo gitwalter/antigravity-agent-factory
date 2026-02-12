@@ -650,6 +650,8 @@ Before implementation:
         
         # Add standard patterns that should be included in all projects
         standard_agents = [
+            'knowledge-extender',
+            'knowledge-evolution',
             'debug-conductor-project',
             'factory-updates',  # Enable receiving updates from Factory
         ]
@@ -778,6 +780,7 @@ Before implementation:
             'alignment-check',
             'research-first-project',
             'ci-monitor-project',
+            'pipeline-error-fix-project',
             'receive-updates', # Enable receiving updates from Factory
         ]
         
