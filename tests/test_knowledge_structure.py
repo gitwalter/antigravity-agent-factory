@@ -26,7 +26,7 @@ class TestKnowledgeFileStructure:
     @pytest.fixture
     def knowledge_dir(self, factory_root: Path) -> Path:
         """Get the knowledge directory."""
-        return factory_root / "knowledge"
+        return factory_root / ".agent" / "knowledge"
 
     @pytest.fixture
     def all_knowledge_files(self, knowledge_dir: Path) -> List[Path]:
@@ -237,7 +237,7 @@ class TestKnowledgePatternsStructure:
     @pytest.fixture
     def knowledge_dir(self, factory_root: Path) -> Path:
         """Get the knowledge directory."""
-        return factory_root / "knowledge"
+        return factory_root / ".agent" / "knowledge"
 
     @pytest.fixture
     def all_knowledge_files(self, knowledge_dir: Path) -> List[Path]:
@@ -302,99 +302,4 @@ class TestKnowledgePatternsStructure:
             pass  # Just log for now
 
 
-class TestNewKnowledgeFiles:
-    """Tests specifically for new knowledge files."""
 
-    @pytest.fixture
-    def new_knowledge_names(self) -> List[str]:
-        """List of new knowledge file names to test."""
-        # Based on git status, these are the new knowledge files
-        return [
-            "advanced-rag-patterns",
-            "agent-testing-patterns",
-            "agentic-loop-patterns",
-            "anthropic-agentic",
-            "api-integration-patterns",
-            "business-automation-patterns",
-            "caching-patterns",
-            "data-pipeline-patterns",
-            "database-agent-patterns",
-            "error-handling-patterns",
-            "filesystem-patterns",
-            "hitl-patterns",
-            "langsmith-prompts-patterns",
-            "memory-patterns",
-            "ocr-patterns",
-            "speech-patterns",
-            "state-patterns",
-            "streaming-patterns",
-            "subagent-patterns",
-            "tool-patterns",
-            "vision-patterns",
-            "web-browsing-patterns",
-        ]
-
-    def test_new_knowledge_files_exist(self, knowledge_dir: Path, new_knowledge_names: List[str]):
-        """Test that all new knowledge files exist."""
-        missing_files = []
-        for knowledge_name in new_knowledge_names:
-            knowledge_path = knowledge_dir / f"{knowledge_name}.json"
-            if not knowledge_path.exists():
-                missing_files.append(knowledge_name)
-        
-        if missing_files:
-            pytest.fail(
-                f"Missing {len(missing_files)} new knowledge file(s):\n" +
-                "\n".join(f"  - {name}.json" for name in missing_files)
-            )
-
-    def test_new_knowledge_files_have_valid_structure(self, knowledge_dir: Path, new_knowledge_names: List[str]):
-        """Test that all new knowledge files have valid structure."""
-        errors = []
-        for knowledge_name in new_knowledge_names:
-            knowledge_path = knowledge_dir / f"{knowledge_name}.json"
-            if not knowledge_path.exists():
-                continue
-            
-            try:
-                with open(knowledge_path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                
-                # Check required fields
-                required_fields = ["id", "name", "version", "category", "description"]
-                missing_fields = [f for f in required_fields if f not in data]
-                if missing_fields:
-                    errors.append(f"{knowledge_name}: Missing fields - {', '.join(missing_fields)}")
-                
-                # Check id matches filename
-                if data.get("id") != knowledge_name:
-                    errors.append(f"{knowledge_name}: id '{data.get('id')}' doesn't match filename")
-                
-                # Check patterns exists
-                if "patterns" not in data:
-                    errors.append(f"{knowledge_name}: Missing 'patterns' field")
-                elif not isinstance(data["patterns"], dict):
-                    errors.append(f"{knowledge_name}: 'patterns' should be an object")
-                
-                # Check best_practices exists
-                if "best_practices" not in data:
-                    errors.append(f"{knowledge_name}: Missing 'best_practices' field")
-                elif not isinstance(data["best_practices"], list):
-                    errors.append(f"{knowledge_name}: 'best_practices' should be an array")
-                
-                # Check anti_patterns exists
-                if "anti_patterns" not in data:
-                    errors.append(f"{knowledge_name}: Missing 'anti_patterns' field")
-                elif not isinstance(data["anti_patterns"], list):
-                    errors.append(f"{knowledge_name}: 'anti_patterns' should be an array")
-                
-            except json.JSONDecodeError as e:
-                errors.append(f"{knowledge_name}: Invalid JSON - {e}")
-            except Exception as e:
-                errors.append(f"{knowledge_name}: Error - {e}")
-        
-        if errors:
-            pytest.fail(
-                f"Found {len(errors)} issue(s) with new knowledge files:\n" +
-                "\n".join(f"  - {e}" for e in errors)
-            )

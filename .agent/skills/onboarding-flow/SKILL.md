@@ -1,5 +1,7 @@
 ---
 description: Onboard existing repositories into the Cursor Agent Factory ecosystem
+name: onboarding-flow
+type: skill
 ---
 
 # Onboarding Flow

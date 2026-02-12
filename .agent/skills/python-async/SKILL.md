@@ -1,5 +1,9 @@
 ---
-description: asyncio patterns for web apps, async context managers, Concurrent task execution (gather, TaskGroup), Async generators, Background task scheduling (APScheduler, Celery), Connection pool management
+description: asyncio patterns for web apps, async context managers, Concurrent task
+  execution (gather, TaskGroup), Async generators, Background task scheduling (APScheduler,
+  Celery), Connection pool management
+name: python-async
+type: skill
 ---
 
 # Python Async

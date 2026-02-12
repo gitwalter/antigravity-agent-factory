@@ -1,5 +1,7 @@
 ---
 description: Convert team workshop outputs to project management artifacts
+name: workshop-to-pm
+type: skill
 ---
 
 # Workshop To Pm

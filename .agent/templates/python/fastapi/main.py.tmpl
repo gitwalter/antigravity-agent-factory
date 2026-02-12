@@ -1,27 +1,30 @@
 """
-FastAPI Application Entry Point
-
-Purpose: Initialize and configure FastAPI application
-Author: {{AUTHOR}}
-Created: {{DATE}}
-
-Axiom Alignment:
-- A1 (Verifiability): Application configuration is explicit and documented
-- A3 (Transparency): Clear startup and shutdown logging
-- A4 (Non-Harm): Proper error handling and graceful shutdown
+{{ module_docstring(
+    title='FastAPI Application Entry Point',
+    description='Purpose: Initialize and configure FastAPI application\n' +
+                'Axiom Alignment:\n' +
+                '- A1 (Verifiability): Application configuration is explicit and documented\n' +
+                '- A3 (Transparency): Clear startup and shutdown logging\n' +
+                '- A4 (Non-Harm): Proper error handling and graceful shutdown',
+    version='1.0.0',
+    author='{{AUTHOR}}'
+) }}
 """
 
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import JSONResponse
-import logging
-import uvicorn
+{% from '_macros/python.tmpl' import import_block, function_def, async_function_def, decorator, module_docstring %}
 
-from .config.settings import settings
-from .middleware.error_handler import global_exception_handler, {{ERROR_HANDLER_CLASS_NAME}}
-from .domain.router import router as {{MODULE_NAME}}_router
+{{ import_block([
+    {'from': 'contextlib', 'names': ['asynccontextmanager']},
+    {'from': 'fastapi', 'names': ['FastAPI', 'Request']},
+    {'from': 'fastapi.middleware.cors', 'names': ['CORSMiddleware']},
+    {'from': 'fastapi.middleware.trustedhost', 'names': ['TrustedHostMiddleware']},
+    {'from': 'fastapi.responses', 'names': ['JSONResponse']},
+    {'name': 'logging'},
+    {'name': 'uvicorn'},
+    {'from': '.config.settings', 'names': ['settings']},
+    {'from': '.middleware.error_handler', 'names': ['global_exception_handler', '{{ERROR_HANDLER_CLASS_NAME}}']},
+    {'from': '.domain.router', 'names': ['router'], 'alias': '{{MODULE_NAME}}_router'}
+]) }}
 
 # Configure logging
 logging.basicConfig(
@@ -31,19 +34,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    Application lifespan context manager.
-    
-    Handles startup and shutdown logic for the FastAPI application.
-    
-    Args:
-        app: FastAPI application instance
-        
-    Yields:
-        None
-    """
+{{ decorator('asynccontextmanager') }}
+{{ async_function_def(
+    name='lifespan',
+    description='Application lifespan context manager.\n\nHandles startup and shutdown logic for the FastAPI application.',
+    params=[{'name': 'app', 'type': 'FastAPI'}],
+    returns='None'
+) }}
     # Startup
     logger.info(f"Starting {settings.app_name} v{settings.app_version}")
     logger.info(f"Environment: {settings.environment}")
@@ -64,13 +61,11 @@ async def lifespan(app: FastAPI):
     # await close_redis()
 
 
-def create_app() -> FastAPI:
-    """
-    Create and configure FastAPI application.
-    
-    Returns:
-        Configured FastAPI application instance
-    """
+{{ function_def(
+    name='create_app',
+    description='Create and configure FastAPI application.',
+    returns='FastAPI'
+) }}
     app = FastAPI(
         title=settings.api_title,
         version=settings.api_version,
@@ -109,13 +104,12 @@ def create_app() -> FastAPI:
     return app
 
 
-def setup_middleware(app: FastAPI) -> None:
-    """
-    Configure application middleware.
-    
-    Args:
-        app: FastAPI application instance
-    """
+{{ function_def(
+    name='setup_middleware',
+    description='Configure application middleware.',
+    params=[{'name': 'app', 'type': 'FastAPI'}],
+    returns='None'
+) }}
     # CORS middleware
     app.add_middleware(
         CORSMiddleware,
@@ -135,13 +129,12 @@ def setup_middleware(app: FastAPI) -> None:
     logger.info("Middleware configured")
 
 
-def setup_routers(app: FastAPI) -> None:
-    """
-    Register application routers.
-    
-    Args:
-        app: FastAPI application instance
-    """
+{{ function_def(
+    name='setup_routers',
+    description='Register application routers.',
+    params=[{'name': 'app', 'type': 'FastAPI'}],
+    returns='None'
+) }}
     # Include domain routers
     app.include_router({{MODULE_NAME}}_router)
     
@@ -155,12 +148,10 @@ def setup_routers(app: FastAPI) -> None:
 app = create_app()
 
 
-def main():
-    """
-    Main entry point for running the application.
-    
-    This function starts the Uvicorn server with the configured settings.
-    """
+{{ function_def(
+    name='main',
+    description='Main entry point for running the application.\n\nThis function starts the Uvicorn server with the configured settings.'
+) }}
     uvicorn.run(
         "{{MODULE_NAME}}.main:app",
         host=settings.host,

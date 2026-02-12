@@ -54,12 +54,12 @@ class TestNoAxiomDrift:
     def _get_protected_files_snapshot(self) -> dict:
         """Get a snapshot of all protected files."""
         protected_files = [
-            "patterns/axioms/core-axioms.json",
-            "patterns/axioms/axiom-zero.json",
-            "patterns/principles/ethical-boundaries.json",
-            "patterns/principles/quality-standards.json",
-            "patterns/enforcement/integrity-enforcement.json",
-            "patterns/enforcement/safety-enforcement.json",
+            ".agent/patterns/axioms/core-axioms.json",
+            ".agent/patterns/axioms/axiom-zero.json",
+            ".agent/patterns/principles/ethical-boundaries.json",
+            ".agent/patterns/principles/quality-standards.json",
+            ".agent/patterns/enforcement/integrity-enforcement.json",
+            ".agent/patterns/enforcement/safety-enforcement.json",
             ".agentrules",        ]
         
         snapshot = {}
@@ -115,8 +115,8 @@ class TestNoAxiomDrift:
         guard = MutabilityGuard()
         
         axiom_files = [
-            "patterns/axioms/core-axioms.json",
-            "patterns/axioms/axiom-zero.json",
+            ".agent/patterns/axioms/core-axioms.json",
+            ".agent/patterns/axioms/axiom-zero.json",
             ".agentrules",        ]
         
         for axiom_file in axiom_files:
@@ -176,7 +176,7 @@ class TestNoAxiomDrift:
         assert engine.guard is not None
         
         # Guard should block axiom modifications
-        result = engine.guard.can_modify("patterns/axioms/core-axioms.json")
+        result = engine.guard.can_modify(".agent/patterns/axioms/core-axioms.json")
         assert not result.allowed
     
     def test_memory_store_does_not_touch_protected_files(self, temp_dir):
@@ -212,7 +212,7 @@ class TestAxiomIntegrity:
         """
         Verify core-axioms.json has the expected structure.
         """
-        axioms_path = Path("patterns/axioms/core-axioms.json")
+        axioms_path = Path(".agent/patterns/axioms/core-axioms.json")
         
         if axioms_path.exists():
             with open(axioms_path, 'r', encoding='utf-8') as f:
@@ -242,7 +242,7 @@ class TestAxiomIntegrity:
         from scripts.guardian.mutability_guard import NEVER_MODIFY
         
         critical_files = [
-            ".agentrules",            "patterns/axioms/core-axioms.json",
+            ".agentrules",            ".agent/patterns/axioms/core-axioms.json",
         ]
         
         for critical in critical_files:

@@ -1,5 +1,7 @@
 ---
 description: Build multi-agent workflows using CrewAI patterns
+name: crewai-workflow
+type: skill
 ---
 
 # Crewai Workflow

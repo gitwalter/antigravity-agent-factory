@@ -168,7 +168,7 @@
     },
     "custom_tools": {
       "description": "Create custom tools for agents",
-      "code_example": "from llama_index.core.tools import FunctionTool\nfrom typing import List\n\n# Simple function tool\n@FunctionTool.from_defaults()\ndef get_weather(location: str) -> str:\n    '''Get the current weather for a location.'''\n    return f'Weather in {location}: Sunny, 72°F'\n\n# Tool with Pydantic schema\nfrom pydantic import BaseModel, Field\n\nclass SearchInput(BaseModel):\n    query: str = Field(description='Search query')\n    max_results: int = Field(default=5, ge=1, le=20)\n\n@FunctionTool.from_defaults()\ndef search_documents(query: str, max_results: int = 5) -> str:\n    '''Search documents with query and max results.'''\n    results = retriever.retrieve(query)\n    return '\\n'.join([node.text for node in results[:max_results]])\n\n# Use in agent\ntools = [get_weather, search_documents]\nagent = OpenAIAgent.from_tools(tools=tools, llm=llm)",
+      "code_example": "from llama_index.core.tools import FunctionTool\nfrom typing import List\n\n# Simple function tool\n@FunctionTool.from_defaults()\ndef get_weather(location: str) -> str:\n    '''Get the current weather for a location.'''\n    return f'Weather in {location}: Sunny, 72\u00b0F'\n\n# Tool with Pydantic schema\nfrom pydantic import BaseModel, Field\n\nclass SearchInput(BaseModel):\n    query: str = Field(description='Search query')\n    max_results: int = Field(default=5, ge=1, le=20)\n\n@FunctionTool.from_defaults()\ndef search_documents(query: str, max_results: int = 5) -> str:\n    '''Search documents with query and max results.'''\n    results = retriever.retrieve(query)\n    return '\\n'.join([node.text for node in results[:max_results]])\n\n# Use in agent\ntools = [get_weather, search_documents]\nagent = OpenAIAgent.from_tools(tools=tools, llm=llm)",
       "best_practices": [
         "Use FunctionTool for simple functions",
         "Add Pydantic schemas for complex inputs",
@@ -215,28 +215,32 @@
       ]
     }
   },
-  "anti_patterns": {
-    "mismatched_embeddings": {
+  "anti_patterns": [
+    {
+      "name": "mismatched_embeddings",
       "description": "Using different embedding models for indexing and querying",
       "problem": "Poor retrieval quality",
       "solution": "Use same embed_model for both indexing and querying"
     },
-    "no_source_citations": {
+    {
+      "name": "no_source_citations",
       "description": "Not accessing source_nodes for citations",
       "problem": "Cannot verify answers",
       "solution": "Always access response.source_nodes and include in output"
     },
-    "too_many_nodes": {
+    {
+      "name": "too_many_nodes",
       "description": "Retrieving too many nodes for context",
       "problem": "Token limit issues, slower responses",
       "solution": "Set similarity_top_k appropriately (5-10 typically)"
     },
-    "no_metadata_filtering": {
+    {
+      "name": "no_metadata_filtering",
       "description": "Not using metadata filters for retrieval",
       "problem": "Irrelevant results, poor precision",
       "solution": "Use metadata filters in retriever to narrow search"
     }
-  },
+  ],
   "best_practices_summary": [
     "Use same embed_model for indexing and querying",
     "Set similarity_top_k based on context window",
@@ -246,5 +250,10 @@
     "Use streaming for better UX",
     "Set temperature=0 for deterministic responses",
     "Monitor token usage and memory"
-  ]
+  ],
+  "id": "llamaindex-patterns",
+  "name": "Llamaindex Patterns",
+  "category": "patterns",
+  "patterns": {},
+  "best_practices": []
 }

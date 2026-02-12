@@ -1,5 +1,8 @@
 ---
-description: Answer process and configuration questions for FI (incl. FI-CAX, VIM), SD, MM, EWM, LE, and logistics chain. Output EN or DE.
+description: Answer process and configuration questions for FI (incl. FI-CAX, VIM),
+  SD, MM, EWM, LE, and logistics chain. Output EN or DE.
+name: s4-process-guide
+type: skill
 ---
 
 # S4 Process Guide

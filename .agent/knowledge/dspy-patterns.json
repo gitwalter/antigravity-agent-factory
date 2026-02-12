@@ -73,7 +73,7 @@
     "react": {
       "description": "Reasoning and Acting module for tool-using agents",
       "use_when": "Building agents that need to use tools, multi-step tool calling",
-      "code_example": "import dspy\n\ndef get_weather(city: str) -> str:\n    \"\"\"Get current weather for a city.\"\"\"\n    return f\"The weather in {city} is sunny, 72°F.\"\n\ndef search_documents(query: str) -> str:\n    \"\"\"Search document database.\"\"\"\n    return f\"Found documents about: {query}\"\n\nclass AgentTask(dspy.Signature):\n    \"\"\"Complete tasks using available tools.\"\"\"\n    question = dspy.InputField()\n    answer = dspy.OutputField()\n\nreact = dspy.ReAct(\n    signature=AgentTask,\n    tools=[get_weather, search_documents],\n    max_iters=10\n)\n\npred = react(question=\"What is the weather in Tokyo and find documents about Python?\")\nprint(pred.answer)",
+      "code_example": "import dspy\n\ndef get_weather(city: str) -> str:\n    \"\"\"Get current weather for a city.\"\"\"\n    return f\"The weather in {city} is sunny, 72\u00b0F.\"\n\ndef search_documents(query: str) -> str:\n    \"\"\"Search document database.\"\"\"\n    return f\"Found documents about: {query}\"\n\nclass AgentTask(dspy.Signature):\n    \"\"\"Complete tasks using available tools.\"\"\"\n    question = dspy.InputField()\n    answer = dspy.OutputField()\n\nreact = dspy.ReAct(\n    signature=AgentTask,\n    tools=[get_weather, search_documents],\n    max_iters=10\n)\n\npred = react(question=\"What is the weather in Tokyo and find documents about Python?\")\nprint(pred.answer)",
       "best_practices": [
         "Provide clear tool descriptions",
         "Set appropriate max_iters to prevent infinite loops",
@@ -265,54 +265,42 @@
       ]
     }
   },
-  "best_practices": {
-    "signature_design": [
-      "Keep signatures semantic and declarative",
-      "Use descriptive field names",
-      "Provide detailed field descriptions",
-      "Specify types for better validation",
-      "Start simple, add complexity as needed"
-    ],
-    "module_composition": [
-      "Build complex modules from simple ones",
-      "Make modules reusable and testable",
-      "Document module purpose and usage",
-      "Use forward() for inference logic",
-      "Initialize sub-modules in __init__"
-    ],
-    "optimization_strategy": [
-      "Start with baseline (no optimization)",
-      "Use 20% training / 80% validation split",
-      "Begin with BootstrapFewShot for few-shot examples",
-      "Add MIPRO for instruction optimization if needed",
-      "Evaluate on held-out test set",
-      "Monitor for overfitting",
-      "Document optimization process"
-    ],
-    "evaluation": [
-      "Define clear, measurable metrics",
-      "Use separate train/validation/test sets",
-      "Report test set metrics only after final optimization",
-      "Compare baseline vs optimized performance",
-      "Track metrics over time",
-      "Use parallel evaluation (num_threads) for speed"
-    ],
-    "retrieval": [
-      "Configure both lm and rm in settings",
-      "Set k based on context window and task",
-      "Consider multi-hop for complex queries",
-      "Use reranking for precision-critical tasks",
-      "Monitor retrieval quality"
-    ],
-    "production": [
-      "Cache expensive operations when possible",
-      "Set appropriate timeouts",
-      "Handle errors gracefully",
-      "Log important operations",
-      "Monitor costs and performance",
-      "Use assertions/suggestions for quality control"
-    ]
-  },
+  "best_practices": [
+    "Keep signatures semantic and declarative",
+    "Use descriptive field names",
+    "Provide detailed field descriptions",
+    "Specify types for better validation",
+    "Start simple, add complexity as needed",
+    "Build complex modules from simple ones",
+    "Make modules reusable and testable",
+    "Document module purpose and usage",
+    "Use forward() for inference logic",
+    "Initialize sub-modules in __init__",
+    "Start with baseline (no optimization)",
+    "Use 20% training / 80% validation split",
+    "Begin with BootstrapFewShot for few-shot examples",
+    "Add MIPRO for instruction optimization if needed",
+    "Evaluate on held-out test set",
+    "Monitor for overfitting",
+    "Document optimization process",
+    "Define clear, measurable metrics",
+    "Use separate train/validation/test sets",
+    "Report test set metrics only after final optimization",
+    "Compare baseline vs optimized performance",
+    "Track metrics over time",
+    "Use parallel evaluation (num_threads) for speed",
+    "Configure both lm and rm in settings",
+    "Set k based on context window and task",
+    "Consider multi-hop for complex queries",
+    "Use reranking for precision-critical tasks",
+    "Monitor retrieval quality",
+    "Cache expensive operations when possible",
+    "Set appropriate timeouts",
+    "Handle errors gracefully",
+    "Log important operations",
+    "Monitor costs and performance",
+    "Use assertions/suggestions for quality control"
+  ],
   "comparison_with_frameworks": {
     "vs_langchain": {
       "description": "DSPy vs LangChain comparison",
@@ -381,33 +369,38 @@
       ]
     }
   },
-  "anti_patterns": {
-    "over_optimization": {
+  "anti_patterns": [
+    {
+      "name": "over_optimization",
       "description": "Overfitting to training set",
       "problem": "Program performs well on training but poorly on validation",
       "solution": "Use proper train/validation split, monitor validation metrics, use regularization"
     },
-    "ignoring_metrics": {
+    {
+      "name": "ignoring_metrics",
       "description": "Not defining clear evaluation metrics",
       "problem": "Can't measure improvement, optimization is directionless",
       "solution": "Define measurable metrics upfront, use validation set"
     },
-    "complex_signatures": {
+    {
+      "name": "complex_signatures",
       "description": "Making signatures too complex initially",
       "problem": "Hard to debug, optimization struggles",
       "solution": "Start simple, add complexity incrementally"
     },
-    "no_baseline": {
+    {
+      "name": "no_baseline",
       "description": "Optimizing without baseline comparison",
       "problem": "Don't know if optimization helped",
       "solution": "Always evaluate baseline first, compare improvements"
     },
-    "wrong_optimizer": {
+    {
+      "name": "wrong_optimizer",
       "description": "Using wrong optimizer for task",
       "problem": "Inefficient optimization, poor results",
       "solution": "Start with BootstrapFewShot, add MIPRO for instruction optimization if needed"
     }
-  },
+  ],
   "testing_strategies": {
     "unit_testing": {
       "description": "Test individual modules in isolation",
@@ -429,5 +422,9 @@
         "Compare before/after optimization"
       ]
     }
-  }
+  },
+  "id": "dspy-patterns",
+  "name": "Dspy Patterns",
+  "category": "patterns",
+  "patterns": {}
 }

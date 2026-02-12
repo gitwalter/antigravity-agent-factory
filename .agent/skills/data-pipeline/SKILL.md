@@ -1,5 +1,9 @@
 ---
-description: Dataset preparation for ML, HuggingFace datasets, custom loaders, data validation with Great Expectations, feature engineering, data versioning with DVC, preprocessing pipelines
+description: Dataset preparation for ML, HuggingFace datasets, custom loaders, data
+  validation with Great Expectations, feature engineering, data versioning with DVC,
+  preprocessing pipelines
+name: data-pipeline
+type: skill
 ---
 
 # Data Pipeline

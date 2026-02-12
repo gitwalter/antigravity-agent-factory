@@ -1,5 +1,8 @@
 ---
-description: Structured logging with structlog, metrics collection, alerting patterns, and distributed tracing
+description: Structured logging with structlog, metrics collection, alerting patterns,
+  and distributed tracing
+name: logging-monitoring
+type: skill
 ---
 
 # Logging Monitoring

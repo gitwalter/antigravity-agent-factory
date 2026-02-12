@@ -1,5 +1,9 @@
 ---
-description: Micrometer metrics (counters, gauges, timers), Distributed tracing with Micrometer Tracing + Zipkin/Jaeger, Structured logging (Logback + JSON), Spring Boot Actuator endpoints, Prometheus + Grafana setup, Custom health indicators
+description: Micrometer metrics (counters, gauges, timers), Distributed tracing with
+  Micrometer Tracing + Zipkin/Jaeger, Structured logging (Logback + JSON), Spring
+  Boot Actuator endpoints, Prometheus + Grafana setup, Custom health indicators
+name: spring-observability
+type: skill
 ---
 
 # Spring Observability

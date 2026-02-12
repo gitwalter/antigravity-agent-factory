@@ -1,5 +1,7 @@
 ---
 description: ASP.NET Core authentication and authorization patterns
+name: dotnet-auth
+type: skill
 ---
 
 # Dotnet Auth

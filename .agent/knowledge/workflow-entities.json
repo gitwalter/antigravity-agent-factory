@@ -1,7 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Workflow System Entities",
-  "description": "Entity definitions and relationships for the Antigravity Agent Factory Workflow System",  "version": "1.0.0",
+  "description": "Entity definitions and relationships for the Antigravity Agent Factory Workflow System",
+  "version": "1.0.0",
   "philosophy": "Workflows are the choreography of intelligence - composing agents, skills, knowledge, and tools into purposeful action sequences that learn and improve over time.",
   "entities": {
     "workflow": {
@@ -19,11 +20,24 @@
         "learningHooks"
       ],
       "relationships": {
-        "contains": ["phase", "decisionPoint", "escalation", "learningHook"],
-        "activatedBy": ["trigger"],
-        "references": ["knowledge"],
-        "requires": ["mcpRequirement"],
-        "tracks": ["state"]
+        "contains": [
+          "phase",
+          "decisionPoint",
+          "escalation",
+          "learningHook"
+        ],
+        "activatedBy": [
+          "trigger"
+        ],
+        "references": [
+          "knowledge"
+        ],
+        "requires": [
+          "mcpRequirement"
+        ],
+        "tracks": [
+          "state"
+        ]
       },
       "examples": [
         "debug-pipeline-failure",
@@ -39,31 +53,51 @@
       "types": {
         "event": {
           "description": "External system sends a signal",
-          "examples": ["GitHub Actions failure webhook", "Jira issue created"]
+          "examples": [
+            "GitHub Actions failure webhook",
+            "Jira issue created"
+          ]
         },
         "manual": {
           "description": "User explicitly requests activation",
-          "examples": ["'Debug this failure'", "'Run code review'"]
+          "examples": [
+            "'Debug this failure'",
+            "'Run code review'"
+          ]
         },
         "schedule": {
           "description": "Time-based activation",
-          "examples": ["Every day at midnight", "Every 6 hours"]
+          "examples": [
+            "Every day at midnight",
+            "Every 6 hours"
+          ]
         },
         "watch": {
           "description": "File or state change detection",
-          "examples": ["Config file modified", "Error log updated"]
+          "examples": [
+            "Config file modified",
+            "Error log updated"
+          ]
         },
         "chain": {
           "description": "Another workflow completes",
-          "examples": ["Post-deployment verification", "Cleanup after build"]
+          "examples": [
+            "Post-deployment verification",
+            "Cleanup after build"
+          ]
         },
         "webhook": {
           "description": "HTTP endpoint receives request",
-          "examples": ["CI/CD callback", "External service notification"]
+          "examples": [
+            "CI/CD callback",
+            "External service notification"
+          ]
         }
       },
       "relationships": {
-        "activates": ["workflow"]
+        "activates": [
+          "workflow"
+        ]
       }
     },
     "phase": {
@@ -80,10 +114,19 @@
         "onFailure"
       ],
       "relationships": {
-        "containedBy": ["workflow"],
-        "contains": ["step", "decisionPoint"],
-        "mayTrigger": ["escalation"],
-        "transitionsTo": ["phase"]
+        "containedBy": [
+          "workflow"
+        ],
+        "contains": [
+          "step",
+          "decisionPoint"
+        ],
+        "mayTrigger": [
+          "escalation"
+        ],
+        "transitionsTo": [
+          "phase"
+        ]
       },
       "examples": [
         "diagnosis",
@@ -106,11 +149,21 @@
         "retry"
       ],
       "relationships": {
-        "containedBy": ["phase"],
-        "invokes": ["skill"],
-        "executes": ["action"],
-        "uses": ["mcpTool"],
-        "produces": ["output"]
+        "containedBy": [
+          "phase"
+        ],
+        "invokes": [
+          "skill"
+        ],
+        "executes": [
+          "action"
+        ],
+        "uses": [
+          "mcpTool"
+        ],
+        "produces": [
+          "output"
+        ]
       },
       "examples": [
         "parse-error-log",
@@ -123,7 +176,8 @@
       "name": "Skill",
       "description": "A reusable capability that can be invoked by workflow steps",
       "purpose": "Encapsulate complex behaviors as composable, testable units",
-      "location": ".agent/skills/{skill-id}/SKILL.md",      "keyProperties": [
+      "location": ".agent/skills/{skill-id}/SKILL.md",
+      "keyProperties": [
         "name",
         "description",
         "triggers",
@@ -133,9 +187,16 @@
         "mcpServers"
       ],
       "relationships": {
-        "invokedBy": ["step"],
-        "uses": ["knowledge", "mcpServer"],
-        "mayInvoke": ["skill"]
+        "invokedBy": [
+          "step"
+        ],
+        "uses": [
+          "knowledge",
+          "mcpServer"
+        ],
+        "mayInvoke": [
+          "skill"
+        ]
       },
       "categories": [
         "diagnostic",
@@ -166,9 +227,16 @@
         "tools"
       ],
       "relationships": {
-        "requiredBy": ["workflow", "skill"],
-        "provides": ["mcpTool"],
-        "mayFallbackTo": ["mcpServer"]
+        "requiredBy": [
+          "workflow",
+          "skill"
+        ],
+        "provides": [
+          "mcpTool"
+        ],
+        "mayFallbackTo": [
+          "mcpServer"
+        ]
       },
       "categories": [
         "core",
@@ -196,8 +264,12 @@
         "returns"
       ],
       "relationships": {
-        "providedBy": ["mcpServer"],
-        "usedBy": ["step"]
+        "providedBy": [
+          "mcpServer"
+        ],
+        "usedBy": [
+          "step"
+        ]
       },
       "examples": [
         "github.get_workflow_run",
@@ -217,8 +289,13 @@
         "content"
       ],
       "relationships": {
-        "referencedBy": ["workflow", "skill"],
-        "updatedBy": ["learningHook"]
+        "referencedBy": [
+          "workflow",
+          "skill"
+        ],
+        "updatedBy": [
+          "learningHook"
+        ]
       },
       "categories": [
         "patterns",
@@ -245,9 +322,17 @@
         "default"
       ],
       "relationships": {
-        "containedBy": ["workflow", "phase"],
-        "branchesTo": ["phase", "step"],
-        "mayTrigger": ["escalation"]
+        "containedBy": [
+          "workflow",
+          "phase"
+        ],
+        "branchesTo": [
+          "phase",
+          "step"
+        ],
+        "mayTrigger": [
+          "escalation"
+        ]
       },
       "examples": [
         "confidence-check",
@@ -266,9 +351,16 @@
         "escalation"
       ],
       "relationships": {
-        "containedBy": ["decisionPoint"],
-        "goesTo": ["phase", "step"],
-        "triggers": ["escalation"]
+        "containedBy": [
+          "decisionPoint"
+        ],
+        "goesTo": [
+          "phase",
+          "step"
+        ],
+        "triggers": [
+          "escalation"
+        ]
       }
     },
     "escalation": {
@@ -291,9 +383,18 @@
         "fallback": "Try alternative approach"
       },
       "relationships": {
-        "containedBy": ["workflow"],
-        "triggeredBy": ["phase", "step", "decisionPoint"],
-        "resumesTo": ["phase", "step"]
+        "containedBy": [
+          "workflow"
+        ],
+        "triggeredBy": [
+          "phase",
+          "step",
+          "decisionPoint"
+        ],
+        "resumesTo": [
+          "phase",
+          "step"
+        ]
       },
       "examples": [
         "confirm-destructive-action",
@@ -314,9 +415,15 @@
         "outputs"
       ],
       "relationships": {
-        "trackedBy": ["workflow"],
-        "persistedTo": ["stateStore"],
-        "restoredFrom": ["checkpoint"]
+        "trackedBy": [
+          "workflow"
+        ],
+        "persistedTo": [
+          "stateStore"
+        ],
+        "restoredFrom": [
+          "checkpoint"
+        ]
       }
     },
     "learningHook": {
@@ -339,9 +446,17 @@
         "user_correction"
       ],
       "relationships": {
-        "containedBy": ["workflow"],
-        "updates": ["knowledge"],
-        "capturesFrom": ["step", "phase", "escalation"]
+        "containedBy": [
+          "workflow"
+        ],
+        "updates": [
+          "knowledge"
+        ],
+        "capturesFrom": [
+          "step",
+          "phase",
+          "escalation"
+        ]
       },
       "examples": [
         "capture-successful-fix",
@@ -360,8 +475,13 @@
         "value"
       ],
       "relationships": {
-        "producedBy": ["step"],
-        "consumedBy": ["step", "decisionPoint"]
+        "producedBy": [
+          "step"
+        ],
+        "consumedBy": [
+          "step",
+          "decisionPoint"
+        ]
       }
     }
   },
@@ -425,7 +545,8 @@
   },
   "extensionPoints": {
     "customSkills": {
-      "description": "Add new skills in .agent/skills/{id}/SKILL.md",      "process": "Define inputs, outputs, process steps, and dependencies"
+      "description": "Add new skills in .agent/skills/{id}/SKILL.md",
+      "process": "Define inputs, outputs, process steps, and dependencies"
     },
     "customMCPServers": {
       "description": "Add servers to knowledge/mcp-servers-catalog.json",
@@ -461,5 +582,11 @@
       "path": "knowledge/schemas/workflow-schema.json",
       "purpose": "JSON Schema for validation"
     }
-  ]
+  ],
+  "id": "workflow-entities",
+  "name": "Workflow Entities",
+  "category": "patterns",
+  "patterns": {},
+  "best_practices": [],
+  "anti_patterns": []
 }

@@ -1,5 +1,8 @@
 ---
-description: Safe commit and release workflow with auto-sync, changelog updates, and learning from failures
+description: Safe commit and release workflow with auto-sync, changelog updates, and
+  learning from failures
+name: commit-release
+type: skill
 ---
 
 # Commit Release

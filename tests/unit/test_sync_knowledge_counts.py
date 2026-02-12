@@ -35,8 +35,8 @@ class TestCountKnowledgeFiles:
         """Should count all .json files in knowledge/."""
         monkeypatch.chdir(tmp_path)
         
-        knowledge_dir = tmp_path / "knowledge"
-        knowledge_dir.mkdir()
+        knowledge_dir = tmp_path / ".agent" / "knowledge"
+        knowledge_dir.mkdir(parents=True)
         
         # Create some JSON files
         (knowledge_dir / "file1.json").write_text("{}", encoding='utf-8')
@@ -50,8 +50,8 @@ class TestCountKnowledgeFiles:
         """Should exclude files starting with underscore."""
         monkeypatch.chdir(tmp_path)
         
-        knowledge_dir = tmp_path / "knowledge"
-        knowledge_dir.mkdir()
+        knowledge_dir = tmp_path / ".agent" / "knowledge"
+        knowledge_dir.mkdir(parents=True)
         
         (knowledge_dir / "file1.json").write_text("{}", encoding='utf-8')
         (knowledge_dir / "_schema.json").write_text("{}", encoding='utf-8')
@@ -63,8 +63,8 @@ class TestCountKnowledgeFiles:
         """Should not count files in subdirectories."""
         monkeypatch.chdir(tmp_path)
         
-        knowledge_dir = tmp_path / "knowledge"
-        knowledge_dir.mkdir()
+        knowledge_dir = tmp_path / ".agent" / "knowledge"
+        knowledge_dir.mkdir(parents=True)
         subdir = knowledge_dir / "schemas"
         subdir.mkdir()
         
@@ -89,8 +89,8 @@ class TestGetManifestCount:
         """Should extract statistics.total_files from manifest."""
         monkeypatch.chdir(tmp_path)
         
-        knowledge_dir = tmp_path / "knowledge"
-        knowledge_dir.mkdir()
+        knowledge_dir = tmp_path / ".agent" / "knowledge"
+        knowledge_dir.mkdir(parents=True)
         
         manifest = knowledge_dir / "manifest.json"
         manifest.write_text(json.dumps({
@@ -111,8 +111,8 @@ class TestGetManifestCount:
         """Should return 0 if statistics key is missing."""
         monkeypatch.chdir(tmp_path)
         
-        knowledge_dir = tmp_path / "knowledge"
-        knowledge_dir.mkdir()
+        knowledge_dir = tmp_path / ".agent" / "knowledge"
+        knowledge_dir.mkdir(parents=True)
         
         manifest = knowledge_dir / "manifest.json"
         manifest.write_text('{"files": {}}', encoding='utf-8')
@@ -168,8 +168,8 @@ class TestUpdateManifest:
         """Should not modify file when dry_run=True."""
         monkeypatch.chdir(tmp_path)
         
-        knowledge_dir = tmp_path / "knowledge"
-        knowledge_dir.mkdir()
+        knowledge_dir = tmp_path / ".agent" / "knowledge"
+        knowledge_dir.mkdir(parents=True)
         
         manifest = knowledge_dir / "manifest.json"
         original = json.dumps({"statistics": {"total_files": 10}})
@@ -184,8 +184,8 @@ class TestUpdateManifest:
         """Should update count when dry_run=False."""
         monkeypatch.chdir(tmp_path)
         
-        knowledge_dir = tmp_path / "knowledge"
-        knowledge_dir.mkdir()
+        knowledge_dir = tmp_path / ".agent" / "knowledge"
+        knowledge_dir.mkdir(parents=True)
         
         manifest = knowledge_dir / "manifest.json"
         manifest.write_text(json.dumps({"statistics": {"total_files": 10}}), encoding='utf-8')
@@ -200,8 +200,8 @@ class TestUpdateManifest:
         """Should return False when counts match."""
         monkeypatch.chdir(tmp_path)
         
-        knowledge_dir = tmp_path / "knowledge"
-        knowledge_dir.mkdir()
+        knowledge_dir = tmp_path / ".agent" / "knowledge"
+        knowledge_dir.mkdir(parents=True)
         
         manifest = knowledge_dir / "manifest.json"
         manifest.write_text(json.dumps({"statistics": {"total_files": 10}}), encoding='utf-8')
@@ -254,8 +254,8 @@ class TestSyncKnowledgeCounts:
         monkeypatch.chdir(tmp_path)
         
         # Create knowledge dir with files
-        knowledge_dir = tmp_path / "knowledge"
-        knowledge_dir.mkdir()
+        knowledge_dir = tmp_path / ".agent" / "knowledge"
+        knowledge_dir.mkdir(parents=True)
         (knowledge_dir / "file1.json").write_text("{}", encoding='utf-8')
         (knowledge_dir / "file2.json").write_text("{}", encoding='utf-8')
         
@@ -280,8 +280,8 @@ class TestSyncKnowledgeCounts:
         
         # Create knowledge dir with files
         # Note: manifest.json is excluded from count (it's a meta-file)
-        knowledge_dir = tmp_path / "knowledge"
-        knowledge_dir.mkdir()
+        knowledge_dir = tmp_path / ".agent" / "knowledge"
+        knowledge_dir.mkdir(parents=True)
         (knowledge_dir / "file1.json").write_text("{}", encoding='utf-8')
         (knowledge_dir / "file2.json").write_text("{}", encoding='utf-8')
         
@@ -311,11 +311,11 @@ class TestIntegration:
     
     def test_knowledge_dir_exists(self, factory_root):
         """knowledge/ directory should exist."""
-        assert (factory_root / "knowledge").exists()
+        assert (factory_root / ".agent" / "knowledge").exists()
     
     def test_manifest_exists(self, factory_root):
         """knowledge/manifest.json should exist."""
-        assert (factory_root / "knowledge" / "manifest.json").exists()
+        assert (factory_root / ".agent" / "knowledge" / "manifest.json").exists()
     
     def test_knowledge_files_md_exists(self, factory_root):
         """docs/reference/KNOWLEDGE_FILES.md should exist."""

@@ -1,5 +1,8 @@
 ---
-description: Document chunking strategies, hybrid retrieval (semantic + keyword), reranking patterns, and citation/attribution
+description: Document chunking strategies, hybrid retrieval (semantic + keyword),
+  reranking patterns, and citation/attribution
+name: rag-patterns
+type: skill
 ---
 
 # Rag Patterns

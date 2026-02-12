@@ -1,5 +1,7 @@
 ---
 description: JSON knowledge file generation skill
+name: knowledge-generation
+type: skill
 ---
 
 # Knowledge Generation

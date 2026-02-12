@@ -1,5 +1,8 @@
 ---
-description: PyTorch training loops, distributed training with DeepSpeed/FSDP, hyperparameter tuning with Optuna, experiment tracking, mixed precision training, checkpointing
+description: PyTorch training loops, distributed training with DeepSpeed/FSDP, hyperparameter
+  tuning with Optuna, experiment tracking, mixed precision training, checkpointing
+name: model-training
+type: skill
 ---
 
 # Model Training

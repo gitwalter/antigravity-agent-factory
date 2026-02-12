@@ -1,5 +1,8 @@
 ---
-description: Deploy ML models to production with Docker, Kubernetes, cloud platforms, and edge devices
+description: Deploy ML models to production with Docker, Kubernetes, cloud platforms,
+  and edge devices
+name: ml-deployment
+type: skill
 ---
 
 # Ml Deployment

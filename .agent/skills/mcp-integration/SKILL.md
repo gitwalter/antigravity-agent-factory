@@ -1,5 +1,8 @@
 ---
-description: Model Context Protocol overview, server creation, tool exposure, and common integrations
+description: Model Context Protocol overview, server creation, tool exposure, and
+  common integrations
+name: mcp-integration
+type: skill
 ---
 
 # Mcp Integration

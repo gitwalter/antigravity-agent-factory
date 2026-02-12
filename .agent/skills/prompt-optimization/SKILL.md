@@ -1,5 +1,8 @@
 ---
-description: DSPy integration for declarative prompt optimization, prompt versioning, A/B testing, few-shot optimization, chain-of-thought patterns, prompt caching
+description: DSPy integration for declarative prompt optimization, prompt versioning,
+  A/B testing, few-shot optimization, chain-of-thought patterns, prompt caching
+name: prompt-optimization
+type: skill
 ---
 
 # Prompt Optimization

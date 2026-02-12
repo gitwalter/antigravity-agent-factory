@@ -1,5 +1,8 @@
 ---
-description: Claude agentic loop patterns - tool use until done, extended thinking for complex reasoning, safety and alignment patterns, LangChain ChatAnthropic integration
+description: Claude agentic loop patterns - tool use until done, extended thinking
+  for complex reasoning, safety and alignment patterns, LangChain ChatAnthropic integration
+name: anthropic-patterns
+type: skill
 ---
 
 # Anthropic Patterns

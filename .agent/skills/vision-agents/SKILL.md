@@ -1,5 +1,8 @@
 ---
-description: Image analysis with multi-modal LLMs (GPT-4V, Gemini Vision), object detection integration, image generation pipelines, and visual question answering
+description: Image analysis with multi-modal LLMs (GPT-4V, Gemini Vision), object
+  detection integration, image generation pipelines, and visual question answering
+name: vision-agents
+type: skill
 ---
 
 # Vision Agents

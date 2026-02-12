@@ -1,5 +1,7 @@
 ---
 description: Spring Cloud microservices patterns with gateway, discovery, and resilience
+name: spring-microservices
+type: skill
 ---
 
 # Spring Microservices

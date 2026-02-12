@@ -1,5 +1,9 @@
 ---
-description: CPI iFlow design patterns (content-based routing, splitter, aggregator), Groovy script patterns, API Management policies, Event Mesh topic design, OData consumption
+description: CPI iFlow design patterns (content-based routing, splitter, aggregator),
+  Groovy script patterns, API Management policies, Event Mesh topic design, OData
+  consumption
+name: sap-integration
+type: skill
 ---
 
 # Sap Integration

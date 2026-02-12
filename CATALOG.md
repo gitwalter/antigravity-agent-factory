@@ -200,6 +200,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | Workflow | Description |
 |----------|-------------|
 | [build-langchain-agent](.agent/workflows/build-langchain-agent.md) | Building AI Agents with LangChain |
+| [migrate-skill-to-jinja2](.agent/workflows/migrate-skill-to-jinja2.md) | Migrate Skill to Jinja2 Template |
 
 ## 📚 Knowledge Files
 
@@ -447,6 +448,8 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 |----------|----------|------|
 | common.tmpl | _macros | [`.agent/templates/_macros/common.tmpl`](.agent/templates/_macros/common.tmpl) |
 | python.tmpl | _macros | [`.agent/templates/_macros/python.tmpl`](.agent/templates/_macros/python.tmpl) |
+| skills.tmpl | _macros | [`.agent/templates/_macros/skills.tmpl`](.agent/templates/_macros/skills.tmpl) |
+| typescript.tmpl | _macros | [`.agent/templates/_macros/typescript.tmpl`](.agent/templates/_macros/typescript.tmpl) |
 | enhancement.abap.tmpl | clean-abap | [`.agent/templates/abap/clean-abap/enhancement.abap.tmpl`](.agent/templates/abap/clean-abap/enhancement.abap.tmpl) |
 | exception-class.abap.tmpl | clean-abap | [`.agent/templates/abap/clean-abap/exception-class.abap.tmpl`](.agent/templates/abap/clean-abap/exception-class.abap.tmpl) |
 | factory-class.abap.tmpl | clean-abap | [`.agent/templates/abap/clean-abap/factory-class.abap.tmpl`](.agent/templates/abap/clean-abap/factory-class.abap.tmpl) |
@@ -703,6 +706,8 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | page.py.tmpl | pages | [`.agent/templates/python/streamlit/pages/page.py.tmpl`](.agent/templates/python/streamlit/pages/page.py.tmpl) |
 | cache.py.tmpl | utils | [`.agent/templates/python/streamlit/utils/cache.py.tmpl`](.agent/templates/python/streamlit/utils/cache.py.tmpl) |
 | verify_proofs.sh.tmpl | scripts | [`.agent/templates/scripts/verify_proofs.sh.tmpl`](.agent/templates/scripts/verify_proofs.sh.tmpl) |
+| SKILL.md.j2 | ai-agent-dev | [`.agent/templates/skills/ai-agent-dev/SKILL.md.j2`](.agent/templates/skills/ai-agent-dev/SKILL.md.j2) |
+| base_skill.md.j2 | skills | [`.agent/templates/skills/base_skill.md.j2`](.agent/templates/skills/base_skill.md.j2) |
 | foundry.toml.tmpl | config | [`.agent/templates/solidity/config/foundry.toml.tmpl`](.agent/templates/solidity/config/foundry.toml.tmpl) |
 | hardhat.config.ts.tmpl | config | [`.agent/templates/solidity/config/hardhat.config.ts.tmpl`](.agent/templates/solidity/config/hardhat.config.ts.tmpl) |
 | staking-contract.sol.tmpl | defi | [`.agent/templates/solidity/contracts/defi/staking-contract.sol.tmpl`](.agent/templates/solidity/contracts/defi/staking-contract.sol.tmpl) |
@@ -748,4 +753,4 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | python.yml.tmpl | templates | [`.agent/templates/workflows/gitlab/templates/python.yml.tmpl`](.agent/templates/workflows/gitlab/templates/python.yml.tmpl) |
 | workflow.md.tmpl | workflows | [`.agent/templates/workflows/workflow.md.tmpl`](.agent/templates/workflows/workflow.md.tmpl) |
 
-*Total templates: 302*
+*Total templates: 306*

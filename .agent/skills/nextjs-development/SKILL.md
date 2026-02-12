@@ -1,5 +1,9 @@
 ---
-description: Comprehensive Next.js 16 App Router patterns, Server vs Client Components decision tree, route handlers, Server Actions, middleware, streaming with Suspense, parallel routes, intercepting routes, and advanced routing patterns.
+description: Comprehensive Next.js 16 App Router patterns, Server vs Client Components
+  decision tree, route handlers, Server Actions, middleware, streaming with Suspense,
+  parallel routes, intercepting routes, and advanced routing patterns.
+name: nextjs-development
+type: skill
 ---
 
 # Nextjs Development

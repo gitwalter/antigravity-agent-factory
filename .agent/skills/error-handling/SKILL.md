@@ -1,5 +1,8 @@
 ---
-description: Retry strategies with tenacity, fallback patterns, circuit breakers, graceful degradation
+description: Retry strategies with tenacity, fallback patterns, circuit breakers,
+  graceful degradation
+name: error-handling
+type: skill
 ---
 
 # Error Handling

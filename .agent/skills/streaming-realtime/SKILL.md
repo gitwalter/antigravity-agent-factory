@@ -1,5 +1,8 @@
 ---
-description: Token streaming from LLMs, event streaming with astream_events, WebSocket agent patterns, and real-time UI updates
+description: Token streaming from LLMs, event streaming with astream_events, WebSocket
+  agent patterns, and real-time UI updates
+name: streaming-realtime
+type: skill
 ---
 
 # Streaming Realtime

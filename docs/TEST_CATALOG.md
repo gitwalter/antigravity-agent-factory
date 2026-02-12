@@ -1,20 +1,20 @@
 # Test Catalog
 
-*Generated on 2026-02-12 18:59:06*
+*Generated on 2026-02-12 19:54:52*
 
 ## Summary
 
 | Category | Files | Classes | Methods |
 |----------|-------|---------|---------|
-| general | 3 | 11 | 42 |
-| guardian | 1 | 2 | 9 |
+| general | 3 | 8 | 35 |
+| guardian | 2 | 4 | 31 |
 | integration | 11 | 63 | 224 |
 | knowledge | 1 | 3 | 16 |
 | lib | 10 | 76 | 343 |
 | memory | 3 | 8 | 45 |
 | unit | 30 | 273 | 987 |
 | validation | 11 | 44 | 213 |
-| **Total** | **70** | **480** | **1879** |
+| **Total** | **71** | **479** | **1894** |
 
 ## General Tests
 
@@ -58,14 +58,6 @@ Tests validate that all knowledge JSON files have:
   - Test that patterns object is not empty.
 - `test_patterns_have_descriptions`
   - Test that patterns have description fields.
-
-#### TestNewKnowledgeFiles
-*Tests specifically for new knowledge files.*
-
-- `test_new_knowledge_files_exist`
-  - Test that all new knowledge files exist.
-- `test_new_knowledge_files_have_valid_structure`
-  - Test that all new knowledge files have valid structure.
 
 ### tests\test_skills_structure.py
 
@@ -114,14 +106,6 @@ Tests validate that all skill files have:
 - `test_skill_directories_use_kebab_case`
   - Test that skill directories use kebab-case naming.
 
-#### TestNewSkills
-*Tests specifically for the 25 new skills mentioned.*
-
-- `test_new_skills_exist`
-  - Test that all new skills exist.
-- `test_new_skills_have_valid_structure`
-  - Test that all new skills have valid structure.
-
 ### tests\test_templates_syntax.py
 
 *Comprehensive tests for Jinja2 template syntax validation.
@@ -165,17 +149,65 @@ Tests validate that all Jinja2 templates (.j2 files) have:
 - `test_templates_use_j2_extension`
   - Test that all Jinja2 templates use .j2 extension.
 
-#### TestNewTemplates
-*Tests specifically for new templates mentioned.*
-
-- `test_new_templates_exist`
-  - Test that all new templates exist.
-- `test_new_templates_have_valid_syntax`
-  - Test that all new templates have valid Jinja2 syntax.
-- `test_new_templates_have_required_variables_documented`
-  - Test that new templates document required variables (if applicable).
-
 ## Guardian Tests
+
+### tests\guardian\test_mutability_guard.py
+
+*Tests for the Mutability Guard.
+
+CRITICAL tests for layer protection - ensures axioms cannot be modified.*
+
+#### TestMutabilityGuard
+*Tests for MutabilityGuard class.*
+
+- `test_axioms_are_protected`
+  - CRITICAL: Verify Layer 0 (Axioms) cannot be modified.
+- `test_cursorrules_is_protected`
+  - CRITICAL: Verify .agentrules cannot be modified.
+- `test_axiom_zero_is_protected`
+  - CRITICAL: Verify axiom-zero.json cannot be modified.
+- `test_purpose_is_protected`
+  - CRITICAL: Verify Layer 1 (Purpose) cannot be modified.
+- `test_purpose_patterns_are_protected`
+  - CRITICAL: Verify patterns/purpose/ cannot be modified.
+- `test_principles_are_protected`
+  - CRITICAL: Verify Layer 2 (Principles) cannot be modified.
+- `test_enforcement_patterns_are_protected`
+  - CRITICAL: Verify enforcement patterns cannot be modified.
+- `test_quality_standards_are_protected`
+  - CRITICAL: Verify quality standards cannot be modified.
+- `test_knowledge_files_are_mutable`
+  - Verify knowledge files can be extended.
+- `test_blueprints_are_mutable`
+  - Verify blueprints can be modified.
+- `test_stack_patterns_are_mutable`
+  - Verify stack patterns can be modified.
+- `test_templates_are_mutable`
+  - Verify templates can be modified.
+- `test_data_directory_is_mutable`
+  - Verify data directory can be modified.
+- `test_validate_modification_checks_path_first`
+  - Test that path is checked before content.
+- `test_validate_modification_checks_content`
+  - Test that content is validated for violations.
+- `test_valid_modification_passes`
+  - Test that valid modifications pass.
+- `test_path_with_backslashes`
+  - Test Windows-style paths are handled.
+- `test_path_with_dot_prefix`
+  - Test paths with ./ prefix are handled.
+- `test_get_layer_info`
+  - Test getting layer information.
+- `test_get_all_protected_paths`
+  - Test getting all protected paths.
+- `test_get_protection_summary`
+  - Test getting protection summary.
+
+#### TestMutabilityGuardSingleton
+*Tests for the singleton pattern.*
+
+- `test_get_mutability_guard_returns_instance`
+  - Test singleton returns an instance.
 
 ### tests\guardian\test_no_axiom_drift.py
 

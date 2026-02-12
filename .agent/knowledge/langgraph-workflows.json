@@ -10,7 +10,11 @@
   "core_concepts": {
     "graph": {
       "description": "Directed graph defining agent workflow",
-      "components": ["Nodes (functions)", "Edges (transitions)", "State (shared data)"]
+      "components": [
+        "Nodes (functions)",
+        "Edges (transitions)",
+        "State (shared data)"
+      ]
     },
     "state": {
       "description": "TypedDict or Pydantic model holding workflow state",
@@ -31,7 +35,11 @@
     },
     "edge": {
       "description": "Connection between nodes, can be conditional",
-      "types": ["Normal edge", "Conditional edge", "Entry/exit points"]
+      "types": [
+        "Normal edge",
+        "Conditional edge",
+        "Entry/exit points"
+      ]
     }
   },
   "patterns": {
@@ -228,7 +236,10 @@
     "reducers": {
       "description": "Functions that combine state updates",
       "use_case": "When multiple nodes update the same key",
-      "built_in": ["add_messages (for chat)", "operator.add (for lists)"],
+      "built_in": [
+        "add_messages (for chat)",
+        "operator.add (for lists)"
+      ],
       "code_example": "from operator import add\nfrom langgraph.graph import add_messages\n\nclass State(TypedDict):\n    # Built-in message reducer\n    messages: Annotated[list, add_messages]\n    \n    # Operator reducer for lists\n    results: Annotated[list, add]\n    \n    # Custom reducer\n    metadata: Annotated[dict, lambda left, right: {**left, **right}]",
       "advanced_reducers": {
         "description": "Advanced reducer patterns",
@@ -244,8 +255,16 @@
     },
     "checkpointing": {
       "description": "Persist state for resumption and debugging",
-      "implementations": ["MemorySaver", "SqliteSaver", "PostgresSaver"],
-      "use_when": ["Human-in-the-loop", "Long-running workflows", "Fault tolerance"],
+      "implementations": [
+        "MemorySaver",
+        "SqliteSaver",
+        "PostgresSaver"
+      ],
+      "use_when": [
+        "Human-in-the-loop",
+        "Long-running workflows",
+        "Fault tolerance"
+      ],
       "basic_checkpointing": {
         "code_example": "from langgraph.checkpoint.sqlite import SqliteSaver\n\nmemory = SqliteSaver.from_conn_string('checkpoints.db')\ngraph = builder.compile(checkpointer=memory)\n\nconfig = {'configurable': {'thread_id': 'conversation-123'}}\nresult = graph.invoke({'input': 'Hello'}, config=config)",
         "best_practices": [
@@ -310,21 +329,28 @@
       "code": "graph.get_graph().draw_mermaid_png()"
     }
   },
-  "anti_patterns": {
-    "god_state": {
+  "anti_patterns": [
+    {
+      "name": "god_state",
       "description": "State with too many fields",
       "problem": "Hard to track, prone to bugs",
       "solution": "Keep state minimal, use nested structures for organization"
     },
-    "side_effects_in_nodes": {
+    {
+      "name": "side_effects_in_nodes",
       "description": "Nodes that modify external state",
       "problem": "Hard to test, unpredictable",
       "solution": "Make nodes pure when possible, isolate side effects"
     },
-    "missing_error_handling": {
+    {
+      "name": "missing_error_handling",
       "description": "No handling for node failures",
       "problem": "Silent failures, stuck workflows",
       "solution": "Add error nodes, implement fallback paths"
     }
-  }
+  ],
+  "id": "langgraph-workflows",
+  "name": "Langgraph Workflows",
+  "category": "patterns",
+  "best_practices": []
 }

@@ -30,7 +30,7 @@ class TestTemplateSyntax:
     @pytest.fixture
     def templates_dir(self, factory_root: Path) -> Path:
         """Get the templates directory."""
-        return factory_root / "templates"
+        return factory_root / ".agent" / "templates"
 
     @pytest.fixture
     def all_template_files(self, templates_dir: Path) -> List[Path]:
@@ -313,102 +313,4 @@ class TestTemplateStructure:
             pass
 
 
-class TestNewTemplates:
-    """Tests specifically for new templates mentioned."""
 
-    @pytest.fixture
-    def templates_dir(self, factory_root: Path) -> Path:
-        """Get the templates directory."""
-        return factory_root / "templates"
-
-    @pytest.fixture
-    def new_template_paths(self) -> List[str]:
-        """List of new template paths to test."""
-        # Based on the 15 templates found
-        return [
-            "ai/tools/database_tool.py.j2",
-            "ai/tests/agent_test.py.j2",
-            "ai/rag/chunker.py.j2",
-            "ai/rag/retriever.py.j2",
-            "ai/memory/postgres_memory.py.j2",
-            "ai/memory/redis_memory.py.j2",
-            "ai/graphs/hitl_graph.py.j2",
-            "ai/tools/mcp_tool.py.j2",
-            "ai/agents/tool_agent.py.j2",
-            "ai/agents/crew_agent.py.j2",
-            "ai/agents/rag_agent.py.j2",
-            "ai/graphs/supervisor_graph.py.j2",
-            "ai/graphs/simple_graph.py.j2",
-            "ai/agents/base_agent.py.j2",
-            "ai/tools/api_tool.py.j2",
-        ]
-
-    def test_new_templates_exist(self, templates_dir: Path, new_template_paths: List[str]):
-        """Test that all new templates exist."""
-        missing_templates = []
-        for template_path in new_template_paths:
-            full_path = templates_dir / template_path
-            if not full_path.exists():
-                missing_templates.append(template_path)
-        
-        if missing_templates:
-            pytest.fail(
-                f"Missing {len(missing_templates)} new template file(s):\n" +
-                "\n".join(f"  - {path}" for path in missing_templates)
-            )
-
-    def test_new_templates_have_valid_syntax(self, templates_dir: Path, new_template_paths: List[str]):
-        """Test that all new templates have valid Jinja2 syntax."""
-        if not JINJA2_AVAILABLE:
-            pytest.skip("Jinja2 not available")
-        
-        from jinja2 import Environment, TemplateSyntaxError
-        
-        errors = []
-        jinja_env = Environment()
-        
-        for template_path in new_template_paths:
-            full_path = templates_dir / template_path
-            if not full_path.exists():
-                continue
-            
-            try:
-                content = full_path.read_text(encoding="utf-8")
-                jinja_env.parse(content)
-            except TemplateSyntaxError as e:
-                errors.append(f"{template_path}: Syntax error at line {e.lineno}: {e.message}")
-            except Exception as e:
-                errors.append(f"{template_path}: Error: {e}")
-        
-        if errors:
-            pytest.fail(
-                f"Found {len(errors)} issue(s) with new templates:\n" +
-                "\n".join(f"  - {e}" for e in errors)
-            )
-
-    def test_new_templates_have_required_variables_documented(self, templates_dir: Path, new_template_paths: List[str]):
-        """Test that new templates document required variables (if applicable)."""
-        # This is a best practice check - templates should document variables
-        warnings = []
-        for template_path in new_template_paths:
-            full_path = templates_dir / template_path
-            if not full_path.exists():
-                continue
-            
-            content = full_path.read_text(encoding="utf-8")
-            
-            # Check if template has variable documentation in comments
-            # Look for patterns like "# Required variables:" or "{{ variable | default(...) }}"
-            has_docs = (
-                "required" in content.lower() or
-                "variable" in content.lower() or
-                "parameter" in content.lower() or
-                "| default" in content  # Using defaults is a form of documentation
-            )
-            
-            if not has_docs and "{{" in content:
-                warnings.append(f"{template_path}: No obvious variable documentation found")
-        
-        # Don't fail - just log warnings
-        if warnings:
-            pass

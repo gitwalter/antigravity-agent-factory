@@ -1,5 +1,7 @@
 ---
 description: Agent memory patterns - conversation, long-term, and backend implementations
+name: memory-management
+type: skill
 ---
 
 # Memory Management

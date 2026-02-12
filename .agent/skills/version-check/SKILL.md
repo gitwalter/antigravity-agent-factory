@@ -1,5 +1,7 @@
 ---
 description: On-demand version audits using version-registry.json as source of truth
+name: version-check
+type: skill
 ---
 
 # Version Check

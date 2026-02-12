@@ -1,24 +1,26 @@
-"""
-{{APP_NAME}} - Main Streamlit Application
+{% from '_macros/python.tmpl' import import_block, function_def, module_docstring %}
 
-Purpose: {{APP_PURPOSE}}
-Author: {{AUTHOR}}
-Created: {{DATE}}
+{{ module_docstring(
+    title=APP_NAME ~ " - Main Streamlit Application",
+    description="Main entry point for the Streamlit application.",
+    authors=[AUTHOR],
+    created=DATE,
+    axiom_alignment=[
+        "A1 (Verifiability): All data operations are logged and traceable",
+        "A3 (Transparency): Clear UI feedback and error messages",
+        "A4 (Non-Harm): Input validation prevents invalid operations"
+    ]
+) }}
 
-Axiom Alignment:
-- A1 (Verifiability): All data operations are logged and traceable
-- A3 (Transparency): Clear UI feedback and error messages
-- A4 (Non-Harm): Input validation prevents invalid operations
-"""
-
-import streamlit as st
-import logging
-from pathlib import Path
-
-from .config.settings import get_settings
-from .utils.state import init_session_state
-from .components.sidebar import render_sidebar
-from .components.dashboard import render_dashboard
+{{ import_block([
+    {'from': 'streamlit', 'names': [], 'as_name': 'st'},
+    {'from': 'logging', 'names': []},
+    {'from': 'pathlib', 'names': ['Path']},
+    {'from': '.config.settings', 'names': ['get_settings']},
+    {'from': '.utils.state', 'names': ['init_session_state']},
+    {'from': '.components.sidebar', 'names': ['render_sidebar']},
+    {'from': '.components.dashboard', 'names': ['render_dashboard']}
+]) }}
 
 # Configure logging
 logging.basicConfig(
@@ -41,14 +43,7 @@ settings = get_settings()
 # Initialize session state
 init_session_state()
 
-
-def main():
-    """
-    Main application entry point.
-    
-    This function orchestrates the Streamlit application flow,
-    handling page routing and component rendering.
-    """
+{% call function_def('main', [], docstring="Main application entry point.\n\nThis function orchestrates the Streamlit application flow,\nhandling page routing and component rendering.") %}
     logger.info("Starting {{APP_NAME}} application")
     
     try:
@@ -73,7 +68,7 @@ def main():
         logger.error(f"Error in main application: {e}", exc_info=True)
         st.error(f"An error occurred: {str(e)}")
         st.info("Please refresh the page or contact support if the issue persists.")
-
+{% endcall %}
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,8 @@
 ---
-description: Fiori Elements app creation (List Report, Object Page, Worklist), CDS annotations for UI, value helps, draft-enabled UIs, SAP Fiori Tools usage
+description: Fiori Elements app creation (List Report, Object Page, Worklist), CDS
+  annotations for UI, value helps, draft-enabled UIs, SAP Fiori Tools usage
+name: fiori-development
+type: skill
 ---
 
 # Fiori Development

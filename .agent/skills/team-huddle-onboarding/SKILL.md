@@ -1,5 +1,8 @@
 ---
-description: Condensed 1-2 hour collaborative onboarding for small teams (2-5 people) with mini-games and shared decision-making
+description: Condensed 1-2 hour collaborative onboarding for small teams (2-5 people)
+  with mini-games and shared decision-making
+name: team-huddle-onboarding
+type: skill
 ---
 
 # Team Huddle Onboarding

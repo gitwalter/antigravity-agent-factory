@@ -1,5 +1,9 @@
 ---
-description: tRPC router setup with Next.js App Router, procedures (query, mutation, subscription), input validation with Zod, middleware and context, React Query integration, error handling, and type inference.
+description: tRPC router setup with Next.js App Router, procedures (query, mutation,
+  subscription), input validation with Zod, middleware and context, React Query integration,
+  error handling, and type inference.
+name: trpc-api
+type: skill
 ---
 
 # Trpc Api

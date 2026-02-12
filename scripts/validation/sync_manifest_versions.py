@@ -66,13 +66,7 @@ VERSION_LOCATIONS = [
         "replacement": lambda v: f'*Antigravity Agent Factory v{v}*',
         "extract_pattern": r'\*Antigravity Agent Factory v([\d.]+)\*',
     },
-    {
-        "file": "docs/ONBOARDING_GUIDE.md",
-        "name": "ONBOARDING_GUIDE.md footer",
-        "pattern": r'\*Antigravity Agent Factory v[\d.]+\*',
-        "replacement": lambda v: f'*Antigravity Agent Factory v{v}*',
-        "extract_pattern": r'\*Antigravity Agent Factory v([\d.]+)\*',
-    },    {
+{
         "file": "scripts/core/generate_project.py",
         "name": "generate_project.py comment",
         "pattern": r'# Factory Version: [\d.]+',
@@ -80,13 +74,13 @@ VERSION_LOCATIONS = [
         "extract_pattern": r'# Factory Version: ([\d.]+)',
     },
     {
-        "file": "templates/factory/cursorrules-template.md",
+        "file": ".agent/templates/factory/cursorrules-template.md",
         "name": "cursorrules-template.md header",        "pattern": r'\*\*Version\*\*: [\d.]+ \(5-Layer',
         "replacement": lambda v: f'**Version**: {v} (5-Layer',
         "extract_pattern": r'\*\*Version\*\*: ([\d.]+)',
     },
     {
-        "file": "templates/knowledge/guardian-protocol.json.tmpl",
+        "file": ".agent/templates/knowledge/guardian-protocol.json.tmpl",
         "name": "guardian-protocol.json.tmpl",
         "pattern": r'"source_factory_version": "[\d.]+"',
         "replacement": lambda v: f'"source_factory_version": "{v}"',

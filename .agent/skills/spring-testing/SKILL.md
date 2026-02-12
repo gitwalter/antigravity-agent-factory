@@ -1,5 +1,9 @@
 ---
-description: JUnit 5 patterns, Spring Boot Test slices (@WebMvcTest, @DataJpaTest), MockMvc for API testing, Testcontainers for integration tests (PostgreSQL, Redis, Kafka), Mockito patterns, Test fixtures with @TestConfiguration
+description: JUnit 5 patterns, Spring Boot Test slices (@WebMvcTest, @DataJpaTest),
+  MockMvc for API testing, Testcontainers for integration tests (PostgreSQL, Redis,
+  Kafka), Mockito patterns, Test fixtures with @TestConfiguration
+name: spring-testing
+type: skill
 ---
 
 # Spring Testing

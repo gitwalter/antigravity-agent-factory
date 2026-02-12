@@ -1,5 +1,8 @@
 ---
-description: Guide users through selecting enforcement patterns that ensure agent system lives its values
+description: Guide users through selecting enforcement patterns that ensure agent
+  system lives its values
+name: enforcement-selection
+type: skill
 ---
 
 # Enforcement Selection

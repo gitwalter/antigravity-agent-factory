@@ -1,5 +1,8 @@
 ---
-description: Structured knowledge capture to extract team wisdom, lessons learned, and best practices for embedding in agent systems
+description: Structured knowledge capture to extract team wisdom, lessons learned,
+  and best practices for embedding in agent systems
+name: wisdom-harvest
+type: skill
 ---
 
 # Wisdom Harvest

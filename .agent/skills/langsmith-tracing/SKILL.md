@@ -1,5 +1,7 @@
 ---
 description: Debugging and tracing LangChain/LangGraph with LangSmith MCP
+name: langsmith-tracing
+type: skill
 ---
 
 # Langsmith Tracing

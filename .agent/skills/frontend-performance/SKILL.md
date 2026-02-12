@@ -1,5 +1,7 @@
 ---
 description: Core Web Vitals optimization, code splitting, and React performance patterns
+name: frontend-performance
+type: skill
 ---
 
 # Frontend Performance

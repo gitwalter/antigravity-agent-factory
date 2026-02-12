@@ -1,5 +1,8 @@
 ---
-description: Detailed CrewAI agent design patterns - role design, backstories, collaboration, hierarchical vs sequential processes, tool integration
+description: Detailed CrewAI agent design patterns - role design, backstories, collaboration,
+  hierarchical vs sequential processes, tool integration
+name: crewai-agents
+type: skill
 ---
 
 # Crewai Agents

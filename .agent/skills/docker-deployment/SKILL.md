@@ -1,5 +1,9 @@
 ---
-description: Dockerfile best practices (multi-stage builds, layer caching), Docker Compose for development, GPU support (NVIDIA Container Toolkit), Image optimization (slim/distroless), Health checks, Secrets management, Volume patterns
+description: Dockerfile best practices (multi-stage builds, layer caching), Docker
+  Compose for development, GPU support (NVIDIA Container Toolkit), Image optimization
+  (slim/distroless), Health checks, Secrets management, Volume patterns
+name: docker-deployment
+type: skill
 ---
 
 # Docker Deployment

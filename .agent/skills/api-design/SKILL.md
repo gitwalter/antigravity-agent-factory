@@ -1,5 +1,10 @@
 ---
-description: REST API design (resource naming, HTTP methods, status codes), OpenAPI/Swagger documentation, API versioning strategies (URL, header, query), GraphQL schema design, gRPC proto definitions, Pagination patterns, Error response format, Rate limiting headers
+description: REST API design (resource naming, HTTP methods, status codes), OpenAPI/Swagger
+  documentation, API versioning strategies (URL, header, query), GraphQL schema design,
+  gRPC proto definitions, Pagination patterns, Error response format, Rate limiting
+  headers
+name: api-design
+type: skill
 ---
 
 # Api Design

@@ -1,5 +1,8 @@
 ---
-description: ReAct pattern implementation, reflection and self-correction, planning and task decomposition, iterative refinement patterns
+description: ReAct pattern implementation, reflection and self-correction, planning
+  and task decomposition, iterative refinement patterns
+name: agentic-loops
+type: skill
 ---
 
 # Agentic Loops

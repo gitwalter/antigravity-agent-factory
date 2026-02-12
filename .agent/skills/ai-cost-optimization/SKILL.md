@@ -1,5 +1,8 @@
 ---
-description: Optimize AI/LLM costs through intelligent routing, caching, batching, and usage analytics
+description: Optimize AI/LLM costs through intelligent routing, caching, batching,
+  and usage analytics
+name: ai-cost-optimization
+type: skill
 ---
 
 # Ai Cost Optimization

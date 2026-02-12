@@ -1,5 +1,8 @@
 ---
-description: Blazor Server, WebAssembly, and Auto render modes, component lifecycle, state management, JavaScript interop, authentication
+description: Blazor Server, WebAssembly, and Auto render modes, component lifecycle,
+  state management, JavaScript interop, authentication
+name: blazor-development
+type: skill
 ---
 
 # Blazor Development

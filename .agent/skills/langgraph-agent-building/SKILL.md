@@ -1,5 +1,7 @@
 ---
 description: Build stateful agents and workflows with LangGraph 1.x
+name: langgraph-agent-building
+type: skill
 ---
 
 # Langgraph Agent Building

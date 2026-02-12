@@ -1,5 +1,8 @@
 ---
-description: Systematic error detection and fixing strategy for CI/CD pipeline failures with intelligent test packaging
+description: Systematic error detection and fixing strategy for CI/CD pipeline failures
+  with intelligent test packaging
+name: pipeline-error-fix
+type: skill
 ---
 
 # Pipeline Error Fix

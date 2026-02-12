@@ -1,5 +1,7 @@
 ---
 description: Code and document template generation skill
+name: template-generation
+type: skill
 ---
 
 # Template Generation

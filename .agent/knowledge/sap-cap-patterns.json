@@ -261,7 +261,7 @@
     "abap_cloud_patterns": {
       "description": "ABAP Cloud-compatible patterns",
       "use_when": "Developing for SAP BTP ABAP Environment",
-      "code_example": "// Use released APIs only\n\" ✅ Allowed: Released API\nDATA(lo_http_client) = cl_web_http_client_manager=>create_by_http_destination(\n  i_destination = 'MY_DESTINATION'\n).\n\n\" ❌ Not allowed: Direct database access\n\" SELECT * FROM ztravel INTO TABLE @DATA(lt_travel).\n\n\" ✅ Use: Released API for database access\nSELECT FROM ztravel\n  FIELDS *\n  INTO TABLE @DATA(lt_travel).\n\n// Use released function modules\n\" ✅ Allowed: Released function module\nCALL FUNCTION 'RFC_SYSTEM_INFO'\n  DESTINATION 'BACKEND'\n  IMPORTING\n    rfcsi_export = DATA(ls_rfcsi).\n\n\" ❌ Not allowed: Custom function modules\n\" CALL FUNCTION 'Z_CUSTOM_FUNCTION'.\n\n// Use released classes\n\" ✅ Allowed: Released class\nDATA(lo_json_writer) = cl_sxml_string_writer=>create( type = if_sxml=>co_xt_json ).\n\n\" ❌ Not allowed: System classes\n\" DATA(lo_system) = cl_system=>get_instance( ).\n\n// Use CDS views instead of direct table access\n\" ✅ Preferred: CDS view\nSELECT FROM zi_travel\n  FIELDS *\n  INTO TABLE @DATA(lt_travel).\n\n\" ❌ Avoid: Direct table access\n\" SELECT FROM ztravel INTO TABLE @DATA(lt_travel).",
+      "code_example": "// Use released APIs only\n\" \u2705 Allowed: Released API\nDATA(lo_http_client) = cl_web_http_client_manager=>create_by_http_destination(\n  i_destination = 'MY_DESTINATION'\n).\n\n\" \u274c Not allowed: Direct database access\n\" SELECT * FROM ztravel INTO TABLE @DATA(lt_travel).\n\n\" \u2705 Use: Released API for database access\nSELECT FROM ztravel\n  FIELDS *\n  INTO TABLE @DATA(lt_travel).\n\n// Use released function modules\n\" \u2705 Allowed: Released function module\nCALL FUNCTION 'RFC_SYSTEM_INFO'\n  DESTINATION 'BACKEND'\n  IMPORTING\n    rfcsi_export = DATA(ls_rfcsi).\n\n\" \u274c Not allowed: Custom function modules\n\" CALL FUNCTION 'Z_CUSTOM_FUNCTION'.\n\n// Use released classes\n\" \u2705 Allowed: Released class\nDATA(lo_json_writer) = cl_sxml_string_writer=>create( type = if_sxml=>co_xt_json ).\n\n\" \u274c Not allowed: System classes\n\" DATA(lo_system) = cl_system=>get_instance( ).\n\n// Use CDS views instead of direct table access\n\" \u2705 Preferred: CDS view\nSELECT FROM zi_travel\n  FIELDS *\n  INTO TABLE @DATA(lt_travel).\n\n\" \u274c Avoid: Direct table access\n\" SELECT FROM ztravel INTO TABLE @DATA(lt_travel).",
       "best_practices": [
         "Only use released APIs",
         "Check API release status in SAP Help",
@@ -298,104 +298,101 @@
       ]
     }
   },
-  "best_practices": {
-    "cds_modeling": [
-      "Separate base views from projection views",
-      "Use aspects for reusable field groups",
-      "Define proper associations and compositions",
-      "Add semantic annotations for metadata",
-      "Use type definitions for consistency",
-      "Include audit fields in all entities"
-    ],
-    "rap_development": [
-      "Use draft for complex editing scenarios",
-      "Implement proper validations and determinations",
-      "Set field control appropriately",
-      "Configure authorization properly",
-      "Handle numbering correctly",
-      "Test behavior implementations thoroughly"
-    ],
-    "cap_development": [
-      "Separate service definitions from implementations",
-      "Use before/after handlers appropriately",
-      "Emit events for async processing",
-      "Handle errors gracefully",
-      "Support multitenancy from the start",
-      "Use database-agnostic queries when possible"
-    ],
-    "abap_cloud": [
-      "Only use released APIs",
-      "Check API release status regularly",
-      "Use CDS views instead of direct table access",
-      "Avoid system classes and function modules",
-      "Follow Clean ABAP guidelines",
-      "Write comprehensive unit tests"
-    ],
-    "fiori_integration": [
-      "Use proper UI annotations",
-      "Configure list reports and object pages",
-      "Set positions and importance correctly",
-      "Use facets for object pages",
-      "Configure search properly",
-      "Test on different devices"
-    ],
-    "security": [
-      "Always implement authorization checks",
-      "Use XSUAA for authentication",
-      "Filter by tenant in multitenant apps",
-      "Validate all inputs",
-      "Never expose sensitive data",
-      "Use secure communication (HTTPS)"
-    ],
-    "testing": [
-      "Write ABAP Unit tests for all logic",
-      "Test both success and error cases",
-      "Use mocks for dependencies",
-      "Follow Given-When-Then pattern",
-      "Set appropriate risk levels",
-      "Test authorization scenarios"
-    ]
-  },
-  "anti_patterns": {
-    "direct_table_access": {
+  "best_practices": [
+    "Separate base views from projection views",
+    "Use aspects for reusable field groups",
+    "Define proper associations and compositions",
+    "Add semantic annotations for metadata",
+    "Use type definitions for consistency",
+    "Include audit fields in all entities",
+    "Use draft for complex editing scenarios",
+    "Implement proper validations and determinations",
+    "Set field control appropriately",
+    "Configure authorization properly",
+    "Handle numbering correctly",
+    "Test behavior implementations thoroughly",
+    "Separate service definitions from implementations",
+    "Use before/after handlers appropriately",
+    "Emit events for async processing",
+    "Handle errors gracefully",
+    "Support multitenancy from the start",
+    "Use database-agnostic queries when possible",
+    "Only use released APIs",
+    "Check API release status regularly",
+    "Use CDS views instead of direct table access",
+    "Avoid system classes and function modules",
+    "Follow Clean ABAP guidelines",
+    "Write comprehensive unit tests",
+    "Use proper UI annotations",
+    "Configure list reports and object pages",
+    "Set positions and importance correctly",
+    "Use facets for object pages",
+    "Configure search properly",
+    "Test on different devices",
+    "Always implement authorization checks",
+    "Use XSUAA for authentication",
+    "Filter by tenant in multitenant apps",
+    "Validate all inputs",
+    "Never expose sensitive data",
+    "Use secure communication (HTTPS)",
+    "Write ABAP Unit tests for all logic",
+    "Test both success and error cases",
+    "Use mocks for dependencies",
+    "Follow Given-When-Then pattern",
+    "Set appropriate risk levels",
+    "Test authorization scenarios"
+  ],
+  "anti_patterns": [
+    {
+      "name": "direct_table_access",
       "description": "Accessing database tables directly instead of CDS views",
       "problem": "Bypasses authorization, harder to maintain",
       "solution": "Always use CDS views for data access"
     },
-    "business_logic_in_ui": {
+    {
+      "name": "business_logic_in_ui",
       "description": "Putting business logic in UI layer",
       "problem": "Logic not reusable, hard to test",
       "solution": "Move logic to behavior implementations or service handlers"
     },
-    "missing_authorization": {
+    {
+      "name": "missing_authorization",
       "description": "Not implementing proper authorization checks",
       "problem": "Security vulnerability",
       "solution": "Always implement authorization in behavior definitions"
     },
-    "hardcoded_values": {
+    {
+      "name": "hardcoded_values",
       "description": "Using hardcoded values instead of constants or enums",
       "problem": "Hard to maintain, error-prone",
       "solution": "Use constants, enums, or value ranges"
     },
-    "ignoring_errors": {
+    {
+      "name": "ignoring_errors",
       "description": "Not handling exceptions properly",
       "problem": "Unclear error messages, potential data corruption",
       "solution": "Always use TRY-CATCH, create proper exception classes"
     },
-    "no_unit_tests": {
+    {
+      "name": "no_unit_tests",
       "description": "Not writing unit tests",
       "problem": "No verification, regression risk",
       "solution": "Write ABAP Unit tests for all business logic"
     },
-    "unreleased_apis": {
+    {
+      "name": "unreleased_apis",
       "description": "Using unreleased APIs in ABAP Cloud",
       "problem": "Not compatible with BTP, may break",
       "solution": "Only use released APIs, check compatibility"
     },
-    "missing_tenant_isolation": {
+    {
+      "name": "missing_tenant_isolation",
       "description": "Not filtering by tenant in multitenant apps",
       "problem": "Data leakage between tenants",
       "solution": "Always filter by tenant, verify ownership"
     }
-  }
+  ],
+  "id": "sap-cap-patterns",
+  "name": "Sap Cap Patterns",
+  "category": "patterns"
 }

@@ -1,5 +1,7 @@
 ---
 description: Technology stack selection and configuration skill
+name: stack-configuration
+type: skill
 ---
 
 # Stack Configuration

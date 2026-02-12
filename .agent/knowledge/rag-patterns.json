@@ -2,7 +2,8 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "RAG Patterns",
   "description": "Retrieval-Augmented Generation patterns for building production RAG systems",
-  "version": "1.0.0",  "axiomAlignment": {
+  "version": "1.0.0",
+  "axiomAlignment": {
     "A1_verifiability": "RAG grounds responses in source documents",
     "A3_transparency": "Citations enable fact-checking"
   },
@@ -10,7 +11,15 @@
     "basic_rag": {
       "description": "Simple retrieve-then-generate pipeline",
       "use_when": "Starting with RAG, simple use cases",
-      "components": ["Document Loader", "Text Splitter", "Embeddings", "Vector Store", "Retriever", "LLM"],      "code_example": "from langchain_community.document_loaders import PyPDFLoader\nfrom langchain.text_splitter import RecursiveCharacterTextSplitter\nfrom langchain_openai import OpenAIEmbeddings, ChatOpenAI\nfrom langchain_community.vectorstores import Chroma\nfrom langchain_core.prompts import ChatPromptTemplate\nfrom langchain_core.runnables import RunnablePassthrough\nfrom langchain_core.output_parsers import StrOutputParser\n\n# 1. Load documents\nloader = PyPDFLoader('document.pdf')\ndocs = loader.load()\n\n# 2. Split into chunks\ntext_splitter = RecursiveCharacterTextSplitter(\n    chunk_size=1000,\n    chunk_overlap=200\n)\nchunks = text_splitter.split_documents(docs)\n\n# 3. Create embeddings and store\nembeddings = OpenAIEmbeddings(model='text-embedding-3-small')\nvectorstore = Chroma.from_documents(chunks, embeddings)\nretriever = vectorstore.as_retriever(search_kwargs={'k': 5})\n\n# 4. Create RAG chain\nllm = ChatOpenAI(model='gpt-4o')\n\nprompt = ChatPromptTemplate.from_template('''\nAnswer the question based on the context below.\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:''')\n\ndef format_docs(docs):\n    return '\\n\\n'.join(doc.page_content for doc in docs)\n\nrag_chain = (\n    {'context': retriever | format_docs, 'question': RunnablePassthrough()}\n    | prompt\n    | llm\n    | StrOutputParser()\n)\n\n# Query\nresponse = rag_chain.invoke('What is the main topic?')\nprint(response)",
+      "components": [
+        "Document Loader",
+        "Text Splitter",
+        "Embeddings",
+        "Vector Store",
+        "Retriever",
+        "LLM"
+      ],
+      "code_example": "from langchain_community.document_loaders import PyPDFLoader\nfrom langchain.text_splitter import RecursiveCharacterTextSplitter\nfrom langchain_openai import OpenAIEmbeddings, ChatOpenAI\nfrom langchain_community.vectorstores import Chroma\nfrom langchain_core.prompts import ChatPromptTemplate\nfrom langchain_core.runnables import RunnablePassthrough\nfrom langchain_core.output_parsers import StrOutputParser\n\n# 1. Load documents\nloader = PyPDFLoader('document.pdf')\ndocs = loader.load()\n\n# 2. Split into chunks\ntext_splitter = RecursiveCharacterTextSplitter(\n    chunk_size=1000,\n    chunk_overlap=200\n)\nchunks = text_splitter.split_documents(docs)\n\n# 3. Create embeddings and store\nembeddings = OpenAIEmbeddings(model='text-embedding-3-small')\nvectorstore = Chroma.from_documents(chunks, embeddings)\nretriever = vectorstore.as_retriever(search_kwargs={'k': 5})\n\n# 4. Create RAG chain\nllm = ChatOpenAI(model='gpt-4o')\n\nprompt = ChatPromptTemplate.from_template('''\nAnswer the question based on the context below.\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:''')\n\ndef format_docs(docs):\n    return '\\n\\n'.join(doc.page_content for doc in docs)\n\nrag_chain = (\n    {'context': retriever | format_docs, 'question': RunnablePassthrough()}\n    | prompt\n    | llm\n    | StrOutputParser()\n)\n\n# Query\nresponse = rag_chain.invoke('What is the main topic?')\nprint(response)",
       "best_practices": [
         "Start simple, add complexity as needed",
         "Log retrieved chunks for debugging",
@@ -74,7 +83,8 @@
         "Retrieve children first, then fetch parent for context",
         "Use parent_id to group related chunks",
         "Store both children and parents in vector store"
-      ]    }
+      ]
+    }
   },
   "retrieval_strategies": {
     "similarity": {
@@ -129,7 +139,8 @@
         "Use LLM to generate diverse perspectives",
         "Combine results using union or weighted scoring",
         "Track which query found each document for debugging"
-      ]    },
+      ]
+    },
     "self_query": {
       "description": "LLM generates metadata filters from query",
       "code_example": "from langchain.retrievers.self_query.base import SelfQueryRetriever\nfrom langchain.chains.query_constructor.base import AttributeInfo\n\nmetadata_field_info = [\n    AttributeInfo(name='source', description='Document source', type='string'),\n    AttributeInfo(name='date', description='Publication date', type='date'),\n    AttributeInfo(name='category', description='Category', type='string')\n]\n\nretriever = SelfQueryRetriever.from_llm(\n    llm=llm,\n    vectorstore=vectorstore,\n    document_contents='Technical documentation',\n    metadata_field_info=metadata_field_info\n)"
@@ -153,7 +164,8 @@
         "Local cross-encoders are free but slower",
         "Reranking improves precision at cost of latency",
         "Consider reranking only for top candidates (20-50 docs)"
-      ]    }
+      ]
+    }
   },
   "prompt_patterns": {
     "basic_qa": {
@@ -177,5 +189,11 @@
         "context_recall": "Did we retrieve all needed context?"
       }
     }
-  }
+  },
+  "id": "rag-patterns",
+  "name": "Rag Patterns",
+  "category": "patterns",
+  "patterns": {},
+  "best_practices": [],
+  "anti_patterns": []
 }

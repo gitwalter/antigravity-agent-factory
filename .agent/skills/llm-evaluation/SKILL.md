@@ -1,5 +1,8 @@
 ---
-description: RAGAS evaluation setup, DeepEval integration, LangSmith evaluation runs, custom metrics, retrieval quality metrics, regression testing for LLM outputs
+description: RAGAS evaluation setup, DeepEval integration, LangSmith evaluation runs,
+  custom metrics, retrieval quality metrics, regression testing for LLM outputs
+name: llm-evaluation
+type: skill
 ---
 
 # Llm Evaluation

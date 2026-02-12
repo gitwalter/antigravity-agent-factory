@@ -1,5 +1,7 @@
 ---
 description: .cursorrules file generation skill
+name: cursorrules-generation
+type: skill
 ---
 
 # Cursorrules Generation

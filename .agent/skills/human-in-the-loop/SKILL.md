@@ -1,5 +1,7 @@
 ---
 description: Approval workflows, interrupts, and feedback patterns for agents
+name: human-in-the-loop
+type: skill
 ---
 
 # Human In The Loop

@@ -1,5 +1,9 @@
 ---
-description: RAP business object creation (managed, unmanaged, abstract), behavior definitions, determinations, validations, actions, draft handling, authorization control
+description: RAP business object creation (managed, unmanaged, abstract), behavior
+  definitions, determinations, validations, actions, draft handling, authorization
+  control
+name: rap-development
+type: skill
 ---
 
 # Rap Development

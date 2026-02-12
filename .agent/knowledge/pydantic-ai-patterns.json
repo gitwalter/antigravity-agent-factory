@@ -47,7 +47,7 @@
   "tool_definition_patterns": {
     "basic_tool": {
       "description": "Define a simple tool",
-      "code_example": "from pydantic_ai import Agent\nfrom pydantic_ai.tools import tool\nfrom pydantic_ai.models.openai import OpenAIModel\n\n# Define tool\n@tool\ndef get_weather(location: str) -> str:\n    '''Get the current weather for a location.'''\n    return f'Weather in {location}: Sunny, 72°F'\n\n# Create agent with tool\nmodel = OpenAIModel('gpt-4')\nagent = Agent(\n    model=model,\n    tools=[get_weather],\n    system_prompt='You have access to weather information.'\n)\n\n# Use agent\nresult = agent.run_sync('What is the weather in San Francisco?')\nprint(result.data)",
+      "code_example": "from pydantic_ai import Agent\nfrom pydantic_ai.tools import tool\nfrom pydantic_ai.models.openai import OpenAIModel\n\n# Define tool\n@tool\ndef get_weather(location: str) -> str:\n    '''Get the current weather for a location.'''\n    return f'Weather in {location}: Sunny, 72\u00b0F'\n\n# Create agent with tool\nmodel = OpenAIModel('gpt-4')\nagent = Agent(\n    model=model,\n    tools=[get_weather],\n    system_prompt='You have access to weather information.'\n)\n\n# Use agent\nresult = agent.run_sync('What is the weather in San Francisco?')\nprint(result.data)",
       "best_practices": [
         "Use @tool decorator for tools",
         "Provide clear docstrings",
@@ -76,7 +76,7 @@
     },
     "multiple_tools": {
       "description": "Agent with multiple tools",
-      "code_example": "from pydantic_ai import Agent\nfrom pydantic_ai.tools import tool\n\n@tool\ndef calculator(expression: str) -> str:\n    '''Evaluate a mathematical expression.'''\n    return str(eval(expression))\n\n@tool\ndef get_weather(location: str) -> str:\n    '''Get the current weather for a location.'''\n    return f'Weather in {location}: Sunny, 72°F'\n\n@tool\ndef search_documents(query: str) -> str:\n    '''Search documents for information.'''\n    return f'Results for: {query}'\n\n# Create agent with multiple tools\nagent = Agent(\n    model=model,\n    tools=[calculator, get_weather, search_documents],\n    system_prompt='You have access to multiple tools.'\n)",
+      "code_example": "from pydantic_ai import Agent\nfrom pydantic_ai.tools import tool\n\n@tool\ndef calculator(expression: str) -> str:\n    '''Evaluate a mathematical expression.'''\n    return str(eval(expression))\n\n@tool\ndef get_weather(location: str) -> str:\n    '''Get the current weather for a location.'''\n    return f'Weather in {location}: Sunny, 72\u00b0F'\n\n@tool\ndef search_documents(query: str) -> str:\n    '''Search documents for information.'''\n    return f'Results for: {query}'\n\n# Create agent with multiple tools\nagent = Agent(\n    model=model,\n    tools=[calculator, get_weather, search_documents],\n    system_prompt='You have access to multiple tools.'\n)",
       "best_practices": [
         "Provide clear tool descriptions",
         "Use descriptive tool names",
@@ -205,28 +205,32 @@
       ]
     }
   },
-  "anti_patterns": {
-    "no_result_type": {
+  "anti_patterns": [
+    {
+      "name": "no_result_type",
       "description": "Not using result_type for structured outputs",
       "problem": "Unstructured outputs, harder to validate",
       "solution": "Always use result_type with Pydantic models"
     },
-    "ignoring_errors": {
+    {
+      "name": "ignoring_errors",
       "description": "Not handling agent errors",
       "problem": "Silent failures, poor UX",
       "solution": "Always handle PydanticAIError and other exceptions"
     },
-    "no_tool_descriptions": {
+    {
+      "name": "no_tool_descriptions",
       "description": "Tools without clear docstrings",
       "problem": "Poor tool selection by agent",
       "solution": "Provide clear, descriptive docstrings for all tools"
     },
-    "unbounded_conversation": {
+    {
+      "name": "unbounded_conversation",
       "description": "Not limiting conversation history",
       "problem": "Token limit errors, high costs",
       "solution": "Limit message_history length, clear when needed"
     }
-  },
+  ],
   "best_practices_summary": [
     "Use result_type with Pydantic models for structured outputs",
     "Provide clear tool docstrings",
@@ -236,5 +240,10 @@
     "Use appropriate model for task complexity",
     "Validate results with Pydantic",
     "Use async for I/O-bound operations"
-  ]
+  ],
+  "id": "pydantic-ai-patterns",
+  "name": "Pydantic Ai Patterns",
+  "category": "patterns",
+  "patterns": {},
+  "best_practices": []
 }

@@ -1,5 +1,7 @@
 ---
 description: Interactive guidance for selecting appropriate trust verification tier
+name: axiom-selection
+type: skill
 ---
 
 # Axiom Selection

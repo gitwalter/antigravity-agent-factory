@@ -1,5 +1,8 @@
 ---
-description: Guide users through selecting practices that maintain excellence, alignment, and continuous improvement
+description: Guide users through selecting practices that maintain excellence, alignment,
+  and continuous improvement
+name: practice-selection
+type: skill
 ---
 
 # Practice Selection

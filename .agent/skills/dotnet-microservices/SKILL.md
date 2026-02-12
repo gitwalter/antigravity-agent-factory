@@ -1,5 +1,8 @@
 ---
-description: Service decomposition, API Gateway with YARP, inter-service communication (gRPC, REST, message bus), distributed caching, health checks, circuit breakers
+description: Service decomposition, API Gateway with YARP, inter-service communication
+  (gRPC, REST, message bus), distributed caching, health checks, circuit breakers
+name: dotnet-microservices
+type: skill
 ---
 
 # Dotnet Microservices

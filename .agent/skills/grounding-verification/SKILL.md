@@ -1,5 +1,8 @@
 ---
-description: Universal two-pass verification for LLM grounding using confidence delta comparison
+description: Universal two-pass verification for LLM grounding using confidence delta
+  comparison
+name: grounding-verification
+type: skill
 ---
 
 # Grounding Verification

@@ -1,5 +1,9 @@
 ---
-description: Prisma schema design patterns, relations (1:1, 1:N, M:N), migrations workflow, Prisma Client queries (findMany, create, update, transactions), seeding, type-safe queries, and performance optimization.
+description: Prisma schema design patterns, relations (1:1, 1:N, M:N), migrations
+  workflow, Prisma Client queries (findMany, create, update, transactions), seeding,
+  type-safe queries, and performance optimization.
+name: prisma-database
+type: skill
 ---
 
 # Prisma Database

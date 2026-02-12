@@ -1,5 +1,8 @@
 ---
-description: Fast-track 10-15 minute onboarding for individual developers with guided prompts and celebrations
+description: Fast-track 10-15 minute onboarding for individual developers with guided
+  prompts and celebrations
+name: express-onboarding
+type: skill
 ---
 
 # Express Onboarding

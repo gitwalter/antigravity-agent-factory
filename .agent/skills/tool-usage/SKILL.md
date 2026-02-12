@@ -1,5 +1,7 @@
 ---
 description: Tool design, binding, and error handling patterns for LangChain agents
+name: tool-usage
+type: skill
 ---
 
 # Tool Usage

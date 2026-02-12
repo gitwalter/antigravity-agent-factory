@@ -1,5 +1,7 @@
 ---
 description: Unit testing with mocks, integration testing, LangSmith evaluation, benchmarking
+name: agent-testing
+type: skill
 ---
 
 # Agent Testing

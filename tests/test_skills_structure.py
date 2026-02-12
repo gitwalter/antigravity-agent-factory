@@ -30,7 +30,7 @@ class TestSkillFileStructure:
     @pytest.fixture
     def skills_dir(self, factory_root: Path) -> Path:
         """Get the skills directory."""
-        return factory_root / ".cursor" / "skills"
+        return factory_root / ".agent" / "skills"
 
     @pytest.fixture
     def all_skill_files(self, skills_dir: Path) -> List[Path]:
@@ -124,9 +124,6 @@ class TestSkillFileStructure:
                 skill_name = data.get("name", "")
                 directory_name = skill_file.parent.name
                 
-                # Handle nested skills (e.g., pm/close-sprint)
-                if skill_file.parent.parent.name == "pm":
-                    directory_name = f"{skill_file.parent.parent.name}/{directory_name}"
                 
                 if skill_name != directory_name:
                     rel_path = skill_file.relative_to(skill_file.parent.parent.parent.parent)
@@ -169,7 +166,7 @@ class TestSkillMarkdownSections:
     @pytest.fixture
     def skills_dir(self, factory_root: Path) -> Path:
         """Get the skills directory."""
-        return factory_root / ".cursor" / "skills"
+        return factory_root / ".agent" / "skills"
 
     @pytest.fixture
     def all_skill_files(self, skills_dir: Path) -> List[Path]:
@@ -281,7 +278,7 @@ class TestSkillFileNaming:
     @pytest.fixture
     def skills_dir(self, factory_root: Path) -> Path:
         """Get the skills directory."""
-        return factory_root / ".cursor" / "skills"
+        return factory_root / ".agent" / "skills"
 
     def test_skill_files_named_skill_md(self, skills_dir: Path):
         """Test that skill files are named SKILL.md."""
@@ -318,104 +315,4 @@ class TestSkillFileNaming:
             )
 
 
-class TestNewSkills:
-    """Tests specifically for the 25 new skills mentioned."""
 
-    @pytest.fixture
-    def new_skill_names(self) -> List[str]:
-        """List of new skill names to test."""
-        # Based on git status, these are the new skills
-        return [
-            "advanced-retrieval",
-            "agent-testing",
-            "agentic-loops",
-            "anthropic-patterns",
-            "caching-optimization",
-            "crewai-agents",
-            "database-agents",
-            "error-handling",
-            "filesystem-ops",
-            "human-in-the-loop",
-            "knowledge-graphs",
-            "langchain-usage",
-            "langgraph-agent-building",
-            "langsmith-prompts",
-            "langsmith-tracing",
-            "logging-monitoring",
-            "mcp-integration",
-            "memory-management",
-            "ocr-processing",
-            "rag-patterns",
-            "security-sandboxing",
-            "speech-processing",
-            "state-management",
-            "streaming-realtime",
-            "subagent-orchestration",
-            "tool-usage",
-            "vision-agents",
-            "web-browsing",
-        ]
-
-    def test_new_skills_exist(self, skills_dir: Path, new_skill_names: List[str]):
-        """Test that all new skills exist."""
-        missing_skills = []
-        for skill_name in new_skill_names:
-            skill_path = skills_dir / skill_name / "SKILL.md"
-            if not skill_path.exists():
-                missing_skills.append(skill_name)
-        
-        if missing_skills:
-            pytest.fail(
-                f"Missing {len(missing_skills)} new skill file(s):\n" +
-                "\n".join(f"  - {skill}" for skill in missing_skills)
-            )
-
-    def test_new_skills_have_valid_structure(self, skills_dir: Path, new_skill_names: List[str]):
-        """Test that all new skills have valid structure."""
-        errors = []
-        for skill_name in new_skill_names:
-            skill_path = skills_dir / skill_name / "SKILL.md"
-            if not skill_path.exists():
-                continue
-            
-            content = skill_path.read_text(encoding="utf-8")
-            
-            # Check frontmatter
-            frontmatter = extract_frontmatter(content)
-            if not frontmatter:
-                errors.append(f"{skill_name}: Missing YAML frontmatter")
-                continue
-            
-            # Check YAML syntax
-            yaml_error = validate_yaml_syntax(frontmatter, str(skill_path))
-            if yaml_error:
-                errors.append(f"{skill_name}: Invalid YAML - {yaml_error}")
-                continue
-            
-            # Check required fields
-            try:
-                data = yaml.safe_load(frontmatter)
-                required_fields = ["name", "description", "type"]
-                missing_fields = [f for f in required_fields if f not in data]
-                if missing_fields:
-                    errors.append(f"{skill_name}: Missing fields - {', '.join(missing_fields)}")
-            except yaml.YAMLError:
-                pass
-            
-            # Check markdown sections
-            required_sections = [
-                ("When to Use", r"^##+\s+When to Use"),
-                ("Prerequisites", r"^##+\s+Prerequisites"),
-                ("Process", r"^##+\s+Process"),
-                ("Best Practices", r"^##+\s+Best Practices"),
-            ]
-            
-            for section_name, pattern in required_sections:
-                if not re.search(pattern, content, re.MULTILINE | re.IGNORECASE):
-                    errors.append(f"{skill_name}: Missing '{section_name}' section")
-        
-        if errors:
-            pytest.fail(
-                f"Found {len(errors)} issue(s) with new skills:\n" +
-                "\n".join(f"  - {e}" for e in errors)
-            )

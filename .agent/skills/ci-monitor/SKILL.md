@@ -1,5 +1,8 @@
 ---
-description: Continuous CI/CD pipeline monitoring with automatic error detection and fix loop
+description: Continuous CI/CD pipeline monitoring with automatic error detection and
+  fix loop
+name: ci-monitor
+type: skill
 ---
 
 # Ci Monitor

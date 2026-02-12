@@ -1,5 +1,8 @@
 ---
-description: Graph RAG patterns, entity extraction with LLMs, relationship mapping, and Neo4j integration
+description: Graph RAG patterns, entity extraction with LLMs, relationship mapping,
+  and Neo4j integration
+name: knowledge-graphs
+type: skill
 ---
 
 # Knowledge Graphs

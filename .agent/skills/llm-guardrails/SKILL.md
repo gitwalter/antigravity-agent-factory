@@ -1,5 +1,8 @@
 ---
-description: NeMo Guardrails setup, Guardrails AI integration, prompt injection prevention, PII detection, content safety, topic control
+description: NeMo Guardrails setup, Guardrails AI integration, prompt injection prevention,
+  PII detection, content safety, topic control
+name: llm-guardrails
+type: skill
 ---
 
 # Llm Guardrails

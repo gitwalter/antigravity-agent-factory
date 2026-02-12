@@ -1,5 +1,8 @@
 ---
-description: Spawning subagents dynamically, parent-child agent communication, task delegation and result aggregation, resource management and cleanup
+description: Spawning subagents dynamically, parent-child agent communication, task
+  delegation and result aggregation, resource management and cleanup
+name: subagent-orchestration
+type: skill
 ---
 
 # Subagent Orchestration

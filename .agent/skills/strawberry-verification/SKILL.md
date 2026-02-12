@@ -1,5 +1,7 @@
 ---
 description: Factual claim verification - the canonical profile of grounding-verification
+name: strawberry-verification
+type: skill
 ---
 
 # Strawberry Verification

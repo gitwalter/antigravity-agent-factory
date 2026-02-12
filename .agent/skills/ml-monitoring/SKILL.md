@@ -1,5 +1,8 @@
 ---
-description: Monitor ML model performance, data drift, LLM observability, and production metrics
+description: Monitor ML model performance, data drift, LLM observability, and production
+  metrics
+name: ml-monitoring
+type: skill
 ---
 
 # Ml Monitoring

@@ -249,10 +249,10 @@ antigravity-agent-factory/
 │       ├── analyze-knowledge-gaps/
 │       ├── axiom-selection/
 │       └── ...                       # + more skills
-│   ├── patterns/                    # Reusable patterns (302+ files)
-│   ├── templates/                   # Code templates (302+ files)
+│   ├── patterns/                    # Reusable patterns (113+ files)
+│   ├── templates/                   # Code templates (306+ files)
 │   ├── blueprints/                  # Technology stack blueprints (34 blueprints)
-│   ├── knowledge/                   # Knowledge base (302 files)
+│   ├── knowledge/                   # Knowledge base (234 files)
 │   └── workflows/                   # Workflow definitions
 │       ├── python-fastapi/
 │   ├── python-streamlit/
@@ -268,9 +268,9 @@ antigravity-agent-factory/
 │   ├── sap-rap/
 │   ├── sap-cap/
 │   └── sap-cpi-pi/
-├── knowledge/                   # Reference data (302+ files)
+├── knowledge/                   # Reference data (305+ files)
 │   └── *.json                   # Stack, workflow, MCP, security, AI patterns
-├── templates/                   # Code and document templates (302+ files)
+├── templates/                   # Code and document templates (305+ files)
 │   ├── factory/                 # Factory templates (cursorrules, PURPOSE.md, etc.)│   ├── ai/                      # AI agent templates
 │   ├── python/                  # Python templates (FastAPI, Streamlit)
 │   ├── typescript/              # TypeScript templates (Next.js)

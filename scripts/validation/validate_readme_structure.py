@@ -351,8 +351,10 @@ class StructureValidator:
             return False
             
         content = self.readme_path.read_text(encoding="utf-8")
+        lines = content.splitlines()
         actual_counts = self.scan_all()
-        updated_content = content
+        updated_lines = list(lines)
+        modified = False
         
         for section_name, config in self.scan_config.items():
             pattern = config.get("readme_pattern")
@@ -361,17 +363,24 @@ class StructureValidator:
                 
             actual = actual_counts.get(section_name, 0)
             
-            # Replace pattern match with new count
-            def replacer(match):
-                # Preserve the format but update the number
-                prefix = match.group(0)[:match.start(1) - match.start(0)]
-                suffix = match.group(0)[match.end(1) - match.start(0):]
-                return f"{prefix}{actual}{suffix}"
+            # Find the line for this section
+            for i, line in enumerate(lines):
+                # Context check: line must contain section name or path
+                if section_name.lower() in line.lower() or config["dir"].lower() in line.lower():
+                    match = re.search(pattern, line, re.IGNORECASE)
+                    if match:
+                        # Construct replacement
+                        prefix = line[:match.start(1)]
+                        suffix = line[match.end(1):]
+                        new_line = f"{prefix}{actual}{suffix}"
+                        
+                        if new_line != updated_lines[i]:
+                            updated_lines[i] = new_line
+                            modified = True
+                        break
             
-            updated_content = re.sub(pattern, replacer, updated_content, flags=re.IGNORECASE)
-            
-        if updated_content != content:
-            self.readme_path.write_text(updated_content, encoding="utf-8")
+        if modified:
+            self.readme_path.write_text("\n".join(updated_lines), encoding="utf-8")
             return True
         return False
     

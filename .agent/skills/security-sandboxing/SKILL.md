@@ -1,5 +1,8 @@
 ---
-description: Input validation and sanitization, output filtering, code execution safety, and permission management
+description: Input validation and sanitization, output filtering, code execution safety,
+  and permission management
+name: security-sandboxing
+type: skill
 ---
 
 # Security Sandboxing

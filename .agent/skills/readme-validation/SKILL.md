@@ -1,5 +1,8 @@
 ---
-description: Validates that project structure documented in README.md accurately reflects the actual filesystem structure
+description: Validates that project structure documented in README.md accurately reflects
+  the actual filesystem structure
+name: readme-validation
+type: skill
 ---
 
 # Readme Validation

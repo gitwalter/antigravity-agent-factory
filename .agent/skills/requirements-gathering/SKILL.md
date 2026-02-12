@@ -1,5 +1,8 @@
 ---
-description: 5-layer requirements elicitation for Cursor agent system generation with axioms, purpose, and methodology
+description: 5-layer requirements elicitation for Cursor agent system generation with
+  axioms, purpose, and methodology
+name: requirements-gathering
+type: skill
 ---
 
 # Requirements Gathering

@@ -1,5 +1,8 @@
 ---
-description: Azure App Service deployment, Azure Functions, Service Bus messaging, Key Vault integration, Container Apps, Application Insights
+description: Azure App Service deployment, Azure Functions, Service Bus messaging,
+  Key Vault integration, Container Apps, Application Insights
+name: azure-integration
+type: skill
 ---
 
 # Azure Integration

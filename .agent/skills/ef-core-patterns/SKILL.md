@@ -1,5 +1,8 @@
 ---
-description: Entity Framework Core patterns for data access, migrations, and query optimization
+description: Entity Framework Core patterns for data access, migrations, and query
+  optimization
+name: ef-core-patterns
+type: skill
 ---
 
 # Ef Core Patterns

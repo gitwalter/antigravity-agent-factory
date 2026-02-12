@@ -1,5 +1,7 @@
 ---
 description: Create and export agent bundles for portable behavior transfer
+name: export-agent-bundle
+type: skill
 ---
 
 # Export Agent Bundle

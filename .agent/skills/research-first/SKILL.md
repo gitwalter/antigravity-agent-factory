@@ -1,5 +1,7 @@
 ---
 description: Research existing solutions before building to create multiplied value
+name: research-first
+type: skill
 ---
 
 # Research First

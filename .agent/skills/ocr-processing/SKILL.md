@@ -1,5 +1,8 @@
 ---
-description: Image-to-text with various engines (Tesseract, EasyOCR, cloud APIs), PDF text extraction, table recognition, and layout analysis
+description: Image-to-text with various engines (Tesseract, EasyOCR, cloud APIs),
+  PDF text extraction, table recognition, and layout analysis
+name: ocr-processing
+type: skill
 ---
 
 # Ocr Processing

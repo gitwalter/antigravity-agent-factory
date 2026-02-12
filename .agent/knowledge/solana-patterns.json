@@ -18,18 +18,50 @@
       "key_insight": "Unlike Ethereum where contracts own state, Solana programs receive accounts as inputs",
       "account_structure": {
         "fields": [
-          {"name": "lamports", "type": "u64", "description": "Balance in lamports (1 SOL = 1B lamports)"},
-          {"name": "owner", "type": "Pubkey", "description": "Program that owns this account"},
-          {"name": "executable", "type": "bool", "description": "Whether account contains program code"},
-          {"name": "data", "type": "Vec<u8>", "description": "Raw bytes of account data"},
-          {"name": "rent_epoch", "type": "u64", "description": "Next epoch rent is due"}
+          {
+            "name": "lamports",
+            "type": "u64",
+            "description": "Balance in lamports (1 SOL = 1B lamports)"
+          },
+          {
+            "name": "owner",
+            "type": "Pubkey",
+            "description": "Program that owns this account"
+          },
+          {
+            "name": "executable",
+            "type": "bool",
+            "description": "Whether account contains program code"
+          },
+          {
+            "name": "data",
+            "type": "Vec<u8>",
+            "description": "Raw bytes of account data"
+          },
+          {
+            "name": "rent_epoch",
+            "type": "u64",
+            "description": "Next epoch rent is due"
+          }
         ]
       },
       "account_types": [
-        {"type": "Program Account", "description": "Executable, contains compiled BPF bytecode"},
-        {"type": "Data Account", "description": "Non-executable, stores state for programs"},
-        {"type": "Native Account", "description": "System programs (System, Token, etc.)"},
-        {"type": "Sysvar Account", "description": "Cluster state (clock, rent, etc.)"}
+        {
+          "type": "Program Account",
+          "description": "Executable, contains compiled BPF bytecode"
+        },
+        {
+          "type": "Data Account",
+          "description": "Non-executable, stores state for programs"
+        },
+        {
+          "type": "Native Account",
+          "description": "System programs (System, Token, etc.)"
+        },
+        {
+          "type": "Sysvar Account",
+          "description": "Cluster state (clock, rent, etc.)"
+        }
       ],
       "best_practices": [
         "Always verify account ownership before trusting data",
@@ -87,14 +119,31 @@
       "description": "Transactions contain one or more instructions executed atomically",
       "structure": {
         "transaction": {
-          "components": ["signatures", "message"],
-          "message_components": ["header", "account_keys", "recent_blockhash", "instructions"]
+          "components": [
+            "signatures",
+            "message"
+          ],
+          "message_components": [
+            "header",
+            "account_keys",
+            "recent_blockhash",
+            "instructions"
+          ]
         },
         "instruction": {
           "fields": [
-            {"name": "program_id", "description": "Program to execute"},
-            {"name": "accounts", "description": "Accounts needed by program"},
-            {"name": "data", "description": "Instruction-specific data"}
+            {
+              "name": "program_id",
+              "description": "Program to execute"
+            },
+            {
+              "name": "accounts",
+              "description": "Accounts needed by program"
+            },
+            {
+              "name": "data",
+              "description": "Instruction-specific data"
+            }
           ]
         }
       },
@@ -237,7 +286,12 @@
   },
   "testing_patterns": {
     "local_development": {
-      "tools": ["solana-test-validator", "Anchor test framework", "LiteSVM", "Mollusk"],
+      "tools": [
+        "solana-test-validator",
+        "Anchor test framework",
+        "LiteSVM",
+        "Mollusk"
+      ],
       "setup": "solana-test-validator --reset"
     },
     "anchor_testing": {
@@ -250,26 +304,35 @@
       ]
     }
   },
-  "anti_patterns": {
-    "missing_ownership_check": {
+  "anti_patterns": [
+    {
+      "name": "missing_ownership_check",
       "description": "Trusting account data without verifying owner",
       "problem": "Attacker can pass fake account with crafted data",
       "solution": "Always use Anchor's Account<'info, T> or verify owner manually"
     },
-    "missing_signer_check": {
+    {
+      "name": "missing_signer_check",
       "description": "Not verifying required signatures",
       "problem": "Unauthorized actions",
       "solution": "Use Signer<'info> type or check is_signer"
     },
-    "pda_seed_collision": {
+    {
+      "name": "pda_seed_collision",
       "description": "Predictable or non-unique PDA seeds",
       "problem": "Users can derive same PDA, causing conflicts",
       "solution": "Include user-specific data in seeds"
     },
-    "unvalidated_cpi": {
+    {
+      "name": "unvalidated_cpi",
       "description": "Invoking programs without verifying their identity",
       "problem": "Attacker can substitute malicious program",
       "solution": "Check program_id matches expected value"
     }
-  }
+  ],
+  "id": "solana-patterns",
+  "name": "Solana Patterns",
+  "category": "patterns",
+  "patterns": {},
+  "best_practices": []
 }

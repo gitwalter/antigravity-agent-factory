@@ -1,5 +1,8 @@
 ---
-description: Multi-index RAG, query decomposition, contextual compression, and self-querying retrievers
+description: Multi-index RAG, query decomposition, contextual compression, and self-querying
+  retrievers
+name: advanced-retrieval
+type: skill
 ---
 
 # Advanced Retrieval

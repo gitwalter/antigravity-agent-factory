@@ -787,6 +787,51 @@ Before implementation:
         
         # Generate all skills
         for skill_id in skills_to_generate:
+            # Check for Jinja2 template first
+            template_path = f"skills/{skill_id}/SKILL.md.j2"
+            # We need to check if this template exists in the factory templates dir
+            # The template engine handles looking up in the template dirs, but we need to know if we should try to render it.
+            # A simple way is to try to find it.
+            
+            # Construct absolute path to check existence (simplification for now)
+            # In a robust implementation, we would ask the template engine to find it.
+            # Here we assume standard structure: factory_root/.agent/templates/skills/<skill_id>/SKILL.md.j2
+            file_path = self.factory_root / '.agent' / 'templates' / 'skills' / skill_id / 'SKILL.md.j2'
+            
+            if file_path.exists() and self.template_engine:
+                 # It's a Jinja2 skill!
+                 # Load pattern anyway to get metadata/frontmatter for context
+                 pattern = self._load_pattern('skills', skill_id) or {}
+                 frontmatter = pattern.get('frontmatter', {})
+                 
+                 context = self._build_template_context(blueprint)
+                 # Add skill-specific context
+                 context.update({
+                     'skill_name': frontmatter.get('name', skill_id),
+                     'skill_description': frontmatter.get('description', ''),
+                     'skill_title': pattern.get('sections', {}).get('title', frontmatter.get('name', 'Skill')),
+                     'skill_summary': pattern.get('sections', {}).get('introduction', ''),
+                     'pattern': pattern
+                 })
+                 
+                 try:
+                     content = self.template_engine.render(f"skills/{skill_id}/SKILL.md.j2", context)
+                     name = frontmatter.get('name', skill_id)
+                     skill_dir = self.target_dir / '.agent' / 'skills' / name
+                     skill_dir.mkdir(parents=True, exist_ok=True)
+                     output_path = skill_dir / 'SKILL.md'
+                     
+                     # DEBUG LOG
+                     debug_path = self.factory_root / "generation_debug.log"
+                     with open(debug_path, "a", encoding="utf-8") as f:
+                         f.write(f"  [SKILL-JINJA2] Writing {name}/SKILL.md to {output_path}\n")
+
+                     self._write_file(output_path, content)
+                     continue # Skip the legacy pattern rendering
+                 except Exception as e:
+                     print(f"Warning: Failed to render Jinja2 skill {skill_id}: {e}")
+                     # Fall through to legacy pattern rendering
+            
             pattern = self._load_pattern('skills', skill_id)
             if pattern:
                 content = self._render_skill_from_pattern(pattern)

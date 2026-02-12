@@ -1,5 +1,8 @@
 ---
-description: SQL generation with LLMs, schema understanding, query optimization, and text-to-SQL pipelines
+description: SQL generation with LLMs, schema understanding, query optimization, and
+  text-to-SQL pipelines
+name: database-agents
+type: skill
 ---
 
 # Database Agents

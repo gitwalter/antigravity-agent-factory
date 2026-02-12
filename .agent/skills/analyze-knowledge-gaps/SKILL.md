@@ -1,5 +1,8 @@
 ---
-description: Analyze Factory knowledge base to identify missing, shallow, or stale content
+description: Analyze Factory knowledge base to identify missing, shallow, or stale
+  content
+name: analyze-knowledge-gaps
+type: skill
 ---
 
 # Analyze Knowledge Gaps

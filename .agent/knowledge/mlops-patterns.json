@@ -12,23 +12,59 @@
       "mlflow": {
         "type": "Open source, self-hosted",
         "best_for": "Full MLOps lifecycle, model registry",
-        "features": ["Experiment tracking", "Model registry", "Model serving", "Projects"],
-        "pros": ["Open source", "Full lifecycle", "Good integrations"],
-        "cons": ["Requires infrastructure", "UI less polished"]
+        "features": [
+          "Experiment tracking",
+          "Model registry",
+          "Model serving",
+          "Projects"
+        ],
+        "pros": [
+          "Open source",
+          "Full lifecycle",
+          "Good integrations"
+        ],
+        "cons": [
+          "Requires infrastructure",
+          "UI less polished"
+        ]
       },
       "weights_and_biases": {
         "type": "SaaS (free tier available)",
         "best_for": "Rich visualizations, team collaboration",
-        "features": ["Experiment tracking", "Sweeps (HPO)", "Artifacts", "Reports"],
-        "pros": ["Beautiful UI", "Easy setup", "Great visualizations"],
-        "cons": ["SaaS dependency", "Can get expensive"]
+        "features": [
+          "Experiment tracking",
+          "Sweeps (HPO)",
+          "Artifacts",
+          "Reports"
+        ],
+        "pros": [
+          "Beautiful UI",
+          "Easy setup",
+          "Great visualizations"
+        ],
+        "cons": [
+          "SaaS dependency",
+          "Can get expensive"
+        ]
       },
       "tensorboard": {
         "type": "Open source, embedded",
         "best_for": "Training visualization, TensorFlow users",
-        "features": ["Loss curves", "Histograms", "Embeddings", "Profiling"],
-        "pros": ["Built into TensorFlow", "No setup", "Real-time"],
-        "cons": ["Limited to visualization", "No registry"]
+        "features": [
+          "Loss curves",
+          "Histograms",
+          "Embeddings",
+          "Profiling"
+        ],
+        "pros": [
+          "Built into TensorFlow",
+          "No setup",
+          "Real-time"
+        ],
+        "cons": [
+          "Limited to visualization",
+          "No registry"
+        ]
       }
     },
     "selection_guide": {
@@ -65,7 +101,7 @@
       "use_when": "Moving models through staging to production",
       "code_example": "from mlflow import MlflowClient\n\nclient = MlflowClient()\n\n# Register model from run\nmodel_uri = f'runs:/{run_id}/model'\nresult = mlflow.register_model(model_uri, 'my-classifier')\n\n# Transition model stage\nclient.transition_model_version_stage(\n    name='my-classifier',\n    version=1,\n    stage='Staging'\n)\n\n# After testing, promote to production\nclient.transition_model_version_stage(\n    name='my-classifier',\n    version=1,\n    stage='Production'\n)\n\n# Load production model\nmodel = mlflow.pyfunc.load_model(\n    model_uri='models:/my-classifier/Production'\n)\npredictions = model.predict(X_test)\n\n# List model versions\nfor mv in client.search_model_versions(\"name='my-classifier'\"):\n    print(f'Version {mv.version}: stage={mv.current_stage}')",
       "best_practices": [
-        "Use stages: None → Staging → Production → Archived",
+        "Use stages: None \u2192 Staging \u2192 Production \u2192 Archived",
         "Add descriptions to model versions",
         "Tag models with metadata",
         "Only one version should be in Production"
@@ -196,28 +232,32 @@
       ]
     }
   },
-  "anti_patterns": {
-    "no_experiment_tracking": {
+  "anti_patterns": [
+    {
+      "name": "no_experiment_tracking",
       "description": "Not tracking experiments",
       "problem": "Cannot reproduce or compare results",
       "solution": "Use MLflow or W&B from the start"
     },
-    "manual_deployment": {
+    {
+      "name": "manual_deployment",
       "description": "Manually deploying models",
       "problem": "Error-prone, not reproducible",
       "solution": "Use CI/CD pipeline with automated testing"
     },
-    "no_model_versioning": {
+    {
+      "name": "no_model_versioning",
       "description": "Not versioning models",
       "problem": "Cannot rollback or compare versions",
       "solution": "Use model registry with semantic versioning"
     },
-    "no_monitoring": {
+    {
+      "name": "no_monitoring",
       "description": "Not monitoring production models",
       "problem": "Silent failures, undetected drift",
       "solution": "Log predictions, monitor for drift"
     }
-  },
+  ],
   "best_practices_summary": [
     "Track all experiments with parameters and metrics",
     "Use model registry for version management",
@@ -226,5 +266,10 @@
     "Document model lineage",
     "Set up alerts for model failures",
     "Version everything: code, data, models"
-  ]
+  ],
+  "id": "mlops-patterns",
+  "name": "Mlops Patterns",
+  "category": "patterns",
+  "patterns": {},
+  "best_practices": []
 }

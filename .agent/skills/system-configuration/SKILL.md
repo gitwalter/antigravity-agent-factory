@@ -1,5 +1,8 @@
 ---
-description: Interactive configuration and onboarding skill for Cursor Agent Factory settings
+description: Interactive configuration and onboarding skill for Cursor Agent Factory
+  settings
+name: system-configuration
+type: skill
 ---
 
 # System Configuration

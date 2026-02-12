@@ -1,5 +1,7 @@
 ---
 description: Create and extend workflow definitions using the workflow system architecture
+name: extend-workflow
+type: skill
 ---
 
 # Extend Workflow

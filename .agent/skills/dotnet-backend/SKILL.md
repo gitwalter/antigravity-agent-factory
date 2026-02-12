@@ -1,5 +1,8 @@
 ---
-description: ASP.NET Core Minimal APIs, Controllers, dependency injection, middleware, background services, options pattern, health checks
+description: ASP.NET Core Minimal APIs, Controllers, dependency injection, middleware,
+  background services, options pattern, health checks
+name: dotnet-backend
+type: skill
 ---
 
 # Dotnet Backend

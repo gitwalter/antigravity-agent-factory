@@ -1,5 +1,8 @@
 ---
-description: Platform-specific shell command considerations for Windows PowerShell and Unix shells
+description: Platform-specific shell command considerations for Windows PowerShell
+  and Unix shells
+name: shell-platform
+type: skill
 ---
 
 # Shell Platform

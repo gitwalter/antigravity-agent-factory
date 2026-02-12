@@ -1,5 +1,7 @@
 ---
 description: AI Agent Development with LangChain and LangGraph
+name: ai-agent-dev
+type: skill
 ---
 
 # AI Agent Development Skill

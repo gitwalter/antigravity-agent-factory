@@ -1,5 +1,8 @@
 ---
-description: File reading/writing tools, directory traversal, file type detection, and security sandboxing
+description: File reading/writing tools, directory traversal, file type detection,
+  and security sandboxing
+name: filesystem-ops
+type: skill
 ---
 
 # Filesystem Ops

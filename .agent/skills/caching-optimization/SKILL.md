@@ -1,5 +1,7 @@
 ---
 description: LLM response caching, semantic caching, memoization, cache invalidation
+name: caching-optimization
+type: skill
 ---
 
 # Caching Optimization

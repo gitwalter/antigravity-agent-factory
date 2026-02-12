@@ -1,5 +1,9 @@
 ---
-description: FastAPI project structure, Router organization, Dependency injection, Pydantic v2 models, Background tasks, WebSocket endpoints, Middleware, CORS, OpenAPI customization
+description: FastAPI project structure, Router organization, Dependency injection,
+  Pydantic v2 models, Background tasks, WebSocket endpoints, Middleware, CORS, OpenAPI
+  customization
+name: fastapi-development
+type: skill
 ---
 
 # Fastapi Development

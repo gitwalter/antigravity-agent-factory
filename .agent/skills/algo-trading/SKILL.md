@@ -1,5 +1,8 @@
 ---
-description: Build algorithmic trading strategies with backtesting, technical indicators, and fundamental data
+description: Build algorithmic trading strategies with backtesting, technical indicators,
+  and fundamental data
+name: algo-trading
+type: skill
 ---
 
 # Algo Trading

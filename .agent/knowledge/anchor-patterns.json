@@ -17,10 +17,22 @@
       "description": "Standard Anchor program structure",
       "code_example": "use anchor_lang::prelude::*;\n\ndeclare_id!(\"YourProgramId11111111111111111111111111111\");\n\n#[program]\npub mod my_program {\n    use super::*;\n\n    pub fn initialize(ctx: Context<Initialize>, data: u64) -> Result<()> {\n        let account = &mut ctx.accounts.my_account;\n        account.data = data;\n        account.authority = ctx.accounts.authority.key();\n        account.bump = ctx.bumps.my_account;\n        Ok(())\n    }\n\n    pub fn update(ctx: Context<Update>, new_data: u64) -> Result<()> {\n        ctx.accounts.my_account.data = new_data;\n        Ok(())\n    }\n}\n\n#[derive(Accounts)]\npub struct Initialize<'info> {\n    #[account(\n        init,\n        payer = authority,\n        space = 8 + MyAccount::INIT_SPACE,\n        seeds = [b\"my_account\", authority.key().as_ref()],\n        bump\n    )]\n    pub my_account: Account<'info, MyAccount>,\n    #[account(mut)]\n    pub authority: Signer<'info>,\n    pub system_program: Program<'info, System>,\n}\n\n#[account]\n#[derive(InitSpace)]\npub struct MyAccount {\n    pub authority: Pubkey,\n    pub data: u64,\n    pub bump: u8,\n}",
       "components": [
-        {"name": "declare_id!", "purpose": "Set program's on-chain address"},
-        {"name": "#[program]", "purpose": "Mark module containing instruction handlers"},
-        {"name": "#[derive(Accounts)]", "purpose": "Define account validation struct"},
-        {"name": "#[account]", "purpose": "Define account data structure"}
+        {
+          "name": "declare_id!",
+          "purpose": "Set program's on-chain address"
+        },
+        {
+          "name": "#[program]",
+          "purpose": "Mark module containing instruction handlers"
+        },
+        {
+          "name": "#[derive(Accounts)]",
+          "purpose": "Define account validation struct"
+        },
+        {
+          "name": "#[account]",
+          "purpose": "Define account data structure"
+        }
       ]
     },
     "idl_generation": {
@@ -38,7 +50,11 @@
       "init": {
         "description": "Create and initialize a new account",
         "code_example": "#[account(\n    init,\n    payer = payer,\n    space = 8 + DataAccount::INIT_SPACE\n)]\npub data_account: Account<'info, DataAccount>,",
-        "requirements": ["payer", "space", "system_program in accounts"]
+        "requirements": [
+          "payer",
+          "space",
+          "system_program in accounts"
+        ]
       },
       "init_if_needed": {
         "description": "Initialize only if account doesn't exist",
@@ -119,12 +135,18 @@
     "Account": {
       "description": "Deserialized account with ownership verification",
       "code_example": "pub my_account: Account<'info, MyAccountData>,",
-      "checks": ["Owner matches program ID", "Discriminator matches type", "Deserializable"]
+      "checks": [
+        "Owner matches program ID",
+        "Discriminator matches type",
+        "Deserializable"
+      ]
     },
     "Signer": {
       "description": "Account that must sign transaction",
       "code_example": "pub authority: Signer<'info>,",
-      "checks": ["is_signer = true"]
+      "checks": [
+        "is_signer = true"
+      ]
     },
     "SystemAccount": {
       "description": "Account owned by System Program (wallet)",
@@ -211,5 +233,11 @@
       "description": "Delay actions for security",
       "use_case": "Governance, upgrades"
     }
-  }
+  },
+  "id": "anchor-patterns",
+  "name": "Anchor Patterns",
+  "category": "patterns",
+  "patterns": {},
+  "best_practices": [],
+  "anti_patterns": []
 }

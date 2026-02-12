@@ -1,5 +1,7 @@
 ---
 description: Enable verified, axiom-compliant communication between Factory agents
+name: verified-communication
+type: skill
 ---
 
 # Verified Communication

@@ -1,5 +1,7 @@
 ---
 description: LangChain 1.x patterns for chains, tools, memory, and structured outputs
+name: langchain-usage
+type: skill
 ---
 
 # Langchain Usage

@@ -1,5 +1,7 @@
 ---
 description: Workflow pattern generation and customization skill
+name: workflow-generation
+type: skill
 ---
 
 # Workflow Generation

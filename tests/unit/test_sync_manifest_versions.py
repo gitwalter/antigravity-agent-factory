@@ -237,8 +237,9 @@ class TestSyncManifest:
         changelog.write_text("## [3.5.0] - 2026-01-31\n", encoding='utf-8')
         
         # Create knowledge directory and manifest
-        knowledge_dir = tmp_path / "knowledge"
-        knowledge_dir.mkdir()
+        agent_dir = tmp_path / ".agent"
+        knowledge_dir = agent_dir / "knowledge"
+        knowledge_dir.mkdir(parents=True)
         manifest = knowledge_dir / "manifest.json"
         manifest.write_text(json.dumps({
             "factory_version": "3.4.0",
@@ -259,8 +260,9 @@ class TestSyncManifest:
         changelog.write_text("## [3.4.0] - 2026-01-31\n", encoding='utf-8')
         
         # Create knowledge directory and manifest with matching version
-        knowledge_dir = tmp_path / "knowledge"
-        knowledge_dir.mkdir()
+        agent_dir = tmp_path / ".agent"
+        knowledge_dir = agent_dir / "knowledge"
+        knowledge_dir.mkdir(parents=True)
         manifest = knowledge_dir / "manifest.json"
         manifest.write_text(json.dumps({
             "factory_version": "3.4.0",

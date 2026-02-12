@@ -1,5 +1,8 @@
 ---
-description: Architecture patterns, technology selection, scalability planning, and vector DB selection for AI applications
+description: Architecture patterns, technology selection, scalability planning, and
+  vector DB selection for AI applications
+name: ai-system-design
+type: skill
 ---
 
 # Ai System Design

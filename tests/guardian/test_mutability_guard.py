@@ -22,7 +22,7 @@ class TestMutabilityGuard:
     
     def test_axioms_are_protected(self, guard):
         """CRITICAL: Verify Layer 0 (Axioms) cannot be modified."""
-        result = guard.can_modify("patterns/axioms/core-axioms.json")
+        result = guard.can_modify(".agent/patterns/axioms/core-axioms.json")
         
         assert result.allowed is False
         # Valid reasons: immutable, Layer 0, or never-modify list
@@ -37,7 +37,7 @@ class TestMutabilityGuard:
     
     def test_axiom_zero_is_protected(self, guard):
         """CRITICAL: Verify axiom-zero.json cannot be modified."""
-        result = guard.can_modify("patterns/axioms/axiom-zero.json")
+        result = guard.can_modify(".agent/patterns/axioms/axiom-zero.json")
         
         assert result.allowed is False
     
@@ -54,7 +54,7 @@ class TestMutabilityGuard:
     
     def test_purpose_patterns_are_protected(self, guard):
         """CRITICAL: Verify patterns/purpose/ cannot be modified."""
-        result = guard.can_modify("patterns/purpose/mission.json")
+        result = guard.can_modify(".agent/patterns/purpose/mission.json")
         
         assert result.allowed is False
     
@@ -64,7 +64,7 @@ class TestMutabilityGuard:
     
     def test_principles_are_protected(self, guard):
         """CRITICAL: Verify Layer 2 (Principles) cannot be modified."""
-        result = guard.can_modify("patterns/principles/ethical-boundaries.json")
+        result = guard.can_modify(".agent/patterns/principles/ethical-boundaries.json")
         
         assert result.allowed is False
         # Valid reasons: immutable, Layer 2, or never-modify list
@@ -74,13 +74,13 @@ class TestMutabilityGuard:
     
     def test_enforcement_patterns_are_protected(self, guard):
         """CRITICAL: Verify enforcement patterns cannot be modified."""
-        result = guard.can_modify("patterns/enforcement/integrity-enforcement.json")
+        result = guard.can_modify(".agent/patterns/enforcement/integrity-enforcement.json")
         
         assert result.allowed is False
     
     def test_quality_standards_are_protected(self, guard):
         """CRITICAL: Verify quality standards cannot be modified."""
-        result = guard.can_modify("patterns/principles/quality-standards.json")
+        result = guard.can_modify(".agent/patterns/principles/quality-standards.json")
         
         assert result.allowed is False
     
@@ -97,13 +97,13 @@ class TestMutabilityGuard:
     
     def test_blueprints_are_mutable(self, guard):
         """Verify blueprints can be modified."""
-        result = guard.can_modify("blueprints/python-fastapi/blueprint.json")
+        result = guard.can_modify(".agent/blueprints/python-fastapi/blueprint.json")
         
         assert result.allowed is True
     
     def test_stack_patterns_are_mutable(self, guard):
         """Verify stack patterns can be modified."""
-        result = guard.can_modify("patterns/stacks/python-stack.json")
+        result = guard.can_modify(".agent/patterns/stacks/python-stack.json")
         
         assert result.allowed is True
     
@@ -126,7 +126,7 @@ class TestMutabilityGuard:
     def test_validate_modification_checks_path_first(self, guard):
         """Test that path is checked before content."""
         result = guard.validate_modification(
-            "patterns/axioms/core-axioms.json",
+            ".agent/patterns/axioms/core-axioms.json",
             "Some content"
         )
         
@@ -163,13 +163,13 @@ class TestMutabilityGuard:
     
     def test_path_with_backslashes(self, guard):
         """Test Windows-style paths are handled."""
-        result = guard.can_modify("patterns\\axioms\\core-axioms.json")
+        result = guard.can_modify(".agent\\patterns\\axioms\\core-axioms.json")
         
         assert result.allowed is False
     
     def test_path_with_dot_prefix(self, guard):
         """Test paths with ./ prefix are handled."""
-        result = guard.can_modify("./patterns/axioms/core-axioms.json")
+        result = guard.can_modify("./.agent/patterns/axioms/core-axioms.json")
         
         assert result.allowed is False
     
@@ -189,7 +189,8 @@ class TestMutabilityGuard:
         """Test getting all protected paths."""
         paths = guard.get_all_protected_paths()
         
-        assert ".agentrules" in paths        assert any("axioms" in p for p in paths)
+        assert ".agentrules" in paths
+        assert any("axioms" in p for p in paths)
         assert any("principles" in p for p in paths)
     
     def test_get_protection_summary(self, guard):

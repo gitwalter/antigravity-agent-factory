@@ -1,5 +1,7 @@
 ---
 description: LoRA/QLoRA/PEFT fine-tuning workflows with Hugging Face transformers
+name: model-fine-tuning
+type: skill
 ---
 
 # Model Fine Tuning

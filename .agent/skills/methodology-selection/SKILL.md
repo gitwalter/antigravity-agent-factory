@@ -1,5 +1,8 @@
 ---
-description: Guide users through selecting and configuring development methodology for agent system
+description: Guide users through selecting and configuring development methodology
+  for agent system
+name: methodology-selection
+type: skill
 ---
 
 # Methodology Selection

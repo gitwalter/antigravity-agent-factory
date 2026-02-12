@@ -192,103 +192,121 @@
       ]
     }
   },
-  "best_practices": {
-    "pipeline_design": [
-      "Keep pipelines fast (< 10 minutes for CI)",
-      "Fail fast on critical errors",
-      "Use parallel jobs when possible",
-      "Cache dependencies aggressively",
-      "Use conditional execution",
-      "Document pipeline stages"
-    ],
-    "security": [
-      "Never commit secrets",
-      "Use platform secret management",
-      "Rotate credentials regularly",
-      "Limit secret access",
-      "Use OIDC when available",
-      "Scan for secrets in code",
-      "Use least privilege principle"
-    ],
-    "reliability": [
-      "Use idempotent deployments",
-      "Implement rollback procedures",
-      "Run smoke tests after deployment",
-      "Monitor deployment health",
-      "Use blue-green deployments",
-      "Test deployment scripts"
-    ],
-    "maintainability": [
-      "Use reusable workflows/templates",
-      "Version pin actions/tasks",
-      "Document pipeline changes",
-      "Keep pipelines DRY",
-      "Use consistent naming",
-      "Review pipeline changes"
-    ],
-    "performance": [
-      "Cache dependencies",
-      "Use matrix for parallelization",
-      "Optimize Docker images",
-      "Use build artifacts",
-      "Skip unnecessary steps",
-      "Use self-hosted runners for large builds"
-    ]
-  },
-  "anti_patterns": {
-    "committing_secrets": {
+  "best_practices": [
+    "Keep pipelines fast (< 10 minutes for CI)",
+    "Fail fast on critical errors",
+    "Use parallel jobs when possible",
+    "Cache dependencies aggressively",
+    "Use conditional execution",
+    "Document pipeline stages",
+    "Never commit secrets",
+    "Use platform secret management",
+    "Rotate credentials regularly",
+    "Limit secret access",
+    "Use OIDC when available",
+    "Scan for secrets in code",
+    "Use least privilege principle",
+    "Use idempotent deployments",
+    "Implement rollback procedures",
+    "Run smoke tests after deployment",
+    "Monitor deployment health",
+    "Use blue-green deployments",
+    "Test deployment scripts",
+    "Use reusable workflows/templates",
+    "Version pin actions/tasks",
+    "Document pipeline changes",
+    "Keep pipelines DRY",
+    "Use consistent naming",
+    "Review pipeline changes",
+    "Cache dependencies",
+    "Use matrix for parallelization",
+    "Optimize Docker images",
+    "Use build artifacts",
+    "Skip unnecessary steps",
+    "Use self-hosted runners for large builds"
+  ],
+  "anti_patterns": [
+    {
+      "name": "committing_secrets",
       "description": "Storing secrets in repository files",
       "problem": "Security vulnerability, secrets exposed in history",
       "solution": "Use platform secret stores, never commit secrets",
       "example": "# Bad\nDATABASE_PASSWORD=secret123\n\n# Good\nDATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}"
     },
-    "monolithic_pipelines": {
+    {
+      "name": "monolithic_pipelines",
       "description": "Single large pipeline doing everything",
       "problem": "Hard to maintain, slow, difficult to debug",
       "solution": "Break into stages and jobs, use reusable workflows",
       "example": "# Bad: One job doing everything\njobs:\n  everything:\n    steps:\n      - build\n      - test\n      - deploy\n\n# Good: Separate stages\nstages:\n  - build\n  - test\n  - deploy"
     },
-    "no_caching": {
+    {
+      "name": "no_caching",
       "description": "Not caching dependencies",
       "problem": "Slow pipelines, wasted resources",
       "solution": "Cache package manager dependencies",
       "example": "# Bad: No caching\n- run: pip install -r requirements.txt\n\n# Good: With caching\n- uses: actions/cache@v4\n  with:\n    path: ~/.cache/pip\n    key: pip-${{ hashFiles('requirements.txt') }}"
     },
-    "hardcoded_configurations": {
+    {
+      "name": "hardcoded_configurations",
       "description": "Hardcoding environment-specific values",
       "problem": "Not portable, hard to maintain",
       "solution": "Use variables and secrets",
       "example": "# Bad\n- run: deploy --url https://production.example.com\n\n# Good\n- run: deploy --url ${{ env.DEPLOYMENT_URL }}"
     },
-    "ignoring_failures": {
+    {
+      "name": "ignoring_failures",
       "description": "Continuing pipeline after failures",
       "problem": "Deploying broken code",
       "solution": "Fail fast, fix issues before proceeding",
       "example": "# Bad\n- run: tests || true\n\n# Good\n- run: tests"
     },
-    "no_artifact_management": {
+    {
+      "name": "no_artifact_management",
       "description": "Rebuilding in every job",
       "problem": "Wasted time and resources",
       "solution": "Upload and download artifacts",
       "example": "# Bad: Rebuild in every job\njobs:\n  test:\n    steps:\n      - run: npm run build\n  deploy:\n    steps:\n      - run: npm run build  # Rebuilding!\n\n# Good: Use artifacts\njobs:\n  build:\n    steps:\n      - run: npm run build\n      - uses: actions/upload-artifact@v4\n  deploy:\n    needs: build\n    steps:\n      - uses: actions/download-artifact@v4"
     }
-  },
+  ],
   "tools_and_platforms": {
     "github_actions": {
-      "features": ["Reusable workflows", "Matrix strategies", "Environments", "Artifacts"],
+      "features": [
+        "Reusable workflows",
+        "Matrix strategies",
+        "Environments",
+        "Artifacts"
+      ],
       "documentation": "https://docs.github.com/en/actions"
     },
     "gitlab_ci": {
-      "features": ["Extends", "Matrix", "Environments", "Artifacts"],
+      "features": [
+        "Extends",
+        "Matrix",
+        "Environments",
+        "Artifacts"
+      ],
       "documentation": "https://docs.gitlab.com/ee/ci/"
     },
     "azure_devops": {
-      "features": ["Multi-stage pipelines", "Matrix", "Environments", "Artifacts"],
+      "features": [
+        "Multi-stage pipelines",
+        "Matrix",
+        "Environments",
+        "Artifacts"
+      ],
       "documentation": "https://docs.microsoft.com/en-us/azure/devops/pipelines"
     },
     "jenkins": {
-      "features": ["Pipeline as Code", "Shared libraries", "Matrix builds"],
+      "features": [
+        "Pipeline as Code",
+        "Shared libraries",
+        "Matrix builds"
+      ],
       "documentation": "https://www.jenkins.io/doc/book/pipeline/"
     }
-  }
+  },
+  "id": "cicd-patterns",
+  "name": "Cicd Patterns",
+  "category": "patterns"
 }

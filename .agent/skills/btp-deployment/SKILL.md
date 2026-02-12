@@ -1,5 +1,8 @@
 ---
-description: BTP Cloud Foundry deployment (cf push, MTA), service bindings (XSUAA, destination, connectivity), Kyma runtime deployment, SAP Build Work Zone integration
+description: BTP Cloud Foundry deployment (cf push, MTA), service bindings (XSUAA,
+  destination, connectivity), Kyma runtime deployment, SAP Build Work Zone integration
+name: btp-deployment
+type: skill
 ---
 
 # Btp Deployment

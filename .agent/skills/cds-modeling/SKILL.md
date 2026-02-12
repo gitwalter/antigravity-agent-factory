@@ -1,5 +1,8 @@
 ---
-description: CDS view creation (basic, composite, consumption), associations, compositions, CDS annotations (semantic, UI, analytics), CDS access control (DCL)
+description: CDS view creation (basic, composite, consumption), associations, compositions,
+  CDS annotations (semantic, UI, analytics), CDS access control (DCL)
+name: cds-modeling
+type: skill
 ---
 
 # Cds Modeling

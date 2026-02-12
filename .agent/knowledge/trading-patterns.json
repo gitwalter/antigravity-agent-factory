@@ -14,7 +14,10 @@
       "patterns": {
         "moving_average_crossover": {
           "description": "Fast MA crosses above/below slow MA",
-          "parameters": ["fast_period", "slow_period"],
+          "parameters": [
+            "fast_period",
+            "slow_period"
+          ],
           "code_example": "import pandas as pd\nimport pandas_ta as ta\n\ndef ma_crossover_signals(df: pd.DataFrame, fast: int = 10, slow: int = 50) -> pd.Series:\n    \"\"\"\n    Generate trading signals based on moving average crossover.\n    \n    Args:\n        df: DataFrame with 'close' column\n        fast: Fast MA period\n        slow: Slow MA period\n        \n    Returns:\n        Series with signals: 1 (buy), -1 (sell), 0 (hold)\n    \"\"\"\n    fast_ma = df['close'].rolling(window=fast).mean()\n    slow_ma = df['close'].rolling(window=slow).mean()\n    \n    signals = pd.Series(0, index=df.index)\n    signals[fast_ma > slow_ma] = 1\n    signals[fast_ma < slow_ma] = -1\n    \n    # Only signal on crossover\n    return signals.diff().fillna(0).clip(-1, 1)",
           "best_practices": [
             "Use longer periods in trending markets",
@@ -24,7 +27,10 @@
         },
         "breakout": {
           "description": "Enter when price breaks through resistance/support",
-          "parameters": ["lookback_period", "breakout_threshold"],
+          "parameters": [
+            "lookback_period",
+            "breakout_threshold"
+          ],
           "code_example": "def breakout_signals(df: pd.DataFrame, lookback: int = 20) -> pd.Series:\n    \"\"\"\n    Generate breakout trading signals.\n    \n    Args:\n        df: DataFrame with 'high', 'low', 'close' columns\n        lookback: Period for calculating range\n        \n    Returns:\n        Series with signals\n    \"\"\"\n    rolling_high = df['high'].rolling(window=lookback).max()\n    rolling_low = df['low'].rolling(window=lookback).min()\n    \n    signals = pd.Series(0, index=df.index)\n    signals[df['close'] > rolling_high.shift(1)] = 1  # Breakout up\n    signals[df['close'] < rolling_low.shift(1)] = -1  # Breakout down\n    \n    return signals",
           "filters": [
             "Volume confirmation",
@@ -34,7 +40,11 @@
         },
         "trend_following": {
           "description": "Follow established trends with trailing stops",
-          "indicators": ["ADX", "Parabolic SAR", "Supertrend"],
+          "indicators": [
+            "ADX",
+            "Parabolic SAR",
+            "Supertrend"
+          ],
           "code_example": "def trend_following_signals(\n    df: pd.DataFrame,\n    adx_period: int = 14,\n    adx_threshold: float = 25\n) -> pd.Series:\n    \"\"\"\n    Generate trend-following signals using ADX filter.\n    \"\"\"\n    adx = ta.adx(df['high'], df['low'], df['close'], length=adx_period)\n    \n    signals = pd.Series(0, index=df.index)\n    \n    # Only trade when trend is strong\n    trending = adx['ADX_14'] > adx_threshold\n    signals[(adx['DMP_14'] > adx['DMN_14']) & trending] = 1\n    signals[(adx['DMN_14'] > adx['DMP_14']) & trending] = -1\n    \n    return signals"
         }
       }
@@ -45,7 +55,10 @@
       "patterns": {
         "bollinger_bands": {
           "description": "Trade reversals at band extremes",
-          "parameters": ["period", "std_dev"],
+          "parameters": [
+            "period",
+            "std_dev"
+          ],
           "code_example": "def bollinger_signals(\n    df: pd.DataFrame,\n    period: int = 20,\n    std_dev: float = 2.0\n) -> pd.Series:\n    \"\"\"\n    Generate mean-reversion signals using Bollinger Bands.\n    \"\"\"\n    bb = ta.bbands(df['close'], length=period, std=std_dev)\n    \n    signals = pd.Series(0, index=df.index)\n    \n    # Buy when price touches lower band\n    signals[df['close'] <= bb[f'BBL_{period}_{std_dev}']] = 1\n    \n    # Sell when price touches upper band\n    signals[df['close'] >= bb[f'BBU_{period}_{std_dev}']] = -1\n    \n    return signals",
           "enhancements": [
             "Add RSI confirmation",
@@ -55,7 +68,11 @@
         },
         "rsi_reversal": {
           "description": "Trade overbought/oversold conditions",
-          "parameters": ["period", "overbought", "oversold"],
+          "parameters": [
+            "period",
+            "overbought",
+            "oversold"
+          ],
           "code_example": "def rsi_signals(\n    df: pd.DataFrame,\n    period: int = 14,\n    overbought: float = 70,\n    oversold: float = 30\n) -> pd.Series:\n    \"\"\"\n    Generate RSI-based mean reversion signals.\n    \"\"\"\n    rsi = ta.rsi(df['close'], length=period)\n    \n    signals = pd.Series(0, index=df.index)\n    signals[rsi < oversold] = 1   # Oversold = buy\n    signals[rsi > overbought] = -1  # Overbought = sell\n    \n    return signals"
         },
         "pairs_trading": {
@@ -74,12 +91,22 @@
       "patterns": {
         "factor_model": {
           "description": "Trade based on factor exposures",
-          "factors": ["value", "momentum", "size", "quality", "volatility"],
+          "factors": [
+            "value",
+            "momentum",
+            "size",
+            "quality",
+            "volatility"
+          ],
           "implementation": "scikit-learn linear regression or PCA"
         },
         "market_making": {
           "description": "Provide liquidity, profit from spread",
-          "requirements": ["Low latency", "Inventory management", "Quote optimization"]
+          "requirements": [
+            "Low latency",
+            "Inventory management",
+            "Quote optimization"
+          ]
         }
       }
     },
@@ -88,13 +115,24 @@
       "patterns": {
         "classification": {
           "description": "Predict direction (up/down/neutral)",
-          "algorithms": ["Random Forest", "XGBoost", "Neural Networks"],
+          "algorithms": [
+            "Random Forest",
+            "XGBoost",
+            "Neural Networks"
+          ],
           "code_example": "from sklearn.ensemble import RandomForestClassifier\nfrom sklearn.preprocessing import StandardScaler\nimport numpy as np\n\ndef train_ml_model(features: pd.DataFrame, labels: pd.Series):\n    \"\"\"\n    Train ML classification model for direction prediction.\n    \n    Args:\n        features: DataFrame with feature columns\n        labels: Series with -1, 0, 1 labels\n    \"\"\"\n    # Scale features\n    scaler = StandardScaler()\n    X_scaled = scaler.fit_transform(features)\n    \n    # Train model\n    model = RandomForestClassifier(\n        n_estimators=100,\n        max_depth=10,\n        min_samples_leaf=50,\n        random_state=42\n    )\n    model.fit(X_scaled, labels)\n    \n    return model, scaler\n\ndef generate_ml_signals(model, scaler, features: pd.DataFrame) -> pd.Series:\n    \"\"\"Generate signals from trained model.\"\"\"\n    X_scaled = scaler.transform(features)\n    predictions = model.predict(X_scaled)\n    return pd.Series(predictions, index=features.index)"
         },
         "reinforcement_learning": {
           "description": "Learn optimal actions through interaction",
-          "algorithms": ["DQN", "PPO", "A2C"],
-          "libraries": ["stable-baselines3", "RLlib"]
+          "algorithms": [
+            "DQN",
+            "PPO",
+            "A2C"
+          ],
+          "libraries": [
+            "stable-baselines3",
+            "RLlib"
+          ]
         }
       },
       "best_practices": [
@@ -163,34 +201,43 @@
       "formula": "position_size = target_volatility / asset_volatility * account_size"
     }
   },
-  "anti_patterns": {
-    "curve_fitting": {
+  "anti_patterns": [
+    {
+      "name": "curve_fitting",
       "description": "Over-optimizing parameters to historical data",
       "problem": "Strategy fails in live trading",
       "solution": "Walk-forward validation, parameter stability testing"
     },
-    "survivorship_bias": {
+    {
+      "name": "survivorship_bias",
       "description": "Only testing on assets that still exist",
       "problem": "Overstated historical performance",
       "solution": "Use point-in-time datasets with delisted securities"
     },
-    "look_ahead_bias": {
+    {
+      "name": "look_ahead_bias",
       "description": "Using future information in historical test",
       "problem": "Unrealistic backtest results",
       "solution": "Strict data alignment, point-in-time features"
     },
-    "transaction_cost_neglect": {
+    {
+      "name": "transaction_cost_neglect",
       "description": "Ignoring slippage and commissions",
       "problem": "Profitable backtest becomes unprofitable live",
       "solution": "Include realistic costs (0.1-0.5% per trade)"
     }
-  },
+  ],
   "technical_indicators_advanced": {
     "added_date": "2026-01-31",
     "description": "Extended technical indicators with calculation code",
     "ichimoku_cloud": {
       "description": "Japanese trend indicator with multiple components",
-      "components": ["Tenkan-sen (9)", "Kijun-sen (26)", "Senkou Span A/B", "Chikou Span"],
+      "components": [
+        "Tenkan-sen (9)",
+        "Kijun-sen (26)",
+        "Senkou Span A/B",
+        "Chikou Span"
+      ],
       "code_example": "def ichimoku(df: pd.DataFrame) -> pd.DataFrame:\n    \"\"\"\n    Calculate Ichimoku Cloud components.\n    \n    Returns DataFrame with all Ichimoku components.\n    \"\"\"\n    high = df['high']\n    low = df['low']\n    close = df['close']\n    \n    # Tenkan-sen (Conversion Line): (9-period high + 9-period low)/2\n    tenkan = (high.rolling(9).max() + low.rolling(9).min()) / 2\n    \n    # Kijun-sen (Base Line): (26-period high + 26-period low)/2\n    kijun = (high.rolling(26).max() + low.rolling(26).min()) / 2\n    \n    # Senkou Span A (Leading Span A): (Tenkan-sen + Kijun-sen)/2 shifted 26 periods ahead\n    senkou_a = ((tenkan + kijun) / 2).shift(26)\n    \n    # Senkou Span B (Leading Span B): (52-period high + 52-period low)/2 shifted 26 periods ahead\n    senkou_b = ((high.rolling(52).max() + low.rolling(52).min()) / 2).shift(26)\n    \n    # Chikou Span (Lagging Span): Close shifted 26 periods back\n    chikou = close.shift(-26)\n    \n    return pd.DataFrame({\n        'tenkan': tenkan,\n        'kijun': kijun,\n        'senkou_a': senkou_a,\n        'senkou_b': senkou_b,\n        'chikou': chikou\n    })",
       "signals": {
         "bullish": "Price above cloud, Tenkan > Kijun, Chikou above price",
@@ -199,12 +246,23 @@
     },
     "fibonacci_retracement": {
       "description": "Key support/resistance levels based on Fibonacci sequence",
-      "levels": [0.236, 0.382, 0.5, 0.618, 0.786],
+      "levels": [
+        0.236,
+        0.382,
+        0.5,
+        0.618,
+        0.786
+      ],
       "code_example": "def fibonacci_levels(high: float, low: float, direction: str = 'up') -> dict:\n    \"\"\"\n    Calculate Fibonacci retracement levels.\n    \n    Args:\n        high: Swing high price\n        low: Swing low price\n        direction: 'up' for uptrend, 'down' for downtrend\n    \"\"\"\n    diff = high - low\n    levels = [0.236, 0.382, 0.5, 0.618, 0.786]\n    \n    if direction == 'up':\n        # Retracement in uptrend: levels from high going down\n        return {f'{l*100:.1f}%': high - diff * l for l in levels}\n    else:\n        # Retracement in downtrend: levels from low going up\n        return {f'{l*100:.1f}%': low + diff * l for l in levels}"
     },
     "pivot_points": {
       "description": "Daily support/resistance levels",
-      "types": ["Standard", "Fibonacci", "Camarilla", "Woodie"],
+      "types": [
+        "Standard",
+        "Fibonacci",
+        "Camarilla",
+        "Woodie"
+      ],
       "code_example": "def pivot_points(high: float, low: float, close: float) -> dict:\n    \"\"\"\n    Calculate standard pivot points and support/resistance levels.\n    \"\"\"\n    pivot = (high + low + close) / 3\n    \n    return {\n        'pivot': pivot,\n        'r1': 2 * pivot - low,\n        'r2': pivot + (high - low),\n        'r3': high + 2 * (pivot - low),\n        's1': 2 * pivot - high,\n        's2': pivot - (high - low),\n        's3': low - 2 * (high - pivot)\n    }"
     },
     "vwap": {
@@ -251,13 +309,21 @@
     "description": "Modern backtesting framework patterns",
     "vectorbt": {
       "description": "High-performance vectorized backtesting",
-      "pros": ["Fast (NumPy-based)", "Portfolio optimization", "Rich analytics"],
+      "pros": [
+        "Fast (NumPy-based)",
+        "Portfolio optimization",
+        "Rich analytics"
+      ],
       "code_example": "import vectorbt as vbt\nimport numpy as np\n\n# Download data\ndata = vbt.YFData.download('SPY', start='2020-01-01', end='2024-01-01')\nclose = data.get('Close')\n\n# Generate signals using moving averages\nfast_ma = vbt.MA.run(close, 10)\nslow_ma = vbt.MA.run(close, 50)\n\n# Entry when fast crosses above slow\nentries = fast_ma.ma_crossed_above(slow_ma)\nexits = fast_ma.ma_crossed_below(slow_ma)\n\n# Run backtest\nportfolio = vbt.Portfolio.from_signals(\n    close,\n    entries,\n    exits,\n    init_cash=100_000,\n    fees=0.001,\n    freq='1D'\n)\n\n# Get statistics\nprint(portfolio.stats())\n\n# Plot equity curve\nportfolio.plot().show()",
       "parameter_optimization": "# Optimize MA parameters\nfast_windows = np.arange(5, 30, 5)\nslow_windows = np.arange(20, 100, 10)\n\nfast_ma, slow_ma = vbt.MA.run_combs(\n    close,\n    window=fast_windows,\n    r=2,  # 2 MAs per combination\n    short_names=['fast', 'slow']\n)\n\nentries = fast_ma.ma_crossed_above(slow_ma)\nexits = fast_ma.ma_crossed_below(slow_ma)\n\nportfolio = vbt.Portfolio.from_signals(close, entries, exits)\nreturns = portfolio.total_return()\n\n# Best parameters\nbest_idx = returns.idxmax()\nprint(f'Best params: {best_idx}')"
     },
     "backtrader": {
       "description": "Feature-rich object-oriented backtesting",
-      "pros": ["Intuitive API", "Live trading support", "Extensive indicators"],
+      "pros": [
+        "Intuitive API",
+        "Live trading support",
+        "Extensive indicators"
+      ],
       "code_example": "import backtrader as bt\n\nclass MACrossStrategy(bt.Strategy):\n    params = (\n        ('fast_period', 10),\n        ('slow_period', 50),\n    )\n    \n    def __init__(self):\n        self.fast_ma = bt.indicators.SMA(\n            self.data.close,\n            period=self.params.fast_period\n        )\n        self.slow_ma = bt.indicators.SMA(\n            self.data.close,\n            period=self.params.slow_period\n        )\n        self.crossover = bt.indicators.CrossOver(\n            self.fast_ma,\n            self.slow_ma\n        )\n    \n    def next(self):\n        if not self.position:\n            if self.crossover > 0:\n                self.buy(size=100)\n        elif self.crossover < 0:\n            self.close()\n\n# Run backtest\ncerebro = bt.Cerebro()\ncerebro.addstrategy(MACrossStrategy)\n\ndata = bt.feeds.YahooFinanceData(\n    dataname='SPY',\n    fromdate=datetime(2020, 1, 1),\n    todate=datetime(2024, 1, 1)\n)\ncerebro.adddata(data)\ncerebro.broker.setcash(100_000)\ncerebro.broker.setcommission(commission=0.001)\n\nresults = cerebro.run()\ncerebro.plot()"
     },
     "walk_forward_optimization": {
@@ -274,7 +340,8 @@
     "description": "Structured approach to building trading strategies",
     "strategy_template": {
       "description": "Standard strategy class structure",
-      "code_example": "from abc import ABC, abstractmethod\nfrom dataclasses import dataclass\nfrom typing import Optional\nimport pandas as pd\n\n@dataclass\nclass StrategyConfig:\n    \"\"\"Configuration for trading strategy.\"\"\"\n    name: str\n    universe: list[str]\n    timeframe: str = '1D'\n    max_positions: int = 10\n    position_size_pct: float = 0.1\n    stop_loss_pct: Optional[float] = 0.02\n    take_profit_pct: Optional[float] = 0.05\n\nclass BaseStrategy(ABC):\n    \"\"\"Abstract base class for trading strategies.\"\"\"\n    \n    def __init__(self, config: StrategyConfig):\n        self.config = config\n        self.positions = {}\n    \n    @abstractmethod\n    def generate_signals(self, data: pd.DataFrame) -> pd.Series:\n        \"\"\"Generate trading signals from data.\"\"\"\n        pass\n    \n    @abstractmethod\n    def calculate_position_size(self, signal: float, price: float) -> float:\n        \"\"\"Determine position size for signal.\"\"\"\n        pass\n    \n    def validate(self, data: pd.DataFrame) -> bool:\n        \"\"\"Validate data has required columns.\"\"\"\n        required = ['open', 'high', 'low', 'close', 'volume']\n        return all(col in data.columns for col in required)"    },
+      "code_example": "from abc import ABC, abstractmethod\nfrom dataclasses import dataclass\nfrom typing import Optional\nimport pandas as pd\n\n@dataclass\nclass StrategyConfig:\n    \"\"\"Configuration for trading strategy.\"\"\"\n    name: str\n    universe: list[str]\n    timeframe: str = '1D'\n    max_positions: int = 10\n    position_size_pct: float = 0.1\n    stop_loss_pct: Optional[float] = 0.02\n    take_profit_pct: Optional[float] = 0.05\n\nclass BaseStrategy(ABC):\n    \"\"\"Abstract base class for trading strategies.\"\"\"\n    \n    def __init__(self, config: StrategyConfig):\n        self.config = config\n        self.positions = {}\n    \n    @abstractmethod\n    def generate_signals(self, data: pd.DataFrame) -> pd.Series:\n        \"\"\"Generate trading signals from data.\"\"\"\n        pass\n    \n    @abstractmethod\n    def calculate_position_size(self, signal: float, price: float) -> float:\n        \"\"\"Determine position size for signal.\"\"\"\n        pass\n    \n    def validate(self, data: pd.DataFrame) -> bool:\n        \"\"\"Validate data has required columns.\"\"\"\n        required = ['open', 'high', 'low', 'close', 'volume']\n        return all(col in data.columns for col in required)"
+    },
     "multi_factor_strategy": {
       "description": "Combine multiple signals with weights",
       "code_example": "class MultiFactorStrategy(BaseStrategy):\n    \"\"\"Strategy combining multiple factors.\"\"\"\n    \n    def __init__(self, config: StrategyConfig, factors: dict):\n        \"\"\"\n        Args:\n            factors: Dict of factor_name -> (function, weight)\n        \"\"\"\n        super().__init__(config)\n        self.factors = factors\n    \n    def generate_signals(self, data: pd.DataFrame) -> pd.Series:\n        composite_signal = pd.Series(0.0, index=data.index)\n        \n        for name, (func, weight) in self.factors.items():\n            factor_signal = func(data)\n            # Normalize to [-1, 1]\n            normalized = (factor_signal - factor_signal.mean()) / factor_signal.std()\n            composite_signal += weight * normalized.clip(-1, 1)\n        \n        # Normalize composite\n        total_weight = sum(w for _, w in self.factors.values())\n        return (composite_signal / total_weight).clip(-1, 1)"
@@ -293,21 +360,58 @@
     "description": "Data providers and fetching patterns",
     "providers": {
       "free": [
-        {"name": "yfinance", "type": "OHLCV + Fundamentals", "limit": "Rate limited"},
-        {"name": "Alpha Vantage (free tier)", "type": "OHLCV + Fundamentals", "limit": "5 calls/min"},
-        {"name": "FRED", "type": "Economic data", "limit": "Unlimited"},
-        {"name": "SEC EDGAR", "type": "Filings", "limit": "10 calls/sec"}
+        {
+          "name": "yfinance",
+          "type": "OHLCV + Fundamentals",
+          "limit": "Rate limited"
+        },
+        {
+          "name": "Alpha Vantage (free tier)",
+          "type": "OHLCV + Fundamentals",
+          "limit": "5 calls/min"
+        },
+        {
+          "name": "FRED",
+          "type": "Economic data",
+          "limit": "Unlimited"
+        },
+        {
+          "name": "SEC EDGAR",
+          "type": "Filings",
+          "limit": "10 calls/sec"
+        }
       ],
       "paid": [
-        {"name": "Polygon.io", "type": "OHLCV, Real-time", "cost": "$29+/mo"},
-        {"name": "IEX Cloud", "type": "OHLCV, Fundamentals", "cost": "$9+/mo"},
-        {"name": "Quandl/Nasdaq", "type": "Alternative data", "cost": "Varies"},
-        {"name": "Bloomberg", "type": "Professional", "cost": "$$$$"}
+        {
+          "name": "Polygon.io",
+          "type": "OHLCV, Real-time",
+          "cost": "$29+/mo"
+        },
+        {
+          "name": "IEX Cloud",
+          "type": "OHLCV, Fundamentals",
+          "cost": "$9+/mo"
+        },
+        {
+          "name": "Quandl/Nasdaq",
+          "type": "Alternative data",
+          "cost": "Varies"
+        },
+        {
+          "name": "Bloomberg",
+          "type": "Professional",
+          "cost": "$$$$"
+        }
       ]
     },
     "data_pipeline": {
       "description": "Standard data fetching and caching pattern",
       "code_example": "import yfinance as yf\nimport pandas as pd\nfrom pathlib import Path\nimport hashlib\nfrom datetime import datetime, timedelta\n\nclass DataPipeline:\n    \"\"\"Data fetching with caching.\"\"\"\n    \n    def __init__(self, cache_dir: str = './data_cache'):\n        self.cache_dir = Path(cache_dir)\n        self.cache_dir.mkdir(exist_ok=True)\n    \n    def _cache_key(self, symbol: str, start: str, end: str) -> str:\n        key = f'{symbol}_{start}_{end}'\n        return hashlib.md5(key.encode()).hexdigest()\n    \n    def get_ohlcv(self, symbol: str, start: str, end: str, force_refresh: bool = False) -> pd.DataFrame:\n        \"\"\"Fetch OHLCV with caching.\"\"\"\n        cache_file = self.cache_dir / f'{self._cache_key(symbol, start, end)}.parquet'\n        \n        if cache_file.exists() and not force_refresh:\n            return pd.read_parquet(cache_file)\n        \n        df = yf.download(symbol, start=start, end=end, progress=False)\n        df.columns = [c.lower() for c in df.columns]\n        df.to_parquet(cache_file)\n        \n        return df\n    \n    def get_multiple(self, symbols: list, start: str, end: str) -> dict:\n        \"\"\"Fetch multiple symbols.\"\"\"\n        return {sym: self.get_ohlcv(sym, start, end) for sym in symbols}"
     }
-  }
+  },
+  "id": "trading-patterns",
+  "name": "Trading Patterns",
+  "category": "patterns",
+  "patterns": {},
+  "best_practices": []
 }

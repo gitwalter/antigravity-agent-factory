@@ -1,5 +1,9 @@
 ---
-description: Vitest setup and configuration, React Testing Library patterns, component testing (render, fireEvent, waitFor), mock patterns (MSW for API mocking), Playwright E2E testing, snapshot testing strategy, and coverage configuration.
+description: Vitest setup and configuration, React Testing Library patterns, component
+  testing (render, fireEvent, waitFor), mock patterns (MSW for API mocking), Playwright
+  E2E testing, snapshot testing strategy, and coverage configuration.
+name: frontend-testing
+type: skill
 ---
 
 # Frontend Testing

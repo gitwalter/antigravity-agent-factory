@@ -1,5 +1,7 @@
 ---
 description: Interactive skill for reviewing, applying, and managing knowledge updates
+name: update-knowledge
+type: skill
 ---
 
 # Update Knowledge

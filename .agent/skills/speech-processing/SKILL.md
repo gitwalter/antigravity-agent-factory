@@ -1,5 +1,8 @@
 ---
-description: Speech-to-text (Whisper, cloud APIs), text-to-speech synthesis, real-time transcription, and audio analysis
+description: Speech-to-text (Whisper, cloud APIs), text-to-speech synthesis, real-time
+  transcription, and audio analysis
+name: speech-processing
+type: skill
 ---
 
 # Speech Processing

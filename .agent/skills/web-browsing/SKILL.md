@@ -1,5 +1,8 @@
 ---
-description: Web scraping with agents, browser automation, content extraction, and ethical scraping practices
+description: Web scraping with agents, browser automation, content extraction, and
+  ethical scraping practices
+name: web-browsing
+type: skill
 ---
 
 # Web Browsing

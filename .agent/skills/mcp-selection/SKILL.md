@@ -1,5 +1,8 @@
 ---
-description: Guide users through selecting appropriate MCP servers during project generation
+description: Guide users through selecting appropriate MCP servers during project
+  generation
+name: mcp-selection
+type: skill
 ---
 
 # Mcp Selection

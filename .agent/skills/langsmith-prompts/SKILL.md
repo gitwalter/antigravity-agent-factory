@@ -1,5 +1,7 @@
 ---
 description: Prompt management with LangSmith Hub - versioning, testing, and evaluation
+name: langsmith-prompts
+type: skill
 ---
 
 # Langsmith Prompts

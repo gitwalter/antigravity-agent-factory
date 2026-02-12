@@ -122,28 +122,32 @@
       "code_example": "from dataclasses import dataclass\nfrom typing import List, Optional\nimport json\n\n@dataclass\nclass BenchmarkItem:\n    id: str\n    question: str\n    expected_answer: str\n    category: str\n    difficulty: str\n    metadata: dict\n\nclass Benchmark:\n    def __init__(self, name: str, items: List[BenchmarkItem]):\n        self.name = name\n        self.items = items\n    \n    @classmethod\n    def from_file(cls, path: str) -> 'Benchmark':\n        data = json.loads(Path(path).read_text())\n        items = [BenchmarkItem(**item) for item in data['items']]\n        return cls(data['name'], items)\n    \n    def run(self, model_fn, evaluator_fn) -> dict:\n        results = []\n        for item in self.items:\n            response = model_fn(item.question)\n            score = evaluator_fn(response, item.expected_answer)\n            results.append({\n                'id': item.id,\n                'category': item.category,\n                'difficulty': item.difficulty,\n                'score': score\n            })\n        \n        return self.aggregate_results(results)\n    \n    def aggregate_results(self, results: List[dict]) -> dict:\n        import pandas as pd\n        df = pd.DataFrame(results)\n        \n        return {\n            'overall': df['score'].mean(),\n            'by_category': df.groupby('category')['score'].mean().to_dict(),\n            'by_difficulty': df.groupby('difficulty')['score'].mean().to_dict()\n        }"
     }
   },
-  "anti_patterns": {
-    "no_evaluation": {
+  "anti_patterns": [
+    {
+      "name": "no_evaluation",
       "description": "Deploying without evaluation",
       "problem": "Unknown quality, silent failures",
       "solution": "Always evaluate before deployment"
     },
-    "wrong_metrics": {
+    {
+      "name": "wrong_metrics",
       "description": "Using irrelevant metrics",
       "problem": "Optimizing for wrong thing",
       "solution": "Choose metrics aligned with user needs"
     },
-    "static_evaluation": {
+    {
+      "name": "static_evaluation",
       "description": "Only evaluating once",
       "problem": "Missing drift and degradation",
       "solution": "Continuous monitoring and evaluation"
     },
-    "biased_test_set": {
+    {
+      "name": "biased_test_set",
       "description": "Non-representative test data",
       "problem": "False confidence in model",
       "solution": "Use diverse, representative test sets"
     }
-  },
+  ],
   "best_practices_summary": [
     "Evaluate before deploying any changes",
     "Use multiple metrics for comprehensive view",
@@ -153,5 +157,10 @@
     "Test adversarial and edge cases",
     "Calibrate LLM-as-judge with human ratings",
     "Document evaluation methodology"
-  ]
+  ],
+  "id": "llm-evaluation-patterns",
+  "name": "Llm Evaluation Patterns",
+  "category": "patterns",
+  "patterns": {},
+  "best_practices": []
 }

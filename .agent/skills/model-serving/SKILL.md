@@ -1,5 +1,8 @@
 ---
-description: Production model serving with vLLM, TGI, Ollama, Triton, FastAPI endpoints, batching, and GPU optimization
+description: Production model serving with vLLM, TGI, Ollama, Triton, FastAPI endpoints,
+  batching, and GPU optimization
+name: model-serving
+type: skill
 ---
 
 # Model Serving

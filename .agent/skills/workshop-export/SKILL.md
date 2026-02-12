@@ -1,5 +1,8 @@
 ---
-description: Export learning workshops to standalone projects with all necessary artifacts for maximum AI-assisted learning
+description: Export learning workshops to standalone projects with all necessary artifacts
+  for maximum AI-assisted learning
+name: workshop-export
+type: skill
 ---
 
 # Workshop Export

@@ -1,5 +1,7 @@
 ---
 description: LangGraph state schemas, reducers, checkpointing, and persistence
+name: state-management
+type: skill
 ---
 
 # State Management

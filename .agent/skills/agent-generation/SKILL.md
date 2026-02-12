@@ -1,5 +1,7 @@
 ---
 description: Agent definition file generation skill
+name: agent-generation
+type: skill
 ---
 
 # Agent Generation

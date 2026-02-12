@@ -17,11 +17,26 @@
         "Route to dead letter queue or error handling flow"
       ],
       "properties": [
-        {"name": "SAP_ErrorModelStepID", "description": "Step where error occurred"},
-        {"name": "SAP_ErrorText", "description": "Error description"},
-        {"name": "ErrorMessage", "description": "Custom error message"},
-        {"name": "ErrorTimestamp", "description": "When error occurred"},
-        {"name": "ErrorCorrelationId", "description": "Correlation ID for tracing"}
+        {
+          "name": "SAP_ErrorModelStepID",
+          "description": "Step where error occurred"
+        },
+        {
+          "name": "SAP_ErrorText",
+          "description": "Error description"
+        },
+        {
+          "name": "ErrorMessage",
+          "description": "Custom error message"
+        },
+        {
+          "name": "ErrorTimestamp",
+          "description": "When error occurred"
+        },
+        {
+          "name": "ErrorCorrelationId",
+          "description": "Correlation ID for tracing"
+        }
       ]
     },
     "tryCatchPattern": {
@@ -39,17 +54,28 @@
     "immediateRetry": {
       "description": "Retry immediately after failure",
       "useCase": "Transient network issues",
-      "configuration": {"retryCount": 3, "delay": "0s"}
+      "configuration": {
+        "retryCount": 3,
+        "delay": "0s"
+      }
     },
     "fixedDelay": {
       "description": "Retry with fixed delay between attempts",
       "useCase": "Rate limiting, temporary unavailability",
-      "configuration": {"retryCount": 3, "delay": "5s"}
+      "configuration": {
+        "retryCount": 3,
+        "delay": "5s"
+      }
     },
     "exponentialBackoff": {
       "description": "Increasing delay between retries",
       "useCase": "System recovery, load management",
-      "configuration": {"retryCount": 5, "initialDelay": "1s", "multiplier": 2, "maxDelay": "60s"},
+      "configuration": {
+        "retryCount": 5,
+        "initialDelay": "1s",
+        "multiplier": 2,
+        "maxDelay": "60s"
+      },
       "pattern": "delays: 1s, 2s, 4s, 8s, 16s"
     },
     "customRetry": {
@@ -61,12 +87,26 @@
     "deadLetterChannel": {
       "description": "Route failed messages to error queue",
       "implementation": "JMS queue for failed messages",
-      "purposes": ["Manual review", "Reprocessing", "Audit trail"]
+      "purposes": [
+        "Manual review",
+        "Reprocessing",
+        "Audit trail"
+      ]
     },
     "errorNotification": {
       "description": "Send alerts on error",
-      "channels": ["Email", "Slack webhook", "Microsoft Teams", "SNMP trap"],
-      "content": ["Error type", "Timestamp", "Message ID", "Business context"]
+      "channels": [
+        "Email",
+        "Slack webhook",
+        "Microsoft Teams",
+        "SNMP trap"
+      ],
+      "content": [
+        "Error type",
+        "Timestamp",
+        "Message ID",
+        "Business context"
+      ]
     },
     "errorTransformation": {
       "description": "Transform error to standard format",
@@ -75,7 +115,11 @@
   },
   "circuitBreaker": {
     "description": "Prevent cascading failures",
-    "states": ["CLOSED", "OPEN", "HALF_OPEN"],
+    "states": [
+      "CLOSED",
+      "OPEN",
+      "HALF_OPEN"
+    ],
     "configuration": {
       "failureThreshold": 5,
       "recoveryTimeout": "60s",
@@ -86,17 +130,29 @@
   "errorCategories": {
     "transient": {
       "description": "Temporary errors that may resolve",
-      "examples": ["Network timeout", "Service unavailable", "Rate limited"],
+      "examples": [
+        "Network timeout",
+        "Service unavailable",
+        "Rate limited"
+      ],
       "strategy": "Retry with backoff"
     },
     "permanent": {
       "description": "Errors that won't resolve with retry",
-      "examples": ["Invalid input", "Authorization failure", "Resource not found"],
+      "examples": [
+        "Invalid input",
+        "Authorization failure",
+        "Resource not found"
+      ],
       "strategy": "Log and route to error handling"
     },
     "business": {
       "description": "Business rule violations",
-      "examples": ["Validation failure", "Duplicate entry", "Insufficient funds"],
+      "examples": [
+        "Validation failure",
+        "Duplicate entry",
+        "Insufficient funds"
+      ],
       "strategy": "Return business error response"
     }
   },
@@ -120,5 +176,13 @@
     "Logging sensitive data in error messages",
     "Not implementing circuit breaker for external calls",
     "Ignoring error monitoring and alerting"
-  ]
+  ],
+  "id": "cpi-error-handling",
+  "name": "Cpi Error Handling",
+  "version": "1.0.0",
+  "category": "patterns",
+  "description": "Knowledge patterns for cpi error handling.",
+  "patterns": {},
+  "best_practices": [],
+  "anti_patterns": []
 }

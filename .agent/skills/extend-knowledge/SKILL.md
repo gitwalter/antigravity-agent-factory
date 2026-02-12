@@ -1,5 +1,8 @@
 ---
-description: Extend Factory knowledge, skills, and templates via research, documents, or user links
+description: Extend Factory knowledge, skills, and templates via research, documents,
+  or user links
+name: extend-knowledge
+type: skill
 ---
 
 # Extend Knowledge

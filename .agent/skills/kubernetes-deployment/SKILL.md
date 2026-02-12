@@ -1,5 +1,9 @@
 ---
-description: Deployment/Service/ConfigMap/Secret patterns, Horizontal Pod Autoscaler, Ingress configuration, Health probes (liveness/readiness/startup), Resource requests and limits, Helm chart basics, Kustomize overlays, Rolling updates
+description: Deployment/Service/ConfigMap/Secret patterns, Horizontal Pod Autoscaler,
+  Ingress configuration, Health probes (liveness/readiness/startup), Resource requests
+  and limits, Helm chart basics, Kustomize overlays, Rolling updates
+name: kubernetes-deployment
+type: skill
 ---
 
 # Kubernetes Deployment

@@ -1,5 +1,8 @@
 ---
-description: Collaborative team workshop series for designing customized Cursor agent systems grounded in love, truth, and beauty
+description: Collaborative team workshop series for designing customized Cursor agent
+  systems grounded in love, truth, and beauty
+name: team-workshop-onboarding
+type: skill
 ---
 
 # Team Workshop Onboarding

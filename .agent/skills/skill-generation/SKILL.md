@@ -1,5 +1,7 @@
 ---
 description: Skill definition file generation skill
+name: skill-generation
+type: skill
 ---
 
 # Skill Generation

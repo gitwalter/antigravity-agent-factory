@@ -1,5 +1,8 @@
 ---
-description: Implement inductive learning by observing patterns and proposing improvements to axioms, principles, and methodologies
+description: Implement inductive learning by observing patterns and proposing improvements
+  to axioms, principles, and methodologies
+name: pattern-feedback
+type: skill
 ---
 
 # Pattern Feedback

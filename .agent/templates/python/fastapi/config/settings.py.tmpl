@@ -1,141 +1,53 @@
 """
-Application Settings - Configuration management using Pydantic BaseSettings
-
-Purpose: Centralized configuration management with environment variable support
-Author: {{AUTHOR}}
-Created: {{DATE}}
-
-Axiom Alignment:
-- A1 (Verifiability): All settings are typed and validated
-- A3 (Transparency): Clear configuration structure and defaults
-- A4 (Non-Harm): Sensitive values are properly handled
+{{ module_docstring(
+    title='Application Settings - Configuration management using Pydantic BaseSettings',
+    description='Purpose: Centralized configuration management with environment variable support\n' +
+                'Axiom Alignment:\n' +
+                '- A1 (Verifiability): All settings are typed and validated\n' +
+                '- A3 (Transparency): Clear configuration structure and defaults\n' +
+                '- A4 (Non-Harm): Sensitive values are properly handled',
+    author='{{AUTHOR}}'
+) }}
 """
 
-from typing import Optional, Listfrom pydantic import BaseSettings, Field, validator
-from functools import lru_cache
-import os
+{% from '_macros/python.tmpl' import import_block, function_def, pydantic_model, decorator %}
+
+{{ import_block([
+    {'from': 'typing', 'names': ['Optional', 'List']},
+    {'from': 'pydantic', 'names': ['BaseSettings', 'Field', 'validator']},
+    {'from': 'functools', 'names': ['lru_cache']},
+    {'name': 'os'}
+]) }}
 
 
-class Settings(BaseSettings):
-    """
-    Application settings with environment variable support.
-    
-    This class uses Pydantic BaseSettings to automatically load
-    configuration from environment variables. Settings can be
-    overridden via .env file or environment variables.
-    
-    Example:
-        >>> settings = Settings()
-        >>> print(settings.database_url)
-    """
-    
-    # Application
-    app_name: str = Field(
-        default="{{APP_NAME}}",
-        description="Application name"
-    )
-    app_version: str = Field(
-        default="1.0.0",
-        description="Application version"
-    )
-    debug: bool = Field(
-        default=False,
-        description="Debug mode"
-    )
-    environment: str = Field(
-        default="development",
-        description="Environment (development, staging, production)"
-    )
-    
-    # API
-    api_prefix: str = Field(
-        default="/api/v1",
-        description="API URL prefix"
-    )
-    api_title: str = Field(
-        default="{{APP_NAME}} API",
-        description="API documentation title"
-    )
-    api_version: str = Field(
-        default="1.0.0",
-        description="API version"
-    )
-    
-    # Server
-    host: str = Field(
-        default="0.0.0.0",
-        description="Server host"
-    )
-    port: int = Field(
-        default=8000,
-        ge=1,
-        le=65535,
-        description="Server port"
-    )
-    
-    # Database
-    database_url: str = Field(
-        ...,
-        description="Database connection URL"
-    )
-    database_pool_size: int = Field(
-        default=10,
-        ge=1,
-        description="Database connection pool size"
-    )
-    database_max_overflow: int = Field(
-        default=20,
-        ge=0,
-        description="Database connection pool max overflow"
-    )
-    database_echo: bool = Field(
-        default=False,
-        description="Echo SQL queries (for debugging)"
-    )
-    
-    # Security
-    secret_key: str = Field(
-        ...,
-        min_length=32,
-        description="Secret key for encryption"
-    )
-    algorithm: str = Field(
-        default="HS256",
-        description="JWT algorithm"
-    )
-    access_token_expire_minutes: int = Field(
-        default=30,
-        ge=1,
-        description="Access token expiration time in minutes"
-    )
-    
-    # CORS
-    cors_origins: List[str] = Field(
-        default=["http://localhost:3000", "http://localhost:8000"],
-        description="Allowed CORS origins"
-    )
-    cors_allow_credentials: bool = Field(
-        default=True,
-        description="Allow CORS credentials"
-    )
-    cors_allow_methods: List[str] = Field(
-        default=["*"],
-        description="Allowed CORS methods"
-    )
-    cors_allow_headers: List[str] = Field(
-        default=["*"],
-        description="Allowed CORS headers"
-    )
-    
-    # Logging
-    log_level: str = Field(
-        default="INFO",
-        description="Logging level"
-    )
-    log_format: str = Field(
-        default="json",
-        description="Log format (json, text)"
-    )
+{{ pydantic_model(
+    name='Settings',
+    description='Application settings with environment variable support.\n\nThis class uses Pydantic BaseSettings to automatically load\nconfiguration from environment variables. Settings can be\noverridden via .env file or environment variables.\n\nExample:\n    >>> settings = Settings()\n    >>> print(settings.database_url)',
+    fields=[
+        {'name': 'app_name', 'type': 'str', 'field': 'default="{{APP_NAME}}", description="Application name"'},
+        {'name': 'app_version', 'type': 'str', 'field': 'default="1.0.0", description="Application version"'},
+        {'name': 'debug', 'type': 'bool', 'field': 'default=False, description="Debug mode"'},
+        {'name': 'environment', 'type': 'str', 'field': 'default="development", description="Environment (development, staging, production)"'},
+        {'name': 'api_prefix', 'type': 'str', 'field': 'default="/api/v1", description="API URL prefix"'},
+        {'name': 'api_title', 'type': 'str', 'field': 'default="{{APP_NAME}} API", description="API documentation title"'},
+        {'name': 'api_version', 'type': 'str', 'field': 'default="1.0.0", description="API version"'},
+        {'name': 'host', 'type': 'str', 'field': 'default="0.0.0.0", description="Server host"'},
+        {'name': 'port', 'type': 'int', 'field': 'default=8000, ge=1, le=65535, description="Server port"'},
+        {'name': 'database_url', 'type': 'str', 'field': '..., description="Database connection URL"'},
+        {'name': 'database_pool_size', 'type': 'int', 'field': 'default=10, ge=1, description="Database connection pool size"'},
+        {'name': 'database_max_overflow', 'type': 'int', 'field': 'default=20, ge=0, description="Database connection pool max overflow"'},
+        {'name': 'database_echo', 'type': 'bool', 'field': 'default=False, description="Echo SQL queries (for debugging)"'},
+        {'name': 'secret_key', 'type': 'str', 'field': '..., min_length=32, description="Secret key for encryption"'},
+        {'name': 'algorithm', 'type': 'str', 'field': 'default="HS256", description="JWT algorithm"'},
+        {'name': 'access_token_expire_minutes', 'type': 'int', 'field': 'default=30, ge=1, description="Access token expiration time in minutes"'},
+        {'name': 'cors_origins', 'type': 'List[str]', 'field': 'default=["http://localhost:3000", "http://localhost:8000"], description="Allowed CORS origins"'},
+        {'name': 'cors_allow_credentials', 'type': 'bool', 'field': 'default=True, description="Allow CORS credentials"'},
+        {'name': 'cors_allow_methods', 'type': 'List[str]', 'field': 'default=["*"], description="Allowed CORS methods"'},
+        {'name': 'cors_allow_headers', 'type': 'List[str]', 'field': 'default=["*"], description="Allowed CORS headers"'},
+        {'name': 'log_level', 'type': 'str', 'field': 'default="INFO", description="Logging level"'},
+        {'name': 'log_format', 'type': 'str', 'field': 'default="json", description="Log format (json, text)"'}
+    ]
+) }}
     
     # External Services (add as needed)
     # redis_url: Optional[str] = Field(None, description="Redis connection URL")
@@ -221,17 +133,12 @@ class Settings(BaseSettings):
         return self.environment == "development"
 
 
-@lru_cache()
-def get_settings() -> Settings:
-    """
-    Get cached settings instance.
-    
-    This function uses LRU cache to ensure settings are loaded
-    only once and reused across the application.
-    
-    Returns:
-        Settings instance
-    """
+{{ decorator('lru_cache') }}
+{{ function_def(
+    name='get_settings',
+    description='Get cached settings instance.\n\nThis function uses LRU cache to ensure settings are loaded\nonly once and reused across the application.',
+    returns='Settings'
+) }}
     return Settings()
 
 

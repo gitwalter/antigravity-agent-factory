@@ -1,5 +1,7 @@
 ---
 description: Configure project management system with backend and methodology selection
+name: pm-configuration
+type: skill
 ---
 
 # Pm Configuration

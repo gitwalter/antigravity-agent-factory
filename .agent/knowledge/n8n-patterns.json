@@ -307,86 +307,82 @@
       ]
     }
   },
-  "best_practices": {
-    "workflow_design": [
-      "Keep workflows focused and single-purpose",
-      "Use descriptive node names",
-      "Document complex logic",
-      "Test workflows thoroughly",
-      "Use sub-workflows for reusability",
-      "Version control workflows"
-    ],
-    "performance": [
-      "Use batch processing for large datasets",
-      "Implement caching where appropriate",
-      "Optimize API calls",
-      "Use parallel execution",
-      "Monitor execution times",
-      "Handle rate limits"
-    ],
-    "error_handling": [
-      "Implement retry logic",
-      "Use error triggers",
-      "Log errors appropriately",
-      "Notify on critical failures",
-      "Handle partial failures",
-      "Implement fallback actions"
-    ],
-    "security": [
-      "Use credential management",
-      "Validate webhook signatures",
-      "Sanitize inputs",
-      "Use HTTPS",
-      "Limit webhook access",
-      "Rotate credentials regularly"
-    ],
-    "maintainability": [
-      "Use sub-workflows",
-      "Document workflows",
-      "Use consistent naming",
-      "Keep workflows DRY",
-      "Test changes",
-      "Version workflows"
-    ]
-  },
-  "anti_patterns": {
-    "hardcoded_credentials": {
+  "best_practices": [
+    "Keep workflows focused and single-purpose",
+    "Use descriptive node names",
+    "Document complex logic",
+    "Test workflows thoroughly",
+    "Use sub-workflows for reusability",
+    "Version control workflows",
+    "Use batch processing for large datasets",
+    "Implement caching where appropriate",
+    "Optimize API calls",
+    "Use parallel execution",
+    "Monitor execution times",
+    "Handle rate limits",
+    "Implement retry logic",
+    "Use error triggers",
+    "Log errors appropriately",
+    "Notify on critical failures",
+    "Handle partial failures",
+    "Implement fallback actions",
+    "Use credential management",
+    "Validate webhook signatures",
+    "Sanitize inputs",
+    "Use HTTPS",
+    "Limit webhook access",
+    "Rotate credentials regularly",
+    "Use sub-workflows",
+    "Document workflows",
+    "Use consistent naming",
+    "Keep workflows DRY",
+    "Test changes",
+    "Version workflows"
+  ],
+  "anti_patterns": [
+    {
+      "name": "hardcoded_credentials",
       "description": "Hardcoding credentials in workflows",
       "problem": "Security vulnerability, hard to rotate",
       "solution": "Use n8n credential management",
       "example": "// Bad\nconst apiKey = 'sk-1234567890';\n\n// Good\nconst apiKey = $credentials.openAiApi.apiKey;"
     },
-    "no_error_handling": {
+    {
+      "name": "no_error_handling",
       "description": "Not handling errors in workflows",
       "problem": "Workflows fail silently or unpredictably",
       "solution": "Implement error handling and retries",
       "example": "// Bad: No error handling\nconst response = await apiCall();\n\n// Good: With error handling\ntry {\n  const response = await apiCall();\n} catch (error) {\n  await notifyError(error);\n  throw error;\n}"
     },
-    "monolithic_workflows": {
+    {
+      "name": "monolithic_workflows",
       "description": "Single large workflow doing everything",
       "problem": "Hard to maintain, test, and debug",
       "solution": "Break into smaller workflows and sub-workflows",
       "example": "// Bad: One workflow with 50+ nodes\n// Good: Multiple focused workflows with sub-workflows"
     },
-    "no_validation": {
+    {
+      "name": "no_validation",
       "description": "Not validating webhook inputs or API responses",
       "problem": "Security issues, unexpected failures",
       "solution": "Validate all inputs and responses",
       "example": "// Bad: No validation\nconst userId = $json.user_id;\n\n// Good: With validation\nconst userId = $json.user_id;\nif (!userId || typeof userId !== 'string') {\n  throw new Error('Invalid user_id');\n}"
     },
-    "synchronous_processing": {
+    {
+      "name": "synchronous_processing",
       "description": "Processing items one by one when batch processing is possible",
       "problem": "Slow execution, inefficient",
       "solution": "Use batch processing and parallel execution",
       "example": "// Bad: Sequential processing\nfor (const item of items) {\n  await processItem(item);\n}\n\n// Good: Batch processing\nconst batches = chunk(items, 10);\nfor (const batch of batches) {\n  await Promise.all(batch.map(processItem));\n}"
     },
-    "ignoring_rate_limits": {
+    {
+      "name": "ignoring_rate_limits",
       "description": "Not respecting API rate limits",
       "problem": "API calls fail, potential service disruption",
       "solution": "Implement rate limiting and backoff",
       "example": "// Bad: No rate limiting\nfor (const item of items) {\n  await apiCall(item);\n}\n\n// Good: With rate limiting\nfor (const item of items) {\n  await apiCall(item);\n  await delay(1000); // Rate limit delay\n}"
     }
-  },
+  ],
   "integration_examples": {
     "webhook_to_database": {
       "description": "Receive webhook, validate, store in database",
@@ -430,5 +426,8 @@
     "node_reference": "https://docs.n8n.io/integrations/",
     "community_workflows": "https://n8n.io/workflows",
     "api_documentation": "https://docs.n8n.io/api/"
-  }
+  },
+  "id": "n8n-patterns",
+  "name": "N8N Patterns",
+  "category": "patterns"
 }

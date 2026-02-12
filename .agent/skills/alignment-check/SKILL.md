@@ -1,5 +1,7 @@
 ---
 description: Verify understanding and alignment before major implementations
+name: alignment-check
+type: skill
 ---
 
 # Alignment Check

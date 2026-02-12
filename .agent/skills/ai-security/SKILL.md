@@ -1,5 +1,8 @@
 ---
-description: Prompt injection defense, API security, and content filtering for AI systems
+description: Prompt injection defense, API security, and content filtering for AI
+  systems
+name: ai-security
+type: skill
 ---
 
 # Ai Security

@@ -1,37 +1,35 @@
-/**
- * Home Page - Next.js App Router Server Component
- * 
- * Purpose: {{PAGE_PURPOSE}}
- * Author: {{AUTHOR}}
- * Created: {{DATE}}
- * 
- * Axiom Alignment:
- * - A1 (Verifiability): All data fetching is traceable
- * - A3 (Transparency): Clear page structure and data sources
- * - A4 (Non-Harm): Safe data handling and error boundaries
- */
+{% from '_macros/typescript.tmpl' import import_block, ts_docstring, react_component %}
 
-import type { Metadata } from 'next'
-import { Suspense } from 'react'
-import { {{FEATURE_COMPONENT}} } from '@/components/{{FEATURE_NAME}}'
-import { {{LOADING_COMPONENT}} } from '@/components/{{LOADING_NAME}}'
-import { {{ERROR_COMPONENT}} } from '@/components/{{ERROR_NAME}}'
-import { get{{DATA_NAME}} } from '@/lib/{{DATA_SOURCE}}'
+{{ ts_docstring(
+    description=PAGE_PURPOSE,
+    author=AUTHOR,
+    created=DATE,
+    axioms=[
+        "A1 (Verifiability): All data fetching is traceable",
+        "A3 (Transparency): Clear page structure and data sources",
+        "A4 (Non-Harm): Safe data handling and error boundaries"
+    ]
+) }}
+
+{{ import_block([
+    {'from': 'next', 'type_names': ['Metadata']},
+    {'from': 'react', 'names': ['Suspense']},
+    {'from': '@/components/' ~ FEATURE_NAME, 'names': [FEATURE_COMPONENT]},
+    {'from': '@/components/' ~ LOADING_NAME, 'names': [LOADING_COMPONENT]},
+    {'from': '@/components/' ~ ERROR_NAME, 'names': [ERROR_COMPONENT]},
+    {'from': '@/lib/' ~ DATA_SOURCE, 'names': ['get' ~ DATA_NAME]}
+]) }}
 
 export const metadata: Metadata = {
   title: '{{PAGE_TITLE}}',
   description: '{{PAGE_DESCRIPTION}}',
 }
 
-/**
- * Home page component.
- * 
- * This is a Server Component that can directly fetch data
- * and render on the server for better performance.
- * 
- * @returns JSX element
- */
-export default async function HomePage() {
+{{ ts_docstring(
+    description="Home page component.\n\nThis is a Server Component that can directly fetch data\nand render on the server for better performance.",
+    returns="JSX element"
+) }}
+{% call react_component('HomePage', async=True, export=True, default=True) %}
   try {
     // Fetch data on the server
     const data = await get{{DATA_NAME}}()
@@ -54,4 +52,4 @@ export default async function HomePage() {
     console.error('Error loading page data:', error)
     return <{{ERROR_COMPONENT}} error={error} />
   }
-}
+{% endcall %}

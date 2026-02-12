@@ -54,7 +54,8 @@
     },
     "batch_predictions": {
       "description": "Handle batch prediction requests",
-      "code_example": "from fastapi import BackgroundTasks\nfrom typing import Optional\nimport asyncio\n\nclass BatchRequest(BaseModel):\n    instances: list[list[float]]\n    request_id: Optional[str] = None\n\nclass BatchResponse(BaseModel):\n    predictions: list[int]\n    probabilities: list[float]\n    request_id: Optional[str]\n\n@app.post('/predict/batch', response_model=BatchResponse)\nasync def predict_batch(request: BatchRequest):\n    model = ml_models['classifier']\n    X = np.array(request.instances)\n    \n    # Run in thread pool for CPU-bound work\n    loop = asyncio.get_event_loop()\n    predictions = await loop.run_in_executor(\n        None, model.predict, X\n    )\n    probabilities = await loop.run_in_executor(\n        None, lambda: model.predict_proba(X).max(axis=1)\n    )\n    \n    return BatchResponse(\n        predictions=predictions.tolist(),\n        probabilities=probabilities.tolist(),\n        request_id=request.request_id\n    )"    },
+      "code_example": "from fastapi import BackgroundTasks\nfrom typing import Optional\nimport asyncio\n\nclass BatchRequest(BaseModel):\n    instances: list[list[float]]\n    request_id: Optional[str] = None\n\nclass BatchResponse(BaseModel):\n    predictions: list[int]\n    probabilities: list[float]\n    request_id: Optional[str]\n\n@app.post('/predict/batch', response_model=BatchResponse)\nasync def predict_batch(request: BatchRequest):\n    model = ml_models['classifier']\n    X = np.array(request.instances)\n    \n    # Run in thread pool for CPU-bound work\n    loop = asyncio.get_event_loop()\n    predictions = await loop.run_in_executor(\n        None, model.predict, X\n    )\n    probabilities = await loop.run_in_executor(\n        None, lambda: model.predict_proba(X).max(axis=1)\n    )\n    \n    return BatchResponse(\n        predictions=predictions.tolist(),\n        probabilities=probabilities.tolist(),\n        request_id=request.request_id\n    )"
+    },
     "async_inference": {
       "description": "Async inference for I/O-bound models",
       "code_example": "from fastapi import BackgroundTasks\nimport redis\nimport uuid\n\nredis_client = redis.Redis()\n\nclass AsyncRequest(BaseModel):\n    features: list[float]\n\nclass AsyncResponse(BaseModel):\n    job_id: str\n    status: str\n\n@app.post('/predict/async', response_model=AsyncResponse)\nasync def predict_async(\n    request: AsyncRequest,\n    background_tasks: BackgroundTasks\n):\n    job_id = str(uuid.uuid4())\n    \n    # Queue for background processing\n    background_tasks.add_task(process_prediction, job_id, request.features)\n    \n    return AsyncResponse(job_id=job_id, status='processing')\n\nasync def process_prediction(job_id: str, features: list[float]):\n    model = ml_models['classifier']\n    X = np.array(features).reshape(1, -1)\n    prediction = model.predict(X)[0]\n    \n    # Store result\n    redis_client.setex(f'result:{job_id}', 3600, str(prediction))\n\n@app.get('/predict/result/{job_id}')\ndef get_result(job_id: str):\n    result = redis_client.get(f'result:{job_id}')\n    if result:\n        return {'job_id': job_id, 'prediction': int(result), 'status': 'completed'}\n    return {'job_id': job_id, 'status': 'processing'}"
@@ -123,23 +124,26 @@
       "code_example": "# docker-compose.yml\nversion: '3.8'\nservices:\n  model:\n    build: .\n    deploy:\n      replicas: 3\n    ports:\n      - '8000-8002:8000'\n    healthcheck:\n      test: ['CMD', 'curl', '-f', 'http://localhost:8000/health']\n      interval: 30s\n      timeout: 10s\n      retries: 3\n\n  nginx:\n    image: nginx:alpine\n    ports:\n      - '80:80'\n    volumes:\n      - ./nginx.conf:/etc/nginx/nginx.conf\n    depends_on:\n      - model"
     }
   },
-  "anti_patterns": {
-    "loading_on_request": {
+  "anti_patterns": [
+    {
+      "name": "loading_on_request",
       "description": "Loading model on every request",
       "problem": "Slow response times, resource waste",
       "solution": "Load model once at startup"
     },
-    "no_health_check": {
+    {
+      "name": "no_health_check",
       "description": "Missing health check endpoint",
       "problem": "Can't detect unhealthy instances",
       "solution": "Add /health endpoint"
     },
-    "blocking_inference": {
+    {
+      "name": "blocking_inference",
       "description": "Blocking event loop with sync inference",
       "problem": "Poor concurrency",
       "solution": "Use thread pool for CPU-bound work"
     }
-  },
+  ],
   "best_practices_summary": [
     "Load models at startup, not per-request",
     "Include health check endpoints",
@@ -149,5 +153,10 @@
     "Use batching for throughput",
     "Containerize for deployment",
     "Set resource limits"
-  ]
+  ],
+  "id": "model-serving-patterns",
+  "name": "Model Serving Patterns",
+  "category": "patterns",
+  "patterns": {},
+  "best_practices": []
 }

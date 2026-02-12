@@ -210,7 +210,7 @@ class TestStructureValidatorFunctionality:
     def test_scan_all_returns_complete_structure(self, validator):
         """Test that scan_all returns all component categories."""
         result = validator.scan_all()
-        expected_keys = {"agents", "skills", "blueprints", "patterns", "knowledge", "templates"}
+        expected_keys = {"agents", "skills", "blueprints", "patterns", "knowledge", "templates", "tests"}
         assert set(result.keys()) == expected_keys, \
             f"scan_all should return all categories: {expected_keys}"
     
@@ -262,23 +262,23 @@ class TestProjectComponentsExist:
         assert skills_dir.exists(), ".agent/skills directory should exist"    
     def test_blueprints_directory_exists(self, project_root):
         """Test that blueprints directory exists."""
-        blueprints_dir = project_root / "blueprints"
-        assert blueprints_dir.exists(), "blueprints directory should exist"
+        blueprints_dir = project_root / ".agent" / "blueprints"
+        assert blueprints_dir.exists(), ".agent/blueprints directory should exist"
     
     def test_patterns_directory_exists(self, project_root):
         """Test that patterns directory exists."""
-        patterns_dir = project_root / "patterns"
-        assert patterns_dir.exists(), "patterns directory should exist"
+        patterns_dir = project_root / ".agent" / "patterns"
+        assert patterns_dir.exists(), ".agent/patterns directory should exist"
     
     def test_knowledge_directory_exists(self, project_root):
         """Test that knowledge directory exists."""
-        knowledge_dir = project_root / "knowledge"
-        assert knowledge_dir.exists(), "knowledge directory should exist"
+        knowledge_dir = project_root / ".agent" / "knowledge"
+        assert knowledge_dir.exists(), ".agent/knowledge directory should exist"
     
     def test_templates_directory_exists(self, project_root):
         """Test that templates directory exists."""
-        templates_dir = project_root / "templates"
-        assert templates_dir.exists(), "templates directory should exist"
+        templates_dir = project_root / ".agent" / "templates"
+        assert templates_dir.exists(), ".agent/templates directory should exist"
     
     def test_has_minimum_agents(self, validator):
         """Test that project has at least some agents defined."""

@@ -1,5 +1,9 @@
 ---
-description: SQLAlchemy 2.0 patterns (mapped_column, Mapped types), Async engine and sessions, Relationship patterns, Alembic migrations, Repository pattern, Query optimization, Connection pooling
+description: SQLAlchemy 2.0 patterns (mapped_column, Mapped types), Async engine and
+  sessions, Relationship patterns, Alembic migrations, Repository pattern, Query optimization,
+  Connection pooling
+name: sqlalchemy-patterns
+type: skill
 ---
 
 # Sqlalchemy Patterns

@@ -1,5 +1,8 @@
 ---
-description: Guide users through articulating why their agent system should exist, who it serves, and how success will be measured
+description: Guide users through articulating why their agent system should exist,
+  who it serves, and how success will be measured
+name: purpose-definition
+type: skill
 ---
 
 # Purpose Definition

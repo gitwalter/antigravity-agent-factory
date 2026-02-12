@@ -1,5 +1,8 @@
 ---
-description: XSUAA configuration and scopes, OAuth 2.0 flows in BTP, principal propagation (cloud to on-premise), CDS access control (DCL rules), API authentication patterns
+description: XSUAA configuration and scopes, OAuth 2.0 flows in BTP, principal propagation
+  (cloud to on-premise), CDS access control (DCL rules), API authentication patterns
+name: sap-security
+type: skill
 ---
 
 # Sap Security

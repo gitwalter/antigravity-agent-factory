@@ -1,5 +1,7 @@
 ---
 description: Interactive guidance for selecting appropriate trust verification tier
+name: society-tier-selection
+type: skill
 ---
 
 # Society Tier Selection
