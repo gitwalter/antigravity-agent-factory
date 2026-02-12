@@ -159,7 +159,7 @@ def sync_manifest(dry_run: bool = True) -> tuple[bool, list[str]]:
     Returns:
         (all_synced, list of changes)
     """
-    manifest_path = Path('knowledge/manifest.json')
+    manifest_path = Path('.agent/knowledge/manifest.json')
     manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
     
     changes = []
@@ -194,7 +194,7 @@ def sync_manifest(dry_run: bool = True) -> tuple[bool, list[str]]:
                 )
     
     # 3. Sync each knowledge file's version in manifest from actual file
-    knowledge_dir = Path('knowledge')
+    knowledge_dir = Path('.agent/knowledge')
     # Update version in knowledge/project-info.json
     project_info_path = knowledge_dir / "project-info.json"
     if not project_info_path.exists():

@@ -248,10 +248,7 @@ class TestCatalogGenerator:
         for category in sorted(categories.values(), key=lambda c: c.name):
             files_count = len(category.files)
             classes_count = sum(len(f.classes) for f in category.files)
-            methods_count = sum(
-                len(f.classes) * len(c.methods) + len(f.standalone_tests)
-                for f in category.files
-            )
+            methods_count = 0
             for f in category.files:
                 methods_count += sum(len(c.methods) for c in f.classes)
                 methods_count += len(f.standalone_tests)
@@ -378,21 +375,21 @@ def main():
             existing_lines = [l for l in existing_catalog.splitlines() if "*Generated on" not in l]
             
             if new_lines == existing_lines:
-                print("✅ Test catalog is up to date")
+                print("[OK] Test catalog is up to date")
                 return 0
             else:
-                print("❌ Test catalog is outdated. Run without --check to update.")
+                print("[FAIL] Test catalog is outdated. Run without --check to update.")
                 return 1
         else:
-            print("❌ Test catalog does not exist. Run without --check to generate.")
+            print("[FAIL] Test catalog does not exist. Run without --check to generate.")
             return 1
     
     # Generate catalog
     if generator.write_catalog():
-        print(f"✅ Generated test catalog: {output_path}")
+        print(f"[OK] Generated test catalog: {output_path}")
         return 0
     else:
-        print(f"ℹ️  Test catalog already up to date: {output_path}")
+        print(f"[INFO] Test catalog already up to date: {output_path}")
         return 0
 
 

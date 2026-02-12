@@ -101,8 +101,6 @@ class PreCommitRunner:
             # Sync/Update Mode
             if script_name == "validate_json_syntax.py":
                 cmd.append("--all")
-            elif script_name == "validate_yaml_frontmatter.py":
-                pass # No args = scan repo
             elif script_name == "update_index.py":
                 cmd.append("--full")
             elif script_name in [
@@ -114,29 +112,28 @@ class PreCommitRunner:
                 cmd.append("--sync")
             elif script_name == "validate_readme_structure.py":
                 cmd.append("--update")
-            else:
-                # Default for others
+            elif script_name == "fix_values.py":
                 cmd.append("--update")
+            elif script_name == "changelog_helper.py":
+                cmd.append("--check")
+            else:
+                # Default for others (no args or custom)
+                pass 
         else:
             # Check Mode
             if script_name == "validate_json_syntax.py":
                 cmd.append("--all")
-            elif script_name == "validate_yaml_frontmatter.py":
-                pass # No args = scan repo
             elif script_name == "update_index.py":
                 cmd.append("--check")
-            elif script_name in [
-                "sync_manifest_versions.py", 
-                "sync_test_counts.py", 
-                "sync_knowledge_counts.py",
-                "sync_artifacts.py"
-            ]:
-                pass # No args = check
             elif script_name == "validate_readme_structure.py":
+                cmd.append("--check")
+            elif script_name == "fix_values.py":
+                cmd.append("--check")
+            elif script_name == "changelog_helper.py":
                 cmd.append("--check")
             else:
                 # Default for others
-                cmd.append("--check")
+                pass
             
         if self.fast_mode and script_name == "sync_artifacts.py":
             cmd.append("--fast")

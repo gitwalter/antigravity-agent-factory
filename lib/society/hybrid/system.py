@@ -13,7 +13,7 @@ import logging
 from lib.society.events import AgentEvent, EventStore
 from lib.society.verification import AxiomComplianceMonitor, VerificationResult
 from lib.society.contracts import AgentContract, ContractRegistry, ContractVerifier
-from lib.society.trust import ReputationSystem, TrustGraph, AgentIdentity
+from lib.society.trust import ReputationSystem, TrustGraph
 from lib.society.blockchain import AnchorService, LocalAnchor, AttestationRegistry
 
 logger = logging.getLogger(__name__)

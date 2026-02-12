@@ -264,4 +264,4 @@ Ask yourself these questions:
 
 *Part of the Antigravity Agent Factory Learning Workshop Ecosystem*
 
-**Workshop Definition:** `patterns/workshops/L15_llm_finetuning.json`
+**Workshop Definition:** `.agent/patterns/workshops/L15_llm_finetuning.json`

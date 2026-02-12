@@ -249,10 +249,10 @@ antigravity-agent-factory/
 │       ├── analyze-knowledge-gaps/
 │       ├── axiom-selection/
 │       └── ...                       # + more skills
-│   ├── patterns/                    # Reusable patterns (234+ files)
-│   ├── templates/                   # Code templates (234+ files)
+│   ├── patterns/                    # Reusable patterns (302+ files)
+│   ├── templates/                   # Code templates (302+ files)
 │   ├── blueprints/                  # Technology stack blueprints (34 blueprints)
-│   ├── knowledge/                   # Knowledge base (234 files)
+│   ├── knowledge/                   # Knowledge base (302 files)
 │   └── workflows/                   # Workflow definitions
 │       ├── python-fastapi/
 │   ├── python-streamlit/
@@ -268,9 +268,9 @@ antigravity-agent-factory/
 │   ├── sap-rap/
 │   ├── sap-cap/
 │   └── sap-cpi-pi/
-├── knowledge/                   # Reference data (234+ files)
+├── knowledge/                   # Reference data (302+ files)
 │   └── *.json                   # Stack, workflow, MCP, security, AI patterns
-├── templates/                   # Code and document templates (234+ files)
+├── templates/                   # Code and document templates (302+ files)
 │   ├── factory/                 # Factory templates (cursorrules, PURPOSE.md, etc.)│   ├── ai/                      # AI agent templates
 │   ├── python/                  # Python templates (FastAPI, Streamlit)
 │   ├── typescript/              # TypeScript templates (Next.js)
@@ -753,14 +753,14 @@ For detailed testing documentation, see [docs/TESTING.md](docs/TESTING.md).
 ```
 tests/
 ├── conftest.py                 # Shared pytest fixtures
-├── unit/                       # Unit tests (70 tests)
+├── unit/                       # Unit tests (71 tests)
 │   ├── test_project_config.py  # ProjectConfig dataclass tests
 │   ├── test_project_generator.py # ProjectGenerator class tests
 │   └── test_pattern_loading.py # Pattern/blueprint loading tests
-├── integration/                # Integration tests (70 tests)
+├── integration/                # Integration tests (71 tests)
 │   ├── test_cli.py             # CLI command tests
 │   └── test_generation.py      # End-to-end generation tests
-├── validation/                 # Schema validation tests (70 tests)
+├── validation/                 # Schema validation tests (71 tests)
 │   ├── test_blueprint_schema.py
 │   ├── test_pattern_schema.py
 │   └── test_knowledge_schema.py

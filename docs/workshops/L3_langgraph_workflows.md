@@ -241,4 +241,4 @@ Ask yourself these questions:
 
 *Part of the Antigravity Agent Factory Learning Workshop Ecosystem*
 
-**Workshop Definition:** `patterns/workshops/L3_langgraph_workflows.json`
+**Workshop Definition:** `.agent/patterns/workshops/L3_langgraph_workflows.json`

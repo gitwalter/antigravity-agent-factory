@@ -13,9 +13,11 @@ Provides a clean interface for agents to:
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING
+if TYPE_CHECKING:
+    from lib.society.integration.context import SocietyContext
 import logging
-import uuid
+
 
 from lib.society.events import (
     Agent,
@@ -25,7 +27,7 @@ from lib.society.events import (
     AxiomContext,
     AgentEvent,
 )
-from lib.society.verification import VerificationResult, VerificationStatus
+from lib.society.verification import VerificationResult
 from lib.society.contracts import (
     AgentContract,
     Party,

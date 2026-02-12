@@ -6,7 +6,7 @@ Provides hash chain validation and integrity verification for event streams.
 
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
-import hashlib
+
 
 from lib.society.events.schema import AgentEvent
 

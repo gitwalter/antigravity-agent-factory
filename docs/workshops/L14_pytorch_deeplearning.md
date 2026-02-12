@@ -280,4 +280,4 @@ Ask yourself these questions:
 
 *Part of the Antigravity Agent Factory Learning Workshop Ecosystem*
 
-**Workshop Definition:** `patterns/workshops/L14_pytorch_deeplearning.json`
+**Workshop Definition:** `.agent/patterns/workshops/L14_pytorch_deeplearning.json`

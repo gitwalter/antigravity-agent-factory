@@ -201,7 +201,7 @@ class TestBlueprintGeneration:
         # Verify generated files
         assert (output_dir / ".agentrules").exists()
         assert (output_dir / "README.md").exists()
-        assert (output_dir / ".agent" / "agents").exists()    
+        assert (output_dir / ".agent" / "agents").exists()
     def test_blueprint_generation_with_name(self, python_executable, cli_path, temp_output_dir):
         """Test blueprint generation with custom project name."""
         output_dir = temp_output_dir / "named-project"
@@ -261,7 +261,7 @@ class TestConfigGeneration:
         )
         
         assert result.returncode == 0
-        assert (output_dir / ".agentrules").exists()    
+        assert (output_dir / ".agentrules").exists()
     def test_config_generation_from_yaml(self, python_executable, cli_path, sample_yaml_config, temp_output_dir):
         """Test generation from YAML config file."""
         output_dir = temp_output_dir / "yaml-config-test"
@@ -344,7 +344,8 @@ class TestQuickStart:
         assert (output_dir / ".agentrules").exists()
     
     def test_quickstart_creates_agents_directory(self, python_executable, cli_path, temp_output_dir):
-        """Test that --quickstart creates .agent/agents/ directory."""        output_dir = temp_output_dir / "quickstart-agents-test"
+        """Test that --quickstart creates .agent/agents/ directory."""
+        output_dir = temp_output_dir / "quickstart-agents-test"
         
         result = subprocess.run(
             [python_executable, str(cli_path),
@@ -359,7 +360,8 @@ class TestQuickStart:
         assert (output_dir / ".agent" / "agents").exists()
     
     def test_quickstart_creates_skills_directory(self, python_executable, cli_path, temp_output_dir):
-        """Test that --quickstart creates .agent/skills/ directory."""        output_dir = temp_output_dir / "quickstart-skills-test"
+        """Test that --quickstart creates .agent/skills/ directory."""
+        output_dir = temp_output_dir / "quickstart-skills-test"
         
         result = subprocess.run(
             [python_executable, str(cli_path),
@@ -371,7 +373,7 @@ class TestQuickStart:
         )
         
         assert result.returncode == 0
-        assert (output_dir / ".agent" / "skills").exists()    
+        assert (output_dir / ".agent" / "skills").exists()
     def test_quickstart_creates_readme(self, python_executable, cli_path, temp_output_dir):
         """Test that --quickstart creates README.md file."""
         output_dir = temp_output_dir / "quickstart-readme-test"

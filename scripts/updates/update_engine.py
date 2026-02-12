@@ -368,21 +368,15 @@ class UpdateEngine:
                             new_value=value,
                         ))
             
-            elif strategy == MergeStrategy.BALANCED:
-                # Add and update, preserve structure
-                merged = self._deep_merge(merged, update.proposed_content, operations, update.target_file)
-            
-            elif strategy == MergeStrategy.CONSERVATIVE:
-                # Only add new keys
-                for key, value in update.proposed_content.items():
-                    if key not in merged:
-                        merged[key] = value
-                        operations.append(UpdateOperation(
-                            target_file=update.target_file,
-                            operation_type="add",
-                            path=key,
-                            new_value=value,
-                        ))
+            elif strategy in [MergeStrategy.BALANCED, MergeStrategy.CONSERVATIVE]:
+                # Add and update (Balanced) or only add (Conservative)
+                merged = self._deep_merge(
+                    merged,
+                    update.proposed_content,
+                    operations,
+                    update.target_file,
+                    strategy=strategy
+                )
         
         # Add changelog entry
         if "changelog" not in merged:
@@ -410,7 +404,8 @@ class UpdateEngine:
         updates: Dict[str, Any],
         operations: List[UpdateOperation],
         target_file: str,
-        path: str = ""
+        path: str = "",
+        strategy: MergeStrategy = MergeStrategy.BALANCED
     ) -> Dict[str, Any]:
         """Deep merge two dictionaries.
         
@@ -441,10 +436,14 @@ class UpdateEngine:
             elif isinstance(value, dict) and isinstance(result[key], dict):
                 # Both are dicts - recurse
                 result[key] = self._deep_merge(
-                    result[key], value, operations, target_file, current_path
+                    result[key], value, operations, target_file, current_path, strategy
                 )
             elif result[key] != value:
-                # Different value - update
+                # Different value
+                if strategy == MergeStrategy.CONSERVATIVE:
+                    continue  # Skip update in conservative mode
+                
+                # Update value
                 old_value = result[key]
                 result[key] = value
                 operations.append(UpdateOperation(

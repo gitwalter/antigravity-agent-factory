@@ -237,4 +237,4 @@ Ask yourself these questions:
 
 *Part of the Antigravity Agent Factory Learning Workshop Ecosystem*
 
-**Workshop Definition:** `patterns/workshops/L9_react_modern.json`
+**Workshop Definition:** `.agent/patterns/workshops/L9_react_modern.json`

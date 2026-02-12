@@ -170,7 +170,8 @@ class ValuesFixer:
         
         # Fix blueprints
         print("\n  BLUEPRINTS:")
-        blueprints_dir = self.factory_root / 'blueprints'
+        print("\n  BLUEPRINTS:")
+        blueprints_dir = self.factory_root / '.agent' / 'blueprints'
         for bp_dir in sorted(blueprints_dir.iterdir()):
             if bp_dir.is_dir():
                 bp_file = bp_dir / 'blueprint.json'
@@ -179,13 +180,15 @@ class ValuesFixer:
         
         # Fix agent patterns
         print("\n  AGENT PATTERNS:")
-        agents_dir = self.factory_root / 'patterns' / 'agents'
+        print("\n  AGENT PATTERNS:")
+        agents_dir = self.factory_root / '.agent' / 'patterns' / 'agents'
         for pattern_file in sorted(agents_dir.glob('*.json')):
             self.fix_agent_pattern(pattern_file)
         
         # Fix skill patterns
         print("\n  SKILL PATTERNS:")
-        skills_dir = self.factory_root / 'patterns' / 'skills'
+        print("\n  SKILL PATTERNS:")
+        skills_dir = self.factory_root / '.agent' / 'patterns' / 'skills'
         for pattern_file in sorted(skills_dir.glob('*.json')):
             self.fix_skill_pattern(pattern_file)
         

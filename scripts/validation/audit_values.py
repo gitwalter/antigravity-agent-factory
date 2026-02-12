@@ -166,7 +166,7 @@ class ValuesAuditor:
     def audit_all(self) -> Dict[str, Any]:
         """Run all audits and return summary."""
         # Audit blueprints
-        blueprints_dir = self.factory_root / 'blueprints'
+        blueprints_dir = self.factory_root / '.agent' / 'blueprints'
         for bp_dir in blueprints_dir.iterdir():
             if bp_dir.is_dir():
                 bp_file = bp_dir / 'blueprint.json'
@@ -174,12 +174,12 @@ class ValuesAuditor:
                     self.results.extend(self.audit_blueprint(bp_file))
         
         # Audit agent patterns
-        agents_dir = self.factory_root / 'patterns' / 'agents'
+        agents_dir = self.factory_root / '.agent' / 'patterns' / 'agents'
         for pattern_file in agents_dir.glob('*.json'):
             self.results.extend(self.audit_agent_pattern(pattern_file))
         
         # Audit skill patterns
-        skills_dir = self.factory_root / 'patterns' / 'skills'
+        skills_dir = self.factory_root / '.agent' / 'patterns' / 'skills'
         for pattern_file in skills_dir.glob('*.json'):
             self.results.extend(self.audit_skill_pattern(pattern_file))
         

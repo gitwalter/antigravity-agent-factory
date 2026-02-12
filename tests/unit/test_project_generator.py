@@ -34,8 +34,8 @@ class TestProjectGeneratorInit:
         generator = ProjectGenerator(sample_config, str(temp_output_dir))
         
         assert generator.factory_root.exists()
-        assert (generator.factory_root / "blueprints").exists()
-        assert (generator.factory_root / "patterns").exists()
+        assert (generator.factory_root / ".agent" / "blueprints").exists()
+        assert (generator.factory_root / ".agent" / "patterns").exists()
 
 
 class TestDirectoryCreation:

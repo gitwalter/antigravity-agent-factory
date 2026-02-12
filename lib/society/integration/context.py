@@ -7,7 +7,7 @@ Provides a unified container for all verification infrastructure
 components that agents share when participating in the society.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
@@ -17,7 +17,7 @@ from lib.society.events import EventStore
 from lib.society.verification import AxiomComplianceMonitor, create_default_monitor
 from lib.society.contracts import ContractRegistry, ContractVerifier
 from lib.society.trust import ReputationSystem, TrustGraph, IdentityRegistry
-from lib.society.hybrid import HybridVerificationSystem, SystemConfig, VerificationLevel
+from lib.society.hybrid import VerificationLevel
 
 logger = logging.getLogger(__name__)
 

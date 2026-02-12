@@ -112,7 +112,8 @@ class AggregationResult:
                 except (AttributeError, TypeError):
                     pass
         
-        # Always return a dict with all UpdatePriority keys, even if empty        return result
+        # Always return a dict with all UpdatePriority keys, even if empty
+        return result
     
     @property
     def by_file(self) -> Dict[str, List[KnowledgeUpdate]]:
@@ -143,7 +144,8 @@ class AggregationResult:
                 errors=self.errors,
             )
         
-        if patterns == ["*"]:            return self
+        if patterns == ["*"]:
+            return self
         
         filtered = []
         for update in self.updates:

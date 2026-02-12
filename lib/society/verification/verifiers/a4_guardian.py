@@ -5,7 +5,7 @@ Verifies actions follow the Guardian protocol.
 Checks for harm prevention, proper escalation, and user notification.
 """
 
-from lib.society.events.schema import AgentEvent, ActionType
+from lib.society.events.schema import AgentEvent
 from lib.society.verification.verifiers.base import AxiomVerifier, AxiomId, AxiomResult
 
 

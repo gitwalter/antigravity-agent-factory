@@ -10,14 +10,17 @@ SDG - Love - Truth - Beauty
 from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from lib.society.pabp.bundle import AgentBundle
 import hashlib
 import json
 
 # Try to import cryptographic libraries
 try:
     from nacl.signing import SigningKey, VerifyKey
-    from nacl.encoding import HexEncoder
+
     CRYPTO_AVAILABLE = True
 except ImportError:
     CRYPTO_AVAILABLE = False
@@ -238,7 +241,7 @@ def create_manifest_from_bundle(bundle: "AgentBundle") -> BundleManifest:
         BundleManifest with checksums from bundle components.
     """
     # Import here to avoid circular import
-    from lib.society.pabp.bundle import AgentBundle
+
     
     checksums = [
         ComponentChecksum(

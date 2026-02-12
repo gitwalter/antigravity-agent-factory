@@ -31,7 +31,7 @@ def run_pre_commit(root_dir: Path) -> bool:
     pre_commit_script = root_dir / "scripts" / "git" / "pre_commit_runner.py"
     
     if not pre_commit_script.exists():
-        print("⚠️  Pre-commit runner not found. Skipping validation.")
+        print("[WARN] Pre-commit runner not found. Skipping validation.")
         return True
     
     try:
@@ -42,7 +42,7 @@ def run_pre_commit(root_dir: Path) -> bool:
         )
         return result.returncode == 0
     except Exception as e:
-        print(f"❌ Error running pre-commit validation: {e}")
+        print(f"[FAIL] Error running pre-commit validation: {e}")
         return False
 
 
@@ -65,7 +65,7 @@ def commit(root_dir: Path, message: str) -> bool:
         )
         return result.returncode == 0
     except Exception as e:
-        print(f"❌ Error creating commit: {e}")
+        print(f"[FAIL] Error creating commit: {e}")
         return False
 
 
@@ -87,7 +87,7 @@ def push(root_dir: Path) -> bool:
         )
         return result.returncode == 0
     except Exception as e:
-        print(f"❌ Error pushing: {e}")
+        print(f"[FAIL] Error pushing: {e}")
         return False
 
 
@@ -125,32 +125,32 @@ def main():
     # Check if we're in a git repository
     git_dir = root_dir / ".git"
     if not git_dir.exists():
-        print("❌ Not a git repository. Run 'git init' first.")
+        print("[FAIL] Not a git repository. Run 'git init' first.")
         return 1
     
     # Run pre-commit validation
     if not args.skip_validation:
-        print("🔍 Running pre-commit validation...")
+        print("[INFO] Running pre-commit validation...")
         if not run_pre_commit(root_dir):
-            print("❌ Pre-commit validation failed. Commit aborted.")
+            print("[FAIL] Pre-commit validation failed. Commit aborted.")
             print("   Fix the issues above or use --skip-validation to bypass (not recommended)")
             return 1
-        print("✅ Pre-commit validation passed")
+        print("[OK] Pre-commit validation passed")
     
     # Create commit
-    print(f"📝 Creating commit: {args.message}")
+    print(f"[EDIT] Creating commit: {args.message}")
     if not commit(root_dir, args.message):
-        print("❌ Commit failed")
+        print("[FAIL] Commit failed")
         return 1
-    print("✅ Commit created successfully")
+    print("[OK] Commit created successfully")
     
     # Push if requested
     if args.push:
-        print("🚀 Pushing to remote...")
+        print("[INFO] Pushing to remote...")
         if not push(root_dir):
-            print("❌ Push failed")
+            print("[FAIL] Push failed")
             return 1
-        print("✅ Pushed to remote")
+        print("[OK] Pushed to remote")
     
     return 0
 

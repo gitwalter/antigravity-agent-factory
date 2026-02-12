@@ -496,7 +496,7 @@ class TestValidate:
             root = Path(tmpdir)
             
             # Create 55 knowledge files
-            knowledge_dir = root / ".agent" / "knowledge"
+            knowledge_dir = root / "knowledge"
             knowledge_dir.mkdir()
             for i in range(55):
                 (knowledge_dir / f"file{i}.json").touch()

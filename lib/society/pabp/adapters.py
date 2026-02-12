@@ -9,7 +9,7 @@ SDG - Love - Truth - Beauty
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Dict, List, Optional, Type
+from typing import Dict, List, Type
 import re
 import shutil
 

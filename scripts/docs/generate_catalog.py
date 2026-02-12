@@ -11,7 +11,7 @@ from typing import Dict, List, Any
 
 def get_factory_root() -> Path:
     """Return the root directory of the factory."""
-    return Path(__file__).parent.parent
+    return Path(__file__).parent.parent.parent
 
 def load_blueprint(path: Path) -> Dict[str, Any]:
     """Load and parse a blueprint.json file."""
@@ -39,20 +39,21 @@ def generate_catalog():
     catalog_path = root / 'CATALOG.md'
     
     blueprints = []
-    blueprints_dir = root / 'blueprints'
-    if blueprints_dir.exists():
-        for bp_dir in sorted(blueprints_dir.iterdir()):
-            if bp_dir.is_dir():
-                bp_file = bp_dir / 'blueprint.json'
-                if bp_file.exists():
-                    meta = load_blueprint(bp_file)
-                    blueprints.append({
-                        'id': meta.get('blueprintId', bp_dir.name),
-                        'name': meta.get('blueprintName', bp_dir.name.title()),
-                        'description': meta.get('description', 'No description'),
-                        'tags': meta.get('tags', []),
-                        'path': bp_dir.relative_to(root).as_posix() # Link to dir
-                    })
+    blueprints_dirs = [root / 'blueprints', root / '.agent' / 'blueprints']
+    for blueprints_dir in blueprints_dirs:
+        if blueprints_dir.exists():
+            for bp_dir in sorted(blueprints_dir.iterdir()):
+                if bp_dir.is_dir():
+                    bp_file = bp_dir / 'blueprint.json'
+                    if bp_file.exists():
+                        meta = load_blueprint(bp_file)
+                        blueprints.append({
+                            'id': meta.get('blueprintId', bp_dir.name),
+                            'name': meta.get('blueprintName', bp_dir.name.title()),
+                            'description': meta.get('description', 'No description'),
+                            'tags': meta.get('tags', []),
+                            'path': bp_dir.relative_to(root).as_posix() # Link to dir
+                        })
 
     # Helper to calculate path relative to root (where catalog now lives)
     def get_rel_path(path):
@@ -84,7 +85,7 @@ def generate_catalog():
                         })
 
     workflows = []
-    workflow_dirs = [root / 'patterns' / 'workflows', root / 'workflows'] 
+    workflow_dirs = [root / 'patterns' / 'workflows', root / 'workflows', root / '.agent' / 'workflows'] 
     for wd in workflow_dirs:
         if wd.exists():
             for wf_file in sorted(wd.glob('*.md')):
@@ -95,7 +96,7 @@ def generate_catalog():
                 })
     
     knowledge = []
-    knowledge_dirs = [root / 'knowledge']
+    knowledge_dirs = [root / 'knowledge', root / '.agent' / 'knowledge']
     for kd in knowledge_dirs:
         if kd.exists():
              for k_file in sorted(kd.glob('*.json')):
@@ -105,16 +106,17 @@ def generate_catalog():
                  })
 
     templates = []
-    templates_dir = root / 'templates'
-    if templates_dir.exists():
-        for item in sorted(templates_dir.rglob('*')):
-            if item.is_file() and not item.name.startswith('.'):
-                 category = item.parent.name
-                 templates.append({
-                     'name': item.name,
-                     'category': category,
-                     'path': get_rel_path(item)
-                 })
+    templates_dirs = [root / 'templates', root / '.agent' / 'templates']
+    for templates_dir in templates_dirs:
+        if templates_dir.exists():
+            for item in sorted(templates_dir.rglob('*')):
+                if item.is_file() and not item.name.startswith('.'):
+                     category = item.parent.name
+                     templates.append({
+                         'name': item.name,
+                         'category': category,
+                         'path': get_rel_path(item)
+                     })
 
     with open(catalog_path, 'w', encoding='utf-8') as f:
         f.write("# Antigravity Agent Factory Catalog\n\n")

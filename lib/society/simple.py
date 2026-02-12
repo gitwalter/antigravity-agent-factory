@@ -29,8 +29,8 @@ from typing import Any, Callable, Dict, List, Optional
 from enum import Enum
 
 from lib.society.integration import SocietyContext, AgentSocietyBridge, MessageRouter
-from lib.society.integration.agent_bridge import MessageType, BridgeResult
-from lib.society.trust import ReputationSystem
+from lib.society.integration.agent_bridge import MessageType
+
 from lib.society.contracts import AgentContract, Party, Capability, Obligation, Prohibition
 
 

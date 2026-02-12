@@ -26,7 +26,7 @@ class KnowledgeCounts(NamedTuple):
 
 def count_knowledge_files() -> int:
     """Count actual JSON files in knowledge/ directory."""
-    knowledge_dir = Path("knowledge")
+    knowledge_dir = Path(".agent/knowledge")
     if not knowledge_dir.exists():
         return 0
     
@@ -41,7 +41,7 @@ def count_knowledge_files() -> int:
 
 def get_manifest_count() -> int:
     """Extract total_files from manifest.json."""
-    manifest_path = Path("knowledge/manifest.json")
+    manifest_path = Path(".agent/knowledge/manifest.json")
     if not manifest_path.exists():
         return 0
     
@@ -75,7 +75,7 @@ def update_manifest(actual_count: int, dry_run: bool = True) -> bool:
     Returns:
         True if update was needed (or would be needed)
     """
-    manifest_path = Path("knowledge/manifest.json")
+    manifest_path = Path(".agent/knowledge/manifest.json")
     if not manifest_path.exists():
         return False
     

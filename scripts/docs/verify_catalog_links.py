@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 def verify_links():
-    root = Path(__file__).parent.parent
+    root = Path(__file__).parent.parent.parent
     docs_dir = root / 'docs'
     catalog_path = root / 'CATALOG.md'
 

@@ -19,7 +19,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from lib.society.pabp.adapters import (
     PlatformAdapter,
-    AntigravityAdapter,
     detect_platform,
     get_adapter
 )

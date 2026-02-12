@@ -697,8 +697,8 @@ def create_engine(
         factory_root = Path(__file__).parent.parent.parent
     
     template_dirs = [
-        factory_root / 'templates',
-        factory_root / 'templates' / '_macros',
+        factory_root / '.agent' / 'templates',
+        factory_root / '.agent' / 'templates' / '_macros',
     ]
     
     if additional_dirs:

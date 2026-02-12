@@ -39,7 +39,8 @@ class TestFullProjectGeneration:
         # Verify directory structure
         expected_dirs = [
             ".agent/agents",
-            ".agent/skills",            "knowledge",
+            ".agent/skills",
+            "knowledge",
             "templates",
             "workflows",
             "scripts",
@@ -55,7 +56,8 @@ class TestFullProjectGeneration:
         """Test that .agentrules is created with correct content."""
         config = ProjectConfig(
             project_name="cursorrules-test",
-            project_description="Testing cursorrules generation",            domain="testing-domain",
+            project_description="Testing cursorrules generation",
+            domain="testing-domain",
             primary_language="typescript",
             style_guide="google"
         )
@@ -70,7 +72,8 @@ class TestFullProjectGeneration:
         
         content = cursorrules_path.read_text(encoding='utf-8')
         assert "cursorrules-test" in content
-        assert "Testing cursorrules generation" in content        assert "typescript" in content
+        assert "Testing cursorrules generation" in content
+        assert "typescript" in content
         assert "testing-domain" in content
     
     def test_generate_creates_readme(self, temp_output_dir):
@@ -105,7 +108,8 @@ class TestFullProjectGeneration:
         
         assert result["success"]
         
-        agents_dir = temp_output_dir / ".agent" / "agents"        assert agents_dir.exists()
+        agents_dir = temp_output_dir / ".agent" / "agents"
+        assert agents_dir.exists()
         
         # Check that agent files were created
         agent_files = list(agents_dir.glob("*.md"))
@@ -123,7 +127,8 @@ class TestFullProjectGeneration:
         
         assert result["success"]
         
-        skills_dir = temp_output_dir / ".agent" / "skills"        assert skills_dir.exists()
+        skills_dir = temp_output_dir / ".agent" / "skills"
+        assert skills_dir.exists()
         
         # Check that skill directories were created
         skill_dirs = [d for d in skills_dir.iterdir() if d.is_dir()]
@@ -148,7 +153,8 @@ class TestBlueprintGeneration:
         result = generator.generate()
         
         assert result["success"]
-        assert (temp_output_dir / ".agentrules").exists()        assert (temp_output_dir / "README.md").exists()
+        assert (temp_output_dir / ".agentrules").exists()
+        assert (temp_output_dir / "README.md").exists()
     
     def test_blueprint_generates_knowledge_files(self, temp_output_dir, factory_root):
         """Test that knowledge files are copied from factory."""
@@ -185,7 +191,8 @@ class TestGeneratedContentValidation:
         
         assert result["success"]
         
-        agents_dir = temp_output_dir / ".agent" / "agents"        agent_files = list(agents_dir.glob("*.md"))
+        agents_dir = temp_output_dir / ".agent" / "agents"
+        agent_files = list(agents_dir.glob("*.md"))
         
         for agent_file in agent_files:
             content = agent_file.read_text(encoding='utf-8')
@@ -213,7 +220,8 @@ class TestGeneratedContentValidation:
                     assert "## Process" in content or "## When to Use" in content
     
     def test_cursorrules_has_mcp_section_when_configured(self, temp_output_dir):
-        """Test that .agentrules has MCP section when servers configured."""        config = ProjectConfig(
+        """Test that .agentrules has MCP section when servers configured."""
+        config = ProjectConfig(
             project_name="mcp-test",
             mcp_servers=[
                 {"name": "atlassian", "url": "https://mcp.atlassian.com", "purpose": "Jira"},
@@ -314,7 +322,8 @@ class TestGenerationErrors:
         assert result["success"]
         
         # The nonexistent agent should not create a file
-        agents_dir = temp_output_dir / ".agent" / "agents"        agent_files = list(agents_dir.glob("nonexistent-agent.md"))
+        agents_dir = temp_output_dir / ".agent" / "agents"
+        agent_files = list(agents_dir.glob("nonexistent-agent.md"))
         assert len(agent_files) == 0
     
     def test_missing_skill_pattern_warning(self, temp_output_dir, capsys):

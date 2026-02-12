@@ -313,8 +313,7 @@ class ProjectGenerator:
             blueprint = self._load_blueprint()
             
             # DEBUG LOG
-            import os
-            debug_path = Path("D:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory/generation_debug.log")
+            debug_path = self.factory_root / "generation_debug.log"
             with open(debug_path, "a", encoding="utf-8") as f:
                 f.write(f"\n[DEBUG] Project: {self.config.project_name}\n")
                 f.write(f"  Target: {self.target_dir}\n")
@@ -346,7 +345,7 @@ class ProjectGenerator:
             # Generate diagrams folder with README
             self._generate_diagrams()
             
-            print(f"✓ Project generated successfully")
+            print(f"[SUCCESS] Project generated successfully")
             
             return {
                 'success': True,
@@ -396,7 +395,7 @@ class ProjectGenerator:
         if not self.config.blueprint_id:
             return None
             
-        blueprint_path = self.factory_root / 'blueprints' / self.config.blueprint_id / 'blueprint.json'
+        blueprint_path = self.factory_root / '.agent' / 'blueprints' / self.config.blueprint_id / 'blueprint.json'
         
         if not blueprint_path.exists():
             print(f"Warning: Blueprint {self.config.blueprint_id} not found")
@@ -415,10 +414,10 @@ class ProjectGenerator:
         Returns:
             Pattern dictionary or None.
         """
-        pattern_path = self.factory_root / 'patterns' / pattern_type / f'{pattern_id}.json'
+        pattern_path = self.factory_root / '.agent' / 'patterns' / pattern_type / f'{pattern_id}.json'
         
         # DEBUG LOG
-        debug_path = Path("D:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory/generation_debug.log")
+        debug_path = self.factory_root / "generation_debug.log"
         with open(debug_path, "a", encoding="utf-8") as f:
             f.write(f"  [LOAD] {pattern_type}/{pattern_id} from {pattern_path} exists? {pattern_path.exists()}\n")
             if not pattern_path.exists():
@@ -429,6 +428,21 @@ class ProjectGenerator:
             
         with open(pattern_path, 'r', encoding='utf-8') as f:
             return json.load(f)
+    
+    def _write_file(self, path: Path, content: str) -> None:
+        """Write content to file.
+        
+        Args:
+            path: Path to the file.
+            content: Content to write.
+        """
+        # Create parent directory if it doesn't exist
+        path.parent.mkdir(parents=True, exist_ok=True)
+            
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(content)
+            
+        self.generated_files.append(str(path))
     
     def _generate_cursorrules(self, blueprint: Optional[Dict[str, Any]]) -> None:
         """Generate the .agentrules file.
@@ -511,7 +525,7 @@ class ProjectGenerator:
         Returns:
             Template content string.
         """
-        template_path = self.factory_root / 'templates' / 'factory' / 'cursorrules-template.md'        
+        template_path = self.factory_root / '.agent' / 'templates' / 'factory' / 'cursorrules-template.md'        
         if template_path.exists():
             with open(template_path, 'r', encoding='utf-8') as f:
                 return f.read()
@@ -662,14 +676,14 @@ Before implementation:
                 output_path = agents_dir / f'{name}.md'
                 
                 # DEBUG LOG
-                debug_path = Path("D:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory/generation_debug.log")
+                debug_path = self.factory_root / "generation_debug.log"
                 with open(debug_path, "a", encoding="utf-8") as f:
                     f.write(f"  [AGENT] Writing {name}.md to {output_path}\n")
 
                 self._write_file(output_path, content)
             else:
                 # DEBUG LOG
-                debug_path = Path("D:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory/generation_debug.log")
+                debug_path = self.factory_root / "generation_debug.log"
                 with open(debug_path, "a", encoding="utf-8") as f:
                     f.write(f"  [AGENT] FAILED to load pattern for {agent_id}\n")
                 print(f"Warning: Agent pattern {agent_id} not found")
@@ -782,14 +796,14 @@ Before implementation:
                 output_path = skill_dir / 'SKILL.md'
                 
                 # DEBUG LOG
-                debug_path = Path("D:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory/generation_debug.log")
+                debug_path = self.factory_root / "generation_debug.log"
                 with open(debug_path, "a", encoding="utf-8") as f:
                     f.write(f"  [SKILL] Writing {name}/SKILL.md to {output_path}\n")
 
                 self._write_file(output_path, content)
             else:
                 # DEBUG LOG
-                debug_path = Path("D:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory/generation_debug.log")
+                debug_path = self.factory_root / "generation_debug.log"
                 with open(debug_path, "a", encoding="utf-8") as f:
                     f.write(f"  [SKILL] FAILED to load pattern for {skill_id}\n")
                 print(f"Warning: Skill pattern {skill_id} not found")
@@ -924,6 +938,40 @@ Before implementation:
                     dest = knowledge_dir / filename
                     shutil.copy2(src_file, dest)
                     self.generated_files.append(str(dest))
+
+    def _generate_guardian_protocol(self, knowledge_dir: Path) -> None:
+        """Generate guardian-protocol.json.
+        
+        Args:
+            knowledge_dir: Path to knowledge directory.
+        """
+        template_path = self.factory_root / '.agent' / 'templates' / 'knowledge' / 'guardian-protocol.json.tmpl'
+        
+        if not template_path.exists():
+            print("Warning: guardian-protocol.json.tmpl not found")
+            return
+            
+        try:
+            template_content = template_path.read_text(encoding='utf-8')
+            
+            # Context for replacements
+            now = datetime.now()
+            replacements = {
+                '{PROJECT_NAME}': self.config.project_name,
+                '{DOMAIN}': self.config.domain,
+                '{GENERATED_DATE}': now.strftime('%Y-%m-%d'),
+            }
+            
+            content = template_content
+            for placeholder, value in replacements.items():
+                content = content.replace(placeholder, value)
+            
+            output_path = knowledge_dir / 'guardian-protocol.json'
+            self._write_file(output_path, content)
+            
+        except Exception as e:
+            print(f"Error generating guardian protocol: {e}")
+
     def _generate_project_info(
         self, 
         knowledge_dir: Path, 
@@ -938,7 +986,7 @@ Before implementation:
             knowledge_dir: Path to knowledge directory.
             blueprint: Optional blueprint configuration.
         """
-        template_path = self.factory_root / 'templates' / 'knowledge' / 'project-info.json.tmpl'
+        template_path = self.factory_root / '.agent' / 'templates' / 'knowledge' / 'project-info.json.tmpl'
         
         if not template_path.exists():
             print("Warning: project-info.json.tmpl not found")
@@ -1249,7 +1297,7 @@ Before implementation:
             workflows_dir: Target workflows directory.
         """
         # Agent workflow templates from Factory
-        agent_templates = self.factory_root / 'templates' / 'workflows' / 'agent'
+        agent_templates = self.factory_root / '.agent' / 'templates' / 'workflows' / 'agent'
         
         if not agent_templates.exists():
             return

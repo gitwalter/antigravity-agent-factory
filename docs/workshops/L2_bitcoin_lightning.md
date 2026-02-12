@@ -244,4 +244,4 @@ Ask yourself these questions:
 
 *Part of the Antigravity Agent Factory Learning Workshop Ecosystem*
 
-**Workshop Definition:** `patterns/workshops/L2_bitcoin_lightning.json`
+**Workshop Definition:** `.agent/patterns/workshops/L2_bitcoin_lightning.json`

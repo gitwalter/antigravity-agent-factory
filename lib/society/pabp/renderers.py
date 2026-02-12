@@ -36,7 +36,7 @@ SDG - Love - Truth - Beauty
 """
 
 import re
-from typing import Dict, Optional
+from typing import Dict
 
 
 def _apply_rewrites(text: str, path_rewrites: Dict[str, str] = None,

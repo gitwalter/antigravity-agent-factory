@@ -139,12 +139,12 @@ class ChangelogHelper:
                 if count > 0:
                     significant_types.append(f"{count} {cat}")
         
-        if significant_count >= self.SIGNIFICANT_THRESHOLD:
-            return True, f"Significant changes: {', '.join(significant_types)}"
-        
         # Check if changelog is in staged files (already being updated)
         if "CHANGELOG.md" in staged:
             return False, "CHANGELOG.md already staged"
+            
+        if significant_count >= self.SIGNIFICANT_THRESHOLD:
+            return True, f"Significant changes: {', '.join(significant_types)}"
         
         return False, f"Only {significant_count} significant files (threshold: {self.SIGNIFICANT_THRESHOLD})"
     

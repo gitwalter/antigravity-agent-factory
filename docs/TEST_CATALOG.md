@@ -1,20 +1,20 @@
 # Test Catalog
 
-*Generated on 2026-02-09 22:46:02*
+*Generated on 2026-02-12 17:48:55*
 
 ## Summary
 
 | Category | Files | Classes | Methods |
 |----------|-------|---------|---------|
-| general | 3 | 11 | 84 |
-| guardian | 1 | 2 | 18 |
-| integration | 6 | 35 | 242 |
-| knowledge | 1 | 3 | 32 |
-| lib | 10 | 76 | 686 |
-| memory | 3 | 8 | 90 |
-| unit | 23 | 226 | 1664 |
-| validation | 9 | 38 | 372 |
-| **Total** | **56** | **399** | **3188** |
+| general | 3 | 11 | 42 |
+| guardian | 1 | 2 | 9 |
+| integration | 11 | 63 | 224 |
+| knowledge | 1 | 3 | 16 |
+| lib | 10 | 76 | 343 |
+| memory | 3 | 8 | 45 |
+| unit | 30 | 273 | 987 |
+| validation | 11 | 44 | 213 |
+| **Total** | **70** | **480** | **1879** |
 
 ## General Tests
 
@@ -218,6 +218,107 @@ verifies that no protected files have been modified.
 
 ## Integration Tests
 
+### tests\integration\test_cli.py
+
+*Integration tests for the Antigravity Agent Factory CLI.
+Tests cover:
+- --list-blueprints command
+- --list-patterns command
+- --blueprint generation
+- --config file generation
+- --help output
+- Error handling for missing arguments*
+
+#### TestCLIHelp
+*Tests for CLI help functionality.*
+
+- `test_help_exits_successfully`
+  - Test that --help exits with code 0.
+- `test_help_shows_commands`
+  - Test that --help shows available commands.
+- `test_version_shows_version`
+  - Test that --version shows version information.
+
+#### TestListBlueprints
+*Tests for --list-blueprints command.*
+
+- `test_list_blueprints_exits_successfully`
+  - Test that --list-blueprints exits with code 0.
+- `test_list_blueprints_shows_python_fastapi`
+  - Test that python-fastapi blueprint is listed.
+- `test_list_blueprints_shows_all_blueprints`
+  - Test that multiple blueprints are shown.
+- `test_list_blueprints_shows_metadata`
+  - Test that blueprint metadata is shown.
+
+#### TestListPatterns
+*Tests for --list-patterns command.*
+
+- `test_list_patterns_exits_successfully`
+  - Test that --list-patterns exits with code 0.
+- `test_list_patterns_shows_categories`
+  - Test that pattern categories are shown.
+- `test_list_patterns_shows_patterns`
+  - Test that individual patterns are listed.
+
+#### TestBlueprintGeneration
+*Tests for --blueprint generation command.*
+
+- `test_blueprint_generation_requires_output`
+  - Test that --blueprint without --output fails.
+- `test_blueprint_generation_invalid_blueprint`
+  - Test that invalid blueprint ID fails.
+- `test_blueprint_generation_success`
+  - Test successful blueprint generation.
+- `test_blueprint_generation_with_name`
+  - Test blueprint generation with custom project name.
+
+#### TestConfigGeneration
+*Tests for --config file generation command.*
+
+- `test_config_generation_requires_output`
+  - Test that --config without --output fails.
+- `test_config_generation_missing_file`
+  - Test that missing config file fails.
+- `test_config_generation_from_json`
+  - Test generation from JSON config file.
+- `test_config_generation_from_yaml`
+  - Test generation from YAML config file.
+
+#### TestQuickStart
+*Tests for --quickstart command functionality.*
+
+- `test_quickstart_exits_successfully`
+  - Test that --quickstart generates a project successfully.
+- `test_quickstart_shows_welcome_message`
+  - Test that --quickstart shows warm welcome message.
+- `test_quickstart_shows_congratulations`
+  - Test that --quickstart shows celebration message on success.
+- `test_quickstart_creates_cursorrules`
+  - Test that --quickstart creates .agentrules file.
+- `test_quickstart_creates_agents_directory`
+  - Test that --quickstart creates .agent/agents/ directory.
+- `test_quickstart_creates_skills_directory`
+  - Test that --quickstart creates .agent/skills/ directory.
+- `test_quickstart_creates_readme`
+  - Test that --quickstart creates README.md file.
+- `test_quickstart_with_custom_blueprint`
+  - Test that --quickstart-blueprint overrides default blueprint.
+- `test_quickstart_default_output_directory`
+  - Test that --quickstart uses ./quickstart-demo as default output.
+- `test_quickstart_shows_next_steps`
+  - Test that --quickstart shows guidance for next steps.
+- `test_help_shows_quickstart_option`
+  - Test that --help shows the --quickstart option.
+
+#### TestCLIErrorHandling
+*Tests for CLI error handling.*
+
+- `test_no_arguments_shows_help`
+  - Test that running without arguments shows help.
+- `test_conflicting_arguments`
+  - Test handling of conflicting arguments (blueprint and config together).
+
 ### tests\integration\test_cli_extension.py
 
 *Integration tests for CLI extension commands.
@@ -351,6 +452,220 @@ Tests cover the complete gap analysis workflow from start to finish.*
   - Test loading the default agent taxonomy.
 - `test_taxonomy_has_substantial_content`
   - Test that taxonomy has substantial content for analysis.
+
+### tests\integration\test_generation.py
+
+*End-to-end integration tests for project generation.
+
+Tests cover:
+- Complete project generation from blueprints
+- Generated file structure validation
+- Generated content validation
+- Multi-blueprint generation consistency*
+
+#### TestFullProjectGeneration
+*Tests for complete project generation.*
+
+- `test_generate_creates_complete_structure`
+  - Test that generation creates complete directory structure.
+- `test_generate_creates_cursorrules`
+  - Test that .agentrules is created with correct content.
+- `test_generate_creates_readme`
+  - Test that README.md is created with correct content.
+- `test_generate_creates_agents`
+  - Test that agent files are created when specified.
+- `test_generate_creates_skills`
+  - Test that skill files are created when specified.
+
+#### TestBlueprintGeneration
+*Tests for blueprint-based generation.*
+
+- `test_python_fastapi_blueprint_generation`
+  - Test generation from python-fastapi blueprint.
+- `test_blueprint_generates_knowledge_files`
+  - Test that knowledge files are copied from factory.
+
+#### TestGeneratedContentValidation
+*Tests for validating generated file contents.*
+
+- `test_agent_markdown_has_frontmatter`
+  - Test that generated agent files have YAML frontmatter.
+- `test_skill_markdown_has_process_section`
+  - Test that generated skill files have process section.
+- `test_cursorrules_has_mcp_section_when_configured`
+  - Test that .agentrules has MCP section when servers configured.
+- `test_templates_are_created`
+  - Test that template files are created.
+
+#### TestWorkflowGeneration
+*Tests for workflow file generation.*
+
+- `test_workflows_readme_created`
+  - Test that workflows README is created.
+- `test_bugfix_workflow_created_with_jira_trigger`
+  - Test that bugfix workflow is created when jira trigger is specified.
+- `test_feature_workflow_created_with_confluence_trigger`
+  - Test that feature workflow is created when confluence trigger is specified.
+
+#### TestGenerationErrors
+*Tests for error handling during generation.*
+
+- `test_missing_agent_pattern_warning`
+  - Test that missing agent patterns are handled gracefully.
+- `test_missing_skill_pattern_warning`
+  - Test that missing skill patterns are handled gracefully.
+
+#### TestFileTracking
+*Tests for file tracking during generation.*
+
+- `test_all_files_tracked`
+  - Test that all generated files are tracked.
+- `test_file_count_matches_tracked`
+  - Test that file count matches tracked files.
+
+### tests\integration\test_guardian_behavior.py
+
+*Integration tests for Guardian behavior - testing actual intended outcomes.
+
+These tests verify that the Guardian behaves as intended in realistic scenarios,
+not just that patterns match. They test the *behavior* not just the detection.*
+
+#### TestGuardianIntendedBehavior
+*Tests that Guardian behaves as documented in Wu Wei Response Protocol.*
+
+- `test_level_0_safe_command_returns_flow`
+  - Safe commands should return Level 0 (Flow) - no intervention.
+- `test_level_0_normal_file_operations_continue`
+  - Normal file operations should continue without intervention.
+- `test_level_2_sensitive_file_pauses`
+  - Accessing sensitive files should pause and ask user.
+- `test_level_2_caution_file_modifications_pause`
+  - Modifying caution-worthy files should pause.
+- `test_level_3_harmful_content_blocks`
+  - Content with harmful patterns should block with explanation.
+- `test_level_3_medium_secrets_require_confirmation`
+  - Medium severity secrets should block and require confirmation.
+- `test_level_4_destructive_commands_protect`
+  - Destructive commands must be prevented immediately.
+- `test_level_4_high_severity_secrets_protect`
+  - High severity secrets (API keys) must be prevented.
+
+#### TestGuardianMessaging
+*Tests that Guardian messages are helpful and 'with love'.*
+
+- `test_block_messages_include_explanation`
+  - Block (Level 3) should explain what was detected.
+- `test_block_messages_include_recommendations`
+  - Block (Level 3) should provide guidance, not just reject.
+- `test_caution_messages_are_informative`
+  - Caution (Level 2) messages should explain the concern.
+
+#### TestGuardianAxiomAlignment
+*Tests that Guardian correctly identifies which axiom is involved.*
+
+- `test_verifiability_a1_flagged`
+  - A1 (Verifiability) violations should be identified.
+- `test_non_harm_a4_flagged`
+  - A4 (Non-Harm) violations should be clearly identified.
+- `test_transparency_a3_flagged`
+  - A3 (Transparency) violations should be identified.
+- `test_consistency_a5_flagged`
+  - A5 (Consistency) violations should be identified.
+
+#### TestGuardianRealWorldScenarios
+*Tests based on real-world scenarios the Guardian should handle.*
+
+- `test_accidental_env_commit_detected`
+  - Scenario: Developer about to commit .env file content.
+- `test_copy_paste_secret_detected`
+  - Scenario: Developer pastes API key directly in code.
+- `test_safe_placeholder_not_blocked`
+  - Scenario: Developer uses placeholder correctly.
+- `test_dangerous_sql_detected`
+  - Scenario: Dangerous SQL in code review.
+- `test_safe_sql_passes`
+  - Scenario: Safe SQL with proper filtering.
+
+#### TestGuardianNoFalsePositives
+*Tests that Guardian doesn't block legitimate operations.*
+
+- `test_test_files_not_blocked`
+  - Test files with example secrets should not be blocked.
+- `test_documentation_examples_not_blocked`
+  - Documentation with example secrets should not be blocked.
+- `test_rm_with_specific_file_not_blocked`
+  - 'rm' with specific safe file should not trigger Level 4.
+- `test_drop_table_if_exists_safer`
+  - DROP TABLE IF EXISTS is safer than raw DROP.
+
+#### TestGuardianIntegrationPoints
+*Tests for how Guardian integrates with the system.*
+
+- `test_comprehensive_check_combines_all`
+  - Comprehensive check should find issues from all sources.
+- `test_check_result_has_required_fields`
+  - CheckResult should have all fields needed for UI.
+
+### tests\integration\test_guardian_real_effect.py
+
+*Tests that prove the Guardian has a REAL, observable effect.
+
+These tests simulate actual operations and verify the Guardian
+actually PREVENTS harmful actions, not just detects them.*
+
+#### TestGuardianActuallyPreventsHarm
+*Tests that Guardian ACTUALLY prevents harmful actions.*
+
+- `test_guardian_blocks_rm_rf_root`
+  - CRITICAL: Guardian must BLOCK 'rm -rf /' - not just detect it.
+- `test_guardian_blocks_even_with_user_confirmation`
+  - Level 4 actions are blocked even if user tries to confirm.
+- `test_guardian_blocks_secret_in_file_write`
+  - Guardian must BLOCK writing files containing secrets.
+- `test_guardian_allows_safe_operations`
+  - Guardian must ALLOW safe operations to proceed.
+
+#### TestGuardianPauseRequiresConfirmation
+*Tests that Level 2-3 actions require user confirmation.*
+
+- `test_sensitive_file_requires_confirmation`
+  - Accessing .env requires user confirmation to proceed.
+- `test_cursorrules_modification_requires_confirmation`
+  - Modifying .agentrules requires confirmation.
+
+#### TestGuardianWithRealFiles
+*Tests Guardian with actual file system operations.*
+
+- `test_would_have_deleted_critical_file`
+  - Verify Guardian would prevent critical file deletion.
+- `test_secret_file_creation_blocked`
+  - Test that creating a file with secrets is blocked.
+- `test_safe_file_creation_allowed`
+  - Test that creating safe files is allowed.
+
+#### TestGuardianPreCommitScenario
+*Simulates a pre-commit hook using Guardian.*
+
+- `test_commit_with_secrets_blocked`
+  - Commit containing secrets should be BLOCKED.
+- `test_commit_without_secrets_allowed`
+  - Clean commit should be ALLOWED.
+- `test_env_file_in_commit_blocked`
+  - Committing .env content should be blocked.
+
+#### TestGuardianStatistics
+*Track Guardian effectiveness statistics.*
+
+- `test_guardian_blocking_rate`
+  - Measure what percentage of harmful actions are blocked.
+- `test_guardian_false_positive_rate`
+  - Measure false positive rate on safe actions.
+
+#### TestGuardianEndToEnd
+*End-to-end tests simulating real user scenarios.*
+
+- `test_developer_workflow_with_guardian`
+  - Simulate a typical developer workflow with Guardian protection.
 
 ### tests\integration\test_society_blueprint_generation.py
 
@@ -661,6 +976,51 @@ Version: 1.0.0*
   - Quick check that update feed exists.
 - `test_smoke_feed_parseable`
   - Quick check that update feed is valid JSON.
+
+### tests\integration\test_value_transmission.py
+
+*Test Value Transmission - Verify values flow through generated projects.
+
+These tests ensure that the eternal values (love, truth, beauty, flourishing)
+are properly transmitted to every generated project.*
+
+#### TestValueTransmission
+*Test that values are transmitted to generated projects.*
+
+- `test_cursorrules_has_axiom_zero`
+  - Test that generated .agentrules contains Axiom Zero.
+- `test_cursorrules_has_eternal_values`
+  - Test that generated .agentrules contains eternal values.
+- `test_cursorrules_has_wu_wei`
+  - Test that generated .agentrules contains Wu Wei protocol.
+- `test_guardian_protocol_has_values`
+  - Test that guardian-protocol.json contains eternal values.
+- `test_guardian_protocol_has_unity`
+  - Test that guardian-protocol.json contains unity statement.
+- `test_guardian_protocol_has_daily_intention`
+  - Test that guardian-protocol.json contains daily intention.
+- `test_generated_project_is_complete`
+  - Test that generated project has all required components.
+- `test_values_are_not_empty_strings`
+  - Test that value descriptions are meaningful, not empty.
+
+#### TestAxiomConsistency
+*Test that axioms are consistent across generated artifacts.*
+
+- `test_all_five_axioms_present`
+  - Test that all 5 core axioms are present in .agentrules.
+- `test_axiom_meanings_present`
+  - Test that axiom meanings are explained.
+- `test_guardian_protocol_axioms_match`
+  - Test that guardian-protocol.json axioms match .agentrules.
+
+#### TestWuWeiProtocol
+*Test Wu Wei response protocol transmission.*
+
+- `test_five_levels_present`
+  - Test that all 5 Wu Wei levels are present.
+- `test_wu_wei_in_guardian_protocol`
+  - Test that Wu Wei is in guardian-protocol.json.
 
 ## Knowledge Tests
 
@@ -2248,6 +2608,96 @@ Tests backup creation, manifest management, and rollback functionality.*
 - `test_format_backup_size_units`
   - Test format_backup_size with various sizes.
 
+### tests\unit\test_config_manager.py
+
+*Unit Tests for ConfigManager
+
+Tests the configuration management system including:
+- Settings loading and saving
+- Environment variable resolution
+- Tool path resolution
+- Knowledge evolution configuration
+
+Author: Antigravity Agent FactoryVersion: 1.0.0*
+
+#### TestConfigManagerInitialization
+*Tests for ConfigManager initialization.*
+
+- `test_creates_default_settings`
+  - Test that default settings are created when none exist.
+- `test_singleton_pattern`
+  - Test that ConfigManager follows singleton pattern.
+- `test_factory_root_detection`
+  - Test that factory root is correctly detected.
+- `test_platform_detection`
+  - Test that platform is detected.
+
+#### TestConfigManagerGetSet
+*Tests for get/set operations.*
+
+- `test_get_simple_value`
+  - Test getting a simple configuration value.
+- `test_get_nested_value`
+  - Test getting a nested configuration value.
+- `test_get_with_default`
+  - Test getting a non-existent value with default.
+- `test_set_value`
+  - Test setting a configuration value.
+- `test_set_creates_path`
+  - Test that set creates missing path components.
+
+#### TestEnvironmentVariableResolution
+*Tests for environment variable resolution.*
+
+- `test_resolves_env_var`
+  - Test that ${VAR} syntax is resolved.
+- `test_missing_env_var_returns_empty`
+  - Test that missing env vars resolve to empty string.
+- `test_partial_env_var_resolution`
+  - Test resolving env var in a larger string.
+
+#### TestToolPathResolution
+*Tests for tool path resolution.*
+
+- `test_get_tool_path_from_env`
+  - Test tool path resolution from environment variable.
+- `test_get_tool_path_from_config`
+  - Test tool path resolution from explicit config.
+- `test_get_tool_path_returns_none_for_unknown`
+  - Test that unknown tool returns None.
+
+#### TestKnowledgeEvolutionConfig
+*Tests for knowledge evolution configuration.*
+
+- `test_get_knowledge_evolution_config`
+  - Test getting knowledge evolution configuration.
+- `test_knowledge_evolution_sources`
+  - Test knowledge evolution sources configuration.
+
+#### TestCredentialManagement
+*Tests for credential management.*
+
+- `test_get_credential_resolves_env`
+  - Test getting a credential resolves environment variable.
+- `test_get_missing_credential_returns_none`
+  - Test getting a missing credential returns None.
+
+#### TestSettingsValidation
+*Tests for settings validation.*
+
+- `test_validate_valid_settings`
+  - Test validating correct settings returns no errors.
+- `test_validate_invalid_mode`
+  - Test that invalid mode is caught.
+- `test_validate_invalid_channel`
+  - Test that invalid update channel is caught.
+
+#### TestLegacyMigration
+*Tests for migrating from legacy tools.json.*
+
+- `test_migrates_legacy_tools`
+  - Test migration from legacy tools.json format.
+
 ### tests\unit\test_conflict_resolver.py
 
 *Unit tests for scripts/git/conflict_resolver.py
@@ -3033,6 +3483,83 @@ potentially harmful operations according to the core axioms.*
 - `test_a4_non_harm_in_files`
   - A4 (Non-Harm) should be checked in file operations.
 
+### tests\unit\test_guardian_harm_detector.py
+
+*Unit tests for the Guardian Harm Detector.
+
+These tests verify the comprehensive harm detection that combines
+axiom checking, secret scanning, and content analysis.*
+
+#### TestAnalyzeCommand
+*Tests for command analysis.*
+
+- `test_safe_command`
+  - Safe commands should produce safe report.
+- `test_dangerous_command`
+  - Dangerous commands should produce unsafe report.
+
+#### TestAnalyzeFileOperation
+*Tests for file operation analysis.*
+
+- `test_normal_file_write`
+  - Writing to normal file should be safe.
+- `test_env_file_write`
+  - Writing to .env should trigger caution.
+- `test_cursorrules_modification`
+  - Modifying .agentrules should trigger caution.
+- `test_file_with_secrets`
+  - File content with secrets should be flagged.
+- `test_dockerfile_modification`
+  - Modifying Dockerfile should trigger caution.
+- `test_cicd_modification`
+  - Modifying CI/CD files should trigger caution.
+
+#### TestAnalyzeContent
+*Tests for content analysis.*
+
+- `test_safe_content`
+  - Normal content should be safe.
+- `test_content_with_secrets`
+  - Content with secrets should be flagged.
+- `test_harmful_patterns`
+  - Harmful content patterns should be flagged.
+
+#### TestComprehensiveCheck
+*Tests for comprehensive harm analysis.*
+
+- `test_nothing_to_check`
+  - Empty check should return safe.
+- `test_command_only`
+  - Command-only check should work.
+- `test_file_only`
+  - File-only check should work.
+- `test_content_only`
+  - Content-only check should work.
+- `test_combined_check`
+  - Combined check should find highest severity.
+- `test_all_safe`
+  - All safe inputs should produce safe report.
+
+#### TestHarmReport
+*Tests for HarmReport structure.*
+
+- `test_safe_report_str`
+  - Safe report string representation.
+- `test_unsafe_report_str`
+  - Unsafe report string representation.
+
+#### TestAxiomAlignment
+*Tests verifying alignment with core axioms.*
+
+- `test_a1_verifiability`
+  - A1: Claims should be flagged for verification.
+- `test_a3_transparency`
+  - A3: Hidden logic should be flagged.
+- `test_a4_non_harm`
+  - A4: Harmful actions should be blocked.
+- `test_a5_consistency`
+  - A5: Instruction override attempts should be flagged.
+
 ### tests\unit\test_guardian_secret_scanner.py
 
 *Unit tests for the Guardian Secret Scanner.
@@ -3123,10 +3650,6 @@ The hook now focuses on: secrets, JSON syntax, version sync.
 
 Note: validate_readme_structure.py was removed from the hook for speed.
 The hook now focuses on: secrets, JSON syntax, version sync.
-- `test_unix_hook_stages_readme`
-  - Test that Unix hook stages README.md.
-- `test_windows_hook_stages_readme`
-  - Test that Windows hook stages README.md.
 - `test_unix_hook_exits_cleanly`
   - Test that Unix hook exits with 0.
 - `test_windows_hook_checks_multiple_python_paths`
@@ -3150,7 +3673,7 @@ The hook now focuses on: secrets, JSON syntax, version sync.
 *Tests for the main entry point.*
 
 - `test_main_calls_install_hooks`
-  - Test that __main__ calls install_hooks.
+  - Test that __main__ calls install_hook.
 
 ### tests\unit\test_knowledge_gap_analyzer.py
 
@@ -3239,6 +3762,124 @@ Tests for CoverageScore, KnowledgeGap, AnalysisResult, and KnowledgeGapAnalyzer.
   - Test running gap analysis with defaults.
 - `test_run_with_custom_taxonomy`
   - Test running gap analysis with custom taxonomy.
+
+### tests\unit\test_merge_strategy.py
+
+*Unit tests for scripts/git/merge_strategy.py
+
+Tests merge strategies, conflict detection, and resolution mechanisms.*
+
+#### TestConflictResolution
+*Tests for ConflictResolution enum.*
+
+- `test_resolution_values`
+  - Test that all resolutions have correct values.
+
+#### TestArtifactType
+*Tests for ArtifactType enum.*
+
+- `test_artifact_type_values`
+  - Test artifact type values.
+
+#### TestMergeStrategy
+*Tests for MergeStrategy enum.*
+
+- `test_strategy_values`
+  - Test merge strategy values.
+
+#### TestDefaultStrategies
+*Tests for default strategy mappings.*
+
+- `test_cursorrules_strategy`
+  - Test default strategy for cursorrules.
+- `test_agent_strategy`
+  - Test default strategy for agents.
+- `test_command_strategy`
+  - Test default strategy for commands (user custom).
+- `test_purpose_strategy`
+  - Test default strategy for PURPOSE.md (user custom).
+
+#### TestConflict
+*Tests for Conflict dataclass.*
+
+- `test_conflict_creation`
+  - Test creating a Conflict.
+- `test_get_existing_content`
+  - Test reading existing file content.
+- `test_get_existing_content_nonexistent`
+  - Test reading non-existent file returns empty string.
+
+#### TestConflictPrompt
+*Tests for ConflictPrompt dataclass.*
+
+- `test_format_prompt`
+  - Test formatting a conflict prompt.
+
+#### TestMergeResult
+*Tests for MergeResult dataclass.*
+
+- `test_successful_result`
+  - Test creating a successful merge result.
+- `test_failed_result`
+  - Test creating a failed merge result.
+
+#### TestMergeEngine
+*Tests for MergeEngine class.*
+
+- `test_engine_creation`
+  - Test creating a MergeEngine.
+- `test_detect_cursorrules_conflict`
+  - Test detecting cursorrules conflict.
+- `test_detect_agent_conflict`
+  - Test detecting agent conflict.
+- `test_detect_skill_conflict`
+  - Test detecting skill conflict.
+- `test_detect_mcp_conflict`
+  - Test detecting MCP configuration conflict.
+- `test_no_conflict_when_different_content_is_same`
+  - Test no conflict when content is identical.
+- `test_get_conflict_prompt_cursorrules`
+  - Test getting prompt for cursorrules conflict.
+- `test_get_conflict_prompt_command`
+  - Test getting prompt for command conflict (user custom).
+- `test_set_and_get_resolution`
+  - Test setting and getting a resolution.
+- `test_should_skip_artifact`
+  - Test checking if artifact should be skipped.
+- `test_should_rename_artifact`
+  - Test checking if artifact should be renamed.
+- `test_get_renamed_name_with_extension`
+  - Test getting renamed name for file with extension.
+- `test_get_renamed_name_without_extension`
+  - Test getting renamed name for file without extension.
+
+#### TestMergeJsonFiles
+*Tests for merge_json_files function.*
+
+- `test_merge_simple_objects`
+  - Test merging simple JSON objects.
+- `test_merge_overlapping_keys`
+  - Test merging with overlapping keys (new takes precedence).
+- `test_merge_nested_objects`
+  - Test deep merging nested objects.
+- `test_merge_arrays_no_duplicates`
+  - Test merging arrays without duplicates.
+- `test_merge_invalid_json`
+  - Test merging invalid JSON returns error.
+- `test_shallow_merge`
+  - Test shallow merge replaces nested objects.
+
+#### TestDeepMerge
+*Tests for _deep_merge helper function.*
+
+- `test_merge_flat_dicts`
+  - Test merging flat dictionaries.
+- `test_merge_nested_dicts`
+  - Test merging nested dictionaries.
+- `test_overlay_takes_precedence`
+  - Test that overlay values take precedence.
+- `test_merge_lists`
+  - Test merging lists without duplicates.
 
 ### tests\unit\test_pattern_loading.py
 
@@ -3503,6 +4144,290 @@ Tests cover:
   - Test that default values are consistent across creation methods.
 - `test_none_vs_empty_handling`
   - Test handling of None vs empty values.
+
+### tests\unit\test_project_generator.py
+
+*Unit tests for ProjectGenerator class.
+
+Tests cover:
+- Directory creation
+- Blueprint and pattern loading
+- Agent and skill rendering from patterns
+- Antigravityrules generation with variable substitution- File writing and tracking*
+
+#### TestProjectGeneratorInit
+*Tests for ProjectGenerator initialization.*
+
+- `test_init_basic`
+  - Test basic initialization.
+- `test_init_factory_root`
+  - Test factory root is correctly determined.
+
+#### TestDirectoryCreation
+*Tests for _create_directories method.*
+
+- `test_create_directories_structure`
+  - Test that all expected directories are created.
+- `test_create_directories_idempotent`
+  - Test that calling _create_directories twice doesn't cause errors.
+
+#### TestBlueprintLoading
+*Tests for _load_blueprint method.*
+
+- `test_load_blueprint_valid`
+  - Test loading a valid blueprint.
+- `test_load_blueprint_none_when_not_specified`
+  - Test that None is returned when no blueprint specified.
+- `test_load_blueprint_missing`
+  - Test loading a non-existent blueprint returns None.
+
+#### TestPatternLoading
+*Tests for _load_pattern method.*
+
+- `test_load_pattern_agent_valid`
+  - Test loading a valid agent pattern.
+- `test_load_pattern_skill_valid`
+  - Test loading a valid skill pattern.
+- `test_load_pattern_missing`
+  - Test loading a non-existent pattern returns None.
+- `test_load_pattern_invalid_type`
+  - Test loading from invalid pattern type returns None.
+
+#### TestAgentRendering
+*Tests for _render_agent_from_pattern method.*
+
+- `test_render_agent_basic_structure`
+  - Test that rendered agent has correct markdown structure.
+- `test_render_agent_contains_skills_section`
+  - Test that rendered agent contains skills used section.
+- `test_render_agent_contains_rules`
+  - Test that rendered agent contains important rules.
+
+#### TestSkillRendering
+*Tests for _render_skill_from_pattern method.*
+
+- `test_render_skill_basic_structure`
+  - Test that rendered skill has correct markdown structure.
+- `test_render_skill_contains_mcp_tools`
+  - Test that rendered skill contains MCP tools references.
+- `test_render_skill_contains_fallback`
+  - Test that rendered skill contains fallback procedures.
+
+#### TestFileWriting
+*Tests for _write_file method.*
+
+- `test_write_file_creates_file`
+  - Test that _write_file creates the file.
+- `test_write_file_creates_parent_dirs`
+  - Test that _write_file creates parent directories.
+- `test_write_file_tracks_files`
+  - Test that written files are tracked.
+- `test_write_file_utf8_encoding`
+  - Test that files are written with UTF-8 encoding.
+
+#### TestAntigravityrulesGeneration
+*Tests for cursorrules generation with variable substitution.*
+
+- `test_cursorrules_variable_substitution`
+  - Test that variables are correctly substituted.
+- `test_cursorrules_no_placeholder_remnants`
+  - Test that no unreplaced placeholders remain.
+
+#### TestMcpServerSection
+*Tests for MCP server section generation.*
+
+- `test_mcp_section_with_servers`
+  - Test MCP section generation when servers are configured.
+- `test_mcp_section_table_format`
+  - Test that MCP section uses markdown table format.
+
+#### TestFullGeneration
+*Tests for complete project generation.*
+
+- `test_generate_returns_result_dict`
+  - Test that generate() returns proper result dictionary.
+- `test_generate_creates_expected_files`
+  - Test that generate() creates expected files.
+- `test_generate_tracks_all_files`
+  - Test that all generated files are tracked.
+
+### tests\unit\test_reactive_index.py
+
+*Tests for the Reactive Artifact Indexing System.
+
+Following TDD principles, these tests are written before implementation
+to define the expected behavior of the reactive indexing system.
+
+Test Categories:
+1. Fast file-based counting (count_test_functions)
+2. Cache structure and validation
+3. Index update operations
+4. Staleness detection
+5. Directory trigger mapping*
+
+#### TestFastFileCounting
+*Tests for fast file-based test counting.*
+
+- `test_count_test_functions_finds_simple_tests`
+  - Should count simple test functions correctly.
+- `test_count_test_functions_handles_async_tests`
+  - Should count async test functions.
+- `test_count_test_functions_ignores_non_test_files`
+  - Should only count tests in test_*.py files.
+- `test_count_test_functions_handles_subdirectories`
+  - Should recursively count tests in subdirectories.
+- `test_count_test_functions_by_subdirectory`
+  - Should count tests in specific subdirectory only.
+
+#### TestCacheStructure
+*Tests for artifact index cache structure.*
+
+- `test_cache_has_required_fields`
+  - Cache JSON should have schema_version, updated_at, and artifacts.
+- `test_artifact_entry_has_count_and_hash`
+  - Each artifact entry should have count and hash fields.
+- `test_tests_artifact_has_breakdown`
+  - Tests artifact should include category breakdown.
+
+#### TestIndexUpdates
+*Tests for index update operations.*
+
+- `test_update_for_file_identifies_artifact_type`
+  - Should correctly identify artifact type from file path.
+- `test_update_only_affects_relevant_section`
+  - Updating one artifact type should not modify others.
+
+#### TestStalenessDetection
+*Tests for cache staleness detection.*
+
+- `test_cache_is_fresh_within_threshold`
+  - Cache should be considered fresh within time threshold.
+- `test_cache_is_stale_beyond_threshold`
+  - Cache should be considered stale beyond time threshold.
+- `test_missing_cache_is_stale`
+  - Missing cache file should trigger rebuild.
+
+#### TestDirectoryTriggers
+*Tests for directory to artifact type mapping.*
+
+- `test_known_directories_map_correctly`
+  - Known directories should map to correct artifact types.
+- `test_nested_path_triggers_parent`
+  - Nested paths should trigger parent directory's artifacts.
+
+#### TestPrecommitIntegration
+*Tests for pre-commit hook integration.*
+
+- `test_precommit_reads_from_cache_when_fresh`
+  - Pre-commit should use cached values when cache is fresh.
+- `test_precommit_rebuilds_when_stale`
+  - Pre-commit should rebuild when cache is stale.
+
+#### TestPerformance
+*Performance-related tests.*
+
+- `test_file_based_counting_is_fast`
+  - File-based counting should complete in under 1 second.
+
+### tests\unit\test_repo_analyzer.py
+
+*Unit tests for scripts/analysis/repo_analyzer.py
+
+Tests repository analysis, tech stack detection, and onboarding scenarios.*
+
+#### TestOnboardingScenario
+*Tests for OnboardingScenario enum.*
+
+- `test_scenario_values`
+  - Test that all scenarios have correct values.
+
+#### TestAntigravityruleAnalysis
+*Tests for AntigravityruleAnalysis dataclass.*
+
+- `test_default_values`
+  - Test default values for AntigravityruleAnalysis.
+
+#### TestMcpAnalysis
+*Tests for McpAnalysis dataclass.*
+
+- `test_default_values`
+  - Test default values for McpAnalysis.
+
+#### TestTechStackDetection
+*Tests for TechStackDetection dataclass.*
+
+- `test_default_values`
+  - Test default values for TechStackDetection.
+
+#### TestRepoInventory
+*Tests for RepoInventory dataclass.*
+
+- `test_creation_with_path`
+  - Test creating RepoInventory with a path.
+- `test_get_summary_fresh_repo`
+  - Test get_summary for a fresh repository.
+- `test_get_summary_with_artifacts`
+  - Test get_summary with some artifacts.
+
+#### TestRepoAnalyzer
+*Tests for RepoAnalyzer class.*
+
+- `test_analyzer_creation`
+  - Test creating a RepoAnalyzer.
+- `test_analyzer_nonexistent_path_raises`
+  - Test that non-existent path raises ValueError.
+- `test_analyze_fresh_repo`
+  - Test analyzing a fresh repository with no artifacts.
+- `test_analyze_detects_git_repo`
+  - Test that analyzer detects .git directory.
+- `test_analyze_detects_cursorrules`
+  - Test that analyzer detects .agentrules file.
+- `test_analyze_detects_factory_marker`
+  - Test that analyzer detects factory marker in cursorrules.
+- `test_analyze_detects_agents`
+  - Test that analyzer detects agent files.
+- `test_analyze_detects_skills`
+  - Test that analyzer detects skill directories.
+- `test_analyze_detects_mcp_config`
+  - Test that analyzer detects MCP configuration.
+- `test_analyze_detects_knowledge_files`
+  - Test that analyzer detects knowledge files.
+- `test_analyze_detects_purpose_md`
+  - Test that analyzer detects PURPOSE.md.
+- `test_detect_tech_stack_python`
+  - Test tech stack detection for Python project.
+- `test_detect_tech_stack_typescript_react`
+  - Test tech stack detection for TypeScript React project.
+- `test_detect_tech_stack_java_spring`
+  - Test tech stack detection for Java Spring project.
+- `test_determine_scenario_minimal`
+  - Test scenario determination for minimal setup.
+- `test_determine_scenario_partial`
+  - Test scenario determination for partial setup.
+- `test_determine_scenario_upgrade`
+  - Test scenario determination for upgrade scenario.
+- `test_determine_scenario_complete`
+  - Test scenario determination for complete setup.
+
+#### TestGetFileHash
+*Tests for get_file_hash function.*
+
+- `test_hash_existing_file`
+  - Test hashing an existing file.
+- `test_hash_nonexistent_file`
+  - Test hashing a non-existent file returns empty string.
+- `test_hash_same_content_same_hash`
+  - Test that same content produces same hash.
+- `test_hash_different_content_different_hash`
+  - Test that different content produces different hash.
+
+#### TestMainEntry
+*Tests for command-line interface.*
+
+- `test_main_with_valid_path`
+  - Test analyzing a valid repository path.
+- `test_analyzer_provides_complete_summary`
+  - Test that analyzer provides complete summary.
 
 ### tests\unit\test_research_first_pattern.py
 
@@ -3966,6 +4891,89 @@ Ensures the knowledge count sync script correctly:
 - `test_counts_are_currently_synced`
   - Current knowledge counts should be in sync.
 
+### tests\unit\test_sync_manifest_versions.py
+
+*Tests for scripts/validation/sync_manifest_versions.py
+
+Ensures the version sync script correctly:
+- Extracts version from CHANGELOG.md
+- Identifies out-of-sync versions in various files
+- Updates files when --sync is used*
+
+#### TestGetChangelogVersion
+*Tests for extracting version from CHANGELOG.md.*
+
+- `test_extracts_version_from_valid_changelog`
+  - Should extract the first version header from CHANGELOG.md.
+- `test_handles_missing_changelog`
+  - Should return 0.0.0 if CHANGELOG.md doesn't exist.
+- `test_handles_changelog_without_version`
+  - Should return 0.0.0 if no version header found.
+
+#### TestGetFileVersionGeneric
+*Tests for extracting version from files using regex.*
+
+- `test_extracts_version_with_valid_pattern`
+  - Should extract version matching the pattern.
+- `test_returns_none_for_missing_file`
+  - Should return None if file doesn't exist.
+- `test_returns_none_for_no_match`
+  - Should return None if pattern doesn't match.
+
+#### TestSyncFileVersion
+*Tests for syncing version in a file.*
+
+- `test_dry_run_does_not_modify_file`
+  - Should not modify file when dry_run=True.
+- `test_sync_updates_file`
+  - Should update file when dry_run=False.
+- `test_returns_false_for_missing_file`
+  - Should return False if file doesn't exist.
+- `test_returns_false_for_no_pattern_match`
+  - Should return False if pattern doesn't match.
+
+#### TestGetFileVersion
+*Tests for extracting version from JSON knowledge files.*
+
+- `test_extracts_version_from_valid_json`
+  - Should extract version from JSON file.
+- `test_returns_none_for_missing_version`
+  - Should return None if no version field.
+- `test_returns_none_for_invalid_json`
+  - Should return None for invalid JSON.
+- `test_returns_none_for_missing_file`
+  - Should return None if file doesn't exist.
+
+#### TestVersionLocations
+*Tests for VERSION_LOCATIONS configuration.*
+
+- `test_all_locations_have_required_keys`
+  - All VERSION_LOCATIONS entries should have required keys.
+- `test_all_patterns_are_valid_regex`
+  - All patterns should be valid regex.
+- `test_replacement_functions_are_callable`
+  - All replacement functions should be callable.
+- `test_replacement_functions_produce_valid_strings`
+  - Replacement functions should return strings with version.
+
+#### TestSyncManifest
+*Tests for the main sync_manifest function.*
+
+- `test_detects_out_of_sync_factory_version`
+  - Should detect when factory_version is out of sync.
+- `test_reports_synced_when_all_match`
+  - Should report all synced when versions match.
+
+#### TestIntegration
+*Integration tests using actual project files.*
+
+- `test_changelog_exists_and_has_version`
+  - CHANGELOG.md should exist and have a valid version.
+- `test_version_locations_files_exist`
+  - All files in VERSION_LOCATIONS should exist.
+- `test_current_state_is_synced`
+  - Current factory state should be version-synced.
+
 ### tests\unit\test_sync_test_counts.py
 
 *Tests for test count synchronization functionality.
@@ -4363,82 +5371,6 @@ Version: 1.0.0*
 - `test_changelog_entry_defaults`
   - Test ChangelogEntry with default values.
 
-#### TestChangelogGeneratorInit
-*Tests for ChangelogGenerator initialization.*
-
-- `test_init_creates_directory`
-  - Test that initialization creates changelog directory.
-- `test_init_existing_directory`
-  - Test initialization with existing directory.
-
-#### TestChangelogGeneratorPaths
-*Tests for changelog path methods.*
-
-- `test_get_changelog_path`
-  - Test getting changelog path for a knowledge file.
-- `test_get_changelog_path_with_path_object`
-  - Test getting changelog path with Path object.
-
-#### TestChangelogGeneratorLoadSave
-*Tests for loading and saving changelogs.*
-
-- `test_load_nonexistent_changelog`
-  - Test loading a changelog that doesn't exist.
-- `test_load_existing_changelog`
-  - Test loading an existing changelog.
-- `test_save_changelog`
-  - Test saving a changelog.
-
-#### TestChangelogGeneratorCreateEntry
-*Tests for creating changelog entries.*
-
-- `test_create_entry_from_update_result`
-  - Test creating entry from UpdateResult.
-- `test_create_entry_from_knowledge_update`
-  - Test creating entry from KnowledgeUpdate.
-- `test_create_entry_removes_empty_categories`
-  - Test that empty change categories are removed.
-
-#### TestChangelogGeneratorAppend
-*Tests for appending entries.*
-
-- `test_append_entry_new_changelog`
-  - Test appending to a new changelog.
-- `test_append_entry_existing_changelog`
-  - Test appending to existing changelog.
-- `test_append_entry_with_migration_notes`
-  - Test appending entry with migration notes.
-
-#### TestChangelogGeneratorMarkdown
-*Tests for markdown generation.*
-
-- `test_generate_markdown_empty`
-  - Test generating markdown for empty changelog.
-- `test_generate_markdown_with_entries`
-  - Test generating markdown with entries.
-- `test_generate_markdown_with_max_entries`
-  - Test generating markdown with max entries limit.
-- `test_generate_markdown_breaking_changes`
-  - Test markdown generation with breaking changes.
-
-#### TestChangelogGeneratorSummary
-*Tests for summary generation.*
-
-- `test_generate_summary_no_files`
-  - Test generating summary with no changelog files.
-- `test_generate_summary_with_files`
-  - Test generating summary with changelog files.
-- `test_generate_summary_with_filter`
-  - Test generating summary with file filter.
-
-#### TestChangelogGeneratorVersionDiff
-*Tests for version diff functionality.*
-
-- `test_get_version_diff`
-  - Test getting changes between versions.
-- `test_get_version_diff_no_matches`
-  - Test version diff with no matching versions.
-
 #### TestNotification
 *Tests for Notification dataclass.*
 
@@ -4666,18 +5598,6 @@ Version: 1.0.0*
 - `test_is_valid_version`
   - Test version format validation.
 
-#### TestChangelogGeneratorEdgeCases
-*Additional edge case tests for ChangelogGenerator.*
-
-- `test_create_entry_empty_operations`
-  - Test creating entry with no operations.
-- `test_create_entry_unknown_operation_type`
-  - Test handling unknown operation types.
-- `test_generate_markdown_empty_changes`
-  - Test markdown generation with empty changes.
-- `test_get_changelog_path_nested`
-  - Test changelog path with nested file path.
-
 #### TestNotificationSystemEdgeCases
 *Additional edge case tests for NotificationSystem.*
 
@@ -4829,6 +5749,8 @@ Tests README structure validation and update functionality.*
   - Test extracting exact counts from README.
 - `test_extract_threshold_counts`
   - Test extracting threshold counts (50+ files).
+- `test_extract_unconfigured_section`
+  - Test extracting section not in config.
 
 #### TestValidate
 *Tests for validate method.*
@@ -5277,6 +6199,15 @@ as the project evolves, catching drift before it reaches production.*
 - `test_has_minimum_blueprints`
   - Test that project has at least some blueprints defined.
 
+### tests\validation\test_society_linting.py
+
+#### Standalone Tests
+
+- `test_society_imports`
+  - Verify that all society modules can be imported without error.
+- `test_instantiate_classes`
+  - Verify that key classes can be instantiated.
+
 ### tests\validation\test_taxonomy_schema.py
 
 *Validation tests for taxonomy file structure.
@@ -5465,3 +6396,89 @@ with proper sections, phases, and documentation.*
   - Test that workflow patterns reference existing workflows.
 - `test_workflow_patterns_doc_exists`
   - Test that WORKFLOW_PATTERNS.md documentation exists.
+
+### tests\validation\test_yaml_frontmatter.py
+
+*YAML Frontmatter validation tests.
+
+Tests validate that markdown files with YAML frontmatter have valid
+syntax, catching errors before they break tooling or documentation.
+
+This prevents YAML parsing errors like:
+- Comma-separated values that should be arrays
+- Unbalanced quotes
+- Invalid key-value syntax*
+
+#### TestFrontmatterExtraction
+*Tests for extracting YAML frontmatter from markdown files.*
+
+- `test_extract_valid_frontmatter`
+  - Test extraction of valid frontmatter.
+- `test_extract_no_frontmatter`
+  - Test extraction when no frontmatter exists.
+- `test_extract_frontmatter_only_at_start`
+  - Test that frontmatter must be at the start of the file.
+- `test_extract_multiline_frontmatter`
+  - Test extraction of multiline frontmatter values.
+
+#### TestYamlSyntaxValidation
+*Tests for YAML syntax validation.*
+
+- `test_valid_simple_yaml`
+  - Test that valid simple YAML passes.
+- `test_valid_yaml_with_array`
+  - Test that valid YAML array syntax passes.
+- `test_invalid_comma_separated_strings`
+  - Test detection of comma-separated quoted strings (common error).
+- `test_invalid_tab_indentation`
+  - Test detection of tab characters.
+- `test_unbalanced_quotes`
+  - Test detection of unbalanced quotes.
+- `test_valid_yaml_with_special_chars`
+  - Test that valid YAML with special characters passes.
+
+#### TestFileValidation
+*Tests for full file validation.*
+
+- `test_validate_file_with_valid_frontmatter`
+  - Test validation of file with valid frontmatter.
+- `test_validate_file_without_frontmatter`
+  - Test validation of file without frontmatter (should pass).
+- `test_validate_file_with_invalid_frontmatter`
+  - Test validation of file with invalid frontmatter.
+
+#### TestFindMarkdownFiles
+*Tests for markdown file discovery.*
+
+- `test_find_markdown_files_returns_list`
+  - Test that find_markdown_files returns a list.
+- `test_find_markdown_files_all_are_md`
+  - Test that all found files are markdown files.
+- `test_find_markdown_files_includes_agents`
+  - Test that agent files are included.
+- `test_find_markdown_files_includes_skills`
+  - Test that skill files are included.
+
+#### TestAllProjectFilesValid
+*Tests that all markdown files in the project have valid frontmatter.*
+
+- `test_all_agent_files_have_valid_yaml`
+  - Test that all agent files have valid YAML frontmatter.
+- `test_all_skill_files_have_valid_yaml`
+  - Test that all skill files have valid YAML frontmatter.
+- `test_all_docs_have_valid_yaml`
+  - Test that all doc files have valid YAML frontmatter.
+- `test_all_markdown_files_valid`
+  - Comprehensive test: all markdown files in standard locations are valid.
+
+#### TestEdgeCases
+*Tests for edge cases and special scenarios.*
+
+- `test_empty_frontmatter`
+  - Test handling of empty frontmatter.
+- `test_frontmatter_with_comments`
+  - Test that YAML comments are handled.
+- `test_frontmatter_with_nested_objects`
+  - Test handling of nested YAML objects.
+- `test_unreadable_file`
+  - Test handling of file read errors.

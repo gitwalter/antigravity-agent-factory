@@ -41,25 +41,25 @@ def factory_root() -> Path:
 @pytest.fixture
 def blueprints_dir(factory_root: Path) -> Path:
     """Get the blueprints directory."""
-    return factory_root / "blueprints"
+    return factory_root / ".agent" / "blueprints"
 
 
 @pytest.fixture
 def patterns_dir(factory_root: Path) -> Path:
     """Get the patterns directory."""
-    return factory_root / "patterns"
+    return factory_root / ".agent" / "patterns"
 
 
 @pytest.fixture
 def templates_dir(factory_root: Path) -> Path:
     """Get the templates directory."""
-    return factory_root / "templates"
+    return factory_root / ".agent" / "templates"
 
 
 @pytest.fixture
 def knowledge_dir(factory_root: Path) -> Path:
     """Get the knowledge directory."""
-    return factory_root / "knowledge"
+    return factory_root / ".agent" / "knowledge"
 
 
 @pytest.fixture

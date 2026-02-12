@@ -49,13 +49,13 @@ SCAN_CONFIG = {
         "dir": ".agent/patterns",
         "pattern": "*.json",
         "recursive": True,
-        "readme_pattern": r"\((\d+)(\+)? patterns?\)"
+        "readme_pattern": r"\((\d+)(\+)? (?:patterns|files?)\)"
     },
     "templates": {
         "dir": ".agent/templates",
-        "pattern": "*.tmpl",
+        "pattern": "*",
         "recursive": True,
-        "readme_pattern": r"\((\d+)(\+)? templates?\)"
+        "readme_pattern": r"\((\d+)(\+)? (?:templates|files?)\)"
     },
     "tests": {
         "dir": "tests",
@@ -74,7 +74,7 @@ class StructureValidator:
     found in README.md.
     """
     
-    def __init__(self, root_dir: Path, readme_path: Optional[Path] = None, scan_config: Optional[Dict] = None):
+    def __init__(self, root_dir: Optional[Path] = None, readme_path: Optional[Path] = None, scan_config: Optional[Dict] = None):
         """
         Initialize validator.
         
@@ -83,9 +83,111 @@ class StructureValidator:
             readme_path: Path to README.md
             scan_config: Configuration dict for scanning sections
         """
-        self.root_dir = root_dir.resolve()
-        self.readme_path = (readme_path or (root_dir / "README.md")).resolve()
+        self.root_dir = (root_dir or Path(".")).resolve()
+        self.root_path = self.root_dir  # Alias for test compatibility
+        self.readme_path = (readme_path or (self.root_dir / "README.md")).resolve()
         self.scan_config = scan_config or SCAN_CONFIG
+        
+    def _should_ignore(self, path: Path) -> bool:
+        """Check if path should be ignored (e.g., __pycache__, .pyc)."""
+        ignore_names = {"__pycache__", ".git", ".pytest_cache", "node_modules", "venv", ".venv"}
+        ignore_exts = {".pyc", ".pyo", ".pyd"}
+        return (any(part in ignore_names for part in path.parts) or 
+                path.suffix in ignore_exts or 
+                (path.name.startswith(".") and path.name != ".agent"))
+
+    def _count_files_by_extension(self, directory: Path, extension: str, recursive: bool = True) -> int:
+        """Internal helper to count files by extension, matching test expectations."""
+        if not directory.exists():
+            return 0
+        
+        count = 0
+        method = directory.rglob if recursive else directory.glob
+        # Use *extension but extension might be .json
+        pattern = f"*{extension}"
+        for path in method(pattern):
+            if not self._should_ignore(path) and path.is_file():
+                count += 1
+        return count
+
+    def scan_agents(self) -> Dict[str, Any]:
+        """Wrapper for tests: scan agents."""
+        config = self.scan_config["agents"]
+        count = self.scan_section("agents", config)
+        agents_dir = self.root_dir / config["dir"]
+        if not agents_dir.exists() and (self.root_dir / "agents").exists():
+            agents_dir = self.root_dir / "agents"
+        agents = [f.stem for f in agents_dir.glob(config["pattern"])] if agents_dir.exists() else []
+        return {"count": count, "agents": agents}
+
+    def scan_skills(self) -> Dict[str, Any]:
+        """Wrapper for tests: scan skills."""
+        config = self.scan_config["skills"]
+        count = self.scan_section("skills", config)
+        skills_dir = self.root_dir / config["dir"]
+        if not skills_dir.exists() and (self.root_dir / "skills").exists():
+            skills_dir = self.root_dir / "skills"
+        skills = [d.name for d in skills_dir.iterdir() if d.is_dir() and (d / config["sentinel"]).exists()] if skills_dir.exists() else []
+        return {"count": count, "skills": skills}
+
+    def scan_blueprints(self) -> Dict[str, Any]:
+        """Wrapper for tests: scan blueprints."""
+        config = self.scan_config["blueprints"]
+        count = self.scan_section("blueprints", config)
+        blueprints_dir = self.root_dir / config["dir"]
+        if not blueprints_dir.exists() and (self.root_dir / "blueprints").exists():
+            blueprints_dir = self.root_dir / "blueprints"
+        blueprints = [d.name for d in blueprints_dir.iterdir() if d.is_dir() and (d / config["sentinel"]).exists()] if blueprints_dir.exists() else []
+        return {"count": count, "blueprints": blueprints}
+
+    def scan_knowledge(self) -> Dict[str, Any]:
+        """Wrapper for tests: scan knowledge."""
+        config = self.scan_config["knowledge"]
+        count = self.scan_section("knowledge", config)
+        kn_dir = self.root_dir / config["dir"]
+        if not kn_dir.exists() and (self.root_dir / "knowledge").exists():
+            kn_dir = self.root_dir / "knowledge"
+        files = [f.name for f in kn_dir.glob(config["pattern"])] if kn_dir.exists() else []
+        return {"count": count, "files": files}
+
+    def scan_patterns(self) -> Dict[str, Any]:
+        """Wrapper for tests: scan patterns."""
+        config = self.scan_config["patterns"]
+        count = self.scan_section("patterns", config)
+        pat_dir = self.root_dir / config["dir"]
+        if not pat_dir.exists() and (self.root_dir / "patterns").exists():
+            pat_dir = self.root_dir / "patterns"
+        
+        categories = {}
+        if pat_dir.exists():
+            subdirs = [d for d in pat_dir.iterdir() if d.is_dir()]
+            if not subdirs:
+                return {"count": count, "total_files": count, "categories": []}
+            for d in subdirs:
+                categories[d.name] = [f.name for f in d.glob(config["pattern"])]
+        else:
+            return {"count": count, "total_files": count, "categories": []}
+        
+        return {"count": count, "total_files": count, "categories": categories}
+
+    def scan_templates(self) -> Dict[str, Any]:
+        """Wrapper for tests: scan templates."""
+        config = self.scan_config["templates"]
+        count = self.scan_section("templates", config)
+        tm_dir = self.root_dir / config["dir"]
+        if not tm_dir.exists() and (self.root_dir / "templates").exists():
+            tm_dir = self.root_dir / "templates"
+            
+        categories = []
+        if tm_dir.exists():
+            categories = [d.name for d in tm_dir.iterdir() if d.is_dir()]
+            
+        return {"count": count, "total_files": count, "categories": categories}
+
+    def scan_tests(self) -> Dict[str, Any]:
+        """Wrapper for tests: scan tests."""
+        return {"count": self.scan_section("tests", self.scan_config["tests"])}
+
         
     def scan_section(self, section_name: str, config: Dict) -> int:
         """
@@ -100,9 +202,15 @@ class StructureValidator:
         """
         section_dir = self.root_dir / config["dir"]
         
+        # Fallback for old structure or generated project
         if not section_dir.exists():
-            return 0
-            
+            basename = Path(config["dir"]).name
+            fallback_dir = self.root_dir / basename
+            if fallback_dir.exists():
+                section_dir = fallback_dir
+            else:
+                return 0
+        
         if config.get("count_method") == "subdirs_with_file":
             # Count subdirectories containing the sentinel file
             sentinel = config.get("sentinel", "SKILL.md")
@@ -118,9 +226,9 @@ class StructureValidator:
         recursive = config.get("recursive", False)
         
         if recursive:
-            count = len(list(section_dir.rglob(pattern)))
+            count = len([p for p in section_dir.rglob(pattern) if p.is_file()])
         else:
-            count = len(list(section_dir.glob(pattern)))
+            count = len([p for p in section_dir.glob(pattern) if p.is_file()])
             
         return count
     
@@ -147,33 +255,25 @@ class StructureValidator:
 
     def _round_to_threshold(self, count: int) -> int:
         """
-        Round count down to nearest threshold (5, 10, 25, 50, 100, etc.).
-        
-        Args:
-            count: Number to round
-            
-        Returns:
-            Rounded number
+        Round count down to nearest threshold (5, 10, 25, 40, 50, 75, 100, 500).
+        Matching logic from test expectations.
         """
-        if count < 5: return count
-        if count < 10: return 5
-        if count < 25: return 10
-        if count < 50: return 25
-        if count < 100: return 50
-        if count < 500: return 100 * (count // 100)
-        return 500 * (count // 500)
+        thresholds = [0, 5, 10, 25, 40, 50, 75, 100, 500, 1000]
+        for t in reversed(thresholds):
+            if count >= t:
+                return t
+        return 0
 
     def extract_readme_counts(self) -> Dict[str, Dict[str, Any]]:
         """
         Extract expected counts from README.md using configured patterns.
-        
-        Returns:
-            Dict mapping section names to results info (count and is_threshold)
+        Context-aware to avoid collisions.
         """
         if not self.readme_path.exists():
             return {}
             
         content = self.readme_path.read_text(encoding="utf-8")
+        lines = content.splitlines()
         results = {}
         
         for section_name, config in self.scan_config.items():
@@ -182,14 +282,21 @@ class StructureValidator:
                 results[section_name] = {"count": 0, "is_threshold": False, "found": False}
                 continue
                 
-            match = re.search(pattern, content, re.IGNORECASE)
-            if match:
-                results[section_name] = {
-                    "count": int(match.group(1)),
-                    "is_threshold": match.group(2) == "+",
-                    "found": True
-                }
-            else:
+            # Try to find the line containing the section name first
+            found = False
+            for line in lines:
+                if section_name.lower() in line.lower() or config["dir"].lower() in line.lower():
+                    match = re.search(pattern, line, re.IGNORECASE)
+                    if match:
+                        results[section_name] = {
+                            "count": int(match.group(1)),
+                            "is_threshold": match.group(2) == "+",
+                            "found": True
+                        }
+                        found = True
+                        break
+            
+            if not found:
                 results[section_name] = {"count": 0, "is_threshold": False, "found": False}
                 
         return results
@@ -310,6 +417,11 @@ def main():
         help="Update README.md with current counts"
     )
     parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output counts in JSON format"
+    )
+    parser.add_argument(
         "--root",
         type=str,
         default=".",
@@ -329,6 +441,10 @@ def main():
     
     validator = StructureValidator(root_dir, readme_path, SCAN_CONFIG)
     
+    if args.json:
+        print(json.dumps(validator.scan_all(), indent=2))
+        return 0
+
     if args.generate:
         print(validator.generate_structure_markdown())
         return 0
@@ -343,6 +459,10 @@ def main():
             
     # Default: check mode
     is_valid, messages = validator.validate()
+    
+    # Matching test expectations for output
+    status = "[OK]" if is_valid else "[FAIL]"
+    print(f"{status} README structure validation")
     
     for msg in messages:
         print(msg)

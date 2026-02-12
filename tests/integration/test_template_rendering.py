@@ -34,7 +34,7 @@ class TestFactoryTemplateRendering:
     
     def test_guardian_protocol_template(self, engine, factory_root):
         """Test rendering guardian-protocol.json.tmpl."""
-        template_path = factory_root / 'templates' / 'knowledge' / 'guardian-protocol.json.tmpl'
+        template_path = factory_root / '.agent' / 'templates' / 'knowledge' / 'guardian-protocol.json.tmpl'
         
         if not template_path.exists():
             pytest.skip("guardian-protocol.json.tmpl not found")
@@ -53,7 +53,7 @@ class TestFactoryTemplateRendering:
     
     def test_agent_template_rendering(self, engine, factory_root):
         """Test rendering agent.md.tmpl with Jinja2 features."""
-        template_path = factory_root / 'templates' / 'factory' / 'agent.md.tmpl'
+        template_path = factory_root / '.agent' / 'templates' / 'factory' / 'agent.md.tmpl'
         
         if not template_path.exists():
             pytest.skip("agent.md.tmpl not found")
@@ -93,7 +93,7 @@ class TestFactoryTemplateRendering:
     
     def test_skill_template_rendering(self, engine, factory_root):
         """Test rendering skill.md.tmpl with Jinja2 features."""
-        template_path = factory_root / 'templates' / 'factory' / 'skill.md.tmpl'
+        template_path = factory_root / '.agent' / 'templates' / 'factory' / 'skill.md.tmpl'
         
         if not template_path.exists():
             pytest.skip("skill.md.tmpl not found")

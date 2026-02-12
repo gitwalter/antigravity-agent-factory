@@ -6,7 +6,7 @@ Storage and lookup for agent contracts.
 
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 import json
 import logging
 import threading

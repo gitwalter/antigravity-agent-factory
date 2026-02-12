@@ -10,16 +10,19 @@ Provides:
 - Message queue management
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set
-import asyncio
+from typing import Any, Callable, Dict, List, Optional, Set, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from lib.society.integration.context import SocietyContext
+
 import logging
 import uuid
 
 from lib.society.events import AgentEvent, ActionType
-from lib.society.integration.agent_bridge import AgentSocietyBridge, MessageType
+from lib.society.integration.agent_bridge import AgentSocietyBridge
 
 logger = logging.getLogger(__name__)
 

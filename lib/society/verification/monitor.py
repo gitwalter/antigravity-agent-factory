@@ -11,7 +11,7 @@ from typing import Any, Callable, Dict, List, Optional
 import logging
 
 from lib.society.events.schema import AgentEvent
-from lib.society.verification.verifiers.base import AxiomVerifier, AxiomId, AxiomResult
+from lib.society.verification.verifiers.base import AxiomVerifier, AxiomResult
 
 logger = logging.getLogger(__name__)
 
