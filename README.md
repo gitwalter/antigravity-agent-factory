@@ -250,7 +250,7 @@ antigravity-agent-factory/
 │       ├── axiom-selection/
 │       └── ...                       # + more skills
 │   ├── patterns/                    # Reusable patterns (113+ files)
-│   ├── templates/                   # Code templates (306+ files)
+│   ├── templates/                   # Code templates (307+ files)
 │   ├── blueprints/                  # Technology stack blueprints (34 blueprints)
 │   ├── knowledge/                   # Knowledge base (234 files)
 │   └── workflows/                   # Workflow definitions

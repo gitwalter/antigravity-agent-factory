@@ -1,0 +1,88 @@
+{# 
+TypeScript/React Macros for Antigravity Agent Factory
+This file contains reusable macros for generating consistent TypeScript and React code.
+
+Usage:
+  {% from '_macros/typescript.tmpl' import import_block, interface_def, react_component, ts_docstring %}
+#}
+
+{# ============================================================================
+   IMPORTS
+   ============================================================================ #}
+
+{# Generate a block of imports #}
+{# 
+   items format:
+   [
+     {'from': 'module', 'default': 'DefaultImport', 'names': ['Named1', 'Named2'], 'type_names': ['Type1']},
+     ...
+   ]
+#}
+{% macro import_block(items) -%}
+{% for item in items %}
+{%- if item.type_names %}
+import type { {{ item.type_names|join(', ') }} } from '{{ item.from }}';
+{%- endif %}
+{%- if item.default or item.names %}
+import {{ item.default }}{% if item.default and item.names %}, {% endif %}{% if item.names %}{ {{ item.names|join(', ') }} }{% endif %} from '{{ item.from }}';
+{%- endif %}
+{% endfor %}
+{%- endmacro %}
+
+{# ============================================================================
+   DOCSTRINGS (JSDoc)
+   ============================================================================ #}
+
+{# Generate a JSDoc comment #}
+{% macro ts_docstring(description, params=None, returns=None, author=None, created=None, axioms=None) -%}
+/**
+ * {{ description }}
+ *
+{%- if author %}
+ * Author: {{ author }}
+{%- endif %}
+{%- if created %}
+ * Created: {{ created }}
+{%- endif %}
+ *
+{%- if axioms %}
+ * Axiom Alignment:
+{%- for axiom in axioms %}
+ * - {{ axiom }}
+{%- endfor %}
+ *
+{%- endif %}
+{%- if params %}
+{%- for param in params %}
+ * @param {{ param.name }} - {{ param.description }}
+{%- endfor %}
+{%- endif %}
+{%- if returns %}
+ * @returns {{ returns }}
+{%- endif %}
+ */
+{%- endmacro %}
+
+{# ============================================================================
+   INTERFACES & TYPES
+   ============================================================================ #}
+
+{# Generate an interface definition #}
+{% macro interface_def(name, properties, extends=None, export=True) -%}
+{% if export %}export {% endif %}interface {{ name }}{% if extends %} extends {{ extends }}{% endif %} {
+{%- for prop in properties %}
+  {{ prop.name }}{{ '?' if prop.optional else '' }}: {{ prop.type }};
+{%- endfor %}
+}
+{%- endmacro %}
+
+{# ============================================================================
+   COMPONENTS
+   ============================================================================ #}
+
+{# Generate a React functional component #}
+{% macro react_component(name, props=None, async=False, export=True, default=True) -%}
+{%- if export %}export {% endif %}{% if default %}default {% endif %}{% if async %}async {% endif %}function {{ name }}({% if props %}{ {{ props|join(', ') }} }: {{ name }}Props{% endif %}) {
+  {{ caller() }}
+}
+{%- endmacro %}

@@ -446,6 +446,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 
 | Template | Category | Path |
 |----------|----------|------|
+| abap.tmpl | _macros | [`.agent/templates/_macros/abap.tmpl`](.agent/templates/_macros/abap.tmpl) |
 | common.tmpl | _macros | [`.agent/templates/_macros/common.tmpl`](.agent/templates/_macros/common.tmpl) |
 | python.tmpl | _macros | [`.agent/templates/_macros/python.tmpl`](.agent/templates/_macros/python.tmpl) |
 | skills.tmpl | _macros | [`.agent/templates/_macros/skills.tmpl`](.agent/templates/_macros/skills.tmpl) |
@@ -753,4 +754,4 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | python.yml.tmpl | templates | [`.agent/templates/workflows/gitlab/templates/python.yml.tmpl`](.agent/templates/workflows/gitlab/templates/python.yml.tmpl) |
 | workflow.md.tmpl | workflows | [`.agent/templates/workflows/workflow.md.tmpl`](.agent/templates/workflows/workflow.md.tmpl) |
 
-*Total templates: 306*
+*Total templates: 307*

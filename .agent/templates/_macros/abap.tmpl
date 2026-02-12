@@ -1,0 +1,88 @@
+{# 
+ABAP Macros for Antigravity Agent Factory
+This file contains reusable macros for generating consistent Clean ABAP code.
+
+Usage:
+  {% from '_macros/abap.tmpl' import abap_doc, method_def, interface_def %}
+#}
+
+{# ============================================================================
+   ABAP DOC
+   ============================================================================ #}
+
+{# Generate ABAP Doc comments #}
+{% macro abap_doc(description, parameters=None, returning=None, raising=None) -%}
+  "! <p class="shorttext synchronized">{{ description }}</p>
+{%- if parameters %}
+{%- for param in parameters %}
+  "! @parameter {{ param.name }} | {{ param.description }}
+{%- endfor %}
+{%- endif %}
+{%- if returning %}
+  "! @parameter result | {{ returning }}
+{%- endif %}
+{%- if raising %}
+{%- for exc in raising %}
+  "! @raising {{ exc.name }} | {{ exc.description }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro %}
+
+{# ============================================================================
+   METHODS
+   ============================================================================ #}
+
+{# Generate a method definition #}
+{% macro method_def(name, description, importing=None, exporting=None, changing=None, returning=None, raising=None) -%}
+{{ abap_doc(description, importing, returning.description if returning else None, raising) }}
+  METHODS {{ name }}
+{%- if importing %}
+    IMPORTING
+{%- for param in importing %}
+      {{ param.name }} TYPE {{ param.type }}{{ " OPTIONAL" if param.optional else "" }}{{ " DEFAULT " ~ param.default if param.default else "" }}
+{%- endfor %}
+{%- endif %}
+{%- if exporting %}
+    EXPORTING
+{%- for param in exporting %}
+      {{ param.name }} TYPE {{ param.type }}
+{%- endfor %}
+{%- endif %}
+{%- if changing %}
+    CHANGING
+{%- for param in changing %}
+      {{ param.name }} TYPE {{ param.type }}
+{%- endfor %}
+{%- endif %}
+{%- if returning %}
+    RETURNING
+      VALUE(result) TYPE {{ returning.type }}
+{%- endif %}
+{%- if raising %}
+    RAISING
+{%- for exc in raising %}
+      {{ exc.name }}
+{%- endfor %}
+{%- endif %}
+    .
+{%- endmacro %}
+
+{# ============================================================================
+   INTERFACE
+   ============================================================================ #}
+
+{# Generate an interface definition #}
+{% macro interface_def(name, description, author, date, purpose) -%}
+"! <p class="shorttext synchronized">{{ description }}</p>
+"! Interface definition for {{ purpose }}
+"! @author {{ author }}
+"! @date {{ date }}
+"! @version 1.0
+"!
+"! Purpose: {{ purpose }}
+INTERFACE {{ name }} PUBLIC.
+
+  {{ caller() }}
+
+ENDINTERFACE.
+{%- endmacro %}
