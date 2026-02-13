@@ -395,7 +395,12 @@ class DependencyValidator:
             
             # Knowledge file references
             for knowledge in blueprint.get("knowledge", []):
-                filename = knowledge.get("filename")
+                filename = None
+                if isinstance(knowledge, str):
+                    filename = knowledge
+                elif isinstance(knowledge, dict):
+                    filename = knowledge.get("filename")
+                
                 if filename:
                     self.edges.append(DependencyEdge(
                         from_node=node_id,
