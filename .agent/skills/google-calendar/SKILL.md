@@ -8,11 +8,29 @@ type: skill
 
 This skill provides access to Google Calendar management capabilities via the `google-calendar` MCP server.
 
+## When to Use
+Use this skill when you need to interact with Google Calendar to manage schedules, list events, or create new appointments.
+
+## Prerequisites
+- Google Workspace MCP server configured and authorized.
+- Active Google account with Calendar access.
+
 ## Capabilities
 - List calendars.
 - List events.
 - Create events.
 - Update/Delete events.
+
+## Process
+1. Identify the target calendar (e.g., 'primary').
+2. Define the time range or event details.
+3. Call the appropriate calendar tool.
+4. Process the result or handle potential scheduling conflicts.
+
+## Best Practices
+- Always check for existing events before creating new ones to avoid overlaps.
+- Use ISO 8601 format for all timestamps.
+- Explicitly handle cases where a calendar ID might not be available or valid.
 
 ## Tools (MCP)
 These tools are provided by the `google-calendar` MCP server:

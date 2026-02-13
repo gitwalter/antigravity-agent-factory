@@ -7,6 +7,13 @@ type: skill
 
 Use the GitHub MCP Server to manage repositories, issues, pull requests, and file operations.
 
+## When to Use
+Use this skill when you need to automate GitHub-related tasks such as managing issues, reviewing pull requests, or performing remote file commits.
+
+## Prerequisites
+- GitHub MCP server installed and configured.
+- Valid `GITHUB_TOKEN` with appropriate scopes available in the environment.
+
 ## Capabilities
 
 - **Repository Management**: Search, fork, and configure repositories.

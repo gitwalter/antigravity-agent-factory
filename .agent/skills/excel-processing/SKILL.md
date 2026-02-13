@@ -7,6 +7,13 @@ type: skill
 
 Use the Excel MCP Server to read, edit, and analyze Excel workbooks directly.
 
+## When to Use
+Use this skill when you need to automate tasks involving Excel workbooks, such as reading large datasets, updating specific cells with calculated values, or generating summary reports.
+
+## Prerequisites
+- Excel MCP server installed and configured.
+- Access to local or network-mapped Excel files (.xlsx).
+
 ## Capabilities
 
 - **Read Worksheets**: Extract data from specific sheets or ranges.

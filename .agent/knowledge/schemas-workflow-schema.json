@@ -1,10 +1,35 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://cursor-agent-factory.dev/schemas/workflow-schema.json",
-  "title": "Workflow Definition Schema",
-  "description": "JSON Schema for defining autonomous agent workflows in the Antigravity Agent Factory",  "version": "1.0.0",
-  "type": "object",
-  "required": ["id", "name", "version", "phases"],
+  "id": "schemas-workflow-schema",
+  "name": "Workflow Schema",
+  "category": "patterns",
+  "description": "JSON Schema for defining autonomous agent workflows in the Antigravity Agent Factory",
+  "version": "1.0.0",
+  "patterns": {
+    "workflow-definition": {
+      "name": "Workflow Definition Pattern",
+      "description": "Standard structure for defining autonomous workflows",
+      "use_when": "Creating new agent workflows",
+      "best_practices": [
+        "Define clear goals for each phase",
+        "Include decision points for branching"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use kebab-case for workflow identifiers",
+    "Always define a state schema for complex workflows"
+  ],
+  "anti_patterns": [
+    "Circular workflow dependencies",
+    "Shadowing global state in local phases"
+  ],
+  "required": [
+    "id",
+    "name",
+    "version",
+    "phases"
+  ],
   "properties": {
     "id": {
       "type": "string",
@@ -94,11 +119,20 @@
   "definitions": {
     "Trigger": {
       "type": "object",
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["event", "manual", "schedule", "watch", "chain", "webhook"],
+          "enum": [
+            "event",
+            "manual",
+            "schedule",
+            "watch",
+            "chain",
+            "webhook"
+          ],
           "description": "Type of trigger"
         },
         "source": {
@@ -111,7 +145,9 @@
         },
         "patterns": {
           "type": "array",
-          "items": {"type": "string"},
+          "items": {
+            "type": "string"
+          },
           "description": "User input patterns for manual triggers"
         },
         "cron": {
@@ -124,7 +160,9 @@
         },
         "events": {
           "type": "array",
-          "items": {"type": "string"},
+          "items": {
+            "type": "string"
+          },
           "description": "File events to watch (created, modified, deleted)"
         },
         "workflow": {
@@ -142,7 +180,9 @@
           "properties": {
             "context": {
               "type": "object",
-              "additionalProperties": {"type": "string"}
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           }
         }
@@ -167,7 +207,10 @@
     },
     "ContextParameter": {
       "type": "object",
-      "required": ["name", "type"],
+      "required": [
+        "name",
+        "type"
+      ],
       "properties": {
         "name": {
           "type": "string",
@@ -192,7 +235,9 @@
     },
     "MCPRequirement": {
       "type": "object",
-      "required": ["server"],
+      "required": [
+        "server"
+      ],
       "properties": {
         "server": {
           "type": "string",
@@ -205,7 +250,9 @@
         },
         "capabilities": {
           "type": "array",
-          "items": {"type": "string"},
+          "items": {
+            "type": "string"
+          },
           "description": "Required server capabilities"
         },
         "authCheck": {
@@ -241,7 +288,9 @@
     },
     "KnowledgeReference": {
       "type": "object",
-      "required": ["file"],
+      "required": [
+        "file"
+      ],
       "properties": {
         "file": {
           "type": "string",
@@ -259,7 +308,11 @@
     },
     "Phase": {
       "type": "object",
-      "required": ["id", "name", "steps"],
+      "required": [
+        "id",
+        "name",
+        "steps"
+      ],
       "properties": {
         "id": {
           "type": "string",
@@ -317,7 +370,10 @@
     },
     "Step": {
       "type": "object",
-      "required": ["id", "name"],
+      "required": [
+        "id",
+        "name"
+      ],
       "properties": {
         "id": {
           "type": "string",
@@ -349,12 +405,16 @@
         },
         "conditions": {
           "type": "array",
-          "items": {"type": "string"},
+          "items": {
+            "type": "string"
+          },
           "description": "Conditions for step execution"
         },
         "mcpTools": {
           "type": "array",
-          "items": {"type": "string"},
+          "items": {
+            "type": "string"
+          },
           "description": "MCP tools this step may use"
         },
         "timeout": {
@@ -375,7 +435,10 @@
     },
     "Output": {
       "type": "object",
-      "required": ["name", "type"],
+      "required": [
+        "name",
+        "type"
+      ],
       "properties": {
         "name": {
           "type": "string",
@@ -424,7 +487,11 @@
         },
         "backoff": {
           "type": "string",
-          "enum": ["fixed", "linear", "exponential"],
+          "enum": [
+            "fixed",
+            "linear",
+            "exponential"
+          ],
           "default": "exponential"
         },
         "initialDelay": {
@@ -439,7 +506,11 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["transient", "timeout", "rate_limit"]
+            "enum": [
+              "transient",
+              "timeout",
+              "rate_limit"
+            ]
           }
         }
       }
@@ -466,7 +537,14 @@
       "properties": {
         "action": {
           "type": "string",
-          "enum": ["retry", "skip", "abort", "escalate", "compensate", "goto"],
+          "enum": [
+            "retry",
+            "skip",
+            "abort",
+            "escalate",
+            "compensate",
+            "goto"
+          ],
           "description": "Action to take on failure"
         },
         "goto": {
@@ -482,7 +560,11 @@
         },
         "backoff": {
           "type": "string",
-          "enum": ["fixed", "linear", "exponential"]
+          "enum": [
+            "fixed",
+            "linear",
+            "exponential"
+          ]
         },
         "reason": {
           "type": "string",
@@ -505,7 +587,11 @@
     },
     "DecisionPoint": {
       "type": "object",
-      "required": ["id", "evaluate", "branches"],
+      "required": [
+        "id",
+        "evaluate",
+        "branches"
+      ],
       "properties": {
         "id": {
           "type": "string",
@@ -533,7 +619,9 @@
     },
     "Branch": {
       "type": "object",
-      "required": ["condition"],
+      "required": [
+        "condition"
+      ],
       "properties": {
         "condition": {
           "type": "string",
@@ -560,7 +648,10 @@
     },
     "Escalation": {
       "type": "object",
-      "required": ["id", "method"],
+      "required": [
+        "id",
+        "method"
+      ],
       "properties": {
         "id": {
           "type": "string",
@@ -572,7 +663,13 @@
         },
         "method": {
           "type": "string",
-          "enum": ["interactive", "notification", "issue", "abort", "fallback"],
+          "enum": [
+            "interactive",
+            "notification",
+            "issue",
+            "abort",
+            "fallback"
+          ],
           "description": "Escalation method"
         },
         "prompt": {
@@ -591,7 +688,9 @@
         },
         "context": {
           "type": "array",
-          "items": {"type": "string"},
+          "items": {
+            "type": "string"
+          },
           "description": "Context fields to include"
         },
         "timeout": {
@@ -600,7 +699,11 @@
         },
         "onTimeout": {
           "type": "string",
-          "enum": ["abort", "continue", "fallback"],
+          "enum": [
+            "abort",
+            "continue",
+            "fallback"
+          ],
           "description": "Action if timeout"
         },
         "repository": {
@@ -613,7 +716,9 @@
         },
         "labels": {
           "type": "array",
-          "items": {"type": "string"},
+          "items": {
+            "type": "string"
+          },
           "description": "Issue labels"
         },
         "then": {
@@ -624,14 +729,23 @@
     },
     "EscalationOption": {
       "type": "object",
-      "required": ["label", "action"],
+      "required": [
+        "label",
+        "action"
+      ],
       "properties": {
         "label": {
           "type": "string"
         },
         "action": {
           "type": "string",
-          "enum": ["continue", "abort", "pause", "goto", "expand_context"]
+          "enum": [
+            "continue",
+            "abort",
+            "pause",
+            "goto",
+            "expand_context"
+          ]
         },
         "goto": {
           "type": "string"
@@ -640,11 +754,22 @@
     },
     "LearningHook": {
       "type": "object",
-      "required": ["event", "capture", "store"],
+      "required": [
+        "event",
+        "capture",
+        "store"
+      ],
       "properties": {
         "event": {
           "type": "string",
-          "enum": ["workflow_success", "workflow_failure", "step_complete", "step_failure", "escalation_resolved", "user_correction"],
+          "enum": [
+            "workflow_success",
+            "workflow_failure",
+            "step_complete",
+            "step_failure",
+            "escalation_resolved",
+            "user_correction"
+          ],
           "description": "Lifecycle event to capture"
         },
         "condition": {
@@ -654,7 +779,9 @@
         "capture": {
           "type": "object",
           "description": "Fields to capture",
-          "additionalProperties": {"type": "string"}
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "store": {
           "type": "string",
@@ -675,11 +802,21 @@
     },
     "LearningAction": {
       "type": "object",
-      "required": ["type", "target"],
+      "required": [
+        "type",
+        "target"
+      ],
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["increment_success_count", "increase_confidence", "decrease_confidence", "add_pattern", "add_negative_example", "update_pattern"]
+          "enum": [
+            "increment_success_count",
+            "increase_confidence",
+            "decrease_confidence",
+            "add_pattern",
+            "add_negative_example",
+            "update_pattern"
+          ]
         },
         "target": {
           "type": "string",
@@ -728,7 +865,12 @@
         },
         "logging": {
           "type": "string",
-          "enum": ["minimal", "standard", "verbose", "debug"],
+          "enum": [
+            "minimal",
+            "standard",
+            "verbose",
+            "debug"
+          ],
           "default": "standard"
         }
       }

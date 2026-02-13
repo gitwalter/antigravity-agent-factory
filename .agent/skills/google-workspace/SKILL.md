@@ -7,6 +7,13 @@ type: skill
 
 Use Google Workspace MCP servers to manage files, emails, and calendar events.
 
+## When to Use
+Use this skill when you need integrated access to multiple Google Workspace services (Drive, Gmail, Calendar) within a single agent context.
+
+## Prerequisites
+- Google Workspace MCP servers installed and configured.
+- OAuth authentication completed for the target account.
+
 ## Capabilities
 
 - **Google Drive**: List, read, and search files.

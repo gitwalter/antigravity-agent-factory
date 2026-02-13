@@ -8,9 +8,22 @@ type: skill
 
 This skill allows agents to send emails via the user's Gmail account using a Python script.
 
-## Pre-requisites
+## When to Use
+Use this skill when you need to perform automated email communication, such as sending reports, notifications, or project updates.
+
+## Prerequisites
 - Valid Gmail credentials stored in `.gemini/antigravity/brain/...` (configured).
 - `google-api-python-client` installed.
+
+## Process
+1. Prepare the email recipient, subject, and body.
+2. Formulate the python command with the appropriate arguments.
+3. Execute the command and monitor for success or failure logs.
+
+## Best Practices
+- Always verify recipient email addresses before sending.
+- Keep email bodies concise and professional.
+- Use descriptive subjects to ensure clarity for the recipient.
 
 ## Tools
 
