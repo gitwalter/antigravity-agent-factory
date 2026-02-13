@@ -299,13 +299,14 @@ class PABPClient:
         return UpdateResult(added, modified, errors, audit_log)
         
     def _sanitize_filename(self, name: str) -> str:
-        """Sanitize a name for use as a filename."""
+        """Sanitize a name for use as a filename (strict kebab-case)."""
         import re
-        # Replace invalid characters with -
-        # Windows: < > : " / \ | ? *
-        safe_name = re.sub(r'[<>:"/\\|?*]', '-', name)
-        # Strip leading/trailing spaces and dots
-        safe_name = safe_name.strip(" .")
+        # Convert to lowercase
+        name = name.lower()
+        # Replace any non-alphanumeric character with -
+        safe_name = re.sub(r'[^a-z0-9]+', '-', name)
+        # Strip leading/trailing dashes
+        safe_name = safe_name.strip('-')
         return safe_name
 
     def _convert_pabp_component(self, data: Dict[str, Any], comp_type: str) -> Optional[str]:
@@ -432,13 +433,65 @@ class PABPClient:
         dry_run: bool,
         modified: List[str]
     ) -> None:
-        """Translate and install rules file."""
+        """Translate and install rules."""
         source_rules = source_path / source_adapter.rules_path()
-        if source_rules.exists():
-            content = source_rules.read_text(encoding="utf-8")
+        target_rules = self.project_root / self.target_adapter.rules_path()
+        
+        # Scenario 1: Source exists
+        if not source_rules.exists():
+            return
+
+        # Determine if target is a directory (based on adapter convention or existing path)
+        # AntigravityAdapter returns .agent/rules which is meant to be a dir
+        # But generic/cursor return file paths.
+        
+        # We can check if the path extension is empty, implying directory? 
+        # Or check if we are on Antigravity adapter definitively.
+        is_target_dir = self.target_adapter.platform_name == "antigravity"
+        
+        if is_target_dir:
+            if not dry_run:
+                target_rules.mkdir(parents=True, exist_ok=True)
+                
+            if source_rules.is_file():
+                # Single file source -> main.md in target dir
+                content = source_rules.read_text(encoding="utf-8")
+                translated = self.target_adapter.translate_rules(content, source_adapter)
+                target_file = target_rules / "main.md"
+                
+                if not target_file.exists() or target_file.read_text(encoding="utf-8") != translated:
+                    if not dry_run:
+                        target_file.write_text(translated, encoding="utf-8")
+                    modified.append("rules/main.md")
+            elif source_rules.is_dir():
+                # Directory source -> copy all valid rule files
+                for rule_file in source_rules.glob("*"):
+                    if rule_file.suffix in [".json", ".yaml", ".md"]:
+                        content = rule_file.read_text(encoding="utf-8")
+                        # Translate if needed? For now assume raw copy or basic translation
+                        # If it's markdown, we might translate. defaults to identity for same platform
+                        translated = self.target_adapter.translate_rules(content, source_adapter)
+                        target_file = target_rules / rule_file.name
+                        
+                        if not target_file.exists() or target_file.read_text(encoding="utf-8") != translated:
+                            if not dry_run:
+                                target_file.write_text(translated, encoding="utf-8")
+                            modified.append(f"rules/{rule_file.name}")
+        else:
+            # Legacy file-to-file behavior
+            if source_rules.is_dir():
+                 # Flatten directory to single file?
+                 # ideally we concatenate. unique implementation detail.
+                 # for now, just take main.md or first found
+                 found = list(source_rules.glob("*.md"))
+                 if found:
+                     content = found[0].read_text(encoding="utf-8")
+                 else:
+                     return # Nothing to install
+            else:
+                content = source_rules.read_text(encoding="utf-8")
+                
             translated = self.target_adapter.translate_rules(content, source_adapter)
-            
-            target_rules = self.project_root / self.target_adapter.rules_path()
             
             if not target_rules.exists() or target_rules.read_text(encoding="utf-8") != translated:
                 if not dry_run:

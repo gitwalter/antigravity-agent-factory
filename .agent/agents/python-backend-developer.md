@@ -26,8 +26,8 @@ Build production-ready Python web applications using FastAPI, SQLAlchemy, async/
 - [[error-handling]]
 
 ## Knowledge
-- [Factory Automation](../../docs/automation/FACTORY_AUTOMATION.md)
-- [fastapi-patterns.json](../../knowledge/fastapi-patterns.json)
-- [sqlalchemy-advanced.json](../../knowledge/sqlalchemy-advanced.json)
-- [python-production-patterns.json](../../knowledge/python-production-patterns.json)
-- [streamlit-patterns.json](../../knowledge/streamlit-patterns.json)
+- [fastapi-patterns.json](../knowledge/fastapi-patterns.json)
+- [sqlalchemy-advanced.json](../knowledge/sqlalchemy-advanced.json)
+- [database-design-patterns.json](../knowledge/database-design-patterns.json)
+- [python-production-patterns.json](../knowledge/python-production-patterns.json)
+- [streamlit-patterns.json](../knowledge/streamlit-patterns.json)

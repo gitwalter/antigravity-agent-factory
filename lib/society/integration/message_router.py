@@ -11,7 +11,7 @@ Provides:
 """
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set, TYPE_CHECKING
 
@@ -216,7 +216,7 @@ class MessageRouter:
             sender=sender,
             recipient=target,
             status=RouteStatus.DELIVERED,
-            delivered_at=datetime.utcnow(),
+            delivered_at=datetime.now(timezone.utc),
         )
         
         self._deliver(routed_msg, bridge)
@@ -255,7 +255,7 @@ class MessageRouter:
                 sender=event.agent.id,
                 recipient=agent_id,
                 status=RouteStatus.DELIVERED,
-                delivered_at=datetime.utcnow(),
+                delivered_at=datetime.now(timezone.utc),
             )
             
             self._deliver(routed_msg, bridge)
@@ -270,7 +270,7 @@ class MessageRouter:
         try:
             bridge.handle_incoming(message.event)
             message.status = RouteStatus.DELIVERED
-            message.delivered_at = datetime.utcnow()
+            message.delivered_at = datetime.now(timezone.utc)
             
             # Notify delivery handlers
             for handler in self._delivery_handlers:

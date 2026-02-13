@@ -3,13 +3,28 @@
   "id": "langgraph-workflow-patterns",
   "name": "LangGraph Workflow Patterns",
   "title": "LangGraph Workflow Patterns",
-  "description": "Patterns for building stateful agent workflows with LangGraph",
-  "version": "2.0.0",
-  "category": "workflows",
+  "description": "Patterns for building stateful agent workflows with LangGraph including state management, checkpointing, human-in-the-loop, distributed workflows, and production patterns",
+  "version": "1.1.0",
+  "category": "workflow",
   "axiomAlignment": {
     "A1_verifiability": "State machines enable traceable, reproducible agent behavior",
-    "A3_transparency": "Graph structure makes agent logic explicit and inspectable"
+    "A2_user_primacy": "Workflows serve user goals; human-in-the-loop supports critical decisions",
+    "A3_transparency": "Graph structure makes agent logic explicit and inspectable",
+    "A4_non_harm": "Error nodes and fallback paths ensure graceful failure handling",
+    "A5_consistency": "Unified state and checkpoint patterns across workflows"
   },
+  "related_skills": [
+    "langgraph-agent-building",
+    "state-management",
+    "human-in-the-loop",
+    "subagent-orchestration",
+    "agent-testing"
+  ],
+  "related_knowledge": [
+    "langchain-patterns.json",
+    "multi-agent-patterns.json",
+    "agent-handoffs.json"
+  ],
   "core_concepts": {
     "graph": {
       "description": "Directed graph defining agent workflow",
@@ -17,6 +32,12 @@
         "Nodes (functions)",
         "Edges (transitions)",
         "State (shared data)"
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
       ]
     },
     "state": {
@@ -25,7 +46,9 @@
         "Use immutable updates (return new state)",
         "Define clear state schema with types",
         "Include metadata for observability"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)"
     },
     "node": {
       "description": "Function that transforms state",
@@ -34,7 +57,9 @@
         "Single responsibility per node",
         "Return only changed state keys",
         "Handle errors gracefully"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)"
     },
     "edge": {
       "description": "Connection between nodes, can be conditional",
@@ -42,6 +67,12 @@
         "Normal edge",
         "Conditional edge",
         "Entry/exit points"
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
       ]
     }
   },
@@ -91,7 +122,8 @@
         "Ensure tasks are truly independent",
         "Handle partial failures gracefully",
         "Implement proper aggregation logic"
-      ]
+      ],
+      "code_example": "Use fanout edges to multiple nodes, fanin to aggregator"
     },
     "human_in_the_loop": {
       "description": "Pause workflow for human input/approval",
@@ -184,7 +216,8 @@
           "Clean up old snapshots",
           "Use for long-running workflows",
           "Balance storage vs recovery speed"
-        ]
+        ],
+        "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
       },
       "incremental_checkpointing": {
         "description": "Store only changes between checkpoints",
@@ -194,8 +227,15 @@
           "Periodically save full checkpoints",
           "Handle delta reconstruction",
           "Monitor storage savings"
-        ]
-      }
+        ],
+        "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
+      },
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
     "state_reducers": {
       "description": "Advanced state reduction patterns",
@@ -207,7 +247,8 @@
           "Ensure reducers are commutative and associative",
           "Test reducer behavior",
           "Document reducer semantics"
-        ]
+        ],
+        "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
       },
       "conditional_reducer": {
         "description": "Reducer that applies conditionally",
@@ -216,8 +257,15 @@
           "Document conditional logic",
           "Ensure idempotency",
           "Handle edge cases"
-        ]
-      }
+        ],
+        "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
+      },
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
     "command_pattern": {
       "description": "Encapsulate operations as commands for undo/redo",
@@ -234,7 +282,12 @@
   "state_management": {
     "typed_state": {
       "description": "Define state with TypedDict for type safety",
-      "code_example": "from typing import TypedDict, Annotated\nfrom langgraph.graph import add_messages\n\nclass State(TypedDict):\n    messages: Annotated[list, add_messages]\n    context: str\n    iteration: int"
+      "code_example": "from typing import TypedDict, Annotated\nfrom langgraph.graph import add_messages\n\nclass State(TypedDict):\n    messages: Annotated[list, add_messages]\n    context: str\n    iteration: int",
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
     "reducers": {
       "description": "Functions that combine state updates",
@@ -253,8 +306,15 @@
           "Reducers should be associative: reducer(reducer(a, b), c) == reducer(a, reducer(b, c))",
           "Test reducer with edge cases (empty inputs, None values)",
           "Document reducer behavior clearly"
-        ]
-      }
+        ],
+        "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+        "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)"
+      },
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
     "checkpointing": {
       "description": "Persist state for resumption and debugging",
@@ -263,18 +323,16 @@
         "SqliteSaver",
         "PostgresSaver"
       ],
-      "use_when": [
-        "Human-in-the-loop",
-        "Long-running workflows",
-        "Fault tolerance"
-      ],
+      "use_when": "Human-in-the-loop; Long-running workflows; Fault tolerance",
       "basic_checkpointing": {
         "code_example": "from langgraph.checkpoint.sqlite import SqliteSaver\n\nmemory = SqliteSaver.from_conn_string('checkpoints.db')\ngraph = builder.compile(checkpointer=memory)\n\nconfig = {'configurable': {'thread_id': 'conversation-123'}}\nresult = graph.invoke({'input': 'Hello'}, config=config)",
         "best_practices": [
           "Use persistent storage for production",
           "Include thread_id for conversation tracking",
           "Implement cleanup for old checkpoints"
-        ]
+        ],
+        "description": "Agent pattern for iterative reasoning and tool use with observation-based refinement.",
+        "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
       },
       "advanced_checkpointing": {
         "description": "Advanced checkpointing strategies",
@@ -284,7 +342,9 @@
             "Add metadata for filtering and debugging",
             "Include user/session identifiers",
             "Store operation context"
-          ]
+          ],
+          "description": "Agent pattern for iterative reasoning and tool use with observation-based refinement.",
+          "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
         },
         "checkpoint_filtering": {
           "code_example": "from langgraph.checkpoint.sqlite import SqliteSaver\n\nmemory = SqliteSaver.from_conn_string('checkpoints.db')\n\n# List checkpoints with filter\ncheckpoints = memory.list(\n    {'configurable': {}},\n    filter={'metadata.user_id': 'user-123'}\n)\n\n# Get specific checkpoint\ncheckpoint = memory.get(\n    {'configurable': {'thread_id': 'thread-789'}},\n    {'checkpoint_id': 'checkpoint-id'}\n)",
@@ -292,7 +352,9 @@
             "Use filters for efficient querying",
             "Index frequently filtered fields",
             "Clean up old checkpoints"
-          ]
+          ],
+          "description": "Agent pattern for iterative reasoning and tool use with observation-based refinement.",
+          "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
         },
         "checkpoint_compression": {
           "code_example": "import gzip\nimport json\nfrom langgraph.checkpoint.base import BaseCheckpointSaver\n\nclass CompressedCheckpointSaver(BaseCheckpointSaver):\n    def __init__(self, base_saver):\n        self.base_saver = base_saver\n    \n    def put(self, config, checkpoint, metadata, new_versions):\n        # Compress checkpoint data\n        compressed_checkpoint = {\n            **checkpoint,\n            'channel_values': self._compress(checkpoint['channel_values'])\n        }\n        \n        return self.base_saver.put(config, compressed_checkpoint, metadata, new_versions)\n    \n    def get(self, config, checkpoint_id=None):\n        checkpoint = self.base_saver.get(config, checkpoint_id)\n        if checkpoint:\n            checkpoint['channel_values'] = self._decompress(checkpoint['channel_values'])\n        return checkpoint\n    \n    def _compress(self, data):\n        return gzip.compress(json.dumps(data).encode())\n    \n    def _decompress(self, compressed_data):\n        return json.loads(gzip.decompress(compressed_data).decode())",
@@ -300,36 +362,136 @@
             "Use for large state objects",
             "Monitor compression ratio",
             "Consider compression overhead"
-          ]
-        }
-      }
+          ],
+          "description": "Agent pattern for iterative reasoning and tool use with observation-based refinement.",
+          "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
+        },
+        "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+        "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+        "best_practices": [
+          "Set max_iterations to prevent infinite agent loops",
+          "Use structured output for reliable parsing of agent responses"
+        ]
+      },
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     }
   },
   "prebuilt_components": {
     "create_react_agent": {
       "description": "Pre-built ReAct agent graph",
       "use_when": "Standard agent with tools",
-      "code": "from langgraph.prebuilt import create_react_agent\n\nagent = create_react_agent(model, tools, checkpointer=memory)"
+      "code": "from langgraph.prebuilt import create_react_agent\n\nagent = create_react_agent(model, tools, checkpointer=memory)",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
     "ToolNode": {
       "description": "Pre-built node for tool execution",
-      "use_when": "Need to execute tools in a graph"
+      "use_when": "Need to execute tools in a graph",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     }
   },
   "testing_langgraph": {
     "unit_testing": {
       "description": "Test individual nodes",
       "approach": "Test node functions with mock state",
-      "code_example": "def test_extract_node():\n    input_state = {'input': 'test data', 'results': []}\n    output_state = extract_node(input_state)\n    assert 'extracted' in output_state"
+      "code_example": "def test_extract_node():\n    input_state = {'input': 'test data', 'results': []}\n    output_state = extract_node(input_state)\n    assert 'extracted' in output_state",
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
     "integration_testing": {
       "description": "Test complete graph execution",
       "approach": "Compile graph and run with test inputs",
-      "code_example": "def test_workflow():\n    graph = create_workflow()\n    result = graph.invoke({'input': 'test'})\n    assert result['status'] == 'complete'"
+      "code_example": "def test_workflow():\n    graph = create_workflow()\n    result = graph.invoke({'input': 'test'})\n    assert result['status'] == 'complete'",
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
     "visualization": {
       "description": "Visualize graph structure for debugging",
-      "code": "graph.get_graph().draw_mermaid_png()"
+      "code": "graph.get_graph().draw_mermaid_png()",
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    }
+  },
+  "production_patterns": {
+    "distributed_workflows": {
+      "description": "Run workflows across multiple machines with shared state",
+      "use_when": "Large-scale, geographically distributed, or fault-tolerant systems",
+      "code_example": "from langgraph.checkpoint.postgres import PostgresSaver\nimport redis\nfrom contextlib import contextmanager\n\n# Shared checkpoint store for all workers\ncheckpointer = PostgresSaver.from_conn_string(\n    'postgresql://user:pass@host/db'\n)\n\n# Redis for distributed coordination and locking\nredis_client = redis.Redis(host='localhost', port=6379)\n\nclass DistributedWorkflowRunner:\n    def __init__(self, graph_builder, checkpointer, redis_client):\n        self.graph = graph_builder.compile(checkpointer=checkpointer)\n        self.redis = redis_client\n    \n    @contextmanager\n    def distributed_lock(self, thread_id: str, timeout: int = 30):\n        lock = self.redis.lock(f'workflow:{thread_id}', timeout=timeout)\n        try:\n            acquired = lock.acquire(blocking=True, blocking_timeout=10)\n            if not acquired:\n                raise TimeoutError(f'Could not acquire lock for {thread_id}')\n            yield\n        finally:\n            if lock.owned():\n                lock.release()\n    \n    def invoke_distributed(self, input_state: dict, config: dict):\n        thread_id = config['configurable']['thread_id']\n        with self.distributed_lock(thread_id):\n            return self.graph.invoke(input_state, config)",
+      "best_practices": [
+        "Use PostgresSaver for shared checkpoint store across workers",
+        "Implement distributed locking with Redis to prevent race conditions",
+        "Handle network partitions with timeout and retry logic",
+        "Use message queues (RabbitMQ, Kafka) for async workflow triggers",
+        "Monitor distributed execution with centralized logging"
+      ]
+    },
+    "multi_worker_deployment": {
+      "description": "Deploy workflow executors across multiple workers",
+      "use_when": "High-throughput workflow processing with horizontal scaling",
+      "code_example": "from langgraph.checkpoint.postgres import PostgresSaver\nfrom celery import Celery\n\n# Celery for task distribution\napp = Celery('workflows', broker='redis://localhost:6379/0')\n\n# Shared checkpointer\ncheckpointer = PostgresSaver.from_conn_string('postgresql://...')\n\n@app.task(bind=True, max_retries=3)\ndef execute_workflow(self, workflow_id: str, input_data: dict):\n    try:\n        graph = create_workflow().compile(checkpointer=checkpointer)\n        config = {'configurable': {'thread_id': workflow_id}}\n        return graph.invoke(input_data, config)\n    except Exception as exc:\n        self.retry(exc=exc, countdown=2 ** self.request.retries)",
+      "best_practices": [
+        "Use Celery or similar task queues for work distribution",
+        "Configure retry logic with exponential backoff",
+        "Monitor worker health and queue depth",
+        "Use separate queues for different workflow priorities"
+      ]
+    },
+    "enhanced_time_travel": {
+      "description": "Advanced time-travel debugging with checkpoint inspection and replay",
+      "use_when": "Debugging complex workflows or investigating failures",
+      "code_example": "from langgraph.checkpoint.postgres import PostgresSaver\nfrom datetime import datetime\n\ncheckpointer = PostgresSaver.from_conn_string('postgresql://...')\ngraph = builder.compile(checkpointer=checkpointer)\n\nclass WorkflowDebugger:\n    def __init__(self, checkpointer, graph):\n        self.checkpointer = checkpointer\n        self.graph = graph\n    \n    def list_checkpoints(self, thread_id: str):\n        config = {'configurable': {'thread_id': thread_id}}\n        return list(self.checkpointer.list(config))\n    \n    def inspect_state_at(self, thread_id: str, checkpoint_id: str):\n        config = {\n            'configurable': {\n                'thread_id': thread_id,\n                'checkpoint_id': checkpoint_id\n            }\n        }\n        checkpoint = self.checkpointer.get(config)\n        return {\n            'state': checkpoint['channel_values'],\n            'metadata': checkpoint.get('metadata', {}),\n            'step': checkpoint.get('step', 0)\n        }\n    \n    def replay_from(self, thread_id: str, checkpoint_id: str, new_input: dict = None):\n        config = {\n            'configurable': {\n                'thread_id': f'{thread_id}-replay-{datetime.now().isoformat()}',\n                'checkpoint_id': checkpoint_id\n            }\n        }\n        return self.graph.invoke(new_input, config)\n    \n    def compare_checkpoints(self, thread_id: str, cp_id_1: str, cp_id_2: str):\n        state_1 = self.inspect_state_at(thread_id, cp_id_1)['state']\n        state_2 = self.inspect_state_at(thread_id, cp_id_2)['state']\n        diff = {}\n        all_keys = set(state_1.keys()) | set(state_2.keys())\n        for key in all_keys:\n            if state_1.get(key) != state_2.get(key):\n                diff[key] = {'before': state_1.get(key), 'after': state_2.get(key)}\n        return diff",
+      "best_practices": [
+        "Store checkpoints in persistent storage for post-mortem debugging",
+        "Add metadata to checkpoints (user_id, session_id, timestamp)",
+        "Create replay threads with unique IDs to avoid conflicts",
+        "Use checkpoint comparison to identify where workflows diverged",
+        "Implement checkpoint cleanup policies to manage storage"
+      ]
+    },
+    "supervisor_routing": {
+      "description": "Advanced supervisor patterns for multi-agent routing",
+      "use_when": "Complex task delegation across specialized agents",
+      "code_example": "from langgraph.graph import StateGraph, MessagesState, START, END\nfrom pydantic import BaseModel\nfrom typing import Literal\n\nclass RouteDecision(BaseModel):\n    next_agent: Literal['researcher', 'writer', 'reviewer', 'done']\n    reasoning: str\n\ndef create_supervisor_graph(llm, agents: dict):\n    builder = StateGraph(MessagesState)\n    \n    # Supervisor node that routes to workers\n    def supervisor(state: MessagesState):\n        structured_llm = llm.with_structured_output(RouteDecision)\n        decision = structured_llm.invoke([\n            ('system', '''You are a supervisor routing tasks to specialists:\n            - researcher: gathers information\n            - writer: creates content\n            - reviewer: checks quality\n            - done: task is complete'''),\n            *state['messages']\n        ])\n        return {'next': decision.next_agent, 'reasoning': decision.reasoning}\n    \n    # Add supervisor and worker nodes\n    builder.add_node('supervisor', supervisor)\n    for name, agent_fn in agents.items():\n        builder.add_node(name, agent_fn)\n    \n    # Conditional routing from supervisor\n    def route_supervisor(state):\n        return state.get('next', 'done')\n    \n    builder.add_conditional_edges(\n        'supervisor',\n        route_supervisor,\n        {name: name for name in agents.keys()} | {'done': END}\n    )\n    \n    # Workers return to supervisor\n    for name in agents.keys():\n        builder.add_edge(name, 'supervisor')\n    \n    builder.add_edge(START, 'supervisor')\n    return builder",
+      "best_practices": [
+        "Use structured output for routing decisions",
+        "Include reasoning in routing for observability",
+        "Implement max_iterations to prevent infinite routing loops",
+        "Add fallback routing for unknown or error cases",
+        "Log routing decisions for debugging and optimization"
+      ]
+    },
+    "durable_execution": {
+      "description": "Ensure workflows complete even with failures",
+      "use_when": "Mission-critical workflows that must not lose progress",
+      "code_example": "from langgraph.checkpoint.postgres import PostgresSaver\nfrom tenacity import retry, stop_after_attempt, wait_exponential\n\ncheckpointer = PostgresSaver.from_conn_string('postgresql://...')\n\nclass DurableWorkflowExecutor:\n    def __init__(self, graph_builder, checkpointer):\n        self.graph = graph_builder.compile(checkpointer=checkpointer)\n        self.checkpointer = checkpointer\n    \n    @retry(\n        stop=stop_after_attempt(5),\n        wait=wait_exponential(multiplier=1, min=1, max=60)\n    )\n    def execute_durable(self, input_data: dict, thread_id: str):\n        config = {'configurable': {'thread_id': thread_id}}\n        \n        # Check if workflow already started\n        existing = self.checkpointer.get(config)\n        if existing:\n            # Resume from last checkpoint\n            return self.graph.invoke(None, config)\n        else:\n            # Start fresh\n            return self.graph.invoke(input_data, config)\n    \n    def recover_failed_workflows(self, max_age_hours: int = 24):\n        # Query checkpointer for incomplete workflows\n        # Implementation depends on checkpointer capabilities\n        pass",
+      "best_practices": [
+        "Use PostgresSaver for production durability",
+        "Implement automatic retry with exponential backoff",
+        "Check for existing checkpoints before starting",
+        "Monitor and alert on stuck workflows",
+        "Implement recovery procedures for failed workflows"
+      ]
     }
   },
   "anti_patterns": [
@@ -347,6 +509,16 @@
       "name": "No handling for node failures",
       "problem": "Silent failures, stuck workflows",
       "solution": "Add error nodes, implement fallback paths"
+    },
+    {
+      "name": "Single-instance checkpoint store",
+      "problem": "Cannot scale horizontally, single point of failure",
+      "solution": "Use PostgresSaver or other distributed checkpoint stores for production"
+    },
+    {
+      "name": "Missing distributed locks",
+      "problem": "Race conditions when multiple workers process same workflow",
+      "solution": "Implement distributed locking with Redis or similar"
     }
   ],
   "best_practices": [
@@ -357,6 +529,16 @@
     "Implement error nodes and fallback paths for graceful failure handling instead of letting workflows crash",
     "Use subgraphs to decompose complex workflows into reusable, testable components",
     "Add interrupt_before or interrupt_after for human-in-the-loop approval on critical decisions",
-    "Visualize graph structure with graph.get_graph().draw_mermaid_png() during development for debugging"
-  ]
+    "Visualize graph structure with graph.get_graph().draw_mermaid_png() during development for debugging",
+    "Use PostgresSaver with Redis locking for distributed multi-worker deployments",
+    "Implement durable execution patterns with automatic retry for mission-critical workflows",
+    "Add checkpoint metadata (user_id, session_id) to enable filtering and debugging",
+    "Use structured output in supervisor nodes for reliable routing decisions"
+  ],
+  "sources": [
+    "https://langchain-ai.github.io/langgraph/concepts/multi_agent/",
+    "https://pypi.org/project/langgraph/",
+    "https://jangwook.net/en/blog/en/langgraph-multi-agent/"
+  ],
+  "last_updated": "2026-02-11"
 }

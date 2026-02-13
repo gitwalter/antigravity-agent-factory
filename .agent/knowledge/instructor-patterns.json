@@ -1,12 +1,30 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "instructor-patterns",
+  "name": "Instructor Patterns",
   "title": "Instructor Patterns",
   "description": "Best practices and patterns for Instructor library structured output extraction",
   "version": "1.0.0",
+  "category": "ai-ml",
   "axiomAlignment": {
     "A1_verifiability": "Structured outputs enable validation and verification",
-    "A3_transparency": "Pydantic models provide explicit output schemas"
+    "A2_user_primacy": "Extraction models align with user-defined schemas and intent",
+    "A3_transparency": "Pydantic models provide explicit output schemas",
+    "A4_non_harm": "Validation and retry patterns prevent invalid or harmful outputs",
+    "A5_consistency": "Unified extraction patterns across providers and model types"
   },
+  "related_skills": [
+    "prompt-optimization",
+    "tool-usage",
+    "langchain-usage",
+    "error-handling"
+  ],
+  "related_knowledge": [
+    "dspy-patterns.json",
+    "pydantic-ai-patterns.json",
+    "anthropic-patterns.json",
+    "llm-provider-comparison.json"
+  ],
   "basic_patterns": {
     "simple_extraction": {
       "description": "Extract simple structured data from LLM responses",
@@ -241,37 +259,14 @@
     }
   },
   "best_practices": [
-    "Use clear, descriptive Field descriptions",
-    "Add validation constraints (ge, le, min_length, etc.)",
-    "Break complex models into smaller nested models",
-    "Use appropriate types (str, int, float, bool, List, Dict)",
-    "Prefer Enum over Literal for reusable values",
-    "Use Optional for fields that may be missing",
-    "Provide clear instructions in prompts",
-    "Include examples for complex extractions",
-    "Specify required vs optional fields",
-    "Use structured prompt templates",
-    "Test prompts with various inputs",
-    "Add field-level validation constraints",
-    "Use custom validators for complex logic",
-    "Set appropriate max_retries (2-5 typically)",
-    "Log validation failures for improvement",
-    "Handle ValidationError gracefully",
-    "Use gpt-4o or claude-3-opus for complex extractions",
-    "Use gpt-3.5-turbo or claude-3-haiku for simple extractions",
-    "Set low temperature (0-0.3) for consistent extraction",
-    "Consider cost vs quality trade-offs",
-    "Test with multiple providers when possible",
-    "Implement retry logic with max_retries",
-    "Use try/except for ValidationError",
-    "Provide fallback strategies",
-    "Log errors for monitoring and improvement",
-    "Handle partial failures gracefully",
-    "Use streaming for long-running extractions",
-    "Cache results when appropriate",
-    "Batch multiple extractions when possible",
-    "Monitor token usage and costs",
-    "Use appropriate model size for task complexity"
+    "Use clear, descriptive Field descriptions to guide LLM extraction and improve accuracy",
+    "Add validation constraints (ge, le, min_length, pattern) to ensure data quality and catch errors early",
+    "Break complex models into smaller nested Pydantic models for better maintainability and extraction quality",
+    "Set appropriate max_retries (2-5 typically) to handle occasional validation failures automatically",
+    "Use gpt-4o or claude-3-opus for complex extractions, gpt-3.5-turbo for simple ones to optimize cost",
+    "Set low temperature (0-0.3) for consistent extraction results in production",
+    "Implement retry logic with max_retries and handle ValidationError gracefully with fallback strategies",
+    "Use streaming for long-running extractions and monitor token usage to control costs"
   ],
   "common_use_cases": {
     "entity_extraction": {
@@ -297,38 +292,76 @@
   },
   "anti_patterns": [
     {
-      "name": "overly_complex_models",
-      "description": "Creating models that are too complex",
+      "name": "Overly Complex Models",
       "problem": "Hard to validate, poor extraction quality",
       "solution": "Break into smaller, focused models"
     },
     {
-      "name": "missing_descriptions",
-      "description": "Not providing Field descriptions",
+      "name": "Missing Descriptions",
       "problem": "Poor extraction quality, ambiguous fields",
       "solution": "Always provide clear Field descriptions"
     },
     {
-      "name": "no_validation",
-      "description": "Not adding validation constraints",
+      "name": "No Validation",
       "problem": "Invalid data passes through",
       "solution": "Add appropriate validation constraints"
     },
     {
-      "name": "ignoring_errors",
-      "description": "Not handling validation errors",
+      "name": "Ignoring Errors",
       "problem": "Silent failures, poor user experience",
       "solution": "Implement proper error handling and retries"
     },
     {
-      "name": "wrong_model_size",
-      "description": "Using wrong model size for task",
+      "name": "Wrong Model Size",
       "problem": "Overpaying or poor quality",
       "solution": "Match model capability to task complexity"
     }
   ],
-  "id": "instructor-patterns",
-  "name": "Instructor Patterns",
-  "category": "patterns",
-  "patterns": {}
+  "patterns": {
+    "validation_patterns": {
+      "field_validation": {
+        "description": "Validate extracted data using Pydantic validators",
+        "use_when": "Need custom validation logic beyond type constraints",
+        "code_example": "from pydantic import BaseModel, Field, field_validator\nfrom typing import List\n\nclass EmailList(BaseModel):\n    emails: List[str] = Field(description=\"List of email addresses\")\n    \n    @field_validator('emails')\n    @classmethod\n    def validate_emails(cls, v):\n        if not v:\n            raise ValueError('At least one email required')\n        for email in v:\n            if '@' not in email:\n                raise ValueError(f'Invalid email format: {email}')\n        return v\n\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=EmailList,\n    messages=[{\"role\": \"user\", \"content\": \"Extract emails: john@example.com, jane@example.com\"}]\n)",
+        "best_practices": [
+          "Use @field_validator for custom validation",
+          "Provide clear error messages",
+          "Validate early in the pipeline",
+          "Consider using EmailStr from pydantic for emails"
+        ]
+      },
+      "retry_on_validation_error": {
+        "description": "Automatic retry when validation fails",
+        "use_when": "LLM output may occasionally fail validation",
+        "code_example": "from instructor import Instructor\nfrom pydantic import BaseModel, Field, ValidationError\n\nclass StrictUser(BaseModel):\n    name: str = Field(description=\"Full name\", min_length=2)\n    age: int = Field(description=\"Age\", ge=0, le=120)\n    email: str = Field(description=\"Email\", pattern=r\"^[\\w\\.-]+@[\\w\\.-]+\\.[a-zA-Z]{2,}$\")\n\n# Instructor automatically retries on validation errors\nresult = instructor.chat.completions.create(\n    model=\"gpt-4o\",\n    response_model=StrictUser,\n    messages=[{\"role\": \"user\", \"content\": \"Extract user info\"}],\n    max_retries=3  # Retry up to 3 times on validation failure\n)",
+        "best_practices": [
+          "Set max_retries appropriately (2-5 typically)",
+          "Use validation errors to improve prompts",
+          "Log retry attempts for monitoring",
+          "Consider adjusting temperature for more consistent outputs"
+        ]
+      },
+      "custom_validators": {
+        "description": "Create reusable custom validators",
+        "use_when": "Need complex validation logic across multiple models",
+        "code_example": "from pydantic import BaseModel, Field, field_validator\nfrom typing import Any\n\nclass DateRange(BaseModel):\n    start_date: str = Field(description=\"Start date (YYYY-MM-DD)\")\n    end_date: str = Field(description=\"End date (YYYY-MM-DD)\")\n    \n    @field_validator('start_date', 'end_date')\n    @classmethod\n    def validate_date_format(cls, v: str) -> str:\n        from datetime import datetime\n        try:\n            datetime.strptime(v, '%Y-%m-%d')\n            return v\n        except ValueError:\n            raise ValueError(f'Invalid date format: {v}. Expected YYYY-MM-DD')\n    \n    @field_validator('end_date')\n    @classmethod\n    def validate_date_range(cls, v: str, info) -> str:\n        start = info.data.get('start_date')\n        if start and v < start:\n            raise ValueError('End date must be after start date')\n        return v",
+        "best_practices": [
+          "Create reusable validator functions",
+          "Validate format before business logic",
+          "Use info.data for cross-field validation",
+          "Return validated value or raise ValueError"
+        ]
+      },
+      "description": "Pattern for instructor patterns - implement with domain-specific logic.",
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "# Implement pattern based on description\n# Use appropriate imports and domain-specific logic\nresult = process_data(input_data)",
+      "best_practices": [
+        "Use clear, descriptive Field descriptions to guide LLM extraction and improve accuracy",
+        "Add validation constraints (ge, le, min_length, pattern) to ensure data quality and catch errors early",
+        "Break complex models into smaller nested Pydantic models for better maintainability and extraction quality",
+        "Set appropriate max_retries (2-5 typically) to handle occasional validation failures automatically",
+        "Use gpt-4o or claude-3-opus for complex extractions, gpt-3.5-turbo for simple ones to optimize cost"
+      ]
+    }
+  }
 }

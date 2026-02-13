@@ -30,8 +30,7 @@ Design enterprise-grade .NET architectures including microservices, Azure cloud 
 - [[stack-configuration]]
 
 ## Knowledge
-- [Factory Automation](../../docs/automation/FACTORY_AUTOMATION.md)
-- [azure-patterns.json](../../knowledge/azure-patterns.json)
-- [dotnet-microservices-patterns.json](../../knowledge/dotnet-microservices-patterns.json)
-- [dotnet-auth-patterns.json](../../knowledge/dotnet-auth-patterns.json)
-- [dotnet-patterns.json](../../knowledge/dotnet-patterns.json)
+- [azure-patterns.json](../knowledge/azure-patterns.json)
+- [dotnet-microservices-patterns.json](../knowledge/dotnet-microservices-patterns.json)
+- [dotnet-auth-patterns.json](../knowledge/dotnet-auth-patterns.json)
+- [dotnet-patterns.json](../knowledge/dotnet-patterns.json)

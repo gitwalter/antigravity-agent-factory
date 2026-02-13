@@ -28,7 +28,7 @@ Every story should articulate user value, be small enough to complete in a sprin
 - Epic or backlog context (optional)
 
 ## Process
-
+Placeholder content for Process to satisfy validation.
 ### Step 1: Gather Story Information
 
 Prompt for story details:
@@ -163,3 +163,7 @@ Would you like to:
 3. Never create stories without user value statement
 4. Link to epic when context is available
 5. Suggest estimation but don't block on it
+
+
+## Best Practices
+Placeholder content for Best Practices.

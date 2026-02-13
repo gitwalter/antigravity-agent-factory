@@ -5,7 +5,7 @@ Cryptographic identity management for agents using Ed25519 signatures.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import hashlib
@@ -43,7 +43,7 @@ class KeyPair:
     """
     private_key: str
     public_key: str
-    created: datetime = field(default_factory=datetime.utcnow)
+    created: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     
     @classmethod
     def generate(cls) -> "KeyPair":
@@ -106,7 +106,7 @@ class KeyPair:
         return cls(
             private_key=data.get("private_key", ""),
             public_key=data["public_key"],
-            created=datetime.fromisoformat(data["created"]) if "created" in data else datetime.utcnow(),
+            created=datetime.fromisoformat(data["created"]) if "created" in data else datetime.now(timezone.utc),
         )
 
 
@@ -126,7 +126,7 @@ class AgentIdentity:
     name: str
     keypair: KeyPair
     metadata: Dict[str, Any] = field(default_factory=dict)
-    created: datetime = field(default_factory=datetime.utcnow)
+    created: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     
     @property
     def public_key(self) -> str:
@@ -230,7 +230,7 @@ class AgentIdentity:
             name=data["name"],
             keypair=KeyPair.from_dict(data["keypair"]),
             metadata=data.get("metadata", {}),
-            created=datetime.fromisoformat(data["created"]) if "created" in data else datetime.utcnow(),
+            created=datetime.fromisoformat(data["created"]) if "created" in data else datetime.now(timezone.utc),
         )
     
     def save(self, path: str) -> None:

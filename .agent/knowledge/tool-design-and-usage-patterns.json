@@ -1,9 +1,27 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "tool-design-and-usage-patterns",
   "name": "Tool Design and Usage Patterns",
-  "description": "Patterns for designing, implementing, and managing tools in LangChain/LangGraph agents",
+  "title": "Tool Design and Usage Patterns",
+  "description": "Patterns for designing, implementing, and managing tools in LangChain/LangGraph agents including tool decorators, binding, error handling, and permissions",
   "version": "1.0.0",
-  "category": "agent-development",
+  "category": "core",
+  "axiomAlignment": {
+    "A1_verifiability": "All tool patterns include testable examples and validation approaches",
+    "A2_user_primacy": "Tools designed to enhance user capabilities with clear boundaries",
+    "A3_transparency": "Documented patterns with clear explanations of behavior and side effects",
+    "A4_non_harm": "Includes security patterns, permission checks, and error handling for safe tool usage",
+    "A5_consistency": "Unified tool design patterns across LangChain and LangGraph ecosystems"
+  },
+  "related_skills": [
+    "tool-usage",
+    "mcp-integration",
+    "langchain-usage"
+  ],
+  "related_knowledge": [
+    "langchain-patterns.json",
+    "mcp-patterns.json"
+  ],
   "patterns": {
     "tool_design": {
       "basic_tool": {
@@ -14,48 +32,97 @@
           "Use type hints for all parameters",
           "Return strings or structured data",
           "Handle errors gracefully"
-        ]
+        ],
+        "use_when": "Apply when basic tool is needed in Tool Design and Usage Patterns",
+        "code_example": "@tool\ndef my_tool(arg: str) -> str:\n    \"\"\"Clear docstring for LLM.\"\"\"\n    return result"
       },
       "structured_tool": {
         "description": "Tool with Pydantic input schema",
         "example": "StructuredTool.from_function(func=fn, args_schema=InputModel)",
-        "use_when": [
-          "Complex input validation needed",
-          "Multiple optional parameters",
-          "Need detailed parameter descriptions"
+        "use_when": "Complex input validation needed; Multiple optional parameters; Need detailed parameter descriptions",
+        "code_example": "StructuredTool.from_function(func=fn, args_schema=InputModel)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
         ]
       },
       "async_tool": {
         "description": "Async tool for I/O operations",
         "example": "@tool\nasync def fetch_data(url: str) -> str:\n    async with httpx.AsyncClient() as client:\n        return (await client.get(url)).text",
-        "use_when": [
-          "API calls",
-          "Database queries",
-          "File I/O"
+        "use_when": "API calls; Database queries; File I/O",
+        "code_example": "@tool\nasync def fetch_data(url: str) -> str:\n    async with httpx.AsyncClient() as client:\n        return (await client.get(url)).text",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
         ]
-      }
+      },
+      "description": "Category grouping: basic_tool, structured_tool, async_tool",
+      "use_when": "Apply when tool design patterns are needed in Tool Design and Usage Patterns",
+      "code_example": "# See child patterns under tool_design for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "tool_binding": {
       "bind_to_llm": {
         "description": "Attach tools to LLM for calling",
         "example": "llm_with_tools = llm.bind_tools([tool1, tool2])",
-        "notes": "Returns AIMessage with tool_calls attribute"
+        "notes": "Returns AIMessage with tool_calls attribute",
+        "use_when": "Apply when bind to llm is needed in Tool Design and Usage Patterns",
+        "code_example": "llm_with_tools = llm.bind_tools([tool1, tool2])",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
+        ]
       },
       "tool_execution": {
         "description": "Execute tool calls from LLM response",
-        "pattern": "Build tools_map, iterate tool_calls, invoke each, return ToolMessages"
-      }
+        "pattern": "Build tools_map, iterate tool_calls, invoke each, return ToolMessages",
+        "use_when": "Apply when tool execution is needed in Tool Design and Usage Patterns",
+        "code_example": "# Implement tool_execution per tool-patterns patterns\n# See description and related documentation",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
+        ]
+      },
+      "description": "Category grouping: bind_to_llm, tool_execution",
+      "use_when": "Apply when tool binding patterns are needed in Tool Design and Usage Patterns",
+      "code_example": "# See child patterns under tool_binding for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "error_handling": {
       "retry_pattern": {
         "description": "Retry on transient failures",
         "library": "tenacity",
-        "example": "@retry(stop=stop_after_attempt(3), wait=wait_exponential())"
+        "example": "@retry(stop=stop_after_attempt(3), wait=wait_exponential())",
+        "use_when": "Apply when retry pattern is needed in Tool Design and Usage Patterns",
+        "code_example": "@retry(stop=stop_after_attempt(3), wait=wait_exponential())",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
+        ]
       },
       "graceful_failure": {
         "description": "Return error message instead of raising",
-        "example": "try:\n    return result\nexcept Exception as e:\n    return f'Error: {e}'"
-      }
+        "example": "try:\n    return result\nexcept Exception as e:\n    return f'Error: {e}'",
+        "use_when": "Apply when graceful failure is needed in Tool Design and Usage Patterns",
+        "code_example": "try:\n    return result\nexcept Exception as e:\n    return f'Error: {e}'",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
+        ]
+      },
+      "description": "Category grouping: retry_pattern, graceful_failure",
+      "use_when": "Apply when error handling patterns are needed in Tool Design and Usage Patterns",
+      "code_example": "# See child patterns under error_handling for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "security": {
       "input_validation": {
@@ -64,6 +131,12 @@
           "Path validation",
           "SQL injection prevention",
           "Rate limiting"
+        ],
+        "use_when": "Apply when input validation is needed in Tool Design and Usage Patterns",
+        "code_example": "# Implement input_validation per tool-patterns patterns\n# See description and related documentation",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
         ]
       },
       "permission_checking": {
@@ -73,8 +146,21 @@
           "WRITE",
           "EXECUTE",
           "NETWORK"
+        ],
+        "use_when": "Apply when permission checking is needed in Tool Design and Usage Patterns",
+        "code_example": "# Implement permission_checking per tool-patterns patterns\n# See description and related documentation",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
         ]
-      }
+      },
+      "description": "Category grouping: input_validation, permission_checking",
+      "use_when": "Apply when security patterns are needed in Tool Design and Usage Patterns",
+      "code_example": "# See child patterns under security for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     }
   },
   "tool_categories": {
@@ -134,11 +220,6 @@
       "problem": "Raising exceptions in tools breaks the agent execution flow. Agents cannot handle exceptions gracefully and may retry indefinitely or fail completely instead of trying alternative approaches.",
       "solution": "Return error information as structured data (strings or dicts) instead of raising exceptions. Use return values like {'error': 'message', 'code': 'ERROR_CODE'} or simple error strings. Let the agent decide how to handle errors."
     }
-  ],
-  "related_skills": [
-    "tool-usage",
-    "mcp-integration",
-    "langchain-usage"
   ],
   "best_practices": [
     "Write comprehensive docstrings for all tools - LLMs use these to understand tool purpose and parameters",

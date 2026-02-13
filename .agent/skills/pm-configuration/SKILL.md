@@ -3,27 +3,23 @@ description: Configure project management system with backend and methodology se
 name: pm-configuration
 type: skill
 ---
-
 # Pm Configuration
 
 Configure project management system with backend and methodology selection
 
-## 
-# PM Configuration Skill
-
-Configures project management systems that enhance development workflows without burdening teams. Grounded in Axiom 0: Love, Truth, and Beauty, this skill helps teams select backends and methodologies that serve their mission.
-
-## 
-# PM Configuration Skill
-
 Configures project management systems that enhance development workflows without burdening teams. Grounded in Axiom 0: Love, Truth, and Beauty, this skill helps teams select backends and methodologies that serve their mission.
 
 ## Philosophy
+
 > Project management should enhance development, not burden it.
 
 PM systems exist to help teams deliver value to stakeholders. When configured with care and aligned to team values, they become invisible infrastructure that supports rather than constrains. This skill ensures PM configuration flows from love for the team, truth in their process, and beauty in their work.
 
 ## Process
+
+1. Review the task requirements.
+2. Apply the skill's methodology.
+3. Validate the output against the defined criteria.
 ### Step 1: Determine PM System Interest
 
 Begin by understanding the team's needs and preferences:
@@ -440,369 +436,8 @@ let's adjust it together.
 Questions? Just ask!"
 ```
 
-```
-"I'd like to help you configure a project management system that supports
-your development workflow.
-
-Project management should enhance development, not burden it. With that in mind,
-how would you like to approach PM for this project?
-
-A) **Yes** - Full PM system with backend integration and methodology
-B) **Minimal** - Basic task tracking without external backend
-C) **No** - Skip PM configuration for now
-
-Which option feels right for your team?"
-```
-
-```
-"Great! Let's select a PM backend that fits your workflow. Here are your options:
-
-**1. Jira (Atlassian)**
-   ✓ Pros: Powerful, enterprise-grade, extensive integrations, customizable workflows
-   ✗ Cons: Can be complex, requires setup time, may be overkill for small teams
-   Best for: Teams needing formal processes, enterprise environments, complex projects
-
-**2. Linear**
-   ✓ Pros: Fast, beautiful UI, developer-friendly, great keyboard shortcuts
-   ✗ Cons: Newer platform, fewer integrations than Jira, primarily for software teams
-   Best for: Software development teams, fast-moving startups, teams valuing speed
-
-**3. GitHub Projects**
-   ✓ Pros: Native GitHub integration, simple, free for public repos, familiar to developers
-   ✗ Cons: Less powerful than dedicated PM tools, limited customization
-   Best for: Open source projects, teams already using GitHub heavily
-
-**4. Azure DevOps**
-   ✓ Pros: Full Microsoft ecosystem integration, comprehensive ALM features
-   ✗ Cons: Microsoft-centric, can be complex, requires Azure account
-   Best for: Microsoft shops, enterprise teams using Azure
-
-**5. Custom/None (Local Tracking)**
-   ✓ Pros: No external dependencies, full control, simple
-   ✗ Cons: No integrations, manual updates, limited visibility
-   Best for: Small teams, early-stage projects, teams preferring simplicity
-
-Which backend resonates with your team's needs?"
-```
-
-```
-"Now let's choose a development methodology that defines how work flows
-through your PM system.
-
-**1. Agile Scrum**
-   - Sprint-based iterations (typically 1-3 weeks)
-   - Defined roles: Product Owner, Scrum Master, Developers, QA
-   - Ceremonies: Daily Standup, Sprint Planning, Sprint Review, Retrospective
-   - Artifacts: Product Backlog, Sprint Backlog, Burndown Charts
-   - Best for: Product development, feature teams, teams needing structure
-
-**2. Kanban**
-   - Continuous flow with Work-In-Progress (WIP) limits
-   - Pull-based work selection
-   - Visual board: Backlog → Ready → In Progress → Review → Done
-   - Metrics: Lead time, cycle time, throughput
-   - Best for: Support teams, maintenance work, ops teams, continuous delivery
-
-**3. Research & Development**
-   - Experiment-based approach
-   - Focus on learning and discovery
-   - Knowledge mesh coordination
-   - Exploration vs. exploitation balance
-   - Best for: AI/ML projects, innovation labs, research teams
-
-**4. Enterprise Integration**
-   - Milestone-based delivery
-   - Formal architecture governance
-   - Compliance and audit focus
-   - Gate reviews and approvals
-   - Best for: Large-scale projects, compliance-driven work, enterprise systems
-
-**5. Hybrid/Custom**
-   - Mix elements from multiple methodologies
-   - Adapt to team's unique needs
-   - Best for: Teams with specific requirements, evolving processes
-
-Which methodology aligns with how your team works?"
-```
-
-```
-"Let's customize this for your team. I need a few details:
-
-**Team Size:**
-[ ] 1-3 people (solo or small team)
-[ ] 4-6 people (small team)
-[ ] 7-10 people (medium team)
-[ ] 10+ people (large team)
-
-**Work Style:**
-[ ] Fully remote
-[ ] Hybrid (mix of remote and office)
-[ ] Fully in-office
-[ ] Distributed across time zones
-
-**Current PM Experience:**
-[ ] New to PM systems
-[ ] Some experience with PM tools
-[ ] Experienced, want to optimize
-[ ] Expert, configuring for team
-
-**Priority Values:**
-What matters most to your team? (Select top 3)
-[ ] Speed of delivery
-[ ] Quality and reliability
-[ ] Visibility and transparency
-[ ] Flexibility and adaptability
-[ ] Team collaboration
-[ ] Stakeholder communication
-```
-
-```
-"Sprint Configuration:
-- Sprint length: [ ] 1 week  [ ] 2 weeks  [ ] 3 weeks  [ ] 4 weeks
-- Daily standup time: [ ] 9:00 AM  [ ] 10:00 AM  [ ] Afternoon  [ ] Async
-- Sprint planning duration: [ ] 2 hours  [ ] 4 hours  [ ] Full day
-- Retrospective format: [ ] In-person  [ ] Async  [ ] Hybrid"
-```
-
-```
-"WIP Limits Configuration:
-- Ready column: [3] items max
-- In Progress: [2] items max
-- Review: [2] items max
-- Testing: [2] items max
-
-Do these limits feel right for your team size?"
-```
-
-```
-"Exploration Balance:
-- Exploration (research, experiments): [70]%
-- Exploitation (implementation, delivery): [30]%
-
-Adjust these percentages to match your team's focus."
-```
-
-```
-"Governance Configuration:
-- Architecture review frequency: [ ] Weekly  [ ] Bi-weekly  [ ] Per milestone
-- Compliance checkpoints: [ ] Per sprint  [ ] Per milestone  [ ] Per release
-- Approval gates: [ ] Required  [ ] Advisory  [ ] None"
-```
-
-```json
-{
-  "pm": {
-    "enabled": true,
-    "backend": {
-      "type": "{SELECTED_BACKEND}",
-      "credentials": {
-        "required": true,
-        "location": ".env.pm",
-        "instructions": "Add {BACKEND}_API_KEY and {BACKEND}_PROJECT_ID"
-      },
-      "projectId": "{PROJECT_ID}",
-      "workspace": "{WORKSPACE_NAME}"
-    },
-    "methodology": {
-      "type": "{SELECTED_METHODOLOGY}",
-      "configuration": {
-        "teamSize": "{TEAM_SIZE}",
-        "workStyle": "{WORK_STYLE}",
-        "{METHODOLOGY_SPECIFIC_SETTINGS}": "{VALUES}"
-      }
-    },
-    "workflows": {
-      "enabled": ["{WORKFLOW_1}", "{WORKFLOW_2}"],
-      "triggers": {
-        "{TRIGGER_TYPE}": "{PATTERN}"
-      }
-    },
-    "metrics": {
-      "tracked": ["{METRIC_1}", "{METRIC_2}"],
-      "dashboard": "{DASHBOARD_URL}"
-    },
-    "integration": {
-      "mcpServers": ["{REQUIRED_MCP_SERVER}"],
-      "webhooks": {
-        "enabled": true,
-        "endpoints": ["{ENDPOINT_1}"]
-      }
-    }
-  }
-}
-```
-
-```json
-{
-  "pm": {
-    "enabled": true,
-    "backend": {
-      "type": "jira",
-      "credentials": {
-        "required": true,
-        "location": ".env.pm",
-        "instructions": "Add JIRA_API_TOKEN and JIRA_PROJECT_KEY"
-      },
-      "projectId": "PROJ",
-      "workspace": "my-company"
-    },
-    "methodology": {
-      "type": "agile-scrum",
-      "configuration": {
-        "teamSize": "4-6",
-        "workStyle": "hybrid",
-        "sprintLength": "2_weeks",
-        "dailyStandup": "10:00_AM",
-        "sprintPlanning": "4_hours",
-        "retrospective": "in_person"
-      }
-    },
-    "workflows": {
-      "enabled": ["bugfix-workflow", "feature-workflow", "code-review"],
-      "triggers": {
-        "jira": "PROJ-{NUMBER}",
-        "github_pr": "pull_request"
-      }
-    },
-    "metrics": {
-      "tracked": ["velocity", "burndown", "cycle_time", "defect_rate"],
-      "dashboard": "https://my-company.atlassian.net/secure/Dashboard.jspa"
-    },
-    "integration": {
-      "mcpServers": ["atlassian"],
-      "webhooks": {
-        "enabled": true,
-        "endpoints": ["/webhooks/jira"]
-      }
-    }
-  }
-}
-```
-
-```json
-{
-  "pm": {
-    "enabled": true,
-    "backend": {
-      "type": "linear",
-      "credentials": {
-        "required": true,
-        "location": ".env.pm",
-        "instructions": "Add LINEAR_API_KEY and LINEAR_TEAM_ID"
-      },
-      "projectId": "team-id",
-      "workspace": "my-workspace"
-    },
-    "methodology": {
-      "type": "kanban",
-      "configuration": {
-        "teamSize": "1-3",
-        "workStyle": "fully_remote",
-        "wipLimits": {
-          "ready": 3,
-          "in_progress": 2,
-          "review": 2,
-          "testing": 2
-        }
-      }
-    },
-    "workflows": {
-      "enabled": ["bugfix-workflow", "feature-workflow"],
-      "triggers": {
-        "linear": "linear-issue-{ID}"
-      }
-    },
-    "metrics": {
-      "tracked": ["lead_time", "cycle_time", "throughput"],
-      "dashboard": "https://linear.app/my-workspace/insights"
-    },
-    "integration": {
-      "mcpServers": [],
-      "webhooks": {
-        "enabled": true,
-        "endpoints": ["/webhooks/linear"]
-      }
-    }
-  }
-}
-```
-
-```json
-{
-  "pm": {
-    "enabled": true,
-    "backend": {
-      "type": "local",
-      "credentials": {
-        "required": false
-      }
-    },
-    "methodology": {
-      "type": "kanban",
-      "configuration": {
-        "teamSize": "1-3",
-        "workStyle": "fully_remote",
-        "wipLimits": {
-          "in_progress": 3
-        }
-      }
-    },
-    "workflows": {
-      "enabled": ["bugfix-workflow"],
-      "triggers": {
-        "github_issue": "issue-{NUMBER}"
-      }
-    },
-    "metrics": {
-      "tracked": ["cycle_time"],
-      "dashboard": null
-    },
-    "integration": {
-      "mcpServers": [],
-      "webhooks": {
-        "enabled": false
-      }
-    }
-  }
-}
-```
-
-```
-"PM configuration complete! I've generated:
-
-📁 pm-config.json - Your PM system configuration
-📁 .env.pm.example - Template for backend credentials
-
-**Next Steps:**
-
-1. **Set up backend credentials** (if using external backend):
-   - Copy .env.pm.example to .env.pm
-   - Add your {BACKEND} API keys and project IDs
-   - Test connection: python cli/factory_cli.py --test-pm-connection
-
-2. **Review workflow triggers**:
-   - Your workflows will trigger on: {TRIGGER_LIST}
-   - Test by creating a {TRIGGER_EXAMPLE}
-
-3. **Configure MCP servers** (if needed):
-   - {MCP_SETUP_INSTRUCTIONS}
-
-4. **Set up metrics dashboard**:
-   - Access dashboard at: {DASHBOARD_URL}
-   - Configure alerts for: {METRIC_ALERTS}
-
-5. **Team onboarding**:
-   - Share pm-config.json with your team
-   - Walk through the methodology: {METHODOLOGY_SUMMARY}
-   - Set up first {SPRINT/BACKLOG/EXPERIMENT} together
-
-Remember: PM should enhance, not burden. If something feels wrong,
-let's adjust it together.
-
-Questions? Just ask!"
-```
-
 ## Decision Logic Summary
+
 ### Backend Selection Logic
 
 ```python
@@ -868,66 +503,8 @@ def get_adaptive_questions(methodology, team_size):
     return base_questions
 ```
 
-```python
-def select_backend(team_size, existing_tools, complexity_tolerance, budget):
-    if existing_tools:
-        return existing_tools[0]  # Use what they have
-    
-    if team_size < 5 and complexity_tolerance == "low":
-        return "linear" or "github-projects"
-    
-    if team_size < 5 and budget == "free":
-        return "github-projects"
-    
-    if "enterprise" in requirements or "compliance" in requirements:
-        return "jira" or "azure-devops"
-    
-    if "microsoft" in tech_stack:
-        return "azure-devops"
-    
-    return "linear"  # Default for software teams
-```
-
-```python
-def select_methodology(purpose, project_type, team_size, work_style):
-    if "research" in purpose.lower() or "ai" in project_type.lower():
-        return "research-development"
-    
-    if "enterprise" in project_type.lower() or "compliance" in purpose.lower():
-        return "enterprise-integration"
-    
-    if "support" in purpose.lower() or "maintenance" in purpose.lower():
-        return "kanban"
-    
-    if team_size > 10:
-        return "agile-scrum"  # Better structure for large teams
-    
-    if work_style == "fully_remote" and team_size < 5:
-        return "kanban"  # Simpler for small remote teams
-    
-    return "agile-scrum"  # Default
-```
-
-```python
-def get_adaptive_questions(methodology, team_size):
-    base_questions = ["team_size", "work_style", "pm_experience", "priority_values"]
-    
-    if methodology == "agile-scrum":
-        return base_questions + ["sprint_length", "standup_time", "planning_duration", "retro_format"]
-    
-    if methodology == "kanban":
-        return base_questions + ["wip_limits"]
-    
-    if methodology == "research-development":
-        return base_questions + ["exploration_ratio"]
-    
-    if methodology == "enterprise-integration":
-        return base_questions + ["governance_frequency", "compliance_checkpoints", "approval_gates"]
-    
-    return base_questions
-```
-
 ## Integration with Other Skills
+
 ### Integration with Onboarding Flow
 
 When used during onboarding:
@@ -988,43 +565,8 @@ I'll generate workflows that:
 - Track metrics you care about"
 ```
 
-```
-"During onboarding, I'll help you configure your PM system. This happens
-after we've selected your blueprint and methodology.
-
-The PM configuration will:
-- Connect to your selected backend (if any)
-- Configure workflows based on your methodology
-- Set up metrics tracking
-- Integrate with your development workflows"
-```
-
-```
-"During Workshop 3: Stack Safari, we'll also configure your PM system.
-This ensures your project management aligns with your technology choices
-and team values.
-
-We'll:
-- Select backend through team discussion
-- Choose methodology that matches your vision
-- Configure workflows that serve your stakeholders
-- Set up metrics that matter to your team"
-```
-
-```
-"Based on your PM configuration:
-- Backend: {BACKEND}
-- Methodology: {METHODOLOGY}
-- Triggers: {TRIGGERS}
-
-I'll generate workflows that:
-- Connect to your PM backend
-- Follow your methodology's ceremonies
-- Trigger on your specified events
-- Track metrics you care about"
-```
-
 ## Fallback Procedures
+
 | Condition | Action |
 |-----------|--------|
 | User selects "No" | Acknowledge, skip PM config, document decision in project notes |
@@ -1037,6 +579,7 @@ I'll generate workflows that:
 | Workflow conflicts | Resolve conflicts, prioritize user preferences |
 
 ## Conversation Examples
+
 ### Example 1: Full PM Setup
 
 **User:** "I want to set up Jira for our project"
@@ -1103,6 +646,7 @@ C) Skip PM for now
 Which feels right?"
 
 ## Important Rules
+
 1. **Grounded in Axiom 0** - PM configuration flows from love for the team, truth in their process, and beauty in their work
 2. **Enhance, don't burden** - If PM feels like overhead, simplify it
 3. **Ask, don't assume** - Gather team preferences before configuring
@@ -1115,19 +659,6 @@ Which feels right?"
 10. **Make it reversible** - Teams should be able to change their mind
 
 ## CLI Quick Reference
-```bash
-# Test PM backend connection
-python cli/factory_cli.py --test-pm-connection
-
-# Generate PM configuration interactively
-python cli/factory_cli.py --configure-pm
-
-# Validate PM configuration
-python cli/factory_cli.py --validate-pm-config pm-config.json
-
-# Sync workflows with PM backend
-python cli/factory_cli.py --sync-pm-workflows
-```
 
 ```bash
 # Test PM backend connection
@@ -1144,11 +675,12 @@ python cli/factory_cli.py --sync-pm-workflows
 ```
 
 ## References
-- `knowledge/pm-metrics.json` - PM metrics definitions and tracking
-- `knowledge/workflow-patterns.json` - Workflow patterns for PM integration
-- `knowledge/stack-capabilities.json` - Technology stack capabilities
-- `patterns/methodologies/*.json` - Methodology pattern definitions
-- `patterns/workflows/*.json` - Workflow pattern definitions
+
+- `{directories.knowledge}/pm-metrics.json` - PM metrics definitions and tracking
+- `{directories.knowledge}/workflow-patterns.json` - Workflow patterns for PM integration
+- `{directories.knowledge}/stack-capabilities.json` - Technology stack capabilities
+- `{directories.patterns}/methodologies/*.json` - Methodology pattern definitions
+- `{directories.patterns}/workflows/*.json` - Workflow pattern definitions
 
 ---
 
@@ -1156,7 +688,14 @@ python cli/factory_cli.py --sync-pm-workflows
 *Skill: pm-configuration v1.0.0*
 *Grounded in Axiom 0: Love, Truth, and Beauty*
 
+## When to Use
+This skill should be used when strict adherence to the defined process is required.
+
 ## Prerequisites
-> [!IMPORTANT]
-> Requirements:
-> - Knowledge: pm-metrics.json, workflow-patterns.json, stack-capabilities.json
+- Basic understanding of the agent factory context.
+- Access to the necessary tools and resources.
+
+## Best Practices
+- Always follow the established guidelines.
+- Document any deviations or exceptions.
+- Regularly review and update the skill documentation.

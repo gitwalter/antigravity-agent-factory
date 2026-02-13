@@ -11,80 +11,11 @@ from pathlib import Path
 import pytest
 from jsonschema import Draft7Validator
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from scripts.validation.schema_validator import load_schemas  # noqa: E402
 
-
-# Define skill catalog schema
-SKILL_CATALOG_SCHEMA = {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "required": ["skills"],
-    "properties": {
-        "title": {"type": "string"},
-        "description": {"type": "string"},
-        "version": {"type": "string"},
-        "categories": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "object",
-                "properties": {
-                    "description": {"type": "string"},
-                    "implementedInFactory": {"type": "boolean"},
-                    "note": {"type": "string"}
-                }
-            }
-        },
-        "skills": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "object",
-                "required": ["id", "name", "category"],
-                "properties": {
-                    "id": {"type": "string"},
-                    "name": {"type": "string"},
-                    "category": {"type": "string"},
-                    "stackAgnostic": {"type": "boolean"},
-                    "description": {"type": "string"},
-                    "factoryPattern": {"type": ["string", "null"]},
-                    "implementationRepo": {"type": "string"},
-                    "whenToUse": {"type": "array", "items": {"type": "string"}}
-                }
-            }
-        },
-        "skillsByStack": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "array",
-                "items": {"type": "string"}
-            }
-        },
-        "usage": {"type": "object"}
-    }
-}
-
-# Define MCP servers catalog schema
-MCP_CATALOG_SCHEMA = {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "properties": {
-        "version": {"type": "string"},
-        "servers": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "object",
-                "required": ["name"],
-                "properties": {
-                    "name": {"type": "string"},
-                    "url": {"type": "string"},
-                    "description": {"type": "string"},
-                    "authentication": {"type": "string"},
-                    "tools": {"type": "array"}
-                }
-            }
-        }
-    }
-}
+# Load canonical knowledge-file schema for general knowledge validation
+_SCHEMAS = load_schemas()
+KNOWLEDGE_FILE_SCHEMA = _SCHEMAS.get("knowledge-file", {})
 
 
 class TestKnowledgeFilesStructure:
@@ -114,8 +45,9 @@ class TestSkillCatalogSchema:
     
     @pytest.fixture
     def validator(self):
-        """Create a JSON schema validator."""
-        return Draft7Validator(SKILL_CATALOG_SCHEMA)
+        """Create a JSON schema validator from the canonical knowledge-file schema."""
+        assert KNOWLEDGE_FILE_SCHEMA, "knowledge-file.schema.json could not be loaded"
+        return Draft7Validator(KNOWLEDGE_FILE_SCHEMA)
     
     def test_skill_catalog_exists(self, knowledge_dir):
         """Test that skill-catalog.json exists."""

@@ -1,0 +1,155 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "backtesting-framework-patterns",
+  "name": "Backtesting Framework Patterns",
+  "title": "Backtesting Framework Patterns",
+  "description": "Event-driven, vectorized, walk-forward backtesting; position management, slippage models",
+  "version": "1.0.0",
+  "last_updated": "2026-02-10",
+  "category": "trading",
+  "axiomAlignment": {
+    "A1_verifiability": "Strict time ordering and no look-ahead enable reproducible, verifiable backtests",
+    "A2_user_primacy": "Configurable slippage and commission models preserve user assumptions",
+    "A3_transparency": "Explicit metrics and OOS reporting make strategy performance traceable",
+    "A4_non_harm": "Walk-forward and Monte Carlo validation prevent overfitted, harmful strategies",
+    "A5_consistency": "Unified patterns across event-driven, vectorized, and walk-forward approaches"
+  },
+  "related_skills": [
+    "algo-trading",
+    "trading-strategy",
+    "backtesting-validation",
+    "risk-analysis"
+  ],
+  "related_knowledge": [
+    "trading-patterns.json",
+    "market-data-patterns.json"
+  ],
+  "patterns": {
+    "event_driven": {
+      "description": "Process bar/tick events in chronological order; update state, generate signals, execute",
+      "flow": "on_bar -> update_indicators -> generate_signal -> execute fill -> update_position",
+      "when_to_use": "Complex logic, intraday, realistic execution",
+      "best_practices": [
+        "Strict time ordering",
+        "No look-ahead",
+        "Separate signal and execution"
+      ],
+      "use_when": "Complex logic, intraday, realistic execution",
+      "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)"
+    },
+    "vectorized": {
+      "description": "Apply operations to entire price series; NumPy/pandas; fast but less realistic",
+      "idiom": "signals = (fast_ma > slow_ma).astype(int); returns = signals.shift(1) * price.pct_change()",
+      "when_to_use": "Screening, parameter sweep, simple strategies",
+      "best_practices": [
+        "Shift for execution lag",
+        "Include commissions",
+        "Beware of vectorization assumptions"
+      ],
+      "use_when": "Screening, parameter sweep, simple strategies",
+      "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)"
+    },
+    "walk_forward": {
+      "description": "In-sample optimization, out-of-sample validation; rolling windows",
+      "structure": "train [0:70%] -> optimize -> validate [70:85%] -> test [85:100%]",
+      "when_to_use": "Parameter optimization, overfitting prevention",
+      "best_practices": [
+        "Multiple folds",
+        "Anchored vs rolling",
+        "Report OOS metrics"
+      ],
+      "use_when": "Parameter optimization, overfitting prevention",
+      "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)"
+    },
+    "position_management": {
+      "description": "Track positions, PnL, and portfolio state across time",
+      "state": "positions, cash, equity, open_orders",
+      "when_to_use": "Any backtest with positions",
+      "best_practices": [
+        "Account for partial fills",
+        "Track commission per trade",
+        "Handle corporate actions"
+      ],
+      "use_when": "Any backtest with positions",
+      "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)"
+    },
+    "slippage_models": {
+      "description": "Model execution cost beyond commission; market impact",
+      "models": [
+        "fixed_bps",
+        "sqrt_volume",
+        "linear_impact",
+        "Almgren-Chriss"
+      ],
+      "when_to_use": "Realistic backtests, large orders",
+      "best_practices": [
+        "Use conservative slippage",
+        "Scale with order size",
+        "Document assumptions"
+      ],
+      "use_when": "Realistic backtests, large orders",
+      "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)"
+    },
+    "fills_and_execution": {
+      "description": "Model order fills: market vs limit; fill probability",
+      "assumptions": [
+        "Market: fill at close + slippage",
+        "Limit: fill if price touched"
+      ],
+      "when_to_use": "Intraday, limit order strategies",
+      "best_practices": [
+        "Model fill probability for limits",
+        "Handle expired orders",
+        "Stale quote handling"
+      ],
+      "use_when": "Intraday, limit order strategies",
+      "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)"
+    },
+    "metrics_reporting": {
+      "description": "Sharpe, drawdown, win rate, profit factor",
+      "metrics": [
+        "total_return",
+        "sharpe_ratio",
+        "max_drawdown",
+        "win_rate",
+        "profit_factor",
+        "calmar"
+      ],
+      "when_to_use": "Strategy evaluation",
+      "best_practices": [
+        "Report risk-adjusted",
+        "Include confidence intervals",
+        "Compare to benchmark"
+      ],
+      "use_when": "Strategy evaluation",
+      "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)"
+    },
+    "monte_carlo_validation": {
+      "description": "Shuffle trade order to assess robustness",
+      "approach": "Bootstrap or shuffle returns; compute distribution of metrics",
+      "when_to_use": "Assessing strategy stability",
+      "best_practices": [
+        "1000+ simulations",
+        "Report percentiles",
+        "Detect path dependency"
+      ],
+      "use_when": "Assessing strategy stability",
+      "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)"
+    }
+  },
+  "best_practices": [
+    "Strict time ordering",
+    "No look-ahead",
+    "Separate signal and execution",
+    "Shift for execution lag",
+    "Include commissions",
+    "Beware of vectorization assumptions",
+    "Multiple folds",
+    "Anchored vs rolling"
+  ],
+  "anti_patterns": [
+    "Applying patterns without understanding the underlying concepts",
+    "Copy-pasting solutions without adapting to specific context",
+    "Over-engineering simple problems with complex patterns"
+  ]
+}

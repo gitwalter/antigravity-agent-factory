@@ -1,0 +1,207 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "microsoft-autogen-patterns",
+  "name": "Microsoft AutoGen Patterns",
+  "title": "AutoGen Patterns",
+  "description": "Best practices and patterns for Microsoft AutoGen 0.4+ - event-driven multi-agent framework with AgentChat, Teams, GroupChat, Swarm, and GraphFlow orchestration",
+  "version": "1.0.0",
+  "last_updated": "2026-02-11",
+  "category": "agent-patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Event-driven architecture enables verification of agent interactions",
+    "A2_user_primacy": "Human-in-the-loop patterns put users in control",
+    "A3_transparency": "Explicit team and agent definitions make behavior traceable",
+    "A4_non_harm": "Termination conditions and guardrails prevent runaway agents",
+    "A5_consistency": "Unified patterns across AgentChat, Teams, and GraphFlow"
+  },
+  "related_skills": [
+    "agentic-loops",
+    "human-in-the-loop",
+    "tool-usage"
+  ],
+  "related_knowledge": [
+    "langgraph-workflows.json",
+    "crewai-patterns.json",
+    "openai-agents-sdk-patterns.json"
+  ],
+  "patterns": {
+    "agent_definition": {
+      "description": "Create agents using AutoGen's AssistantAgent or custom agents",
+      "use_when": "Building conversational agents with tool capabilities",
+      "code_example": "from autogen_agentchat.agents import AssistantAgent\nfrom autogen_agentchat.messages import TextMessage\nfrom autogen_ext.models.openai import OpenAIChatCompletionClient\n\n# Create model client\nmodel = OpenAIChatCompletionClient(model='gpt-4')\n\n# Create agent\nagent = AssistantAgent(\n    name='research_assistant',\n    model_client=model,\n    system_message='''You are a helpful research assistant.\n    You can search for information and summarize findings.''',\n    tools=[search_tool, summarize_tool]\n)\n\n# Use agent\nresponse = await agent.on_messages(\n    [TextMessage(content='Find information about AI agents', source='user')],\n    cancellation_token=None\n)\nprint(response.chat_message.content)",
+      "best_practices": [
+        "Use descriptive agent names",
+        "Write clear system messages",
+        "Provide relevant tools for agent role",
+        "Handle responses asynchronously"
+      ],
+      "agent_types": {
+        "AssistantAgent": "LLM-powered agent with tool capabilities",
+        "UserProxyAgent": "Represents human user, can execute code",
+        "CodeExecutorAgent": "Specialized for code execution",
+        "SocietyOfMindAgent": "Wraps team as single agent"
+      }
+    },
+    "teams": {
+      "description": "Group agents into teams for collaborative tasks",
+      "use_when": "Tasks require multiple specialized agents working together",
+      "code_example": "from autogen_agentchat.teams import RoundRobinGroupChat\nfrom autogen_agentchat.conditions import TextMentionTermination\n\nteam = RoundRobinGroupChat(\n    participants=[researcher, writer, reviewer],\n    termination_condition=TextMentionTermination('APPROVED')\n)\nresult = await team.run('Write an article about machine learning')",
+      "round_robin_team": {
+        "description": "Agents take turns in sequence",
+        "code_example": "from autogen_agentchat.teams import RoundRobinGroupChat\nfrom autogen_agentchat.conditions import TextMentionTermination\n\n# Create agents\nresearcher = AssistantAgent(name='researcher', model_client=model, system_message='Research topics')\nwriter = AssistantAgent(name='writer', model_client=model, system_message='Write content')\nreviewer = AssistantAgent(name='reviewer', model_client=model, system_message='Review content')\n\n# Create team with termination condition\nteam = RoundRobinGroupChat(\n    participants=[researcher, writer, reviewer],\n    termination_condition=TextMentionTermination('APPROVED')\n)\n\n# Run team\nresult = await team.run('Write an article about machine learning')\nprint(result.messages[-1].content)"
+      },
+      "selector_team": {
+        "description": "LLM dynamically selects which agent speaks next",
+        "code_example": "from autogen_agentchat.teams import SelectorGroupChat\n\nteam = SelectorGroupChat(\n    participants=[researcher, writer, reviewer],\n    model_client=model,\n    selector_prompt='''Select the next agent based on conversation state:\n    - researcher: when information is needed\n    - writer: when content needs to be created\n    - reviewer: when content needs review''',\n    termination_condition=TextMentionTermination('DONE')\n)\n\nresult = await team.run('Create a technical blog post')"
+      },
+      "swarm_team": {
+        "description": "Agents can hand off to specific other agents",
+        "code_example": "from autogen_agentchat.teams import Swarm\nfrom autogen_agentchat.handoffs import Handoff\n\n# Define agents with handoffs\ntriage = AssistantAgent(\n    name='triage',\n    model_client=model,\n    system_message='Route requests to specialists',\n    handoffs=[Handoff(target='tech_support'), Handoff(target='billing')]\n)\n\ntech_support = AssistantAgent(\n    name='tech_support',\n    model_client=model,\n    system_message='Handle technical issues',\n    handoffs=[Handoff(target='triage')]  # Can return to triage\n)\n\nbilling = AssistantAgent(\n    name='billing',\n    model_client=model,\n    system_message='Handle billing questions',\n    handoffs=[Handoff(target='triage')]\n)\n\nswarm = Swarm(\n    participants=[triage, tech_support, billing],\n    termination_condition=TextMentionTermination('RESOLVED')\n)\n\nresult = await swarm.run('I have a billing question about my invoice')"
+      },
+      "best_practices": [
+        "Use RoundRobin for predictable workflows",
+        "Use Selector for dynamic orchestration",
+        "Use Swarm for handoff-based routing",
+        "Always set termination conditions"
+      ]
+    },
+    "graph_flow": {
+      "description": "Define complex workflows with directed graphs",
+      "use_when": "Need conditional branching and complex agent orchestration",
+      "code_example": "from autogen_agentchat.teams import GraphFlow, Edge, Node\nfrom autogen_agentchat.conditions import TerminationCondition\n\n# Define nodes (agents or teams)\nresearch_node = Node(agent=researcher)\nanalyze_node = Node(agent=analyzer)\nwrite_positive = Node(agent=positive_writer)\nwrite_negative = Node(agent=negative_writer)\nreview_node = Node(agent=reviewer)\n\n# Define conditional routing\ndef route_by_sentiment(message):\n    if 'positive' in message.content.lower():\n        return 'write_positive'\n    else:\n        return 'write_negative'\n\n# Build graph\ngraph = GraphFlow(\n    nodes={\n        'research': research_node,\n        'analyze': analyze_node,\n        'write_positive': write_positive,\n        'write_negative': write_negative,\n        'review': review_node\n    },\n    edges=[\n        Edge(source='research', target='analyze'),\n        Edge(source='analyze', target=route_by_sentiment),  # Conditional\n        Edge(source='write_positive', target='review'),\n        Edge(source='write_negative', target='review')\n    ],\n    entry='research',\n    exit_nodes=['review']\n)\n\nresult = await graph.run('Analyze market trends')",
+      "best_practices": [
+        "Use nodes for agents or nested teams",
+        "Use conditional edges for branching logic",
+        "Define clear entry and exit points",
+        "Test graph paths independently"
+      ]
+    },
+    "event_driven": {
+      "description": "React to events in the agent execution loop",
+      "use_when": "Need fine-grained control over agent behavior",
+      "code_example": "from autogen_agentchat.base import TaskRunner\nfrom autogen_agentchat.events import (\n    AgentMessageEvent,\n    ToolCallEvent,\n    TerminationEvent\n)\n\n# Event handler\nclass EventLogger:\n    def __init__(self):\n        self.events = []\n    \n    async def on_event(self, event):\n        self.events.append(event)\n        \n        if isinstance(event, AgentMessageEvent):\n            print(f'Agent {event.source} said: {event.message.content}')\n        elif isinstance(event, ToolCallEvent):\n            print(f'Tool called: {event.tool_name}')\n        elif isinstance(event, TerminationEvent):\n            print(f'Terminated: {event.reason}')\n\nlogger = EventLogger()\n\n# Subscribe to events\nteam.subscribe(logger.on_event)\n\n# Run team\nresult = await team.run('Do something')\n\n# Or stream events\nasync for event in team.run_stream('Do something'):\n    await logger.on_event(event)",
+      "best_practices": [
+        "Subscribe to events for observability",
+        "Use run_stream for real-time event processing",
+        "Log events for debugging and audit",
+        "Handle all event types gracefully"
+      ]
+    },
+    "code_execution": {
+      "description": "Execute code safely with Docker or local sandboxes",
+      "use_when": "Agents need to run generated code",
+      "code_example": "from autogen_ext.code_executors.docker import DockerCodeExecutor\nfrom autogen_ext.code_executors.local import LocalCodeExecutor\nfrom autogen_agentchat.agents import CodeExecutorAgent\n\n# Docker executor (recommended for production)\ndocker_executor = DockerCodeExecutor(\n    image='python:3.11-slim',\n    timeout=60,\n    work_dir='/workspace'\n)\n\n# Local executor (for development)\nlocal_executor = LocalCodeExecutor(\n    timeout=30,\n    work_dir='./workspace'\n)\n\n# Code executor agent\ncode_agent = CodeExecutorAgent(\n    name='code_executor',\n    code_executor=docker_executor\n)\n\n# Assistant that generates code\ncoder = AssistantAgent(\n    name='coder',\n    model_client=model,\n    system_message='You write Python code. Always wrap code in ```python blocks.'\n)\n\n# Team where coder generates, executor runs\nteam = RoundRobinGroupChat(\n    participants=[coder, code_agent],\n    termination_condition=MaxMessageTermination(10)\n)",
+      "best_practices": [
+        "Use Docker for production code execution",
+        "Set appropriate timeouts",
+        "Restrict available packages and permissions",
+        "Review generated code before execution"
+      ]
+    },
+    "streaming": {
+      "description": "Stream agent responses and events",
+      "use_when": "Building real-time UIs or monitoring agent progress",
+      "code_example": "from autogen_agentchat.agents import AssistantAgent\nfrom autogen_agentchat.teams import RoundRobinGroupChat\n\n# Stream single agent\nasync for chunk in agent.on_messages_stream(\n    [TextMessage(content='Explain AI', source='user')]\n):\n    if hasattr(chunk, 'content'):\n        print(chunk.content, end='', flush=True)\n\n# Stream team execution\nasync for event in team.run_stream('Write a story'):\n    if isinstance(event, AgentMessageEvent):\n        print(f'[{event.source}]: {event.message.content}')\n    elif isinstance(event, ToolCallEvent):\n        print(f'[TOOL]: {event.tool_name}({event.args})')",
+      "best_practices": [
+        "Use streaming for responsive UIs",
+        "Handle partial messages correctly",
+        "Process events as they arrive",
+        "Implement proper cancellation"
+      ]
+    },
+    "human_in_the_loop": {
+      "description": "Involve humans in agent workflows",
+      "use_when": "Critical decisions require human oversight",
+      "code_example": "from autogen_agentchat.agents import UserProxyAgent\nfrom autogen_agentchat.conditions import HumanInputCondition\n\n# User proxy for human input\nhuman = UserProxyAgent(\n    name='human',\n    input_func=input,  # Or custom async input function\n    description='Human reviewer who approves important decisions'\n)\n\n# Team with human\nteam = RoundRobinGroupChat(\n    participants=[researcher, writer, human],\n    termination_condition=TextMentionTermination('APPROVED')\n)\n\n# Human will be prompted for input during execution\nresult = await team.run('Write a press release')\n\n# Alternative: Condition-based human input\nteam_with_condition = SelectorGroupChat(\n    participants=[agent1, agent2, human],\n    human_input_condition=HumanInputCondition(\n        trigger='REVIEW_NEEDED',\n        prompt='Please review the above and provide feedback:'\n    )\n)",
+      "best_practices": [
+        "Use UserProxyAgent for human involvement",
+        "Define clear triggers for human input",
+        "Set timeouts for human responses",
+        "Log human decisions for audit"
+      ]
+    },
+    "termination": {
+      "description": "Define when agent or team execution should stop",
+      "use_when": "Controlling execution boundaries",
+      "code_example": "from autogen_agentchat.conditions import (\n    TextMentionTermination,\n    MaxMessageTermination,\n    TimeoutTermination,\n    StopMessageTermination,\n    CombinedTermination\n)\n\n# Stop when specific text appears\ntext_term = TextMentionTermination('DONE')\n\n# Stop after N messages\nmessage_term = MaxMessageTermination(20)\n\n# Stop after timeout\ntimeout_term = TimeoutTermination(timeout_seconds=300)\n\n# Stop on specific stop message\nstop_term = StopMessageTermination()\n\n# Combine conditions (any triggers termination)\ncombined = CombinedTermination(\n    conditions=[text_term, message_term, timeout_term],\n    mode='any'  # or 'all'\n)\n\nteam = RoundRobinGroupChat(\n    participants=[agent1, agent2],\n    termination_condition=combined\n)",
+      "best_practices": [
+        "Always set termination conditions",
+        "Use MaxMessageTermination as safety net",
+        "Add timeouts for production",
+        "Combine conditions for robust stopping"
+      ]
+    },
+    "distributed_runtime": {
+      "description": "Run agents across multiple processes or machines",
+      "use_when": "Scaling agent workloads",
+      "code_example": "from autogen_core.application import WorkerAgentRuntime\nfrom autogen_core.application.grpc import GrpcWorkerAgentRuntimeHostConfig\n\n# Configure distributed runtime\nruntime = WorkerAgentRuntime(\n    host_config=GrpcWorkerAgentRuntimeHostConfig(\n        host='0.0.0.0',\n        port=50051\n    )\n)\n\n# Register agents with runtime\nawait runtime.register_agent(agent1)\nawait runtime.register_agent(agent2)\n\n# Start runtime\nawait runtime.start()\n\n# Workers connect and execute agent tasks\n# See autogen documentation for worker setup",
+      "best_practices": [
+        "Use gRPC for low-latency communication",
+        "Implement health checks for workers",
+        "Handle worker failures gracefully",
+        "Monitor distributed execution"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use AssistantAgent for LLM-powered agents with tools",
+    "Choose team type based on orchestration needs (RoundRobin, Selector, Swarm, GraphFlow)",
+    "Always set termination conditions to prevent infinite loops",
+    "Use Docker code executor for safe code execution in production",
+    "Subscribe to events for observability and debugging",
+    "Use streaming for responsive user interfaces",
+    "Include UserProxyAgent for human oversight on critical decisions",
+    "Use combined termination conditions as safety net",
+    "Test agent interactions with unit and integration tests",
+    "Use distributed runtime for scaling agent workloads"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Missing Termination",
+      "problem": "Agents run indefinitely",
+      "solution": "Always set termination conditions with MaxMessageTermination as fallback"
+    },
+    {
+      "name": "Unsafe Code Execution",
+      "problem": "Generated code runs with full system access",
+      "solution": "Use Docker code executor with restricted permissions"
+    },
+    {
+      "name": "No Event Handling",
+      "problem": "Cannot observe or debug agent behavior",
+      "solution": "Subscribe to events and use run_stream"
+    },
+    {
+      "name": "Blocking Human Input",
+      "problem": "Workflow hangs waiting for human forever",
+      "solution": "Set timeouts on human input conditions"
+    },
+    {
+      "name": "Monolithic Teams",
+      "problem": "Single team handles too many responsibilities",
+      "solution": "Use SocietyOfMindAgent to nest teams"
+    }
+  ],
+  "migration_from_v0_2": {
+    "description": "AutoGen 0.4 is a major rewrite with breaking changes",
+    "key_changes": [
+      "Event-driven architecture (vs synchronous in 0.2)",
+      "AgentChat high-level API replaces GroupChat",
+      "Teams replace GroupChatManager",
+      "on_messages() replaces generate_reply()",
+      "Async-first design throughout"
+    ],
+    "migration_steps": [
+      "Update imports to autogen_agentchat",
+      "Convert GroupChat to Team (RoundRobin, Selector, Swarm)",
+      "Replace generate_reply with on_messages",
+      "Add async/await to all agent interactions",
+      "Update termination logic to use Condition classes"
+    ]
+  },
+  "sources": [
+    "https://microsoft.github.io/autogen/",
+    "https://pypi.org/project/autogen-agentchat/",
+    "https://github.com/microsoft/autogen"
+  ]
+}

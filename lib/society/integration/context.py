@@ -8,7 +8,7 @@ components that agents share when participating in the society.
 """
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 import logging
@@ -125,7 +125,7 @@ class SocietyContext:
         self._message_listeners: List[Callable[[Any], None]] = []
         
         # Statistics
-        self._created_at = datetime.utcnow()
+        self._created_at = datetime.now(timezone.utc)
         self._stats = {
             "messages_sent": 0,
             "messages_received": 0,
@@ -222,7 +222,7 @@ class SocietyContext:
         return {
             "name": self.config.name,
             "created_at": self._created_at.isoformat(),
-            "uptime_seconds": (datetime.utcnow() - self._created_at).total_seconds(),
+            "uptime_seconds": (datetime.now(timezone.utc) - self._created_at).total_seconds(),
             **self._stats,
             "event_count": self.event_store.count,
             "contract_count": len(self.contract_registry.contracts),

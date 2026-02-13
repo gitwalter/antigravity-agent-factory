@@ -23,6 +23,8 @@ Design and implement production-ready SAP integration solutions using Cloud Plat
 - "Groovy script", "message transformation", "enrichment"
 - "splitter", "aggregator", "multicast", "gather"
 - "error handling", "retry", "exception subprocess"
+- "AIF monitoring", "AIF interface", "AIF error handling", "AIF namespace"
+- "interface monitoring", "application interface framework"
 
 ## Skills
 - [[sap-integration]]
@@ -30,12 +32,13 @@ Design and implement production-ready SAP integration solutions using Cloud Plat
 - [[extend-knowledge]]
 
 ## Knowledge
-- [Factory Automation](../../docs/automation/FACTORY_AUTOMATION.md)
-- [sap-event-mesh.json](../../knowledge/sap-event-mesh.json)
-- [sap-api-management.json](../../knowledge/sap-api-management.json)
-- [sap-security-patterns.json](../../knowledge/sap-security-patterns.json)
-- [b2b-patterns.json](../../knowledge/b2b-patterns.json)
-- [cpi-error-handling.json](../../knowledge/cpi-error-handling.json)
-- [groovy-patterns.json](../../knowledge/groovy-patterns.json)
-- [iflow-patterns.json](../../knowledge/iflow-patterns.json)
-- [mapping-patterns.json](../../knowledge/mapping-patterns.json)
+- [sap-event-mesh.json](../knowledge/sap-event-mesh.json)
+- [sap-api-management.json](../knowledge/sap-api-management.json)
+- [sap-idoc-patterns.json](../knowledge/sap-idoc-patterns.json)
+- [sap-security-patterns.json](../knowledge/sap-security-patterns.json)
+- [b2b-patterns.json](../knowledge/b2b-patterns.json)
+- [cpi-error-handling.json](../knowledge/cpi-error-handling.json)
+- [groovy-patterns.json](../knowledge/groovy-patterns.json)
+- [iflow-patterns.json](../knowledge/iflow-patterns.json)
+- [mapping-patterns.json](../knowledge/mapping-patterns.json)
+- [sap-aif-patterns.json](../knowledge/sap-aif-patterns.json)

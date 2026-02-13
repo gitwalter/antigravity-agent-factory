@@ -4,48 +4,17 @@ description: Universal two-pass verification for LLM grounding using confidence 
 name: grounding-verification
 type: skill
 ---
-
 # Grounding Verification
 
 Universal two-pass verification for LLM grounding using confidence delta comparison
 
-## 
-# Grounding Verification Skill
-
-Universal two-pass verification for any LLM grounding scenario. Detects when the LLM may be confabulating by comparing confidence between scrubbed and full evidence passes.
-
-## 
-# Grounding Verification Skill
-
 Universal two-pass verification for any LLM grounding scenario. Detects when the LLM may be confabulating by comparing confidence between scrubbed and full evidence passes.
 
 ## Core Principle
+
 > **If removing specific identifiers from evidence doesn't significantly change LLM confidence, the evidence may not have been used - indicating potential confabulation.**
 
 ## How It Works
-```
-┌─────────────────┐     ┌─────────────────┐
-│ Scrubbed Pass   │     │ Full Pass       │
-│ (anonymized)    │     │ (complete)      │
-│                 │     │                 │
-│ [TABLE_1] has   │     │ users table has │
-│ [FIELD_1] of    │     │ email field of  │
-│ type [TYPE_1]   │     │ type VARCHAR    │
-└────────┬────────┘     └────────┬────────┘
-         │                       │
-         ▼                       ▼
-   confidence: 0.3         confidence: 0.95
-         │                       │
-         └───────────┬───────────┘
-                     │
-                     ▼
-              delta = 0.65
-              (>= 0.3 threshold)
-                     │
-                     ▼
-              ✓ VERIFIED
-        (evidence is essential)
-```
 
 ```
 ┌─────────────────┐     ┌─────────────────┐
@@ -72,6 +41,7 @@ Universal two-pass verification for any LLM grounding scenario. Detects when the
 ```
 
 ## Best Practices
+
 - **Select appropriate profile**: Choose the verification profile (strawberry, code, documentation, data, security) that matches your domain for optimal thresholds
 - **Use triggers wisely**: Configure triggers (always, on_medium_confidence, on_critical_claim, on_conflict) based on cost/latency trade-offs
 - **Scrub consistently**: Replace all domain-specific identifiers (table names, classes, functions) with typed placeholders to test evidence dependency
@@ -80,6 +50,10 @@ Universal two-pass verification for any LLM grounding scenario. Detects when the
 - **Document violations**: When violations occur, log them for pattern analysis and system improvement
 
 ## Process
+
+1. Review the task requirements.
+2. Apply the skill's methodology.
+3. Validate the output against the defined criteria.
 ### Step 1: Collect Evidence
 Gather evidence spans from grounding skills or other sources that support the claim to be verified.
 
@@ -102,6 +76,7 @@ Compare delta against profile thresholds to determine verification status (VERIF
 Proceed with confidence, add warnings, or stop based on the verification status.
 
 ## Available Profiles
+
 Skills opt-in to verification by selecting a profile that matches their domain:
 
 | Profile | Domain | Thresholds | Default Trigger |
@@ -113,6 +88,7 @@ Skills opt-in to verification by selecting a profile that matches their domain:
 | `security` | Security-critical claims | Very strict (delta >= 0.4) | always |
 
 ## Opting In
+
 Skills add verification to their frontmatter:
 
 ```json
@@ -128,20 +104,8 @@ Skills add verification to their frontmatter:
 }
 ```
 
-```json
-{
-  "frontmatter": {
-    "name": "your-skill",
-    "verification": {
-      "enabled": true,
-      "profile": "data",
-      "trigger": "on_medium_confidence"
-    }
-  }
-}
-```
-
 ## Trigger Options
+
 | Trigger | When | Use Case |
 |---------|------|----------|
 | `always` | Every grounding result | Critical systems, security |
@@ -151,6 +115,7 @@ Skills add verification to their frontmatter:
 | `manual` | Explicitly called | Exploratory queries |
 
 ## Verification Statuses
+
 | Status | Meaning | Action |
 |--------|---------|--------|
 | **VERIFIED** | Evidence essential (high delta) | Proceed with confidence |
@@ -159,6 +124,7 @@ Skills add verification to their frontmatter:
 | **UNSUPPORTED** | Insufficient evidence | STOP - gather more or ask user |
 
 ## Profile Details
+
 ### Strawberry (General/Factual)
 
 The canonical profile, inspired by Pythea/Strawberry.
@@ -212,6 +178,7 @@ For verifying security-critical claims, vulnerabilities, auth/authz.
 - Note: Security errors can be catastrophic
 
 ## Algorithm
+
 ### Two-Pass Comparison
 
 1. **Scrubbed Pass**: Replace identifiers with typed placeholders
@@ -235,15 +202,8 @@ For verifying security-critical claims, vulnerabilities, auth/authz.
 - **CONTRADICTED**: Context explicitly contradicts claim
 - **UNSURE**: Context neither confirms nor denies
 
-```json
-{
-  "verdict": "ENTAILED | CONTRADICTED | UNSURE",
-  "confidence": 0.0-1.0,
-  "reasoning": "Brief explanation"
-}
-```
-
 ## Error Handling
+
 ### Parse Failure
 - Retry with simplified prompt (max 2 retries)
 - Fallback: extract verdict via regex
@@ -257,6 +217,7 @@ For verifying security-critical claims, vulnerabilities, auth/authz.
 - UNSURE on both → PLAUSIBLE (gather more evidence)
 
 ## When NOT to Verify
+
 To save cost/latency, skip verification when:
 
 - HIGH confidence from cached/pre-verified sources
@@ -264,6 +225,7 @@ To save cost/latency, skip verification when:
 - Time-sensitive operations where latency matters
 
 ## Integration with Existing Skills
+
 | Skill | Profile | Trigger |
 |-------|---------|---------|
 | `grounding` | data | on_medium_confidence |
@@ -272,27 +234,6 @@ To save cost/latency, skip verification when:
 | `mcp-results` | documentation | on_conflict |
 
 ## Output Format
-```markdown
-### Grounding Verification Report
-
-**Profile:** {PROFILE}
-**Trigger:** {TRIGGER}
-**Claims Analyzed:** {COUNT}
-
----
-
-#### Claim Verification
-
-| Claim | Scrubbed Conf | Full Conf | Delta | Status |
-|-------|---------------|-----------|-------|--------|
-| {CLAIM} | {0.XX} | {0.XX} | {0.XX} | {STATUS} |
-
----
-
-### RECOMMENDATION: {PROCEED|PROCEED_WITH_WARNINGS|STOP|GATHER_MORE_EVIDENCE}
-
-**Rationale:** {RATIONALE}
-```
 
 ```markdown
 ### Grounding Verification Report
@@ -317,6 +258,7 @@ To save cost/latency, skip verification when:
 ```
 
 ## Related Skills
+
 | Skill | Relationship |
 |-------|--------------|
 | `strawberry-verification` | Profile implementation (extends this base) |
@@ -324,6 +266,7 @@ To save cost/latency, skip verification when:
 | `security-audit` | Consumer (opts in with security profile) |
 
 ## Axiom Alignment
+
 | Axiom | How This Skill Applies |
 |-------|------------------------|
 | A1 (Verifiability) | Mathematically verify claims against evidence |
@@ -332,11 +275,15 @@ To save cost/latency, skip verification when:
 | A5 (Consistency) | Apply uniform verification across all grounding |
 
 ## References
+
 - [Pythea/Strawberry](https://github.com/leochlon/pythea) - Original implementation by Leon Chlon
-- `patterns/skills/grounding-verification.json` - Full pattern specification
-- `patterns/skills/strawberry-verification.json` - Strawberry profile
+- `{directories.patterns}/skills/grounding-verification.json` - Full pattern specification
+- `{directories.patterns}/skills/strawberry-verification.json` - Strawberry profile
 - `diagrams/verification-flow.md` - Flow diagrams
 
+## When to Use
+This skill should be used when strict adherence to the defined process is required.
+
 ## Prerequisites
-> [!IMPORTANT]
-> Requirements:
+- Basic understanding of the agent factory context.
+- Access to the necessary tools and resources.

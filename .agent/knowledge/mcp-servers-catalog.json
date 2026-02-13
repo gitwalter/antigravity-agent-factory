@@ -1,8 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "mcp-servers-catalog",
+  "name": "MCP Servers Catalog",
   "title": "MCP Servers Catalog",
-  "description": "Comprehensive catalog of MCP servers for Antigravity agent system integration",
+  "description": "Comprehensive catalog of MCP servers for Cursor agent system integration",
   "version": "2.0.0",
+  "category": "integration",
   "categories": {
     "core": {
       "name": "Essential/Core Tools",
@@ -250,7 +253,7 @@
       "authentication": "none",
       "setupDocs": "https://github.com/modelcontextprotocol/servers/tree/main/src/fetch",
       "setupSteps": [
-        "Built-in to Antigravity - no setup required"
+        "Built-in to Cursor - no setup required"
       ],
       "envVariables": [],
       "capabilities": [
@@ -2567,7 +2570,7 @@
     "sap-documentation": {
       "name": "SAP Documentation",
       "displayName": "SAP Documentation",
-      "description": "SAP Help Portal and Community search",
+      "description": "SAP Help Portal and Community search - broad SAP coverage (CAP, RAP, CPI, Fiori)",
       "category": "code",
       "url": "https://mcp-sap-docs.marianzeis.de/mcp",
       "transport": "sse",
@@ -2602,6 +2605,56 @@
           "url": "https://mcp-sap-docs.marianzeis.de/mcp"
         }
       }
+    },
+    "sap-abap-documentation": {
+      "name": "SAP ABAP Documentation",
+      "displayName": "SAP ABAP Documentation",
+      "description": "ABAP-focused documentation: keywords, DSAG guidelines, Clean ABAP style guide",
+      "category": "code",
+      "url": "https://mcp-abap.marianzeis.de/mcp",
+      "transport": "sse",
+      "authentication": "none",
+      "setupDocs": "https://github.com/marianfoo/sap-mcp-server",
+      "setupSteps": [
+        "No setup required - remote server",
+        "Add URL to MCP config",
+        "For Eclipse ADT: see {directories.docs}/guides/ECLIPSE_ABAP_MCP_SETUP.md"
+      ],
+      "envVariables": [],
+      "capabilities": [
+        "documentation",
+        "abap",
+        "search",
+        "style-guide",
+        "dsag"
+      ],
+      "tools": [
+        {
+          "name": "search",
+          "description": "Search ABAP docs, style guides, SAP Community"
+        },
+        {
+          "name": "fetch",
+          "description": "Get specific documentation content"
+        },
+        {
+          "name": "sap_help_search",
+          "description": "Search SAP Help Portal (ABAP-focused)"
+        },
+        {
+          "name": "sap_community_search",
+          "description": "Search SAP Community (ABAP-focused)"
+        }
+      ],
+      "configExample": {
+        "sap-abap-documentation": {
+          "url": "https://mcp-abap.marianzeis.de/mcp"
+        }
+      },
+      "relatedServers": [
+        "sap-documentation"
+      ],
+      "notes": "Use for pure ABAP development. For CAP/RAP/CPI, prefer sap-documentation."
     }
   },
   "serversByCategory": {
@@ -2624,7 +2677,8 @@
       "openapi",
       "context7",
       "deepwiki",
-      "sap-documentation"
+      "sap-documentation",
+      "sap-abap-documentation"
     ],
     "data": [
       "postgresql",
@@ -2744,6 +2798,7 @@
       "git",
       "fetch",
       "sap-documentation",
+      "sap-abap-documentation",
       "atlassian"
     ]
   },
@@ -2817,12 +2872,86 @@
         "github",
         "datadog"
       ]
+    },
+    "sap-abap": {
+      "name": "SAP ABAP Starter",
+      "description": "Classic ABAP development with Clean ABAP grounding",
+      "servers": [
+        "filesystem",
+        "git",
+        "sap-abap-documentation",
+        "atlassian"
+      ]
     }
   },
-  "id": "mcp-servers-catalog",
-  "name": "Mcp Servers Catalog",
-  "category": "patterns",
-  "patterns": {},
-  "best_practices": [],
-  "anti_patterns": []
+  "patterns": {
+    "general_description": {
+      "description": "Comprehensive catalog of MCP servers for Cursor agent system integration",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# general_description pattern for mcp-servers-catalog\n# Implement based on description: Comprehensive catalog of MCP servers for Cursor ag...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "general_usage": {
+      "description": "See detailed sections below",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# general_usage pattern for mcp-servers-catalog\n# Implement based on description: See detailed sections below...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    }
+  },
+  "best_practices": [
+    "Always read server setupDocs and follow setupSteps before adding servers to your MCP configuration",
+    "Verify authentication requirements and obtain necessary credentials (API keys, OAuth tokens, connection strings) before configuration",
+    "Test server connectivity and basic tool execution after configuration to ensure proper integration",
+    "Use environment variables for sensitive credentials rather than hardcoding them in configuration files",
+    "Check server capabilities and available tools before selection to ensure they match your use case requirements",
+    "Review transport type (stdio vs SSE) - stdio servers run locally while SSE servers require network connectivity and may have latency",
+    "Start with core servers (filesystem, git, memory) and add specialized servers incrementally based on project needs",
+    "Monitor server resource usage - browser automation servers (Playwright, Puppeteer) and ML servers can be resource-intensive"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Skipping Setup Documentation",
+      "problem": "Adding servers to configuration without reading setupDocs leads to authentication failures, missing environment variables, and runtime errors. Each server has specific setup requirements that must be followed.",
+      "solution": "Always read the setupDocs URL and follow all setupSteps before adding a server to your MCP configuration. Verify authentication, environment variables, and any required dependencies are properly configured."
+    },
+    {
+      "name": "Hardcoding Credentials",
+      "problem": "Placing API keys, tokens, or connection strings directly in MCP configuration files exposes sensitive credentials in version control and makes rotation difficult.",
+      "solution": "Use environment variables for all credentials. Reference them in config using ${VAR_NAME} syntax. Store credentials securely (e.g., .env files excluded from git, secret management systems)."
+    },
+    {
+      "name": "Not Verifying Server Capabilities",
+      "problem": "Selecting servers without checking their tools and capabilities leads to discovering missing functionality at runtime, requiring reconfiguration and wasted setup time.",
+      "solution": "Review the tools array for each server before selection to ensure it provides the functionality you need. Check capabilities to understand what the server can do. Test key tools after configuration."
+    },
+    {
+      "name": "Ignoring Transport Type Implications",
+      "problem": "Not understanding the difference between stdio (local execution) and SSE (remote server) causes confusion when some servers work offline while others require internet connectivity and may have latency.",
+      "solution": "Check the transport field for each server. Prefer stdio servers for local operations when possible. For SSE servers, ensure network connectivity, understand latency implications, and verify server availability."
+    },
+    {
+      "name": "Adding Servers Without Testing",
+      "problem": "Adding multiple servers to configuration without testing each one leads to cascading failures when agents try to use unavailable or misconfigured servers, making debugging difficult.",
+      "solution": "Add and test servers one at a time. After adding each server, verify connectivity, test authentication, and execute a basic tool call. Check server logs for errors. Only proceed to the next server after confirming the current one works."
+    }
+  ],
+  "axiomAlignment": {
+    "A1_verifiability": "All patterns include verifiable examples and test approaches",
+    "A2_user_primacy": "Patterns prioritize user needs and practical outcomes",
+    "A3_transparency": "Pattern selection rationale is clearly documented",
+    "A4_non_harm": "Patterns include safety considerations and error handling",
+    "A5_consistency": "Patterns follow established conventions and standards"
+  },
+  "related_skills": [
+    "none"
+  ],
+  "related_knowledge": [
+    "best-practices.json"
+  ]
 }

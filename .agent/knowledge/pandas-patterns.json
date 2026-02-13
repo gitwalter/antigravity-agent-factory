@@ -1,12 +1,30 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "pandas-patterns",
+  "name": "Pandas Patterns",
   "title": "Pandas Patterns",
   "description": "Best practices and patterns for pandas data manipulation and analysis",
   "version": "1.0.0",
+  "category": "integration",
   "axiomAlignment": {
     "A1_verifiability": "Patterns include data validation and verification techniques",
-    "A3_transparency": "All patterns emphasize reproducible data transformations"
+    "A2_user_primacy": "Data validation and type checking protect user data integrity",
+    "A3_transparency": "All patterns emphasize reproducible data transformations",
+    "A4_non_harm": "Explicit handling of missing values and outliers prevents harmful outputs",
+    "A5_consistency": "Unified patterns for loading, cleaning, and transforming data"
   },
+  "related_skills": [
+    "data-pipeline",
+    "sqlalchemy-patterns",
+    "fastapi-development",
+    "python-async"
+  ],
+  "related_knowledge": [
+    "numpy-patterns.json",
+    "polars-patterns.json",
+    "data-patterns.json",
+    "sqlalchemy-advanced.json"
+  ],
   "data_loading": {
     "reading_csv": {
       "description": "Load data from CSV files",
@@ -91,7 +109,7 @@
     "data_type_conversion": {
       "description": "Convert data types appropriately",
       "use_when": "Data types are incorrect or need optimization",
-      "code_example": "import pandas as pd\n\n# Convert to numeric\ndf['col'] = pd.to_numeric(df['col'], errors='coerce')\n\n# Convert to datetime\ndf['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')\n\n# Convert to category (memory efficient)\ndf['category'] = df['category'].astype('category')\n\n# Convert to string\ndf['col'] = df['col'].astype(str)\n\n# Convert multiple columns\ndf[[col1-col2]] = df[[col1-col2]].astype(float)\n\n# Downcast numeric types\ndf['int_col'] = pd.to_numeric(df['int_col'], downcast='integer')\ndf['float_col'] = pd.to_numeric(df['float_col'], downcast='float')",
+      "code_example": "import pandas as pd\n\n# Convert to numeric\ndf['col'] = pd.to_numeric(df['col'], errors='coerce')\n\n# Convert to datetime\ndf['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')\n\n# Convert to category (memory efficient)\ndf['category'] = df['category'].astype('category')\n\n# Convert to string\ndf['col'] = df['col'].astype(str)\n\n# Convert multiple columns\ndf[['col1', 'col2']] = df[['col1', 'col2']].astype(float)\n\n# Downcast numeric types\ndf['int_col'] = pd.to_numeric(df['int_col'], downcast='integer')\ndf['float_col'] = pd.to_numeric(df['float_col'], downcast='float')",
       "best_practices": [
         "Use category dtype for low-cardinality strings",
         "Downcast numeric types to save memory",
@@ -114,7 +132,7 @@
     "string_cleaning": {
       "description": "Clean and normalize string data",
       "use_when": "String columns need cleaning",
-      "code_example": "import pandas as pd\n\n# Strip whitespace\ndf['col'] = df['col'].str.strip()\n\n# Convert to lowercase\ndf['col'] = df['col'].str.lower()\n\n# Remove special characters\ndf['col'] = df['col'].str.replace('[^a-zA-Z0-9]', '', regex=True)\n\n# Replace values\ndf['col'] = df['col'].str.replace('old', 'new')\n\n# Extract patterns\ndf['email'] = df['text'].str.extract(r'([\\w\\.-]+@[\\w\\.-]+)')\n\n# Split strings\ndf[[first-last]] = df['name'].str.split(' ', expand=True)\n\n# Check contains\ndf['has_keyword'] = df['col'].str.contains('keyword', case=False)",
+      "code_example": "import pandas as pd\n\n# Strip whitespace\ndf['col'] = df['col'].str.strip()\n\n# Convert to lowercase\ndf['col'] = df['col'].str.lower()\n\n# Remove special characters\ndf['col'] = df['col'].str.replace('[^a-zA-Z0-9]', '', regex=True)\n\n# Replace values\ndf['col'] = df['col'].str.replace('old', 'new')\n\n# Extract patterns\ndf['email'] = df['text'].str.extract(r'([\\w\\.-]+@[\\w\\.-]+)')\n\n# Split strings\ndf[['first', 'last']] = df['name'].str.split(' ', expand=True)\n\n# Check contains\ndf['has_keyword'] = df['col'].str.contains('keyword', case=False)",
       "best_practices": [
         "Use vectorized string operations",
         "Chain string operations efficiently",
@@ -184,7 +202,7 @@
     "basic_aggregations": {
       "description": "Compute summary statistics",
       "use_when": "Need descriptive statistics",
-      "code_example": "import pandas as pd\n\n# Basic statistics\ndf.describe()\n\n# Individual statistics\ndf['col'].sum()\ndf['col'].mean()\ndf['col'].median()\ndf['col'].std()\ndf['col'].var()\ndf['col'].min()\ndf['col'].max()\ndf['col'].quantile(0.25)\ndf['col'].count()\n\n# Multiple columns\ndf[[col1-col2]].mean()\n\n# All columns\ndf.mean()",
+      "code_example": "import pandas as pd\n\n# Basic statistics\ndf.describe()\n\n# Individual statistics\ndf['col'].sum()\ndf['col'].mean()\ndf['col'].median()\ndf['col'].std()\ndf['col'].var()\ndf['col'].min()\ndf['col'].max()\ndf['col'].quantile(0.25)\ndf['col'].count()\n\n# Multiple columns\ndf[['col1', 'col2']].mean()\n\n# All columns\ndf.mean()",
       "best_practices": [
         "Use describe() for quick overview",
         "Understand what each statistic means",
@@ -250,34 +268,29 @@
   },
   "anti_patterns": [
     {
-      "name": "chained_assignment",
-      "description": "Using chained assignment (SettingWithCopyWarning)",
-      "problem": "Unpredictable behavior, warnings",
-      "solution": "Use .loc[] or .iloc[] for assignment, or copy() explicitly"
+      "name": "Chained assignment causing SettingWithCopyWarning",
+      "problem": "Unpredictable behavior, warnings, and potential data corruption",
+      "solution": "Use .loc[] or .iloc[] for assignment, or call .copy() explicitly before modifying"
     },
     {
-      "name": "iterating_rows",
-      "description": "Iterating over DataFrame rows",
-      "problem": "Very slow, not pandas-idiomatic",
-      "solution": "Use vectorized operations or apply()"
+      "name": "Iterating over DataFrame rows with for loops",
+      "problem": "Extremely slow (100x slower than vectorized operations), not pandas-idiomatic",
+      "solution": "Use vectorized operations, apply(), or list comprehensions instead of row iteration"
     },
     {
-      "name": "not_using_categories",
-      "description": "Using object dtype for categorical data",
-      "problem": "High memory usage",
-      "solution": "Use category dtype for low-cardinality strings"
+      "name": "Using object dtype for categorical data",
+      "problem": "High memory usage (2-10x more than necessary) and slower operations",
+      "solution": "Convert low-cardinality string columns to category dtype using .astype('category')"
     },
     {
-      "name": "ignoring_dtypes",
-      "description": "Not specifying dtypes when reading",
-      "problem": "Slow reading, high memory",
-      "solution": "Specify dtype parameter when reading files"
+      "name": "Not specifying dtypes when reading files",
+      "problem": "Slow file reading and high memory usage due to type inference",
+      "solution": "Specify dtype parameter when reading CSV/Excel files to avoid inference overhead"
     },
     {
-      "name": "modifying_during_iteration",
-      "description": "Modifying DataFrame during iteration",
-      "problem": "Unpredictable results",
-      "solution": "Create new DataFrame or use vectorized operations"
+      "name": "Modifying DataFrame during iteration",
+      "problem": "Unpredictable results and potential data corruption",
+      "solution": "Create new DataFrame with modifications or use vectorized operations"
     }
   ],
   "best_practices_summary": [
@@ -292,9 +305,36 @@
     "Use appropriate join types",
     "Document data transformations"
   ],
-  "id": "pandas-patterns",
-  "name": "Pandas Patterns",
-  "category": "patterns",
-  "patterns": {},
-  "best_practices": []
+  "patterns": {
+    "general_description": {
+      "description": "Best practices and patterns for pandas data manipulation and analysis",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# general_description pattern for pandas-patterns\n# Implement based on description: Best practices and patterns for pandas data manipu...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "general_usage": {
+      "description": "See detailed sections below",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# general_usage pattern for pandas-patterns\n# Implement based on description: See detailed sections below...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use vectorized operations instead of iterating with apply() for better performance - 10-100x faster",
+    "Prefer query() method for filtering with complex boolean conditions - more readable and efficient",
+    "Use categorical dtype for columns with limited unique values to reduce memory usage by 50-90%",
+    "Specify dtypes when reading CSV/Excel files to avoid type inference overhead and memory waste",
+    "Use .loc[] or .iloc[] for assignment to avoid SettingWithCopyWarning - never use chained indexing",
+    "Process large files in chunks using chunksize parameter - don't load entire dataset into memory",
+    "Use groupby().transform() when you need same-shape results as original DataFrame",
+    "Downcast numeric types (int64->int32, float64->float32) when precision allows to save memory",
+    "Use pd.to_datetime() with explicit format strings for faster date parsing",
+    "Always check for duplicates with duplicated().sum() before removing - understand what you're deleting"
+  ]
 }

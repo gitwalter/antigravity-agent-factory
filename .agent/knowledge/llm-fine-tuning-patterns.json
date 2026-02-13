@@ -1,12 +1,26 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "llm-fine-tuning-patterns",
+  "name": "LLM Fine-Tuning Patterns",
   "title": "LLM Fine-Tuning Patterns",
   "description": "Patterns for fine-tuning large language models",
   "version": "1.0.0",
+  "category": "ai-ml",
   "axiomAlignment": {
     "A1_verifiability": "Fine-tuning includes evaluation to verify improvement",
-    "A3_transparency": "Training data and methodology are documented"
+    "A2_user_primacy": "Fine-tuned models serve user intent through alignment techniques",
+    "A3_transparency": "Training data and methodology are documented",
+    "A4_non_harm": "Evaluation and guardrails prevent harmful model outputs",
+    "A5_consistency": "Unified LoRA, QLoRA, and DPO patterns"
   },
+  "related_skills": [
+    "model-fine-tuning",
+    "model-training"
+  ],
+  "related_knowledge": [
+    "model-training-patterns.json",
+    "deep-learning-patterns.json"
+  ],
   "fine_tuning_methods": {
     "comparison": {
       "full_fine_tuning": {
@@ -117,28 +131,29 @@
   },
   "anti_patterns": [
     {
-      "name": "too_small_dataset",
-      "description": "Fine-tuning with very few examples",
-      "problem": "Overfitting, poor generalization",
-      "solution": "Collect more data or use few-shot prompting"
+      "name": "Fine-tuning with too small dataset",
+      "problem": "Overfitting, poor generalization, model memorizes training examples",
+      "solution": "Collect more data (minimum 100-500 examples) or use few-shot prompting instead"
     },
     {
-      "name": "learning_rate_too_high",
-      "description": "Using high learning rate",
-      "problem": "Catastrophic forgetting, instability",
-      "solution": "Use lower LR (1e-5 to 3e-4)"
+      "name": "Learning rate too high",
+      "problem": "Catastrophic forgetting of pretrained knowledge, training instability",
+      "solution": "Use lower learning rate (1e-5 to 3e-4) - much lower than base model training"
     },
     {
-      "name": "no_validation",
-      "description": "Training without validation set",
-      "problem": "Cannot detect overfitting",
-      "solution": "Always hold out validation data"
+      "name": "Training without validation set",
+      "problem": "Cannot detect overfitting or determine optimal stopping point",
+      "solution": "Always hold out 10-20% of data for validation and monitor validation loss"
     },
     {
-      "name": "wrong_format",
-      "description": "Wrong instruction format for model",
-      "problem": "Poor results, confused model",
-      "solution": "Use model's native chat template"
+      "name": "Wrong instruction format for model",
+      "problem": "Poor results, model doesn't follow instructions, confused behavior",
+      "solution": "Use model's native chat template with tokenizer.apply_chat_template() for correct formatting"
+    },
+    {
+      "name": "Full fine-tuning without sufficient GPU memory",
+      "problem": "Out of memory errors, cannot train large models",
+      "solution": "Use LoRA or QLoRA for efficient fine-tuning - trains only small adapter matrices"
     }
   ],
   "best_practices_summary": [
@@ -151,9 +166,61 @@
     "Evaluate on held-out test set",
     "Merge and push to Hub for deployment"
   ],
-  "id": "llm-fine-tuning-patterns",
-  "name": "Llm Fine Tuning Patterns",
-  "category": "patterns",
-  "patterns": {},
-  "best_practices": []
+  "patterns": {
+    "fine_tuning_methods": {
+      "description": "Patterns for different fine-tuning approaches",
+      "lora": "Low-Rank Adaptation - train small adapter matrices instead of full model",
+      "qlora": "Quantized LoRA - LoRA on 4-bit quantized base model for consumer GPUs",
+      "full_fine_tuning": "Train all parameters - requires significant GPU memory and compute",
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "from transformers import AutoModelForCausalLM, AutoTokenizer\nmodel = AutoModelForCausalLM.from_pretrained(\"meta-llama/Llama-3.1-8B\", torch_dtype=torch.bfloat16, device_map=\"auto\")\ntokenizer = AutoTokenizer.from_pretrained(\"meta-llama/Llama-3.1-8B\")",
+      "best_practices": [
+        "Start with LoRA for most use cases - it's efficient and often matches full fine-tuning quality",
+        "Use QLoRA (4-bit quantization + LoRA) for limited GPU memory to train large models on consumer hardware",
+        "Prepare high-quality training data with diverse examples covering all use cases",
+        "Use model's native chat template (tokenizer.apply_chat_template()) for instruction-tuned models",
+        "Set appropriate learning rate (1e-5 to 3e-4) - lower than base model training, higher than full fine-tuning"
+      ]
+    },
+    "data_preparation": {
+      "description": "Patterns for preparing training data",
+      "instruction_format": "Format data as instruction-input-response pairs",
+      "chat_template": "Use model's native chat template for instruction-tuned models",
+      "data_quality": "Ensure diverse, high-quality examples covering all use cases",
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "from transformers import AutoModelForCausalLM, AutoTokenizer\nmodel = AutoModelForCausalLM.from_pretrained(\"meta-llama/Llama-3.1-8B\", torch_dtype=torch.bfloat16, device_map=\"auto\")\ntokenizer = AutoTokenizer.from_pretrained(\"meta-llama/Llama-3.1-8B\")",
+      "best_practices": [
+        "Start with LoRA for most use cases - it's efficient and often matches full fine-tuning quality",
+        "Use QLoRA (4-bit quantization + LoRA) for limited GPU memory to train large models on consumer hardware",
+        "Prepare high-quality training data with diverse examples covering all use cases",
+        "Use model's native chat template (tokenizer.apply_chat_template()) for instruction-tuned models",
+        "Set appropriate learning rate (1e-5 to 3e-4) - lower than base model training, higher than full fine-tuning"
+      ]
+    },
+    "evaluation": {
+      "description": "Patterns for evaluating fine-tuned models",
+      "during_training": "Monitor validation loss and generation quality during training",
+      "post_training": "Evaluate on held-out test set using perplexity or task-specific metrics",
+      "lm_harness": "Use lm-eval harness for standard LLM benchmarks",
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "from transformers import AutoModelForCausalLM, AutoTokenizer\nmodel = AutoModelForCausalLM.from_pretrained(\"meta-llama/Llama-3.1-8B\", torch_dtype=torch.bfloat16, device_map=\"auto\")\ntokenizer = AutoTokenizer.from_pretrained(\"meta-llama/Llama-3.1-8B\")",
+      "best_practices": [
+        "Start with LoRA for most use cases - it's efficient and often matches full fine-tuning quality",
+        "Use QLoRA (4-bit quantization + LoRA) for limited GPU memory to train large models on consumer hardware",
+        "Prepare high-quality training data with diverse examples covering all use cases",
+        "Use model's native chat template (tokenizer.apply_chat_template()) for instruction-tuned models",
+        "Set appropriate learning rate (1e-5 to 3e-4) - lower than base model training, higher than full fine-tuning"
+      ]
+    }
+  },
+  "best_practices": [
+    "Start with LoRA for most use cases - it's efficient and often matches full fine-tuning quality",
+    "Use QLoRA (4-bit quantization + LoRA) for limited GPU memory to train large models on consumer hardware",
+    "Prepare high-quality training data with diverse examples covering all use cases",
+    "Use model's native chat template (tokenizer.apply_chat_template()) for instruction-tuned models",
+    "Set appropriate learning rate (1e-5 to 3e-4) - lower than base model training, higher than full fine-tuning",
+    "Monitor validation loss for overfitting - stop training when validation loss stops improving",
+    "Evaluate on held-out test set using perplexity, BLEU, or task-specific metrics",
+    "Merge LoRA adapters and push to Hugging Face Hub for easy deployment and sharing"
+  ]
 }

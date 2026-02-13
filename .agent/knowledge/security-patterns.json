@@ -1,106 +1,199 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "security-patterns",
   "name": "Security Patterns",
-  "version": "2.0.0",
-  "category": "agent-development",
+  "title": "Security Patterns for Agent Systems",
   "description": "Security patterns for agent systems including input validation, output filtering, sandboxing, and permission management",
+  "version": "1.0.0",
+  "category": "security",
+  "axiomAlignment": {
+    "A1_verifiability": "Security measures enable threat verification and audit trails",
+    "A2_user_primacy": "Input sanitization and permission checks protect user wellbeing",
+    "A3_transparency": "Audit logs and permission boundaries make security explicit",
+    "A4_non_harm": "Defense layers prevent injection, XSS, and unauthorized access",
+    "A5_consistency": "Unified defense across input, output, sandboxing, and permissions"
+  },
+  "related_skills": [
+    "security-sandboxing",
+    "error-handling",
+    "logging-monitoring",
+    "tool-usage"
+  ],
+  "related_knowledge": [
+    "ai-security-patterns.json",
+    "guardrails-patterns.json",
+    "filesystem-patterns.json"
+  ],
   "patterns": {
-    "input_validation": {
-      "pydantic_validation": {
-        "description": "Validate inputs using Pydantic schemas",
-        "example": "from pydantic import BaseModel, Field, field_validator\n\nclass UserInput(BaseModel):\n    query: str = Field(min_length=1, max_length=1000)\n    user_id: str = Field(pattern=r\"^[a-zA-Z0-9_-]+$\")\n    \n    @field_validator(\"query\")\n    @classmethod\n    def validate_query(cls, v: str):\n        # Remove dangerous characters\n        v = re.sub(r'[<>\"\\']', '', v)\n        # Check for SQL injection\n        if re.search(r'(\\bOR\\b|\\bAND\\b).*=', v, re.IGNORECASE):\n            raise ValueError(\"Invalid input detected\")\n        return v.strip()",
-        "use_when": ["User inputs", "API parameters", "Tool arguments"]
-      },
-      "size_limits": {
-        "description": "Enforce input size limits",
-        "example": "class SizeLimitedInput(BaseModel):\n    query: str = Field(max_length=1000)\n    \n    @field_validator(\"query\")\n    @classmethod\n    def validate_size(cls, v: str):\n        if len(v) > 10000:\n            raise ValueError(\"Input too large\")\n        estimated_tokens = len(v) / 4\n        if estimated_tokens > 2000:\n            raise ValueError(\"Input exceeds token limit\")\n        return v",
-        "use_when": ["Preventing DoS", "Resource limits", "Cost control"]
-      },
-      "content_moderation": {
-        "description": "Moderate input content for harmful patterns",
-        "example": "class ContentModerator:\n    def __init__(self):\n        self.blocked_patterns = [\n            r'<script[^>]*>.*?</script>',\n            r'javascript:',\n            r'on\\w+\\s*='\n        ]\n    \n    def moderate_input(self, text: str) -> tuple[bool, Optional[str]]:\n        for pattern in self.blocked_patterns:\n            if re.search(pattern, text, re.IGNORECASE):\n                return False, f\"Blocked pattern: {pattern}\"\n        return True, None",
-        "use_when": ["XSS prevention", "Malicious content", "User-generated content"]
-      },
-      "sql_injection_prevention": {
-        "description": "Prevent SQL injection attacks",
-        "example": "def validate_sql_input(input: str):\n    sql_patterns = [\n        r'(\\bOR\\b|\\bAND\\b).*=',\n        r';\\s*(DROP|DELETE|UPDATE)',\n        r'UNION\\s+SELECT'\n    ]\n    for pattern in sql_patterns:\n        if re.search(pattern, input, re.IGNORECASE):\n            raise ValueError(\"SQL injection attempt detected\")\n    return input",
-        "use_when": ["Database queries", "SQL generation", "User inputs"]
-      }
+    "input_validation_pydantic_validation": {
+      "description": "Validate inputs using Pydantic schemas",
+      "example": "from pydantic import BaseModel, Field, field_validator\n\nclass UserInput(BaseModel):\n    query: str = Field(min_length=1, max_length=1000)\n    user_id: str = Field(pattern=r\"^[a-zA-Z0-9_-]+$\")\n    \n    @field_validator(\"query\")\n    @classmethod\n    def validate_query(cls, v: str):\n        # Remove dangerous characters\n        v = re.sub(r'[<>\"\\']', '', v)\n        # Check for SQL injection\n        if re.search(r'(\\bOR\\b|\\bAND\\b).*=', v, re.IGNORECASE):\n            raise ValueError(\"Invalid input detected\")\n        return v.strip()",
+      "use_when": "User inputs; API parameters; Tool arguments",
+      "code_example": "from pydantic import BaseModel, Field, field_validator\n\nclass UserInput(BaseModel):\n    query: str = Field(min_length=1, max_length=1000)\n    user_id: str = Field(pattern=r\"^[a-zA-Z0-9_-]+$\")\n    \n    @field_validator(\"query\")\n    @classmethod\n    def validate_query(cls, v: str):\n        # Remove dangerous characters\n        v = re.sub(r'[<>\"\\']', '', v)\n        # Check for SQL injection\n        if re.search(r'(\\bOR\\b|\\bAND\\b).*=', v, re.IGNORECASE):\n            raise ValueError(\"Invalid input detected\")\n        return v.strip()",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for pydantic_validation",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
-    "output_filtering": {
-      "html_sanitization": {
-        "description": "Sanitize HTML in outputs",
-        "example": "import html\n\ndef sanitize_html(text: str) -> str:\n    return html.escape(text)",
-        "use_when": ["Web outputs", "User-facing content", "XSS prevention"]
-      },
-      "code_block_removal": {
-        "description": "Remove executable code blocks from outputs",
-        "example": "def remove_code_blocks(text: str) -> str:\n    text = re.sub(r'```[\\s\\S]*?```', '[Code block removed]', text)\n    text = re.sub(r'`[^`]+`', '[Code removed]', text)\n    return text",
-        "use_when": ["Restricted environments", "Code execution prevention"]
-      },
-      "secret_filtering": {
-        "description": "Filter potential secrets from outputs",
-        "example": "def filter_secrets(text: str) -> str:\n    # API keys\n    text = re.sub(r'[A-Za-z0-9]{32,}', '[Potential secret removed]', text)\n    # Email addresses\n    text = re.sub(r'\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b', '[Email removed]', text)\n    return text",
-        "use_when": ["Logging", "Public outputs", "Privacy protection"]
-      },
-      "comprehensive_sanitization": {
-        "description": "Comprehensive output sanitization",
-        "example": "class OutputFilter:\n    @staticmethod\n    def sanitize_output(text: str, strict: bool = False) -> str:\n        text = html.escape(text)\n        \n        if strict:\n            text = remove_code_blocks(text)\n            text = filter_secrets(text)\n        \n        # Remove control characters\n        text = re.sub(r'[\\x00-\\x1f\\x7f-\\x9f]', '', text)\n        \n        return text",
-        "use_when": ["General output filtering", "Multi-layer security"]
-      }
+    "input_validation_size_limits": {
+      "description": "Enforce input size limits",
+      "example": "class SizeLimitedInput(BaseModel):\n    query: str = Field(max_length=1000)\n    \n    @field_validator(\"query\")\n    @classmethod\n    def validate_size(cls, v: str):\n        if len(v) > 10000:\n            raise ValueError(\"Input too large\")\n        estimated_tokens = len(v) / 4\n        if estimated_tokens > 2000:\n            raise ValueError(\"Input exceeds token limit\")\n        return v",
+      "use_when": "Preventing DoS; Resource limits; Cost control",
+      "code_example": "class SizeLimitedInput(BaseModel):\n    query: str = Field(max_length=1000)\n    \n    @field_validator(\"query\")\n    @classmethod\n    def validate_size(cls, v: str):\n        if len(v) > 10000:\n            raise ValueError(\"Input too large\")\n        estimated_tokens = len(v) / 4\n        if estimated_tokens > 2000:\n            raise ValueError(\"Input exceeds token limit\")\n        return v",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for size_limits",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
-    "sandboxing": {
-      "restricted_python": {
-        "description": "Execute Python code in restricted environment",
-        "example": "from RestrictedPython import compile_restricted\nfrom RestrictedPython.Guards import safe_builtins\n\nclass SafeCodeExecutor:\n    def __init__(self):\n        self.allowed_builtins = {'abs', 'all', 'any', 'bool', 'dict', 'len'}\n        self.restricted_builtins = {\n            name: getattr(safe_builtins, name)\n            for name in self.allowed_builtins\n            if hasattr(safe_builtins, name)\n        }\n    \n    def execute(self, code: str) -> tuple[bool, any, str]:\n        try:\n            byte_code = compile_restricted(code, '<inline>', 'exec')\n            exec(byte_code, {'__builtins__': self.restricted_builtins})\n            return True, restricted_globals.get('_result'), None\n        except Exception as e:\n            return False, None, f\"Execution error: {e}\"",
-        "use_when": ["Code execution tools", "User-provided code", "Safe evaluation"]
-      },
-      "docker_sandboxing": {
-        "description": "Execute code in Docker containers",
-        "example": "import docker\n\ndef execute_in_sandbox(code: str, timeout: int = 30):\n    client = docker.from_env()\n    \n    container = client.containers.run(\n        'python:3.9-slim',\n        command=f'python -c \"{code}\"',\n        detach=True,\n        mem_limit='128m',\n        cpu_period=100000,\n        cpu_quota=50000,\n        network_disabled=True\n    )\n    \n    try:\n        result = container.wait(timeout=timeout)\n        logs = container.logs().decode('utf-8')\n        return logs\n    finally:\n        container.remove()",
-        "use_when": ["Untrusted code", "Isolated execution", "Resource limits"]
-      },
-      "path_sandboxing": {
-        "description": "Restrict file system access",
-        "example": "class SandboxedFileTool:\n    def __init__(self, allowed_paths: Set[str]):\n        self.allowed_paths = {os.path.abspath(p) for p in allowed_paths}\n    \n    def read_file(self, path: str) -> str:\n        abs_path = os.path.abspath(path)\n        \n        if not any(abs_path.startswith(allowed) for allowed in self.allowed_paths):\n            raise PermissionError(f\"Path not allowed: {path}\")\n        \n        with open(abs_path, 'r') as f:\n            return f.read()",
-        "use_when": ["File operations", "Directory access", "Path validation"]
-      }
+    "input_validation_content_moderation": {
+      "description": "Moderate input content for harmful patterns",
+      "example": "class ContentModerator:\n    def __init__(self):\n        self.blocked_patterns = [\n            r'<script[^>]*>.*?</script>',\n            r'javascript:',\n            r'on\\w+\\s*='\n        ]\n    \n    def moderate_input(self, text: str) -> tuple[bool, Optional[str]]:\n        for pattern in self.blocked_patterns:\n            if re.search(pattern, text, re.IGNORECASE):\n                return False, f\"Blocked pattern: {pattern}\"\n        return True, None",
+      "use_when": "XSS prevention; Malicious content; User-generated content",
+      "code_example": "class ContentModerator:\n    def __init__(self):\n        self.blocked_patterns = [\n            r'<script[^>]*>.*?</script>',\n            r'javascript:',\n            r'on\\w+\\s*='\n        ]\n    \n    def moderate_input(self, text: str) -> tuple[bool, Optional[str]]:\n        for pattern in self.blocked_patterns:\n            if re.search(pattern, text, re.IGNORECASE):\n                return False, f\"Blocked pattern: {pattern}\"\n        return True, None",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for content_moderation",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
-    "permission_management": {
-      "permission_system": {
-        "description": "Role-based permission system",
-        "example": "from enum import Enum\nfrom typing import Set\n\nclass Permission(str, Enum):\n    READ_FILE = \"read_file\"\n    WRITE_FILE = \"write_file\"\n    EXECUTE_CODE = \"execute_code\"\n    NETWORK_ACCESS = \"network_access\"\n\n@dataclass\nclass AgentPermissions:\n    user_id: str\n    permissions: Set[Permission]\n    allowed_paths: Set[str] = None\n    \n    def has_permission(self, permission: Permission) -> bool:\n        return permission in self.permissions\n    \n    def can_access_path(self, path: str) -> bool:\n        abs_path = os.path.abspath(path)\n        return any(abs_path.startswith(os.path.abspath(p)) for p in self.allowed_paths)",
-        "use_when": ["Multi-user systems", "Access control", "Role management"]
-      },
-      "permission_manager": {
-        "description": "Centralized permission management",
-        "example": "class PermissionManager:\n    def __init__(self):\n        self.permissions: dict[str, AgentPermissions] = {}\n    \n    def grant(self, user_id: str, permission: Permission):\n        if user_id not in self.permissions:\n            self.permissions[user_id] = AgentPermissions(user_id, set())\n        self.permissions[user_id].permissions.add(permission)\n    \n    def check(self, user_id: str, permission: Permission) -> bool:\n        if user_id not in self.permissions:\n            return False\n        return self.permissions[user_id].has_permission(permission)",
-        "use_when": ["Permission checking", "Access control", "Security enforcement"]
-      },
-      "tool_permission_wrapper": {
-        "description": "Wrap tools with permission checks",
-        "example": "class SandboxedTool:\n    def __init__(self, tool_func, required_permission: Permission):\n        self.tool_func = tool_func\n        self.required_permission = required_permission\n    \n    async def execute(self, user_id: str, *args, **kwargs):\n        if not permission_manager.check(user_id, self.required_permission):\n            raise PermissionError(f\"User {user_id} lacks permission: {self.required_permission}\")\n        return await self.tool_func(*args, **kwargs)",
-        "use_when": ["Tool security", "Permission enforcement", "Access control"]
-      }
+    "input_validation_sql_injection_prevention": {
+      "description": "Prevent SQL injection attacks",
+      "example": "def validate_sql_input(input: str):\n    sql_patterns = [\n        r'(\\bOR\\b|\\bAND\\b).*=',\n        r';\\s*(DROP|DELETE|UPDATE)',\n        r'UNION\\s+SELECT'\n    ]\n    for pattern in sql_patterns:\n        if re.search(pattern, input, re.IGNORECASE):\n            raise ValueError(\"SQL injection attempt detected\")\n    return input",
+      "use_when": "Database queries; SQL generation; User inputs",
+      "code_example": "def validate_sql_input(input: str):\n    sql_patterns = [\n        r'(\\bOR\\b|\\bAND\\b).*=',\n        r';\\s*(DROP|DELETE|UPDATE)',\n        r'UNION\\s+SELECT'\n    ]\n    for pattern in sql_patterns:\n        if re.search(pattern, input, re.IGNORECASE):\n            raise ValueError(\"SQL injection attempt detected\")\n    return input",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for sql_injection_prevention",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
-    "rate_limiting": {
-      "basic_rate_limiter": {
-        "description": "Rate limiting to prevent abuse",
-        "example": "from datetime import datetime, timedelta\nfrom collections import defaultdict\n\nclass RateLimiter:\n    def __init__(self, max_requests: int = 100, window_seconds: int = 60):\n        self.max_requests = max_requests\n        self.window = timedelta(seconds=window_seconds)\n        self.requests: dict[str, list[datetime]] = defaultdict(list)\n    \n    def is_allowed(self, user_id: str) -> bool:\n        now = datetime.now()\n        cutoff = now - self.window\n        \n        self.requests[user_id] = [\n            req_time for req_time in self.requests[user_id]\n            if req_time > cutoff\n        ]\n        \n        if len(self.requests[user_id]) >= self.max_requests:\n            return False\n        \n        self.requests[user_id].append(now)\n        return True",
-        "use_when": ["API protection", "DoS prevention", "Resource management"]
-      }
+    "output_filtering_html_sanitization": {
+      "description": "Sanitize HTML in outputs",
+      "example": "import html\n\ndef sanitize_html(text: str) -> str:\n    return html.escape(text)",
+      "use_when": "Web outputs; User-facing content; XSS prevention",
+      "code_example": "import html\n\ndef sanitize_html(text: str) -> str:\n    return html.escape(text)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for html_sanitization",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
-    "security_monitoring": {
-      "audit_logging": {
-        "description": "Log security events for audit",
-        "example": "def log_security_event(\n    event_type: str,\n    user_id: str,\n    details: dict\n):\n    logger.info(\n        \"Security event\",\n        extra={\n            \"event_type\": event_type,\n            \"user_id\": user_id,\n            \"timestamp\": datetime.now().isoformat(),\n            **details\n        }\n    )",
-        "use_when": ["Compliance", "Forensics", "Security monitoring"]
-      },
-      "anomaly_detection": {
-        "description": "Detect anomalous behavior patterns",
-        "example": "def detect_anomalies(user_id: str, action: str):\n    recent_actions = get_recent_actions(user_id, minutes=5)\n    \n    # Check for suspicious patterns\n    if len(recent_actions) > 100:\n        log_security_event(\"rate_limit_exceeded\", user_id, {\"actions\": len(recent_actions)})\n        return True\n    \n    if action in blocked_actions:\n        log_security_event(\"blocked_action\", user_id, {\"action\": action})\n        return True\n    \n    return False",
-        "use_when": ["Threat detection", "Behavioral analysis", "Security alerts"]
-      }
+    "output_filtering_code_block_removal": {
+      "description": "Remove executable code blocks from outputs",
+      "example": "def remove_code_blocks(text: str) -> str:\n    text = re.sub(r'```[\\s\\S]*?```', '[Code block removed]', text)\n    text = re.sub(r'`[^`]+`', '[Code removed]', text)\n    return text",
+      "use_when": "Restricted environments; Code execution prevention",
+      "code_example": "def remove_code_blocks(text: str) -> str:\n    text = re.sub(r'```[\\s\\S]*?```', '[Code block removed]', text)\n    text = re.sub(r'`[^`]+`', '[Code removed]', text)\n    return text",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for code_block_removal",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "output_filtering_secret_filtering": {
+      "description": "Filter potential secrets from outputs",
+      "example": "def filter_secrets(text: str) -> str:\n    # API keys\n    text = re.sub(r'[A-Za-z0-9]{32,}', '[Potential secret removed]', text)\n    # Email addresses\n    text = re.sub(r'\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b', '[Email removed]', text)\n    return text",
+      "use_when": "Logging; Public outputs; Privacy protection",
+      "code_example": "def filter_secrets(text: str) -> str:\n    # API keys\n    text = re.sub(r'[A-Za-z0-9]{32,}', '[Potential secret removed]', text)\n    # Email addresses\n    text = re.sub(r'\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b', '[Email removed]', text)\n    return text",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for secret_filtering",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "output_filtering_comprehensive_sanitization": {
+      "description": "Comprehensive output sanitization",
+      "example": "class OutputFilter:\n    @staticmethod\n    def sanitize_output(text: str, strict: bool = False) -> str:\n        text = html.escape(text)\n        \n        if strict:\n            text = remove_code_blocks(text)\n            text = filter_secrets(text)\n        \n        # Remove control characters\n        text = re.sub(r'[\\x00-\\x1f\\x7f-\\x9f]', '', text)\n        \n        return text",
+      "use_when": "General output filtering; Multi-layer security",
+      "code_example": "class OutputFilter:\n    @staticmethod\n    def sanitize_output(text: str, strict: bool = False) -> str:\n        text = html.escape(text)\n        \n        if strict:\n            text = remove_code_blocks(text)\n            text = filter_secrets(text)\n        \n        # Remove control characters\n        text = re.sub(r'[\\x00-\\x1f\\x7f-\\x9f]', '', text)\n        \n        return text",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for comprehensive_sanitization",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "sandboxing_restricted_python": {
+      "description": "Execute Python code in restricted environment",
+      "example": "from RestrictedPython import compile_restricted\nfrom RestrictedPython.Guards import safe_builtins\n\nclass SafeCodeExecutor:\n    def __init__(self):\n        self.allowed_builtins = {'abs', 'all', 'any', 'bool', 'dict', 'len'}\n        self.restricted_builtins = {\n            name: getattr(safe_builtins, name)\n            for name in self.allowed_builtins\n            if hasattr(safe_builtins, name)\n        }\n    \n    def execute(self, code: str) -> tuple[bool, any, str]:\n        try:\n            byte_code = compile_restricted(code, '<inline>', 'exec')\n            exec(byte_code, {'__builtins__': self.restricted_builtins})\n            return True, restricted_globals.get('_result'), None\n        except Exception as e:\n            return False, None, f\"Execution error: {e}\"",
+      "use_when": "Code execution tools; User-provided code; Safe evaluation",
+      "code_example": "from RestrictedPython import compile_restricted\nfrom RestrictedPython.Guards import safe_builtins\n\nclass SafeCodeExecutor:\n    def __init__(self):\n        self.allowed_builtins = {'abs', 'all', 'any', 'bool', 'dict', 'len'}\n        self.restricted_builtins = {\n            name: getattr(safe_builtins, name)\n            for name in self.allowed_builtins\n            if hasattr(safe_builtins, name)\n        }\n    \n    def execute(self, code: str) -> tuple[bool, any, str]:\n        try:\n            byte_code = compile_restricted(code, '<inline>', 'exec')\n            exec(byte_code, {'__builtins__': self.restricted_builtins})\n            return True, restricted_globals.get('_result'), None\n        except Exception as e:\n            return False, None, f\"Execution error: {e}\"",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for restricted_python",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "sandboxing_docker_sandboxing": {
+      "description": "Execute code in Docker containers",
+      "example": "import docker\n\ndef execute_in_sandbox(code: str, timeout: int = 30):\n    client = docker.from_env()\n    \n    container = client.containers.run(\n        'python:3.9-slim',\n        command=f'python -c \"{code}\"',\n        detach=True,\n        mem_limit='128m',\n        cpu_period=100000,\n        cpu_quota=50000,\n        network_disabled=True\n    )\n    \n    try:\n        result = container.wait(timeout=timeout)\n        logs = container.logs().decode('utf-8')\n        return logs\n    finally:\n        container.remove()",
+      "use_when": "Untrusted code; Isolated execution; Resource limits",
+      "code_example": "import docker\n\ndef execute_in_sandbox(code: str, timeout: int = 30):\n    client = docker.from_env()\n    \n    container = client.containers.run(\n        'python:3.9-slim',\n        command=f'python -c \"{code}\"',\n        detach=True,\n        mem_limit='128m',\n        cpu_period=100000,\n        cpu_quota=50000,\n        network_disabled=True\n    )\n    \n    try:\n        result = container.wait(timeout=timeout)\n        logs = container.logs().decode('utf-8')\n        return logs\n    finally:\n        container.remove()",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for docker_sandboxing",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "sandboxing_path_sandboxing": {
+      "description": "Restrict file system access",
+      "example": "class SandboxedFileTool:\n    def __init__(self, allowed_paths: Set[str]):\n        self.allowed_paths = {os.path.abspath(p) for p in allowed_paths}\n    \n    def read_file(self, path: str) -> str:\n        abs_path = os.path.abspath(path)\n        \n        if not any(abs_path.startswith(allowed) for allowed in self.allowed_paths):\n            raise PermissionError(f\"Path not allowed: {path}\")\n        \n        with open(abs_path, 'r') as f:\n            return f.read()",
+      "use_when": "File operations; Directory access; Path validation",
+      "code_example": "class SandboxedFileTool:\n    def __init__(self, allowed_paths: Set[str]):\n        self.allowed_paths = {os.path.abspath(p) for p in allowed_paths}\n    \n    def read_file(self, path: str) -> str:\n        abs_path = os.path.abspath(path)\n        \n        if not any(abs_path.startswith(allowed) for allowed in self.allowed_paths):\n            raise PermissionError(f\"Path not allowed: {path}\")\n        \n        with open(abs_path, 'r') as f:\n            return f.read()",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for path_sandboxing",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "permission_management_permission_system": {
+      "description": "Role-based permission system",
+      "example": "from enum import Enum\nfrom typing import Set\n\nclass Permission(str, Enum):\n    READ_FILE = \"read_file\"\n    WRITE_FILE = \"write_file\"\n    EXECUTE_CODE = \"execute_code\"\n    NETWORK_ACCESS = \"network_access\"\n\n@dataclass\nclass AgentPermissions:\n    user_id: str\n    permissions: Set[Permission]\n    allowed_paths: Set[str] = None\n    \n    def has_permission(self, permission: Permission) -> bool:\n        return permission in self.permissions\n    \n    def can_access_path(self, path: str) -> bool:\n        abs_path = os.path.abspath(path)\n        return any(abs_path.startswith(os.path.abspath(p)) for p in self.allowed_paths)",
+      "use_when": "Multi-user systems; Access control; Role management",
+      "code_example": "from enum import Enum\nfrom typing import Set\n\nclass Permission(str, Enum):\n    READ_FILE = \"read_file\"\n    WRITE_FILE = \"write_file\"\n    EXECUTE_CODE = \"execute_code\"\n    NETWORK_ACCESS = \"network_access\"\n\n@dataclass\nclass AgentPermissions:\n    user_id: str\n    permissions: Set[Permission]\n    allowed_paths: Set[str] = None\n    \n    def has_permission(self, permission: Permission) -> bool:\n        return permission in self.permissions\n    \n    def can_access_path(self, path: str) -> bool:\n        abs_path = os.path.abspath(path)\n        return any(abs_path.startswith(os.path.abspath(p)) for p in self.allowed_paths)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for permission_system",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "permission_management_permission_manager": {
+      "description": "Centralized permission management",
+      "example": "class PermissionManager:\n    def __init__(self):\n        self.permissions: dict[str, AgentPermissions] = {}\n    \n    def grant(self, user_id: str, permission: Permission):\n        if user_id not in self.permissions:\n            self.permissions[user_id] = AgentPermissions(user_id, set())\n        self.permissions[user_id].permissions.add(permission)\n    \n    def check(self, user_id: str, permission: Permission) -> bool:\n        if user_id not in self.permissions:\n            return False\n        return self.permissions[user_id].has_permission(permission)",
+      "use_when": "Permission checking; Access control; Security enforcement",
+      "code_example": "class PermissionManager:\n    def __init__(self):\n        self.permissions: dict[str, AgentPermissions] = {}\n    \n    def grant(self, user_id: str, permission: Permission):\n        if user_id not in self.permissions:\n            self.permissions[user_id] = AgentPermissions(user_id, set())\n        self.permissions[user_id].permissions.add(permission)\n    \n    def check(self, user_id: str, permission: Permission) -> bool:\n        if user_id not in self.permissions:\n            return False\n        return self.permissions[user_id].has_permission(permission)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for permission_manager",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "permission_management_tool_permission_wrapper": {
+      "description": "Wrap tools with permission checks",
+      "example": "class SandboxedTool:\n    def __init__(self, tool_func, required_permission: Permission):\n        self.tool_func = tool_func\n        self.required_permission = required_permission\n    \n    async def execute(self, user_id: str, *args, **kwargs):\n        if not permission_manager.check(user_id, self.required_permission):\n            raise PermissionError(f\"User {user_id} lacks permission: {self.required_permission}\")\n        return await self.tool_func(*args, **kwargs)",
+      "use_when": "Tool security; Permission enforcement; Access control",
+      "code_example": "class SandboxedTool:\n    def __init__(self, tool_func, required_permission: Permission):\n        self.tool_func = tool_func\n        self.required_permission = required_permission\n    \n    async def execute(self, user_id: str, *args, **kwargs):\n        if not permission_manager.check(user_id, self.required_permission):\n            raise PermissionError(f\"User {user_id} lacks permission: {self.required_permission}\")\n        return await self.tool_func(*args, **kwargs)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for tool_permission_wrapper",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "rate_limiting_basic_rate_limiter": {
+      "description": "Rate limiting to prevent abuse",
+      "example": "from datetime import datetime, timedelta\nfrom collections import defaultdict\n\nclass RateLimiter:\n    def __init__(self, max_requests: int = 100, window_seconds: int = 60):\n        self.max_requests = max_requests\n        self.window = timedelta(seconds=window_seconds)\n        self.requests: dict[str, list[datetime]] = defaultdict(list)\n    \n    def is_allowed(self, user_id: str) -> bool:\n        now = datetime.now()\n        cutoff = now - self.window\n        \n        self.requests[user_id] = [\n            req_time for req_time in self.requests[user_id]\n            if req_time > cutoff\n        ]\n        \n        if len(self.requests[user_id]) >= self.max_requests:\n            return False\n        \n        self.requests[user_id].append(now)\n        return True",
+      "use_when": "API protection; DoS prevention; Resource management",
+      "code_example": "from datetime import datetime, timedelta\nfrom collections import defaultdict\n\nclass RateLimiter:\n    def __init__(self, max_requests: int = 100, window_seconds: int = 60):\n        self.max_requests = max_requests\n        self.window = timedelta(seconds=window_seconds)\n        self.requests: dict[str, list[datetime]] = defaultdict(list)\n    \n    def is_allowed(self, user_id: str) -> bool:\n        now = datetime.now()\n        cutoff = now - self.window\n        \n        self.requests[user_id] = [\n            req_time for req_time in self.requests[user_id]\n            if req_time > cutoff\n        ]\n        \n        if len(self.requests[user_id]) >= self.max_requests:\n            return False\n        \n        self.requests[user_id].append(now)\n        return True",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for basic_rate_limiter",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "security_monitoring_audit_logging": {
+      "description": "Log security events for audit",
+      "example": "def log_security_event(\n    event_type: str,\n    user_id: str,\n    details: dict\n):\n    logger.info(\n        \"Security event\",\n        extra={\n            \"event_type\": event_type,\n            \"user_id\": user_id,\n            \"timestamp\": datetime.now().isoformat(),\n            **details\n        }\n    )",
+      "use_when": "Compliance; Forensics; Security monitoring",
+      "code_example": "def log_security_event(\n    event_type: str,\n    user_id: str,\n    details: dict\n):\n    logger.info(\n        \"Security event\",\n        extra={\n            \"event_type\": event_type,\n            \"user_id\": user_id,\n            \"timestamp\": datetime.now().isoformat(),\n            **details\n        }\n    )",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for audit_logging",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "security_monitoring_anomaly_detection": {
+      "description": "Detect anomalous behavior patterns",
+      "example": "def detect_anomalies(user_id: str, action: str):\n    recent_actions = get_recent_actions(user_id, minutes=5)\n    \n    # Check for suspicious patterns\n    if len(recent_actions) > 100:\n        log_security_event(\"rate_limit_exceeded\", user_id, {\"actions\": len(recent_actions)})\n        return True\n    \n    if action in blocked_actions:\n        log_security_event(\"blocked_action\", user_id, {\"action\": action})\n        return True\n    \n    return False",
+      "use_when": "Threat detection; Behavioral analysis; Security alerts",
+      "code_example": "def detect_anomalies(user_id: str, action: str):\n    recent_actions = get_recent_actions(user_id, minutes=5)\n    \n    # Check for suspicious patterns\n    if len(recent_actions) > 100:\n        log_security_event(\"rate_limit_exceeded\", user_id, {\"actions\": len(recent_actions)})\n        return True\n    \n    if action in blocked_actions:\n        log_security_event(\"blocked_action\", user_id, {\"action\": action})\n        return True\n    \n    return False",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for anomaly_detection",
+        "Validate implementation against domain requirements before deployment"
+      ]
     }
   },
   "best_practices": [
@@ -160,5 +253,5 @@
       "problem": "Undetected attacks, delayed response",
       "fix": "Implement audit logging and anomaly detection"
     }
-  ],
-  "related_skills": ["security-sandboxing", "error-handling-patterns", "logging-monitoring", "tool-usage"]}
+  ]
+}

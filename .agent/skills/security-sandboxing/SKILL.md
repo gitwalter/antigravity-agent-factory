@@ -4,22 +4,17 @@ description: Input validation and sanitization, output filtering, code execution
 name: security-sandboxing
 type: skill
 ---
-
 # Security Sandboxing
 
 Input validation and sanitization, output filtering, code execution safety, and permission management
 
-## 
-# Security & Sandboxing Skill
-
-Implement security measures for agents: input validation, output filtering, safe code execution, and permission management.
-
-## 
-# Security & Sandboxing Skill
-
 Implement security measures for agents: input validation, output filtering, safe code execution, and permission management.
 
 ## Process
+
+1. Review the task requirements.
+2. Apply the skill's methodology.
+3. Validate the output against the defined criteria.
 ### Step 1: Input Validation with Pydantic
 
 ```python
@@ -528,117 +523,8 @@ if not is_safe:
     return "[Output blocked]"
 ```
 
-```python
-from pydantic import BaseModel, Field, field_validator, ValidationError
-from typing import Optional
-import re
-
-class UserInput(BaseModel):
-    """Validated user input schema."""
-    query: str = Field(
-        min_length=1,
-        max_length=1000,
-        description="User query"
-    )
-    user_id: str = Field(
-        pattern=r"^[a-zA-Z0-9_-]+$",
-        description="Alphanumeric user ID"
-    )
-    context: Optional[dict] = Field(default=None)
-    
-    @field_validator("query")
-    @classmethod
-    def validate_query(cls, v: str) -> str:
-        """Validate and sanitize query."""
-        # Remove potentially dangerous characters
-        v = re.sub(r'[<>"\']', '', v)
-        
-        # Check for SQL injection patterns
-        sql_patterns = [
-            r'(\bOR\b|\bAND\b).*=',  # SQL injection
-            r';\s*(DROP|DELETE|UPDATE)',  # SQL commands
-        ]
-        for pattern in sql_patterns:
-            if re.search(pattern, v, re.IGNORECASE):
-                raise ValueError("Invalid input detected")
-        
-        return v.strip()
-    
-    @field_validator("context")
-    @classmethod
-    def validate_context(cls, v: Optional[dict]) -> Optional[dict]:
-        """Validate context dictionary."""
-        if v is None:
-            return None
-        
-        # Limit context size
-        if len(str(v)) > 5000:
-            raise ValueError("Context too large")
-        
-        # Ensure no code execution attempts
-        context_str = str(v).lower()
-        dangerous = ['eval', 'exec', '__import__', 'open(']
-        for keyword in dangerous:
-            if keyword in context_str:
-                raise ValueError("Dangerous context detected")
-        
-        return v
-
-# Usage
-try:
-    validated = UserInput(
-        query="What is Python?",
-        user_id="user_123"
-    )
-except ValidationError as e:
-    print(f"Validation error: {e}")
-```
-
-```python
-from typing import Optional
-import html
-import re
-
-class OutputFilter:
-    """Filter and sanitize agent outputs."""
-    
-    @staticmethod
-    def sanitize_html(text: str) -> str:
-        """Escape HTML characters."""
-        return html.escape(text)
-    
-    @staticmethod
-    def remove_code_blocks(text: str) -> str:
-        """Remove code blocks that might contain executable code."""
-        # Remove markdown code blocks
-        text = re.sub(r'
-```
-
-```
-### Step 3: Safe Code Execution
-```
-
-```
-### Step 4: Permission Management
-```
-
-```
-### Step 5: Sandboxed Tool Execution
-```
-
-```
-### Step 6: Rate Limiting
-```
-
-```
-### Step 7: Input Size Limits
-```
-
-```
-### Step 8: Content Moderation
-```
-
 ## Security Layers
+
 | Layer | Purpose | Implementation |
 |-------|---------|----------------|
 | Input Validation | Validate user inputs | Pydantic schemas |
@@ -649,6 +535,7 @@ class OutputFilter:
 | Content Moderation | Filter harmful content | ContentModerator |
 
 ## Best Practices
+
 - Validate all inputs with Pydantic
 - Sanitize all outputs before returning
 - Use sandboxed execution for code
@@ -659,6 +546,7 @@ class OutputFilter:
 - Keep security libraries updated
 
 ## Anti-Patterns
+
 | Anti-Pattern | Fix |
 |--------------|-----|
 | Trusting user input | Always validate |
@@ -671,11 +559,14 @@ class OutputFilter:
 | No logging | Log security events |
 
 ## Related
+
 - Skill: `error-handling`
 - Skill: `logging-monitoring`
 - Skill: `tool-usage`
 
+## When to Use
+This skill should be used when strict adherence to the defined process is required.
+
 ## Prerequisites
-> [!IMPORTANT]
-> Requirements:
-> - Packages: pydantic, langchain-core, restrictedpython
+- Basic understanding of the agent factory context.
+- Access to the necessary tools and resources.

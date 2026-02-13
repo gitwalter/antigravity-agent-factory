@@ -4,21 +4,18 @@ description: Interactive configuration and onboarding skill for Cursor Agent Fac
 name: system-configuration
 type: skill
 ---
-
 # System Configuration
 
 Interactive configuration and onboarding skill for Cursor Agent Factory settings
 
-## 
-# System Configuration Skill
-
-## 
 # System Configuration Skill
 
 ## Overview
+
 This skill provides interactive configuration and onboarding for the Cursor Agent Factory. It guides users through setting up all system settings including tool paths, credentials, knowledge evolution preferences, and platform-specific configurations.
 
 ## Purpose
+
 Provide a single, unified configuration experience that:
 - Detects and configures tool paths (Python, Git, etc.)
 - Sets up API credentials securely (GitHub, NPM, PyPI)
@@ -27,11 +24,13 @@ Provide a single, unified configuration experience that:
 - Migrates from legacy configuration formats
 
 ## Axiom Alignment
+
 - **A1 (Verifiability)**: All configurations are validated against schema
 - **A3 (Transparency)**: Clear explanation of what each setting does
 - **A4 (Adaptability)**: Flexible configuration for different environments
 
 ## Trigger
+
 This skill is activated when:
 - User says "configure system", "setup factory", "configure settings"
 - First run of the factory (no settings.json exists)
@@ -39,6 +38,10 @@ This skill is activated when:
 - Migration from legacy tools.json is needed
 
 ## Process
+
+1. Review the task requirements.
+2. Apply the skill's methodology.
+3. Validate the output against the defined criteria.
 ### Step 1: Environment Detection
 
 Automatically detect the current environment:
@@ -77,35 +80,8 @@ Show the user what has been detected:
 
 ```markdown
 
-```yaml
-detection_tasks:
-  platform:
-    action: Detect operating system (Windows, Linux, macOS)
-    output: Platform identifier and shell type
-  
-  python:
-    action: Find Python installation
-    checks:
-      - PYTHON_PATH environment variable
-      - cursor-factory conda environment
-      - System Python (python3, python.exe)
-    output: Python path and version
-  
-  git:
-    action: Find Git installation
-    checks:
-      - GIT_PATH environment variable
-      - git in PATH
-      - Common installation paths
-    output: Git path and version
-  
-  other_tools:
-    action: Detect additional tools
-    tools: [conda, pip, pytest, gh]
-    output: Tool availability status
-```
-
 ## Detected Configuration
+
 | Setting | Value | Source |
 |---------|-------|--------|
 | Platform | {platform} | Auto-detected |
@@ -114,6 +90,7 @@ detection_tasks:
 | ...
 
 ## Missing or Unverified
+
 - [ ] GitHub Token (required for knowledge updates)
 - [ ] NPM Token (optional, for JS/TS updates)
 ```
@@ -241,7 +218,7 @@ save_actions:
   
   save:
     action: Write new settings.json
-    path: .cursor/config/settings.json
+    path: {directories.config}/settings.json
   
   migrate_legacy:
     when: tools.json exists
@@ -256,78 +233,9 @@ save_actions:
       - Next steps
 ```
 
-```
-### Step 3: Interactive Configuration
-
-Guide user through configuring each section:
-
-#### 3.1 Tool Paths
-```
-
-```
-#### 3.2 Credentials
-```
-
-```
-#### 3.3 Knowledge Evolution Settings
-```
-
-```
-### Step 4: Validation
-
-Validate all settings before saving:
-```
-
-```
-### Step 5: Save Configuration
-
-Save validated configuration:
-```
-
 ## Configuration File Structure
-The skill creates/updates `.cursor/config/settings.json`:
 
-```json
-{
-  "$schema": "./settings-schema.json",
-  "version": "1.0.0",
-  "system": {
-    "factory_version": "2.0.0",
-    "platform": "windows"
-  },
-  "tools": {
-    "python": {
-      "path": "C:\\App\\Anaconda\\envs\\cursor-factory\\python.exe",
-      "env_var": "PYTHON_PATH",
-      "min_version": "3.10",
-      "description": "Python 3.10+ interpreter"
-    },
-    "git": {
-      "path": "C:\\Program Files\\Git\\bin\\git.exe",
-      "env_var": "GIT_PATH",
-      "description": "Git version control"
-    }
-  },
-  "credentials": {
-    "github_token": "${GITHUB_TOKEN}",
-    "npm_token": "${NPM_TOKEN}"
-  },
-  "knowledge_evolution": {
-    "mode": "awareness_hybrid",
-    "check_on_startup": true,
-    "auto_update": false,
-    "notify_updates": true,
-    "update_channel": "stable",
-    "sources": {
-      "github_trending": true,
-      "official_docs": true,
-      "package_registries": true,
-      "community_curated": true,
-      "user_feedback": true
-    }
-  }
-}
-```
+The skill creates/updates `{directories.config}/settings.json`:
 
 ```json
 {
@@ -372,6 +280,7 @@ The skill creates/updates `.cursor/config/settings.json`:
 ```
 
 ## Environment Variable Setup
+
 Provide instructions for setting environment variables:
 
 ### Windows (PowerShell)
@@ -398,33 +307,15 @@ export NPM_TOKEN="npm_xxx..."
 source ~/.bashrc
 ```
 
-```powershell
-# Set GitHub token
-[Environment]::SetEnvironmentVariable("GITHUB_TOKEN", "ghp_xxx...", "User")
-
-# Set NPM token (optional)
-[Environment]::SetEnvironmentVariable("NPM_TOKEN", "npm_xxx...", "User")
-
-# Verify
-$env:GITHUB_TOKEN
-```
-
-```bash
-# Add to ~/.bashrc or ~/.zshrc
-export GITHUB_TOKEN="ghp_xxx..."
-export NPM_TOKEN="npm_xxx..."
-
-# Apply changes
-source ~/.bashrc
-```
-
 ## Outputs
+
 1. **settings.json** - Unified configuration file
 2. **Configuration Summary** - Report of what was configured
 3. **Environment Instructions** - How to set required env vars
 4. **Validation Report** - Results of all validation checks
 
 ## Important Rules
+
 1. **Never store raw credentials** - Always use environment variable references
 2. **Always validate before saving** - Ensure configuration is valid
 3. **Create backups** - Backup existing config before overwriting
@@ -432,6 +323,7 @@ source ~/.bashrc
 5. **Provide defaults** - Sensible defaults for all optional settings
 
 ## Error Handling
+
 | Error | Resolution |
 |-------|------------|
 | Python not found | Provide installation instructions |
@@ -441,6 +333,7 @@ source ~/.bashrc
 | Permission denied | Request elevated permissions |
 
 ## Success Criteria
+
 Configuration is complete when:
 - [ ] All required tools are configured and validated
 - [ ] At least GitHub token is configured (for knowledge updates)
@@ -449,6 +342,7 @@ Configuration is complete when:
 - [ ] User understands next steps
 
 ## Related Skills
+
 - `update-knowledge` - Uses configuration to fetch updates
 - `grounding-verification` - May need tool paths
 - `requirements-gathering` - May trigger configuration if not set
@@ -457,7 +351,14 @@ Configuration is complete when:
 
 *This skill ensures the Cursor Agent Factory is properly configured for optimal operation.*
 
+## When to Use
+This skill should be used when strict adherence to the defined process is required.
+
 ## Prerequisites
-> [!IMPORTANT]
-> Requirements:
-> - Knowledge: mcp-servers-catalog.json, stack-capabilities.json
+- Basic understanding of the agent factory context.
+- Access to the necessary tools and resources.
+
+## Best Practices
+- Always follow the established guidelines.
+- Document any deviations or exceptions.
+- Regularly review and update the skill documentation.

@@ -6,7 +6,7 @@ Anchors agent events and contracts to blockchain for immutability.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 import hashlib
 
@@ -333,7 +333,7 @@ class LocalAnchor(BlockchainAnchor):
         self._anchors[tx_id] = {
             "merkle_root": merkle_root,
             "metadata": metadata,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "confirmed": True,
             "block": self._tx_counter,
         }

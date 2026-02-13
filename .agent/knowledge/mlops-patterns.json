@@ -1,12 +1,29 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "mlops-patterns",
+  "name": "MLOps Patterns",
   "title": "MLOps Patterns",
   "description": "Patterns for ML operations, experiment tracking, model registry, and deployment",
   "version": "1.0.0",
+  "category": "ai-ml",
   "axiomAlignment": {
     "A1_verifiability": "All experiments are tracked with full reproducibility metadata",
-    "A3_transparency": "Model lineage and deployment history are explicit"
+    "A2_user_primacy": "Model registry and deployment serve user workflows",
+    "A3_transparency": "Model lineage and deployment history are explicit",
+    "A4_non_harm": "CI/CD validation and drift detection prevent harmful deployments",
+    "A5_consistency": "Unified MLOps patterns across MLflow, W&B, and TensorBoard"
   },
+  "related_skills": [
+    "ml-deployment",
+    "ml-monitoring",
+    "model-training",
+    "model-serving"
+  ],
+  "related_knowledge": [
+    "model-training-patterns.json",
+    "model-serving-patterns.json",
+    "ml-workflow-patterns.json"
+  ],
   "tool_comparison": {
     "experiment_tracking": {
       "mlflow": {
@@ -195,7 +212,7 @@
     "model_testing": {
       "description": "Test model before deployment",
       "use_when": "Automating ML pipeline",
-      "code_example": "# tests/test_model.py\nimport pytest\nimport joblib\nimport numpy as np\n\n@pytest.fixture\ndef model():\n    return joblib.load('model.joblib')\n\n@pytest.fixture\ndef sample_input():\n    return np.random.randn(10, 20)  # 10 samples, 20 features\n\ndef test_model_loads(model):\n    assert model is not None\n\ndef test_model_predicts(model, sample_input):\n    predictions = model.predict(sample_input)\n    assert len(predictions) == 10\n\ndef test_prediction_shape(model, sample_input):\n    predictions = model.predict(sample_input)\n    assert predictions.shape == (10,)\n\ndef test_prediction_values(model, sample_input):\n    predictions = model.predict(sample_input)\n    # Check predictions are valid classes\n    assert all(p in [0, 1] for p in predictions)\n\ndef test_model_performance():\n    # Load test data\n    X_test = np.load('test_data.npy')\n    y_test = np.load('test_labels.npy')\n    \n    model = joblib.load('model.joblib')\n    accuracy = (model.predict(X_test) == y_test).mean()\n    \n    # Fail if accuracy drops below threshold\n    assert accuracy >= 0.85, f'Model accuracy {accuracy} below threshold'",
+      "code_example": "# {directories.tests}/test_model.py\nimport pytest\nimport joblib\nimport numpy as np\n\n@pytest.fixture\ndef model():\n    return joblib.load('model.joblib')\n\n@pytest.fixture\ndef sample_input():\n    return np.random.randn(10, 20)  # 10 samples, 20 features\n\ndef test_model_loads(model):\n    assert model is not None\n\ndef test_model_predicts(model, sample_input):\n    predictions = model.predict(sample_input)\n    assert len(predictions) == 10\n\ndef test_prediction_shape(model, sample_input):\n    predictions = model.predict(sample_input)\n    assert predictions.shape == (10,)\n\ndef test_prediction_values(model, sample_input):\n    predictions = model.predict(sample_input)\n    # Check predictions are valid classes\n    assert all(p in [0, 1] for p in predictions)\n\ndef test_model_performance():\n    # Load test data\n    X_test = np.load('test_data.npy')\n    y_test = np.load('test_labels.npy')\n    \n    model = joblib.load('model.joblib')\n    accuracy = (model.predict(X_test) == y_test).mean()\n    \n    # Fail if accuracy drops below threshold\n    assert accuracy >= 0.85, f'Model accuracy {accuracy} below threshold'",
       "best_practices": [
         "Test model loading",
         "Test prediction shape and values",
@@ -205,7 +222,7 @@
     },
     "github_actions": {
       "description": "CI/CD pipeline for ML",
-      "code_example": "# .github/workflows/ml-pipeline.yml\nname: ML Pipeline\n\non:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      \n      - name: Set up Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: '3.11'\n      \n      - name: Install dependencies\n        run: |\n          pip install -r requirements.txt\n          pip install pytest\n      \n      - name: Run tests\n        run: pytest tests/\n      \n      - name: Run model validation\n        run: python scripts/validate_model.py\n\n  train:\n    needs: test\n    runs-on: ubuntu-latest\n    if: github.ref == 'refs/heads/main'\n    steps:\n      - uses: actions/checkout@v4\n      \n      - name: Train model\n        run: python scripts/train.py\n      \n      - name: Upload model artifact\n        uses: actions/upload-artifact@v4\n        with:\n          name: model\n          path: model.joblib"
+      "code_example": "# .github/workflows/ml-pipeline.yml\nname: ML Pipeline\n\non:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      \n      - name: Set up Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: '3.11'\n      \n      - name: Install dependencies\n        run: |\n          pip install -r requirements.txt\n          pip install pytest\n      \n      - name: Run tests\n        run: pytest {directories.tests}/\n      \n      - name: Run model validation\n        run: python {directories.scripts}/validate_model.py\n\n  train:\n    needs: test\n    runs-on: ubuntu-latest\n    if: github.ref == 'refs/heads/main'\n    steps:\n      - uses: actions/checkout@v4\n      \n      - name: Train model\n        run: python {directories.scripts}/train.py\n      \n      - name: Upload model artifact\n        uses: actions/upload-artifact@v4\n        with:\n          name: model\n          path: model.joblib"
     }
   },
   "monitoring_patterns": {
@@ -234,28 +251,29 @@
   },
   "anti_patterns": [
     {
-      "name": "no_experiment_tracking",
-      "description": "Not tracking experiments",
-      "problem": "Cannot reproduce or compare results",
-      "solution": "Use MLflow or W&B from the start"
+      "name": "Not tracking experiments",
+      "problem": "Cannot reproduce results, compare model versions, or understand what worked",
+      "solution": "Use MLflow or W&B from the start to log parameters, metrics, and code versions"
     },
     {
-      "name": "manual_deployment",
-      "description": "Manually deploying models",
-      "problem": "Error-prone, not reproducible",
-      "solution": "Use CI/CD pipeline with automated testing"
+      "name": "Manually deploying models",
+      "problem": "Error-prone process, not reproducible, difficult to rollback",
+      "solution": "Use CI/CD pipeline with automated testing, validation, and deployment steps"
     },
     {
-      "name": "no_model_versioning",
-      "description": "Not versioning models",
-      "problem": "Cannot rollback or compare versions",
-      "solution": "Use model registry with semantic versioning"
+      "name": "Not versioning models",
+      "problem": "Cannot rollback to previous versions or compare model performance over time",
+      "solution": "Use model registry (MLflow Model Registry) with semantic versioning and staging"
     },
     {
-      "name": "no_monitoring",
-      "description": "Not monitoring production models",
-      "problem": "Silent failures, undetected drift",
-      "solution": "Log predictions, monitor for drift"
+      "name": "Not monitoring production models",
+      "problem": "Silent failures, undetected data drift, model degradation goes unnoticed",
+      "solution": "Log predictions, monitor for data drift, set up alerts for anomalies and failures"
+    },
+    {
+      "name": "Deploying without validation tests",
+      "problem": "Broken models deployed to production causing service outages",
+      "solution": "Run automated tests before deployment: accuracy thresholds, input validation, shape checks"
     }
   ],
   "best_practices_summary": [
@@ -267,9 +285,60 @@
     "Set up alerts for model failures",
     "Version everything: code, data, models"
   ],
-  "id": "mlops-patterns",
-  "name": "Mlops Patterns",
-  "category": "patterns",
-  "patterns": {},
-  "best_practices": []
+  "patterns": {
+    "experiment_tracking": {
+      "description": "Patterns for tracking ML experiments and runs",
+      "mlflow": "Use MLflow for full MLOps lifecycle with experiment tracking and model registry",
+      "wandb": "Use Weights & Biases for rich visualizations and team collaboration",
+      "autologging": "Enable autologging for supported frameworks (sklearn, pytorch, tensorflow)",
+      "use_when": "When deploying ML models to cloud platforms for production inference",
+      "code_example": "import sagemaker\nfrom sagemaker.pytorch import PyTorchModel\nmodel = PyTorchModel(model_data=\"s3://bucket/model.tar.gz\", role=role, entry_point=\"inference.py\", framework_version=\"2.0.0\")\npredictor = model.deploy(initial_instance_count=1, instance_type=\"ml.m5.large\")",
+      "best_practices": [
+        "Track all experiments with parameters, metrics, and code versions using MLflow or W&B",
+        "Use model registry for version management and staging (None \u2192 Staging \u2192 Production \u2192 Archived)",
+        "Automate testing and deployment with CI/CD pipelines to catch issues early",
+        "Monitor predictions and data drift in production to detect model degradation",
+        "Document model lineage including training data, hyperparameters, and code versions"
+      ]
+    },
+    "model_deployment": {
+      "description": "Patterns for deploying models to production",
+      "docker": "Package models in Docker containers for consistent deployment environments",
+      "bentoml": "Use BentoML for standardized ML serving with automatic batching",
+      "fastapi": "Wrap models in FastAPI for custom serving logic and API endpoints",
+      "use_when": "When deploying ML models to cloud platforms for production inference",
+      "code_example": "import sagemaker\nfrom sagemaker.pytorch import PyTorchModel\nmodel = PyTorchModel(model_data=\"s3://bucket/model.tar.gz\", role=role, entry_point=\"inference.py\", framework_version=\"2.0.0\")\npredictor = model.deploy(initial_instance_count=1, instance_type=\"ml.m5.large\")",
+      "best_practices": [
+        "Track all experiments with parameters, metrics, and code versions using MLflow or W&B",
+        "Use model registry for version management and staging (None \u2192 Staging \u2192 Production \u2192 Archived)",
+        "Automate testing and deployment with CI/CD pipelines to catch issues early",
+        "Monitor predictions and data drift in production to detect model degradation",
+        "Document model lineage including training data, hyperparameters, and code versions"
+      ]
+    },
+    "monitoring": {
+      "description": "Patterns for monitoring production models",
+      "prediction_logging": "Log all predictions with metadata for debugging and analysis",
+      "drift_detection": "Monitor input data distribution changes using statistical tests (KS test)",
+      "use_when": "When deploying ML models to cloud platforms for production inference",
+      "code_example": "import sagemaker\nfrom sagemaker.pytorch import PyTorchModel\nmodel = PyTorchModel(model_data=\"s3://bucket/model.tar.gz\", role=role, entry_point=\"inference.py\", framework_version=\"2.0.0\")\npredictor = model.deploy(initial_instance_count=1, instance_type=\"ml.m5.large\")",
+      "best_practices": [
+        "Track all experiments with parameters, metrics, and code versions using MLflow or W&B",
+        "Use model registry for version management and staging (None \u2192 Staging \u2192 Production \u2192 Archived)",
+        "Automate testing and deployment with CI/CD pipelines to catch issues early",
+        "Monitor predictions and data drift in production to detect model degradation",
+        "Document model lineage including training data, hyperparameters, and code versions"
+      ]
+    }
+  },
+  "best_practices": [
+    "Track all experiments with parameters, metrics, and code versions using MLflow or W&B",
+    "Use model registry for version management and staging (None \u2192 Staging \u2192 Production \u2192 Archived)",
+    "Automate testing and deployment with CI/CD pipelines to catch issues early",
+    "Monitor predictions and data drift in production to detect model degradation",
+    "Document model lineage including training data, hyperparameters, and code versions",
+    "Set up alerts for model failures, high latency, or prediction anomalies",
+    "Version everything: code, data, models, and configurations for full reproducibility",
+    "Use automated model validation tests before deployment (accuracy thresholds, shape checks)"
+  ]
 }

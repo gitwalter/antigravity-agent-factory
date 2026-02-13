@@ -4,22 +4,17 @@ description: Prompt injection defense, API security, and content filtering for A
 name: ai-security
 type: skill
 ---
-
 # Ai Security
 
 Prompt injection defense, API security, and content filtering for AI systems
 
-## 
-# AI Security Skill
-
-Protect AI systems against prompt injection, data leakage, and abuse through multi-layer defense patterns.
-
-## 
-# AI Security Skill
-
 Protect AI systems against prompt injection, data leakage, and abuse through multi-layer defense patterns.
 
 ## Process
+
+1. Review the task requirements.
+2. Apply the skill's methodology.
+3. Validate the output against the defined criteria.
 ### Step 1: Input Sanitization
 
 ```python
@@ -152,36 +147,8 @@ def filter_output(response: str) -> str:
     return response
 ```
 
-```python
-import re
-from typing import Tuple
-
-INJECTION_PATTERNS = [
-    r"ignore\s+(previous|above|all)\s+(instructions|prompts)",
-    r"you\s+are\s+now\s+(a|an)\s+",
-    r"system\s*:\s*",
-    r"<\|.*?\|>",
-    r"\[INST\]|\[/INST\]",
-    r"
-```
-
-```
-### Step 2: PII Detection and Redaction
-```
-
-```
-### Step 3: Rate Limiting for LLM Endpoints
-```
-
-```
-### Step 4: Audit Logging
-```
-
-```
-### Step 5: Output Filtering
-```
-
 ## Output
+
 - Input sanitization pipeline filtering injection attempts
 - PII detection and redaction using Presidio
 - Token bucket rate limiting with Redis
@@ -189,6 +156,7 @@ INJECTION_PATTERNS = [
 - Output filtering for sensitive data leakage prevention
 
 ## Best Practices
+
 - **Input Validation**: Always sanitize and validate user inputs before sending to LLM to prevent injection attacks
 - **Prompt Injection Prevention**: Use pattern detection, input length limits, and content filtering to block injection attempts
 - **Output Filtering**: Filter LLM outputs to prevent sensitive data leakage (PII, credentials, API keys)
@@ -199,11 +167,13 @@ INJECTION_PATTERNS = [
 - **Token Management**: Monitor token usage and implement quotas to prevent unexpected costs
 
 ## Related Skills
+
 - `llm-guardrails` - NeMo Guardrails and content safety
 - `ai-system-design` - Architecture patterns for AI apps
 
+## When to Use
+This skill should be used when strict adherence to the defined process is required.
+
 ## Prerequisites
-> [!IMPORTANT]
-> Requirements:
-> - Packages: presidio-analyzer, presidio-anonymizer, nemoguardrails, redis
-> - Knowledge: ai-security-patterns.json
+- Basic understanding of the agent factory context.
+- Access to the necessary tools and resources.

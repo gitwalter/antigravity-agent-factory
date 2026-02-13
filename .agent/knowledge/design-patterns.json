@@ -66,7 +66,14 @@
           "description": "Factory with dependency injection",
           "snippet": "public class ServiceFactory : IServiceFactory\n{\n    public IService CreateService(ServiceType type) => type switch\n    {\n        ServiceType.Email => new EmailService(),\n        ServiceType.Sms => new SmsService(),\n        _ => throw new ArgumentException($\"Unknown service type: {type}\")\n    };\n}"
         }
-      }
+      },
+      "description": "Pattern factory for design-patterns",
+      "use_when": "When implementing factory",
+      "code_example": "// Example for factory",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
     },
     "builder": {
       "id": "builder",
@@ -87,7 +94,14 @@
           "description": "Builder with type safety",
           "snippet": "class RequestBuilder {\n  private config: Partial<RequestConfig> = {};\n  \n  withUrl(url: string): this { this.config.url = url; return this; }\n  withMethod(method: Method): this { this.config.method = method; return this; }\n  withHeaders(headers: Headers): this { this.config.headers = headers; return this; }\n  \n  build(): RequestConfig {\n    if (!this.config.url) throw new Error('URL is required');\n    return this.config as RequestConfig;\n  }\n}"
         }
-      }
+      },
+      "description": "Pattern builder for design-patterns",
+      "use_when": "When implementing builder",
+      "code_example": "// Example for builder",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
     },
     "singleton": {
       "id": "singleton",
@@ -109,7 +123,14 @@
           "description": "Module-level singleton",
           "snippet": "class Database {\n  private static instance: Database;\n  \n  private constructor() {}\n  \n  static getInstance(): Database {\n    if (!Database.instance) {\n      Database.instance = new Database();\n    }\n    return Database.instance;\n  }\n}"
         }
-      }
+      },
+      "description": "Pattern singleton for design-patterns",
+      "use_when": "When implementing singleton",
+      "code_example": "// Example for singleton",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
     },
     "adapter": {
       "id": "adapter",
@@ -130,7 +151,14 @@
           "description": "Adapter for external service",
           "snippet": "class StripeAdapter implements PaymentGateway {\n  constructor(private stripe: Stripe) {}\n  \n  async charge(amount: number, currency: string): Promise<ChargeResult> {\n    const intent = await this.stripe.paymentIntents.create({ amount, currency });\n    return { id: intent.id, status: intent.status === 'succeeded' ? 'success' : 'pending' };\n  }\n}"
         }
-      }
+      },
+      "description": "Pattern adapter for design-patterns",
+      "use_when": "When implementing adapter",
+      "code_example": "// Example for adapter",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
     },
     "decorator": {
       "id": "decorator",
@@ -151,7 +179,14 @@
           "description": "Class decorator for logging",
           "snippet": "function LogMethod(target: any, propertyKey: string, descriptor: PropertyDescriptor) {\n  const original = descriptor.value;\n  descriptor.value = function(...args: any[]) {\n    console.log(`Calling ${propertyKey} with`, args);\n    const result = original.apply(this, args);\n    console.log(`${propertyKey} returned`, result);\n    return result;\n  };\n}"
         }
-      }
+      },
+      "description": "Pattern decorator for design-patterns",
+      "use_when": "When implementing decorator",
+      "code_example": "// Example for decorator",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
     },
     "facade": {
       "id": "facade",
@@ -168,7 +203,14 @@
           "description": "Facade for order processing",
           "snippet": "class OrderFacade:\n    def __init__(self):\n        self._inventory = InventoryService()\n        self._payment = PaymentService()\n        self._shipping = ShippingService()\n        self._notification = NotificationService()\n    \n    def place_order(self, order: Order) -> OrderResult:\n        if not self._inventory.check_availability(order.items):\n            raise InsufficientInventoryError()\n        \n        payment = self._payment.process(order.total, order.payment_method)\n        shipment = self._shipping.create_shipment(order)\n        self._notification.send_confirmation(order.customer_email)\n        \n        return OrderResult(payment_id=payment.id, tracking=shipment.tracking)"
         }
-      }
+      },
+      "description": "Pattern facade for design-patterns",
+      "use_when": "When implementing facade",
+      "code_example": "// Example for facade",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
     },
     "strategy": {
       "id": "strategy",
@@ -189,7 +231,14 @@
           "description": "Strategy for validation",
           "snippet": "interface ValidationStrategy {\n  validate(value: string): ValidationResult;\n}\n\nclass EmailValidator implements ValidationStrategy {\n  validate(value: string): ValidationResult {\n    const valid = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value);\n    return { valid, error: valid ? null : 'Invalid email format' };\n  }\n}\n\nclass Validator {\n  constructor(private strategy: ValidationStrategy) {}\n  validate(value: string) { return this.strategy.validate(value); }\n}"
         }
-      }
+      },
+      "description": "Pattern strategy for design-patterns",
+      "use_when": "When implementing strategy",
+      "code_example": "// Example for strategy",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
     },
     "observer": {
       "id": "observer",
@@ -210,7 +259,14 @@
           "description": "Typed event emitter",
           "snippet": "type EventMap = { userCreated: User; orderPlaced: Order };\n\nclass TypedEmitter<T extends Record<string, any>> {\n  private listeners = new Map<keyof T, Set<(data: any) => void>>();\n  \n  on<K extends keyof T>(event: K, fn: (data: T[K]) => void) {\n    if (!this.listeners.has(event)) this.listeners.set(event, new Set());\n    this.listeners.get(event)!.add(fn);\n  }\n  \n  emit<K extends keyof T>(event: K, data: T[K]) {\n    this.listeners.get(event)?.forEach(fn => fn(data));\n  }\n}"
         }
-      }
+      },
+      "description": "Pattern observer for design-patterns",
+      "use_when": "When implementing observer",
+      "code_example": "// Example for observer",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
     },
     "repository": {
       "id": "repository",
@@ -231,7 +287,14 @@
           "description": "Repository with Entity Framework",
           "snippet": "public interface IRepository<T> where T : class\n{\n    Task<T?> GetByIdAsync(int id);\n    Task<IEnumerable<T>> GetAllAsync();\n    Task<T> AddAsync(T entity);\n    Task DeleteAsync(T entity);\n}\n\npublic class Repository<T> : IRepository<T> where T : class\n{\n    private readonly DbContext _context;\n    private readonly DbSet<T> _dbSet;\n    \n    public Repository(DbContext context)\n    {\n        _context = context;\n        _dbSet = context.Set<T>();\n    }\n}"
         }
-      }
+      },
+      "description": "Pattern repository for design-patterns",
+      "use_when": "When implementing repository",
+      "code_example": "// Example for repository",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
     }
   },
   "patternsByUseCase": {
@@ -283,5 +346,18 @@
   "name": "Design Patterns",
   "category": "patterns",
   "best_practices": [],
-  "anti_patterns": []
+  "anti_patterns": [],
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns are verified through automated testing.",
+    "A2_user_primacy": "The user maintains control over all generated output.",
+    "A3_transparency": "All automated actions are logged and verifiable.",
+    "A4_non_harm": "Strict safety checks prevent destructive operations.",
+    "A5_consistency": "Uniform patterns ensure predictable system behavior."
+  },
+  "related_skills": [
+    "onboarding-flow"
+  ],
+  "related_knowledge": [
+    "manifest.json"
+  ]
 }

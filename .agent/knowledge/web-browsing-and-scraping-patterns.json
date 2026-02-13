@@ -1,105 +1,126 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "web-browsing-and-scraping-patterns",
   "name": "Web Browsing and Scraping Patterns",
+  "title": "Web Browsing and Scraping Patterns",
   "description": "Patterns for web scraping, browser automation, content extraction, and ethical scraping practices",
   "version": "1.0.0",
-  "category": "agent-development",
+  "category": "integration",
+  "axiomAlignment": {
+    "A1_verifiability": "Extracted content can be verified against source URLs and responses",
+    "A2_user_primacy": "Web scraping serves user information gathering needs",
+    "A3_transparency": "Rate limits and robots.txt compliance are explicit",
+    "A4_non_harm": "Ethical scraping and ToS respect prevent harm to targets",
+    "A5_consistency": "Unified patterns for static, SPA, and API-based content"
+  },
+  "related_skills": [
+    "web-browsing",
+    "tool-usage",
+    "mcp-integration",
+    "langchain-usage"
+  ],
+  "related_knowledge": [
+    "mcp-patterns.json",
+    "langchain-patterns.json",
+    "api-integration-patterns.json",
+    "security-patterns.json"
+  ],
   "patterns": {
-    "scraping_strategies": {
-      "static_html": {
-        "description": "Scrape static HTML content using httpx and BeautifulSoup",
-        "use_when": "Simple websites without JavaScript rendering",
-        "code_example": "import httpx\nfrom bs4 import BeautifulSoup\n\nasync def fetch_page(url: str) -> str:\n    async with httpx.AsyncClient(timeout=30.0) as client:\n        response = await client.get(url, headers={'User-Agent': 'Mozilla/5.0'})\n        response.raise_for_status()\n        return response.text\n\ndef parse_html(html: str) -> BeautifulSoup:\n    return BeautifulSoup(html, 'lxml')\n\nhtml = await fetch_page('https://example.com')\nsoup = parse_html(html)\ntitle = soup.title.string if soup.title else None",
-        "best_practices": [
-          "Use appropriate User-Agent headers",
-          "Set reasonable timeouts",
-          "Handle encoding errors gracefully",
-          "Respect robots.txt"
-        ]
-      },
-      "javascript_spa": {
-        "description": "Scrape JavaScript-heavy Single Page Applications",
-        "use_when": "React/Vue/Angular apps, dynamic content",
-        "code_example": "from playwright.async_api import async_playwright\n\nasync def scrape_spa(url: str):\n    async with async_playwright() as p:\n        browser = await p.chromium.launch(headless=True)\n        page = await browser.new_page()\n        await page.goto(url, wait_until='networkidle')\n        await page.wait_for_selector('.content')\n        content = await page.content()\n        await browser.close()\n        return content",
-        "best_practices": [
-          "Wait for content to load",
-          "Use networkidle for full page load",
-          "Handle dynamic selectors",
-          "Close browser instances properly"
-        ]
-      },
-      "api_endpoints": {
-        "description": "Direct API calls instead of scraping",
-        "use_when": "Data available via API endpoints",
-        "code_example": "async def fetch_api_data(url: str, params: dict = None) -> dict:\n    async with httpx.AsyncClient() as client:\n        response = await client.get(url, params=params, headers={'Accept': 'application/json'})\n        response.raise_for_status()\n        return response.json()",
-        "best_practices": [
-          "Prefer APIs over scraping when available",
-          "Use proper authentication headers",
-          "Handle rate limits",
-          "Cache responses when possible"
-        ]
-      }
+    "scraping_strategies_static_html": {
+      "description": "Scrape static HTML content using httpx and BeautifulSoup",
+      "use_when": "Simple websites without JavaScript rendering",
+      "code_example": "import httpx\nfrom bs4 import BeautifulSoup\n\nasync def fetch_page(url: str) -> str:\n    async with httpx.AsyncClient(timeout=30.0) as client:\n        response = await client.get(url, headers={'User-Agent': 'Mozilla/5.0'})\n        response.raise_for_status()\n        return response.text\n\ndef parse_html(html: str) -> BeautifulSoup:\n    return BeautifulSoup(html, 'lxml')\n\nhtml = await fetch_page('https://example.com')\nsoup = parse_html(html)\ntitle = soup.title.string if soup.title else None",
+      "best_practices": [
+        "Use appropriate User-Agent headers",
+        "Set reasonable timeouts",
+        "Handle encoding errors gracefully",
+        "Respect robots.txt"
+      ]
     },
-    "browser_automation": {
-      "playwright_basic": {
-        "description": "Basic browser automation with Playwright",
-        "code_example": "from playwright.async_api import async_playwright\n\nasync def automate_browser(url: str):\n    async with async_playwright() as p:\n        browser = await p.chromium.launch(headless=True)\n        page = await browser.new_page()\n        await page.goto(url)\n        await page.click('button.submit')\n        await page.fill('input[name=\"email\"]', 'user@example.com')\n        content = await page.content()\n        await browser.close()\n        return content",
-        "best_practices": [
-          "Use headless mode for production",
-          "Wait for elements before interaction",
-          "Take screenshots for debugging",
-          "Handle popups and dialogs"
-        ]
-      },
-      "selenium_alternative": {
-        "description": "Selenium as alternative to Playwright",
-        "use_when": "Legacy compatibility needed",
-        "code_example": "from selenium import webdriver\nfrom selenium.webdriver.common.by import By\n\noptions = webdriver.ChromeOptions()\noptions.add_argument('--headless')\ndriver = webdriver.Chrome(options=options)\ndriver.get('https://example.com')\nelement = driver.find_element(By.CSS_SELECTOR, '.content')\ncontent = element.text\ndriver.quit()",
-        "notes": "Playwright generally faster and more reliable"
-      }
+    "scraping_strategies_javascript_spa": {
+      "description": "Scrape JavaScript-heavy Single Page Applications",
+      "use_when": "React/Vue/Angular apps, dynamic content",
+      "code_example": "from playwright.async_api import async_playwright\n\nasync def scrape_spa(url: str):\n    async with async_playwright() as p:\n        browser = await p.chromium.launch(headless=True)\n        page = await browser.new_page()\n        await page.goto(url, wait_until='networkidle')\n        await page.wait_for_selector('.content')\n        content = await page.content()\n        await browser.close()\n        return content",
+      "best_practices": [
+        "Wait for content to load",
+        "Use networkidle for full page load",
+        "Handle dynamic selectors",
+        "Close browser instances properly"
+      ]
     },
-    "content_extraction": {
-      "structured_extraction": {
-        "description": "Extract structured data from HTML",
-        "code_example": "from pydantic import BaseModel\nfrom typing import Optional, List\n\nclass Article(BaseModel):\n    title: str\n    content: str\n    author: Optional[str] = None\n    published_date: Optional[str] = None\n    tags: List[str] = []\n\ndef extract_article(soup: BeautifulSoup) -> Article:\n    title_selectors = ['h1.article-title', 'h1.post-title', 'article h1', 'h1']\n    title = None\n    for selector in title_selectors:\n        elem = soup.select_one(selector)\n        if elem:\n            title = elem.get_text().strip()\n            break\n    \n    content_elem = soup.select_one('article .content, .post-content, article, main')\n    content = content_elem.get_text().strip() if content_elem else ''\n    \n    return Article(title=title or 'Untitled', content=content)",
-        "best_practices": [
-          "Use multiple selector fallbacks",
-          "Validate extracted data",
-          "Handle missing fields gracefully",
-          "Use Pydantic for validation"
-        ]
-      },
-      "llm_extraction": {
-        "description": "Use LLM to extract structured data",
-        "code_example": "from langchain_google_genai import ChatGoogleGenerativeAI\nfrom langchain_core.messages import HumanMessage\nfrom PIL import Image\n\nllm = ChatGoogleGenerativeAI(model='gemini-2.5-flash')\n\nasync def extract_with_llm(html: str, schema: BaseModel) -> BaseModel:\n    soup = BeautifulSoup(html, 'lxml')\n    text_content = soup.get_text()[:8000]\n    \n    parser = PydanticOutputParser(pydantic_object=schema)\n    prompt = ChatPromptTemplate.from_messages([\n        ('system', 'Extract structured data from web content.\\n{format_instructions}'),\n        ('user', 'Extract data from:\\n{content}')\n    ])\n    \n    chain = prompt.partial(format_instructions=parser.get_format_instructions()) | llm | parser\n    return await chain.ainvoke({'content': text_content})",
-        "use_when": [
-          "Complex extraction logic",
-          "Varying page structures",
-          "Need semantic understanding"
-        ]
-      }
+    "scraping_strategies_api_endpoints": {
+      "description": "Direct API calls instead of scraping",
+      "use_when": "Data available via API endpoints",
+      "code_example": "async def fetch_api_data(url: str, params: dict = None) -> dict:\n    async with httpx.AsyncClient() as client:\n        response = await client.get(url, params=params, headers={'Accept': 'application/json'})\n        response.raise_for_status()\n        return response.json()",
+      "best_practices": [
+        "Prefer APIs over scraping when available",
+        "Use proper authentication headers",
+        "Handle rate limits",
+        "Cache responses when possible"
+      ]
     },
-    "rate_limiting": {
-      "token_bucket": {
-        "description": "Token bucket rate limiter",
-        "code_example": "import asyncio\nfrom datetime import datetime, timedelta\nfrom collections import deque\n\nclass RateLimiter:\n    def __init__(self, max_requests: int, time_window: int):\n        self.max_requests = max_requests\n        self.time_window = time_window\n        self.requests = deque()\n    \n    async def acquire(self):\n        now = datetime.now()\n        while self.requests and (now - self.requests[0]).total_seconds() > self.time_window:\n            self.requests.popleft()\n        \n        if len(self.requests) >= self.max_requests:\n            sleep_time = self.time_window - (now - self.requests[0]).total_seconds()\n            if sleep_time > 0:\n                await asyncio.sleep(sleep_time)\n                return await self.acquire()\n        \n        self.requests.append(datetime.now())",
-        "best_practices": [
-          "Respect website rate limits",
-          "Use exponential backoff on 429 errors",
-          "Monitor request rates",
-          "Implement per-domain limits"
-        ]
-      },
-      "exponential_backoff": {
-        "description": "Exponential backoff on rate limit errors",
-        "code_example": "from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type\n\n@retry(\n    stop=stop_after_attempt(5),\n    wait=wait_exponential(multiplier=2, min=1, max=60),\n    retry=retry_if_exception_type(RateLimitError)\n)\nasync def fetch_with_backoff(url: str):\n    async with httpx.AsyncClient() as client:\n        response = await client.get(url)\n        if response.status_code == 429:\n            retry_after = int(response.headers.get('Retry-After', 60))\n            raise RateLimitError(f'Rate limited, retry after {retry_after}s')\n        response.raise_for_status()\n        return response.text",
-        "best_practices": [
-          "Read Retry-After header",
-          "Use jitter to prevent thundering herd",
-          "Log rate limit events",
-          "Respect server instructions"
-        ]
-      }
+    "browser_automation_playwright_basic": {
+      "description": "Basic browser automation with Playwright",
+      "code_example": "from playwright.async_api import async_playwright\n\nasync def automate_browser(url: str):\n    async with async_playwright() as p:\n        browser = await p.chromium.launch(headless=True)\n        page = await browser.new_page()\n        await page.goto(url)\n        await page.click('button.submit')\n        await page.fill('input[name=\"email\"]', 'user@example.com')\n        content = await page.content()\n        await browser.close()\n        return content",
+      "best_practices": [
+        "Use headless mode for production",
+        "Wait for elements before interaction",
+        "Take screenshots for debugging",
+        "Handle popups and dialogs"
+      ],
+      "use_when": "Apply when implementing playwright basic in integration context"
+    },
+    "browser_automation_selenium_alternative": {
+      "description": "Selenium as alternative to Playwright",
+      "use_when": "Legacy compatibility needed",
+      "code_example": "from selenium import webdriver\nfrom selenium.webdriver.common.by import By\n\noptions = webdriver.ChromeOptions()\noptions.add_argument('--headless')\ndriver = webdriver.Chrome(options=options)\ndriver.get('https://example.com')\nelement = driver.find_element(By.CSS_SELECTOR, '.content')\ncontent = element.text\ndriver.quit()",
+      "notes": "Playwright generally faster and more reliable",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for selenium_alternative",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "content_extraction_structured_extraction": {
+      "description": "Extract structured data from HTML",
+      "code_example": "from pydantic import BaseModel\nfrom typing import Optional, List\n\nclass Article(BaseModel):\n    title: str\n    content: str\n    author: Optional[str] = None\n    published_date: Optional[str] = None\n    tags: List[str] = []\n\ndef extract_article(soup: BeautifulSoup) -> Article:\n    title_selectors = ['h1.article-title', 'h1.post-title', 'article h1', 'h1']\n    title = None\n    for selector in title_selectors:\n        elem = soup.select_one(selector)\n        if elem:\n            title = elem.get_text().strip()\n            break\n    \n    content_elem = soup.select_one('article .content, .post-content, article, main')\n    content = content_elem.get_text().strip() if content_elem else ''\n    \n    return Article(title=title or 'Untitled', content=content)",
+      "best_practices": [
+        "Use multiple selector fallbacks",
+        "Validate extracted data",
+        "Handle missing fields gracefully",
+        "Use Pydantic for validation"
+      ],
+      "use_when": "Apply when implementing structured extraction in integration context"
+    },
+    "content_extraction_llm_extraction": {
+      "description": "Use LLM to extract structured data",
+      "code_example": "from langchain_google_genai import ChatGoogleGenerativeAI\nfrom langchain_core.messages import HumanMessage\nfrom PIL import Image\n\nllm = ChatGoogleGenerativeAI(model='gemini-2.5-flash')\n\nasync def extract_with_llm(html: str, schema: BaseModel) -> BaseModel:\n    soup = BeautifulSoup(html, 'lxml')\n    text_content = soup.get_text()[:8000]\n    \n    parser = PydanticOutputParser(pydantic_object=schema)\n    prompt = ChatPromptTemplate.from_messages([\n        ('system', 'Extract structured data from web content.\\n{format_instructions}'),\n        ('user', 'Extract data from:\\n{content}')\n    ])\n    \n    chain = prompt.partial(format_instructions=parser.get_format_instructions()) | llm | parser\n    return await chain.ainvoke({'content': text_content})",
+      "use_when": "Complex extraction logic; Varying page structures; Need semantic understanding",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for llm_extraction",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "rate_limiting_token_bucket": {
+      "description": "Token bucket rate limiter",
+      "code_example": "import asyncio\nfrom datetime import datetime, timedelta\nfrom collections import deque\n\nclass RateLimiter:\n    def __init__(self, max_requests: int, time_window: int):\n        self.max_requests = max_requests\n        self.time_window = time_window\n        self.requests = deque()\n    \n    async def acquire(self):\n        now = datetime.now()\n        while self.requests and (now - self.requests[0]).total_seconds() > self.time_window:\n            self.requests.popleft()\n        \n        if len(self.requests) >= self.max_requests:\n            sleep_time = self.time_window - (now - self.requests[0]).total_seconds()\n            if sleep_time > 0:\n                await asyncio.sleep(sleep_time)\n                return await self.acquire()\n        \n        self.requests.append(datetime.now())",
+      "best_practices": [
+        "Respect website rate limits",
+        "Use exponential backoff on 429 errors",
+        "Monitor request rates",
+        "Implement per-domain limits"
+      ],
+      "use_when": "Apply when implementing token bucket in integration context"
+    },
+    "rate_limiting_exponential_backoff": {
+      "description": "Exponential backoff on rate limit errors",
+      "code_example": "from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type\n\n@retry(\n    stop=stop_after_attempt(5),\n    wait=wait_exponential(multiplier=2, min=1, max=60),\n    retry=retry_if_exception_type(RateLimitError)\n)\nasync def fetch_with_backoff(url: str):\n    async with httpx.AsyncClient() as client:\n        response = await client.get(url)\n        if response.status_code == 429:\n            retry_after = int(response.headers.get('Retry-After', 60))\n            raise RateLimitError(f'Rate limited, retry after {retry_after}s')\n        response.raise_for_status()\n        return response.text",
+      "best_practices": [
+        "Read Retry-After header",
+        "Use jitter to prevent thundering herd",
+        "Log rate limit events",
+        "Respect server instructions"
+      ],
+      "use_when": "Apply when implementing exponential backoff in integration context"
     }
   },
   "best_practices": [
@@ -167,11 +188,5 @@
       "problem": "Legal issues, reputation damage",
       "fix": "Review ToS, use responsibly, consider APIs first"
     }
-  ],
-  "related_skills": [
-    "web-browsing",
-    "tool-usage",
-    "mcp-integration",
-    "langchain-usage"
   ]
 }

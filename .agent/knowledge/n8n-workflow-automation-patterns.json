@@ -5,12 +5,26 @@
   "title": "n8n Workflow Automation Patterns",
   "description": "Comprehensive patterns for n8n workflow automation including triggers, nodes, AI integration, error handling, and integration with LangChain/agents",
   "version": "1.0.0",
-  "category": "patterns",
+  "category": "integration",
   "axiomAlignment": {
     "A1_verifiability": "Workflow definitions provide verifiable automation logic",
+    "A2_user_primacy": "Workflow design and error handling protect user data and intent",
     "A3_transparency": "Visual workflows make automation processes explicit",
-    "A4_adaptability": "Workflows can be easily modified and extended"
+    "A4_non_harm": "Credential management, validation, and retry patterns prevent harmful outcomes",
+    "A5_consistency": "Unified patterns across webhooks, AI nodes, and sub-workflows"
   },
+  "related_skills": [
+    "workflow-generation",
+    "langchain-usage",
+    "error-handling",
+    "mcp-integration"
+  ],
+  "related_knowledge": [
+    "langchain-patterns.json",
+    "coordination-patterns.json",
+    "iflow-patterns.json",
+    "error-handling-patterns.json"
+  ],
   "core_concepts": {
     "workflow_structure": {
       "description": "n8n workflows consist of nodes connected by connections",
@@ -92,7 +106,7 @@
     "webhook_trigger": {
       "description": "Trigger workflow via HTTP webhook",
       "use_when": "External systems need to trigger workflows",
-      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {},\n      \"id\": \"webhook-trigger\",\n      \"name\": \"Webhook\",\n      \"type\": \"n8n-nodes-base.webhook\",\n      \"typeVersion\": 1,\n      \"position\": [250, 300],\n      \"webhookId\": \"webhook-id\",\n      \"settings\": {\n        \"httpMethod\": \"POST\",\n        \"path\": \"trigger-workflow\",\n        \"responseMode\": \"responseNode\",\n        \"options\": {}\n      }\n    },\n    {\n      \"parameters\": {\n        \"conditions\": {\n          \"string\": [\n            {\n              \"value1\": \"={{ $json.body.event_type }}\",\n              \"operation\": \"equals\",\n              \"value2\": \"user.created\"\n            }\n          ]\n        }\n      },\n      \"id\": \"if-node\",\n      \"name\": \"IF\",\n      \"type\": \"n8n-nodes-base.if\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300]\n    },\n    {\n      \"parameters\": {\n        \"respondWith\": \"json\",\n        \"responseBody\": \"={{ { \\\"status\\\": \\\"success\\\", \\\"message\\\": \\\"Workflow triggered\\\" } }}\"\n      },\n      \"id\": \"respond-node\",\n      \"name\": \"Respond to Webhook\",\n      \"type\": \"n8n-nodes-base.respondToWebhook\",\n      \"typeVersion\": 1,\n      \"position\": [650, 300]\n    }\n  ],\n  \"connections\": {\n    \"Webhook\": {\n      \"main\": [[node-if-type-main-index-0]]\n    },\n    \"IF\": {\n      \"main\": [[node-respond-to-webhook-type-main-index-0]]\n    }\n  }\n}",
+      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {},\n      \"id\": \"webhook-trigger\",\n      \"name\": \"Webhook\",\n      \"type\": \"n8n-nodes-base.webhook\",\n      \"typeVersion\": 1,\n      \"position\": [250, 300],\n      \"webhookId\": \"webhook-id\",\n      \"settings\": {\n        \"httpMethod\": \"POST\",\n        \"path\": \"trigger-workflow\",\n        \"responseMode\": \"responseNode\",\n        \"options\": {}\n      }\n    },\n    {\n      \"parameters\": {\n        \"conditions\": {\n          \"string\": [\n            {\n              \"value1\": \"={{ $json.body.event_type }}\",\n              \"operation\": \"equals\",\n              \"value2\": \"user.created\"\n            }\n          ]\n        }\n      },\n      \"id\": \"if-node\",\n      \"name\": \"IF\",\n      \"type\": \"n8n-nodes-base.if\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300]\n    },\n    {\n      \"parameters\": {\n        \"respondWith\": \"json\",\n        \"responseBody\": \"={{ { \\\"status\\\": \\\"success\\\", \\\"message\\\": \\\"Workflow triggered\\\" } }}\"\n      },\n      \"id\": \"respond-node\",\n      \"name\": \"Respond to Webhook\",\n      \"type\": \"n8n-nodes-base.respondToWebhook\",\n      \"typeVersion\": 1,\n      \"position\": [650, 300]\n    }\n  ],\n  \"connections\": {\n    \"Webhook\": {\n      \"main\": [[{\"node\": \"IF\", \"type\": \"main\", \"index\": 0}]]\n    },\n    \"IF\": {\n      \"main\": [[{\"node\": \"Respond to Webhook\", \"type\": \"main\", \"index\": 0}]]\n    }\n  }\n}",
       "best_practices": [
         "Validate webhook payload",
         "Use HTTPS in production",
@@ -108,7 +122,7 @@
     "schedule_trigger": {
       "description": "Trigger workflow on a schedule",
       "use_when": "Periodic tasks, data synchronization, reports",
-      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"rule\": {\n          \"interval\": [\n            {\n              \"field\": \"hours\",\n              \"hoursInterval\": 1\n            }\n          ]\n        }\n      },\n      \"id\": \"schedule-trigger\",\n      \"name\": \"Schedule Trigger\",\n      \"type\": \"n8n-nodes-base.scheduleTrigger\",\n      \"typeVersion\": 1,\n      \"position\": [250, 300]\n    },\n    {\n      \"parameters\": {\n        \"operation\": \"executeQuery\",\n        \"query\": \"SELECT * FROM users WHERE created_at > NOW() - INTERVAL '1 hour'\"\n      },\n      \"id\": \"postgres-node\",\n      \"name\": \"Get New Users\",\n      \"type\": \"n8n-nodes-base.postgres\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300]\n    }\n  ],\n  \"connections\": {\n    \"Schedule Trigger\": {\n      \"main\": [[node-get-new-users-type-main-index-0]]\n    }\n  }\n}",
+      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"rule\": {\n          \"interval\": [\n            {\n              \"field\": \"hours\",\n              \"hoursInterval\": 1\n            }\n          ]\n        }\n      },\n      \"id\": \"schedule-trigger\",\n      \"name\": \"Schedule Trigger\",\n      \"type\": \"n8n-nodes-base.scheduleTrigger\",\n      \"typeVersion\": 1,\n      \"position\": [250, 300]\n    },\n    {\n      \"parameters\": {\n        \"operation\": \"executeQuery\",\n        \"query\": \"SELECT * FROM users WHERE created_at > NOW() - INTERVAL '1 hour'\"\n      },\n      \"id\": \"postgres-node\",\n      \"name\": \"Get New Users\",\n      \"type\": \"n8n-nodes-base.postgres\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300]\n    }\n  ],\n  \"connections\": {\n    \"Schedule Trigger\": {\n      \"main\": [[{\"node\": \"Get New Users\", \"type\": \"main\", \"index\": 0}]]\n    }\n  }\n}",
       "best_practices": [
         "Use appropriate intervals",
         "Consider timezone settings",
@@ -198,7 +212,7 @@
     "error_handling_patterns": {
       "description": "Error handling and retry strategies",
       "use_when": "Need robust error handling",
-      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"continueOnFail\": true,\n        \"retryOnFail\": true,\n        \"maxTries\": 3,\n        \"waitBetweenTries\": 5000,\n        \"options\": {\n          \"retry\": {\n            \"maxRetries\": 3,\n            \"retryDelay\": 5000\n          }\n        }\n      },\n      \"id\": \"http-node\",\n      \"name\": \"HTTP Request with Retry\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300]\n    },\n    {\n      \"parameters\": {\n        \"conditions\": {\n          \"options\": {\n            \"caseSensitive\": true,\n            \"leftValue\": \"\",\n            \"typeValidation\": \"strict\"\n          },\n          \"conditions\": [\n            {\n              \"id\": \"error-check\",\n              \"leftValue\": \"={{ $json.error }}\",\n              \"rightValue\": \"\",\n              \"operator\": {\n                \"type\": \"string\",\n                \"operation\": \"notEmpty\"\n              }\n            }\n          ]\n        }\n      },\n      \"id\": \"if-error\",\n      \"name\": \"Check for Error\",\n      \"type\": \"n8n-nodes-base.if\",\n      \"typeVersion\": 1,\n      \"position\": [650, 300]\n    },\n    {\n      \"parameters\": {\n        \"assignments\": {\n          \"assignments\": [\n            {\n              \"id\": \"error_message\",\n              \"name\": \"error_message\",\n              \"value\": \"={{ $json.error }}\",\n              \"type\": \"string\"\n            },\n            {\n              \"id\": \"timestamp\",\n              \"name\": \"timestamp\",\n              \"value\": \"={{ $now }}\",\n              \"type\": \"dateTime\"\n            }\n          ]\n        }\n      },\n      \"id\": \"log-error\",\n      \"name\": \"Log Error\",\n      \"type\": \"n8n-nodes-base.set\",\n      \"typeVersion\": 1,\n      \"position\": [850, 300]\n    },\n    {\n      \"parameters\": {\n        \"url\": \"https://hooks.slack.com/services/YOUR/WEBHOOK/URL\",\n        \"sendBody\": true,\n        \"specifyBody\": \"json\",\n        \"jsonBody\": \"={{ { \\\"text\\\": \\\"Workflow Error: \\\" + $json.error_message } }}\",\n        \"options\": {}\n      },\n      \"id\": \"notify-slack\",\n      \"name\": \"Notify Slack\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 1,\n      \"position\": [1050, 300]\n    }\n  ],\n  \"connections\": {\n    \"HTTP Request with Retry\": {\n      \"main\": [[node-check-for-error-type-main-index-0]]\n    },\n    \"Check for Error\": {\n      \"main\": [[node-log-error-type-main-index-0]]\n    },\n    \"Log Error\": {\n      \"main\": [[node-notify-slack-type-main-index-0]]\n    }\n  }\n}",
+      "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"continueOnFail\": true,\n        \"retryOnFail\": true,\n        \"maxTries\": 3,\n        \"waitBetweenTries\": 5000,\n        \"options\": {\n          \"retry\": {\n            \"maxRetries\": 3,\n            \"retryDelay\": 5000\n          }\n        }\n      },\n      \"id\": \"http-node\",\n      \"name\": \"HTTP Request with Retry\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 1,\n      \"position\": [450, 300]\n    },\n    {\n      \"parameters\": {\n        \"conditions\": {\n          \"options\": {\n            \"caseSensitive\": true,\n            \"leftValue\": \"\",\n            \"typeValidation\": \"strict\"\n          },\n          \"conditions\": [\n            {\n              \"id\": \"error-check\",\n              \"leftValue\": \"={{ $json.error }}\",\n              \"rightValue\": \"\",\n              \"operator\": {\n                \"type\": \"string\",\n                \"operation\": \"notEmpty\"\n              }\n            }\n          ]\n        }\n      },\n      \"id\": \"if-error\",\n      \"name\": \"Check for Error\",\n      \"type\": \"n8n-nodes-base.if\",\n      \"typeVersion\": 1,\n      \"position\": [650, 300]\n    },\n    {\n      \"parameters\": {\n        \"assignments\": {\n          \"assignments\": [\n            {\n              \"id\": \"error_message\",\n              \"name\": \"error_message\",\n              \"value\": \"={{ $json.error }}\",\n              \"type\": \"string\"\n            },\n            {\n              \"id\": \"timestamp\",\n              \"name\": \"timestamp\",\n              \"value\": \"={{ $now }}\",\n              \"type\": \"dateTime\"\n            }\n          ]\n        }\n      },\n      \"id\": \"log-error\",\n      \"name\": \"Log Error\",\n      \"type\": \"n8n-nodes-base.set\",\n      \"typeVersion\": 1,\n      \"position\": [850, 300]\n    },\n    {\n      \"parameters\": {\n        \"url\": \"https://hooks.slack.com/services/YOUR/WEBHOOK/URL\",\n        \"sendBody\": true,\n        \"specifyBody\": \"json\",\n        \"jsonBody\": \"={{ { \\\"text\\\": \\\"Workflow Error: \\\" + $json.error_message } }}\",\n        \"options\": {}\n      },\n      \"id\": \"notify-slack\",\n      \"name\": \"Notify Slack\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 1,\n      \"position\": [1050, 300]\n    }\n  ],\n  \"connections\": {\n    \"HTTP Request with Retry\": {\n      \"main\": [[{\"node\": \"Check for Error\", \"type\": \"main\", \"index\": 0}]]\n    },\n    \"Check for Error\": {\n      \"main\": [[{\"node\": \"Log Error\", \"type\": \"main\", \"index\": 0}]]\n    },\n    \"Log Error\": {\n      \"main\": [[{\"node\": \"Notify Slack\", \"type\": \"main\", \"index\": 0}]]\n    }\n  }\n}",
       "retry_with_exponential_backoff": {
         "description": "Exponential backoff retry pattern",
         "code_example": "// Code node for exponential backoff\nasync function retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000) {\n  for (let attempt = 0; attempt < maxRetries; attempt++) {\n    try {\n      return await fn();\n    } catch (error) {\n      if (attempt === maxRetries - 1) throw error;\n      \n      const delay = baseDelay * Math.pow(2, attempt);\n      await new Promise(resolve => setTimeout(resolve, delay));\n    }\n  }\n}\n\n// Usage\nconst result = await retryWithBackoff(async () => {\n  const response = await $http.request({\n    method: 'GET',\n    url: 'https://api.example.com/data'\n  });\n  return response;\n}, 3, 1000);\n\nreturn [{ json: result }];"
@@ -432,5 +446,46 @@
     "node_reference": "https://docs.n8n.io/integrations/",
     "community_workflows": "https://n8n.io/workflows",
     "api_documentation": "https://docs.n8n.io/api/"
+  },
+  "ai_agent_nodes": {
+    "description": "LangChain agent nodes, AI tool nodes, memory nodes, and chain nodes in n8n",
+    "use_when": "Building agentic workflows with tool use, memory, and chained reasoning",
+    "code_example": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"agentType\": \"langchain\",\n        \"model\": \"gpt-4\",\n        \"prompt\": \"={{ $json.user_query }}\",\n        \"tools\": [\"web_search\", \"calculator\", \"database_query\"],\n        \"memory\": true\n      },\n      \"name\": \"AI Agent\",\n      \"type\": \"@n8n/n8n-nodes-langchain.agent\"\n    },\n    {\n      \"parameters\": {\n        \"sessionId\": \"={{ $json.session_id }}\",\n        \"contextWindow\": 10\n      },\n      \"name\": \"Conversation Memory\",\n      \"type\": \"@n8n/n8n-nodes-langchain.memoryBuffer\"\n    }\n  ]\n}",
+    "best_practices": [
+      "Configure session IDs for memory isolation",
+      "Limit tool scope for security",
+      "Use appropriate model for task"
+    ]
+  },
+  "custom_node_development": {
+    "description": "Building custom n8n nodes with TypeScript - structure, credentials, testing, publishing",
+    "use_when": "Extending n8n with domain-specific or proprietary integrations",
+    "code_example": "import { IExecuteFunctions, INodeExecutionData, INodeType, INodeTypeDescription } from 'n8n-workflow';\n\nexport class MyCustomNode implements INodeType {\n  description: INodeTypeDescription = {\n    displayName: 'My Custom Node',\n    name: 'myCustomNode',\n    group: ['transform'],\n    version: 1,\n    inputs: ['main'],\n    outputs: ['main'],\n    properties: [\n      { displayName: 'Resource', name: 'resource', type: 'options', default: 'entity' },\n      { displayName: 'Operation', name: 'operation', type: 'options', default: 'get' }\n    ],\n    credentials: [{ name: 'myApi', required: true }]\n  };\n\n  async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {\n    const items = this.getInputData();\n    const returnData = items.map(item => ({ json: { ...item.json, processed: true } }));\n    return [returnData];\n  }\n}\n\n// Testing: npm run test | Publishing: npx n8n-node-dev publish",
+    "best_practices": [
+      "Follow n8n node naming conventions",
+      "Implement proper error handling",
+      "Write unit tests",
+      "Document node in README"
+    ]
+  },
+  "n8n_cloud_patterns": {
+    "description": "n8n Cloud-specific features, execution limits, and community nodes",
+    "use_when": "Deploying on n8n Cloud or using cloud-specific capabilities",
+    "code_example": "{\n  \"execution_limits\": {\n    \"starter\": { \"executions_per_month\": 2500, \"max_execution_time\": 120 },\n    \"pro\": { \"executions_per_month\": 10000, \"max_execution_time\": 300 }\n  },\n  \"cloud_features\": [\"Managed hosting\", \"Queue mode\", \"Team collaboration\", \"Workflow versioning\", \"SSO\"],\n  \"community_nodes\": \"Settings > Community nodes > Install\"\n}",
+    "best_practices": [
+      "Monitor execution usage",
+      "Use queue mode for concurrency control",
+      "Leverage workflow versioning for rollbacks"
+    ]
+  },
+  "langchain_integration": {
+    "description": "Connecting n8n to LangChain/LangGraph pipelines",
+    "use_when": "Orchestrating LangChain agents or using LangGraph state machines from n8n",
+    "code_example": "const { StateGraph, END } = require('@langchain/langgraph');\nconst { ChatOpenAI } = require('@langchain/openai');\n\nconst model = new ChatOpenAI({ model: 'gpt-4', temperature: 0 });\nconst workflow = new StateGraph({ channels: { messages: { value: (x, y) => x.concat(y) } } });\nworkflow.addNode('agent', async (state) => {\n  const response = await model.invoke(state.messages);\n  return { messages: [response] };\n});\nworkflow.addEdge('agent', END);\nworkflow.setEntryPoint('agent');\nconst app = workflow.compile();\nconst input = $input.first().json;\nconst result = await app.invoke({ messages: [{ role: 'user', content: input.query }] });\nreturn [{ json: { output: result.messages, pipeline: 'langgraph' } }];",
+    "best_practices": [
+      "Share credentials via n8n credential store",
+      "Handle streaming for long responses",
+      "Map n8n items to LangChain message format"
+    ]
   }
 }

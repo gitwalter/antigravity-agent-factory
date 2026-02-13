@@ -4,22 +4,9 @@ description: Extend Factory knowledge, skills, and templates via research, docum
 name: extend-knowledge
 type: skill
 ---
-
 # Extend Knowledge
 
 Extend Factory knowledge, skills, and templates via research, documents, or user links
-
-## 
-# Extend Knowledge Skill
-
-Extend the Factory's knowledge base, skills, and templates through multiple research methods:
-- **Web Search**: Use `web_search` tool to find current information
-- **Document Reading**: Read files, PDFs, or code repositories
-- **User Links**: Process URLs provided by users in chat
-- **Synthesis**: Combine sources into structured Factory artifacts
-
-## 
-# Extend Knowledge Skill
 
 Extend the Factory's knowledge base, skills, and templates through multiple research methods:
 - **Web Search**: Use `web_search` tool to find current information
@@ -28,15 +15,17 @@ Extend the Factory's knowledge base, skills, and templates through multiple rese
 - **Synthesis**: Combine sources into structured Factory artifacts
 
 ## Artifacts Used
+
 | Artifact | Path | Purpose |
 |----------|------|---------|
-| Knowledge Template | `templates/knowledge/knowledge-file.tmpl` | JSON structure for knowledge |
-| Skill Template | `templates/factory/skill.md.tmpl` | Markdown structure for skills |
-| Agent Template | `templates/factory/agent.md.tmpl` | Markdown structure for agents |
-| Schema | `patterns/knowledge/knowledge-schema.json` | Validation rules |
-| Taxonomy | `scripts/taxonomy/agent_taxonomy.json` | Topic definitions |
+| Knowledge Template | `{directories.templates}/knowledge/knowledge-file.tmpl` | JSON structure for knowledge |
+| Skill Template | `{directories.templates}/factory/skill.md.tmpl` | Markdown structure for skills |
+| Agent Template | `{directories.templates}/factory/agent.md.tmpl` | Markdown structure for agents |
+| Schema | `{directories.patterns}/knowledge/knowledge-schema.json` | Validation rules |
+| Taxonomy | `{directories.scripts}/taxonomy/agent_taxonomy.json` | Topic definitions |
 
 ## Research Methods
+
 ### Method 1: Web Search Research
 
 Use when: Topic needs current, online information
@@ -91,7 +80,7 @@ User: Extend knowledge using https://docs.anthropic.com/constitutional-ai
 Agent: I'll research Constitutional AI from Anthropic's docs...
 [web_search("site:docs.anthropic.com constitutional AI principles")]
 [Synthesizes findings]
-[Creates knowledge/constitutional-ai-patterns.json]
+[Creates {directories.knowledge}/constitutional-ai-patterns.json]
 ```
 
 ### Method 4: Repository Analysis
@@ -107,35 +96,8 @@ Step 3: read_file("{{interesting_files}}") - Analyze implementation
 Step 4: Synthesize patterns into knowledge
 ```
 
-```
-Step 1: web_search("{{topic}} best practices patterns 2026")
-Step 2: web_search("{{topic}} implementation examples")
-Step 3: web_search("{{topic}} common pitfalls anti-patterns")
-```
-
-```
-Step 1: read_file("{{path_to_document}}")
-Step 2: Extract key patterns and concepts
-Step 3: Transform into structured knowledge
-```
-
-```
-User: Extend knowledge using https://docs.anthropic.com/constitutional-ai
-
-Agent: I'll research Constitutional AI from Anthropic's docs...
-[web_search("site:docs.anthropic.com constitutional AI principles")]
-[Synthesizes findings]
-[Creates knowledge/constitutional-ai-patterns.json]
-```
-
-```
-Step 1: list_dir("{{repo_path}}") - Understand structure
-Step 2: grep("pattern|implementation", "{{repo_path}}") - Find key code
-Step 3: read_file("{{interesting_files}}") - Analyze implementation
-Step 4: Synthesize patterns into knowledge
-```
-
 ## Extension Procedures
+
 ### Procedure A: Create Knowledge File
 
 **Trigger**: "Extend knowledge for {{topic}}", "Add knowledge about {{topic}}"
@@ -144,25 +106,25 @@ Step 4: Synthesize patterns into knowledge
 
 1. **Check Existing Knowledge**
    ```
-   list_dir("knowledge")
+   list_dir("{directories.knowledge}")
    → See what already exists
    ```
 
 2. **Read Taxonomy**
    ```
-   read_file("scripts/taxonomy/agent_taxonomy.json")
+   read_file("{directories.scripts}/taxonomy/agent_taxonomy.json")
    → Understand topic requirements (depth, keywords)
    ```
 
 3. **Read Template**
    ```
-   read_file("templates/knowledge/knowledge-file.tmpl")
+   read_file("{directories.templates}/knowledge/knowledge-file.tmpl")
    → Get JSON structure to follow
    ```
 
 4. **Read Schema**
    ```
-   read_file("patterns/knowledge/knowledge-schema.json")
+   read_file("{directories.patterns}/knowledge/knowledge-schema.json")
    → Get validation rules (min 3 patterns)
    ```
 
@@ -181,16 +143,16 @@ Step 4: Synthesize patterns into knowledge
 
 7. **Write File**
    ```
-   write("knowledge/{{topic-name}}-patterns.json", content)
+   write("{directories.knowledge}/{{topic-name}}-patterns.json", content)
    ```
 
 8. **Validate**
    ```
-   read_file("knowledge/{{topic-name}}-patterns.json")
+   read_file("{directories.knowledge}/{{topic-name}}-patterns.json")
    → Verify JSON is valid
    ```
 
-**Output**: `knowledge/{topic}-patterns.json` (50-200 lines)
+**Output**: `{directories.knowledge}/{topic}-patterns.json` (50-200 lines)
 
 ---
 
@@ -202,19 +164,19 @@ Step 4: Synthesize patterns into knowledge
 
 1. **Check Existing Skills**
    ```
-   list_dir(".cursor/skills")
+   list_dir("{directories.skills}")
    → See what already exists, avoid duplicates
    ```
 
 2. **Read Skill Template**
    ```
-   read_file("templates/factory/skill.md.tmpl")
+   read_file("{directories.templates}/factory/skill.md.tmpl")
    → Get markdown structure
    ```
 
 3. **Read Example Skill** (for reference)
    ```
-   read_file(".cursor/skills/extend-knowledge/SKILL.md")
+   read_file("{directories.skills}/extend-knowledge/SKILL.md")
    → See good skill structure
    ```
 
@@ -231,10 +193,10 @@ Step 4: Synthesize patterns into knowledge
 
 6. **Create Skill Directory**
    ```
-   write(".cursor/skills/{{skill-name}}/SKILL.md", content)
+   write("{directories.skills}/{{skill-name}}/SKILL.md", content)
    ```
 
-**Output**: `.cursor/skills/{skill-name}/SKILL.md`
+**Output**: `{directories.skills}/{skill-name}/SKILL.md`
 
 **Skill Template Structure**:
 ```markdown
@@ -249,72 +211,20 @@ knowledge: [{{knowledge referenced}}]
 
 # {{Skill Title}}
 
-```
-list_dir("knowledge")
-   → See what already exists
-```
-
-```
-read_file("scripts/taxonomy/agent_taxonomy.json")
-   → Understand topic requirements (depth, keywords)
-```
-
-```
-read_file("templates/knowledge/knowledge-file.tmpl")
-   → Get JSON structure to follow
-```
-
-```
-read_file("patterns/knowledge/knowledge-schema.json")
-   → Get validation rules (min 3 patterns)
-```
-
-```
-web_search("{{topic}} best practices 2026")
-   web_search("{{topic}} implementation patterns")
-   read_file("{{user_provided_doc}}") if provided
-```
-
-```
-write("knowledge/{{topic-name}}-patterns.json", content)
-```
-
-```
-read_file("knowledge/{{topic-name}}-patterns.json")
-   → Verify JSON is valid
-```
-
-```
-list_dir(".cursor/skills")
-   → See what already exists, avoid duplicates
-```
-
-```
-read_file("templates/factory/skill.md.tmpl")
-   → Get markdown structure
-```
-
-```
-read_file(".cursor/skills/extend-knowledge/SKILL.md")
-   → See good skill structure
-```
-
-```
-web_search("{{purpose}} workflow best practices")
-```
-
-```
-write(".cursor/skills/{{skill-name}}/SKILL.md", content)
-```
-
 ## Process
+
+1. Review the task requirements.
+2. Apply the skill's methodology.
+3. Validate the output against the defined criteria.
 ### Step 1: {{action}}
 ### Step 2: {{action}}
 
 ## What Gets Created/Changed
+
 | Action | File | Change |
 
 ## Fallback Procedures
+
 | Issue | Resolution |
 ```
 
@@ -328,13 +238,13 @@ write(".cursor/skills/{{skill-name}}/SKILL.md", content)
 
 1. **Determine Template Category**
    ```
-   list_dir("templates")
+   list_dir("{directories.templates}")
    → Find appropriate category folder
    ```
 
 2. **Read Similar Template** (for style)
    ```
-   read_file("templates/{{category}}/{{similar}}.tmpl")
+   read_file("{directories.templates}/{{category}}/{{similar}}.tmpl")
    → Understand existing conventions
    ```
 
@@ -345,10 +255,10 @@ write(".cursor/skills/{{skill-name}}/SKILL.md", content)
 
 4. **Write Template**
    ```
-   write("templates/{{category}}/{{name}}.tmpl", content)
+   write("{directories.templates}/{{category}}/{{name}}.tmpl", content)
    ```
 
-**Output**: `templates/{category}/{name}.tmpl`
+**Output**: `{directories.templates}/{category}/{name}.tmpl`
 
 **Template Conventions**:
 - Use `{{VARIABLE_NAME}}` for placeholders
@@ -365,19 +275,19 @@ write(".cursor/skills/{{skill-name}}/SKILL.md", content)
 
 1. **Check Existing Agents**
    ```
-   list_dir(".cursor/agents")
+   list_dir("{directories.agents}")
    → See what already exists
    ```
 
 2. **Read Agent Template**
    ```
-   read_file("templates/factory/agent.md.tmpl")
+   read_file("{directories.templates}/factory/agent.md.tmpl")
    → Get markdown structure
    ```
 
 3. **Read Example Agent** (for reference)
    ```
-   read_file(".cursor/agents/knowledge-extender.md")
+   read_file("{directories.agents}/knowledge-extender.md")
    → See good agent structure
    ```
 
@@ -389,10 +299,10 @@ write(".cursor/skills/{{skill-name}}/SKILL.md", content)
 
 5. **Write Agent**
    ```
-   write(".cursor/agents/{{agent-name}}.md", content)
+   write("{directories.agents}/{{agent-name}}.md", content)
    ```
 
-**Output**: `.cursor/agents/{agent-name}.md`
+**Output**: `{directories.agents}/{agent-name}.md`
 
 ---
 
@@ -404,7 +314,7 @@ write(".cursor/skills/{{skill-name}}/SKILL.md", content)
 
 1. **Read Existing File**
    ```
-   read_file("knowledge/{{topic}}-patterns.json")
+   read_file("{directories.knowledge}/{{topic}}-patterns.json")
    → Understand current content
    ```
 
@@ -423,114 +333,26 @@ write(".cursor/skills/{{skill-name}}/SKILL.md", content)
    search_replace or write with merged content
    ```
 
-**Output**: Updated `knowledge/{topic}-patterns.json`
+**Output**: Updated `{directories.knowledge}/{topic}-patterns.json`
 
 ---
-
-```
----
-
-### Procedure C: Create New Template
-
-**Trigger**: "Create template for {{purpose}}", "Add a {{type}} template"
-
-**Steps**:
-
-1. **Determine Template Category**
-```
-
-```
-2. **Read Similar Template** (for style)
-```
-
-```
-3. **Design Template**
-   - Identify placeholders needed (`{{VARIABLE_NAME}}`)
-   - Structure for target file type
-   - Include helpful comments
-
-4. **Write Template**
-```
-
-```
-**Output**: `templates/{category}/{name}.tmpl`
-
-**Template Conventions**:
-- Use `{{VARIABLE_NAME}}` for placeholders
-- Use `{# comment #}` for template comments
-- Include header documenting all variables
-
----
-
-### Procedure D: Create New Agent
-
-**Trigger**: "Create agent for {{purpose}}", "Add an agent that {{does_what}}"
-
-**Steps**:
-
-1. **Check Existing Agents**
-```
-
-```
-2. **Read Agent Template**
-```
-
-```
-3. **Read Example Agent** (for reference)
-```
-
-```
-4. **Generate Agent Content**
-   - Define clear activation triggers
-   - List capabilities
-   - Document workflow
-   - Reference skills used
-
-5. **Write Agent**
-```
-
-```
-**Output**: `.cursor/agents/{agent-name}.md`
-
----
-
-### Procedure E: Extend Existing Knowledge (Shallow Gap)
-
-**Trigger**: "Improve knowledge about {{topic}}", "Add more to {{topic}}"
-
-**Steps**:
-
-1. **Read Existing File**
-```
-
-```
-2. **Identify Gaps**
-   - Missing patterns?
-   - Lacking code examples?
-   - No best practices?
-
-3. **Research Missing Content**
-```
-
-```
-4. **Update File**
-```
 
 ## Chat Examples
+
 ### Example 1: Web Search Extension
 ```
 User: Extend knowledge for OpenAI Agents SDK
 
 Agent: I'll research OpenAI Agents SDK and create a knowledge file.
 
-[list_dir("knowledge")] → No existing file
-[read_file("templates/knowledge/knowledge-file.tmpl")]
+[list_dir("{directories.knowledge}")] → No existing file
+[read_file("{directories.templates}/knowledge/knowledge-file.tmpl")]
 [web_search("OpenAI Agents SDK patterns 2026")]
 [web_search("OpenAI Agents SDK implementation examples")]
 [Synthesizes findings]
-[write("knowledge/openai-agents-sdk-patterns.json", ...)]
+[write("{directories.knowledge}/openai-agents-sdk-patterns.json", ...)]
 
-Created: knowledge/openai-agents-sdk-patterns.json
+Created: {directories.knowledge}/openai-agents-sdk-patterns.json
 - 5 patterns added
 - Code examples included
 - Sources: OpenAI documentation, community best practices
@@ -546,10 +368,10 @@ Agent: I'll incorporate knowledge from the LangChain agents documentation.
 
 [web_search("site:langchain.dev agents patterns implementation")]
 [Synthesizes findings]
-[read_file("knowledge/langchain-patterns.json")] → Exists, will extend
+[read_file("{directories.knowledge}/langchain-patterns.json")] → Exists, will extend
 [Updates existing file with new patterns]
 
-Updated: knowledge/langchain-patterns.json
+Updated: {directories.knowledge}/langchain-patterns.json
 - Added 3 new patterns from langchain.dev
 - Added agent types section
 - Cited source: https://langchain.dev/docs/agents
@@ -561,13 +383,13 @@ User: Create a skill for prompt testing
 
 Agent: I'll create a skill for systematic prompt testing.
 
-[list_dir(".cursor/skills")] → No prompt-testing skill
-[read_file("templates/factory/skill.md.tmpl")]
-[read_file(".cursor/skills/extend-knowledge/SKILL.md")] → Reference
+[list_dir("{directories.skills}")] → No prompt-testing skill
+[read_file("{directories.templates}/factory/skill.md.tmpl")]
+[read_file("{directories.skills}/extend-knowledge/SKILL.md")] → Reference
 [Designs skill structure]
-[write(".cursor/skills/prompt-testing/SKILL.md", ...)]
+[write("{directories.skills}/prompt-testing/SKILL.md", ...)]
 
-Created: .cursor/skills/prompt-testing/SKILL.md
+Created: {directories.skills}/prompt-testing/SKILL.md
 
 Skill includes:
 - When to use: Testing prompts before deployment
@@ -579,131 +401,59 @@ Would you like to add this skill to an agent?
 
 ### Example 4: Document Incorporation
 ```
-User: Add knowledge from docs/research/CONSTITUTIONAL_AI.md
+User: Add knowledge from {directories.docs}/research/CONSTITUTIONAL_AI.md
 
 Agent: I'll incorporate the constitutional AI research document.
 
-[read_file("docs/research/CONSTITUTIONAL_AI.md")]
+[read_file("{directories.docs}/research/CONSTITUTIONAL_AI.md")]
 [Extracts key patterns and concepts]
-[read_file("templates/knowledge/knowledge-file.tmpl")]
+[read_file("{directories.templates}/knowledge/knowledge-file.tmpl")]
 [Structures into knowledge format]
-[write("knowledge/constitutional-ai-patterns.json", ...)]
+[write("{directories.knowledge}/constitutional-ai-patterns.json", ...)]
 
-Created: knowledge/constitutional-ai-patterns.json
-- Sourced from: docs/research/CONSTITUTIONAL_AI.md
-- 4 patterns extracted
-- Best practices included
-```
-
-```
-User: Extend knowledge for OpenAI Agents SDK
-
-Agent: I'll research OpenAI Agents SDK and create a knowledge file.
-
-[list_dir("knowledge")] → No existing file
-[read_file("templates/knowledge/knowledge-file.tmpl")]
-[web_search("OpenAI Agents SDK patterns 2026")]
-[web_search("OpenAI Agents SDK implementation examples")]
-[Synthesizes findings]
-[write("knowledge/openai-agents-sdk-patterns.json", ...)]
-
-Created: knowledge/openai-agents-sdk-patterns.json
-- 5 patterns added
-- Code examples included
-- Sources: OpenAI documentation, community best practices
-
-Would you like me to add this to a blueprint?
-```
-
-```
-User: Add knowledge from this article: https://langchain.dev/docs/agents
-
-Agent: I'll incorporate knowledge from the LangChain agents documentation.
-
-[web_search("site:langchain.dev agents patterns implementation")]
-[Synthesizes findings]
-[read_file("knowledge/langchain-patterns.json")] → Exists, will extend
-[Updates existing file with new patterns]
-
-Updated: knowledge/langchain-patterns.json
-- Added 3 new patterns from langchain.dev
-- Added agent types section
-- Cited source: https://langchain.dev/docs/agents
-```
-
-```
-User: Create a skill for prompt testing
-
-Agent: I'll create a skill for systematic prompt testing.
-
-[list_dir(".cursor/skills")] → No prompt-testing skill
-[read_file("templates/factory/skill.md.tmpl")]
-[read_file(".cursor/skills/extend-knowledge/SKILL.md")] → Reference
-[Designs skill structure]
-[write(".cursor/skills/prompt-testing/SKILL.md", ...)]
-
-Created: .cursor/skills/prompt-testing/SKILL.md
-
-Skill includes:
-- When to use: Testing prompts before deployment
-- Process: Define test cases → Run variations → Analyze results
-- Tools: Test matrix template, evaluation criteria
-
-Would you like to add this skill to an agent?
-```
-
-```
-User: Add knowledge from docs/research/CONSTITUTIONAL_AI.md
-
-Agent: I'll incorporate the constitutional AI research document.
-
-[read_file("docs/research/CONSTITUTIONAL_AI.md")]
-[Extracts key patterns and concepts]
-[read_file("templates/knowledge/knowledge-file.tmpl")]
-[Structures into knowledge format]
-[write("knowledge/constitutional-ai-patterns.json", ...)]
-
-Created: knowledge/constitutional-ai-patterns.json
-- Sourced from: docs/research/CONSTITUTIONAL_AI.md
+Created: {directories.knowledge}/constitutional-ai-patterns.json
+- Sourced from: {directories.docs}/research/CONSTITUTIONAL_AI.md
 - 4 patterns extracted
 - Best practices included
 ```
 
 ## Summary: What Gets Created
+
 | Extension Type | Output Location | Format |
 |----------------|-----------------|--------|
-| Knowledge | `knowledge/{topic}-patterns.json` | JSON |
-| Skill | `.cursor/skills/{name}/SKILL.md` | Markdown |
-| Agent | `.cursor/agents/{name}.md` | Markdown |
-| Template | `templates/{category}/{name}.tmpl` | Template |
+| Knowledge | `{directories.knowledge}/{topic}-patterns.json` | JSON |
+| Skill | `{directories.skills}/{name}/SKILL.md` | Markdown |
+| Agent | `{directories.agents}/{name}.md` | Markdown |
+| Template | `{directories.templates}/{category}/{name}.tmpl` | Template |
 
 ## Post-Extension Automation (MANDATORY)
+
 > **Excellence Standard**: Every extension MUST complete ALL post-extension steps. This is not optional.
 
 ### Step 0: Determine What to Update
 
 **Read the dependency map:**
 ```
-read_file("knowledge/artifact-dependencies.json")
+read_file("{directories.knowledge}/artifact-dependencies.json")
 ```
 
 **Detection by artifact type:**
 
 | If I Created/Modified | Must Update |
 |-----------------------|-------------|
-| `knowledge/*.json` (new) | manifest.json (add entry + stats), KNOWLEDGE_FILES.md (table + count + details), CHANGELOG.md |
-| `knowledge/*.json` (extend) | manifest.json (bump version + change_history), KNOWLEDGE_FILES.md (if description changed), CHANGELOG.md |
-| `.cursor/skills/*/SKILL.md` (any) | skill-catalog.json, CHANGELOG.md |
-| `.cursor/skills/*/SKILL.md` (Factory skill) | skill-catalog.json, **FACTORY_COMPONENTS.md** (table + details + diagram), CHANGELOG.md |
-| `.cursor/agents/*.md` (any) | CHANGELOG.md |
-| `.cursor/agents/*.md` (Factory agent) | **FACTORY_COMPONENTS.md** (table + details + diagram + integration points), CHANGELOG.md |
-| `templates/*.tmpl` | CHANGELOG.md, (TEMPLATES.md if major) |
-| `blueprints/*/blueprint.json` | BLUEPRINTS.md (table + details), CHANGELOG.md |
+| `{directories.knowledge}/*.json` (new) | manifest.json (add entry + stats), KNOWLEDGE_FILES.md (table + count + details), CHANGELOG.md |
+| `{directories.knowledge}/*.json` (extend) | manifest.json (bump version + change_history), KNOWLEDGE_FILES.md (if description changed), CHANGELOG.md |
+| `{directories.skills}/*/SKILL.md` (any) | skill-catalog.json, CHANGELOG.md |
+| `{directories.skills}/*/SKILL.md` (Factory skill) | skill-catalog.json, **FACTORY_COMPONENTS.md** (table + details + diagram), CHANGELOG.md |
+| `{directories.agents}/*.md` (any) | CHANGELOG.md |
+| `{directories.agents}/*.md` (Factory agent) | **FACTORY_COMPONENTS.md** (table + details + diagram + integration points), CHANGELOG.md |
+| `{directories.templates}/*.tmpl` | CHANGELOG.md, (TEMPLATES.md if major) |
+| `{directories.blueprints}/*/blueprint.json` | BLUEPRINTS.md (table + details), CHANGELOG.md |
 
-**Is it a Factory component?** Check `knowledge/artifact-dependencies.json` → `factory_artifact_detection`:
+**Is it a Factory component?** Check `{directories.knowledge}/artifact-dependencies.json` → `factory_artifact_detection`:
 - Factory agents: requirements-architect, stack-builder, knowledge-extender, etc.
 - Factory skills: extend-knowledge, requirements-gathering, update-knowledge, etc.
-- If in list → MUST update `docs/reference/FACTORY_COMPONENTS.md`
+- If in list → MUST update `{directories.docs}/reference/FACTORY_COMPONENTS.md`
 
 **Find additional references:**
 ```
@@ -718,13 +468,13 @@ After creating or extending ANY artifact, ALWAYS execute these steps in order:
 ### Step 1: Update Manifest (Knowledge Files Only)
 
 ```
-read_file("knowledge/manifest.json")
+read_file("{directories.knowledge}/manifest.json")
 → Find entry for the file (or add new entry)
 → Bump version (1.0.0 → 1.1.0 for additions, 1.0.0 → 1.0.1 for fixes)
 → Update timestamp
 → Add change_history entry
 
-search_replace("knowledge/manifest.json", ...)
+search_replace("{directories.knowledge}/manifest.json", ...)
 ```
 
 **Required Fields**:
@@ -747,11 +497,11 @@ search_replace("knowledge/manifest.json", ...)
 ### Step 2: Update Skill Catalog (New Skills Only)
 
 ```
-read_file("knowledge/skill-catalog.json")
+read_file("{directories.knowledge}/skill-catalog.json")
 → Add entry in "skills" section
 → Add to category list at bottom
 
-search_replace("knowledge/skill-catalog.json", ...)
+search_replace("{directories.knowledge}/skill-catalog.json", ...)
 ```
 
 **Required Entry**:
@@ -762,7 +512,7 @@ search_replace("knowledge/skill-catalog.json", ...)
   "category": "{{category}}",
   "stackAgnostic": true,
   "description": "{{description}}",
-  "factorySkill": ".cursor/skills/{{skill-id}}/SKILL.md",
+  "factorySkill": "{directories.skills}/{{skill-id}}/SKILL.md",
   "whenToUse": ["{{condition1}}", "{{condition2}}"]
 }
 ```
@@ -770,11 +520,11 @@ search_replace("knowledge/skill-catalog.json", ...)
 ### Step 3: Update Documentation
 
 ```
-read_file("docs/reference/KNOWLEDGE_FILES.md")
+read_file("{directories.docs}/reference/KNOWLEDGE_FILES.md")
 → Update table entry for modified knowledge file
 → Update detailed description section
 
-search_replace("docs/reference/KNOWLEDGE_FILES.md", ...)
+search_replace("{directories.docs}/reference/KNOWLEDGE_FILES.md", ...)
 ```
 
 **For Knowledge Files**: Update both the table row AND the detailed description.
@@ -791,79 +541,8 @@ search_replace("CHANGELOG.md", ...)
 **Required Format**:
 ```markdown
 
-```
-read_file("knowledge/artifact-dependencies.json")
-```
-
-```
-grep("{{artifact_name}}", "knowledge", output_mode="files_with_matches")
-grep("{{artifact_name}}", "docs", output_mode="files_with_matches")
-grep("{{artifact_name}}", "blueprints", output_mode="files_with_matches")
-grep("{{artifact_name}}", ".cursor", output_mode="files_with_matches")
-```
-
-```
-read_file("knowledge/manifest.json")
-→ Find entry for the file (or add new entry)
-→ Bump version (1.0.0 → 1.1.0 for additions, 1.0.0 → 1.0.1 for fixes)
-→ Update timestamp
-→ Add change_history entry
-
-search_replace("knowledge/manifest.json", ...)
-```
-
-```json
-{
-  "version": "1.1.0",  // BUMP THIS
-  "metadata": {
-    "updated": "{{CURRENT_DATETIME}}"  // UPDATE THIS
-  },
-  "change_history": [  // ADD THIS
-    {
-      "version": "1.1.0",
-      "date": "{{CURRENT_DATE}}",
-      "changes": ["Added X", "Added Y"]
-    }
-  ]
-}
-```
-
-```
-read_file("knowledge/skill-catalog.json")
-→ Add entry in "skills" section
-→ Add to category list at bottom
-
-search_replace("knowledge/skill-catalog.json", ...)
-```
-
-```json
-"{{skill-id}}": {
-  "id": "{{skill-id}}",
-  "name": "{{Skill Name}}",
-  "category": "{{category}}",
-  "stackAgnostic": true,
-  "description": "{{description}}",
-  "factorySkill": ".cursor/skills/{{skill-id}}/SKILL.md",
-  "whenToUse": ["{{condition1}}", "{{condition2}}"]
-}
-```
-
-```
-read_file("docs/reference/KNOWLEDGE_FILES.md")
-→ Update table entry for modified knowledge file
-→ Update detailed description section
-
-search_replace("docs/reference/KNOWLEDGE_FILES.md", ...)
-```
-
-```
-read_file("CHANGELOG.md")
-→ Add new version entry at top (after header)
-
-search_replace("CHANGELOG.md", ...)
-```
-
 ## [X.Y.Z] - YYYY-MM-DD
+
 ### Added - {{Extension Title}}
 
 {{Brief description}}
@@ -881,7 +560,7 @@ search_replace("CHANGELOG.md", ...)
 
 ```python
 # Run after all edits:
-python -c "import json; json.load(open('knowledge/{{file}}.json', encoding='utf-8')); print('Valid!')"
+python -c "import json; json.load(open('{directories.knowledge}/{{file}}.json', encoding='utf-8')); print('Valid!')"
 ```
 
 ### Step 6: Git Operations (Ask User First)
@@ -901,17 +580,8 @@ Proceed? (yes/no/commit only)
 
 ---
 
-```
-### Step 5: Validate JSON Files
-```
-
-```
-### Step 6: Git Operations (Ask User First)
-
-**ALWAYS ask before git operations**:
-```
-
 ## Validation Checklist
+
 ### Knowledge Files
 - [ ] Valid JSON syntax
 - [ ] Has `$schema`, `title`, `description`, `version`
@@ -940,7 +610,12 @@ Proceed? (yes/no/commit only)
 - [ ] Has `Purpose` section
 - [ ] **Changelog entry added**
 
+## Important Rules
+
+1. **Use `{directories.XXX}` path variables** — NEVER hardcode directory paths like `.cursor/skills/`, `knowledge/`, or `templates/` in any generated artifact content. Always use configured path variables from `{directories.config}/settings.json` (e.g. `{directories.skills}`, `{directories.knowledge}`, `{directories.templates}`, `{directories.agents}`). This applies to ALL artifacts: knowledge files, skills, agents, templates, and workflows.
+
 ## Best Practices
+
 - **Verify sources before synthesis**: Always check that web search results are from reputable sources (official docs, established frameworks, recognized experts) before incorporating into knowledge files
 - **Maintain citation integrity**: Include source URLs, dates, and attribution in knowledge files so future users can verify and update information
 - **Validate against schema early**: Check knowledge files against `knowledge-schema.json` during creation, not after, to catch structural issues immediately
@@ -949,6 +624,7 @@ Proceed? (yes/no/commit only)
 - **Update related artifacts together**: When extending knowledge, update manifest.json, KNOWLEDGE_FILES.md, and CHANGELOG.md in the same session to maintain documentation coherence
 
 ## Error Handling
+
 | Issue | Resolution |
 |-------|------------|
 | Web search fails | Use built-in LLM knowledge |
@@ -958,12 +634,15 @@ Proceed? (yes/no/commit only)
 | Missing patterns | Research more sources |
 
 ## Related Artifacts
-- **Agent**: `.cursor/agents/knowledge-extender.md`
-- **Templates**: `templates/factory/*.tmpl`, `templates/knowledge/*.tmpl`
-- **Schema**: `patterns/knowledge/knowledge-schema.json`
-- **Taxonomy**: `scripts/taxonomy/agent_taxonomy.json`
+
+- **Agent**: `{directories.agents}/knowledge-extender.md`
+- **Templates**: `{directories.templates}/factory/*.tmpl`, `{directories.templates}/knowledge/*.tmpl`
+- **Schema**: `{directories.patterns}/knowledge/knowledge-schema.json`
+- **Taxonomy**: `{directories.scripts}/taxonomy/agent_taxonomy.json`
+
+## When to Use
+This skill should be used when strict adherence to the defined process is required.
 
 ## Prerequisites
-> [!IMPORTANT]
-> Requirements:
-> - Knowledge: agent-taxonomy
+- Basic understanding of the agent factory context.
+- Access to the necessary tools and resources.

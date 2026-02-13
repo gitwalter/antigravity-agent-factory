@@ -33,11 +33,12 @@ Deploy machine learning models to production environments with proper serving in
 - [[kubernetes-deployment]]
 
 ## Knowledge
-- [Factory Automation](../../docs/automation/FACTORY_AUTOMATION.md)
-- [mlops-patterns.json](../../knowledge/mlops-patterns.json)
-- [model-serving-patterns.json](../../knowledge/model-serving-patterns.json)
-- [ml-workflow-patterns.json](../../knowledge/ml-workflow-patterns.json)
-- [cloud-ml-deployment.json](../../knowledge/cloud-ml-deployment.json)
-- [kubernetes-ml-patterns.json](../../knowledge/kubernetes-ml-patterns.json)
-- [cicd-patterns.json](../../knowledge/cicd-patterns.json)
-- [kubernetes-patterns.json](../../knowledge/kubernetes-patterns.json)
+- [mlops-patterns.json](../knowledge/mlops-patterns.json)
+- [model-serving-patterns.json](../knowledge/model-serving-patterns.json)
+- [ml-workflow-patterns.json](../knowledge/ml-workflow-patterns.json)
+- [cloud-ml-deployment.json](../knowledge/cloud-ml-deployment.json)
+- [kubernetes-ml-patterns.json](../knowledge/kubernetes-ml-patterns.json)
+- [cicd-patterns.json](../knowledge/cicd-patterns.json)
+- [kubernetes-patterns.json](../knowledge/kubernetes-patterns.json)
+- [monitoring-observability-patterns.json](../knowledge/monitoring-observability-patterns.json)
+- [cloud-architecture-patterns.json](../knowledge/cloud-architecture-patterns.json)

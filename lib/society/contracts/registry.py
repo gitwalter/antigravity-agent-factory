@@ -4,7 +4,7 @@ Contract Registry
 Storage and lookup for agent contracts.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 import json
@@ -264,7 +264,7 @@ class ContractRegistry:
             Number of contracts removed.
         """
         with self._lock:
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
             expired = [
                 cid for cid, c in self._contracts.items()
                 if c.expires and c.expires < now

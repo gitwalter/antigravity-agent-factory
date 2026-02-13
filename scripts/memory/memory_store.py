@@ -677,12 +677,14 @@ class MemoryStore:
 _default_store: Optional[MemoryStore] = None
 
 
-def get_memory_store(config_path: Optional[str] = None) -> MemoryStore:
+
+def get_memory_store(config_path: Optional[str] = None, persist_dir: Optional[str] = None) -> MemoryStore:
     """
     Get or create the default memory store instance.
     
     Args:
         config_path: Config path (only applies on first call).
+        persist_dir: Override persist directory (only applies on first call).
         
     Returns:
         MemoryStore instance.
@@ -690,6 +692,12 @@ def get_memory_store(config_path: Optional[str] = None) -> MemoryStore:
     global _default_store
     
     if _default_store is None:
-        _default_store = MemoryStore(config_path=config_path)
+        _default_store = MemoryStore(config_path=config_path, persist_dir=persist_dir)
     
     return _default_store
+
+def reset_memory_store() -> None:
+    """Reset the singleton instance (for testing)."""
+    global _default_store
+    _default_store = None
+

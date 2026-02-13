@@ -32,11 +32,11 @@ Expert in Git version control operations with intelligent pre-commit validation,
 - [[commit-release]]
 - [[ci-monitor]]
 - [[pipeline-error-fix]]
-- [[shell-platform]]
+- [[repo-sync]]
 
 ## Knowledge
-- [Factory Automation](../../docs/automation/FACTORY_AUTOMATION.md)
-- [workflow-patterns.json](../../knowledge/workflow-patterns.json)
+- [workflow-patterns.json](../knowledge/workflow-patterns.json)
+- [cicd-patterns.json](../knowledge/cicd-patterns.json)
 
 ## Tooling
 **MCP Servers:**

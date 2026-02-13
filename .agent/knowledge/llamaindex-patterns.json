@@ -1,12 +1,29 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "llamaindex-patterns",
+  "name": "LlamaIndex Patterns",
   "title": "LlamaIndex Patterns",
   "description": "Best practices and patterns for LlamaIndex 0.12+ for building RAG and agent applications",
   "version": "1.0.0",
+  "category": "rag",
   "axiomAlignment": {
     "A1_verifiability": "Patterns include source citations and retrieval verification",
-    "A3_transparency": "Query engines and agents provide explainable behavior"
+    "A2_user_primacy": "Query engines and agents prioritize user intent and context",
+    "A3_transparency": "Query engines and agents provide explainable behavior",
+    "A4_non_harm": "Retrieval filters and agent constraints mitigate harmful outputs",
+    "A5_consistency": "Unified LlamaIndex patterns for RAG and agent applications"
   },
+  "related_skills": [
+    "rag-patterns",
+    "advanced-retrieval",
+    "agentic-loops"
+  ],
+  "related_knowledge": [
+    "rag-patterns.json",
+    "embedding-models.json",
+    "vector-database-patterns.json",
+    "haystack-patterns.json"
+  ],
   "import_structure": {
     "description": "LlamaIndex 0.12+ uses modular packages",
     "core": "llama_index.core - Core abstractions (nodes, indices, query engines)",
@@ -16,7 +33,13 @@
       "embeddings": "llama_index.embeddings.openai - OpenAI embeddings",
       "vector_stores": "llama_index.vector_stores.chroma - Vector store integrations"
     },
-    "note": "Use llama_index for high-level APIs, llama_index.core for core components"
+    "note": "Use llama_index for high-level APIs, llama_index.core for core components",
+    "use_when": "Apply when implementing import structure in integration context",
+    "code_example": "import httpx\n\nasync with httpx.AsyncClient() as client:\n    response = await client.get(url, timeout=30.0)\n    response.raise_for_status()\n    return response.json()",
+    "best_practices": [
+      "Document the pattern usage and rationale in code comments for import_structure",
+      "Validate implementation against domain requirements before deployment"
+    ]
   },
   "data_ingestion_patterns": {
     "document_loaders": {
@@ -27,7 +50,8 @@
         "Specify required_exts to filter file types",
         "Add metadata at load time for better tracking",
         "Handle encoding issues for text files"
-      ]
+      ],
+      "use_when": "Apply when implementing document loaders in integration context"
     },
     "node_parsing": {
       "description": "Parse documents into nodes with metadata",
@@ -37,7 +61,8 @@
         "Set chunk_size based on embedding model context",
         "Use 10-20% overlap for context preservation",
         "Store metadata in nodes for filtering"
-      ]
+      ],
+      "use_when": "Apply when implementing node parsing in integration context"
     },
     "indexing": {
       "description": "Create and populate vector indices",
@@ -47,7 +72,8 @@
         "Set show_progress=True for large document sets",
         "Use same embed_model for indexing and querying",
         "Store index metadata for versioning"
-      ]
+      ],
+      "use_when": "Apply when implementing indexing in integration context"
     },
     "metadata_indexing": {
       "description": "Index documents with rich metadata for filtering",
@@ -57,7 +83,8 @@
         "Use consistent metadata keys across documents",
         "Store metadata that will be used for filtering",
         "Consider using metadata extractors for automatic extraction"
-      ]
+      ],
+      "use_when": "Apply when implementing metadata indexing in integration context"
     }
   },
   "query_engine_patterns": {
@@ -68,7 +95,8 @@
         "Set similarity_top_k based on context window",
         "Use response_mode='compact' for concise answers",
         "Access source_nodes for citations"
-      ]
+      ],
+      "use_when": "Apply when implementing basic query engine in integration context"
     },
     "retrieval_query_engine": {
       "description": "Query engine with custom retrieval settings",
@@ -78,7 +106,8 @@
         "Set similarity_top_k higher than final response",
         "Use filters to narrow retrieval scope",
         "Enable async for better performance"
-      ]
+      ],
+      "use_when": "Apply when implementing retrieval query engine in integration context"
     },
     "router_query_engine": {
       "description": "Route queries to different query engines",
@@ -87,7 +116,8 @@
         "Use router for different query types",
         "Provide clear descriptions for each tool",
         "Test routing accuracy with sample queries"
-      ]
+      ],
+      "use_when": "Apply when implementing router query engine in integration context"
     },
     "sub_question_query_engine": {
       "description": "Break complex queries into sub-questions",
@@ -96,7 +126,8 @@
         "Use for complex multi-part queries",
         "Enable async for parallel sub-question processing",
         "Monitor sub-question generation quality"
-      ]
+      ],
+      "use_when": "Apply when implementing sub question query engine in integration context"
     },
     "retrieval_augmented_query_engine": {
       "description": "Query engine with retrieval augmentation",
@@ -105,18 +136,20 @@
         "Use post-processors to filter low-quality results",
         "Set similarity_cutoff based on your data",
         "Retrieve more nodes than needed, then filter"
-      ]
+      ],
+      "use_when": "Apply when implementing retrieval augmented query engine in integration context"
     }
   },
   "rag_patterns": {
     "basic_rag": {
-      "description": "Simple RAG pipeline",
+      "description": "Implements basic rag for reliable, maintainable code. Use when the scenario requires this pattern.",
       "code_example": "from llama_index.core import VectorStoreIndex, SimpleDirectoryReader\nfrom llama_index.llms.openai import OpenAI\nfrom llama_index.embeddings.openai import OpenAIEmbedding\n\n# Load documents\nreader = SimpleDirectoryReader('./documents')\ndocuments = reader.load_data()\n\n# Create LLM and embedding model\nllm = OpenAI(model='gpt-4', temperature=0)\nembed_model = OpenAIEmbedding(model='text-embedding-3-small')\n\n# Create index\nindex = VectorStoreIndex.from_documents(\n    documents,\n    embed_model=embed_model\n)\n\n# Create query engine\nquery_engine = index.as_query_engine(llm=llm)\n\n# Query\nresponse = query_engine.query('What is the main topic?')\nprint(response)\nprint(f'Sources: {[node.node_id for node in response.source_nodes]}')",
       "best_practices": [
         "Use temperature=0 for deterministic responses",
         "Access source_nodes for citations",
         "Set similarity_top_k appropriately"
-      ]
+      ],
+      "use_when": "Apply when implementing basic rag in integration context"
     },
     "streaming_rag": {
       "description": "Stream RAG responses token by token",
@@ -125,7 +158,8 @@
         "Use streaming for better UX",
         "Handle streaming errors gracefully",
         "Consider rate limiting for production"
-      ]
+      ],
+      "use_when": "Apply when implementing streaming rag in integration context"
     },
     "chat_rag": {
       "description": "RAG with conversation history",
@@ -134,7 +168,8 @@
         "Set token_limit based on model context window",
         "Use ContextChatEngine for better context handling",
         "Clear memory for new conversations"
-      ]
+      ],
+      "use_when": "Apply when implementing chat rag in integration context"
     },
     "multi_document_rag": {
       "description": "RAG across multiple document collections",
@@ -143,7 +178,8 @@
         "Use router for multiple document collections",
         "Provide clear descriptions for routing",
         "Consider ensemble retrieval for cross-collection queries"
-      ]
+      ],
+      "use_when": "Apply when implementing multi document rag in integration context"
     }
   },
   "agent_patterns": {
@@ -155,16 +191,18 @@
         "Provide clear tool descriptions",
         "Set verbose=True for debugging",
         "Handle tool errors gracefully"
-      ]
+      ],
+      "use_when": "Apply when implementing openai agent in integration context"
     },
     "react_agent": {
-      "description": "ReAct agent pattern",
+      "description": "Implements react agent for reliable, maintainable code. Use when the scenario requires this pattern.",
       "code_example": "from llama_index.core.agent import ReActAgent\nfrom llama_index.core.tools import QueryEngineTool\n\n# Create tools\nquery_tool = QueryEngineTool.from_defaults(\n    query_engine=index.as_query_engine(),\n    description='Search documents'\n)\n\n# Create ReAct agent\nagent = ReActAgent.from_tools(\n    tools=[query_tool],\n    llm=llm,\n    verbose=True,\n    max_iterations=10\n)\n\nresponse = agent.chat('What is the main topic?')",
       "best_practices": [
         "Set max_iterations to prevent infinite loops",
         "Use for models without native function calling",
         "Monitor reasoning steps for debugging"
-      ]
+      ],
+      "use_when": "Apply when implementing react agent in integration context"
     },
     "custom_tools": {
       "description": "Create custom tools for agents",
@@ -174,7 +212,8 @@
         "Add Pydantic schemas for complex inputs",
         "Provide clear docstrings for tool descriptions",
         "Return structured outputs when possible"
-      ]
+      ],
+      "use_when": "Apply when implementing custom tools in integration context"
     },
     "agent_with_memory": {
       "description": "Agent with conversation memory",
@@ -183,7 +222,8 @@
         "Set token_limit based on model context",
         "Clear memory for new conversations",
         "Monitor memory usage"
-      ]
+      ],
+      "use_when": "Apply when implementing agent with memory in integration context"
     }
   },
   "callbacks_observability": {
@@ -194,7 +234,8 @@
         "Use LlamaDebugHandler for development",
         "Set callback_manager globally for consistency",
         "Access traces for debugging"
-      ]
+      ],
+      "use_when": "Apply when implementing callback handlers in integration context"
     },
     "langsmith_integration": {
       "description": "Integrate with LangSmith for tracing",
@@ -203,7 +244,8 @@
         "Set LANGCHAIN_PROJECT for organization",
         "Enable tracing in all environments",
         "Add metadata to traces for filtering"
-      ]
+      ],
+      "use_when": "Apply when implementing langsmith integration in integration context"
     },
     "custom_callbacks": {
       "description": "Create custom callback handlers",
@@ -212,48 +254,86 @@
         "Implement only needed callback methods",
         "Keep callbacks lightweight",
         "Use for logging and monitoring"
-      ]
+      ],
+      "use_when": "Apply when implementing custom callbacks in integration context"
     }
   },
   "anti_patterns": [
     {
-      "name": "mismatched_embeddings",
-      "description": "Using different embedding models for indexing and querying",
+      "name": "Using different embedding models for indexing and querying",
       "problem": "Poor retrieval quality",
       "solution": "Use same embed_model for both indexing and querying"
     },
     {
-      "name": "no_source_citations",
-      "description": "Not accessing source_nodes for citations",
+      "name": "Not accessing source_nodes for citations",
       "problem": "Cannot verify answers",
       "solution": "Always access response.source_nodes and include in output"
     },
     {
-      "name": "too_many_nodes",
-      "description": "Retrieving too many nodes for context",
+      "name": "Retrieving too many nodes for context",
       "problem": "Token limit issues, slower responses",
       "solution": "Set similarity_top_k appropriately (5-10 typically)"
     },
     {
-      "name": "no_metadata_filtering",
-      "description": "Not using metadata filters for retrieval",
+      "name": "Not using metadata filters for retrieval",
       "problem": "Irrelevant results, poor precision",
       "solution": "Use metadata filters in retriever to narrow search"
     }
   ],
-  "best_practices_summary": [
-    "Use same embed_model for indexing and querying",
-    "Set similarity_top_k based on context window",
-    "Access source_nodes for citations",
-    "Use metadata filters for better retrieval",
-    "Enable callbacks for observability",
-    "Use streaming for better UX",
-    "Set temperature=0 for deterministic responses",
-    "Monitor token usage and memory"
+  "best_practices": [
+    "Use the same embed_model for both indexing and querying to ensure consistent embedding space",
+    "Set similarity_top_k based on context window (typically 5-10) to balance retrieval quality and token usage",
+    "Always access response.source_nodes for citations to enable verification and transparency",
+    "Use metadata filters in retrievers to narrow search scope and improve precision",
+    "Enable callbacks (LlamaDebugHandler or LangSmith) for observability and debugging",
+    "Use streaming for better UX on long-running queries, handling streaming errors gracefully",
+    "Set temperature=0 for deterministic responses in production RAG applications",
+    "Monitor token usage and memory, implementing conversation windowing for long chats",
+    "Use SentenceSplitter with 10-20% chunk overlap for better semantic boundary preservation",
+    "Store indices with persistent storage_context for production - in-memory indices are for development only"
   ],
-  "id": "llamaindex-patterns",
-  "name": "Llamaindex Patterns",
-  "category": "patterns",
-  "patterns": {},
-  "best_practices": []
+  "patterns": {
+    "agent_patterns_openai_agent": {
+      "description": "Create agent with OpenAI function calling",
+      "code_example": "from llama_index.agent.openai import OpenAIAgent\nfrom llama_index.core.tools import FunctionTool\nfrom llama_index.core.query_engine import RetrieverQueryEngine\n\n# Create query engine tool\nquery_engine = index.as_query_engine()\nquery_tool = QueryEngineTool.from_defaults(\n    query_engine=query_engine,\n    description='Search documents for information'\n)\n\n# Create custom tool\n@FunctionTool.from_defaults()\ndef calculator(expression: str) -> str:\n    '''Evaluate a mathematical expression.'''\n    return str(eval(expression))\n\n# Create agent\nagent = OpenAIAgent.from_tools(\n    tools=[query_tool, calculator],\n    llm=llm,\n    verbose=True\n)\n\n# Use agent\nresponse = agent.chat('What is 15*23 and what does the document say about AI?')",
+      "best_practices": [
+        "Use OpenAIAgent for GPT-4 with function calling",
+        "Provide clear tool descriptions",
+        "Set verbose=True for debugging",
+        "Handle tool errors gracefully"
+      ],
+      "use_when": "Apply when implementing openai agent in integration context"
+    },
+    "agent_patterns_react_agent": {
+      "description": "Implements react agent for reliable, maintainable code. Use when the scenario requires this pattern.",
+      "code_example": "from llama_index.core.agent import ReActAgent\nfrom llama_index.core.tools import QueryEngineTool\n\n# Create tools\nquery_tool = QueryEngineTool.from_defaults(\n    query_engine=index.as_query_engine(),\n    description='Search documents'\n)\n\n# Create ReAct agent\nagent = ReActAgent.from_tools(\n    tools=[query_tool],\n    llm=llm,\n    verbose=True,\n    max_iterations=10\n)\n\nresponse = agent.chat('What is the main topic?')",
+      "best_practices": [
+        "Set max_iterations to prevent infinite loops",
+        "Use for models without native function calling",
+        "Monitor reasoning steps for debugging"
+      ],
+      "use_when": "Apply when implementing react agent in integration context"
+    },
+    "agent_patterns_custom_tools": {
+      "description": "Create custom tools for agents",
+      "code_example": "from llama_index.core.tools import FunctionTool\nfrom typing import List\n\n# Simple function tool\n@FunctionTool.from_defaults()\ndef get_weather(location: str) -> str:\n    '''Get the current weather for a location.'''\n    return f'Weather in {location}: Sunny, 72\u00b0F'\n\n# Tool with Pydantic schema\nfrom pydantic import BaseModel, Field\n\nclass SearchInput(BaseModel):\n    query: str = Field(description='Search query')\n    max_results: int = Field(default=5, ge=1, le=20)\n\n@FunctionTool.from_defaults()\ndef search_documents(query: str, max_results: int = 5) -> str:\n    '''Search documents with query and max results.'''\n    results = retriever.retrieve(query)\n    return '\\n'.join([node.text for node in results[:max_results]])\n\n# Use in agent\ntools = [get_weather, search_documents]\nagent = OpenAIAgent.from_tools(tools=tools, llm=llm)",
+      "best_practices": [
+        "Use FunctionTool for simple functions",
+        "Add Pydantic schemas for complex inputs",
+        "Provide clear docstrings for tool descriptions",
+        "Return structured outputs when possible"
+      ],
+      "use_when": "Apply when implementing custom tools in integration context"
+    },
+    "agent_patterns_agent_with_memory": {
+      "description": "Agent with conversation memory",
+      "code_example": "from llama_index.core.agent import ReActAgent\nfrom llama_index.core.memory import ChatMemoryBuffer\n\n# Create memory\nmemory = ChatMemoryBuffer.from_defaults(token_limit=3000)\n\n# Create agent with memory\nagent = ReActAgent.from_tools(\n    tools=[query_tool],\n    llm=llm,\n    memory=memory,\n    verbose=True\n)\n\n# Chat with memory\nresponse1 = agent.chat('What is machine learning?')\nresponse2 = agent.chat('Tell me more about that')  # Uses context from previous",
+      "best_practices": [
+        "Set token_limit based on model context",
+        "Clear memory for new conversations",
+        "Monitor memory usage"
+      ],
+      "use_when": "Apply when implementing agent with memory in integration context"
+    }
+  }
 }

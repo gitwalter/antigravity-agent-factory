@@ -1,7 +1,8 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "sap-event-mesh-patterns",
   "name": "SAP Event Mesh Patterns",
+  "title": "SAP Event Mesh Patterns",
   "version": "1.0.0",
   "description": "Event-driven integration patterns using SAP Event Mesh, CloudEvents format, and S/4HANA business events",
   "category": "sap",
@@ -9,7 +10,12 @@
   "axiomAlignment": {
     "love": "Enable decoupled, scalable integrations that respond to business events",
     "truth": "Based on CloudEvents specification and SAP Event Mesh documentation",
-    "beauty": "Clean, event-driven architectures that scale naturally"
+    "beauty": "Clean, event-driven architectures that scale naturally",
+    "A1_verifiability": "All patterns include verifiable examples and test approaches",
+    "A2_user_primacy": "Patterns prioritize user needs and practical outcomes",
+    "A3_transparency": "Pattern selection rationale is clearly documented",
+    "A4_non_harm": "Patterns include safety considerations and error handling",
+    "A5_consistency": "Patterns follow established conventions and standards"
   },
   "patterns": {
     "event-mesh-topic-design": {
@@ -21,7 +27,9 @@
         "topic": "salesorder/created",
         "naming": "Use format: domain/action (e.g., salesorder/created, customer/updated)"
       },
-      "bestPractices": [
+      "use_when": "When All event-driven integrations",
+      "code_example": "Use format: domain/action (e.g., salesorder/created, customer/updated)",
+      "best_practices": [
         "Use hierarchical topic names",
         "Follow domain/action pattern",
         "Use lowercase with slashes",
@@ -36,7 +44,9 @@
       "code": {
         "subscription": "{\n  \"subscription\": {\n    \"name\": \"salesorder-subscription\",\n    \"topic\": \"salesorder/created\",\n    \"queue\": \"salesorder-queue\"\n  }\n}"
       },
-      "bestPractices": [
+      "use_when": "When Reliable message delivery",
+      "code_example": "{\n  \"subscription\": {\n    \"name\": \"salesorder-subscription\",\n    \"topic\": \"salesorder/created\",\n    \"queue\": \"salesorder-queue\"\n  }\n}",
+      "best_practices": [
         "Use queues for reliable delivery",
         "Configure proper QoS",
         "Set up dead letter queues",
@@ -51,7 +61,9 @@
       "code": {
         "cloudevent": "{\n  \"specversion\": \"1.0\",\n  \"type\": \"com.sap.s4hana.salesorder.created\",\n  \"source\": \"/s4hana/salesorder\",\n  \"id\": \"event-id\",\n  \"time\": \"2026-02-09T10:00:00Z\",\n  \"datacontenttype\": \"application/json\",\n  \"data\": {\n    \"orderId\": \"12345\",\n    \"customerId\": \"C001\"\n  }\n}"
       },
-      "bestPractices": [
+      "use_when": "When All events",
+      "code_example": "{\n  \"specversion\": \"1.0\",\n  \"type\": \"com.sap.s4hana.salesorder.created\",\n  \"source\": \"/s4hana/salesorder\",\n  \"id\": \"event-id\",\n  \"time\": \"2026-02-09T10:00:00Z\",\n  \"datacontenttype\": \"application/json\",\n  \"data\": {\n    \"orderId\": \"12345\",\n    \"customerId\": \"C001\"\n  }\n}",
+      "best_practices": [
         "Follow CloudEvents specification",
         "Use proper type and source",
         "Include unique event ID",
@@ -66,7 +78,9 @@
       "code": {
         "javascript": "const axios = require('axios');\nconst event = {\n  specversion: '1.0',\n  type: 'com.sap.s4hana.salesorder.created',\n  source: '/s4hana/salesorder',\n  id: generateUUID(),\n  time: new Date().toISOString(),\n  datacontenttype: 'application/json',\n  data: {\n    orderId: '12345',\n    customerId: 'C001'\n  }\n};\nawait axios.post(eventMeshUrl, event, {\n  headers: { 'Content-Type': 'application/cloudevents+json' }\n});"
       },
-      "bestPractices": [
+      "use_when": "When Event producers",
+      "code_example": "const axios = require('axios');\nconst event = {\n  specversion: '1.0',\n  type: 'com.sap.s4hana.salesorder.created',\n  source: '/s4hana/salesorder',\n  id: generateUUID(),\n  time: new Date().toISOString(),\n  datacontenttype: 'application/json',\n  data: {\n    orderId: '12345',\n    customerId: 'C001'\n  }\n};\nawait axios.post(eventMeshUrl, event, {\n  headers: { 'Content-Type': 'application/cloudevents+json' }\n});",
+      "best_practices": [
         "Use CloudEvents format",
         "Set proper headers",
         "Include unique event ID",
@@ -81,7 +95,9 @@
       "code": {
         "javascript": "const mqtt = require('mqtt');\nconst client = mqtt.connect(eventMeshUrl, {\n  username: clientId,\n  password: clientSecret\n});\n\nclient.on('connect', () => {\n  client.subscribe('salesorder/created');\n});\n\nclient.on('message', (topic, message) => {\n  const event = JSON.parse(message.toString());\n  processEvent(event);\n});"
       },
-      "bestPractices": [
+      "use_when": "When Event consumers",
+      "code_example": "const mqtt = require('mqtt');\nconst client = mqtt.connect(eventMeshUrl, {\n  username: clientId,\n  password: clientSecret\n});\n\nclient.on('connect', () => {\n  client.subscribe('salesorder/created');\n});\n\nclient.on('message', (topic, message) => {\n  const event = JSON.parse(message.toString());\n  processEvent(event);\n});",
+      "best_practices": [
         "Use MQTT client",
         "Subscribe to topics",
         "Parse CloudEvents format",
@@ -96,7 +112,9 @@
       "code": {
         "filter": "{\n  \"subscription\": {\n    \"name\": \"filtered-subscription\",\n    \"topic\": \"salesorder/created\",\n    \"queue\": \"filtered-queue\",\n    \"filters\": [\n      {\n        \"field\": \"data.customerId\",\n        \"operator\": \"eq\",\n        \"value\": \"C001\"\n      }\n    ]\n  }\n}"
       },
-      "bestPractices": [
+      "use_when": "When Selective event consumption",
+      "code_example": "{\n  \"subscription\": {\n    \"name\": \"filtered-subscription\",\n    \"topic\": \"salesorder/created\",\n    \"queue\": \"filtered-queue\",\n    \"filters\": [\n      {\n        \"field\": \"data.customerId\",\n        \"operator\": \"eq\",\n        \"value\": \"C001\"\n      }\n    ]\n  }\n}",
+      "best_practices": [
         "Use filters for selective consumption",
         "Filter at subscription level",
         "Use proper operators",
@@ -111,7 +129,9 @@
       "code": {
         "error": "try {\n  await processEvent(event);\n} catch (error) {\n  log.error('Event processing failed', { event, error });\n  await sendToDeadLetterQueue(event, error);\n}"
       },
-      "bestPractices": [
+      "use_when": "When All event consumers",
+      "code_example": "try {\n  await processEvent(event);\n} catch (error) {\n  log.error('Event processing failed', { event, error });\n  await sendToDeadLetterQueue(event, error);\n}",
+      "best_practices": [
         "Handle errors gracefully",
         "Log errors with context",
         "Use dead letter queues",
@@ -126,7 +146,9 @@
       "code": {
         "retry": "const maxRetries = 3;\nlet retryCount = 0;\nwhile (retryCount < maxRetries) {\n  try {\n    await processEvent(event);\n    break;\n  } catch (error) {\n    retryCount++;\n    if (retryCount >= maxRetries) {\n      await sendToDeadLetterQueue(event, error);\n    } else {\n      await sleep(1000 * retryCount);\n    }\n  }\n}"
       },
-      "bestPractices": [
+      "use_when": "When Transient failures",
+      "code_example": "const maxRetries = 3;\nlet retryCount = 0;\nwhile (retryCount < maxRetries) {\n  try {\n    await processEvent(event);\n    break;\n  } catch (error) {\n    retryCount++;\n    if (retryCount >= maxRetries) {\n      await sendToDeadLetterQueue(event, error);\n    } else {\n      await sleep(1000 * retryCount);\n    }\n  }\n}",
+      "best_practices": [
         "Implement retry logic",
         "Use exponential backoff",
         "Set maximum retries",
@@ -141,7 +163,9 @@
       "code": {
         "dlq": "const deadLetterQueue = 'failed-events';\nawait publishEvent(deadLetterQueue, {\n  originalEvent: event,\n  error: error.message,\n  timestamp: new Date().toISOString()\n});"
       },
-      "bestPractices": [
+      "use_when": "When Error handling",
+      "code_example": "const deadLetterQueue = 'failed-events';\nawait publishEvent(deadLetterQueue, {\n  originalEvent: event,\n  error: error.message,\n  timestamp: new Date().toISOString()\n});",
+      "best_practices": [
         "Use DLQ for failed events",
         "Include original event",
         "Store error details",
@@ -156,7 +180,9 @@
       "code": {
         "idempotency": "const eventId = event.id;\nconst processed = await checkEventProcessed(eventId);\nif (processed) {\n  log.info('Event already processed', { eventId });\n  return;\n}\nawait markEventProcessed(eventId);\nawait processEvent(event);"
       },
-      "bestPractices": [
+      "use_when": "When All event consumers",
+      "code_example": "const eventId = event.id;\nconst processed = await checkEventProcessed(eventId);\nif (processed) {\n  log.info('Event already processed', { eventId });\n  return;\n}\nawait markEventProcessed(eventId);\nawait processEvent(event);",
+      "best_practices": [
         "Check event ID before processing",
         "Store processed event IDs",
         "Handle duplicate events",
@@ -171,7 +197,9 @@
       "code": {
         "s4hana": "Subscribe to S/4HANA business events:\n- Sales Order Created\n- Customer Updated\n- Material Changed\n- Invoice Posted"
       },
-      "bestPractices": [
+      "use_when": "When S/4HANA event consumption",
+      "code_example": "Subscribe to S/4HANA business events:\n- Sales Order Created\n- Customer Updated\n- Material Changed\n- Invoice Posted",
+      "best_practices": [
         "Subscribe to S/4HANA events",
         "Use proper event types",
         "Handle S/4HANA event format",
@@ -186,7 +214,9 @@
       "code": {
         "choreography": "Event flow:\n1. SalesOrderCreated -> InventoryCheck\n2. InventoryChecked -> PaymentProcessing\n3. PaymentProcessed -> ShipmentCreation"
       },
-      "bestPractices": [
+      "use_when": "When Complex workflows",
+      "code_example": "Event flow:\n1. SalesOrderCreated -> InventoryCheck\n2. InventoryChecked -> PaymentProcessing\n3. PaymentProcessed -> ShipmentCreation",
+      "best_practices": [
         "Design event flows",
         "Use events for orchestration",
         "Document event dependencies",
@@ -201,7 +231,9 @@
       "code": {
         "storage": "Store all events:\n- SalesOrderCreated\n- SalesOrderUpdated\n- SalesOrderCancelled\n\nReconstruct state from events"
       },
-      "bestPractices": [
+      "use_when": "When Audit trails, state reconstruction",
+      "code_example": "Store all events:\n- SalesOrderCreated\n- SalesOrderUpdated\n- SalesOrderCancelled\n\nReconstruct state from events",
+      "best_practices": [
         "Store all events",
         "Use events for state reconstruction",
         "Implement event replay",
@@ -216,7 +248,9 @@
       "code": {
         "pattern": "Producer publishes to topic\nMultiple consumers subscribe\nNo direct coupling between producer and consumers"
       },
-      "bestPractices": [
+      "use_when": "When Loose coupling",
+      "code_example": "Producer publishes to topic\nMultiple consumers subscribe\nNo direct coupling between producer and consumers",
+      "best_practices": [
         "Use topics for decoupling",
         "Support multiple consumers",
         "Avoid direct dependencies",
@@ -231,7 +265,9 @@
       "code": {
         "enrichment": "const enrichedEvent = {\n  ...event,\n  data: {\n    ...event.data,\n    customerName: await getCustomerName(event.data.customerId),\n    orderTotal: await calculateTotal(event.data.orderId)\n  }\n};"
       },
-      "bestPractices": [
+      "use_when": "When Event transformation",
+      "code_example": "const enrichedEvent = {\n  ...event,\n  data: {\n    ...event.data,\n    customerName: await getCustomerName(event.data.customerId),\n    orderTotal: await calculateTotal(event.data.orderId)\n  }\n};",
+      "best_practices": [
         "Enrich events before processing",
         "Cache enrichment data",
         "Handle enrichment errors",
@@ -246,7 +282,9 @@
       "code": {
         "routing": "if (event.data.orderType === 'STANDARD') {\n  await publishToTopic('standard-orders', event);\n} else if (event.data.orderType === 'EXPRESS') {\n  await publishToTopic('express-orders', event);\n}"
       },
-      "bestPractices": [
+      "use_when": "When Conditional processing",
+      "code_example": "if (event.data.orderType === 'STANDARD') {\n  await publishToTopic('standard-orders', event);\n} else if (event.data.orderType === 'EXPRESS') {\n  await publishToTopic('express-orders', event);\n}",
+      "best_practices": [
         "Route based on event content",
         "Use multiple topics",
         "Document routing logic",
@@ -261,7 +299,9 @@
       "code": {
         "aggregation": "const events = await collectEvents(timeWindow);\nconst aggregated = aggregateEvents(events);\nawait processAggregatedEvent(aggregated);"
       },
-      "bestPractices": [
+      "use_when": "When Batch processing",
+      "code_example": "const events = await collectEvents(timeWindow);\nconst aggregated = aggregateEvents(events);\nawait processAggregatedEvent(aggregated);",
+      "best_practices": [
         "Collect events in time windows",
         "Aggregate efficiently",
         "Process aggregated events",
@@ -276,7 +316,9 @@
       "code": {
         "monitoring": "Monitor:\n- Event publish rate\n- Event consumption rate\n- Queue depth\n- Processing latency\n- Error rate"
       },
-      "bestPractices": [
+      "use_when": "When All event-driven systems",
+      "code_example": "Monitor:\n- Event publish rate\n- Event consumption rate\n- Queue depth\n- Processing latency\n- Error rate",
+      "best_practices": [
         "Monitor event metrics",
         "Set up alerts",
         "Track processing times",
@@ -291,7 +333,9 @@
       "code": {
         "security": "Use:\n- OAuth 2.0 for authentication\n- TLS for encryption\n- Topic-level authorization\n- Event validation"
       },
-      "bestPractices": [
+      "use_when": "When All event-driven systems",
+      "code_example": "Use:\n- OAuth 2.0 for authentication\n- TLS for encryption\n- Topic-level authorization\n- Event validation",
+      "best_practices": [
         "Use OAuth 2.0",
         "Enable TLS",
         "Implement authorization",
@@ -306,7 +350,9 @@
       "code": {
         "testing": "Test:\n- Event publishing\n- Event consumption\n- Error handling\n- Retry logic\n- Idempotency"
       },
-      "bestPractices": [
+      "use_when": "When All event-driven systems",
+      "code_example": "Test:\n- Event publishing\n- Event consumption\n- Error handling\n- Retry logic\n- Idempotency",
+      "best_practices": [
         "Test event flows",
         "Mock event producers",
         "Test error scenarios",
@@ -321,7 +367,9 @@
       "code": {
         "optimization": "Optimize:\n- Batch event processing\n- Parallel consumption\n- Efficient filtering\n- Connection pooling"
       },
-      "bestPractices": [
+      "use_when": "When High-volume systems",
+      "code_example": "Optimize:\n- Batch event processing\n- Parallel consumption\n- Efficient filtering\n- Connection pooling",
+      "best_practices": [
         "Process events in batches",
         "Use parallel consumers",
         "Optimize filters",
@@ -336,7 +384,9 @@
       "code": {
         "evolution": "Handle schema changes:\n- Version events\n- Support multiple versions\n- Migrate consumers gradually\n- Document changes"
       },
-      "bestPractices": [
+      "use_when": "When Long-lived systems",
+      "code_example": "Handle schema changes:\n- Version events\n- Support multiple versions\n- Migrate consumers gradually\n- Document changes",
+      "best_practices": [
         "Version event schemas",
         "Support backward compatibility",
         "Migrate gradually",
@@ -379,5 +429,11 @@
       "problem": "Difficult to scale and maintain",
       "solution": "Use topics for decoupling"
     }
+  ],
+  "related_skills": [
+    "none"
+  ],
+  "related_knowledge": [
+    "best-practices.json"
   ]
 }

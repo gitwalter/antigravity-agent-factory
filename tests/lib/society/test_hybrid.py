@@ -5,7 +5,7 @@ Tests unified verification system and escalation management.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 
 from lib.society.events import (
     Agent,
@@ -36,8 +36,8 @@ def create_test_event(
 ) -> AgentEvent:
     """Create a test event with all required fields."""
     return AgentEvent(
-        event_id=f"evt-{datetime.utcnow().timestamp()}",
-        timestamp=datetime.utcnow(),
+        event_id=f"evt-{datetime.now(timezone.utc).timestamp()}",
+        timestamp=datetime.now(timezone.utc),
         sequence=1,  # First event has sequence 1
         previous_hash="",
         agent=Agent(id=agent_id, type=AgentType.WORKER, public_key="pk_test"),

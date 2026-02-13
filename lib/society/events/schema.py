@@ -5,7 +5,7 @@ Dataclasses for agent events with cryptographic signing support.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 import hashlib
@@ -276,7 +276,7 @@ class AgentEvent:
         """
         event = cls(
             event_id=str(uuid.uuid4()),
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             sequence=sequence,
             previous_hash=previous_hash,
             agent=agent,

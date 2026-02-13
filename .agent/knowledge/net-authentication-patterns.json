@@ -3,13 +3,26 @@
   "id": "net-authentication-patterns",
   "name": ".NET Authentication Patterns",
   "title": ".NET Authentication and Authorization Patterns",
-  "description": "Best practices and patterns for implementing authentication and authorization in .NET applications",
+  "description": "Best practices and patterns for implementing authentication and authorization in .NET applications including JWT, OAuth2, and Identity",
   "version": "1.0.0",
-  "category": "patterns",
+  "category": "dotnet",
   "axiomAlignment": {
     "A1_verifiability": "Patterns include security testing and verification strategies",
-    "A3_transparency": "All patterns emphasize audit logging and security transparency"
+    "A2_user_primacy": "User identity and authorization serve user access control needs",
+    "A3_transparency": "All patterns emphasize audit logging and security transparency",
+    "A4_non_harm": "Secure token handling and validation prevent harmful exposures",
+    "A5_consistency": "Unified auth patterns across ASP.NET Core ecosystem"
   },
+  "related_skills": [
+    "dotnet-auth",
+    "dotnet-backend",
+    "ai-security"
+  ],
+  "related_knowledge": [
+    "dotnet-patterns.json",
+    "azure-patterns.json",
+    "ai-security-patterns.json"
+  ],
   "aspnet_identity": {
     "description": "ASP.NET Core Identity for user management",
     "features": {
@@ -37,7 +50,9 @@
       "Store sensitive data encrypted",
       "Implement proper session management",
       "Log authentication events"
-    ]
+    ],
+    "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+    "code_example": "dotnet ef migrations add AddUserTable\ndotnet ef database update\nvar users = await context.Users.Where(u => u.IsActive).ToListAsync();"
   },
   "jwt_authentication": {
     "description": "JSON Web Token authentication",
@@ -52,13 +67,23 @@
       "access_token": {
         "description": "Short-lived token for API access",
         "lifetime": "15 minutes to 1 hour",
-        "use_when": "API authentication"
+        "use_when": "API authentication",
+        "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);",
+        "best_practices": [
+          "Validate inputs and handle errors appropriately",
+          "Document the pattern and when to use it"
+        ]
       },
       "refresh_token": {
         "description": "Long-lived token to obtain new access tokens",
         "lifetime": "Days to weeks",
         "use_when": "Maintain user sessions",
-        "storage": "Secure storage (HttpOnly cookie or database)"
+        "storage": "Secure storage (HttpOnly cookie or database)",
+        "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);",
+        "best_practices": [
+          "Validate inputs and handle errors appropriately",
+          "Document the pattern and when to use it"
+        ]
       }
     },
     "best_practices": [
@@ -80,7 +105,9 @@
       "Validate token on every request",
       "Use secure key storage",
       "Implement rate limiting for token endpoints"
-    ]
+    ],
+    "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+    "code_example": "builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)\n    .AddJwtBearer(o => o.TokenValidationParameters = new TokenValidationParameters { ... });"
   },
   "oauth2_oidc": {
     "description": "OAuth 2.0 and OpenID Connect",
@@ -88,21 +115,42 @@
       "authorization_code": {
         "description": "Server-side web applications",
         "use_when": "Web applications with server",
-        "security": "Most secure flow"
+        "security": "Most secure flow",
+        "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);",
+        "best_practices": [
+          "Validate inputs and handle errors appropriately",
+          "Document the pattern and when to use it"
+        ]
       },
       "client_credentials": {
         "description": "Service-to-service authentication",
         "use_when": "API to API communication",
-        "security": "No user involved"
+        "security": "No user involved",
+        "code_example": "builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)\n    .AddJwtBearer(o => o.TokenValidationParameters = new TokenValidationParameters { ... });",
+        "best_practices": [
+          "Validate inputs and handle errors appropriately",
+          "Document the pattern and when to use it"
+        ]
       },
       "implicit": {
         "description": "Deprecated, use authorization code with PKCE",
-        "status": "Not recommended"
+        "status": "Not recommended",
+        "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+        "code_example": "builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)\n    .AddJwtBearer(o => o.TokenValidationParameters = new TokenValidationParameters { ... });",
+        "best_practices": [
+          "Validate inputs and handle errors appropriately",
+          "Document the pattern and when to use it"
+        ]
       },
       "resource_owner_password": {
         "description": "Direct username/password exchange",
         "use_when": "Trusted applications only",
-        "security": "Less secure, avoid if possible"
+        "security": "Less secure, avoid if possible",
+        "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);",
+        "best_practices": [
+          "Validate inputs and handle errors appropriately",
+          "Document the pattern and when to use it"
+        ]
       }
     },
     "openid_connect": {
@@ -113,7 +161,13 @@
         "Standard claims"
       ],
       "id_token": "Contains user identity information",
-      "userinfo_endpoint": "Get additional user information"
+      "userinfo_endpoint": "Get additional user information",
+      "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+      "code_example": "builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)\n    .AddJwtBearer(o => o.TokenValidationParameters = new TokenValidationParameters { ... });",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
+      ]
     },
     "identity_servers": {
       "duende_identityserver": {
@@ -123,7 +177,12 @@
           "Customizable",
           "Self-hosted"
         ],
-        "use_when": "Need full control, self-hosted"
+        "use_when": "Need full control, self-hosted",
+        "code_example": "dotnet ef migrations add AddUserTable\ndotnet ef database update\nvar users = await context.Users.Where(u => u.IsActive).ToListAsync();",
+        "best_practices": [
+          "Validate inputs and handle errors appropriately",
+          "Document the pattern and when to use it"
+        ]
       },
       "azure_ad": {
         "description": "Microsoft's managed identity provider",
@@ -132,7 +191,12 @@
           "Enterprise features",
           "Azure integration"
         ],
-        "use_when": "Microsoft ecosystem, managed solution"
+        "use_when": "Microsoft ecosystem, managed solution",
+        "code_example": "dotnet ef migrations add AddUserTable\ndotnet ef database update\nvar users = await context.Users.Where(u => u.IsActive).ToListAsync();",
+        "best_practices": [
+          "Validate inputs and handle errors appropriately",
+          "Document the pattern and when to use it"
+        ]
       },
       "okta": {
         "description": "Cloud identity provider",
@@ -140,7 +204,12 @@
           "Managed service",
           "Enterprise features"
         ],
-        "use_when": "Need managed solution"
+        "use_when": "Need managed solution",
+        "code_example": "dotnet ef migrations add AddUserTable\ndotnet ef database update\nvar users = await context.Users.Where(u => u.IsActive).ToListAsync();",
+        "best_practices": [
+          "Validate inputs and handle errors appropriately",
+          "Document the pattern and when to use it"
+        ]
       }
     },
     "best_practices": [
@@ -152,7 +221,9 @@
       "Handle token refresh",
       "Implement logout properly",
       "Use nonce for ID token validation"
-    ]
+    ],
+    "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+    "code_example": "builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)\n    .AddJwtBearer(o => o.TokenValidationParameters = new TokenValidationParameters { ... });"
   },
   "authorization": {
     "role_based": {
@@ -162,6 +233,11 @@
       "limitations": [
         "Less flexible",
         "Role explosion"
+      ],
+      "code_example": "[Authorize(Roles = \"Admin\")]",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     },
     "policy_based": {
@@ -178,7 +254,8 @@
         "Use requirements and handlers",
         "Test policies independently",
         "Document policy purposes"
-      ]
+      ],
+      "code_example": "AddAuthorization with policy definitions"
     },
     "claim_based": {
       "description": "Authorization based on claims",
@@ -187,6 +264,11 @@
       "benefits": [
         "Flexible",
         "Granular control"
+      ],
+      "code_example": "RequireClaim() in policies",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     },
     "resource_based": {
@@ -201,7 +283,8 @@
         "Check resource ownership",
         "Handle authorization failures",
         "Log authorization decisions"
-      ]
+      ],
+      "code_example": "IAuthorizationHandler with resource"
     }
   },
   "azure_ad_entra_id": {
@@ -229,7 +312,9 @@
       "Use app roles for authorization",
       "Configure conditional access policies",
       "Monitor authentication events"
-    ]
+    ],
+    "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+    "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);"
   },
   "api_key_authentication": {
     "description": "Simple API key authentication",
@@ -249,7 +334,8 @@
       "Implement key rotation",
       "Monitor key usage",
       "Use short-lived keys when possible"
-    ]
+    ],
+    "code_example": "Custom authentication handler"
   },
   "multi_tenant": {
     "description": "Support multiple tenants in single application",
@@ -271,7 +357,9 @@
       "Implement tenant switching securely",
       "Log tenant-specific actions",
       "Handle tenant not found scenarios"
-    ]
+    ],
+    "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+    "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);"
   },
   "security_best_practices": {
     "password_security": [
@@ -332,7 +420,9 @@
       "Log security events",
       "Handle token expiration gracefully",
       "Provide clear error messages for users"
-    ]
+    ],
+    "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+    "code_example": "builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)\n    .AddJwtBearer(o => o.TokenValidationParameters = new TokenValidationParameters { ... });"
   },
   "testing": {
     "unit_testing": {
@@ -348,7 +438,9 @@
         "Test error scenarios",
         "Test token validation",
         "Use test identity providers"
-      ]
+      ],
+      "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+      "code_example": "builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)\n    .AddJwtBearer(o => o.TokenValidationParameters = new TokenValidationParameters { ... });"
     }
   },
   "patterns": {
@@ -360,7 +452,8 @@
         "Transform claims early in pipeline",
         "Cache transformed claims",
         "Document transformation logic"
-      ]
+      ],
+      "code_example": "IClaimsTransformation"
     },
     "authentication_schemes": {
       "description": "Support multiple authentication methods",
@@ -370,7 +463,8 @@
         "Define clear scheme names",
         "Use appropriate default scheme",
         "Handle scheme selection properly"
-      ]
+      ],
+      "code_example": "Multiple authentication schemes"
     },
     "challenge_response": {
       "description": "Challenge unauthenticated requests",
@@ -380,7 +474,8 @@
         "Set appropriate redirect URI",
         "Handle return URL",
         "Preserve original request"
-      ]
+      ],
+      "code_example": "builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)\n    .AddJwtBearer(o => o.TokenValidationParameters = new TokenValidationParameters { ... });"
     }
   },
   "best_practices": [
@@ -405,5 +500,7 @@
     "Implement proper error messages (don't reveal user existence)",
     "Use strong signing keys and rotate them regularly"
   ],
-  "anti_patterns": []
+  "anti_patterns": [],
+  "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+  "code_example": "dotnet ef migrations add AddUserTable\ndotnet ef database update\nvar users = await context.Users.Where(u => u.IsActive).ToListAsync();"
 }

@@ -1,4 +1,30 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "tadir-object-types",
+  "name": "Tadir Object Types",
+  "title": "TADIR Object Types Reference",
+  "description": "SAP Repository object types from TADIR for ABAP development including RAP, CDS, and classic object types",
+  "version": "1.0.0",
+  "category": "sap",
+  "axiomAlignment": {
+    "A1_verifiability": "Object type definitions enable verifiable ABAP repository structure and dependencies",
+    "A2_user_primacy": "Standard object types support user workflows and transport management",
+    "A3_transparency": "Explicit object type catalog makes repository structure and relationships clear",
+    "A4_non_harm": "Proper object typing prevents incorrect usage and transport issues",
+    "A5_consistency": "Unified TADIR catalog ensures consistent naming and development across systems"
+  },
+  "related_skills": [
+    "rap-behavior-design",
+    "cds-grounding",
+    "sap-grounding",
+    "rap-grounding"
+  ],
+  "related_knowledge": [
+    "sap-cap-patterns.json",
+    "sap-rap-patterns.json",
+    "naming-conventions.json",
+    "cdhdr-object-classes.json"
+  ],
   "metadata": {
     "name": "TADIR Object Types",
     "description": "SAP Repository object types from TADIR for ABAP development",
@@ -243,12 +269,108 @@
       "TRAN"
     ]
   },
-  "id": "tadir-object-types",
-  "name": "Tadir Object Types",
-  "version": "1.0.0",
-  "category": "patterns",
-  "description": "Knowledge patterns for tadir object types.",
-  "patterns": {},
-  "best_practices": [],
-  "anti_patterns": []
+  "patterns": {
+    "rapDevelopment": {
+      "description": "RAP object type sequence for business object development",
+      "sequence": [
+        "1. Create DDLS (CDS view) for data model",
+        "2. Create BDEF (behavior definition) referencing DDLS",
+        "3. Create CLAS (behavior implementation) implementing BDEF",
+        "4. Create DCLS (access control) for authorization",
+        "5. Create SRVD (service definition) exposing BDEF",
+        "6. Create SRVB (service binding) for OData exposure"
+      ],
+      "naming": "Use consistent prefix (e.g., ZTRAVEL_*) across all related objects",
+      "use_when": "When implementing rapDevelopment or when RAP object type sequence for business object development",
+      "code_example": "SELECT * FROM tadir WHERE object = @lv_object AND obj_name = @lv_name",
+      "best_practices": [
+        "Always use standard object types when available instead of creating custom ones",
+        "Document custom object types with clear descriptions in TADIR and object documentation",
+        "Follow SAP naming conventions: Z* for customer objects, Y* for partner objects",
+        "Group related objects in the same development package (DEVC) for easier transport management"
+      ]
+    },
+    "legacyToModern": {
+      "description": "Migration pattern from classic ABAP to modern RAP",
+      "classic": "PROG/FUGR \u2192 TABL \u2192 CLAS",
+      "modern": "DDLS \u2192 BDEF \u2192 CLAS \u2192 SRVD \u2192 SRVB",
+      "benefit": "Better separation of concerns, OData-ready, cloud-native",
+      "use_when": "When implementing legacyToModern or when Migration pattern from classic ABAP to modern RAP",
+      "code_example": "SELECT * FROM tadir WHERE object = @lv_object AND obj_name = @lv_name",
+      "best_practices": [
+        "Always use standard object types when available instead of creating custom ones",
+        "Document custom object types with clear descriptions in TADIR and object documentation",
+        "Follow SAP naming conventions: Z* for customer objects, Y* for partner objects",
+        "Group related objects in the same development package (DEVC) for easier transport management"
+      ]
+    },
+    "objectGrouping": {
+      "description": "Group related objects in same package",
+      "pattern": "All objects for one business object in same DEVC package",
+      "example": "ZTRAVEL package contains: ZTRAVEL_DDLS, ZTRAVEL_BDEF, ZTRAVEL_SRVD, ZTRAVEL_SRVB",
+      "use_when": "When implementing objectGrouping or when Group related objects in same package",
+      "code_example": "All objects for one business object in same DEVC package",
+      "best_practices": [
+        "Always use standard object types when available instead of creating custom ones",
+        "Document custom object types with clear descriptions in TADIR and object documentation",
+        "Follow SAP naming conventions: Z* for customer objects, Y* for partner objects",
+        "Group related objects in the same development package (DEVC) for easier transport management"
+      ]
+    },
+    "namingConventions": {
+      "description": "Consistent naming across object types",
+      "pattern": "Prefix + Domain + ObjectType",
+      "examples": {
+        "class": "ZCL_TRAVEL_SERVICE",
+        "interface": "ZIF_TRAVEL_REPOSITORY",
+        "cds": "ZI_TRAVEL",
+        "behavior": "ZTRAVEL_B"
+      },
+      "use_when": "When implementing namingConventions or when Consistent naming across object types",
+      "code_example": "Prefix + Domain + ObjectType",
+      "best_practices": [
+        "Always use standard object types when available instead of creating custom ones",
+        "Document custom object types with clear descriptions in TADIR and object documentation",
+        "Follow SAP naming conventions: Z* for customer objects, Y* for partner objects",
+        "Group related objects in the same development package (DEVC) for easier transport management"
+      ]
+    }
+  },
+  "best_practices": [
+    "Always use standard object types when available instead of creating custom ones",
+    "Document custom object types with clear descriptions in TADIR and object documentation",
+    "Follow SAP naming conventions: Z* for customer objects, Y* for partner objects",
+    "Group related objects in the same development package (DEVC) for easier transport management",
+    "Use appropriate object types for the use case: DDLS for data models, CLAS for business logic, SRVB for OData services",
+    "Verify object dependencies before deletion using Where-Used List (transaction SE11/SE80)",
+    "Use transportable packages (not $TMP) for all production objects to enable change management",
+    "Create object type-specific documentation explaining purpose, usage, and relationships"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Using wrong object type for the purpose",
+      "problem": "Creating PROG instead of CLAS for reusable logic, or TABL instead of DDLS for RAP development leads to architectural issues and maintenance problems",
+      "solution": "Understand object type purpose: use CLAS for reusable logic, DDLS for data models, BDEF for behavior definitions"
+    },
+    {
+      "name": "Mixing object types in wrong packages",
+      "problem": "Scattering related objects across multiple packages makes transport management difficult and breaks object relationships",
+      "solution": "Group all objects for one business domain in the same DEVC package"
+    },
+    {
+      "name": "Creating objects in $TMP package for production code",
+      "problem": "$TMP objects cannot be transported, leading to code duplication and inconsistency across systems",
+      "solution": "Always use transportable packages (Z* or Y*) for any code that needs to move between systems"
+    },
+    {
+      "name": "Ignoring object type relationships",
+      "problem": "Creating BDEF without DDLS, or SRVB without SRVD breaks the RAP architecture and causes runtime errors",
+      "solution": "Follow proper object creation sequence: create dependent objects (DDLS) before dependent ones (BDEF, SRVD)"
+    },
+    {
+      "name": "Not documenting custom object types",
+      "problem": "Undocumented custom object types confuse developers and make maintenance difficult",
+      "solution": "Always add descriptions in TADIR (transaction SE80) and create technical documentation explaining object purpose and usage"
+    }
+  ]
 }

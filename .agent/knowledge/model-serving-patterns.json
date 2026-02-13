@@ -1,12 +1,29 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "model-serving-patterns",
+  "name": "Model Serving Patterns",
   "title": "Model Serving Patterns",
   "description": "Patterns for deploying and serving ML models in production",
   "version": "1.0.0",
+  "category": "ai-ml",
   "axiomAlignment": {
     "A1_verifiability": "Serving includes health checks and monitoring",
-    "A3_transparency": "Logging and metrics enable observability"
+    "A2_user_primacy": "APIs serve user requests with validated responses",
+    "A3_transparency": "Logging and metrics enable observability",
+    "A4_non_harm": "Input validation and error handling prevent harm",
+    "A5_consistency": "Unified serving patterns across FastAPI, BentoML, and vLLM"
   },
+  "related_skills": [
+    "model-serving",
+    "ml-deployment",
+    "fastapi-development",
+    "docker-deployment"
+  ],
+  "related_knowledge": [
+    "mlops-patterns.json",
+    "kubernetes-ml-patterns.json",
+    "fastapi-patterns.json"
+  ],
   "serving_options": {
     "comparison": {
       "fastapi_custom": {
@@ -126,22 +143,29 @@
   },
   "anti_patterns": [
     {
-      "name": "loading_on_request",
-      "description": "Loading model on every request",
-      "problem": "Slow response times, resource waste",
-      "solution": "Load model once at startup"
+      "name": "Loading model on every request",
+      "problem": "Slow response times (seconds per request), resource waste, poor user experience",
+      "solution": "Load model once at startup using lifespan context manager or application startup event"
     },
     {
-      "name": "no_health_check",
-      "description": "Missing health check endpoint",
-      "problem": "Can't detect unhealthy instances",
-      "solution": "Add /health endpoint"
+      "name": "Missing health check endpoint",
+      "problem": "Cannot detect unhealthy instances, load balancers can't route traffic correctly",
+      "solution": "Add /health endpoint that checks model loaded status and returns 200/503 accordingly"
     },
     {
-      "name": "blocking_inference",
-      "description": "Blocking event loop with sync inference",
-      "problem": "Poor concurrency",
-      "solution": "Use thread pool for CPU-bound work"
+      "name": "Blocking event loop with synchronous inference",
+      "problem": "Poor concurrency, server can't handle multiple requests simultaneously",
+      "solution": "Use thread pool executor (run_in_executor) for CPU-bound inference in async frameworks"
+    },
+    {
+      "name": "No input validation",
+      "problem": "Invalid inputs cause crashes or unexpected behavior",
+      "solution": "Validate input shape, type, and range using Pydantic models or custom validators"
+    },
+    {
+      "name": "Not logging predictions for monitoring",
+      "problem": "Cannot debug issues, detect drift, or analyze model behavior in production",
+      "solution": "Log predictions with metadata (timestamp, input hash, prediction, latency) for analysis"
     }
   ],
   "best_practices_summary": [
@@ -154,9 +178,61 @@
     "Containerize for deployment",
     "Set resource limits"
   ],
-  "id": "model-serving-patterns",
-  "name": "Model Serving Patterns",
-  "category": "patterns",
-  "patterns": {},
-  "best_practices": []
+  "patterns": {
+    "serving_frameworks": {
+      "description": "Patterns for different model serving frameworks",
+      "fastapi": "Custom FastAPI server for full control and custom logic",
+      "bentoml": "BentoML for standardized ML serving with automatic batching",
+      "vllm": "vLLM for high-throughput LLM inference with continuous batching",
+      "use_when": "When deploying ML models to cloud platforms for production inference",
+      "code_example": "import sagemaker\nfrom sagemaker.pytorch import PyTorchModel\nmodel = PyTorchModel(model_data=\"s3://bucket/model.tar.gz\", role=role, entry_point=\"inference.py\", framework_version=\"2.0.0\")\npredictor = model.deploy(initial_instance_count=1, instance_type=\"ml.m5.large\")",
+      "best_practices": [
+        "Load models at startup using lifespan context manager, not per-request to avoid overhead",
+        "Include health check endpoints (/health) for monitoring and load balancer health checks",
+        "Use async for I/O-bound operations and thread pool executor for CPU-bound inference",
+        "Implement proper error handling with try-except blocks and meaningful error messages",
+        "Add monitoring and logging (Prometheus metrics, structured JSON logs) for observability"
+      ]
+    },
+    "deployment": {
+      "description": "Patterns for deploying models",
+      "docker": "Containerize models with Docker for consistent environments",
+      "horizontal_scaling": "Scale with multiple replicas behind load balancer",
+      "gpu_serving": "Use GPU Docker images and --gpus flag for GPU inference",
+      "use_when": "When deploying ML models to cloud platforms for production inference",
+      "code_example": "import sagemaker\nfrom sagemaker.pytorch import PyTorchModel\nmodel = PyTorchModel(model_data=\"s3://bucket/model.tar.gz\", role=role, entry_point=\"inference.py\", framework_version=\"2.0.0\")\npredictor = model.deploy(initial_instance_count=1, instance_type=\"ml.m5.large\")",
+      "best_practices": [
+        "Load models at startup using lifespan context manager, not per-request to avoid overhead",
+        "Include health check endpoints (/health) for monitoring and load balancer health checks",
+        "Use async for I/O-bound operations and thread pool executor for CPU-bound inference",
+        "Implement proper error handling with try-except blocks and meaningful error messages",
+        "Add monitoring and logging (Prometheus metrics, structured JSON logs) for observability"
+      ]
+    },
+    "monitoring": {
+      "description": "Patterns for monitoring production models",
+      "prometheus": "Expose Prometheus metrics for prediction counts, latency, and errors",
+      "logging": "Use structured JSON logging for predictions and errors",
+      "health_checks": "Implement health check endpoints for load balancer integration",
+      "use_when": "When deploying ML models to cloud platforms for production inference",
+      "code_example": "import sagemaker\nfrom sagemaker.pytorch import PyTorchModel\nmodel = PyTorchModel(model_data=\"s3://bucket/model.tar.gz\", role=role, entry_point=\"inference.py\", framework_version=\"2.0.0\")\npredictor = model.deploy(initial_instance_count=1, instance_type=\"ml.m5.large\")",
+      "best_practices": [
+        "Load models at startup using lifespan context manager, not per-request to avoid overhead",
+        "Include health check endpoints (/health) for monitoring and load balancer health checks",
+        "Use async for I/O-bound operations and thread pool executor for CPU-bound inference",
+        "Implement proper error handling with try-except blocks and meaningful error messages",
+        "Add monitoring and logging (Prometheus metrics, structured JSON logs) for observability"
+      ]
+    }
+  },
+  "best_practices": [
+    "Load models at startup using lifespan context manager, not per-request to avoid overhead",
+    "Include health check endpoints (/health) for monitoring and load balancer health checks",
+    "Use async for I/O-bound operations and thread pool executor for CPU-bound inference",
+    "Implement proper error handling with try-except blocks and meaningful error messages",
+    "Add monitoring and logging (Prometheus metrics, structured JSON logs) for observability",
+    "Use batching for throughput - enable batchable=True in BentoML or implement custom batching",
+    "Containerize models with Docker for consistent deployment across environments",
+    "Set resource limits (CPU, memory) in container orchestration to prevent resource exhaustion"
+  ]
 }

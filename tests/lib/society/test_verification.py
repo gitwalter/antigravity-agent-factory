@@ -5,7 +5,7 @@ Tests axiom verifiers and compliance monitoring.
 """
 
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 
 from lib.society.events import (
     Agent,
@@ -45,7 +45,7 @@ def create_event(
     )
     return AgentEvent(
         event_id="test-event",
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
         sequence=1,  # First event has sequence 1
         previous_hash="",
         agent=Agent(id="agent-1", type=AgentType.WORKER, public_key="pk_test"),

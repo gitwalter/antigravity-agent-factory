@@ -5,12 +5,23 @@
   "title": "AI Guardrails and Safety Patterns",
   "description": "Patterns for implementing guardrails, content safety, and prompt injection prevention in AI applications",
   "version": "1.0.0",
-  "category": "patterns",
+  "category": "security",
   "axiomAlignment": {
-    "A1_verifiability": "Guardrails enable verification of AI behavior",
+    "A1_verifiability": "Guardrails enable verification of AI behavior and output validation",
+    "A2_user_primacy": "Content filtering and topic control protect user wellbeing",
     "A3_transparency": "Explicit guardrails make safety measures clear",
-    "A4_adaptability": "Configurable guardrails support different use cases"
+    "A4_non_harm": "Content safety and PII detection prevent harmful outputs",
+    "A5_consistency": "Unified defense layers across input, prompt, runtime, and output"
   },
+  "related_skills": [
+    "llm-guardrails",
+    "ai-security",
+    "security-sandboxing"
+  ],
+  "related_knowledge": [
+    "ai-security-patterns.json",
+    "tool-patterns.json"
+  ],
   "nemo_guardrails": {
     "description": "NVIDIA NeMo Guardrails framework",
     "components": {
@@ -29,7 +40,9 @@
       "Handle edge cases",
       "Test guardrails thoroughly",
       "Monitor guardrail triggers"
-    ]
+    ],
+    "use_when": "Apply when implementing nemo guardrails in security context",
+    "code_example": "import re\n\ndef sanitize_input(text: str, max_len: int = 1000) -> str:\n    if len(text) > max_len:\n        raise ValueError('Input too long')\n    return ''.join(c for c in text if c.isprintable())\n\nresult = sanitize_input(user_input)"
   },
   "guardrails_ai": {
     "description": "Guardrails AI framework",
@@ -45,7 +58,9 @@
       "Configure thresholds",
       "Handle validation failures",
       "Log guardrail events"
-    ]
+    ],
+    "use_when": "Apply when implementing guardrails ai in security context",
+    "code_example": "from guardrails import Guard\nfrom guardrails.hub import DetectPII\n\nguard = Guard().use(DetectPII())\nresult = guard.validate(prompt)"
   },
   "llamaguard": {
     "description": "Meta's LlamaGuard for content classification",
@@ -59,7 +74,13 @@
       "Chat safety",
       "API filtering"
     ],
-    "integration": "from llama_guard import LlamaGuard\n\nguard = LlamaGuard.from_pretrained('meta-llama/LlamaGuard-7b')\nresult = guard.classify(text)"
+    "integration": "from llama_guard import LlamaGuard\n\nguard = LlamaGuard.from_pretrained('meta-llama/LlamaGuard-7b')\nresult = guard.classify(text)",
+    "use_when": "Apply when implementing llamaguard in security context",
+    "code_example": "import re\n\ndef sanitize_input(text: str, max_len: int = 1000) -> str:\n    if len(text) > max_len:\n        raise ValueError('Input too long')\n    return ''.join(c for c in text if c.isprintable())\n\nresult = sanitize_input(user_input)",
+    "best_practices": [
+      "Document the pattern usage and rationale in code comments for llamaguard",
+      "Validate implementation against domain requirements before deployment"
+    ]
   },
   "presidio_pii": {
     "description": "Microsoft Presidio for PII detection",
@@ -78,7 +99,9 @@
       "Anonymize sensitive data",
       "Validate anonymization",
       "Handle false positives"
-    ]
+    ],
+    "use_when": "Apply when implementing presidio pii in security context",
+    "code_example": "from presidio_analyzer import AnalyzerEngine\nfrom presidio_anonymizer import AnonymizerEngine\n\nanalyzer = AnalyzerEngine()\nresults = analyzer.analyze(text=text, language='en')\nanonymizer = AnonymizerEngine()\nanonymized = anonymizer.anonymize(text=text, analyzer_results=results)"
   },
   "prompt_injection": {
     "description": "Prompt injection attack patterns and defenses",
@@ -115,7 +138,13 @@
       "output_validation": "Validate model outputs",
       "rate_limiting": "Limit prompt attempts",
       "monitoring": "Monitor for injection patterns"
-    }
+    },
+    "use_when": "Apply when implementing prompt injection in security context",
+    "code_example": "import re\n\ndef sanitize_input(text: str, max_len: int = 1000) -> str:\n    if len(text) > max_len:\n        raise ValueError('Input too long')\n    return ''.join(c for c in text if c.isprintable())\n\nresult = sanitize_input(user_input)",
+    "best_practices": [
+      "Document the pattern usage and rationale in code comments for prompt_injection",
+      "Validate implementation against domain requirements before deployment"
+    ]
   },
   "content_safety": {
     "description": "Content safety classification",
@@ -131,14 +160,26 @@
       "perspective_api": "Google Perspective API",
       "openai_moderation": "OpenAI Moderation API"
     },
-    "implementation": "from openai import OpenAI\n\nclient = OpenAI()\nmoderation = client.moderations.create(input=text)\nif moderation.results[0].flagged:\n    # Handle unsafe content\n    pass"
+    "implementation": "from openai import OpenAI\n\nclient = OpenAI()\nmoderation = client.moderations.create(input=text)\nif moderation.results[0].flagged:\n    # Handle unsafe content\n    pass",
+    "use_when": "Apply when implementing content safety in security context",
+    "code_example": "from openai import OpenAI\n\nclient = OpenAI()\nmoderation = client.moderations.create(input=text)\nif moderation.results[0].flagged:\n    # Handle unsafe content\n    pass",
+    "best_practices": [
+      "Document the pattern usage and rationale in code comments for content_safety",
+      "Validate implementation against domain requirements before deployment"
+    ]
   },
   "topic_control": {
     "description": "Control allowed topics",
     "whitelist_approach": "Only allow specific topics",
     "blacklist_approach": "Block specific topics",
     "hybrid_approach": "Combine whitelist and blacklist",
-    "implementation": "allowed_topics = ['general', 'technology', 'science']\nif topic not in allowed_topics:\n    return 'I can only discuss allowed topics.'"
+    "implementation": "allowed_topics = ['general', 'technology', 'science']\nif topic not in allowed_topics:\n    return 'I can only discuss allowed topics.'",
+    "use_when": "Apply when implementing topic control in security context",
+    "code_example": "allowed_topics = ['general', 'technology', 'science']\nif topic not in allowed_topics:\n    return 'I can only discuss allowed topics.'",
+    "best_practices": [
+      "Document the pattern usage and rationale in code comments for topic_control",
+      "Validate implementation against domain requirements before deployment"
+    ]
   },
   "output_filtering": {
     "description": "Filter model outputs",
@@ -153,7 +194,9 @@
       "Log filtered content",
       "Handle false positives",
       "Provide fallback responses"
-    ]
+    ],
+    "use_when": "Apply when: keyword_filtering; regex_patterns; ml_classification",
+    "code_example": "import re\n\ndef sanitize_input(text: str, max_len: int = 1000) -> str:\n    if len(text) > max_len:\n        raise ValueError('Input too long')\n    return ''.join(c for c in text if c.isprintable())\n\nresult = sanitize_input(user_input)"
   },
   "defense_layers": {
     "layer_1_input": {
@@ -163,33 +206,65 @@
         "Character filtering",
         "Encoding validation",
         "Structure validation"
+      ],
+      "use_when": "Apply when: Input length limits; Character filtering; Encoding validation",
+      "code_example": "import re\n\ndef sanitize_input(text: str, max_len: int = 1000) -> str:\n    if len(text) > max_len:\n        raise ValueError('Input too long')\n    return ''.join(c for c in text if c.isprintable())\n\nresult = sanitize_input(user_input)",
+      "best_practices": [
+        "Apply Input length limits",
+        "Apply Character filtering",
+        "Apply Encoding validation",
+        "Apply Structure validation"
       ]
     },
     "layer_2_prompt": {
-      "description": "Prompt protection",
+      "description": "Implements layer 2 prompt for reliable, maintainable code. Use when the scenario requires this pattern.",
       "techniques": [
         "System prompt isolation",
         "User input encoding",
         "Prompt structure validation",
         "Context separation"
+      ],
+      "use_when": "Apply when: System prompt isolation; User input encoding; Prompt structure validation",
+      "code_example": "import re\n\ndef sanitize_input(text: str, max_len: int = 1000) -> str:\n    if len(text) > max_len:\n        raise ValueError('Input too long')\n    return ''.join(c for c in text if c.isprintable())\n\nresult = sanitize_input(user_input)",
+      "best_practices": [
+        "Apply System prompt isolation",
+        "Apply User input encoding",
+        "Apply Prompt structure validation",
+        "Apply Context separation"
       ]
     },
     "layer_3_runtime": {
-      "description": "Runtime monitoring",
+      "description": "Implements layer 3 runtime for reliable, maintainable code. Use when the scenario requires this pattern.",
       "techniques": [
         "Token monitoring",
         "Behavioral analysis",
         "Anomaly detection",
         "Rate limiting"
+      ],
+      "use_when": "Apply when: Token monitoring; Behavioral analysis; Anomaly detection",
+      "code_example": "import re\n\ndef sanitize_input(text: str, max_len: int = 1000) -> str:\n    if len(text) > max_len:\n        raise ValueError('Input too long')\n    return ''.join(c for c in text if c.isprintable())\n\nresult = sanitize_input(user_input)",
+      "best_practices": [
+        "Apply Token monitoring",
+        "Apply Behavioral analysis",
+        "Apply Anomaly detection",
+        "Apply Rate limiting"
       ]
     },
     "layer_4_output": {
-      "description": "Output validation",
+      "description": "Implements layer 4 output for reliable, maintainable code. Use when the scenario requires this pattern.",
       "techniques": [
         "Content filtering",
         "PII detection",
         "Safety classification",
         "Output sanitization"
+      ],
+      "use_when": "Apply when: Content filtering; PII detection; Safety classification",
+      "code_example": "import re\n\ndef sanitize_input(text: str, max_len: int = 1000) -> str:\n    if len(text) > max_len:\n        raise ValueError('Input too long')\n    return ''.join(c for c in text if c.isprintable())\n\nresult = sanitize_input(user_input)",
+      "best_practices": [
+        "Apply Content filtering",
+        "Apply PII detection",
+        "Apply Safety classification",
+        "Apply Output sanitization"
       ]
     }
   },
@@ -201,6 +276,12 @@
         "Remove dangerous characters",
         "Encode special characters",
         "Check for injection patterns"
+      ],
+      "use_when": "Apply when implementing input sanitization in security context",
+      "code_example": "import re\n\ndef sanitize_input(text: str, max_len: int = 1000) -> str:\n    if len(text) > max_len:\n        raise ValueError('Input too long')\n    return ''.join(c for c in text if c.isprintable())\n\nresult = sanitize_input(user_input)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for input_sanitization",
+        "Validate implementation against domain requirements before deployment"
       ]
     },
     "prompt_encoding": {
@@ -210,6 +291,14 @@
         "JSON encoding",
         "XML encoding",
         "Custom delimiters"
+      ],
+      "use_when": "Apply when: Base64 encoding; JSON encoding; XML encoding",
+      "code_example": "import re\n\ndef sanitize_input(text: str, max_len: int = 1000) -> str:\n    if len(text) > max_len:\n        raise ValueError('Input too long')\n    return ''.join(c for c in text if c.isprintable())\n\nresult = sanitize_input(user_input)",
+      "best_practices": [
+        "Apply Base64 encoding",
+        "Apply JSON encoding",
+        "Apply XML encoding",
+        "Apply Custom delimiters"
       ]
     },
     "output_validation": {
@@ -219,14 +308,21 @@
         "PII detection",
         "Topic compliance",
         "Format validation"
+      ],
+      "use_when": "Apply when implementing output validation in security context",
+      "code_example": "import re\n\ndef sanitize_input(text: str, max_len: int = 1000) -> str:\n    if len(text) > max_len:\n        raise ValueError('Input too long')\n    return ''.join(c for c in text if c.isprintable())\n\nresult = sanitize_input(user_input)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for output_validation",
+        "Validate implementation against domain requirements before deployment"
       ]
     },
     "fallback_responses": {
       "description": "Provide safe fallback responses",
-      "use_when": [
-        "Guardrail triggered",
-        "Unsafe content detected",
-        "Validation failure"
+      "use_when": "Guardrail triggered; Unsafe content detected; Validation failure",
+      "code_example": "import re\n\ndef sanitize_input(text: str, max_len: int = 1000) -> str:\n    if len(text) > max_len:\n        raise ValueError('Input too long')\n    return ''.join(c for c in text if c.isprintable())\n\nresult = sanitize_input(user_input)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for fallback_responses",
+        "Validate implementation against domain requirements before deployment"
       ]
     }
   },

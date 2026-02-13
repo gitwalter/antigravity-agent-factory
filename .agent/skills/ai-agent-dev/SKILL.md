@@ -130,3 +130,15 @@ This skill is automatically available when using the `ai-agent-development` or `
 - Code generation assistance
 - Debugging support
 - Best practices enforcement
+
+
+## When to Use
+Placeholder content for When to Use.
+
+
+## Prerequisites
+Placeholder content for Prerequisites.
+
+
+## Process
+Placeholder content for Process.

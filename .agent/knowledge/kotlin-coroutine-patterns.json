@@ -1,0 +1,154 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "kotlin-coroutine-patterns",
+  "name": "Kotlin Coroutine Patterns",
+  "title": "Kotlin Coroutine Patterns",
+  "description": "Structured concurrency, channels, flows, supervisorScope, and exception handling in Kotlin coroutines",
+  "version": "1.0.0",
+  "last_updated": "2026-02-10",
+  "category": "core",
+  "axiomAlignment": {
+    "A1_verifiability": "Structured concurrency enables verifiable async flows",
+    "A2_user_primacy": "Coroutines serve user-defined concurrent tasks",
+    "A3_transparency": "Explicit scopes and dispatchers make execution context clear",
+    "A4_non_harm": "Exception handling and supervisorScope prevent cascading failures",
+    "A5_consistency": "Unified patterns across Kotlin coroutine ecosystem"
+  },
+  "related_skills": [
+    "python-async",
+    "error-handling",
+    "state-management",
+    "streaming-realtime"
+  ],
+  "related_knowledge": [
+    "reactive-patterns.json",
+    "kotlin-idioms.json",
+    "error-handling-patterns.json"
+  ],
+  "patterns": {
+    "structured_concurrency": {
+      "description": "Parent scope waits for all children; cancellation propagates; no orphaned coroutines",
+      "idiom": "coroutineScope { launch { fetchA() }; launch { fetchB() } }",
+      "when_to_use": "Parallel work within a scope, ensuring cleanup",
+      "best_practices": [
+        "Use coroutineScope not GlobalScope",
+        "Prefer supervisorScope when child failures shouldn't cancel siblings",
+        "Always use structured scopes"
+      ],
+      "use_when": "Parallel work within a scope, ensuring cleanup",
+      "code_example": "coroutineScope { launch { fetchA() }; launch { fetchB() } }"
+    },
+    "channels": {
+      "description": "Hot streams for one-to-one or one-to-many communication between coroutines",
+      "idiom": "val channel = Channel<Data>(); producer.send(data); consumer.receive()",
+      "when_to_use": "Producer-consumer, pipelines, work queues",
+      "channel_types": [
+        "Channel (unbuffered)",
+        "Channel(capacity)",
+        "Channel(Channel.UNLIMITED)"
+      ],
+      "best_practices": [
+        "Close channel when done",
+        "Use receiveOrNull in loops",
+        "Consider Flow for cold streams"
+      ],
+      "use_when": "Producer-consumer, pipelines, work queues",
+      "code_example": "val channel = Channel<Data>(); producer.send(data); consumer.receive()"
+    },
+    "flows": {
+      "description": "Cold streams; emit on demand; backpressure built-in",
+      "idiom": "flow { emit(1); emit(2) }.map { it * 2 }.collect { }",
+      "when_to_use": "Async sequences, streams, reactive data",
+      "operators": [
+        "map, filter, take",
+        "flatMapMerge, flatMapConcat",
+        "buffer, conflate",
+        " catch, retry"
+      ],
+      "best_practices": [
+        "Prefer cold Flow over hot Channel when possible",
+        "Use buffer for fast producer",
+        "catch exceptions in flow"
+      ],
+      "use_when": "Async sequences, streams, reactive data",
+      "code_example": "flow { emit(1); emit(2) }.map { it * 2 }.collect { }"
+    },
+    "supervisorScope": {
+      "description": "Child failure does not cancel siblings; parent still propagates cancellation",
+      "idiom": "supervisorScope { launch { mayFail() }; launch { other() } }",
+      "when_to_use": "Independent parallel tasks where one failure shouldn't stop others",
+      "best_practices": [
+        "Use for parallel independent work",
+        "Handle failures in individual children",
+        "Monitor with SupervisorJob"
+      ],
+      "use_when": "Independent parallel tasks where one failure shouldn't stop others",
+      "code_example": "supervisorScope { launch { mayFail() }; launch { other() } }"
+    },
+    "exception_handling": {
+      "description": "CoroutineExceptionHandler, try/catch, supervisorScope for exception handling",
+      "idiom": "val handler = CoroutineExceptionHandler { _, e -> log.error(e) }; launch(handler) { throw }",
+      "when_to_use": "Top-level exception handling, logging, user notification",
+      "best_practices": [
+        "Use handler for root coroutines",
+        "catch in supervisorScope children",
+        "Preserve exception context"
+      ],
+      "use_when": "Top-level exception handling, logging, user notification",
+      "code_example": "val handler = CoroutineExceptionHandler { _, e -> log.error(e) }; launch(handler) { throw }"
+    },
+    "async_await": {
+      "description": "Concurrent execution with await for results; parallel decomposition",
+      "idiom": "coroutineScope { val a = async { fetchA() }; val b = async { fetchB() }; a.await() + b.await() }",
+      "when_to_use": "Parallel I/O, combine results",
+      "best_practices": [
+        "Use async for parallel work",
+        "Await in same scope",
+        "Prefer async over launch when result needed"
+      ],
+      "use_when": "Parallel I/O, combine results",
+      "code_example": "coroutineScope { val a = async { fetchA() }; val b = async { fetchB() }; a.await() + b.await() }"
+    },
+    "dispatchers": {
+      "description": "Default, IO, Unconfined for coroutine execution context",
+      "idiom": "withContext(Dispatchers.IO) { blockingCall() }",
+      "when_to_use": "Offload blocking to IO, main thread for UI",
+      "best_practices": [
+        "Use IO for blocking I/O",
+        "Default for CPU-bound",
+        "Inject Dispatchers for testing"
+      ],
+      "use_when": "Offload blocking to IO, main thread for UI",
+      "code_example": "withContext(Dispatchers.IO) { blockingCall() }"
+    },
+    "flow_cancellation": {
+      "description": "Flows are cancellable; cancellation is cooperative",
+      "idiom": "flow { emit(1); emit(2) }.cancellable().collect { }",
+      "when_to_use": "Long-running flows, user cancellation",
+      "best_practices": [
+        "Use yield() in long loops",
+        "Check isActive",
+        "ensureActive() for cancellation points"
+      ],
+      "use_when": "Long-running flows, user cancellation",
+      "code_example": "flow { emit(1); emit(2) }.cancellable().collect { }"
+    }
+  },
+  "best_practices": [
+    "Use coroutineScope not GlobalScope",
+    "Prefer supervisorScope when child failures shouldn't cancel siblings",
+    "Always use structured scopes",
+    "Close channel when done",
+    "Use receiveOrNull in loops",
+    "Consider Flow for cold streams",
+    "Prefer cold Flow over hot Channel when possible",
+    "Use buffer for fast producer"
+  ],
+  "anti_patterns": [
+    "Applying patterns without understanding the underlying concepts",
+    "Copy-pasting solutions without adapting to specific context",
+    "Over-engineering simple problems with complex patterns"
+  ],
+  "use_when": "Concurrent operations, async flows, or structured concurrency",
+  "code_example": "coroutineScope { launch { fetchA() }; launch { fetchB() } }"
+}

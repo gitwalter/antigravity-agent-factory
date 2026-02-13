@@ -15,7 +15,7 @@ Author: Antigravity Agent FactoryVersion: 1.0.0
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 from pathlib import Path
@@ -54,7 +54,7 @@ class Notification:
     message: str
     level: NotificationLevel = NotificationLevel.INFO
     source: str = "knowledge-evolution"
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     data: Optional[Dict[str, Any]] = None
     read: bool = False
     

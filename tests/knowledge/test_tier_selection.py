@@ -18,7 +18,7 @@ class TestTierSelectionKnowledge:
     @pytest.fixture
     def tier_knowledge(self):
         """Load the tier selection knowledge file."""
-        knowledge_path = Path(__file__).parent.parent.parent / "knowledge" / "trust-tier-decision-matrix.json"
+        knowledge_path = Path(__file__).parent.parent.parent / ".agent" / "knowledge" / "trust-tier-decision-matrix.json"
         with open(knowledge_path, "r", encoding="utf-8") as f:
             return json.load(f)
     
@@ -92,7 +92,7 @@ class TestCoordinationPatternKnowledge:
     @pytest.fixture
     def pattern_knowledge(self):
         """Load the pattern selection knowledge file."""
-        knowledge_path = Path(__file__).parent.parent.parent / "knowledge" / "coordination-pattern-selection.json"
+        knowledge_path = Path(__file__).parent.parent.parent / ".agent" / "knowledge" / "coordination-pattern-selection.json"
         with open(knowledge_path, "r", encoding="utf-8") as f:
             return json.load(f)
     
@@ -123,7 +123,7 @@ class TestCoordinationPatternKnowledge:
     
     def test_anti_patterns_documented(self, pattern_knowledge):
         """Anti-patterns are documented."""
-        anti_patterns = pattern_knowledge["anti_patterns"]["patterns"]
+        anti_patterns = pattern_knowledge["anti_patterns"]
         
         assert len(anti_patterns) >= 3
         
@@ -139,7 +139,7 @@ class TestQuickReferenceKnowledge:
     @pytest.fixture
     def quick_ref(self):
         """Load the quick reference knowledge file."""
-        knowledge_path = Path(__file__).parent.parent.parent / "knowledge" / "asp-quick-reference.json"
+        knowledge_path = Path(__file__).parent.parent.parent / ".agent" / "knowledge" / "asp-quick-reference.json"
         with open(knowledge_path, "r", encoding="utf-8") as f:
             return json.load(f)
     

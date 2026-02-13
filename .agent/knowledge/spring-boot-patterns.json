@@ -5,11 +5,27 @@
   "title": "Spring Boot Application Patterns",
   "description": "Best practices and patterns for Spring Boot applications including REST APIs, dependency injection, configuration, security, and testing",
   "version": "1.0.0",
-  "category": "patterns",
+  "category": "java",
   "axiomAlignment": {
     "A1_verifiability": "Patterns include testing and validation for verification",
-    "A3_transparency": "Patterns emphasize logging and observability for transparency"
+    "A2_user_primacy": "REST APIs and security patterns prioritize user needs and clear boundaries",
+    "A3_transparency": "Patterns emphasize logging and observability for transparency",
+    "A4_non_harm": "Error handling and validation patterns prevent harmful outcomes",
+    "A5_consistency": "Unified Spring Boot patterns across application layers"
   },
+  "related_skills": [
+    "spring-boot-development",
+    "spring-testing",
+    "api-design",
+    "error-handling",
+    "logging-monitoring"
+  ],
+  "related_knowledge": [
+    "spring-observability-patterns.json",
+    "spring-microservices-patterns.json",
+    "spring-kotlin-patterns.json",
+    "error-handling-patterns.json"
+  ],
   "patterns": {
     "rest_api_patterns": {
       "description": "REST API design and implementation patterns",
@@ -37,7 +53,9 @@
         "Version APIs (/api/v1/)",
         "Use proper HTTP methods",
         "Follow RESTful conventions"
-      ]
+      ],
+      "use_when": "When building Java/Spring applications and need rest api patterns",
+      "code_example": "@RestController\n@RequestMapping(\"/api/v1/products\")\npublic class ProductController {\n    @GetMapping\n    public ResponseEntity<List<ProductDto>> getProducts() { return ResponseEntity.ok(service.findAll()); }\n    @PostMapping\n    public ResponseEntity<ProductDto> create(@RequestBody @Valid ProductCreateDto dto) { return ResponseEntity.status(201).body(service.create(dto)); }\n}"
     },
     "dependency_injection": {
       "description": "Spring dependency injection patterns",
@@ -58,7 +76,9 @@
         "Use appropriate bean scopes",
         "Register beans with @Component, @Service, @Repository",
         "Use @Configuration for configuration classes"
-      ]
+      ],
+      "use_when": "When building Java/Spring applications and need dependency injection",
+      "code_example": "@Service\npublic class ProductService {\n    private final ProductRepository repo;\n    public ProductService(ProductRepository repo) { this.repo = repo; }\n}"
     },
     "configuration_patterns": {
       "description": "Application configuration patterns",
@@ -87,7 +107,9 @@
         "Separate by profiles",
         "Use environment variables for secrets",
         "Validate configuration"
-      ]
+      ],
+      "use_when": "When building Java/Spring applications and need configuration patterns",
+      "code_example": "@ConfigurationProperties(prefix = \"app\")\n@Validated\npublic class AppProperties {\n    private String apiUrl;\n    private int timeout;\n}"
     },
     "transaction_management": {
       "description": "Transaction management patterns",
@@ -106,7 +128,9 @@
         "Handle transaction boundaries properly",
         "Avoid @Transactional on controllers",
         "Use appropriate propagation"
-      ]
+      ],
+      "use_when": "When building Java/Spring applications and need transaction management",
+      "code_example": "@Transactional(readOnly = true)\npublic List<Product> findAll() { return repo.findAll(); }\n@Transactional(rollbackFor = Exception.class)\npublic Product save(Product p) { return repo.save(p); }"
     },
     "exception_handling": {
       "description": "Exception handling patterns",
@@ -135,7 +159,9 @@
         "Return proper HTTP status codes",
         "Log exceptions with context",
         "Don't expose internal details"
-      ]
+      ],
+      "use_when": "When building Java/Spring applications and need exception handling",
+      "code_example": "@ControllerAdvice\npublic class GlobalExceptionHandler {\n    @ExceptionHandler(ResourceNotFoundException.class)\n    public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex) {\n        return ResponseEntity.status(404).body(new ErrorResponse(ex.getMessage()));\n    }\n}"
     },
     "validation_patterns": {
       "description": "Input validation patterns",
@@ -159,7 +185,9 @@
         "Validate at controller level",
         "Create custom validators when needed",
         "Return proper validation errors"
-      ]
+      ],
+      "use_when": "When building Java/Spring applications and need validation patterns",
+      "code_example": "@PostMapping\npublic ResponseEntity<Product> create(@RequestBody @Valid ProductCreateDto dto) {\n    return ResponseEntity.ok(service.create(dto));\n}"
     },
     "security_patterns": {
       "description": "Spring Security patterns",
@@ -180,7 +208,9 @@
         "Configure CORS properly",
         "Use HTTPS in production",
         "Validate tokens"
-      ]
+      ],
+      "use_when": "When building Java/Spring applications and need security patterns",
+      "code_example": "@EnableWebSecurity\npublic class SecurityConfig {\n    @Bean\n    public SecurityFilterChain filterChain(HttpSecurity http) { ... }\n}"
     },
     "testing_patterns": {
       "description": "Testing patterns for Spring Boot",
@@ -211,10 +241,12 @@
         "Use Testcontainers for real databases",
         "Mock external dependencies",
         "Test both success and failure scenarios"
-      ]
+      ],
+      "use_when": "When building Java/Spring applications and need testing patterns",
+      "code_example": "# Testing Patterns - implement per Java/Spring conventions"
     },
     "logging_patterns": {
-      "description": "Logging patterns",
+      "description": "Logging patterns. This pattern applies to Java/Spring and provides production-ready implementation guidance.",
       "slf4j": {
         "description": "SLF4J logging facade",
         "implementation": "Logback (default)",
@@ -226,12 +258,13 @@
         "mdc": "Mapped Diagnostic Context for correlation IDs"
       },
       "best_practices": [
-        "Use SLF4J",
         "Use structured logging in production",
         "Add correlation IDs",
         "Use appropriate log levels",
         "Don't log sensitive information"
-      ]
+      ],
+      "use_when": "When building Java/Spring applications and need logging patterns",
+      "code_example": "# Logging Patterns - implement per Java/Spring conventions"
     },
     "async_patterns": {
       "description": "Asynchronous processing patterns",
@@ -249,10 +282,12 @@
         "Configure thread pool",
         "Handle exceptions properly",
         "Use CompletableFuture for composition"
-      ]
+      ],
+      "use_when": "When building Java/Spring applications and need async patterns",
+      "code_example": "# Async Patterns - implement per Java/Spring conventions"
     },
     "caching_patterns": {
-      "description": "Caching patterns",
+      "description": "Caching patterns. This pattern applies to Java/Spring and provides production-ready implementation guidance.",
       "cache_annotation": {
         "@Cacheable": "Cache method results",
         "@CacheEvict": "Evict cache entries",
@@ -269,7 +304,9 @@
         "Configure cache eviction",
         "Use Redis for distributed caching",
         "Monitor cache hit rates"
-      ]
+      ],
+      "use_when": "When building Java/Spring applications and need caching patterns",
+      "code_example": "# Caching Patterns - implement per Java/Spring conventions"
     },
     "actuator_patterns": {
       "description": "Spring Boot Actuator patterns",
@@ -288,7 +325,9 @@
         "Secure sensitive endpoints",
         "Create custom health indicators",
         "Use health probes for Kubernetes"
-      ]
+      ],
+      "use_when": "When building Java/Spring applications and need actuator patterns",
+      "code_example": "# Actuator Patterns - implement per Java/Spring conventions"
     }
   },
   "best_practices": [],

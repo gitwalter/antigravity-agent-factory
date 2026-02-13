@@ -486,3 +486,8 @@ def get_induction_engine() -> InductionEngine:
         _default_engine = InductionEngine()
     
     return _default_engine
+
+def reset_induction_engine() -> None:
+    """Reset the singleton instance (for testing)."""
+    global _default_engine
+    _default_engine = None

@@ -1,176 +1,514 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "claude-agentic-patterns",
   "name": "Claude Agentic Patterns",
   "description": "Patterns for building Claude-powered agents using Anthropic's agentic loop, extended thinking, safety guidelines, and prompt engineering best practices",
   "version": "1.0.0",
-  "category": "agent-development",
+  "category": "agent-patterns",
   "patterns": {
-    "agentic_loop": {
-      "tool_use_until_done": {
-        "description": "Continue tool-use loop until Claude indicates completion",
-        "pattern": "Loop while tool_calls exist, execute tools, append ToolMessages, repeat until no tool_calls",
-        "example": "while iteration < max_iterations:\n    response = await llm_with_tools.ainvoke(messages)\n    if not response.tool_calls:\n        return response.content\n    # Execute tools and continue",
-        "use_when": [
-          "Multi-step tasks",
-          "Complex workflows",
-          "Data gathering"
-        ],
-        "best_practices": [
-          "Set max_iterations to prevent infinite loops",
-          "Handle tool execution errors gracefully",
-          "Log each iteration for debugging"
-        ]
-      },
-      "iterative_refinement": {
-        "description": "Multiple passes with feedback for quality improvement",
-        "pattern": "Generate -> Evaluate -> Refine -> Repeat",
-        "use_when": [
-          "Content generation",
-          "Code writing",
-          "Analysis refinement"
-        ]
-      },
-      "parallel_tool_execution": {
-        "description": "Execute multiple tools simultaneously when independent",
-        "pattern": "Use asyncio.gather() for concurrent tool calls",
-        "use_when": [
-          "Independent data gathering",
-          "Parallel API calls"
-        ]
-      },
-      "conditional_tool_use": {
-        "description": "Use tools based on conditions and context",
-        "pattern": "Evaluate context -> Select appropriate tools -> Execute",
-        "use_when": [
-          "Adaptive workflows",
-          "Context-dependent actions"
-        ]
-      }
+    "agentic_loop_tool_use_until_done_description": {
+      "description": "Continue tool-use loop until Claude indicates completion",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# agentic_loop_tool_use_until_done_description pattern for anthropic-agentic\n# Implement based on description: Continue tool-use loop until Claude indicates comp...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
     },
-    "extended_thinking": {
-      "enabled_thinking": {
-        "description": "Enable Claude's extended thinking for complex reasoning",
-        "configuration": {
-          "type": "enabled",
-          "budget_tokens": 10000
-        },
-        "example": "ChatAnthropic(model='claude-3-5-sonnet-20241022', thinking={'type': 'enabled', 'budget_tokens': 10000})",
-        "use_when": [
-          "Complex problem solving",
-          "Multi-step reasoning",
-          "Design tasks",
-          "Analysis requiring deep thought"
-        ],
-        "best_practices": [
-          "Set appropriate token budget",
-          "Use for tasks requiring extended reasoning",
-          "Monitor token usage"
-        ]
-      },
-      "thinking_access": {
-        "description": "Access Claude's thinking process if available",
-        "pattern": "Check response.thinking attribute for reasoning process",
-        "use_when": [
-          "Debugging",
-          "Understanding reasoning",
-          "Transparency requirements"
-        ]
-      }
+    "agentic_loop_tool_use_until_done_pattern": {
+      "description": "Loop while tool_calls exist, execute tools, append ToolMessages, repeat until no tool_calls",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# agentic_loop_tool_use_until_done_pattern pattern for anthropic-agentic\n# Implement based on description: Loop while tool_calls exist, execute tools, append...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
     },
-    "safety_patterns": {
-      "system_prompts": {
-        "description": "Define clear safety guidelines in system prompts",
-        "example": "SystemMessage with safety guidelines: never provide harmful info, protect privacy, be honest about limitations",
-        "best_practices": [
-          "Define clear boundaries",
-          "Include ethical guidelines",
-          "Specify limitations"
-        ]
-      },
-      "temperature_control": {
-        "description": "Use lower temperature (0.3-0.5) for consistent, safe behavior",
-        "use_when": [
-          "Production systems",
-          "Structured outputs",
-          "Consistent behavior needed"
-        ],
-        "temperature_ranges": {
-          "creative": "0.7-1.0",
-          "balanced": "0.5-0.7",
-          "consistent": "0.3-0.5",
-          "deterministic": "0.0-0.3"
-        }
-      },
-      "output_validation": {
-        "description": "Check responses for unsafe content",
-        "pattern": "Validate response content against safety criteria before returning",
-        "implementation": "Custom validation function checking for unsafe keywords, content filters"
-      },
-      "rate_limiting": {
-        "description": "Implement rate limits to prevent abuse",
-        "best_practices": [
-          "Set per-user limits",
-          "Implement exponential backoff",
-          "Monitor usage patterns"
-        ]
-      }
+    "agentic_loop_tool_use_until_done_example": {
+      "description": "while iteration < max_iterations:\n    response = await llm_with_tools.ainvoke(messages)\n    if not response.tool_calls:\n        return response.content\n    # Execute tools and continue",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# agentic_loop_tool_use_until_done_example pattern for anthropic-agentic\n# Implement based on description: while iteration < max_iterations:\n    response = a...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
     },
-    "prompt_engineering": {
-      "claude_specific": {
-        "description": "Prompt engineering optimized for Claude models",
-        "best_practices": [
-          "Use clear, structured prompts",
-          "Provide examples when helpful",
-          "Use XML tags for structure",
-          "Be explicit about desired format",
-          "Leverage Claude's long context window"
-        ]
-      },
-      "structured_outputs": {
-        "description": "Use Claude with structured output schemas",
-        "pattern": "llm.with_structured_output(PydanticModel)",
-        "example": "structured_llm = claude.with_structured_output(AnalysisResult)",
-        "use_when": [
-          "Data extraction",
-          "API responses",
-          "Consistent formats"
-        ],
-        "temperature": "Use 0.3-0.5 for structured outputs"
-      },
-      "multi_turn_conversation": {
-        "description": "Maintain context across conversation turns",
-        "pattern": "Use RunnableWithMessageHistory for conversation memory",
-        "use_when": [
-          "Chat applications",
-          "Multi-step interactions",
-          "Context-dependent tasks"
-        ]
-      }
+    "agentic_loop_tool_use_until_done_use_when": {
+      "description": "['Multi-step tasks', 'Complex workflows', 'Data gathering']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
     },
-    "langchain_integration": {
-      "chat_anthropic": {
-        "description": "Integrate Claude with LangChain workflows",
-        "pattern": "Use ChatAnthropic in LangChain chains and agents",
-        "example": "chain = prompt | ChatAnthropic(model='claude-3-5-sonnet-20241022') | parser"
-      },
-      "tool_binding": {
-        "description": "Bind tools to Claude for agentic loops",
-        "pattern": "llm_with_tools = claude.bind_tools(tools)",
-        "best_practices": [
-          "Provide clear tool docstrings",
-          "Use type hints in tool functions",
-          "Handle tool errors gracefully"
-        ]
-      },
-      "streaming": {
-        "description": "Stream Claude responses for better UX",
-        "pattern": "async for chunk in llm_with_tools.astream(messages)",
-        "use_when": [
-          "Interactive applications",
-          "Long responses",
-          "Real-time feedback"
-        ]
-      }
+    "agentic_loop_tool_use_until_done_best_practices": {
+      "description": "['Set max_iterations to prevent infinite loops', 'Handle tool execution errors gracefully', 'Log each iteration for debugging']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "agentic_loop_iterative_refinement_description": {
+      "description": "Multiple passes with feedback for quality improvement",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# agentic_loop_iterative_refinement_description pattern for anthropic-agentic\n# Implement based on description: Multiple passes with feedback for quality improvem...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "agentic_loop_iterative_refinement_pattern": {
+      "description": "Generate -> Evaluate -> Refine -> Repeat",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# agentic_loop_iterative_refinement_pattern pattern for anthropic-agentic\n# Implement based on description: Generate -> Evaluate -> Refine -> Repeat...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "agentic_loop_iterative_refinement_use_when": {
+      "description": "['Content generation', 'Code writing', 'Analysis refinement']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "agentic_loop_parallel_tool_execution_description": {
+      "description": "Execute multiple tools simultaneously when independent",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# agentic_loop_parallel_tool_execution_description pattern for anthropic-agentic\n# Implement based on description: Execute multiple tools simultaneously when indepen...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "agentic_loop_parallel_tool_execution_pattern": {
+      "description": "Use asyncio.gather() for concurrent tool calls",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# agentic_loop_parallel_tool_execution_pattern pattern for anthropic-agentic\n# Implement based on description: Use asyncio.gather() for concurrent tool calls...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "agentic_loop_parallel_tool_execution_use_when": {
+      "description": "['Independent data gathering', 'Parallel API calls']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "agentic_loop_conditional_tool_use_description": {
+      "description": "Use tools based on conditions and context",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# agentic_loop_conditional_tool_use_description pattern for anthropic-agentic\n# Implement based on description: Use tools based on conditions and context...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "agentic_loop_conditional_tool_use_pattern": {
+      "description": "Evaluate context -> Select appropriate tools -> Execute",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# agentic_loop_conditional_tool_use_pattern pattern for anthropic-agentic\n# Implement based on description: Evaluate context -> Select appropriate tools -> Ex...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "agentic_loop_conditional_tool_use_use_when": {
+      "description": "['Adaptive workflows', 'Context-dependent actions']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "extended_thinking_enabled_thinking_description": {
+      "description": "Enable Claude's extended thinking for complex reasoning",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# extended_thinking_enabled_thinking_description pattern for anthropic-agentic\n# Implement based on description: Enable Claude's extended thinking for complex reas...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "extended_thinking_enabled_thinking_configuration_type": {
+      "description": "enabled             ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# extended_thinking_enabled_thinking_configuration_type pattern for anthropic-agentic\n# Implement based on description: enabled             ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "extended_thinking_enabled_thinking_configuration_budget_tokens": {
+      "description": "10000               ",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "extended_thinking_enabled_thinking_example": {
+      "description": "ChatAnthropic(model='claude-3-5-sonnet-20241022', thinking={'type': 'enabled', 'budget_tokens': 10000})",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# extended_thinking_enabled_thinking_example pattern for anthropic-agentic\n# Implement based on description: ChatAnthropic(model='claude-3-5-sonnet-20241022', ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "extended_thinking_enabled_thinking_use_when": {
+      "description": "['Complex problem solving', 'Multi-step reasoning', 'Design tasks', 'Analysis requiring deep thought']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "extended_thinking_enabled_thinking_best_practices": {
+      "description": "['Set appropriate token budget', 'Use for tasks requiring extended reasoning', 'Monitor token usage']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "extended_thinking_thinking_access_description": {
+      "description": "Access Claude's thinking process if available",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# extended_thinking_thinking_access_description pattern for anthropic-agentic\n# Implement based on description: Access Claude's thinking process if available...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "extended_thinking_thinking_access_pattern": {
+      "description": "Check response.thinking attribute for reasoning process",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# extended_thinking_thinking_access_pattern pattern for anthropic-agentic\n# Implement based on description: Check response.thinking attribute for reasoning pr...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "extended_thinking_thinking_access_use_when": {
+      "description": "['Debugging', 'Understanding reasoning', 'Transparency requirements']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "safety_patterns_system_prompts_description": {
+      "description": "Define clear safety guidelines in system prompts",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# safety_patterns_system_prompts_description pattern for anthropic-agentic\n# Implement based on description: Define clear safety guidelines in system prompts...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "safety_patterns_system_prompts_example": {
+      "description": "SystemMessage with safety guidelines: never provide harmful info, protect privacy, be honest about limitations",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# safety_patterns_system_prompts_example pattern for anthropic-agentic\n# Implement based on description: SystemMessage with safety guidelines: never provid...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "safety_patterns_system_prompts_best_practices": {
+      "description": "['Define clear boundaries', 'Include ethical guidelines', 'Specify limitations']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "safety_patterns_temperature_control_description": {
+      "description": "Use lower temperature (0.3-0.5) for consistent, safe behavior",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# safety_patterns_temperature_control_description pattern for anthropic-agentic\n# Implement based on description: Use lower temperature (0.3-0.5) for consistent, sa...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "safety_patterns_temperature_control_use_when": {
+      "description": "['Production systems', 'Structured outputs', 'Consistent behavior needed']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "safety_patterns_temperature_control_temperature_ranges_creative": {
+      "description": "0.7-1.0             ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# safety_patterns_temperature_control_temperature_ranges_creative pattern for anthropic-agentic\n# Implement based on description: 0.7-1.0             ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "safety_patterns_temperature_control_temperature_ranges_balanced": {
+      "description": "0.5-0.7             ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# safety_patterns_temperature_control_temperature_ranges_balanced pattern for anthropic-agentic\n# Implement based on description: 0.5-0.7             ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "safety_patterns_temperature_control_temperature_ranges_consistent": {
+      "description": "0.3-0.5             ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# safety_patterns_temperature_control_temperature_ranges_consistent pattern for anthropic-agentic\n# Implement based on description: 0.3-0.5             ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "safety_patterns_temperature_control_temperature_ranges_deterministic": {
+      "description": "0.0-0.3             ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# safety_patterns_temperature_control_temperature_ranges_deterministic pattern for anthropic-agentic\n# Implement based on description: 0.0-0.3             ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "safety_patterns_output_validation_description": {
+      "description": "Check responses for unsafe content",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# safety_patterns_output_validation_description pattern for anthropic-agentic\n# Implement based on description: Check responses for unsafe content...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "safety_patterns_output_validation_pattern": {
+      "description": "Validate response content against safety criteria before returning",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# safety_patterns_output_validation_pattern pattern for anthropic-agentic\n# Implement based on description: Validate response content against safety criteria ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "safety_patterns_output_validation_implementation": {
+      "description": "Custom validation function checking for unsafe keywords, content filters",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# safety_patterns_output_validation_implementation pattern for anthropic-agentic\n# Implement based on description: Custom validation function checking for unsafe key...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "safety_patterns_rate_limiting_description": {
+      "description": "Implement rate limits to prevent abuse",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# safety_patterns_rate_limiting_description pattern for anthropic-agentic\n# Implement based on description: Implement rate limits to prevent abuse...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "safety_patterns_rate_limiting_best_practices": {
+      "description": "['Set per-user limits', 'Implement exponential backoff', 'Monitor usage patterns']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "prompt_engineering_claude_specific_description": {
+      "description": "Prompt engineering optimized for Claude models",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# prompt_engineering_claude_specific_description pattern for anthropic-agentic\n# Implement based on description: Prompt engineering optimized for Claude models...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "prompt_engineering_claude_specific_best_practices": {
+      "description": "['Use clear, structured prompts', 'Provide examples when helpful', 'Use XML tags for structure', 'Be explicit about desired format', \"Leverage Claude's long context window\"]",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "prompt_engineering_structured_outputs_description": {
+      "description": "Use Claude with structured output schemas",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# prompt_engineering_structured_outputs_description pattern for anthropic-agentic\n# Implement based on description: Use Claude with structured output schemas...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "prompt_engineering_structured_outputs_pattern": {
+      "description": "llm.with_structured_output(PydanticModel)",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# prompt_engineering_structured_outputs_pattern pattern for anthropic-agentic\n# Implement based on description: llm.with_structured_output(PydanticModel)...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "prompt_engineering_structured_outputs_example": {
+      "description": "structured_llm = claude.with_structured_output(AnalysisResult)",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# prompt_engineering_structured_outputs_example pattern for anthropic-agentic\n# Implement based on description: structured_llm = claude.with_structured_output(Ana...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "prompt_engineering_structured_outputs_use_when": {
+      "description": "['Data extraction', 'API responses', 'Consistent formats']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "prompt_engineering_structured_outputs_temperature": {
+      "description": "Use 0.3-0.5 for structured outputs",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# prompt_engineering_structured_outputs_temperature pattern for anthropic-agentic\n# Implement based on description: Use 0.3-0.5 for structured outputs...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "prompt_engineering_multi_turn_conversation_description": {
+      "description": "Maintain context across conversation turns",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# prompt_engineering_multi_turn_conversation_description pattern for anthropic-agentic\n# Implement based on description: Maintain context across conversation turns...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "prompt_engineering_multi_turn_conversation_pattern": {
+      "description": "Use RunnableWithMessageHistory for conversation memory",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# prompt_engineering_multi_turn_conversation_pattern pattern for anthropic-agentic\n# Implement based on description: Use RunnableWithMessageHistory for conversation me...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "prompt_engineering_multi_turn_conversation_use_when": {
+      "description": "['Chat applications', 'Multi-step interactions', 'Context-dependent tasks']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "langchain_integration_chat_anthropic_description": {
+      "description": "Integrate Claude with LangChain workflows",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# langchain_integration_chat_anthropic_description pattern for anthropic-agentic\n# Implement based on description: Integrate Claude with LangChain workflows...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "langchain_integration_chat_anthropic_pattern": {
+      "description": "Use ChatAnthropic in LangChain chains and agents",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# langchain_integration_chat_anthropic_pattern pattern for anthropic-agentic\n# Implement based on description: Use ChatAnthropic in LangChain chains and agents...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "langchain_integration_chat_anthropic_example": {
+      "description": "chain = prompt | ChatAnthropic(model='claude-3-5-sonnet-20241022') | parser",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# langchain_integration_chat_anthropic_example pattern for anthropic-agentic\n# Implement based on description: chain = prompt | ChatAnthropic(model='claude-3-5-s...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "langchain_integration_tool_binding_description": {
+      "description": "Bind tools to Claude for agentic loops",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# langchain_integration_tool_binding_description pattern for anthropic-agentic\n# Implement based on description: Bind tools to Claude for agentic loops...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "langchain_integration_tool_binding_pattern": {
+      "description": "llm_with_tools = claude.bind_tools(tools)",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# langchain_integration_tool_binding_pattern pattern for anthropic-agentic\n# Implement based on description: llm_with_tools = claude.bind_tools(tools)...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "langchain_integration_tool_binding_best_practices": {
+      "description": "['Provide clear tool docstrings', 'Use type hints in tool functions', 'Handle tool errors gracefully']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "langchain_integration_streaming_description": {
+      "description": "Stream Claude responses for better UX",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# langchain_integration_streaming_description pattern for anthropic-agentic\n# Implement based on description: Stream Claude responses for better UX...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "langchain_integration_streaming_pattern": {
+      "description": "async for chunk in llm_with_tools.astream(messages)",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# langchain_integration_streaming_pattern pattern for anthropic-agentic\n# Implement based on description: async for chunk in llm_with_tools.astream(messages...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "langchain_integration_streaming_use_when": {
+      "description": "['Interactive applications', 'Long responses', 'Real-time feedback']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
     }
   },
   "model_variants": {
@@ -259,5 +597,16 @@
     "tool-usage",
     "memory-management",
     "streaming-realtime"
+  ],
+  "title": "Anthropic Agentic Patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "All patterns include verifiable examples and test approaches",
+    "A2_user_primacy": "Patterns prioritize user needs and practical outcomes",
+    "A3_transparency": "Pattern selection rationale is clearly documented",
+    "A4_non_harm": "Patterns include safety considerations and error handling",
+    "A5_consistency": "Patterns follow established conventions and standards"
+  },
+  "related_knowledge": [
+    "best-practices.json"
   ]
 }

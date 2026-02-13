@@ -1,0 +1,178 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "advanced-rag-patterns-2026",
+  "name": "Advanced RAG Patterns 2026",
+  "title": "Advanced RAG Patterns 2026",
+  "description": "State-of-the-art RAG patterns including Agentic RAG (MA-RAG), late-interaction retrieval (ColBERT, ColBERTv2), Reason-ModernColBERT, and multi-agent RAG architectures",
+  "version": "1.0.0",
+  "last_updated": "2026-02-11",
+  "category": "ai-ml",
+  "axiomAlignment": {
+    "A1_verifiability": "Source attribution and citation enable verification",
+    "A2_user_primacy": "User queries drive retrieval and generation",
+    "A3_transparency": "Retrieval scores and reasoning are traceable",
+    "A4_non_harm": "Source filtering prevents harmful content",
+    "A5_consistency": "Unified RAG patterns across implementations"
+  },
+  "related_skills": [
+    "rag-patterns",
+    "advanced-retrieval",
+    "agentic-loops"
+  ],
+  "related_knowledge": [
+    "langchain-patterns.json",
+    "langgraph-workflows.json",
+    "vector-store-patterns.json"
+  ],
+  "patterns": {
+    "ma_rag": {
+      "description": "Multi-Agent RAG (MA-RAG) - specialized agents for each RAG stage",
+      "use_when": "Complex queries requiring sophisticated reasoning and retrieval",
+      "architecture": {
+        "planner_agent": "Decomposes complex queries into sub-queries",
+        "step_definer_agent": "Plans retrieval steps for each sub-query",
+        "extractor_agent": "Retrieves and extracts relevant information",
+        "qa_agent": "Synthesizes final answer from extracted info"
+      },
+      "code_example": "from langchain_openai import ChatOpenAI\nfrom langgraph.graph import StateGraph\nfrom typing import TypedDict, List\n\nclass MARAGState(TypedDict):\n    query: str\n    sub_queries: List[str]\n    retrieval_plan: List[dict]\n    extracted_info: List[str]\n    answer: str\n\ndef create_ma_rag(llm, retriever):\n    builder = StateGraph(MARAGState)\n    \n    # Planner Agent\n    def planner(state: MARAGState) -> dict:\n        decomposition = llm.with_structured_output(List[str]).invoke(\n            f'''Decompose this complex query into simpler sub-queries:\n            Query: {state[\"query\"]}\n            \n            Return 1-5 sub-queries that together answer the main query.'''\n        )\n        return {'sub_queries': decomposition}\n    \n    # Step Definer Agent\n    def step_definer(state: MARAGState) -> dict:\n        plans = []\n        for sq in state['sub_queries']:\n            plan = llm.invoke(\n                f'What retrieval steps are needed for: {sq}'\n            )\n            plans.append({'query': sq, 'steps': plan.content})\n        return {'retrieval_plan': plans}\n    \n    # Extractor Agent\n    def extractor(state: MARAGState) -> dict:\n        extracted = []\n        for plan in state['retrieval_plan']:\n            docs = retriever.invoke(plan['query'])\n            extraction = llm.invoke(\n                f'''Extract relevant information for: {plan[\"query\"]}\n                Documents: {[d.page_content for d in docs]}'''\n            )\n            extracted.append(extraction.content)\n        return {'extracted_info': extracted}\n    \n    # QA Agent\n    def qa_agent(state: MARAGState) -> dict:\n        answer = llm.invoke(\n            f'''Answer the original query based on extracted information:\n            Query: {state[\"query\"]}\n            Extracted Info: {state[\"extracted_info\"]}'''\n        )\n        return {'answer': answer.content}\n    \n    # Build graph\n    builder.add_node('planner', planner)\n    builder.add_node('step_definer', step_definer)\n    builder.add_node('extractor', extractor)\n    builder.add_node('qa_agent', qa_agent)\n    \n    builder.add_edge('planner', 'step_definer')\n    builder.add_edge('step_definer', 'extractor')\n    builder.add_edge('extractor', 'qa_agent')\n    builder.set_entry_point('planner')\n    builder.set_finish_point('qa_agent')\n    \n    return builder.compile()\n\n# Usage\nma_rag = create_ma_rag(llm, retriever)\nresult = ma_rag.invoke({'query': 'Compare the economic policies of X and Y'})",
+      "best_practices": [
+        "Use specialized agents for each RAG stage",
+        "Decompose complex queries into sub-queries",
+        "Plan retrieval steps before executing",
+        "Synthesize from multiple extractions"
+      ]
+    },
+    "colbert_retrieval": {
+      "description": "Late-interaction retrieval with ColBERT/ColBERTv2",
+      "use_when": "Need high-quality retrieval with better matching than dense embeddings",
+      "how_it_works": {
+        "token_embeddings": "Encode query and document tokens separately",
+        "late_interaction": "MaxSim scoring between token embeddings",
+        "benefits": "Captures fine-grained token-level matches"
+      },
+      "code_example": "from colbert import ColBERT\nfrom colbert.indexing import Indexer\nfrom colbert.retrieval import Retriever\n\n# Initialize ColBERT\ncolbert = ColBERT('colbert-ir/colbertv2.0')\n\n# Index documents\nindexer = Indexer(\n    colbert=colbert,\n    index_name='my_collection',\n    doc_maxlen=300\n)\nindexer.index(documents=['doc1 text...', 'doc2 text...'])\n\n# Retrieve\nretriever = Retriever(\n    colbert=colbert,\n    index_name='my_collection'\n)\n\nresults = retriever.search(\n    query='What is machine learning?',\n    k=10\n)\n\nfor result in results:\n    print(f'Doc {result.doc_id}: {result.score}')\n\n# LangChain integration\nfrom langchain_community.retrievers import ColBERTRetriever\n\nretriever = ColBERTRetriever(\n    model_name='colbert-ir/colbertv2.0',\n    index_path='./colbert_index',\n    k=10\n)\n\ndocs = retriever.invoke('What is machine learning?')",
+      "best_practices": [
+        "Use ColBERTv2 for best quality",
+        "Index with appropriate doc_maxlen",
+        "Combine with reranking for top results",
+        "Cache embeddings for performance"
+      ],
+      "comparison_with_dense": {
+        "dense": "Single vector per doc, fast but less precise",
+        "colbert": "Token vectors with MaxSim, slower but more accurate",
+        "when_colbert": "Precision matters more than speed"
+      }
+    },
+    "reason_modern_colbert": {
+      "description": "Reason-ModernColBERT - ColBERT optimized for agentic RAG",
+      "use_when": "Building agents that need precise retrieval with reasoning",
+      "code_example": "from colbert import ModernColBERT\nfrom langchain_openai import ChatOpenAI\n\n# Reason-ModernColBERT for agentic RAG\ncolbert = ModernColBERT(\n    model_name='colbert-ir/reason-moderncolbert',\n    query_augmentation=True,  # Augment queries with reasoning\n    doc_maxlen=512\n)\n\nclass AgenticRAG:\n    def __init__(self, colbert, llm):\n        self.colbert = colbert\n        self.llm = llm\n    \n    async def query_with_reasoning(self, query: str) -> str:\n        # Step 1: Reason about what to retrieve\n        reasoning = await self.llm.ainvoke(\n            f'''What information do I need to answer: {query}\n            Think step by step about what to search for.'''\n        )\n        \n        # Step 2: Augmented retrieval with reasoning\n        augmented_query = f'{query} [REASON: {reasoning.content}]'\n        docs = self.colbert.search(augmented_query, k=10)\n        \n        # Step 3: Score documents with reasoning\n        scored_docs = []\n        for doc in docs:\n            relevance_reason = await self.llm.ainvoke(\n                f'''Is this document relevant to: {query}\n                Document: {doc.content}\n                Explain why or why not.'''\n            )\n            scored_docs.append({\n                'doc': doc,\n                'reasoning': relevance_reason.content,\n                'keep': 'relevant' in relevance_reason.content.lower()\n            })\n        \n        # Step 4: Generate answer from relevant docs\n        relevant_docs = [d['doc'] for d in scored_docs if d['keep']]\n        answer = await self.llm.ainvoke(\n            f'''Answer based on these documents:\n            {[d.content for d in relevant_docs]}\n            \n            Question: {query}'''\n        )\n        \n        return answer.content",
+      "best_practices": [
+        "Augment queries with reasoning context",
+        "Score document relevance with LLM",
+        "Filter before final generation",
+        "Use ModernColBERT for best agentic performance"
+      ]
+    },
+    "hybrid_retrieval": {
+      "description": "Combine dense, sparse, and late-interaction retrieval",
+      "use_when": "Need robust retrieval across query types",
+      "code_example": "from langchain_community.retrievers import (\n    EnsembleRetriever,\n    BM25Retriever,\n    ColBERTRetriever\n)\nfrom langchain_community.vectorstores import Chroma\nfrom langchain_openai import OpenAIEmbeddings\n\n# Dense retriever (embeddings)\ndense_vectorstore = Chroma(\n    collection_name='docs',\n    embedding_function=OpenAIEmbeddings()\n)\ndense_retriever = dense_vectorstore.as_retriever(search_kwargs={'k': 20})\n\n# Sparse retriever (BM25)\nbm25_retriever = BM25Retriever.from_documents(documents, k=20)\n\n# Late-interaction retriever (ColBERT)\ncolbert_retriever = ColBERTRetriever(\n    model_name='colbert-ir/colbertv2.0',\n    k=20\n)\n\n# Ensemble with weights\nhybrid_retriever = EnsembleRetriever(\n    retrievers=[dense_retriever, bm25_retriever, colbert_retriever],\n    weights=[0.3, 0.2, 0.5],  # Weight ColBERT highest\n    c=60  # Reciprocal rank fusion constant\n)\n\n# Retrieve\ndocs = hybrid_retriever.invoke('What is machine learning?')\n\n# With reranking\nfrom langchain.retrievers import ContextualCompressionRetriever\nfrom langchain.retrievers.document_compressors import CrossEncoderReranker\n\nreranker = CrossEncoderReranker(\n    model_name='cross-encoder/ms-marco-MiniLM-L-12-v2',\n    top_n=10\n)\n\nreranked_retriever = ContextualCompressionRetriever(\n    base_compressor=reranker,\n    base_retriever=hybrid_retriever\n)",
+      "best_practices": [
+        "Combine dense, sparse, and late-interaction",
+        "Tune weights based on evaluation",
+        "Retrieve more than needed, then rerank",
+        "Use cross-encoder reranking for top results"
+      ]
+    },
+    "adaptive_rag": {
+      "description": "Route queries to different retrieval strategies",
+      "use_when": "Different queries need different retrieval approaches",
+      "code_example": "from langchain_openai import ChatOpenAI\nfrom pydantic import BaseModel\nfrom typing import Literal\n\nclass RouteDecision(BaseModel):\n    strategy: Literal['simple', 'multi_hop', 'comparative', 'temporal']\n    reasoning: str\n\nclass AdaptiveRAG:\n    def __init__(self, llm, retrievers: dict):\n        self.llm = llm\n        self.retrievers = retrievers\n    \n    def route_query(self, query: str) -> RouteDecision:\n        router = self.llm.with_structured_output(RouteDecision)\n        return router.invoke(\n            f'''Determine the best retrieval strategy for this query:\n            Query: {query}\n            \n            Strategies:\n            - simple: Factoid questions, single-hop retrieval\n            - multi_hop: Complex queries requiring multiple retrievals\n            - comparative: Comparing entities or concepts\n            - temporal: Time-sensitive queries, recent events'''\n        )\n    \n    async def retrieve(self, query: str) -> list:\n        decision = self.route_query(query)\n        strategy = decision.strategy\n        \n        if strategy == 'simple':\n            return self.retrievers['dense'].invoke(query)\n        elif strategy == 'multi_hop':\n            return await self.multi_hop_retrieve(query)\n        elif strategy == 'comparative':\n            return await self.comparative_retrieve(query)\n        elif strategy == 'temporal':\n            return self.retrievers['temporal'].invoke(query)\n    \n    async def multi_hop_retrieve(self, query: str) -> list:\n        # Decompose and retrieve iteratively\n        all_docs = []\n        sub_queries = await self.decompose_query(query)\n        for sq in sub_queries:\n            docs = self.retrievers['dense'].invoke(sq)\n            all_docs.extend(docs)\n        return self.deduplicate(all_docs)\n    \n    async def comparative_retrieve(self, query: str) -> list:\n        # Extract entities and retrieve for each\n        entities = await self.extract_entities(query)\n        all_docs = []\n        for entity in entities:\n            docs = self.retrievers['dense'].invoke(f'information about {entity}')\n            all_docs.extend(docs)\n        return all_docs",
+      "best_practices": [
+        "Route queries based on characteristics",
+        "Use specialized strategies for complex queries",
+        "Combine routing with hybrid retrieval",
+        "Monitor route decisions for optimization"
+      ]
+    },
+    "self_rag": {
+      "description": "Self-reflective RAG that evaluates and refines retrieval",
+      "use_when": "Need high-quality answers with self-verification",
+      "code_example": "from langchain_openai import ChatOpenAI\nfrom pydantic import BaseModel\n\nclass RetrievalQuality(BaseModel):\n    is_relevant: bool\n    covers_query: bool\n    needs_more_info: bool\n    follow_up_query: str = None\n\nclass SelfRAG:\n    def __init__(self, llm, retriever, max_iterations: int = 3):\n        self.llm = llm\n        self.retriever = retriever\n        self.max_iterations = max_iterations\n    \n    async def query(self, query: str) -> str:\n        all_docs = []\n        current_query = query\n        \n        for i in range(self.max_iterations):\n            # Retrieve\n            docs = self.retriever.invoke(current_query)\n            all_docs.extend(docs)\n            \n            # Evaluate retrieval quality\n            quality = await self.evaluate_retrieval(query, all_docs)\n            \n            if not quality.needs_more_info:\n                break\n            \n            # Refine query for next iteration\n            if quality.follow_up_query:\n                current_query = quality.follow_up_query\n        \n        # Generate answer with all retrieved docs\n        return await self.generate_with_citations(query, all_docs)\n    \n    async def evaluate_retrieval(self, query: str, docs: list) -> RetrievalQuality:\n        evaluator = self.llm.with_structured_output(RetrievalQuality)\n        return evaluator.invoke(\n            f'''Evaluate if these documents adequately answer the query.\n            Query: {query}\n            Documents: {[d.page_content for d in docs]}\n            \n            If more information is needed, suggest a follow-up query.'''\n        )\n    \n    async def generate_with_citations(self, query: str, docs: list) -> str:\n        return (await self.llm.ainvoke(\n            f'''Answer the query with citations.\n            Query: {query}\n            Documents: {[(i, d.page_content) for i, d in enumerate(docs)]}\n            \n            Include [1], [2], etc. for citations.'''\n        )).content",
+      "best_practices": [
+        "Evaluate retrieval quality before generation",
+        "Iterate with refined queries if needed",
+        "Limit iterations to prevent infinite loops",
+        "Generate with explicit citations"
+      ]
+    },
+    "citation_rag": {
+      "description": "RAG with verifiable source citations",
+      "use_when": "Answers must be traceable to sources",
+      "code_example": "from langchain_openai import ChatOpenAI\nfrom pydantic import BaseModel, Field\nfrom typing import List\n\nclass Citation(BaseModel):\n    text: str = Field(description='The cited text from the source')\n    source_id: int = Field(description='Index of the source document')\n    page: int = Field(default=None, description='Page number if available')\n\nclass CitedAnswer(BaseModel):\n    answer: str = Field(description='The answer with inline citations [1], [2], etc.')\n    citations: List[Citation] = Field(description='List of citations used')\n    confidence: float = Field(ge=0, le=1, description='Confidence in the answer')\n\nclass CitationRAG:\n    def __init__(self, llm, retriever):\n        self.llm = llm\n        self.retriever = retriever\n    \n    async def query_with_citations(self, query: str) -> CitedAnswer:\n        # Retrieve with metadata\n        docs = self.retriever.invoke(query)\n        \n        # Format docs with IDs\n        formatted_docs = []\n        for i, doc in enumerate(docs):\n            formatted_docs.append({\n                'id': i + 1,\n                'content': doc.page_content,\n                'source': doc.metadata.get('source', 'Unknown'),\n                'page': doc.metadata.get('page')\n            })\n        \n        # Generate with structured citations\n        generator = self.llm.with_structured_output(CitedAnswer)\n        return generator.invoke(\n            f'''Answer the query with citations.\n            \n            Query: {query}\n            \n            Documents:\n            {formatted_docs}\n            \n            Rules:\n            1. Include inline citations like [1], [2] for each claim\n            2. Only cite information actually present in documents\n            3. Include the exact cited text in citations\n            4. Set confidence based on how well docs answer the query'''\n        )\n\n# Verify citations\ndef verify_citations(answer: CitedAnswer, docs: list) -> List[bool]:\n    verifications = []\n    for citation in answer.citations:\n        doc_content = docs[citation.source_id - 1].page_content\n        # Check if cited text is in document\n        is_valid = citation.text.lower() in doc_content.lower()\n        verifications.append(is_valid)\n    return verifications",
+      "best_practices": [
+        "Use structured output for citations",
+        "Include exact cited text for verification",
+        "Verify citations against source documents",
+        "Track confidence based on source quality"
+      ]
+    },
+    "contextual_chunking": {
+      "description": "Add context to chunks for better retrieval",
+      "use_when": "Chunks lose meaning without surrounding context",
+      "code_example": "from langchain_openai import ChatOpenAI\nfrom langchain_text_splitters import RecursiveCharacterTextSplitter\n\nclass ContextualChunker:\n    def __init__(self, llm):\n        self.llm = llm\n        self.splitter = RecursiveCharacterTextSplitter(\n            chunk_size=1000,\n            chunk_overlap=200\n        )\n    \n    async def chunk_with_context(self, document: str) -> list:\n        # Split into base chunks\n        chunks = self.splitter.split_text(document)\n        \n        contextualized = []\n        for i, chunk in enumerate(chunks):\n            # Get surrounding context\n            prev_chunk = chunks[i-1] if i > 0 else ''\n            next_chunk = chunks[i+1] if i < len(chunks)-1 else ''\n            \n            # Generate context summary\n            context = await self.llm.ainvoke(\n                f'''Provide brief context for this chunk.\n                \n                Previous chunk: {prev_chunk[:200]}...\n                Current chunk: {chunk}\n                Next chunk: {next_chunk[:200]}...\n                \n                Context (1-2 sentences describing where this fits):'''\n            )\n            \n            # Prepend context to chunk\n            contextualized.append({\n                'content': f'{context.content}\\n\\n{chunk}',\n                'original': chunk,\n                'context': context.content,\n                'index': i\n            })\n        \n        return contextualized",
+      "best_practices": [
+        "Add context summaries to chunks",
+        "Include document-level metadata",
+        "Use overlapping chunks",
+        "Generate context with LLM for best quality"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use MA-RAG for complex multi-step queries",
+    "Use ColBERT/ColBERTv2 for high-precision retrieval",
+    "Combine dense, sparse, and late-interaction in hybrid retrieval",
+    "Route queries to appropriate retrieval strategies",
+    "Implement self-reflection to evaluate and refine retrieval",
+    "Generate answers with verifiable citations",
+    "Rerank top results with cross-encoders",
+    "Add context to chunks for better retrieval",
+    "Decompose complex queries into sub-queries",
+    "Verify citations against source documents"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Single Retrieval Strategy",
+      "problem": "One strategy doesn't work for all query types",
+      "solution": "Use adaptive RAG with query routing"
+    },
+    {
+      "name": "No Citation Verification",
+      "problem": "LLM may hallucinate citations",
+      "solution": "Verify cited text exists in source documents"
+    },
+    {
+      "name": "Context-Free Chunks",
+      "problem": "Chunks lose meaning without context",
+      "solution": "Use contextual chunking with summaries"
+    },
+    {
+      "name": "Dense-Only Retrieval",
+      "problem": "Misses keyword and exact matches",
+      "solution": "Combine with BM25 and late-interaction"
+    },
+    {
+      "name": "No Reranking",
+      "problem": "Initial retrieval has low precision",
+      "solution": "Rerank with cross-encoder for top results"
+    }
+  ],
+  "sources": [
+    "https://arxiv.org/abs/2401.15884",
+    "https://github.com/stanford-futuredata/ColBERT",
+    "https://arxiv.org/abs/2310.11511",
+    "https://www.langchain.com/blog/advanced-rag-patterns"
+  ]
+}

@@ -29,7 +29,6 @@ Design and architect production-ready Java microservices systems using Spring Cl
 - [[stack-configuration]]
 
 ## Knowledge
-- [Factory Automation](../../docs/automation/FACTORY_AUTOMATION.md)
-- [spring-microservices-patterns.json](../../knowledge/spring-microservices-patterns.json)
-- [java-containerization-patterns.json](../../knowledge/java-containerization-patterns.json)
-- [spring-observability-patterns.json](../../knowledge/spring-observability-patterns.json)
+- [spring-microservices-patterns.json](../knowledge/spring-microservices-patterns.json)
+- [java-containerization-patterns.json](../knowledge/java-containerization-patterns.json)
+- [spring-observability-patterns.json](../knowledge/spring-observability-patterns.json)

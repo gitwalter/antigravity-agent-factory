@@ -1,24 +1,77 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "human-in-the-loop-patterns",
   "name": "Human-in-the-Loop Patterns",
-  "description": "Patterns for human oversight and approval in agent workflows",
+  "title": "Human-in-the-Loop Patterns",
+  "description": "Patterns for human oversight, approval workflows, escalation, and feedback collection in agent systems",
   "version": "1.0.0",
-  "category": "agent-development",
+  "category": "agent-patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Approval logging and audit trails enable verifiable human decisions",
+    "A2_user_primacy": "Interrupt points and proposal editing preserve user control over critical actions",
+    "A3_transparency": "Context and confirmation levels make approval requirements explicit",
+    "A4_non_harm": "Human approval gates prevent harmful automated actions",
+    "A5_consistency": "Unified HITL patterns across interrupt_before, interrupt_after, and escalation"
+  },
+  "related_skills": [
+    "human-in-the-loop",
+    "state-management",
+    "langgraph-agent-building"
+  ],
+  "related_knowledge": [
+    "state-patterns.json",
+    "langgraph-workflows.json",
+    "memory-patterns.json"
+  ],
   "patterns": {
     "interrupt_before": {
       "description": "Pause before executing action",
       "use_case": "Review before high-stakes actions",
-      "implementation": "graph.compile(interrupt_before=['node_name'])"
+      "implementation": "graph.compile(interrupt_before=['node_name'])",
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "graph.compile(interrupt_before=['node_name'])",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
     "interrupt_after": {
       "description": "Pause after generating proposal",
       "use_case": "Review generated content",
-      "implementation": "graph.compile(interrupt_after=['node_name'])"
+      "implementation": "graph.compile(interrupt_after=['node_name'])",
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "graph.compile(interrupt_after=['node_name'])",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
-    "confirmation_levels": {
-      "INFO": "Notify only, no response needed",
-      "CONFIRM": "Simple yes/no approval",
-      "VERIFY": "Type confirmation phrase"
+    "confirmation_levels_INFO": {
+      "description": "Notify only, no response needed",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# confirmation_levels_INFO pattern for hitl-patterns\n# Implement based on description: Notify only, no response needed...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "confirmation_levels_CONFIRM": {
+      "description": "Simple yes/no approval",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# confirmation_levels_CONFIRM pattern for hitl-patterns\n# Implement based on description: Simple yes/no approval...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "confirmation_levels_VERIFY": {
+      "description": "Type confirmation phrase",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# confirmation_levels_VERIFY pattern for hitl-patterns\n# Implement based on description: Type confirmation phrase...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
     },
     "escalation": {
       "levels": [
@@ -32,26 +85,63 @@
         "error",
         "sensitive operation"
       ],
-      "pattern": "Progressive escalation based on criteria"
+      "pattern": "Progressive escalation based on criteria",
+      "description": "Agent pattern for iterative reasoning and tool use with observation-based refinement.",
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
-    "feedback_collection": {
-      "types": [
-        "correctness",
-        "helpfulness",
-        "safety"
-      ],
-      "storage": "LangSmith feedback API",
-      "use": "Continuous improvement"
+    "feedback_collection_types": {
+      "description": "['correctness', 'helpfulness', 'safety']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "feedback_collection_storage": {
+      "description": "LangSmith feedback API",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# feedback_collection_storage pattern for hitl-patterns\n# Implement based on description: LangSmith feedback API...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "feedback_collection_use": {
+      "description": "Continuous improvement",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# feedback_collection_use pattern for hitl-patterns\n# Implement based on description: Continuous improvement...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
     }
   },
   "workflow_patterns": {
     "single_approval": {
       "description": "One approval point before execution",
-      "flow": "propose -> interrupt -> execute"
+      "flow": "propose -> interrupt -> execute",
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
     "multi_step": {
       "description": "Approval at each step",
-      "flow": "step1 -> approve -> step2 -> approve -> ..."
+      "flow": "step1 -> approve -> step2 -> approve -> ...",
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
     "conditional_approval": {
       "description": "Approval only for certain actions",
@@ -59,6 +149,12 @@
         "cost > threshold",
         "irreversible",
         "external"
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
       ]
     }
   },
@@ -73,7 +169,14 @@
     },
     "timeout": {
       "recommended": true,
-      "pattern": "Expire pending approvals after duration"
+      "pattern": "Expire pending approvals after duration",
+      "description": "Agent pattern for iterative reasoning and tool use with observation-based refinement.",
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     }
   },
   "best_practices": [
@@ -112,10 +215,5 @@
       "problem": "Workflows cannot resume after human approval if system restarts, losing progress and requiring full re-execution",
       "solution": "Require checkpointing (MemorySaver minimum, Redis/PostgreSQL for production) before implementing human-in-the-loop patterns"
     }
-  ],
-  "related_skills": [
-    "human-in-the-loop",
-    "state-management",
-    "langgraph-agent-building"
   ]
 }

@@ -5,7 +5,7 @@ Dataclasses for agent contracts with deontic logic support.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 import hashlib
@@ -282,7 +282,7 @@ class AgentContract:
         """Check if contract is currently active."""
         if not self.is_fully_signed:
             return False
-        if self.expires and datetime.utcnow() > self.expires:
+        if self.expires and datetime.now(timezone.utc) > self.expires:
             return False
         return True
     
@@ -448,7 +448,7 @@ class AgentContract:
         return cls(
             contract_id=str(uuid.uuid4()),
             version=version,
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=parties,
             capabilities=parsed_capabilities,
             **kwargs,

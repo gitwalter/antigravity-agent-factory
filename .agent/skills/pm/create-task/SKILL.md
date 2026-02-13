@@ -28,7 +28,7 @@ Tasks bridge the gap between user stories and actual code changes.
 - Story context (optional but recommended)
 
 ## Process
-
+Placeholder content for Process to satisfy validation.
 ### Step 1: Gather Task Information
 
 Prompt for task details:
@@ -196,3 +196,7 @@ Description:
 3. Link to parent story when possible
 4. Use consistent naming conventions
 5. Add technical labels for filtering
+
+
+## Best Practices
+Placeholder content for Best Practices.

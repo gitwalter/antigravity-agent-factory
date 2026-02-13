@@ -5,7 +5,7 @@ Integration with Solana blockchain for high-performance anchoring.
 """
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 import hashlib
 import json
@@ -61,7 +61,7 @@ class SolanaTransaction:
     
     def __post_init__(self):
         if self.timestamp is None:
-            self.timestamp = datetime.utcnow()
+            self.timestamp = datetime.now(timezone.utc)
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -176,7 +176,7 @@ class SolanaAnchor(BlockchainAnchor):
             data_to_sign = json.dumps({
                 "merkle_root": merkle_root,
                 "metadata": metadata,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }, sort_keys=True)
             
             signature = hashlib.sha256(data_to_sign.encode()).hexdigest()[:88]

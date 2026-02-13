@@ -11,99 +11,20 @@ from pathlib import Path
 import pytest
 from jsonschema import Draft7Validator
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from scripts.validation.schema_validator import load_schemas  # noqa: E402
 
-
-# Define blueprint schema
-BLUEPRINT_SCHEMA = {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "required": ["metadata", "stack"],
-    "properties": {
-        "metadata": {
-            "type": "object",
-            "required": ["blueprintId", "blueprintName", "description"],
-            "properties": {
-                "blueprintId": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
-                "blueprintName": {"type": "string"},
-                "description": {"type": "string"},
-                "version": {"type": "string"},
-                "author": {"type": "string"},
-                "tags": {"type": "array", "items": {"type": "string"}}
-            }
-        },
-        "stack": {
-            "type": "object",
-            "required": ["primaryLanguage"],
-            "properties": {
-                "primaryLanguage": {"type": "string"},
-                "frameworks": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "required": ["name"],
-                        "properties": {
-                            "name": {"type": "string"},
-                            "version": {"type": "string"},
-                            "purpose": {"type": "string"}
-                        }
-                    }
-                },
-                "databases": {"type": "array"},
-                "tools": {"type": "array"},
-                "styleGuides": {"type": "array"}
-            }
-        },
-        "agents": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["patternId"],
-                "properties": {
-                    "patternId": {"type": "string"},
-                    "required": {"type": "boolean"},
-                    "customizations": {"type": "object"}
-                }
-            }
-        },
-        "skills": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["patternId"],
-                "properties": {
-                    "patternId": {"type": "string"},
-                    "required": {"type": "boolean"}
-                }
-            }
-        },
-        "knowledge": {"type": "array"},
-        "templates": {"type": "object"},
-        "workflows": {"type": "array"},
-        "mcpServers": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {"type": "string"},
-                    "url": {"type": "string"},
-                    "purpose": {"type": "string"},
-                    "required": {"type": "boolean"}
-                }
-            }
-        },
-        "projectStructure": {"type": "object"},
-        "cursorrules": {"type": "object"}    }
-}
+# Load the canonical blueprint schema from schemas/blueprint.schema.json
+_SCHEMAS = load_schemas()
+BLUEPRINT_SCHEMA = _SCHEMAS.get("blueprint", {})
 
 
 class TestBlueprintSchema:
     """Tests for blueprint schema validation."""
-    
+
     @pytest.fixture
     def validator(self):
-        """Create a JSON schema validator."""
+        """Create a JSON schema validator from the canonical schema."""
+        assert BLUEPRINT_SCHEMA, "blueprint.schema.json could not be loaded"
         return Draft7Validator(BLUEPRINT_SCHEMA)
     
     def test_schema_is_valid(self, validator):

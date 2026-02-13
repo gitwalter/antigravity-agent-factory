@@ -1,0 +1,212 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "openai-agents-sdk-patterns",
+  "name": "OpenAI Agents SDK Patterns",
+  "title": "OpenAI Agents SDK Patterns",
+  "description": "Best practices and patterns for OpenAI Agents SDK - the production-ready agent framework replacing Swarm, featuring Agents, Handoffs, Guardrails, Sessions, and Tracing",
+  "version": "1.0.0",
+  "last_updated": "2026-02-11",
+  "category": "agent-patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Tracing and sessions enable verification of agent behavior",
+    "A2_user_primacy": "Guardrails and human-in-the-loop patterns prioritize user safety",
+    "A3_transparency": "Agent definitions and handoffs are explicit and traceable",
+    "A4_non_harm": "Input/output guardrails prevent harmful agent behaviors",
+    "A5_consistency": "Unified SDK patterns across agents, tools, and handoffs"
+  },
+  "related_skills": [
+    "tool-usage",
+    "agentic-loops",
+    "human-in-the-loop",
+    "error-handling"
+  ],
+  "related_knowledge": [
+    "langchain-patterns.json",
+    "langgraph-workflows.json",
+    "anthropic-patterns.json",
+    "crewai-patterns.json"
+  ],
+  "patterns": {
+    "agent_definition": {
+      "description": "Define agents with name, instructions, model, and tools",
+      "use_when": "Creating AI agents with specific capabilities and behaviors",
+      "code_example": "from openai_agents import Agent, Runner\n\n# Basic agent definition\nagent = Agent(\n    name='Research Assistant',\n    instructions='''You are a helpful research assistant.\n    You can search the web, read documents, and summarize information.\n    Always cite your sources.''',\n    model='gpt-4',\n    tools=[search_tool, read_document_tool]\n)\n\n# Run agent\nrunner = Runner()\nresult = await runner.run(agent, 'Research the latest developments in quantum computing')\nprint(result.final_output)",
+      "best_practices": [
+        "Write clear, specific instructions that define agent behavior",
+        "Choose appropriate model based on task complexity",
+        "Provide only tools relevant to agent's purpose",
+        "Set reasonable timeout and iteration limits"
+      ],
+      "key_properties": {
+        "name": "Unique identifier for the agent",
+        "instructions": "System prompt defining agent behavior",
+        "model": "OpenAI model to use (gpt-4, gpt-3.5-turbo, etc.)",
+        "tools": "List of function tools available to agent",
+        "handoffs": "List of agents this agent can hand off to"
+      }
+    },
+    "function_tools": {
+      "description": "Define tools as Python functions with type hints",
+      "use_when": "Agents need to perform actions or retrieve external data",
+      "code_example": "from openai_agents import Agent, function_tool\nfrom pydantic import BaseModel, Field\nfrom typing import List\n\n# Simple function tool\n@function_tool\ndef get_weather(city: str) -> str:\n    \"\"\"Get current weather for a city.\"\"\"\n    return f'The weather in {city} is sunny, 72\u00b0F'\n\n# Tool with Pydantic schema\nclass SearchParams(BaseModel):\n    query: str = Field(description='Search query')\n    max_results: int = Field(default=5, ge=1, le=20)\n\n@function_tool\ndef search_web(params: SearchParams) -> List[str]:\n    \"\"\"Search the web for information.\"\"\"\n    return [f'Result {i} for: {params.query}' for i in range(params.max_results)]\n\n# Async tool\n@function_tool\nasync def fetch_data(url: str) -> dict:\n    \"\"\"Fetch data from a URL.\"\"\"\n    async with httpx.AsyncClient() as client:\n        response = await client.get(url)\n        return response.json()\n\n# Create agent with tools\nagent = Agent(\n    name='Assistant',\n    instructions='You are a helpful assistant.',\n    tools=[get_weather, search_web, fetch_data]\n)",
+      "best_practices": [
+        "Use @function_tool decorator for automatic schema generation",
+        "Provide detailed docstrings for tool descriptions",
+        "Use Pydantic models for complex tool inputs",
+        "Handle errors gracefully within tool functions",
+        "Use async tools for I/O-bound operations"
+      ]
+    },
+    "agent_handoffs": {
+      "description": "Transfer control between specialized agents",
+      "use_when": "Complex tasks require different agent specializations",
+      "code_example": "from openai_agents import Agent, Handoff, Runner\n\n# Define specialized agents\ntriage_agent = Agent(\n    name='Triage Agent',\n    instructions='''Route requests to the appropriate specialist.\n    - Technical questions -> Technical Support\n    - Billing questions -> Billing Support\n    - General questions -> handle yourself''',\n    handoffs=[\n        Handoff(target='technical_support', description='Technical and product issues'),\n        Handoff(target='billing_support', description='Billing and payment issues')\n    ]\n)\n\ntechnical_agent = Agent(\n    name='Technical Support',\n    instructions='You are a technical support specialist. Help with product issues.',\n    tools=[search_docs, check_system_status]\n)\n\nbilling_agent = Agent(\n    name='Billing Support',\n    instructions='You are a billing specialist. Help with payment and invoice issues.',\n    tools=[lookup_invoice, process_refund]\n)\n\n# Register agents\nrunner = Runner()\nrunner.register_agent(triage_agent)\nrunner.register_agent(technical_agent, name='technical_support')\nrunner.register_agent(billing_agent, name='billing_support')\n\n# Run with automatic handoffs\nresult = await runner.run(triage_agent, 'I need help with my invoice')\n# Handoff chain: Triage -> Billing Support",
+      "best_practices": [
+        "Start with a triage agent for request routing",
+        "Define clear handoff descriptions",
+        "Limit handoff depth to prevent infinite loops",
+        "Pass context when handing off",
+        "Monitor handoff patterns for optimization"
+      ]
+    },
+    "agent_loop": {
+      "description": "The core execution loop for running agents",
+      "use_when": "Understanding how agents process requests",
+      "loop_steps": [
+        "1. Receive user input",
+        "2. Call LLM with instructions + tools + context",
+        "3. If LLM returns tool call -> execute tool, add result, goto 2",
+        "4. If LLM returns handoff -> transfer to target agent, goto 2",
+        "5. If LLM returns final response -> return to user"
+      ],
+      "code_example": "from openai_agents import Agent, Runner, RunConfig\n\nagent = Agent(\n    name='Assistant',\n    instructions='You are helpful.',\n    tools=[tool1, tool2],\n    handoffs=[handoff1]\n)\n\nrunner = Runner()\n\n# Configure run behavior\nconfig = RunConfig(\n    max_iterations=10,        # Prevent infinite loops\n    max_tool_calls=20,        # Limit tool usage\n    timeout_seconds=120,      # Overall timeout\n    stream=True               # Enable streaming\n)\n\n# Run with config\nresult = await runner.run(\n    agent,\n    'Help me with this task',\n    config=config\n)\n\n# Access loop history\nfor step in result.steps:\n    print(f'Step: {step.type}, Agent: {step.agent}')\n    if step.tool_call:\n        print(f'  Tool: {step.tool_call.name}')\n    if step.handoff:\n        print(f'  Handoff to: {step.handoff.target}')",
+      "best_practices": [
+        "Set max_iterations to prevent runaway loops",
+        "Use timeouts for production environments",
+        "Log all loop steps for debugging",
+        "Monitor tool call counts for cost control"
+      ]
+    },
+    "guardrails": {
+      "description": "Input and output validation for agent safety",
+      "use_when": "Production agents need content filtering and validation",
+      "code_example": "from openai_agents import Agent, Guardrail, GuardrailResult\nfrom pydantic import BaseModel\n\n# Input guardrail - runs before agent\nclass InputValidator(Guardrail):\n    async def check(self, input_text: str) -> GuardrailResult:\n        # Check for PII\n        if self._contains_pii(input_text):\n            return GuardrailResult(\n                passed=False,\n                message='Input contains personal information. Please remove it.'\n            )\n        # Check for prompt injection\n        if self._is_injection_attempt(input_text):\n            return GuardrailResult(\n                passed=False,\n                message='Invalid input format.'\n            )\n        return GuardrailResult(passed=True)\n    \n    def _contains_pii(self, text: str) -> bool:\n        # PII detection logic\n        return False\n    \n    def _is_injection_attempt(self, text: str) -> bool:\n        # Prompt injection detection\n        return False\n\n# Output guardrail - runs after agent response\nclass OutputValidator(Guardrail):\n    async def check(self, output_text: str) -> GuardrailResult:\n        # Check for harmful content\n        if self._is_harmful(output_text):\n            return GuardrailResult(\n                passed=False,\n                message='Response filtered for safety.',\n                replacement='I cannot provide that information.'\n            )\n        return GuardrailResult(passed=True)\n    \n    def _is_harmful(self, text: str) -> bool:\n        return False\n\n# Apply guardrails to agent\nagent = Agent(\n    name='Safe Assistant',\n    instructions='You are a helpful assistant.',\n    input_guardrails=[InputValidator()],\n    output_guardrails=[OutputValidator()]\n)",
+      "best_practices": [
+        "Always use input guardrails in production",
+        "Implement PII detection for privacy compliance",
+        "Add prompt injection detection",
+        "Use output guardrails for content filtering",
+        "Log guardrail blocks for security monitoring"
+      ]
+    },
+    "sessions": {
+      "description": "Persist conversation state across multiple interactions",
+      "use_when": "Multi-turn conversations requiring context retention",
+      "code_example": "from openai_agents import Agent, Runner, Session, SessionStore\nimport uuid\n\n# Create session store (in-memory, Redis, or database)\nstore = SessionStore.memory()  # For development\n# store = SessionStore.redis(url='redis://localhost:6379')  # For production\n\nagent = Agent(\n    name='Conversational Assistant',\n    instructions='You are a helpful assistant. Remember previous conversation.'\n)\n\nrunner = Runner(session_store=store)\n\n# Start new session\nsession_id = str(uuid.uuid4())\n\n# First message\nresult1 = await runner.run(\n    agent,\n    'My name is Alice and I work at Acme Corp.',\n    session_id=session_id\n)\n\n# Second message - agent remembers context\nresult2 = await runner.run(\n    agent,\n    'What company do I work at?',\n    session_id=session_id\n)\nprint(result2.final_output)  # 'You work at Acme Corp.'\n\n# Access session history\nsession = await store.get(session_id)\nfor message in session.messages:\n    print(f'{message.role}: {message.content}')",
+      "best_practices": [
+        "Use Redis or database session store for production",
+        "Set session expiration for cleanup",
+        "Summarize long sessions to prevent context overflow",
+        "Associate sessions with user IDs for multi-user systems",
+        "Implement session cleanup policies"
+      ]
+    },
+    "tracing": {
+      "description": "Observe and debug agent execution with detailed traces",
+      "use_when": "Debugging, monitoring, and analyzing agent behavior",
+      "code_example": "from openai_agents import Agent, Runner, Tracer, TraceConfig\nimport json\n\n# Configure tracing\ntrace_config = TraceConfig(\n    enabled=True,\n    include_prompts=True,      # Log full prompts\n    include_completions=True,  # Log full completions\n    include_tool_calls=True,   # Log tool inputs/outputs\n    export_to='langsmith'      # Export to LangSmith, Datadog, etc.\n)\n\n# Custom tracer for logging\nclass LoggingTracer(Tracer):\n    def on_agent_start(self, agent_name: str, input_text: str):\n        print(f'[START] Agent: {agent_name}')\n        print(f'[INPUT] {input_text}')\n    \n    def on_tool_call(self, tool_name: str, args: dict, result: str):\n        print(f'[TOOL] {tool_name}({json.dumps(args)}) -> {result[:100]}...')\n    \n    def on_handoff(self, from_agent: str, to_agent: str, reason: str):\n        print(f'[HANDOFF] {from_agent} -> {to_agent}: {reason}')\n    \n    def on_agent_end(self, agent_name: str, output: str):\n        print(f'[END] Agent: {agent_name}')\n        print(f'[OUTPUT] {output}')\n\nrunner = Runner(\n    trace_config=trace_config,\n    tracers=[LoggingTracer()]\n)\n\nresult = await runner.run(agent, 'Help me with this task')\n\n# Access trace data\ntrace = result.trace\nprint(f'Total tokens: {trace.total_tokens}')\nprint(f'Total duration: {trace.duration_ms}ms')\nprint(f'Tool calls: {len(trace.tool_calls)}')",
+      "best_practices": [
+        "Enable tracing in all environments",
+        "Export traces to observability platform",
+        "Monitor token usage and costs",
+        "Set up alerts for errors and anomalies",
+        "Use traces for debugging and optimization"
+      ]
+    },
+    "human_in_the_loop": {
+      "description": "Require human approval for critical actions",
+      "use_when": "Sensitive operations need human oversight",
+      "code_example": "from openai_agents import Agent, Runner, HumanApproval, ApprovalHandler\n\n# Define approval handler\nclass SlackApprovalHandler(ApprovalHandler):\n    async def request_approval(\n        self,\n        action: str,\n        context: dict,\n        timeout_seconds: int = 300\n    ) -> bool:\n        # Send approval request to Slack\n        message = f'Agent wants to: {action}\\nContext: {context}'\n        approval_id = await self.send_slack_message(message)\n        \n        # Wait for approval\n        return await self.wait_for_approval(approval_id, timeout_seconds)\n\n# Tool requiring approval\n@function_tool\n@HumanApproval(\n    handler=SlackApprovalHandler(),\n    reason='This action modifies production data'\n)\nasync def delete_record(record_id: str) -> str:\n    \"\"\"Delete a record from the database.\"\"\"\n    await database.delete(record_id)\n    return f'Record {record_id} deleted'\n\n# Agent with approval-gated tool\nagent = Agent(\n    name='Database Admin',\n    instructions='You can manage database records. Deletions require approval.',\n    tools=[delete_record]\n)",
+      "best_practices": [
+        "Require approval for destructive actions",
+        "Set reasonable approval timeouts",
+        "Log all approval requests and decisions",
+        "Provide context for informed approval",
+        "Implement escalation for expired approvals"
+      ]
+    },
+    "realtime_voice": {
+      "description": "Build voice-based agents with real-time audio",
+      "use_when": "Creating voice assistants or phone agents",
+      "code_example": "from openai_agents import Agent, RealtimeRunner, VoiceConfig\n\n# Configure voice settings\nvoice_config = VoiceConfig(\n    model='gpt-4o-realtime',\n    voice='alloy',\n    input_audio_format='pcm16',\n    output_audio_format='pcm16',\n    turn_detection='server_vad',  # Voice activity detection\n    vad_threshold=0.5\n)\n\nagent = Agent(\n    name='Voice Assistant',\n    instructions='You are a friendly voice assistant. Keep responses concise.',\n    voice_config=voice_config\n)\n\nrunner = RealtimeRunner()\n\n# Stream audio\nasync def handle_voice_session(websocket):\n    session = await runner.start_session(agent)\n    \n    async for audio_chunk in websocket:\n        # Send audio to agent\n        response_chunks = await session.send_audio(audio_chunk)\n        \n        # Stream response audio back\n        for chunk in response_chunks:\n            await websocket.send(chunk)\n    \n    await session.end()",
+      "best_practices": [
+        "Use server-side VAD for turn detection",
+        "Keep responses concise for natural conversation",
+        "Handle audio stream interruptions gracefully",
+        "Monitor latency for real-time experience",
+        "Implement fallback for poor audio quality"
+      ]
+    }
+  },
+  "best_practices": [
+    "Write clear, specific agent instructions that define behavior and constraints",
+    "Use @function_tool decorator with type hints for automatic schema generation",
+    "Implement input guardrails for prompt injection and PII detection",
+    "Use output guardrails for content filtering in production",
+    "Set max_iterations and timeouts to prevent runaway agent loops",
+    "Use session stores for multi-turn conversations requiring context",
+    "Enable tracing in all environments for observability and debugging",
+    "Require human approval for destructive or sensitive actions",
+    "Start with triage agent pattern for complex multi-agent systems",
+    "Monitor token usage and costs across all agent interactions"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Unbounded Agent Loops",
+      "problem": "Agent runs indefinitely without producing results",
+      "solution": "Set max_iterations and timeout_seconds in RunConfig"
+    },
+    {
+      "name": "No Input Validation",
+      "problem": "Vulnerable to prompt injection and malicious inputs",
+      "solution": "Implement input guardrails with injection detection"
+    },
+    {
+      "name": "Missing Session Management",
+      "problem": "Agent loses context between messages",
+      "solution": "Use session stores with appropriate persistence backend"
+    },
+    {
+      "name": "Unmonitored Tool Calls",
+      "problem": "Cannot debug issues or track costs",
+      "solution": "Enable tracing and export to observability platform"
+    },
+    {
+      "name": "Direct Destructive Actions",
+      "problem": "Agent can cause damage without oversight",
+      "solution": "Add @HumanApproval decorator to sensitive tools"
+    }
+  ],
+  "migration_from_swarm": {
+    "description": "OpenAI Agents SDK is the production replacement for the experimental Swarm library",
+    "key_differences": [
+      "Agents SDK is production-ready with official support",
+      "Built-in guardrails, sessions, and tracing",
+      "Better handoff semantics with explicit Handoff objects",
+      "Native async/await support throughout",
+      "Integrated with OpenAI's observability infrastructure"
+    ],
+    "migration_steps": [
+      "Replace Agent class imports",
+      "Convert context_variables to session state",
+      "Update handoff syntax to use Handoff objects",
+      "Add guardrails for production safety",
+      "Enable tracing for observability"
+    ]
+  },
+  "sources": [
+    "https://github.com/openai/openai-agents-python",
+    "https://pypi.org/project/openai-agents/",
+    "https://openai.com/blog/new-tools-for-building-agents"
+  ]
+}

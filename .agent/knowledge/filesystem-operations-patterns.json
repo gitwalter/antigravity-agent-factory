@@ -1,9 +1,29 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "filesystem-operations-patterns",
   "name": "Filesystem Operations Patterns",
+  "title": "Filesystem Operations Patterns",
   "description": "Patterns for secure file operations, directory traversal, and security sandboxing",
   "version": "1.0.0",
-  "category": "agent-development",
+  "category": "core",
+  "axiomAlignment": {
+    "A1_verifiability": "File operations can be verified via path validation and audit logs",
+    "A2_user_primacy": "Filesystem access serves user-defined allowed directories",
+    "A3_transparency": "Path sanitization and sandbox boundaries are explicit",
+    "A4_non_harm": "Sandboxing prevents path traversal and unauthorized access",
+    "A5_consistency": "Unified patterns for read, write, and traversal across operations"
+  },
+  "related_skills": [
+    "filesystem-ops",
+    "tool-usage",
+    "security-sandboxing",
+    "mcp-integration"
+  ],
+  "related_knowledge": [
+    "security-patterns.json",
+    "mcp-patterns.json",
+    "ai-security-patterns.json"
+  ],
   "patterns": {
     "file_operations": {
       "basic_read_write": {
@@ -14,17 +34,25 @@
           "Use pathlib for cross-platform compatibility",
           "Handle encoding errors gracefully",
           "Check file existence before operations"
-        ]
+        ],
+        "use_when": "Apply when basic read write is needed in Filesystem Operations Patterns"
       },
       "async_operations": {
         "description": "Async file operations for large files",
         "code_example": "import aiofiles\nfrom pathlib import Path\n\nasync def read_file_async(file_path: str) -> str:\n    async with aiofiles.open(file_path, 'r', encoding='utf-8') as f:\n        return await f.read()\n\nasync def write_file_async(file_path: str, content: str) -> None:\n    path = Path(file_path)\n    path.parent.mkdir(parents=True, exist_ok=True)\n    async with aiofiles.open(file_path, 'w', encoding='utf-8') as f:\n        await f.write(content)",
-        "use_when": [
-          "Large files (>10MB)",
-          "High concurrency",
-          "Non-blocking I/O needed"
+        "use_when": "Large files (>10MB); High concurrency; Non-blocking I/O needed",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
         ]
-      }
+      },
+      "description": "Category grouping: basic_read_write, async_operations",
+      "use_when": "Apply when file operations patterns are needed in Filesystem Operations Patterns",
+      "code_example": "# See child patterns under file_operations for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "directory_traversal": {
       "recursive_search": {
@@ -35,7 +63,8 @@
           "Limit results to prevent memory issues",
           "Filter by file type when possible",
           "Validate directory paths"
-        ]
+        ],
+        "use_when": "Apply when recursive search is needed in Filesystem Operations Patterns"
       },
       "content_search": {
         "description": "Search for text content in files",
@@ -45,8 +74,16 @@
           "Limit line matches per file",
           "Use case-insensitive search by default",
           "Skip binary files"
-        ]
-      }
+        ],
+        "use_when": "Apply when content search is needed in Filesystem Operations Patterns"
+      },
+      "description": "Category grouping: recursive_search, content_search",
+      "use_when": "Apply when directory traversal patterns are needed in Filesystem Operations Patterns",
+      "code_example": "# See child patterns under directory_traversal for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "security_sandboxing": {
       "sandboxed_filesystem": {
@@ -58,7 +95,8 @@
           "Set file size limits",
           "Restrict file extensions",
           "Use read-only mode when possible"
-        ]
+        ],
+        "use_when": "Apply when sandboxed filesystem is needed in Filesystem Operations Patterns"
       },
       "permission_checking": {
         "description": "Check file permissions before operations",
@@ -68,8 +106,16 @@
           "Handle permission errors gracefully",
           "Log permission denials",
           "Provide clear error messages"
-        ]
-      }
+        ],
+        "use_when": "Apply when permission checking is needed in Filesystem Operations Patterns"
+      },
+      "description": "Category grouping: sandboxed_filesystem, permission_checking",
+      "use_when": "Apply when security sandboxing patterns are needed in Filesystem Operations Patterns",
+      "code_example": "# See child patterns under security_sandboxing for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "file_type_detection": {
       "mime_type_detection": {
@@ -80,8 +126,16 @@
           "Categorize files for processing",
           "Handle unknown file types",
           "Validate before processing"
-        ]
-      }
+        ],
+        "use_when": "Apply when mime type detection is needed in Filesystem Operations Patterns"
+      },
+      "description": "Category grouping: mime_type_detection",
+      "use_when": "Apply when file type detection patterns are needed in Filesystem Operations Patterns",
+      "code_example": "# See child patterns under file_type_detection for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     }
   },
   "best_practices": [
@@ -149,11 +203,5 @@
       "problem": "Processes binary files as text, security issues",
       "fix": "Check file types before processing, validate extensions"
     }
-  ],
-  "related_skills": [
-    "filesystem-ops",
-    "tool-usage",
-    "security-sandboxing",
-    "mcp-integration"
   ]
 }

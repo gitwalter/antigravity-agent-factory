@@ -5,7 +5,7 @@ Append-only storage for agent events with persistence support.
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 import json
@@ -285,7 +285,7 @@ class EventStore:
         Returns:
             Number of violations.
         """
-        cutoff = datetime.utcnow() - window
+        cutoff = datetime.now(timezone.utc) - window
         count = 0
         
         with self._lock:

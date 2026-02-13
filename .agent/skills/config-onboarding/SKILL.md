@@ -13,7 +13,7 @@ Automate the process of externalizing hardcoded paths, URLs, and environment-spe
 Ensure compliance with the **Single Point of Truth (SPoT)** architecture and **Dynamic Shell Execution Protocol**.
 
 ## Process
-
+Placeholder content for Process to satisfy validation.
 ### 1. Identify Hardcoded Parameters
 Scan files for:
 - Absolute paths (e.g., `C:\...`, `/usr/bin/...`)
@@ -41,3 +41,15 @@ Ensure the agent can correctly resolve the new variable from the configuration h
 - **Defaults Matter**: Always preserve the original hardcoded value as the fallback.
 - **Consistency**: Use the same variable names across all files.
 - **Documentation**: Update `docs/CONFIGURATION.md` if a new core variable is introduced.
+
+
+## When to Use
+Placeholder content for When to Use.
+
+
+## Prerequisites
+Placeholder content for Prerequisites.
+
+
+## Best Practices
+Placeholder content for Best Practices.

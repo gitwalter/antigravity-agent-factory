@@ -1,0 +1,150 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "java-jvm-containerization-patterns",
+  "name": "Java/JVM Containerization Patterns",
+  "title": "Java/JVM Containerization Patterns",
+  "description": "Multi-stage Docker, GraalVM native, Jib, JLink, CDS, and memory tuning for Java containers",
+  "version": "1.0.0",
+  "last_updated": "2026-02-10",
+  "category": "java",
+  "axiomAlignment": {
+    "A1_verifiability": "Health checks and reproducible builds enable verification of container behavior",
+    "A2_user_primacy": "Fast startup and resource tuning serve user-facing reliability",
+    "A3_transparency": "Multi-stage builds and explicit flags make container behavior traceable",
+    "A4_non_harm": "Distroless and non-root base images reduce attack surface",
+    "A5_consistency": "Unified Java containerization patterns across build and runtime"
+  },
+  "related_skills": [
+    "java-containerization",
+    "docker-deployment",
+    "kubernetes-deployment",
+    "spring-boot-development"
+  ],
+  "related_knowledge": [
+    "spring-patterns.json",
+    "spring-observability-patterns.json",
+    "docker-patterns.json",
+    "kubernetes-deployment-patterns.json"
+  ],
+  "patterns": {
+    "multi_stage_docker": {
+      "description": "Build stage with JDK; runtime stage with JRE or distroless",
+      "structure": "FROM eclipse-temurin:17-jdk AS build; COPY . .; RUN ./mvnw package -DskipTests; FROM eclipse-temurin:17-jre; COPY --from=build /app/target/*.jar app.jar",
+      "when_to_use": "Standard Java apps, Maven or Gradle builds",
+      "best_practices": [
+        "Use slim or alpine base",
+        "Non-root user",
+        "Layer caching for dependencies",
+        "Single JAR in final image"
+      ],
+      "use_when": "Standard Java apps, Maven or Gradle builds",
+      "code_example": "# Multi Stage Docker\nFROM eclipse-temurin:17-jdk AS build; COPY . .; RUN ./mvnw package -DskipTests; FROM eclipse-temurin:17-jre; COPY --from=build /app/target/*.jar app.jar"
+    },
+    "graalvm_native": {
+      "description": "AOT compilation to native binary; fast startup, low memory",
+      "flow": "native-image -jar app.jar --no-fallback -H:ReflectionConfigurationFiles=reflect.json",
+      "when_to_use": "Serverless, CLI tools, rapid scaling",
+      "best_practices": [
+        "Test reflection config",
+        "Avoid --no-fallback in prod initially",
+        "Profile to optimize"
+      ],
+      "use_when": "Serverless, CLI tools, rapid scaling",
+      "code_example": "# Graalvm Native\nnative-image -jar app.jar --no-fallback -H:ReflectionConfigurationFiles=reflect.json"
+    },
+    "jib": {
+      "description": "Build container images without Dockerfile; Maven or Gradle plugins",
+      "idiom": "mvn com.google.cloud.tools:jib-maven-plugin:build -Dimage=myapp:latest",
+      "when_to_use": "Reproducible builds, no Docker daemon",
+      "best_practices": [
+        "Layer application and dependencies separately",
+        "Use .dockerignore equivalent",
+        "Set entrypoint explicitly"
+      ],
+      "use_when": "Reproducible builds, no Docker daemon",
+      "code_example": "# Jib\nmvn com.google.cloud.tools:jib-maven-plugin:build -Dimage=myapp:latest"
+    },
+    "jlink": {
+      "description": "Create minimal JRE with only required modules",
+      "idiom": "jlink --add-modules java.base,java.sql --output jre-minimal",
+      "when_to_use": "Smaller images, custom runtime",
+      "best_practices": [
+        "Verify module graph",
+        "Include jdk.jcmd for debugging",
+        "Test thoroughly"
+      ],
+      "use_when": "Smaller images, custom runtime",
+      "code_example": "# Jlink\njlink --add-modules java.base,java.sql --output jre-minimal"
+    },
+    "class_data_sharing": {
+      "description": "CDS archives for faster startup; AppCDS for application classes",
+      "flags": [
+        "-XX:SharedArchiveFile=app-cds.jsa",
+        "-Xshare:on"
+      ],
+      "when_to_use": "Frequent restarts, Kubernetes pods",
+      "best_practices": [
+        "Generate archive in ci",
+        "Include in image",
+        "Use -Xshare:auto for flexibility"
+      ],
+      "use_when": "Frequent restarts, Kubernetes pods",
+      "code_example": "# Class Data Sharing - implement per Java/Spring conventions"
+    },
+    "memory_tuning": {
+      "description": "Heap, metaspace, container-aware settings",
+      "flags": [
+        "-XX:+UseContainerSupport",
+        "-XX:MaxRAMPercentage=75",
+        "-XX:InitialRAMPercentage=50"
+      ],
+      "when_to_use": "Running in containers with memory limits",
+      "best_practices": [
+        "Use MaxRAMPercentage for containers",
+        "Leave headroom for metaspace",
+        "Monitor RSS vs heap"
+      ],
+      "use_when": "Running in containers with memory limits",
+      "code_example": "# Memory Tuning - implement per Java/Spring conventions"
+    },
+    "distroless_base": {
+      "description": "Minimal image without shell or package manager",
+      "base": "gcr.io/distroless/java17-debian11",
+      "when_to_use": "Security, minimal attack surface",
+      "best_practices": [
+        "Debug with debug image variant",
+        "Use non-root",
+        "Copy only app JAR"
+      ],
+      "use_when": "Security, minimal attack surface",
+      "code_example": "# Distroless Base - implement per Java/Spring conventions"
+    },
+    "health_checks": {
+      "description": "Liveness and readiness probes for Kubernetes",
+      "implementation": "Spring Boot Actuator /health, custom endpoints",
+      "when_to_use": "Kubernetes, container orchestration",
+      "best_practices": [
+        "Liveness: can process",
+        "Readiness: dependencies OK",
+        "Use startup probe for slow JVM"
+      ],
+      "use_when": "Kubernetes, container orchestration",
+      "code_example": "# Health Checks\nSpring Boot Actuator /health, custom endpoints"
+    }
+  },
+  "best_practices": [
+    "Use slim or alpine base",
+    "Non-root user",
+    "Layer caching for dependencies",
+    "Single JAR in final image",
+    "Test reflection config",
+    "Avoid --no-fallback in prod initially",
+    "Profile to optimize",
+    "Layer application and dependencies separately"
+  ],
+  "anti_patterns": [
+    "Applying patterns without understanding the underlying concepts",
+    "Copy-pasting solutions without adapting to specific context",
+    "Over-engineering simple problems with complex patterns"
+  ]
+}

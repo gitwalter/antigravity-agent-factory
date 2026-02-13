@@ -1,16 +1,32 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "sap-api-management-patterns",
   "name": "SAP API Management Patterns",
+  "title": "SAP API Management Patterns",
   "version": "1.0.0",
   "description": "API Management patterns including policies, proxies, products, developer portal, and analytics",
   "category": "sap",
   "last_updated": "2026-02-09",
   "axiomAlignment": {
-    "love": "Enable secure, scalable API consumption for developers",
-    "truth": "Based on SAP API Management documentation and REST API best practices",
-    "beauty": "Clean, well-documented APIs with proper governance"
+    "A1_verifiability": "Request validation and analytics enable verifiable API behavior",
+    "A2_user_primacy": "OAuth, quotas, and developer portal serve API consumer needs",
+    "A3_transparency": "API documentation and lifecycle stages make governance explicit",
+    "A4_non_harm": "Rate limiting, spike arrest, and error handling prevent harmful usage",
+    "A5_consistency": "Unified patterns for proxies, products, policies, and monitoring"
   },
+  "related_skills": [
+    "sap-integration",
+    "api-design",
+    "sap-security",
+    "btp-deployment",
+    "error-handling"
+  ],
+  "related_knowledge": [
+    "sap-security-patterns.json",
+    "sap-btp-patterns.json",
+    "iflow-patterns.json",
+    "sap-event-mesh.json"
+  ],
   "patterns": {
     "apimgmt-spike-arrest": {
       "id": "apimgmt-spike-arrest",
@@ -20,7 +36,9 @@
       "code": {
         "policy": "<SpikeArrest async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"SpikeArrest-1\">\n  <Properties>\n    <Property name=\"spikeArrest\">100ps</Property>\n  </Properties>\n</SpikeArrest>"
       },
-      "bestPractices": [
+      "use_when": "When implementing Spike Arrest Policy or when Protect backend from traffic spikes",
+      "code_example": "<SpikeArrest async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"SpikeArrest-1\">\n  <Properties>\n    <Property name=\"spikeArrest\">100ps</Property>\n  </Properties>\n</SpikeArrest>",
+      "best_practices": [
         "Use spike arrest for all APIs",
         "Set appropriate rate (e.g., 100ps = 100 per second)",
         "Protect backend systems",
@@ -35,7 +53,9 @@
       "code": {
         "policy": "<Quota async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"Quota-1\" type=\"calendar\">\n  <Properties>\n    <Property name=\"interval\">1</Property>\n    <Property name=\"timeUnit\">day</Property>\n    <Property name=\"allow\">10000</Property>\n  </Properties>\n</Quota>"
       },
-      "bestPractices": [
+      "use_when": "When API monetization, usage limits",
+      "code_example": "<Quota async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"Quota-1\" type=\"calendar\">\n  <Properties>\n    <Property name=\"interval\">1</Property>\n    <Property name=\"timeUnit\">day</Property>\n    <Property name=\"allow\">10000</Property>\n  </Properties>\n</Quota>",
+      "best_practices": [
         "Set quotas based on business needs",
         "Use calendar or rolling window",
         "Configure proper intervals",
@@ -50,7 +70,9 @@
       "code": {
         "policy": "<OAuthV2 async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"OAuthV2-1\">\n  <Properties>\n    <Property name=\"operation\">VerifyAccessToken</Property>\n    <Property name=\"publicKey\">public_key</Property>\n  </Properties>\n</OAuthV2>"
       },
-      "bestPractices": [
+      "use_when": "When All protected APIs",
+      "code_example": "<OAuthV2 async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"OAuthV2-1\">\n  <Properties>\n    <Property name=\"operation\">VerifyAccessToken</Property>\n    <Property name=\"publicKey\">public_key</Property>\n  </Properties>\n</OAuthV2>",
+      "best_practices": [
         "Use OAuth 2.0 for authentication",
         "Verify access tokens",
         "Configure public key properly",
@@ -60,12 +82,14 @@
     "apimgmt-caching": {
       "id": "apimgmt-caching",
       "name": "Caching Policy",
-      "description": "Cache API responses",
+      "description": "Cache API responses This pattern supports SAP Caching Policy integration and implementation.",
       "scenario": "Read-heavy APIs",
       "code": {
         "policy": "<ResponseCache async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"ResponseCache-1\">\n  <Properties>\n    <Property name=\"cacheKey\">\n      <KeyFragment ref=\"request.uri\" />\n      <KeyFragment ref=\"request.queryparam.id\" />\n    </Property>\n    <Property name=\"timeToLiveInSeconds\">300</Property>\n  </Properties>\n</ResponseCache>"
       },
-      "bestPractices": [
+      "use_when": "When Read-heavy APIs",
+      "code_example": "<ResponseCache async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"ResponseCache-1\">\n  <Properties>\n    <Property name=\"cacheKey\">\n      <KeyFragment ref=\"request.uri\" />\n      <KeyFragment ref=\"request.queryparam.id\" />\n    </Property>\n    <Property name=\"timeToLiveInSeconds\">300</Property>\n  </Properties>\n</ResponseCache>",
+      "best_practices": [
         "Cache GET requests",
         "Set appropriate TTL",
         "Use proper cache keys",
@@ -75,12 +99,14 @@
     "apimgmt-api-proxy": {
       "id": "apimgmt-api-proxy",
       "name": "API Proxy Pattern",
-      "description": "Create API proxy",
+      "description": "Create API proxy This pattern supports SAP API Proxy Pattern integration and implementation.",
       "scenario": "All APIs",
       "code": {
         "proxy": "Create API Proxy:\n- Base path: /api/v1\n- Target endpoint: https://backend.example.com\n- Policies: OAuth, Quota, Spike Arrest"
       },
-      "bestPractices": [
+      "use_when": "When implementing API Proxy Pattern or when Create API proxy This pattern supports SAP API Proxy Pattern integration and imp",
+      "code_example": "Create API Proxy:\n- Base path: /api/v1\n- Target endpoint: https://backend.example.com\n- Policies: OAuth, Quota, Spike Arrest",
+      "best_practices": [
         "Use proxies for all APIs",
         "Set proper base paths",
         "Configure target endpoints",
@@ -95,7 +121,9 @@
       "code": {
         "product": "Create API Product:\n- Name: Travel Booking API\n- APIs: TravelBooking, TravelBookingItem\n- Quota: 10,000/day\n- Scopes: Display, Edit"
       },
-      "bestPractices": [
+      "use_when": "When API monetization",
+      "code_example": "Create API Product:\n- Name: Travel Booking API\n- APIs: TravelBooking, TravelBookingItem\n- Quota: 10,000/day\n- Scopes: Display, Edit",
+      "best_practices": [
         "Group related APIs",
         "Set quotas per product",
         "Configure scopes",
@@ -110,7 +138,9 @@
       "code": {
         "portal": "Publish to Developer Portal:\n- API documentation\n- Try-it-out functionality\n- Code samples\n- Authentication guide"
       },
-      "bestPractices": [
+      "use_when": "When External API consumption",
+      "code_example": "Publish to Developer Portal:\n- API documentation\n- Try-it-out functionality\n- Code samples\n- Authentication guide",
+      "best_practices": [
         "Provide complete documentation",
         "Include code samples",
         "Enable try-it-out",
@@ -125,7 +155,9 @@
       "code": {
         "policy": "<AssignMessage async=\"false\" name=\"TransformRequest\">\n  <AssignTo createNew=\"false\" type=\"request\"/>\n  <Set>\n    <Payload contentType=\"application/json\">\n      {\"transformed\": \"data\"}\n    </Payload>\n  </Set>\n</AssignMessage>"
       },
-      "bestPractices": [
+      "use_when": "When API versioning, format conversion",
+      "code_example": "<AssignMessage async=\"false\" name=\"TransformRequest\">\n  <AssignTo createNew=\"false\" type=\"request\"/>\n  <Set>\n    <Payload contentType=\"application/json\">\n      {\"transformed\": \"data\"}\n    </Payload>\n  </Set>\n</AssignMessage>",
+      "best_practices": [
         "Transform requests when needed",
         "Maintain request structure",
         "Handle errors gracefully",
@@ -140,7 +172,9 @@
       "code": {
         "policy": "<AssignMessage async=\"false\" name=\"TransformResponse\">\n  <AssignTo createNew=\"false\" type=\"response\"/>\n  <Set>\n    <Payload contentType=\"application/json\">\n      {\"transformed\": \"response\"}\n    </Payload>\n  </Set>\n</AssignMessage>"
       },
-      "bestPractices": [
+      "use_when": "When API versioning, format conversion",
+      "code_example": "<AssignMessage async=\"false\" name=\"TransformResponse\">\n  <AssignTo createNew=\"false\" type=\"response\"/>\n  <Set>\n    <Payload contentType=\"application/json\">\n      {\"transformed\": \"response\"}\n    </Payload>\n  </Set>\n</AssignMessage>",
+      "best_practices": [
         "Transform responses when needed",
         "Maintain response structure",
         "Handle errors gracefully",
@@ -150,12 +184,14 @@
     "apimgmt-error-handling": {
       "id": "apimgmt-error-handling",
       "name": "Error Handling Policy",
-      "description": "Handle API errors",
+      "description": "Handle API errors This pattern supports SAP Error Handling Policy integration and implementation.",
       "scenario": "All APIs",
       "code": {
         "policy": "<RaiseFault async=\"false\" name=\"HandleError\">\n  <FaultResponse>\n    <Set>\n      <StatusCode>500</StatusCode>\n      <ReasonPhrase>Internal Server Error</ReasonPhrase>\n    </Set>\n    <Payload contentType=\"application/json\">\n      {\"error\": \"message\"}\n    </Payload>\n  </FaultResponse>\n</RaiseFault>"
       },
-      "bestPractices": [
+      "use_when": "When implementing Error Handling Policy or when Handle API errors This pattern supports SAP Error Handling Policy integration an",
+      "code_example": "<RaiseFault async=\"false\" name=\"HandleError\">\n  <FaultResponse>\n    <Set>\n      <StatusCode>500</StatusCode>\n      <ReasonPhrase>Internal Server Error</ReasonPhrase>\n    </Set>\n    <Payload contentType=\"application/json\">\n      {\"error\": \"message\"}\n    </Payload>\n  </FaultResponse>\n</RaiseFault>",
+      "best_practices": [
         "Handle errors gracefully",
         "Return proper status codes",
         "Provide error messages",
@@ -165,12 +201,14 @@
     "apimgmt-cors": {
       "id": "apimgmt-cors",
       "name": "CORS Policy",
-      "description": "Configure CORS",
+      "description": "Configure CORS This pattern supports SAP CORS Policy integration and implementation.",
       "scenario": "Web applications",
       "code": {
         "policy": "<CORS async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"CORS-1\">\n  <Properties>\n    <Property name=\"allowedOrigins\">https://example.com</Property>\n    <Property name=\"allowedMethods\">GET,POST,PUT,DELETE</Property>\n    <Property name=\"allowedHeaders\">Content-Type,Authorization</Property>\n  </Properties>\n</CORS>"
       },
-      "bestPractices": [
+      "use_when": "When Web applications",
+      "code_example": "<CORS async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"CORS-1\">\n  <Properties>\n    <Property name=\"allowedOrigins\">https://example.com</Property>\n    <Property name=\"allowedMethods\">GET,POST,PUT,DELETE</Property>\n    <Property name=\"allowedHeaders\">Content-Type,Authorization</Property>\n  </Properties>\n</CORS>",
+      "best_practices": [
         "Configure CORS properly",
         "Whitelist allowed origins",
         "Set allowed methods",
@@ -180,12 +218,14 @@
     "apimgmt-rate-limiting": {
       "id": "apimgmt-rate-limiting",
       "name": "Rate Limiting Policy",
-      "description": "Limit request rate",
+      "description": "Limit request rate This pattern supports SAP Rate Limiting Policy integration and implementation.",
       "scenario": "API protection",
       "code": {
         "policy": "<Quota async=\"false\" name=\"RateLimit\">\n  <Properties>\n    <Property name=\"interval\">1</Property>\n    <Property name=\"timeUnit\">minute</Property>\n    <Property name=\"allow\">100</Property>\n  </Properties>\n</Quota>"
       },
-      "bestPractices": [
+      "use_when": "When API protection",
+      "code_example": "<Quota async=\"false\" name=\"RateLimit\">\n  <Properties>\n    <Property name=\"interval\">1</Property>\n    <Property name=\"timeUnit\">minute</Property>\n    <Property name=\"allow\">100</Property>\n  </Properties>\n</Quota>",
+      "best_practices": [
         "Set appropriate rate limits",
         "Use per-minute or per-second",
         "Monitor rate limit usage",
@@ -200,7 +240,9 @@
       "code": {
         "versioning": "Version APIs:\n- URL: /api/v1/resource\n- Header: API-Version: 1.0\n- Query: ?version=1.0"
       },
-      "bestPractices": [
+      "use_when": "When API evolution",
+      "code_example": "Version APIs:\n- URL: /api/v1/resource\n- Header: API-Version: 1.0\n- Query: ?version=1.0",
+      "best_practices": [
         "Use URL versioning",
         "Support multiple versions",
         "Deprecate old versions",
@@ -210,12 +252,14 @@
     "apimgmt-analytics": {
       "id": "apimgmt-analytics",
       "name": "Analytics Pattern",
-      "description": "Monitor API usage",
+      "description": "Monitor API usage This pattern supports SAP Analytics Pattern integration and implementation.",
       "scenario": "All APIs",
       "code": {
         "analytics": "Monitor:\n- Request count\n- Response times\n- Error rates\n- Top consumers\n- Geographic distribution"
       },
-      "bestPractices": [
+      "use_when": "When implementing Analytics Pattern or when Monitor API usage This pattern supports SAP Analytics Pattern integration and im",
+      "code_example": "Monitor:\n- Request count\n- Response times\n- Error rates\n- Top consumers\n- Geographic distribution",
+      "best_practices": [
         "Enable analytics",
         "Monitor key metrics",
         "Set up alerts",
@@ -230,7 +274,9 @@
       "code": {
         "odata": "OData API:\n- Base path: /odata/v4\n- Service: TravelBookingService\n- Entities: TravelBooking, TravelBookingItem"
       },
-      "bestPractices": [
+      "use_when": "When SAP OData services",
+      "code_example": "OData API:\n- Base path: /odata/v4\n- Service: TravelBookingService\n- Entities: TravelBooking, TravelBookingItem",
+      "best_practices": [
         "Use OData V4",
         "Follow OData conventions",
         "Support $filter, $select, $expand",
@@ -245,7 +291,9 @@
       "code": {
         "policy": "<VerifyAPIKey async=\"false\" name=\"VerifyAPIKey\">\n  <APIKey ref=\"request.header.apikey\"/>\n</VerifyAPIKey>"
       },
-      "bestPractices": [
+      "use_when": "When Simple authentication",
+      "code_example": "<VerifyAPIKey async=\"false\" name=\"VerifyAPIKey\">\n  <APIKey ref=\"request.header.apikey\"/>\n</VerifyAPIKey>",
+      "best_practices": [
         "Use API keys for simple auth",
         "Store keys securely",
         "Rotate keys regularly",
@@ -260,7 +308,9 @@
       "code": {
         "policy": "<IPAccessControl async=\"false\" name=\"IPWhitelist\">\n  <IPRules>\n    <Rule action=\"ALLOW\">192.168.1.0/24</Rule>\n  </IPRules>\n</IPAccessControl>"
       },
-      "bestPractices": [
+      "use_when": "When Internal APIs",
+      "code_example": "<IPAccessControl async=\"false\" name=\"IPWhitelist\">\n  <IPRules>\n    <Rule action=\"ALLOW\">192.168.1.0/24</Rule>\n  </IPRules>\n</IPAccessControl>",
+      "best_practices": [
         "Use IP whitelist for internal APIs",
         "Configure CIDR blocks",
         "Test IP restrictions",
@@ -275,7 +325,9 @@
       "code": {
         "policy": "<JSONToXML async=\"false\" name=\"ValidateJSON\">\n  <Options>\n    <Options>\n      <Source>request</Source>\n      <OutputVariable>jsonPayload</OutputVariable>\n    </Options>\n  </Options>\n</JSONToXML>"
       },
-      "bestPractices": [
+      "use_when": "When implementing Request Validation Pattern or when Validate request payload",
+      "code_example": "<JSONToXML async=\"false\" name=\"ValidateJSON\">\n  <Options>\n    <Options>\n      <Source>request</Source>\n      <OutputVariable>jsonPayload</OutputVariable>\n    </Options>\n  </Options>\n</JSONToXML>",
+      "best_practices": [
         "Validate request format",
         "Check required fields",
         "Validate data types",
@@ -290,7 +342,9 @@
       "code": {
         "policy": "<GZIP async=\"false\" name=\"CompressResponse\">\n  <Request>\n    <Header name=\"Accept-Encoding\">gzip</Header>\n  </Request>\n</GZIP>"
       },
-      "bestPractices": [
+      "use_when": "When Large responses",
+      "code_example": "<GZIP async=\"false\" name=\"CompressResponse\">\n  <Request>\n    <Header name=\"Accept-Encoding\">gzip</Header>\n  </Request>\n</GZIP>",
+      "best_practices": [
         "Enable compression",
         "Support gzip",
         "Compress large responses",
@@ -305,7 +359,9 @@
       "code": {
         "documentation": "Document:\n- Endpoints\n- Request/response formats\n- Authentication\n- Error codes\n- Code samples"
       },
-      "bestPractices": [
+      "use_when": "When implementing API Documentation Pattern or when Document APIs properly",
+      "code_example": "Document:\n- Endpoints\n- Request/response formats\n- Authentication\n- Error codes\n- Code samples",
+      "best_practices": [
         "Provide complete documentation",
         "Include examples",
         "Document error codes",
@@ -315,12 +371,14 @@
     "apimgmt-api-testing": {
       "id": "apimgmt-api-testing",
       "name": "API Testing Pattern",
-      "description": "Test APIs",
+      "description": "Test APIs This pattern supports SAP API Testing Pattern integration and implementation.",
       "scenario": "All APIs",
       "code": {
         "testing": "Test:\n- Authentication\n- Request/response formats\n- Error handling\n- Rate limits\n- Policies"
       },
-      "bestPractices": [
+      "use_when": "When implementing API Testing Pattern or when Test APIs This pattern supports SAP API Testing Pattern integration and implemen",
+      "code_example": "Test:\n- Authentication\n- Request/response formats\n- Error handling\n- Rate limits\n- Policies",
+      "best_practices": [
         "Test all endpoints",
         "Test error scenarios",
         "Test rate limits",
@@ -330,12 +388,14 @@
     "apimgmt-api-monitoring": {
       "id": "apimgmt-api-monitoring",
       "name": "API Monitoring Pattern",
-      "description": "Monitor API health",
+      "description": "Monitor API health This pattern supports SAP API Monitoring Pattern integration and implementation.",
       "scenario": "All APIs",
       "code": {
         "monitoring": "Monitor:\n- API availability\n- Response times\n- Error rates\n- Backend health\n- Policy violations"
       },
-      "bestPractices": [
+      "use_when": "When implementing API Monitoring Pattern or when Monitor API health This pattern supports SAP API Monitoring Pattern integration ",
+      "code_example": "Monitor:\n- API availability\n- Response times\n- Error rates\n- Backend health\n- Policy violations",
+      "best_practices": [
         "Monitor API health",
         "Set up alerts",
         "Track SLA compliance",
@@ -350,7 +410,9 @@
       "code": {
         "lifecycle": "Lifecycle stages:\n- Created\n- Published\n- Deprecated\n- Retired"
       },
-      "bestPractices": [
+      "use_when": "When API evolution",
+      "code_example": "Lifecycle stages:\n- Created\n- Published\n- Deprecated\n- Retired",
+      "best_practices": [
         "Manage API lifecycle",
         "Deprecate gracefully",
         "Provide migration guides",

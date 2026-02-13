@@ -29,17 +29,17 @@ Proactive test orchestration agent that runs tests intelligently, maximizes para
 - "How healthy are the tests?"
 
 ## Skills
-- [[shell-platform]]
 - [[agent-testing]]
 - [[pipeline-error-fix]]
 - [[ci-monitor]]
 - [[grounding-verification]]
 
 ## Knowledge
-- [Factory Automation](../../docs/automation/FACTORY_AUTOMATION.md)
-- [agent-testing-patterns.json](../../knowledge/agent-testing-patterns.json)
-- [debug-patterns.json](../../knowledge/debug-patterns.json)
-- [workflow-patterns.json](../../knowledge/workflow-patterns.json)
+- [agent-testing.json](../knowledge/agent-testing.json)
+- [debug-patterns.json](../knowledge/debug-patterns.json)
+- [tdd-patterns.json](../knowledge/tdd-patterns.json)
+- [bdd-patterns.json](../knowledge/bdd-patterns.json)
+- [test-traceability.json](../knowledge/test-traceability.json)
 
 ## Tooling
 **MCP Servers:**

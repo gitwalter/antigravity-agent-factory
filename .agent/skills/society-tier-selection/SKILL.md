@@ -3,25 +3,18 @@ description: Interactive guidance for selecting appropriate trust verification t
 name: society-tier-selection
 type: skill
 ---
-
 # Society Tier Selection
 
 Interactive guidance for selecting appropriate trust verification tier
 
-## 
-# Society Tier Selection Skill
-
-Select the optimal trust verification tier for multi-agent interactions based on stakes, context, and requirements.
-
-## 
-# Society Tier Selection Skill
-
 Select the optimal trust verification tier for multi-agent interactions based on stakes, context, and requirements.
 
 ## Process
+
 See the detailed interactive selection process below with decision trees and tier reference.
 
 ## Best Practices
+
 - Match verification cost to interaction stakes
 - Start with lower tiers and escalate only when needed
 - Use presets for common scenarios (DEVELOPMENT, PRODUCTION, ENTERPRISE)
@@ -30,31 +23,10 @@ See the detailed interactive selection process below with decision trees and tie
 - Consider de-escalation after compliance periods
 
 ## Core Principle
+
 > **Match verification cost to interaction stakes. Don't pay for blockchain when signatures suffice.**
 
 ## Quick Decision Tree
-```
-START: What is the economic value at risk?
-
-Less than $100?
-  └─► L0 Local (free, <10ms)
-      Unless: Cross-organization OR audit required
-              └─► L1 Attested ($0.0001, minutes)
-
-$100 - $10,000?
-  └─► L1 Attested (audit trail)
-      Unless: Automated enforcement needed
-              └─► L2 Contracted ($0.10, seconds)
-
-$10,000 - $100,000?
-  └─► L2 Contracted (smart contracts)
-      Unless: Multi-party agreement required
-              └─► L3 Consensus ($1-5, minutes)
-
-Over $100,000?
-  └─► L3 Consensus OR L4 Economic
-      L4 if: Long-term partnership with stake commitment
-```
 
 ```
 START: What is the economic value at risk?
@@ -80,6 +52,7 @@ Over $100,000?
 ```
 
 ## Tier Reference
+
 | Tier | Mechanism | Latency | Cost | Best For |
 |------|-----------|---------|------|----------|
 | **L0 Local** | Ed25519 signatures | <10ms | Free | Internal agents, development |
@@ -89,6 +62,7 @@ Over $100,000?
 | **L4 Economic** | Stake + slashing | Variable | Stake | Long-term partnerships |
 
 ## Interactive Selection
+
 When asked to select a tier, gather these inputs:
 
 ### 1. Economic Value
@@ -136,11 +110,13 @@ When asked to select a tier, gather these inputs:
 - Yes → Consider L4 with stake
 
 ## Selection Output Format
+
 After gathering inputs, provide:
 
 ```markdown
 
 ## Recommended Trust Tier: L{tier_number} {tier_name}
+
 ### Rationale
 - Economic value: {value}
 - Cross-organization: {yes/no}
@@ -173,18 +149,8 @@ The system will automatically escalate to a higher tier if:
 - {escalation_trigger_2}
 ```
 
-```python
-from lib.society.simple import create_agent_society, SocietyPreset
-
-# For L{tier_number}, use {preset} preset
-society = create_agent_society(
-    "YourProject",
-    agents=["agent1", "agent2"],
-    preset=SocietyPreset.{preset}
-)
-```
-
 ## Common Scenarios
+
 ### Development & Testing
 **Recommendation:** L0 Local (DEVELOPMENT preset)
 ```python
@@ -216,30 +182,8 @@ society = (SocietyBuilder("FinanceProject")
     .build())
 ```
 
-```python
-society = create_agent_society("MyProject", preset=SocietyPreset.DEVELOPMENT)
-```
-
-```python
-society = create_agent_society("MyProject", preset=SocietyPreset.PRODUCTION)
-```
-
-```python
-society = create_agent_society("MyProject", preset=SocietyPreset.ENTERPRISE)
-```
-
-```python
-# Configure for contracted trust
-from lib.society.presets import SocietyBuilder, TrustTier
-
-society = (SocietyBuilder("FinanceProject")
-    .with_trust_tier(TrustTier.L2_CONTRACTED)
-    .with_contract_enforcement(True)
-    .with_agents(["payment_agent", "verification_agent"])
-    .build())
-```
-
 ## Cost-Benefit Analysis
+
 | Tier | Setup Cost | Operational Cost | Security Level |
 |------|------------|------------------|----------------|
 | L0 | Minimal | Free | Good for trusted environments |
@@ -249,6 +193,7 @@ society = (SocietyBuilder("FinanceProject")
 | L4 | Very high | Stake opportunity cost | Maximum security |
 
 ## Escalation and De-escalation
+
 ### Automatic Escalation Triggers
 - 3+ violations in 24 hours → +1 tier
 - Dispute open >48 hours → +1 tier
@@ -259,10 +204,14 @@ society = (SocietyBuilder("FinanceProject")
 - 7 days compliance with no violations → -1 tier (minimum L0)
 
 ## References
+
 - [Trust Tier Decision Matrix](../../../knowledge/trust-tier-decision-matrix.json)
-- [ASP Value Proposition](../../../docs/ASP_VALUE_PROPOSITION.md)
+- [ASP Value Proposition](../../../docs/asp-value-proposition.md)
 - [Verified Communication Skill](../verified-communication/SKILL.md)
 
+## When to Use
+This skill should be used when strict adherence to the defined process is required.
+
 ## Prerequisites
-> [!IMPORTANT]
-> Requirements:
+- Basic understanding of the agent factory context.
+- Access to the necessary tools and resources.

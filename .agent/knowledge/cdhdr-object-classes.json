@@ -1,4 +1,28 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "cdhdr-object-classes",
+  "name": "Cdhdr Object Classes",
+  "title": "CDHDR Change Document Object Classes",
+  "description": "SAP Change Document patterns for audit trails and history tracking",
+  "version": "1.0.0",
+  "category": "sap",
+  "axiomAlignment": {
+    "A1_verifiability": "Change document structure enables verification of audit trails and compliance",
+    "A2_user_primacy": "Audit trails protect user data and support regulatory requirements",
+    "A3_transparency": "Explicit CDHDR/CDPOS structure makes change history traceable",
+    "A4_non_harm": "Proper change tracking prevents data integrity issues and supports forensics",
+    "A5_consistency": "Standard object classes ensure consistent audit patterns across SAP objects"
+  },
+  "related_skills": [
+    "rap-behavior-design",
+    "cds-grounding",
+    "sap-grounding"
+  ],
+  "related_knowledge": [
+    "sap-cap-patterns.json",
+    "sap-rap-patterns.json",
+    "tadir-object-types.json"
+  ],
   "metadata": {
     "name": "Change Document Object Classes",
     "description": "SAP Change Document patterns for audit trails and history tracking",
@@ -246,7 +270,13 @@
     "location": "ON SAVE determination or saver class",
     "example": "CALL FUNCTION 'CHANGEDOCUMENT_WRITE'\n  EXPORTING\n    objectclass = 'ZTRAVEL'\n    objectid    = ls_travel-travel_id\n    ..."
   },
-  "bestPractices": [
+  "limitations": [
+    "Maximum field length for VALUE_OLD/VALUE_NEW is 254 characters",
+    "Long text changes require special handling",
+    "High-volume changes may impact performance",
+    "Not all SAP standard objects have change documents enabled"
+  ],
+  "best_practices": [
     "Define change document objects for all critical business data",
     "Track key fields that affect business processes",
     "Consider storage requirements for high-volume data",
@@ -256,18 +286,104 @@
     "Document which fields are tracked",
     "Consider GDPR requirements for personal data"
   ],
-  "limitations": [
-    "Maximum field length for VALUE_OLD/VALUE_NEW is 254 characters",
-    "Long text changes require special handling",
-    "High-volume changes may impact performance",
-    "Not all SAP standard objects have change documents enabled"
-  ],
-  "id": "cdhdr-object-classes",
-  "name": "Cdhdr Object Classes",
-  "version": "1.0.0",
-  "category": "patterns",
-  "description": "Knowledge patterns for cdhdr object classes.",
-  "patterns": {},
-  "best_practices": [],
-  "anti_patterns": []
+  "patterns": {
+    "standardObjectUsage": {
+      "description": "Use standard SAP object classes when available",
+      "pattern": "Prefer MATERIAL, VERKBELEG, EINKBELEG over custom classes for standard business objects",
+      "benefit": "Better integration with SAP standard reports and analytics",
+      "use_when": "When implementing standardObjectUsage or when Use standard SAP object classes when available",
+      "code_example": "Prefer MATERIAL, VERKBELEG, EINKBELEG over custom classes for standard business objects",
+      "best_practices": [
+        "Define change document objects for all critical business data",
+        "Track key fields that affect business processes",
+        "Consider storage requirements for high-volume data",
+        "Use archiving for old change documents"
+      ]
+    },
+    "customObjectNaming": {
+      "description": "Naming convention for custom change document objects",
+      "pattern": "Z* or Y* prefix, descriptive name matching business object",
+      "example": "ZTRAVEL for travel management, ZBOOKING for booking objects",
+      "use_when": "When implementing customObjectNaming or when Naming convention for custom change document objects",
+      "code_example": "Z* or Y* prefix, descriptive name matching business object",
+      "best_practices": [
+        "Define change document objects for all critical business data",
+        "Track key fields that affect business processes",
+        "Consider storage requirements for high-volume data",
+        "Use archiving for old change documents"
+      ]
+    },
+    "fieldSelection": {
+      "description": "Select only relevant fields for change tracking",
+      "pattern": "Track fields that affect business logic, not technical or display fields",
+      "criteria": [
+        "Business-critical fields",
+        "Fields used in calculations",
+        "Status and approval fields",
+        "Amount and quantity fields"
+      ],
+      "use_when": "When implementing fieldSelection or when Select only relevant fields for change tracking",
+      "code_example": "Track fields that affect business logic, not technical or display fields",
+      "best_practices": [
+        "Define change document objects for all critical business data",
+        "Track key fields that affect business processes",
+        "Consider storage requirements for high-volume data",
+        "Use archiving for old change documents"
+      ]
+    },
+    "integrationPattern": {
+      "description": "Integration with RAP and modern ABAP",
+      "pattern": "Call change document function in ON SAVE determination or saver class",
+      "location": "Behavior implementation class, method ON SAVE",
+      "example": "CALL FUNCTION 'ZTRAVEL_WRITE_DOCUMENT' IN UPDATE TASK",
+      "use_when": "When implementing integrationPattern or when Integration with RAP and modern ABAP",
+      "code_example": "Call change document function in ON SAVE determination or saver class",
+      "best_practices": [
+        "Define change document objects for all critical business data",
+        "Track key fields that affect business processes",
+        "Consider storage requirements for high-volume data",
+        "Use archiving for old change documents"
+      ]
+    },
+    "archivingPattern": {
+      "description": "Archive old change documents to manage storage",
+      "pattern": "Use SAP ArchiveLink or custom archiving for documents older than retention period",
+      "consideration": "Ensure archived documents remain accessible for audit requirements",
+      "use_when": "When implementing archivingPattern or when Archive old change documents to manage storage",
+      "code_example": "Use SAP ArchiveLink or custom archiving for documents older than retention period",
+      "best_practices": [
+        "Define change document objects for all critical business data",
+        "Track key fields that affect business processes",
+        "Consider storage requirements for high-volume data",
+        "Use archiving for old change documents"
+      ]
+    }
+  },
+  "anti_patterns": [
+    {
+      "name": "Tracking too many fields",
+      "problem": "Logging every field including technical and display-only fields creates excessive storage overhead and makes audit trails hard to read",
+      "solution": "Select only business-critical fields that affect business logic or require audit compliance"
+    },
+    {
+      "name": "Not calling change document function in update task",
+      "problem": "Calling change document write function synchronously can cause performance issues and lock problems in high-volume scenarios",
+      "solution": "Always use IN UPDATE TASK or call from update function module for asynchronous processing"
+    },
+    {
+      "name": "Creating custom object class when standard exists",
+      "problem": "Creating ZMATERIAL instead of using standard MATERIAL class breaks integration with SAP standard reports and analytics",
+      "solution": "Use standard SAP object classes (MATERIAL, VERKBELEG, etc.) unless you have a truly custom business object"
+    },
+    {
+      "name": "Ignoring field length limitations",
+      "problem": "VALUE_OLD and VALUE_NEW fields are limited to 254 characters, causing truncation of long text fields without proper handling",
+      "solution": "For long text fields, store only change indicator (U/I/D) or use separate text change document object class"
+    },
+    {
+      "name": "Not archiving old change documents",
+      "problem": "CDHDR and CDPOS tables grow indefinitely, impacting query performance and database size",
+      "solution": "Implement archiving strategy for change documents older than legal retention period, typically 7-10 years"
+    }
+  ]
 }

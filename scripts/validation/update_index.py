@@ -23,7 +23,7 @@ import argparse
 import json
 import re
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
 
@@ -74,7 +74,7 @@ class ArtifactIndexManager:
     def save_index(self, index: dict[str, Any]) -> None:
         """Save the index to disk."""
         self.cache_path.parent.mkdir(parents=True, exist_ok=True)
-        index["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        index["updated_at"] = datetime.now(timezone.utc).isoformat() + "Z"
         self.cache_path.write_text(
             json.dumps(index, indent=2, ensure_ascii=False) + "\n",
             encoding='utf-8'
@@ -90,7 +90,7 @@ class ArtifactIndexManager:
             updated_at = datetime.fromisoformat(
                 index.get("updated_at", "1970-01-01T00:00:00Z").rstrip("Z")
             )
-            return (datetime.utcnow() - updated_at) < STALENESS_THRESHOLD
+            return (datetime.now(timezone.utc) - updated_at) < STALENESS_THRESHOLD
         except (ValueError, KeyError):
             return False
     
@@ -128,7 +128,7 @@ class ArtifactIndexManager:
         else:
             artifact["count"] = self._count_files(artifact_type)
         
-        artifact["last_modified"] = datetime.utcnow().isoformat() + "Z"
+        artifact["last_modified"] = datetime.now(timezone.utc).isoformat() + "Z"
         
         return index
     
@@ -239,7 +239,7 @@ class ArtifactIndexManager:
         """Create an empty index structure."""
         return {
             "schema_version": "1.0.0",
-            "updated_at": datetime.utcnow().isoformat() + "Z",
+            "updated_at": datetime.now(timezone.utc).isoformat() + "Z",
             "description": "Cached artifact counts for fast pre-commit validation. Auto-generated.",
             "artifacts": {}
         }

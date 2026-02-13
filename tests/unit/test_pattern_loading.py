@@ -255,6 +255,13 @@ class TestPatternConsistency:
             catalog_skills = set(catalog.get("skills", {}).keys())
             available_skills = available_skills.union(catalog_skills)
         
+        # Add skills from .agent/skills directory
+        skills_dir = patterns_dir.parent / "skills"
+        if skills_dir.exists():
+            for skill_dir in skills_dir.iterdir():
+                if skill_dir.is_dir() and (skill_dir / "SKILL.md").exists():
+                    available_skills.add(skill_dir.name)
+        
         for blueprint_dir in blueprints_dir.iterdir():
             if blueprint_dir.is_dir():
                 blueprint_file = blueprint_dir / "blueprint.json"

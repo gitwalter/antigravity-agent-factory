@@ -1,4 +1,32 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "iflow-patterns",
+  "name": "Iflow Patterns",
+  "title": "SAP Integration Flow Patterns",
+  "version": "1.0.0",
+  "description": "Design patterns and best practices for SAP CPI/PI integration flows including routing, error handling, and adapters",
+  "category": "sap",
+  "axiomAlignment": {
+    "A1_verifiability": "Correlation IDs and trace points enable verifiable message flows",
+    "A2_user_primacy": "Content-based routing and exception subprocesses protect user data",
+    "A3_transparency": "Exception subprocesses and logging make integration behavior traceable",
+    "A4_non_harm": "Retry, circuit breaker, and DLQ prevent harmful cascade failures",
+    "A5_consistency": "Unified patterns for point-to-point, content routing, splitter-aggregator"
+  },
+  "related_skills": [
+    "sap-integration",
+    "error-handling",
+    "btp-deployment",
+    "api-design",
+    "logging-monitoring"
+  ],
+  "related_knowledge": [
+    "groovy-patterns.json",
+    "sap-api-management.json",
+    "sap-security-patterns.json",
+    "sap-event-mesh.json",
+    "sap-btp-patterns.json"
+  ],
   "metadata": {
     "name": "Integration Flow Patterns for SAP CPI/PI",
     "description": "Design patterns and best practices for SAP integration flows",
@@ -294,36 +322,84 @@
       ]
     }
   },
-  "bestPractices": [
-    "Use exception subprocesses for error handling",
-    "Implement proper logging with business context",
-    "Use external parameters for configuration",
-    "Design for idempotency where possible",
-    "Implement correlation IDs for tracing",
-    "Use content-based routing over multiple iFlows",
-    "Keep iFlows focused (single responsibility)",
-    "Document all interfaces and mappings",
-    "Test with various payload sizes and error conditions",
-    "Monitor message processing times and volumes"
+  "best_practices": [
+    "Use exception subprocesses for error handling - always add exception subprocess to main process flow",
+    "Implement proper logging with business context - include message IDs, correlation IDs, and key business data",
+    "Use external parameters for configuration - never hardcode URLs, credentials, or business rules",
+    "Design for idempotency where possible - use message IDs or unique keys to prevent duplicate processing",
+    "Implement correlation IDs for tracing - propagate correlation ID through all integration steps",
+    "Use content-based routing over multiple iFlows - keep flows focused and maintainable",
+    "Keep iFlows focused (single responsibility) - one flow should handle one integration scenario",
+    "Document all interfaces and mappings - maintain interface documentation with examples",
+    "Test with various payload sizes and error conditions - include edge cases in test scenarios",
+    "Monitor message processing times and volumes - set up dashboards and alerts for SLA tracking",
+    "Use JMS queues for async processing and guaranteed delivery",
+    "Implement circuit breaker pattern for external system calls to prevent cascading failures"
   ],
-  "antiPatterns": [
-    "Hardcoding configuration in scripts",
-    "Ignoring error handling",
-    "Creating overly complex single iFlows",
-    "Not considering retry and idempotency",
-    "Logging sensitive data",
-    "Tight coupling between iFlows",
-    "Not handling large payloads properly",
-    "Missing timeout configuration",
-    "No monitoring or alerting",
-    "Not testing error scenarios"
+  "anti_patterns": [
+    {
+      "name": "Hardcoding configuration in scripts",
+      "problem": "Hardcoded values require code changes for configuration updates and prevent environment-specific settings",
+      "solution": "Use External Parameters artifact for all configuration values, reference via ${property.name}"
+    },
+    {
+      "name": "Ignoring error handling",
+      "problem": "Unhandled errors cause message loss and make debugging difficult without proper error context",
+      "solution": "Always implement exception subprocess with logging, alerting, and error routing to dead letter queue"
+    },
+    {
+      "name": "Creating overly complex single iFlows",
+      "problem": "Monolithic flows are hard to maintain, test, and debug, violating single responsibility principle",
+      "solution": "Split complex flows into smaller, focused flows with clear responsibilities, use content-based routing"
+    },
+    {
+      "name": "Not considering retry and idempotency",
+      "problem": "Duplicate message processing causes data inconsistencies and business errors",
+      "solution": "Implement idempotency checks using message IDs, configure retry with exponential backoff"
+    },
+    {
+      "name": "Logging sensitive data",
+      "problem": "Logging PII, passwords, or payment data violates security policies and compliance requirements",
+      "solution": "Mask sensitive fields in logs, use messageLog attachments only for non-sensitive debugging data"
+    },
+    {
+      "name": "Tight coupling between iFlows",
+      "problem": "Direct dependencies between flows make changes risky and prevent independent deployment",
+      "solution": "Use message queues or events for inter-flow communication, maintain loose coupling"
+    },
+    {
+      "name": "Not handling large payloads properly",
+      "problem": "Loading entire large files into memory causes out-of-memory errors and performance degradation",
+      "solution": "Use streaming adapters, implement claim check pattern for large attachments, process in chunks"
+    },
+    {
+      "name": "Missing timeout configuration",
+      "problem": "Default timeouts may be too long, causing resource exhaustion and poor user experience",
+      "solution": "Configure appropriate timeouts for all external calls based on SLA requirements"
+    },
+    {
+      "name": "No monitoring or alerting",
+      "problem": "Issues go undetected until users report problems, leading to extended downtime",
+      "solution": "Set up monitoring dashboards, configure alerts for error rates and SLA breaches"
+    },
+    {
+      "name": "Not testing error scenarios",
+      "problem": "Production errors reveal untested failure paths, causing unexpected behavior",
+      "solution": "Test all error scenarios including network failures, invalid data, and system unavailability"
+    }
   ],
-  "id": "iflow-patterns",
-  "name": "Iflow Patterns",
-  "version": "1.0.0",
-  "category": "patterns",
-  "description": "Knowledge patterns for iflow patterns.",
-  "patterns": {},
-  "best_practices": [],
-  "anti_patterns": []
+  "patterns": {
+    "general": {
+      "description": "Reference documentation",
+      "usage": "See detailed sections below",
+      "use_when": "When implementing general or when Reference documentation",
+      "code_example": "Configure: Sender Adapter -> Content Modifier -> Groovy -> Receiver Adapter",
+      "best_practices": [
+        "Use exception subprocesses for error handling - always add exception subprocess to main process flow",
+        "Implement proper logging with business context - include message IDs, correlation IDs, and key business data",
+        "Use external parameters for configuration - never hardcode URLs, credentials, or business rules",
+        "Design for idempotency where possible - use message IDs or unique keys to prevent duplicate processing"
+      ]
+    }
+  }
 }

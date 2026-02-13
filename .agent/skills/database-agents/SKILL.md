@@ -4,22 +4,17 @@ description: SQL generation with LLMs, schema understanding, query optimization,
 name: database-agents
 type: skill
 ---
-
 # Database Agents
 
 SQL generation with LLMs, schema understanding, query optimization, and text-to-SQL pipelines
 
-## 
-# Database Agents Skill
-
-Build AI agents that interact with databases through natural language, generating and optimizing SQL queries.
-
-## 
-# Database Agents Skill
-
 Build AI agents that interact with databases through natural language, generating and optimizing SQL queries.
 
 ## Process
+
+1. Review the task requirements.
+2. Apply the skill's methodology.
+3. Validate the output against the defined criteria.
 ### Step 1: Database Connection Setup
 
 ```python
@@ -443,150 +438,8 @@ result = await agent.query("What are the top 10 products by sales?")
 print(result["summary"])
 ```
 
-```python
-from sqlalchemy import create_engine, MetaData, inspect
-from sqlalchemy.engine import Engine
-
-def create_db_connection(connection_string: str) -> Engine:
-    """Create SQLAlchemy engine."""
-    return create_engine(connection_string)
-
-# SQLite example
-engine = create_db_connection("sqlite:///example.db")
-
-# PostgreSQL example
-# engine = create_db_connection("postgresql://user:pass@localhost/dbname")
-
-# MySQL example
-# engine = create_db_connection("mysql+pymysql://user:pass@localhost/dbname")
-```
-
-```python
-from sqlalchemy import inspect
-from typing import Dict, List
-
-def get_database_schema(engine: Engine) -> Dict[str, List[Dict]]:
-    """Extract database schema information."""
-    inspector = inspect(engine)
-    schema = {}
-    
-    for table_name in inspector.get_table_names():
-        columns = []
-        for column in inspector.get_columns(table_name):
-            columns.append({
-                "name": column["name"],
-                "type": str(column["type"]),
-                "nullable": column["nullable"],
-                "default": str(column.get("default", ""))
-            })
-        
-        # Get foreign keys
-        foreign_keys = []
-        for fk in inspector.get_foreign_keys(table_name):
-            foreign_keys.append({
-                "constrained_columns": fk["constrained_columns"],
-                "referred_table": fk["referred_table"],
-                "referred_columns": fk["referred_columns"]
-            })
-        
-        # Get indexes
-        indexes = []
-        for idx in inspector.get_indexes(table_name):
-            indexes.append({
-                "name": idx["name"],
-                "columns": idx["column_names"],
-                "unique": idx["unique"]
-            })
-        
-        schema[table_name] = {
-            "columns": columns,
-            "foreign_keys": foreign_keys,
-            "indexes": indexes
-        }
-    
-    return schema
-
-def format_schema_for_llm(schema: Dict) -> str:
-    """Format schema as text for LLM prompt."""
-    lines = []
-    for table_name, info in schema.items():
-        lines.append(f"\nTable: {table_name}")
-        lines.append("Columns:")
-        for col in info["columns"]:
-            nullable = "NULL" if col["nullable"] else "NOT NULL"
-            lines.append(f"  - {col['name']} ({col['type']}) {nullable}")
-        
-        if info["foreign_keys"]:
-            lines.append("Foreign Keys:")
-            for fk in info["foreign_keys"]:
-                cols = ", ".join(fk["constrained_columns"])
-                ref_cols = ", ".join(fk["referred_columns"])
-                lines.append(f"  - {cols} -> {fk['referred_table']}.{ref_cols}")
-    
-    return "\n".join(lines)
-
-# Usage
-schema = get_database_schema(engine)
-schema_text = format_schema_for_llm(schema)
-print(schema_text)
-```
-
-```python
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-
-llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
-
-def create_sql_prompt(schema_text: str) -> ChatPromptTemplate:
-    """Create prompt template for SQL generation."""
-    return ChatPromptTemplate.from_messages([
-        ("system", """You are a SQL expert. Generate SQL queries based on the database schema and user questions.
-
-Database Schema:
-{schema}
-
-Rules:
-- Only generate SELECT queries
-- Use proper SQL syntax
-- Include JOINs when needed
-- Use table aliases for readability
-- Return only the SQL query, no explanations"""),
-        ("user", "{question}")
-    ])
-
-async def generate_sql(question: str, schema_text: str) -> str:
-    """Generate SQL query from natural language question."""
-    prompt = create_sql_prompt(schema_text)
-    chain = prompt | llm | StrOutputParser()
-    
-    result = await chain.ainvoke({
-        "schema": schema_text,
-        "question": question
-    })
-    
-    # Extract SQL from response (remove markdown code blocks if present)
-    sql = result.strip()
-    if sql.startswith("
-```
-
-```
-### Step 4: Execute and Validate Queries
-```
-
-```
-### Step 5: Schema-Aware SQL Generation
-```
-
-```
-### Step 6: Query Optimization Patterns
-```
-
-```
-### Step 7: Complete Text-to-SQL Pipeline
-```
-
 ## Query Patterns
+
 | Pattern | Example |
 |---------|---------|
 | Simple SELECT | "Get all users" |
@@ -597,6 +450,7 @@ async def generate_sql(question: str, schema_text: str) -> str:
 | Grouping | "Average order value by category" |
 
 ## Best Practices
+
 - Always validate and sanitize generated SQL
 - Restrict to SELECT queries only
 - Use schema introspection for accurate queries
@@ -609,6 +463,7 @@ async def generate_sql(question: str, schema_text: str) -> str:
 - Consider query optimization suggestions
 
 ## Anti-Patterns
+
 | Anti-Pattern | Fix |
 |--------------|-----|
 | No SQL validation | Validate syntax before execution |
@@ -621,13 +476,15 @@ async def generate_sql(question: str, schema_text: str) -> str:
 | Ignoring indexes | Consider indexes in optimization |
 
 ## Related
-- Knowledge: `knowledge/data-pipeline-patterns.json`
+
+- Knowledge: `{directories.knowledge}/data-pipeline-patterns.json`
 - Skill: `mcp-integration`
 - Skill: `langchain-usage`
 - Skill: `tool-usage`
 
+## When to Use
+This skill should be used when strict adherence to the defined process is required.
+
 ## Prerequisites
-> [!IMPORTANT]
-> Requirements:
-> - Packages: langchain, langchain-core, sqlalchemy, langchain-google-genai
-> - Knowledge: data-pipeline-patterns.json
+- Basic understanding of the agent factory context.
+- Access to the necessary tools and resources.

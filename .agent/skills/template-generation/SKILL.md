@@ -1,24 +1,54 @@
 ---
-description: Code and document template generation skill
+description: Code and document template generation skill with mandatory schema validation
+  against schemas/template.schema.json
 name: template-generation
 type: skill
 ---
-
 # Template Generation
 
-Code and document template generation skill
+Code and document template generation skill with mandatory schema validation against schemas/template.schema.json
 
-## 
-# Template Generation Skill
+Generates code and document templates for target projects with mandatory schema validation against `schemas/template.schema.json`.
 
-Generates code and document templates for target projects.
+## Canonical Schema Reference
 
-## 
-# Template Generation Skill
+Template metadata (embedded in .j2/.tmpl files as comment) MUST validate against `schemas/template.schema.json`. Required fields:
 
-Generates code and document templates for target projects.
+| Field | Type | Constraints |
+|-------|------|-------------|
+| `name` | string | Min 3 chars |
+| `description` | string | Min 20 chars |
+| `version` | string | Semantic version |
+| `category` | enum | ONLY: agents, graphs, memory, rag, tests, tools, ai, python, docs, config, trading, sap, dotnet, java, web |
+| `variables` | array | Min 1 item, each with name, type, description, required |
+| `produces` | string | What file type is generated |
+| `used_by_skills` | array | Min 1 item |
+| `used_by_blueprints` | array | Min 1 item |
+
+## Validation Checklist
+
+- [ ] All required metadata fields present
+- [ ] `category` uses allowed enum value
+- [ ] Each variable has `name`, `type`, `description`, `required`
+- [ ] At least 1 skill in `used_by_skills`
+- [ ] At least 1 blueprint in `used_by_blueprints` (use `["none"]` if not applicable)
+- [ ] `produces` clearly describes output file type
+
+## Common Violations
+
+| Violation | Fix |
+|-----------|-----|
+| Missing `used_by_blueprints` | Add `used_by_blueprints: ["none"]` if no blueprint |
+| Variable missing `required` | Each variable needs name, type, description, required |
+| Empty `variables` | Add at least 1 variable |
+| Invalid `category` | Use one of the allowed enum values |
+| Short `description` | Min 20 chars |
 
 ## Process
+
+1. Review the task requirements.
+2. Apply the skill's methodology.
+3. Validate the output against the defined criteria.
 ### Step 1: Determine Template Categories
 Based on stack, identify template categories:
 
@@ -35,10 +65,11 @@ For each category:
 2. Apply stack naming conventions
 3. Include proper imports/dependencies
 4. Add documentation comments
+5. Embed metadata header validating against `schemas/template.schema.json`
 
 Template structure:
 ```
-templates/{language}/{category}/{template-name}.{ext}
+{directories.templates}/{language}/{category}/{template-name}.{ext}
 ```
 
 ### Step 3: Generate Document Templates
@@ -61,28 +92,13 @@ Use consistent variable placeholders:
 | `{DESCRIPTION}` | Description text |
 | `{TICKET_ID}` | Ticket identifier |
 
-```
-templates/{language}/{category}/{template-name}.{ext}
-```
-
 ## Output
+
 Templates in project structure:
 
 ```
 {TARGET}/
-├── templates/
-│   ├── {language}/
-│   │   ├── service-class/
-│   │   ├── test-class/
-│   │   └── ...
-│   └── docs/
-│       ├── implementation_plan.md
-│       └── technical_spec.md
-```
-
-```
-{TARGET}/
-├── templates/
+├── {directories.templates}/
 │   ├── {language}/
 │   │   ├── service-class/
 │   │   ├── test-class/
@@ -93,22 +109,34 @@ Templates in project structure:
 ```
 
 ## Best Practices
+
 - **Follow stack-specific conventions**: Research and apply naming conventions, file structure, and code style patterns specific to the target technology stack
 - **Use consistent placeholder naming**: Establish a clear convention for template variables (e.g., `{CLASS_NAME}`, `{METHOD_NAME}`) and document all placeholders
-- **Include helpful comments in templates**: Add comments explaining template structure, required variables, and usage examples to guide future users
+- **Include helpful comments in templates**: Add comments explaining template structure, required variables, and usage examples
 - **Validate templates with real examples**: Generate sample outputs from templates using realistic values to ensure they produce correct, runnable code
-- **Organize templates by category**: Group templates logically (by language, by pattern type, by use case) to make them easy to discover and maintain
-- **Version templates when patterns change**: Update template version numbers and changelogs when modifying templates to track evolution and breaking changes
+- **Organize templates by category**: Group templates logically (by language, by pattern type, by use case)
+- **Version templates when patterns change**: Update template version numbers and changelogs when modifying templates
+
+## Important Rules
+
+1. **Use `{directories.XXX}` path variables** — NEVER hardcode directory paths like `templates/` or `knowledge/` in generated template content. See `{directories.config}/settings.json` for the full mapping.
+2. **Validate against schema** — Template metadata must validate against `schemas/template.schema.json`.
 
 ## Fallback Procedures
+
 - **If template category unknown**: Create minimal generic template
 - **If style guide unavailable**: Use default conventions
 
 ## References
-- `knowledge/stack-capabilities.json`
-- `patterns/templates/template-pattern.json`
+
+- `{directories.knowledge}/stack-capabilities.json`
+- `{directories.knowledge}/knowledge-cross-reference.json`
+- `{directories.patterns}/templates/template-pattern.json`
+- `schemas/template.schema.json`
+
+## When to Use
+This skill should be used when strict adherence to the defined process is required.
 
 ## Prerequisites
-> [!IMPORTANT]
-> Requirements:
-> - Knowledge: stack-capabilities.json, best-practices.json
+- Basic understanding of the agent factory context.
+- Access to the necessary tools and resources.

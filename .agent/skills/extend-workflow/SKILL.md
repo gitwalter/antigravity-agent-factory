@@ -3,22 +3,9 @@ description: Create and extend workflow definitions using the workflow system ar
 name: extend-workflow
 type: skill
 ---
-
 # Extend Workflow
 
 Create and extend workflow definitions using the workflow system architecture
-
-## 
-# Extend Workflow Skill
-
-Create, extend, and manage workflow definitions using the Factory's workflow system architecture:
-- **Workflow Creation**: Build new workflows from patterns
-- **Workflow Extension**: Enhance existing workflows with new phases
-- **Integration Design**: Configure MCP servers and skills for workflows
-- **Schema Validation**: Ensure workflows conform to the schema
-
-## 
-# Extend Workflow Skill
 
 Create, extend, and manage workflow definitions using the Factory's workflow system architecture:
 - **Workflow Creation**: Build new workflows from patterns
@@ -27,19 +14,21 @@ Create, extend, and manage workflow definitions using the Factory's workflow sys
 - **Schema Validation**: Ensure workflows conform to the schema
 
 ## Artifacts Used
+
 | Artifact | Path | Purpose |
 |----------|------|---------|
-| Workflow Template | `templates/workflows/workflow.md.tmpl` | Markdown structure for workflows |
-| Workflow Schema | `knowledge/schemas/workflow-schema.json` | Validation rules |
-| Workflow Entities | `knowledge/workflow-entities.json` | Entity definitions |
-| Workflow Patterns | `knowledge/workflow-patterns.json` | Common patterns |
-| MCP Catalog | `knowledge/mcp-servers-catalog.json` | Available tools |
-| Skill Catalog | `knowledge/skill-catalog.json` | Available skills |
+| Workflow Template | `{directories.templates}/workflows/workflow.md.tmpl` | Markdown structure for workflows |
+| Workflow Schema | `{directories.knowledge}/schemas/workflow-schema.json` | Validation rules |
+| Workflow Entities | `{directories.knowledge}/workflow-entities.json` | Entity definitions |
+| Workflow Patterns | `{directories.knowledge}/workflow-patterns.json` | Common patterns |
+| MCP Catalog | `{directories.knowledge}/mcp-servers-catalog.json` | Available tools |
+| Skill Catalog | `{directories.knowledge}/skill-catalog.json` | Available skills |
 
 ## Core Concepts
+
 ### Workflow System Architecture
 
-Workflows follow the entity model defined in `knowledge/workflow-entities.json`:
+Workflows follow the entity model defined in `{directories.knowledge}/workflow-entities.json`:
 
 ```
 Workflow
@@ -66,26 +55,14 @@ Workflow
 | `failed` | Terminated with errors |
 | `learning` | Post-execution analysis |
 
-```
-Workflow
-├── Phases (ordered groups of steps)
-│   ├── Steps (atomic operations)
-│   │   ├── Skills (reusable capabilities)
-│   │   ├── MCP Servers (external tools)
-│   │   └── Knowledge (reference data)
-│   └── Decision Points (branching logic)
-├── State Machine (lifecycle management)
-├── Learning Hooks (continuous improvement)
-└── Outputs (artifacts produced)
-```
-
 ## Research Methods
+
 ### Method 1: Pattern-Based Creation
 
 Use when: Creating workflow from known patterns
 
 **Steps**:
-1. Read existing patterns: `knowledge/workflow-patterns.json`
+1. Read existing patterns: `{directories.knowledge}/workflow-patterns.json`
 2. Select applicable pattern (bugfix, feature, code-review, etc.)
 3. Customize for specific use case
 4. Add project-specific skills and tools
@@ -109,26 +86,14 @@ Use when: Enhancing an existing workflow
 **Tools**: `read_file`, `search_replace`
 
 ```
-Step 1: read_file("workflows/{{existing-workflow}}.md")
-Step 2: Identify extension points
-Step 3: Add new phases/steps
-Step 4: Update MCP tools and skills
-```
-
-```
-Step 1: web_search("{{domain}} workflow best practices 2026")
-Step 2: web_search("{{domain}} automation patterns")
-Step 3: Synthesize into workflow structure
-```
-
-```
-Step 1: read_file("workflows/{{existing-workflow}}.md")
+Step 1: read_file("{directories.workflows}/{{existing-workflow}}.md")
 Step 2: Identify extension points
 Step 3: Add new phases/steps
 Step 4: Update MCP tools and skills
 ```
 
 ## Creation Procedures
+
 ### Procedure A: Create New Workflow
 
 **Trigger**: "Create workflow for {{purpose}}", "Add workflow that {{does_what}}"
@@ -145,31 +110,31 @@ Step 4: Update MCP tools and skills
 
 2. **Check Existing Patterns**
    ```
-   read_file("knowledge/workflow-patterns.json")
+   read_file("{directories.knowledge}/workflow-patterns.json")
    → Find similar patterns to use as base
    ```
 
 3. **Read Workflow Schema**
    ```
-   read_file("knowledge/schemas/workflow-schema.json")
+   read_file("{directories.knowledge}/schemas/workflow-schema.json")
    → Understand required structure
    ```
 
 4. **Read Entity Definitions**
    ```
-   read_file("knowledge/workflow-entities.json")
+   read_file("{directories.knowledge}/workflow-entities.json")
    → Understand entity relationships
    ```
 
 5. **Identify Required MCP Servers**
    ```
-   read_file("knowledge/mcp-servers-catalog.json")
+   read_file("{directories.knowledge}/mcp-servers-catalog.json")
    → Select tools needed for workflow steps
    ```
 
 6. **Identify Required Skills**
    ```
-   read_file("knowledge/skill-catalog.json")
+   read_file("{directories.knowledge}/skill-catalog.json")
    → Select skills for each step
    ```
 
@@ -182,13 +147,13 @@ Step 4: Update MCP tools and skills
 
 8. **Read Template**
    ```
-   read_file("templates/workflows/workflow.md.tmpl")
+   read_file("{directories.templates}/workflows/workflow.md.tmpl")
    → Get markdown structure
    ```
 
 9. **Generate Workflow**
    ```
-   write("workflows/{{workflow-name}}.md", content)
+   write("{directories.workflows}/{{workflow-name}}.md", content)
    ```
 
 10. **Validate Structure**
@@ -197,7 +162,7 @@ Step 4: Update MCP tools and skills
     - Verify skills exist in catalog
     - Ensure phases have clear outputs
 
-**Output**: `workflows/{workflow-name}.md`
+**Output**: `{directories.workflows}/{workflow-name}.md`
 
 ---
 
@@ -209,7 +174,7 @@ Step 4: Update MCP tools and skills
 
 1. **Load Pattern**
    ```
-   read_file("knowledge/workflow-patterns.json")
+   read_file("{directories.knowledge}/workflow-patterns.json")
    → Extract pattern: bugfix, feature, code-review, etc.
    ```
 
@@ -221,10 +186,10 @@ Step 4: Update MCP tools and skills
 
 3. **Generate Workflow**
    ```
-   write("workflows/{{workflow-name}}.md", content)
+   write("{directories.workflows}/{{workflow-name}}.md", content)
    ```
 
-**Output**: `workflows/{workflow-name}.md` (customized from pattern)
+**Output**: `{directories.workflows}/{workflow-name}.md` (customized from pattern)
 
 ---
 
@@ -236,7 +201,7 @@ Step 4: Update MCP tools and skills
 
 1. **Read Existing Workflow**
    ```
-   read_file("workflows/{{workflow-name}}.md")
+   read_file("{directories.workflows}/{{workflow-name}}.md")
    → Understand current structure
    ```
 
@@ -252,7 +217,7 @@ Step 4: Update MCP tools and skills
 
 4. **Apply Extension**
    ```
-   search_replace("workflows/{{workflow-name}}.md", ...)
+   search_replace("{directories.workflows}/{{workflow-name}}.md", ...)
    ```
 
 5. **Validate Extended Workflow**
@@ -260,7 +225,7 @@ Step 4: Update MCP tools and skills
    - Verify all tools exist
    - Check for circular dependencies
 
-**Output**: Updated `workflows/{workflow-name}.md`
+**Output**: Updated `{directories.workflows}/{workflow-name}.md`
 
 ---
 
@@ -272,7 +237,7 @@ Step 4: Update MCP tools and skills
 
 1. **Understand Agent Purpose**
    ```
-   read_file(".cursor/agents/{{agent-name}}.md")
+   read_file("{directories.agents}/{{agent-name}}.md")
    → Extract responsibilities and skills
    ```
 
@@ -288,86 +253,20 @@ Step 4: Update MCP tools and skills
 
 4. **Generate Workflow**
    ```
-   write("workflows/{{agent-name}}-workflow.md", content)
+   write("{directories.workflows}/{{agent-name}}-workflow.md", content)
    ```
 
-**Output**: `workflows/{agent-name}-workflow.md`
+**Output**: `{directories.workflows}/{agent-name}-workflow.md`
 
 ---
 
-```
-→ What problem does the workflow solve?
-   → What are the inputs and outputs?
-   → What tools and skills are needed?
-   → What are the success criteria?
-```
-
-```
-read_file("knowledge/workflow-patterns.json")
-   → Find similar patterns to use as base
-```
-
-```
-read_file("knowledge/schemas/workflow-schema.json")
-   → Understand required structure
-```
-
-```
-read_file("knowledge/workflow-entities.json")
-   → Understand entity relationships
-```
-
-```
-read_file("knowledge/mcp-servers-catalog.json")
-   → Select tools needed for workflow steps
-```
-
-```
-read_file("knowledge/skill-catalog.json")
-   → Select skills for each step
-```
-
-```
-read_file("templates/workflows/workflow.md.tmpl")
-   → Get markdown structure
-```
-
-```
-write("workflows/{{workflow-name}}.md", content)
-```
-
-```
-read_file("knowledge/workflow-patterns.json")
-   → Extract pattern: bugfix, feature, code-review, etc.
-```
-
-```
-write("workflows/{{workflow-name}}.md", content)
-```
-
-```
-read_file("workflows/{{workflow-name}}.md")
-   → Understand current structure
-```
-
-```
-search_replace("workflows/{{workflow-name}}.md", ...)
-```
-
-```
-read_file(".cursor/agents/{{agent-name}}.md")
-   → Extract responsibilities and skills
-```
-
-```
-write("workflows/{{agent-name}}-workflow.md", content)
-```
-
 ## Workflow Template Structure
+
 ```markdown
 # {{Workflow Name}}
 
 ## Overview
+
 {{Brief description of what this workflow accomplishes}}
 
 **Project:** {{PROJECT_NAME}}
@@ -375,9 +274,11 @@ write("workflows/{{agent-name}}-workflow.md", content)
 **Created:** {{DATE}}
 
 ## Trigger Conditions
+
 {{When this workflow is activated}}
 
 ## Phases
+
 ### Phase 1: {{Phase Name}}
 **Description:** {{What this phase accomplishes}}
 **Entry Criteria:** {{When to enter this phase}}
@@ -407,6 +308,7 @@ write("workflows/{{agent-name}}-workflow.md", content)
 ---
 
 ## Decision Points
+
 ### Decision: {{Decision Name}}
 **Condition:** {{What triggers this decision}}
 **Options:**
@@ -417,6 +319,7 @@ write("workflows/{{agent-name}}-workflow.md", content)
 ---
 
 ## Escalation Paths
+
 | Trigger | Action | Escalate To |
 |---------|--------|-------------|
 | {{trigger}} | {{action}} | {{target}} |
@@ -424,6 +327,7 @@ write("workflows/{{agent-name}}-workflow.md", content)
 ---
 
 ## Learning Hooks
+
 | Hook Point | Capture | Use For |
 |------------|---------|---------|
 | {{when}} | {{what data}} | {{improvement}} |
@@ -431,6 +335,7 @@ write("workflows/{{agent-name}}-workflow.md", content)
 ---
 
 ## Output Artifacts
+
 | Artifact | Location | Purpose |
 |----------|----------|---------|
 | {{name}} | {{path}} | {{purpose}} |
@@ -438,6 +343,7 @@ write("workflows/{{agent-name}}-workflow.md", content)
 ---
 
 ## Fallback Procedures
+
 | Condition | Action |
 |-----------|--------|
 | {{issue}} | {{resolution}} |
@@ -445,25 +351,27 @@ write("workflows/{{agent-name}}-workflow.md", content)
 ---
 
 ## Related Artifacts
+
 - **Agent**: {{agent if any}}
 - **Skills**: {{list of skills}}
 - **Knowledge**: {{list of knowledge files}}
 ```
 
 ## Chat Examples
+
 ### Example 1: Create Debugging Workflow
 ```
 User: Create a workflow for debugging pipeline failures
 
 Agent: I'll create a comprehensive debugging workflow.
 
-[read_file("knowledge/workflow-patterns.json")] → Check existing patterns
-[read_file("knowledge/mcp-servers-catalog.json")] → Available tools
-[read_file("knowledge/skill-catalog.json")] → Available skills
+[read_file("{directories.knowledge}/workflow-patterns.json")] → Check existing patterns
+[read_file("{directories.knowledge}/mcp-servers-catalog.json")] → Available tools
+[read_file("{directories.knowledge}/skill-catalog.json")] → Available skills
 [Designs workflow structure]
-[write("workflows/operations/debug-pipeline.md", ...)]
+[write("{directories.workflows}/operations/debug-pipeline.md", ...)]
 
-Created: workflows/operations/debug-pipeline.md
+Created: {directories.workflows}/operations/debug-pipeline.md
 
 Phases:
 1. Error Detection - Parse logs, identify failure
@@ -485,12 +393,12 @@ User: Add learning hooks to the TDD workflow
 
 Agent: I'll extend the TDD workflow with learning capabilities.
 
-[read_file("workflows/tdd-workflow.md")]
-[read_file("knowledge/workflow-entities.json")] → Learning hook structure
+[read_file("{directories.workflows}/tdd-workflow.md")]
+[read_file("{directories.knowledge}/workflow-entities.json")] → Learning hook structure
 [Designs learning extensions]
-[search_replace("workflows/tdd-workflow.md", ...)]
+[search_replace("{directories.workflows}/tdd-workflow.md", ...)]
 
-Updated: workflows/tdd-workflow.md
+Updated: {directories.workflows}/tdd-workflow.md
 
 Added Learning Hooks:
 - After Phase 5 (Refactor): Capture refactoring patterns
@@ -506,81 +414,12 @@ User: Create a bugfix workflow for my SAP project
 
 Agent: I'll create a bugfix workflow customized for SAP.
 
-[read_file("knowledge/workflow-patterns.json")] → bugfix pattern
-[read_file("knowledge/sap-grounding-patterns.json")] → SAP-specific
+[read_file("{directories.knowledge}/workflow-patterns.json")] → bugfix pattern
+[read_file("{directories.knowledge}/sap-grounding-patterns.json")] → SAP-specific
 [Customizes pattern for SAP]
-[write("workflows/sap-bugfix-workflow.md", ...)]
+[write("{directories.workflows}/sap-bugfix-workflow.md", ...)]
 
-Created: workflows/sap-bugfix-workflow.md
-
-Customizations for SAP:
-- Phase 1 uses SAP documentation MCP
-- Grounding phase checks SAP data models
-- Implementation follows RAP/ABAP patterns
-- Testing uses SAP Unit framework
-
-Tools: atlassian, SAP-documentation
-Skills: grounding, bugfix-workflow, sap-development
-```
-
-```
-User: Create a workflow for debugging pipeline failures
-
-Agent: I'll create a comprehensive debugging workflow.
-
-[read_file("knowledge/workflow-patterns.json")] → Check existing patterns
-[read_file("knowledge/mcp-servers-catalog.json")] → Available tools
-[read_file("knowledge/skill-catalog.json")] → Available skills
-[Designs workflow structure]
-[write("workflows/operations/debug-pipeline.md", ...)]
-
-Created: workflows/operations/debug-pipeline.md
-
-Phases:
-1. Error Detection - Parse logs, identify failure
-2. Root Cause Analysis - Trace error origins
-3. Resolution Strategy - Plan fix approach
-4. Implementation - Apply fixes
-5. Verification - Confirm resolution
-6. Learning - Capture lessons learned
-
-MCP Tools: github, sentry (if available)
-Skills: pipeline-error-fix, tdd
-
-Would you like me to create an agent to execute this workflow?
-```
-
-```
-User: Add learning hooks to the TDD workflow
-
-Agent: I'll extend the TDD workflow with learning capabilities.
-
-[read_file("workflows/tdd-workflow.md")]
-[read_file("knowledge/workflow-entities.json")] → Learning hook structure
-[Designs learning extensions]
-[search_replace("workflows/tdd-workflow.md", ...)]
-
-Updated: workflows/tdd-workflow.md
-
-Added Learning Hooks:
-- After Phase 5 (Refactor): Capture refactoring patterns
-- After Phase 7 (Integration): Capture test effectiveness metrics
-- On failure: Capture failure patterns for future prevention
-
-Would you like me to create a knowledge file to store learned patterns?
-```
-
-```
-User: Create a bugfix workflow for my SAP project
-
-Agent: I'll create a bugfix workflow customized for SAP.
-
-[read_file("knowledge/workflow-patterns.json")] → bugfix pattern
-[read_file("knowledge/sap-grounding-patterns.json")] → SAP-specific
-[Customizes pattern for SAP]
-[write("workflows/sap-bugfix-workflow.md", ...)]
-
-Created: workflows/sap-bugfix-workflow.md
+Created: {directories.workflows}/sap-bugfix-workflow.md
 
 Customizations for SAP:
 - Phase 1 uses SAP documentation MCP
@@ -593,27 +432,29 @@ Skills: grounding, bugfix-workflow, sap-development
 ```
 
 ## Summary: What Gets Created
+
 | Extension Type | Output Location | Format |
 |----------------|-----------------|--------|
-| Workflow | `workflows/{name}.md` | Markdown |
-| Agent Workflow | `workflows/{agent}-workflow.md` | Markdown |
-| Pattern-Based | `workflows/{pattern}-{project}.md` | Markdown |
+| Workflow | `{directories.workflows}/{name}.md` | Markdown |
+| Agent Workflow | `{directories.workflows}/{agent}-workflow.md` | Markdown |
+| Pattern-Based | `{directories.workflows}/{pattern}-{project}.md` | Markdown |
 
 ## Post-Extension Automation (MANDATORY)
+
 After creating or extending ANY workflow:
 
 ### Step 1: Update Manifest (if applicable)
 
 If workflow adds new knowledge:
 ```
-read_file("knowledge/manifest.json")
+read_file("{directories.knowledge}/manifest.json")
 → Update if new knowledge file created
 ```
 
 ### Step 2: Update Documentation
 
 ```
-read_file("docs/reference/WORKFLOW_PATTERNS.md")
+read_file("{directories.docs}/reference/WORKFLOW_PATTERNS.md")
 → Add new workflow to catalog if reusable pattern
 ```
 
@@ -644,32 +485,8 @@ Proposed commit: feat(workflow): {{description}}
 Proceed? (yes/no/commit only)
 ```
 
-```
-read_file("knowledge/manifest.json")
-→ Update if new knowledge file created
-```
-
-```
-read_file("docs/reference/WORKFLOW_PATTERNS.md")
-→ Add new workflow to catalog if reusable pattern
-```
-
-```
-read_file("CHANGELOG.md")
-→ Add entry for new/extended workflow
-```
-
-```
-⚠️ Ready to commit workflow changes:
-
-Created/Modified: [list files]
-
-Proposed commit: feat(workflow): {{description}}
-
-Proceed? (yes/no/commit only)
-```
-
 ## Best Practices
+
 - **Design workflows with clear entry and exit conditions**: Each phase should have explicit criteria for when it starts and when it's considered complete
 - **Include error handling and rollback procedures**: Every workflow should define what happens when steps fail, including how to undo partial changes
 - **Document workflow dependencies and requirements**: Clearly list all MCP servers, skills, and knowledge files needed before execution begins
@@ -678,6 +495,7 @@ Proceed? (yes/no/commit only)
 - **Keep workflows focused and composable**: Each workflow should solve one specific problem; combine multiple workflows for complex processes rather than creating monolithic workflows
 
 ## Validation Checklist
+
 ### Workflows
 - [ ] Has Overview section
 - [ ] Has Trigger Conditions
@@ -690,6 +508,7 @@ Proceed? (yes/no/commit only)
 - [ ] **Changelog entry added**
 
 ## Error Handling
+
 | Issue | Resolution |
 |-------|------------|
 | Unknown MCP tool | Check catalog, suggest alternatives |
@@ -699,6 +518,7 @@ Proceed? (yes/no/commit only)
 | No trigger conditions | Add activation triggers |
 
 ## Integration with Onboarding
+
 When onboarding a project:
 1. Analyze project type and requirements
 2. Select applicable workflow patterns
@@ -706,21 +526,30 @@ When onboarding a project:
 4. Include in generated `.cursor/` structure
 
 ## Integration with Generation
+
 When generating a project:
 1. Blueprint specifies workflow patterns
-2. Generator creates `workflows/` directory
+2. Generator creates `{directories.workflows}/` directory
 3. Customized workflows from patterns
 4. Workflows reference project-specific tools/skills
 
 ## Related Artifacts
-- **Agent**: `.cursor/agents/workflow-architect.md`
-- **Templates**: `templates/workflows/*.tmpl`
-- **Schema**: `knowledge/schemas/workflow-schema.json`
-- **Entities**: `knowledge/workflow-entities.json`
-- **Patterns**: `knowledge/workflow-patterns.json`
-- **Documentation**: `docs/WORKFLOW_AUTHORING.md`
+
+- **Agent**: `{directories.agents}/workflow-architect.md`
+- **Templates**: `{directories.templates}/workflows/*.tmpl`
+- **Schema**: `{directories.knowledge}/schemas/workflow-schema.json`
+- **Entities**: `{directories.knowledge}/workflow-entities.json`
+- **Patterns**: `{directories.knowledge}/workflow-patterns.json`
+- **Documentation**: `{directories.docs}/WORKFLOW_AUTHORING.md`
+
+## When to Use
+This skill should be used when strict adherence to the defined process is required.
 
 ## Prerequisites
-> [!IMPORTANT]
-> Requirements:
-> - Knowledge: workflow-entities.json, workflow-patterns.json, mcp-servers-catalog.json
+- Basic understanding of the agent factory context.
+- Access to the necessary tools and resources.
+
+## Process
+1. Review the task requirements.
+2. Apply the skill's methodology.
+3. Validate the output against the defined criteria.

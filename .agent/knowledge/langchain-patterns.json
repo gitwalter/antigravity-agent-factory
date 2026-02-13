@@ -1,16 +1,164 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "langchain-patterns",
+  "name": "LangChain Patterns",
   "title": "LangChain Patterns",
-  "description": "Best practices and patterns for LangChain 1.x agent development",
-  "version": "2.1.0",
+  "description": "Best practices and patterns for LangChain 1.x agent development including LCEL, chains, memory, RAG, tool patterns, MCP adapters, and context overflow handling",
+  "version": "1.1.0",
+  "category": "specialized",
   "axiomAlignment": {
     "A1_verifiability": "Patterns include testing strategies for verification",
-    "A3_transparency": "All patterns emphasize explainable agent behavior"
+    "A2_user_primacy": "All patterns serve user goals with clear boundaries",
+    "A3_transparency": "All patterns emphasize explainable agent behavior",
+    "A4_non_harm": "Error handling and security patterns prevent harmful outcomes",
+    "A5_consistency": "Unified patterns across LangChain ecosystem"
+  },
+  "related_skills": [
+    "langchain-usage",
+    "tool-usage",
+    "rag-patterns",
+    "memory-management",
+    "langsmith-tracing",
+    "agent-testing"
+  ],
+  "related_knowledge": [
+    "langgraph-workflows.json",
+    "agentic-loop-patterns.json",
+    "agent-memory-patterns.json"
+  ],
+  "import_structure": {
+    "description": "LangChain 1.x uses modular packages",
+    "core": "langchain_core - Core abstractions (runnables, prompts, messages, tools)",
+    "integrations": {
+      "openai": "langchain_openai - OpenAI models and embeddings",
+      "anthropic": "langchain_anthropic - Anthropic Claude models",
+      "community": "langchain_community - Community integrations (loaders, vectorstores)"
+    },
+    "text_splitters": "langchain_text_splitters - Document text splitters",
+    "high_level": "langchain - High-level agents, chains, and utilities",
+    "note": "Prefer langchain_core and integration packages. Use langchain package for agents and high-level abstractions.",
+    "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+    "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+    "best_practices": [
+      "Set max_iterations to prevent infinite agent loops",
+      "Use structured output for reliable parsing of agent responses"
+    ]
+  },
+  "lcel_patterns": {
+    "description": "LangChain Expression Language (LCEL) composition patterns",
+    "pipe_composition": {
+      "description": "Compose chains using pipe operator",
+      "use_when": "Sequential processing pipeline",
+      "code_example": "from langchain_core.runnables import RunnablePassthrough\nfrom langchain_openai import ChatOpenAI\nfrom langchain_core.prompts import ChatPromptTemplate\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\nprompt = ChatPromptTemplate.from_template('Summarize: {text}')\n\nchain = prompt | llm | (lambda x: x.content)\nresult = chain.invoke({'text': 'Long document...'})",
+      "best_practices": [
+        "Use pipe operator for readability",
+        "Each step should be a Runnable",
+        "Add type hints for better IDE support"
+      ]
+    },
+    "parallel_composition": {
+      "description": "Execute multiple chains in parallel",
+      "use_when": "Independent operations that can run concurrently",
+      "code_example": "from langchain_core.runnables import RunnableParallel, RunnablePassthrough\n\nparallel = RunnableParallel(\n    summary=prompt | llm,\n    sentiment=sentiment_prompt | llm,\n    keywords=keyword_prompt | llm\n)\nresult = parallel.invoke({'text': 'Document content'})",
+      "best_practices": [
+        "Only parallelize truly independent operations",
+        "Consider rate limits when parallelizing API calls",
+        "Use RunnableParallel for structured outputs"
+      ]
+    },
+    "conditional_routing": {
+      "description": "Route to different chains based on input",
+      "use_when": "Different processing paths based on input characteristics",
+      "code_example": "from langchain_core.runnables import RunnableBranch\n\ndef route_by_length(input_dict):\n    text = input_dict.get('text', '')\n    return 'long' if len(text) > 1000 else 'short'\n\nbranch = RunnableBranch(\n    (lambda x: len(x.get('text', '')) > 1000, long_chain),\n    (lambda x: len(x.get('text', '')) <= 1000, short_chain),\n    default_chain\n)\nresult = branch.invoke({'text': 'Some text'})",
+      "best_practices": [
+        "Always include a default branch",
+        "Make routing conditions explicit and testable",
+        "Document routing logic clearly"
+      ]
+    },
+    "stateful_chains": {
+      "description": "Chains that maintain state across invocations",
+      "use_when": "Need to accumulate or modify state",
+      "code_example": "from langchain_core.runnables import RunnableLambda\nfrom typing import Dict, Any\n\nclass StatefulChain:\n    def __init__(self):\n        self.state: Dict[str, Any] = {}\n    \n    def update_state(self, input_dict: Dict) -> Dict:\n        self.state.update(input_dict)\n        return self.state\n    \n    def get_chain(self):\n        return RunnableLambda(self.update_state)\n\nchain = StatefulChain().get_chain()",
+      "best_practices": [
+        "Use RunnableLambda for simple state transformations",
+        "Consider thread-local storage for concurrent requests",
+        "Document state mutations clearly"
+      ]
+    },
+    "async_chains": {
+      "description": "Asynchronous chain execution",
+      "use_when": "I/O-bound operations or concurrent processing",
+      "code_example": "import asyncio\nfrom langchain_core.runnables import RunnableLambda\n\nasync def async_operation(input_dict):\n    await asyncio.sleep(0.1)\n    return {'result': input_dict['input'].upper()}\n\nasync_chain = RunnableLambda(async_operation)\nresult = await async_chain.ainvoke({'input': 'test'})",
+      "best_practices": [
+        "Use ainvoke/abatch for async chains",
+        "Consider using asyncio.gather for parallel async operations",
+        "Handle async errors appropriately"
+      ]
+    },
+    "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+    "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+    "best_practices": [
+      "Set max_iterations to prevent infinite agent loops",
+      "Use structured output for reliable parsing of agent responses"
+    ]
+  },
+  "chain_patterns": {
+    "sequential_chain": {
+      "description": "Chain of operations executed in sequence",
+      "use_when": "Processing needs multiple sequential steps",
+      "implementation": "chain = step1 | step2 | step3",
+      "code_example": "from langchain_core.prompts import ChatPromptTemplate\nfrom langchain_openai import ChatOpenAI\nfrom langchain_core.output_parsers import StrOutputParser\n\nprompt = ChatPromptTemplate.from_template('Translate to {language}: {text}')\nllm = ChatOpenAI(model='gpt-4')\noutput_parser = StrOutputParser()\n\nchain = prompt | llm | output_parser\nresult = chain.invoke({'language': 'French', 'text': 'Hello'})",
+      "best_practices": [
+        "Use LCEL pipe syntax for clarity",
+        "Keep each step focused on single responsibility",
+        "Add intermediate logging for debugging"
+      ]
+    },
+    "parallel_chain": {
+      "description": "Multiple operations executed in parallel",
+      "use_when": "Independent operations can run concurrently",
+      "implementation": "from langchain_core.runnables import RunnableParallel\nchain = RunnableParallel(branch1=step1, branch2=step2)",
+      "code_example": "from langchain_core.runnables import RunnableParallel\n\nparallel_chain = RunnableParallel(\n    summary=summary_prompt | llm | StrOutputParser(),\n    tags=tag_prompt | llm | StrOutputParser(),\n    sentiment=sentiment_prompt | llm | StrOutputParser()\n)\nresult = parallel_chain.invoke({'text': 'Document content'})",
+      "best_practices": [
+        "Only parallelize truly independent operations",
+        "Consider rate limits when parallelizing API calls",
+        "Aggregate results appropriately"
+      ]
+    },
+    "branching_chain": {
+      "description": "Conditional routing based on input",
+      "use_when": "Different processing paths based on input type",
+      "implementation": "from langchain_core.runnables import RunnableBranch",
+      "code_example": "from langchain_core.runnables import RunnableBranch\n\ndef route_by_type(input_dict):\n    doc_type = input_dict.get('type', 'unknown')\n    if doc_type == 'code':\n        return 'code_chain'\n    elif doc_type == 'text':\n        return 'text_chain'\n    return 'default_chain'\n\nbranch = RunnableBranch(\n    (lambda x: x.get('type') == 'code', code_processing_chain),\n    (lambda x: x.get('type') == 'text', text_processing_chain),\n    default_processing_chain\n)",
+      "best_practices": [
+        "Define clear conditions for each branch",
+        "Always include a default branch",
+        "Test all branches independently"
+      ]
+    },
+    "retry_chain": {
+      "description": "Chain with automatic retry logic",
+      "use_when": "Dealing with transient failures",
+      "code_example": "from langchain_core.runnables import RunnableLambda\nfrom tenacity import retry, stop_after_attempt, wait_exponential\n\n@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))\ndef unreliable_operation(input_dict):\n    # Operation that may fail\n    return process(input_dict)\n\nretry_chain = RunnableLambda(unreliable_operation)",
+      "best_practices": [
+        "Use exponential backoff for retries",
+        "Set maximum retry attempts",
+        "Log retry attempts for observability"
+      ]
+    }
   },
   "memory_patterns": {
-    "buffer_memory": {
+    "conversation_buffer": {
+      "description": "Store full conversation history",
+      "use_when": "Need complete context, short conversations",
+      "implementation": "ConversationBufferMemory",
       "code_example": "from langchain_core.chat_history import InMemoryChatMessageHistory\nfrom langchain_core.chat_messages import HumanMessage, AIMessage\nfrom langchain_openai import ChatOpenAI\nfrom langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder\nfrom langchain_core.runnables import RunnablePassthrough\n\nhistory = InMemoryChatMessageHistory()\nllm = ChatOpenAI(model='gpt-4')\n\nprompt = ChatPromptTemplate.from_messages([\n    ('system', 'You are a helpful assistant.'),\n    MessagesPlaceholder(variable_name='history'),\n    ('human', '{input}')\n])\n\nchain = (\n    RunnablePassthrough.assign(\n        history=lambda x: history.messages\n    )\n    | prompt\n    | llm\n)\n\nresponse = chain.invoke({'input': 'Hello, how are you?'})\nhistory.add_message(HumanMessage(content='Hello, how are you?'))\nhistory.add_message(AIMessage(content=response.content))",
-      "limitations": "Token limit for long conversations"
+      "limitations": "Token limit for long conversations",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
     "conversation_summary": {
       "description": "Summarize conversation to save tokens",
@@ -184,6 +332,42 @@
         "Test with different contexts"
       ]
     },
+    "bind_tools": {
+      "description": "Bind tools to LLM for native tool calling",
+      "use_when": "Using models with native tool calling support (GPT-4, Claude)",
+      "code_example": "from langchain_openai import ChatOpenAI\nfrom langchain_core.tools import tool\nfrom langchain_core.messages import HumanMessage\n\n@tool\ndef get_weather(location: str) -> str:\n    '''Get the current weather for a location.'''\n    return f'Weather in {location}: Sunny, 72\u00b0F'\n\n@tool\ndef calculator(expression: str) -> str:\n    '''Evaluate a mathematical expression.'''\n    return str(eval(expression))\n\ntools = [get_weather, calculator]\n\nllm = ChatOpenAI(model='gpt-4')\n\n# Bind tools to LLM\nllm_with_tools = llm.bind_tools(tools)\n\n# Invoke with tool calling enabled\nmessages = [HumanMessage(content='What is the weather in SF and calculate 15*23?')]\nresponse = llm_with_tools.invoke(messages)\n\n# Check if tools were called\nif response.tool_calls:\n    for tool_call in response.tool_calls:\n        print(f'Tool: {tool_call[\"name\"]}, Args: {tool_call[\"args\"]}')",
+      "best_practices": [
+        "Use bind_tools() for native tool calling (preferred in LangChain 1.x)",
+        "More efficient than ReAct for models with tool calling support",
+        "Check response.tool_calls to see if tools were invoked",
+        "Use with create_tool_calling_agent for full agent workflow"
+      ]
+    },
+    "anthropic_tool_calling": {
+      "description": "Tool calling with Anthropic Claude models",
+      "use_when": "Using Claude models for tool calling",
+      "code_example": "from langchain_anthropic import ChatAnthropic\nfrom langchain_core.tools import tool\nfrom langchain_core.messages import HumanMessage\n\n@tool\ndef search_documents(query: str) -> str:\n    '''Search documents for information.'''\n    return f'Results for: {query}'\n\ntools = [search_documents]\n\nllm = ChatAnthropic(model='claude-3-opus-20240229')\n\n# Bind tools to Claude\nllm_with_tools = llm.bind_tools(tools)\n\nmessages = [HumanMessage(content='Search for information about LangChain')]\nresponse = llm_with_tools.invoke(messages)\n\n# Claude uses tool_use blocks\nif hasattr(response, 'tool_use_blocks') and response.tool_use_blocks:\n    for block in response.tool_use_blocks:\n        print(f'Tool: {block.name}, Input: {block.input}')",
+      "best_practices": [
+        "Use langchain_anthropic for Claude models",
+        "Claude uses tool_use_blocks instead of tool_calls",
+        "Works seamlessly with bind_tools()",
+        "Claude has excellent tool calling capabilities"
+      ]
+    }
+  },
+  "structured_output_patterns": {
+    "pydantic_output": {
+      "description": "Guarantee structured output using Pydantic models",
+      "use_when": "Need consistent, validated output format",
+      "code_example": "from pydantic import BaseModel, Field\nfrom langchain_openai import ChatOpenAI\nfrom typing import List, Literal\n\nclass AnalysisResult(BaseModel):\n    summary: str = Field(description='Brief summary')\n    key_points: List[str] = Field(description='Main points')\n    sentiment: Literal['positive', 'negative', 'neutral'] = Field(description='Overall sentiment')\n    confidence: float = Field(description='Confidence score', ge=0.0, le=1.0)\n\nllm = ChatOpenAI(model='gpt-4')\nstructured_llm = llm.with_structured_output(AnalysisResult)\n\nresult = structured_llm.invoke('Analyze this text: ...')\n# Returns AnalysisResult instance with validated fields\nprint(result.summary)\nprint(result.sentiment)",
+      "best_practices": [
+        "Use Field descriptions for better model understanding",
+        "Add validation constraints",
+        "Use Literal types for enums (preferred over pattern in LangChain 1.x)",
+        "Handle parsing errors gracefully",
+        "with_structured_output() is the recommended method in LangChain 1.x"
+      ]
+    },
     "structured_output_with_method": {
       "description": "Structured output with method specification",
       "use_when": "Need to specify JSON Schema or Pydantic mode explicitly",
@@ -251,7 +435,8 @@
         "Handle encoding issues for text files",
         "Use appropriate loader for file type",
         "Handle loading errors gracefully"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     },
     "text_splitters": {
       "description": "Split documents into chunks",
@@ -267,7 +452,8 @@
         "Set chunk_overlap 10-20% of chunk_size",
         "Choose splitter based on document type",
         "Test chunk quality for your use case"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     }
   },
   "vector_store_patterns": {
@@ -278,7 +464,8 @@
         "Use persist_directory for production",
         "Choose appropriate embedding model",
         "Set k based on context window"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     },
     "faiss": {
       "description": "FAISS vector store (in-memory or file-based)",
@@ -287,7 +474,8 @@
         "Use for in-memory or file-based storage",
         "Good for development and testing",
         "Consider Chroma or Pinecone for production"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     },
     "pinecone": {
       "description": "Pinecone managed vector database",
@@ -296,7 +484,8 @@
         "Use for production scale",
         "Handle API rate limits",
         "Monitor costs"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     },
     "metadata_filtering": {
       "description": "Filter retrieval by metadata",
@@ -305,7 +494,53 @@
         "Include relevant metadata when indexing",
         "Use filters to narrow search space",
         "Index metadata fields for efficient filtering"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
+    },
+    "qdrant": {
+      "description": "Qdrant vector store integration",
+      "code_example": "from langchain_community.vectorstores import Qdrant\nfrom langchain_openai import OpenAIEmbeddings\nfrom qdrant_client import QdrantClient\n\n# Connect to Qdrant\nclient = QdrantClient(\n    url='http://localhost:6333',  # or path='./qdrant_db' for local\n    api_key='your-api-key'  # Optional for cloud\n)\n\nembeddings = OpenAIEmbeddings(model='text-embedding-3-small')\n\n# Create vector store\nvectorstore = Qdrant.from_documents(\n    documents=documents,\n    embedding=embeddings,\n    client=client,\n    collection_name='documents'\n)\n\n# Or connect to existing collection\nvectorstore = Qdrant(\n    client=client,\n    collection_name='documents',\n    embeddings=embeddings\n)\n\n# Similarity search\nresults = vectorstore.similarity_search('query', k=5)\n\n# With metadata filtering\nresults = vectorstore.similarity_search(\n    'query',\n    k=5,\n    filter={'source': 'file1.pdf', 'year': {'$gte': 2023}}\n)\n\n# Hybrid search (if collection supports sparse vectors)\n# Requires custom implementation or Qdrant client directly",
+      "best_practices": [
+        "Use QdrantClient for connection management",
+        "Set collection_name appropriately",
+        "Use metadata filters for better retrieval",
+        "Consider hybrid search for production"
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
+    },
+    "weaviate": {
+      "description": "Weaviate vector store integration",
+      "code_example": "from langchain_community.vectorstores import Weaviate\nfrom langchain_openai import OpenAIEmbeddings\nimport weaviate\n\n# Connect to Weaviate\nclient = weaviate.connect_to_local()\n# client = weaviate.connect_to_wcs(\n#     cluster_url='https://xxx.weaviate.network',\n#     auth_credentials=weaviate.auth.AuthApiKey('your-api-key')\n# )\n\nembeddings = OpenAIEmbeddings(model='text-embedding-3-small')\n\n# Create vector store\nvectorstore = Weaviate.from_documents(\n    documents=documents,\n    embedding=embeddings,\n    client=client,\n    index_name='Document'\n)\n\n# Similarity search\nresults = vectorstore.similarity_search('query', k=5)\n\n# Hybrid search\nresults = vectorstore.similarity_search(\n    'query',\n    k=5,\n    where_filter={'path': ['source'], 'operator': 'Equal', 'valueText': 'file1.pdf'}\n)\n\n# Weaviate supports multi-tenancy\nvectorstore = Weaviate(\n    client=client,\n    index_name='Document',\n    embedding=embeddings,\n    tenant='tenant1'  # Multi-tenancy\n)",
+      "best_practices": [
+        "Use Weaviate for GraphQL API needs",
+        "Leverage built-in vectorizers when possible",
+        "Use hybrid search for better results",
+        "Consider multi-tenancy for SaaS applications"
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
+    },
+    "milvus": {
+      "description": "Milvus vector store integration",
+      "code_example": "from langchain_community.vectorstores import Milvus\nfrom langchain_openai import OpenAIEmbeddings\nfrom pymilvus import connections\n\n# Connect to Milvus\nconnections.connect(\n    alias='default',\n    host='localhost',\n    port='19530'\n)\n\nembeddings = OpenAIEmbeddings(model='text-embedding-3-small')\n\n# Create vector store\nvectorstore = Milvus.from_documents(\n    documents=documents,\n    embedding=embeddings,\n    connection_args={\n        'host': 'localhost',\n        'port': '19530'\n    },\n    collection_name='documents'\n)\n\n# Similarity search\nresults = vectorstore.similarity_search('query', k=5)\n\n# With metadata filtering\nresults = vectorstore.similarity_search(\n    'query',\n    k=5,\n    expr='source == \"file1.pdf\" && year >= 2023'\n)\n\n# Use partition keys for logical separation\nvectorstore = Milvus(\n    embedding_function=embeddings,\n    collection_name='documents',\n    connection_args={'host': 'localhost', 'port': '19530'},\n    partition_key_field='category'  # Partition by category\n)",
+      "best_practices": [
+        "Use Milvus for large-scale deployments",
+        "Use partition keys for logical data separation",
+        "Use expr parameter for metadata filtering",
+        "Load collection before searching"
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
+    },
+    "pgvector": {
+      "description": "PGVector store using PostgreSQL extension",
+      "code_example": "from langchain_community.vectorstores import PGVector\nfrom langchain_openai import OpenAIEmbeddings\nfrom sqlalchemy import create_engine\n\n# Create connection string\nCONNECTION_STRING = 'postgresql://user:password@localhost:5432/vectordb'\n\nembeddings = OpenAIEmbeddings(model='text-embedding-3-small')\n\n# Create vector store\nvectorstore = PGVector.from_documents(\n    documents=documents,\n    embedding=embeddings,\n    connection_string=CONNECTION_STRING,\n    collection_name='documents'\n)\n\n# Or connect to existing collection\nvectorstore = PGVector(\n    connection_string=CONNECTION_STRING,\n    embedding_function=embeddings,\n    collection_name='documents'\n)\n\n# Similarity search\nresults = vectorstore.similarity_search('query', k=5)\n\n# With metadata filtering\nresults = vectorstore.similarity_search(\n    'query',\n    k=5,\n    filter={'source': 'file1.pdf'}\n)\n\n# Using SQLAlchemy engine\nfrom sqlalchemy import create_engine\n\nengine = create_engine(CONNECTION_STRING)\nvectorstore = PGVector(\n    embedding_function=embeddings,\n    collection_name='documents',\n    engine=engine\n)\n\n# Create index for better performance\n# Run in PostgreSQL:\n# CREATE INDEX ON documents USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);",
+      "best_practices": [
+        "Use PGVector if already using PostgreSQL",
+        "Create IVFFlat or HNSW indexes for performance",
+        "Use connection pooling for production",
+        "Leverage SQL joins with other tables",
+        "Consider pgvector extension version compatibility"
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     }
   },
   "callbacks_and_tracing": {
@@ -317,7 +552,8 @@
         "Add metadata to traces using config",
         "Use for debugging and optimization",
         "Tracing is automatic in LangChain 1.x - no need to import LangChainTracer"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     },
     "custom_callbacks": {
       "description": "Create custom callbacks for monitoring",
@@ -326,7 +562,8 @@
         "Implement only needed callback methods",
         "Keep callbacks lightweight",
         "Use for logging and monitoring"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     },
     "streaming": {
       "description": "Stream LLM responses token by token",
@@ -335,6 +572,40 @@
         "Use streaming for better UX",
         "Handle streaming errors gracefully",
         "Consider rate limiting for streaming"
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
+    },
+    "astream_events": {
+      "description": "Stream events from chain execution with fine-grained control",
+      "use_when": "Need detailed visibility into chain execution steps",
+      "code_example": "from langchain_openai import ChatOpenAI\nfrom langchain_core.prompts import ChatPromptTemplate\nfrom langchain_core.runnables import RunnablePassthrough\n\nllm = ChatOpenAI(model='gpt-4')\nprompt = ChatPromptTemplate.from_template('Summarize: {text}')\nchain = prompt | llm\n\nasync for event in chain.astream_events({'text': 'Long document...'}, version='v2'):\n    kind = event.get('event')\n    if kind == 'on_chat_model_stream':\n        content = event['data']['chunk'].content\n        print(content, end='', flush=True)\n    elif kind == 'on_chain_start':\n        print(f'\\nStarting: {event[\"name\"]}')\n    elif kind == 'on_chain_end':\n        print(f'\\nCompleted: {event[\"name\"]}')",
+      "best_practices": [
+        "Use version='v2' for latest event format",
+        "Filter events by kind for specific monitoring",
+        "Use for debugging complex chains",
+        "Can filter by runnable name for targeted monitoring"
+      ]
+    }
+  },
+  "agent_architecture": {
+    "react_agent": {
+      "description": "Reasoning and Acting agent pattern",
+      "use_when": "Agent needs to reason about actions step-by-step",
+      "implementation": {
+        "framework": "langchain.agents.create_react_agent",
+        "components": [
+          "ChatModel",
+          "Tools",
+          "Prompt"
+        ]
+      },
+      "code_example": "from langchain.agents import create_react_agent, AgentExecutor\nfrom langchain_openai import ChatOpenAI\nfrom langchain_core.prompts import ChatPromptTemplate\nfrom langchain_core.tools import tool\n\n@tool\ndef get_weather(location: str) -> str:\n    '''Get the current weather for a location.'''\n    return f'Weather in {location}: Sunny, 72\u00b0F'\n\ntools = [get_weather]\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\nprompt = ChatPromptTemplate.from_messages([\n    ('system', 'You are a helpful assistant with access to tools.'),\n    ('placeholder', '{chat_history}'),\n    ('human', '{input}'),\n    ('placeholder', '{agent_scratchpad}')\n])\n\nagent = create_react_agent(llm, tools, prompt)\nexecutor = AgentExecutor(\n    agent=agent,\n    tools=tools,\n    verbose=True,\n    max_iterations=15,\n    handle_parsing_errors=True\n)\nresult = executor.invoke({'input': 'What is the weather in San Francisco?'})",
+      "best_practices": [
+        "Keep tool descriptions clear and specific",
+        "Use structured outputs for consistent parsing",
+        "Implement proper error handling for tool failures",
+        "Add observability with LangSmith tracing",
+        "Set max_iterations to prevent infinite loops"
       ]
     },
     "tool_calling_agent": {
@@ -417,7 +688,8 @@
         "Mock LLM calls for deterministic tests",
         "Test tool implementations independently",
         "Verify prompt templates render correctly"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     },
     "integration_testing": {
       "description": "Test agent end-to-end with real LLM",
@@ -430,7 +702,8 @@
         "Use low-temperature for reproducibility",
         "Test with representative input scenarios",
         "Verify tool calling works correctly"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     },
     "evaluation": {
       "description": "Measure agent quality systematically",
@@ -444,6 +717,11 @@
         "Factual accuracy",
         "Tool usage efficiency",
         "Response quality"
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
       ]
     }
   },
@@ -463,7 +741,8 @@
         "Add metadata to traces for filtering",
         "Set up alerts for anomalies",
         "Use LANGCHAIN_PROJECT for organization"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     },
     "logging": {
       "description": "Structured logging for agents",
@@ -473,12 +752,318 @@
         "Include correlation IDs for request tracking",
         "Avoid logging sensitive information",
         "Use structured logging format"
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
+    }
+  },
+  "patterns": {
+    "lcel_patterns": {
+      "description": "LangChain Expression Language (LCEL) composition patterns",
+      "pipe_composition": {
+        "description": "Compose chains using pipe operator",
+        "use_when": "Sequential processing pipeline",
+        "code_example": "from langchain_core.runnables import RunnablePassthrough\nfrom langchain_openai import ChatOpenAI\nfrom langchain_core.prompts import ChatPromptTemplate\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\nprompt = ChatPromptTemplate.from_template('Summarize: {text}')\n\nchain = prompt | llm | (lambda x: x.content)\nresult = chain.invoke({'text': 'Long document...'})",
+        "best_practices": [
+          "Use pipe operator for readability",
+          "Each step should be a Runnable",
+          "Add type hints for better IDE support"
+        ]
+      },
+      "parallel_composition": {
+        "description": "Execute multiple chains in parallel",
+        "use_when": "Independent operations that can run concurrently",
+        "code_example": "from langchain_core.runnables import RunnableParallel, RunnablePassthrough\n\nparallel = RunnableParallel(\n    summary=prompt | llm,\n    sentiment=sentiment_prompt | llm,\n    keywords=keyword_prompt | llm\n)\nresult = parallel.invoke({'text': 'Document content'})",
+        "best_practices": [
+          "Only parallelize truly independent operations",
+          "Consider rate limits when parallelizing API calls",
+          "Use RunnableParallel for structured outputs"
+        ]
+      },
+      "conditional_routing": {
+        "description": "Route to different chains based on input",
+        "use_when": "Different processing paths based on input characteristics",
+        "code_example": "from langchain_core.runnables import RunnableBranch\n\ndef route_by_length(input_dict):\n    text = input_dict.get('text', '')\n    return 'long' if len(text) > 1000 else 'short'\n\nbranch = RunnableBranch(\n    (lambda x: len(x.get('text', '')) > 1000, long_chain),\n    (lambda x: len(x.get('text', '')) <= 1000, short_chain),\n    default_chain\n)\nresult = branch.invoke({'text': 'Some text'})",
+        "best_practices": [
+          "Always include a default branch",
+          "Make routing conditions explicit and testable",
+          "Document routing logic clearly"
+        ]
+      },
+      "stateful_chains": {
+        "description": "Chains that maintain state across invocations",
+        "use_when": "Need to accumulate or modify state",
+        "code_example": "from langchain_core.runnables import RunnableLambda\nfrom typing import Dict, Any\n\nclass StatefulChain:\n    def __init__(self):\n        self.state: Dict[str, Any] = {}\n    \n    def update_state(self, input_dict: Dict) -> Dict:\n        self.state.update(input_dict)\n        return self.state\n    \n    def get_chain(self):\n        return RunnableLambda(self.update_state)\n\nchain = StatefulChain().get_chain()",
+        "best_practices": [
+          "Use RunnableLambda for simple state transformations",
+          "Consider thread-local storage for concurrent requests",
+          "Document state mutations clearly"
+        ]
+      },
+      "async_chains": {
+        "description": "Asynchronous chain execution",
+        "use_when": "I/O-bound operations or concurrent processing",
+        "code_example": "import asyncio\nfrom langchain_core.runnables import RunnableLambda\n\nasync def async_operation(input_dict):\n    await asyncio.sleep(0.1)\n    return {'result': input_dict['input'].upper()}\n\nasync_chain = RunnableLambda(async_operation)\nresult = await async_chain.ainvoke({'input': 'test'})",
+        "best_practices": [
+          "Use ainvoke/abatch for async chains",
+          "Consider using asyncio.gather for parallel async operations",
+          "Handle async errors appropriately"
+        ]
+      },
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    },
+    "chain_patterns_sequential_chain": {
+      "description": "Chain of operations executed in sequence",
+      "use_when": "Processing needs multiple sequential steps",
+      "implementation": "chain = step1 | step2 | step3",
+      "code_example": "from langchain_core.prompts import ChatPromptTemplate\nfrom langchain_openai import ChatOpenAI\nfrom langchain_core.output_parsers import StrOutputParser\n\nprompt = ChatPromptTemplate.from_template('Translate to {language}: {text}')\nllm = ChatOpenAI(model='gpt-4')\noutput_parser = StrOutputParser()\n\nchain = prompt | llm | output_parser\nresult = chain.invoke({'language': 'French', 'text': 'Hello'})",
+      "best_practices": [
+        "Use LCEL pipe syntax for clarity",
+        "Keep each step focused on single responsibility",
+        "Add intermediate logging for debugging"
+      ]
+    },
+    "chain_patterns_parallel_chain": {
+      "description": "Multiple operations executed in parallel",
+      "use_when": "Independent operations can run concurrently",
+      "implementation": "from langchain_core.runnables import RunnableParallel\nchain = RunnableParallel(branch1=step1, branch2=step2)",
+      "code_example": "from langchain_core.runnables import RunnableParallel\n\nparallel_chain = RunnableParallel(\n    summary=summary_prompt | llm | StrOutputParser(),\n    tags=tag_prompt | llm | StrOutputParser(),\n    sentiment=sentiment_prompt | llm | StrOutputParser()\n)\nresult = parallel_chain.invoke({'text': 'Document content'})",
+      "best_practices": [
+        "Only parallelize truly independent operations",
+        "Consider rate limits when parallelizing API calls",
+        "Aggregate results appropriately"
+      ]
+    },
+    "chain_patterns_branching_chain": {
+      "description": "Conditional routing based on input",
+      "use_when": "Different processing paths based on input type",
+      "implementation": "from langchain_core.runnables import RunnableBranch",
+      "code_example": "from langchain_core.runnables import RunnableBranch\n\ndef route_by_type(input_dict):\n    doc_type = input_dict.get('type', 'unknown')\n    if doc_type == 'code':\n        return 'code_chain'\n    elif doc_type == 'text':\n        return 'text_chain'\n    return 'default_chain'\n\nbranch = RunnableBranch(\n    (lambda x: x.get('type') == 'code', code_processing_chain),\n    (lambda x: x.get('type') == 'text', text_processing_chain),\n    default_processing_chain\n)",
+      "best_practices": [
+        "Define clear conditions for each branch",
+        "Always include a default branch",
+        "Test all branches independently"
+      ]
+    },
+    "chain_patterns_retry_chain": {
+      "description": "Chain with automatic retry logic",
+      "use_when": "Dealing with transient failures",
+      "code_example": "from langchain_core.runnables import RunnableLambda\nfrom tenacity import retry, stop_after_attempt, wait_exponential\n\n@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))\ndef unreliable_operation(input_dict):\n    # Operation that may fail\n    return process(input_dict)\n\nretry_chain = RunnableLambda(unreliable_operation)",
+      "best_practices": [
+        "Use exponential backoff for retries",
+        "Set maximum retry attempts",
+        "Log retry attempts for observability"
+      ]
+    },
+    "tool_patterns_structured_tool": {
+      "description": "Tool with Pydantic input schema",
+      "use_when": "Tool needs validated, structured inputs",
+      "implementation": "@tool decorator with Pydantic model",
+      "code_example": "from langchain_core.tools import tool\nfrom pydantic import BaseModel, Field\nfrom typing import List\n\nclass SearchInput(BaseModel):\n    query: str = Field(description='Search query')\n    max_results: int = Field(default=5, ge=1, le=20)\n    filters: List[str] = Field(default=[], description='Search filters')\n\n@tool(args_schema=SearchInput)\ndef search_documents(query: str, max_results: int, filters: List[str]) -> str:\n    '''Search for documents matching the query.'''\n    results = perform_search(query, max_results, filters)\n    return json.dumps(results, indent=2)",
+      "best_practices": [
+        "Use Field descriptions for better tool understanding",
+        "Add validation constraints (ge, le, etc.)",
+        "Return structured outputs when possible"
+      ]
+    },
+    "tool_patterns_tool_with_error_handling": {
+      "description": "Tool that handles errors gracefully",
+      "use_when": "Tool can fail and agent should recover",
+      "code_example": "from langchain_core.tools import tool\nimport logging\n\nlogger = logging.getLogger(__name__)\n\n@tool\ndef safe_api_call(url: str) -> str:\n    '''Make a safe API call with error handling.'''\n    try:\n        response = requests.get(url, timeout=10)\n        response.raise_for_status()\n        return response.text\n    except requests.exceptions.Timeout:\n        error_msg = f'Request to {url} timed out'\n        logger.error(error_msg)\n        return f'Error: {error_msg}'\n    except requests.exceptions.RequestException as e:\n        error_msg = f'Request failed: {str(e)}'\n        logger.error(error_msg)\n        return f'Error: {error_msg}'",
+      "best_practices": [
+        "Return error messages, don't raise exceptions",
+        "Provide actionable error information",
+        "Consider retry logic for transient failures",
+        "Log errors for debugging"
+      ]
+    },
+    "tool_patterns_async_tool": {
+      "description": "Asynchronous tool for I/O operations",
+      "use_when": "Tool performs network/disk I/O",
+      "implementation": "async def implementation with @tool decorator",
+      "code_example": "from langchain_core.tools import tool\nimport aiohttp\n\n@tool\nasync def async_fetch(url: str) -> str:\n    '''Fetch content from URL asynchronously.'''\n    async with aiohttp.ClientSession() as session:\n        async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as response:\n            return await response.text()",
+      "best_practices": [
+        "Use async for I/O-bound operations",
+        "Implement proper timeout handling",
+        "Consider rate limiting",
+        "Use connection pooling for multiple requests"
+      ]
+    },
+    "tool_patterns_dynamic_tool_loading": {
+      "description": "Load tools dynamically based on context",
+      "use_when": "Different tools needed for different scenarios",
+      "code_example": "from langchain_core.tools import Tool\nfrom typing import List\n\ndef get_tools_for_context(context: str) -> List[Tool]:\n    base_tools = [search_tool, calculator_tool]\n    if context == 'code':\n        base_tools.extend([code_search_tool, syntax_check_tool])\n    elif context == 'data':\n        base_tools.extend([data_analysis_tool, visualization_tool])\n    return base_tools",
+      "best_practices": [
+        "Cache tool definitions when possible",
+        "Document tool selection logic",
+        "Test with different contexts"
+      ]
+    },
+    "tool_patterns_bind_tools": {
+      "description": "Bind tools to LLM for native tool calling",
+      "use_when": "Using models with native tool calling support (GPT-4, Claude)",
+      "code_example": "from langchain_openai import ChatOpenAI\nfrom langchain_core.tools import tool\nfrom langchain_core.messages import HumanMessage\n\n@tool\ndef get_weather(location: str) -> str:\n    '''Get the current weather for a location.'''\n    return f'Weather in {location}: Sunny, 72\u00b0F'\n\n@tool\ndef calculator(expression: str) -> str:\n    '''Evaluate a mathematical expression.'''\n    return str(eval(expression))\n\ntools = [get_weather, calculator]\n\nllm = ChatOpenAI(model='gpt-4')\n\n# Bind tools to LLM\nllm_with_tools = llm.bind_tools(tools)\n\n# Invoke with tool calling enabled\nmessages = [HumanMessage(content='What is the weather in SF and calculate 15*23?')]\nresponse = llm_with_tools.invoke(messages)\n\n# Check if tools were called\nif response.tool_calls:\n    for tool_call in response.tool_calls:\n        print(f'Tool: {tool_call[\"name\"]}, Args: {tool_call[\"args\"]}')",
+      "best_practices": [
+        "Use bind_tools() for native tool calling (preferred in LangChain 1.x)",
+        "More efficient than ReAct for models with tool calling support",
+        "Check response.tool_calls to see if tools were invoked",
+        "Use with create_tool_calling_agent for full agent workflow"
+      ]
+    },
+    "tool_patterns_anthropic_tool_calling": {
+      "description": "Tool calling with Anthropic Claude models",
+      "use_when": "Using Claude models for tool calling",
+      "code_example": "from langchain_anthropic import ChatAnthropic\nfrom langchain_core.tools import tool\nfrom langchain_core.messages import HumanMessage\n\n@tool\ndef search_documents(query: str) -> str:\n    '''Search documents for information.'''\n    return f'Results for: {query}'\n\ntools = [search_documents]\n\nllm = ChatAnthropic(model='claude-3-opus-20240229')\n\n# Bind tools to Claude\nllm_with_tools = llm.bind_tools(tools)\n\nmessages = [HumanMessage(content='Search for information about LangChain')]\nresponse = llm_with_tools.invoke(messages)\n\n# Claude uses tool_use blocks\nif hasattr(response, 'tool_use_blocks') and response.tool_use_blocks:\n    for block in response.tool_use_blocks:\n        print(f'Tool: {block.name}, Input: {block.input}')",
+      "best_practices": [
+        "Use langchain_anthropic for Claude models",
+        "Claude uses tool_use_blocks instead of tool_calls",
+        "Works seamlessly with bind_tools()",
+        "Claude has excellent tool calling capabilities"
+      ]
+    },
+    "memory_patterns_conversation_buffer": {
+      "description": "Store full conversation history",
+      "use_when": "Need complete context, short conversations",
+      "implementation": "ConversationBufferMemory",
+      "code_example": "from langchain_core.chat_history import InMemoryChatMessageHistory\nfrom langchain_core.chat_messages import HumanMessage, AIMessage\nfrom langchain_openai import ChatOpenAI\nfrom langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder\nfrom langchain_core.runnables import RunnablePassthrough\n\nhistory = InMemoryChatMessageHistory()\nllm = ChatOpenAI(model='gpt-4')\n\nprompt = ChatPromptTemplate.from_messages([\n    ('system', 'You are a helpful assistant.'),\n    MessagesPlaceholder(variable_name='history'),\n    ('human', '{input}')\n])\n\nchain = (\n    RunnablePassthrough.assign(\n        history=lambda x: history.messages\n    )\n    | prompt\n    | llm\n)\n\nresponse = chain.invoke({'input': 'Hello, how are you?'})\nhistory.add_message(HumanMessage(content='Hello, how are you?'))\nhistory.add_message(AIMessage(content=response.content))",
+      "limitations": "Token limit for long conversations",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    },
+    "memory_patterns_conversation_summary": {
+      "description": "Summarize conversation to save tokens",
+      "use_when": "Long conversations, need to stay within token limits",
+      "implementation": "ConversationSummaryBufferMemory with LCEL",
+      "code_example": "from langchain_core.chat_history import InMemoryChatMessageHistory\nfrom langchain_openai import ChatOpenAI\nfrom langchain_core.prompts import ChatPromptTemplate\nfrom langchain_core.runnables import RunnablePassthrough\n\nhistory = InMemoryChatMessageHistory()\nllm = ChatOpenAI(model='gpt-4')\nsummary_llm = ChatOpenAI(model='gpt-3.5-turbo', temperature=0)\n\n# Summarize when history exceeds token limit\nsummary_prompt = ChatPromptTemplate.from_template(\n    'Summarize this conversation: {messages}'\n)\n\n# Use RunnableLambda to check and summarize when needed\n# Implementation would check token count and summarize if needed",
+      "best_practices": [
+        "Use smaller model for summarization if cost-sensitive",
+        "Periodically verify summary quality",
+        "Set max_token_limit appropriately",
+        "Use LCEL for memory management in LangChain 1.x"
+      ]
+    },
+    "memory_patterns_conversation_window": {
+      "description": "Keep only last N messages",
+      "use_when": "Recent context is most important",
+      "implementation": "InMemoryChatMessageHistory with windowing",
+      "code_example": "from langchain_core.chat_history import InMemoryChatMessageHistory\nfrom langchain_core.chat_messages import HumanMessage, AIMessage\n\nhistory = InMemoryChatMessageHistory()\n\n# Add messages\nhistory.add_message(HumanMessage(content='Message 1'))\nhistory.add_message(AIMessage(content='Response 1'))\n\n# Get last N messages\nwindow_size = 5\nrecent_messages = history.messages[-window_size:]",
+      "best_practices": [
+        "Choose k based on context window size",
+        "Consider message length when setting k",
+        "Use InMemoryChatMessageHistory for LangChain 1.x"
+      ]
+    },
+    "memory_patterns_conversation_summary_buffer": {
+      "description": "Combine summary with recent messages",
+      "use_when": "Need both long-term context and recent details",
+      "code_example": "from langchain_core.chat_history import InMemoryChatMessageHistory\nfrom langchain_openai import ChatOpenAI\nfrom langchain_core.runnables import RunnableLambda\n\nhistory = InMemoryChatMessageHistory()\nllm = ChatOpenAI(model='gpt-4')\nsummary_llm = ChatOpenAI(model='gpt-3.5-turbo')\n\n# Implement custom logic to maintain summary + recent messages\n# Check token count, summarize older messages, keep recent ones",
+      "best_practices": [
+        "Set max_token_limit based on model context window",
+        "Monitor token usage",
+        "Use LCEL for custom memory management in LangChain 1.x"
+      ]
+    },
+    "memory_patterns_vector_store_memory": {
+      "description": "Store and retrieve relevant past interactions",
+      "use_when": "Long-term memory with semantic retrieval",
+      "implementation": "VectorStore with custom memory retrieval",
+      "code_example": "from langchain_community.vectorstores import Chroma\nfrom langchain_openai import OpenAIEmbeddings\nfrom langchain_core.documents import Document\nfrom langchain_core.runnables import RunnableLambda\n\nembeddings = OpenAIEmbeddings()\nvectorstore = Chroma(embedding_function=embeddings)\nretriever = vectorstore.as_retriever(search_kwargs={'k': 5})\n\n# Store conversation as documents\nconversation_doc = Document(\n    page_content='User: Hello\\nAssistant: Hi there!',\n    metadata={'timestamp': '2024-01-01', 'session_id': 'abc123'}\n)\nvectorstore.add_documents([conversation_doc])\n\n# Retrieve relevant past conversations\nrelevant_memories = retriever.invoke('user asked about weather')",
+      "best_practices": [
+        "Choose appropriate embedding model",
+        "Set retrieval k based on context window",
+        "Consider memory decay strategies",
+        "Use metadata filters for better retrieval",
+        "Use langchain_community for vector stores in LangChain 1.x"
+      ]
+    },
+    "memory_patterns_entity_memory": {
+      "description": "Track entities and their attributes across conversation",
+      "use_when": "Need to remember facts about entities",
+      "code_example": "from langchain_openai import ChatOpenAI\nfrom langchain_core.prompts import ChatPromptTemplate\nfrom pydantic import BaseModel\nfrom typing import Dict\n\nllm = ChatOpenAI(model='gpt-4')\n\nclass EntityMemory(BaseModel):\n    entities: Dict[str, Dict[str, str]] = {}\n\n# Use structured output to extract entities\nentity_extraction_prompt = ChatPromptTemplate.from_template(\n    'Extract entities from: {message}'\n)\n\n# Implement custom entity tracking using structured outputs",
+      "best_practices": [
+        "Useful for maintaining entity context",
+        "Works well with structured information",
+        "Use structured outputs for entity extraction in LangChain 1.x"
+      ]
+    },
+    "mcp_adapters": {
+      "description": "MCP Adapters 0.2.0 for connecting LangChain agents to MCP servers",
+      "use_when": "Agent needs to access tools from MCP servers (filesystem, databases, APIs)",
+      "code_example": "from langchain_mcp_adapters import MCPToolkit\nfrom langchain_openai import ChatOpenAI\nfrom langgraph.prebuilt import create_react_agent\n\n# Connect to MCP servers\nmcp_toolkit = MCPToolkit(\n    servers=[\n        {'name': 'filesystem', 'command': 'npx', 'args': ['-y', '@anthropic/mcp-filesystem']},\n        {'name': 'github', 'command': 'npx', 'args': ['-y', '@anthropic/mcp-github']}\n    ]\n)\n\n# Get tools from MCP servers\ntools = await mcp_toolkit.get_tools()\n\n# Create agent with MCP tools\nllm = ChatOpenAI(model='gpt-4')\nagent = create_react_agent(llm, tools)",
+      "best_practices": [
+        "Use langchain-mcp-adapters 0.2.0+ for multimodal tool support",
+        "Configure MCP servers in a central config file",
+        "Use async initialization for MCP toolkit",
+        "Handle MCP server connection errors gracefully"
+      ]
+    },
+    "deepagents_patterns": {
+      "description": "deepagents v0.4 patterns for advanced agent orchestration",
+      "use_when": "Building complex agents with sandbox execution and conversation management",
+      "code_example": "from langchain_modal import ModalSandbox\nfrom deepagents import wrap_model_call\n\n# Pluggable sandbox for code execution\nsandbox = ModalSandbox()\nagent = create_react_agent(llm, tools, sandbox=sandbox)\n\n# Auto-summarize on context overflow\nwrapped_llm = wrap_model_call(llm, summarize_on_overflow=True, max_context_tokens=8000)",
+      "components": {
+        "pluggable_sandboxes": {
+          "description": "Use langchain-modal, langchain-daytona, or langchain-runloop for code execution",
+          "code_example": "from langchain_modal import ModalSandbox\n\n# Configure pluggable sandbox for code execution\nsandbox = ModalSandbox()\nagent = create_react_agent(llm, tools, sandbox=sandbox)"
+        },
+        "conversation_summarization": {
+          "description": "Auto-summarize conversation history via wrap_model_call events",
+          "code_example": "from deepagents import wrap_model_call\n\n# Wrap model to auto-summarize on context overflow\nwrapped_llm = wrap_model_call(\n    llm,\n    summarize_on_overflow=True,\n    max_context_tokens=8000\n)"
+        }
+      },
+      "best_practices": [
+        "Use pluggable sandboxes for secure code execution",
+        "Enable auto-summarization for long conversations",
+        "Configure max_context_tokens based on model limits"
+      ]
+    },
+    "context_overflow_handling": {
+      "description": "Handle ContextOverflowError gracefully with automatic recovery",
+      "use_when": "Long conversations exceed model context window",
+      "code_example": "from langchain_core.exceptions import ContextOverflowError\nfrom langchain_openai import ChatOpenAI\nfrom langchain_core.prompts import ChatPromptTemplate\n\nllm = ChatOpenAI(model='gpt-4')\n\ndef invoke_with_overflow_handling(chain, input_data, history):\n    try:\n        return chain.invoke(input_data)\n    except ContextOverflowError:\n        # Summarize history and retry\n        summary_prompt = ChatPromptTemplate.from_template(\n            'Summarize this conversation concisely: {history}'\n        )\n        summary = (summary_prompt | llm).invoke({'history': str(history)})\n        \n        # Replace history with summary\n        input_data['history'] = [summary]\n        return chain.invoke(input_data)",
+      "best_practices": [
+        "Catch ContextOverflowError explicitly",
+        "Summarize older messages, keep recent ones intact",
+        "Use a smaller model for summarization to save costs",
+        "Log overflow events for monitoring",
+        "Consider using deepagents wrap_model_call for automatic handling"
+      ]
+    },
+    "openai_responses_api": {
+      "description": "Use OpenAI Responses API for agent interactions (deepagents default)",
+      "use_when": "Using OpenAI models with streaming and tool calling",
+      "code_example": "from langchain_openai import ChatOpenAI\n\n# Use Responses API (default for 'openai:' model strings in deepagents)\nllm = ChatOpenAI(\n    model='gpt-4',\n    streaming=True,\n    use_responses_api=True  # Opt-in for non-deepagents usage\n)\n\n# Opt-out if needed\nllm_legacy = ChatOpenAI(\n    model='gpt-4',\n    use_responses_api=False\n)",
+      "best_practices": [
+        "Use Responses API for better streaming and tool calling",
+        "Opt-out only if legacy behavior is required",
+        "Combine with streaming for real-time responses"
       ]
     }
   },
-  "id": "langchain-patterns",
-  "name": "Langchain Patterns",
-  "category": "patterns",
-  "patterns": {},
-  "best_practices": []
+  "best_practices": [
+    "Use LCEL pipe syntax (|) for chain composition instead of legacy Chain classes for better readability and type safety",
+    "Always implement retry logic with exponential backoff for LLM API calls using tenacity or RunnableRetry",
+    "Use bind_tools() for native tool calling with GPT-4 and Claude models instead of ReAct pattern when possible",
+    "Set max_iterations on all agents to prevent infinite loops and runaway costs",
+    "Use with_structured_output() with Pydantic models for guaranteed structured outputs instead of parsing JSON strings",
+    "Enable LangSmith tracing by setting LANGCHAIN_TRACING_V2=true for observability and debugging",
+    "Use RunnableParallel for independent operations that can run concurrently to improve throughput",
+    "Always access response.source_nodes in RAG pipelines to provide citations and enable verification",
+    "Use langchain-mcp-adapters 0.2.0+ to connect agents to MCP servers for external tool access",
+    "Handle ContextOverflowError with automatic summarization for long conversations",
+    "Use deepagents wrap_model_call for automatic conversation summarization on context overflow",
+    "Prefer OpenAI Responses API for streaming and tool calling with deepagents"
+  ],
+  "sources": [
+    "https://python.langchain.com/docs/concepts/lcel",
+    "https://docs.langchain.com/oss/python/releases/changelog",
+    "https://changelog.langchain.com/?date=2026-02-01"
+  ],
+  "last_updated": "2026-02-11"
 }

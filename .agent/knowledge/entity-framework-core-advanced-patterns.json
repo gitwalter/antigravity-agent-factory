@@ -3,13 +3,23 @@
   "id": "entity-framework-core-advanced-patterns",
   "name": "Entity Framework Core Advanced Patterns",
   "title": "EF Core Advanced Patterns and Best Practices",
-  "description": "Advanced patterns, optimizations, and best practices for Entity Framework Core",
+  "description": "Advanced patterns, optimizations, and best practices for Entity Framework Core including migrations, query optimization, and bulk operations",
   "version": "1.0.0",
-  "category": "patterns",
+  "category": "dotnet",
   "axiomAlignment": {
     "A1_verifiability": "Patterns include testing strategies and query verification",
-    "A3_transparency": "All patterns emphasize clear data access patterns and change tracking"
+    "A2_user_primacy": "Data access patterns serve application and user needs efficiently",
+    "A3_transparency": "All patterns emphasize clear data access patterns and change tracking",
+    "A4_non_harm": "Concurrency handling and validation prevent data corruption",
+    "A5_consistency": "Unified EF Core patterns across data layer"
   },
+  "related_skills": [
+    "ef-core-patterns",
+    "dotnet-backend"
+  ],
+  "related_knowledge": [
+    "dotnet-patterns.json"
+  ],
   "patterns": {
     "migrations": {
       "description": "Database schema versioning and management",
@@ -38,7 +48,9 @@
             "Handle large datasets in batches",
             "Make data migrations idempotent",
             "Rollback data changes in Down method"
-          ]
+          ],
+          "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+          "code_example": "Use migration Up/Down methods"
         },
         "seed_data": {
           "description": "Initialize database with default data",
@@ -48,112 +60,125 @@
             "Use seed migrations for dynamic data",
             "Avoid seeding in production",
             "Make seed data idempotent"
-          ]
+          ],
+          "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+          "code_example": "HasData() in OnModelCreating or seed migrations"
         }
-      }
+      },
+      "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+      "code_example": "model User { id Int @id @default(autoincrement()); email String @unique; posts Post[] }\nmodel Post { id Int @id; authorId Int; author User @relation(fields: [authorId], references: [id]) }"
     },
-    "query_optimization": {
-      "projections": {
-        "description": "Select only needed columns",
-        "benefits": [
-          "Reduced data transfer",
-          "Better performance",
-          "Lower memory usage"
-        ],
-        "implementation": "Use Select() to project to DTOs",
-        "best_practices": [
-          "Always use projections for read operations",
-          "Avoid selecting entire entities when only need DTOs",
-          "Use anonymous types for simple projections",
-          "Map to DTOs for complex scenarios"
-        ]
-      },
-      "compiled_queries": {
-        "description": "Pre-compile LINQ queries for better performance",
-        "use_when": "Frequently executed queries",
-        "implementation": "EF.CompileAsyncQuery",
-        "benefits": [
-          "Faster execution",
-          "Reduced overhead"
-        ],
-        "limitations": [
-          "Cannot use parameters in some scenarios"
-        ],
-        "best_practices": [
-          "Use for hot path queries",
-          "Cache compiled queries",
-          "Test performance improvement"
-        ]
-      },
-      "split_queries": {
-        "description": "Split single query into multiple queries",
-        "use_when": "Include() causes cartesian explosion",
-        "implementation": "AsSplitQuery() (.NET 8+)",
-        "benefits": [
-          "Avoids cartesian explosion",
-          "Better performance for large datasets"
-        ],
-        "best_practices": [
-          "Use when Include() causes performance issues",
-          "Monitor query count",
-          "Consider impact on database connections"
-        ]
-      },
-      "no_tracking": {
-        "description": "Disable change tracking for read-only queries",
-        "use_when": "Read-only operations, better performance needed",
-        "implementation": "AsNoTracking()",
-        "benefits": [
-          "Better performance",
-          "Lower memory usage",
-          "Faster queries"
-        ],
-        "best_practices": [
-          "Use for all read-only queries",
-          "Don't use when need to update entities",
-          "Combine with projections for best performance"
-        ]
-      },
-      "pagination": {
-        "description": "Limit result sets",
-        "implementation": "Skip() and Take()",
-        "best_practices": [
-          "Always paginate large result sets",
-          "Use cursor-based pagination for very large datasets",
-          "Include total count when needed",
-          "Set reasonable page sizes"
-        ]
-      },
-      "eager_loading": {
-        "description": "Load related data upfront",
-        "implementation": "Include() and ThenInclude()",
-        "best_practices": [
-          "Use Include() for needed related data",
-          "Avoid over-including",
-          "Use projections with Include()",
-          "Consider split queries for complex includes"
-        ]
-      },
-      "explicit_loading": {
-        "description": "Load related data on demand",
-        "implementation": "Load() and LoadAsync()",
-        "use_when": "Don't know if related data is needed",
-        "best_practices": [
-          "Use sparingly",
-          "Prefer eager loading when possible",
-          "Handle null navigation properties"
-        ]
-      },
-      "lazy_loading": {
-        "description": "Automatically load related data on access",
-        "implementation": "Enable lazy loading proxies",
-        "use_when": "Convenience over performance",
-        "best_practices": [
-          "Avoid in high-performance scenarios",
-          "Be aware of N+1 query problems",
-          "Use explicit loading instead when possible"
-        ]
-      }
+    "query_optimization_projections": {
+      "description": "Select only needed columns",
+      "benefits": [
+        "Reduced data transfer",
+        "Better performance",
+        "Lower memory usage"
+      ],
+      "implementation": "Use Select() to project to DTOs",
+      "best_practices": [
+        "Always use projections for read operations",
+        "Avoid selecting entire entities when only need DTOs",
+        "Use anonymous types for simple projections",
+        "Map to DTOs for complex scenarios"
+      ],
+      "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+      "code_example": "Use Select() to project to DTOs"
+    },
+    "query_optimization_compiled_queries": {
+      "description": "Pre-compile LINQ queries for better performance",
+      "use_when": "Frequently executed queries",
+      "implementation": "EF.CompileAsyncQuery",
+      "benefits": [
+        "Faster execution",
+        "Reduced overhead"
+      ],
+      "limitations": [
+        "Cannot use parameters in some scenarios"
+      ],
+      "best_practices": [
+        "Use for hot path queries",
+        "Cache compiled queries",
+        "Test performance improvement"
+      ],
+      "code_example": "EF.CompileAsyncQuery"
+    },
+    "query_optimization_split_queries": {
+      "description": "Split single query into multiple queries",
+      "use_when": "Include() causes cartesian explosion",
+      "implementation": "AsSplitQuery() (.NET 8+)",
+      "benefits": [
+        "Avoids cartesian explosion",
+        "Better performance for large datasets"
+      ],
+      "best_practices": [
+        "Use when Include() causes performance issues",
+        "Monitor query count",
+        "Consider impact on database connections"
+      ],
+      "code_example": "AsSplitQuery() (.NET 8+)"
+    },
+    "query_optimization_no_tracking": {
+      "description": "Disable change tracking for read-only queries",
+      "use_when": "Read-only operations, better performance needed",
+      "implementation": "AsNoTracking()",
+      "benefits": [
+        "Better performance",
+        "Lower memory usage",
+        "Faster queries"
+      ],
+      "best_practices": [
+        "Use for all read-only queries",
+        "Don't use when need to update entities",
+        "Combine with projections for best performance"
+      ],
+      "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);"
+    },
+    "query_optimization_pagination": {
+      "description": "Limit result sets Th",
+      "implementation": "Skip() and Take()",
+      "best_practices": [
+        "Always paginate large result sets",
+        "Use cursor-based pagination for very large datasets",
+        "Include total count when needed",
+        "Set reasonable page sizes"
+      ],
+      "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+      "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);"
+    },
+    "query_optimization_eager_loading": {
+      "description": "Load related data upfront",
+      "implementation": "Include() and ThenInclude()",
+      "best_practices": [
+        "Use Include() for needed related data",
+        "Avoid over-including",
+        "Use projections with Include()",
+        "Consider split queries for complex includes"
+      ],
+      "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+      "code_example": "Include() and ThenInclude()"
+    },
+    "query_optimization_explicit_loading": {
+      "description": "Load related data on demand",
+      "implementation": "Load() and LoadAsync()",
+      "use_when": "Don't know if related data is needed",
+      "best_practices": [
+        "Use sparingly",
+        "Prefer eager loading when possible",
+        "Handle null navigation properties"
+      ],
+      "code_example": "Load() and LoadAsync()"
+    },
+    "query_optimization_lazy_loading": {
+      "description": "Automatically load related data on access",
+      "implementation": "Enable lazy loading proxies",
+      "use_when": "Convenience over performance",
+      "best_practices": [
+        "Avoid in high-performance scenarios",
+        "Be aware of N+1 query problems",
+        "Use explicit loading instead when possible"
+      ],
+      "code_example": "Enable lazy loading proxies"
     },
     "bulk_operations": {
       "description": "Perform operations on large datasets",
@@ -169,6 +194,12 @@
           "limitations": [
             "No change tracking",
             "No interceptors"
+          ],
+          "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+          "code_example": "ExecuteUpdateAsync()",
+          "best_practices": [
+            "Validate inputs and handle errors appropriately",
+            "Document the pattern and when to use it"
           ]
         },
         "execute_delete": {
@@ -181,6 +212,12 @@
           "limitations": [
             "No change tracking",
             "No interceptors"
+          ],
+          "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+          "code_example": "ExecuteDeleteAsync()",
+          "best_practices": [
+            "Validate inputs and handle errors appropriately",
+            "Document the pattern and when to use it"
           ]
         },
         "bulk_extensions": {
@@ -196,7 +233,9 @@
             "Use for large datasets",
             "Consider transaction boundaries",
             "Handle errors appropriately"
-          ]
+          ],
+          "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+          "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);"
         }
       },
       "best_practices": [
@@ -204,7 +243,9 @@
         "Use bulk extensions for complex scenarios",
         "Process in batches for very large datasets",
         "Monitor performance and memory usage"
-      ]
+      ],
+      "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+      "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);"
     },
     "change_tracking": {
       "description": "Track entity changes for updates",
@@ -216,7 +257,12 @@
             "Automatic",
             "Comprehensive"
           ],
-          "overhead": "Memory and performance"
+          "overhead": "Memory and performance",
+          "code_example": "dotnet ef migrations add AddUserTable\ndotnet ef database update\nvar users = await context.Users.Where(u => u.IsActive).ToListAsync();",
+          "best_practices": [
+            "Validate inputs and handle errors appropriately",
+            "Document the pattern and when to use it"
+          ]
         },
         "no_tracking": {
           "description": "Disable change tracking",
@@ -227,6 +273,11 @@
           ],
           "limitations": [
             "No automatic updates"
+          ],
+          "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);",
+          "best_practices": [
+            "Validate inputs and handle errors appropriately",
+            "Document the pattern and when to use it"
           ]
         },
         "change_tracking_proxies": {
@@ -235,6 +286,11 @@
           "limitations": [
             "Requires virtual properties",
             "Performance overhead"
+          ],
+          "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);",
+          "best_practices": [
+            "Validate inputs and handle errors appropriately",
+            "Document the pattern and when to use it"
           ]
         }
       },
@@ -246,6 +302,11 @@
           "benefits": [
             "No database query",
             "Better performance"
+          ],
+          "code_example": "Attach() and mark properties as modified",
+          "best_practices": [
+            "Validate inputs and handle errors appropriately",
+            "Document the pattern and when to use it"
           ]
         },
         "selective_updates": {
@@ -254,6 +315,12 @@
           "benefits": [
             "Reduced SQL",
             "Better performance"
+          ],
+          "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+          "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);",
+          "best_practices": [
+            "Validate inputs and handle errors appropriately",
+            "Document the pattern and when to use it"
           ]
         }
       },
@@ -262,7 +329,9 @@
         "Update entities efficiently",
         "Avoid unnecessary change tracking",
         "Use Attach() for updates when entity not loaded"
-      ]
+      ],
+      "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+      "code_example": "dotnet ef migrations add AddUserTable\ndotnet ef database update\nvar users = await context.Users.Where(u => u.IsActive).ToListAsync();"
     },
     "concurrency": {
       "description": "Handle concurrent access to data",
@@ -275,7 +344,8 @@
             "Use concurrency tokens",
             "Handle DbUpdateConcurrencyException",
             "Implement conflict resolution"
-          ]
+          ],
+          "code_example": "Concurrency token (Timestamp, RowVersion)"
         },
         "pessimistic": {
           "description": "Lock data during transaction",
@@ -284,6 +354,11 @@
           "limitations": [
             "Performance impact",
             "Deadlock risk"
+          ],
+          "code_example": "Database-level locks",
+          "best_practices": [
+            "Validate inputs and handle errors appropriately",
+            "Document the pattern and when to use it"
           ]
         }
       },
@@ -300,8 +375,16 @@
           "Implement proper conflict resolution",
           "Inform users of conflicts",
           "Log concurrency exceptions"
-        ]
-      }
+        ],
+        "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+        "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);"
+      },
+      "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+      "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
+      ]
     },
     "value_conversions": {
       "description": "Convert between database and model types",
@@ -317,7 +400,9 @@
         "Consider performance impact",
         "Test conversions thoroughly",
         "Document conversion logic"
-      ]
+      ],
+      "use_when": "Enums as strings, Encrypted values, JSON columns",
+      "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);"
     },
     "owned_types": {
       "description": "Value objects owned by entities",
@@ -327,7 +412,8 @@
         "Use for value objects",
         "Keep owned types simple",
         "Consider table splitting for complex owned types"
-      ]
+      ],
+      "code_example": "OwnsOne() or OwnsMany()"
     },
     "table_splitting": {
       "description": "Split entity across multiple tables",
@@ -337,7 +423,8 @@
         "Use for large entities",
         "Consider performance implications",
         "Document table relationships"
-      ]
+      ],
+      "code_example": "ToTable() with same key"
     },
     "temporal_tables": {
       "description": "Track historical data automatically",
@@ -353,7 +440,8 @@
         "Consider storage implications",
         "Implement history cleanup",
         "Document temporal queries"
-      ]
+      ],
+      "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);"
     },
     "interceptors": {
       "description": "Intercept EF Core operations",
@@ -374,77 +462,102 @@
         "Keep interceptors lightweight",
         "Test interceptor behavior",
         "Document interceptor purpose"
+      ],
+      "use_when": "Auditing, Soft delete, Multi-tenancy",
+      "code_example": "dotnet ef migrations add AddUserTable\ndotnet ef database update\nvar users = await context.Users.Where(u => u.IsActive).ToListAsync();"
+    },
+    "testing_unit_testing": {
+      "description": "Test data access logic",
+      "approaches": {
+        "in_memory": {
+          "description": "Use in-memory database",
+          "use_when": "Simple scenarios, fast tests",
+          "limitations": [
+            "Not SQL Server",
+            "Limited features"
+          ],
+          "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);",
+          "best_practices": [
+            "Validate inputs and handle errors appropriately",
+            "Document the pattern and when to use it"
+          ]
+        },
+        "sqlite": {
+          "description": "Use SQLite in-memory",
+          "use_when": "Need real database features",
+          "benefits": [
+            "Real SQL",
+            "Better coverage"
+          ],
+          "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);",
+          "best_practices": [
+            "Validate inputs and handle errors appropriately",
+            "Document the pattern and when to use it"
+          ]
+        },
+        "test_containers": {
+          "description": "Use Docker containers for tests",
+          "use_when": "Need exact database behavior",
+          "benefits": [
+            "Real database",
+            "Accurate tests"
+          ],
+          "overhead": "Slower tests",
+          "code_example": "FROM node:18-alpine\nWORKDIR /app\nCOPY . .\nRUN npm ci\nCMD [\"node\", \"dist/index.js\"]",
+          "best_practices": [
+            "Validate inputs and handle errors appropriately",
+            "Document the pattern and when to use it"
+          ]
+        }
+      },
+      "best_practices": [
+        "Use in-memory for simple unit tests",
+        "Use SQLite for integration tests",
+        "Use test containers for critical scenarios",
+        "Clean up test data",
+        "Use transactions for isolation"
+      ],
+      "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+      "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);"
+    },
+    "performance_connection_management": {
+      "description": "Manage database connections",
+      "best_practices": [
+        "Use connection pooling",
+        "Dispose DbContext properly",
+        "Avoid long-lived contexts",
+        "Use scoped lifetime in DI"
+      ],
+      "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+      "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);"
+    },
+    "performance_query_performance": {
+      "description": "Optimize query performance",
+      "techniques": [
+        "Use projections",
+        "Use compiled queries",
+        "Use AsNoTracking()",
+        "Avoid N+1 queries",
+        "Use appropriate indexes",
+        "Monitor query performance"
+      ],
+      "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+      "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     },
-    "testing": {
-      "unit_testing": {
-        "description": "Test data access logic",
-        "approaches": {
-          "in_memory": {
-            "description": "Use in-memory database",
-            "use_when": "Simple scenarios, fast tests",
-            "limitations": [
-              "Not SQL Server",
-              "Limited features"
-            ]
-          },
-          "sqlite": {
-            "description": "Use SQLite in-memory",
-            "use_when": "Need real database features",
-            "benefits": [
-              "Real SQL",
-              "Better coverage"
-            ]
-          },
-          "test_containers": {
-            "description": "Use Docker containers for tests",
-            "use_when": "Need exact database behavior",
-            "benefits": [
-              "Real database",
-              "Accurate tests"
-            ],
-            "overhead": "Slower tests"
-          }
-        },
-        "best_practices": [
-          "Use in-memory for simple unit tests",
-          "Use SQLite for integration tests",
-          "Use test containers for critical scenarios",
-          "Clean up test data",
-          "Use transactions for isolation"
-        ]
-      }
-    },
-    "performance": {
-      "connection_management": {
-        "description": "Manage database connections",
-        "best_practices": [
-          "Use connection pooling",
-          "Dispose DbContext properly",
-          "Avoid long-lived contexts",
-          "Use scoped lifetime in DI"
-        ]
-      },
-      "query_performance": {
-        "description": "Optimize query performance",
-        "techniques": [
-          "Use projections",
-          "Use compiled queries",
-          "Use AsNoTracking()",
-          "Avoid N+1 queries",
-          "Use appropriate indexes",
-          "Monitor query performance"
-        ]
-      },
-      "batching": {
-        "description": "Batch operations for better performance",
-        "implementation": "SaveChanges() batches multiple changes",
-        "best_practices": [
-          "Let EF Core batch automatically",
-          "Consider batch size",
-          "Monitor batch performance"
-        ]
-      }
+    "performance_batching": {
+      "description": "Batch operations for better performance",
+      "implementation": "SaveChanges() batches multiple changes",
+      "best_practices": [
+        "Let EF Core batch automatically",
+        "Consider batch size",
+        "Monitor batch performance"
+      ],
+      "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+      "code_example": "SaveChanges() batches multiple changes"
     }
   },
   "best_practices": [
@@ -467,5 +580,7 @@
     "Use temporal tables for audit requirements",
     "Use interceptors for cross-cutting concerns"
   ],
-  "anti_patterns": []
+  "anti_patterns": [],
+  "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+  "code_example": "dotnet ef migrations add AddUserTable\ndotnet ef database update\nvar users = await context.Users.Where(u => u.IsActive).ToListAsync();"
 }

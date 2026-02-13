@@ -16,7 +16,7 @@ Test Categories:
 import json
 import re
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -153,7 +153,7 @@ class TestCacheStructure:
         cache_path = tmp_path / "artifact-index.json"
         cache_data = {
             "schema_version": "1.0.0",
-            "updated_at": datetime.utcnow().isoformat() + "Z",
+            "updated_at": datetime.now(timezone.utc).isoformat() + "Z",
             "artifacts": {}
         }
         cache_path.write_text(json.dumps(cache_data, indent=2))
@@ -243,7 +243,7 @@ class TestStalenessDetection:
     
     def test_cache_is_fresh_within_threshold(self):
         """Cache should be considered fresh within time threshold."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         cache_time = now - timedelta(minutes=30)  # 30 minutes ago
         threshold = timedelta(hours=1)
         
@@ -252,7 +252,7 @@ class TestStalenessDetection:
     
     def test_cache_is_stale_beyond_threshold(self):
         """Cache should be considered stale beyond time threshold."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         cache_time = now - timedelta(hours=2)  # 2 hours ago
         threshold = timedelta(hours=1)
         
@@ -347,7 +347,7 @@ class TestPrecommitIntegration:
         
         cache_data = {
             "schema_version": "1.0.0",
-            "updated_at": datetime.utcnow().isoformat() + "Z",
+            "updated_at": datetime.now(timezone.utc).isoformat() + "Z",
             "artifacts": {
                 "agents": {"count": 12, "hash": "abc123"}
             }
@@ -363,7 +363,7 @@ class TestPrecommitIntegration:
         cache_path.parent.mkdir(parents=True, exist_ok=True)
         
         # Create stale cache (2 hours old)
-        old_time = (datetime.utcnow() - timedelta(hours=2)).isoformat() + "Z"
+        old_time = (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat() + "Z"
         cache_data = {
             "schema_version": "1.0.0",
             "updated_at": old_time,

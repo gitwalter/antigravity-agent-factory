@@ -26,7 +26,7 @@ import json
 import hashlib
 import shutil
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -61,7 +61,7 @@ class UpdateOperation:
     path: str
     old_value: Optional[Any] = None
     new_value: Optional[Any] = None
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
@@ -114,11 +114,11 @@ class BatchUpdateResult:
     total_applied: int = 0
     total_failed: int = 0
     batch_id: str = ""
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     
     def __post_init__(self):
         if not self.batch_id:
-            self.batch_id = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+            self.batch_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         self.total_applied = sum(1 for r in self.results if r.success)
         self.total_failed = sum(1 for r in self.results if not r.success)
 
@@ -264,7 +264,7 @@ class UpdateEngine:
         Returns:
             Path to the backup file
         """
-        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         backup_name = f"{file_path.stem}.{timestamp}{file_path.suffix}"
         backup_path = self.backup_dir / backup_name
         
@@ -340,7 +340,7 @@ class UpdateEngine:
         # Update metadata
         if "metadata" not in merged:
             merged["metadata"] = {}
-        merged["metadata"]["updated"] = datetime.utcnow().isoformat()
+        merged["metadata"]["updated"] = datetime.now(timezone.utc).isoformat()
         merged["metadata"]["checksum"] = update.checksum
         
         # Add source information
@@ -384,7 +384,7 @@ class UpdateEngine:
         
         changelog_entry = {
             "version": update.new_version,
-            "date": datetime.utcnow().strftime("%Y-%m-%d"),
+            "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
             "changes": [
                 {
                     "type": c.change_type.value,

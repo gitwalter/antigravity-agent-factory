@@ -5,7 +5,7 @@ Scoring and tracking agent reputation based on axiom compliance.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional
 import logging
@@ -66,8 +66,8 @@ class ReputationScore:
     agent_id: str
     current_score: float = 50.0  # Start at neutral
     history: List[ReputationEvent] = field(default_factory=list)
-    first_seen: datetime = field(default_factory=datetime.utcnow)
-    last_updated: datetime = field(default_factory=datetime.utcnow)
+    first_seen: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    last_updated: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     
     # Score bounds
     MIN_SCORE = 0.0
@@ -98,7 +98,7 @@ class ReputationScore:
             self.MIN_SCORE,
             min(self.MAX_SCORE, self.current_score + event.delta)
         )
-        self.last_updated = datetime.utcnow()
+        self.last_updated = datetime.now(timezone.utc)
     
     def get_recent_history(
         self,
@@ -109,7 +109,7 @@ class ReputationScore:
         events = self.history
         
         if window:
-            cutoff = datetime.utcnow() - window
+            cutoff = datetime.now(timezone.utc) - window
             events = [e for e in events if e.timestamp > cutoff]
         
         return events[-limit:]
@@ -209,7 +209,7 @@ class ReputationSystem:
         delta = self.COMPLIANCE_BONUS if compliant else self.VIOLATION_PENALTY
         
         event = ReputationEvent(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             type=ReputationType.AXIOM_COMPLIANCE,
             delta=delta,
             reason=reason or f"Axiom {'compliance' if compliant else 'violation'}{': ' + axiom if axiom else ''}",
@@ -241,7 +241,7 @@ class ReputationSystem:
         delta = self.CONTRACT_FULFILLED_BONUS if fulfilled else self.CONTRACT_VIOLATED_PENALTY
         
         event = ReputationEvent(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             type=ReputationType.CONTRACT_FULFILLMENT,
             delta=delta,
             reason=reason or f"Contract {contract_id} {'fulfilled' if fulfilled else 'violated'}",
@@ -276,7 +276,7 @@ class ReputationSystem:
         target_score = self.get_score(agent_id)
         
         event = ReputationEvent(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             type=ReputationType.PEER_ENDORSEMENT,
             delta=delta,
             reason=reason or f"{'Positive' if positive else 'Negative'} endorsement from {endorser_id}",
@@ -291,7 +291,7 @@ class ReputationSystem:
             return
         
         last_update = score.last_updated
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         days_elapsed = (now - last_update).total_seconds() / 86400
         
         if days_elapsed < 1:

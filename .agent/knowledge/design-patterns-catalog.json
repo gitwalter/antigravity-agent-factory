@@ -5,7 +5,24 @@
   "title": "Design Patterns Catalog",
   "description": "Gang of Four and modern design patterns with stack-specific examples",
   "version": "1.0.0",
-  "category": "patterns",
+  "category": "core",
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns enable testable, verifiable code structure",
+    "A2_user_primacy": "Facade and adapter patterns prioritize consumer interfaces",
+    "A3_transparency": "Clear pattern intent and structure aid maintainability",
+    "A4_non_harm": "SOLID principles and anti-patterns guide safe refactoring",
+    "A5_consistency": "Unified creational, structural, and behavioral patterns"
+  },
+  "related_skills": [
+    "clean-code-review",
+    "code-analysis",
+    "pattern-feedback"
+  ],
+  "related_knowledge": [
+    "review-checklist.json",
+    "formal-verification.json",
+    "augmented-coding-patterns.json"
+  ],
   "categories": {
     "creational": {
       "description": "Patterns that deal with object creation mechanisms",
@@ -69,7 +86,14 @@
           "description": "Factory with dependency injection",
           "snippet": "public class ServiceFactory : IServiceFactory\n{\n    public IService CreateService(ServiceType type) => type switch\n    {\n        ServiceType.Email => new EmailService(),\n        ServiceType.Sms => new SmsService(),\n        _ => throw new ArgumentException($\"Unknown service type: {type}\")\n    };\n}"
         }
-      }
+      },
+      "description": "Define an interface for creating an object, but let subclasses decide which class to instantiate",
+      "use_when": "When a class cannot anticipate the class of objects it must create; When a class wants its subclasses to specify the objects it creates; When you want to localize the knowledge of which class gets created",
+      "code_example": "class PaymentFactory:\n    @staticmethod\n    def create_payment(payment_type: str) -> Payment:\n        if payment_type == 'credit':\n            return CreditCardPayment()\n        elif payment_type == 'paypal':\n            return PayPalPayment()\n        raise ValueError(f'Unknown payment type: {payment_type}')",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "builder": {
       "id": "builder",
@@ -90,7 +114,14 @@
           "description": "Builder with type safety",
           "snippet": "class RequestBuilder {\n  private config: Partial<RequestConfig> = {};\n  \n  withUrl(url: string): this { this.config.url = url; return this; }\n  withMethod(method: Method): this { this.config.method = method; return this; }\n  withHeaders(headers: Headers): this { this.config.headers = headers; return this; }\n  \n  build(): RequestConfig {\n    if (!this.config.url) throw new Error('URL is required');\n    return this.config as RequestConfig;\n  }\n}"
         }
-      }
+      },
+      "description": "Separate the construction of a complex object from its representation",
+      "use_when": "When the algorithm for creating a complex object should be independent of the parts; When the construction process must allow different representations; When you need to build objects step by step",
+      "code_example": "class QueryBuilder:\n    def __init__(self):\n        self._select = []\n        self._where = []\n    \n    def select(self, *fields) -> 'QueryBuilder':\n        self._select.extend(fields)\n        return self\n    \n    def where(self, condition: str) -> 'QueryBuilder':\n        self._where.append(condition)\n        return self\n    \n    def build(self) -> str:\n        return f\"SELECT {', '.join(self._select)} WHERE {' AND '.join(self._where)}\"",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "singleton": {
       "id": "singleton",
@@ -112,7 +143,14 @@
           "description": "Module-level singleton",
           "snippet": "class Database {\n  private static instance: Database;\n  \n  private constructor() {}\n  \n  static getInstance(): Database {\n    if (!Database.instance) {\n      Database.instance = new Database();\n    }\n    return Database.instance;\n  }\n}"
         }
-      }
+      },
+      "description": "Ensure a class only has one instance, and provide a global point of access to it",
+      "use_when": "When there must be exactly one instance of a class; When the sole instance should be extensible by subclassing; For configuration managers, connection pools, caches",
+      "code_example": "import threading\n\nclass ConfigManager:\n    _instance = None\n    _lock = threading.Lock()\n    \n    def __new__(cls):\n        if cls._instance is None:\n            with cls._lock:\n                if cls._instance is None:\n                    cls._instance = super().__new__(cls)\n        return cls._instance",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "adapter": {
       "id": "adapter",
@@ -133,7 +171,14 @@
           "description": "Adapter for external service",
           "snippet": "class StripeAdapter implements PaymentGateway {\n  constructor(private stripe: Stripe) {}\n  \n  async charge(amount: number, currency: string): Promise<ChargeResult> {\n    const intent = await this.stripe.paymentIntents.create({ amount, currency });\n    return { id: intent.id, status: intent.status === 'succeeded' ? 'success' : 'pending' };\n  }\n}"
         }
-      }
+      },
+      "description": "Convert the interface of a class into another interface clients expect",
+      "use_when": "When you want to use an existing class with an incompatible interface; When you want to create a reusable class that cooperates with unrelated classes; When integrating with third-party libraries",
+      "code_example": "class LegacyPaymentAdapter(ModernPaymentInterface):\n    def __init__(self, legacy_system: LegacyPaymentSystem):\n        self._legacy = legacy_system\n    \n    def process_payment(self, amount: Decimal, currency: str) -> PaymentResult:\n        # Adapt modern interface to legacy system\n        legacy_result = self._legacy.make_payment(float(amount), currency.upper())\n        return PaymentResult(success=legacy_result.ok, transaction_id=legacy_result.ref)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "decorator": {
       "id": "decorator",
@@ -154,7 +199,14 @@
           "description": "Class decorator for logging",
           "snippet": "function LogMethod(target: any, propertyKey: string, descriptor: PropertyDescriptor) {\n  const original = descriptor.value;\n  descriptor.value = function(...args: any[]) {\n    console.log(`Calling ${propertyKey} with`, args);\n    const result = original.apply(this, args);\n    console.log(`${propertyKey} returned`, result);\n    return result;\n  };\n}"
         }
-      }
+      },
+      "description": "Attach additional responsibilities to an object dynamically",
+      "use_when": "When you need to add responsibilities to objects dynamically and transparently; When extension by subclassing is impractical; For cross-cutting concerns like logging, caching, validation",
+      "code_example": "from functools import wraps\n\ndef cache(func):\n    _cache = {}\n    \n    @wraps(func)\n    def wrapper(*args):\n        if args not in _cache:\n            _cache[args] = func(*args)\n        return _cache[args]\n    return wrapper\n\n@cache\ndef expensive_operation(n: int) -> int:\n    return sum(range(n))",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "facade": {
       "id": "facade",
@@ -171,7 +223,14 @@
           "description": "Facade for order processing",
           "snippet": "class OrderFacade:\n    def __init__(self):\n        self._inventory = InventoryService()\n        self._payment = PaymentService()\n        self._shipping = ShippingService()\n        self._notification = NotificationService()\n    \n    def place_order(self, order: Order) -> OrderResult:\n        if not self._inventory.check_availability(order.items):\n            raise InsufficientInventoryError()\n        \n        payment = self._payment.process(order.total, order.payment_method)\n        shipment = self._shipping.create_shipment(order)\n        self._notification.send_confirmation(order.customer_email)\n        \n        return OrderResult(payment_id=payment.id, tracking=shipment.tracking)"
         }
-      }
+      },
+      "description": "Provide a unified interface to a set of interfaces in a subsystem",
+      "use_when": "When you want to provide a simple interface to a complex subsystem; When there are many dependencies between clients and implementation classes; When you want to layer your subsystems",
+      "code_example": "class OrderFacade:\n    def __init__(self):\n        self._inventory = InventoryService()\n        self._payment = PaymentService()\n        self._shipping = ShippingService()\n        self._notification = NotificationService()\n    \n    def place_order(self, order: Order) -> OrderResult:\n        if not self._inventory.check_availability(order.items):\n            raise InsufficientInventoryError()\n        \n        payment = self._payment.process(order.total, order.payment_method)\n        shipment = self._shipping.create_shipment(order)\n        self._notification.send_confirmation(order.customer_email)\n        \n        return OrderResult(payment_id=payment.id, tracking=shipment.tracking)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "strategy": {
       "id": "strategy",
@@ -192,7 +251,14 @@
           "description": "Strategy for validation",
           "snippet": "interface ValidationStrategy {\n  validate(value: string): ValidationResult;\n}\n\nclass EmailValidator implements ValidationStrategy {\n  validate(value: string): ValidationResult {\n    const valid = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value);\n    return { valid, error: valid ? null : 'Invalid email format' };\n  }\n}\n\nclass Validator {\n  constructor(private strategy: ValidationStrategy) {}\n  validate(value: string) { return this.strategy.validate(value); }\n}"
         }
-      }
+      },
+      "description": "Define a family of algorithms, encapsulate each one, and make them interchangeable",
+      "use_when": "When you need different variants of an algorithm; When you want to avoid exposing complex algorithm-specific data structures; When a class defines many behaviors that appear as multiple conditional statements",
+      "code_example": "from abc import ABC, abstractmethod\n\nclass PricingStrategy(ABC):\n    @abstractmethod\n    def calculate(self, base_price: Decimal) -> Decimal:\n        pass\n\nclass RegularPricing(PricingStrategy):\n    def calculate(self, base_price: Decimal) -> Decimal:\n        return base_price\n\nclass DiscountPricing(PricingStrategy):\n    def __init__(self, discount_percent: int):\n        self._discount = discount_percent / 100\n    \n    def calculate(self, base_price: Decimal) -> Decimal:\n        return base_price * (1 - Decimal(self._discount))",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "observer": {
       "id": "observer",
@@ -213,7 +279,14 @@
           "description": "Typed event emitter",
           "snippet": "type EventMap = { userCreated: User; orderPlaced: Order };\n\nclass TypedEmitter<T extends Record<string, any>> {\n  private listeners = new Map<keyof T, Set<(data: any) => void>>();\n  \n  on<K extends keyof T>(event: K, fn: (data: T[K]) => void) {\n    if (!this.listeners.has(event)) this.listeners.set(event, new Set());\n    this.listeners.get(event)!.add(fn);\n  }\n  \n  emit<K extends keyof T>(event: K, data: T[K]) {\n    this.listeners.get(event)?.forEach(fn => fn(data));\n  }\n}"
         }
-      }
+      },
+      "description": "Define a one-to-many dependency between objects so that when one object changes state, all its dependents are notified",
+      "use_when": "When a change to one object requires changing others, and you don't know how many objects need to change; When an object should be able to notify other objects without knowing who these objects are; For event-driven architectures",
+      "code_example": "from typing import Callable, Dict, List\n\nclass EventEmitter:\n    def __init__(self):\n        self._listeners: Dict[str, List[Callable]] = {}\n    \n    def on(self, event: str, callback: Callable) -> None:\n        if event not in self._listeners:\n            self._listeners[event] = []\n        self._listeners[event].append(callback)\n    \n    def emit(self, event: str, *args, **kwargs) -> None:\n        for callback in self._listeners.get(event, []):\n            callback(*args, **kwargs)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "repository": {
       "id": "repository",
@@ -234,7 +307,14 @@
           "description": "Repository with Entity Framework",
           "snippet": "public interface IRepository<T> where T : class\n{\n    Task<T?> GetByIdAsync(int id);\n    Task<IEnumerable<T>> GetAllAsync();\n    Task<T> AddAsync(T entity);\n    Task DeleteAsync(T entity);\n}\n\npublic class Repository<T> : IRepository<T> where T : class\n{\n    private readonly DbContext _context;\n    private readonly DbSet<T> _dbSet;\n    \n    public Repository(DbContext context)\n    {\n        _context = context;\n        _dbSet = context.Set<T>();\n    }\n}"
         }
-      }
+      },
+      "description": "Mediates between the domain and data mapping layers using a collection-like interface",
+      "use_when": "When you want to separate data access logic from business logic; When you need to abstract database operations; For testability with mock repositories",
+      "code_example": "from abc import ABC, abstractmethod\nfrom typing import Generic, TypeVar, Optional, List\n\nT = TypeVar('T')\n\nclass Repository(ABC, Generic[T]):\n    @abstractmethod\n    def get_by_id(self, id: int) -> Optional[T]: pass\n    \n    @abstractmethod\n    def get_all(self) -> List[T]: pass\n    \n    @abstractmethod\n    def add(self, entity: T) -> T: pass\n    \n    @abstractmethod\n    def delete(self, entity: T) -> None: pass",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
     }
   },
   "patternsByUseCase": {

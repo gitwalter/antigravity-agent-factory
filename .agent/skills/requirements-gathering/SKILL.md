@@ -4,25 +4,21 @@ description: 5-layer requirements elicitation for Cursor agent system generation
 name: requirements-gathering
 type: skill
 ---
-
 # Requirements Gathering
 
 5-layer requirements elicitation for Cursor agent system generation with axioms, purpose, and methodology
 
-## 
-# Requirements Gathering Skill
-
-Executes a structured multi-phase questionnaire implementing the **5-layer architecture** to capture all requirements for generating a new Cursor agent development system.
-
-## 
-# Requirements Gathering Skill
-
 Executes a structured multi-phase questionnaire implementing the **5-layer architecture** to capture all requirements for generating a new Cursor agent development system.
 
 ## Philosophy
+
 This skill guides users from foundational axioms through purpose, principles, methodology, and technical implementation - ensuring generated systems are grounded in clear values and purpose.
 
 ## Process
+
+1. Review the task requirements.
+2. Apply the skill's methodology.
+3. Validate the output against the defined criteria.
 ### Step 1: Axiom Configuration (Layer 0)
 Select core axioms (A1-A5) and optional axioms (A6-A10) that will govern the agent system. Axiom 0 (Love, Truth, and Beauty) is always included.
 
@@ -48,6 +44,7 @@ Gather project context, technology stack, workflow triggers, knowledge domain, a
 Validate completeness, confirm target directory, generate summary, and create all artifacts.
 
 ## Complete Phase Structure
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ PRE-PHASE: Layer 0 - Axiom Configuration                        │
@@ -78,36 +75,9 @@ Validate completeness, confirm target directory, generate summary, and create al
 
 ---
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ PRE-PHASE: Layer 0 - Axiom Configuration                        │
-│   Select core (A1-A5) and optional (A6-A10) axioms              │
-├─────────────────────────────────────────────────────────────────┤
-│ PHASE 0: Layer 1 - Purpose Definition                           │
-│   Mission, Stakeholders, Success Criteria                        │
-├─────────────────────────────────────────────────────────────────┤
-│ PHASE 0.5: Depth Selection                                       │
-│   Quick Start / Standard / Comprehensive                         │
-├─────────────────────────────────────────────────────────────────┤
-│ PHASE 0.6: Layer 2 - Principles (if Standard+)                   │
-│   Ethical boundaries, quality standards, failure handling        │
-├─────────────────────────────────────────────────────────────────┤
-│ PHASE 0.7: Layer 3 - Methodology (if Standard+)                  │
-│   Agile/Kanban/R&D/Enterprise selection and configuration        │
-├─────────────────────────────────────────────────────────────────┤
-│ PHASE 0.8: Enforcement Selection (if Comprehensive)              │
-│   Quality, Safety, Integrity enforcement patterns                │
-├─────────────────────────────────────────────────────────────────┤
-│ PHASE 0.9: Practice Selection (if Comprehensive)                 │
-│   Daily, Craft, Alignment practices                              │
-├─────────────────────────────────────────────────────────────────┤
-│ PHASE 1-5: Layer 4 - Technical Configuration                     │
-│   Stack, Agents, Skills, Knowledge, Integrations                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
 ## PRE-PHASE: Layer 0 - Axiom Configuration
-**Skill Reference**: `.cursor/skills/axiom-selection/SKILL.md`
+
+**Skill Reference**: `{directories.skills}/axiom-selection/SKILL.md`
 
 ### Introduction
 
@@ -159,26 +129,9 @@ layer0:
 
 ---
 
-```
-Before we begin, let's ground ourselves in the foundation of foundations:
-
-Axiom 0: Love, Truth, and Beauty
-"All being and doing is grounded in love, truth, and beauty."
-
-This axiom is always included and cannot be removed. From this foundation,
-we derive the core axioms that govern agent behavior.
-```
-
-```yaml
-layer0:
-  foundationAxiom: "A0"  # Love, Truth, and Beauty - always included
-  coreAxioms: ["A1", "A2", "A3", "A4", "A5"]
-  optionalAxioms: ["A6", "A7"]  # User selected
-  customAxioms: []  # Domain-specific additions
-```
-
 ## PHASE 0: Layer 1 - Purpose Definition
-**Skill Reference**: `.cursor/skills/purpose-definition/SKILL.md`
+
+**Skill Reference**: `{directories.skills}/purpose-definition/SKILL.md`
 
 ### Questions
 
@@ -201,14 +154,8 @@ layer1:
 
 ---
 
-```yaml
-layer1:
-  mission: "{MISSION_STATEMENT}"
-  stakeholders: "{PRIMARY_STAKEHOLDERS}"
-  successCriteria: "{SUCCESS_CRITERIA}"
-```
-
 ## PHASE 0.5: Depth Selection
+
 ### Question
 
 ```
@@ -229,22 +176,15 @@ C) Comprehensive - Define all layers including enforcement and practices
 
 ---
 
-```
-How deep should we define the remaining layers?
-
-A) Quick Start - Use defaults, go straight to technical configuration
-B) Standard - Define principles and select methodology template
-C) Comprehensive - Define all layers including enforcement and practices
-```
-
 ## PHASE 0.6: Layer 2 - Principles (Standard & Comprehensive)
+
 ### Questions
 
 | # | Question | Variable | Reference |
 |---|----------|----------|-----------|
-| 1 | What actions should agents NEVER take? | `{ETHICAL_BOUNDARIES}` | `patterns/principles/ethical-boundaries.json` |
-| 2 | What quality bar must all outputs meet? | `{QUALITY_STANDARDS}` | `patterns/principles/quality-standards.json` |
-| 3 | How should failures be handled? | `{FAILURE_HANDLING}` | `patterns/principles/failure-handling.json` |
+| 1 | What actions should agents NEVER take? | `{ETHICAL_BOUNDARIES}` | `{directories.patterns}/principles/ethical-boundaries.json` |
+| 2 | What quality bar must all outputs meet? | `{QUALITY_STANDARDS}` | `{directories.patterns}/principles/quality-standards.json` |
+| 3 | How should failures be handled? | `{FAILURE_HANDLING}` | `{directories.patterns}/principles/failure-handling.json` |
 
 ### Output
 
@@ -257,15 +197,9 @@ layer2:
 
 ---
 
-```yaml
-layer2:
-  ethicalBoundaries: ["EB1", "EB2", "EB3", "EB4", "EB5"]
-  qualityStandards: ["QS1", "QS2", "QS3", "QS4", "QS5"]
-  failureHandling: ["FH1", "FH2", "FH3"]
-```
-
 ## PHASE 0.7: Layer 3 - Methodology (Standard & Comprehensive)
-**Skill Reference**: `.cursor/skills/methodology-selection/SKILL.md`
+
+**Skill Reference**: `{directories.skills}/methodology-selection/SKILL.md`
 
 ### Questions
 
@@ -292,19 +226,13 @@ layer3:
   pattern: "domain_expert_swarm + peer_collaboration"
 ```
 
-**Generated Artifact**: `workflows/methodology.yaml`
+**Generated Artifact**: `{directories.workflows}/methodology.yaml`
 
 ---
 
-```yaml
-layer3:
-  methodology: "agile-scrum"
-  teamSize: "4-6"
-  pattern: "domain_expert_swarm + peer_collaboration"
-```
-
 ## PHASE 0.8: Enforcement Selection (Comprehensive Only)
-**Skill Reference**: `.cursor/skills/enforcement-selection/SKILL.md`
+
+**Skill Reference**: `{directories.skills}/enforcement-selection/SKILL.md`
 
 ### Question
 
@@ -342,36 +270,9 @@ enforcement:
 
 ---
 
-```
-Select enforcement patterns to ensure values are lived:
-
-Quality Enforcement:
-[x] E1: Test Coverage Gate
-[x] E2: Peer Review Gate
-[ ] E3: Documentation Completeness
-[x] E4: Style Consistency
-
-Safety Enforcement:
-[x] E5: Destructive Action Confirmation
-[ ] E6: Backup Before Modification
-[ ] E7: Security Vulnerability Check
-[ ] E8: Production Safeguard
-
-Integrity Enforcement:
-[x] E9: Axiom Compliance Check
-[ ] E10: Purpose Alignment Check
-[ ] E11: Transparency Log
-```
-
-```yaml
-enforcement:
-  quality: ["E1", "E2", "E4"]
-  safety: ["E5"]
-  integrity: ["E9"]
-```
-
 ## PHASE 0.9: Practice Selection (Comprehensive Only)
-**Skill Reference**: `.cursor/skills/practice-selection/SKILL.md`
+
+**Skill Reference**: `{directories.skills}/practice-selection/SKILL.md`
 
 ### Question
 
@@ -408,34 +309,8 @@ practices:
 
 ---
 
-```
-Select practices to maintain excellence and alignment:
-
-Daily Practices:
-[ ] P1: Morning Intention Setting
-[ ] P2: Evening Reflection
-[x] P3: Focused Stand-up
-
-Craft Practices:
-[x] P4: Code as Craft Review
-[x] P5: Thoughtful Code Review
-[ ] P6: Continuous Refactoring
-
-Alignment Practices:
-[ ] P7: Weekly Learning Session
-[x] P8: Sprint Retrospective
-[ ] P9: Release Blessing
-[ ] P10: Quarterly Purpose Alignment
-```
-
-```yaml
-practices:
-  daily: ["P3"]
-  craft: ["P4", "P5"]
-  alignment: ["P8"]
-```
-
 ## PHASE 1: Project Context (Layer 4 - Technical)
+
 ### Questions
 
 | # | Question | Variable | Validation |
@@ -469,15 +344,8 @@ projectContext:
 
 ---
 
-```yaml
-projectContext:
-  name: "{PROJECT_NAME}"
-  description: "{PROJECT_DESCRIPTION}"
-  domain: "{DOMAIN}"
-  teamContext: "{TEAM_CONTEXT}"
-```
-
 ## PHASE 2: Technology Stack
+
 ### Questions
 
 | # | Question | Variable | Reference |
@@ -511,25 +379,8 @@ technologyStack:
 
 ---
 
-```
-IF primaryLanguage == "python" AND "fastapi" IN frameworks:
-    suggest blueprint: "python-fastapi"
-IF primaryLanguage == "python" AND ("langchain" IN frameworks OR "langgraph" IN frameworks):
-    suggest blueprint: "ai-agent-development"
-IF primaryLanguage == "typescript" AND "react" IN frameworks:
-    suggest blueprint: "typescript-react"
-```
-
-```yaml
-technologyStack:
-  primaryLanguage: "{PRIMARY_LANGUAGE}"
-  frameworks: ["{FRAMEWORK_1}", "{FRAMEWORK_2}"]
-  databases: ["{DATABASE_1}"]
-  externalApis: ["{API_1}"]
-  matchedBlueprint: "{BLUEPRINT_ID}" | null
-```
-
 ## PHASE 3: Workflow Methodology
+
 ### Questions
 
 | # | Question | Variable | Options |
@@ -558,15 +409,8 @@ workflowConfig:
 
 ---
 
-```yaml
-workflowConfig:
-  triggerSources:
-    - type: "jira"
-      pattern: "{PROJECT_KEY}-{NUMBER}"
-  outputArtifacts: ["code", "docs", "tests"]
-```
-
 ## PHASE 4: Knowledge Domain
+
 ### Questions
 
 | # | Question | Variable | Purpose |
@@ -589,17 +433,8 @@ knowledgeDomain:
 
 ---
 
-```yaml
-knowledgeDomain:
-  concepts: ["{CONCEPT_1}", "{CONCEPT_2}"]
-  referenceSources:
-    - type: "github"
-      url: "{REPO_URL}"
-  conventions:
-    styleGuide: "{STYLE_GUIDE}"
-```
-
 ## PHASE 5: Agent Capabilities
+
 ### Questions
 
 | # | Question | Variable | Options |
@@ -639,14 +474,8 @@ agentCapabilities:
 
 ---
 
-```yaml
-agentCapabilities:
-  agents: ["code-reviewer", "test-generator"]
-  skills: ["bugfix-workflow", "feature-workflow", "tdd"]
-  mcpIntegrations: ["atlassian", "deepwiki"]
-```
-
 ## Final Validation & Summary
+
 ### Completeness Check
 
 - [ ] Layer 0: Axioms configured
@@ -668,6 +497,7 @@ agentCapabilities:
 ```markdown
 
 ## Requirements Summary
+
 ### Layer 0: Axioms
 - **Core:** A1-A5 (Verifiability, User Primacy, Transparency, Non-Harm, Consistency)
 - **Optional:** {SELECTED_OPTIONAL_AXIOMS}
@@ -699,20 +529,22 @@ agentCapabilities:
 ---
 
 ## Generated Artifacts
+
 | Layer | Artifact | Description |
 |-------|----------|-------------|
 | 0-4 | `.cursorrules` | Complete 5-layer agent rules |
 | 1 | `PURPOSE.md` | Mission, stakeholders, success |
 | 2+ | `enforcement.yaml` | Enforcement configuration |
-| 3 | `workflows/methodology.yaml` | Methodology configuration |
+| 3 | `{directories.workflows}/methodology.yaml` | Methodology configuration |
 | 3+ | `practices.yaml` | Team practices |
-| 4 | `.cursor/agents/` | Agent definitions |
-| 4 | `.cursor/skills/` | Skill definitions |
-| 4 | `knowledge/` | Domain knowledge |
+| 4 | `{directories.agents}/` | Agent definitions |
+| 4 | `{directories.skills}/` | Skill definitions |
+| 4 | `{directories.knowledge}/` | Domain knowledge |
 
 ---
 
 ## Team Alternative
+
 For teams of 2+ people, offer the Team Workshop Onboarding:
 
 ```
@@ -731,21 +563,8 @@ Team workshops are grounded in Axiom 0 (Love, Truth, and Beauty) and include:
 
 If they choose team workshops, hand off to `team-workshop-onboarding` skill.
 
-```
-"Would you prefer to gather requirements:
-
-A) Individually - I'll ask you questions now (faster, solo decision-maker)
-B) As a Team - Workshop series with games and discussions (richer, collaborative)
-
-Team workshops are grounded in Axiom 0 (Love, Truth, and Beauty) and include:
-- Vision Quest: Headlines and stakeholder games
-- Ethics Arena: Dilemma debates and value auctions
-- Stack Safari: Trade-off games and architecture pictionary
-- Agent Assembly: Trading cards and skill bingo
-- Integration Celebration: Demo derby and gratitude circle"
-```
-
 ## Important Rules
+
 1. **Ask one phase at a time** - Don't overwhelm user
 2. **Explain the why** - Connect questions to axioms and purpose
 3. **Validate inputs** - Check against axioms before proceeding
@@ -755,15 +574,23 @@ Team workshops are grounded in Axiom 0 (Love, Truth, and Beauty) and include:
 7. **Ground in A0** - Remember that love, truth, and beauty underpin all requirements
 
 ## References
-- `patterns/axioms/` - Axiom definitions
-- `patterns/principles/` - Principle patterns
-- `patterns/methodologies/` - Methodology templates
-- `patterns/enforcement/` - Enforcement patterns
-- `patterns/practices/` - Practice patterns
-- `knowledge/` - Domain knowledge files
-- `blueprints/` - Technology blueprints
+
+- `{directories.patterns}/axioms/` - Axiom definitions
+- `{directories.patterns}/principles/` - Principle patterns
+- `{directories.patterns}/methodologies/` - Methodology templates
+- `{directories.patterns}/enforcement/` - Enforcement patterns
+- `{directories.patterns}/practices/` - Practice patterns
+- `{directories.knowledge}/` - Domain knowledge files
+- `{directories.blueprints}/` - Technology blueprints
+
+## When to Use
+This skill should be used when strict adherence to the defined process is required.
 
 ## Prerequisites
-> [!IMPORTANT]
-> Requirements:
-> - Knowledge: stack-capabilities.json, workflow-patterns.json, mcp-servers-catalog.json, best-practices.json, langchain-patterns.json, agent-coordination.json
+- Basic understanding of the agent factory context.
+- Access to the necessary tools and resources.
+
+## Best Practices
+- Always follow the established guidelines.
+- Document any deviations or exceptions.
+- Regularly review and update the skill documentation.

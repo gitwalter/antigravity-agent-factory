@@ -1,0 +1,246 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://cursor-agent-factory.dev/schemas/skill.schema.json",
+    "title": "Skill Schema",
+    "description": "Schema for skill YAML frontmatter in {directories.skills}/*/SKILL.md files. Supports multi-resource skills with bundled scripts, examples, starters, and progressive documentation.",
+    "type": "object",
+    "required": [
+        "name",
+        "description",
+        "type",
+        "version",
+        "category",
+        "agents",
+        "knowledge",
+        "tools",
+        "related_skills",
+        "templates"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "name": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+(/[a-z0-9-]+)*$",
+            "minLength": 3,
+            "description": "Unique skill identifier matching directory name"
+        },
+        "description": {
+            "type": "string",
+            "minLength": 20,
+            "description": "Detailed description of what this skill teaches"
+        },
+        "type": {
+            "const": "skill"
+        },
+        "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "description": "Semantic version of the skill"
+        },
+        "category": {
+            "type": "string",
+            "enum": [
+                "core",
+                "rag",
+                "agent-patterns",
+                "integration",
+                "observability",
+                "specialized",
+                "workflow",
+                "optimization",
+                "security",
+                "testing",
+                "ai-ml",
+                "trading",
+                "sap",
+                "dotnet",
+                "java",
+                "web",
+                "devops",
+                "onboarding",
+                "factory"
+            ],
+            "description": "Skill category for organization"
+        },
+        "agents": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+            },
+            "minItems": 1,
+            "description": "Cursor agents that use this skill"
+        },
+        "knowledge": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+\\.json$"
+            },
+            "minItems": 1,
+            "description": "Knowledge files this skill requires"
+        },
+        "tools": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "name",
+                            "type",
+                            "description"
+                        ],
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 2
+                            },
+                            "type": {
+                                "enum": [
+                                    "example",
+                                    "production",
+                                    "mcp",
+                                    "langchain",
+                                    "factory",
+                                    "library",
+                                    "stdlib"
+                                ]
+                            },
+                            "description": {
+                                "type": "string",
+                                "minLength": 10
+                            },
+                            "source": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ]
+            },
+            "minItems": 1,
+            "description": "Tools documented or used in this skill (use ['none'] if no tools)"
+        },
+        "related_skills": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+            },
+            "minItems": 1,
+            "description": "Related skills"
+        },
+        "templates": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1,
+            "description": "Templates used by this skill (use ['none'] if no templates)"
+        },
+        "scope": {
+            "type": "string",
+            "enum": [
+                "always",
+                "project",
+                "local"
+            ],
+            "default": "local",
+            "description": "Skill loading scope. 'always' = auto-loaded for every agent session, 'project' = loaded for project-level operations, 'local' = loaded only when explicitly triggered (default)"
+        },
+        "triggers": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 5
+            },
+            "description": "Conditions that auto-activate this skill (e.g. 'user mentions FastAPI', 'file contains import fastapi')"
+        },
+        "prerequisites": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 3
+            },
+            "description": "Software, packages, or configurations required before using this skill"
+        },
+        "outputs": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 5
+            },
+            "description": "What this skill produces (e.g. 'FastAPI application structure', 'OpenAPI documentation')"
+        },
+        "complexity": {
+            "type": "string",
+            "enum": [
+                "beginner",
+                "intermediate",
+                "advanced"
+            ],
+            "description": "Skill complexity level for user guidance"
+        },
+        "has_scripts": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether this skill bundles executable scripts in scripts/ subdirectory"
+        },
+        "has_examples": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether this skill bundles runnable examples in examples/ subdirectory"
+        },
+        "axioms": {
+            "type": "object",
+            "description": "Axiom alignment declarations for this skill"
+        },
+        "extends": {
+            "type": "string",
+            "description": "Parent skill this skill extends"
+        },
+        "inspiration": {
+            "type": "string",
+            "description": "Source of inspiration or reference for this skill"
+        },
+        "mcp_servers": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "MCP servers this skill integrates with"
+        },
+        "pattern": {
+            "type": "string",
+            "description": "Primary design pattern this skill implements"
+        },
+        "patterns": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Design patterns this skill covers"
+        },
+        "profile": {
+            "type": "string",
+            "description": "Execution profile for this skill"
+        },
+        "profiles": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Execution profiles supported by this skill"
+        },
+        "skills": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Sub-skills included in this skill"
+        }
+    }
+}

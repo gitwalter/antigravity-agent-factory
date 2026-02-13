@@ -1,107 +1,194 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "streaming-patterns",
   "name": "Streaming Patterns",
+  "title": "Streaming and Real-Time Patterns",
+  "description": "Patterns for implementing streaming responses, event-based architectures, token streaming, and real-time agent interactions",
   "version": "1.0.0",
-  "category": "agent-development",
-  "description": "Patterns for implementing streaming responses, event-based architectures, and real-time agent interactions",
+  "category": "core",
+  "axiomAlignment": {
+    "A1_verifiability": "Event streaming and astream_events enable verifiable execution tracing",
+    "A2_user_primacy": "Real-time streaming improves perceived responsiveness and user experience",
+    "A3_transparency": "SSE and WebSocket patterns make streaming behavior explicit",
+    "A4_non_harm": "Error handling and disconnection cleanup prevent resource leaks",
+    "A5_consistency": "Unified streaming patterns across token, event, and state streaming"
+  },
+  "related_skills": [
+    "streaming-realtime",
+    "langchain-usage",
+    "langgraph-agent-building",
+    "logging-monitoring"
+  ],
+  "related_knowledge": [
+    "langchain-patterns.json",
+    "langgraph-workflows.json",
+    "memory-patterns.json"
+  ],
   "patterns": {
     "token_streaming": {
       "basic_streaming": {
         "description": "Stream LLM tokens token-by-token",
         "example": "async for chunk in chain.astream({\"input\": query}):\n    if chunk.content:\n        print(chunk.content, end=\"\", flush=True)",
-        "use_when": ["Chat interfaces", "Long responses", "Real-time feedback"]
+        "use_when": "Chat interfaces; Long responses; Real-time feedback",
+        "code_example": "async for chunk in chain.astream({\"input\": query}):\n    if chunk.content:\n        print(chunk.content, end=\"\", flush=True)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
+        ]
       },
       "sse_streaming": {
         "description": "Server-Sent Events for HTTP streaming",
         "example": "from sse_starlette.sse import EventSourceResponse\n\nasync def event_generator():\n    async for chunk in chain.astream({\"input\": query}):\n        if chunk.content:\n            yield {\"event\": \"token\", \"data\": json.dumps({\"content\": chunk.content})}\n    yield {\"event\": \"done\", \"data\": json.dumps({\"status\": \"complete\"})}\n\nreturn EventSourceResponse(event_generator())",
-        "use_when": ["HTTP APIs", "Browser clients", "One-way streaming"]
+        "use_when": "HTTP APIs; Browser clients; One-way streaming",
+        "code_example": "from sse_starlette.sse import EventSourceResponse\n\nasync def event_generator():\n    async for chunk in chain.astream({\"input\": query}):\n        if chunk.content:\n            yield {\"event\": \"token\", \"data\": json.dumps({\"content\": chunk.content})}\n    yield {\"event\": \"done\", \"data\": json.dumps({\"status\": \"complete\"})}\n\nreturn EventSourceResponse(event_generator())",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
+        ]
       },
       "websocket_streaming": {
         "description": "Bidirectional WebSocket streaming",
         "example": "@app.websocket(\"/ws/chat\")\nasync def websocket_chat(websocket: WebSocket):\n    await websocket.accept()\n    async for chunk in chain.astream({\"input\": message}):\n        if chunk.content:\n            await websocket.send_json({\"type\": \"token\", \"content\": chunk.content})",
-        "use_when": ["Real-time chat", "Bidirectional communication", "Interactive agents"]
-      }
+        "use_when": "Real-time chat; Bidirectional communication; Interactive agents",
+        "code_example": "@app.websocket(\"/ws/chat\")\nasync def websocket_chat(websocket: WebSocket):\n    await websocket.accept()\n    async for chunk in chain.astream({\"input\": message}):\n        if chunk.content:\n            await websocket.send_json({\"type\": \"token\", \"content\": chunk.content})",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
+        ]
+      },
+      "description": "Category grouping: basic_streaming, sse_streaming, websocket_streaming",
+      "use_when": "Apply when token streaming patterns are needed in Streaming and Real-Time Patterns",
+      "code_example": "# See child patterns under token_streaming for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "event_streaming": {
       "astream_events": {
         "description": "Stream detailed execution events from chains",
         "example": "async for event in chain.astream_events(input_data, version=\"v2\"):\n    kind = event[\"event\"]\n    if kind == \"on_chat_model_stream\":\n        # Token streaming\n        yield event[\"data\"][\"chunk\"]\n    elif kind == \"on_tool_start\":\n        # Tool execution started\n        yield {\"type\": \"tool_start\", \"name\": event[\"name\"]}",
-        "use_when": ["Debugging", "Monitoring", "Detailed execution tracking"]
+        "use_when": "Debugging; Monitoring; Detailed execution tracking",
+        "code_example": "async for event in chain.astream_events(input_data, version=\"v2\"):\n    kind = event[\"event\"]\n    if kind == \"on_chat_model_stream\":\n        # Token streaming\n        yield event[\"data\"][\"chunk\"]\n    elif kind == \"on_tool_start\":\n        # Tool execution started\n        yield {\"type\": \"tool_start\", \"name\": event[\"name\"]}",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
+        ]
       },
       "event_filtering": {
         "description": "Filter events by component name or type",
         "example": "async for event in chain.astream_events(\n    input_data,\n    version=\"v2\",\n    include_names=[\"ChatGoogleGenerativeAI\", \"ToolExecutor\"]\n):",
-        "use_when": ["Selective monitoring", "Performance analysis"]
-      }
+        "use_when": "Selective monitoring; Performance analysis",
+        "code_example": "async for event in chain.astream_events(\n    input_data,\n    version=\"v2\",\n    include_names=[\"ChatGoogleGenerativeAI\", \"ToolExecutor\"]\n):",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
+        ]
+      },
+      "description": "Category grouping: astream_events, event_filtering",
+      "use_when": "Apply when event streaming patterns are needed in Streaming and Real-Time Patterns",
+      "code_example": "# See child patterns under event_streaming for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "state_streaming": {
       "real_time_updates": {
         "description": "Stream agent state updates in real-time",
         "example": "async def stream_with_state(chain, input_data, websocket):\n    state = {\"status\": \"starting\", \"tokens_received\": 0}\n    await websocket.send_json({\"type\": \"state\", \"data\": state})\n    \n    async for event in chain.astream_events(input_data, version=\"v2\"):\n        if event[\"event\"] == \"on_chat_model_stream\":\n            state[\"tokens_received\"] += len(event[\"data\"][\"chunk\"].content)\n            await websocket.send_json({\"type\": \"state\", \"data\": state})",
-        "use_when": ["Real-time UI updates", "Progress tracking", "Agent monitoring"]
+        "use_when": "Real-time UI updates; Progress tracking; Agent monitoring",
+        "code_example": "async def stream_with_state(chain, input_data, websocket):\n    state = {\"status\": \"starting\", \"tokens_received\": 0}\n    await websocket.send_json({\"type\": \"state\", \"data\": state})\n    \n    async for event in chain.astream_events(input_data, version=\"v2\"):\n        if event[\"event\"] == \"on_chat_model_stream\":\n            state[\"tokens_received\"] += len(event[\"data\"][\"chunk\"].content)\n            await websocket.send_json({\"type\": \"state\", \"data\": state})",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
+        ]
       },
       "memory_streaming": {
         "description": "Stream responses with conversation memory",
         "example": "chain_with_memory = RunnableWithMessageHistory(\n    chain,\n    get_session_history,\n    input_messages_key=\"input\"\n)\n\nasync for chunk in chain_with_memory.astream(\n    {\"input\": query},\n    config={\"configurable\": {\"session_id\": session_id}}\n):",
-        "use_when": ["Multi-turn conversations", "Context-aware streaming"]
-      }
+        "use_when": "Multi-turn conversations; Context-aware streaming",
+        "code_example": "chain_with_memory = RunnableWithMessageHistory(\n    chain,\n    get_session_history,\n    input_messages_key=\"input\"\n)\n\nasync for chunk in chain_with_memory.astream(\n    {\"input\": query},\n    config={\"configurable\": {\"session_id\": session_id}}\n):",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
+        ]
+      },
+      "description": "Category grouping: real_time_updates, memory_streaming",
+      "use_when": "Apply when state streaming patterns are needed in Streaming and Real-Time Patterns",
+      "code_example": "# See child patterns under state_streaming for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "tool_streaming": {
       "streaming_tool_results": {
         "description": "Stream results from long-running tools",
         "example": "@tool\nasync def stream_search(query: str) -> str:\n    async for result in search_api.stream(query):\n        yield result  # Stream partial results\n    return \"\\n\".join(results)",
-        "use_when": ["Long-running operations", "Progressive result display"]
-      }
+        "use_when": "Long-running operations; Progressive result display",
+        "code_example": "@tool\nasync def stream_search(query: str) -> str:\n    async for result in search_api.stream(query):\n        yield result  # Stream partial results\n    return \"\\n\".join(results)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
+        ]
+      },
+      "description": "Category grouping: streaming_tool_results",
+      "use_when": "Apply when tool streaming patterns are needed in Streaming and Real-Time Patterns",
+      "code_example": "# See child patterns under tool_streaming for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     }
   },
   "best_practices": [
-    "Always use streaming=True for LLM initialization",
-    "Use async generators for streaming endpoints",
-    "Implement proper error handling in streams",
-    "Send heartbeat messages for long streams",
-    "Use WebSocket for bidirectional communication",
-    "Stream state updates for better UX",
-    "Handle client disconnections gracefully",
-    "Buffer tokens for better performance",
-    "Use EventSourceResponse for HTTP streaming",
-    "Filter events to reduce overhead"
+    "Always use streaming=True for LLM initialization to enable token-by-token streaming and improve perceived response time",
+    "Use async generators (async def, yield) for streaming endpoints to avoid blocking the event loop and enable concurrent request handling",
+    "Implement proper error handling in streams with try/except blocks and error events to prevent connection crashes and provide user feedback",
+    "Send heartbeat messages (ping/pong) every 30-60 seconds for long streams to prevent client timeouts and maintain connection health",
+    "Use WebSocket for bidirectional communication when real-time interaction is needed, enabling both streaming responses and user input",
+    "Stream state updates (progress, status, intermediate results) for better UX, giving users visibility into agent processing",
+    "Handle client disconnections gracefully by catching WebSocketDisconnect exceptions and cleaning up resources to prevent memory leaks",
+    "Buffer tokens (e.g., 5-10 tokens) before sending to reduce message overhead and improve network efficiency while maintaining responsiveness",
+    "Use EventSourceResponse for HTTP streaming (SSE) when one-way streaming is sufficient, simpler than WebSocket for basic use cases",
+    "Filter events using include_names or include_types in astream_events to reduce overhead and focus on relevant execution details"
   ],
   "anti_patterns": [
     {
       "name": "Blocking streams",
-      "problem": "Blocks event loop, poor performance",
-      "fix": "Use async generators with astream"
+      "problem": "Synchronous stream() calls block the event loop, preventing other requests from processing and causing poor performance",
+      "solution": "Use async generators with astream() instead of stream(), ensuring non-blocking execution and proper async/await patterns"
     },
     {
       "name": "No error handling",
-      "problem": "Stream failures crash the connection",
-      "fix": "Wrap streams in try/except blocks"
+      "problem": "Unhandled exceptions in streams crash the connection, leaving clients hanging and losing partial responses",
+      "solution": "Wrap streams in try/except blocks, send error events to clients, and implement graceful error recovery with fallback responses"
     },
     {
       "name": "Missing heartbeats",
-      "problem": "Clients timeout on long streams",
-      "fix": "Send periodic ping/heartbeat messages"
+      "problem": "Long-running streams without heartbeats cause clients to timeout, closing connections and losing progress",
+      "solution": "Send periodic ping/heartbeat messages every 30-60 seconds, or use keepalive mechanisms to maintain connection health"
     },
     {
       "name": "Unbuffered tokens",
-      "problem": "Too many small messages, poor performance",
-      "fix": "Buffer tokens and flush in chunks"
+      "problem": "Sending individual tokens creates excessive small messages, overwhelming network and client processing",
+      "solution": "Buffer tokens (5-10 tokens) and flush in chunks, balancing responsiveness with network efficiency"
     },
     {
       "name": "No disconnection handling",
-      "problem": "Resources leak when clients disconnect",
-      "fix": "Handle WebSocketDisconnect exceptions"
+      "problem": "Client disconnections leave resources (memory, connections, background tasks) allocated, causing memory leaks",
+      "solution": "Handle WebSocketDisconnect exceptions, clean up session data, cancel background tasks, and release resources on disconnect"
     },
     {
       "name": "Sync in async context",
-      "problem": "Blocks event loop",
-      "fix": "Use astream not stream in async contexts"
+      "problem": "Using synchronous stream() in async endpoints blocks the event loop, preventing concurrent request handling",
+      "solution": "Use astream() not stream() in async contexts, ensuring proper async/await patterns and non-blocking execution"
     },
     {
       "name": "Memory leaks in sessions",
-      "problem": "Session data accumulates",
-      "fix": "Clean up session data on disconnect"
+      "problem": "Session data accumulates without cleanup, causing memory bloat and degraded performance over time",
+      "solution": "Clean up session data on disconnect, implement TTL for session storage, and periodically purge old session data"
     }
-  ],
-  "related_skills": ["streaming-realtime", "langchain-usage", "langgraph-agent-building", "logging-monitoring"]
+  ]
 }

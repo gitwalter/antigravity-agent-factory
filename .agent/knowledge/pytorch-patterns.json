@@ -1,16 +1,34 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "pytorch-patterns",
+  "name": "PyTorch Patterns",
   "title": "PyTorch Patterns",
   "description": "Best practices and patterns for deep learning with PyTorch",
   "version": "1.0.0",
+  "category": "ai-ml",
   "sources": [
     "https://pytorch.org/docs/stable/",
     "https://pytorch.org/tutorials/"
   ],
   "axiomAlignment": {
     "A1_verifiability": "Patterns include evaluation and testing strategies",
-    "A3_transparency": "Model architecture and training are explicit"
+    "A2_user_primacy": "Training and inference serve user-defined objectives",
+    "A3_transparency": "Model architecture and training are explicit",
+    "A4_non_harm": "Checkpointing and validation prevent harmful model drift",
+    "A5_consistency": "Unified PyTorch patterns across model definition, training, and deployment"
   },
+  "related_skills": [
+    "model-training",
+    "model-serving",
+    "data-pipeline",
+    "ml-deployment"
+  ],
+  "related_knowledge": [
+    "deep-learning-patterns.json",
+    "model-training-patterns.json",
+    "model-serving-patterns.json",
+    "data-engineering-ml.json"
+  ],
   "core_patterns": {
     "model_definition": {
       "nn_module": {
@@ -134,28 +152,107 @@
   ],
   "anti_patterns": [
     {
-      "name": "forgetting_eval_mode",
-      "problem": "Dropout/BatchNorm active during inference",
-      "solution": "Always call model.eval() before inference"
+      "name": "Forgetting eval mode during inference",
+      "problem": "Dropout and BatchNorm layers behave differently, causing inconsistent predictions",
+      "solution": "Always call model.eval() before inference and model.train() before training"
     },
     {
-      "name": "no_grad_missing",
-      "problem": "Memory waste during inference",
-      "solution": "Use with torch.no_grad(): for inference"
+      "name": "Missing torch.no_grad() during inference",
+      "problem": "Wastes memory computing gradients that aren't needed, slows down inference",
+      "solution": "Wrap inference code with 'with torch.no_grad():' to disable gradient computation"
     },
     {
-      "name": "device_mismatch",
-      "problem": "Tensors on different devices",
-      "solution": "Ensure data and model are on same device"
+      "name": "Device mismatch between model and data",
+      "problem": "Runtime errors when tensors are on different devices (CPU vs GPU)",
+      "solution": "Explicitly move both model and data to same device using .to(device) or .cuda()"
     },
     {
-      "name": "in_place_operations",
-      "problem": "Can break autograd",
-      "solution": "Avoid in-place operations on tensors requiring grad"
+      "name": "In-place operations on tensors requiring gradients",
+      "problem": "Can break autograd graph and cause incorrect gradient computation",
+      "solution": "Avoid operations like x += y or x.mul_(2) on tensors with requires_grad=True"
+    },
+    {
+      "name": "Training without validation split",
+      "problem": "Cannot detect overfitting or tune hyperparameters effectively",
+      "solution": "Always reserve 10-20% of data for validation and monitor validation loss"
     }
   ],
-  "id": "pytorch-patterns",
-  "name": "Pytorch Patterns",
-  "category": "patterns",
-  "patterns": {}
+  "patterns": {
+    "core_patterns": {
+      "model_definition": {
+        "nn_module": {
+          "description": "Standard way to define neural networks",
+          "code_example": "import torch\nimport torch.nn as nn\nimport torch.nn.functional as F\n\nclass SimpleNet(nn.Module):\n    def __init__(self, input_size, hidden_size, num_classes):\n        super().__init__()\n        self.fc1 = nn.Linear(input_size, hidden_size)\n        self.bn1 = nn.BatchNorm1d(hidden_size)\n        self.fc2 = nn.Linear(hidden_size, hidden_size)\n        self.dropout = nn.Dropout(0.3)\n        self.fc3 = nn.Linear(hidden_size, num_classes)\n    \n    def forward(self, x):\n        x = F.relu(self.bn1(self.fc1(x)))\n        x = F.relu(self.fc2(x))\n        x = self.dropout(x)\n        x = self.fc3(x)\n        return x",
+          "use_when": "When training neural networks with limited GPU memory",
+          "best_practices": [
+            "Use model.train() and model.eval() appropriately",
+            "Always use torch.no_grad() during inference",
+            "Move data and model to same device",
+            "Use appropriate weight initialization",
+            "Monitor training with TensorBoard or W&B"
+          ]
+        },
+        "sequential": {
+          "description": "Quick model definition for simple architectures",
+          "code_example": "model = nn.Sequential(\n    nn.Linear(784, 256),\n    nn.ReLU(),\n    nn.Dropout(0.2),\n    nn.Linear(256, 128),\n    nn.ReLU(),\n    nn.Linear(128, 10)\n)",
+          "use_when": "When training neural networks with limited GPU memory",
+          "best_practices": [
+            "Use model.train() and model.eval() appropriately",
+            "Always use torch.no_grad() during inference",
+            "Move data and model to same device",
+            "Use appropriate weight initialization",
+            "Monitor training with TensorBoard or W&B"
+          ]
+        }
+      },
+      "training_loop": {
+        "description": "Standard training pattern",
+        "code_example": "def train_epoch(model, train_loader, optimizer, criterion, device):\n    model.train()\n    total_loss = 0\n    correct = 0\n    total = 0\n    \n    for batch_idx, (data, target) in enumerate(train_loader):\n        data, target = data.to(device), target.to(device)\n        \n        optimizer.zero_grad()\n        output = model(data)\n        loss = criterion(output, target)\n        loss.backward()\n        optimizer.step()\n        \n        total_loss += loss.item()\n        pred = output.argmax(dim=1)\n        correct += pred.eq(target).sum().item()\n        total += target.size(0)\n    \n    return total_loss / len(train_loader), 100. * correct / total\n\ndef evaluate(model, val_loader, criterion, device):\n    model.eval()\n    total_loss = 0\n    correct = 0\n    total = 0\n    \n    with torch.no_grad():\n        for data, target in val_loader:\n            data, target = data.to(device), target.to(device)\n            output = model(data)\n            loss = criterion(output, target)\n            \n            total_loss += loss.item()\n            pred = output.argmax(dim=1)\n            correct += pred.eq(target).sum().item()\n            total += target.size(0)\n    \n    return total_loss / len(val_loader), 100. * correct / total",
+        "use_when": "When training neural networks with limited GPU memory",
+        "best_practices": [
+          "Use model.train() and model.eval() appropriately",
+          "Always use torch.no_grad() during inference",
+          "Move data and model to same device",
+          "Use appropriate weight initialization",
+          "Monitor training with TensorBoard or W&B"
+        ]
+      },
+      "data_loading": {
+        "dataset": {
+          "description": "Custom dataset definition",
+          "code_example": "from torch.utils.data import Dataset, DataLoader\n\nclass CustomDataset(Dataset):\n    def __init__(self, data, labels, transform=None):\n        self.data = data\n        self.labels = labels\n        self.transform = transform\n    \n    def __len__(self):\n        return len(self.data)\n    \n    def __getitem__(self, idx):\n        x = self.data[idx]\n        y = self.labels[idx]\n        \n        if self.transform:\n            x = self.transform(x)\n        \n        return x, y",
+          "use_when": "When training neural networks with limited GPU memory",
+          "best_practices": [
+            "Use model.train() and model.eval() appropriately",
+            "Always use torch.no_grad() during inference",
+            "Move data and model to same device",
+            "Use appropriate weight initialization",
+            "Monitor training with TensorBoard or W&B"
+          ]
+        },
+        "dataloader": {
+          "description": "Efficient batching and loading",
+          "code_example": "train_loader = DataLoader(\n    dataset,\n    batch_size=32,\n    shuffle=True,\n    num_workers=4,\n    pin_memory=True,\n    drop_last=True\n)",
+          "use_when": "When training neural networks with limited GPU memory",
+          "best_practices": [
+            "Use model.train() and model.eval() appropriately",
+            "Always use torch.no_grad() during inference",
+            "Move data and model to same device",
+            "Use appropriate weight initialization",
+            "Monitor training with TensorBoard or W&B"
+          ]
+        }
+      },
+      "description": "Pattern for pytorch patterns - implement with domain-specific logic.",
+      "use_when": "When training neural networks with limited GPU memory",
+      "code_example": "import torch\noptimizer = torch.optim.Adam(model.parameters(), lr=1e-3)\nfor epoch in range(num_epochs):\n    for batch in dataloader:\n        loss = model(batch)\n        loss.backward()\n        optimizer.step()",
+      "best_practices": [
+        "Use model.train() and model.eval() appropriately",
+        "Always use torch.no_grad() during inference",
+        "Move data and model to same device",
+        "Use appropriate weight initialization",
+        "Monitor training with TensorBoard or W&B"
+      ]
+    }
+  }
 }

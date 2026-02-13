@@ -5,7 +5,7 @@ Trust graph and delegation mechanisms for agent relationships.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional, Set
 import logging
 
@@ -35,7 +35,7 @@ class TrustDelegation:
     @property
     def is_valid(self) -> bool:
         """Check if delegation is still valid."""
-        if self.expires and datetime.utcnow() > self.expires:
+        if self.expires and datetime.now(timezone.utc) > self.expires:
             return False
         return self.trust_level > 0
     
@@ -67,7 +67,7 @@ class TrustDelegation:
             trust_level=data["trust_level"],
             scope=data.get("scope", []),
             expires=datetime.fromisoformat(data["expires"]) if data.get("expires") else None,
-            created=datetime.fromisoformat(data["created"]) if "created" in data else datetime.utcnow(),
+            created=datetime.fromisoformat(data["created"]) if "created" in data else datetime.now(timezone.utc),
         )
 
 
@@ -127,7 +127,7 @@ class TrustGraph:
         
         expires = None
         if duration:
-            expires = datetime.utcnow() + duration
+            expires = datetime.now(timezone.utc) + duration
         
         delegation = TrustDelegation(
             delegator=delegator,
@@ -360,7 +360,7 @@ class TrustGraph:
     def cleanup_expired(self) -> int:
         """Remove expired delegations."""
         removed = 0
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         for delegator in list(self._delegations.keys()):
             delegates = self._delegations[delegator]

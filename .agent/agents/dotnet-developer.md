@@ -28,7 +28,7 @@ Build production-ready .NET applications including ASP.NET Core APIs, Entity Fra
 - [[error-handling]]
 
 ## Knowledge
-- [Factory Automation](../../docs/automation/FACTORY_AUTOMATION.md)
-- [dotnet-patterns.json](../../knowledge/dotnet-patterns.json)
-- [blazor-patterns.json](../../knowledge/blazor-patterns.json)
-- [ef-core-advanced.json](../../knowledge/ef-core-advanced.json)
+- [dotnet-patterns.json](../knowledge/dotnet-patterns.json)
+- [blazor-patterns.json](../knowledge/blazor-patterns.json)
+- [dotnet-auth-patterns.json](../knowledge/dotnet-auth-patterns.json)
+- [ef-core-advanced.json](../knowledge/ef-core-advanced.json)

@@ -5,12 +5,25 @@
   "title": "Polars Patterns",
   "description": "Patterns and best practices for Polars - fast DataFrame library with lazy evaluation, expressions, and high-performance operations",
   "version": "1.0.0",
-  "category": "patterns",
+  "category": "integration",
   "axiomAlignment": {
     "A1_verifiability": "Type-safe operations enable compile-time verification",
+    "A2_user_primacy": "Schema validation and type safety protect data integrity",
     "A3_transparency": "Explicit lazy evaluation makes query plans transparent",
-    "A4_adaptability": "Modular expression API supports easy refactoring"
+    "A4_non_harm": "Explicit null handling and validation prevent harmful outputs",
+    "A5_consistency": "Unified expression API and lazy evaluation patterns"
   },
+  "related_skills": [
+    "data-pipeline",
+    "sqlalchemy-patterns",
+    "fastapi-development"
+  ],
+  "related_knowledge": [
+    "pandas-patterns.json",
+    "numpy-patterns.json",
+    "data-patterns.json",
+    "sqlalchemy-advanced.json"
+  ],
   "core_concepts": {
     "lazy_evaluation": {
       "description": "Polars uses lazy evaluation for optimization",
@@ -118,15 +131,40 @@
         "Let Polars optimize automatically"
       ]
     },
-    "lazy_scan_patterns": {
-      "description": "Scan files lazily",
-      "use_when": "Loading large files without loading into memory",
-      "code_example": "import polars as pl\n\n# Scan CSV lazily\n lazy_df = pl.scan_csv(\n     'large_file.csv',\n     has_header=True,\n     separator=',',\n     infer_schema_length=10000\n )\n\n# Scan Parquet lazily\n lazy_df = pl.scan_parquet('large_file.parquet')\n\n# Scan with schema\n schema = {\n     'id': pl.Int64,\n     'name': pl.Utf8,\n     'value': pl.Float64\n }\n lazy_df = pl.scan_csv('file.csv', schema=schema)\n\n# Scan with predicate pushdown\n lazy_df = pl.scan_parquet('data.parquet')\n filtered = lazy_df.filter(pl.col('date') > '2024-01-01')\n\n# Scan multiple files\n files = ['file1.parquet', 'file2.parquet', 'file3.parquet']\n lazy_dfs = [pl.scan_parquet(f) for f in files]\n combined = pl.concat(lazy_dfs)\n\n# Scan with projection pushdown\n lazy_df = pl.scan_csv('large_file.csv')\n projected = lazy_df.select(['col1', 'col2'])  # Only reads these columns\n\n# Collect when ready\n result = projected.collect()",
+    "lazy_scan_patterns_description": {
+      "description": "Scan files lazily   ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# lazy_scan_patterns_description pattern for polars-patterns\n# Implement based on description: Scan files lazily   ...",
       "best_practices": [
-        "Use scan_* for large files",
-        "Specify schema when known",
-        "Let predicate pushdown filter early",
-        "Use projection pushdown to read fewer columns"
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "lazy_scan_patterns_use_when": {
+      "description": "Loading large files without loading into memory",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# lazy_scan_patterns_use_when pattern for polars-patterns\n# Implement based on description: Loading large files without loading into memory...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "lazy_scan_patterns_code_example": {
+      "description": "import polars as pl\n\n# Scan CSV lazily\n lazy_df = pl.scan_csv(\n     'large_file.csv',\n     has_header=True,\n     separator=',',\n     infer_schema_length=10000\n )\n\n# Scan Parquet lazily\n lazy_df = pl.scan_parquet('large_file.parquet')\n\n# Scan with schema\n schema = {\n     'id': pl.Int64,\n     'name': pl.Utf8,\n     'value': pl.Float64\n }\n lazy_df = pl.scan_csv('file.csv', schema=schema)\n\n# Scan with predicate pushdown\n lazy_df = pl.scan_parquet('data.parquet')\n filtered = lazy_df.filter(pl.col('date') > '2024-01-01')\n\n# Scan multiple files\n files = ['file1.parquet', 'file2.parquet', 'file3.parquet']\n lazy_dfs = [pl.scan_parquet(f) for f in files]\n combined = pl.concat(lazy_dfs)\n\n# Scan with projection pushdown\n lazy_df = pl.scan_csv('large_file.csv')\n projected = lazy_df.select(['col1', 'col2'])  # Only reads these columns\n\n# Collect when ready\n result = projected.collect()",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# lazy_scan_patterns_code_example pattern for polars-patterns\n# Implement based on description: import polars as pl\n\n# Scan CSV lazily\n lazy_df = ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "lazy_scan_patterns_best_practices": {
+      "description": "['Use scan_* for large files', 'Specify schema when known', 'Let predicate pushdown filter early', 'Use projection pushdown to read fewer columns']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
       ]
     },
     "explain_query_plan": {
@@ -199,7 +237,7 @@
     "pandas_migration": {
       "description": "Migrate from pandas to Polars",
       "use_when": "Converting pandas code to Polars",
-      "code_example": "# Pandas code\n# df = pd.read_csv('data.csv')\n# result = df[df['age'] > 25][[name-age]].groupby('category').mean()\n\n# Polars equivalent\n df = pl.read_csv('data.csv')\n result = (\n     df\n     .filter(pl.col('age') > 25)\n     .select(['name', 'age'])\n     .group_by('category')\n     .agg([pl.col('age').mean()])\n )\n\n# Pandas: df['new_col'] = df['col1'] + df['col2']\n# Polars:\n df = df.with_columns([\n     (pl.col('col1') + pl.col('col2')).alias('new_col')\n ])\n\n# Pandas: df.groupby('cat').agg({'val': 'sum'})\n# Polars:\n df.group_by('cat').agg([pl.col('val').sum()])\n\n# Pandas: df.apply(lambda x: x * 2)\n# Polars:\n df.with_columns([pl.col('col').map_elements(lambda x: x * 2)])\n\n# Convert Polars to pandas if needed\n pandas_df = df.to_pandas()\n\n# Convert pandas to Polars\n polars_df = pl.from_pandas(pandas_df)",
+      "code_example": "# Pandas code\n# df = pd.read_csv('data.csv')\n# result = df[df['age'] > 25][['name', 'age']].groupby('category').mean()\n\n# Polars equivalent\n df = pl.read_csv('data.csv')\n result = (\n     df\n     .filter(pl.col('age') > 25)\n     .select(['name', 'age'])\n     .group_by('category')\n     .agg([pl.col('age').mean()])\n )\n\n# Pandas: df['new_col'] = df['col1'] + df['col2']\n# Polars:\n df = df.with_columns([\n     (pl.col('col1') + pl.col('col2')).alias('new_col')\n ])\n\n# Pandas: df.groupby('cat').agg({'val': 'sum'})\n# Polars:\n df.group_by('cat').agg([pl.col('val').sum()])\n\n# Pandas: df.apply(lambda x: x * 2)\n# Polars:\n df.with_columns([pl.col('col').map_elements(lambda x: x * 2)])\n\n# Convert Polars to pandas if needed\n pandas_df = df.to_pandas()\n\n# Convert pandas to Polars\n polars_df = pl.from_pandas(pandas_df)",
       "best_practices": [
         "Use expression API instead of apply",
         "Chain operations instead of intermediate variables",

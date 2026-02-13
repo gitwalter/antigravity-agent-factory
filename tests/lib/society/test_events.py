@@ -7,7 +7,7 @@ Tests event sourcing, hash chains, and event storage.
 import json
 import pytest
 import tempfile
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from lib.society.events import (
@@ -170,7 +170,7 @@ class TestHashChain:
         """Test computing event hash."""
         event = AgentEvent(
             event_id="evt-1",
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             sequence=1,  # First event has sequence 1
             previous_hash="",
             agent=Agent(id="a1", type=AgentType.WORKER, public_key="pk_test"),
@@ -189,7 +189,7 @@ class TestHashChain:
         # Create first event (sequence 1 for genesis)
         event1 = AgentEvent(
             event_id="evt-1",
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             sequence=1,
             previous_hash="",  # Genesis has empty previous
             agent=Agent(id="a1", type=AgentType.WORKER, public_key="pk_test"),
@@ -216,7 +216,7 @@ class TestHashChain:
         # Create second event (sequence 2)
         event2 = AgentEvent(
             event_id="evt-2",
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             sequence=2,
             previous_hash=event1.hash,
             agent=Agent(id="a1", type=AgentType.WORKER, public_key="pk_test"),
@@ -355,7 +355,7 @@ class TestVerifyChainIntegrity:
         # Create event with sequence 1 (first event)
         event = AgentEvent(
             event_id="evt-1",
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             sequence=1,  # Genesis event is sequence 1
             previous_hash="",
             agent=Agent(id="a1", type=AgentType.WORKER, public_key="pk_test"),

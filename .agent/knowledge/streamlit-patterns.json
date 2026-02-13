@@ -1,13 +1,31 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "streamlit-patterns",
+  "name": "Streamlit Patterns",
   "title": "Streamlit Patterns",
-  "description": "Production-grade patterns for Streamlit applications",
+  "description": "Production-grade patterns for Streamlit applications including app structure, session state, caching, and ML deployment",
   "version": "1.0.0",
+  "category": "web",
   "axiomAlignment": {
     "A1_verifiability": "Type hints and clear structure enable verification",
+    "A2_user_primacy": "Session state and form patterns preserve user intent",
     "A3_transparency": "Explicit state management makes data flow clear",
-    "A4_adaptability": "Modular structure supports easy refactoring"
+    "A4_non_harm": "Input validation and secrets management prevent harmful outcomes",
+    "A5_consistency": "Unified patterns across pages, components, and deployment"
   },
+  "related_skills": [
+    "fastapi-development",
+    "caching-optimization",
+    "state-management",
+    "streaming-realtime",
+    "model-serving"
+  ],
+  "related_knowledge": [
+    "fastapi-patterns.json",
+    "react-patterns.json",
+    "docker-patterns.json",
+    "pandas-patterns.json"
+  ],
   "core_concepts": {
     "app_structure": {
       "description": "Organize Streamlit app with clear separation of concerns",
@@ -149,64 +167,82 @@
     }
   },
   "best_practices": [
-    "Organize code into modules",
-    "Separate UI, logic, and data",
-    "Use components for reusable UI",
-    "Keep main app.py clean",
-    "Use caching for expensive operations",
-    "Load data/models lazily",
-    "Use st.empty() for dynamic updates",
-    "Optimize data processing",
-    "Use appropriate data types",
+    "Organize code into modules - separate utils/, components/, pages/",
+    "Separate UI, logic, and data - keep concerns separated",
+    "Use components for reusable UI elements",
+    "Keep main app.py clean - delegate to functions and modules",
+    "Use pages/ directory for multi-page apps",
+    "Create reusable utility functions for data loading",
+    "Use config.py for configuration management",
+    "Document complex logic and components",
+    "Use caching for expensive operations - @st.cache_data and @st.cache_resource",
+    "Load data/models lazily - only when needed",
+    "Use st.empty() for dynamic updates without full rerun",
+    "Optimize data processing - use pandas efficiently",
+    "Use appropriate data types - avoid unnecessary conversions",
+    "Set TTL on cached functions when data changes",
+    "Use show_spinner parameter for better UX during caching",
+    "Clear cache when data changes with st.cache_data.clear()",
     "Use st.spinner() for loading states",
-    "Provide clear error messages",
-    "Use st.success(), st.error(), st.warning()",
-    "Implement form validation",
-    "Use columns for layout",
-    "Initialize session state early",
-    "Use descriptive keys",
-    "Clear state when appropriate",
-    "Avoid storing large objects",
-    "Use for user preferences",
-    "Use st.secrets for sensitive data",
-    "Validate all inputs",
-    "Sanitize user-generated content",
-    "Use environment variables",
-    "Implement authentication when needed"
+    "Provide clear error messages with st.error()",
+    "Use st.success(), st.error(), st.warning() for user feedback",
+    "Implement form validation before submission",
+    "Use columns for layout - st.columns() for responsive design",
+    "Use st.progress() for long-running operations",
+    "Implement proper loading states for async operations",
+    "Use st.info() and st.warning() appropriately for user guidance",
+    "Initialize session state early - at top of script",
+    "Use descriptive keys - avoid generic names",
+    "Clear state when appropriate - use st.session_state.clear()",
+    "Avoid storing large objects in session state",
+    "Use for user preferences and form data",
+    "Check if key exists before accessing: if 'key' not in st.session_state",
+    "Use session state for multi-step forms and wizards",
+    "Reset state on user actions like 'Clear' or 'Reset' buttons",
+    "Use st.secrets for sensitive data - never hardcode credentials",
+    "Validate all inputs - check types and ranges",
+    "Sanitize user-generated content before processing",
+    "Use environment variables for configuration",
+    "Implement authentication when needed - use session state for auth",
+    "Never expose API keys or secrets in code",
+    "Validate file uploads - check file types and sizes",
+    "Use HTTPS in production deployments"
   ],
   "anti_patterns": [
     {
-      "name": "everything_in_one_file",
-      "description": "Putting all code in a single app.py file",
-      "problem": "Hard to maintain, poor organization",
-      "solution": "Organize into modules, components, and utils"
+      "name": "Monolithic Single File",
+      "problem": "Hard to maintain, poor organization, difficult to test",
+      "solution": "Organize into modules (utils/, components/, pages/), separate concerns"
     },
     {
-      "name": "not_using_caching",
-      "description": "Not caching expensive operations",
-      "problem": "Poor performance, slow reruns",
-      "solution": "Use @st.cache_data and @st.cache_resource"
+      "name": "Not Using Caching",
+      "problem": "Poor performance, slow reruns, unnecessary I/O operations",
+      "solution": "Use @st.cache_data for data and @st.cache_resource for models/connections"
     },
     {
-      "name": "ignoring_session_state",
-      "description": "Not using session state for persistence",
-      "problem": "Data lost on rerun, poor UX",
-      "solution": "Use st.session_state for persistent data"
+      "name": "Ignoring Session State",
+      "problem": "Data lost on rerun, poor UX, forms reset unexpectedly",
+      "solution": "Use st.session_state for persistent data, initialize early in script"
     },
     {
-      "name": "reloading_data_on_rerun",
-      "description": "Reloading data on every rerun",
-      "problem": "Unnecessary I/O, slow performance",
-      "solution": "Cache data and check session state"
+      "name": "Reloading Data on Every Rerun",
+      "problem": "Unnecessary I/O, slow performance, wasted resources",
+      "solution": "Cache data with @st.cache_data and check session state before reloading"
     },
     {
-      "name": "not_handling_errors",
-      "description": "Not handling errors gracefully",
-      "problem": "Poor user experience, app crashes",
-      "solution": "Use try-except blocks, show error messages"
+      "name": "Not Handling Errors",
+      "problem": "Poor user experience, app crashes, unclear error messages",
+      "solution": "Use try-except blocks, show error messages with st.error(), log errors"
+    },
+    {
+      "name": "Hardcoded File Paths",
+      "problem": "App breaks on different machines, not portable",
+      "solution": "Use relative paths, pathlib.Path, or configuration files"
+    },
+    {
+      "name": "Missing Input Validation",
+      "problem": "Security vulnerabilities, runtime errors, data corruption",
+      "solution": "Validate all inputs - check types, ranges, formats before processing"
     }
-  ],
-  "id": "streamlit-patterns",
-  "name": "Streamlit Patterns",
-  "category": "patterns"
+  ]
 }

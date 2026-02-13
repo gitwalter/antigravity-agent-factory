@@ -1,237 +1,277 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "subagent-orchestration-patterns",
   "name": "Subagent Orchestration Patterns",
+  "title": "Subagent Orchestration Patterns",
   "description": "Patterns for spawning, managing, and orchestrating subagents including communication, resource management, and error propagation",
   "version": "1.0.0",
-  "category": "agent-development",
+  "category": "agent-patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Task correlation IDs and lifecycle tracking enable verification of subagent behavior",
+    "A2_user_primacy": "Parent aggregates results for user benefit; user-initiated tasks drive delegation",
+    "A3_transparency": "Bidirectional communication and status queries make subagent state traceable",
+    "A4_non_harm": "Resource limits and graceful shutdown prevent resource exhaustion and cascading failures",
+    "A5_consistency": "Unified spawning, cleanup, and error propagation patterns across hierarchies"
+  },
+  "related_skills": [
+    "subagent-orchestration",
+    "langgraph-agent-building",
+    "crewai-agents",
+    "state-management",
+    "tool-usage"
+  ],
+  "related_knowledge": [
+    "multi-agent-coordination.json",
+    "crewai-patterns.json",
+    "langgraph-workflows.json",
+    "agent-handoffs.json"
+  ],
   "patterns": {
-    "spawning_strategies": {
-      "dynamic_spawning": {
-        "description": "Create subagents on demand based on task requirements",
-        "pattern": "Analyze task -> Determine needed roles -> Spawn subagents -> Delegate",
-        "example": "async def spawn_subagent(agent_id: str, role: str) -> Subagent:\n    subagent = Subagent(agent_id, role, llm)\n    self.subagents[agent_id] = subagent\n    return subagent",
-        "use_when": [
-          "Variable workloads",
-          "Task-specific agents",
-          "Dynamic decomposition"
-        ],
-        "best_practices": [
-          "Track spawned agents",
-          "Set limits on concurrent agents",
-          "Clean up when done"
-        ]
-      },
-      "pool_pattern": {
-        "description": "Maintain a pool of reusable subagents",
-        "pattern": "Initialize pool -> Acquire agent -> Use -> Release back to pool",
-        "use_when": [
-          "High-throughput tasks",
-          "Consistent workloads",
-          "Resource optimization"
-        ],
-        "benefits": [
-          "Reduced overhead",
-          "Better resource utilization",
-          "Faster task execution"
-        ]
-      },
-      "hierarchical_spawning": {
-        "description": "Parent agent spawns child agents which may spawn grandchildren",
-        "pattern": "Parent -> Children -> Grandchildren (multi-level hierarchy)",
-        "use_when": [
-          "Complex decomposition",
-          "Specialized sub-tasks",
-          "Organizational structures"
-        ]
-      },
-      "on_demand_specialists": {
-        "description": "Spawn specialist agents based on task requirements",
-        "pattern": "Identify needed expertise -> Spawn specialist -> Delegate -> Cleanup",
-        "use_when": [
-          "Specialized knowledge needed",
-          "Domain-specific tasks"
-        ]
-      }
+    "spawning_strategies_dynamic_spawning": {
+      "description": "Create subagents on demand based on task requirements",
+      "pattern": "Analyze task -> Determine needed roles -> Spawn subagents -> Delegate",
+      "example": "async def spawn_subagent(agent_id: str, role: str) -> Subagent:\n    subagent = Subagent(agent_id, role, llm)\n    self.subagents[agent_id] = subagent\n    return subagent",
+      "use_when": "Variable workloads; Task-specific agents; Dynamic decomposition",
+      "best_practices": [
+        "Track spawned agents",
+        "Set limits on concurrent agents",
+        "Clean up when done"
+      ],
+      "code_example": "async def spawn_subagent(agent_id: str, role: str) -> Subagent:\n    subagent = Subagent(agent_id, role, llm)\n    self.subagents[agent_id] = subagent\n    return subagent"
     },
-    "communication_patterns": {
-      "task_delegation": {
-        "description": "Parent assigns tasks to child agents",
-        "pattern": "Parent creates task -> Sends to subagent -> Subagent executes -> Returns result",
-        "message_types": [
-          "TASK",
-          "RESULT",
-          "QUERY",
-          "STATUS"
-        ],
-        "best_practices": [
-          "Include task context",
-          "Set clear expectations",
-          "Track task IDs"
-        ]
-      },
-      "bidirectional_communication": {
-        "description": "Two-way communication between parent and child",
-        "pattern": "Parent <-> Child message passing with message queues",
-        "use_when": [
-          "Interactive workflows",
-          "Status updates",
-          "Clarification needed"
-        ],
-        "implementation": "Message queues with sender/receiver IDs and message types"
-      },
-      "result_aggregation": {
-        "description": "Combine results from multiple subagents",
-        "patterns": {
-          "parallel_aggregation": "Aggregate independent results from concurrent subagents",
-          "sequential_aggregation": "Synthesize results from sequential pipeline",
-          "voting_consensus": "Determine consensus from multiple agent opinions"
-        },
-        "use_when": [
-          "Multi-agent outputs",
-          "Synthesis needed",
-          "Consensus building"
-        ]
-      },
-      "status_queries": {
-        "description": "Parent checks child agent status",
-        "pattern": "Parent sends QUERY -> Child responds with STATUS",
-        "use_when": [
-          "Monitoring",
-          "Progress tracking",
-          "Health checks"
-        ]
-      }
+    "spawning_strategies_pool_pattern": {
+      "description": "Maintain a pool of reusable subagents",
+      "pattern": "Initialize pool -> Acquire agent -> Use -> Release back to pool",
+      "use_when": "High-throughput tasks; Consistent workloads; Resource optimization",
+      "benefits": [
+        "Reduced overhead",
+        "Better resource utilization",
+        "Faster task execution"
+      ],
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
-    "resource_management": {
-      "lifecycle_tracking": {
-        "description": "Track subagent lifecycle and resource usage",
-        "tracked_metrics": [
-          "created_at",
-          "status",
-          "task_count",
-          "memory_usage",
-          "terminated_at"
-        ],
-        "best_practices": [
-          "Monitor resource usage",
-          "Set limits on concurrent agents",
-          "Track agent health"
-        ]
-      },
-      "automatic_cleanup": {
-        "description": "Automatically clean up subagents when done",
-        "pattern": "Use context managers for automatic cleanup",
-        "example": "async with resource_manager.managed_subagent(id, role, llm) as agent:\n    result = await agent.execute_task(task)\n    # Auto cleanup on exit",
-        "benefits": [
-          "Prevents memory leaks",
-          "Ensures proper cleanup",
-          "Simplifies resource management"
-        ]
-      },
-      "resource_limits": {
-        "description": "Set limits on concurrent subagents and resource usage",
-        "limits": [
-          "Max concurrent agents",
-          "Memory per agent",
-          "Task queue size",
-          "Execution timeout"
-        ],
-        "best_practices": [
-          "Set reasonable limits",
-          "Monitor usage",
-          "Handle limit exceeded gracefully"
-        ]
-      },
-      "graceful_shutdown": {
-        "description": "Properly shut down all subagents",
-        "pattern": "Signal shutdown -> Wait for completion -> Cleanup resources",
-        "best_practices": [
-          "Allow in-flight tasks to complete",
-          "Save necessary state",
-          "Release all resources"
-        ]
-      }
+    "spawning_strategies_hierarchical_spawning": {
+      "description": "Parent agent spawns child agents which may spawn grandchildren",
+      "pattern": "Parent -> Children -> Grandchildren (multi-level hierarchy)",
+      "use_when": "Complex decomposition; Specialized sub-tasks; Organizational structures",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
-    "error_propagation": {
-      "error_handling": {
-        "description": "Handle errors from subagent execution",
-        "pattern": "Wrap subagent calls in try/except -> Log error -> Report to parent",
-        "best_practices": [
-          "Catch specific exceptions",
-          "Provide error context",
-          "Don't silently fail"
-        ]
-      },
-      "error_propagation": {
-        "description": "Propagate errors from child to parent",
-        "pattern": "Child error -> Wrap in error message -> Send to parent -> Parent handles",
-        "use_when": [
-          "Critical failures",
-          "Error recovery needed",
-          "Logging requirements"
-        ]
-      },
-      "retry_strategies": {
-        "description": "Retry failed subagent tasks",
-        "strategies": [
-          "Exponential backoff",
-          "Max retry attempts",
-          "Conditional retry based on error type"
-        ],
-        "use_when": [
-          "Transient failures",
-          "Network issues",
-          "Temporary errors"
-        ]
-      },
-      "timeout_handling": {
-        "description": "Handle subagent timeouts",
-        "pattern": "Set timeout -> Monitor execution -> Cancel on timeout -> Report",
-        "best_practices": [
-          "Set reasonable timeouts",
-          "Cancel long-running tasks",
-          "Report timeout to parent"
-        ]
-      }
+    "spawning_strategies_on_demand_specialists": {
+      "description": "Spawn specialist agents based on task requirements",
+      "pattern": "Identify needed expertise -> Spawn specialist -> Delegate -> Cleanup",
+      "use_when": "Specialized knowledge needed; Domain-specific tasks",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
-    "orchestration_patterns": {
-      "task_decomposition": {
-        "description": "Break complex tasks into subtasks for subagents",
-        "pattern": "Analyze task -> Identify subtasks -> Assign to subagents -> Execute",
-        "use_when": [
-          "Complex tasks",
-          "Multi-step workflows",
-          "Parallelizable work"
-        ]
+    "communication_patterns_task_delegation": {
+      "description": "Parent assigns tasks to child agents",
+      "pattern": "Parent creates task -> Sends to subagent -> Subagent executes -> Returns result",
+      "message_types": [
+        "TASK",
+        "RESULT",
+        "QUERY",
+        "STATUS"
+      ],
+      "best_practices": [
+        "Include task context",
+        "Set clear expectations",
+        "Track task IDs"
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)"
+    },
+    "communication_patterns_bidirectional_communication": {
+      "description": "Two-way communication between parent and child",
+      "pattern": "Parent <-> Child message passing with message queues",
+      "use_when": "Interactive workflows; Status updates; Clarification needed",
+      "implementation": "Message queues with sender/receiver IDs and message types",
+      "code_example": "Message queues with sender/receiver IDs and message types",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    },
+    "communication_patterns_result_aggregation": {
+      "description": "Combine results from multiple subagents",
+      "patterns": {
+        "parallel_aggregation": "Aggregate independent results from concurrent subagents",
+        "sequential_aggregation": "Synthesize results from sequential pipeline",
+        "voting_consensus": "Determine consensus from multiple agent opinions"
       },
-      "dependency_management": {
-        "description": "Handle dependencies between subtasks",
-        "pattern": "Build dependency graph -> Execute in order -> Wait for dependencies",
-        "use_when": [
-          "Sequential dependencies",
-          "Data pipelines",
-          "Ordered execution"
-        ]
-      },
-      "concurrent_execution": {
-        "description": "Execute multiple subagents concurrently",
-        "pattern": "Use asyncio.gather() for parallel execution",
-        "example": "results = await asyncio.gather(*[agent.execute_task(t) for agent, t in tasks])",
-        "use_when": [
-          "Independent tasks",
-          "Parallel processing",
-          "Performance optimization"
-        ]
-      },
-      "sequential_pipeline": {
-        "description": "Chain subagents in sequence",
-        "pattern": "Agent1 -> Agent2 -> Agent3 (passing results)",
-        "use_when": [
-          "Dependent tasks",
-          "Processing pipelines",
-          "Sequential workflows"
-        ]
-      }
+      "use_when": "Multi-agent outputs; Synthesis needed; Consensus building",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    },
+    "communication_patterns_status_queries": {
+      "description": "Parent checks child agent status",
+      "pattern": "Parent sends QUERY -> Child responds with STATUS",
+      "use_when": "Monitoring; Progress tracking; Health checks",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    },
+    "resource_management_lifecycle_tracking": {
+      "description": "Track subagent lifecycle and resource usage",
+      "tracked_metrics": [
+        "created_at",
+        "status",
+        "task_count",
+        "memory_usage",
+        "terminated_at"
+      ],
+      "best_practices": [
+        "Monitor resource usage",
+        "Set limits on concurrent agents",
+        "Track agent health"
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)"
+    },
+    "resource_management_automatic_cleanup": {
+      "description": "Automatically clean up subagents when done",
+      "pattern": "Use context managers for automatic cleanup",
+      "example": "async with resource_manager.managed_subagent(id, role, llm) as agent:\n    result = await agent.execute_task(task)\n    # Auto cleanup on exit",
+      "benefits": [
+        "Prevents memory leaks",
+        "Ensures proper cleanup",
+        "Simplifies resource management"
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "async with resource_manager.managed_subagent(id, role, llm) as agent:\n    result = await agent.execute_task(task)\n    # Auto cleanup on exit",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    },
+    "resource_management_resource_limits": {
+      "description": "Set limits on concurrent subagents and resource usage",
+      "limits": [
+        "Max concurrent agents",
+        "Memory per agent",
+        "Task queue size",
+        "Execution timeout"
+      ],
+      "best_practices": [
+        "Set reasonable limits",
+        "Monitor usage",
+        "Handle limit exceeded gracefully"
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)"
+    },
+    "resource_management_graceful_shutdown": {
+      "description": "Properly shut down all subagents",
+      "pattern": "Signal shutdown -> Wait for completion -> Cleanup resources",
+      "best_practices": [
+        "Allow in-flight tasks to complete",
+        "Save necessary state",
+        "Release all resources"
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)"
+    },
+    "error_propagation_error_handling": {
+      "description": "Handle errors from subagent execution",
+      "pattern": "Wrap subagent calls in try/except -> Log error -> Report to parent",
+      "best_practices": [
+        "Catch specific exceptions",
+        "Provide error context",
+        "Don't silently fail"
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)"
+    },
+    "error_propagation_error_propagation": {
+      "description": "Propagate errors from child to parent",
+      "pattern": "Child error -> Wrap in error message -> Send to parent -> Parent handles",
+      "use_when": "Critical failures; Error recovery needed; Logging requirements",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    },
+    "error_propagation_retry_strategies": {
+      "description": "Retry failed subagent tasks",
+      "strategies": [
+        "Exponential backoff",
+        "Max retry attempts",
+        "Conditional retry based on error type"
+      ],
+      "use_when": "Transient failures; Network issues; Temporary errors",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    },
+    "error_propagation_timeout_handling": {
+      "description": "Handle subagent timeouts",
+      "pattern": "Set timeout -> Monitor execution -> Cancel on timeout -> Report",
+      "best_practices": [
+        "Set reasonable timeouts",
+        "Cancel long-running tasks",
+        "Report timeout to parent"
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)"
+    },
+    "orchestration_patterns_task_decomposition": {
+      "description": "Break complex tasks into subtasks for subagents",
+      "pattern": "Analyze task -> Identify subtasks -> Assign to subagents -> Execute",
+      "use_when": "Complex tasks; Multi-step workflows; Parallelizable work",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    },
+    "orchestration_patterns_dependency_management": {
+      "description": "Handle dependencies between subtasks",
+      "pattern": "Build dependency graph -> Execute in order -> Wait for dependencies",
+      "use_when": "Sequential dependencies; Data pipelines; Ordered execution",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    },
+    "orchestration_patterns_concurrent_execution": {
+      "description": "Execute multiple subagents concurrently",
+      "pattern": "Use asyncio.gather() for parallel execution",
+      "example": "results = await asyncio.gather(*[agent.execute_task(t) for agent, t in tasks])",
+      "use_when": "Independent tasks; Parallel processing; Performance optimization",
+      "code_example": "results = await asyncio.gather(*[agent.execute_task(t) for agent, t in tasks])",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    },
+    "orchestration_patterns_sequential_pipeline": {
+      "description": "Chain subagents in sequence",
+      "pattern": "Agent1 -> Agent2 -> Agent3 (passing results)",
+      "use_when": "Dependent tasks; Processing pipelines; Sequential workflows",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     }
   },
   "best_practices": [
@@ -297,12 +337,5 @@
       "problem": "Can't track which result belongs to which task",
       "fix": "Use task IDs and correlation"
     }
-  ],
-  "related_skills": [
-    "subagent-orchestration",
-    "langgraph-agent-building",
-    "crewai-agents",
-    "state-management",
-    "tool-usage"
   ]
 }

@@ -1,8 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "security-checklist",
+  "name": "Security Checklist",
   "title": "Security Checklist",
   "description": "Security best practices, OWASP guidelines, and authentication patterns",
   "version": "1.0.0",
+  "category": "security",
   "categories": {
     "authentication": {
       "description": "Verifying user identity",
@@ -346,10 +349,156 @@
       ]
     }
   },
-  "id": "security-checklist",
-  "name": "Security Checklist",
-  "category": "patterns",
-  "patterns": {},
-  "best_practices": [],
-  "anti_patterns": []
+  "patterns": {
+    "general_description": {
+      "description": "Security best practices, OWASP guidelines, and authentication patterns",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# general_description pattern for security-checklist\n# Implement based on description: Security best practices, OWASP guidelines, and aut...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "general_usage": {
+      "description": "See detailed sections below",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# general_usage pattern for security-checklist\n# Implement based on description: See detailed sections below...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    }
+  },
+  "best_practices": [
+    "Verify access control on every request - check user permissions before allowing access to resources",
+    "Use parameterized queries or ORMs for all database operations to prevent SQL injection attacks",
+    "Hash passwords with bcrypt or argon2 with appropriate cost factors (bcrypt cost >= 12, argon2 iterations >= 3)",
+    "Implement multi-factor authentication (MFA) for sensitive operations and admin accounts",
+    "Set secure HTTP headers - Content-Security-Policy, X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security",
+    "Use environment variables or secret managers for all credentials - never commit secrets to version control",
+    "Validate and sanitize all user inputs on the server side - client-side validation is not sufficient",
+    "Implement rate limiting per user and endpoint to prevent brute force and DoS attacks",
+    "Log authentication attempts (both success and failure) with sufficient context for security monitoring",
+    "Keep dependencies updated and scan for known vulnerabilities using tools like pip-audit, npm audit, or Snyk",
+    "Use HTTPS for all connections - enforce TLS 1.2+ and redirect HTTP to HTTPS",
+    "Implement proper session management - use secure, httpOnly, sameSite cookies and regenerate session IDs after login",
+    "Use JWT tokens with short expiration times (15-60 minutes) and implement refresh token rotation",
+    "Block requests to internal IP ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) to prevent SSRF attacks"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Trusting User Input Without Validation",
+      "problem": "Accepting user input without validation leads to injection attacks (SQL, XSS, command injection), data corruption, and security vulnerabilities",
+      "solution": "Always validate and sanitize user inputs on the server side using allowlists, type checking, length limits, and format validation. Use parameterized queries for database operations"
+    },
+    {
+      "name": "Storing Passwords in Plain Text",
+      "problem": "Storing passwords in plain text exposes them if the database is compromised, violating user privacy and security best practices",
+      "solution": "Always hash passwords using bcrypt, argon2, or scrypt with appropriate cost factors. Never store passwords in plain text or use weak hashing algorithms like MD5 or SHA1"
+    },
+    {
+      "name": "Hardcoding Secrets and Credentials",
+      "problem": "Hardcoding API keys, passwords, or tokens in source code exposes them in version control, making them accessible to anyone with repository access",
+      "solution": "Use environment variables, secret management systems (AWS Secrets Manager, HashiCorp Vault), or configuration files excluded from version control. Provide .env.example with placeholder values"
+    },
+    {
+      "name": "Missing Access Control Checks",
+      "problem": "Not verifying user permissions on every request allows unauthorized access to resources, leading to data breaches and privilege escalation",
+      "solution": "Implement access control checks on every request. Verify user permissions, resource ownership, and role-based access before allowing operations. Deny by default"
+    },
+    {
+      "name": "No Rate Limiting",
+      "problem": "Absence of rate limiting allows brute force attacks, DoS attacks, and resource exhaustion, making the system vulnerable to abuse",
+      "solution": "Implement rate limiting per user and endpoint using sliding window or token bucket algorithms. Set appropriate limits based on normal usage patterns and monitor for violations"
+    },
+    {
+      "name": "Insufficient Security Logging",
+      "problem": "Lack of security event logging makes it impossible to detect attacks, investigate incidents, or comply with audit requirements",
+      "solution": "Log all security-relevant events including authentication attempts, access control failures, input validation errors, and suspicious activities. Include sufficient context (timestamp, user ID, IP address, action, result)"
+    },
+    {
+      "name": "Using Weak Authentication Mechanisms",
+      "problem": "Weak passwords, no MFA, and long-lived sessions increase the risk of account compromise and unauthorized access",
+      "solution": "Enforce strong password policies (min 12 chars, mixed case, numbers, special chars), implement MFA for sensitive accounts, use short-lived sessions with secure cookies, and limit failed login attempts"
+    }
+  ],
+  "axiomAlignment": {
+    "A1_verifiability": "All patterns include verifiable examples and test approaches",
+    "A2_user_primacy": "Patterns prioritize user needs and practical outcomes",
+    "A3_transparency": "Pattern selection rationale is clearly documented",
+    "A4_non_harm": "Patterns include safety considerations and error handling",
+    "A5_consistency": "Patterns follow established conventions and standards"
+  },
+  "related_skills": [
+    "none"
+  ],
+  "related_knowledge": [
+    "best-practices.json"
+  ],
+  "sast_dast": {
+    "description": "Static and dynamic analysis tools for security testing",
+    "use_when": "Identifying vulnerabilities in code and running applications",
+    "code_example": "# Static analysis - Bandit (Python)\npip install bandit\nbandit -r src/ -f json -o report.json\n\n# Semgrep\nsemgrep scan --config auto --output results.json\n\n# Dynamic - OWASP ZAP\nzap-cli quick-scan --self-contained http://localhost:8000\nzap-cli active-scan http://localhost:8000\n\n# Burp Suite - proxy at 127.0.0.1:8080 for manual testing",
+    "best_practices": [
+      "Run SAST in CI/CD pipeline",
+      "Use DAST against staging environments",
+      "Fix high/critical findings before release"
+    ],
+    "tools": {
+      "sast": [
+        "Bandit",
+        "SonarQube",
+        "Semgrep"
+      ],
+      "dast": [
+        "OWASP ZAP",
+        "Burp Suite",
+        "Nikto"
+      ]
+    }
+  },
+  "dependency_scanning": {
+    "description": "Scan dependencies for known vulnerabilities",
+    "use_when": "All projects - identify vulnerable packages",
+    "code_example": "# Python - pip-audit\npip install pip-audit\npip-audit\n\n# Python - safety\npip install safety\nsafety check --json\n\n# Dependabot (.github/dependabot.yml)\nversion: 2\nupdates:\n  - package-ecosystem: \"pip\"\n    directory: \"/\"\n    schedule: { interval: \"weekly\" }\n\n# Snyk\nsnyk test\nsnyk auth\nsnyk monitor",
+    "best_practices": [
+      "Run scanning in CI",
+      "Configure automated PR creation",
+      "Prioritize direct dependency fixes"
+    ],
+    "tools": {
+      "python": [
+        "pip-audit",
+        "safety",
+        "snyk"
+      ],
+      "javascript": [
+        "npm audit",
+        "snyk",
+        "dependabot"
+      ]
+    }
+  },
+  "secure_coding_patterns": {
+    "description": "Input validation, parameterized queries, secrets management, CSRF protection",
+    "use_when": "Implementing application logic",
+    "code_example": "# Input validation (Pydantic)\nfrom pydantic import BaseModel, validator\nclass UserInput(BaseModel):\n    email: str\n    @validator('email')\n    def validate_email(cls, v):\n        if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}$', v):\n            raise ValueError('Invalid email')\n        return v.lower()\n\n# Parameterized query (SAFE)\ndb.execute(\"SELECT * FROM users WHERE id = %s\", (user_id,))\n\n# Secrets: api_key = os.environ.get('API_KEY')\n\n# CSRF (Flask): from flask_wtf.csrf import CSRFProtect\ncsrf = CSRFProtect(app)",
+    "best_practices": [
+      "Validate all user input",
+      "Never concatenate SQL",
+      "Use environment variables for secrets",
+      "Enable CSRF for state-changing requests"
+    ]
+  },
+  "container_security": {
+    "description": "Image scanning, runtime security, least privilege containers",
+    "use_when": "Deploying containerized applications",
+    "code_example": "# Trivy - image scanning\ntrivy image python:3.11-slim\ntrivy image --severity HIGH,CRITICAL myapp:latest\n\n# Grype\ngrype myapp:latest -o json\n\n# Dockerfile - least privilege\nFROM python:3.11-slim\nRUN adduser --disabled-password appuser\nUSER appuser\nCOPY --chown=appuser:appuser app/ /app\nWORKDIR /app\n\n# Runtime - read-only, drop capabilities\ndocker run --read-only --cap-drop=ALL myapp:latest\n\n# docker-compose: security_opt: [no-new-privileges:true], read_only: true, user: \"1000:1000\"",
+    "best_practices": [
+      "Scan images before deployment",
+      "Run as non-root user",
+      "Use minimal base images",
+      "Drop unnecessary capabilities"
+    ]
+  }
 }

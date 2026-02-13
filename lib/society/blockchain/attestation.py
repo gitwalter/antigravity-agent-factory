@@ -5,7 +5,7 @@ Cryptographic attestations for agent actions and contracts.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional
 import hashlib
@@ -57,7 +57,7 @@ class Attestation:
     @property
     def is_valid(self) -> bool:
         """Check if attestation is still valid."""
-        if self.expires and datetime.utcnow() > self.expires:
+        if self.expires and datetime.now(timezone.utc) > self.expires:
             return False
         return True
     
@@ -106,7 +106,7 @@ class Attestation:
             claim=data.get("claim", {}),
             attester=data["attester"],
             evidence=data.get("evidence", []),
-            timestamp=datetime.fromisoformat(data["timestamp"]) if "timestamp" in data else datetime.utcnow(),
+            timestamp=datetime.fromisoformat(data["timestamp"]) if "timestamp" in data else datetime.now(timezone.utc),
             expires=datetime.fromisoformat(data["expires"]) if data.get("expires") else None,
             signature=data.get("signature"),
             anchored=data.get("anchored", False),
@@ -232,7 +232,7 @@ class AttestationRegistry:
         
         expires = None
         if expires_in:
-            expires = datetime.utcnow() + expires_in
+            expires = datetime.now(timezone.utc) + expires_in
         
         attestation = Attestation(
             id=attestation_id,
@@ -419,7 +419,7 @@ class AttestationRegistry:
         
         deadline_dt = None
         if deadline:
-            deadline_dt = datetime.utcnow() + deadline
+            deadline_dt = datetime.now(timezone.utc) + deadline
         
         request = AttestationRequest(
             request_id=request_id,
@@ -465,7 +465,7 @@ class AttestationRegistry:
             return None
         
         # Check deadline
-        if request.deadline and datetime.utcnow() > request.deadline:
+        if request.deadline and datetime.now(timezone.utc) > request.deadline:
             request.status = "expired"
             return None
         

@@ -9,7 +9,7 @@ SDG - Love - Truth - Beauty
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -278,7 +278,7 @@ class AgentBundle:
             agent_id=data["agent_id"],
             agent_name=data["agent_name"],
             version=data.get("version", "1.0.0"),
-            created_at=datetime.fromisoformat(data["created_at"]) if isinstance(data.get("created_at"), str) else datetime.utcnow(),
+            created_at=datetime.fromisoformat(data["created_at"]) if isinstance(data.get("created_at"), str) else datetime.now(timezone.utc),
             components=components,
             reputation_snapshot=data.get("reputation_snapshot"),
             compatibility=data.get("compatibility", {}),

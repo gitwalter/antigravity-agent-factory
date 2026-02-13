@@ -1,351 +1,218 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "agent-memory-patterns",
+  "name": "Agent Memory Patterns",
   "title": "Agent Memory Patterns",
-  "description": "Patterns for implementing short-term and long-term memory in AI agents using Mem0, Zep, LangChain, and other frameworks",
+  "description": "Patterns for implementing memory systems in agents including conversation, long-term semantic, and user profile storage",
   "version": "1.0.0",
+  "category": "agent-patterns",
   "axiomAlignment": {
-    "A1_verifiability": "Memory patterns enable verification of agent behavior over time",
-    "A3_transparency": "Memory storage and retrieval mechanisms are explicit and traceable"
+    "A1_verifiability": "Memory compression and TTL enable verifiable session lifecycle and retrieval",
+    "A2_user_primacy": "Memory isolation and forgetting mechanisms preserve user privacy and control",
+    "A3_transparency": "Explicit memory types and storage backends make data flow traceable",
+    "A4_non_harm": "Privacy deletion and TTL prevent harmful data retention",
+    "A5_consistency": "Unified memory patterns across conversation, long-term, and hybrid storage"
   },
+  "related_skills": [
+    "memory-management",
+    "state-management",
+    "rag-patterns"
+  ],
+  "related_knowledge": [
+    "state-patterns.json",
+    "rag-patterns.json",
+    "langchain-patterns.json"
+  ],
   "memory_types": {
-    "short_term": {
-      "description": "Temporary memory for current conversation context",
-      "characteristics": [
-        "Limited size",
-        "Fast access",
-        "Session-scoped",
-        "Recent context"
-      ],
-      "use_when": "Need immediate context for current conversation",
-      "examples": [
-        "Conversation buffer",
-        "Sliding window",
-        "Recent messages"
-      ]
+    "conversation": {
+      "description": "Short-term message history",
+      "implementations": {
+        "in_memory": {
+          "class": "InMemoryChatMessageHistory",
+          "use_case": "Development, single session",
+          "persistence": false
+        },
+        "redis": {
+          "backend": "Redis",
+          "use_case": "Production, distributed",
+          "persistence": true,
+          "ttl_support": true
+        },
+        "postgres": {
+          "backend": "PostgreSQL",
+          "use_case": "Production, queryable history",
+          "persistence": true
+        }
+      }
     },
     "long_term": {
-      "description": "Persistent memory across conversations and sessions",
-      "characteristics": [
-        "Unlimited size",
-        "Slower access",
-        "Persistent storage",
-        "Semantic retrieval"
+      "description": "Semantic knowledge storage",
+      "implementations": {
+        "vector_store": {
+          "backends": [
+            "ChromaDB",
+            "Pinecone",
+            "Weaviate",
+            "Qdrant"
+          ],
+          "use_case": "Semantic retrieval of past interactions"
+        },
+        "knowledge_graph": {
+          "backends": [
+            "Neo4j",
+            "NetworkX"
+          ],
+          "use_case": "Entity relationships and facts"
+        }
+      }
+    },
+    "user_profile": {
+      "description": "Structured user preferences and facts",
+      "storage": [
+        "Redis hash",
+        "PostgreSQL JSON",
+        "Document DB"
       ],
-      "use_when": "Need to remember facts, preferences, or past interactions",
-      "examples": [
-        "Vector store memory",
-        "Entity memory",
-        "Episodic memory"
+      "schema": [
+        "name",
+        "preferences",
+        "facts",
+        "history_summary"
       ]
     },
-    "episodic": {
-      "description": "Memory of specific events and experiences",
-      "characteristics": [
-        "Event-based",
-        "Temporal",
-        "Contextual"
-      ],
-      "use_when": "Need to recall specific past interactions or events"
-    },
-    "semantic": {
-      "description": "Memory of facts, concepts, and knowledge",
-      "characteristics": [
-        "Fact-based",
-        "Structured",
-        "Queryable"
-      ],
-      "use_when": "Need to store and retrieve factual information"
-    },
-    "procedural": {
-      "description": "Memory of how to perform tasks",
-      "characteristics": [
-        "Action-based",
-        "Skill-oriented"
-      ],
-      "use_when": "Need to remember learned procedures or workflows"
+    "working": {
+      "description": "Current task context",
+      "implementation": "LangGraph state",
+      "scope": "Single workflow execution"
     }
   },
-  "mem0_patterns": {
-    "basic_setup": {
-      "description": "Basic Mem0 setup for agent memory",
-      "use_when": "Need simple, flexible memory system for agents",
-      "code_example": "from mem0 import Memory\n\n# Initialize Mem0\nmemory = Memory(\n    vector_store='chroma',  # or 'pinecone', 'qdrant', 'weaviate'\n    config={\n        'vector_store': {\n            'provider': 'chroma',\n            'config': {\n                'collection_name': 'agent_memories',\n                'path': './chroma_db'\n            }\n        }\n    }\n)\n\n# Add memory\nmemory.add(\n    messages=[\n        {'role': 'user', 'content': 'My name is John and I like Python'},\n        {'role': 'assistant', 'content': 'Nice to meet you, John!'}\n    ],\n    user_id='user123'\n)\n\n# Search memories\nmemories = memory.search(\n    query='What does the user like?',\n    user_id='user123',\n    limit=5\n)\n\nfor mem in memories:\n    print(f'Memory: {mem.memory}')\n    print(f'Score: {mem.score}')",
+  "patterns": {
+    "session_management_description": {
+      "description": "Manage memory per user session",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# session_management_description pattern for memory-patterns\n# Implement based on description: Manage memory per user session...",
       "best_practices": [
-        "Use appropriate vector store for scale",
-        "Set user_id for multi-user scenarios",
-        "Include relevant context in messages",
-        "Limit search results for performance"
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
       ]
     },
-    "entity_extraction": {
+    "session_management_pattern": {
+      "description": "Use session_id in config.configurable",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# session_management_pattern pattern for memory-patterns\n# Implement based on description: Use session_id in config.configurable...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "session_management_example": {
+      "description": "RunnableWithMessageHistory with get_session_history function",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# session_management_example pattern for memory-patterns\n# Implement based on description: RunnableWithMessageHistory with get_session_histor...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "memory_compression_description": {
+      "description": "Summarize old messages to fit context",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# memory_compression_description pattern for memory-patterns\n# Implement based on description: Summarize old messages to fit context...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "memory_compression_trigger": {
+      "description": "When messages exceed threshold",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# memory_compression_trigger pattern for memory-patterns\n# Implement based on description: When messages exceed threshold...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "memory_compression_method": {
+      "description": "LLM summarization of old messages",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# memory_compression_method pattern for memory-patterns\n# Implement based on description: LLM summarization of old messages...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "hybrid_memory_description": {
+      "description": "Combine short and long-term memory",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# hybrid_memory_description pattern for memory-patterns\n# Implement based on description: Combine short and long-term memory...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "hybrid_memory_pattern": {
+      "description": "Recent messages + relevant retrieved memories",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# hybrid_memory_pattern pattern for memory-patterns\n# Implement based on description: Recent messages + relevant retrieved memories...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "entity_extraction_description": {
       "description": "Extract and store entities from conversations",
-      "use_when": "Need to remember facts about users or entities",
-      "code_example": "from mem0 import Memory\n\nmemory = Memory()\n\n# Mem0 automatically extracts entities\nmemory.add(\n    messages=[\n        {'role': 'user', 'content': 'I work at Google as a software engineer'},\n        {'role': 'assistant', 'content': 'That\\'s great! What do you work on?'}\n    ],\n    user_id='user123'\n)\n\n# Query entities\nentities = memory.get_all(user_id='user123')\n\nfor entity in entities:\n    print(f'Entity: {entity.entity}')\n    print(f'Type: {entity.entity_type}')\n    print(f'Memory: {entity.memory}')",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# entity_extraction_description pattern for memory-patterns\n# Implement based on description: Extract and store entities from conversations...",
       "best_practices": [
-        "Let Mem0 handle entity extraction automatically",
-        "Review extracted entities for accuracy",
-        "Use entity queries for personalized responses",
-        "Update entities as new information arrives"
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
       ]
     },
-    "memory_retrieval": {
-      "description": "Retrieve relevant memories for context",
-      "use_when": "Need to include past context in current conversation",
-      "code_example": "from mem0 import Memory\n\nmemory = Memory()\n\n# Add multiple memories\nmemory.add(\n    messages=[{'role': 'user', 'content': 'I love Python programming'}],\n    user_id='user123'\n)\n\nmemory.add(\n    messages=[{'role': 'user', 'content': 'My favorite framework is FastAPI'}],\n    user_id='user123'\n)\n\n# Retrieve relevant memories for query\nquery = 'What programming languages does the user like?'\nrelevant_memories = memory.search(\n    query=query,\n    user_id='user123',\n    limit=3\n)\n\n# Format memories for context\ncontext = '\\n'.join([\n    f'- {mem.memory}' for mem in relevant_memories\n])\n\n# Use in prompt\nprompt = f'''Previous context:\n{context}\n\nUser: {current_query}\nAssistant:'''",
+    "entity_extraction_entities": {
+      "description": "['names', 'preferences', 'facts', 'relationships']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
       "best_practices": [
-        "Use semantic search for memory retrieval",
-        "Limit retrieved memories to avoid token limits",
-        "Include memory scores for confidence assessment",
-        "Combine multiple memories for richer context"
-      ]
-    },
-    "memory_updates": {
-      "description": "Update existing memories with new information",
-      "use_when": "Need to correct or enhance existing memories",
-      "code_example": "from mem0 import Memory\n\nmemory = Memory()\n\n# Add initial memory\nmemory.add(\n    messages=[{'role': 'user', 'content': 'I work at Microsoft'}],\n    user_id='user123'\n)\n\n# Update memory when user corrects\nmemory.add(\n    messages=[{'role': 'user', 'content': 'Actually, I work at Google now'}],\n    user_id='user123'\n)\n\n# Mem0 handles updates automatically\n# Or manually update\nmemory.update(\n    memory_id='memory_id_here',\n    updated_memory='User works at Google'\n)",
-      "best_practices": [
-        "Let Mem0 handle automatic updates",
-        "Verify updates for accuracy",
-        "Maintain memory history if needed",
-        "Handle conflicting information appropriately"
-      ]
-    },
-    "multi_user_memory": {
-      "description": "Handle memory for multiple users",
-      "use_when": "Building multi-user agent system",
-      "code_example": "from mem0 import Memory\n\nmemory = Memory()\n\n# Add memories for different users\nmemory.add(\n    messages=[{'role': 'user', 'content': 'I am Alice'}],\n    user_id='alice123'\n)\n\nmemory.add(\n    messages=[{'role': 'user', 'content': 'I am Bob'}],\n    user_id='bob456'\n)\n\n# Retrieve user-specific memories\nalice_memories = memory.get_all(user_id='alice123')\nbob_memories = memory.get_all(user_id='bob456')\n\n# Search within user context\nquery = 'What is the user\\'s name?'\nalice_context = memory.search(query=query, user_id='alice123')\nbob_context = memory.search(query=query, user_id='bob456')",
-      "best_practices": [
-        "Always specify user_id for multi-user systems",
-        "Isolate memories by user_id",
-        "Implement user authentication",
-        "Consider privacy and data isolation"
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
       ]
     }
   },
-  "zep_patterns": {
-    "basic_setup": {
-      "description": "Basic Zep setup for conversational memory",
-      "use_when": "Need production-ready conversational memory with summarization",
-      "code_example": "from zep_python import ZepClient, Memory, MemorySearchPayload\nfrom zep_python.memory.models import Session\n\n# Initialize Zep client\nzep_client = ZepClient(\n    api_key='your-api-key',\n    api_url='http://localhost:8000'  # or Zep Cloud URL\n)\n\n# Create session\nsession_id = 'user_session_123'\nsession = Session(\n    session_id=session_id,\n    user_id='user123',\n    metadata={'key': 'value'}\n)\n\nzep_client.memory.add_session(session)\n\n# Add messages to session\nzep_client.memory.add_memory(\n    session_id=session_id,\n    memory=Memory(\n        messages=[\n            {'role': 'user', 'content': 'Hello, my name is John'},\n            {'role': 'assistant', 'content': 'Nice to meet you, John!'}\n        ]\n    )\n)\n\n# Get session memory\nmemory = zep_client.memory.get_session(session_id)\nprint(f'Summary: {memory.summary}')\nprint(f'Messages: {len(memory.messages)}')",
-      "best_practices": [
-        "Use Zep Cloud for production",
-        "Create sessions per conversation",
-        "Include metadata for filtering",
-        "Leverage automatic summarization"
-      ]
-    },
-    "automatic_summarization": {
-      "description": "Use Zep's automatic conversation summarization",
-      "use_when": "Need to maintain context in long conversations",
-      "code_example": "from zep_python import ZepClient, Memory\n\nzep_client = ZepClient(api_key='your-api-key')\nsession_id = 'session_123'\n\n# Add messages - Zep automatically summarizes\nzep_client.memory.add_memory(\n    session_id=session_id,\n    memory=Memory(\n        messages=[\n            {'role': 'user', 'content': 'Message 1'},\n            {'role': 'assistant', 'content': 'Response 1'}\n        ]\n    )\n)\n\n# Get session with summary\nsession = zep_client.memory.get_session(session_id)\n\n# Summary is automatically generated\nprint(f'Summary: {session.summary.content}')\nprint(f'Summary created at: {session.summary.created_at}')\n\n# Use summary in prompts\nprompt = f'''Conversation Summary:\n{session.summary.content}\n\nRecent Messages:\n{format_recent_messages(session.messages)}\n\nUser: {current_query}\nAssistant:'''",
-      "best_practices": [
-        "Rely on Zep's automatic summarization",
-        "Use summaries for long-term context",
-        "Combine summaries with recent messages",
-        "Review summaries for accuracy"
-      ]
-    },
-    "semantic_search": {
-      "description": "Search memories semantically using Zep",
-      "use_when": "Need to find relevant past conversations",
-      "code_example": "from zep_python import ZepClient, MemorySearchPayload\n\nzep_client = ZepClient(api_key='your-api-key')\n\n# Search across sessions\nsearch_payload = MemorySearchPayload(\n    text='What did the user say about Python?',\n    search_scope='messages',  # or 'summary'\n    search_type='similarity',  # or 'mmr'\n    limit=5\n)\n\n# Search in specific session\nresults = zep_client.memory.search(\n    session_id='session_123',\n    search_payload=search_payload\n)\n\nfor result in results:\n    print(f'Message: {result.message.content}')\n    print(f'Score: {result.score}')\n    print(f'Created: {result.message.created_at}')\n\n# Search across all user sessions\nuser_results = zep_client.memory.search(\n    user_id='user123',\n    search_payload=search_payload\n)",
-      "best_practices": [
-        "Use semantic search for better recall",
-        "Search both messages and summaries",
-        "Limit results to avoid token overflow",
-        "Use MMR for diverse results"
-      ]
-    },
-    "entity_extraction_zep": {
-      "description": "Extract and query entities using Zep",
-      "use_when": "Need to track entities across conversations",
-      "code_example": "from zep_python import ZepClient, Memory\n\nzep_client = ZepClient(api_key='your-api-key')\nsession_id = 'session_123'\n\n# Add memory - Zep extracts entities automatically\nzep_client.memory.add_memory(\n    session_id=session_id,\n    memory=Memory(\n        messages=[\n            {'role': 'user', 'content': 'I work at Google in Mountain View'}\n        ]\n    )\n)\n\n# Get entities from session\nsession = zep_client.memory.get_session(session_id)\n\n# Access extracted entities\nif session.entities:\n    for entity in session.entities:\n        print(f'Entity: {entity.name}')\n        print(f'Type: {entity.entity_type}')\n        print(f'Metadata: {entity.metadata}')\n\n# Search by entity\nentity_results = zep_client.memory.search(\n    session_id=session_id,\n    search_payload=MemorySearchPayload(\n        text='Google',\n        search_type='similarity',\n        limit=5\n    )\n)",
-      "best_practices": [
-        "Leverage Zep's automatic entity extraction",
-        "Query entities for personalization",
-        "Use entity metadata for filtering",
-        "Update entities as information changes"
-      ]
-    },
-    "session_management": {
-      "description": "Manage conversation sessions with Zep",
-      "use_when": "Need to organize conversations into sessions",
-      "code_example": "from zep_python import ZepClient, Session\nfrom datetime import datetime\n\nzep_client = ZepClient(api_key='your-api-key')\n\n# Create new session\nsession = Session(\n    session_id='session_123',\n    user_id='user123',\n    metadata={\n        'created_at': datetime.now().isoformat(),\n        'source': 'web_app',\n        'topic': 'customer_support'\n    }\n)\n\nzep_client.memory.add_session(session)\n\n# List user sessions\nuser_sessions = zep_client.memory.list_sessions(\n    user_id='user123',\n    limit=10\n)\n\nfor sess in user_sessions:\n    print(f'Session: {sess.session_id}')\n    print(f'Created: {sess.created_at}')\n    print(f'Metadata: {sess.metadata}')\n\n# Get session details\nsession_details = zep_client.memory.get_session('session_123')\n\n# Delete session\nzep_client.memory.delete_session('session_123')",
-      "best_practices": [
-        "Create sessions per conversation thread",
-        "Include metadata for organization",
-        "Clean up old sessions periodically",
-        "Use session IDs for conversation tracking"
-      ]
-    }
-  },
-  "langchain_memory_patterns": {
-    "conversation_buffer": {
-      "description": "Store full conversation history",
-      "use_when": "Short conversations, need complete context",
-      "code_example": "from langchain_core.chat_history import InMemoryChatMessageHistory\nfrom langchain_core.chat_messages import HumanMessage, AIMessage\nfrom langchain_openai import ChatOpenAI\nfrom langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder\nfrom langchain_core.runnables import RunnablePassthrough\n\n# Create message history\nhistory = InMemoryChatMessageHistory()\n\n# Add messages\nhistory.add_message(HumanMessage(content='Hello, my name is John'))\nhistory.add_message(AIMessage(content='Nice to meet you, John!'))\n\n# Use in chain\nllm = ChatOpenAI(model='gpt-4')\nprompt = ChatPromptTemplate.from_messages([\n    ('system', 'You are a helpful assistant.'),\n    MessagesPlaceholder(variable_name='history'),\n    ('human', '{input}')\n])\n\nchain = (\n    RunnablePassthrough.assign(\n        history=lambda x: history.messages\n    )\n    | prompt\n    | llm\n)\n\nresponse = chain.invoke({'input': 'What is my name?'})\n\n# Add to history\nhistory.add_message(HumanMessage(content='What is my name?'))\nhistory.add_message(AIMessage(content=response.content))",
-      "limitations": "Token limit for long conversations",
-      "best_practices": [
-        "Use for short conversations only",
-        "Monitor token usage",
-        "Switch to summary buffer for long conversations"
-      ]
-    },
-    "conversation_summary": {
-      "description": "Summarize conversation to save tokens",
-      "use_when": "Long conversations, need to stay within token limits",
-      "code_example": "from langchain_core.chat_history import InMemoryChatMessageHistory\nfrom langchain_openai import ChatOpenAI\nfrom langchain_core.prompts import ChatPromptTemplate\nfrom langchain_core.runnables import RunnablePassthrough\n\nhistory = InMemoryChatMessageHistory()\nllm = ChatOpenAI(model='gpt-4')\nsummary_llm = ChatOpenAI(model='gpt-3.5-turbo', temperature=0)\n\n# Summarize when history gets long\ndef summarize_if_needed(messages, max_tokens=2000):\n    from langchain_core.messages import get_buffer_string\n    \n    buffer_string = get_buffer_string(messages)\n    token_count = len(buffer_string.split()) * 1.3  # Rough estimate\n    \n    if token_count > max_tokens and len(messages) > 4:\n        # Summarize older messages\n        older_messages = messages[:-2]  # Keep last exchange\n        \n        summary_prompt = ChatPromptTemplate.from_template(\n            'Summarize this conversation concisely:\\n\\n{conversation}'\n        )\n        \n        summary_chain = summary_prompt | summary_llm\n        summary = summary_chain.invoke({\n            'conversation': get_buffer_string(older_messages)\n        })\n        \n        # Return summary + recent messages\n        return [AIMessage(content=f'Previous conversation summary: {summary.content}')] + messages[-2:]\n    \n    return messages\n\n# Use in chain\nprompt = ChatPromptTemplate.from_messages([\n    ('system', 'You are a helpful assistant.'),\n    MessagesPlaceholder(variable_name='history'),\n    ('human', '{input}')\n])\n\nchain = (\n    RunnablePassthrough.assign(\n        history=lambda x: summarize_if_needed(history.messages)\n    )\n    | prompt\n    | llm\n)",
-      "best_practices": [
-        "Use smaller model for summarization to save costs",
-        "Keep recent messages for context",
-        "Summarize periodically, not every turn",
-        "Monitor summary quality"
-      ]
-    },
-    "conversation_window": {
-      "description": "Keep only last N messages",
-      "use_when": "Recent context is most important",
-      "code_example": "from langchain_core.chat_history import InMemoryChatMessageHistory\nfrom langchain_core.chat_messages import HumanMessage, AIMessage\n\nhistory = InMemoryChatMessageHistory()\n\n# Add messages\nfor i in range(10):\n    history.add_message(HumanMessage(content=f'Message {i}'))\n    history.add_message(AIMessage(content=f'Response {i}'))\n\n# Get last N messages\nwindow_size = 6  # Last 3 exchanges\nrecent_messages = history.messages[-window_size:]\n\n# Use in chain\nchain = (\n    RunnablePassthrough.assign(\n        history=lambda x: history.messages[-window_size:]\n    )\n    | prompt\n    | llm\n)",
-      "best_practices": [
-        "Choose window size based on context window",
-        "Consider message length when setting window",
-        "Use for recent-context-focused applications"
-      ]
-    },
-    "conversation_summary_buffer": {
-      "description": "Combine summary with recent messages",
-      "use_when": "Need both long-term context and recent details",
-      "code_example": "from langchain_core.chat_history import InMemoryChatMessageHistory\nfrom langchain_openai import ChatOpenAI\nfrom langchain_core.runnables import RunnableLambda\n\nhistory = InMemoryChatMessageHistory()\nllm = ChatOpenAI(model='gpt-4')\nsummary_llm = ChatOpenAI(model='gpt-3.5-turbo')\n\nclass SummaryBufferMemory:\n    def __init__(self, max_token_limit=2000, recent_messages=4):\n        self.max_token_limit = max_token_limit\n        self.recent_messages = recent_messages\n        self.summary = ''\n    \n    def get_messages(self, history_messages):\n        from langchain_core.messages import get_buffer_string\n        \n        # Get recent messages\n        recent = history_messages[-self.recent_messages:]\n        \n        # Estimate tokens\n        recent_str = get_buffer_string(recent)\n        token_count = len(recent_str.split()) * 1.3\n        \n        # If over limit, summarize older messages\n        if token_count + len(self.summary.split()) * 1.3 > self.max_token_limit:\n            older = history_messages[:-self.recent_messages]\n            if older:\n                summary_prompt = ChatPromptTemplate.from_template(\n                    'Summarize: {messages}'\n                )\n                summary_chain = summary_prompt | summary_llm\n                self.summary = summary_chain.invoke({\n                    'messages': get_buffer_string(older)\n                }).content\n        \n        # Return summary + recent\n        result = []\n        if self.summary:\n            result.append(AIMessage(content=f'Summary: {self.summary}'))\n        result.extend(recent)\n        return result\n\nmemory = SummaryBufferMemory()\n\n# Use in chain\nchain = (\n    RunnablePassthrough.assign(\n        history=lambda x: memory.get_messages(history.messages)\n    )\n    | prompt\n    | llm\n)",
-      "best_practices": [
-        "Set max_token_limit based on model context",
-        "Keep 2-4 recent exchanges for context",
-        "Update summary periodically",
-        "Monitor token usage"
-      ]
-    },
-    "vector_store_memory": {
-      "description": "Store and retrieve relevant past interactions",
-      "use_when": "Long-term memory with semantic retrieval",
-      "code_example": "from langchain_community.vectorstores import Chroma\nfrom langchain_openai import OpenAIEmbeddings\nfrom langchain_core.documents import Document\nfrom langchain_core.runnables import RunnableLambda\n\nembeddings = OpenAIEmbeddings()\nvectorstore = Chroma(embedding_function=embeddings, collection_name='conversations')\nretriever = vectorstore.as_retriever(search_kwargs={'k': 5})\n\n# Store conversation as document\ndef store_conversation(user_id: str, messages: list):\n    from langchain_core.messages import get_buffer_string\n    \n    conversation_text = get_buffer_string(messages)\n    \n    doc = Document(\n        page_content=conversation_text,\n        metadata={\n            'user_id': user_id,\n            'timestamp': datetime.now().isoformat(),\n            'message_count': len(messages)\n        }\n    )\n    \n    vectorstore.add_documents([doc])\n\n# Retrieve relevant past conversations\ndef get_relevant_memories(query: str, user_id: str, k: int = 3):\n    docs = retriever.invoke(query)\n    \n    # Filter by user_id\n    user_docs = [\n        doc for doc in docs\n        if doc.metadata.get('user_id') == user_id\n    ]\n    \n    return user_docs[:k]\n\n# Use in chain\nchain = (\n    RunnablePassthrough.assign(\n        relevant_memories=lambda x: get_relevant_memories(\n            x['input'],\n            x['user_id']\n        )\n    )\n    | prompt\n    | llm\n)",
-      "best_practices": [
-        "Choose appropriate embedding model",
-        "Set retrieval k based on context window",
-        "Use metadata filters for better retrieval",
-        "Consider memory decay strategies"
-      ]
-    },
-    "entity_memory": {
-      "description": "Track entities and their attributes across conversation",
-      "use_when": "Need to remember facts about entities",
-      "code_example": "from langchain_openai import ChatOpenAI\nfrom langchain_core.prompts import ChatPromptTemplate\nfrom pydantic import BaseModel\nfrom typing import Dict\n\nllm = ChatOpenAI(model='gpt-4')\n\nclass EntityMemory:\n    def __init__(self):\n        self.entities: Dict[str, Dict[str, str]] = {}\n    \n    def extract_entities(self, messages: list):\n        '''Extract entities from conversation'''\n        from langchain_core.messages import get_buffer_string\n        \n        conversation = get_buffer_string(messages)\n        \n        entity_prompt = ChatPromptTemplate.from_template('''\n        Extract entities and their attributes from this conversation.\n        \n        Conversation:\n        {conversation}\n        \n        Return JSON with entities and their attributes.\n        Example: {{\"person\": {{\"name\": \"John\", \"job\": \"engineer\"}}}}\n        ''')\n        \n        from langchain_core.output_parsers import JsonOutputParser\n        \n        chain = entity_prompt | llm | JsonOutputParser()\n        entities = chain.invoke({'conversation': conversation})\n        \n        # Update entity memory\n        for entity_type, attributes in entities.items():\n            if entity_type not in self.entities:\n                self.entities[entity_type] = {}\n            self.entities[entity_type].update(attributes)\n        \n        return self.entities\n    \n    def get_entity_context(self) -> str:\n        '''Format entities as context string'''\n        if not self.entities:\n            return ''\n        \n        context_parts = []\n        for entity_type, attributes in self.entities.items():\n            attrs_str = ', '.join([f'{k}: {v}' for k, v in attributes.items()])\n            context_parts.append(f'{entity_type}: {attrs_str}')\n        \n        return '\\n'.join(context_parts)\n\nentity_memory = EntityMemory()\n\n# Extract entities periodically\nentities = entity_memory.extract_entities(history.messages)\n\n# Use in prompt\nentity_context = entity_memory.get_entity_context()\n\nprompt = ChatPromptTemplate.from_template('''\nKnown entities:\n{entity_context}\n\nConversation:\n{history}\n\nUser: {input}\nAssistant:''')",
-      "best_practices": [
-        "Extract entities periodically, not every turn",
-        "Use structured output for entity extraction",
-        "Update entities as new information arrives",
-        "Use entities for personalization"
-      ]
-    }
-  },
-  "memory_architecture_patterns": {
-    "hybrid_memory": {
-      "description": "Combine short-term and long-term memory",
-      "use_when": "Need both immediate context and long-term knowledge",
-      "code_example": "from langchain_core.chat_history import InMemoryChatMessageHistory\nfrom langchain_community.vectorstores import Chroma\nfrom langchain_openai import OpenAIEmbeddings\n\n# Short-term: conversation buffer\nshort_term = InMemoryChatMessageHistory()\n\n# Long-term: vector store\nembeddings = OpenAIEmbeddings()\nlong_term = Chroma(embedding_function=embeddings)\nlong_term_retriever = long_term.as_retriever(search_kwargs={'k': 3})\n\ndef get_hybrid_context(query: str, user_id: str):\n    # Get recent messages (short-term)\n    recent = short_term.messages[-4:]  # Last 2 exchanges\n    \n    # Get relevant memories (long-term)\n    relevant = long_term_retriever.invoke(query)\n    \n    # Combine\n    context = {\n        'recent_messages': format_messages(recent),\n        'relevant_memories': format_documents(relevant),\n        'query': query\n    }\n    \n    return context\n\n# Use in chain\nchain = (\n    RunnablePassthrough.assign(\n        context=lambda x: get_hybrid_context(x['input'], x['user_id'])\n    )\n    | prompt\n    | llm\n)",
-      "best_practices": [
-        "Use short-term for immediate context",
-        "Use long-term for relevant past information",
-        "Balance between both memory types",
-        "Monitor token usage from both sources"
-      ]
-    },
-    "memory_hierarchical": {
-      "description": "Hierarchical memory with different time scales",
-      "use_when": "Need memory at multiple time scales (recent, medium-term, long-term)",
-      "code_example": "class HierarchicalMemory:\n    def __init__(self):\n        # Recent: last 10 messages\n        self.recent = InMemoryChatMessageHistory()\n        \n        # Medium-term: last week (vector store)\n        self.medium_term = Chroma(collection_name='medium_term')\n        \n        # Long-term: important facts (entity memory)\n        self.long_term = EntityMemory()\n    \n    def get_context(self, query: str, user_id: str):\n        # Recent: immediate context\n        recent_context = format_messages(self.recent.messages[-10:])\n        \n        # Medium-term: relevant past week\n        medium_docs = self.medium_term.as_retriever().invoke(query)\n        medium_context = format_documents(medium_docs[:3])\n        \n        # Long-term: entity facts\n        entity_context = self.long_term.get_entity_context()\n        \n        return {\n            'recent': recent_context,\n            'medium_term': medium_context,\n            'long_term': entity_context\n        }",
-      "best_practices": [
-        "Define clear time boundaries for each level",
-        "Use appropriate retrieval for each level",
-        "Balance context from all levels",
-        "Update each level appropriately"
-      ]
-    }
-  },
-  "conversation_summarization_patterns": {
-    "incremental_summarization": {
-      "description": "Summarize conversation incrementally",
-      "use_when": "Long conversations that need periodic summarization",
-      "code_example": "class IncrementalSummarizer:\n    def __init__(self, llm, summary_interval=10):\n        self.llm = llm\n        self.summary_interval = summary_interval\n        self.current_summary = ''\n        self.message_count = 0\n    \n    def summarize_incrementally(self, new_messages: list):\n        '''Add new messages and summarize if needed'''\n        from langchain_core.messages import get_buffer_string\n        \n        self.message_count += len(new_messages)\n        \n        # Summarize if interval reached\n        if self.message_count >= self.summary_interval:\n            # Summarize recent messages\n            recent_text = get_buffer_string(new_messages)\n            \n            summary_prompt = ChatPromptTemplate.from_template('''\n            Previous summary: {previous_summary}\n            \n            New messages:\n            {new_messages}\n            \n            Create an updated summary that incorporates the new information:\n            ''')\n            \n            chain = summary_prompt | self.llm\n            self.current_summary = chain.invoke({\n                'previous_summary': self.current_summary,\n                'new_messages': recent_text\n            }).content\n            \n            self.message_count = 0\n            return self.current_summary\n        \n        return self.current_summary",
-      "best_practices": [
-        "Set appropriate summarization interval",
-        "Incorporate previous summary in new summary",
-        "Keep recent messages even after summarization",
-        "Monitor summary quality"
-      ]
-    },
-    "topic_based_summarization": {
-      "description": "Summarize by topic or theme",
-      "use_when": "Conversations span multiple topics",
-      "code_example": "def summarize_by_topic(messages: list, llm):\n    '''Group messages by topic and summarize each'''\n    from langchain_core.messages import get_buffer_string\n    \n    # Extract topics (simplified)\n    topic_prompt = ChatPromptTemplate.from_template('''\n    Identify topics in this conversation:\n    {conversation}\n    \n    List topics:''')\n    \n    chain = topic_prompt | llm\n    topics = chain.invoke({'conversation': get_buffer_string(messages)}).content\n    \n    # Group messages by topic (simplified - would need topic classification)\n    # Then summarize each topic group\n    \n    summaries = {}\n    for topic in topics.split('\\n'):\n        # Filter messages for topic\n        topic_messages = filter_messages_by_topic(messages, topic)\n        \n        # Summarize topic\n        summary_prompt = ChatPromptTemplate.from_template('''\n        Summarize this conversation about {topic}:\n        {messages}\n        ''')\n        \n        chain = summary_prompt | llm\n        summaries[topic] = chain.invoke({\n            'topic': topic,\n            'messages': get_buffer_string(topic_messages)\n        }).content\n    \n    return summaries",
-      "best_practices": [
-        "Use topic classification for grouping",
-        "Summarize each topic independently",
-        "Maintain topic summaries separately",
-        "Retrieve relevant topic summaries for queries"
-      ]
-    }
-  },
-  "best_practices_summary": [
-    "Choose memory type based on use case (short-term vs long-term)",
-    "Use conversation summarization for long conversations",
-    "Implement entity memory for personalized experiences",
-    "Combine multiple memory types for comprehensive context",
-    "Monitor token usage when including memory in prompts",
-    "Use semantic search for retrieving relevant memories",
-    "Update memories as new information arrives",
-    "Isolate memories by user_id for multi-user systems",
-    "Implement memory decay for old, irrelevant information",
-    "Test memory retrieval accuracy regularly",
-    "Use appropriate vector stores for scale",
-    "Leverage automatic summarization when available",
-    "Store rich metadata with memories for better retrieval",
-    "Implement memory versioning for important facts",
-    "Consider privacy and data retention policies"
+  "best_practices": [
+    "Use token-based summarization to prevent memory overflow when messages exceed context window thresholds",
+    "Implement TTL (Time-To-Live) for conversation memory to automatically expire old sessions and reduce storage costs",
+    "Separate short-term conversation memory from long-term semantic memory using different storage backends optimized for each use case",
+    "Index memories with embeddings for semantic retrieval, enabling agents to find relevant past interactions even with different wording",
+    "Implement memory forgetting mechanisms for privacy compliance, allowing users to delete specific memories or entire conversation histories",
+    "Use session-based memory isolation with unique session IDs to prevent memory leakage between different users or conversations",
+    "Extract and store structured entities (names, preferences, facts) separately from raw conversation history for efficient querying",
+    "Implement hybrid memory retrieval combining recent messages with semantically similar long-term memories for context-aware responses"
   ],
   "anti_patterns": [
     {
-      "name": "unbounded_memory",
-      "description": "Storing unlimited conversation history",
-      "problem": "Token limit errors, high costs, poor performance",
-      "solution": "Implement summarization or windowing"
+      "name": "Unbounded history",
+      "problem": "Conversation history grows indefinitely, exceeding context window limits and causing API failures or degraded performance",
+      "solution": "Set maximum message limits (e.g., last 50 messages) and implement token-based summarization when thresholds are exceeded"
     },
     {
-      "name": "no_memory_isolation",
-      "description": "Not isolating memories by user",
-      "problem": "Privacy violations, context leakage",
-      "solution": "Always use user_id for memory isolation"
+      "name": "No persistence",
+      "problem": "Memory lost on application restart, requiring users to repeat context and breaking continuity",
+      "solution": "Use persistent backends like Redis or PostgreSQL for conversation memory, ensuring state survives restarts"
     },
     {
-      "name": "ignoring_memory_quality",
-      "description": "Not validating memory accuracy",
-      "problem": "Hallucinated facts, incorrect context",
-      "solution": "Validate and update memories regularly"
+      "name": "Mixing memory types",
+      "problem": "Storing short-term conversation history and long-term semantic knowledge in the same storage system leads to inefficient queries and poor performance",
+      "solution": "Use separate storage systems: Redis/PostgreSQL for conversation history, vector databases for semantic memory"
     },
     {
-      "name": "over_retrieval",
-      "description": "Retrieving too many memories",
-      "problem": "Token overflow, irrelevant context",
-      "solution": "Limit retrieval to top-k relevant memories"
+      "name": "No memory compression",
+      "problem": "Raw conversation history accumulates tokens quickly, hitting context limits and increasing API costs",
+      "solution": "Implement LLM-based summarization to compress old messages while preserving key information and context"
     },
     {
-      "name": "no_memory_decay",
-      "description": "Never removing old memories",
-      "problem": "Stale information, storage bloat",
-      "solution": "Implement memory decay and cleanup strategies"
+      "name": "Ignoring privacy requirements",
+      "problem": "Storing user data indefinitely without deletion mechanisms violates privacy regulations and user trust",
+      "solution": "Implement memory deletion APIs, TTL-based expiration, and user-initiated memory clearing capabilities"
     }
-  ],
-  "id": "agent-memory-patterns",
-  "name": "Agent Memory Patterns",
-  "category": "patterns",
-  "patterns": {},
-  "best_practices": []
+  ]
 }

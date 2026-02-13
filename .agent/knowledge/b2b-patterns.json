@@ -1,4 +1,28 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "b2b-patterns",
+  "name": "B2B Patterns",
+  "title": "B2B Integration Patterns",
+  "description": "EDI, AS2, partner management, and B2B integration patterns for SAP CPI",
+  "version": "1.0.0",
+  "category": "sap",
+  "axiomAlignment": {
+    "A1_verifiability": "EDI standards and acknowledgment handling enable verifiable message exchange",
+    "A2_user_primacy": "Partner agreements and TPA documentation preserve trading partner intent",
+    "A3_transparency": "Explicit message types and protocols make B2B flows traceable",
+    "A4_non_harm": "Signing, encryption, and MDN ensure secure, non-repudiable exchanges",
+    "A5_consistency": "Standard EDI/AS2 patterns ensure consistent integration across partners"
+  },
+  "related_skills": [
+    "b2b-integration",
+    "cpi-integration-flow",
+    "cpi-groovy-scripting"
+  ],
+  "related_knowledge": [
+    "cpi-error-handling.json",
+    "mapping-patterns.json",
+    "iflow-patterns.json"
+  ],
   "metadata": {
     "name": "B2B Integration Patterns",
     "description": "EDI, AS2, partner management, and B2B integration patterns for SAP CPI",
@@ -258,24 +282,119 @@
       ]
     }
   },
-  "bestPractices": [
-    "Use Partner Directory for centralized partner configuration",
-    "Implement proper acknowledgment handling",
-    "Store original messages for audit/compliance",
-    "Use correlation IDs for end-to-end tracking",
-    "Implement retry logic for transient failures",
-    "Monitor message volumes and error rates",
-    "Test with partner in sandbox before production",
-    "Document partner agreements and message specs",
-    "Use Integration Advisor for complex mappings",
-    "Implement proper security (signing, encryption)"
+  "best_practices": [
+    "Use Partner Directory for centralized partner configuration to avoid duplication and ensure consistency",
+    "Implement proper acknowledgment handling - always send functional ACK (CONTRL/997) and application ACK (APERAK/824) when required",
+    "Store original messages for audit/compliance - retain EDI messages for regulatory requirements",
+    "Use correlation IDs for end-to-end tracking across all B2B message exchanges",
+    "Implement retry logic with exponential backoff for transient failures in AS2 transport",
+    "Monitor message volumes and error rates - set up alerts for abnormal patterns",
+    "Test with partner in sandbox environment before production deployment",
+    "Document partner agreements and message specs - maintain trading partner agreements (TPA) documentation",
+    "Use Integration Advisor for complex mappings - leverage MIG templates for standard message types",
+    "Implement proper security (signing, encryption) - use SHA-256 signing and AES-256 encryption for AS2",
+    "Validate EDI syntax before processing - catch errors early to avoid downstream issues",
+    "Handle MDN (Message Disposition Notification) properly - verify synchronous/asynchronous MDN receipt"
   ],
-  "id": "b2b-patterns",
-  "name": "B2B Patterns",
-  "version": "1.0.0",
-  "category": "patterns",
-  "description": "Knowledge patterns for b2b patterns.",
-  "patterns": {},
-  "best_practices": [],
-  "anti_patterns": []
+  "patterns": {
+    "as2Integration": {
+      "description": "AS2 integration pattern with MDN handling",
+      "steps": [
+        "Configure AS2 sender/receiver adapters with certificates",
+        "Set up MDN handling (synchronous or asynchronous)",
+        "Implement retry logic for MDN failures",
+        "Store original message and MDN for audit"
+      ],
+      "use_when": "When implementing as2Integration or when AS2 integration pattern with MDN handling",
+      "code_example": "Steps: Configure AS2 sender/receiver adapters with certificates; Set up MDN handling (synchronous or asynchronous); Implement retry logic for MDN failures; Store original message and MDN for audit",
+      "best_practices": [
+        "Use Partner Directory for centralized partner configuration to avoid duplication and ensure consistency",
+        "Implement proper acknowledgment handling - always send functional ACK (CONTRL/997) and application ACK (APERAK/824) when required",
+        "Store original messages for audit/compliance - retain EDI messages for regulatory requirements",
+        "Use correlation IDs for end-to-end tracking across all B2B message exchanges"
+      ]
+    },
+    "ediToIdocMapping": {
+      "description": "EDI to IDoc mapping pattern",
+      "steps": [
+        "Parse EDI message (EDIFACT or X12)",
+        "Map EDI segments to IDoc segments",
+        "Set IDoc control record (EDI_DC40)",
+        "Post IDoc to SAP system",
+        "Handle acknowledgment and error responses"
+      ],
+      "use_when": "When implementing ediToIdocMapping or when EDI to IDoc mapping pattern",
+      "code_example": "Steps: Parse EDI message (EDIFACT or X12); Map EDI segments to IDoc segments; Set IDoc control record (EDI_DC40); Post IDoc to SAP system; Handle acknowledgment and error responses",
+      "best_practices": [
+        "Use Partner Directory for centralized partner configuration to avoid duplication and ensure consistency",
+        "Implement proper acknowledgment handling - always send functional ACK (CONTRL/997) and application ACK (APERAK/824) when required",
+        "Store original messages for audit/compliance - retain EDI messages for regulatory requirements",
+        "Use correlation IDs for end-to-end tracking across all B2B message exchanges"
+      ]
+    },
+    "partnerOnboarding": {
+      "description": "Trading partner onboarding workflow",
+      "steps": [
+        "Create partner profile in Partner Directory",
+        "Exchange certificates and AS2 IDs",
+        "Configure message types and versions",
+        "Test in sandbox environment",
+        "Document partner agreement",
+        "Deploy to production with monitoring"
+      ],
+      "use_when": "When implementing partnerOnboarding or when Trading partner onboarding workflow",
+      "code_example": "Steps: Create partner profile in Partner Directory; Exchange certificates and AS2 IDs; Configure message types and versions; Test in sandbox environment; Document partner agreement",
+      "best_practices": [
+        "Use Partner Directory for centralized partner configuration to avoid duplication and ensure consistency",
+        "Implement proper acknowledgment handling - always send functional ACK (CONTRL/997) and application ACK (APERAK/824) when required",
+        "Store original messages for audit/compliance - retain EDI messages for regulatory requirements",
+        "Use correlation IDs for end-to-end tracking across all B2B message exchanges"
+      ]
+    },
+    "acknowledgmentFlow": {
+      "description": "Acknowledgment handling pattern",
+      "steps": [
+        "Receive EDI message",
+        "Validate syntax and generate functional ACK",
+        "Process business logic",
+        "Generate application ACK with results",
+        "Store all messages for audit trail"
+      ],
+      "use_when": "When implementing acknowledgmentFlow or when Acknowledgment handling pattern",
+      "code_example": "Steps: Receive EDI message; Validate syntax and generate functional ACK; Process business logic; Generate application ACK with results; Store all messages for audit trail",
+      "best_practices": [
+        "Use Partner Directory for centralized partner configuration to avoid duplication and ensure consistency",
+        "Implement proper acknowledgment handling - always send functional ACK (CONTRL/997) and application ACK (APERAK/824) when required",
+        "Store original messages for audit/compliance - retain EDI messages for regulatory requirements",
+        "Use correlation IDs for end-to-end tracking across all B2B message exchanges"
+      ]
+    }
+  },
+  "anti_patterns": [
+    {
+      "name": "Hardcoding partner configuration",
+      "problem": "Hardcoding partner IDs, certificates, or endpoints makes partner management difficult and error-prone",
+      "solution": "Use Partner Directory for all partner-specific configuration, reference via partner ID"
+    },
+    {
+      "name": "Ignoring acknowledgments",
+      "problem": "Not handling functional or application acknowledgments leads to partner confusion and compliance issues",
+      "solution": "Always implement proper ACK handling - send CONTRL/997 for syntax validation and APERAK/824 for business processing"
+    },
+    {
+      "name": "Not storing original messages",
+      "problem": "Losing original EDI messages makes audit trails impossible and compliance verification difficult",
+      "solution": "Store all incoming and outgoing messages with timestamps and correlation IDs in persistent storage"
+    },
+    {
+      "name": "Weak security configuration",
+      "problem": "Using weak encryption or not signing messages exposes sensitive business data and lacks non-repudiation",
+      "solution": "Use SHA-256 for signing, AES-256 for encryption, and always require MDN for AS2 messages"
+    },
+    {
+      "name": "No idempotency handling",
+      "problem": "Processing duplicate messages causes data inconsistencies and business errors",
+      "solution": "Implement idempotency checks using message IDs or control numbers, reject duplicates"
+    }
+  ]
 }

@@ -6,7 +6,7 @@ Inter-agent communication patterns with axiom compliance.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set
 import hashlib
@@ -104,7 +104,7 @@ class Message:
             recipients=data.get("recipients", []),
             content=data.get("content", {}),
             priority=MessagePriority(data.get("priority", 2)),
-            timestamp=datetime.fromisoformat(data["timestamp"]) if "timestamp" in data else datetime.utcnow(),
+            timestamp=datetime.fromisoformat(data["timestamp"]) if "timestamp" in data else datetime.now(timezone.utc),
             reply_to=data.get("reply_to"),
             signature=data.get("signature"),
         )

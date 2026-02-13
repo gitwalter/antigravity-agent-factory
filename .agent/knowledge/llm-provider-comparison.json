@@ -1,12 +1,30 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "llm-provider-comparison",
+  "name": "LLM Provider Comparison",
   "title": "LLM Provider Comparison",
-  "description": "Comparison of LLM providers, models, and integration patterns",
+  "description": "Comparison of LLM providers, models, and integration patterns for informed selection",
   "version": "1.0.0",
+  "category": "ai-ml",
   "axiomAlignment": {
+    "A1_verifiability": "Structured outputs and model specs enable reproducible provider selection",
     "A2_user_primacy": "Provider selection considers user requirements and constraints",
-    "A3_transparency": "Pricing and capabilities are explicitly documented"
+    "A3_transparency": "Pricing and capabilities are explicitly documented",
+    "A4_non_harm": "Content safety and guardrails documented per provider",
+    "A5_consistency": "Unified patterns for provider abstraction and fallback"
   },
+  "related_skills": [
+    "ai-cost-optimization",
+    "ai-system-design",
+    "langchain-usage",
+    "tool-usage"
+  ],
+  "related_knowledge": [
+    "anthropic-patterns.json",
+    "langchain-patterns.json",
+    "guardrails-patterns.json",
+    "caching-patterns.json"
+  ],
   "provider_comparison": {
     "openai": {
       "provider": "OpenAI",
@@ -189,6 +207,288 @@
       "api_pattern": {
         "code_example": "# Using Ollama Python library\nimport ollama\n\n# Basic completion\nresponse = ollama.chat(\n    model='llama3.2',\n    messages=[{'role': 'user', 'content': 'Hello!'}]\n)\nprint(response['message']['content'])\n\n# Streaming\nstream = ollama.chat(\n    model='llama3.2',\n    messages=[{'role': 'user', 'content': 'Tell me a story'}],\n    stream=True\n)\nfor chunk in stream:\n    print(chunk['message']['content'], end='')\n\n# Using OpenAI-compatible API\nfrom openai import OpenAI\n\nclient = OpenAI(\n    base_url='http://localhost:11434/v1',\n    api_key='ollama'  # Not used but required\n)\n\nresponse = client.chat.completions.create(\n    model='llama3.2',\n    messages=[{'role': 'user', 'content': 'Hello!'}]\n)\nprint(response.choices[0].message.content)"
       }
+    },
+    "mistral": {
+      "provider": "Mistral AI",
+      "models": {
+        "mistral-7b-instruct": {
+          "context_window": 32000,
+          "max_output": 8192,
+          "input_price": "$0.10/1M tokens",
+          "output_price": "$0.30/1M tokens",
+          "best_for": "Cost-effective, fast inference, general purpose",
+          "features": [
+            "Function calling",
+            "JSON mode",
+            "Streaming"
+          ]
+        },
+        "mixtral-8x7b-instruct": {
+          "context_window": 32000,
+          "max_output": 8192,
+          "input_price": "$0.24/1M tokens",
+          "output_price": "$0.24/1M tokens",
+          "best_for": "High quality, multilingual, expert model",
+          "features": [
+            "Function calling",
+            "JSON mode",
+            "Streaming"
+          ]
+        },
+        "mistral-large": {
+          "context_window": 32000,
+          "max_output": 8192,
+          "input_price": "$2.00/1M tokens",
+          "output_price": "$6.00/1M tokens",
+          "best_for": "Highest quality, complex reasoning",
+          "features": [
+            "Function calling",
+            "JSON mode",
+            "Streaming"
+          ]
+        }
+      },
+      "api_pattern": {
+        "code_example": "from mistralai import Mistral\n\nclient = Mistral(api_key='your-api-key')\n\n# Basic completion\nresponse = client.chat.complete(\n    model='mistral-large-latest',\n    messages=[{'role': 'user', 'content': 'Hello!'}]\n)\nprint(response.choices[0].message.content)\n\n# Streaming\nstream = client.chat.stream(\n    model='mistral-large-latest',\n    messages=[{'role': 'user', 'content': 'Tell me a story'}]\n)\nfor chunk in stream:\n    if chunk.choices[0].delta.content:\n        print(chunk.choices[0].delta.content, end='')\n\n# Function calling\ntools = [{\n    'type': 'function',\n    'function': {\n        'name': 'get_weather',\n        'description': 'Get weather for a location',\n        'parameters': {\n            'type': 'object',\n            'properties': {\n                'location': {'type': 'string'}\n            },\n            'required': ['location']\n        }\n    }\n}]\n\nresponse = client.chat.complete(\n    model='mistral-large-latest',\n    messages=[{'role': 'user', 'content': 'What is the weather in Tokyo?'}],\n    tools=tools\n)"
+      }
+    },
+    "groq": {
+      "provider": "Groq",
+      "models": {
+        "llama-3.1-70b-versatile": {
+          "context_window": 128000,
+          "max_output": 8192,
+          "input_price": "$0.59/1M tokens",
+          "output_price": "$0.79/1M tokens",
+          "best_for": "Ultra-fast inference, high throughput",
+          "features": [
+            "Function calling",
+            "JSON mode",
+            "Streaming",
+            "Ultra-fast inference"
+          ]
+        },
+        "mixtral-8x7b-32768": {
+          "context_window": 32768,
+          "max_output": 8192,
+          "input_price": "$0.24/1M tokens",
+          "output_price": "$0.24/1M tokens",
+          "best_for": "Fast inference, cost-effective",
+          "features": [
+            "Function calling",
+            "Streaming",
+            "Ultra-fast inference"
+          ]
+        }
+      },
+      "api_pattern": {
+        "code_example": "# Groq uses OpenAI-compatible API\nfrom openai import OpenAI\n\nclient = OpenAI(\n    api_key='your-groq-api-key',\n    base_url='https://api.groq.com/openai/v1'\n)\n\n# Basic completion (same as OpenAI)\nresponse = client.chat.completions.create(\n    model='llama-3.1-70b-versatile',\n    messages=[{'role': 'user', 'content': 'Hello!'}]\n)\nprint(response.choices[0].message.content)\n\n# Streaming\nstream = client.chat.completions.create(\n    model='llama-3.1-70b-versatile',\n    messages=[{'role': 'user', 'content': 'Tell me a story'}],\n    stream=True\n)\nfor chunk in stream:\n    if chunk.choices[0].delta.content:\n        print(chunk.choices[0].delta.content, end='')\n\n# Function calling (OpenAI-compatible)\ntools = [{\n    'type': 'function',\n    'function': {\n        'name': 'get_weather',\n        'description': 'Get weather for a location',\n        'parameters': {\n            'type': 'object',\n            'properties': {\n                'location': {'type': 'string'}\n            },\n            'required': ['location']\n        }\n    }\n}]\n\nresponse = client.chat.completions.create(\n    model='llama-3.1-70b-versatile',\n    messages=[{'role': 'user', 'content': 'What is the weather in Tokyo?'}],\n    tools=tools\n)"
+      }
+    },
+    "together": {
+      "provider": "Together.ai",
+      "models": {
+        "meta-llama/Llama-3-70b-chat-hf": {
+          "context_window": 8192,
+          "max_output": 4096,
+          "input_price": "$0.59/1M tokens",
+          "output_price": "$0.79/1M tokens",
+          "best_for": "Open-source models, fine-tuning, inference",
+          "features": [
+            "Open-source models",
+            "Fine-tuning API",
+            "Streaming"
+          ]
+        },
+        "mistralai/Mixtral-8x7B-Instruct-v0.1": {
+          "context_window": 32768,
+          "max_output": 8192,
+          "input_price": "$0.24/1M tokens",
+          "output_price": "$0.24/1M tokens",
+          "best_for": "Cost-effective, high quality",
+          "features": [
+            "Open-source models",
+            "Streaming"
+          ]
+        }
+      },
+      "api_pattern": {
+        "code_example": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key='your-together-api-key',\n    base_url='https://api.together.xyz/v1'\n)\n\n# Basic completion\nresponse = client.chat.completions.create(\n    model='meta-llama/Llama-3-70b-chat-hf',\n    messages=[{'role': 'user', 'content': 'Hello!'}]\n)\nprint(response.choices[0].message.content)\n\n# Streaming\nstream = client.chat.completions.create(\n    model='meta-llama/Llama-3-70b-chat-hf',\n    messages=[{'role': 'user', 'content': 'Tell me a story'}],\n    stream=True\n)\nfor chunk in stream:\n    if chunk.choices[0].delta.content:\n        print(chunk.choices[0].delta.content, end='')\n\n# Fine-tuning API\nimport requests\n\nresponse = requests.post(\n    'https://api.together.xyz/v1/fine_tuning/jobs',\n    headers={'Authorization': f'Bearer {api_key}'},\n    json={\n        'model': 'meta-llama/Llama-3-70b-chat-hf',\n        'training_file': 'file_id',\n        'hyperparameters': {'epochs': 3}\n    }\n)"
+      }
+    },
+    "fireworks": {
+      "provider": "Fireworks AI",
+      "models": {
+        "accounts/fireworks/models/llama-v3-70b-instruct": {
+          "context_window": 8192,
+          "max_output": 4096,
+          "input_price": "$0.59/1M tokens",
+          "output_price": "$0.79/1M tokens",
+          "best_for": "Fast inference, function calling, JSON mode",
+          "features": [
+            "Function calling",
+            "JSON mode",
+            "Fast inference",
+            "Streaming"
+          ]
+        }
+      },
+      "api_pattern": {
+        "code_example": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key='your-fireworks-api-key',\n    base_url='https://api.fireworks.ai/inference/v1'\n)\n\n# Basic completion\nresponse = client.chat.completions.create(\n    model='accounts/fireworks/models/llama-v3-70b-instruct',\n    messages=[{'role': 'user', 'content': 'Hello!'}]\n)\nprint(response.choices[0].message.content)\n\n# JSON mode\nresponse = client.chat.completions.create(\n    model='accounts/fireworks/models/llama-v3-70b-instruct',\n    messages=[{'role': 'user', 'content': 'Return JSON with colors'}],\n    response_format={'type': 'json_object'}\n)\n\n# Function calling\ntools = [{\n    'type': 'function',\n    'function': {\n        'name': 'get_weather',\n        'description': 'Get weather for a location',\n        'parameters': {\n            'type': 'object',\n            'properties': {\n                'location': {'type': 'string'}\n            },\n            'required': ['location']\n        }\n    }\n}]\n\nresponse = client.chat.completions.create(\n    model='accounts/fireworks/models/llama-v3-70b-instruct',\n    messages=[{'role': 'user', 'content': 'What is the weather in Tokyo?'}],\n    tools=tools\n)"
+      }
+    },
+    "cohere": {
+      "provider": "Cohere",
+      "models": {
+        "command-r-plus": {
+          "context_window": 128000,
+          "max_output": 4096,
+          "input_price": "$3.00/1M tokens",
+          "output_price": "$15.00/1M tokens",
+          "best_for": "RAG-native features, tool use, multilingual",
+          "features": [
+            "Tool use",
+            "RAG-native",
+            "Multilingual",
+            "Streaming"
+          ]
+        },
+        "command-r": {
+          "context_window": 128000,
+          "max_output": 4096,
+          "input_price": "$0.50/1M tokens",
+          "output_price": "$1.50/1M tokens",
+          "best_for": "Cost-effective RAG, tool use",
+          "features": [
+            "Tool use",
+            "RAG-native",
+            "Streaming"
+          ]
+        }
+      },
+      "api_pattern": {
+        "code_example": "import cohere\n\nco = cohere.Client(api_key='your-api-key')\n\n# Basic completion\nresponse = co.chat(\n    model='command-r-plus',\n    message='Hello!',\n    chat_history=[]\n)\nprint(response.text)\n\n# With RAG (retrieval-augmented generation)\nresponse = co.chat(\n    model='command-r-plus',\n    message='What is machine learning?',\n    documents=[\n        {'id': 'doc1', 'text': 'Machine learning is...'},\n        {'id': 'doc2', 'text': 'Deep learning is...'}\n    ],\n    connectors=[{'id': 'web-search'}],  # Web search connector\n    citation_quality='accurate'\n)\n\n# Tool use\ntools = [{\n    'name': 'get_weather',\n    'description': 'Get weather for a location',\n    'parameter_definitions': {\n        'location': {\n            'description': 'City name',\n            'type': 'str',\n            'required': True\n        }\n    }\n}]\n\nresponse = co.chat(\n    model='command-r-plus',\n    message='What is the weather in Tokyo?',\n    tools=tools,\n    tool_results=[]\n)"
+      }
+    },
+    "replicate": {
+      "provider": "Replicate",
+      "models": {
+        "meta/llama-2-70b-chat": {
+          "context_window": 4096,
+          "max_output": 2048,
+          "input_price": "Pay-per-second",
+          "output_price": "Pay-per-second",
+          "best_for": "Community models, model hosting, prediction API",
+          "features": [
+            "Community models",
+            "Model hosting",
+            "Streaming"
+          ]
+        }
+      },
+      "api_pattern": {
+        "code_example": "import replicate\n\n# Set API token\nreplicate.Client(api_token='your-api-token')\n\n# Run prediction\noutput = replicate.run(\n    'meta/llama-2-70b-chat',\n    input={\n        'prompt': 'Hello!',\n        'max_length': 100\n    }\n)\n\n# Streaming\nfor event in replicate.stream(\n    'meta/llama-2-70b-chat',\n    input={'prompt': 'Tell me a story'}\n):\n    print(event, end='')\n\n# List available models\nmodels = replicate.models.list()\nfor model in models:\n    print(f'{model.owner}/{model.name}')"
+      }
+    },
+    "azure_openai": {
+      "provider": "Azure OpenAI",
+      "models": {
+        "gpt-4o": {
+          "context_window": 128000,
+          "max_output": 16384,
+          "input_price": "Varies by region",
+          "output_price": "Varies by region",
+          "best_for": "Enterprise, compliance, managed identity",
+          "features": [
+            "Content safety",
+            "Managed identity",
+            "Private endpoints",
+            "Compliance"
+          ]
+        },
+        "gpt-4-turbo": {
+          "context_window": 128000,
+          "max_output": 4096,
+          "input_price": "Varies by region",
+          "output_price": "Varies by region",
+          "best_for": "Enterprise deployments, legacy compatibility",
+          "features": [
+            "Content safety",
+            "Managed identity",
+            "Private endpoints"
+          ]
+        }
+      },
+      "api_pattern": {
+        "code_example": "from openai import AzureOpenAI\n\n# Using API key\nclient = AzureOpenAI(\n    api_key='your-api-key',\n    api_version='2024-02-15-preview',\n    azure_endpoint='https://your-resource.openai.azure.com'\n)\n\n# Using managed identity (from Azure VM/App Service)\nfrom azure.identity import DefaultAzureCredential\n\ncredential = DefaultAzureCredential()\ntoken = credential.get_token('https://cognitiveservices.azure.com/.default')\n\nclient = AzureOpenAI(\n    api_key=token.token,\n    api_version='2024-02-15-preview',\n    azure_endpoint='https://your-resource.openai.azure.com'\n)\n\n# Basic completion\nresponse = client.chat.completions.create(\n    model='gpt-4o',\n    messages=[{'role': 'user', 'content': 'Hello!'}],\n    deployment_id='your-deployment-name'\n)\n\n# With content safety filters\nresponse = client.chat.completions.create(\n    model='gpt-4o',\n    messages=[{'role': 'user', 'content': 'Hello!'}],\n    deployment_id='your-deployment-name',\n    filter='auto'  # Content safety filter\n)"
+      },
+      "differences_from_openai": [
+        "Requires deployment_id parameter",
+        "Uses azure_endpoint instead of base_url",
+        "Supports managed identity authentication",
+        "Content safety filters built-in",
+        "Private endpoints for network isolation",
+        "Regional availability varies"
+      ]
+    },
+    "bedrock": {
+      "provider": "Amazon Bedrock",
+      "models": {
+        "anthropic.claude-3-5-sonnet-20241022-v2:0": {
+          "context_window": 200000,
+          "max_output": 8192,
+          "input_price": "Varies by region",
+          "output_price": "Varies by region",
+          "best_for": "AWS integration, enterprise, knowledge bases",
+          "features": [
+            "Knowledge bases",
+            "Agents",
+            "Guardrails",
+            "AWS integration"
+          ]
+        },
+        "amazon.titan-text-lite-v1": {
+          "context_window": 8000,
+          "max_output": 2048,
+          "input_price": "Varies by region",
+          "output_price": "Varies by region",
+          "best_for": "Cost-effective, AWS-native",
+          "features": [
+            "AWS integration",
+            "Streaming"
+          ]
+        }
+      },
+      "api_pattern": {
+        "code_example": "import boto3\nimport json\n\nbedrock = boto3.client('bedrock-runtime', region_name='us-east-1')\n\n# Invoke model\nresponse = bedrock.invoke_model(\n    modelId='anthropic.claude-3-5-sonnet-20241022-v2:0',\n    body=json.dumps({\n        'anthropic_version': 'bedrock-2023-05-31',\n        'max_tokens': 1024,\n        'messages': [\n            {'role': 'user', 'content': 'Hello!'}\n        ]\n    })\n)\n\nresult = json.loads(response['body'].read())\nprint(result['content'][0]['text'])\n\n# Streaming\nresponse = bedrock.invoke_model_with_response_stream(\n    modelId='anthropic.claude-3-5-sonnet-20241022-v2:0',\n    body=json.dumps({\n        'anthropic_version': 'bedrock-2023-05-31',\n        'max_tokens': 1024,\n        'messages': [{'role': 'user', 'content': 'Tell me a story'}]\n    })\n)\n\nfor event in response['body']:\n    chunk = json.loads(event['chunk']['bytes'])\n    if 'delta' in chunk and 'text' in chunk['delta']:\n        print(chunk['delta']['text'], end='')\n\n# With knowledge base\nfrom langchain_aws import BedrockKnowledgeBasesRetriever\n\nretriever = BedrockKnowledgeBasesRetriever(\n    knowledge_base_id='your-kb-id',\n    retrieval_config={'vectorSearchConfiguration': {'numberOfResults': 5}}\n)\n\ndocs = retriever.invoke('What is machine learning?')"
+      },
+      "knowledge_bases": {
+        "description": "Managed RAG with Bedrock Knowledge Bases",
+        "features": [
+          "Automatic data ingestion",
+          "Vector store integration",
+          "Source attribution",
+          "Managed infrastructure"
+        ]
+      },
+      "agents": {
+        "description": "Bedrock Agents for orchestration",
+        "features": [
+          "Action groups",
+          "Lambda function integration",
+          "Orchestration",
+          "Memory"
+        ]
+      },
+      "guardrails": {
+        "description": "Content safety and filtering",
+        "features": [
+          "Content filtering",
+          "PII detection",
+          "Custom policies",
+          "Word filters"
+        ]
+      }
     }
   },
   "selection_guide": {
@@ -217,6 +517,14 @@
       "privacy_sensitive": {
         "local": "llama3.2, mistral via Ollama",
         "enterprise": "Azure OpenAI, AWS Bedrock"
+      },
+      "fast_inference": {
+        "ultra_fast": "Groq (llama-3.1-70b), Fireworks AI",
+        "fast": "Mistral AI, Together.ai"
+      },
+      "open_source": {
+        "hosted": "Together.ai, Replicate",
+        "local": "Ollama (Mistral, Llama)"
       }
     },
     "by_priority": {
@@ -297,22 +605,171 @@
   },
   "langchain_integration": {
     "description": "Use providers through LangChain abstraction",
-    "code_example": "from langchain_openai import ChatOpenAI\nfrom langchain_anthropic import ChatAnthropic\nfrom langchain_google_genai import ChatGoogleGenerativeAI\nfrom langchain_community.chat_models import ChatOllama\n\n# OpenAI\nllm_openai = ChatOpenAI(model='gpt-4o', temperature=0.7)\n\n# Anthropic\nllm_anthropic = ChatAnthropic(model='claude-3-5-sonnet-20241022')\n\n# Google\nllm_google = ChatGoogleGenerativeAI(model='gemini-2.0-flash')\n\n# Local (Ollama)\nllm_local = ChatOllama(model='llama3.2')\n\n# All share same interface\nresponse = llm_openai.invoke('Hello!')\nresponse = llm_anthropic.invoke('Hello!')\nresponse = llm_google.invoke('Hello!')\nresponse = llm_local.invoke('Hello!')"
+    "code_example": "from langchain_openai import ChatOpenAI\nfrom langchain_anthropic import ChatAnthropic\nfrom langchain_google_genai import ChatGoogleGenerativeAI\nfrom langchain_community.chat_models import ChatOllama, ChatMistralAI\nfrom langchain_aws import ChatBedrock\n\n# OpenAI\nllm_openai = ChatOpenAI(model='gpt-4o', temperature=0.7)\n\n# Anthropic\nllm_anthropic = ChatAnthropic(model='claude-3-5-sonnet-20241022')\n\n# Google\nllm_google = ChatGoogleGenerativeAI(model='gemini-2.0-flash')\n\n# Local (Ollama)\nllm_local = ChatOllama(model='llama3.2')\n\n# Mistral AI\nllm_mistral = ChatMistralAI(model='mistral-large-latest')\n\n# Azure OpenAI (use ChatOpenAI with azure_endpoint)\nllm_azure = ChatOpenAI(\n    azure_endpoint='https://your-resource.openai.azure.com',\n    api_version='2024-02-15-preview',\n    model='gpt-4o'\n)\n\n# AWS Bedrock\nllm_bedrock = ChatBedrock(\n    model_id='anthropic.claude-3-5-sonnet-20241022-v2:0',\n    region_name='us-east-1'\n)\n\n# All share same interface\nresponse = llm_openai.invoke('Hello!')\nresponse = llm_anthropic.invoke('Hello!')\nresponse = llm_google.invoke('Hello!')\nresponse = llm_local.invoke('Hello!')\nresponse = llm_mistral.invoke('Hello!')\nresponse = llm_azure.invoke('Hello!')\nresponse = llm_bedrock.invoke('Hello!')"
   },
-  "best_practices_summary": [
-    "Start with cheaper models, upgrade as needed",
-    "Use structured outputs for reliable parsing",
-    "Implement retry logic with exponential backoff",
-    "Monitor token usage and costs",
-    "Cache responses when appropriate",
-    "Use LangChain for provider flexibility",
-    "Test with multiple providers to compare",
-    "Consider privacy requirements for model selection"
+  "patterns": {
+    "provider_abstraction": {
+      "description": "Use LangChain or similar abstraction layer to switch between providers without code changes",
+      "implementation": "Wrap provider-specific code in abstraction layer, use consistent interface across providers",
+      "benefits": [
+        "Flexibility",
+        "Easy switching",
+        "Reduced vendor lock-in"
+      ],
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "Wrap provider-specific code in abstraction layer, use consistent interface across providers",
+      "best_practices": [
+        "Start with cheaper models (gpt-4o-mini, claude-3-haiku, gemini-2.0-flash) for simple tasks and upgrade to premium models only when needed",
+        "Use structured outputs (JSON mode, tool use, function calling) for reliable parsing and type safety",
+        "Implement retry logic with exponential backoff (tenacity library) for rate limits and transient errors",
+        "Monitor token usage and costs per request, set up alerts for budget thresholds to optimize spending",
+        "Cache responses for identical or semantically similar queries using exact match or semantic caching"
+      ]
+    },
+    "model_tiering": {
+      "description": "Route simple tasks to cheaper models (gpt-4o-mini, claude-3-haiku) and complex tasks to premium models",
+      "implementation": "Classify task complexity, route to appropriate model tier based on requirements",
+      "benefits": [
+        "Cost optimization",
+        "Performance balance",
+        "Scalability"
+      ],
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "Classify task complexity, route to appropriate model tier based on requirements",
+      "best_practices": [
+        "Start with cheaper models (gpt-4o-mini, claude-3-haiku, gemini-2.0-flash) for simple tasks and upgrade to premium models only when needed",
+        "Use structured outputs (JSON mode, tool use, function calling) for reliable parsing and type safety",
+        "Implement retry logic with exponential backoff (tenacity library) for rate limits and transient errors",
+        "Monitor token usage and costs per request, set up alerts for budget thresholds to optimize spending",
+        "Cache responses for identical or semantically similar queries using exact match or semantic caching"
+      ]
+    },
+    "structured_output_consistency": {
+      "description": "Use provider-specific structured output features (JSON mode, tool use) for reliable parsing",
+      "implementation": "OpenAI: response_format={'type': 'json_object'}, Anthropic: tool use, Google: function calling",
+      "benefits": [
+        "Reliable parsing",
+        "Type safety",
+        "Consistent format"
+      ],
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "OpenAI: response_format={'type': 'json_object'}, Anthropic: tool use, Google: function calling",
+      "best_practices": [
+        "Start with cheaper models (gpt-4o-mini, claude-3-haiku, gemini-2.0-flash) for simple tasks and upgrade to premium models only when needed",
+        "Use structured outputs (JSON mode, tool use, function calling) for reliable parsing and type safety",
+        "Implement retry logic with exponential backoff (tenacity library) for rate limits and transient errors",
+        "Monitor token usage and costs per request, set up alerts for budget thresholds to optimize spending",
+        "Cache responses for identical or semantically similar queries using exact match or semantic caching"
+      ]
+    },
+    "retry_with_backoff": {
+      "description": "Implement exponential backoff retry logic for rate limits and transient errors",
+      "implementation": "Use tenacity library or custom retry logic with exponential delays and max attempts",
+      "benefits": [
+        "Resilience",
+        "Handles rate limits",
+        "Better reliability"
+      ],
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "Use tenacity library or custom retry logic with exponential delays and max attempts",
+      "best_practices": [
+        "Start with cheaper models (gpt-4o-mini, claude-3-haiku, gemini-2.0-flash) for simple tasks and upgrade to premium models only when needed",
+        "Use structured outputs (JSON mode, tool use, function calling) for reliable parsing and type safety",
+        "Implement retry logic with exponential backoff (tenacity library) for rate limits and transient errors",
+        "Monitor token usage and costs per request, set up alerts for budget thresholds to optimize spending",
+        "Cache responses for identical or semantically similar queries using exact match or semantic caching"
+      ]
+    },
+    "cost_monitoring": {
+      "description": "Track token usage and costs per request to optimize spending and detect anomalies",
+      "implementation": "Log input/output tokens, calculate costs, set up alerts for budget thresholds",
+      "benefits": [
+        "Cost control",
+        "Optimization",
+        "Budget management"
+      ],
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "Log input/output tokens, calculate costs, set up alerts for budget thresholds",
+      "best_practices": [
+        "Start with cheaper models (gpt-4o-mini, claude-3-haiku, gemini-2.0-flash) for simple tasks and upgrade to premium models only when needed",
+        "Use structured outputs (JSON mode, tool use, function calling) for reliable parsing and type safety",
+        "Implement retry logic with exponential backoff (tenacity library) for rate limits and transient errors",
+        "Monitor token usage and costs per request, set up alerts for budget thresholds to optimize spending",
+        "Cache responses for identical or semantically similar queries using exact match or semantic caching"
+      ]
+    },
+    "response_caching": {
+      "description": "Cache LLM responses for identical or semantically similar queries to reduce costs",
+      "implementation": "Use exact match caching for identical queries, semantic caching for similar queries",
+      "benefits": [
+        "Cost reduction",
+        "Faster responses",
+        "Consistency"
+      ],
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "Use exact match caching for identical queries, semantic caching for similar queries",
+      "best_practices": [
+        "Start with cheaper models (gpt-4o-mini, claude-3-haiku, gemini-2.0-flash) for simple tasks and upgrade to premium models only when needed",
+        "Use structured outputs (JSON mode, tool use, function calling) for reliable parsing and type safety",
+        "Implement retry logic with exponential backoff (tenacity library) for rate limits and transient errors",
+        "Monitor token usage and costs per request, set up alerts for budget thresholds to optimize spending",
+        "Cache responses for identical or semantically similar queries using exact match or semantic caching"
+      ]
+    },
+    "fallback_strategy": {
+      "description": "Implement fallback to alternative providers or models when primary provider fails",
+      "implementation": "Try primary provider, catch errors, fallback to secondary provider with same request",
+      "benefits": [
+        "High availability",
+        "Resilience",
+        "Service continuity"
+      ],
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "Try primary provider, catch errors, fallback to secondary provider with same request",
+      "best_practices": [
+        "Start with cheaper models (gpt-4o-mini, claude-3-haiku, gemini-2.0-flash) for simple tasks and upgrade to premium models only when needed",
+        "Use structured outputs (JSON mode, tool use, function calling) for reliable parsing and type safety",
+        "Implement retry logic with exponential backoff (tenacity library) for rate limits and transient errors",
+        "Monitor token usage and costs per request, set up alerts for budget thresholds to optimize spending",
+        "Cache responses for identical or semantically similar queries using exact match or semantic caching"
+      ]
+    }
+  },
+  "best_practices": [
+    "Start with cheaper models (gpt-4o-mini, claude-3-haiku, gemini-2.0-flash) for simple tasks and upgrade to premium models only when needed",
+    "Use structured outputs (JSON mode, tool use, function calling) for reliable parsing and type safety",
+    "Implement retry logic with exponential backoff (tenacity library) for rate limits and transient errors",
+    "Monitor token usage and costs per request, set up alerts for budget thresholds to optimize spending",
+    "Cache responses for identical or semantically similar queries using exact match or semantic caching",
+    "Use LangChain or similar abstraction layer for provider flexibility and easy switching between providers",
+    "Test with multiple providers on representative samples to compare quality, cost, and latency before committing",
+    "Consider privacy requirements (local models, enterprise APIs) and compliance needs when selecting providers"
   ],
-  "id": "llm-provider-comparison",
-  "name": "Llm Provider Comparison",
-  "category": "patterns",
-  "patterns": {},
-  "best_practices": [],
-  "anti_patterns": []
+  "anti_patterns": [
+    {
+      "name": "Provider Lock-in",
+      "problem": "Hardcoding provider-specific code makes it difficult to switch providers or compare alternatives",
+      "solution": "Use abstraction layers (LangChain) and design provider-agnostic interfaces to enable easy switching"
+    },
+    {
+      "name": "Ignoring Cost Implications",
+      "problem": "Using expensive models for simple tasks wastes budget and reduces scalability",
+      "solution": "Implement model tiering: route simple tasks to cheaper models, reserve premium models for complex reasoning"
+    },
+    {
+      "name": "No Error Handling",
+      "problem": "Failing to handle rate limits, context length errors, and API failures leads to poor user experience",
+      "solution": "Implement retry logic with exponential backoff, handle context length errors with truncation, add fallback providers"
+    },
+    {
+      "name": "Missing Cost Monitoring",
+      "problem": "Not tracking token usage and costs leads to unexpected bills and inability to optimize spending",
+      "solution": "Log all API calls with token counts, calculate costs per request, set up budget alerts and dashboards"
+    },
+    {
+      "name": "No Response Caching",
+      "problem": "Repeatedly calling LLMs for identical or similar queries wastes money and increases latency",
+      "solution": "Implement caching layer (Redis, in-memory) for exact matches and semantic similarity for cost reduction"
+    }
+  ]
 }

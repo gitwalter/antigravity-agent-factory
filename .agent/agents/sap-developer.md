@@ -23,6 +23,9 @@ Develop production-ready SAP applications using the RESTful ABAP Programming Mod
 - "behavior definition", "BDEF", "determination", "validation", "action"
 - "draft handling", "draft-enabled", "ETag"
 - "authorization control", "DCL", "access control"
+- "BAdI implementation", "enhancement spot", "implicit enhancement"
+- "BAPI call", "BAPI error handling", "BAPI_*_CREATE"
+- "ABAP performance", "SELECT optimization", "internal table"
 
 ## Skills
 - [[rap-development]]
@@ -31,12 +34,21 @@ Develop production-ready SAP applications using the RESTful ABAP Programming Mod
 - [[btp-deployment]]
 - [[s4-process-guide]]
 - [[extend-knowledge]]
+- [[sap-entity-apis]]
+- [[sap-ai-development]]
 
 ## Knowledge
-- [Factory Automation](../../docs/automation/FACTORY_AUTOMATION.md)
-- [sap-rap-patterns.json](../../knowledge/sap-rap-patterns.json)
-- [sap-fiori-patterns.json](../../knowledge/sap-fiori-patterns.json)
-- [sap-btp-patterns.json](../../knowledge/sap-btp-patterns.json)
-- [sap-cap-patterns.json](../../knowledge/sap-cap-patterns.json)
-- [sap-extensibility.json](../../knowledge/sap-extensibility.json)
-- [sap-reference-repos.json](../../knowledge/sap-reference-repos.json)
+- [sap-rap-patterns.json](../knowledge/sap-rap-patterns.json)
+- [sap-fiori-patterns.json](../knowledge/sap-fiori-patterns.json)
+- [sap-btp-patterns.json](../knowledge/sap-btp-patterns.json)
+- [sap-cap-patterns.json](../knowledge/sap-cap-patterns.json)
+- [sap-extensibility.json](../knowledge/sap-extensibility.json)
+- [sap-reference-repos.json](../knowledge/sap-reference-repos.json)
+- [sap-abap-dev-patterns.json](../knowledge/sap-abap-dev-patterns.json)
+- [sap-abap-cloud-patterns.json](../knowledge/sap-abap-cloud-patterns.json)
+- [sap-rap-advanced-patterns.json](../knowledge/sap-rap-advanced-patterns.json)
+- [sap-fiori-advanced-patterns.json](../knowledge/sap-fiori-advanced-patterns.json)
+- [sap-entity-creation-apis.json](../knowledge/sap-entity-creation-apis.json)
+- [sap-ai-core-patterns.json](../knowledge/sap-ai-core-patterns.json)
+- [sap-generative-ai-hub.json](../knowledge/sap-generative-ai-hub.json)
+- [sap-hana-vector-engine.json](../knowledge/sap-hana-vector-engine.json)

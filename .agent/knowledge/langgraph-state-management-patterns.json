@@ -1,9 +1,28 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "langgraph-state-management-patterns",
   "name": "LangGraph State Management Patterns",
-  "description": "Patterns for managing state in LangGraph workflows",
+  "title": "LangGraph State Management Patterns",
+  "description": "Patterns for managing state in LangGraph workflows including TypedDict schemas, reducers, checkpointing, and interrupt points",
   "version": "1.0.0",
-  "category": "agent-development",
+  "category": "core",
+  "axiomAlignment": {
+    "A1_verifiability": "State schemas and checkpointing enable verifiable workflow execution and recovery",
+    "A2_user_primacy": "Thread isolation and partial updates preserve user workflow context",
+    "A3_transparency": "Explicit reducers and state schemas make accumulation behavior traceable",
+    "A4_non_harm": "Proper reducer usage and state validation prevent data corruption",
+    "A5_consistency": "Unified state patterns across LangGraph workflows ensure predictable behavior"
+  },
+  "related_skills": [
+    "state-management",
+    "langgraph-agent-building",
+    "memory-management"
+  ],
+  "related_knowledge": [
+    "langgraph-workflows.json",
+    "memory-patterns.json",
+    "hitl-patterns.json"
+  ],
   "state_schema": {
     "typed_dict": {
       "description": "Define state with TypedDict",
@@ -76,18 +95,36 @@
         "configurable": {
           "thread_id": "unique_id"
         }
-      }
+      },
+      "use_when": "Apply when thread management is needed in LangGraph State Management Patterns",
+      "code_example": "\nconfig = {\"configurable\": {\"thread_id\": str(uuid4())}}\napp.invoke(input, config)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "interrupt_points": {
       "description": "Pause execution for human input",
       "options": [
         "interrupt_before",
         "interrupt_after"
+      ],
+      "use_when": "Apply when interrupt points is needed in LangGraph State Management Patterns",
+      "code_example": "# Implement interrupt_points per state-patterns patterns\n# See description and related documentation",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
       ]
     },
     "state_update": {
       "description": "Nodes return partial state updates",
-      "rule": "Return dict with only fields to update"
+      "rule": "Return dict with only fields to update",
+      "use_when": "Apply when state update is needed in LangGraph State Management Patterns",
+      "code_example": "# Implement state_update per state-patterns patterns\n# See description and related documentation",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
     }
   },
   "best_practices": [
@@ -126,10 +163,5 @@
       "problem": "Returning complete state from nodes overwrites unchanged fields unnecessarily, causing performance issues and potential conflicts",
       "solution": "Return only fields that changed in partial state updates, letting LangGraph merge with existing state using reducers"
     }
-  ],
-  "related_skills": [
-    "state-management",
-    "langgraph-agent-building",
-    "memory-management"
   ]
 }

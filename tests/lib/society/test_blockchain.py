@@ -5,7 +5,7 @@ Tests Merkle trees, anchoring, and attestations.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from lib.society.blockchain import (
     MerkleNode,
@@ -349,7 +349,7 @@ class TestAttestation:
             subject="s1",
             claim={},
             attester="att1",
-            expires=datetime.utcnow() - timedelta(hours=1),
+            expires=datetime.now(timezone.utc) - timedelta(hours=1),
         )
         assert not expired.is_valid
     

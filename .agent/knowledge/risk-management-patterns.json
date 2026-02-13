@@ -5,9 +5,13 @@
   "title": "Risk Management Patterns",
   "description": "Position sizing, stop-loss strategies, and portfolio risk management",
   "version": "1.0.0",
-  "category": "reference",
+  "category": "core",
   "axiomAlignment": {
-    "A4_non_harm": "Risk management protects capital and prevents catastrophic losses"
+    "A4_non_harm": "Risk management protects capital and prevents catastrophic losses",
+    "A1_verifiability": "All patterns include verifiable examples and test approaches",
+    "A2_user_primacy": "Patterns prioritize user needs and practical outcomes",
+    "A3_transparency": "Pattern selection rationale is clearly documented",
+    "A5_consistency": "Patterns follow established conventions and standards"
   },
   "position_sizing": {
     "fixed_percentage": {
@@ -18,7 +22,12 @@
         "conservative": "0.5% - 1%",
         "moderate": "1% - 2%",
         "aggressive": "2% - 5%"
-      }
+      },
+      "use_when": "Apply when implementing fixed percentage in trading context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for fixed_percentage",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "volatility_adjusted": {
       "description": "Size inversely proportional to volatility",
@@ -28,6 +37,11 @@
         "Equalizes risk across different assets",
         "Reduces position in volatile markets",
         "More stable portfolio volatility"
+      ],
+      "use_when": "Apply when implementing volatility adjusted in trading context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for volatility_adjusted",
+        "Validate implementation against domain requirements before deployment"
       ]
     },
     "kelly_criterion": {
@@ -38,6 +52,11 @@
         "Full Kelly is very aggressive",
         "Use quarter or half Kelly in practice",
         "Requires accurate win rate and payoff estimates"
+      ],
+      "use_when": "Apply when implementing kelly criterion in trading context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for kelly_criterion",
+        "Validate implementation against domain requirements before deployment"
       ]
     }
   },
@@ -45,7 +64,12 @@
     "fixed_percentage": {
       "description": "Exit at fixed percentage loss from entry",
       "code_example": "def fixed_stop_loss(entry_price: float, stop_percent: float, is_long: bool = True) -> float:\n    \"\"\"Calculate fixed percentage stop loss.\"\"\"\n    if is_long:\n        return entry_price * (1 - stop_percent)\n    else:\n        return entry_price * (1 + stop_percent)",
-      "typical_values": "1% - 5% depending on timeframe"
+      "typical_values": "1% - 5% depending on timeframe",
+      "use_when": "Apply when implementing fixed percentage in trading context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for fixed_percentage",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "atr_based": {
       "description": "Stop loss based on Average True Range",
@@ -54,6 +78,11 @@
         "Adapts to market volatility",
         "Wider stops in volatile markets",
         "Tighter stops in calm markets"
+      ],
+      "use_when": "Apply when implementing atr based in trading context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for atr_based",
+        "Validate implementation against domain requirements before deployment"
       ]
     },
     "trailing_stop": {
@@ -63,33 +92,64 @@
         "Chandelier Exit (ATR-based trailing)",
         "Parabolic SAR trailing",
         "Moving average trailing"
+      ],
+      "use_when": "Apply when implementing trailing stop in trading context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for trailing_stop",
+        "Validate implementation against domain requirements before deployment"
       ]
     },
     "time_based": {
       "description": "Exit after maximum holding period",
       "use_when": "Strategy has expected holding period",
-      "code_example": "def time_stop(\n    entry_time: datetime,\n    current_time: datetime,\n    max_holding_days: int\n) -> bool:\n    \"\"\"Check if time stop is triggered.\"\"\"\n    holding_period = (current_time - entry_time).days\n    return holding_period >= max_holding_days"
+      "code_example": "def time_stop(\n    entry_time: datetime,\n    current_time: datetime,\n    max_holding_days: int\n) -> bool:\n    \"\"\"Check if time stop is triggered.\"\"\"\n    holding_period = (current_time - entry_time).days\n    return holding_period >= max_holding_days",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for time_based",
+        "Validate implementation against domain requirements before deployment"
+      ]
     }
   },
   "portfolio_risk": {
     "correlation_limits": {
       "description": "Limit exposure to correlated assets",
-      "code_example": "def check_correlation_limit(\n    current_positions: dict,\n    new_position: str,\n    correlation_matrix: pd.DataFrame,\n    max_correlation: float = 0.7\n) -> bool:\n    \"\"\"\n    Check if new position violates correlation limits.\n    \n    Returns:\n        True if position is acceptable, False if too correlated\n    \"\"\"\n    for existing in current_positions:\n        if existing == new_position:\n            continue\n        \n        corr = correlation_matrix.loc[existing, new_position]\n        if abs(corr) > max_correlation:\n            return False\n    \n    return True"
+      "code_example": "def check_correlation_limit(\n    current_positions: dict,\n    new_position: str,\n    correlation_matrix: pd.DataFrame,\n    max_correlation: float = 0.7\n) -> bool:\n    \"\"\"\n    Check if new position violates correlation limits.\n    \n    Returns:\n        True if position is acceptable, False if too correlated\n    \"\"\"\n    for existing in current_positions:\n        if existing == new_position:\n            continue\n        \n        corr = correlation_matrix.loc[existing, new_position]\n        if abs(corr) > max_correlation:\n            return False\n    \n    return True",
+      "use_when": "Apply when implementing correlation limits in trading context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for correlation_limits",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "sector_limits": {
       "description": "Limit exposure to single sector",
       "typical_limits": {
         "per_sector": "20-25%",
         "per_asset": "5-10%"
-      }
+      },
+      "use_when": "Apply when implementing sector limits in trading context",
+      "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for sector_limits",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "drawdown_limits": {
       "description": "Reduce exposure during drawdowns",
-      "code_example": "class DrawdownBasedRisk:\n    \"\"\"\n    Reduce risk during drawdowns.\n    \"\"\"\n    \n    def __init__(self, base_risk: float = 0.02, max_drawdown: float = 0.20):\n        self.base_risk = base_risk\n        self.max_drawdown = max_drawdown\n        self.peak_equity = None\n    \n    def get_risk_multiplier(self, current_equity: float) -> float:\n        \"\"\"\n        Calculate risk multiplier based on current drawdown.\n        \"\"\"\n        if self.peak_equity is None:\n            self.peak_equity = current_equity\n        \n        self.peak_equity = max(self.peak_equity, current_equity)\n        \n        drawdown = (self.peak_equity - current_equity) / self.peak_equity\n        \n        if drawdown >= self.max_drawdown:\n            return 0  # Stop trading\n        \n        # Linear reduction\n        multiplier = 1 - (drawdown / self.max_drawdown)\n        return max(0.25, multiplier)  # Minimum 25% of base risk\n    \n    def get_adjusted_risk(self, current_equity: float) -> float:\n        \"\"\"Get adjusted risk percentage.\"\"\"\n        return self.base_risk * self.get_risk_multiplier(current_equity)"
+      "code_example": "class DrawdownBasedRisk:\n    \"\"\"\n    Reduce risk during drawdowns.\n    \"\"\"\n    \n    def __init__(self, base_risk: float = 0.02, max_drawdown: float = 0.20):\n        self.base_risk = base_risk\n        self.max_drawdown = max_drawdown\n        self.peak_equity = None\n    \n    def get_risk_multiplier(self, current_equity: float) -> float:\n        \"\"\"\n        Calculate risk multiplier based on current drawdown.\n        \"\"\"\n        if self.peak_equity is None:\n            self.peak_equity = current_equity\n        \n        self.peak_equity = max(self.peak_equity, current_equity)\n        \n        drawdown = (self.peak_equity - current_equity) / self.peak_equity\n        \n        if drawdown >= self.max_drawdown:\n            return 0  # Stop trading\n        \n        # Linear reduction\n        multiplier = 1 - (drawdown / self.max_drawdown)\n        return max(0.25, multiplier)  # Minimum 25% of base risk\n    \n    def get_adjusted_risk(self, current_equity: float) -> float:\n        \"\"\"Get adjusted risk percentage.\"\"\"\n        return self.base_risk * self.get_risk_multiplier(current_equity)",
+      "use_when": "Apply when implementing drawdown limits in trading context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for drawdown_limits",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "var_limits": {
       "description": "Limit portfolio Value-at-Risk",
-      "implementation": "Reduce positions if VaR exceeds threshold"
+      "implementation": "Reduce positions if VaR exceeds threshold",
+      "use_when": "Apply when implementing var limits in trading context",
+      "code_example": "Reduce positions if VaR exceeds threshold",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for var_limits",
+        "Validate implementation against domain requirements before deployment"
+      ]
     }
   },
   "risk_alerts": {
@@ -111,6 +171,12 @@
         "Close all positions",
         "Cancel pending orders",
         "Alert human operator"
+      ],
+      "use_when": "Apply when implementing circuit breaker in trading context",
+      "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for circuit_breaker",
+        "Validate implementation against domain requirements before deployment"
       ]
     },
     "deleveraging": {
@@ -119,6 +185,12 @@
         "Largest losing positions",
         "Most volatile positions",
         "Largest positions"
+      ],
+      "use_when": "Apply when implementing deleveraging in trading context",
+      "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for deleveraging",
+        "Validate implementation against domain requirements before deployment"
       ]
     }
   },
@@ -135,7 +207,13 @@
   "patterns": {
     "general": {
       "description": "Position sizing, stop-loss strategies, and portfolio risk management",
-      "usage": "See detailed sections below"
+      "usage": "See detailed sections below",
+      "use_when": "Apply when implementing general in trading context",
+      "code_example": "See detailed sections below",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for general",
+        "Validate implementation against domain requirements before deployment"
+      ]
     }
   },
   "anti_patterns": [
@@ -144,5 +222,11 @@
       "problem": "Leads to misuse",
       "solution": "Always read docs first"
     }
+  ],
+  "related_skills": [
+    "none"
+  ],
+  "related_knowledge": [
+    "best-practices.json"
   ]
 }

@@ -1,12 +1,27 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "ml-workflow-patterns",
+  "name": "ML Workflow Patterns",
   "title": "ML Workflow Patterns",
   "description": "Framework-agnostic machine learning workflow patterns for data preparation, model training, evaluation, and deployment",
   "version": "1.0.0",
+  "category": "ai-ml",
   "axiomAlignment": {
     "A1_verifiability": "All patterns include metrics and validation steps for reproducibility",
-    "A3_transparency": "Patterns document assumptions and data transformations explicitly"
+    "A2_user_primacy": "Workflows serve user goals through validated preprocessing and evaluation",
+    "A3_transparency": "Patterns document assumptions and data transformations explicitly",
+    "A4_non_harm": "Data leakage prevention and pipeline validation prevent model harm",
+    "A5_consistency": "Unified sklearn pipeline and workflow patterns"
   },
+  "related_skills": [
+    "data-pipeline",
+    "model-training"
+  ],
+  "related_knowledge": [
+    "model-training-patterns.json",
+    "mlops-patterns.json",
+    "data-pipeline-patterns.json"
+  ],
   "data_preparation": {
     "train_test_split": {
       "description": "Split data into training and testing sets with stratification",
@@ -59,7 +74,7 @@
     "handling_categorical": {
       "description": "Encode categorical variables for ML algorithms",
       "use_when": "Dataset contains categorical features",
-      "code_example": "from sklearn.preprocessing import LabelEncoder, OneHotEncoder, OrdinalEncoder\nfrom sklearn.compose import ColumnTransformer\nimport pandas as pd\n\n# Identify categorical columns\ncategorical_cols = X.select_dtypes(include=['object', 'category']).columns.tolist()\n\n# One-Hot Encoding (nominal categories)\nonehot = OneHotEncoder(sparse_output=False, handle_unknown='ignore')\nX_onehot = onehot.fit_transform(X[categorical_cols])\n\n# Ordinal Encoding (ordered categories)\nordinal = OrdinalEncoder(categories=[[low-medium-high]])\nX_ordinal = ordinal.fit_transform(X[[priority]])\n\n# Label Encoding (for target variable)\nlabel_encoder = LabelEncoder()\ny_encoded = label_encoder.fit_transform(y)\n\n# Combined preprocessing with ColumnTransformer\npreprocessor = ColumnTransformer(\n    transformers=[\n        ('num', StandardScaler(), numeric_cols),\n        ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_cols)\n    ]\n)\n\nX_processed = preprocessor.fit_transform(X)",
+      "code_example": "from sklearn.preprocessing import LabelEncoder, OneHotEncoder, OrdinalEncoder\nfrom sklearn.compose import ColumnTransformer\nimport pandas as pd\n\n# Identify categorical columns\ncategorical_cols = X.select_dtypes(include=['object', 'category']).columns.tolist()\n\n# One-Hot Encoding (nominal categories)\nonehot = OneHotEncoder(sparse_output=False, handle_unknown='ignore')\nX_onehot = onehot.fit_transform(X[categorical_cols])\n\n# Ordinal Encoding (ordered categories)\nordinal = OrdinalEncoder(categories=[['low', 'medium', 'high']])\nX_ordinal = ordinal.fit_transform(X[['priority']])\n\n# Label Encoding (for target variable)\nlabel_encoder = LabelEncoder()\ny_encoded = label_encoder.fit_transform(y)\n\n# Combined preprocessing with ColumnTransformer\npreprocessor = ColumnTransformer(\n    transformers=[\n        ('num', StandardScaler(), numeric_cols),\n        ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_cols)\n    ]\n)\n\nX_processed = preprocessor.fit_transform(X)",
       "best_practices": [
         "Use OneHotEncoder for nominal categories (no order)",
         "Use OrdinalEncoder for ordered categories",
@@ -182,34 +197,29 @@
   },
   "anti_patterns": [
     {
-      "name": "data_leakage",
-      "description": "Using test data information during training",
-      "problem": "Overly optimistic performance estimates",
-      "solution": "Fit preprocessing only on training data; use pipelines"
+      "name": "Data leakage from using test data information during training",
+      "problem": "Overly optimistic performance estimates that don't reflect real-world performance",
+      "solution": "Fit preprocessing (scalers, imputers) only on training data; use sklearn Pipeline to automate"
     },
     {
-      "name": "target_leakage",
-      "description": "Features that contain information about the target that won't be available at prediction time",
-      "problem": "Model performs well in training but fails in production",
-      "solution": "Carefully review feature engineering; understand data collection timeline"
+      "name": "Target leakage from features unavailable at prediction time",
+      "problem": "Model performs well in training but fails in production due to unavailable features",
+      "solution": "Carefully review feature engineering; understand data collection timeline and feature availability"
     },
     {
-      "name": "training_on_test",
-      "description": "Using test set for model selection or tuning",
-      "problem": "Test set no longer provides unbiased estimate",
-      "solution": "Use train/validation/test split or cross-validation"
+      "name": "Training on test set for model selection",
+      "problem": "Test set no longer provides unbiased performance estimate after hyperparameter tuning",
+      "solution": "Use train/validation/test split or nested cross-validation; only evaluate final model on test set"
     },
     {
-      "name": "no_baseline",
-      "description": "Not comparing model to simple baseline",
-      "problem": "Cannot assess if complex model is worthwhile",
-      "solution": "Always compare to DummyClassifier/DummyRegressor"
+      "name": "Not comparing to simple baseline",
+      "problem": "Cannot assess if complex model provides value over simple rules",
+      "solution": "Always compare to DummyClassifier/DummyRegressor to establish performance floor"
     },
     {
-      "name": "ignoring_class_imbalance",
-      "description": "Using accuracy on imbalanced datasets",
-      "problem": "Model may just predict majority class",
-      "solution": "Use F1, precision, recall, or ROC-AUC; handle imbalance"
+      "name": "Ignoring class imbalance and using accuracy",
+      "problem": "Model may just predict majority class, accuracy metric is misleading",
+      "solution": "Use F1, precision, recall, or ROC-AUC metrics; handle imbalance with class_weight or SMOTE"
     }
   ],
   "best_practices_summary": [
@@ -223,9 +233,60 @@
     "Validate on held-out test set only once",
     "Monitor for data drift in production"
   ],
-  "id": "ml-workflow-patterns",
-  "name": "Ml Workflow Patterns",
-  "category": "patterns",
-  "patterns": {},
-  "best_practices": []
+  "patterns": {
+    "data_preparation": {
+      "description": "Patterns for preparing data for machine learning",
+      "train_test_split": "Split data with stratification for classification to maintain class distribution",
+      "cross_validation": "Use K-fold cross-validation for robust performance estimates with limited data",
+      "feature_scaling": "Scale features (StandardScaler) for distance-based algorithms and neural networks",
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "# Implement pattern based on description\n# Use appropriate imports and domain-specific logic\nresult = process_data(input_data)",
+      "best_practices": [
+        "Always split data before any preprocessing to prevent data leakage from test set",
+        "Use pipelines (sklearn Pipeline) to prevent data leakage and ensure reproducible workflows",
+        "Set random_state for reproducibility in train_test_split, cross-validation, and models",
+        "Start with simple baselines (DummyClassifier/DummyRegressor) to establish performance floor",
+        "Choose metrics aligned with business goals (F1 for imbalanced classes, not just accuracy)"
+      ]
+    },
+    "model_selection": {
+      "description": "Patterns for selecting and tuning models",
+      "hyperparameter_tuning": "Use GridSearchCV for small spaces, RandomizedSearchCV for large parameter spaces",
+      "model_comparison": "Compare multiple algorithms using same cross-validation strategy",
+      "pipeline": "Create end-to-end pipelines combining preprocessing and modeling",
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "# Implement pattern based on description\n# Use appropriate imports and domain-specific logic\nresult = process_data(input_data)",
+      "best_practices": [
+        "Always split data before any preprocessing to prevent data leakage from test set",
+        "Use pipelines (sklearn Pipeline) to prevent data leakage and ensure reproducible workflows",
+        "Set random_state for reproducibility in train_test_split, cross-validation, and models",
+        "Start with simple baselines (DummyClassifier/DummyRegressor) to establish performance floor",
+        "Choose metrics aligned with business goals (F1 for imbalanced classes, not just accuracy)"
+      ]
+    },
+    "evaluation": {
+      "description": "Patterns for evaluating model performance",
+      "classification_metrics": "Use F1 for imbalanced classes, ROC-AUC for ranking ability",
+      "regression_metrics": "Use RMSE for same units as target, R\u00b2 for variance explained",
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "# Implement pattern based on description\n# Use appropriate imports and domain-specific logic\nresult = process_data(input_data)",
+      "best_practices": [
+        "Always split data before any preprocessing to prevent data leakage from test set",
+        "Use pipelines (sklearn Pipeline) to prevent data leakage and ensure reproducible workflows",
+        "Set random_state for reproducibility in train_test_split, cross-validation, and models",
+        "Start with simple baselines (DummyClassifier/DummyRegressor) to establish performance floor",
+        "Choose metrics aligned with business goals (F1 for imbalanced classes, not just accuracy)"
+      ]
+    }
+  },
+  "best_practices": [
+    "Always split data before any preprocessing to prevent data leakage from test set",
+    "Use pipelines (sklearn Pipeline) to prevent data leakage and ensure reproducible workflows",
+    "Set random_state for reproducibility in train_test_split, cross-validation, and models",
+    "Start with simple baselines (DummyClassifier/DummyRegressor) to establish performance floor",
+    "Choose metrics aligned with business goals (F1 for imbalanced classes, not just accuracy)",
+    "Document all preprocessing decisions including imputation strategies and feature engineering",
+    "Version your models and data using semantic versioning and commit hashes",
+    "Validate on held-out test set only once at the end to get unbiased performance estimate"
+  ]
 }

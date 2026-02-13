@@ -28,7 +28,7 @@ Build production-ready Spring Boot applications including REST APIs, JPA data ac
 - [[error-handling]]
 
 ## Knowledge
-- [Factory Automation](../../docs/automation/FACTORY_AUTOMATION.md)
-- [spring-patterns.json](../../knowledge/spring-patterns.json)
-- [spring-microservices-patterns.json](../../knowledge/spring-microservices-patterns.json)
-- [testcontainers-patterns.json](../../knowledge/testcontainers-patterns.json)
+- [spring-patterns.json](../knowledge/spring-patterns.json)
+- [spring-microservices-patterns.json](../knowledge/spring-microservices-patterns.json)
+- [spring-kotlin-patterns.json](../knowledge/spring-kotlin-patterns.json)
+- [testcontainers-patterns.json](../knowledge/testcontainers-patterns.json)

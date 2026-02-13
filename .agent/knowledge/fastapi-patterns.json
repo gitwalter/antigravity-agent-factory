@@ -1,13 +1,31 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "fastapi-patterns",
+  "name": "FastAPI Patterns",
   "title": "FastAPI Patterns",
-  "description": "Production-grade patterns for FastAPI 0.115+ applications",
+  "description": "Production-grade patterns for FastAPI 0.115+ applications including domain-driven layout, Pydantic v2, async, and dependency injection",
   "version": "1.0.0",
+  "category": "web",
   "axiomAlignment": {
     "A1_verifiability": "Type hints and Pydantic models enable compile-time verification",
+    "A2_user_primacy": "Validation and error handling protect user data and experience",
     "A3_transparency": "Explicit dependency injection makes dependencies clear",
-    "A4_adaptability": "Modular structure supports easy refactoring and testing"
+    "A4_non_harm": "Input validation and exception handlers prevent harmful outcomes",
+    "A5_consistency": "Unified patterns across routers, services, and schemas"
   },
+  "related_skills": [
+    "fastapi-development",
+    "api-design",
+    "python-async",
+    "sqlalchemy-patterns",
+    "frontend-testing"
+  ],
+  "related_knowledge": [
+    "prisma-patterns.json",
+    "api-design-patterns.json",
+    "error-handling-patterns.json",
+    "docker-patterns.json"
+  ],
   "core_concepts": {
     "domain_driven_layout": {
       "description": "Organize code by domain/feature rather than technical layers",
@@ -128,7 +146,7 @@
     "testing_patterns": {
       "description": "Testing FastAPI applications with pytest",
       "use_when": "Any application requiring tests",
-      "code_example": "# tests/conftest.py\nimport pytest\nfrom fastapi.testclient import TestClient\nfrom sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker\nfrom sqlalchemy.orm import DeclarativeBase\nfrom src.main import app\nfrom src.core.database import get_db\nfrom src.core.config import Settings\n\n# Test database\nTEST_DATABASE_URL = \"sqlite+aiosqlite:///./test.db\"\n\ntest_engine = create_async_engine(TEST_DATABASE_URL, echo=False)\nTestSessionLocal = async_sessionmaker(test_engine, class_=AsyncSession)\n\n@pytest.fixture\ndef test_settings() -> Settings:\n    return Settings(\n        database_url=TEST_DATABASE_URL,\n        secret_key=\"test-secret-key\"\n    )\n\n@pytest.fixture\nasync def db_session() -> AsyncSession:\n    async with TestSessionLocal() as session:\n        yield session\n        await session.rollback()\n\n@pytest.fixture\ndef client(db_session: AsyncSession) -> TestClient:\n    def override_get_db():\n        yield db_session\n    \n    app.dependency_overrides[get_db] = override_get_db\n    yield TestClient(app)\n    app.dependency_overrides.clear()\n\n# tests/test_users.py\nimport pytest\nfrom fastapi import status\n\ndef test_create_user(client: TestClient):\n    response = client.post(\n        \"/api/v1/users/\",\n        json={\"email\": \"test@example.com\", \"password\": \"testpass123\"}\n    )\n    assert response.status_code == status.HTTP_201_CREATED\n    data = response.json()\n    assert data[\"email\"] == \"test@example.com\"\n    assert \"id\" in data\n\ndef test_get_user_not_found(client: TestClient):\n    response = client.get(\"/api/v1/users/999\")\n    assert response.status_code == status.HTTP_404_NOT_FOUND\n\n@pytest.mark.asyncio\nasync def test_user_service_create(db_session: AsyncSession):\n    from src.domains.users.service import UserService\n    from src.domains.users.schemas import UserCreate\n    \n    service = UserService(db_session)\n    user_data = UserCreate(email=\"test@example.com\", password=\"testpass123\")\n    user = await service.create_user(user_data)\n    \n    assert user.email == \"test@example.com\"\n    assert user.id is not None",
+      "code_example": "# {directories.tests}/conftest.py\nimport pytest\nfrom fastapi.testclient import TestClient\nfrom sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker\nfrom sqlalchemy.orm import DeclarativeBase\nfrom src.main import app\nfrom src.core.database import get_db\nfrom src.core.config import Settings\n\n# Test database\nTEST_DATABASE_URL = \"sqlite+aiosqlite:///./test.db\"\n\ntest_engine = create_async_engine(TEST_DATABASE_URL, echo=False)\nTestSessionLocal = async_sessionmaker(test_engine, class_=AsyncSession)\n\n@pytest.fixture\ndef test_settings() -> Settings:\n    return Settings(\n        database_url=TEST_DATABASE_URL,\n        secret_key=\"test-secret-key\"\n    )\n\n@pytest.fixture\nasync def db_session() -> AsyncSession:\n    async with TestSessionLocal() as session:\n        yield session\n        await session.rollback()\n\n@pytest.fixture\ndef client(db_session: AsyncSession) -> TestClient:\n    def override_get_db():\n        yield db_session\n    \n    app.dependency_overrides[get_db] = override_get_db\n    yield TestClient(app)\n    app.dependency_overrides.clear()\n\n# {directories.tests}/test_users.py\nimport pytest\nfrom fastapi import status\n\ndef test_create_user(client: TestClient):\n    response = client.post(\n        \"/api/v1/users/\",\n        json={\"email\": \"test@example.com\", \"password\": \"testpass123\"}\n    )\n    assert response.status_code == status.HTTP_201_CREATED\n    data = response.json()\n    assert data[\"email\"] == \"test@example.com\"\n    assert \"id\" in data\n\ndef test_get_user_not_found(client: TestClient):\n    response = client.get(\"/api/v1/users/999\")\n    assert response.status_code == status.HTTP_404_NOT_FOUND\n\n@pytest.mark.asyncio\nasync def test_user_service_create(db_session: AsyncSession):\n    from src.domains.users.service import UserService\n    from src.domains.users.schemas import UserCreate\n    \n    service = UserService(db_session)\n    user_data = UserCreate(email=\"test@example.com\", password=\"testpass123\")\n    user = await service.create_user(user_data)\n    \n    assert user.email == \"test@example.com\"\n    assert user.id is not None",
       "best_practices": [
         "Use TestClient for integration tests",
         "Override dependencies for testing",
@@ -143,59 +161,80 @@
     "Keep routers thin - delegate to service layer",
     "Use dependency injection for all external resources",
     "Separate models, schemas, and DTOs",
+    "Use Pydantic models for request/response validation in FastAPI",
+    "Keep business logic in service layer, not in routers",
+    "Use APIRouter for grouping related endpoints",
+    "Maintain clear separation between domain, application, and interface layers",
     "Use async for I/O-bound operations (DB, HTTP)",
     "Avoid async for CPU-bound tasks",
     "Use async context managers for resources",
     "Handle exceptions in async code properly",
+    "Use asyncpg or aiosqlite for async database operations",
+    "Never mix sync and async database drivers",
+    "Use asyncio.gather() for parallel async operations",
+    "Always await async functions - never call without await",
     "Use Pydantic models for request/response validation",
     "Validate at the boundary (routers)",
     "Use Field() for complex validation",
     "Provide clear error messages",
+    "Use Pydantic validators for custom validation logic",
+    "Validate email addresses with EmailStr from pydantic",
+    "Use conint, confloat for numeric constraints",
+    "Leverage Pydantic's model_validator for cross-field validation",
     "Never store plain passwords",
     "Use HTTPS in production",
     "Validate and sanitize all inputs",
     "Use dependency injection for auth checks",
     "Implement rate limiting",
     "Use environment variables for secrets",
+    "Never run containers as root in production",
+    "Use password hashing libraries like passlib with bcrypt",
+    "Implement CORS properly with specific origins",
+    "Use dependency injection for authentication/authorization checks",
     "Use async database operations",
     "Implement connection pooling",
     "Use response models to limit data",
     "Consider caching for expensive operations",
-    "Use background tasks for long operations"
+    "Use background tasks for long operations",
+    "Use response_model_exclude_unset=True to reduce payload size",
+    "Implement database query optimization with proper indexes",
+    "Use connection pooling with appropriate pool sizes"
   ],
   "anti_patterns": [
     {
-      "name": "business_logic_in_routers",
-      "description": "Putting business logic directly in route handlers",
-      "problem": "Hard to test, violates separation of concerns",
-      "solution": "Move logic to service layer, keep routers thin"
+      "name": "Business Logic in Routers",
+      "problem": "Hard to test, violates separation of concerns, makes code harder to reuse",
+      "solution": "Move logic to service layer, keep routers thin - routers should only handle HTTP concerns"
     },
     {
-      "name": "synchronous_database",
-      "description": "Using sync database drivers in async routes",
-      "problem": "Blocks event loop, poor performance",
-      "solution": "Use async database drivers (asyncpg, aiosqlite)"
+      "name": "Synchronous Database in Async Routes",
+      "problem": "Blocks event loop, poor performance, defeats purpose of async",
+      "solution": "Use async database drivers (asyncpg, aiosqlite) and async SQLAlchemy sessions"
     },
     {
-      "name": "global_state",
-      "description": "Using global variables for configuration or services",
-      "problem": "Hard to test, tight coupling",
-      "solution": "Use dependency injection"
+      "name": "Global State Variables",
+      "problem": "Hard to test, tight coupling, makes dependency tracking impossible",
+      "solution": "Use dependency injection with FastAPI's Depends() system"
     },
     {
-      "name": "ignoring_errors",
-      "description": "Not handling exceptions properly",
-      "problem": "Unclear error messages, potential security issues",
-      "solution": "Use exception handlers, validate inputs"
+      "name": "Ignoring Exception Handling",
+      "problem": "Unclear error messages, potential security issues, poor user experience",
+      "solution": "Use exception handlers, validate inputs, return appropriate HTTP status codes"
     },
     {
-      "name": "mixing_sync_async",
-      "description": "Calling sync code from async functions without proper wrapping",
-      "problem": "Blocks event loop",
-      "solution": "Use asyncio.to_thread() or make everything async"
+      "name": "Mixing Sync and Async Code",
+      "problem": "Blocks event loop, negates async benefits",
+      "solution": "Use asyncio.to_thread() for CPU-bound tasks or make everything async"
+    },
+    {
+      "name": "Skipping Request Validation",
+      "problem": "Security vulnerabilities, runtime errors, unclear API contracts",
+      "solution": "Always use Pydantic models for request/response validation"
+    },
+    {
+      "name": "Direct Database Access in Routers",
+      "problem": "Bypasses business logic, hard to test, violates layered architecture",
+      "solution": "Access database through service layer, use dependency injection for repositories"
     }
-  ],
-  "id": "fastapi-patterns",
-  "name": "Fastapi Patterns",
-  "category": "patterns"
+  ]
 }

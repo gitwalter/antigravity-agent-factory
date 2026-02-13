@@ -1,0 +1,152 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "reactive-programming-patterns",
+  "name": "Reactive Programming Patterns",
+  "title": "Reactive Programming Patterns",
+  "description": "Reactor/RxJava/Kotlin Flow: backpressure, hot vs cold, operators, error recovery",
+  "version": "1.0.0",
+  "last_updated": "2026-02-10",
+  "category": "core",
+  "axiomAlignment": {
+    "A1_verifiability": "Reactive streams enable predictable, testable event flows",
+    "A2_user_primacy": "Streams serve user-defined data processing and UI updates",
+    "A3_transparency": "Operators and backpressure make data flow explicit",
+    "A4_non_harm": "Error recovery and resource management prevent system failures",
+    "A5_consistency": "Unified patterns across Reactor, RxJava, and Kotlin Flow"
+  },
+  "related_skills": [
+    "streaming-realtime",
+    "error-handling",
+    "python-async",
+    "state-management"
+  ],
+  "related_knowledge": [
+    "coroutines-patterns.json",
+    "kotlin-idioms.json",
+    "error-handling-patterns.json"
+  ],
+  "patterns": {
+    "backpressure": {
+      "description": "Consumer signals demand; producer doesn't overwhelm consumer",
+      "mechanisms": [
+        "request(n) in Reactive Streams",
+        "buffer with overflow strategy",
+        "drop, latest, error"
+      ],
+      "when_to_use": "Fast producer, slow consumer, streaming APIs",
+      "best_practices": [
+        "Understand demand propagation",
+        "Use buffer when appropriate",
+        "Avoid unbounded buffers in production"
+      ],
+      "use_when": "Fast producer, slow consumer, streaming APIs",
+      "code_example": "# Implement backpressure per reactive-patterns patterns\n# See description and related documentation"
+    },
+    "hot_vs_cold": {
+      "description": "Cold: each subscriber gets full sequence; Hot: shared source, late subscribers miss earlier values",
+      "cold_examples": [
+        "Mono.fromCallable",
+        "Flow { emit(1) }",
+        "Observable.create"
+      ],
+      "hot_examples": [
+        "ConnectableFlux",
+        "SharedFlow",
+        "Subject"
+      ],
+      "when_to_use": "Cold for request-scoped; Hot for shared events (notifications, caches)",
+      "best_practices": [
+        "Prefer cold by default",
+        "Use hot for broadcast scenarios",
+        "Document hot/cold in APIs"
+      ],
+      "use_when": "Cold for request-scoped; Hot for shared events (notifications, caches)",
+      "code_example": "# Implement hot_vs_cold per reactive-patterns patterns\n# See description and related documentation"
+    },
+    "operators": {
+      "description": "map, filter, flatMap, zip, merge, switchMap for transformation and combination",
+      "transformation": [
+        "map: 1:1",
+        "flatMap: 1:n with merge",
+        "concatMap: 1:n preserving order"
+      ],
+      "combination": [
+        "zip: combine emissions",
+        "merge: interleave",
+        "combineLatest: latest from each"
+      ],
+      "best_practices": [
+        "Use flatMap for async inner",
+        "Prefer concatMap when order matters",
+        "Avoid nesting flatMaps deeply"
+      ],
+      "use_when": "Apply when operators is needed in Reactive Programming Patterns",
+      "code_example": "# Implement operators per reactive-patterns patterns\n# See description and related documentation"
+    },
+    "error_recovery": {
+      "description": "onErrorReturn, onErrorResume, retry, retryWhen for resilient streams",
+      "idiom": "flux.onErrorResume { e -> fallbackFlux }.retry(3)",
+      "when_to_use": "Transient failures, fallback sources, retry policies",
+      "best_practices": [
+        "Handle at appropriate level",
+        "Use retryWhen for backoff",
+        "Log before retry",
+        "Avoid infinite retry"
+      ],
+      "use_when": "Transient failures, fallback sources, retry policies",
+      "code_example": "flux.onErrorResume { e -> fallbackFlux }.retry(3)"
+    },
+    "scheduling": {
+      "description": "subscribeOn, publishOn, observeOn for thread switching",
+      "subscribeOn": "Where subscription runs (source execution)",
+      "publishOn": "Where subsequent operators and subscriber run",
+      "when_to_use": "Offload blocking to specific threads; UI thread for Swing/JavaFX",
+      "best_practices": [
+        "Use subscribeOn for blocking source",
+        "publishOn for downstream",
+        "Limit thread hopping"
+      ],
+      "use_when": "Offload blocking to specific threads; UI thread for Swing/JavaFX",
+      "code_example": "# Implement scheduling per reactive-patterns patterns\n# See description and related documentation"
+    },
+    "resource_management": {
+      "description": "Using, usingWhen for cleanup with streams",
+      "idiom": "Mono.using(resource::get, Mono::fromSupplier, resource::close)",
+      "when_to_use": "DB connections, file handles, HTTP clients",
+      "best_practices": [
+        "Always use using for resources",
+        "Handle async cleanup",
+        "Ensure cleanup on error"
+      ],
+      "use_when": "DB connections, file handles, HTTP clients",
+      "code_example": "Mono.using(resource::get, Mono::fromSupplier, resource::close)"
+    },
+    "testing": {
+      "description": "StepVerifier, TestPublisher, VirtualTimeScheduler for reactive tests",
+      "step_verifier": "expectNext, expectComplete, expectError, verify",
+      "when_to_use": "Unit testing Flux/Mono; Verifying order and timing",
+      "best_practices": [
+        "Use StepVerifier for Flows",
+        "VirtualTime for time-dependent",
+        "TestPublisher for custom sources"
+      ],
+      "use_when": "Unit testing Flux/Mono; Verifying order and timing",
+      "code_example": "# Implement testing per reactive-patterns patterns\n# See description and related documentation"
+    }
+  },
+  "best_practices": [
+    "Understand demand propagation",
+    "Use buffer when appropriate",
+    "Avoid unbounded buffers in production",
+    "Prefer cold by default",
+    "Use hot for broadcast scenarios",
+    "Document hot/cold in APIs",
+    "Use flatMap for async inner",
+    "Prefer concatMap when order matters"
+  ],
+  "anti_patterns": [
+    "Applying patterns without understanding the underlying concepts",
+    "Copy-pasting solutions without adapting to specific context",
+    "Over-engineering simple problems with complex patterns"
+  ]
+}

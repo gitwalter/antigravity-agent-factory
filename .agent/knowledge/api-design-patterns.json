@@ -5,197 +5,647 @@
   "title": "REST API Design Patterns",
   "description": "Best practices and patterns for designing RESTful APIs, GraphQL, and gRPC services",
   "version": "1.0.0",
-  "category": "patterns",
+  "category": "web",
   "axiomAlignment": {
     "A1_verifiability": "OpenAPI schemas enable API contract verification",
+    "A2_user_primacy": "REST conventions and resource naming prioritize consumer needs",
     "A3_transparency": "Clear API documentation makes interfaces explicit",
-    "A4_adaptability": "Versioning strategies support API evolution"
+    "A4_non_harm": "Rate limiting, validation, and error handling prevent harmful usage",
+    "A5_consistency": "Unified patterns for REST, GraphQL, WebSocket, and gRPC"
   },
+  "related_skills": [
+    "api-design",
+    "fastapi-development",
+    "dotnet-backend"
+  ],
+  "related_knowledge": [
+    "fastapi-patterns.json",
+    "dotnet-patterns.json",
+    "error-handling-patterns.json"
+  ],
   "patterns": {
-    "rest_conventions": {
-      "resource_naming": {
-        "use_nouns": "Use nouns, not verbs",
-        "plural_collections": "Use plural for collections",
-        "lowercase_hyphens": "Use lowercase with hyphens",
-        "examples": {
-          "good": "/api/v1/users",
-          "bad": "/api/v1/getUsers"
-        }
-      },
-      "http_methods": {
-        "GET": "Retrieve resources",
-        "POST": "Create resources",
-        "PUT": "Replace/update resource",
-        "PATCH": "Partial update",
-        "DELETE": "Delete resource",
-        "HEAD": "Get headers only",
-        "OPTIONS": "Get allowed methods"
-      },
-      "status_codes": {
-        "2xx_success": {
-          "200": "OK - Request succeeded",
-          "201": "Created - Resource created",
-          "202": "Accepted - Request accepted for processing",
-          "204": "No Content - Success with no body"
-        },
-        "4xx_client_error": {
-          "400": "Bad Request - Invalid request",
-          "401": "Unauthorized - Authentication required",
-          "403": "Forbidden - Not authorized",
-          "404": "Not Found - Resource doesn't exist",
-          "409": "Conflict - Resource conflict",
-          "422": "Unprocessable Entity - Validation error",
-          "429": "Too Many Requests - Rate limit exceeded"
-        },
-        "5xx_server_error": {
-          "500": "Internal Server Error",
-          "502": "Bad Gateway",
-          "503": "Service Unavailable",
-          "504": "Gateway Timeout"
-        }
-      }
-    },
-    "versioning": {
-      "url_versioning": {
-        "description": "Version in URL path",
-        "example": "/api/v1/users, /api/v2/users",
-        "pros": [
-          "Clear and explicit",
-          "Easy to cache",
-          "Browser-friendly"
-        ],
-        "cons": [
-          "URLs change",
-          "More endpoints"
-        ]
-      },
-      "header_versioning": {
-        "description": "Version in HTTP header",
-        "example": "API-Version: 1.0",
-        "pros": [
-          "Clean URLs",
-          "Flexible"
-        ],
-        "cons": [
-          "Less discoverable",
-          "Harder to test"
-        ]
-      },
-      "query_versioning": {
-        "description": "Version as query parameter",
-        "example": "/api/users?version=1.0",
-        "pros": [
-          "Simple",
-          "Easy to test"
-        ],
-        "cons": [
-          "Not RESTful",
-          "Can be ignored"
-        ]
-      },
-      "media_type_versioning": {
-        "description": "Version in Accept header",
-        "example": "Accept: application/vnd.api.v1+json",
-        "pros": [
-          "True content negotiation",
-          "Flexible"
-        ],
-        "cons": [
-          "Complex",
-          "Less common"
-        ]
-      }
-    },
-    "pagination": {
-      "offset_based": {
-        "description": "Use page and limit",
-        "example": "?page=1&limit=20",
-        "pros": [
-          "Simple",
-          "Easy to implement",
-          "Jump to any page"
-        ],
-        "cons": [
-          "Performance issues with large offsets",
-          "Inconsistent results if data changes"
-        ]
-      },
-      "cursor_based": {
-        "description": "Use cursor/token",
-        "example": "?cursor=eyJpZCI6MTIzfQ&limit=20",
-        "pros": [
-          "Better performance",
-          "Consistent results",
-          "Works with large datasets"
-        ],
-        "cons": [
-          "Can't jump to specific page",
-          "More complex"
-        ]
-      },
-      "response_format": {
-        "data": "Array of resources",
-        "pagination": {
-          "page": "Current page",
-          "limit": "Items per page",
-          "total": "Total items",
-          "total_pages": "Total pages",
-          "has_next": "Has next page",
-          "has_prev": "Has previous page",
-          "next_cursor": "Next cursor (cursor-based)"
-        }
-      }
-    },
-    "filtering": {
-      "query_parameters": "?status=active&role=admin",
-      "operators": {
-        "equals": "?status=active",
-        "not_equals": "?status=!inactive",
-        "greater_than": "?age=gt:18",
-        "less_than": "?age=lt:65",
-        "contains": "?name=contains:john",
-        "in": "?status=in:active,pending"
-      },
+    "rest_conventions_resource_naming_use_nouns": {
+      "description": "Use nouns, not verbs",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_resource_naming_use_nouns pattern for api-design-patterns\n# Implement based on description: Use nouns, not verbs...",
       "best_practices": [
-        "Document filter parameters",
-        "Validate filter values",
-        "Set maximum filter depth",
-        "Index filtered columns"
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
       ]
     },
-    "sorting": {
-      "query_parameters": "?sort=name&order=asc",
-      "multiple_fields": "?sort=name,created_at&order=asc,desc",
-      "default_sort": "Always have default sort order",
+    "rest_conventions_resource_naming_plural_collections": {
+      "description": "Use plural for collections",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_resource_naming_plural_collections pattern for api-design-patterns\n# Implement based on description: Use plural for collections...",
       "best_practices": [
-        "Document sortable fields",
-        "Validate sort fields",
-        "Index sorted columns",
-        "Limit sort fields"
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
       ]
     },
-    "error_handling": {
-      "error_format": {
-        "error": {
-          "code": "Error code (e.g., USER_NOT_FOUND)",
-          "message": "Human-readable message",
-          "details": "Additional details",
-          "request_id": "Request identifier for tracking"
-        }
-      },
-      "error_codes": {
-        "validation_error": "VALIDATION_ERROR",
-        "not_found": "RESOURCE_NOT_FOUND",
-        "unauthorized": "UNAUTHORIZED",
-        "forbidden": "FORBIDDEN",
-        "rate_limit": "RATE_LIMIT_EXCEEDED"
-      },
+    "rest_conventions_resource_naming_lowercase_hyphens": {
+      "description": "Use lowercase with hyphens",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_resource_naming_lowercase_hyphens pattern for api-design-patterns\n# Implement based on description: Use lowercase with hyphens...",
       "best_practices": [
-        "Use consistent error format",
-        "Include request IDs",
-        "Don't expose internal errors",
-        "Provide actionable messages",
-        "Use appropriate HTTP status codes"
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_resource_naming_examples_good": {
+      "description": "/api/v1/users       ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_resource_naming_examples_good pattern for api-design-patterns\n# Implement based on description: /api/v1/users       ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_resource_naming_examples_bad": {
+      "description": "/api/v1/getUsers    ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_resource_naming_examples_bad pattern for api-design-patterns\n# Implement based on description: /api/v1/getUsers    ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_http_methods_GET": {
+      "description": "Retrieve resources  ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_http_methods_GET pattern for api-design-patterns\n# Implement based on description: Retrieve resources  ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_http_methods_POST": {
+      "description": "Create resources    ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_http_methods_POST pattern for api-design-patterns\n# Implement based on description: Create resources    ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_http_methods_PUT": {
+      "description": "Replace/update resource",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_http_methods_PUT pattern for api-design-patterns\n# Implement based on description: Replace/update resource...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_http_methods_PATCH": {
+      "description": "Partial update      ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_http_methods_PATCH pattern for api-design-patterns\n# Implement based on description: Partial update      ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_http_methods_DELETE": {
+      "description": "Delete resource     ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_http_methods_DELETE pattern for api-design-patterns\n# Implement based on description: Delete resource     ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_http_methods_HEAD": {
+      "description": "Get headers only    ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_http_methods_HEAD pattern for api-design-patterns\n# Implement based on description: Get headers only    ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_http_methods_OPTIONS": {
+      "description": "Get allowed methods ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_http_methods_OPTIONS pattern for api-design-patterns\n# Implement based on description: Get allowed methods ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_status_codes_2xx_success_200": {
+      "description": "OK - Request succeeded",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_status_codes_2xx_success_200 pattern for api-design-patterns\n# Implement based on description: OK - Request succeeded...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_status_codes_2xx_success_201": {
+      "description": "Created - Resource created",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_status_codes_2xx_success_201 pattern for api-design-patterns\n# Implement based on description: Created - Resource created...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_status_codes_2xx_success_202": {
+      "description": "Accepted - Request accepted for processing",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_status_codes_2xx_success_202 pattern for api-design-patterns\n# Implement based on description: Accepted - Request accepted for processing...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_status_codes_2xx_success_204": {
+      "description": "No Content - Success with no body",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_status_codes_2xx_success_204 pattern for api-design-patterns\n# Implement based on description: No Content - Success with no body...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_status_codes_4xx_client_error_400": {
+      "description": "Bad Request - Invalid request",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_status_codes_4xx_client_error_400 pattern for api-design-patterns\n# Implement based on description: Bad Request - Invalid request...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_status_codes_4xx_client_error_401": {
+      "description": "Unauthorized - Authentication required",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_status_codes_4xx_client_error_401 pattern for api-design-patterns\n# Implement based on description: Unauthorized - Authentication required...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_status_codes_4xx_client_error_403": {
+      "description": "Forbidden - Not authorized",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_status_codes_4xx_client_error_403 pattern for api-design-patterns\n# Implement based on description: Forbidden - Not authorized...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_status_codes_4xx_client_error_404": {
+      "description": "Not Found - Resource doesn't exist",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_status_codes_4xx_client_error_404 pattern for api-design-patterns\n# Implement based on description: Not Found - Resource doesn't exist...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_status_codes_4xx_client_error_409": {
+      "description": "Conflict - Resource conflict",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_status_codes_4xx_client_error_409 pattern for api-design-patterns\n# Implement based on description: Conflict - Resource conflict...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_status_codes_4xx_client_error_422": {
+      "description": "Unprocessable Entity - Validation error",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_status_codes_4xx_client_error_422 pattern for api-design-patterns\n# Implement based on description: Unprocessable Entity - Validation error...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_status_codes_4xx_client_error_429": {
+      "description": "Too Many Requests - Rate limit exceeded",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_status_codes_4xx_client_error_429 pattern for api-design-patterns\n# Implement based on description: Too Many Requests - Rate limit exceeded...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_status_codes_5xx_server_error_500": {
+      "description": "Internal Server Error",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_status_codes_5xx_server_error_500 pattern for api-design-patterns\n# Implement based on description: Internal Server Error...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_status_codes_5xx_server_error_502": {
+      "description": "Bad Gateway         ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_status_codes_5xx_server_error_502 pattern for api-design-patterns\n# Implement based on description: Bad Gateway         ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_status_codes_5xx_server_error_503": {
+      "description": "Service Unavailable ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_status_codes_5xx_server_error_503 pattern for api-design-patterns\n# Implement based on description: Service Unavailable ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "rest_conventions_status_codes_5xx_server_error_504": {
+      "description": "Gateway Timeout     ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# rest_conventions_status_codes_5xx_server_error_504 pattern for api-design-patterns\n# Implement based on description: Gateway Timeout     ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "versioning_url_versioning": {
+      "description": "Implements url versioning for reliable, maintainable code. Use when the scenario requires this pattern.",
+      "example": "/api/v1/users, /api/v2/users",
+      "pros": [
+        "Clear and explicit",
+        "Easy to cache",
+        "Browser-friendly"
+      ],
+      "cons": [
+        "URLs change",
+        "More endpoints"
+      ],
+      "use_when": "Apply when implementing url versioning in integration context",
+      "code_example": "/api/v1/users, /api/v2/users",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for url_versioning",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "versioning_header_versioning": {
+      "description": "Version in HTTP header",
+      "example": "API-Version: 1.0",
+      "pros": [
+        "Clean URLs",
+        "Flexible"
+      ],
+      "cons": [
+        "Less discoverable",
+        "Harder to test"
+      ],
+      "use_when": "Apply when implementing header versioning in integration context",
+      "code_example": "import httpx\n\nasync with httpx.AsyncClient() as client:\n    response = await client.get(url, timeout=30.0)\n    response.raise_for_status()\n    return response.json()",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for header_versioning",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "versioning_query_versioning": {
+      "description": "Version as query parameter",
+      "example": "/api/users?version=1.0",
+      "pros": [
+        "Simple",
+        "Easy to test"
+      ],
+      "cons": [
+        "Not RESTful",
+        "Can be ignored"
+      ],
+      "use_when": "Apply when implementing query versioning in integration context",
+      "code_example": "/api/users?version=1.0",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for query_versioning",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "versioning_media_type_versioning": {
+      "description": "Version in Accept header",
+      "example": "Accept: application/vnd.api.v1+json",
+      "pros": [
+        "True content negotiation",
+        "Flexible"
+      ],
+      "cons": [
+        "Complex",
+        "Less common"
+      ],
+      "use_when": "Apply when implementing media type versioning in integration context",
+      "code_example": "Accept: application/vnd.api.v1+json",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for media_type_versioning",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "pagination_offset_based": {
+      "description": "Implements offset based for reliable, maintainable code. Use when the scenario requires this pattern.",
+      "example": "?page=1&limit=20",
+      "pros": [
+        "Simple",
+        "Easy to implement",
+        "Jump to any page"
+      ],
+      "cons": [
+        "Performance issues with large offsets",
+        "Inconsistent results if data changes"
+      ],
+      "use_when": "Apply when implementing offset based in integration context",
+      "code_example": "import httpx\n\nasync with httpx.AsyncClient() as client:\n    response = await client.get(url, timeout=30.0)\n    response.raise_for_status()\n    return response.json()",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for offset_based",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "pagination_cursor_based": {
+      "description": "Implements cursor based for reliable, maintainable code. Use when the scenario requires this pattern.",
+      "example": "?cursor=eyJpZCI6MTIzfQ&limit=20",
+      "pros": [
+        "Better performance",
+        "Consistent results",
+        "Works with large datasets"
+      ],
+      "cons": [
+        "Can't jump to specific page",
+        "More complex"
+      ],
+      "use_when": "Apply when implementing cursor based in integration context",
+      "code_example": "?cursor=eyJpZCI6MTIzfQ&limit=20",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for cursor_based",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "pagination_response_format_data": {
+      "description": "Array of resources  ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# pagination_response_format_data pattern for api-design-patterns\n# Implement based on description: Array of resources  ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "pagination_response_format_pagination_page": {
+      "description": "Current page        ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# pagination_response_format_pagination_page pattern for api-design-patterns\n# Implement based on description: Current page        ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "pagination_response_format_pagination_limit": {
+      "description": "Items per page      ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# pagination_response_format_pagination_limit pattern for api-design-patterns\n# Implement based on description: Items per page      ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "pagination_response_format_pagination_total": {
+      "description": "Total items         ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# pagination_response_format_pagination_total pattern for api-design-patterns\n# Implement based on description: Total items         ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "pagination_response_format_pagination_total_pages": {
+      "description": "Total pages         ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# pagination_response_format_pagination_total_pages pattern for api-design-patterns\n# Implement based on description: Total pages         ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "pagination_response_format_pagination_has_next": {
+      "description": "Has next page       ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# pagination_response_format_pagination_has_next pattern for api-design-patterns\n# Implement based on description: Has next page       ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "pagination_response_format_pagination_has_prev": {
+      "description": "Has previous page   ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# pagination_response_format_pagination_has_prev pattern for api-design-patterns\n# Implement based on description: Has previous page   ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "pagination_response_format_pagination_next_cursor": {
+      "description": "Next cursor (cursor-based)",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# pagination_response_format_pagination_next_cursor pattern for api-design-patterns\n# Implement based on description: Next cursor (cursor-based)...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "filtering_query_parameters": {
+      "description": "?status=active&role=admin",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# filtering_query_parameters pattern for api-design-patterns\n# Implement based on description: ?status=active&role=admin...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "filtering_operators_equals": {
+      "description": "?status=active      ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# filtering_operators_equals pattern for api-design-patterns\n# Implement based on description: ?status=active      ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "filtering_operators_not_equals": {
+      "description": "?status=!inactive   ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# filtering_operators_not_equals pattern for api-design-patterns\n# Implement based on description: ?status=!inactive   ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "filtering_operators_greater_than": {
+      "description": "?age=gt:18          ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# filtering_operators_greater_than pattern for api-design-patterns\n# Implement based on description: ?age=gt:18          ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "filtering_operators_less_than": {
+      "description": "?age=lt:65          ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# filtering_operators_less_than pattern for api-design-patterns\n# Implement based on description: ?age=lt:65          ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "filtering_operators_contains": {
+      "description": "?name=contains:john ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# filtering_operators_contains pattern for api-design-patterns\n# Implement based on description: ?name=contains:john ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "filtering_operators_in": {
+      "description": "?status=in:active,pending",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# filtering_operators_in pattern for api-design-patterns\n# Implement based on description: ?status=in:active,pending...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "filtering_best_practices": {
+      "description": "['Document filter parameters', 'Validate filter values', 'Set maximum filter depth', 'Index filtered columns']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "sorting_query_parameters": {
+      "description": "?sort=name&order=asc",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# sorting_query_parameters pattern for api-design-patterns\n# Implement based on description: ?sort=name&order=asc...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "sorting_multiple_fields": {
+      "description": "?sort=name,created_at&order=asc,desc",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# sorting_multiple_fields pattern for api-design-patterns\n# Implement based on description: ?sort=name,created_at&order=asc,desc...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "sorting_default_sort": {
+      "description": "Always have default sort order",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# sorting_default_sort pattern for api-design-patterns\n# Implement based on description: Always have default sort order...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "sorting_best_practices": {
+      "description": "['Document sortable fields', 'Validate sort fields', 'Index sorted columns', 'Limit sort fields']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "error_handling_error_format_error_code": {
+      "description": "Error code (e.g., USER_NOT_FOUND)",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# error_handling_error_format_error_code pattern for api-design-patterns\n# Implement based on description: Error code (e.g., USER_NOT_FOUND)...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "error_handling_error_format_error_message": {
+      "description": "Human-readable message",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# error_handling_error_format_error_message pattern for api-design-patterns\n# Implement based on description: Human-readable message...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "error_handling_error_format_error_details": {
+      "description": "Additional details  ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# error_handling_error_format_error_details pattern for api-design-patterns\n# Implement based on description: Additional details  ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "error_handling_error_format_error_request_id": {
+      "description": "Request identifier for tracking",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# error_handling_error_format_error_request_id pattern for api-design-patterns\n# Implement based on description: Request identifier for tracking...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "error_handling_error_codes_validation_error": {
+      "description": "VALIDATION_ERROR    ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# error_handling_error_codes_validation_error pattern for api-design-patterns\n# Implement based on description: VALIDATION_ERROR    ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "error_handling_error_codes_not_found": {
+      "description": "RESOURCE_NOT_FOUND  ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# error_handling_error_codes_not_found pattern for api-design-patterns\n# Implement based on description: RESOURCE_NOT_FOUND  ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "error_handling_error_codes_unauthorized": {
+      "description": "UNAUTHORIZED        ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# error_handling_error_codes_unauthorized pattern for api-design-patterns\n# Implement based on description: UNAUTHORIZED        ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "error_handling_error_codes_forbidden": {
+      "description": "FORBIDDEN           ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# error_handling_error_codes_forbidden pattern for api-design-patterns\n# Implement based on description: FORBIDDEN           ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "error_handling_error_codes_rate_limit": {
+      "description": "RATE_LIMIT_EXCEEDED ",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# error_handling_error_codes_rate_limit pattern for api-design-patterns\n# Implement based on description: RATE_LIMIT_EXCEEDED ...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "error_handling_best_practices": {
+      "description": "['Use consistent error format', 'Include request IDs', \"Don't expose internal errors\", 'Provide actionable messages', 'Use appropriate HTTP status codes']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
       ]
     },
     "hateoas": {
@@ -216,46 +666,67 @@
           "update": "/api/v1/users/123",
           "delete": "/api/v1/users/123"
         }
-      }
-    },
-    "graphql_vs_rest": {
-      "graphql": {
-        "pros": [
-          "Single endpoint",
-          "Client specifies fields",
-          "Strong typing",
-          "Introspection"
-        ],
-        "cons": [
-          "Complexity",
-          "Caching challenges",
-          "N+1 queries",
-          "Over-fetching prevention"
-        ],
-        "use_when": [
-          "Complex data requirements",
-          "Mobile apps",
-          "Real-time updates needed"
-        ]
       },
-      "rest": {
-        "pros": [
-          "Simple",
-          "Well-understood",
-          "Good caching",
-          "HTTP features"
-        ],
-        "cons": [
-          "Over/under-fetching",
-          "Multiple requests",
-          "Versioning complexity"
-        ],
-        "use_when": [
-          "Simple CRUD",
-          "Web applications",
-          "Standard HTTP features needed"
-        ]
-      }
+      "use_when": "Apply when implementing hateoas in integration context",
+      "code_example": "{'data': {'id': 123, 'name': 'John'}, 'links': {'self': '/api/v1/users/123', 'orders': '/api/v1/users/123/orders', 'update': '/api/v1/users/123', 'delete': '/api/v1/users/123'}}",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for hateoas",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "graphql_vs_rest_graphql_pros": {
+      "description": "['Single endpoint', 'Client specifies fields', 'Strong typing', 'Introspection']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "graphql_vs_rest_graphql_cons": {
+      "description": "['Complexity', 'Caching challenges', 'N+1 queries', 'Over-fetching prevention']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "graphql_vs_rest_graphql_use_when": {
+      "description": "['Complex data requirements', 'Mobile apps', 'Real-time updates needed']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "graphql_vs_rest_rest_pros": {
+      "description": "['Simple', 'Well-understood', 'Good caching', 'HTTP features']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "graphql_vs_rest_rest_cons": {
+      "description": "['Over/under-fetching', 'Multiple requests', 'Versioning complexity']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    },
+    "graphql_vs_rest_rest_use_when": {
+      "description": "['Simple CRUD', 'Web applications', 'Standard HTTP features needed']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
     },
     "grpc_patterns": {
       "description": "gRPC service patterns",
@@ -277,7 +748,9 @@
         "Handle errors with status codes",
         "Use streaming for large data",
         "Document services"
-      ]
+      ],
+      "use_when": "Apply when implementing grpc patterns in integration context",
+      "code_example": "import httpx\n\nasync with httpx.AsyncClient() as client:\n    response = await client.get(url, timeout=30.0)\n    response.raise_for_status()\n    return response.json()"
     },
     "websocket_patterns": {
       "description": "WebSocket API patterns",
@@ -297,10 +770,12 @@
         "Handle reconnection",
         "Implement heartbeat",
         "Rate limit connections"
-      ]
+      ],
+      "use_when": "Apply when implementing websocket patterns in integration context",
+      "code_example": "import httpx\n\nasync with httpx.AsyncClient() as client:\n    response = await client.get(url, timeout=30.0)\n    response.raise_for_status()\n    return response.json()"
     },
     "rate_limiting": {
-      "description": "API rate limiting",
+      "description": "Implements rate limiting for reliable, maintainable code. Use when the scenario requires this pattern.",
       "strategies": {
         "fixed_window": "Limit per time window",
         "sliding_window": "Limit over rolling window",
@@ -319,7 +794,9 @@
         "Include rate limit headers",
         "Use different limits per endpoint",
         "Log rate limit violations"
-      ]
+      ],
+      "use_when": "Apply when implementing rate limiting in integration context",
+      "code_example": "import httpx\n\nasync with httpx.AsyncClient() as client:\n    response = await client.get(url, timeout=30.0)\n    response.raise_for_status()\n    return response.json()"
     },
     "caching_headers": {
       "description": "HTTP caching headers",
@@ -336,7 +813,9 @@
         "Implement ETags",
         "Set max-age appropriately",
         "Invalidate cache on updates"
-      ]
+      ],
+      "use_when": "Apply when implementing caching headers in integration context",
+      "code_example": "import httpx\n\nasync with httpx.AsyncClient() as client:\n    response = await client.get(url, timeout=30.0)\n    response.raise_for_status()\n    return response.json()"
     },
     "openapi_specification": {
       "description": "OpenAPI/Swagger documentation",
@@ -359,7 +838,9 @@
         "Define error responses",
         "Version the spec",
         "Validate against spec"
-      ]
+      ],
+      "use_when": "Apply when implementing openapi specification in integration context",
+      "code_example": "import httpx\n\nasync with httpx.AsyncClient() as client:\n    response = await client.get(url, timeout=30.0)\n    response.raise_for_status()\n    return response.json()"
     }
   },
   "best_practices": [

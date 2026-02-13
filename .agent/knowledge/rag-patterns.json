@@ -1,12 +1,29 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "rag-patterns",
+  "name": "RAG Patterns",
   "title": "RAG Patterns",
   "description": "Retrieval-Augmented Generation patterns for building production RAG systems",
   "version": "1.0.0",
+  "category": "rag",
   "axiomAlignment": {
     "A1_verifiability": "RAG grounds responses in source documents",
-    "A3_transparency": "Citations enable fact-checking"
+    "A2_user_primacy": "RAG serves user information needs with cited answers",
+    "A3_transparency": "Citations enable fact-checking",
+    "A4_non_harm": "Source grounding reduces hallucination and harmful fabrication",
+    "A5_consistency": "Unified RAG patterns across chunking, retrieval, and generation"
   },
+  "related_skills": [
+    "rag-patterns",
+    "advanced-retrieval",
+    "llm-evaluation",
+    "documentation-generation"
+  ],
+  "related_knowledge": [
+    "advanced-rag-patterns.json",
+    "document-processing-patterns.json",
+    "llm-evaluation-patterns.json"
+  ],
   "architecture_patterns": {
     "basic_rag": {
       "description": "Simple retrieve-then-generate pipeline",
@@ -56,12 +73,20 @@
         "chunk_size": "500-1500 tokens recommended",
         "chunk_overlap": "10-20% of chunk_size",
         "separators": "Order from most to least preferred"
-      }
+      },
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for recursive_character",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "semantic_chunking": {
       "description": "Split based on semantic similarity",
       "use_when": "Need semantically coherent chunks",
-      "code_example": "from langchain_experimental.text_splitter import SemanticChunker\nfrom langchain_openai import OpenAIEmbeddings\n\nembeddings = OpenAIEmbeddings()\nchunker = SemanticChunker(\n    embeddings,\n    breakpoint_threshold_type='percentile',\n    breakpoint_threshold_amount=95\n)\n\nchunks = chunker.split_documents(docs)"
+      "code_example": "from langchain_experimental.text_splitter import SemanticChunker\nfrom langchain_openai import OpenAIEmbeddings\n\nembeddings = OpenAIEmbeddings()\nchunker = SemanticChunker(\n    embeddings,\n    breakpoint_threshold_type='percentile',\n    breakpoint_threshold_amount=95\n)\n\nchunks = chunker.split_documents(docs)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for semantic_chunking",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "parent_document": {
       "description": "Store small chunks, retrieve larger parents",
@@ -89,11 +114,21 @@
   "retrieval_strategies": {
     "similarity": {
       "description": "Basic vector similarity search",
-      "code_example": "retriever = vectorstore.as_retriever(\n    search_type='similarity',\n    search_kwargs={'k': 5}\n)"
+      "code_example": "retriever = vectorstore.as_retriever(\n    search_type='similarity',\n    search_kwargs={'k': 5}\n)",
+      "use_when": "Apply when implementing similarity in rag context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for similarity",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "mmr": {
       "description": "Maximum Marginal Relevance for diversity",
-      "code_example": "retriever = vectorstore.as_retriever(\n    search_type='mmr',\n    search_kwargs={\n        'k': 5,\n        'fetch_k': 20,\n        'lambda_mult': 0.5\n    }\n)"
+      "code_example": "retriever = vectorstore.as_retriever(\n    search_type='mmr',\n    search_kwargs={\n        'k': 5,\n        'fetch_k': 20,\n        'lambda_mult': 0.5\n    }\n)",
+      "use_when": "Apply when implementing mmr in rag context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for mmr",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "hybrid": {
       "description": "Combine vector and keyword search",
@@ -103,7 +138,8 @@
         "Use BM25 for exact term matching",
         "Use dense vectors for semantic understanding",
         "Consider Reciprocal Rank Fusion (RRF) for combining results"
-      ]
+      ],
+      "use_when": "Apply when implementing hybrid in rag context"
     },
     "hybrid_search_dense_sparse": {
       "description": "Hybrid search combining dense embeddings with sparse keyword vectors",
@@ -143,15 +179,30 @@
     },
     "self_query": {
       "description": "LLM generates metadata filters from query",
-      "code_example": "from langchain.retrievers.self_query.base import SelfQueryRetriever\nfrom langchain.chains.query_constructor.base import AttributeInfo\n\nmetadata_field_info = [\n    AttributeInfo(name='source', description='Document source', type='string'),\n    AttributeInfo(name='date', description='Publication date', type='date'),\n    AttributeInfo(name='category', description='Category', type='string')\n]\n\nretriever = SelfQueryRetriever.from_llm(\n    llm=llm,\n    vectorstore=vectorstore,\n    document_contents='Technical documentation',\n    metadata_field_info=metadata_field_info\n)"
+      "code_example": "from langchain.retrievers.self_query.base import SelfQueryRetriever\nfrom langchain.chains.query_constructor.base import AttributeInfo\n\nmetadata_field_info = [\n    AttributeInfo(name='source', description='Document source', type='string'),\n    AttributeInfo(name='date', description='Publication date', type='date'),\n    AttributeInfo(name='category', description='Category', type='string')\n]\n\nretriever = SelfQueryRetriever.from_llm(\n    llm=llm,\n    vectorstore=vectorstore,\n    document_contents='Technical documentation',\n    metadata_field_info=metadata_field_info\n)",
+      "use_when": "Apply when implementing self query in rag context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for self_query",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "contextual_compression": {
       "description": "Extract relevant parts from retrieved docs",
-      "code_example": "from langchain.retrievers import ContextualCompressionRetriever\nfrom langchain.retrievers.document_compressors import LLMChainExtractor\n\ncompressor = LLMChainExtractor.from_llm(llm)\ncompression_retriever = ContextualCompressionRetriever(\n    base_compressor=compressor,\n    base_retriever=retriever\n)"
+      "code_example": "from langchain.retrievers import ContextualCompressionRetriever\nfrom langchain.retrievers.document_compressors import LLMChainExtractor\n\ncompressor = LLMChainExtractor.from_llm(llm)\ncompression_retriever = ContextualCompressionRetriever(\n    base_compressor=compressor,\n    base_retriever=retriever\n)",
+      "use_when": "Apply when implementing contextual compression in rag context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for contextual_compression",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "reranking": {
       "description": "Re-score results with cross-encoder",
-      "code_example": "from langchain.retrievers import ContextualCompressionRetriever\nfrom langchain_cohere import CohereRerank\n\nreranker = CohereRerank(top_n=5)\ncompression_retriever = ContextualCompressionRetriever(\n    base_compressor=reranker,\n    base_retriever=retriever\n)"
+      "code_example": "from langchain.retrievers import ContextualCompressionRetriever\nfrom langchain_cohere import CohereRerank\n\nreranker = CohereRerank(top_n=5)\ncompression_retriever = ContextualCompressionRetriever(\n    base_compressor=reranker,\n    base_retriever=retriever\n)",
+      "use_when": "Apply when implementing reranking in rag context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for reranking",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "reranking_cross_encoder": {
       "description": "Re-rank retrieval results using cross-encoder models for improved precision",
@@ -175,7 +226,13 @@
       "template": "Answer the question based on the context. Include citations in [Source N] format.\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer with citations:"
     },
     "structured_output": {
-      "code_example": "from pydantic import BaseModel, Field\nfrom langchain_openai import ChatOpenAI\n\nclass Answer(BaseModel):\n    answer: str = Field(description='The answer to the question')\n    sources: list[str] = Field(description='Source documents used')\n    confidence: float = Field(description='Confidence score 0-1')\n\nllm = ChatOpenAI(model='gpt-4o')\nstructured_llm = llm.with_structured_output(Answer)\n\nresponse = structured_llm.invoke(\n    f'Context: {context}\\n\\nQuestion: {question}'\n)"
+      "code_example": "from pydantic import BaseModel, Field\nfrom langchain_openai import ChatOpenAI\n\nclass Answer(BaseModel):\n    answer: str = Field(description='The answer to the question')\n    sources: list[str] = Field(description='Source documents used')\n    confidence: float = Field(description='Confidence score 0-1')\n\nllm = ChatOpenAI(model='gpt-4o')\nstructured_llm = llm.with_structured_output(Answer)\n\nresponse = structured_llm.invoke(\n    f'Context: {context}\\n\\nQuestion: {question}'\n)",
+      "description": "Implements structured output for reliable, maintainable code. Use when the scenario requires this pattern.",
+      "use_when": "Apply when implementing structured output in rag context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for structured_output",
+        "Validate implementation against domain requirements before deployment"
+      ]
     }
   },
   "evaluation_patterns": {
@@ -187,13 +244,203 @@
         "answer_relevancy": "Is answer relevant to question?",
         "context_precision": "Are retrieved contexts relevant?",
         "context_recall": "Did we retrieve all needed context?"
-      }
+      },
+      "use_when": "Apply when implementing ragas in rag context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for ragas",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "evaluation_metrics": {
+      "description": "Comprehensive evaluation metrics for RAG systems",
+      "use_when": "Evaluating RAG quality before deployment",
+      "code_example": "from ragas import evaluate\nfrom ragas.metrics import (\n    faithfulness,\n    answer_relevancy,\n    context_precision,\n    context_recall,\n    context_entity_recall,\n    answer_correctness\n)\nfrom datasets import Dataset\nfrom langchain_openai import ChatOpenAI\n\n# Prepare evaluation dataset\neval_data = {\n    'question': [\n        'What is machine learning?',\n        'How do neural networks work?'\n    ],\n    'answer': [\n        'Machine learning is a subset of AI...',\n        'Neural networks consist of layers...'\n    ],\n    'contexts': [\n        [context1, context2, context3],\n        [context4, context5, context6]\n    ],\n    'ground_truth': [\n        'Machine learning enables systems to learn...',\n        'Neural networks process information through interconnected nodes...'\n    ]\n}\n\ndataset = Dataset.from_dict(eval_data)\n\n# Evaluate with comprehensive metrics\nresults = evaluate(\n    dataset,\n    metrics=[\n        faithfulness,  # Answer grounded in context (0-1)\n        answer_relevancy,  # Answer relevant to question (0-1)\n        context_precision,  # Retrieved contexts are relevant (0-1)\n        context_recall,  # All needed context retrieved (0-1)\n        answer_correctness  # Answer matches ground truth (0-1)\n    ]\n)\n\nprint('Faithfulness:', results['faithfulness'])\nprint('Answer Relevancy:', results['answer_relevancy'])\nprint('Context Precision:', results['context_precision'])\nprint('Context Recall:', results['context_recall'])\nprint('Answer Correctness:', results['answer_correctness'])\n\n# Custom faithfulness evaluation\ndef evaluate_faithfulness(question: str, answer: str, contexts: list[str], llm):\n    '''Evaluate if answer is faithful to contexts'''\n    context_str = '\\n\\n'.join([f'Context {i+1}: {ctx}' for i, ctx in enumerate(contexts)])\n    \n    prompt = f'''Evaluate if the answer is faithful to the provided contexts.\n    \n    Question: {question}\n    \n    Contexts:\n    {context_str}\n    \n    Answer: {answer}\n    \n    Rate faithfulness on a scale of 0-1:\n    1.0 = Answer is fully supported by contexts\n    0.5 = Answer is partially supported\n    0.0 = Answer contradicts or is not supported by contexts\n    \n    Provide score and brief explanation:'''\n    \n    response = llm.invoke(prompt)\n    return response.content\n\n# Custom relevancy evaluation\ndef evaluate_relevancy(question: str, answer: str, llm):\n    '''Evaluate if answer is relevant to question'''\n    prompt = f'''Evaluate if the answer is relevant to the question.\n    \n    Question: {question}\n    Answer: {answer}\n    \n    Rate relevancy on a scale of 0-1:\n    1.0 = Answer directly addresses the question\n    0.5 = Answer partially addresses the question\n    0.0 = Answer is not relevant\n    \n    Provide score and brief explanation:'''\n    \n    response = llm.invoke(prompt)\n    return response.content\n\n# Usage\nllm = ChatOpenAI(model='gpt-4o', temperature=0)\n\nfaithfulness_score = evaluate_faithfulness(\n    question='What is machine learning?',\n    answer=rag_answer,\n    contexts=retrieved_contexts,\n    llm=llm\n)\n\nrelevancy_score = evaluate_relevancy(\n    question='What is machine learning?',\n    answer=rag_answer,\n    llm=llm\n)",
+      "metrics": {
+        "faithfulness": "Measures if answer is grounded in retrieved context (0-1). Higher is better. Prevents hallucination.",
+        "answer_relevancy": "Measures if answer is relevant to the question (0-1). Higher is better. Ensures answer addresses query.",
+        "context_precision": "Measures precision of retrieved contexts (0-1). Higher means more relevant contexts retrieved.",
+        "context_recall": "Measures recall of retrieved contexts (0-1). Higher means all needed context was retrieved.",
+        "answer_correctness": "Measures correctness against ground truth (0-1). Requires labeled data.",
+        "context_entity_recall": "Measures if all entities from ground truth are in contexts (0-1). Useful for entity-heavy queries."
+      },
+      "best_practices": [
+        "Evaluate faithfulness to prevent hallucinations",
+        "Evaluate relevancy to ensure answers address questions",
+        "Use context precision/recall to tune retrieval",
+        "Create evaluation dataset with 50-100 examples minimum",
+        "Run evaluation on regular basis (weekly/monthly)",
+        "Set thresholds: faithfulness > 0.8, relevancy > 0.7",
+        "Use RAGAS for automated evaluation, custom LLM eval for nuanced cases"
+      ]
+    },
+    "custom_evaluation": {
+      "description": "Custom evaluation metrics",
+      "code_example": "from langchain_openai import ChatOpenAI\n\ndef evaluate_answer(question, answer, context, ground_truth):\n    llm = ChatOpenAI(model='gpt-4o', temperature=0)\n    \n    prompt = f'''Evaluate the answer on a scale of 1-5:\n    \n    Question: {question}\n    Context: {context}\n    Answer: {answer}\n    Expected: {ground_truth}\n    \n    Score (1-5) and explanation:'''\n    \n    response = llm.invoke(prompt)\n    return response.content",
+      "use_when": "Apply when implementing custom evaluation in rag context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for custom_evaluation",
+        "Validate implementation against domain requirements before deployment"
+      ]
     }
   },
-  "id": "rag-patterns",
-  "name": "Rag Patterns",
-  "category": "patterns",
-  "patterns": {},
-  "best_practices": [],
-  "anti_patterns": []
+  "production_patterns": {
+    "caching": {
+      "description": "Cache embeddings and responses",
+      "code_example": "from langchain.cache import SQLiteCache\nfrom langchain.globals import set_llm_cache\n\n# LLM response cache\nset_llm_cache(SQLiteCache(database_path='.langchain.db'))\n\n# Embedding cache\nfrom langchain.embeddings import CacheBackedEmbeddings\nfrom langchain.storage import LocalFileStore\n\nstore = LocalFileStore('./embedding_cache')\ncached_embeddings = CacheBackedEmbeddings.from_bytes_store(\n    underlying_embeddings=embeddings,\n    document_embedding_cache=store,\n    namespace='embeddings'\n)",
+      "use_when": "Apply when implementing caching in rag context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for caching",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "streaming": {
+      "description": "Stream responses for better UX",
+      "code_example": "from langchain_core.output_parsers import StrOutputParser\n\nrag_chain = (\n    {'context': retriever | format_docs, 'question': RunnablePassthrough()}\n    | prompt\n    | llm\n    | StrOutputParser()\n)\n\n# Stream response\nfor chunk in rag_chain.stream('What is the main topic?'):\n    print(chunk, end='', flush=True)",
+      "use_when": "Apply when implementing streaming in rag context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for streaming",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "observability": {
+      "description": "Monitor RAG in production",
+      "code_example": "import os\nos.environ['LANGCHAIN_TRACING_V2'] = 'true'\nos.environ['LANGCHAIN_API_KEY'] = 'your-key'\nos.environ['LANGCHAIN_PROJECT'] = 'rag-production'\n\n# All chains automatically traced to LangSmith",
+      "use_when": "Apply when implementing observability in rag context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for observability",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    }
+  },
+  "anti_patterns": [
+    {
+      "name": "No chunking or oversized chunks",
+      "problem": "Using whole documents or chunks larger than embedding context window leads to poor retrieval, token limit issues, and lost information",
+      "solution": "Chunk documents to 500-1500 tokens with 10-20% overlap, ensuring chunks fit within embedding model's max token limit"
+    },
+    {
+      "name": "Mismatched embedding models",
+      "problem": "Using different embedding models for indexing and querying causes semantic mismatch and garbage search results",
+      "solution": "Always use the same embedding model for both indexing documents and querying - never mix models"
+    },
+    {
+      "name": "Single retrieval method",
+      "problem": "Relying only on vector similarity search misses relevant documents with exact keyword matches, especially for technical terms and proper nouns",
+      "solution": "Implement hybrid search combining dense vector search with sparse keyword search (BM25) using ensemble retrievers or native hybrid search"
+    },
+    {
+      "name": "No reranking",
+      "problem": "Vector similarity alone may not rank most relevant documents first, leading to suboptimal context for LLM generation",
+      "solution": "Retrieve 20-50 documents initially, then rerank with cross-encoder models (Cohere Rerank API or local models) to top 5-10 most relevant"
+    },
+    {
+      "name": "Missing source citations",
+      "problem": "Users cannot verify answers or trace back to source documents, violating transparency and verifiability principles",
+      "solution": "Always include source citations in responses using document metadata (source file, page number, section) in [Source N] format"
+    }
+  ],
+  "best_practices_summary": [
+    "Chunk documents appropriately (500-1500 tokens)",
+    "Use overlap between chunks (10-20%)",
+    "Store rich metadata with chunks",
+    "Consider hybrid search for production",
+    "Implement reranking for precision",
+    "Include source citations in responses",
+    "Evaluate with RAGAS before deployment",
+    "Enable tracing for debugging",
+    "Cache embeddings and responses",
+    "Stream for better user experience"
+  ],
+  "patterns": {
+    "semantic_chunking_with_overlap": {
+      "description": "Split documents using semantic boundaries with overlap to preserve context",
+      "use_when": "Need semantically coherent chunks that maintain context across boundaries",
+      "implementation": "Use RecursiveCharacterTextSplitter with 10-20% overlap or SemanticChunker for semantic boundaries",
+      "code_example": "Use RecursiveCharacterTextSplitter with 10-20% overlap or SemanticChunker for semantic boundaries",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for semantic_chunking_with_overlap",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "hybrid_search_ensemble": {
+      "description": "Combine dense vector search with sparse keyword search for improved recall",
+      "use_when": "Need both semantic understanding and exact keyword matching, especially for technical content",
+      "implementation": "Use EnsembleRetriever combining BM25Retriever (sparse) with vector retriever (dense), or native hybrid search in Qdrant/Weaviate",
+      "code_example": "Use EnsembleRetriever combining BM25Retriever (sparse) with vector retriever (dense), or native hybrid search in Qdrant/Weaviate",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for hybrid_search_ensemble",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "retrieve_then_rerank": {
+      "description": "Retrieve more documents than needed, then rerank with cross-encoder for precision",
+      "use_when": "Need high precision and can afford additional latency for reranking step",
+      "implementation": "Retrieve 20-50 documents with vector search, then rerank with CohereRerank or CrossEncoder to top 5-10",
+      "code_example": "Retrieve 20-50 documents with vector search, then rerank with CohereRerank or CrossEncoder to top 5-10",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for retrieve_then_rerank",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "parent_child_chunking": {
+      "description": "Store small chunks for precise retrieval, retrieve parent chunks for broader context",
+      "use_when": "Need precise matching but also require broader document context for generation",
+      "implementation": "Use ParentDocumentRetriever with child chunks (200-500 tokens) for retrieval and parent chunks (1000-2000 tokens) for context",
+      "code_example": "Use ParentDocumentRetriever with child chunks (200-500 tokens) for retrieval and parent chunks (1000-2000 tokens) for context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for parent_child_chunking",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "query_expansion_multi_query": {
+      "description": "Generate multiple query variations and combine results to improve recall",
+      "use_when": "Single query may miss relevant documents, need better recall for complex questions",
+      "implementation": "Use MultiQueryRetriever or generate 3-5 query variations with LLM, retrieve for each, deduplicate and combine results",
+      "code_example": "Use MultiQueryRetriever or generate 3-5 query variations with LLM, retrieve for each, deduplicate and combine results",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for query_expansion_multi_query",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "contextual_retrieval_with_history": {
+      "description": "Reformulate queries using conversation history for better retrieval in conversational RAG",
+      "use_when": "Building chatbots that need document context and handle follow-up questions",
+      "implementation": "Use create_history_aware_retriever to contextualize queries with conversation history before retrieval",
+      "code_example": "Use create_history_aware_retriever to contextualize queries with conversation history before retrieval",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for contextual_retrieval_with_history",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "metadata_filtered_search": {
+      "description": "Apply metadata filters before vector search to narrow search space",
+      "use_when": "Need to constrain search by document attributes (source, date, category, etc.)",
+      "implementation": "Use SelfQueryRetriever or apply filters in vector database (Qdrant Filter, Pinecone filter) before similarity search",
+      "code_example": "Use SelfQueryRetriever or apply filters in vector database (Qdrant Filter, Pinecone filter) before similarity search",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for metadata_filtered_search",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "citation_attribution": {
+      "description": "Include source citations in generated responses for verifiability",
+      "use_when": "Need to enable fact-checking and maintain transparency in RAG responses",
+      "implementation": "Include source metadata in prompt template, instruct LLM to cite sources using [Source N] format, map citations to actual documents",
+      "code_example": "Include source metadata in prompt template, instruct LLM to cite sources using [Source N] format, map citations to actual documents",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for citation_attribution",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use semantic chunking with 10-20% overlap for better context preservation across chunk boundaries",
+    "Implement hybrid search combining dense embeddings with sparse keyword retrievers (BM25) for improved recall",
+    "Apply reranking with cross-encoders after initial retrieval - retrieve 3-5x more documents than needed, then rerank to top k",
+    "Always include source citations in responses using metadata to enable fact-checking and verifiability",
+    "Use parent-child chunking for precise retrieval (small chunks) with broader context (parent chunks) when needed",
+    "Implement query expansion and multi-query retrieval for complex questions to improve recall",
+    "Set chunk size to 500-1500 tokens based on your embedding model's context window and document characteristics",
+    "Evaluate retrieval quality with RAGAS metrics (faithfulness, answer relevancy, context precision) before deployment"
+  ]
 }

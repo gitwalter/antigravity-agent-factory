@@ -5,7 +5,7 @@
   "title": "Anchor Framework Patterns",
   "description": "Best practices and patterns for Solana development with the Anchor framework",
   "version": "1.0.0",
-  "category": "patterns",
+  "category": "ai-ml",
   "sources": [
     "https://www.anchor-lang.com/docs",
     "https://www.anchor-lang.com/docs/references/account-constraints",
@@ -13,8 +13,18 @@
   ],
   "axiomAlignment": {
     "A1_verifiability": "Anchor's constraints provide compile-time and runtime verification",
-    "A3_transparency": "IDL generation enables transparent program interfaces"
+    "A2_user_primacy": "Program design serves user-defined asset and DeFi logic",
+    "A3_transparency": "IDL generation enables transparent program interfaces",
+    "A4_non_harm": "Account validation and signer checks prevent unauthorized access",
+    "A5_consistency": "Unified Anchor patterns across account constraints and CPI"
   },
+  "related_skills": [
+    "none"
+  ],
+  "related_knowledge": [
+    "solana-patterns.json",
+    "solana-security.json"
+  ],
   "program_structure": {
     "basic_layout": {
       "description": "Standard Anchor program structure",
@@ -241,12 +251,38 @@
     "testing_patterns": {
       "typescript_tests": {
         "description": "Integration tests using Anchor's TypeScript client",
-        "code_example": "import * as anchor from \"@coral-xyz/anchor\";\nimport { Program } from \"@coral-xyz/anchor\";\nimport { MyProgram } from \"../target/types/my_program\";\nimport { expect } from \"chai\";\n\ndescribe(\"my-program\", () => {\n  const provider = anchor.AnchorProvider.env();\n  anchor.setProvider(provider);\n  const program = anchor.workspace.MyProgram as Program<MyProgram>;\n\n  it(\"Initializes account\", async () => {\n    const [pda] = anchor.web3.PublicKey.findProgramAddressSync(\n      [Buffer.from(\"my_account\"), provider.wallet.publicKey.toBuffer()],\n      program.programId\n    );\n\n    await program.methods\n      .initialize(new anchor.BN(100))\n      .accounts({\n        myAccount: pda,\n        authority: provider.wallet.publicKey,\n        systemProgram: anchor.web3.SystemProgram.programId,\n      })\n      .rpc();\n\n    const account = await program.account.myAccount.fetch(pda);\n    expect(account.data.toNumber()).to.equal(100);\n  });\n\n  it(\"Fails with unauthorized user\", async () => {\n    const unauthorized = anchor.web3.Keypair.generate();\n    \n    try {\n      await program.methods\n        .update(new anchor.BN(200))\n        .accounts({ authority: unauthorized.publicKey })\n        .signers([unauthorized])\n        .rpc();\n      expect.fail(\"Should have thrown\");\n    } catch (err) {\n      expect(err.error.errorCode.code).to.equal(\"Unauthorized\");\n    }\n  });\n});"
+        "code_example": "import * as anchor from \"@coral-xyz/anchor\";\nimport { Program } from \"@coral-xyz/anchor\";\nimport { MyProgram } from \"../target/types/my_program\";\nimport { expect } from \"chai\";\n\ndescribe(\"my-program\", () => {\n  const provider = anchor.AnchorProvider.env();\n  anchor.setProvider(provider);\n  const program = anchor.workspace.MyProgram as Program<MyProgram>;\n\n  it(\"Initializes account\", async () => {\n    const [pda] = anchor.web3.PublicKey.findProgramAddressSync(\n      [Buffer.from(\"my_account\"), provider.wallet.publicKey.toBuffer()],\n      program.programId\n    );\n\n    await program.methods\n      .initialize(new anchor.BN(100))\n      .accounts({\n        myAccount: pda,\n        authority: provider.wallet.publicKey,\n        systemProgram: anchor.web3.SystemProgram.programId,\n      })\n      .rpc();\n\n    const account = await program.account.myAccount.fetch(pda);\n    expect(account.data.toNumber()).to.equal(100);\n  });\n\n  it(\"Fails with unauthorized user\", async () => {\n    const unauthorized = anchor.web3.Keypair.generate();\n    \n    try {\n      await program.methods\n        .update(new anchor.BN(200))\n        .accounts({ authority: unauthorized.publicKey })\n        .signers([unauthorized])\n        .rpc();\n      expect.fail(\"Should have thrown\");\n    } catch (err) {\n      expect(err.error.errorCode.code).to.equal(\"Unauthorized\");\n    }\n  });\n});",
+        "use_when": "When implementing this pattern in your AI/ML application",
+        "best_practices": [
+          "Always use Anchor's typed Account<'info, T> instead of AccountInfo to get automatic ownership and discriminator verification",
+          "Store bump seeds in account data to avoid recalculation and enable efficient PDA verification in future instructions",
+          "Use checked arithmetic operations (checked_add, checked_sub) everywhere to prevent integer overflow vulnerabilities",
+          "Update state before making cross-program invocations (CPI) to prevent reentrancy attacks",
+          "Validate all account relationships explicitly using Anchor constraints (has_one, constraint) before trusting account data"
+        ]
       },
       "rust_tests": {
         "description": "Unit tests using LiteSVM or Mollusk",
-        "code_example": "use litesvm::LiteSVM;\nuse solana_sdk::{signature::Keypair, signer::Signer};\n\n#[test]\nfn test_initialize() {\n    let mut svm = LiteSVM::new();\n    let payer = Keypair::new();\n    svm.airdrop(&payer.pubkey(), 10_000_000_000).unwrap();\n    \n    // Deploy program and test...\n}"
-      }
+        "code_example": "use litesvm::LiteSVM;\nuse solana_sdk::{signature::Keypair, signer::Signer};\n\n#[test]\nfn test_initialize() {\n    let mut svm = LiteSVM::new();\n    let payer = Keypair::new();\n    svm.airdrop(&payer.pubkey(), 10_000_000_000).unwrap();\n    \n    // Deploy program and test...\n}",
+        "use_when": "When implementing this pattern in your AI/ML application",
+        "best_practices": [
+          "Always use Anchor's typed Account<'info, T> instead of AccountInfo to get automatic ownership and discriminator verification",
+          "Store bump seeds in account data to avoid recalculation and enable efficient PDA verification in future instructions",
+          "Use checked arithmetic operations (checked_add, checked_sub) everywhere to prevent integer overflow vulnerabilities",
+          "Update state before making cross-program invocations (CPI) to prevent reentrancy attacks",
+          "Validate all account relationships explicitly using Anchor constraints (has_one, constraint) before trusting account data"
+        ]
+      },
+      "description": "Pattern for anchor patterns - implement with domain-specific logic.",
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "# Implement pattern based on description\n# Use appropriate imports and domain-specific logic\nresult = process_data(input_data)",
+      "best_practices": [
+        "Always use Anchor's typed Account<'info, T> instead of AccountInfo to get automatic ownership and discriminator verification",
+        "Store bump seeds in account data to avoid recalculation and enable efficient PDA verification in future instructions",
+        "Use checked arithmetic operations (checked_add, checked_sub) everywhere to prevent integer overflow vulnerabilities",
+        "Update state before making cross-program invocations (CPI) to prevent reentrancy attacks",
+        "Validate all account relationships explicitly using Anchor constraints (has_one, constraint) before trusting account data"
+      ]
     }
   },
   "best_practices": [

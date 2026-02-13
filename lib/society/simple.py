@@ -24,7 +24,7 @@ SDG - Love - Truth - Beauty
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional
 from enum import Enum
 
@@ -419,7 +419,7 @@ class SimpleSociety:
         contract = AgentContract(
             contract_id=contract_id,
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=party_list,
             capabilities=cap_dict,
             obligations=obl_dict,

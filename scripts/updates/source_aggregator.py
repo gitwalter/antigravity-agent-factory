@@ -23,7 +23,7 @@ Version: 1.0.0
 
 import asyncio
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
 from pathlib import Path
 import fnmatch
@@ -277,7 +277,7 @@ class SourceAggregator:
         Returns:
             AggregationResult with all updates and metadata
         """
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
         all_updates: List[KnowledgeUpdate] = []
         errors: List[str] = []
         
@@ -303,7 +303,7 @@ class SourceAggregator:
                 all_updates.extend(updates)
                 errors.extend(adapter_errors)
                 self._source_health[name].available = True
-                self._source_health[name].last_check = datetime.utcnow()
+                self._source_health[name].last_check = datetime.now(timezone.utc)
                 self._source_health[name].last_error = None
         
         # Deduplicate updates
@@ -314,7 +314,7 @@ class SourceAggregator:
         deduplicated.sort(key=lambda u: u.priority.value)
         
         # Calculate fetch time
-        fetch_time = (datetime.utcnow() - start_time).total_seconds()
+        fetch_time = (datetime.now(timezone.utc) - start_time).total_seconds()
         
         return AggregationResult(
             updates=deduplicated,
@@ -396,7 +396,7 @@ class SourceAggregator:
             try:
                 available = await adapter.validate_connection()
                 self._source_health[name].available = available
-                self._source_health[name].last_check = datetime.utcnow()
+                self._source_health[name].last_check = datetime.now(timezone.utc)
                 if not available:
                     self._source_health[name].last_error = "Connection validation failed"
             except Exception as e:

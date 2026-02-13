@@ -7,7 +7,7 @@ Tests contract schema, registry, and verification.
 import pytest
 import tempfile
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from lib.society.contracts import (
@@ -92,7 +92,7 @@ class TestAgentContract:
         contract = AgentContract(
             contract_id="contract-1",
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[
                 Party(agent_id="provider-1", role="provider", public_key="pk_1"),
                 Party(agent_id="consumer-1", role="consumer", public_key="pk_2"),
@@ -109,7 +109,7 @@ class TestAgentContract:
             },
             axiom_requirements=AxiomRequirements(A1_love="Prioritize user", A2_truth="Be honest"),
             dispute_resolution=DisputeResolution(method=DisputeMethod.ESCALATE_TO_SUPERVISOR),
-            expires=datetime.utcnow() + timedelta(days=30),
+            expires=datetime.now(timezone.utc) + timedelta(days=30),
         )
         if signed:
             contract.signatures = {"provider-1": "sig1", "consumer-1": "sig2"}
@@ -198,7 +198,7 @@ class TestContractRegistry:
         return AgentContract(
             contract_id=contract_id,
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[Party(agent_id=a, role="member", public_key=f"pk_{a}") for a in agents],
             capabilities={"member": [Capability(action="work", parameters={})]},
         )
@@ -421,7 +421,7 @@ class TestContractRegistry:
         contract1 = AgentContract(
             contract_id="c1",
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[
                 Party(agent_id="a1", role="worker", public_key="pk_1"),
                 Party(agent_id="a2", role="manager", public_key="pk_2"),
@@ -433,7 +433,7 @@ class TestContractRegistry:
         contract2 = AgentContract(
             contract_id="c2",
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[
                 Party(agent_id="a1", role="worker", public_key="pk_1"),
                 Party(agent_id="a3", role="worker", public_key="pk_3"),
@@ -460,7 +460,7 @@ class TestContractRegistry:
         contract = AgentContract(
             contract_id="c1",
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[
                 Party(agent_id="a1", role="worker", public_key="pk_1"),
             ],
@@ -484,7 +484,7 @@ class TestContractRegistry:
         contract1 = AgentContract(
             contract_id="c1",
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[
                 Party(agent_id="a1", role="worker", public_key="pk_1"),
             ],
@@ -494,7 +494,7 @@ class TestContractRegistry:
         contract2 = AgentContract(
             contract_id="c2",
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[
                 Party(agent_id="a1", role="manager", public_key="pk_1"),
             ],
@@ -526,20 +526,20 @@ class TestContractRegistry:
         expired_contract = AgentContract(
             contract_id="c1",
             version="1.0.0",
-            created=datetime.utcnow() - timedelta(days=2),
+            created=datetime.now(timezone.utc) - timedelta(days=2),
             parties=[Party(agent_id="a1", role="member", public_key="pk_1")],
             capabilities={"member": []},
-            expires=datetime.utcnow() - timedelta(days=1),  # Expired yesterday
+            expires=datetime.now(timezone.utc) - timedelta(days=1),  # Expired yesterday
         )
         
         # Add non-expired contract
         active_contract = AgentContract(
             contract_id="c2",
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[Party(agent_id="a2", role="member", public_key="pk_2")],
             capabilities={"member": []},
-            expires=datetime.utcnow() + timedelta(days=1),  # Expires tomorrow
+            expires=datetime.now(timezone.utc) + timedelta(days=1),  # Expires tomorrow
         )
         
         registry.add(expired_contract)
@@ -569,10 +569,10 @@ class TestContractRegistry:
             expired_contract = AgentContract(
                 contract_id="c1",
                 version="1.0.0",
-                created=datetime.utcnow() - timedelta(days=2),
+                created=datetime.now(timezone.utc) - timedelta(days=2),
                 parties=[Party(agent_id="a1", role="member", public_key="pk_1")],
                 capabilities={"member": []},
-                expires=datetime.utcnow() - timedelta(days=1),
+                expires=datetime.now(timezone.utc) - timedelta(days=1),
             )
             registry.add(expired_contract)
             
@@ -616,7 +616,7 @@ class TestContractVerifier:
         self.contract = AgentContract(
             contract_id="test-contract",
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[
                 Party(agent_id="agent-1", role="worker", public_key="pk_1"),
                 Party(agent_id="agent-2", role="manager", public_key="pk_2"),
@@ -705,7 +705,7 @@ class TestContractVerifier:
         contract = AgentContract(
             contract_id="test-contract-2",
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[
                 Party(agent_id="agent-1", role="worker", public_key="pk_1"),
                 Party(agent_id="agent-2", role="manager", public_key="pk_2"),
@@ -732,7 +732,7 @@ class TestContractVerifier:
         contract2 = AgentContract(
             contract_id="test-contract-2",
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[
                 Party(agent_id="agent-1", role="worker", public_key="pk_1"),
                 Party(agent_id="agent-2", role="manager", public_key="pk_2"),
@@ -774,7 +774,7 @@ class TestContractVerifier:
         contract = AgentContract(
             contract_id="test-contract-obligation",
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[
                 Party(agent_id="agent-1", role="worker", public_key="pk_1"),
             ],
@@ -807,7 +807,7 @@ class TestContractVerifier:
         contract = AgentContract(
             contract_id="test-contract-obligation",
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[
                 Party(agent_id="agent-1", role="worker", public_key="pk_1"),
             ],
@@ -827,7 +827,7 @@ class TestContractVerifier:
         contract = AgentContract(
             contract_id="test-contract-obligation",
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[
                 Party(agent_id="agent-1", role="worker", public_key="pk_1"),
             ],
@@ -855,7 +855,7 @@ class TestContractVerifier:
         contract = AgentContract(
             contract_id="test-contract-obligation",
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[
                 Party(agent_id="agent-1", role="worker", public_key="pk_1"),
             ],
@@ -875,7 +875,7 @@ class TestContractVerifier:
         contract = AgentContract(
             contract_id="test-contract-obligation",
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[
                 Party(agent_id="agent-1", role="worker", public_key="pk_1"),
             ],
@@ -908,7 +908,7 @@ class TestContractVerifier:
         contract = AgentContract(
             contract_id="test-contract-obligation",
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[
                 Party(agent_id="agent-1", role="worker", public_key="pk_1"),
             ],
@@ -938,7 +938,7 @@ class TestContractVerifier:
         contract = AgentContract(
             contract_id="test-contract-obligation",
             version="1.0.0",
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             parties=[
                 Party(agent_id="agent-1", role="worker", public_key="pk_1"),
             ],

@@ -320,13 +320,21 @@ class TestMemoryStoreSingleton:
     
     def test_get_memory_store_returns_same_instance(self, tmp_path):
         """Test singleton returns same instance."""
-        from scripts.memory.memory_store import get_memory_store
+        from scripts.memory.memory_store import get_memory_store, reset_memory_store
         
         # Reset singleton for test
-        import scripts.memory.memory_store as module
-        module._default_store = None
+        reset_memory_store()
         
-        # This test is tricky because we can't easily set persist_dir
-        # Just verify the function works
-        store = get_memory_store()
-        assert store is not None
+        try:
+            # First call with temp dir
+            temp_persist = str(tmp_path / "memory_singleton")
+            store1 = get_memory_store(persist_dir=temp_persist)
+            assert store1 is not None
+            
+            # Second call should return same instance
+            store2 = get_memory_store()
+            assert store2 is store1
+            
+        finally:
+            # Clean up
+            reset_memory_store()

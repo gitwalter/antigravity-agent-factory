@@ -3,27 +3,20 @@ description: Onboard existing repositories into the Cursor Agent Factory ecosyst
 name: onboarding-flow
 type: skill
 ---
-
 # Onboarding Flow
 
 Onboard existing repositories into the Cursor Agent Factory ecosystem
 
-## 
-# Onboarding Flow Skill
-
-Integrate Cursor Agent Factory into existing repositories non-destructively, preserving existing artifacts while adding missing components.
-
-## 
-# Onboarding Flow Skill
-
 Integrate Cursor Agent Factory into existing repositories non-destructively, preserving existing artifacts while adding missing components.
 
 ## Philosophy
+
 > Existing repositories have value. Our job is to enhance, not replace.
 
 This skill enables seamless integration of the factory's agent system into repositories that already have code, configurations, and potentially some Cursor artifacts.
 
 ## Value Propagation Features
+
 Every onboarded project receives layered capabilities that enable progressive autonomy:
 
 **Layer 0: Foundation**
@@ -46,6 +39,10 @@ Every onboarded project receives layered capabilities that enable progressive au
 - See Step 3.5 for PM setup options
 
 ## Process
+
+1. Review the task requirements.
+2. Apply the skill's methodology.
+3. Validate the output against the defined criteria.
 ### Step 1: Gather Repository Information
 
 Ask user for the repository path:
@@ -231,96 +228,10 @@ A backup was created: .cursor-factory-backup/20260129_143022/
 Next steps:
 1. Review the merged .cursorrules file
 2. Test the new agents by mentioning them
-3. Check the knowledge/ folder for new reference files
-4. Review workflows/ for available workflow templates
-5. Run `python scripts/git/install_hooks.py` to activate pre-commit hooks
-6. Run `python scripts/validation/validate_readme_structure.py --check` to verify README
-7. Configure PM backend credentials (if PM was enabled)
-
-If anything looks wrong, you can rollback:
-python cli/factory_cli.py --rollback <repo_path>
-"
-```
-
-```
-"Please provide the path to the repository you want to onboard.
-For example: C:\Projects\my-existing-app"
-```
-
-```bash
-python cli/factory_cli.py --analyze <repo_path>
-```
-
-```
-"I detected the following:
-- Languages: C#, TypeScript
-- Frameworks: ASP.NET Core, React
-- Suggested Blueprint: csharp-dotnet
-
-Would you like to use this blueprint, or choose a different one?"
-```
-
-```
-"Would you like to set up project management for this repository?
-
-This will add:
-- PM agents (Product Owner, Sprint Master, Task Manager, Reporting)
-- Integration with your issue tracker (GitHub, Jira, Azure DevOps, Linear)
-- Sprint/Kanban workflow automation
-- Metrics and reporting capabilities
-
-Options:
-1. [Yes] - Configure full project management
-2. [Minimal] - Just issue tracking, no ceremonies
-3. [No] - Skip for now (can add later with pm-configuration skill)"
-```
-
-```
-"Would you like to set up automation tooling for this repository?
-
-This can include:
-- CI/CD pipelines (GitHub Actions)
-- README structure validation and test catalog generation
-- Pre-commit hooks with auto-sync
-- Safe commit wrapper
-- Secret scanning
-
-Options:
-1. [Essential] - CI pipeline, doc sync, .gitignore (recommended)
-2. [Standard]  - Essential + git hooks, safe commit, CD pipeline
-3. [Full]      - Standard + secret scanner, changelog generator
-4. [Custom]    - Pick individual tools
-5. [None]      - Skip for now (can add later via Factory updates)"
-```
-
-```bash
-python cli/factory_cli.py --onboard <repo_path> --blueprint <blueprint_id> --dry-run
-```
-
-```bash
-python cli/factory_cli.py --onboard <repo_path> --blueprint <blueprint_id>
-```
-
-```
-"Onboarding complete!
-
-Summary:
-- Scenario: PARTIAL
-- Files created: 8
-- Files merged: 2
-- Skipped (preserved): 3
-- Tooling tier: {TOOLING_TIER}
-- PM configuration: Enabled (if PM was selected in Step 3.5)
-
-A backup was created: .cursor-factory-backup/20260129_143022/
-
-Next steps:
-1. Review the merged .cursorrules file
-2. Test the new agents by mentioning them
-3. Check the knowledge/ folder for new reference files
-4. Review workflows/ for available workflow templates
-5. Run `python scripts/git/install_hooks.py` to activate pre-commit hooks
-6. Run `python scripts/validation/validate_readme_structure.py --check` to verify README
+3. Check the {directories.knowledge}/ folder for new reference files
+4. Review {directories.workflows}/ for available workflow templates
+5. Run `python {directories.scripts}/git/install_hooks.py` to activate pre-commit hooks
+6. Run `python {directories.scripts}/validation/validate_readme_structure.py --check` to verify README
 7. Configure PM backend credentials (if PM was enabled)
 
 If anything looks wrong, you can rollback:
@@ -329,6 +240,7 @@ python cli/factory_cli.py --rollback <repo_path>
 ```
 
 ## Scenario Handling
+
 ### FRESH Scenario (No Cursor artifacts)
 - Full generation with all factory components
 - Detect tech stack and suggest blueprint
@@ -355,6 +267,7 @@ python cli/factory_cli.py --rollback <repo_path>
 - No changes unless explicitly requested
 
 ## Fallback Procedures
+
 | Condition | Action |
 |-----------|--------|
 | Path not found | Ask user to verify path |
@@ -364,6 +277,7 @@ python cli/factory_cli.py --rollback <repo_path>
 | Conflict with no resolution | Skip artifact, report to user |
 
 ## Integration with Other Skills
+
 | Skill | Integration Point |
 |-------|-------------------|
 | `requirements-gathering` | Use if user wants to customize before onboarding |
@@ -374,6 +288,7 @@ python cli/factory_cli.py --rollback <repo_path>
 | `team-workshop-onboarding` | Alternative for team onboarding with collaborative workshops |
 
 ## Team Onboarding Alternative
+
 If a team (2+ people) is onboarding together, suggest the Team Workshop Onboarding:
 
 ```
@@ -389,18 +304,8 @@ and more customized results. It's grounded in Axiom 0: Love, Truth, and Beauty."
 
 If they choose team workshops, hand off to `team-workshop-onboarding` skill.
 
-```
-"I notice you mentioned a team. Would you like to:
-
-A) Individual Onboarding - I'll analyze and enhance your repo now
-B) Team Workshop Series - Collaborative 5-workshop journey with games 
-   and discussions that builds shared vision, ethics, and custom agents
-
-The workshop series takes more time but creates deeper team alignment
-and more customized results. It's grounded in Axiom 0: Love, Truth, and Beauty."
-```
-
 ## Important Rules
+
 1. **Never overwrite without backup** - Always create backup before any modification
 2. **Preserve user customizations** - Default to keeping existing content
 3. **Ask for conflicts** - Don't make assumptions, ask user for each conflict
@@ -410,22 +315,6 @@ and more customized results. It's grounded in Axiom 0: Love, Truth, and Beauty."
 7. **Update CHANGELOG** - After any feature addition or modification, update CHANGELOG.md before committing
 
 ## CLI Quick Reference
-```bash
-# Analyze repository (no changes)
-python cli/factory_cli.py --analyze C:\Projects\my-repo
-
-# Preview onboarding (dry run)
-python cli/factory_cli.py --onboard C:\Projects\my-repo --dry-run
-
-# Onboard with auto-detected blueprint
-python cli/factory_cli.py --onboard C:\Projects\my-repo
-
-# Onboard with specific blueprint
-python cli/factory_cli.py --onboard C:\Projects\my-repo --blueprint csharp-dotnet
-
-# Rollback last onboarding
-python cli/factory_cli.py --rollback C:\Projects\my-repo
-```
 
 ```bash
 # Analyze repository (no changes)
@@ -445,6 +334,7 @@ python cli/factory_cli.py --rollback C:\Projects\my-repo
 ```
 
 ## Example Conversation
+
 **User:** "I have an existing C# project at C:\Projects\PaymentService that I want to enhance with Cursor agents"
 
 **Agent:** "I'll analyze your repository to understand what's already configured.
@@ -496,7 +386,7 @@ Summary:
 Next steps:
 1. Review the merged .cursorrules file
 2. Test the new agents by mentioning them
-3. Check the knowledge/ folder for new reference files
+3. Check the {directories.knowledge}/ folder for new reference files
 4. Configure Jira credentials in .env.pm"
 
 ---
@@ -504,7 +394,14 @@ Next steps:
 *Generated by Cursor Agent Factory*
 *Skill: onboarding-flow v1.0.0*
 
+## When to Use
+This skill should be used when strict adherence to the defined process is required.
+
 ## Prerequisites
-> [!IMPORTANT]
-> Requirements:
-> - Knowledge: skill-catalog.json, stack-capabilities.json
+- Basic understanding of the agent factory context.
+- Access to the necessary tools and resources.
+
+## Best Practices
+- Always follow the established guidelines.
+- Document any deviations or exceptions.
+- Regularly review and update the skill documentation.

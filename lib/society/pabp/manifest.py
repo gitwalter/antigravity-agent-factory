@@ -9,7 +9,7 @@ SDG - Love - Truth - Beauty
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -143,7 +143,7 @@ class BundleManifest:
             agent_id=data["agent_id"],
             agent_name=data["agent_name"],
             version=data.get("version", "1.0.0"),
-            created_at=datetime.fromisoformat(data["created_at"]) if isinstance(data.get("created_at"), str) else datetime.utcnow(),
+            created_at=datetime.fromisoformat(data["created_at"]) if isinstance(data.get("created_at"), str) else datetime.now(timezone.utc),
             checksums=[ComponentChecksum.from_dict(c) for c in data.get("checksums", [])],
             bundle_checksum=data.get("bundle_checksum", ""),
             compatibility=data.get("compatibility", {}),

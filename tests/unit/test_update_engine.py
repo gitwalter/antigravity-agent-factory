@@ -15,7 +15,7 @@ import sys
 import json
 import asyncio
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import Mock, patch, MagicMock, AsyncMock
 from typing import List, Dict, Any
 
@@ -611,7 +611,7 @@ class TestSourceHealth:
         health = SourceHealth(
             name="test_adapter",
             available=True,
-            last_check=datetime.utcnow(),
+            last_check=datetime.now(timezone.utc),
         )
         
         assert health.name == "test_adapter"

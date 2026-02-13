@@ -50,7 +50,8 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [debug-conductor](.agent/agents/debug-conductor.md) | debug-conductor |
 | [dotnet-architect](.agent/agents/dotnet-architect.md) | dotnet-architect |
 | [dotnet-developer](.agent/agents/dotnet-developer.md) | dotnet-developer |
-| [frontend-architect](.agent/agents/frontend-architect.md) | Frontend Architect |
+| [frontend-architect](.agent/agents/frontend-architect.md) | frontend-architect |
+| [fullstack-ts-developer](.agent/agents/fullstack-ts-developer.md) | fullstack-ts-developer |
 | [fullstack-typescript-developer](.agent/agents/fullstack-typescript-developer.md) | Fullstack TypeScript Developer |
 | [git-specialist](.agent/agents/git-specialist.md) | git-specialist |
 | [integrity-guardian](.agent/agents/integrity-guardian.md) | integrity-guardian |
@@ -93,11 +94,16 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [api-design](.agent/skills/api-design/SKILL.md) | Api Design |
 | [axiom-selection](.agent/skills/axiom-selection/SKILL.md) | Axiom Selection |
 | [azure-integration](.agent/skills/azure-integration/SKILL.md) | Azure Integration |
+| [backtesting-validation](.agent/skills/backtesting-validation/SKILL.md) | Backtesting Validation |
+| [bdd](.agent/skills/bdd/SKILL.md) | Bdd |
 | [blazor-development](.agent/skills/blazor-development/SKILL.md) | Blazor Development |
 | [btp-deployment](.agent/skills/btp-deployment/SKILL.md) | Btp Deployment |
+| [build-raw-bundle](.agent/skills/build-raw-bundle/SKILL.md) | Build Raw Bundle |
 | [caching-optimization](.agent/skills/caching-optimization/SKILL.md) | Caching Optimization |
 | [cds-modeling](.agent/skills/cds-modeling/SKILL.md) | Cds Modeling |
 | [ci-monitor](.agent/skills/ci-monitor/SKILL.md) | Ci Monitor |
+| [clean-code-review](.agent/skills/clean-code-review/SKILL.md) | Clean Code Review |
+| [code-analysis](.agent/skills/code-analysis/SKILL.md) | Code Analysis |
 | [commit-release](.agent/skills/commit-release/SKILL.md) | Commit Release |
 | [config-onboarding](.agent/skills/config-onboarding/SKILL.md) | Config Onboarding Skill |
 | [crewai-agents](.agent/skills/crewai-agents/SKILL.md) | Crewai Agents |
@@ -106,6 +112,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [data-pipeline](.agent/skills/data-pipeline/SKILL.md) | Data Pipeline |
 | [database-agents](.agent/skills/database-agents/SKILL.md) | Database Agents |
 | [docker-deployment](.agent/skills/docker-deployment/SKILL.md) | Docker Deployment |
+| [documentation-generation](.agent/skills/documentation-generation/SKILL.md) | Documentation Generation |
 | [dotnet-auth](.agent/skills/dotnet-auth/SKILL.md) | Dotnet Auth |
 | [dotnet-backend](.agent/skills/dotnet-backend/SKILL.md) | Dotnet Backend |
 | [dotnet-microservices](.agent/skills/dotnet-microservices/SKILL.md) | Dotnet Microservices |
@@ -147,6 +154,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [nextjs-development](.agent/skills/nextjs-development/SKILL.md) | Nextjs Development |
 | [ocr-processing](.agent/skills/ocr-processing/SKILL.md) | Ocr Processing |
 | [onboarding-flow](.agent/skills/onboarding-flow/SKILL.md) | Onboarding Flow |
+| [operating-environment](.agent/skills/operating-environment/SKILL.md) | Operating Environment |
 | [pattern-feedback](.agent/skills/pattern-feedback/SKILL.md) | Pattern Feedback |
 | [pipeline-error-fix](.agent/skills/pipeline-error-fix/SKILL.md) | Pipeline Error Fix |
 | [pm-configuration](.agent/skills/pm-configuration/SKILL.md) | Pm Configuration |
@@ -159,8 +167,10 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [rap-development](.agent/skills/rap-development/SKILL.md) | Rap Development |
 | [react-patterns](.agent/skills/react-patterns/SKILL.md) | React Patterns |
 | [readme-validation](.agent/skills/readme-validation/SKILL.md) | Readme Validation |
+| [receive-updates](.agent/skills/receive-updates/SKILL.md) | Receive Updates |
 | [requirements-gathering](.agent/skills/requirements-gathering/SKILL.md) | Requirements Gathering |
 | [research-first](.agent/skills/research-first/SKILL.md) | Research First |
+| [risk-analysis](.agent/skills/risk-analysis/SKILL.md) | Risk Analysis |
 | [s4-process-guide](.agent/skills/s4-process-guide/SKILL.md) | S4 Process Guide |
 | [sap-integration](.agent/skills/sap-integration/SKILL.md) | Sap Integration |
 | [sap-security](.agent/skills/sap-security/SKILL.md) | Sap Security |
@@ -183,7 +193,9 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [team-huddle-onboarding](.agent/skills/team-huddle-onboarding/SKILL.md) | Team Huddle Onboarding |
 | [team-workshop-onboarding](.agent/skills/team-workshop-onboarding/SKILL.md) | Team Workshop Onboarding |
 | [template-generation](.agent/skills/template-generation/SKILL.md) | Template Generation |
+| [test-translation](.agent/skills/test-translation/SKILL.md) | Test Translation |
 | [tool-usage](.agent/skills/tool-usage/SKILL.md) | Tool Usage |
+| [trading-strategy](.agent/skills/trading-strategy/SKILL.md) | Trading Strategy |
 | [trpc-api](.agent/skills/trpc-api/SKILL.md) | Trpc Api |
 | [update-knowledge](.agent/skills/update-knowledge/SKILL.md) | Update Knowledge |
 | [verified-communication](.agent/skills/verified-communication/SKILL.md) | Verified Communication |
@@ -199,8 +211,68 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 
 | Workflow | Description |
 |----------|-------------|
+| [agent-development](.agent/workflows/agent-development.md) | Agent Development |
+| [agent-testing](.agent/workflows/agent-testing.md) | Agent Testing |
+| [ai-system-design](.agent/workflows/ai-system-design.md) | Ai System Design |
+| [azure-deployment](.agent/workflows/azure-deployment.md) | Azure Deployment |
+| [backlog-refinement](.agent/workflows/backlog-refinement.md) | Backlog Refinement |
+| [backtest-validation](.agent/workflows/backtest-validation.md) | Backtest Validation |
+| [bdd-driven-development](.agent/workflows/bdd-driven-development.md) | Bdd Driven Development |
+| [btp-service-deployment](.agent/workflows/btp-service-deployment.md) | Btp Service Deployment |
+| [bugfix-resolution](.agent/workflows/bugfix-resolution.md) | Bugfix Resolution |
 | [build-langchain-agent](.agent/workflows/build-langchain-agent.md) | Building AI Agents with LangChain |
+| [cap-service-development](.agent/workflows/cap-service-development.md) | Cap Service Development |
+| [cicd-pipeline](.agent/workflows/cicd-pipeline.md) | Cicd Pipeline |
+| [code-review](.agent/workflows/code-review.md) | Code Review |
+| [confluence-feature](.agent/workflows/confluence-feature.md) | Confluence Feature |
+| [coordination-testing](.agent/workflows/coordination-testing.md) | Coordination Testing |
+| [daily-standup](.agent/workflows/daily-standup.md) | Daily Standup |
+| [debug-pipeline](.agent/workflows/debug-pipeline.md) | Debug Pipeline |
+| [defi-development](.agent/workflows/defi-development.md) | Defi Development |
+| [deployment-workflow](.agent/workflows/deployment-workflow.md) | Deployment Workflow |
+| [dotnet-api-development](.agent/workflows/dotnet-api-development.md) | Dotnet Api Development |
+| [dotnet-microservices-setup](.agent/workflows/dotnet-microservices-setup.md) | Dotnet Microservices Setup |
+| [ewm-development](.agent/workflows/ewm-development.md) | Ewm Development |
+| [fastapi-api-development](.agent/workflows/fastapi-api-development.md) | Fastapi Api Development |
+| [feature-development](.agent/workflows/feature-development.md) | Feature Development |
+| [fi-development](.agent/workflows/fi-development.md) | Fi Development |
+| [fiori-app-development](.agent/workflows/fiori-app-development.md) | Fiori App Development |
+| [github-actions-ci](.agent/workflows/github-actions-ci.md) | Github Actions Ci |
+| [iflow-development](.agent/workflows/iflow-development.md) | Iflow Development |
+| [incident-response](.agent/workflows/incident-response.md) | Incident Response |
+| [java-cicd-pipeline](.agent/workflows/java-cicd-pipeline.md) | Java Cicd Pipeline |
+| [jira-bugfix](.agent/workflows/jira-bugfix.md) | Jira Bugfix |
+| [le-development](.agent/workflows/le-development.md) | Le Development |
+| [llm-app-development](.agent/workflows/llm-app-development.md) | Llm App Development |
+| [logistics-chain-workflow](.agent/workflows/logistics-chain-workflow.md) | Logistics Chain Workflow |
 | [migrate-skill-to-jinja2](.agent/workflows/migrate-skill-to-jinja2.md) | Migrate Skill to Jinja2 Template |
+| [ml-deployment-pipeline](.agent/workflows/ml-deployment-pipeline.md) | Ml Deployment Pipeline |
+| [ml-experiment](.agent/workflows/ml-experiment.md) | Ml Experiment |
+| [mm-development](.agent/workflows/mm-development.md) | Mm Development |
+| [model-evaluation](.agent/workflows/model-evaluation.md) | Model Evaluation |
+| [model-training-pipeline](.agent/workflows/model-training-pipeline.md) | Model Training Pipeline |
+| [multi-agent-development](.agent/workflows/multi-agent-development.md) | Multi Agent Development |
+| [multi-agent-orchestration](.agent/workflows/multi-agent-orchestration.md) | Multi Agent Orchestration |
+| [nextjs-feature-development](.agent/workflows/nextjs-feature-development.md) | Nextjs Feature Development |
+| [prompt-iteration](.agent/workflows/prompt-iteration.md) | Prompt Iteration |
+| [quality-gate](.agent/workflows/quality-gate.md) | Quality Gate |
+| [rag-pipeline-development](.agent/workflows/rag-pipeline-development.md) | Rag Pipeline Development |
+| [rap-development](.agent/workflows/rap-development.md) | Rap Development |
+| [rap-with-draft](.agent/workflows/rap-with-draft.md) | Rap With Draft |
+| [release-management](.agent/workflows/release-management.md) | Release Management |
+| [sap-cicd-pipeline](.agent/workflows/sap-cicd-pipeline.md) | Sap Cicd Pipeline |
+| [sd-development](.agent/workflows/sd-development.md) | Sd Development |
+| [security-audit-workflow](.agent/workflows/security-audit-workflow.md) | Security Audit Workflow |
+| [security-audit](.agent/workflows/security-audit.md) | Security Audit |
+| [smart-contract-audit](.agent/workflows/smart-contract-audit.md) | Smart Contract Audit |
+| [smart-contract-development](.agent/workflows/smart-contract-development.md) | Smart Contract Development |
+| [solana-development](.agent/workflows/solana-development.md) | Solana Development |
+| [spring-microservice-development](.agent/workflows/spring-microservice-development.md) | Spring Microservice Development |
+| [sprint-closure](.agent/workflows/sprint-closure.md) | Sprint Closure |
+| [sprint-planning](.agent/workflows/sprint-planning.md) | Sprint Planning |
+| [strategy-development](.agent/workflows/strategy-development.md) | Strategy Development |
+| [tdd-cycle](.agent/workflows/tdd-cycle.md) | Tdd Cycle |
+| [trading-strategy-pipeline](.agent/workflows/trading-strategy-pipeline.md) | Trading Strategy Pipeline |
 
 ## 📚 Knowledge Files
 
@@ -208,9 +280,12 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 |------|------|
 | manifest | [`knowledge/manifest.json`](knowledge/manifest.json) |
 | advanced-agent-architectures | [`.agent/knowledge/advanced-agent-architectures.json`](.agent/knowledge/advanced-agent-architectures.json) |
+| advanced-rag-patterns-2026 | [`.agent/knowledge/advanced-rag-patterns-2026.json`](.agent/knowledge/advanced-rag-patterns-2026.json) |
 | advanced-rag-patterns | [`.agent/knowledge/advanced-rag-patterns.json`](.agent/knowledge/advanced-rag-patterns.json) |
 | agent-coordination-patterns | [`.agent/knowledge/agent-coordination-patterns.json`](.agent/knowledge/agent-coordination-patterns.json) |
 | agent-coordination | [`.agent/knowledge/agent-coordination.json`](.agent/knowledge/agent-coordination.json) |
+| agent-handoff-patterns | [`.agent/knowledge/agent-handoff-patterns.json`](.agent/knowledge/agent-handoff-patterns.json) |
+| agent-memory-patterns-2026 | [`.agent/knowledge/agent-memory-patterns-2026.json`](.agent/knowledge/agent-memory-patterns-2026.json) |
 | agent-memory-patterns | [`.agent/knowledge/agent-memory-patterns.json`](.agent/knowledge/agent-memory-patterns.json) |
 | agent-society-protocol | [`.agent/knowledge/agent-society-protocol.json`](.agent/knowledge/agent-society-protocol.json) |
 | agent-society-verification | [`.agent/knowledge/agent-society-verification.json`](.agent/knowledge/agent-society-verification.json) |
@@ -229,6 +304,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | anchor-framework-patterns | [`.agent/knowledge/anchor-framework-patterns.json`](.agent/knowledge/anchor-framework-patterns.json) |
 | anchor-patterns | [`.agent/knowledge/anchor-patterns.json`](.agent/knowledge/anchor-patterns.json) |
 | anthropic-agentic | [`.agent/knowledge/anthropic-agentic.json`](.agent/knowledge/anthropic-agentic.json) |
+| anthropic-claude-api-patterns | [`.agent/knowledge/anthropic-claude-api-patterns.json`](.agent/knowledge/anthropic-claude-api-patterns.json) |
 | api-design-patterns | [`.agent/knowledge/api-design-patterns.json`](.agent/knowledge/api-design-patterns.json) |
 | api-integration-patterns | [`.agent/knowledge/api-integration-patterns.json`](.agent/knowledge/api-integration-patterns.json) |
 | architecture-patterns | [`.agent/knowledge/architecture-patterns.json`](.agent/knowledge/architecture-patterns.json) |
@@ -237,8 +313,10 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | asp-quick-reference | [`.agent/knowledge/asp-quick-reference.json`](.agent/knowledge/asp-quick-reference.json) |
 | augmented-coding-patterns | [`.agent/knowledge/augmented-coding-patterns.json`](.agent/knowledge/augmented-coding-patterns.json) |
 | autogen-patterns | [`.agent/knowledge/autogen-patterns.json`](.agent/knowledge/autogen-patterns.json) |
+| axiom-zero-love-truth-beauty | [`.agent/knowledge/axiom-zero-love-truth-beauty.json`](.agent/knowledge/axiom-zero-love-truth-beauty.json) |
 | azure-patterns | [`.agent/knowledge/azure-patterns.json`](.agent/knowledge/azure-patterns.json) |
 | b2b-patterns | [`.agent/knowledge/b2b-patterns.json`](.agent/knowledge/b2b-patterns.json) |
+| backtesting-framework-patterns | [`.agent/knowledge/backtesting-framework-patterns.json`](.agent/knowledge/backtesting-framework-patterns.json) |
 | bdd-patterns-and-best-practices | [`.agent/knowledge/bdd-patterns-and-best-practices.json`](.agent/knowledge/bdd-patterns-and-best-practices.json) |
 | bdd-patterns | [`.agent/knowledge/bdd-patterns.json`](.agent/knowledge/bdd-patterns.json) |
 | best-practices | [`.agent/knowledge/best-practices.json`](.agent/knowledge/best-practices.json) |
@@ -251,10 +329,14 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | cicd-patterns | [`.agent/knowledge/cicd-patterns.json`](.agent/knowledge/cicd-patterns.json) |
 | claude-agentic-patterns | [`.agent/knowledge/claude-agentic-patterns.json`](.agent/knowledge/claude-agentic-patterns.json) |
 | cloud-ml-deployment | [`.agent/knowledge/cloud-ml-deployment.json`](.agent/knowledge/cloud-ml-deployment.json) |
+| code-review-checklist | [`.agent/knowledge/code-review-checklist.json`](.agent/knowledge/code-review-checklist.json) |
 | common-table-patterns | [`.agent/knowledge/common-table-patterns.json`](.agent/knowledge/common-table-patterns.json) |
 | coordination-pattern-selection | [`.agent/knowledge/coordination-pattern-selection.json`](.agent/knowledge/coordination-pattern-selection.json) |
+| coordination-patterns | [`.agent/knowledge/coordination-patterns.json`](.agent/knowledge/coordination-patterns.json) |
+| coordination-strategies | [`.agent/knowledge/coordination-strategies.json`](.agent/knowledge/coordination-strategies.json) |
 | cpi-error-handling | [`.agent/knowledge/cpi-error-handling.json`](.agent/knowledge/cpi-error-handling.json) |
 | crewai-patterns | [`.agent/knowledge/crewai-patterns.json`](.agent/knowledge/crewai-patterns.json) |
+| data-application-patterns | [`.agent/knowledge/data-application-patterns.json`](.agent/knowledge/data-application-patterns.json) |
 | data-engineering-for-ml | [`.agent/knowledge/data-engineering-for-ml.json`](.agent/knowledge/data-engineering-for-ml.json) |
 | data-engineering-patterns | [`.agent/knowledge/data-engineering-patterns.json`](.agent/knowledge/data-engineering-patterns.json) |
 | data-pipeline-patterns | [`.agent/knowledge/data-pipeline-patterns.json`](.agent/knowledge/data-pipeline-patterns.json) |
@@ -285,6 +367,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | fastapi-patterns | [`.agent/knowledge/fastapi-patterns.json`](.agent/knowledge/fastapi-patterns.json) |
 | filesystem-operations-patterns | [`.agent/knowledge/filesystem-operations-patterns.json`](.agent/knowledge/filesystem-operations-patterns.json) |
 | filesystem-patterns | [`.agent/knowledge/filesystem-patterns.json`](.agent/knowledge/filesystem-patterns.json) |
+| formal-verification-patterns | [`.agent/knowledge/formal-verification-patterns.json`](.agent/knowledge/formal-verification-patterns.json) |
 | formal-verification | [`.agent/knowledge/formal-verification.json`](.agent/knowledge/formal-verification.json) |
 | frontend-performance-patterns | [`.agent/knowledge/frontend-performance-patterns.json`](.agent/knowledge/frontend-performance-patterns.json) |
 | game-mechanics-knowledge | [`.agent/knowledge/game-mechanics-knowledge.json`](.agent/knowledge/game-mechanics-knowledge.json) |
@@ -303,8 +386,12 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | human-in-the-loop-patterns | [`.agent/knowledge/human-in-the-loop-patterns.json`](.agent/knowledge/human-in-the-loop-patterns.json) |
 | iflow-patterns | [`.agent/knowledge/iflow-patterns.json`](.agent/knowledge/iflow-patterns.json) |
 | instructor-patterns | [`.agent/knowledge/instructor-patterns.json`](.agent/knowledge/instructor-patterns.json) |
+| java-jvm-containerization-patterns | [`.agent/knowledge/java-jvm-containerization-patterns.json`](.agent/knowledge/java-jvm-containerization-patterns.json) |
 | jupyter-notebook-patterns | [`.agent/knowledge/jupyter-notebook-patterns.json`](.agent/knowledge/jupyter-notebook-patterns.json) |
 | knowledge-manifest | [`.agent/knowledge/knowledge-manifest.json`](.agent/knowledge/knowledge-manifest.json) |
+| kotest-testing-framework-patterns | [`.agent/knowledge/kotest-testing-framework-patterns.json`](.agent/knowledge/kotest-testing-framework-patterns.json) |
+| kotlin-coroutine-patterns | [`.agent/knowledge/kotlin-coroutine-patterns.json`](.agent/knowledge/kotlin-coroutine-patterns.json) |
+| kotlin-idioms | [`.agent/knowledge/kotlin-idioms.json`](.agent/knowledge/kotlin-idioms.json) |
 | kubernetes-deployment-patterns | [`.agent/knowledge/kubernetes-deployment-patterns.json`](.agent/knowledge/kubernetes-deployment-patterns.json) |
 | kubernetes-ml-patterns | [`.agent/knowledge/kubernetes-ml-patterns.json`](.agent/knowledge/kubernetes-ml-patterns.json) |
 | kubernetes-patterns | [`.agent/knowledge/kubernetes-patterns.json`](.agent/knowledge/kubernetes-patterns.json) |
@@ -322,6 +409,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | maintenance-procedures | [`.agent/knowledge/maintenance-procedures.json`](.agent/knowledge/maintenance-procedures.json) |
 | manifest | [`.agent/knowledge/manifest.json`](.agent/knowledge/manifest.json) |
 | mapping-patterns | [`.agent/knowledge/mapping-patterns.json`](.agent/knowledge/mapping-patterns.json) |
+| market-data-handling-patterns | [`.agent/knowledge/market-data-handling-patterns.json`](.agent/knowledge/market-data-handling-patterns.json) |
 | mcp-patterns | [`.agent/knowledge/mcp-patterns.json`](.agent/knowledge/mcp-patterns.json) |
 | mcp-selection-guide | [`.agent/knowledge/mcp-selection-guide.json`](.agent/knowledge/mcp-selection-guide.json) |
 | mcp-server-selection-guide | [`.agent/knowledge/mcp-server-selection-guide.json`](.agent/knowledge/mcp-server-selection-guide.json) |
@@ -330,6 +418,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | memory-patterns | [`.agent/knowledge/memory-patterns.json`](.agent/knowledge/memory-patterns.json) |
 | memory-system-configuration | [`.agent/knowledge/memory-system-configuration.json`](.agent/knowledge/memory-system-configuration.json) |
 | memory-systems-patterns | [`.agent/knowledge/memory-systems-patterns.json`](.agent/knowledge/memory-systems-patterns.json) |
+| microsoft-autogen-patterns | [`.agent/knowledge/microsoft-autogen-patterns.json`](.agent/knowledge/microsoft-autogen-patterns.json) |
 | ml-agent-frameworks | [`.agent/knowledge/ml-agent-frameworks.json`](.agent/knowledge/ml-agent-frameworks.json) |
 | ml-workflow-patterns | [`.agent/knowledge/ml-workflow-patterns.json`](.agent/knowledge/ml-workflow-patterns.json) |
 | mlops-patterns | [`.agent/knowledge/mlops-patterns.json`](.agent/knowledge/mlops-patterns.json) |
@@ -345,11 +434,14 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | net-authentication-patterns | [`.agent/knowledge/net-authentication-patterns.json`](.agent/knowledge/net-authentication-patterns.json) |
 | net-microservices-patterns | [`.agent/knowledge/net-microservices-patterns.json`](.agent/knowledge/net-microservices-patterns.json) |
 | net-patterns | [`.agent/knowledge/net-patterns.json`](.agent/knowledge/net-patterns.json) |
+| next-js-advanced-patterns | [`.agent/knowledge/next-js-advanced-patterns.json`](.agent/knowledge/next-js-advanced-patterns.json) |
+| next-js-patterns | [`.agent/knowledge/next-js-patterns.json`](.agent/knowledge/next-js-patterns.json) |
 | nextjs-advanced-patterns | [`.agent/knowledge/nextjs-advanced-patterns.json`](.agent/knowledge/nextjs-advanced-patterns.json) |
 | nextjs-patterns | [`.agent/knowledge/nextjs-patterns.json`](.agent/knowledge/nextjs-patterns.json) |
 | numpy-patterns | [`.agent/knowledge/numpy-patterns.json`](.agent/knowledge/numpy-patterns.json) |
 | ocr-and-document-processing-patterns | [`.agent/knowledge/ocr-and-document-processing-patterns.json`](.agent/knowledge/ocr-and-document-processing-patterns.json) |
 | ocr-patterns | [`.agent/knowledge/ocr-patterns.json`](.agent/knowledge/ocr-patterns.json) |
+| openai-agents-sdk-patterns | [`.agent/knowledge/openai-agents-sdk-patterns.json`](.agent/knowledge/openai-agents-sdk-patterns.json) |
 | openai-assistants-patterns | [`.agent/knowledge/openai-assistants-patterns.json`](.agent/knowledge/openai-assistants-patterns.json) |
 | pandas-patterns | [`.agent/knowledge/pandas-patterns.json`](.agent/knowledge/pandas-patterns.json) |
 | pm-metrics | [`.agent/knowledge/pm-metrics.json`](.agent/knowledge/pm-metrics.json) |
@@ -371,6 +463,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | react-component-patterns | [`.agent/knowledge/react-component-patterns.json`](.agent/knowledge/react-component-patterns.json) |
 | react-patterns | [`.agent/knowledge/react-patterns.json`](.agent/knowledge/react-patterns.json) |
 | reactive-indexing-patterns | [`.agent/knowledge/reactive-indexing-patterns.json`](.agent/knowledge/reactive-indexing-patterns.json) |
+| reactive-programming-patterns | [`.agent/knowledge/reactive-programming-patterns.json`](.agent/knowledge/reactive-programming-patterns.json) |
 | research-first-development | [`.agent/knowledge/research-first-development.json`](.agent/knowledge/research-first-development.json) |
 | risk-management-patterns | [`.agent/knowledge/risk-management-patterns.json`](.agent/knowledge/risk-management-patterns.json) |
 | risk-management | [`.agent/knowledge/risk-management.json`](.agent/knowledge/risk-management.json) |
@@ -381,7 +474,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | sap-event-mesh-patterns | [`.agent/knowledge/sap-event-mesh-patterns.json`](.agent/knowledge/sap-event-mesh-patterns.json) |
 | sap-ewm-patterns | [`.agent/knowledge/sap-ewm-patterns.json`](.agent/knowledge/sap-ewm-patterns.json) |
 | sap-extensibility-patterns | [`.agent/knowledge/sap-extensibility-patterns.json`](.agent/knowledge/sap-extensibility-patterns.json) |
-| sap-fi-cax---central-finance-patterns | [`.agent/knowledge/sap-fi-cax---central-finance-patterns.json`](.agent/knowledge/sap-fi-cax---central-finance-patterns.json) |
+| sap-fi-cax-central-finance-patterns | [`.agent/knowledge/sap-fi-cax-central-finance-patterns.json`](.agent/knowledge/sap-fi-cax-central-finance-patterns.json) |
 | sap-fi-patterns | [`.agent/knowledge/sap-fi-patterns.json`](.agent/knowledge/sap-fi-patterns.json) |
 | sap-fiori-patterns | [`.agent/knowledge/sap-fiori-patterns.json`](.agent/knowledge/sap-fiori-patterns.json) |
 | sap-le-logistics-execution-patterns | [`.agent/knowledge/sap-le-logistics-execution-patterns.json`](.agent/knowledge/sap-le-logistics-execution-patterns.json) |
@@ -407,6 +500,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | spark-patterns | [`.agent/knowledge/spark-patterns.json`](.agent/knowledge/spark-patterns.json) |
 | speech-patterns | [`.agent/knowledge/speech-patterns.json`](.agent/knowledge/speech-patterns.json) |
 | speech-processing-patterns | [`.agent/knowledge/speech-processing-patterns.json`](.agent/knowledge/speech-processing-patterns.json) |
+| spring-boot-kotlin-patterns | [`.agent/knowledge/spring-boot-kotlin-patterns.json`](.agent/knowledge/spring-boot-kotlin-patterns.json) |
 | spring-boot-patterns | [`.agent/knowledge/spring-boot-patterns.json`](.agent/knowledge/spring-boot-patterns.json) |
 | spring-microservices-patterns | [`.agent/knowledge/spring-microservices-patterns.json`](.agent/knowledge/spring-microservices-patterns.json) |
 | spring-observability-patterns | [`.agent/knowledge/spring-observability-patterns.json`](.agent/knowledge/spring-observability-patterns.json) |
@@ -422,6 +516,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | team-dynamics-knowledge | [`.agent/knowledge/team-dynamics-knowledge.json`](.agent/knowledge/team-dynamics-knowledge.json) |
 | team-dynamics | [`.agent/knowledge/team-dynamics.json`](.agent/knowledge/team-dynamics.json) |
 | tensorflow-patterns | [`.agent/knowledge/tensorflow-patterns.json`](.agent/knowledge/tensorflow-patterns.json) |
+| test-patterns | [`.agent/knowledge/test-patterns.json`](.agent/knowledge/test-patterns.json) |
 | test-traceability-patterns | [`.agent/knowledge/test-traceability-patterns.json`](.agent/knowledge/test-traceability-patterns.json) |
 | test-traceability | [`.agent/knowledge/test-traceability.json`](.agent/knowledge/test-traceability.json) |
 | testcontainers-patterns | [`.agent/knowledge/testcontainers-patterns.json`](.agent/knowledge/testcontainers-patterns.json) |

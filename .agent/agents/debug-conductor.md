@@ -34,11 +34,13 @@ This agent demonstrates the **Workflow System Architecture** - orchestrating com
 - [[pipeline-error-fix]]
 - [[ci-monitor]]
 - [[grounding-verification]]
+- [[langsmith-tracing]]
+- [[agent-testing]]
 
 ## Knowledge
-- [Factory Automation](../../docs/automation/FACTORY_AUTOMATION.md)
-- [debug-patterns.json](../../knowledge/debug-patterns.json)
-- [agent-team-registry.json](../../knowledge/agent-team-registry.json)
+- [debug-patterns.json](../knowledge/debug-patterns.json)
+- [langchain-patterns.json](../knowledge/langchain-patterns.json)
+- [agent-testing.json](../knowledge/agent-testing.json)
 
 ## Tooling
 **MCP Servers:**

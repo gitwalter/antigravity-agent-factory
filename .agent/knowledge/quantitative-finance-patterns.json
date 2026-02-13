@@ -11,7 +11,13 @@
       "simple_return": {
         "description": "Percentage change in price",
         "formula": "(P_t - P_{t-1}) / P_{t-1}",
-        "code": "returns = prices.pct_change()"
+        "code": "returns = prices.pct_change()",
+        "use_when": "Apply when implementing simple return in trading context",
+        "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for simple_return",
+          "Validate implementation against domain requirements before deployment"
+        ]
       },
       "log_return": {
         "description": "Logarithmic return (additive over time)",
@@ -21,43 +27,89 @@
           "Additive over time",
           "Symmetric",
           "Better for compounding"
+        ],
+        "use_when": "Apply when implementing log return in trading context",
+        "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for log_return",
+          "Validate implementation against domain requirements before deployment"
         ]
       },
       "annualized_return": {
         "description": "Return scaled to annual basis",
         "formula": "(1 + total_return)^(252/days) - 1",
-        "code": "annualized = (1 + total_return) ** (252 / days) - 1"
+        "code": "annualized = (1 + total_return) ** (252 / days) - 1",
+        "use_when": "Apply when implementing annualized return in trading context",
+        "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for annualized_return",
+          "Validate implementation against domain requirements before deployment"
+        ]
       }
     },
     "volatility_metrics": {
       "standard_deviation": {
         "description": "Dispersion of returns",
         "code": "volatility = returns.std()",
-        "annualization": "annual_vol = daily_vol * np.sqrt(252)"
+        "annualization": "annual_vol = daily_vol * np.sqrt(252)",
+        "use_when": "Apply when implementing standard deviation in trading context",
+        "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for standard_deviation",
+          "Validate implementation against domain requirements before deployment"
+        ]
       },
       "downside_deviation": {
         "description": "Volatility of negative returns only",
         "code": "downside = returns[returns < 0].std()",
-        "use_case": "More realistic risk measure for asymmetric returns"
+        "use_case": "More realistic risk measure for asymmetric returns",
+        "use_when": "Apply when implementing downside deviation in trading context",
+        "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for downside_deviation",
+          "Validate implementation against domain requirements before deployment"
+        ]
       },
       "exponential_volatility": {
         "description": "Recent-weighted volatility (EWMA)",
-        "code": "ewm_vol = returns.ewm(span=20).std()"
+        "code": "ewm_vol = returns.ewm(span=20).std()",
+        "use_when": "Apply when implementing exponential volatility in trading context",
+        "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for exponential_volatility",
+          "Validate implementation against domain requirements before deployment"
+        ]
       }
     },
     "drawdown_metrics": {
       "maximum_drawdown": {
         "description": "Largest peak-to-trough decline",
         "code_example": "def max_drawdown(equity_curve: pd.Series) -> float:\n    \"\"\"Calculate maximum drawdown.\"\"\"\n    rolling_max = equity_curve.expanding().max()\n    drawdowns = equity_curve / rolling_max - 1\n    return drawdowns.min()",
-        "interpretation": "Lower is better; -20% means lost 20% from peak"
+        "interpretation": "Lower is better; -20% means lost 20% from peak",
+        "use_when": "Apply when implementing maximum drawdown in trading context",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for maximum_drawdown",
+          "Validate implementation against domain requirements before deployment"
+        ]
       },
       "average_drawdown": {
         "description": "Mean of all drawdowns",
-        "use_case": "Typical underwater period"
+        "use_case": "Typical underwater period",
+        "use_when": "Apply when implementing average drawdown in trading context",
+        "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for average_drawdown",
+          "Validate implementation against domain requirements before deployment"
+        ]
       },
       "drawdown_duration": {
         "description": "Time to recover from drawdown",
-        "code_example": "def drawdown_duration(equity_curve: pd.Series) -> int:\n    \"\"\"Calculate longest drawdown duration in days.\"\"\"\n    rolling_max = equity_curve.expanding().max()\n    underwater = equity_curve < rolling_max\n    \n    duration = 0\n    max_duration = 0\n    \n    for is_underwater in underwater:\n        if is_underwater:\n            duration += 1\n            max_duration = max(max_duration, duration)\n        else:\n            duration = 0\n    \n    return max_duration"
+        "code_example": "def drawdown_duration(equity_curve: pd.Series) -> int:\n    \"\"\"Calculate longest drawdown duration in days.\"\"\"\n    rolling_max = equity_curve.expanding().max()\n    underwater = equity_curve < rolling_max\n    \n    duration = 0\n    max_duration = 0\n    \n    for is_underwater in underwater:\n        if is_underwater:\n            duration += 1\n            max_duration = max(max_duration, duration)\n        else:\n            duration = 0\n    \n    return max_duration",
+        "use_when": "Apply when implementing drawdown duration in trading context",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for drawdown_duration",
+          "Validate implementation against domain requirements before deployment"
+        ]
       }
     },
     "risk_adjusted_returns": {
@@ -70,23 +122,45 @@
           "1-2": "Good",
           "2-3": "Very good",
           "> 3": "Excellent (verify not overfitted)"
-        }
+        },
+        "use_when": "Apply when implementing sharpe ratio in trading context",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for sharpe_ratio",
+          "Validate implementation against domain requirements before deployment"
+        ]
       },
       "sortino_ratio": {
         "description": "Return per unit of downside risk",
         "formula": "(R_p - R_f) / \u03c3_downside",
         "code_example": "def sortino_ratio(\n    returns: pd.Series,\n    risk_free_rate: float = 0.05,\n    periods_per_year: int = 252\n) -> float:\n    \"\"\"Calculate Sortino ratio.\"\"\"\n    excess_returns = returns - risk_free_rate / periods_per_year\n    downside = returns[returns < 0].std()\n    return np.sqrt(periods_per_year) * excess_returns.mean() / downside",
-        "benefit": "Doesn't penalize upside volatility"
+        "benefit": "Doesn't penalize upside volatility",
+        "use_when": "Apply when implementing sortino ratio in trading context",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for sortino_ratio",
+          "Validate implementation against domain requirements before deployment"
+        ]
       },
       "calmar_ratio": {
         "description": "Annual return / Maximum drawdown",
         "formula": "CAGR / |Max Drawdown|",
-        "interpretation": "Higher is better; 1.0+ is good"
+        "interpretation": "Higher is better; 1.0+ is good",
+        "use_when": "Apply when implementing calmar ratio in trading context",
+        "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for calmar_ratio",
+          "Validate implementation against domain requirements before deployment"
+        ]
       },
       "information_ratio": {
         "description": "Active return per unit of tracking error",
         "formula": "(R_p - R_b) / \u03c3(R_p - R_b)",
-        "use_case": "Evaluate active managers vs benchmark"
+        "use_case": "Evaluate active managers vs benchmark",
+        "use_when": "Apply when implementing information ratio in trading context",
+        "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for information_ratio",
+          "Validate implementation against domain requirements before deployment"
+        ]
       }
     },
     "tail_risk_metrics": {
@@ -98,13 +172,23 @@
           "Historical",
           "Parametric (Gaussian)",
           "Monte Carlo"
+        ],
+        "use_when": "Apply when implementing value at risk in trading context",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for value_at_risk",
+          "Validate implementation against domain requirements before deployment"
         ]
       },
       "conditional_var": {
         "description": "Expected loss beyond VaR (Expected Shortfall)",
         "formula": "CVaR = E[Loss | Loss > VaR]",
         "code_example": "def conditional_var(returns: pd.Series, confidence: float = 0.95) -> float:\n    \"\"\"Calculate Conditional VaR (Expected Shortfall).\"\"\"\n    var = value_at_risk(returns, confidence)\n    return -returns[returns <= -var].mean()",
-        "benefit": "Captures tail risk better than VaR"
+        "benefit": "Captures tail risk better than VaR",
+        "use_when": "Apply when implementing conditional var in trading context",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for conditional_var",
+          "Validate implementation against domain requirements before deployment"
+        ]
       }
     }
   },
@@ -116,6 +200,11 @@
         "Sensitive to expected return estimates",
         "Historical covariance may not persist",
         "Extreme weights without constraints"
+      ],
+      "use_when": "Apply when implementing mean variance optimization in trading context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for mean_variance_optimization",
+        "Validate implementation against domain requirements before deployment"
       ]
     },
     "risk_parity": {
@@ -126,6 +215,11 @@
         "Robust to return estimation errors",
         "Diversified risk exposure",
         "Lower turnover"
+      ],
+      "use_when": "Apply when implementing risk parity in trading context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for risk_parity",
+        "Validate implementation against domain requirements before deployment"
       ]
     },
     "black_litterman": {
@@ -135,7 +229,13 @@
         "Investor views with confidence",
         "Posterior expected returns"
       ],
-      "use_case": "Blend quantitative models with human insights"
+      "use_case": "Blend quantitative models with human insights",
+      "use_when": "Apply when implementing black litterman in trading context",
+      "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for black_litterman",
+        "Validate implementation against domain requirements before deployment"
+      ]
     }
   },
   "statistical_tests": {
@@ -143,21 +243,39 @@
       "adf_test": {
         "description": "Augmented Dickey-Fuller test for unit root",
         "code": "from statsmodels.tsa.stattools import adfuller\nresult = adfuller(series)\np_value = result[1]",
-        "interpretation": "p < 0.05 \u2192 stationary"
+        "interpretation": "p < 0.05 \u2192 stationary",
+        "use_when": "Apply when implementing adf test in trading context",
+        "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for adf_test",
+          "Validate implementation against domain requirements before deployment"
+        ]
       }
     },
     "cointegration": {
       "engle_granger": {
         "description": "Test if two series are cointegrated",
         "code": "from statsmodels.tsa.stattools import coint\nstat, p_value, crit = coint(series1, series2)",
-        "use_case": "Pairs trading validation"
+        "use_case": "Pairs trading validation",
+        "use_when": "Apply when implementing engle granger in trading context",
+        "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for engle_granger",
+          "Validate implementation against domain requirements before deployment"
+        ]
       }
     },
     "normality": {
       "jarque_bera": {
         "description": "Test if returns are normally distributed",
         "code": "from scipy.stats import jarque_bera\nstat, p_value = jarque_bera(returns)",
-        "note": "Financial returns typically NOT normal (fat tails)"
+        "note": "Financial returns typically NOT normal (fat tails)",
+        "use_when": "Apply when implementing jarque bera in trading context",
+        "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments for jarque_bera",
+          "Validate implementation against domain requirements before deployment"
+        ]
       }
     }
   },
@@ -169,12 +287,24 @@
         "I(d): Differencing",
         "MA(q): Moving Average"
       ],
-      "code": "from statsmodels.tsa.arima.model import ARIMA\nmodel = ARIMA(series, order=(p, d, q))\nresult = model.fit()"
+      "code": "from statsmodels.tsa.arima.model import ARIMA\nmodel = ARIMA(series, order=(p, d, q))\nresult = model.fit()",
+      "use_when": "Apply when implementing ARIMA in trading context",
+      "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for ARIMA",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "GARCH": {
       "description": "Generalized Autoregressive Conditional Heteroskedasticity",
       "use_case": "Model time-varying volatility",
-      "code": "from arch import arch_model\nmodel = arch_model(returns, vol='Garch', p=1, q=1)\nresult = model.fit()"
+      "code": "from arch import arch_model\nmodel = arch_model(returns, vol='Garch', p=1, q=1)\nresult = model.fit()",
+      "use_when": "Apply when implementing GARCH in trading context",
+      "code_example": "import pandas as pd\n\ndef calculate_signals(df: pd.DataFrame) -> pd.Series:\n    fast_ma = df['close'].rolling(10).mean()\n    slow_ma = df['close'].rolling(50).mean()\n    return (fast_ma > slow_ma).astype(int) - (fast_ma < slow_ma).astype(int)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for GARCH",
+        "Validate implementation against domain requirements before deployment"
+      ]
     }
   },
   "performance_reporting": {
@@ -190,7 +320,13 @@
       "Profit Factor",
       "Number of Trades"
     ],
-    "code_example": "def performance_report(returns: pd.Series, risk_free: float = 0.05) -> dict:\n    \"\"\"Generate comprehensive performance report.\"\"\"\n    total_return = (1 + returns).prod() - 1\n    annualized = (1 + total_return) ** (252 / len(returns)) - 1\n    volatility = returns.std() * np.sqrt(252)\n    \n    equity_curve = (1 + returns).cumprod()\n    max_dd = max_drawdown(equity_curve)\n    \n    return {\n        'total_return': total_return,\n        'annualized_return': annualized,\n        'annualized_volatility': volatility,\n        'sharpe_ratio': (annualized - risk_free) / volatility,\n        'max_drawdown': max_dd,\n        'calmar_ratio': annualized / abs(max_dd) if max_dd != 0 else np.inf,\n    }"
+    "code_example": "def performance_report(returns: pd.Series, risk_free: float = 0.05) -> dict:\n    \"\"\"Generate comprehensive performance report.\"\"\"\n    total_return = (1 + returns).prod() - 1\n    annualized = (1 + total_return) ** (252 / len(returns)) - 1\n    volatility = returns.std() * np.sqrt(252)\n    \n    equity_curve = (1 + returns).cumprod()\n    max_dd = max_drawdown(equity_curve)\n    \n    return {\n        'total_return': total_return,\n        'annualized_return': annualized,\n        'annualized_volatility': volatility,\n        'sharpe_ratio': (annualized - risk_free) / volatility,\n        'max_drawdown': max_dd,\n        'calmar_ratio': annualized / abs(max_dd) if max_dd != 0 else np.inf,\n    }",
+    "description": "Implements performance reporting for reliable, maintainable code. Use when the scenario requires this pattern.",
+    "use_when": "Apply when implementing performance reporting in trading context",
+    "best_practices": [
+      "Document the pattern usage and rationale in code comments for performance_reporting",
+      "Validate implementation against domain requirements before deployment"
+    ]
   },
   "patterns": {
     "risk_metrics_calculation": {
@@ -202,7 +338,13 @@
         "Information Ratio"
       ],
       "usage": "Compare strategies on risk-adjusted basis, set performance targets",
-      "considerations": "Annualize all metrics, use appropriate risk-free rate"
+      "considerations": "Annualize all metrics, use appropriate risk-free rate",
+      "use_when": "Apply when implementing risk metrics calculation in trading context",
+      "code_example": "Compare strategies on risk-adjusted basis, set performance targets",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for risk_metrics_calculation",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "portfolio_optimization": {
       "description": "Construct optimal portfolios using mean-variance or risk parity approaches",
@@ -212,7 +354,13 @@
         "Black-Litterman"
       ],
       "usage": "Asset allocation, strategy combination, risk budgeting",
-      "considerations": "Sensitive to input estimates, requires regularization or shrinkage"
+      "considerations": "Sensitive to input estimates, requires regularization or shrinkage",
+      "use_when": "Apply when implementing portfolio optimization in trading context",
+      "code_example": "Asset allocation, strategy combination, risk budgeting",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for portfolio_optimization",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "drawdown_analysis": {
       "description": "Measure and manage peak-to-trough declines in equity",
@@ -222,7 +370,13 @@
         "Drawdown Duration"
       ],
       "usage": "Risk assessment, position sizing during drawdowns, strategy comparison",
-      "considerations": "Calculate from rolling peak, not initial capital"
+      "considerations": "Calculate from rolling peak, not initial capital",
+      "use_when": "Apply when implementing drawdown analysis in trading context",
+      "code_example": "Risk assessment, position sizing during drawdowns, strategy comparison",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for drawdown_analysis",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "time_series_modeling": {
       "description": "Model and forecast financial time series using ARIMA, GARCH, or other models",
@@ -232,7 +386,13 @@
         "State Space Models"
       ],
       "usage": "Volatility forecasting, return prediction, regime detection",
-      "considerations": "Test for stationarity, account for heteroskedasticity"
+      "considerations": "Test for stationarity, account for heteroskedasticity",
+      "use_when": "Apply when implementing time series modeling in trading context",
+      "code_example": "Volatility forecasting, return prediction, regime detection",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for time_series_modeling",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "statistical_testing": {
       "description": "Validate assumptions and relationships using statistical tests",
@@ -242,7 +402,13 @@
         "Jarque-Bera (normality)"
       ],
       "usage": "Strategy validation, pairs trading setup, model diagnostics",
-      "considerations": "Understand test limitations, use multiple tests for confirmation"
+      "considerations": "Understand test limitations, use multiple tests for confirmation",
+      "use_when": "Apply when implementing statistical testing in trading context",
+      "code_example": "Strategy validation, pairs trading setup, model diagnostics",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for statistical_testing",
+        "Validate implementation against domain requirements before deployment"
+      ]
     },
     "monte_carlo_simulation": {
       "description": "Assess strategy robustness through randomized simulations",
@@ -252,7 +418,13 @@
         "Stress testing"
       ],
       "usage": "Generate confidence intervals, test tail risk, validate strategy stability",
-      "considerations": "Requires sufficient iterations (1000+), preserve return distribution characteristics"
+      "considerations": "Requires sufficient iterations (1000+), preserve return distribution characteristics",
+      "use_when": "Apply when implementing monte carlo simulation in trading context",
+      "code_example": "Generate confidence intervals, test tail risk, validate strategy stability",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for monte_carlo_simulation",
+        "Validate implementation against domain requirements before deployment"
+      ]
     }
   },
   "best_practices": [
@@ -291,5 +463,18 @@
       "problem": "Applying ARIMA to non-stationary series produces spurious results and poor forecasts",
       "solution": "Test for stationarity with ADF test, difference series if needed, or use models designed for non-stationary data"
     }
+  ],
+  "axiomAlignment": {
+    "A1_verifiability": "All patterns include verifiable examples and test approaches",
+    "A2_user_primacy": "Patterns prioritize user needs and practical outcomes",
+    "A3_transparency": "Pattern selection rationale is clearly documented",
+    "A4_non_harm": "Patterns include safety considerations and error handling",
+    "A5_consistency": "Patterns follow established conventions and standards"
+  },
+  "related_skills": [
+    "none"
+  ],
+  "related_knowledge": [
+    "best-practices.json"
   ]
 }

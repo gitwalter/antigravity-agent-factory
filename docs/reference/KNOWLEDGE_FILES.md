@@ -1,6 +1,6 @@
 ﻿# Knowledge Files Catalog
 
-This factory currently includes **233 knowledge files** covering various aspects of AI development, project management, and technology stacks.
+This factory currently includes **256 knowledge files** covering various aspects of AI development, project management, and technology stacks.
 
 | File | Type | Description |
 |------|------|-------------|
@@ -20,9 +20,12 @@ This factory currently includes **233 knowledge files** covering various aspects
 | --- | --- | --- |
 | [advanced-agent-architectures](file:///.agent/knowledge/advanced-agent-architectures.json) |  |  |
 | [advanced-rag-patterns](file:///.agent/knowledge/advanced-rag-patterns.json) |  |  |
+| [advanced-rag-patterns-2026](file:///.agent/knowledge/advanced-rag-patterns-2026.json) |  |  |
 | [agent-coordination](file:///.agent/knowledge/agent-coordination.json) |  |  |
 | [agent-coordination-patterns](file:///.agent/knowledge/agent-coordination-patterns.json) |  |  |
+| [agent-handoff-patterns](file:///.agent/knowledge/agent-handoff-patterns.json) |  |  |
 | [agent-memory-patterns](file:///.agent/knowledge/agent-memory-patterns.json) |  |  |
+| [agent-memory-patterns-2026](file:///.agent/knowledge/agent-memory-patterns-2026.json) |  |  |
 | [agent-society-protocol](file:///.agent/knowledge/agent-society-protocol.json) |  |  |
 | [agent-society-verification](file:///.agent/knowledge/agent-society-verification.json) |  |  |
 | [agent-team-index](file:///.agent/knowledge/agent-team-index.json) |  |  |
@@ -40,6 +43,7 @@ This factory currently includes **233 knowledge files** covering various aspects
 | [anchor-framework-patterns](file:///.agent/knowledge/anchor-framework-patterns.json) |  |  |
 | [anchor-patterns](file:///.agent/knowledge/anchor-patterns.json) |  |  |
 | [anthropic-agentic](file:///.agent/knowledge/anthropic-agentic.json) |  |  |
+| [anthropic-claude-api-patterns](file:///.agent/knowledge/anthropic-claude-api-patterns.json) |  |  |
 | [api-design-patterns](file:///.agent/knowledge/api-design-patterns.json) |  |  |
 | [api-integration-patterns](file:///.agent/knowledge/api-integration-patterns.json) |  |  |
 | [architecture-patterns](file:///.agent/knowledge/architecture-patterns.json) |  |  |
@@ -48,8 +52,10 @@ This factory currently includes **233 knowledge files** covering various aspects
 | [asp-quick-reference](file:///.agent/knowledge/asp-quick-reference.json) |  |  |
 | [augmented-coding-patterns](file:///.agent/knowledge/augmented-coding-patterns.json) |  |  |
 | [autogen-patterns](file:///.agent/knowledge/autogen-patterns.json) |  |  |
+| [axiom-zero-love-truth-beauty](file:///.agent/knowledge/axiom-zero-love-truth-beauty.json) |  |  |
 | [azure-patterns](file:///.agent/knowledge/azure-patterns.json) |  |  |
 | [b2b-patterns](file:///.agent/knowledge/b2b-patterns.json) |  |  |
+| [backtesting-framework-patterns](file:///.agent/knowledge/backtesting-framework-patterns.json) |  |  |
 | [bdd-patterns](file:///.agent/knowledge/bdd-patterns.json) |  |  |
 | [bdd-patterns-and-best-practices](file:///.agent/knowledge/bdd-patterns-and-best-practices.json) |  |  |
 | [best-practices](file:///.agent/knowledge/best-practices.json) |  |  |
@@ -62,10 +68,14 @@ This factory currently includes **233 knowledge files** covering various aspects
 | [cicd-patterns](file:///.agent/knowledge/cicd-patterns.json) |  |  |
 | [claude-agentic-patterns](file:///.agent/knowledge/claude-agentic-patterns.json) |  |  |
 | [cloud-ml-deployment](file:///.agent/knowledge/cloud-ml-deployment.json) |  |  |
+| [code-review-checklist](file:///.agent/knowledge/code-review-checklist.json) |  |  |
 | [common-table-patterns](file:///.agent/knowledge/common-table-patterns.json) |  |  |
 | [coordination-pattern-selection](file:///.agent/knowledge/coordination-pattern-selection.json) |  |  |
+| [coordination-patterns](file:///.agent/knowledge/coordination-patterns.json) |  |  |
+| [coordination-strategies](file:///.agent/knowledge/coordination-strategies.json) |  |  |
 | [cpi-error-handling](file:///.agent/knowledge/cpi-error-handling.json) |  |  |
 | [crewai-patterns](file:///.agent/knowledge/crewai-patterns.json) |  |  |
+| [data-application-patterns](file:///.agent/knowledge/data-application-patterns.json) |  |  |
 | [data-engineering-for-ml](file:///.agent/knowledge/data-engineering-for-ml.json) |  |  |
 | [data-engineering-patterns](file:///.agent/knowledge/data-engineering-patterns.json) |  |  |
 | [data-pipeline-patterns](file:///.agent/knowledge/data-pipeline-patterns.json) |  |  |
@@ -97,6 +107,7 @@ This factory currently includes **233 knowledge files** covering various aspects
 | [filesystem-operations-patterns](file:///.agent/knowledge/filesystem-operations-patterns.json) |  |  |
 | [filesystem-patterns](file:///.agent/knowledge/filesystem-patterns.json) |  |  |
 | [formal-verification](file:///.agent/knowledge/formal-verification.json) |  |  |
+| [formal-verification-patterns](file:///.agent/knowledge/formal-verification-patterns.json) |  |  |
 | [frontend-performance-patterns](file:///.agent/knowledge/frontend-performance-patterns.json) |  |  |
 | [game-mechanics](file:///.agent/knowledge/game-mechanics.json) |  |  |
 | [game-mechanics-knowledge](file:///.agent/knowledge/game-mechanics-knowledge.json) |  |  |
@@ -114,8 +125,12 @@ This factory currently includes **233 knowledge files** covering various aspects
 | [human-in-the-loop-patterns](file:///.agent/knowledge/human-in-the-loop-patterns.json) |  |  |
 | [iflow-patterns](file:///.agent/knowledge/iflow-patterns.json) |  |  |
 | [instructor-patterns](file:///.agent/knowledge/instructor-patterns.json) |  |  |
+| [java-jvm-containerization-patterns](file:///.agent/knowledge/java-jvm-containerization-patterns.json) |  |  |
 | [jupyter-notebook-patterns](file:///.agent/knowledge/jupyter-notebook-patterns.json) |  |  |
 | [knowledge-manifest](file:///.agent/knowledge/knowledge-manifest.json) |  |  |
+| [kotest-testing-framework-patterns](file:///.agent/knowledge/kotest-testing-framework-patterns.json) |  |  |
+| [kotlin-coroutine-patterns](file:///.agent/knowledge/kotlin-coroutine-patterns.json) |  |  |
+| [kotlin-idioms](file:///.agent/knowledge/kotlin-idioms.json) |  |  |
 | [kubernetes-deployment-patterns](file:///.agent/knowledge/kubernetes-deployment-patterns.json) |  |  |
 | [kubernetes-ml-patterns](file:///.agent/knowledge/kubernetes-ml-patterns.json) |  |  |
 | [kubernetes-patterns](file:///.agent/knowledge/kubernetes-patterns.json) |  |  |
@@ -132,6 +147,7 @@ This factory currently includes **233 knowledge files** covering various aspects
 | [llm-provider-comparison](file:///.agent/knowledge/llm-provider-comparison.json) |  |  |
 | [maintenance-procedures](file:///.agent/knowledge/maintenance-procedures.json) |  |  |
 | [mapping-patterns](file:///.agent/knowledge/mapping-patterns.json) |  |  |
+| [market-data-handling-patterns](file:///.agent/knowledge/market-data-handling-patterns.json) |  |  |
 | [mcp-patterns](file:///.agent/knowledge/mcp-patterns.json) |  |  |
 | [mcp-selection-guide](file:///.agent/knowledge/mcp-selection-guide.json) |  |  |
 | [mcp-server-selection-guide](file:///.agent/knowledge/mcp-server-selection-guide.json) |  |  |
@@ -140,6 +156,7 @@ This factory currently includes **233 knowledge files** covering various aspects
 | [memory-patterns](file:///.agent/knowledge/memory-patterns.json) |  |  |
 | [memory-system-configuration](file:///.agent/knowledge/memory-system-configuration.json) |  |  |
 | [memory-systems-patterns](file:///.agent/knowledge/memory-systems-patterns.json) |  |  |
+| [microsoft-autogen-patterns](file:///.agent/knowledge/microsoft-autogen-patterns.json) |  |  |
 | [ml-agent-frameworks](file:///.agent/knowledge/ml-agent-frameworks.json) |  |  |
 | [ml-workflow-patterns](file:///.agent/knowledge/ml-workflow-patterns.json) |  |  |
 | [mlops-patterns](file:///.agent/knowledge/mlops-patterns.json) |  |  |
@@ -155,11 +172,14 @@ This factory currently includes **233 knowledge files** covering various aspects
 | [net-authentication-patterns](file:///.agent/knowledge/net-authentication-patterns.json) |  |  |
 | [net-microservices-patterns](file:///.agent/knowledge/net-microservices-patterns.json) |  |  |
 | [net-patterns](file:///.agent/knowledge/net-patterns.json) |  |  |
+| [next-js-advanced-patterns](file:///.agent/knowledge/next-js-advanced-patterns.json) |  |  |
+| [next-js-patterns](file:///.agent/knowledge/next-js-patterns.json) |  |  |
 | [nextjs-advanced-patterns](file:///.agent/knowledge/nextjs-advanced-patterns.json) |  |  |
 | [nextjs-patterns](file:///.agent/knowledge/nextjs-patterns.json) |  |  |
 | [numpy-patterns](file:///.agent/knowledge/numpy-patterns.json) |  |  |
 | [ocr-and-document-processing-patterns](file:///.agent/knowledge/ocr-and-document-processing-patterns.json) |  |  |
 | [ocr-patterns](file:///.agent/knowledge/ocr-patterns.json) |  |  |
+| [openai-agents-sdk-patterns](file:///.agent/knowledge/openai-agents-sdk-patterns.json) |  |  |
 | [openai-assistants-patterns](file:///.agent/knowledge/openai-assistants-patterns.json) |  |  |
 | [pandas-patterns](file:///.agent/knowledge/pandas-patterns.json) |  |  |
 | [pm-metrics](file:///.agent/knowledge/pm-metrics.json) |  |  |
@@ -181,6 +201,7 @@ This factory currently includes **233 knowledge files** covering various aspects
 | [react-component-patterns](file:///.agent/knowledge/react-component-patterns.json) |  |  |
 | [react-patterns](file:///.agent/knowledge/react-patterns.json) |  |  |
 | [reactive-indexing-patterns](file:///.agent/knowledge/reactive-indexing-patterns.json) |  |  |
+| [reactive-programming-patterns](file:///.agent/knowledge/reactive-programming-patterns.json) |  |  |
 | [research-first-development](file:///.agent/knowledge/research-first-development.json) |  |  |
 | [risk-management](file:///.agent/knowledge/risk-management.json) |  |  |
 | [risk-management-patterns](file:///.agent/knowledge/risk-management-patterns.json) |  |  |
@@ -191,7 +212,7 @@ This factory currently includes **233 knowledge files** covering various aspects
 | [sap-event-mesh-patterns](file:///.agent/knowledge/sap-event-mesh-patterns.json) |  |  |
 | [sap-ewm-patterns](file:///.agent/knowledge/sap-ewm-patterns.json) |  |  |
 | [sap-extensibility-patterns](file:///.agent/knowledge/sap-extensibility-patterns.json) |  |  |
-| [sap-fi-cax---central-finance-patterns](file:///.agent/knowledge/sap-fi-cax---central-finance-patterns.json) |  |  |
+| [sap-fi-cax-central-finance-patterns](file:///.agent/knowledge/sap-fi-cax-central-finance-patterns.json) |  |  |
 | [sap-fi-patterns](file:///.agent/knowledge/sap-fi-patterns.json) |  |  |
 | [sap-fiori-patterns](file:///.agent/knowledge/sap-fiori-patterns.json) |  |  |
 | [sap-le-logistics-execution-patterns](file:///.agent/knowledge/sap-le-logistics-execution-patterns.json) |  |  |
@@ -217,6 +238,7 @@ This factory currently includes **233 knowledge files** covering various aspects
 | [spark-patterns](file:///.agent/knowledge/spark-patterns.json) |  |  |
 | [speech-patterns](file:///.agent/knowledge/speech-patterns.json) |  |  |
 | [speech-processing-patterns](file:///.agent/knowledge/speech-processing-patterns.json) |  |  |
+| [spring-boot-kotlin-patterns](file:///.agent/knowledge/spring-boot-kotlin-patterns.json) |  |  |
 | [spring-boot-patterns](file:///.agent/knowledge/spring-boot-patterns.json) |  |  |
 | [spring-microservices-patterns](file:///.agent/knowledge/spring-microservices-patterns.json) |  |  |
 | [spring-observability-patterns](file:///.agent/knowledge/spring-observability-patterns.json) |  |  |
@@ -232,6 +254,7 @@ This factory currently includes **233 knowledge files** covering various aspects
 | [team-dynamics](file:///.agent/knowledge/team-dynamics.json) |  |  |
 | [team-dynamics-knowledge](file:///.agent/knowledge/team-dynamics-knowledge.json) |  |  |
 | [tensorflow-patterns](file:///.agent/knowledge/tensorflow-patterns.json) |  |  |
+| [test-patterns](file:///.agent/knowledge/test-patterns.json) |  |  |
 | [test-traceability](file:///.agent/knowledge/test-traceability.json) |  |  |
 | [test-traceability-patterns](file:///.agent/knowledge/test-traceability-patterns.json) |  |  |
 | [testcontainers-patterns](file:///.agent/knowledge/testcontainers-patterns.json) |  |  |

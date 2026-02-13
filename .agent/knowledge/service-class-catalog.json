@@ -1,4 +1,29 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "service-class-catalog",
+  "name": "Service Class Catalog",
+  "title": "ABAP Service Class Catalog",
+  "description": "Patterns and catalog for ABAP service classes following Clean ABAP principles",
+  "version": "1.0.0",
+  "category": "sap",
+  "axiomAlignment": {
+    "A1_verifiability": "Interface-based design and dependency injection enable testable, verifiable service behavior",
+    "A2_user_primacy": "Service layers orchestrate user workflows and preserve business intent",
+    "A3_transparency": "Explicit layer separation and interfaces make service responsibilities clear",
+    "A4_non_harm": "Validation and exception hierarchy patterns ensure safe operations",
+    "A5_consistency": "Unified Clean ABAP patterns across application, domain, and infrastructure layers"
+  },
+  "related_skills": [
+    "rap-behavior-design",
+    "cds-grounding",
+    "sap-grounding"
+  ],
+  "related_knowledge": [
+    "sap-cap-patterns.json",
+    "sap-rap-patterns.json",
+    "error-handling-patterns.json",
+    "naming-conventions.json"
+  ],
   "metadata": {
     "name": "Service Class Catalog",
     "description": "Patterns and catalog for ABAP service classes following Clean ABAP principles",
@@ -267,7 +292,7 @@
       ]
     }
   },
-  "bestPractices": [
+  "best_practices": [
     "One interface per service for testability",
     "Use dependency injection via constructor",
     "Keep services focused on single responsibility",
@@ -277,12 +302,120 @@
     "Write unit tests for all services",
     "Document public interfaces thoroughly"
   ],
-  "id": "service-class-catalog",
-  "name": "Service Class Catalog",
-  "version": "1.0.0",
-  "category": "patterns",
-  "description": "Knowledge patterns for service class catalog.",
-  "patterns": {},
-  "best_practices": [],
-  "anti_patterns": []
+  "patterns": {
+    "layeredArchitecture": {
+      "description": "Four-layer service architecture pattern",
+      "layers": [
+        "Presentation: UI interaction, validation, formatting",
+        "Application: Use case orchestration, transaction management",
+        "Domain: Core business logic, domain rules",
+        "Infrastructure: Data access, external integrations"
+      ],
+      "dependency": "Dependencies flow inward: Presentation \u2192 Application \u2192 Domain \u2190 Infrastructure",
+      "use_when": "When implementing layeredArchitecture or when Four-layer service architecture pattern",
+      "code_example": "DATA(lo_service) = /iwbep/cl_mgw_push_abs_data=>mgw_get_context( )->get_destination( )",
+      "best_practices": [
+        "One interface per service for testability",
+        "Use dependency injection via constructor",
+        "Keep services focused on single responsibility",
+        "Separate business logic from data access"
+      ]
+    },
+    "repositoryPattern": {
+      "description": "Abstract data access behind repository interface",
+      "interface": "Define ZIF_*_REPOSITORY interface with find_by_id, find_all, save, delete methods",
+      "implementation": "Implement repository with database access, CDS views, or BAPI wrappers",
+      "benefit": "Testable, swappable implementations, separation of concerns",
+      "use_when": "When implementing repositoryPattern or when Abstract data access behind repository interface",
+      "code_example": "DATA(lo_service) = /iwbep/cl_mgw_push_abs_data=>mgw_get_context( )->get_destination( )",
+      "best_practices": [
+        "One interface per service for testability",
+        "Use dependency injection via constructor",
+        "Keep services focused on single responsibility",
+        "Separate business logic from data access"
+      ]
+    },
+    "dependencyInjectionPattern": {
+      "description": "Inject dependencies via constructor",
+      "pattern": "METHODS constructor IMPORTING repository TYPE REF TO zif_repository",
+      "benefit": "Testable code, loose coupling, easy to mock dependencies",
+      "example": "Service receives repository in constructor, not creating it internally",
+      "use_when": "When implementing dependencyInjectionPattern or when Inject dependencies via constructor",
+      "code_example": "METHODS constructor IMPORTING repository TYPE REF TO zif_repository",
+      "best_practices": [
+        "One interface per service for testability",
+        "Use dependency injection via constructor",
+        "Keep services focused on single responsibility",
+        "Separate business logic from data access"
+      ]
+    },
+    "exceptionHierarchyPattern": {
+      "description": "Domain-specific exception class hierarchy",
+      "structure": "Base exception (ZCX_DOMAIN_ERROR) with specific exceptions (ZCX_DOMAIN_NOT_FOUND, ZCX_DOMAIN_VALIDATION)",
+      "inheritance": "All domain exceptions inherit from CX_STATIC_CHECK",
+      "usage": "RAISING zcx_domain_error in method signatures, catch specific exceptions",
+      "use_when": "When implementing exceptionHierarchyPattern or when Domain-specific exception class hierarchy",
+      "code_example": "DATA(lo_service) = /iwbep/cl_mgw_push_abs_data=>mgw_get_context( )->get_destination( )",
+      "best_practices": [
+        "One interface per service for testability",
+        "Use dependency injection via constructor",
+        "Keep services focused on single responsibility",
+        "Separate business logic from data access"
+      ]
+    },
+    "serviceInterfacePattern": {
+      "description": "Every service class implements an interface",
+      "pattern": "CLASS zcl_service DEFINITION PUBLIC FINAL CREATE PUBLIC. PUBLIC SECTION. INTERFACES zif_service.",
+      "benefit": "Enables mocking for unit tests, allows multiple implementations, supports dependency inversion",
+      "use_when": "When implementing serviceInterfacePattern or when Every service class implements an interface",
+      "code_example": "CLASS zcl_service DEFINITION PUBLIC FINAL CREATE PUBLIC. PUBLIC SECTION. INTERFACES zif_service.",
+      "best_practices": [
+        "One interface per service for testability",
+        "Use dependency injection via constructor",
+        "Keep services focused on single responsibility",
+        "Separate business logic from data access"
+      ]
+    },
+    "valueObjectPattern": {
+      "description": "Use value objects for complex parameters",
+      "pattern": "Create structured types or classes for related data instead of many individual parameters",
+      "example": "Use ls_travel_data structure instead of 10 individual parameters",
+      "benefit": "Better readability, type safety, easier to extend",
+      "use_when": "When implementing valueObjectPattern or when Use value objects for complex parameters",
+      "code_example": "Create structured types or classes for related data instead of many individual parameters",
+      "best_practices": [
+        "One interface per service for testability",
+        "Use dependency injection via constructor",
+        "Keep services focused on single responsibility",
+        "Separate business logic from data access"
+      ]
+    }
+  },
+  "anti_patterns": [
+    {
+      "name": "God service class with too many responsibilities",
+      "problem": "Single service class handling CRUD, validation, pricing, reporting, and integration violates single responsibility principle and becomes unmaintainable",
+      "solution": "Split into focused services: ZCL_TRAVEL_SERVICE (CRUD), ZCL_TRAVEL_VALIDATION_SERVICE (validation), ZCL_TRAVEL_PRICING_SERVICE (pricing)"
+    },
+    {
+      "name": "Service creating its own dependencies",
+      "problem": "Service class creating repository internally (CREATE OBJECT) makes testing impossible and creates tight coupling",
+      "solution": "Inject dependencies via constructor: METHODS constructor IMPORTING repository TYPE REF TO zif_repository"
+    },
+    {
+      "name": "No interface for service classes",
+      "problem": "Service classes without interfaces cannot be mocked, making unit testing difficult or impossible",
+      "solution": "Always define interface (ZIF_*_SERVICE) and implement it in service class for testability"
+    },
+    {
+      "name": "Mixing business logic with data access",
+      "problem": "Service class directly accessing database tables mixes business logic with data access, violating separation of concerns",
+      "solution": "Extract data access to repository class (ZCL_*_REPOSITORY), service calls repository methods"
+    },
+    {
+      "name": "Generic exception handling without specific exceptions",
+      "problem": "Catching CX_ROOT or using generic error messages makes debugging difficult and error handling imprecise",
+      "solution": "Define domain-specific exception hierarchy (ZCX_DOMAIN_ERROR with specific subclasses) and catch specific exceptions"
+    }
+  ]
 }

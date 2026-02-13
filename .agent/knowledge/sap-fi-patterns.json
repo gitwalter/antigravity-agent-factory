@@ -1,9 +1,27 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "sap-fi-patterns",
+  "title": "SAP FI Patterns",
   "name": "SAP FI Patterns",
   "description": "Financial Accounting process, document types, tables, integration. S/4 on-prem and R/3/ECC.",
   "version": "1.0.0",
-  "category": "patterns",
+  "category": "sap",
+  "axiomAlignment": {
+    "A1_verifiability": "Document types, core tables, and posting keys enable traceable financial verification",
+    "A2_user_primacy": "Hold, Park, Save flow supports user-driven document preparation and approval",
+    "A3_transparency": "Explicit table structure (BKPF, BSEG, ACDOCA) documents document flow",
+    "A4_non_harm": "Integration with MM, SD, CO ensures correct posting and audit trails",
+    "A5_consistency": "Unified document types and table usage across R/3 and S/4"
+  },
+  "related_skills": [
+    "s4-process-guide",
+    "sap-integration"
+  ],
+  "related_knowledge": [
+    "sap-mm-patterns.json",
+    "sap-sd-patterns.json",
+    "sap-btp-patterns.json"
+  ],
   "patterns": {
     "document_types": {
       "description": "FI document types for different posting scenarios",
@@ -23,7 +41,15 @@
           "en": "Customer",
           "de": "Debitor"
         }
-      }
+      },
+      "use_when": "When implementing document_types or when FI document types for different posting scenarios",
+      "code_example": "SELECT * FROM bkpf WHERE bukrs = @lv_bukrs AND belnr = @lv_belnr AND gjahr = @lv_gjahr",
+      "best_practices": [
+        "Verify table/field via SAP Help MCP",
+        "Use document types and posting keys from customizing",
+        "Consider ACDOCA in S/4 for reporting",
+        "Use appropriate document types (SA, KA, DZ) for different scenarios"
+      ]
     },
     "core_tables": {
       "description": "Core FI tables for document header and line items",
@@ -102,7 +128,15 @@
           "r3": true,
           "s4": true
         }
-      }
+      },
+      "use_when": "When implementing core_tables or when Core FI tables for document header and line items",
+      "code_example": "SELECT * FROM BKPF WHERE ... FOR ALL ENTRIES IN @lt_keys. Related: BSEG, BSIS",
+      "best_practices": [
+        "Verify table/field via SAP Help MCP",
+        "Use document types and posting keys from customizing",
+        "Consider ACDOCA in S/4 for reporting",
+        "Use appropriate document types (SA, KA, DZ) for different scenarios"
+      ]
     },
     "parking_tables": {
       "description": "Tables for parked documents (not yet posted)",
@@ -116,7 +150,15 @@
         "VBSEGV": {
           "purpose": "Parked document (vendor)"
         }
-      }
+      },
+      "use_when": "When implementing parking_tables or when Tables for parked documents (not yet posted)",
+      "code_example": "SELECT * FROM bkpf WHERE bukrs = @lv_bukrs AND belnr = @lv_belnr AND gjahr = @lv_gjahr",
+      "best_practices": [
+        "Verify table/field via SAP Help MCP",
+        "Use document types and posting keys from customizing",
+        "Consider ACDOCA in S/4 for reporting",
+        "Use appropriate document types (SA, KA, DZ) for different scenarios"
+      ]
     },
     "process": {
       "description": "FI document posting process: Hold, Park, Save as complete",
@@ -127,7 +169,15 @@
           "FI_SD": "Billing, revenue",
           "FI_CO": "Cost elements, reconciliation"
         }
-      }
+      },
+      "use_when": "When implementing process or when FI document posting process: Hold, Park, Save as complete",
+      "code_example": "SELECT * FROM bkpf WHERE bukrs = @lv_bukrs AND belnr = @lv_belnr AND gjahr = @lv_gjahr",
+      "best_practices": [
+        "Verify table/field via SAP Help MCP",
+        "Use document types and posting keys from customizing",
+        "Consider ACDOCA in S/4 for reporting",
+        "Use appropriate document types (SA, KA, DZ) for different scenarios"
+      ]
     }
   },
   "best_practices": [
@@ -153,8 +203,5 @@
       "problem": "Missing integration between FI and other modules",
       "fix": "Understand FI integration with MM, SD, and CO"
     }
-  ],
-  "related_skills": [
-    "s4-process-guide"
   ]
 }

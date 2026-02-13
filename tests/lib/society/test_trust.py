@@ -6,7 +6,7 @@ Tests identity, reputation, and trust delegation.
 
 import pytest
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 from lib.society.trust import (
@@ -199,7 +199,7 @@ class TestReputationScore:
         score = ReputationScore(agent_id="agent-1")
         
         event = ReputationEvent(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             type=ReputationType.AXIOM_COMPLIANCE,
             delta=5.0,
             reason="Good behavior",
@@ -213,7 +213,7 @@ class TestReputationScore:
         score = ReputationScore(agent_id="agent-1")
         
         event = ReputationEvent(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             type=ReputationType.AXIOM_COMPLIANCE,
             delta=-10.0,
             reason="Violation",
@@ -228,7 +228,7 @@ class TestReputationScore:
         
         # Try to exceed max
         event = ReputationEvent(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             type=ReputationType.PEER_ENDORSEMENT,
             delta=20.0,
         )
@@ -356,7 +356,7 @@ class TestTrustDelegation:
             delegator="a",
             delegate="b",
             trust_level=0.5,
-            expires=datetime.utcnow() - timedelta(hours=1),
+            expires=datetime.now(timezone.utc) - timedelta(hours=1),
         )
         assert not expired.is_valid
     

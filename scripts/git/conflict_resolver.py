@@ -18,7 +18,7 @@ Version: 1.0.0
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 import copy
@@ -91,7 +91,7 @@ class ConflictReport:
     conflicts: List[Conflict] = field(default_factory=list)
     auto_resolved: List[Conflict] = field(default_factory=list)
     requires_user: List[Conflict] = field(default_factory=list)
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     
     @property
     def has_conflicts(self) -> bool:

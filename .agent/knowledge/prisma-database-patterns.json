@@ -2,14 +2,28 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "prisma-database-patterns",
   "name": "Prisma Database Patterns",
+  "title": "Prisma Database Patterns",
   "description": "Prisma ORM patterns including schema design, relations (1:1, 1:N, M:N), enums, composite types, middleware, transactions, raw queries, seeding, migrations, type-safe patterns, and performance optimization",
   "version": "1.0.0",
-  "category": "patterns",
+  "category": "web",
   "axiomAlignment": {
-    "love": "Type-safe database access that delights developers",
-    "truth": "Patterns based on Prisma best practices and real-world usage",
-    "beauty": "Elegant schema design and query patterns"
+    "A1_verifiability": "Type-safe queries and schema enable compile-time verification",
+    "A2_user_primacy": "Transaction patterns ensure data integrity for user operations",
+    "A3_transparency": "Explicit schema and migrations make data model clear",
+    "A4_non_harm": "Validation and constraints prevent invalid data",
+    "A5_consistency": "Unified patterns across Prisma schema, queries, and migrations"
   },
+  "related_skills": [
+    "prisma-database",
+    "api-design",
+    "trpc-api",
+    "frontend-testing"
+  ],
+  "related_knowledge": [
+    "nextjs-patterns.json",
+    "fastapi-patterns.json",
+    "api-design-patterns.json"
+  ],
   "patterns": {
     "schema-design": {
       "name": "Schema Design",
@@ -23,6 +37,12 @@
       ],
       "tradeoffs": [
         "Requires migrations"
+      ],
+      "use_when": "All database modeling",
+      "code_example": "model User { id Int @id @default(autoincrement()); email String @unique; name String; posts Post[] }\nmodel Post { id Int @id; title String; authorId Int; author User @relation(fields: [authorId], references: [id]) }",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     },
     "one-to-one-relations": {
@@ -36,6 +56,12 @@
       ],
       "tradeoffs": [
         "Requires unique constraint"
+      ],
+      "use_when": "User-Profile, Order-Invoice relationships",
+      "code_example": "model User { id Int @id; profile Profile? }\nmodel Profile { id Int @id; userId Int @unique; user User @relation(fields: [userId], references: [id]) }",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     },
     "one-to-many-relations": {
@@ -49,6 +75,12 @@
       ],
       "tradeoffs": [
         "None significant"
+      ],
+      "use_when": "User-Posts, Category-Products relationships",
+      "code_example": "model User { id Int @id; posts Post[] }\nmodel Post { id Int @id; authorId Int; author User @relation(fields: [authorId], references: [id]) }",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     },
     "many-to-many-relations": {
@@ -62,6 +94,12 @@
       ],
       "tradeoffs": [
         "More complex queries"
+      ],
+      "use_when": "Post-Tags, User-Roles relationships",
+      "code_example": "model Post { id Int @id; tags PostTag[] }\nmodel Tag { id Int @id; posts PostTag[] }\nmodel PostTag { postId Int; tagId Int; post Post @relation(...); tag Tag @relation(...); @@id([postId, tagId]) }",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     },
     "self-relations": {
@@ -74,6 +112,12 @@
       ],
       "tradeoffs": [
         "Can be complex"
+      ],
+      "use_when": "User-Manager, Category-Parent relationships",
+      "code_example": "model User { id Int @id; managerId Int?; manager User? @relation('Employee', fields: [managerId], references: [id]); reports User[] @relation('Employee') }",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     },
     "enums": {
@@ -87,6 +131,12 @@
       ],
       "tradeoffs": [
         "Requires migration to change"
+      ],
+      "use_when": "Status fields, roles, categories",
+      "code_example": "enum Role { USER, ADMIN, MODERATOR }",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     },
     "composite-types": {
@@ -99,6 +149,12 @@
       ],
       "tradeoffs": [
         "MongoDB only"
+      ],
+      "use_when": "Address, contact information",
+      "code_example": "type Address { street, city, zipCode }",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     },
     "transactions": {
@@ -112,6 +168,12 @@
       ],
       "tradeoffs": [
         "Performance overhead"
+      ],
+      "use_when": "Operations that must succeed or fail together",
+      "code_example": "Create user and profile in transaction",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     },
     "raw-queries": {
@@ -126,6 +188,12 @@
       "tradeoffs": [
         "No type safety",
         "Database-specific"
+      ],
+      "use_when": "Complex queries, database-specific features",
+      "code_example": "$queryRaw with SQL template",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     },
     "migrations": {
@@ -140,6 +208,12 @@
       ],
       "tradeoffs": [
         "Requires discipline"
+      ],
+      "use_when": "All schema changes",
+      "code_example": "prisma migrate dev --name add_user_role",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     },
     "seeding": {
@@ -153,6 +227,12 @@
       ],
       "tradeoffs": [
         "Requires maintenance"
+      ],
+      "use_when": "Development, testing, demo data",
+      "code_example": "prisma/seed.ts with sample data",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     },
     "query-optimization": {
@@ -166,6 +246,12 @@
       ],
       "tradeoffs": [
         "More complex queries"
+      ],
+      "use_when": "Performance optimization",
+      "code_example": "Select only needed fields, use pagination",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     },
     "middleware": {
@@ -179,6 +265,12 @@
       ],
       "tradeoffs": [
         "Can affect performance"
+      ],
+      "use_when": "Logging, soft deletes, query modification",
+      "code_example": "Logging middleware, soft delete middleware",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     },
     "connection-pooling": {
@@ -192,6 +284,12 @@
       ],
       "tradeoffs": [
         "Requires configuration"
+      ],
+      "use_when": "Production applications",
+      "code_example": "Prisma Client with connection pool",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     },
     "type-safe-queries": {
@@ -206,6 +304,12 @@
       ],
       "tradeoffs": [
         "Requires TypeScript"
+      ],
+      "use_when": "All queries",
+      "code_example": "Typed queries with autocomplete",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
       ]
     }
   },
@@ -227,5 +331,7 @@
     "Ignoring type safety",
     "Not handling errors properly",
     "Not using migrations"
-  ]
+  ],
+  "use_when": "Prisma ORM usage, schema design, or type-safe database queries",
+  "code_example": "model User { id Int @id @default(autoincrement()); email String @unique; posts Post[] }\nmodel Post { id Int @id; authorId Int; author User @relation(fields: [authorId], references: [id]) }"
 }

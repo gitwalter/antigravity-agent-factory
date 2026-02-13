@@ -1,249 +1,175 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "PydanticAI Patterns",
-  "description": "Best practices and patterns for PydanticAI agent development",
+  "id": "pydantic-ai-patterns",
+  "name": "Pydantic AI Patterns",
+  "title": "Pydantic AI Patterns",
+  "description": "Best practices and patterns for Pydantic AI - schema-safe agents with structured outputs via tool-calling and Pydantic validation",
   "version": "1.0.0",
+  "last_updated": "2026-02-11",
+  "category": "agent-patterns",
   "axiomAlignment": {
-    "A1_verifiability": "Pydantic models provide structured, verifiable outputs",
-    "A3_transparency": "Type-safe agents with explicit schemas"
+    "A1_verifiability": "Pydantic schemas enable verification of all agent inputs and outputs",
+    "A2_user_primacy": "Type-safe interfaces ensure predictable agent behavior",
+    "A3_transparency": "Schema definitions make agent contracts explicit",
+    "A4_non_harm": "Validation prevents malformed or harmful data",
+    "A5_consistency": "Unified patterns across all agent interactions"
   },
-  "import_structure": {
-    "description": "PydanticAI uses modular imports",
-    "core": "pydantic_ai - Core agent and model classes",
-    "models": "pydantic_ai.models - Model providers (OpenAI, Anthropic, etc.)",
-    "tools": "pydantic_ai.tools - Tool definitions",
-    "note": "Import from pydantic_ai for main classes"
-  },
-  "agent_creation_patterns": {
+  "related_skills": [
+    "tool-usage",
+    "error-handling",
+    "structured-output"
+  ],
+  "related_knowledge": [
+    "langchain-patterns.json",
+    "openai-agents-sdk-patterns.json",
+    "instructor-patterns.json"
+  ],
+  "patterns": {
     "basic_agent": {
-      "description": "Create a basic agent with a model",
-      "code_example": "from pydantic_ai import Agent\nfrom pydantic_ai.models.openai import OpenAIModel\n\n# Create model\nmodel = OpenAIModel('gpt-4', api_key='your-key')\n\n# Create agent\nagent = Agent(\n    model=model,\n    system_prompt='You are a helpful assistant.'\n)\n\n# Run agent\nresult = agent.run_sync('What is machine learning?')\nprint(result.data)",
+      "description": "Create a schema-safe agent with Pydantic AI",
+      "use_when": "Building agents that need type-safe, validated outputs",
+      "code_example": "from pydantic_ai import Agent\nfrom pydantic import BaseModel, Field\nfrom typing import List\n\n# Define output schema\nclass ResearchResult(BaseModel):\n    title: str = Field(description='Title of the research')\n    summary: str = Field(description='Brief summary of findings')\n    key_points: List[str] = Field(description='Main takeaways')\n    confidence: float = Field(ge=0, le=1, description='Confidence score')\n\n# Create agent with structured output\nagent = Agent(\n    model='openai:gpt-4',\n    result_type=ResearchResult,\n    system_prompt='You are a research assistant. Analyze topics thoroughly.'\n)\n\n# Run agent - output is guaranteed to match schema\nresult = await agent.run('Analyze the impact of AI on healthcare')\n\n# Access typed result\nprint(f'Title: {result.data.title}')\nprint(f'Summary: {result.data.summary}')\nfor point in result.data.key_points:\n    print(f'- {point}')\nprint(f'Confidence: {result.data.confidence}')",
       "best_practices": [
-        "Set clear system prompts",
-        "Use appropriate model for task",
-        "Handle errors gracefully"
+        "Define Pydantic models for all agent outputs",
+        "Use Field descriptions to guide LLM output",
+        "Add validation constraints (ge, le, regex, etc.)",
+        "Use typing hints for complex types (List, Dict, Optional)"
       ]
     },
-    "agent_with_result_type": {
-      "description": "Agent with Pydantic result type",
-      "code_example": "from pydantic import BaseModel, Field\nfrom pydantic_ai import Agent\nfrom pydantic_ai.models.openai import OpenAIModel\n\n# Define result type\nclass Answer(BaseModel):\n    answer: str = Field(description='The answer to the question')\n    confidence: float = Field(description='Confidence score 0-1', ge=0.0, le=1.0)\n    sources: list[str] = Field(description='Source documents', default=[])\n\n# Create agent with result type\nmodel = OpenAIModel('gpt-4')\nagent = Agent(\n    model=model,\n    result_type=Answer,\n    system_prompt='Answer questions with confidence scores.'\n)\n\n# Run agent\nresult = agent.run_sync('What is machine learning?')\nprint(f'Answer: {result.data.answer}')\nprint(f'Confidence: {result.data.confidence}')",
+    "tool_output_marker": {
+      "description": "Mark tool return types for structured tool calling",
+      "use_when": "Tools need to return structured data that the agent can use",
+      "code_example": "from pydantic_ai import Agent, ToolOutput\nfrom pydantic import BaseModel, Field\nfrom typing import List\n\nclass SearchResult(BaseModel):\n    title: str\n    url: str\n    snippet: str\n    relevance: float\n\nclass SearchResults(BaseModel):\n    results: List[SearchResult]\n    total_count: int\n\n# Define tool with ToolOutput marker\ndef search_web(query: str, max_results: int = 5) -> ToolOutput[SearchResults]:\n    \"\"\"Search the web for information.\"\"\"\n    # Implementation\n    results = perform_search(query, max_results)\n    return SearchResults(\n        results=[SearchResult(**r) for r in results],\n        total_count=len(results)\n    )\n\n# Agent uses structured tool output\nagent = Agent(\n    model='openai:gpt-4',\n    tools=[search_web],\n    system_prompt='You are a research assistant with web search.'\n)\n\nresult = await agent.run('Find recent news about quantum computing')\n# Agent receives typed SearchResults from tool",
       "best_practices": [
-        "Use result_type for structured outputs",
-        "Add Field descriptions for better model understanding",
-        "Use validation constraints (ge, le, etc.)",
-        "Access result.data for typed output"
+        "Use ToolOutput[T] to specify tool return types",
+        "Define Pydantic models for complex tool returns",
+        "Include metadata fields (count, pagination, etc.)",
+        "Validate tool outputs before returning"
       ]
     },
-    "async_agent": {
-      "description": "Asynchronous agent execution",
-      "code_example": "import asyncio\nfrom pydantic_ai import Agent\nfrom pydantic_ai.models.openai import OpenAIModel\n\nmodel = OpenAIModel('gpt-4')\nagent = Agent(model=model)\n\nasync def main():\n    result = await agent.run('What is AI?')\n    print(result.data)\n\nasyncio.run(main())",
+    "agent_dependencies": {
+      "description": "Inject dependencies into agent for runtime context",
+      "use_when": "Agents need access to databases, APIs, or services",
+      "code_example": "from pydantic_ai import Agent, RunContext\nfrom pydantic import BaseModel\nfrom dataclasses import dataclass\nimport httpx\n\n@dataclass\nclass AppDependencies:\n    \"\"\"Dependencies available to agent and tools.\"\"\"\n    http_client: httpx.AsyncClient\n    db_connection: DatabaseConnection\n    user_id: str\n    api_key: str\n\nclass UserInfo(BaseModel):\n    name: str\n    email: str\n    plan: str\n\n# Tool accessing dependencies\ndef get_user_info(ctx: RunContext[AppDependencies]) -> ToolOutput[UserInfo]:\n    \"\"\"Get current user information.\"\"\"\n    user = ctx.deps.db_connection.get_user(ctx.deps.user_id)\n    return UserInfo(\n        name=user.name,\n        email=user.email,\n        plan=user.subscription_plan\n    )\n\nagent = Agent(\n    model='openai:gpt-4',\n    deps_type=AppDependencies,\n    tools=[get_user_info],\n    system_prompt='You are a customer support assistant.'\n)\n\n# Run with dependencies\nasync with httpx.AsyncClient() as client:\n    deps = AppDependencies(\n        http_client=client,\n        db_connection=get_db(),\n        user_id='user_123',\n        api_key=os.environ['API_KEY']\n    )\n    \n    result = await agent.run('What plan am I on?', deps=deps)",
       "best_practices": [
-        "Use async for I/O-bound operations",
-        "Use run() for async, run_sync() for sync",
-        "Handle async errors appropriately"
-      ]
-    }
-  },
-  "tool_definition_patterns": {
-    "basic_tool": {
-      "description": "Define a simple tool",
-      "code_example": "from pydantic_ai import Agent\nfrom pydantic_ai.tools import tool\nfrom pydantic_ai.models.openai import OpenAIModel\n\n# Define tool\n@tool\ndef get_weather(location: str) -> str:\n    '''Get the current weather for a location.'''\n    return f'Weather in {location}: Sunny, 72\u00b0F'\n\n# Create agent with tool\nmodel = OpenAIModel('gpt-4')\nagent = Agent(\n    model=model,\n    tools=[get_weather],\n    system_prompt='You have access to weather information.'\n)\n\n# Use agent\nresult = agent.run_sync('What is the weather in San Francisco?')\nprint(result.data)",
-      "best_practices": [
-        "Use @tool decorator for tools",
-        "Provide clear docstrings",
-        "Return strings or structured data"
+        "Use dataclasses for dependency containers",
+        "Access dependencies via RunContext",
+        "Inject async clients for I/O operations",
+        "Keep dependencies immutable during runs"
       ]
     },
-    "tool_with_pydantic_input": {
-      "description": "Tool with Pydantic input schema",
-      "code_example": "from pydantic import BaseModel, Field\nfrom pydantic_ai.tools import tool\nfrom typing import List\n\n# Define input schema\nclass SearchInput(BaseModel):\n    query: str = Field(description='Search query')\n    max_results: int = Field(default=5, ge=1, le=20, description='Maximum results')\n    filters: List[str] = Field(default=[], description='Search filters')\n\n# Define tool with schema\n@tool\nasync def search_documents(input: SearchInput) -> str:\n    '''Search documents with query, max results, and filters.'''\n    # Perform search\n    results = perform_search(input.query, input.max_results, input.filters)\n    return '\\n'.join(results)\n\n# Use in agent\nagent = Agent(\n    model=model,\n    tools=[search_documents],\n    system_prompt='You can search documents.'\n)",
+    "streaming_results": {
+      "description": "Stream agent responses for real-time UX",
+      "use_when": "Building interactive applications with real-time feedback",
+      "code_example": "from pydantic_ai import Agent\nfrom pydantic import BaseModel\n\nclass Article(BaseModel):\n    title: str\n    content: str\n    word_count: int\n\nagent = Agent(\n    model='openai:gpt-4',\n    result_type=Article,\n    system_prompt='You are a content writer.'\n)\n\n# Stream response\nasync with agent.run_stream('Write an article about Python') as stream:\n    # Stream partial text as it's generated\n    async for chunk in stream.stream_text():\n        print(chunk, end='', flush=True)\n    \n    # Get final structured result\n    result = await stream.get_result()\n    print(f'\\n\\nFinal result: {result.data}')\n\n# Alternative: StreamedRunResult\nresult: StreamedRunResult[Article] = await agent.run_stream(\n    'Write an article about AI'\n)\n\n# Access partial data during streaming\nasync for partial in result.stream():\n    if partial.data:\n        print(f'Partial: {partial.data}')",
       "best_practices": [
-        "Use Pydantic models for complex inputs",
-        "Add Field descriptions",
-        "Use validation constraints",
-        "Support both sync and async tools"
+        "Use run_stream for real-time applications",
+        "Stream text for immediate feedback",
+        "Call get_result() for final validated output",
+        "Handle streaming errors gracefully"
       ]
     },
-    "tool_with_error_handling": {
-      "description": "Tool with error handling",
-      "code_example": "from pydantic_ai.tools import tool\nimport logging\n\nlogger = logging.getLogger(__name__)\n\n@tool\ndef safe_api_call(url: str) -> str:\n    '''Make a safe API call with error handling.'''\n    try:\n        import requests\n        response = requests.get(url, timeout=10)\n        response.raise_for_status()\n        return response.text\n    except requests.exceptions.Timeout:\n        error_msg = f'Request to {url} timed out'\n        logger.error(error_msg)\n        return f'Error: {error_msg}'\n    except requests.exceptions.RequestException as e:\n        error_msg = f'Request failed: {str(e)}'\n        logger.error(error_msg)\n        return f'Error: {error_msg}'",
-      "best_practices": [
-        "Return error messages, don't raise exceptions",
-        "Provide actionable error information",
-        "Log errors for debugging",
-        "Consider retry logic for transient failures"
-      ]
-    },
-    "multiple_tools": {
-      "description": "Agent with multiple tools",
-      "code_example": "from pydantic_ai import Agent\nfrom pydantic_ai.tools import tool\n\n@tool\ndef calculator(expression: str) -> str:\n    '''Evaluate a mathematical expression.'''\n    return str(eval(expression))\n\n@tool\ndef get_weather(location: str) -> str:\n    '''Get the current weather for a location.'''\n    return f'Weather in {location}: Sunny, 72\u00b0F'\n\n@tool\ndef search_documents(query: str) -> str:\n    '''Search documents for information.'''\n    return f'Results for: {query}'\n\n# Create agent with multiple tools\nagent = Agent(\n    model=model,\n    tools=[calculator, get_weather, search_documents],\n    system_prompt='You have access to multiple tools.'\n)",
-      "best_practices": [
-        "Provide clear tool descriptions",
-        "Use descriptive tool names",
-        "Group related tools together",
-        "Test tool interactions"
-      ]
-    }
-  },
-  "message_handling_patterns": {
     "conversation_history": {
-      "description": "Maintain conversation history",
-      "code_example": "from pydantic_ai import Agent\nfrom pydantic_ai.models.openai import OpenAIModel\n\nmodel = OpenAIModel('gpt-4')\nagent = Agent(model=model)\n\n# First message\nresult1 = agent.run_sync('What is machine learning?')\nprint(result1.data)\n\n# Follow-up with history\nresult2 = agent.run_sync(\n    'Tell me more about that',\n    conversation_id='conv-123',\n    message_history=result1.all_messages()\n)\nprint(result2.data)",
+      "description": "Maintain conversation state across interactions",
+      "use_when": "Building multi-turn conversational agents",
+      "code_example": "from pydantic_ai import Agent\nfrom pydantic import BaseModel\nfrom typing import List, Optional\n\nclass ConversationResponse(BaseModel):\n    response: str\n    sentiment: str\n    follow_up_questions: Optional[List[str]] = None\n\nagent = Agent(\n    model='openai:gpt-4',\n    result_type=ConversationResponse,\n    system_prompt='You are a helpful assistant. Ask clarifying questions.'\n)\n\n# First message\nresult1 = await agent.run('I want to learn Python')\nprint(f'Assistant: {result1.data.response}')\n\n# Continue conversation with history\nresult2 = await agent.run(\n    'What should I start with?',\n    message_history=result1.all_messages()\n)\nprint(f'Assistant: {result2.data.response}')\n\n# Continue further\nresult3 = await agent.run(\n    'Do you have any book recommendations?',\n    message_history=result2.all_messages()\n)\nprint(f'Assistant: {result3.data.response}')\n\n# Access full history\nfor msg in result3.all_messages():\n    print(f'{msg.kind}: {msg.content}')",
       "best_practices": [
-        "Use conversation_id for tracking",
-        "Pass message_history for context",
-        "Limit history length to avoid token limits",
-        "Clear history for new conversations"
-      ]
-    },
-    "system_message_updates": {
-      "description": "Update system message dynamically",
-      "code_example": "from pydantic_ai import Agent\n\n# Create agent\nagent = Agent(\n    model=model,\n    system_prompt='You are a helpful assistant.'\n)\n\n# Run with updated system message\nresult = agent.run_sync(\n    'What is Python?',\n    system_prompt='You are a Python expert.'\n)",
-      "best_practices": [
-        "Use system_prompt parameter for dynamic updates",
-        "Keep system prompts focused",
-        "Document system prompt changes"
-      ]
-    },
-    "message_formatting": {
-      "description": "Format messages for agent",
-      "code_example": "from pydantic_ai import Agent\nfrom pydantic_ai.models.openai import OpenAIModel\n\nmodel = OpenAIModel('gpt-4')\nagent = Agent(model=model)\n\n# Format message with context\ncontext = 'Document: Machine learning is...'\nquery = 'What is machine learning?'\n\nformatted_message = f'''Context:\n{context}\n\nQuestion: {query}'''\n\nresult = agent.run_sync(formatted_message)",
-      "best_practices": [
-        "Format messages clearly",
-        "Separate context from query",
-        "Use consistent formatting"
-      ]
-    }
-  },
-  "streaming_patterns": {
-    "basic_streaming": {
-      "description": "Stream agent responses",
-      "code_example": "from pydantic_ai import Agent\nfrom pydantic_ai.models.openai import OpenAIModel\n\nmodel = OpenAIModel('gpt-4')\nagent = Agent(model=model)\n\n# Stream response\nfor chunk in agent.run_stream_sync('Tell me a story'):\n    if chunk.is_text:\n        print(chunk.text, end='', flush=True)\n    elif chunk.is_done:\n        print(f'\\n\\nFinal result: {chunk.result.data}')",
-      "best_practices": [
-        "Use streaming for better UX",
-        "Check chunk types (is_text, is_done)",
-        "Handle streaming errors",
-        "Access final result from done chunk"
-      ]
-    },
-    "async_streaming": {
-      "description": "Async streaming",
-      "code_example": "import asyncio\nfrom pydantic_ai import Agent\n\nasync def stream_response():\n    agent = Agent(model=model)\n    async for chunk in agent.run_stream('Tell me a story'):\n        if chunk.is_text:\n            print(chunk.text, end='', flush=True)\n        elif chunk.is_done:\n            print(f'\\n\\nDone: {chunk.result.data}')\n\nasyncio.run(stream_response())",
-      "best_practices": [
-        "Use async streaming for async operations",
-        "Handle async errors appropriately",
-        "Process chunks as they arrive"
-      ]
-    },
-    "streaming_with_tools": {
-      "description": "Stream responses when tools are used",
-      "code_example": "from pydantic_ai import Agent\n\nagent = Agent(\n    model=model,\n    tools=[get_weather, calculator],\n    system_prompt='You have access to tools.'\n)\n\n# Stream response (tools may be called)\nfor chunk in agent.run_stream_sync('What is 15*23 and the weather in SF?'):\n    if chunk.is_text:\n        print(chunk.text, end='', flush=True)\n    elif chunk.is_tool_call:\n        print(f'\\nCalling tool: {chunk.tool_name}')\n    elif chunk.is_done:\n        print(f'\\n\\nFinal: {chunk.result.data}')",
-      "best_practices": [
-        "Handle tool call chunks",
-        "Show tool usage to user",
-        "Stream continues after tool calls"
-      ]
-    }
-  },
-  "multi_model_patterns": {
-    "model_selection": {
-      "description": "Use different models for different tasks",
-      "code_example": "from pydantic_ai import Agent\nfrom pydantic_ai.models.openai import OpenAIModel\nfrom pydantic_ai.models.anthropic import AnthropicModel\n\n# Fast model for simple tasks\nfast_model = OpenAIModel('gpt-3.5-turbo')\nfast_agent = Agent(model=fast_model)\n\n# Powerful model for complex tasks\npowerful_model = OpenAIModel('gpt-4')\npowerful_agent = Agent(model=powerful_model)\n\n# Anthropic model\nclaude_model = AnthropicModel('claude-3-opus-20240229')\nclaude_agent = Agent(model=claude_model)\n\n# Use appropriate agent for task\nif task_complexity == 'simple':\n    result = fast_agent.run_sync(query)\nelse:\n    result = powerful_agent.run_sync(query)",
-      "best_practices": [
-        "Use faster models for simple tasks",
-        "Use powerful models for complex reasoning",
-        "Consider cost vs quality tradeoff",
-        "Test model performance for your use case"
-      ]
-    },
-    "model_switching": {
-      "description": "Switch models dynamically",
-      "code_example": "from pydantic_ai import Agent\nfrom pydantic_ai.models.openai import OpenAIModel\n\n# Create agents with different models\nfast_agent = Agent(model=OpenAIModel('gpt-3.5-turbo'))\npowerful_agent = Agent(model=OpenAIModel('gpt-4'))\n\ndef route_query(query: str, complexity: str):\n    if complexity == 'simple':\n        return fast_agent.run_sync(query)\n    else:\n        return powerful_agent.run_sync(query)",
-      "best_practices": [
-        "Route queries based on complexity",
-        "Monitor model usage and costs",
-        "Fallback to simpler model on errors"
-      ]
-    },
-    "local_models": {
-      "description": "Use local models with PydanticAI",
-      "code_example": "from pydantic_ai import Agent\nfrom pydantic_ai.models.ollama import OllamaModel\n\n# Use local Ollama model\nlocal_model = OllamaModel('llama2')\nlocal_agent = Agent(model=local_model)\n\nresult = local_agent.run_sync('What is AI?')",
-      "best_practices": [
-        "Use local models for privacy",
-        "Consider performance tradeoffs",
-        "Test model quality for your use case"
-      ]
-    }
-  },
-  "result_handling_patterns": {
-    "structured_results": {
-      "description": "Handle structured results",
-      "code_example": "from pydantic import BaseModel\nfrom pydantic_ai import Agent\n\nclass AnalysisResult(BaseModel):\n    summary: str\n    key_points: list[str]\n    confidence: float\n\nagent = Agent(\n    model=model,\n    result_type=AnalysisResult\n)\n\nresult = agent.run_sync('Analyze this document...')\n\n# Access structured data\nprint(result.data.summary)\nprint(result.data.key_points)\nprint(result.data.confidence)",
-      "best_practices": [
-        "Use result_type for structured outputs",
-        "Access result.data for typed data",
-        "Handle validation errors"
-      ]
-    },
-    "error_handling": {
-      "description": "Handle agent errors",
-      "code_example": "from pydantic_ai import Agent\nfrom pydantic_ai.exceptions import PydanticAIError\n\ntry:\n    result = agent.run_sync('Query')\n    print(result.data)\nexcept PydanticAIError as e:\n    print(f'Agent error: {e}')\nexcept Exception as e:\n    print(f'Unexpected error: {e}')",
-      "best_practices": [
-        "Handle PydanticAIError specifically",
-        "Log errors for debugging",
-        "Provide user-friendly error messages",
-        "Implement retry logic for transient failures"
+        "Pass message_history for multi-turn conversations",
+        "Use all_messages() to get complete history",
+        "Summarize long histories to prevent context overflow",
+        "Store histories for session persistence"
       ]
     },
     "result_validation": {
-      "description": "Validate agent results",
-      "code_example": "from pydantic import BaseModel, Field, field_validator\nfrom pydantic_ai import Agent\n\nclass ValidatedResult(BaseModel):\n    answer: str = Field(min_length=10)\n    score: float = Field(ge=0.0, le=1.0)\n    \n    @field_validator('answer')\n    @classmethod\n    def validate_answer(cls, v):\n        if len(v) < 10:\n            raise ValueError('Answer too short')\n        return v\n\nagent = Agent(\n    model=model,\n    result_type=ValidatedResult\n)\n\nresult = agent.run_sync('Question')\n# Result is validated automatically",
+      "description": "Validate and retry on invalid agent outputs",
+      "use_when": "Ensuring agent outputs meet quality requirements",
+      "code_example": "from pydantic_ai import Agent, ModelRetry\nfrom pydantic import BaseModel, Field, field_validator\nfrom typing import List\n\nclass CodeReview(BaseModel):\n    issues: List[str] = Field(min_length=1, description='Found issues')\n    severity: str = Field(pattern='^(low|medium|high|critical)$')\n    suggestions: List[str]\n    approved: bool\n    \n    @field_validator('suggestions')\n    @classmethod\n    def suggestions_not_empty(cls, v):\n        if not v:\n            raise ValueError('Must provide at least one suggestion')\n        return v\n\nagent = Agent(\n    model='openai:gpt-4',\n    result_type=CodeReview,\n    system_prompt='You are a code reviewer. Always provide actionable feedback.',\n    retries=3  # Retry on validation failure\n)\n\ntry:\n    result = await agent.run('Review this code: def add(a, b): return a + b')\n    print(f'Issues: {result.data.issues}')\n    print(f'Severity: {result.data.severity}')\n    print(f'Approved: {result.data.approved}')\nexcept ModelRetry as e:\n    print(f'Agent failed after retries: {e}')",
       "best_practices": [
-        "Use Pydantic validators",
-        "Add Field constraints",
-        "Handle validation errors gracefully"
+        "Use Pydantic validators for complex constraints",
+        "Set appropriate retry count for production",
+        "Define clear Field constraints (min_length, pattern, etc.)",
+        "Handle ModelRetry exceptions gracefully"
+      ]
+    },
+    "multiple_models": {
+      "description": "Use different models for different tasks",
+      "use_when": "Optimizing cost and performance across agent operations",
+      "code_example": "from pydantic_ai import Agent\nfrom pydantic import BaseModel\n\nclass Summary(BaseModel):\n    summary: str\n    key_points: list[str]\n\nclass DetailedAnalysis(BaseModel):\n    analysis: str\n    recommendations: list[str]\n    confidence: float\n\n# Fast model for simple tasks\nsummary_agent = Agent(\n    model='openai:gpt-3.5-turbo',\n    result_type=Summary,\n    system_prompt='Summarize content concisely.'\n)\n\n# Capable model for complex analysis\nanalysis_agent = Agent(\n    model='openai:gpt-4',\n    result_type=DetailedAnalysis,\n    system_prompt='Provide detailed analysis with recommendations.'\n)\n\n# Anthropic for specific use cases\ncreative_agent = Agent(\n    model='anthropic:claude-3-opus',\n    result_type=str,\n    system_prompt='You are a creative writer.'\n)\n\n# Use appropriate agent based on task\ndocument = 'Long document content...'\n\n# Quick summary with fast model\nsummary = await summary_agent.run(f'Summarize: {document}')\n\n# Detailed analysis with capable model\nanalysis = await analysis_agent.run(f'Analyze: {document}')",
+      "best_practices": [
+        "Use faster models for simple tasks",
+        "Use capable models for complex reasoning",
+        "Match model to task requirements",
+        "Monitor costs across model usage"
       ]
     }
   },
+  "best_practices": [
+    "Define Pydantic models for all agent outputs to ensure type safety",
+    "Use Field descriptions to guide LLM output generation",
+    "Add validation constraints (ge, le, regex, min_length) for quality control",
+    "Use ToolOutput[T] marker for structured tool returns",
+    "Inject dependencies via RunContext for clean architecture",
+    "Use run_stream for real-time applications with immediate feedback",
+    "Pass message_history for multi-turn conversations",
+    "Set retries > 1 for production to handle validation failures",
+    "Match model selection to task complexity for cost optimization",
+    "Handle ModelRetry exceptions for graceful degradation"
+  ],
   "anti_patterns": [
     {
-      "name": "no_result_type",
-      "description": "Not using result_type for structured outputs",
-      "problem": "Unstructured outputs, harder to validate",
-      "solution": "Always use result_type with Pydantic models"
+      "name": "Untyped Agent Outputs",
+      "problem": "Agent outputs are unpredictable and hard to use",
+      "solution": "Always define result_type with Pydantic model"
     },
     {
-      "name": "ignoring_errors",
-      "description": "Not handling agent errors",
-      "problem": "Silent failures, poor UX",
-      "solution": "Always handle PydanticAIError and other exceptions"
+      "name": "Missing Field Descriptions",
+      "problem": "LLM doesn't understand expected output format",
+      "solution": "Add Field(description=...) to all Pydantic fields"
     },
     {
-      "name": "no_tool_descriptions",
-      "description": "Tools without clear docstrings",
-      "problem": "Poor tool selection by agent",
-      "solution": "Provide clear, descriptive docstrings for all tools"
+      "name": "No Validation Constraints",
+      "problem": "Invalid data passes through without detection",
+      "solution": "Add constraints like min_length, pattern, ge, le"
     },
     {
-      "name": "unbounded_conversation",
-      "description": "Not limiting conversation history",
-      "problem": "Token limit errors, high costs",
-      "solution": "Limit message_history length, clear when needed"
+      "name": "Unhandled Retries",
+      "problem": "Application crashes on validation failures",
+      "solution": "Set retries and handle ModelRetry exceptions"
+    },
+    {
+      "name": "Hardcoded Dependencies",
+      "problem": "Hard to test and modify agent behavior",
+      "solution": "Use deps_type and RunContext for dependency injection"
     }
   ],
-  "best_practices_summary": [
-    "Use result_type with Pydantic models for structured outputs",
-    "Provide clear tool docstrings",
-    "Handle errors gracefully",
-    "Use streaming for better UX",
-    "Limit conversation history length",
-    "Use appropriate model for task complexity",
-    "Validate results with Pydantic",
-    "Use async for I/O-bound operations"
-  ],
-  "id": "pydantic-ai-patterns",
-  "name": "Pydantic Ai Patterns",
-  "category": "patterns",
-  "patterns": {},
-  "best_practices": []
+  "comparison_with_instructor": {
+    "similarities": [
+      "Both use Pydantic for structured outputs",
+      "Both integrate with OpenAI and other LLM providers",
+      "Both support validation and retries"
+    ],
+    "differences": [
+      "Pydantic AI is agent-focused, Instructor is output-focused",
+      "Pydantic AI has built-in tool support with ToolOutput",
+      "Pydantic AI has dependency injection system",
+      "Instructor is simpler for pure structured extraction"
+    ],
+    "when_to_use_pydantic_ai": [
+      "Building agents with tools",
+      "Need dependency injection",
+      "Multi-turn conversations",
+      "Streaming structured outputs"
+    ],
+    "when_to_use_instructor": [
+      "Simple structured extraction",
+      "Patching existing OpenAI clients",
+      "Minimal setup required",
+      "Focus on output only, not agent behavior"
+    ]
+  },
+  "sources": [
+    "https://ai.pydantic.dev/",
+    "https://github.com/pydantic/pydantic-ai",
+    "https://pypi.org/project/pydantic-ai/"
+  ]
 }

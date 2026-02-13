@@ -1,12 +1,30 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "dspy-patterns",
+  "name": "DSPy Patterns",
   "title": "DSPy Patterns",
-  "description": "Best practices and patterns for DSPy (Declarative Self-improving Python) library for building and optimizing language model pipelines",
-  "version": "1.0.0",
+  "description": "Best practices and patterns for DSPy 3.x (Declarative Self-improving Python) including MIPROv2 optimization, compose optimizers, and ensemble workflows for language model pipelines",
+  "version": "1.1.0",
+  "category": "ai-ml",
   "axiomAlignment": {
     "A1_verifiability": "DSPy enables systematic evaluation and optimization of LM pipelines",
-    "A3_transparency": "Signatures and modules provide clear, declarative specifications"
+    "A2_user_primacy": "Signatures and metrics reflect user-facing task requirements",
+    "A3_transparency": "Signatures and modules provide clear, declarative specifications",
+    "A4_non_harm": "Validation patterns and assertions prevent harmful outputs",
+    "A5_consistency": "Unified declarative patterns across signatures, modules, and optimizers"
   },
+  "related_skills": [
+    "prompt-optimization",
+    "llm-evaluation",
+    "rag-patterns",
+    "agentic-loops"
+  ],
+  "related_knowledge": [
+    "instructor-patterns.json",
+    "langchain-patterns.json",
+    "llm-evaluation-frameworks.json",
+    "rag-patterns.json"
+  ],
   "import_structure": {
     "description": "DSPy uses a unified import structure",
     "core": "import dspy - Main DSPy module",
@@ -141,6 +159,45 @@
         "Consider ensemble of top candidates",
         "Document optimization strategy for reproducibility"
       ]
+    },
+    "miprov2": {
+      "description": "MIPROv2 - improved multi-prompt instruction optimization (DSPy 3.x)",
+      "use_when": "Need advanced instruction optimization with better prompt search",
+      "added_version": "3.0",
+      "code_example": "import dspy\nfrom dspy.teleprompt import MIPROv2\n\ndef metric(example, pred, trace=None):\n    return example.answer.lower() in pred.answer.lower()\n\ntrainset = [...]\nvalidset = [...]\n\nclass QA(dspy.Module):\n    def __init__(self):\n        self.generate = dspy.ChainOfThought('question -> answer')\n    \n    def forward(self, question):\n        return self.generate(question=question)\n\nprogram = QA()\n\n# MIPROv2 with enhanced search\noptimizer = MIPROv2(\n    metric=metric,\n    num_candidates=20,           # More candidates for better search\n    init_temperature=1.4,        # Higher initial temp for exploration\n    prompt_model='gpt-4',        # Use capable model for prompt generation\n    task_model='gpt-3.5-turbo',  # Use faster model for task execution\n    num_batches=8,               # Parallel evaluation batches\n    max_bootstrapped_demos=4,    # Max few-shot examples\n    max_labeled_demos=16,        # Max labeled examples\n    auto=True                    # Auto-tune hyperparameters\n)\n\noptimized_program = optimizer.compile(\n    program,\n    trainset=trainset,\n    valset=validset,\n    num_trials=50  # Number of optimization trials\n)\n\nprint(f'Best prompt: {optimized_program.generate.signature}')",
+      "best_practices": [
+        "Use auto=True for automatic hyperparameter tuning",
+        "Set num_candidates=20+ for thorough search",
+        "Use separate prompt_model and task_model for cost efficiency",
+        "Provide validation set for early stopping",
+        "Monitor prompt diversity across candidates"
+      ]
+    },
+    "bootstrap_optimize_ensemble": {
+      "description": "Bootstrap \u2192 Optimize \u2192 Ensemble workflow for maximum performance",
+      "use_when": "Production systems requiring highest accuracy",
+      "added_version": "3.0",
+      "code_example": "import dspy\nfrom dspy.teleprompt import MIPROv2, BootstrapFewShot\nfrom dspy.evaluate import Evaluate\nimport json\n\ndef metric(example, pred, trace=None):\n    return example.answer.lower() == pred.answer.lower()\n\ntrainset = [...]\nvalidset = [...]\ntestset = [...]\n\nclass QA(dspy.Module):\n    def __init__(self):\n        self.generate = dspy.ChainOfThought('question -> answer')\n    \n    def forward(self, question):\n        return self.generate(question=question)\n\n# Stage 1: Bootstrap - Generate few-shot examples\nprogram = QA()\nbootstrap = BootstrapFewShot(\n    metric=metric,\n    max_bootstrapped_demos=8,\n    max_labeled_demos=16,\n    max_rounds=2\n)\nbootstrapped_program = bootstrap.compile(program, trainset=trainset)\n\n# Stage 2: Optimize - Tune instructions with MIPROv2\noptimizer = MIPROv2(\n    metric=metric,\n    num_candidates=30,\n    auto=True\n)\noptimized_program = optimizer.compile(\n    bootstrapped_program,\n    trainset=trainset,\n    valset=validset,\n    num_trials=100\n)\n\n# Stage 3: Ensemble - Combine top-k candidates\nclass EnsembleQA(dspy.Module):\n    def __init__(self, candidates):\n        super().__init__()\n        self.candidates = candidates\n        self.aggregator = dspy.ChainOfThought('answers -> final_answer')\n    \n    def forward(self, question):\n        predictions = [c(question=question).answer for c in self.candidates]\n        # Use voting or LLM aggregation\n        result = self.aggregator(answers=json.dumps(predictions))\n        return dspy.Prediction(answer=result.final_answer)\n\n# Get top-3 candidates from optimization\ntop_candidates = optimizer.get_top_k_candidates(k=3)\nensemble = EnsembleQA(top_candidates)\n\n# Final evaluation on test set\nevaluator = Evaluate(metric=metric, num_threads=8)\ntest_score = evaluator(ensemble, validset=testset)\nprint(f'Test score: {test_score}')",
+      "best_practices": [
+        "Run Bootstrap first to seed optimization with good examples",
+        "Use MIPROv2 for instruction optimization on bootstrapped program",
+        "Create ensemble from top-k candidates for robustness",
+        "Use separate test set for final evaluation only",
+        "Save intermediate checkpoints for reproducibility"
+      ]
+    },
+    "compose_optimizers": {
+      "description": "Compose multiple optimizers using DSPy 3.x compose API",
+      "use_when": "Building custom optimization pipelines",
+      "added_version": "3.0",
+      "code_example": "import dspy\nfrom dspy.teleprompt import (\n    MIPROv2,\n    BootstrapFewShot,\n    BootstrapRS,\n    Compose\n)\n\ndef metric(example, pred, trace=None):\n    return example.answer.lower() == pred.answer.lower()\n\n# Define optimization stages\nstage1 = BootstrapRS(\n    metric=metric,\n    max_bootstrapped_demos=4,\n    num_candidate_programs=8\n)\n\nstage2 = MIPROv2(\n    metric=metric,\n    num_candidates=16,\n    auto=True\n)\n\nstage3 = BootstrapFewShot(\n    metric=metric,\n    max_bootstrapped_demos=8,\n    max_rounds=3\n)\n\n# Compose optimizers into pipeline\ncomposed_optimizer = Compose(\n    optimizers=[stage1, stage2, stage3],\n    metric=metric,\n    strategy='sequential'  # or 'parallel', 'tournament'\n)\n\n# Run composed optimization\noptimized_program = composed_optimizer.compile(\n    program,\n    trainset=trainset,\n    valset=validset\n)\n\n# Access optimization history\nhistory = composed_optimizer.get_history()\nfor stage_name, stage_result in history.items():\n    print(f'{stage_name}: best_score={stage_result[\"best_score\"]}')",
+      "best_practices": [
+        "Use sequential strategy for dependent optimizations",
+        "Use parallel strategy for independent exploration",
+        "Use tournament strategy for competitive selection",
+        "Monitor intermediate scores to diagnose issues",
+        "Save optimization history for analysis"
+      ]
     }
   },
   "metrics_and_evaluation": {
@@ -266,41 +323,25 @@
     }
   },
   "best_practices": [
-    "Keep signatures semantic and declarative",
-    "Use descriptive field names",
-    "Provide detailed field descriptions",
-    "Specify types for better validation",
-    "Start simple, add complexity as needed",
-    "Build complex modules from simple ones",
-    "Make modules reusable and testable",
-    "Document module purpose and usage",
-    "Use forward() for inference logic",
-    "Initialize sub-modules in __init__",
-    "Start with baseline (no optimization)",
-    "Use 20% training / 80% validation split",
-    "Begin with BootstrapFewShot for few-shot examples",
-    "Add MIPRO for instruction optimization if needed",
-    "Evaluate on held-out test set",
-    "Monitor for overfitting",
-    "Document optimization process",
-    "Define clear, measurable metrics",
-    "Use separate train/validation/test sets",
-    "Report test set metrics only after final optimization",
-    "Compare baseline vs optimized performance",
-    "Track metrics over time",
-    "Use parallel evaluation (num_threads) for speed",
-    "Configure both lm and rm in settings",
-    "Set k based on context window and task",
-    "Consider multi-hop for complex queries",
-    "Use reranking for precision-critical tasks",
-    "Monitor retrieval quality",
-    "Cache expensive operations when possible",
-    "Set appropriate timeouts",
-    "Handle errors gracefully",
-    "Log important operations",
-    "Monitor costs and performance",
-    "Use assertions/suggestions for quality control"
+    "Keep signatures semantic and declarative with descriptive field names and detailed Field descriptions",
+    "Start with simple signatures and add complexity incrementally, specifying types for better validation",
+    "Build complex modules by composing simple ones, making them reusable and testable",
+    "Start optimization with baseline evaluation, then use BootstrapFewShot for few-shot examples",
+    "Add MIPRO for instruction optimization when needed, always monitoring for overfitting",
+    "Use 20% training / 80% validation split, reporting test set metrics only after final optimization",
+    "Configure both language model (lm) and retrieval model (rm) in settings for RAG pipelines",
+    "Set k based on context window and task complexity (typically 3-10), use reranking for precision-critical tasks",
+    "Use MIPROv2 with auto=True for automatic hyperparameter tuning in DSPy 3.x",
+    "Follow Bootstrap \u2192 Optimize \u2192 Ensemble workflow for production systems",
+    "Use Compose API to build custom optimization pipelines from multiple optimizers",
+    "Create ensembles from top-k candidates for maximum robustness"
   ],
+  "sources": [
+    "https://dspy.ai/",
+    "https://pypi.org/project/dspy/",
+    "https://dspy.ai/learn/optimization/optimizers/"
+  ],
+  "last_updated": "2026-02-11",
   "comparison_with_frameworks": {
     "vs_langchain": {
       "description": "DSPy vs LangChain comparison",
@@ -371,32 +412,27 @@
   },
   "anti_patterns": [
     {
-      "name": "over_optimization",
-      "description": "Overfitting to training set",
+      "name": "Over Optimization",
       "problem": "Program performs well on training but poorly on validation",
       "solution": "Use proper train/validation split, monitor validation metrics, use regularization"
     },
     {
-      "name": "ignoring_metrics",
-      "description": "Not defining clear evaluation metrics",
+      "name": "Ignoring Metrics",
       "problem": "Can't measure improvement, optimization is directionless",
       "solution": "Define measurable metrics upfront, use validation set"
     },
     {
-      "name": "complex_signatures",
-      "description": "Making signatures too complex initially",
+      "name": "Complex Signatures",
       "problem": "Hard to debug, optimization struggles",
       "solution": "Start simple, add complexity incrementally"
     },
     {
-      "name": "no_baseline",
-      "description": "Optimizing without baseline comparison",
+      "name": "No Baseline",
       "problem": "Don't know if optimization helped",
       "solution": "Always evaluate baseline first, compare improvements"
     },
     {
-      "name": "wrong_optimizer",
-      "description": "Using wrong optimizer for task",
+      "name": "Wrong Optimizer",
       "problem": "Inefficient optimization, poor results",
       "solution": "Start with BootstrapFewShot, add MIPRO for instruction optimization if needed"
     }
@@ -423,8 +459,49 @@
       ]
     }
   },
-  "id": "dspy-patterns",
-  "name": "Dspy Patterns",
-  "category": "patterns",
-  "patterns": {}
+  "patterns": {
+    "signature_patterns": {
+      "description": "Declarative signature definitions for LM pipelines",
+      "use_when": "Defining input-output mappings for LM operations",
+      "best_practices": [
+        "Use string-based signatures for quick prototyping, class-based for production",
+        "Provide detailed Field descriptions to guide prompt generation",
+        "Specify types for better validation and error handling"
+      ],
+      "code_example": "# Implement pattern based on description\n# Use appropriate imports and domain-specific logic\nresult = process_data(input_data)"
+    },
+    "optimization_patterns": {
+      "description": "Systematic optimization strategies for LM pipelines",
+      "use_when": "Have labeled training data and want to improve prompt quality",
+      "best_practices": [
+        "Start with BootstrapFewShot for few-shot example optimization",
+        "Add MIPRO for instruction optimization when needed",
+        "Always use separate train/validation/test splits",
+        "Monitor for overfitting on training set"
+      ],
+      "code_example": "# Implement pattern based on description\n# Use appropriate imports and domain-specific logic\nresult = process_data(input_data)"
+    },
+    "rag_patterns": {
+      "description": "Retrieval-Augmented Generation patterns with DSPy",
+      "use_when": "Need to ground LM outputs in external knowledge base",
+      "best_practices": [
+        "Configure both language model (lm) and retrieval model (rm) in settings",
+        "Set k based on context window and task complexity (typically 3-10)",
+        "Use multi-hop retrieval for complex queries requiring multiple sources",
+        "Consider reranking for precision-critical tasks"
+      ],
+      "code_example": "# Implement pattern based on description\n# Use appropriate imports and domain-specific logic\nresult = process_data(input_data)"
+    },
+    "evaluation_patterns": {
+      "description": "Systematic evaluation of DSPy programs",
+      "use_when": "Comparing different programs or tracking improvements over time",
+      "best_practices": [
+        "Define clear, measurable metrics upfront",
+        "Use parallel evaluation (num_threads) for speed",
+        "Report test set metrics only after final optimization",
+        "Compare baseline vs optimized performance"
+      ],
+      "code_example": "# Implement pattern based on description\n# Use appropriate imports and domain-specific logic\nresult = process_data(input_data)"
+    }
+  }
 }

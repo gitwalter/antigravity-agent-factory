@@ -5,7 +5,7 @@
   "title": "Hugging Face Patterns",
   "description": "Best practices and patterns for working with Hugging Face Transformers, datasets, and model hub",
   "version": "1.0.0",
-  "category": "patterns",
+  "category": "ai-ml",
   "sources": [
     "https://huggingface.co/docs/transformers",
     "https://huggingface.co/docs/peft",
@@ -13,8 +13,23 @@
   ],
   "axiomAlignment": {
     "A1_verifiability": "Patterns include evaluation strategies for model verification",
-    "A3_transparency": "Emphasis on model cards and documentation"
+    "A2_user_primacy": "Fine-tuning and inference support user-defined tasks",
+    "A3_transparency": "Emphasis on model cards and documentation",
+    "A4_non_harm": "Quantization and evaluation prevent harmful deployment",
+    "A5_consistency": "Unified Hugging Face patterns across loading, fine-tuning, and deployment"
   },
+  "related_skills": [
+    "model-fine-tuning",
+    "model-serving",
+    "data-pipeline",
+    "llm-evaluation"
+  ],
+  "related_knowledge": [
+    "llm-fine-tuning-patterns.json",
+    "model-serving-patterns.json",
+    "data-engineering-ml.json",
+    "llm-evaluation-patterns.json"
+  ],
   "core_patterns": {
     "model_loading": {
       "auto_classes": {
@@ -221,7 +236,8 @@
             "Use Auto* classes for flexibility",
             "Specify torch_dtype for memory efficiency",
             "Use device_map='auto' for multi-GPU"
-          ]
+          ],
+          "use_when": "When implementing this pattern in your AI/ML application"
         },
         "quantization": {
           "description": "Load models with reduced precision for efficiency",
@@ -232,7 +248,16 @@
             "4bit": "Maximum memory savings, some quality loss",
             "8bit": "Good balance of memory and quality",
             "fp16/bf16": "Standard inference, half memory of fp32"
-          }
+          },
+          "use_when": "When implementing this pattern in your AI/ML application",
+          "code_example": "from transformers import AutoModelForCausalLM, AutoTokenizer\nmodel = AutoModelForCausalLM.from_pretrained(\"meta-llama/Llama-3.1-8B\", torch_dtype=torch.bfloat16, device_map=\"auto\")\ntokenizer = AutoTokenizer.from_pretrained(\"meta-llama/Llama-3.1-8B\")",
+          "best_practices": [
+            "Always specify torch_dtype (torch.bfloat16 or torch.float16) to avoid fp32 memory waste",
+            "Use quantization (4-bit or 8-bit) for inference on limited GPU memory with BitsAndBytesConfig",
+            "Prefer LoRA/QLoRA for efficient fine-tuning instead of full fine-tuning when possible",
+            "Use streaming datasets for large datasets that don't fit in memory with streaming=True",
+            "Apply chat templates correctly using tokenizer.apply_chat_template() for instruction-tuned models"
+          ]
         }
       },
       "inference_patterns": {
@@ -245,28 +270,70 @@
             "top_k": "Limit to top K tokens",
             "max_new_tokens": "Maximum tokens to generate",
             "repetition_penalty": "Penalize repeated tokens (>1.0)"
-          }
+          },
+          "use_when": "When implementing this pattern in your AI/ML application",
+          "best_practices": [
+            "Always specify torch_dtype (torch.bfloat16 or torch.float16) to avoid fp32 memory waste",
+            "Use quantization (4-bit or 8-bit) for inference on limited GPU memory with BitsAndBytesConfig",
+            "Prefer LoRA/QLoRA for efficient fine-tuning instead of full fine-tuning when possible",
+            "Use streaming datasets for large datasets that don't fit in memory with streaming=True",
+            "Apply chat templates correctly using tokenizer.apply_chat_template() for instruction-tuned models"
+          ]
         },
         "batch_inference": {
           "description": "Process multiple inputs efficiently",
-          "code_example": "inputs = tokenizer(\n    [\"Text 1\", \"Text 2\", \"Text 3\"],\n    padding=True,\n    truncation=True,\n    return_tensors=\"pt\"\n).to(model.device)\n\nwith torch.no_grad():\n    outputs = model.generate(**inputs, max_new_tokens=100)\n\nresults = tokenizer.batch_decode(outputs, skip_special_tokens=True)"
+          "code_example": "inputs = tokenizer(\n    [\"Text 1\", \"Text 2\", \"Text 3\"],\n    padding=True,\n    truncation=True,\n    return_tensors=\"pt\"\n).to(model.device)\n\nwith torch.no_grad():\n    outputs = model.generate(**inputs, max_new_tokens=100)\n\nresults = tokenizer.batch_decode(outputs, skip_special_tokens=True)",
+          "use_when": "When implementing this pattern in your AI/ML application",
+          "best_practices": [
+            "Always specify torch_dtype (torch.bfloat16 or torch.float16) to avoid fp32 memory waste",
+            "Use quantization (4-bit or 8-bit) for inference on limited GPU memory with BitsAndBytesConfig",
+            "Prefer LoRA/QLoRA for efficient fine-tuning instead of full fine-tuning when possible",
+            "Use streaming datasets for large datasets that don't fit in memory with streaming=True",
+            "Apply chat templates correctly using tokenizer.apply_chat_template() for instruction-tuned models"
+          ]
         },
         "streaming": {
           "description": "Stream tokens as they're generated",
-          "code_example": "from transformers import TextIteratorStreamer\nfrom threading import Thread\n\nstreamer = TextIteratorStreamer(tokenizer, skip_special_tokens=True)\ngeneration_kwargs = {\n    \"input_ids\": inputs[\"input_ids\"],\n    \"streamer\": streamer,\n    \"max_new_tokens\": 256\n}\n\nthread = Thread(target=model.generate, kwargs=generation_kwargs)\nthread.start()\n\nfor text in streamer:\n    print(text, end=\"\", flush=True)"
+          "code_example": "from transformers import TextIteratorStreamer\nfrom threading import Thread\n\nstreamer = TextIteratorStreamer(tokenizer, skip_special_tokens=True)\ngeneration_kwargs = {\n    \"input_ids\": inputs[\"input_ids\"],\n    \"streamer\": streamer,\n    \"max_new_tokens\": 256\n}\n\nthread = Thread(target=model.generate, kwargs=generation_kwargs)\nthread.start()\n\nfor text in streamer:\n    print(text, end=\"\", flush=True)",
+          "use_when": "When implementing this pattern in your AI/ML application",
+          "best_practices": [
+            "Always specify torch_dtype (torch.bfloat16 or torch.float16) to avoid fp32 memory waste",
+            "Use quantization (4-bit or 8-bit) for inference on limited GPU memory with BitsAndBytesConfig",
+            "Prefer LoRA/QLoRA for efficient fine-tuning instead of full fine-tuning when possible",
+            "Use streaming datasets for large datasets that don't fit in memory with streaming=True",
+            "Apply chat templates correctly using tokenizer.apply_chat_template() for instruction-tuned models"
+          ]
         }
       },
       "embeddings": {
         "sentence_embeddings": {
           "description": "Generate embeddings for semantic similarity",
-          "code_example": "from sentence_transformers import SentenceTransformer\n\nmodel = SentenceTransformer('all-MiniLM-L6-v2')\n\nsentences = [\n    \"This is an example sentence\",\n    \"Each sentence is converted to a vector\"\n]\n\nembeddings = model.encode(sentences)\n\n# Compute similarity\nfrom sklearn.metrics.pairwise import cosine_similarity\nsimilarity = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]"
+          "code_example": "from sentence_transformers import SentenceTransformer\n\nmodel = SentenceTransformer('all-MiniLM-L6-v2')\n\nsentences = [\n    \"This is an example sentence\",\n    \"Each sentence is converted to a vector\"\n]\n\nembeddings = model.encode(sentences)\n\n# Compute similarity\nfrom sklearn.metrics.pairwise import cosine_similarity\nsimilarity = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]",
+          "use_when": "When implementing this pattern in your AI/ML application",
+          "best_practices": [
+            "Always specify torch_dtype (torch.bfloat16 or torch.float16) to avoid fp32 memory waste",
+            "Use quantization (4-bit or 8-bit) for inference on limited GPU memory with BitsAndBytesConfig",
+            "Prefer LoRA/QLoRA for efficient fine-tuning instead of full fine-tuning when possible",
+            "Use streaming datasets for large datasets that don't fit in memory with streaming=True",
+            "Apply chat templates correctly using tokenizer.apply_chat_template() for instruction-tuned models"
+          ]
         },
         "pooling_strategies": {
           "mean_pooling": "Average all token embeddings",
           "cls_pooling": "Use [CLS] token embedding",
           "max_pooling": "Take max of each dimension"
         }
-      }
+      },
+      "description": "Pattern for huggingface patterns - implement with domain-specific logic.",
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "from transformers import AutoModelForCausalLM, AutoTokenizer\nmodel = AutoModelForCausalLM.from_pretrained(\"meta-llama/Llama-3.1-8B\", torch_dtype=torch.bfloat16, device_map=\"auto\")\ntokenizer = AutoTokenizer.from_pretrained(\"meta-llama/Llama-3.1-8B\")",
+      "best_practices": [
+        "Always specify torch_dtype (torch.bfloat16 or torch.float16) to avoid fp32 memory waste",
+        "Use quantization (4-bit or 8-bit) for inference on limited GPU memory with BitsAndBytesConfig",
+        "Prefer LoRA/QLoRA for efficient fine-tuning instead of full fine-tuning when possible",
+        "Use streaming datasets for large datasets that don't fit in memory with streaming=True",
+        "Apply chat templates correctly using tokenizer.apply_chat_template() for instruction-tuned models"
+      ]
     }
   }
 }

@@ -1,4 +1,27 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "agent-society-verification",
+  "name": "Agent Society Verification",
+  "title": "Agent Society Verification Patterns",
+  "version": "1.0.0",
+  "description": "Dynamic verification patterns for multi-agent societies with contracts, event sourcing, and blockchain integration",
+  "category": "core",
+  "axiomAlignment": {
+    "A1_verifiability": "Hash chains and Merkle anchoring enable verification of agent actions",
+    "A2_user_primacy": "Contract verification and dispute resolution preserve user sovereignty",
+    "A3_transparency": "Event sourcing and axiom verifiers make agent behavior traceable",
+    "A4_non_harm": "Axiom compliance monitoring and violation escalation prevent harmful outcomes",
+    "A5_consistency": "Unified verification patterns across event sourcing, contracts, and blockchain"
+  },
+  "related_skills": [
+    "society-tier-selection",
+    "verified-communication",
+    "enforcement-selection"
+  ],
+  "related_knowledge": [
+    "agent-society-protocol.json",
+    "formal-verification.json"
+  ],
   "metadata": {
     "name": "Agent Society Verification",
     "version": "1.0.0",
@@ -458,11 +481,11 @@
   },
   "references": {
     "internal": [
-      "docs/VERIFICATION.md",
-      "docs/design/AGENT_SOCIETY_VERIFICATION.md",
-      "knowledge/formal-verification.json",
-      "knowledge/agent-coordination.json",
-      "knowledge/multi-agent-coordination.json"
+      "{directories.docs}/VERIFICATION.md",
+      "{directories.docs}/design/AGENT_SOCIETY_VERIFICATION.md",
+      "{directories.knowledge}/formal-verification.json",
+      "{directories.knowledge}/agent-coordination.json",
+      "{directories.knowledge}/multi-agent-coordination.json"
     ],
     "external": [
       {
@@ -483,12 +506,79 @@
       }
     ]
   },
-  "id": "agent-society-verification",
-  "name": "Agent Society Verification",
-  "version": "1.0.0",
-  "category": "patterns",
-  "description": "Knowledge patterns for agent society verification.",
-  "patterns": {},
-  "best_practices": [],
-  "anti_patterns": []
+  "patterns": {
+    "hash_chain_events": {
+      "description": "Each event references previous hash creating tamper-evident chain",
+      "use_when": "Need immutable audit trail of agent actions",
+      "code_example": "\nevent = {\"event_id\": \"...\", \"previous_hash\": prev_hash, \"action\": {...}}\nhash = sha256(json.dumps(event, sort_keys=True))\nevent_store.append({**event, \"hash\": hash})",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "verification_monitor": {
+      "description": "Real-time axiom compliance checking on event stream",
+      "use_when": "Need to detect violations as they occur",
+      "code_example": "\nfor event in event_stream:\n    for verifier in axiom_verifiers:\n        if not verifier.check(event):\n            escalate_violation(event)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "capability_verification": {
+      "description": "Check if agent has capability before allowing action",
+      "use_when": "Enforcing agent contracts and preventing unauthorized actions",
+      "code_example": "\nif not contract.has_capability(agent_id, action_type):\n    raise UnauthorizedActionError(agent_id, action_type)\nexecute_action(agent_id, action_type, payload)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "merkle_anchoring": {
+      "description": "Batch events into Merkle tree and anchor root on blockchain",
+      "use_when": "Need tamper evidence without storing all events on-chain",
+      "code_example": "\nroot = merkle_tree.compute_root(events_batch)\nblockchain.anchor(root)\n# Verify: merkle_proof.verify(event, root)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "contract_composition": {
+      "description": "Combine contracts when agents form teams",
+      "use_when": "Multiple agents collaborate and need unified contract enforcement",
+      "code_example": "\nteam_contract = compose_contracts([agent_a.contract, agent_b.contract])\n# Capabilities: union. Prohibitions: intersection",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "trust_escalation": {
+      "description": "Progressive escalation from local verification to blockchain consensus",
+      "use_when": "Violations detected or disputes require higher trust guarantees",
+      "code_example": "\nif violation_severity > THRESHOLD:\n    current_tier = escalate_trust_tier(current_tier)\n    require_higher_verification()",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    }
+  },
+  "best_practices": [
+    "Always link events in hash chain - each event must reference previous_hash for tamper evidence",
+    "Sign every event with Ed25519 before storing - unsigned events break verification chain",
+    "Start with L0_local verification and escalate only when violations exceed thresholds or disputes arise",
+    "Create contracts before agent interactions begin - retroactive contracts cannot verify past actions",
+    "Monitor axiom compliance in real-time using verification_monitor pattern - don't batch checks",
+    "Use Merkle anchoring for audit trails when tamper evidence is needed but full on-chain storage is too expensive",
+    "Set contract expiration dates for time-bound agreements - expired contracts should auto-escalate",
+    "Implement obligation monitoring with timeouts - unfulfilled obligations should trigger escalation",
+    "Use contract composition rules correctly - team capabilities are union, prohibitions are intersection",
+    "Store verification proofs locally even when anchoring on-chain - enables efficient verification without chain queries"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Ignoring documentation",
+      "problem": "Leads to misuse",
+      "solution": "Always read docs first"
+    }
+  ]
 }

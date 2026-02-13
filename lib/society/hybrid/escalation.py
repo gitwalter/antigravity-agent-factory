@@ -6,7 +6,7 @@ Handles violation escalation and resolution for agent societies.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 import logging
@@ -74,7 +74,7 @@ class Escalation:
     @property
     def age(self) -> timedelta:
         """Get age of escalation."""
-        return datetime.utcnow() - self.created
+        return datetime.now(timezone.utc) - self.created
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -380,7 +380,7 @@ class EscalationManager:
         
         escalation.status = EscalationStatus.RESOLVED
         escalation.resolution = resolution
-        escalation.resolved_at = datetime.utcnow()
+        escalation.resolved_at = datetime.now(timezone.utc)
         
         if resolver_id:
             escalation.assignee = resolver_id
@@ -409,7 +409,7 @@ class EscalationManager:
         
         escalation.status = EscalationStatus.DISMISSED
         escalation.resolution = f"Dismissed: {reason}"
-        escalation.resolved_at = datetime.utcnow()
+        escalation.resolved_at = datetime.now(timezone.utc)
         
         logger.info(f"Escalation {escalation_id} dismissed: {reason}")
         return True

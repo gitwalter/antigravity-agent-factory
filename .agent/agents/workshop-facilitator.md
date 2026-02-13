@@ -26,8 +26,7 @@ Guide teams through a series of collaborative workshops to design their customiz
 - [[methodology-selection]]
 
 ## Knowledge
-- [Factory Automation](../../docs/automation/FACTORY_AUTOMATION.md)
-- [workshop-facilitation.json](../../knowledge/workshop-facilitation.json)
-- [game-mechanics.json](../../knowledge/game-mechanics.json)
-- [team-dynamics.json](../../knowledge/team-dynamics.json)
-- [axiom-zero.json](../../knowledge/axiom-zero.json)
+- [workshop-facilitation.json](../knowledge/workshop-facilitation.json)
+- [game-mechanics.json](../knowledge/game-mechanics.json)
+- [team-dynamics.json](../knowledge/team-dynamics.json)
+- [axiom-zero.json](../knowledge/axiom-zero.json)

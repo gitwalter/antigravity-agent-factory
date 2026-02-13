@@ -1,0 +1,267 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "anthropic-claude-api-patterns",
+  "name": "Anthropic Claude API Patterns",
+  "title": "Anthropic Claude API Patterns",
+  "description": "Tool use, extended thinking, system prompts, structured output, safety patterns, advanced tool use (Tool Search, Programmatic Tool Calling), MCP integration, and Computer Use for Claude",
+  "version": "1.1.0",
+  "last_updated": "2026-02-11",
+  "category": "core",
+  "axiomAlignment": {
+    "A1_verifiability": "Tool use and structured output enable verification of responses",
+    "A2_user_primacy": "System prompts and refusals prioritize user safety and intent",
+    "A3_transparency": "Streaming and content blocks make model behavior traceable",
+    "A4_non_harm": "Safety patterns and content filtering prevent harmful outputs",
+    "A5_consistency": "Unified Claude API patterns across tool use, thinking, and multi-turn"
+  },
+  "related_skills": [
+    "anthropic-patterns",
+    "tool-usage",
+    "streaming-realtime",
+    "agentic-loops"
+  ],
+  "related_knowledge": [
+    "langchain-patterns.json",
+    "agentic-loop-patterns.json",
+    "tool-patterns.json"
+  ],
+  "patterns": {
+    "tool_use": {
+      "description": "Claude decides when to call tools; request tool_use block in response",
+      "flow": "Send message with tools -> Claude returns tool_use -> Execute tool -> Append result -> Continue",
+      "when_to_use": "RAG, API calls, code execution, data retrieval",
+      "best_practices": [
+        "Provide clear tool descriptions",
+        "Handle tool errors gracefully",
+        "Limit tool use per turn"
+      ],
+      "use_when": "RAG, API calls, code execution, data retrieval",
+      "code_example": "\nresponse = client.messages.create(\n    model=\"claude-3-5-sonnet\",\n    messages=[{\"role\": \"user\", \"content\": \"...\"}],\n    tools=[{\"name\": \"search\", \"description\": \"...\"}]\n)\nfor block in response.content:\n    if block.type == \"tool_use\":\n        result = execute_tool(block.name, block.input)"
+    },
+    "extended_thinking": {
+      "description": "Claude uses think block for complex reasoning before responding",
+      "feature": "thinking block in message; optional; improves reasoning on hard problems",
+      "when_to_use": "Math, logic, multi-step planning",
+      "best_practices": [
+        "Use for reasoning-heavy tasks",
+        "Parse thinking separately if needed",
+        "Monitor latency"
+      ],
+      "use_when": "Math, logic, multi-step planning",
+      "code_example": "\n# Enable thinking block in API call\nresponse = client.messages.create(\n    model=\"claude-3-5-sonnet\",\n    messages=[...],\n    thinking={\"type\": \"enabled\", \"budget_tokens\": 1024}\n)"
+    },
+    "system_prompts": {
+      "description": "System message sets behavior, constraints, format",
+      "structure": "Role, capabilities, constraints, format, examples",
+      "when_to_use": "All Claude API calls",
+      "best_practices": [
+        "Be specific",
+        "Include constraints",
+        "Use XML for structure",
+        "Keep under 2000 tokens when possible"
+      ],
+      "use_when": "All Claude API calls",
+      "code_example": "# Implement system_prompts per anthropic-patterns patterns\n# See description and related documentation"
+    },
+    "structured_output": {
+      "description": "Request JSON or XML output; use tool with schema for validation",
+      "approaches": [
+        "Response format in prompt",
+        "Tool with schema returning parsed output",
+        "XML tags in prompt"
+      ],
+      "when_to_use": "APIs, data extraction, pipelines",
+      "best_practices": [
+        "Provide schema",
+        "Validate output",
+        "Handle parse failures"
+      ],
+      "use_when": "APIs, data extraction, pipelines",
+      "code_example": "\n# Use tool with schema for structured output\ntools = [{\n    \"name\": \"format_response\",\n    \"input_schema\": {\"type\": \"object\", \"properties\": {\"result\": {\"type\": \"string\"}}}\n}]"
+    },
+    "safety_patterns": {
+      "description": "Content filtering, refusals, and jailbreak resistance",
+      "mechanisms": [
+        "Refusal on unsafe content",
+        "Content filtering",
+        "System prompt guardrails"
+      ],
+      "when_to_use": "Production, user-facing systems",
+      "best_practices": [
+        "Handle refusals gracefully",
+        "Log for policy review",
+        "Don't bypass safety"
+      ],
+      "use_when": "Production, user-facing systems",
+      "code_example": "# Implement safety_patterns per anthropic-patterns patterns\n# See description and related documentation"
+    },
+    "streaming": {
+      "description": "Stream tokens for incremental responses",
+      "api": "stream=true; event types: message_start, content_block_start, content_block_delta, content_block_stop",
+      "when_to_use": "UX, long responses, chat",
+      "best_practices": [
+        "Handle partial tool_calls",
+        "Reassemble deltas",
+        "Manage cancellation"
+      ],
+      "use_when": "UX, long responses, chat",
+      "code_example": "# Implement streaming per anthropic-patterns patterns\n# See description and related documentation"
+    },
+    "context_window": {
+      "description": "Large context (200K tokens); manage truncation",
+      "considerations": [
+        "Summarize when needed",
+        "Prioritize recent content",
+        "Token counting"
+      ],
+      "when_to_use": "Long documents, conversations",
+      "best_practices": [
+        "Monitor usage",
+        "Implement summarization",
+        "Use retrieval for very long docs"
+      ],
+      "use_when": "Long documents, conversations",
+      "code_example": "# Implement context_window per anthropic-patterns patterns\n# See description and related documentation"
+    },
+    "multi_turn": {
+      "description": "Conversation with full history; turn-taking",
+      "structure": "messages: [Human, Assistant, Human, ...]. Include full history",
+      "when_to_use": "Chat, agents, iterative refinement",
+      "best_practices": [
+        "Summarize when history is long",
+        "Include tool results in history",
+        "Handle state across turns"
+      ],
+      "use_when": "Chat, agents, iterative refinement",
+      "code_example": "# Implement multi_turn per anthropic-patterns patterns\n# See description and related documentation"
+    }
+  },
+  "advanced_tool_use": {
+    "tool_search": {
+      "description": "Tool Search Tool enables Claude to discover tools on-demand instead of preloading all tool definitions",
+      "problem_solved": "Multi-server MCP setups can have 50K-134K+ tokens of tool definitions, causing context bloat and wrong-tool errors",
+      "when_to_use": "Large tool catalogs (100+ tools), MCP integrations with many servers",
+      "code_example": "# Tool Search Tool pattern\n# Instead of loading all tool definitions upfront:\n\n# 1. Define a tool_search tool\ntool_search = {\n    'name': 'tool_search',\n    'description': 'Search for available tools by capability or name',\n    'input_schema': {\n        'type': 'object',\n        'properties': {\n            'query': {'type': 'string', 'description': 'What capability you need'},\n            'max_results': {'type': 'integer', 'default': 5}\n        },\n        'required': ['query']\n    }\n}\n\n# 2. Implement tool discovery\ndef execute_tool_search(query: str, max_results: int = 5) -> list:\n    # Search tool registry by semantic similarity or keyword match\n    matching_tools = tool_registry.search(query, limit=max_results)\n    return [{'name': t.name, 'description': t.description, 'schema': t.input_schema} for t in matching_tools]\n\n# 3. Claude calls tool_search first, then uses discovered tools",
+      "best_practices": [
+        "Index tool descriptions for semantic search",
+        "Return only top-k relevant tools to minimize context",
+        "Cache frequently used tool combinations",
+        "Include tool examples in search results for better selection"
+      ]
+    },
+    "programmatic_tool_calling": {
+      "description": "Execute tools via code generation instead of per-call JSON tool_use blocks",
+      "problem_solved": "Each tool call requires full NL inference pass; intermediate results fill context window",
+      "when_to_use": "Batch operations, loops over data, complex multi-tool workflows",
+      "code_example": "# Programmatic Tool Calling pattern (used in Claude for Excel)\n# Claude generates code that orchestrates tool calls\n\n# 1. Define tools as callable functions\ntools_code = '''\ndef read_cell(sheet: str, cell: str) -> str:\n    \"\"\"Read value from spreadsheet cell\"\"\"\n    return spreadsheet.get(sheet, cell)\n\ndef write_cell(sheet: str, cell: str, value: str) -> bool:\n    \"\"\"Write value to spreadsheet cell\"\"\"\n    return spreadsheet.set(sheet, cell, value)\n\ndef sum_range(sheet: str, start: str, end: str) -> float:\n    \"\"\"Sum values in cell range\"\"\"\n    return spreadsheet.sum_range(sheet, start, end)\n'''\n\n# 2. Claude generates orchestration code\ngenerated_code = '''\n# Process all rows in column A\nfor row in range(1, 100):\n    value = read_cell('Sheet1', f'A{row}')\n    if value:\n        result = float(value) * 1.1\n        write_cell('Sheet1', f'B{row}', str(result))\n'''\n\n# 3. Execute generated code in sandbox\nsandbox.execute(generated_code, available_functions=[read_cell, write_cell, sum_range])",
+      "best_practices": [
+        "Execute generated code in sandboxed environment",
+        "Provide type hints and docstrings for available functions",
+        "Limit execution time and resource usage",
+        "Log all tool invocations within code execution",
+        "Validate generated code before execution"
+      ]
+    },
+    "tool_use_examples": {
+      "description": "Provide example tool calls to teach Claude conventions beyond JSON schemas",
+      "problem_solved": "Schemas can't express optional/conditional parameter usage, ordering preferences, or common patterns",
+      "when_to_use": "Complex tools with nuanced usage, tools with many optional parameters",
+      "code_example": "# Tool Use Examples pattern\n\ntool_with_examples = {\n    'name': 'search_database',\n    'description': 'Search records with filters and sorting',\n    'input_schema': {\n        'type': 'object',\n        'properties': {\n            'query': {'type': 'string'},\n            'filters': {'type': 'object'},\n            'sort_by': {'type': 'string'},\n            'limit': {'type': 'integer'}\n        },\n        'required': ['query']\n    },\n    # Add examples to teach usage patterns\n    'examples': [\n        {\n            'description': 'Simple keyword search',\n            'input': {'query': 'customer orders', 'limit': 10}\n        },\n        {\n            'description': 'Filtered search with date range',\n            'input': {\n                'query': 'invoices',\n                'filters': {'date_from': '2024-01-01', 'status': 'pending'},\n                'sort_by': 'amount_desc',\n                'limit': 50\n            }\n        },\n        {\n            'description': 'Complex multi-condition filter',\n            'input': {\n                'query': 'products',\n                'filters': {'category': ['electronics', 'accessories'], 'price_min': 100}\n            }\n        }\n    ]\n}\n\n# Include examples in system prompt or tool definition\nsystem_prompt = f'''Use the search_database tool. Examples:\n{json.dumps(tool_with_examples['examples'], indent=2)}'''",
+      "best_practices": [
+        "Provide 2-4 diverse examples covering common use cases",
+        "Include examples for edge cases and optional parameters",
+        "Show examples of what NOT to do if relevant",
+        "Keep examples concise but complete"
+      ]
+    },
+    "computer_use": {
+      "description": "Claude can interact with computer interfaces via screenshot analysis and action generation",
+      "when_to_use": "UI automation, testing, accessibility tasks, legacy system integration",
+      "code_example": "# Computer Use tool pattern\n\ncomputer_use_tools = [\n    {\n        'name': 'computer',\n        'type': 'computer_20241022',\n        'display_width_px': 1920,\n        'display_height_px': 1080\n    }\n]\n\n# Claude can perform actions:\n# - screenshot: capture current screen\n# - click: click at coordinates\n# - type: enter text\n# - scroll: scroll up/down\n# - key: press keyboard shortcuts\n\nresponse = client.messages.create(\n    model='claude-3-5-sonnet-20241022',\n    messages=[{'role': 'user', 'content': 'Open the settings app and enable dark mode'}],\n    tools=computer_use_tools,\n    betas=['computer-use-2024-10-22']\n)\n\n# Process tool calls\nfor block in response.content:\n    if block.type == 'tool_use' and block.name == 'computer':\n        action = block.input.get('action')\n        if action == 'screenshot':\n            screenshot = take_screenshot()\n            # Send screenshot back to Claude\n        elif action == 'click':\n            x, y = block.input['coordinate']\n            click_at(x, y)\n        elif action == 'type':\n            type_text(block.input['text'])",
+      "best_practices": [
+        "Always require human approval for destructive actions",
+        "Implement timeout and cancellation mechanisms",
+        "Log all actions for audit and debugging",
+        "Use in sandboxed or test environments first",
+        "Combine with screenshot verification after actions"
+      ]
+    },
+    "mcp_integration": {
+      "description": "Connect Claude to external tools via Model Context Protocol (MCP)",
+      "when_to_use": "Accessing files, databases, APIs, or any external resources through standardized protocol",
+      "code_example": "# MCP integration with Claude Agent SDK\n\nfrom anthropic import Anthropic\nfrom anthropic.types import MCPServerConfig\n\nclient = Anthropic()\n\n# Configure MCP servers\nmcp_servers = [\n    MCPServerConfig(\n        name='filesystem',\n        command='npx',\n        args=['-y', '@anthropic/mcp-filesystem', '/allowed/path']\n    ),\n    MCPServerConfig(\n        name='github',\n        command='npx', \n        args=['-y', '@anthropic/mcp-github'],\n        env={'GITHUB_TOKEN': os.environ['GITHUB_TOKEN']}\n    )\n]\n\n# Agent SDK configuration\nfrom anthropic.agent import Agent\n\nagent = Agent(\n    client=client,\n    model='claude-3-5-sonnet-20241022',\n    mcp_servers=mcp_servers,\n    allowed_tools=['mcp__filesystem__*', 'mcp__github__read_*']  # Wildcards for permissions\n)\n\n# MCP tool names follow pattern: mcp__<server>__<tool>\nresult = await agent.query('Read the README.md file and summarize it')",
+      "best_practices": [
+        "Use allowed_tools wildcards to restrict MCP tool access",
+        "Configure environment variables securely for MCP servers",
+        "Prefer Streamable HTTP over SSE for new MCP servers (SSE deprecated)",
+        "Use stdio transport for local single-user processes",
+        "Implement error handling for MCP server failures"
+      ]
+    },
+    "token_optimization": {
+      "description": "Reduce token usage in tool-heavy workflows",
+      "problem_solved": "50K-134K+ token overhead from tool definitions in multi-server setups",
+      "when_to_use": "Cost optimization, context window management, large tool catalogs",
+      "strategies": [
+        {
+          "name": "Lazy tool loading",
+          "description": "Only load tool definitions when Claude needs them via Tool Search",
+          "impact": "60-80% token reduction"
+        },
+        {
+          "name": "Programmatic tool calling",
+          "description": "Generate code that calls tools instead of per-call JSON",
+          "impact": "90% reduction for batch operations"
+        },
+        {
+          "name": "Tool result summarization",
+          "description": "Summarize large tool results before returning to Claude",
+          "impact": "Variable, depends on result size"
+        },
+        {
+          "name": "Ephemeral tool definitions",
+          "description": "Include minimal schema, expand on demand",
+          "impact": "40-60% token reduction"
+        }
+      ],
+      "best_practices": [
+        "Measure baseline token usage before optimization",
+        "Use Tool Search for catalogs > 20 tools",
+        "Summarize tool results > 1000 tokens",
+        "Cache tool combinations for common workflows",
+        "Monitor p95 latency alongside token savings"
+      ]
+    }
+  },
+  "best_practices": [
+    "Provide clear tool descriptions",
+    "Handle tool errors gracefully",
+    "Limit tool use per turn",
+    "Use for reasoning-heavy tasks",
+    "Parse thinking separately if needed",
+    "Monitor latency",
+    "Be specific",
+    "Include constraints",
+    "Use Tool Search for tool catalogs with 20+ tools to reduce token overhead",
+    "Use Programmatic Tool Calling for batch operations to reduce context usage by 90%",
+    "Provide Tool Use Examples for complex tools with nuanced parameter usage",
+    "Require human approval for Computer Use actions that modify state",
+    "Use MCP allowed_tools wildcards to enforce least-privilege access",
+    "Summarize tool results larger than 1000 tokens before returning to Claude"
+  ],
+  "anti_patterns": [
+    "Applying patterns without understanding the underlying concepts",
+    "Copy-pasting solutions without adapting to specific context",
+    "Over-engineering simple problems with complex patterns",
+    "Loading all 100+ tool definitions upfront instead of using Tool Search",
+    "Making individual tool calls in loops instead of using Programmatic Tool Calling",
+    "Allowing unrestricted MCP tool access without allowed_tools filtering",
+    "Running Computer Use without human oversight for destructive actions"
+  ],
+  "sources": [
+    "https://www.anthropic.com/engineering/advanced-tool-use",
+    "https://docs.anthropic.com/en/docs/agents-and-tools/mcp",
+    "https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/overview",
+    "https://platform.claude.com/docs/en/agent-sdk/mcp"
+  ]
+}

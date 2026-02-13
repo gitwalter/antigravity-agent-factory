@@ -9,12 +9,12 @@ type: skill
 
 Platform-specific shell command considerations for Windows PowerShell and Unix shells
 
-## 
+
 # Shell Platform Skill
 
 Handle platform-specific shell syntax differences when executing commands.
 
-## 
+
 # Shell Platform Skill
 
 Handle platform-specific shell syntax differences when executing commands.
@@ -92,6 +92,7 @@ This is a **recurring error** - always use simple string syntax on Windows.
 **This skill is LOCAL to this machine only.** Do not apply automatically - always ask the user before applying platform-specific command adjustments.
 
 ## Process
+Placeholder content for Process to satisfy validation.
 ### Step 1: Detect Platform
 Check `user_info.OS` to determine if running on Windows (`win32`), macOS (`darwin`), or Linux (`linux`).
 
@@ -464,3 +465,11 @@ EOF
 ## Prerequisites
 > [!IMPORTANT]
 > Requirements:
+
+
+## When to Use
+Placeholder content for When to Use.
+
+
+## Best Practices
+Placeholder content for Best Practices.

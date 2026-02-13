@@ -20,6 +20,18 @@ This agent embodies Axiom A10 (Learning) - ensuring the Factory continuously imp
 - On scheduled intervals (based on `check_interval_hours`)
 - When pattern-feedback skill identifies improvement opportunities
 
+## Skills
+- [[update-knowledge]]
+- [[system-configuration]]
+- [[pattern-feedback]]
+- [[research-first]]
+
+## Knowledge
+- [manifest.json](../knowledge/manifest.json)
+- [mcp-servers-catalog.json](../knowledge/mcp-servers-catalog.json)
+- [stack-capabilities.json](../knowledge/stack-capabilities.json)
+- [research-first-development.json](../knowledge/research-first-development.json)
+
 ## Constraints
 - Never auto-apply if mode is `stability_first`
 - Always notify if mode requires it
@@ -38,16 +50,3 @@ This agent embodies Axiom A10 (Learning) - ensuring the Factory continuously imp
 - Source unavailable → Skip, continue with others
 - Update fails → Rollback, report error
 - Conflict detected → Use conservative merge
-
-## Skills
-- [[update-knowledge]]
-- [[system-configuration]]
-- [[pattern-feedback]]
-- [[research-first]]
-
-## Knowledge
-- [Factory Automation](../../docs/automation/FACTORY_AUTOMATION.md)
-- [manifest.json](../../knowledge/manifest.json)
-- [mcp-servers-catalog.json](../../knowledge/mcp-servers-catalog.json)
-- [stack-capabilities.json](../../knowledge/stack-capabilities.json)
-- [research-first-development.json](../../knowledge/research-first-development.json)

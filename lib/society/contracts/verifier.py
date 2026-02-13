@@ -5,7 +5,7 @@ Verifies agent messages and actions against contracts.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 import logging
@@ -98,7 +98,7 @@ class Message:
     """
     action: str
     payload: Dict[str, Any] = field(default_factory=dict)
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class ContractVerifier:
@@ -296,7 +296,7 @@ class ContractVerifier:
         if key not in self._obligation_trackers:
             self._obligation_trackers[key] = {}
         
-        self._obligation_trackers[key][trigger] = datetime.utcnow()
+        self._obligation_trackers[key][trigger] = datetime.now(timezone.utc)
         logger.debug(f"Tracked obligation trigger: {trigger} for {agent_id}")
     
     def fulfill_obligation(
@@ -368,7 +368,7 @@ class ContractVerifier:
                 # Check if timeout exceeded
                 triggered_at = tracked[obligation.trigger]
                 timeout_ms = obligation.parameters.get("timeout_ms", 30000)
-                elapsed_ms = (datetime.utcnow() - triggered_at).total_seconds() * 1000
+                elapsed_ms = (datetime.now(timezone.utc) - triggered_at).total_seconds() * 1000
                 
                 if elapsed_ms > timeout_ms:
                     pending.append(obligation)

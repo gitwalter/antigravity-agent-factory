@@ -1,33 +1,82 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "sap-ewm-patterns",
+  "title": "SAP EWM Patterns",
   "name": "SAP EWM Patterns",
   "description": "Extended Warehouse Management structure, movements, MM/SD integration. Embedded EWM in S/4HANA.",
   "version": "1.0.0",
-  "category": "patterns",
+  "category": "sap",
+  "axiomAlignment": {
+    "A1_verifiability": "Warehouse tasks, movements, and stock data enable traceable verification via SAP Help",
+    "A2_user_primacy": "Task confirmation and warehouse operations support user-driven workflows",
+    "A3_transparency": "Explicit structure (warehouse number, storage type, bin) documents warehouse flow",
+    "A4_non_harm": "Synchronous posting and MM/SD integration ensure correct stock and audit trails",
+    "A5_consistency": "Unified EWM-MM synchronization patterns across embedded and decentralized deployments"
+  },
+  "related_skills": [
+    "s4-process-guide"
+  ],
+  "related_knowledge": [
+    "sap-mm-patterns.json",
+    "sap-sd-patterns.json",
+    "sap-logistics-chain.json"
+  ],
   "patterns": {
     "warehouse_structure": {
       "description": "Warehouse number, storage type, storage bin",
       "concepts": {
         "warehouseStructure": "Warehouse number, storage type, storage bin"
-      }
+      },
+      "use_when": "When implementing warehouse_structure or when Warehouse number, storage type, storage bin",
+      "code_example": "SELECT * FROM /SCWM/ORDAT WHERE whse = @lv_whse FOR ALL ENTRIES IN @lt_matnr",
+      "best_practices": [
+        "Use embedded EWM in S/4HANA for unified data model",
+        "Synchronize warehouse tasks with MM movements",
+        "Verify table/field via SAP Help MCP",
+        "Consider deployment model (embedded vs decentralized) based on requirements"
+      ]
     },
     "movements": {
       "description": "Goods movements MM \u2194 EWM; synchronous posting in embedded EWM S/4HANA",
       "concepts": {
         "movements": "Goods movements MM \u2194 EWM; synchronous posting in embedded EWM S/4HANA"
-      }
+      },
+      "use_when": "When implementing movements or when Goods movements MM \u2194 EWM; synchronous posting in embedded EWM S/4HANA",
+      "code_example": "SELECT * FROM /SCWM/ORDAT WHERE whse = @lv_whse FOR ALL ENTRIES IN @lt_matnr",
+      "best_practices": [
+        "Use embedded EWM in S/4HANA for unified data model",
+        "Synchronize warehouse tasks with MM movements",
+        "Verify table/field via SAP Help MCP",
+        "Consider deployment model (embedded vs decentralized) based on requirements"
+      ]
     },
     "warehouse_tasks": {
       "description": "Confirm warehouse tasks; EWM replicates to S/4 for stock",
       "concepts": {
         "warehouseTasks": "Confirm warehouse tasks; EWM replicates to S/4 for stock"
-      }
+      },
+      "use_when": "When implementing warehouse_tasks or when Confirm warehouse tasks; EWM replicates to S/4 for stock",
+      "code_example": "SELECT * FROM /SCWM/ORDAT WHERE whse = @lv_whse FOR ALL ENTRIES IN @lt_matnr",
+      "best_practices": [
+        "Use embedded EWM in S/4HANA for unified data model",
+        "Synchronize warehouse tasks with MM movements",
+        "Verify table/field via SAP Help MCP",
+        "Consider deployment model (embedded vs decentralized) based on requirements"
+      ]
     },
     "integration": {
       "description": "Integration with MM (inventory management) and SD (outbound delivery)",
       "integration": [
         "MM (inventory management)",
         "SD (outbound delivery)"
+      ],
+      "use_when": "When implementing integration or when Integration with MM (inventory management) and SD (outbound delivery)",
+      "code_example": "SELECT * FROM /SCWM/ORDAT WHERE whse = @lv_whse FOR ALL ENTRIES IN @lt_matnr",
+      "best_practices": [
+        "Use embedded EWM in S/4HANA for unified data model",
+        "Synchronize warehouse tasks with MM movements",
+        "Verify table/field via SAP Help MCP",
+        "Consider deployment model (embedded vs decentralized) based on requirements"
       ]
     },
     "deployment": {
@@ -35,7 +84,65 @@
       "deployment": {
         "embedded": "EWM embedded in S/4HANA",
         "decentralized": "Decentral EWM (different feature set)"
-      }
+      },
+      "use_when": "When implementing deployment or when EWM deployment options: embedded in S/4HANA or decentralized",
+      "code_example": "SELECT * FROM /SCWM/ORDAT WHERE whse = @lv_whse FOR ALL ENTRIES IN @lt_matnr",
+      "best_practices": [
+        "Use embedded EWM in S/4HANA for unified data model",
+        "Synchronize warehouse tasks with MM movements",
+        "Verify table/field via SAP Help MCP",
+        "Consider deployment model (embedded vs decentralized) based on requirements"
+      ]
+    },
+    "wave_management": {
+      "description": "Wave creation and release supported with Kanban in embedded EWM. Group pick tasks into waves for execution.",
+      "use_when": "When planning pick waves or using Kanban for wave-driven warehouse execution in embedded EWM.",
+      "code_example": "Create wave via /SCWM/WAVE; release wave for execution; assign to work center. Kanban controls wave triggering.",
+      "best_practices": [
+        "Use Kanban for wave creation triggers in embedded EWM",
+        "Release waves when warehouse capacity is available",
+        "Verify wave-template configuration in SPRO"
+      ]
+    },
+    "yard_management": {
+      "description": "Track transportation unit status and movements. Integrate with freight order management for inbound/outbound.",
+      "use_when": "When tracking TU status, dock assignments, or integrating yard operations with freight orders.",
+      "code_example": "Query /SCWM/YARD* tables for TU status; create yard movements; link to freight order (FO) document.",
+      "best_practices": [
+        "Maintain TU status in real time for yard visibility",
+        "Integrate yard movements with freight order lifecycle",
+        "Use yard planning for dock congestion reduction"
+      ]
+    },
+    "cross_docking": {
+      "description": "Core advanced process: flow-through without putaway. Allocation table integration for retail.",
+      "use_when": "When implementing flow-through or cross-dock flows with retail allocation tables.",
+      "code_example": "Configure cross-dock process type; link to allocation table; use /SCWM/ORDAT for inbound-outbound link.",
+      "best_practices": [
+        "Plan cross-dock lanes based on allocation table rules",
+        "Minimize putaway for flow-through items",
+        "Verify allocation table integration for retail scenarios"
+      ]
+    },
+    "rf_framework": {
+      "description": "Optimized scan-intensive work. Offline behavior with store-and-forward and retries. Screen optimization.",
+      "use_when": "When implementing RF/mobile work or optimizing scan-intensive warehouse operations.",
+      "code_example": "Use RF framework transactions; configure offline mode; implement retry logic for connectivity loss.",
+      "best_practices": [
+        "Optimize RF screens for minimal keystrokes",
+        "Configure store-and-forward for offline resilience",
+        "Use batch processing for RF transaction posting"
+      ]
+    },
+    "embedded_analytics": {
+      "description": "Warehouse Management Monitor. Aging putaway, hot orders, dock congestion analytics.",
+      "use_when": "When monitoring warehouse KPIs, aging stock, or operational bottlenecks.",
+      "code_example": "Use /SCWM/MON for Warehouse Management Monitor; analyze aging putaway, hot orders, dock congestion.",
+      "best_practices": [
+        "Monitor aging putaway for process improvement",
+        "Track hot orders for SLA compliance",
+        "Use dock congestion metrics for resource planning"
+      ]
     }
   },
   "best_practices": [
@@ -55,8 +162,5 @@
       "problem": "EWM stock not replicated to S/4",
       "fix": "Always confirm warehouse tasks to update stock"
     }
-  ],
-  "related_skills": [
-    "s4-process-guide"
   ]
 }

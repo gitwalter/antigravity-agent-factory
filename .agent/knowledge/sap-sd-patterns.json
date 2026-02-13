@@ -1,9 +1,26 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "sap-sd-patterns",
+  "title": "SAP SD Patterns",
   "name": "SAP SD Patterns",
   "description": "Sales & Distribution document flow, tables, billing. S/4 on-prem and R/3/ECC.",
   "version": "1.0.0",
-  "category": "patterns",
+  "category": "sap",
+  "axiomAlignment": {
+    "A1_verifiability": "Document flow (VA\u2192VL\u2192VF) and table structure enable traceable order-to-cash verification",
+    "A2_user_primacy": "Sales order and billing flow support user-driven business processes",
+    "A3_transparency": "Explicit tables (VBAK, VBAP, VBRK, VBRP) document document structure",
+    "A4_non_harm": "Status checks and FI integration ensure correct revenue recognition",
+    "A5_consistency": "Unified document flow and table usage across SD scenarios"
+  },
+  "related_skills": [
+    "s4-process-guide",
+    "sap-integration"
+  ],
+  "related_knowledge": [
+    "sap-fi-patterns.json",
+    "sap-btp-patterns.json"
+  ],
   "patterns": {
     "sales_document": {
       "description": "Sales document header and items",
@@ -29,7 +46,15 @@
         "VBEP": {
           "purpose": "Schedule lines"
         }
-      }
+      },
+      "use_when": "When implementing sales_document or when Sales document header and items",
+      "code_example": "SELECT * FROM VBAK WHERE ... FOR ALL ENTRIES IN @lt_keys. Related: VBAP, VBUK",
+      "best_practices": [
+        "Follow document flow: Sales Order (VA) \u2192 Delivery (VL) \u2192 Billing (VF)",
+        "Use VBAK/VBAP for sales orders",
+        "Use VBRK/VBRP for billing documents",
+        "Verify table/field via SAP Help MCP"
+      ]
     },
     "billing": {
       "description": "Billing document header and items",
@@ -40,7 +65,15 @@
         "VBRP": {
           "purpose": "Billing item"
         }
-      }
+      },
+      "use_when": "When implementing billing or when Billing document header and items",
+      "code_example": "SELECT * FROM VBRK WHERE ... FOR ALL ENTRIES IN @lt_keys. Related: VBRP",
+      "best_practices": [
+        "Follow document flow: Sales Order (VA) \u2192 Delivery (VL) \u2192 Billing (VF)",
+        "Use VBAK/VBAP for sales orders",
+        "Use VBRK/VBRP for billing documents",
+        "Verify table/field via SAP Help MCP"
+      ]
     },
     "document_flow": {
       "description": "SD document flow: Sales Order \u2192 Delivery \u2192 Billing",
@@ -48,12 +81,91 @@
         "VA": "Sales order",
         "VL": "Delivery",
         "VF": "Billing"
-      }
+      },
+      "use_when": "When implementing document_flow or when SD document flow: Sales Order \u2192 Delivery \u2192 Billing",
+      "code_example": "SELECT * FROM vbak WHERE vbeln = @lv_vbeln\nSELECT * FROM vbap WHERE vbeln = @lv_vbeln",
+      "best_practices": [
+        "Follow document flow: Sales Order (VA) \u2192 Delivery (VL) \u2192 Billing (VF)",
+        "Use VBAK/VBAP for sales orders",
+        "Use VBRK/VBRP for billing documents",
+        "Verify table/field via SAP Help MCP"
+      ]
     },
     "integration": {
       "description": "Integration with FI for billing and revenue",
       "integration": [
         "FI (billing, revenue)"
+      ],
+      "use_when": "When implementing integration or when Integration with FI for billing and revenue",
+      "code_example": "SELECT * FROM vbak WHERE vbeln = @lv_vbeln\nSELECT * FROM vbap WHERE vbeln = @lv_vbeln",
+      "best_practices": [
+        "Follow document flow: Sales Order (VA) \u2192 Delivery (VL) \u2192 Billing (VF)",
+        "Use VBAK/VBAP for sales orders",
+        "Use VBRK/VBRP for billing documents",
+        "Verify table/field via SAP Help MCP"
+      ]
+    },
+    "pricing_procedure": {
+      "description": "Gross price, freight, discount, surcharges, taxes. Condition types, access sequences, schema groups, condition records.",
+      "use_when": "Configuring or extending pricing logic for sales documents, billing, or rebates.",
+      "code_example": "VK13 condition records. KOMP/KOMK for pricing. Routine in 906/907 for custom logic.",
+      "best_practices": [
+        "Define condition types with clear calculation bases and plus/minus signs",
+        "Use access sequences to control source priority (manual, info record, contract)"
+      ]
+    },
+    "availability_check": {
+      "description": "Standard ATP at plant/storage location. Plant determination. aATP: large orders, Alternative-Based Confirmation (ABC). S/4HANA 1909+.",
+      "use_when": "ATP configuration, backorder processing, or S/4HANA advanced ATP.",
+      "code_example": "COVB for ATP. aATP: S4H_ATP, alternative-based confirmation. Check VBEP-KETMG.",
+      "best_practices": [
+        "Use standard ATP for simple cases; enable aATP for complex allocation scenarios",
+        "Configure plant determination rules before ATP to avoid wrong plant checks"
+      ]
+    },
+    "credit_management": {
+      "description": "FIN-FSCM-CR replaces FI-AR-CR. Auto checks at order/delivery/GI. Documented Credit Decision (DCD) with workflow.",
+      "use_when": "Credit limit checks, block reasons, or credit decision workflow.",
+      "code_example": "Credit segment BUPA. Credit check in VOV8. DCD workflow for approvals.",
+      "best_practices": [
+        "Migrate from FI-AR-CR to FIN-FSCM-CR for S/4HANA; use DCD for audit trail",
+        "Define credit check points (order, delivery, GI) per risk class"
+      ]
+    },
+    "output_determination": {
+      "description": "Condition-based output (forms, emails, EDI). Output types, access sequences, procedures.",
+      "use_when": "Order confirmations, delivery notes, invoices, or EDI output.",
+      "code_example": "NAST for output log. V/08 output determination. NAST-VSTAT for status.",
+      "best_practices": [
+        "Use output determination procedures and access sequences for flexible routing",
+        "Maintain condition records per output type for doc type/sales org/customer combinations"
+      ]
+    },
+    "copy_control": {
+      "description": "Data flow between doc types (order\u2192delivery\u2192billing). Requirements and data transfer routines.",
+      "use_when": "Configuring or extending copy rules for new doc types or fields.",
+      "code_example": "VTLA/VTFA copy control. Requirements routine 615. Data transfer routine 601.",
+      "best_practices": [
+        "Use requirements in copy control to control when data transfers",
+        "Define data transfer routines for custom field flow between documents"
+      ]
+    },
+    "returns_complaints": {
+      "description": "Returns orders, credit/debit memos, returns delivery, subsequent processing.",
+      "use_when": "Customer returns, complaints, or credit memo scenarios.",
+      "code_example": "RE (returns order), RV (returns delivery). Credit memo RE. Subsequent debit/credit.",
+      "best_practices": [
+        "Use returns order doc type (RE) linked to original order for traceability",
+        "Process returns delivery before credit memo for stock and revenue accuracy"
+      ]
+    },
+    "retail_sd": {
+      "description": "POS integration, rebate (settlement management), listing/exclusion for retail.",
+      "use_when": "Retail sales, POS data, or settlement management rebates.",
+      "code_example": "POS inbound (BDC). Listing/exclusion in article master. Rebate settlement (Settlement Management).",
+      "best_practices": [
+        "Use Settlement Management for rebate agreements and periodic settlement",
+        "Configure listing/exclusion at article-site level for assortment control"
       ]
     }
   },
@@ -81,8 +193,5 @@
       "problem": "Missing revenue recognition",
       "fix": "Ensure billing documents (VBRK/VBRP) link to sales orders (VBAK/VBAP)"
     }
-  ],
-  "related_skills": [
-    "s4-process-guide"
   ]
 }

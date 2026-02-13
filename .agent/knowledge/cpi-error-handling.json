@@ -1,4 +1,28 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "cpi-error-handling",
+  "name": "Cpi Error Handling",
+  "title": "CPI Error Handling Patterns",
+  "description": "Exception handling, retry strategies, and error routing patterns for SAP CPI",
+  "version": "1.0.0",
+  "category": "sap",
+  "axiomAlignment": {
+    "A1_verifiability": "Exception subprocesses and correlation IDs enable traceable error handling",
+    "A2_user_primacy": "Proper error handling preserves message integrity and supports reprocessing",
+    "A3_transparency": "Explicit error categories and routing make failure handling auditable",
+    "A4_non_harm": "Circuit breaker and retry strategies prevent cascading failures",
+    "A5_consistency": "Unified error handling patterns across CPI flows ensure predictable behavior"
+  },
+  "related_skills": [
+    "cpi-error-handling",
+    "cpi-integration-flow",
+    "cpi-groovy-scripting"
+  ],
+  "related_knowledge": [
+    "b2b-patterns.json",
+    "mapping-patterns.json",
+    "error-handling-patterns.json"
+  ],
   "metadata": {
     "name": "CPI Error Handling Patterns",
     "description": "Exception handling, retry strategies, and error routing patterns for SAP CPI",
@@ -156,33 +180,69 @@
       "strategy": "Return business error response"
     }
   },
-  "bestPractices": [
-    "Always implement exception subprocess for production flows",
-    "Use correlation IDs for end-to-end tracing",
-    "Log sufficient context for debugging",
-    "Distinguish between retryable and non-retryable errors",
-    "Set proper alerts for critical errors",
-    "Use dead letter queues for message preservation",
-    "Implement idempotency for retry scenarios",
-    "Monitor error rates and patterns",
-    "Document error handling in flow documentation",
-    "Test error scenarios during development"
+  "best_practices": [
+    "Always implement exception subprocess for production flows - never let errors go unhandled",
+    "Use correlation IDs for end-to-end tracing - propagate correlation ID through all integration steps",
+    "Log sufficient context for debugging - include message ID, step name, error type, and business context",
+    "Distinguish between retryable and non-retryable errors - implement different handling strategies",
+    "Set proper alerts for critical errors - configure email/Slack notifications for business-critical failures",
+    "Use dead letter queues for message preservation - store failed messages for manual review and reprocessing",
+    "Implement idempotency for retry scenarios - use message IDs to prevent duplicate processing",
+    "Monitor error rates and patterns - set up dashboards to track error trends and identify issues early",
+    "Document error handling in flow documentation - describe error scenarios and handling strategies",
+    "Test error scenarios during development - simulate failures to verify error handling works correctly",
+    "Use exponential backoff for retries - implement increasing delays (1s, 2s, 4s, 8s) to reduce system load",
+    "Implement circuit breaker pattern - prevent cascading failures by stopping calls to failing systems"
   ],
-  "antiPatterns": [
-    "Swallowing exceptions without logging",
-    "Retrying non-retryable errors indefinitely",
-    "Not preserving original message on error",
-    "Missing correlation IDs for tracing",
-    "Logging sensitive data in error messages",
-    "Not implementing circuit breaker for external calls",
-    "Ignoring error monitoring and alerting"
+  "anti_patterns": [
+    {
+      "name": "Swallowing exceptions without logging",
+      "problem": "Hidden errors make debugging impossible and cause silent failures in production",
+      "solution": "Always log exception details with messageLog before re-throwing or routing to error handler"
+    },
+    {
+      "name": "Retrying non-retryable errors indefinitely",
+      "problem": "Retrying permanent errors (like invalid input) wastes resources and delays error notification",
+      "solution": "Categorize errors (transient vs permanent), only retry transient errors with backoff"
+    },
+    {
+      "name": "Not preserving original message on error",
+      "problem": "Lost original messages prevent reprocessing and make root cause analysis difficult",
+      "solution": "Store original message in dead letter queue or error storage before error transformation"
+    },
+    {
+      "name": "Missing correlation IDs for tracing",
+      "problem": "Without correlation IDs, tracing messages across systems and debugging issues is impossible",
+      "solution": "Generate correlation ID at flow start, propagate through all steps, include in all logs"
+    },
+    {
+      "name": "Logging sensitive data in error messages",
+      "problem": "Logging PII, passwords, or payment data violates security policies and compliance",
+      "solution": "Mask sensitive fields in logs, use placeholders for sensitive data, log only error context"
+    },
+    {
+      "name": "Not implementing circuit breaker for external calls",
+      "problem": "Continued calls to failing systems cause cascading failures and resource exhaustion",
+      "solution": "Track failure counts, open circuit after threshold, attempt recovery after timeout"
+    },
+    {
+      "name": "Ignoring error monitoring and alerting",
+      "problem": "Unmonitored errors go undetected until users report issues, causing extended downtime",
+      "solution": "Set up error rate monitoring, configure alerts for critical errors, review error patterns regularly"
+    }
   ],
-  "id": "cpi-error-handling",
-  "name": "Cpi Error Handling",
-  "version": "1.0.0",
-  "category": "patterns",
-  "description": "Knowledge patterns for cpi error handling.",
-  "patterns": {},
-  "best_practices": [],
-  "anti_patterns": []
+  "patterns": {
+    "general": {
+      "description": "Reference documentation",
+      "usage": "See detailed sections below",
+      "use_when": "When implementing general or when Reference documentation",
+      "code_example": "try {\n  def body = message.getBody(String)\n  // process\n} catch (Exception e) {\n  message.setProperty('ErrorMessage', e.message)\n  throw e\n}",
+      "best_practices": [
+        "Always implement exception subprocess for production flows - never let errors go unhandled",
+        "Use correlation IDs for end-to-end tracing - propagate correlation ID through all integration steps",
+        "Log sufficient context for debugging - include message ID, step name, error type, and business context",
+        "Distinguish between retryable and non-retryable errors - implement different handling strategies"
+      ]
+    }
+  }
 }

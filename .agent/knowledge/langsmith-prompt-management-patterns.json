@@ -1,9 +1,29 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "langsmith-prompt-management-patterns",
   "name": "LangSmith Prompt Management Patterns",
+  "title": "LangSmith Prompt Management Patterns",
   "description": "Patterns for managing prompts with LangSmith Hub including versioning, A/B testing, evaluation, and integration strategies",
   "version": "1.0.0",
-  "category": "agent-development",
+  "category": "core",
+  "axiomAlignment": {
+    "A1_verifiability": "Versioned prompts and evaluation enable verifiable prompt behavior",
+    "A2_user_primacy": "Prompt management serves user AI application goals",
+    "A3_transparency": "Hub and tracing make prompt usage and changes explicit",
+    "A4_non_harm": "Evaluation and A/B testing prevent harmful prompt deployment",
+    "A5_consistency": "Unified LangSmith patterns across versioning, evaluation, and deployment"
+  },
+  "related_skills": [
+    "langsmith-prompts",
+    "langsmith-tracing",
+    "langchain-usage",
+    "prompt-optimization"
+  ],
+  "related_knowledge": [
+    "prompt-engineering.json",
+    "llm-evaluation-patterns.json",
+    "langchain-patterns.json"
+  ],
   "patterns": {
     "hub_integration": {
       "push_prompts": {
@@ -15,16 +35,19 @@
           "Include clear descriptions",
           "Tag prompts by use case",
           "Set appropriate visibility"
-        ]
+        ],
+        "use_when": "Apply when push prompts is needed in LangSmith Prompt Management Patterns",
+        "code_example": "from langchain import hub\nfrom langchain_core.prompts import ChatPromptTemplate\n\nprompt = ChatPromptTemplate.from_messages([\n    ('system', 'You are a {role}. {instructions}'),\n    ('human', '{input}')\n])\n\nhub.push('my-org/agent-prompt', prompt, new_repo_is_public=False)"
       },
       "pull_prompts": {
         "description": "Pull prompts from Hub for use in chains",
         "pattern": "Pull prompt from Hub -> Use in chain",
         "example": "prompt = hub.pull('my-org/agent-prompt')\nprompt_v2 = hub.pull('my-org/agent-prompt:v2')\nchain = prompt | llm | parser",
-        "use_when": [
-          "Production deployments",
-          "Consistent prompt usage",
-          "Team collaboration"
+        "use_when": "Production deployments; Consistent prompt usage; Team collaboration",
+        "code_example": "prompt = hub.pull('my-org/agent-prompt')\nprompt_v2 = hub.pull('my-org/agent-prompt:v2')\nchain = prompt | llm | parser",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
         ]
       },
       "prompt_organization": {
@@ -39,8 +62,17 @@
           "Group by domain",
           "Separate dev and prod",
           "Include version numbers"
-        ]
-      }
+        ],
+        "use_when": "Apply when prompt organization is needed in LangSmith Prompt Management Patterns",
+        "code_example": "# Implement prompt_organization per langsmith-prompts-patterns patterns\n# See description and related documentation"
+      },
+      "description": "Category grouping: push_prompts, pull_prompts, prompt_organization",
+      "use_when": "Apply when hub integration patterns are needed in LangSmith Prompt Management Patterns",
+      "code_example": "# See child patterns under hub_integration for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "versioning_strategies": {
       "semantic_versioning": {
@@ -50,16 +82,19 @@
           "Increment major version for breaking changes",
           "Increment minor for additions",
           "Use tags for variants"
-        ]
+        ],
+        "use_when": "Apply when semantic versioning is needed in LangSmith Prompt Management Patterns",
+        "code_example": "# Implement semantic_versioning per langsmith-prompts-patterns patterns\n# See description and related documentation"
       },
       "version_comparison": {
         "description": "Compare prompt versions before updating",
         "pattern": "Pull current version -> Compare -> Push new version",
         "example": "current = hub.pull('my-org/agent-prompt')\n# Compare with new prompt\nhub.push('my-org/agent-prompt', new_prompt)",
-        "use_when": [
-          "Updating production prompts",
-          "Tracking changes",
-          "Review processes"
+        "use_when": "Updating production prompts; Tracking changes; Review processes",
+        "code_example": "current = hub.pull('my-org/agent-prompt')\n# Compare with new prompt\nhub.push('my-org/agent-prompt', new_prompt)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
         ]
       },
       "environment_separation": {
@@ -69,17 +104,27 @@
           "Never share dev/prod prompts",
           "Test in staging first",
           "Use environment-specific naming"
-        ]
+        ],
+        "use_when": "Apply when environment separation is needed in LangSmith Prompt Management Patterns",
+        "code_example": "# Implement environment_separation per langsmith-prompts-patterns patterns\n# See description and related documentation"
       },
       "branching_strategy": {
         "description": "Use branches for experimental prompts",
         "pattern": "main branch for stable -> feature branches for experiments",
-        "use_when": [
-          "Testing new approaches",
-          "Experimental features",
-          "Team collaboration"
+        "use_when": "Testing new approaches; Experimental features; Team collaboration",
+        "code_example": "# Implement branching_strategy per langsmith-prompts-patterns patterns\n# See description and related documentation",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
         ]
-      }
+      },
+      "description": "Category grouping: semantic_versioning, version_comparison, environment_separation, branching_strategy",
+      "use_when": "Apply when versioning strategies patterns are needed in LangSmith Prompt Management Patterns",
+      "code_example": "# See child patterns under versioning_strategies for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "ab_testing": {
       "variant_selection": {
@@ -91,7 +136,9 @@
           "Tag runs for analysis",
           "Ensure equal distribution",
           "Track metrics per variant"
-        ]
+        ],
+        "use_when": "Apply when variant selection is needed in LangSmith Prompt Management Patterns",
+        "code_example": "import random\nfrom langsmith import traceable\n\n@traceable(tags=['ab-test'])\nasync def run_with_ab_test(input_data: dict, test_name: str = 'prompt_v1_vs_v2'):\n    variant = random.choice(['control', 'treatment'])\n    if variant == 'control':\n        prompt = hub.pull('my-org/agent-prompt:v1')\n    else:\n        prompt = hub.pull('my-org/agent-prompt:v2')\n    chain = prompt | llm | parser\n    result = await chain.ainvoke(input_data)\n    return {'result': result, 'variant': variant}"
       },
       "metrics_tracking": {
         "description": "Track metrics for each variant",
@@ -102,10 +149,11 @@
           "Latency",
           "Error rates"
         ],
-        "use_when": [
-          "Comparing prompt versions",
-          "Optimizing prompts",
-          "Measuring improvements"
+        "use_when": "Comparing prompt versions; Optimizing prompts; Measuring improvements",
+        "code_example": "# Implement metrics_tracking per langsmith-prompts-patterns patterns\n# See description and related documentation",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
         ]
       },
       "statistical_analysis": {
@@ -115,8 +163,17 @@
           "Use appropriate statistical tests",
           "Consider multiple metrics",
           "Account for confounding factors"
-        ]
-      }
+        ],
+        "use_when": "Apply when statistical analysis is needed in LangSmith Prompt Management Patterns",
+        "code_example": "# Implement statistical_analysis per langsmith-prompts-patterns patterns\n# See description and related documentation"
+      },
+      "description": "Category grouping: variant_selection, metrics_tracking, statistical_analysis",
+      "use_when": "Apply when ab testing patterns are needed in LangSmith Prompt Management Patterns",
+      "code_example": "# See child patterns under ab_testing for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "evaluation_patterns": {
       "dataset_creation": {
@@ -128,7 +185,9 @@
           "Cover edge cases",
           "Include expected outputs",
           "Regularly update dataset"
-        ]
+        ],
+        "use_when": "Apply when dataset creation is needed in LangSmith Prompt Management Patterns",
+        "code_example": "from langsmith import Client\n\nclient = Client()\ndataset = client.create_dataset('prompt-eval')\nclient.create_example(\n    dataset_id=dataset.id,\n    inputs={'input': 'What is Python?'},\n    outputs={'expected': 'Python is a programming language...'}\n)"
       },
       "evaluator_functions": {
         "description": "Define evaluators to measure prompt effectiveness",
@@ -143,16 +202,19 @@
           "Use LLM-based evaluators for complex metrics",
           "Combine multiple evaluators",
           "Validate evaluator accuracy"
-        ]
+        ],
+        "use_when": "Apply when evaluator functions is needed in LangSmith Prompt Management Patterns",
+        "code_example": "def relevance_evaluator(run, example):\n    output = run.outputs.get('output', '')\n    expected = example.outputs.get('expected', '')\n    overlap = len(set(output.split()) & set(expected.split()))\n    return {'score': min(overlap / 10, 1.0)}"
       },
       "evaluation_execution": {
         "description": "Run evaluations on prompt datasets",
         "pattern": "Load dataset -> Run chain -> Evaluate -> Analyze results",
         "example": "from langsmith.evaluation import evaluate\n\nresults = evaluate(\n    lambda x: chain.invoke(x),\n    data='prompt-eval',\n    evaluators=[relevance_evaluator]\n)",
-        "use_when": [
-          "Regression testing",
-          "Prompt optimization",
-          "Quality assurance"
+        "use_when": "Regression testing; Prompt optimization; Quality assurance",
+        "code_example": "from langsmith.evaluation import evaluate\n\nresults = evaluate(\n    lambda x: chain.invoke(x),\n    data='prompt-eval',\n    evaluators=[relevance_evaluator]\n)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
         ]
       },
       "continuous_evaluation": {
@@ -163,18 +225,28 @@
           "Set quality thresholds",
           "Alert on degradation",
           "Track trends over time"
-        ]
-      }
+        ],
+        "use_when": "Apply when continuous evaluation is needed in LangSmith Prompt Management Patterns",
+        "code_example": "# Implement continuous_evaluation per langsmith-prompts-patterns patterns\n# See description and related documentation"
+      },
+      "description": "Category grouping: dataset_creation, evaluator_functions, evaluation_execution, continuous_evaluation",
+      "use_when": "Apply when evaluation patterns patterns are needed in LangSmith Prompt Management Patterns",
+      "code_example": "# See child patterns under evaluation_patterns for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "prompt_templates": {
       "variable_templates": {
         "description": "Create reusable prompts with variables",
         "pattern": "Define template with placeholders -> Partial application -> Use",
         "example": "prompt = ChatPromptTemplate.from_messages([\n    ('system', 'You are a {role} assistant.\\n\\nContext: {context}\\n\\nInstructions: {instructions}'),\n    ('human', '{input}')\n])\n\nanalyst_prompt = prompt.partial(\n    role='data analyst',\n    output_format='JSON with analysis and confidence keys'\n)",
-        "use_when": [
-          "Reusable prompts",
-          "Role-specific variants",
-          "Context injection"
+        "use_when": "Reusable prompts; Role-specific variants; Context injection",
+        "code_example": "prompt = ChatPromptTemplate.from_messages([\n    ('system', 'You are a {role} assistant.\\n\\nContext: {context}\\n\\nInstructions: {instructions}'),\n    ('human', '{input}')\n])\n\nanalyst_prompt = prompt.partial(\n    role='data analyst',\n    output_format='JSON with analysis and confidence keys'\n)",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
         ]
       },
       "complex_templates": {
@@ -190,8 +262,17 @@
           "Use MessagesPlaceholder for history",
           "Separate concerns clearly",
           "Make templates composable"
-        ]
-      }
+        ],
+        "use_when": "Apply when complex templates is needed in LangSmith Prompt Management Patterns",
+        "code_example": "# Implement complex_templates per langsmith-prompts-patterns patterns\n# See description and related documentation"
+      },
+      "description": "Category grouping: variable_templates, complex_templates",
+      "use_when": "Apply when prompt templates patterns are needed in LangSmith Prompt Management Patterns",
+      "code_example": "# See child patterns under prompt_templates for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "integration_patterns": {
       "chain_integration": {
@@ -202,7 +283,9 @@
           "Keep chains modular",
           "Use consistent patterns",
           "Test chains independently"
-        ]
+        ],
+        "use_when": "Apply when chain integration is needed in LangSmith Prompt Management Patterns",
+        "code_example": "prompt = hub.pull('my-org/agent-prompt')\nchain = prompt | llm | StrOutputParser()"
       },
       "tracing_integration": {
         "description": "Use LangSmith tracing with Hub prompts",
@@ -211,6 +294,12 @@
           "Debug prompt issues",
           "Monitor performance",
           "Analyze usage patterns"
+        ],
+        "use_when": "Apply when tracing integration is needed in LangSmith Prompt Management Patterns",
+        "code_example": "# Implement tracing_integration per langsmith-prompts-patterns patterns\n# See description and related documentation",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
         ]
       },
       "production_deployment": {
@@ -227,8 +316,17 @@
           "Keep dev/prod separate",
           "Monitor for degradation",
           "Have rollback plan"
-        ]
-      }
+        ],
+        "use_when": "Apply when production deployment is needed in LangSmith Prompt Management Patterns",
+        "code_example": "# Implement production_deployment per langsmith-prompts-patterns patterns\n# See description and related documentation"
+      },
+      "description": "Category grouping: chain_integration, tracing_integration, production_deployment",
+      "use_when": "Apply when integration patterns patterns are needed in LangSmith Prompt Management Patterns",
+      "code_example": "# See child patterns under integration_patterns for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     }
   },
   "best_practices": [
@@ -287,11 +385,5 @@
       "problem": "Inconsistent prompt naming makes it difficult to find, manage, and understand prompt relationships",
       "solution": "Use consistent naming conventions (org/domain/prompt-name:version) and document naming standards for the team"
     }
-  ],
-  "related_skills": [
-    "langsmith-prompts",
-    "langsmith-tracing",
-    "langchain-usage",
-    "prompt-engineering"
   ]
 }

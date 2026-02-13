@@ -3,27 +3,23 @@ description: Convert team workshop outputs to project management artifacts
 name: workshop-to-pm
 type: skill
 ---
-
 # Workshop To Pm
 
 Convert team workshop outputs to project management artifacts
 
-## 
-# Workshop to PM Skill
-
-Converts team workshop outputs into structured project management artifacts, transforming collaborative insights into actionable work items that teams can track and execute.
-
-## 
-# Workshop to PM Skill
-
 Converts team workshop outputs into structured project management artifacts, transforming collaborative insights into actionable work items that teams can track and execute.
 
 ## Philosophy
+
 > Workshop insights become actionable work items.
 
 Team workshops generate rich insights about vision, stakeholders, values, and workflows. These insights should flow seamlessly into project management systems where they become epics, stories, labels, and definitions of done. This skill bridges the gap between collaborative discovery and structured execution, ensuring that workshop outputs don't get lost but instead seed the PM system with meaningful, team-aligned work.
 
 ## Process
+
+1. Review the task requirements.
+2. Apply the skill's methodology.
+3. Validate the output against the defined criteria.
 ### Step 1: Collect Workshop Outputs
 
 Read from workshop artifacts and identify extractable content:
@@ -314,201 +310,8 @@ Output summary of created artifacts with links:
 ```
 ✅ Workshop outputs successfully converted to PM artifacts!
 
-```
-"I'll help you convert your workshop outputs into PM artifacts.
-
-Let me scan your workshop artifacts:
-
-📄 Reading TEAM_CHARTER.md...
-   ✓ Found {N} Future Headlines
-   ✓ Found {N} Stakeholders
-   ✓ Found mission statement
-
-📄 Reading ETHICS_FRAMEWORK.md...
-   ✓ Found {N} core values
-   ✓ Found {N} ethical boundaries
-   ✓ Found decision-making principles
-
-📄 Reading agent-roster.json...
-   ✓ Found {N} agents
-   ✓ Found {N} workflows
-
-Would you like me to:
-A) Convert all identified items
-B) Review and select specific items
-C) Customize the transformation rules
-
-Which option do you prefer?"
-```
-
-```yaml
-Workshop Output:
-  headline: "Local news platform connects neighbors during crisis"
-  
-PM Artifact:
-  type: epic
-  title: "Local News Platform - Crisis Connection"
-  description: "Build platform that connects neighbors during crisis events"
-  acceptance_criteria:
-    - "Platform enables real-time neighbor communication"
-    - "Crisis events trigger automatic connection flows"
-    - "Users can find and help nearby neighbors"
-  linked_stakeholders: ["local-residents", "crisis-responders"]
-```
-
-```yaml
-Workshop Output:
-  stakeholder:
-    name: "Local Residents"
-    priority: 1
-    needs: ["real-time updates", "trusted information", "community connection"]
-    
-PM Artifact:
-  type: label
-  name: "stakeholder:local-residents"
-  color: "#4A90E2"  # Primary stakeholder color
-  description: "Primary stakeholder - local residents seeking community connection"
-  
-  user_story_template:
-    as_a: "local resident"
-    i_want: "{capability}"
-    so_that: "I can {benefit}"
-```
-
-```yaml
-Workshop Output:
-  ethics_framework:
-    core_values: ["Privacy", "Transparency", "Accessibility"]
-    boundaries: ["Never sell user data", "Never hide data usage"]
-    principles: ["User consent required", "Open source when possible"]
-    
-PM Artifact:
-  type: definition_of_done
-  checklist:
-    - "Privacy: User data encrypted and consent obtained"
-    - "Transparency: Data usage clearly documented"
-    - "Accessibility: WCAG 2.1 AA compliance verified"
-    - "Ethical boundary: No user data sold"
-    - "Ethical boundary: No hidden data usage"
-  applies_to: ["all_stories", "all_epics"]
-```
-
-```yaml
-Workshop Output:
-  workflow:
-    name: "Code Review Flow"
-    agents: ["code-reviewer", "security-auditor"]
-    steps: ["analyze", "review", "approve"]
-    
-PM Artifact:
-  type: task_template
-  name: "Code Review Task Template"
-  description: "Standard code review workflow"
-  tasks:
-    - "Code Reviewer analyzes changes"
-    - "Security Auditor checks vulnerabilities"
-    - "Team lead approves"
-  tags: ["code-review", "security"]
-```
-
-```
-"Transforming workshop outputs into PM artifacts:
-
-📦 Creating Epics from Future Headlines...
-   ✓ Epic 1: {EPIC_TITLE} (from headline: {HEADLINE})
-   ✓ Epic 2: {EPIC_TITLE} (from headline: {HEADLINE})
-   ...
-
-🏷️ Creating Labels from Stakeholders...
-   ✓ Label: stakeholder:{STAKEHOLDER_NAME}
-   ✓ Label: stakeholder:{STAKEHOLDER_NAME}
-   ...
-
-✅ Creating Definition of Done from Ethics Framework...
-   ✓ Added {N} quality gates
-   ✓ Added {N} ethical boundaries
-   ...
-
-📋 Creating Task Templates from Workflows...
-   ✓ Template: {TEMPLATE_NAME}
-   ...
-
-Transformation complete! Ready to create in backend."
-```
-
-```json
-{
-  "title": "{EPIC_TITLE}",
-  "description": "{EPIC_DESCRIPTION}",
-  "projectId": "{PROJECT_ID}",
-  "labels": ["{STAKEHOLDER_LABEL_1}", "{STAKEHOLDER_LABEL_2}"],
-  "acceptanceCriteria": [
-    "{CRITERION_1}",
-    "{CRITERION_2}"
-  ]
-}
-```
-
-```json
-{
-  "name": "stakeholder:{STAKEHOLDER_NAME}",
-  "color": "{COLOR_CODE}",
-  "description": "{STAKEHOLDER_DESCRIPTION}",
-  "projectId": "{PROJECT_ID}"
-}
-```
-
-```json
-{
-  "name": "Workshop Ethics Framework - Definition of Done",
-  "checklist": [
-    "{CHECKLIST_ITEM_1}",
-    "{CHECKLIST_ITEM_2}"
-  ],
-  "projectId": "{PROJECT_ID}",
-  "appliesTo": ["all_stories", "all_epics"]
-}
-```
-
-```json
-{
-  "name": "{TEMPLATE_NAME}",
-  "description": "{TEMPLATE_DESCRIPTION}",
-  "tasks": [
-    {
-      "title": "{TASK_TITLE}",
-      "description": "{TASK_DESCRIPTION}",
-      "tags": ["{TAG_1}", "{TAG_2}"]
-    }
-  ],
-  "projectId": "{PROJECT_ID}"
-}
-```
-
-```
-"Creating artifacts in {BACKEND_NAME}...
-
-📦 Creating epics...
-   ✓ Created EPIC-{ID}: {TITLE}
-   ✓ Created EPIC-{ID}: {TITLE}
-   ...
-
-🏷️ Creating labels...
-   ✓ Created label: stakeholder:{NAME}
-   ✓ Created label: stakeholder:{NAME}
-   ...
-
-✅ Creating Definition of Done...
-   ✓ Created DoD checklist with {N} items
-
-📋 Creating task templates...
-   ✓ Created template: {TEMPLATE_NAME}
-   ...
-
-All artifacts created successfully!"
-```
-
 ## Summary
+
 **Epics Created:** {COUNT}
 {EPIC_LIST_WITH_LINKS}
 
@@ -523,10 +326,12 @@ All artifacts created successfully!"
 {TEMPLATE_LIST}
 
 ## Links
+
 **PM Backend:** {BACKEND_URL}
 **Project:** {PROJECT_NAME} ({PROJECT_ID})
 
 ## Next Steps
+
 1. **Review epics** - Verify epic titles and descriptions match your vision
 2. **Add stories** - Break down epics into user stories
 3. **Assign labels** - Use stakeholder labels when creating stories
@@ -534,6 +339,7 @@ All artifacts created successfully!"
 5. **Apply DoD** - Ensure Definition of Done is used in all stories
 
 ## Mapping Reference
+
 Workshop Output → PM Artifact:
 - Future Headlines → Epics
 - Stakeholders → Labels
@@ -544,6 +350,7 @@ Your workshop insights are now actionable work items!
 ```
 
 ## Example Transformations
+
 ### Example 1: Vision Quest → Epics
 
 **Workshop Output (TEAM_CHARTER.md):**
@@ -551,11 +358,13 @@ Your workshop insights are now actionable work items!
 ```markdown
 
 ## Vision Headlines
+
 - "Local news platform connects neighbors during crisis"
 - "Community garden app helps urban residents grow food"
 - "Neighborhood safety network reduces crime by 40%"
 
 ## Stakeholders (Priority Order)
+
 1. Local Residents
 2. Community Organizers
 3. City Officials
@@ -603,27 +412,20 @@ Labels:
 
 ```markdown
 
-```
-**Transformed PM Artifacts:**
-```
-
-```
-### Example 2: Ethics Arena → Definition of Done
-
-**Workshop Output (ETHICS_FRAMEWORK.md):**
-```
-
 ## Core Values (Ranked by Priority)
+
 1. Privacy - 95 points
 2. Transparency - 88 points
 3. Accessibility - 82 points
 
 ## Ethical Boundaries
+
 - We will never: Sell user data
 - We will never: Hide data usage from users
 - We will never: Exclude users due to accessibility barriers
 
 ## Decision-Making Principles
+
 - When facing dilemmas about data, we prioritize user privacy
 - All features must be accessible to users with disabilities
 ```
@@ -688,21 +490,8 @@ Task Template:
   tags: ["feature-development", "standard-workflow"]
 ```
 
-```
-**Transformed PM Artifact:**
-```
-
-```
-### Example 3: Agent Assembly → Task Templates
-
-**Workshop Output (agent-roster.json):**
-```
-
-```
-**Transformed PM Artifact:**
-```
-
 ## Backend Mapping Table
+
 Different PM backends may have different structures. This table shows how workshop outputs map to each backend:
 
 | Workshop Output | Jira | Linear | GitHub Projects | Azure DevOps |
@@ -781,65 +570,8 @@ Definition of Done:
   checklist: ["{CHECKLIST_ITEM_1}", "{CHECKLIST_ITEM_2}"]
 ```
 
-```yaml
-Epic:
-  type: "Epic"
-  fields:
-    summary: "{EPIC_TITLE}"
-    description: "{EPIC_DESCRIPTION}"
-    customfield_10011: "{EPIC_LABEL}"  # Epic Label
-    labels: ["{STAKEHOLDER_LABEL}"]
-    acceptance_criteria: "{ACCEPTANCE_CRITERIA}"
-
-Definition of Done:
-  type: "Custom Field"
-  name: "Definition of Done"
-  field_type: "Checkboxes"
-  options: ["{CHECKLIST_ITEM_1}", "{CHECKLIST_ITEM_2}"]
-```
-
-```yaml
-Epic:
-  type: "Epic"
-  title: "{EPIC_TITLE}"
-  description: "{EPIC_DESCRIPTION}"
-  labels: ["{STAKEHOLDER_LABEL}"]
-  success_criteria: "{ACCEPTANCE_CRITERIA}"
-
-Definition of Done:
-  type: "Template"
-  name: "Workshop DoD"
-  checklist: ["{CHECKLIST_ITEM_1}", "{CHECKLIST_ITEM_2}"]
-```
-
-```yaml
-Milestone:
-  title: "{EPIC_TITLE}"
-  description: "{EPIC_DESCRIPTION}"
-  labels: ["{STAKEHOLDER_LABEL}"]
-  due_date: null
-
-Definition of Done:
-  type: "Project Note"
-  title: "Definition of Done"
-  body: "- [ ] {CHECKLIST_ITEM_1}\n- [ ] {CHECKLIST_ITEM_2}"
-```
-
-```yaml
-Epic:
-  type: "Epic"
-  title: "{EPIC_TITLE}"
-  description: "{EPIC_DESCRIPTION}"
-  tags: ["{STAKEHOLDER_LABEL}"]
-  acceptance_criteria: "{ACCEPTANCE_CRITERIA}"
-
-Definition of Done:
-  type: "Definition of Done"
-  name: "Workshop DoD"
-  checklist: ["{CHECKLIST_ITEM_1}", "{CHECKLIST_ITEM_2}"]
-```
-
 ## Backend Operations Reference
+
 ### Required Operations
 
 | Operation | Interface | Purpose |
@@ -873,6 +605,7 @@ Definition of Done:
 - **Error Handling:** Validate tasks is non-empty, projectId exists
 
 ## Fallback Procedures
+
 | Condition | Action |
 |-----------|--------|
 | PM backend not configured | Guide user to run `pm-configuration` skill first |
@@ -886,6 +619,7 @@ Definition of Done:
 | Backend doesn't support feature | Use alternative approach (e.g., custom fields instead of DoD) |
 
 ## Integration with Other Skills
+
 ### Integration with team-workshop-onboarding Skill
 
 When used after workshops:
@@ -952,36 +686,8 @@ Converted epics inform sprint planning:
 - Stakeholder labels help prioritize stories
 - Definition of Done applies to all sprint work
 
-```
-"After completing your team workshops, I can convert the outputs
-into PM artifacts:
-
-- Future Headlines → Epics
-- Stakeholders → Labels
-- Ethics Framework → Definition of Done
-- Agent Workflows → Task Templates
-
-This seeds your PM system with meaningful, team-aligned work."
-```
-
-```
-"Before converting workshop outputs, ensure PM backend is configured.
-If not configured, I'll guide you through pm-configuration first."
-```
-
-```
-"When creating epics from Future Headlines, I use the same
-create-epic operations, ensuring consistency across your PM system."
-```
-
-```
-"After converting workshop outputs, you can use plan-sprint to:
-1. Pull epics into sprints
-2. Break epics into stories
-3. Track epic progress across sprints"
-```
-
 ## Important Rules
+
 1. **Preserve workshop intent** - Transformations should maintain the spirit and meaning of workshop outputs
 2. **Validate before creating** - Check that artifacts exist and are readable before transformation
 3. **Handle missing data gracefully** - If required fields are missing, ask user or use defaults
@@ -994,23 +700,6 @@ create-epic operations, ensuring consistency across your PM system."
 10. **Ground in purpose** - Connect all artifacts to project mission and stakeholder needs
 
 ## CLI Quick Reference
-```bash
-# Convert workshop outputs to PM artifacts
-python cli/factory_cli.py --workshop-to-pm \
-  --charter TEAM_CHARTER.md \
-  --ethics ETHICS_FRAMEWORK.md \
-  --project-id "PROJ-123"
-
-# Review transformation before creating
-python cli/factory_cli.py --workshop-to-pm \
-  --charter TEAM_CHARTER.md \
-  --preview-only
-
-# Convert specific artifacts only
-python cli/factory_cli.py --workshop-to-pm \
-  --epics-only \
-  --charter TEAM_CHARTER.md
-```
 
 ```bash
 # Convert workshop outputs to PM artifacts
@@ -1031,14 +720,15 @@ python cli/factory_cli.py --workshop-to-pm \
 ```
 
 ## References
-- `knowledge/pm-metrics.json` - PM metrics definitions and tracking
-- `knowledge/workflow-patterns.json` - Workflow patterns for PM integration
-- `knowledge/team-dynamics.json` - Team dynamics and stakeholder patterns
-- `knowledge/workshop-facilitation.json` - Workshop facilitation patterns
-- `.cursor/skills/team-workshop-onboarding/SKILL.md` - Team workshop onboarding skill
-- `.cursor/skills/pm-configuration/SKILL.md` - PM configuration skill
-- `.cursor/skills/pm/create-epic/SKILL.md` - Epic creation skill
-- `patterns/products/pm-system/adapters/adapter-interface.json` - Backend adapter interface
+
+- `{directories.knowledge}/pm-metrics.json` - PM metrics definitions and tracking
+- `{directories.knowledge}/workflow-patterns.json` - Workflow patterns for PM integration
+- `{directories.knowledge}/team-dynamics.json` - Team dynamics and stakeholder patterns
+- `{directories.knowledge}/workshop-facilitation.json` - Workshop facilitation patterns
+- `{directories.skills}/team-workshop-onboarding/SKILL.md` - Team workshop onboarding skill
+- `{directories.skills}/pm-configuration/SKILL.md` - PM configuration skill
+- `{directories.skills}/pm/create-epic/SKILL.md` - Epic creation skill
+- `{directories.patterns}/products/pm-system/adapters/adapter-interface.json` - Backend adapter interface
 
 ---
 
@@ -1046,7 +736,14 @@ python cli/factory_cli.py --workshop-to-pm \
 *Skill: workshop-to-pm v1.0.0*
 *Grounded in Axiom 0: Love, Truth, and Beauty*
 
+## When to Use
+This skill should be used when strict adherence to the defined process is required.
+
 ## Prerequisites
-> [!IMPORTANT]
-> Requirements:
-> - Knowledge: pm-metrics.json, workflow-patterns.json, team-dynamics.json, workshop-facilitation.json
+- Basic understanding of the agent factory context.
+- Access to the necessary tools and resources.
+
+## Best Practices
+- Always follow the established guidelines.
+- Document any deviations or exceptions.
+- Regularly review and update the skill documentation.

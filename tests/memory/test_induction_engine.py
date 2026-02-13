@@ -256,9 +256,28 @@ class TestInductionEngineSession:
 class TestInductionEngineSingleton:
     """Tests for the singleton pattern."""
     
-    def test_get_induction_engine_returns_instance(self):
+    def test_get_induction_engine_returns_instance(self, tmp_path):
         """Test singleton returns an instance."""
-        from scripts.memory.induction_engine import get_induction_engine
+        from scripts.memory.induction_engine import get_induction_engine, reset_induction_engine
+        from scripts.memory.memory_store import reset_memory_store, get_memory_store
         
-        engine = get_induction_engine()
-        assert engine is not None
+        # Reset singletons
+        reset_induction_engine()
+        reset_memory_store()
+        
+        try:
+            # Initialize memory store with temp dir first (so induction engine uses it)
+            temp_persist = str(tmp_path / "induction_singleton")
+            get_memory_store(persist_dir=temp_persist)
+            
+            # Get engine
+            engine = get_induction_engine()
+            assert engine is not None
+            
+            # Second call should return same instance
+            engine2 = get_induction_engine()
+            assert engine2 is engine
+            
+        finally:
+            reset_induction_engine()
+            reset_memory_store()

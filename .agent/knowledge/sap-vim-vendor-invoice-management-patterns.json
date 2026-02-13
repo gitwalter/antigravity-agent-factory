@@ -1,28 +1,113 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "sap-vim-vendor-invoice-management-patterns",
+  "title": "SAP VIM (Vendor Invoice Management) Patterns",
   "name": "SAP VIM (Vendor Invoice Management) Patterns",
   "description": "Vendor Invoice Management process, workflow, FI/MM integration. OpenText VIM in ECC/S/4HANA.",
   "version": "1.0.0",
-  "category": "patterns",
+  "category": "sap",
+  "axiomAlignment": {
+    "A1_verifiability": "Document type VI, workflow, and company code enable traceable invoice verification",
+    "A2_user_primacy": "Workflow release and approval support user-driven invoice processing",
+    "A3_transparency": "Explicit document types and workflow steps document invoice-to-pay flow",
+    "A4_non_harm": "Workflow and MM-IV integration ensure proper approval and avoid duplicate verification",
+    "A5_consistency": "Unified VIM workflow patterns across ECC and S/4HANA"
+  },
+  "related_skills": [
+    "s4-process-guide"
+  ],
+  "related_knowledge": [
+    "sap-fi-patterns.json",
+    "sap-mm-patterns.json"
+  ],
   "patterns": {
     "vendor_invoice_management": {
       "description": "Vendor Invoice Management and Invoice to Pay (OpenText in SAP ECC or S/4HANA)",
       "process": {
         "description": "Vendor Invoice Management and Invoice to Pay (OpenText in SAP ECC or S/4HANA)",
         "workflow": "Release of requests in workflow; document type VI (vendor invoice); company code assignment"
-      }
+      },
+      "use_when": "When implementing vendor_invoice_management or when Vendor Invoice Management and Invoice to Pay (OpenText in SAP ECC or S/4HANA)",
+      "code_example": "// Open Invoice Verification: MIRO, MIRR\n// Check tables: RSEG, RBKP",
+      "best_practices": [
+        "Use document type VI for vendor invoices",
+        "Follow workflow for invoice release",
+        "Verify table/field via SAP Help MCP",
+        "Ensure proper company code assignment"
+      ]
     },
     "document_type": {
       "description": "Vendor invoice document type",
       "documentType": {
         "VI": "Vendor invoice"
-      }
+      },
+      "use_when": "When implementing document_type or when Vendor invoice document type",
+      "code_example": "// Open Invoice Verification: MIRO, MIRR\n// Check tables: RSEG, RBKP",
+      "best_practices": [
+        "Use document type VI for vendor invoices",
+        "Follow workflow for invoice release",
+        "Verify table/field via SAP Help MCP",
+        "Ensure proper company code assignment"
+      ]
     },
     "integration": {
       "description": "Integration with FI and MM (invoice verification MM-IV)",
       "integration": [
         "FI",
         "MM (invoice verification MM-IV)"
+      ],
+      "use_when": "When implementing integration or when Integration with FI and MM (invoice verification MM-IV)",
+      "code_example": "// Open Invoice Verification: MIRO, MIRR\n// Check tables: RSEG, RBKP",
+      "best_practices": [
+        "Use document type VI for vendor invoices",
+        "Follow workflow for invoice release",
+        "Verify table/field via SAP Help MCP",
+        "Ensure proper company code assignment"
+      ]
+    },
+    "ocr_intelligent_capture": {
+      "description": "OpenText Capture for SAP Solutions and Core Capture (SaaS). OCR from PDFs/images with minimal human interaction. ML auto-learning across P2P and O2C. Enhanced business entity determination via two-step capture.",
+      "use_when": "When implementing OCR-based invoice capture from PDFs or images, or when ML auto-learning for P2P/O2C is required.",
+      "code_example": "// Core Capture API: submit document for OCR\n// Two-step capture: entity determination then validation",
+      "best_practices": [
+        "Use OpenText Capture for SAP Solutions with Core Capture (SaaS) for hybrid scenarios",
+        "Configure two-step capture for enhanced business entity determination"
+      ]
+    },
+    "duplicate_detection": {
+      "description": "RBKP table search by company code, vendor, currency, doc date, external doc number. MIRO/MIR7 validation. Background check RMBABG00.",
+      "use_when": "When implementing duplicate invoice detection or validating against existing RBKP entries.",
+      "code_example": "// RBKP search: BUKRS, LIFNR, WAERS, BLDAT, XBLNR\n// Report RMBABG00 for background duplicate check",
+      "best_practices": [
+        "Search RBKP by company code, vendor, currency, doc date, external doc number",
+        "Run RMBABG00 in background for systematic duplicate validation"
+      ]
+    },
+    "vim_exception_handling": {
+      "description": "Business rule validation before SAP document creation. Preprocessing to eliminate errors. Document type verification. Workflow exception routing.",
+      "use_when": "When implementing preprocessing validation or routing exceptions in VIM workflow.",
+      "code_example": "// Preprocessing: validate rule before FI document\n// Exception routing: workflow to specialist queue",
+      "best_practices": [
+        "Validate business rules before document creation to reduce postings errors",
+        "Route exceptions via workflow to designated specialist queues"
+      ]
+    },
+    "vim_dashboard_reporting": {
+      "description": "MIR6 overview. RBKP/RSEG extraction to BW via MC06M_0ITM. Performance monitoring for background checking.",
+      "use_when": "When implementing VIM dashboards, BW extraction, or monitoring background check performance.",
+      "code_example": "// MIR6: invoice overview transaction\n// MC06M_0ITM: extract RBKP/RSEG to BW",
+      "best_practices": [
+        "Use MIR6 for invoice overview and status tracking",
+        "Extract RBKP/RSEG to BW via MC06M_0ITM for analytics"
+      ]
+    },
+    "s4hana_fiori_integration": {
+      "description": "Fiori 3.0 interface support. Single-click validation widgets. Modern UX for invoice processing.",
+      "use_when": "When implementing Fiori-based invoice processing or modern UX for VIM in S/4HANA.",
+      "code_example": "// Fiori 3.0 app: My Inbox for VIM\n// Single-click validation widget in Object Page",
+      "best_practices": [
+        "Use Fiori 3.0 apps for invoice processing in S/4HANA",
+        "Leverage single-click validation widgets for faster approval"
       ]
     }
   },
@@ -49,8 +134,5 @@
       "problem": "Duplicate invoice verification",
       "fix": "Coordinate VIM with MM-IV invoice verification process"
     }
-  ],
-  "related_skills": [
-    "s4-process-guide"
   ]
 }

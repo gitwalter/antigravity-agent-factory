@@ -1,0 +1,169 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "sap-fi-cax-central-finance-patterns",
+  "title": "SAP FI-CAX / Central Finance Patterns",
+  "name": "SAP FI-CAX / Central Finance Patterns",
+  "description": "Central Finance, replication, central journal. S/4.",
+  "version": "1.0.0",
+  "category": "sap",
+  "axiomAlignment": {
+    "A1_verifiability": "ACDOCA, CDHDR/CDPOS, and replication status enable traceable central journal verification",
+    "A2_user_primacy": "Central journal and migration support user-driven financial consolidation",
+    "A3_transparency": "Explicit ACDOCA and change document structure document replication flow",
+    "A4_non_harm": "Replication monitoring and change documents ensure data consistency and audit trails",
+    "A5_consistency": "Unified ACDOCA and Universal Journal patterns across S/4 Central Finance"
+  },
+  "related_skills": [
+    "s4-process-guide"
+  ],
+  "related_knowledge": [
+    "sap-fi-patterns.json",
+    "sap-btp-patterns.json"
+  ],
+  "patterns": {
+    "replication": {
+      "description": "Accounting documents replicated from source systems to central system",
+      "concepts": {
+        "replication": "Accounting documents replicated from source systems to central system"
+      },
+      "use_when": "When implementing replication or when Accounting documents replicated from source systems to central system",
+      "code_example": "SELECT * FROM bkpf WHERE bukrs = @lv_bukrs AND belnr = @lv_belnr AND gjahr = @lv_gjahr",
+      "best_practices": [
+        "Use ACDOCA in S/4 for central journal entries",
+        "Verify replication status via change documents (CDHDR/CDPOS)",
+        "Verify table/field via SAP Help MCP",
+        "Plan migration from ECC to S/4 Finance carefully"
+      ]
+    },
+    "central_journal": {
+      "description": "Central journal entry table; Universal Journal (ACDOCA) in S/4",
+      "concepts": {
+        "centralJournal": "Central journal entry table; Universal Journal (ACDOCA) in S/4"
+      },
+      "tables": {
+        "ACDOCA": {
+          "purpose": "Universal Journal in S/4",
+          "note": "Target for replicated line items"
+        }
+      },
+      "use_when": "When implementing central_journal or when Central journal entry table; Universal Journal (ACDOCA) in S/4",
+      "code_example": "SELECT * FROM bkpf WHERE bukrs = @lv_bukrs AND belnr = @lv_belnr AND gjahr = @lv_gjahr",
+      "best_practices": [
+        "Use ACDOCA in S/4 for central journal entries",
+        "Verify replication status via change documents (CDHDR/CDPOS)",
+        "Verify table/field via SAP Help MCP",
+        "Plan migration from ECC to S/4 Finance carefully"
+      ]
+    },
+    "data_transfer_workbench": {
+      "description": "FI accounting documents data transfer",
+      "concepts": {
+        "dataTransferWorkbench": "FI accounting documents data transfer"
+      },
+      "use_when": "When implementing data_transfer_workbench or when FI accounting documents data transfer",
+      "code_example": "SELECT * FROM bkpf WHERE bukrs = @lv_bukrs AND belnr = @lv_belnr AND gjahr = @lv_gjahr",
+      "best_practices": [
+        "Use ACDOCA in S/4 for central journal entries",
+        "Verify replication status via change documents (CDHDR/CDPOS)",
+        "Verify table/field via SAP Help MCP",
+        "Plan migration from ECC to S/4 Finance carefully"
+      ]
+    },
+    "migration": {
+      "description": "Migration to S/4 Finance; data moved to ACDOCA",
+      "migration": {
+        "ECC_to_S4": "Migration to S/4 Finance; data moved to ACDOCA"
+      },
+      "use_when": "When implementing migration or when Migration to S/4 Finance; data moved to ACDOCA",
+      "code_example": "SELECT * FROM bkpf WHERE bukrs = @lv_bukrs AND belnr = @lv_belnr AND gjahr = @lv_gjahr",
+      "best_practices": [
+        "Use ACDOCA in S/4 for central journal entries",
+        "Verify replication status via change documents (CDHDR/CDPOS)",
+        "Verify table/field via SAP Help MCP",
+        "Plan migration from ECC to S/4 Finance carefully"
+      ]
+    },
+    "change_documents": {
+      "description": "Change document tracking for replication",
+      "tables": {
+        "CDHDR": {
+          "purpose": "Change document header"
+        },
+        "CDPOS": {
+          "purpose": "Change document positions"
+        }
+      },
+      "use_when": "When implementing change_documents or when Change document tracking for replication",
+      "code_example": "SELECT * FROM bkpf WHERE bukrs = @lv_bukrs AND belnr = @lv_belnr AND gjahr = @lv_gjahr",
+      "best_practices": [
+        "Use ACDOCA in S/4 for central journal entries",
+        "Verify replication status via change documents (CDHDR/CDPOS)",
+        "Verify table/field via SAP Help MCP",
+        "Plan migration from ECC to S/4 Finance carefully"
+      ]
+    },
+    "initial_load": {
+      "description": "Transfer existing postings from source period. Two phases: initial load and real-time replication. Exclusions: CO-FI reconciliation, GLYEC year-end, clearings.",
+      "use_when": "When migrating historical FI data to Central Finance or setting up initial load phase.",
+      "code_example": "// Phase 1: initial load from source period\n// Phase 2: switch to real-time delta; exclude CO-FI, GLYEC, clearings",
+      "best_practices": [
+        "Plan two-phase approach: initial load then real-time delta",
+        "Exclude CO-FI reconciliation, GLYEC year-end, and clearings from initial load"
+      ]
+    },
+    "slt_configuration": {
+      "description": "LTRC wizard for SLT setup. RFC on source and SLT. DMIS add-on, S4CORE. SAP Notes 2154420, 2462424, 2481900, 2223621.",
+      "use_when": "When configuring SLT for FI-CAX replication or when applying SAP Notes.",
+      "code_example": "// LTRC: configure source RFC, SLT RFC\n// Apply SAP Notes 2154420, 2462424, 2481900, 2223621",
+      "best_practices": [
+        "Use LTRC wizard for RFC and SLT configuration",
+        "Apply required SAP Notes (2154420, 2462424, 2481900, 2223621) before go-live"
+      ]
+    },
+    "post_copy_restart": {
+      "description": "Stop replication before copy. Corrective actions. Cleanup SLT objects. Re-enable delta. Reconcile.",
+      "use_when": "When recovering from failed initial load or requiring replication restart.",
+      "code_example": "// 1. Stop replication; 2. Corrective actions; 3. Cleanup SLT objects\n// 4. Re-enable delta; 5. Reconcile source with central",
+      "best_practices": [
+        "Stop replication before applying corrective actions",
+        "Reconcile source and central system after re-enabling delta"
+      ]
+    },
+    "slt_monitoring": {
+      "description": "Focused Run 2.0 FP01. Replication latency (1h/24h avg/max). Load job status. Trigger status. Entries pending.",
+      "use_when": "When monitoring SLT replication health or troubleshooting latency.",
+      "code_example": "// Focused Run: replication latency 1h/24h avg and max\n// Monitor: load job status, trigger status, entries pending",
+      "best_practices": [
+        "Use Focused Run 2.0 FP01 for replication monitoring",
+        "Track 1h and 24h latency averages and maximums"
+      ]
+    },
+    "mapping_filtering_rules": {
+      "description": "Data selection per receiver. Segment filtering. Field conversion rules. Distribution model customization.",
+      "use_when": "When defining receiver-specific rules, segment filters, or field conversions.",
+      "code_example": "// Distribution model: segment filter per receiver\n// Field conversion rules in SLT configuration",
+      "best_practices": [
+        "Define data selection and segment filtering per receiver",
+        "Customize field conversion rules in distribution model"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use ACDOCA in S/4 for central journal entries",
+    "Verify replication status via change documents (CDHDR/CDPOS)",
+    "Verify table/field via SAP Help MCP",
+    "Plan migration from ECC to S/4 Finance carefully"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Not using ACDOCA in S/4",
+      "problem": "Missing unified journal entries",
+      "fix": "Use ACDOCA for all accounting line items in S/4"
+    },
+    {
+      "name": "Ignoring replication errors",
+      "problem": "Data inconsistencies between source and central system",
+      "fix": "Monitor change documents and replication status"
+    }
+  ]
+}

@@ -3,277 +3,184 @@
   "id": "google-agent-development-kit-patterns",
   "name": "Google Agent Development Kit Patterns",
   "title": "Google ADK Patterns",
-  "description": "Patterns and best practices for Google Agent Development Kit (ADK) - agent creation, tools, sessions, multi-agent coordination, and deployment",
+  "description": "Best practices and patterns for Google Agent Development Kit (ADK) - building agents with Gemini models, LlmAgent, WorkflowAgent, and Google's tool ecosystem",
   "version": "1.0.0",
-  "category": "patterns",
+  "last_updated": "2026-02-11",
+  "category": "agent-patterns",
   "axiomAlignment": {
-    "A1_verifiability": "ADK provides structured agent patterns with testable components",
-    "A3_transparency": "Explicit tool definitions and callbacks make agent behavior transparent",
-    "A4_adaptability": "Modular agent design supports easy extension and composition"
+    "A1_verifiability": "AgentOps and AG-UI enable verification of agent behavior",
+    "A2_user_primacy": "AG-UI provides user control and transparency",
+    "A3_transparency": "Agent definitions and tool usage are explicit",
+    "A4_non_harm": "Safety settings and guardrails prevent harmful outputs",
+    "A5_consistency": "Unified ADK patterns across Gemini-powered agents"
   },
-  "core_concepts": {
-    "agent_types": {
-      "description": "Different agent types in ADK",
-      "types": [
-        "LlmAgent - Single LLM-powered agent",
-        "SequentialAgent - Agents that execute in sequence",
-        "ParallelAgent - Agents that execute concurrently"
-      ]
-    },
-    "tool_system": {
-      "description": "Tool integration in ADK",
-      "features": [
-        "Function tools - Python functions as tools",
-        "Built-in tools - Google Search, code execution",
-        "LangChain tool integration",
-        "MCP server integration"
-      ]
-    },
-    "session_management": {
-      "description": "State and session handling",
-      "features": [
-        "Session-based state persistence",
-        "Multi-turn conversations",
-        "State serialization"
-      ]
-    }
-  },
+  "related_skills": [
+    "tool-usage",
+    "agentic-loops",
+    "vision-agents"
+  ],
+  "related_knowledge": [
+    "langchain-patterns.json",
+    "anthropic-patterns.json",
+    "openai-agents-sdk-patterns.json"
+  ],
   "patterns": {
-    "llm_agent_creation": {
-      "description": "Create a basic LlmAgent with model configuration",
-      "use_when": "Building a single-agent system with LLM capabilities",
-      "code_example": "from google.genai import types\nfrom google.genai.types import Tool\nfrom google.genai import Client\n\n# Initialize client\nclient = Client()\n\n# Create agent with model configuration\nagent = client.agents.create(\n    name='my-agent',\n    model='gemini-2.0-flash-exp',\n    system_instruction='You are a helpful assistant that provides accurate information.',\n    tools=[],\n    temperature=0.7,\n    max_output_tokens=2048\n)\n\n# Use agent\nresponse = agent.generate_content('What is the capital of France?')\nprint(response.text)",
+    "llm_agent": {
+      "description": "Create an LLM-powered agent with Google ADK",
+      "use_when": "Building agents that use Gemini models for reasoning",
+      "code_example": "from google_adk import LlmAgent, Gemini\n\n# Create agent with Gemini model\nagent = LlmAgent(\n    name='Research Assistant',\n    model=Gemini('gemini-2.5-flash'),\n    system_instruction='''You are a helpful research assistant.\n    You can search the web, analyze documents, and provide insights.\n    Always cite your sources and be accurate.''',\n    tools=[google_search, analyze_document]\n)\n\n# Run agent\nresult = await agent.run('Research the latest AI developments')\nprint(result.response)\n\n# Access tool usage\nfor tool_call in result.tool_calls:\n    print(f'Tool: {tool_call.name}')\n    print(f'Args: {tool_call.args}')\n    print(f'Result: {tool_call.result}')",
       "best_practices": [
-        "Choose appropriate model for task (gemini-2.0-flash-exp for speed, gemini-2.0-pro for quality)",
-        "Set clear system instructions",
-        "Configure temperature based on creativity needs",
-        "Set max_output_tokens to prevent excessive generation"
+        "Use Gemini 2.5 Flash for fast, cost-effective agents",
+        "Write clear system instructions",
+        "Choose appropriate tools for agent capabilities",
+        "Monitor token usage and costs"
+      ],
+      "key_properties": {
+        "name": "Agent identifier",
+        "model": "Gemini model to use",
+        "system_instruction": "System prompt defining behavior",
+        "tools": "List of available tools",
+        "safety_settings": "Content safety configuration"
+      }
+    },
+    "workflow_agent": {
+      "description": "Create multi-step workflow agents",
+      "use_when": "Complex tasks requiring structured execution flow",
+      "code_example": "from google_adk import WorkflowAgent, Step, Condition\n\n# Define workflow steps\nclass ResearchWorkflow(WorkflowAgent):\n    \n    @Step(name='gather_requirements')\n    async def gather_requirements(self, query: str) -> dict:\n        \"\"\"Extract research requirements from query.\"\"\"\n        result = await self.llm.generate(\n            f'Extract research requirements from: {query}'\n        )\n        return {'requirements': result.text}\n    \n    @Step(name='search_sources')\n    async def search_sources(self, requirements: dict) -> list:\n        \"\"\"Search for relevant sources.\"\"\"\n        sources = await self.tools.google_search(\n            requirements['requirements']\n        )\n        return sources\n    \n    @Step(name='analyze_sources')\n    @Condition(lambda result: len(result) >= 3)  # Only if enough sources\n    async def analyze_sources(self, sources: list) -> dict:\n        \"\"\"Analyze gathered sources.\"\"\"\n        analysis = await self.llm.generate(\n            f'Analyze these sources: {sources}'\n        )\n        return {'analysis': analysis.text}\n    \n    @Step(name='generate_report')\n    async def generate_report(self, analysis: dict) -> str:\n        \"\"\"Generate final report.\"\"\"\n        report = await self.llm.generate(\n            f'Write a report based on: {analysis}'\n        )\n        return report.text\n\n# Run workflow\nworkflow = ResearchWorkflow(model=Gemini('gemini-2.5-pro'))\nresult = await workflow.run('Research quantum computing trends')",
+      "best_practices": [
+        "Break complex tasks into discrete steps",
+        "Use conditions for conditional execution",
+        "Handle step failures gracefully",
+        "Log workflow progress for debugging"
       ]
     },
-    "function_tool_definition": {
-      "description": "Define custom function tools for agents",
-      "use_when": "Need to extend agent capabilities with custom Python functions",
-      "code_example": "from google.genai import types\nfrom google.genai.types import Tool, FunctionDeclaration\nimport json\n\ndef get_weather(location: str, unit: str = 'celsius') -> str:\n    \"\"\"Get weather information for a location.\n    \n    Args:\n        location: City name or location\n        unit: Temperature unit (celsius or fahrenheit)\n    \n    Returns:\n        Weather information as JSON string\n    \"\"\"\n    # Implementation here\n    return json.dumps({\n        'location': location,\n        'temperature': 22,\n        'unit': unit,\n        'condition': 'sunny'\n    })\n\n# Define function tool\nweather_tool = Tool(\n    function_declarations=[\n        FunctionDeclaration(\n            name='get_weather',\n            description='Get current weather for a location',\n            parameters={\n                'type': 'object',\n                'properties': {\n                    'location': {\n                        'type': 'string',\n                        'description': 'City name or location'\n                    },\n                    'unit': {\n                        'type': 'string',\n                        'enum': ['celsius', 'fahrenheit'],\n                        'default': 'celsius'\n                    }\n                },\n                'required': ['location']\n            }\n        )\n    ]\n)\n\n# Create agent with tool\nagent = client.agents.create(\n    name='weather-agent',\n    model='gemini-2.0-flash-exp',\n    tools=[weather_tool],\n    tool_config={'function_calling': 'auto'}\n)\n\n# Agent will automatically use the tool when needed\nresponse = agent.generate_content('What is the weather in Paris?')\nprint(response.text)",
+    "gemini_tools": {
+      "description": "Built-in tools available with Gemini models",
+      "use_when": "Agents need Google-native capabilities like search, code execution, or web fetching",
+      "code_example": "from google_adk import LlmAgent, Gemini\nfrom google_adk.tools import GoogleSearch, CodeExecution, WebFetch\n\nagent = LlmAgent(\n    model=Gemini('gemini-2.5-flash'),\n    tools=[GoogleSearch(), CodeExecution(allowed_imports=['numpy']), WebFetch()]\n)\nresult = await agent.run('Search for latest AI news and summarize')",
+      "tools": {
+        "google_search": {
+          "description": "Search the web using Google Search",
+          "code_example": "from google_adk import LlmAgent, Gemini\nfrom google_adk.tools import GoogleSearch\n\nagent = LlmAgent(\n    model=Gemini('gemini-2.5-flash'),\n    tools=[GoogleSearch()]\n)\n\nresult = await agent.run('What are the latest AI news?')"
+        },
+        "code_execution": {
+          "description": "Execute Python code in a sandboxed environment",
+          "code_example": "from google_adk.tools import CodeExecution\n\nagent = LlmAgent(\n    model=Gemini('gemini-2.5-flash'),\n    tools=[CodeExecution(allowed_imports=['numpy', 'pandas'])]\n)\n\nresult = await agent.run('Calculate the mean of [1, 2, 3, 4, 5]')"
+        },
+        "computer_use": {
+          "description": "Interact with computer interfaces",
+          "code_example": "from google_adk.tools import ComputerUse\n\nagent = LlmAgent(\n    model=Gemini('gemini-2.5-pro'),\n    tools=[ComputerUse(display_size=(1920, 1080))]\n)\n\nresult = await agent.run('Open settings and change theme to dark')"
+        },
+        "web_fetch": {
+          "description": "Fetch content from web pages",
+          "code_example": "from google_adk.tools import WebFetch\n\nagent = LlmAgent(\n    model=Gemini('gemini-2.5-flash'),\n    tools=[WebFetch(allowed_domains=['*.github.com'])]\n)\n\nresult = await agent.run('Get the README from github.com/google/adk')"
+        }
+      },
       "best_practices": [
-        "Provide clear function descriptions for better tool selection",
-        "Use proper JSON schema for parameters",
-        "Handle errors gracefully in tool functions",
-        "Document function parameters and return types"
+        "Use GoogleSearch for real-time information",
+        "Sandbox code execution with allowed_imports",
+        "Restrict WebFetch to trusted domains",
+        "Require human approval for ComputerUse"
       ]
     },
-    "builtin_tools_usage": {
-      "description": "Use built-in Google tools (Search, Code Execution)",
-      "use_when": "Need web search or code execution capabilities",
-      "code_example": "from google.genai import types\nfrom google.genai.types import Tool\n\n# Google Search tool\nsearch_tool = Tool(\n    google_search_retrieval=types.GoogleSearchRetrieval(\n        dynamic_threshold=0.3\n    )\n)\n\n# Code execution tool\ncode_execution_tool = Tool(\n    code_execution=types.CodeExecution()\n)\n\n# Create agent with built-in tools\nagent = client.agents.create(\n    name='research-agent',\n    model='gemini-2.0-pro',\n    tools=[search_tool, code_execution_tool],\n    system_instruction='You are a research assistant that can search the web and execute code.'\n)\n\n# Agent can now search and execute code\nresponse = agent.generate_content(\n    'Search for the latest Python 3.12 features and write a simple example'\n)\nprint(response.text)",
+    "custom_tools": {
+      "description": "Create custom tools for agents",
+      "use_when": "Agents need domain-specific capabilities",
+      "code_example": "from google_adk import LlmAgent, Gemini, tool\nfrom pydantic import BaseModel, Field\n\n# Simple function tool\n@tool\ndef get_weather(city: str) -> str:\n    \"\"\"Get current weather for a city.\"\"\"\n    return f'The weather in {city} is sunny, 72\u00b0F'\n\n# Tool with Pydantic schema\nclass DatabaseQuery(BaseModel):\n    table: str = Field(description='Table name to query')\n    conditions: dict = Field(description='Query conditions')\n    limit: int = Field(default=10, ge=1, le=100)\n\n@tool\nasync def query_database(params: DatabaseQuery) -> list:\n    \"\"\"Query the database with conditions.\"\"\"\n    results = await db.query(\n        table=params.table,\n        where=params.conditions,\n        limit=params.limit\n    )\n    return results\n\n# Multimodal tool\n@tool\nasync def analyze_image(image_url: str, question: str) -> str:\n    \"\"\"Analyze an image and answer a question about it.\"\"\"\n    image = await fetch_image(image_url)\n    result = await gemini_vision.generate(\n        image=image,\n        prompt=question\n    )\n    return result.text\n\n# Create agent with custom tools\nagent = LlmAgent(\n    model=Gemini('gemini-2.5-flash'),\n    tools=[get_weather, query_database, analyze_image]\n)",
       "best_practices": [
-        "Use Google Search for real-time information",
-        "Code execution is useful for calculations and data processing",
-        "Set appropriate dynamic_threshold for search relevance",
-        "Be cautious with code execution in production"
+        "Use @tool decorator for automatic schema",
+        "Provide detailed docstrings",
+        "Use Pydantic for complex inputs",
+        "Handle errors gracefully"
       ]
     },
-    "sequential_agent_pattern": {
-      "description": "Create agents that execute in sequence",
-      "use_when": "Multi-step workflows where each step depends on previous results",
-      "code_example": "from google.genai import Client\nfrom google.genai.types import SequentialAgent\n\nclient = Client()\n\n# Define agent steps\nresearch_agent = client.agents.create(\n    name='research-step',\n    model='gemini-2.0-flash-exp',\n    system_instruction='Research and gather information'\n)\n\nanalysis_agent = client.agents.create(\n    name='analysis-step',\n    model='gemini-2.0-pro',\n    system_instruction='Analyze the research findings'\n)\n\nwriting_agent = client.agents.create(\n    name='writing-step',\n    model='gemini-2.0-flash-exp',\n    system_instruction='Write a comprehensive report'\n)\n\n# Create sequential agent\nsequential_agent = SequentialAgent(\n    agents=[research_agent, analysis_agent, writing_agent],\n    name='research-pipeline'\n)\n\n# Execute sequence\nresult = sequential_agent.run(\n    'Research the impact of AI on software development and write a report'\n)\nprint(result.final_output)",
+    "multimodal_agents": {
+      "description": "Agents that process images, audio, and video",
+      "use_when": "Tasks involving visual or audio understanding",
+      "code_example": "from google_adk import LlmAgent, Gemini\nfrom google_adk.types import Image, Audio, Video\n\n# Multimodal agent\nagent = LlmAgent(\n    name='Visual Assistant',\n    model=Gemini('gemini-2.5-pro'),\n    system_instruction='You can analyze images, audio, and video.'\n)\n\n# Analyze image\nimage = Image.from_file('chart.png')\nresult = await agent.run(\n    'Describe the trends shown in this chart',\n    attachments=[image]\n)\n\n# Analyze video\nvideo = Video.from_file('presentation.mp4')\nresult = await agent.run(\n    'Summarize the key points from this presentation',\n    attachments=[video]\n)\n\n# Analyze audio\naudio = Audio.from_file('meeting.mp3')\nresult = await agent.run(\n    'Transcribe and summarize this meeting',\n    attachments=[audio]\n)\n\n# Multiple attachments\nresult = await agent.run(\n    'Compare these two product designs',\n    attachments=[\n        Image.from_file('design_a.png'),\n        Image.from_file('design_b.png')\n    ]\n)",
       "best_practices": [
-        "Design clear handoff points between agents",
-        "Use appropriate models for each step",
-        "Pass context between sequential steps",
-        "Handle errors at each step"
+        "Use Gemini Pro for complex multimodal tasks",
+        "Compress large media before sending",
+        "Handle unsupported formats gracefully",
+        "Set reasonable timeouts for video processing"
       ]
     },
-    "parallel_agent_pattern": {
-      "description": "Execute multiple agents in parallel",
-      "use_when": "Independent tasks that can run concurrently",
-      "code_example": "from google.genai import Client\nfrom google.genai.types import ParallelAgent\nimport asyncio\n\nclient = Client()\n\n# Create specialized agents\ntechnical_agent = client.agents.create(\n    name='technical-reviewer',\n    model='gemini-2.0-pro',\n    system_instruction='Review code from a technical perspective'\n)\n\nsecurity_agent = client.agents.create(\n    name='security-reviewer',\n    model='gemini-2.0-pro',\n    system_instruction='Review code for security issues'\n)\n\nstyle_agent = client.agents.create(\n    name='style-reviewer',\n    model='gemini-2.0-flash-exp',\n    system_instruction='Review code style and best practices'\n)\n\n# Create parallel agent\nparallel_agent = ParallelAgent(\n    agents=[technical_agent, security_agent, style_agent],\n    name='code-review-pipeline',\n    aggregation_strategy='merge'\n)\n\n# Execute in parallel\ncode_to_review = '''\ndef process_user_data(data):\n    return data.upper()\n'''\n\nresult = parallel_agent.run(f'Review this code: {code_to_review}')\nprint(result.aggregated_output)",
+    "ag_ui": {
+      "description": "Agent-User Interface protocol for transparent interactions",
+      "use_when": "Building user-facing agents with visibility into reasoning",
+      "code_example": "from google_adk import LlmAgent, Gemini\nfrom google_adk.ag_ui import AgUI, ThoughtPanel, ToolPanel\n\n# Create AG-UI enabled agent\nagent = LlmAgent(\n    model=Gemini('gemini-2.5-flash'),\n    ag_ui=AgUI(\n        show_thoughts=True,       # Display reasoning\n        show_tool_calls=True,     # Display tool usage\n        allow_interrupts=True,    # User can interrupt\n        approval_required=['delete_file', 'send_email']  # Require approval\n    )\n)\n\n# Stream with UI events\nasync for event in agent.stream_with_ui('Organize my files'):\n    if event.type == 'thought':\n        print(f'Thinking: {event.content}')\n    elif event.type == 'tool_call':\n        print(f'Using tool: {event.tool_name}')\n        if event.requires_approval:\n            approved = await get_user_approval(event)\n            event.set_approval(approved)\n    elif event.type == 'response':\n        print(f'Response: {event.content}')\n    elif event.type == 'interrupt':\n        # Handle user interrupt\n        break",
       "best_practices": [
-        "Only parallelize truly independent tasks",
-        "Choose appropriate aggregation strategy",
-        "Consider rate limits when parallelizing",
-        "Handle partial failures gracefully"
+        "Enable show_thoughts for transparency",
+        "Require approval for sensitive actions",
+        "Handle interrupts gracefully",
+        "Stream events for real-time UX"
       ]
     },
-    "session_management": {
-      "description": "Manage agent sessions for multi-turn conversations",
-      "use_when": "Building conversational agents that maintain context",
-      "code_example": "from google.genai import Client\nfrom google.genai.types import Session\n\nclient = Client()\n\n# Create agent\nagent = client.agents.create(\n    name='conversational-agent',\n    model='gemini-2.0-flash-exp',\n    system_instruction='You are a helpful assistant. Remember previous conversation context.'\n)\n\n# Create session\nsession = client.sessions.create(\n    agent_id=agent.name,\n    metadata={'user_id': 'user123', 'context': 'customer_support'}\n)\n\n# Multi-turn conversation\nresponse1 = session.send_message('My name is Alice')\nprint(f'Agent: {response1.text}')\n\nresponse2 = session.send_message('What is my name?')\nprint(f'Agent: {response2.text}')  # Should remember Alice\n\n# Get session history\nhistory = session.get_history()\nfor message in history:\n    print(f'{message.role}: {message.content}')\n\n# Close session\nsession.close()",
+    "agent_ops": {
+      "description": "Observability and monitoring for agents",
+      "use_when": "Production agents need monitoring and debugging",
+      "code_example": "from google_adk import LlmAgent, Gemini\nfrom google_adk.ops import AgentOps, CloudTrace, CloudLogging\n\n# Configure observability\nops = AgentOps(\n    tracing=CloudTrace(project='my-project'),\n    logging=CloudLogging(project='my-project'),\n    metrics=True,\n    sample_rate=1.0  # 100% sampling in development\n)\n\nagent = LlmAgent(\n    model=Gemini('gemini-2.5-flash'),\n    ops=ops\n)\n\n# Run with automatic tracing\nresult = await agent.run('Help with task')\n\n# Access trace data\nprint(f'Trace ID: {result.trace_id}')\nprint(f'Duration: {result.duration_ms}ms')\nprint(f'Token usage: {result.token_usage}')\nprint(f'Cost: ${result.estimated_cost}')\n\n# Custom spans\nwith ops.span('custom_operation'):\n    # Custom logic\n    pass\n\n# Log events\nops.log('user_interaction', {\n    'query': 'user query',\n    'response_time_ms': 150\n})",
       "best_practices": [
-        "Create sessions for each user/conversation",
-        "Store session metadata for context",
-        "Manage session lifecycle properly",
-        "Clean up old sessions periodically"
+        "Enable tracing in all environments",
+        "Export to Cloud Trace for distributed tracing",
+        "Monitor token usage and costs",
+        "Set up alerts for errors and latency"
       ]
     },
-    "state_persistence": {
-      "description": "Persist and restore agent state",
-      "use_when": "Need to save and restore agent state across sessions",
-      "code_example": "from google.genai import Client\nimport json\nimport pickle\n\nclient = Client()\n\n# Create agent with state\nagent = client.agents.create(\n    name='stateful-agent',\n    model='gemini-2.0-flash-exp'\n)\n\n# Create session\nsession = client.sessions.create(agent_id=agent.name)\n\n# Use session (state is maintained internally)\nsession.send_message('Set my favorite color to blue')\nsession.send_message('What is my favorite color?')\n\n# Save session state\nsession_state = {\n    'session_id': session.id,\n    'agent_id': agent.name,\n    'history': [msg.to_dict() for msg in session.get_history()]\n}\n\nwith open('session_state.json', 'w') as f:\n    json.dump(session_state, f)\n\n# Restore session state later\nwith open('session_state.json', 'r') as f:\n    saved_state = json.load(f)\n\n# Recreate session with saved state\nrestored_session = client.sessions.create(\n    agent_id=saved_state['agent_id'],\n    session_id=saved_state['session_id']\n)\n\n# Restore history if needed\nfor msg in saved_state['history']:\n    restored_session.add_to_history(msg)",
+    "safety_settings": {
+      "description": "Configure content safety for agents",
+      "use_when": "Production agents need content filtering",
+      "code_example": "from google_adk import LlmAgent, Gemini\nfrom google_adk.safety import SafetySettings, HarmCategory, HarmBlockThreshold\n\n# Configure safety\nsafety = SafetySettings({\n    HarmCategory.HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,\n    HarmCategory.HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,\n    HarmCategory.SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,\n    HarmCategory.DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE\n})\n\nagent = LlmAgent(\n    model=Gemini('gemini-2.5-flash'),\n    safety_settings=safety\n)\n\n# Handle blocked responses\ntry:\n    result = await agent.run('user query')\nexcept SafetyBlockError as e:\n    print(f'Response blocked: {e.category}')\n    # Provide safe fallback response",
       "best_practices": [
-        "Serialize state in a portable format",
-        "Include metadata for state restoration",
-        "Handle state migration for version changes",
-        "Secure sensitive state data"
-      ]
-    },
-    "agent_delegation": {
-      "description": "Agent-to-agent delegation patterns",
-      "use_when": "Building hierarchical agent systems where agents delegate tasks",
-      "code_example": "from google.genai import Client\nfrom google.genai.types import Tool, FunctionDeclaration\n\nclient = Client()\n\n# Create specialized agents\nmath_agent = client.agents.create(\n    name='math-specialist',\n    model='gemini-2.0-pro',\n    system_instruction='You are a math expert. Solve mathematical problems.'\n)\n\ncode_agent = client.agents.create(\n    name='code-specialist',\n    model='gemini-2.0-pro',\n    system_instruction='You are a coding expert. Write and review code.'\n)\n\n# Create delegation tool for coordinator agent\ndef delegate_to_math_agent(problem: str) -> str:\n    \"\"\"Delegate math problems to math specialist.\"\"\"\n    response = math_agent.generate_content(problem)\n    return response.text\n\ndef delegate_to_code_agent(task: str) -> str:\n    \"\"\"Delegate coding tasks to code specialist.\"\"\"\n    response = code_agent.generate_content(task)\n    return response.text\n\n# Coordinator agent with delegation tools\ndelegation_tool = Tool(\n    function_declarations=[\n        FunctionDeclaration(\n            name='delegate_to_math_agent',\n            description='Delegate mathematical problems to math specialist',\n            parameters={\n                'type': 'object',\n                'properties': {\n                    'problem': {'type': 'string'}\n                },\n                'required': ['problem']\n            }\n        ),\n        FunctionDeclaration(\n            name='delegate_to_code_agent',\n            description='Delegate coding tasks to code specialist',\n            parameters={\n                'type': 'object',\n                'properties': {\n                    'task': {'type': 'string'}\n                },\n                'required': ['task']\n            }\n        )\n    ]\n)\n\ncoordinator = client.agents.create(\n    name='coordinator',\n    model='gemini-2.0-pro',\n    tools=[delegation_tool],\n    system_instruction='You coordinate tasks by delegating to specialists.'\n)\n\n# Coordinator delegates appropriately\nresponse = coordinator.generate_content(\n    'Solve the quadratic equation x^2 + 5x + 6 = 0'\n)\nprint(response.text)",
-      "best_practices": [
-        "Design clear delegation boundaries",
-        "Use appropriate tools for delegation",
-        "Handle delegation failures",
-        "Track delegation chains for debugging"
-      ]
-    },
-    "hierarchical_agents": {
-      "description": "Build hierarchical agent structures",
-      "use_when": "Complex systems requiring multi-level agent organization",
-      "code_example": "from google.genai import Client\nfrom google.genai.types import SequentialAgent\n\nclient = Client()\n\n# Level 1: Specialized agents\nresearch_agent = client.agents.create(\n    name='researcher',\n    model='gemini-2.0-flash-exp',\n    system_instruction='Research topics thoroughly'\n)\n\nanalysis_agent = client.agents.create(\n    name='analyst',\n    model='gemini-2.0-pro',\n    system_instruction='Analyze research findings'\n)\n\n# Level 2: Domain coordinator\nresearch_coordinator = SequentialAgent(\n    agents=[research_agent, analysis_agent],\n    name='research-team'\n)\n\n# Level 1: Another specialized team\nwriter_agent = client.agents.create(\n    name='writer',\n    model='gemini-2.0-flash-exp',\n    system_instruction='Write clear, engaging content'\n)\n\neditor_agent = client.agents.create(\n    name='editor',\n    model='gemini-2.0-pro',\n    system_instruction='Edit and refine content'\n)\n\nwriting_coordinator = SequentialAgent(\n    agents=[writer_agent, editor_agent],\n    name='writing-team'\n)\n\n# Level 3: Top-level coordinator\n# (In practice, this would be another agent that coordinates the coordinators)\ntop_coordinator = client.agents.create(\n    name='project-manager',\n    model='gemini-2.0-pro',\n    system_instruction='Coordinate research and writing teams'\n)\n\n# Use hierarchical structure\n# Top coordinator delegates to research team, then writing team",
-      "best_practices": [
-        "Keep hierarchy depth reasonable (2-3 levels)",
-        "Define clear responsibilities at each level",
-        "Use appropriate models for each level",
-        "Design clear communication protocols"
-      ]
-    },
-    "callback_before_model": {
-      "description": "Execute callbacks before model invocation",
-      "use_when": "Need to log, validate, or modify inputs before processing",
-      "code_example": "from google.genai import Client\nfrom google.genai.types import Callback\nfrom typing import Dict, Any\n\nclient = Client()\n\ndef before_model_callback(input_data: Dict[str, Any]) -> Dict[str, Any]:\n    \"\"\"Callback executed before model invocation.\"\"\"\n    print(f'[BEFORE MODEL] Input: {input_data}')\n    \n    # Log input\n    log_input(input_data)\n    \n    # Validate input\n    if 'content' not in input_data:\n        raise ValueError('Missing content field')\n    \n    # Modify input if needed\n    input_data['metadata'] = {'timestamp': get_current_timestamp()}\n    \n    return input_data\n\n# Create callback\nbefore_callback = Callback(\n    before_model=before_model_callback\n)\n\n# Create agent with callback\nagent = client.agents.create(\n    name='logged-agent',\n    model='gemini-2.0-flash-exp',\n    callbacks=[before_callback]\n)\n\n# Callbacks execute automatically\nresponse = agent.generate_content('Hello')\nprint(response.text)",
-      "best_practices": [
-        "Use callbacks for cross-cutting concerns",
-        "Keep callbacks lightweight",
-        "Handle errors in callbacks gracefully",
-        "Don't modify inputs unnecessarily"
-      ]
-    },
-    "callback_after_model": {
-      "description": "Execute callbacks after model invocation",
-      "use_when": "Need to log, validate, or modify outputs after processing",
-      "code_example": "from google.genai import Client\nfrom google.genai.types import Callback\nfrom typing import Dict, Any\n\nclient = Client()\n\ndef after_model_callback(output_data: Dict[str, Any]) -> Dict[str, Any]:\n    \"\"\"Callback executed after model invocation.\"\"\"\n    print(f'[AFTER MODEL] Output: {output_data}')\n    \n    # Log output\n    log_output(output_data)\n    \n    # Validate output\n    if 'text' not in output_data:\n        raise ValueError('Missing text in output')\n    \n    # Post-process output\n    output_data['text'] = sanitize_output(output_data['text'])\n    output_data['metadata'] = {\n        'model': output_data.get('model', 'unknown'),\n        'tokens_used': output_data.get('usage_metadata', {}).get('total_token_count', 0)\n    }\n    \n    return output_data\n\n# Create callback\nafter_callback = Callback(\n    after_model=after_model_callback\n)\n\n# Create agent with callback\nagent = client.agents.create(\n    name='monitored-agent',\n    model='gemini-2.0-flash-exp',\n    callbacks=[after_callback]\n)\n\n# Callbacks execute automatically\nresponse = agent.generate_content('Explain quantum computing')\nprint(response.text)",
-      "best_practices": [
-        "Use for monitoring and logging",
-        "Validate outputs before returning",
-        "Add metadata for observability",
-        "Handle errors without breaking the flow"
-      ]
-    },
-    "callback_before_tool": {
-      "description": "Execute callbacks before tool execution",
-      "use_when": "Need to validate, log, or modify tool inputs",
-      "code_example": "from google.genai import Client\nfrom google.genai.types import Callback, Tool\nfrom typing import Dict, Any\n\nclient = Client()\n\ndef before_tool_callback(tool_name: str, tool_input: Dict[str, Any]) -> Dict[str, Any]:\n    \"\"\"Callback executed before tool execution.\"\"\"\n    print(f'[BEFORE TOOL] {tool_name} with input: {tool_input}')\n    \n    # Log tool usage\n    log_tool_usage(tool_name, tool_input)\n    \n    # Validate tool input\n    if tool_name == 'get_weather' and 'location' not in tool_input:\n        raise ValueError('Location required for get_weather')\n    \n    # Sanitize input\n    if 'location' in tool_input:\n        tool_input['location'] = tool_input['location'].strip()\n    \n    return tool_input\n\n# Create callback\nbefore_tool_cb = Callback(\n    before_tool=before_tool_callback\n)\n\n# Create agent with callback and tools\nagent = client.agents.create(\n    name='monitored-tool-agent',\n    model='gemini-2.0-flash-exp',\n    tools=[weather_tool],\n    callbacks=[before_tool_cb]\n)\n\n# Callbacks execute automatically\nresponse = agent.generate_content('What is the weather in New York?')\nprint(response.text)",
-      "best_practices": [
-        "Validate tool inputs",
-        "Log tool usage for debugging",
-        "Sanitize inputs for security",
-        "Handle validation errors gracefully"
-      ]
-    },
-    "callback_after_tool": {
-      "description": "Execute callbacks after tool execution",
-      "use_when": "Need to log, validate, or modify tool outputs",
-      "code_example": "from google.genai import Client\nfrom google.genai.types import Callback\nfrom typing import Dict, Any\n\nclient = Client()\n\ndef after_tool_callback(tool_name: str, tool_output: Any) -> Any:\n    \"\"\"Callback executed after tool execution.\"\"\"\n    print(f'[AFTER TOOL] {tool_name} returned: {tool_output}')\n    \n    # Log tool result\n    log_tool_result(tool_name, tool_output)\n    \n    # Validate output\n    if isinstance(tool_output, dict) and 'error' in tool_output:\n        print(f'Tool error: {tool_output[\"error\"]}')\n        # Could transform error or raise exception\n    \n    # Transform output if needed\n    if isinstance(tool_output, str):\n        tool_output = tool_output.strip()\n    \n    return tool_output\n\n# Create callback\nafter_tool_cb = Callback(\n    after_tool=after_tool_callback\n)\n\n# Create agent with callback\nagent = client.agents.create(\n    name='tool-monitor-agent',\n    model='gemini-2.0-flash-exp',\n    tools=[weather_tool],\n    callbacks=[after_tool_cb]\n)\n\n# Callbacks execute automatically\nresponse = agent.generate_content('Get weather for London')\nprint(response.text)",
-      "best_practices": [
-        "Log tool results for debugging",
-        "Validate tool outputs",
-        "Transform outputs if needed",
-        "Handle tool errors appropriately"
-      ]
-    },
-    "langchain_tool_integration": {
-      "description": "Use LangChain tools with ADK agents",
-      "use_when": "Want to leverage existing LangChain tool ecosystem",
-      "code_example": "from google.genai import Client\nfrom google.genai.types import Tool\nfrom langchain.tools import DuckDuckGoSearchRun\nfrom langchain_community.tools import WikipediaQueryRun\nfrom langchain_community.utilities import WikipediaAPIWrapper\n\nclient = Client()\n\n# Create LangChain tools\nsearch_tool = DuckDuckGoSearchRun()\nwikipedia_tool = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())\n\ndef langchain_search_wrapper(query: str) -> str:\n    \"\"\"Wrapper to use LangChain search tool.\"\"\"\n    return search_tool.run(query)\n\ndef langchain_wikipedia_wrapper(query: str) -> str:\n    \"\"\"Wrapper to use LangChain Wikipedia tool.\"\"\"\n    return wikipedia_tool.run(query)\n\n# Create ADK tools from LangChain tools\nlangchain_tools = Tool(\n    function_declarations=[\n        FunctionDeclaration(\n            name='search_web',\n            description='Search the web using DuckDuckGo',\n            parameters={\n                'type': 'object',\n                'properties': {\n                    'query': {'type': 'string'}\n                },\n                'required': ['query']\n            }\n        ),\n        FunctionDeclaration(\n            name='search_wikipedia',\n            description='Search Wikipedia',\n            parameters={\n                'type': 'object',\n                'properties': {\n                    'query': {'type': 'string'}\n                },\n                'required': ['query']\n            }\n        )\n    ]\n)\n\n# Create agent with LangChain tools\nagent = client.agents.create(\n    name='langchain-integrated-agent',\n    model='gemini-2.0-pro',\n    tools=[langchain_tools],\n    system_instruction='Use web search and Wikipedia to answer questions.'\n)\n\n# Agent can use LangChain tools\nresponse = agent.generate_content('What is the latest news about AI?')\nprint(response.text)",
-      "best_practices": [
-        "Create wrapper functions for LangChain tools",
-        "Map LangChain tool signatures to ADK function declarations",
-        "Handle LangChain tool errors",
-        "Test tool integration thoroughly"
-      ]
-    },
-    "mcp_server_integration": {
-      "description": "Integrate MCP (Model Context Protocol) servers with ADK",
-      "use_when": "Want to use MCP servers as tools for agents",
-      "code_example": "from google.genai import Client\nfrom google.genai.types import Tool\nimport mcp\n\nclient = Client()\n\n# Connect to MCP server\nmcp_client = mcp.Client('http://localhost:8000')\n\n# Get available tools from MCP server\nmcp_tools = mcp_client.list_tools()\n\ndef mcp_tool_wrapper(tool_name: str, **kwargs) -> str:\n    \"\"\"Wrapper to call MCP server tools.\"\"\"\n    result = mcp_client.call_tool(tool_name, **kwargs)\n    return str(result)\n\n# Create ADK tools from MCP tools\nadk_mcp_tools = []\nfor mcp_tool in mcp_tools:\n    adk_tool = FunctionDeclaration(\n        name=mcp_tool['name'],\n        description=mcp_tool.get('description', ''),\n        parameters=mcp_tool.get('parameters', {})\n    )\n    adk_mcp_tools.append(adk_tool)\n\nmcp_tool_set = Tool(function_declarations=adk_mcp_tools)\n\n# Create agent with MCP tools\nagent = client.agents.create(\n    name='mcp-integrated-agent',\n    model='gemini-2.0-pro',\n    tools=[mcp_tool_set],\n    system_instruction='Use MCP server tools when needed.'\n)\n\n# Agent can use MCP tools\nresponse = agent.generate_content('Use MCP tools to help with this task')\nprint(response.text)",
-      "best_practices": [
-        "Map MCP tool signatures to ADK format",
-        "Handle MCP server connection errors",
-        "Cache MCP tool definitions",
-        "Monitor MCP server health"
-      ]
-    },
-    "local_testing": {
-      "description": "Test agents locally before deployment",
-      "use_when": "Developing and debugging agents",
-      "code_example": "from google.genai import Client\nfrom google.genai.types import Tool\nimport pytest\n\nclient = Client()\n\ndef test_agent_basic_functionality():\n    \"\"\"Test basic agent functionality.\"\"\"\n    agent = client.agents.create(\n        name='test-agent',\n        model='gemini-2.0-flash-exp',\n        system_instruction='You are a test assistant.'\n    )\n    \n    response = agent.generate_content('Say hello')\n    assert 'hello' in response.text.lower()\n    assert response.text is not None\n\ndef test_agent_with_tools():\n    \"\"\"Test agent with tools.\"\"\"\n    def test_tool(input: str) -> str:\n        return f'Processed: {input}'\n    \n    tool = Tool(\n        function_declarations=[\n            FunctionDeclaration(\n                name='test_tool',\n                description='Test tool',\n                parameters={\n                    'type': 'object',\n                    'properties': {\n                        'input': {'type': 'string'}\n                    },\n                    'required': ['input']\n                }\n            )\n        ]\n    )\n    \n    agent = client.agents.create(\n        name='test-tool-agent',\n        model='gemini-2.0-flash-exp',\n        tools=[tool]\n    )\n    \n    response = agent.generate_content('Use test_tool with input \"test\"')\n    assert response.text is not None\n\ndef test_agent_session():\n    \"\"\"Test agent session management.\"\"\"\n    agent = client.agents.create(\n        name='session-test-agent',\n        model='gemini-2.0-flash-exp'\n    )\n    \n    session = client.sessions.create(agent_id=agent.name)\n    \n    response1 = session.send_message('My name is Test')\n    response2 = session.send_message('What is my name?')\n    \n    assert 'test' in response2.text.lower()\n    session.close()\n\n# Run tests\nif __name__ == '__main__':\n    pytest.main([__file__, '-v'])",
-      "best_practices": [
-        "Write unit tests for agent functionality",
-        "Test tool integration separately",
-        "Test session management",
-        "Use mock tools for faster tests"
-      ]
-    },
-    "vertex_ai_deployment": {
-      "description": "Deploy agents to Vertex AI Agent Engine",
-      "use_when": "Ready to deploy agents to production",
-      "code_example": "from google.cloud import aiplatform\nfrom google.genai import Client\nimport os\n\n# Set up Vertex AI\nPROJECT_ID = os.getenv('GOOGLE_CLOUD_PROJECT')\nREGION = 'us-central1'\n\naiplatform.init(project=PROJECT_ID, location=REGION)\n\nclient = Client()\n\n# Create agent\nagent = client.agents.create(\n    name='production-agent',\n    model='gemini-2.0-pro',\n    system_instruction='Production assistant',\n    tools=[weather_tool]\n)\n\n# Deploy to Vertex AI Agent Engine\n# Note: Actual deployment API may vary\n# This is a conceptual example\n\ndeployment_config = {\n    'agent_id': agent.name,\n    'region': REGION,\n    'scaling': {\n        'min_instances': 1,\n        'max_instances': 10\n    },\n    'monitoring': {\n        'enabled': True,\n        'log_level': 'INFO'\n    }\n}\n\n# Deploy agent\n# deployment = client.deployments.create(**deployment_config)\n\n# Get deployment endpoint\n# endpoint = deployment.endpoint\n\n# Use deployed agent\n# response = client.agents.generate_content(\n#     agent_id=agent.name,\n#     content='Hello from production'\n# )",
-      "best_practices": [
-        "Set up proper IAM permissions",
-        "Configure scaling appropriately",
-        "Enable monitoring and logging",
-        "Use environment-specific configurations",
-        "Test deployment in staging first"
-      ]
-    },
-    "error_handling_patterns": {
-      "description": "Handle errors in agent execution",
-      "use_when": "Building production-ready agents",
-      "code_example": "from google.genai import Client\nfrom google.genai.exceptions import GoogleGenAIError\nimport logging\n\nclient = Client()\nlogger = logging.getLogger(__name__)\n\nagent = client.agents.create(\n    name='error-handling-agent',\n    model='gemini-2.0-flash-exp'\n)\n\ndef safe_generate_content(prompt: str, max_retries: int = 3) -> str:\n    \"\"\"Generate content with error handling and retries.\"\"\"\n    for attempt in range(max_retries):\n        try:\n            response = agent.generate_content(prompt)\n            return response.text\n        except GoogleGenAIError as e:\n            logger.error(f'Attempt {attempt + 1} failed: {e}')\n            if attempt == max_retries - 1:\n                raise\n            # Exponential backoff\n            time.sleep(2 ** attempt)\n        except Exception as e:\n            logger.error(f'Unexpected error: {e}')\n            raise\n    \n    raise Exception('Max retries exceeded')\n\n# Use with error handling\ntry:\n    result = safe_generate_content('Generate content')\n    print(result)\nexcept GoogleGenAIError as e:\n    print(f'Agent error: {e}')\nexcept Exception as e:\n    print(f'Unexpected error: {e}')",
-      "best_practices": [
-        "Handle specific exception types",
-        "Implement retry logic with backoff",
-        "Log errors for debugging",
-        "Provide user-friendly error messages",
-        "Set reasonable retry limits"
+        "Always configure safety settings in production",
+        "Use stricter thresholds for sensitive applications",
+        "Handle SafetyBlockError gracefully",
+        "Log blocked responses for review"
       ]
     }
   },
   "best_practices": [
-    "Choose the appropriate model for each agent's role: gemini-2.0-flash-exp for speed, gemini-2.0-pro for quality",
-    "Write clear, specific system instructions that define agent behavior and boundaries",
-    "Use callbacks (before_model, after_model, before_tool, after_tool) for logging, validation, and monitoring",
-    "Implement retry logic with exponential backoff for production agent calls",
-    "Design clear delegation boundaries when building multi-agent systems",
-    "Use sessions for multi-turn conversations and manage their lifecycle properly",
-    "Test agents locally with unit tests before deploying to Vertex AI Agent Engine",
-    "Keep agent hierarchies shallow (2-3 levels) to reduce complexity and latency"
+    "Use Gemini 2.5 Flash for fast, cost-effective agents",
+    "Use Gemini 2.5 Pro for complex reasoning and multimodal tasks",
+    "Write clear system instructions that define agent behavior",
+    "Use @tool decorator with Pydantic for type-safe tools",
+    "Enable AG-UI for transparent user-facing agents",
+    "Configure AgentOps for production observability",
+    "Set appropriate safety settings for content filtering",
+    "Require user approval for sensitive actions",
+    "Use WorkflowAgent for complex multi-step tasks",
+    "Stream events for real-time user experience"
   ],
   "anti_patterns": [
     {
-      "name": "god_agent",
-      "description": "Single agent trying to handle all tasks without delegation",
-      "problem": "Poor quality responses, hard to debug and improve",
-      "solution": "Decompose into specialized agents with clear responsibilities and use delegation patterns"
+      "name": "Wrong Model Selection",
+      "problem": "Using Pro for simple tasks wastes resources",
+      "solution": "Use Flash for simple tasks, Pro for complex reasoning"
     },
     {
-      "name": "missing_error_handling",
-      "description": "Not handling API errors, rate limits, or tool failures in agent execution",
-      "problem": "Agents crash silently or produce incorrect results in production",
-      "solution": "Implement try/except with retries, logging, and graceful degradation"
+      "name": "Missing Safety Settings",
+      "problem": "Agent can produce harmful content",
+      "solution": "Always configure SafetySettings in production"
     },
     {
-      "name": "unbounded_tool_execution",
-      "description": "Allowing tools to run without timeouts or resource limits",
-      "problem": "Runaway costs, stuck agents, resource exhaustion",
-      "solution": "Set timeouts on tool functions, limit iterations, and monitor resource usage"
+      "name": "No Observability",
+      "problem": "Cannot debug issues or track costs",
+      "solution": "Enable AgentOps with tracing and logging"
     },
     {
-      "name": "session_leaks",
-      "description": "Creating sessions without proper cleanup or lifecycle management",
-      "problem": "Memory leaks, stale state, increasing resource consumption",
-      "solution": "Always close sessions when done; implement periodic cleanup of old sessions"
+      "name": "Uncontrolled Tool Access",
+      "problem": "Agent can perform destructive actions",
+      "solution": "Use AG-UI approval_required for sensitive tools"
+    },
+    {
+      "name": "Blocking on Multimodal",
+      "problem": "Large media causes timeouts",
+      "solution": "Compress media and set appropriate timeouts"
     }
+  ],
+  "sources": [
+    "https://developers.google.com/agent-development-kit",
+    "https://ai.google.dev/gemini-api/docs",
+    "https://github.com/google/adk"
   ]
 }

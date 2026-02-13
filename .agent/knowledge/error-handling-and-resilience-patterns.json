@@ -1,9 +1,29 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "error-handling-and-resilience-patterns",
   "name": "Error Handling and Resilience Patterns",
-  "description": "Patterns for retry strategies, fallbacks, circuit breakers, and error handling in agent systems",
+  "title": "Error Handling and Resilience Patterns",
+  "description": "Patterns for retry strategies, fallbacks, circuit breakers, graceful degradation, and error handling in agent systems",
   "version": "1.0.0",
-  "category": "agent-development",
+  "category": "core",
+  "axiomAlignment": {
+    "A1_verifiability": "Error categorization and structured logging enable verifiable failure analysis",
+    "A2_user_primacy": "Fallbacks and graceful degradation preserve user-facing functionality",
+    "A3_transparency": "Explicit error types and retry logic make failure handling traceable",
+    "A4_non_harm": "Circuit breakers and retry limits prevent cascading failures",
+    "A5_consistency": "Unified error handling patterns across retry, fallback, and circuit breaker strategies"
+  },
+  "related_skills": [
+    "tool-usage",
+    "api-integration-patterns",
+    "langchain-usage",
+    "logging-monitoring"
+  ],
+  "related_knowledge": [
+    "langchain-patterns.json",
+    "api-integration-patterns.json",
+    "cpi-error-handling.json"
+  ],
   "patterns": {
     "retry_strategies": {
       "exponential_backoff": {
@@ -14,15 +34,16 @@
           "Set maximum retry attempts",
           "Add jitter to prevent thundering herd",
           "Only retry idempotent operations"
-        ]
+        ],
+        "use_when": "Apply when exponential backoff is needed in Error Handling and Resilience Patterns"
       },
       "fixed_delay": {
         "description": "Retry with fixed delay between attempts",
         "code_example": "from tenacity import retry, stop_after_attempt, wait_fixed\n\n@retry(\n    stop=stop_after_attempt(3),\n    wait=wait_fixed(5)  # Wait 5 seconds between retries\n)\ndef operation_with_fixed_retry():\n    # ... operation\n    pass",
-        "use_when": [
-          "Rate limiting",
-          "Known recovery time",
-          "Simple retry logic"
+        "use_when": "Rate limiting; Known recovery time; Simple retry logic",
+        "best_practices": [
+          "Document the pattern usage and rationale in code comments",
+          "Validate implementation against domain requirements before deployment"
         ]
       },
       "custom_retry_logic": {
@@ -33,8 +54,16 @@
           "Log retry attempts",
           "Track retry metrics",
           "Set reasonable limits"
-        ]
-      }
+        ],
+        "use_when": "Apply when custom retry logic is needed in Error Handling and Resilience Patterns"
+      },
+      "description": "Category grouping: exponential_backoff, fixed_delay, custom_retry_logic",
+      "use_when": "Apply when retry strategies patterns are needed in Error Handling and Resilience Patterns",
+      "code_example": "# See child patterns under retry_strategies for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "fallback_strategies": {
       "primary_fallback": {
@@ -45,7 +74,8 @@
           "Log fallback usage",
           "Monitor fallback frequency",
           "Ensure fallback data quality"
-        ]
+        ],
+        "use_when": "Apply when primary fallback is needed in Error Handling and Resilience Patterns"
       },
       "degraded_mode": {
         "description": "Degrade functionality instead of failing",
@@ -55,7 +85,8 @@
           "Inform users of degraded functionality",
           "Monitor degradation frequency",
           "Automatically recover when possible"
-        ]
+        ],
+        "use_when": "Apply when degraded mode is needed in Error Handling and Resilience Patterns"
       },
       "default_values": {
         "description": "Use default values on failure",
@@ -65,8 +96,16 @@
           "Log default usage",
           "Validate defaults",
           "Document default behavior"
-        ]
-      }
+        ],
+        "use_when": "Apply when default values is needed in Error Handling and Resilience Patterns"
+      },
+      "description": "Category grouping: primary_fallback, degraded_mode, default_values",
+      "use_when": "Apply when fallback strategies patterns are needed in Error Handling and Resilience Patterns",
+      "code_example": "# See child patterns under fallback_strategies for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "circuit_breakers": {
       "basic_circuit_breaker": {
@@ -77,7 +116,8 @@
           "Configure recovery timeout",
           "Monitor circuit breaker state",
           "Alert on circuit open"
-        ]
+        ],
+        "use_when": "Apply when basic circuit breaker is needed in Error Handling and Resilience Patterns"
       },
       "custom_circuit_breaker": {
         "description": "Custom circuit breaker implementation",
@@ -87,8 +127,16 @@
           "Implement half-open state",
           "Reset on success",
           "Log state changes"
-        ]
-      }
+        ],
+        "use_when": "Apply when custom circuit breaker is needed in Error Handling and Resilience Patterns"
+      },
+      "description": "Category grouping: basic_circuit_breaker, custom_circuit_breaker",
+      "use_when": "Apply when circuit breakers patterns are needed in Error Handling and Resilience Patterns",
+      "code_example": "# See child patterns under circuit_breakers for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "error_categorization": {
       "transient_errors": {
@@ -99,7 +147,8 @@
           "Retry only transient errors",
           "Use appropriate retry strategy",
           "Log error types"
-        ]
+        ],
+        "use_when": "Apply when transient errors is needed in Error Handling and Resilience Patterns"
       },
       "permanent_errors": {
         "description": "Handle permanent errors without retry",
@@ -109,8 +158,16 @@
           "Log and handle gracefully",
           "Return appropriate error responses",
           "Inform users clearly"
-        ]
-      }
+        ],
+        "use_when": "Apply when permanent errors is needed in Error Handling and Resilience Patterns"
+      },
+      "description": "Category grouping: transient_errors, permanent_errors",
+      "use_when": "Apply when error categorization patterns are needed in Error Handling and Resilience Patterns",
+      "code_example": "# See child patterns under error_categorization for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "error_logging": {
       "structured_logging": {
@@ -121,18 +178,27 @@
           "Include context in logs",
           "Log error types and messages",
           "Include tracebacks for debugging"
-        ]
+        ],
+        "use_when": "Apply when structured logging is needed in Error Handling and Resilience Patterns"
       },
       "error_metrics": {
-        "description": "Track error metrics",
+        "description": "Pattern for error_metrics: implement acc",
         "code_example": "from collections import defaultdict\n\nclass ErrorTracker:\n    def __init__(self):\n        self.error_counts = defaultdict(int)\n        self.error_types = defaultdict(list)\n    \n    def track_error(self, error: Exception, context: dict = None):\n        error_type = type(error).__name__\n        self.error_counts[error_type] += 1\n        self.error_types[error_type].append({\n            'error': str(error),\n            'context': context,\n            'timestamp': datetime.now().isoformat()\n        })\n    \n    def get_error_rate(self, error_type: str) -> float:\n        total = sum(self.error_counts.values())\n        return self.error_counts[error_type] / total if total > 0 else 0.0",
         "best_practices": [
           "Track error counts by type",
           "Calculate error rates",
           "Monitor error trends",
           "Alert on high error rates"
-        ]
-      }
+        ],
+        "use_when": "Apply when error metrics is needed in Error Handling and Resilience Patterns"
+      },
+      "description": "Category grouping: structured_logging, error_metrics",
+      "use_when": "Apply when error logging patterns are needed in Error Handling and Resilience Patterns",
+      "code_example": "# See child patterns under error_logging for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     },
     "graceful_degradation": {
       "timeout_handling": {
@@ -143,7 +209,8 @@
           "Handle timeout exceptions",
           "Provide fallback on timeout",
           "Log timeout events"
-        ]
+        ],
+        "use_when": "Apply when timeout handling is needed in Error Handling and Resilience Patterns"
       },
       "partial_failure": {
         "description": "Handle partial failures",
@@ -153,8 +220,16 @@
           "Track success and failures",
           "Return partial results",
           "Log individual failures"
-        ]
-      }
+        ],
+        "use_when": "Apply when partial failure is needed in Error Handling and Resilience Patterns"
+      },
+      "description": "Category grouping: timeout_handling, partial_failure",
+      "use_when": "Apply when graceful degradation patterns are needed in Error Handling and Resilience Patterns",
+      "code_example": "# See child patterns under graceful_degradation for implementation examples",
+      "best_practices": [
+        "Refer to specific child patterns for implementation details",
+        "Apply the category pattern appropriate to your use case"
+      ]
     }
   },
   "best_practices": [
@@ -222,11 +297,5 @@
       "problem": "Duplicate side effects (double charges, duplicate records, data corruption) from retrying non-idempotent operations",
       "solution": "Only retry idempotent operations (GET, safe operations), use idempotency keys for non-idempotent operations, check for duplicates before retry"
     }
-  ],
-  "related_skills": [
-    "tool-usage",
-    "api-integration-patterns",
-    "langchain-usage",
-    "logging-monitoring"
   ]
 }

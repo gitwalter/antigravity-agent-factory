@@ -1,12 +1,30 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "multi-agent-patterns",
+  "name": "Multi-Agent Patterns",
   "title": "Multi-Agent Patterns",
-  "description": "Consolidated patterns for multi-agent systems using CrewAI and AutoGen",
+  "description": "Consolidated patterns for multi-agent systems using CrewAI, AutoGen, and LangGraph with role-based orchestration and coordination",
   "version": "1.0.0",
+  "category": "specialized",
   "axiomAlignment": {
+    "A1_verifiability": "Clear roles and task outputs enable verification of agent behavior",
     "A2_user_primacy": "Multi-agent systems coordinate to serve user goals",
-    "A3_transparency": "Agent interactions and decisions are traceable"
+    "A3_transparency": "Agent interactions and decisions are traceable",
+    "A4_non_harm": "Iteration limits and error handling prevent runaway costs and failures",
+    "A5_consistency": "Unified coordination patterns across frameworks"
   },
+  "related_skills": [
+    "crewai-agents",
+    "crewai-workflow",
+    "subagent-orchestration",
+    "langgraph-agent-building"
+  ],
+  "related_knowledge": [
+    "agent-handoffs.json",
+    "langgraph-workflows.json",
+    "crewai-patterns.json",
+    "autogen-patterns.json"
+  ],
   "framework_comparison": {
     "crewai": {
       "description": "Role-based agent orchestration",
@@ -48,7 +66,8 @@
         "Set clear, specific goals",
         "Use allow_delegation appropriately",
         "Set max_iter to prevent infinite loops"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     },
     "task_workflow": {
       "description": "Define tasks with dependencies",
@@ -57,7 +76,8 @@
         "Use context to pass information between tasks",
         "Order tasks logically in sequential process",
         "Define clear expected_output for each task"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     },
     "hierarchical_crew": {
       "description": "Manager coordinates worker agents",
@@ -66,7 +86,8 @@
         "Manager should have allow_delegation=True",
         "Use capable LLM for manager decisions",
         "Good for complex, ambiguous tasks"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     }
   },
   "autogen_patterns": {
@@ -77,7 +98,8 @@
         "Set max_consecutive_auto_reply to prevent loops",
         "Use Docker for code execution in production",
         "TERMINATE mode allows human to end conversation"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     },
     "group_chat": {
       "description": "Multiple agents collaborating",
@@ -86,7 +108,8 @@
         "Set max_round to prevent infinite conversations",
         "Use 'auto' speaker selection for dynamic conversations",
         "Use 'round_robin' for equal participation"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     },
     "teachable_agent": {
       "description": "Agent that learns from feedback",
@@ -95,7 +118,8 @@
         "Use persistent database for long-term memory",
         "Review learned content periodically",
         "Set reset_db=True for fresh start"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     }
   },
   "langgraph_patterns": {
@@ -107,40 +131,71 @@
         "Implement proper routing logic",
         "Allow cycles for iterative refinement",
         "Add persistence for long-running workflows"
-      ]
+      ],
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     }
   },
   "coordination_patterns": {
     "sequential": {
       "description": "Agents execute in order",
       "use_when": "Clear dependencies between tasks",
-      "example": "Research \u2192 Write \u2192 Review"
+      "example": "Research \u2192 Write \u2192 Review",
+      "code_example": "Research \u2192 Write \u2192 Review",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
     "parallel": {
       "description": "Agents execute simultaneously",
       "use_when": "Independent subtasks",
-      "example": "Multiple researchers on different topics"
+      "example": "Multiple researchers on different topics",
+      "code_example": "Multiple researchers on different topics",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
     "hierarchical": {
       "description": "Manager delegates to workers",
       "use_when": "Complex tasks needing coordination",
-      "example": "PM assigns tasks to specialists"
+      "example": "PM assigns tasks to specialists",
+      "code_example": "PM assigns tasks to specialists",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
     "debate": {
       "description": "Agents argue different perspectives",
       "use_when": "Need balanced analysis",
-      "example": "Pro vs Con analysis"
+      "example": "Pro vs Con analysis",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     },
     "consensus": {
       "description": "Agents reach agreement",
       "use_when": "Need validated decisions",
-      "example": "Code review approval"
+      "example": "Code review approval",
+      "code_example": "Code review approval",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     }
   },
   "tool_patterns": {
     "shared_tools": {
       "description": "Tools available to multiple agents",
-      "code_example": "from crewai_tools import tool\n\n@tool('search_database')\ndef search_database(query: str) -> str:\n    '''Search the internal database.'''\n    return database.search(query)\n\n@tool('create_document')\ndef create_document(title: str, content: str) -> str:\n    '''Create a new document.'''\n    return docs.create(title, content)\n\n# Assign to relevant agents\nresearcher = Agent(\n    role='Researcher',\n    tools=[search_database]\n)\n\nwriter = Agent(\n    role='Writer',\n    tools=[search_database, create_document]\n)"
+      "code_example": "from crewai_tools import tool\n\n@tool('search_database')\ndef search_database(query: str) -> str:\n    '''Search the internal database.'''\n    return database.search(query)\n\n@tool('create_document')\ndef create_document(title: str, content: str) -> str:\n    '''Create a new document.'''\n    return docs.create(title, content)\n\n# Assign to relevant agents\nresearcher = Agent(\n    role='Researcher',\n    tools=[search_database]\n)\n\nwriter = Agent(\n    role='Writer',\n    tools=[search_database, create_document]\n)",
+      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows.",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
     }
   },
   "anti_patterns": [
@@ -179,9 +234,70 @@
     "Test with simple scenarios first",
     "Monitor costs and token usage"
   ],
-  "id": "multi-agent-patterns",
-  "name": "Multi Agent Patterns",
-  "category": "patterns",
-  "patterns": {},
-  "best_practices": []
+  "patterns": {
+    "role_based_orchestration": {
+      "description": "Define agents with distinct roles and goals using CrewAI",
+      "use_when": "Clear role separation needed for complex workflows",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    },
+    "task_dependencies": {
+      "description": "Define tasks with context dependencies for sequential execution",
+      "use_when": "Tasks have clear dependencies and need to pass data between agents",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    },
+    "hierarchical_crew": {
+      "description": "Manager agent coordinates worker agents in hierarchical structure",
+      "use_when": "Complex tasks needing intelligent delegation and coordination",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    },
+    "group_chat": {
+      "description": "Multiple agents collaborate through conversational interactions",
+      "use_when": "Dynamic problem-solving requiring multiple perspectives",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    },
+    "multi_agent_graph": {
+      "description": "Agents as nodes in LangGraph state machine",
+      "use_when": "Complex control flow with cycles, state management, and conditional routing",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    },
+    "shared_tools": {
+      "description": "Tools available to multiple agents for common operations",
+      "use_when": "Agents need access to same resources or capabilities",
+      "code_example": "from langchain_core.tools import tool\nfrom langchain_openai import ChatOpenAI\n\n@tool\ndef example_tool(query: str) -> str:\n    '''Example tool for agent use.'''\n    return f\"Result for: {query}\"\n\nllm = ChatOpenAI(model='gpt-4', temperature=0)\ntools = [example_tool]\nagent = llm.bind_tools(tools)",
+      "best_practices": [
+        "Set max_iterations to prevent infinite agent loops",
+        "Use structured output for reliable parsing of agent responses"
+      ]
+    }
+  },
+  "best_practices": [
+    "Define clear, distinct agent roles with non-overlapping responsibilities",
+    "Write detailed backstories or system messages that guide agent behavior",
+    "Set iteration limits (max_iter, max_round) to prevent infinite loops",
+    "Use appropriate coordination pattern (sequential, parallel, hierarchical) for the task",
+    "Implement proper error handling with fallbacks and retry mechanisms",
+    "Enable verbose mode during development for debugging agent interactions",
+    "Test with simple scenarios first before complex multi-agent workflows",
+    "Monitor costs and token usage across all agents in the system"
+  ]
 }

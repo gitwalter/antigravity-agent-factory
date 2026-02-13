@@ -3,18 +3,17 @@ description: Core Web Vitals optimization, code splitting, and React performance
 name: frontend-performance
 type: skill
 ---
-
 # Frontend Performance
 
 Core Web Vitals optimization, code splitting, and React performance patterns
 
-## 
-# Frontend Performance Optimization
-
-## 
 # Frontend Performance Optimization
 
 ## Process
+
+1. Review the task requirements.
+2. Apply the skill's methodology.
+3. Validate the output against the defined criteria.
 ### 1. Core Web Vitals Optimization
 
 **Largest Contentful Paint (LCP)** - Optimize the largest element load time:
@@ -223,193 +222,8 @@ async function getData() {
 }
 ```
 
-```tsx
-// Optimize images with next/image
-import Image from 'next/image';
-
-export function HeroSection() {
-  return (
-    <Image
-      src="/hero-image.jpg"
-      alt="Hero"
-      width={1200}
-      height={600}
-      priority // Preload above-the-fold images
-      placeholder="blur" // Show blur placeholder while loading
-      quality={85} // Optimize quality vs size
-    />
-  );
-}
-```
-
-```tsx
-// Use React.memo for expensive components
-import { memo } from 'react';
-
-export const ExpensiveList = memo(({ items }: { items: Item[] }) => {
-  return (
-    <ul>
-      {items.map(item => (
-        <li key={item.id}>{item.name}</li>
-      ))}
-    </ul>
-  );
-}, (prevProps, nextProps) => {
-  // Custom comparison function
-  return prevProps.items.length === nextProps.items.length;
-});
-```
-
-```tsx
-// Reserve space for dynamic content
-export function ProductCard({ product }: { product: Product }) {
-  return (
-    <div className="card" style={{ minHeight: '400px' }}>
-      {product.image && (
-        <img 
-          src={product.image} 
-          alt={product.name}
-          width={300}
-          height={300}
-          style={{ display: 'block' }} // Prevent inline spacing
-        />
-      )}
-    </div>
-  );
-}
-```
-
-```tsx
-import { useMemo, useCallback, useState } from 'react';
-
-export function ProductList({ products }: { products: Product[] }) {
-  const [filter, setFilter] = useState('');
-  
-  // Memoize expensive computations
-  const filteredProducts = useMemo(() => {
-    return products.filter(p => 
-      p.name.toLowerCase().includes(filter.toLowerCase())
-    );
-  }, [products, filter]);
-  
-  // Memoize callbacks to prevent child re-renders
-  const handleClick = useCallback((id: string) => {
-    console.log('Clicked:', id);
-  }, []);
-  
-  return (
-    <div>
-      <input 
-        value={filter} 
-        onChange={(e) => setFilter(e.target.value)} 
-      />
-      {filteredProducts.map(product => (
-        <ProductItem 
-          key={product.id} 
-          product={product}
-          onClick={handleClick}
-        />
-      ))}
-    </div>
-  );
-}
-```
-
-```tsx
-// Lazy load heavy components
-import { lazy, Suspense } from 'react';
-
-const HeavyChart = lazy(() => import('./HeavyChart'));
-const AdminPanel = lazy(() => import('./AdminPanel'));
-
-export function Dashboard() {
-  return (
-    <div>
-      <Suspense fallback={<div>Loading chart...</div>}>
-        <HeavyChart />
-      </Suspense>
-      
-      {isAdmin && (
-        <Suspense fallback={<div>Loading admin...</div>}>
-          <AdminPanel />
-        </Suspense>
-      )}
-    </div>
-  );
-}
-```
-
-```tsx
-// next/font for automatic font optimization
-import { Inter } from 'next/font/google';
-
-const inter = Inter({ 
-  subsets: ['latin'],
-  display: 'swap', // Prevent invisible text during font load
-  preload: true,
-});
-
-export default function Layout({ children }: { children: React.ReactNode }) {
-  return (
-    <html className={inter.className}>
-      <body>{children}</body>
-    </html>
-  );
-}
-```
-
-```typescript
-// next.config.js
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-});
-
-module.exports = withBundleAnalyzer({
-  // Your Next.js config
-  experimental: {
-    optimizePackageImports: ['@mui/material', 'lodash'],
-  },
-});
-```
-
-```tsx
-// app/dashboard/page.tsx
-import { Suspense } from 'react';
-
-async function SlowData() {
-  const data = await fetchData(); // Server component
-  return <div>{data}</div>;
-}
-
-export default function Dashboard() {
-  return (
-    <div>
-      <h1>Dashboard</h1>
-      <Suspense fallback={<Skeleton />}>
-        <SlowData />
-      </Suspense>
-    </div>
-  );
-}
-```
-
-```typescript
-// Route segment config for Next.js App Router
-export const revalidate = 3600; // ISR: revalidate every hour
-
-// Or per-request caching
-async function getData() {
-  const res = await fetch('https://api.example.com/data', {
-    next: { 
-      revalidate: 60, // Cache for 60 seconds
-      tags: ['products'] // Tag-based revalidation
-    }
-  });
-  return res.json();
-}
-```
-
 ## Best Practices
+
 - **Code Splitting**: Use dynamic imports and React.lazy to split code by route and component, reducing initial bundle size
 - **Lazy Loading**: Lazy load images, components, and routes that aren't immediately visible to improve initial load time
 - **Image Optimization**: Use Next.js Image component or similar with proper sizing, formats (WebP/AVIF), and lazy loading
@@ -420,6 +234,7 @@ async function getData() {
 - **Performance Monitoring**: Set up Core Web Vitals monitoring and performance budgets to track and maintain performance
 
 ## Output
+
 - Optimized React components with memoization
 - Code-split routes and components
 - Optimized images and fonts
@@ -428,7 +243,9 @@ async function getData() {
 - Caching configuration for static and dynamic content
 - Performance monitoring setup
 
+## When to Use
+This skill should be used when strict adherence to the defined process is required.
+
 ## Prerequisites
-> [!IMPORTANT]
-> Requirements:
-> - Knowledge: frontend-performance-patterns.json
+- Basic understanding of the agent factory context.
+- Access to the necessary tools and resources.

@@ -6,7 +6,7 @@ Tests SocietyContext, AgentSocietyBridge, and MessageRouter.
 
 import pytest
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from lib.society.integration import (
@@ -349,7 +349,7 @@ class TestMessageRouter:
         
         event = AgentEvent(
             event_id="test-evt",
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             sequence=1,
             previous_hash="",
             agent=Agent(id="agent-a", type=AgentType.WORKER, public_key="pk"),
@@ -379,7 +379,7 @@ class TestMessageRouter:
         
         event = AgentEvent(
             event_id="test-evt",
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             sequence=1,
             previous_hash="",
             agent=Agent(id="sender", type=AgentType.WORKER, public_key="pk"),

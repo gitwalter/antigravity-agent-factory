@@ -239,9 +239,9 @@ For visual documentation, see the [diagrams/](diagrams/) folder:
 ```
 antigravity-agent-factory/
 ├── .agent/
-│   ├── agents/                  # Factory's own agents (28 agents)
+│   ├── agents/                  # Factory's own agents (29 agents)
 │   │   └── *.md                 # debug-conductor, git-specialist, integrity-guardian, etc.
-│   └── skills/                  # Factory's own skills (116 skills)
+│   └── skills/                  # Factory's own skills (127 skills)
 │       ├── agent-generation/
 │       ├── ai-agent-dev/
 │       ├── algo-trading/
@@ -252,7 +252,7 @@ antigravity-agent-factory/
 │   ├── patterns/                    # Reusable patterns (113+ files)
 │   ├── templates/                   # Code templates (307+ files)
 │   ├── blueprints/                  # Technology stack blueprints (34 blueprints)
-│   ├── knowledge/                   # Knowledge base (234 files)
+│   ├── knowledge/                   # Knowledge base (257 files)
 │   └── workflows/                   # Workflow definitions
 │       ├── python-fastapi/
 │   ├── python-streamlit/

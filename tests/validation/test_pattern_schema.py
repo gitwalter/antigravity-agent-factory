@@ -11,11 +11,14 @@ from pathlib import Path
 import pytest
 from jsonschema import Draft7Validator
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from scripts.validation.schema_validator import load_schemas  # noqa: E402
 
+# Load canonical schemas
+_SCHEMAS = load_schemas()
+AGENT_SCHEMA = _SCHEMAS.get("agent", {})
+SKILL_SCHEMA = _SCHEMAS.get("skill", {})
 
-# Define agent pattern schema
+# Define internal pattern metadata schemas (these wrap the canonical frontmatter)
 AGENT_PATTERN_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
@@ -32,17 +35,7 @@ AGENT_PATTERN_SCHEMA = {
                 "description": {"type": "string"}
             }
         },
-        "frontmatter": {
-            "type": "object",
-            "required": ["name", "type"],
-            "properties": {
-                "name": {"type": "string"},
-                "description": {"type": "string"},
-                "type": {"type": "string", "enum": ["agent"]},
-                "skills": {"type": "array", "items": {"type": "string"}},
-                "knowledge": {"type": "array", "items": {"type": "string"}}
-            }
-        },
+        "frontmatter": AGENT_SCHEMA,
         "sections": {
             "type": "object",
             "required": ["purpose"],
@@ -61,7 +54,6 @@ AGENT_PATTERN_SCHEMA = {
     }
 }
 
-# Define skill pattern schema
 SKILL_PATTERN_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
@@ -79,17 +71,7 @@ SKILL_PATTERN_SCHEMA = {
                 "composable": {"type": "boolean"}
             }
         },
-        "frontmatter": {
-            "type": "object",
-            "required": ["name", "type"],
-            "properties": {
-                "name": {"type": "string"},
-                "description": {"type": "string"},
-                "type": {"type": "string", "enum": ["skill"]},
-                "skills": {"type": "array", "items": {"type": "string"}},
-                "knowledge": {"type": "array", "items": {"type": "string"}}
-            }
-        },
+        "frontmatter": SKILL_SCHEMA,
         "sections": {
             "type": "object",
             "properties": {
@@ -148,7 +130,8 @@ class TestAgentPatternSchema:
             
             validation_errors = list(validator.iter_errors(data))
             for error in validation_errors:
-                errors.append(f"{pattern_file.name}: {error.message}")
+                path = ".".join(str(p) for p in error.path)
+                errors.append(f"{pattern_file.name} at '{path}': {error.message}")
         
         if errors:
             pytest.fail("\n".join(errors))
@@ -223,7 +206,8 @@ class TestSkillPatternSchema:
             
             validation_errors = list(validator.iter_errors(data))
             for error in validation_errors:
-                errors.append(f"{pattern_file.name}: {error.message}")
+                path = ".".join(str(p) for p in error.path)
+                errors.append(f"{pattern_file.name} at '{path}': {error.message}")
         
         if errors:
             pytest.fail("\n".join(errors))

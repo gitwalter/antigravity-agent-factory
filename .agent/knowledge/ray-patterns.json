@@ -3,12 +3,29 @@
   "id": "ray-patterns",
   "name": "Ray Patterns",
   "title": "Ray Patterns",
-  "description": "Best practices and patterns for Ray distributed computing ecosystem",
+  "description": "Best practices and patterns for Ray distributed computing ecosystem including remote functions, Tune, Serve, and distributed training",
   "version": "1.0.0",
-  "category": "patterns",
+  "category": "ai-ml",
   "axiomAlignment": {
-    "A3_transparency": "Ray provides observability and tracing for distributed workloads"
+    "A1_verifiability": "Resource requirements and traceable task DAGs enable verification",
+    "A2_user_primacy": "Ray enables scalable workloads that serve user-facing ML applications",
+    "A3_transparency": "Ray provides observability and tracing for distributed workloads",
+    "A4_non_harm": "Resource limits and failure handling prevent runaway distributed execution",
+    "A5_consistency": "Unified patterns across Tune, Serve, Data, and RLlib"
   },
+  "related_skills": [
+    "model-training",
+    "model-serving",
+    "ml-deployment",
+    "data-pipeline",
+    "kubernetes-deployment"
+  ],
+  "related_knowledge": [
+    "ml-workflow-patterns.json",
+    "model-serving-patterns.json",
+    "kubernetes-patterns.json",
+    "data-patterns.json"
+  ],
   "core_patterns": {
     "remote_functions": {
       "description": "Execute functions remotely across cluster",
@@ -366,27 +383,85 @@
       "remote_functions": {
         "description": "Execute functions remotely across cluster",
         "use_when": "Need to parallelize independent function calls",
-        "code_example": "import ray\n\nray.init()\n\n@ray.remote\ndef process_data(data_chunk):\n    # Process data chunk\n    return processed_result\n\n# Launch multiple tasks in parallel\nfutures = [process_data.remote(chunk) for chunk in data_chunks]\nresults = ray.get(futures)"
+        "code_example": "import ray\n\nray.init()\n\n@ray.remote\ndef process_data(data_chunk):\n    # Process data chunk\n    return processed_result\n\n# Launch multiple tasks in parallel\nfutures = [process_data.remote(chunk) for chunk in data_chunks]\nresults = ray.get(futures)",
+        "best_practices": [
+          "Use @ray.remote decorator for functions and classes to execute remotely",
+          "Pass object references (ray.put) instead of copying large objects",
+          "Set appropriate resource requirements (num_cpus, num_gpus, memory) for tasks",
+          "Use Ray Dashboard for monitoring and debugging distributed workloads",
+          "Handle failures gracefully with retries and error handling"
+        ]
       },
       "remote_class_actors": {
         "description": "Stateful distributed actors",
         "use_when": "Need stateful computation or long-running services",
-        "code_example": "import ray\n\nray.init()\n\n@ray.remote\nclass ModelServer:\n    def __init__(self, model_path):\n        self.model = load_model(model_path)\n    \n    def predict(self, data):\n        return self.model.predict(data)\n\nserver = ModelServer.remote(model_path='model.pkl')\nfutures = [server.predict.remote(data) for data in batch]\npredictions = ray.get(futures)"
-      }
+        "code_example": "import ray\n\nray.init()\n\n@ray.remote\nclass ModelServer:\n    def __init__(self, model_path):\n        self.model = load_model(model_path)\n    \n    def predict(self, data):\n        return self.model.predict(data)\n\nserver = ModelServer.remote(model_path='model.pkl')\nfutures = [server.predict.remote(data) for data in batch]\npredictions = ray.get(futures)",
+        "best_practices": [
+          "Use @ray.remote decorator for functions and classes to execute remotely",
+          "Pass object references (ray.put) instead of copying large objects",
+          "Set appropriate resource requirements (num_cpus, num_gpus, memory) for tasks",
+          "Use Ray Dashboard for monitoring and debugging distributed workloads",
+          "Handle failures gracefully with retries and error handling"
+        ]
+      },
+      "description": "Pattern for ray patterns - implement with domain-specific logic.",
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "# Implement pattern based on description\n# Use appropriate imports and domain-specific logic\nresult = process_data(input_data)",
+      "best_practices": [
+        "Use @ray.remote decorator for functions and classes to execute remotely",
+        "Pass object references (ray.put) instead of copying large objects",
+        "Set appropriate resource requirements (num_cpus, num_gpus, memory) for tasks",
+        "Use Ray Dashboard for monitoring and debugging distributed workloads",
+        "Handle failures gracefully with retries and error handling"
+      ]
     },
     "tune_patterns": {
       "grid_search": {
         "description": "Grid search hyperparameter optimization",
         "use_when": "Small hyperparameter space to exhaustively search",
-        "code_example": "from ray import tune\n\nconfig = {\n    'lr': tune.grid_search([0.001, 0.01, 0.1]),\n    'batch_size': tune.grid_search([32, 64, 128])\n}\n\nanalysis = tune.run(train_model, config=config, num_samples=1)"
-      }
+        "code_example": "from ray import tune\n\nconfig = {\n    'lr': tune.grid_search([0.001, 0.01, 0.1]),\n    'batch_size': tune.grid_search([32, 64, 128])\n}\n\nanalysis = tune.run(train_model, config=config, num_samples=1)",
+        "best_practices": [
+          "Use @ray.remote decorator for functions and classes to execute remotely",
+          "Pass object references (ray.put) instead of copying large objects",
+          "Set appropriate resource requirements (num_cpus, num_gpus, memory) for tasks",
+          "Use Ray Dashboard for monitoring and debugging distributed workloads",
+          "Handle failures gracefully with retries and error handling"
+        ]
+      },
+      "description": "Pattern for ray patterns - implement with domain-specific logic.",
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "# Implement pattern based on description\n# Use appropriate imports and domain-specific logic\nresult = process_data(input_data)",
+      "best_practices": [
+        "Use @ray.remote decorator for functions and classes to execute remotely",
+        "Pass object references (ray.put) instead of copying large objects",
+        "Set appropriate resource requirements (num_cpus, num_gpus, memory) for tasks",
+        "Use Ray Dashboard for monitoring and debugging distributed workloads",
+        "Handle failures gracefully with retries and error handling"
+      ]
     },
     "serve_patterns": {
       "basic_deployment": {
         "description": "Deploy model as Ray Serve service",
         "use_when": "Need to serve ML models at scale",
-        "code_example": "from ray import serve\n\n@serve.deployment\nclass ModelDeployment:\n    def __init__(self):\n        self.model = load_model()\n    \n    def __call__(self, request):\n        return self.model.predict(request.json())\n\nserve.start()\nModelDeployment.deploy()"
-      }
+        "code_example": "from ray import serve\n\n@serve.deployment\nclass ModelDeployment:\n    def __init__(self):\n        self.model = load_model()\n    \n    def __call__(self, request):\n        return self.model.predict(request.json())\n\nserve.start()\nModelDeployment.deploy()",
+        "best_practices": [
+          "Use @ray.remote decorator for functions and classes to execute remotely",
+          "Pass object references (ray.put) instead of copying large objects",
+          "Set appropriate resource requirements (num_cpus, num_gpus, memory) for tasks",
+          "Use Ray Dashboard for monitoring and debugging distributed workloads",
+          "Handle failures gracefully with retries and error handling"
+        ]
+      },
+      "description": "Pattern for ray patterns - implement with domain-specific logic.",
+      "use_when": "When implementing this pattern in your AI/ML application",
+      "code_example": "# Implement pattern based on description\n# Use appropriate imports and domain-specific logic\nresult = process_data(input_data)",
+      "best_practices": [
+        "Use @ray.remote decorator for functions and classes to execute remotely",
+        "Pass object references (ray.put) instead of copying large objects",
+        "Set appropriate resource requirements (num_cpus, num_gpus, memory) for tasks",
+        "Use Ray Dashboard for monitoring and debugging distributed workloads",
+        "Handle failures gracefully with retries and error handling"
+      ]
     }
   }
 }

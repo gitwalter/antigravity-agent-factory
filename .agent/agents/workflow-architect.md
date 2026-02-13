@@ -34,9 +34,8 @@ Design, create, and manage sophisticated workflows that orchestrate complex mult
 - [[research-first]]
 
 ## Knowledge
-- [Factory Automation](../../docs/automation/FACTORY_AUTOMATION.md)
-- [workflow-entities.json](../../knowledge/workflow-entities.json)
-- [workflow-patterns.json](../../knowledge/workflow-patterns.json)
-- [mcp-servers-catalog.json](../../knowledge/mcp-servers-catalog.json)
-- [skill-catalog.json](../../knowledge/skill-catalog.json)
-- [research-first-development.json](../../knowledge/research-first-development.json)
+- [workflow-entities.json](../knowledge/workflow-entities.json)
+- [workflow-patterns.json](../knowledge/workflow-patterns.json)
+- [mcp-servers-catalog.json](../knowledge/mcp-servers-catalog.json)
+- [skill-catalog.json](../knowledge/skill-catalog.json)
+- [research-first-development.json](../knowledge/research-first-development.json)

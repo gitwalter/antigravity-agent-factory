@@ -2,281 +2,251 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "model-context-protocol-patterns",
   "name": "Model Context Protocol Patterns",
-  "title": "Model Context Protocol Patterns",
-  "description": "Best practices and patterns for building MCP servers and clients",
+  "title": "MCP Patterns",
+  "description": "Best practices and patterns for Model Context Protocol (MCP) - the open standard for connecting AI agents to external tools, resources, and prompts across frameworks",
   "version": "1.0.0",
-  "category": "patterns",
+  "last_updated": "2026-02-11",
+  "category": "integration",
   "axiomAlignment": {
-    "A1_verifiability": "MCP enables traceable tool and resource interactions",
-    "A3_transparency": "Protocol makes agent capabilities explicit and discoverable"
+    "A1_verifiability": "MCP standardizes tool interfaces for verification across frameworks",
+    "A2_user_primacy": "Approval flows and permissions put users in control",
+    "A3_transparency": "Explicit tool/resource/prompt schemas make capabilities clear",
+    "A4_non_harm": "Security patterns prevent unauthorized access",
+    "A5_consistency": "Unified protocol across all MCP-compatible agents"
   },
-  "server_design_principles": {
-    "single_responsibility": {
-      "description": "Each server should have a focused purpose",
-      "use_when": "Designing new MCP servers",
+  "related_skills": [
+    "mcp-integration",
+    "tool-usage",
+    "security-sandboxing"
+  ],
+  "related_knowledge": [
+    "langchain-patterns.json",
+    "anthropic-patterns.json",
+    "crewai-patterns.json"
+  ],
+  "patterns": {
+    "mcp_overview": {
+      "description": "Model Context Protocol fundamentals",
+      "use_when": "Understanding MCP architecture before building servers or integrating agents",
+      "code_example": "# MCP configuration in mcp.json\n{\n  \"mcpServers\": {\n    \"filesystem\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@anthropic/mcp-filesystem\", \"/allowed/path\"]\n    }\n  }\n}",
+      "what_is_mcp": "Open standard for connecting AI assistants to external data sources, tools, and prompts",
+      "core_primitives": {
+        "tools": "Functions the model can invoke (e.g., search, write_file)",
+        "resources": "Data the model can read (e.g., files, database records)",
+        "prompts": "Reusable prompt templates for common tasks"
+      },
+      "architecture": {
+        "host": "Application running the AI model (e.g., Claude Desktop, Cursor)",
+        "client": "Protocol handler within the host",
+        "server": "External service providing tools/resources/prompts"
+      },
       "best_practices": [
-        "One server per domain or capability",
-        "Avoid mixing unrelated functionalities",
-        "Keep server scope manageable"
+        "Use MCP for framework-agnostic tool sharing",
+        "Follow the host-client-server architecture",
+        "Expose tools, resources, and prompts through standard primitives",
+        "Leverage cross-platform compatibility"
+      ]
+    },
+    "server_types": {
+      "description": "MCP transport mechanisms for server communication",
+      "use_when": "Choosing the right transport for MCP server deployment",
+      "code_example": "# stdio for local, Streamable HTTP for remote\n# mcp.json\n{\n  \"mcpServers\": {\n    \"local-tool\": {\"command\": \"npx\", \"args\": [\"-y\", \"@anthropic/mcp-filesystem\"]},\n    \"remote-tool\": {\"url\": \"https://api.example.com/mcp\", \"transport\": \"streamable-http\"}\n  }\n}",
+      "stdio": {
+        "description": "Standard I/O transport for local processes",
+        "use_when": "Local single-user tools, development, CLI integration",
+        "code_example": "# mcp.json configuration for stdio server\n{\n  \"mcpServers\": {\n    \"filesystem\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@anthropic/mcp-filesystem\", \"/allowed/path\"],\n      \"transport\": \"stdio\"\n    },\n    \"python-tool\": {\n      \"command\": \"python\",\n      \"args\": [\"-m\", \"my_mcp_server\"],\n      \"cwd\": \"/path/to/server\"\n    }\n  }\n}",
+        "best_practices": [
+          "Use for local development and testing",
+          "Restrict file paths with arguments",
+          "Set working directory for relative paths"
+        ]
+      },
+      "streamable_http": {
+        "description": "HTTP-based transport for scalable remote access (recommended)",
+        "use_when": "Production deployments, multi-client access, cloud services",
+        "code_example": "# Streamable HTTP server configuration\n{\n  \"mcpServers\": {\n    \"remote-tools\": {\n      \"url\": \"https://mcp.example.com/tools\",\n      \"transport\": \"streamable-http\",\n      \"headers\": {\n        \"Authorization\": \"Bearer ${MCP_API_KEY}\"\n      }\n    }\n  }\n}\n\n# Python server implementation\nfrom mcp.server import Server\nfrom mcp.server.streamable_http import StreamableHTTPServer\n\nserver = Server('my-tools')\n\n@server.tool()\nasync def search(query: str) -> str:\n    \"\"\"Search for information.\"\"\"\n    return f'Results for: {query}'\n\nhttp_server = StreamableHTTPServer(server, port=8080)\nawait http_server.start()",
+        "best_practices": [
+          "Use for production and multi-user scenarios",
+          "Implement authentication with headers",
+          "Enable TLS for secure communication",
+          "Set up health checks and monitoring"
+        ]
+      },
+      "sse_deprecated": {
+        "description": "Server-Sent Events transport (DEPRECATED)",
+        "status": "deprecated",
+        "migration": "Migrate to Streamable HTTP for new implementations",
+        "note": "SSE may still work but is no longer recommended"
+      },
+      "best_practices": [
+        "Use stdio for local development and single-user tools",
+        "Use Streamable HTTP for production multi-client deployments",
+        "Migrate from SSE to Streamable HTTP",
+        "Always implement authentication for remote transports"
+      ]
+    },
+    "building_servers": {
+      "description": "Create MCP servers to expose tools and resources",
+      "use_when": "Sharing capabilities with MCP-compatible agents",
+      "code_example": "from mcp.server import Server\nfrom mcp.server.stdio import StdioServer\nimport asyncio\n\nserver = Server('my-tools')\n\n@server.tool()\nasync def search(query: str) -> str:\n    \"\"\"Search for information.\"\"\"\n    return f'Results for: {query}'\n\nif __name__ == '__main__':\n    asyncio.run(StdioServer(server).run())",
+      "python_server": {
+        "code_example": "from mcp.server import Server\nfrom mcp.types import Tool, Resource, TextContent\nfrom pydantic import BaseModel\n\n# Create server\nserver = Server('my-tools')\n\n# Define tool with Pydantic schema\nclass SearchParams(BaseModel):\n    query: str\n    max_results: int = 10\n\n@server.tool()\nasync def search_database(params: SearchParams) -> str:\n    \"\"\"Search the internal database.\"\"\"\n    results = await db.search(params.query, limit=params.max_results)\n    return '\\n'.join(results)\n\n# Define resource\n@server.resource('config://app/settings')\nasync def get_settings() -> Resource:\n    \"\"\"Get application settings.\"\"\"\n    settings = await load_settings()\n    return Resource(\n        uri='config://app/settings',\n        name='App Settings',\n        mimeType='application/json',\n        text=json.dumps(settings)\n    )\n\n# Define prompt template\n@server.prompt()\nasync def code_review_prompt(code: str, language: str) -> list:\n    \"\"\"Generate a code review prompt.\"\"\"\n    return [\n        {'role': 'user', 'content': f'Review this {language} code:\\n```{language}\\n{code}\\n```'}\n    ]\n\n# Run server\nif __name__ == '__main__':\n    import asyncio\n    from mcp.server.stdio import StdioServer\n    \n    asyncio.run(StdioServer(server).run())"
+      },
+      "typescript_server": {
+        "code_example": "import { Server } from '@modelcontextprotocol/sdk/server';\nimport { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio';\n\nconst server = new Server({\n  name: 'my-tools',\n  version: '1.0.0'\n});\n\n// Define tool\nserver.addTool({\n  name: 'search_database',\n  description: 'Search the internal database',\n  inputSchema: {\n    type: 'object',\n    properties: {\n      query: { type: 'string' },\n      maxResults: { type: 'number', default: 10 }\n    },\n    required: ['query']\n  },\n  handler: async (params) => {\n    const results = await db.search(params.query, params.maxResults);\n    return { content: [{ type: 'text', text: results.join('\\n') }] };\n  }\n});\n\n// Run server\nconst transport = new StdioServerTransport();\nawait server.connect(transport);"
+      },
+      "best_practices": [
+        "Use Pydantic models for Python schemas",
+        "Provide detailed tool descriptions",
+        "Handle errors gracefully with clear messages",
+        "Implement proper resource URI schemes"
+      ]
+    },
+    "gateway_pattern": {
+      "description": "Centralized MCP gateway for routing and security",
+      "use_when": "Managing multiple MCP servers with unified access control",
+      "code_example": "from mcp.gateway import MCPGateway, Route, AuthPolicy\n\n# Create gateway\ngateway = MCPGateway(\n    name='enterprise-mcp-gateway',\n    port=8080\n)\n\n# Define routes to backend servers\ngateway.add_route(Route(\n    path='/tools/filesystem',\n    backend='http://localhost:8001',\n    auth_policy=AuthPolicy.REQUIRE_TOKEN,\n    rate_limit='100/minute'\n))\n\ngateway.add_route(Route(\n    path='/tools/database',\n    backend='http://localhost:8002',\n    auth_policy=AuthPolicy.REQUIRE_APPROVAL,\n    allowed_tools=['read_*']  # Wildcard allow\n))\n\ngateway.add_route(Route(\n    path='/tools/github',\n    backend='http://localhost:8003',\n    auth_policy=AuthPolicy.REQUIRE_TOKEN,\n    denied_tools=['delete_*', 'push_*']  # Deny destructive\n))\n\n# Authentication middleware\n@gateway.auth_handler\nasync def verify_token(request):\n    token = request.headers.get('Authorization')\n    if not token or not await validate_jwt(token):\n        return None  # Deny access\n    return {'user_id': decode_jwt(token)['sub']}\n\n# Approval middleware\n@gateway.approval_handler\nasync def request_approval(tool_call, user_context):\n    # Send approval request via Slack, email, etc.\n    approval_id = await send_approval_request(\n        tool=tool_call.tool_name,\n        args=tool_call.args,\n        user=user_context['user_id']\n    )\n    return await wait_for_approval(approval_id, timeout=300)\n\n# Audit logging\n@gateway.on_tool_call\nasync def audit_log(tool_call, user_context, result):\n    await log_to_siem({\n        'event': 'mcp_tool_call',\n        'tool': tool_call.tool_name,\n        'user': user_context['user_id'],\n        'success': result.success\n    })\n\nawait gateway.start()",
+      "best_practices": [
+        "Use gateway for centralized access control",
+        "Implement token-based authentication",
+        "Add approval flows for sensitive tools",
+        "Log all tool calls for audit"
+      ]
+    },
+    "security_patterns": {
+      "description": "Security best practices for MCP deployments",
+      "use_when": "Deploying MCP servers in production or multi-tenant environments",
+      "code_example": "# Restrict tool access per server\nmcp_config = {\n    'servers': [{\n        'name': 'filesystem',\n        'allowed_tools': ['read_file', 'list_directory'],\n        'allowed_paths': ['/data/public']\n    }]\n}",
+      "best_practices": [
+        "Apply least privilege - restrict tools and paths",
+        "Use authentication for remote MCP servers",
+        "Require human approval for destructive operations",
+        "Audit all tool calls in production"
       ],
-      "example": "A file system server vs a database server vs a web search server"
+      "least_privilege": {
+        "description": "Grant minimum required permissions",
+        "code_example": "# In agent configuration\nmcp_config = {\n    'servers': [\n        {\n            'name': 'filesystem',\n            'allowed_tools': ['read_file', 'list_directory'],  # No write\n            'allowed_paths': ['/data/public']  # Restricted paths\n        },\n        {\n            'name': 'database',\n            'allowed_tools': ['select_*'],  # Read-only\n            'denied_tools': ['drop_*', 'delete_*', 'truncate_*']\n        }\n    ]\n}",
+        "best_practices": [
+          "Whitelist allowed tools explicitly",
+          "Deny destructive operations by default",
+          "Restrict resource access to specific paths"
+        ]
+      },
+      "authentication": {
+        "description": "Authenticate clients to MCP servers",
+        "code_example": "# Server-side authentication\nfrom mcp.server import Server\nfrom mcp.server.auth import TokenAuth, JWTAuth\n\nserver = Server('secure-tools')\n\n# Token-based auth\nserver.set_auth(TokenAuth(\n    tokens={\n        'token123': {'user': 'alice', 'roles': ['admin']},\n        'token456': {'user': 'bob', 'roles': ['reader']}\n    }\n))\n\n# Or JWT auth\nserver.set_auth(JWTAuth(\n    issuer='https://auth.example.com',\n    audience='mcp-server',\n    jwks_uri='https://auth.example.com/.well-known/jwks.json'\n))\n\n# Role-based tool access\n@server.tool(roles=['admin'])\nasync def delete_record(id: str) -> str:\n    \"\"\"Delete a record (admin only).\"\"\"\n    await db.delete(id)\n    return f'Deleted {id}'"
+      },
+      "approval_flows": {
+        "description": "Require human approval for sensitive operations",
+        "code_example": "from mcp.server import Server\nfrom mcp.server.approval import ApprovalRequired, SlackApprover\n\nserver = Server('sensitive-tools')\n\napprover = SlackApprover(\n    webhook_url=os.environ['SLACK_WEBHOOK'],\n    channel='#approvals',\n    timeout=300\n)\n\n@server.tool()\n@ApprovalRequired(approver, reason='Modifies production data')\nasync def update_production_config(key: str, value: str) -> str:\n    \"\"\"Update production configuration.\"\"\"\n    await config.set(key, value)\n    return f'Updated {key}'",
+        "best_practices": [
+          "Require approval for destructive actions",
+          "Set reasonable timeouts",
+          "Provide context for informed decisions",
+          "Log all approval decisions"
+        ]
+      },
+      "auditing": {
+        "description": "Log all MCP interactions for security monitoring",
+        "code_example": "from mcp.server import Server\nfrom mcp.server.audit import AuditLogger, CloudAudit\n\nserver = Server('audited-tools')\n\n# Configure audit logging\naudit = AuditLogger(\n    backends=[\n        CloudAudit(project='my-project'),  # Google Cloud Audit\n        FileAudit(path='/var/log/mcp-audit.json')\n    ],\n    include_args=True,\n    include_results=False,  # Don't log potentially sensitive results\n    redact_patterns=['password', 'secret', 'token']\n)\n\nserver.set_audit_logger(audit)"
+      }
     },
-    "stateless_design": {
-      "description": "Servers should be stateless when possible",
-      "use_when": "Designing server architecture",
+    "testing_mcp": {
+      "description": "Test MCP servers and integrations",
+      "use_when": "Ensuring MCP servers work correctly",
+      "code_example": "import pytest\nfrom mcp.testing import MCPTestClient, MockServer\n\n# Unit test MCP server\n@pytest.fixture\nasync def mcp_client():\n    from my_server import server\n    client = MCPTestClient(server)\n    await client.connect()\n    yield client\n    await client.disconnect()\n\nasync def test_search_tool(mcp_client):\n    # List available tools\n    tools = await mcp_client.list_tools()\n    assert 'search_database' in [t.name for t in tools]\n    \n    # Call tool\n    result = await mcp_client.call_tool(\n        'search_database',\n        {'query': 'test', 'max_results': 5}\n    )\n    assert result.success\n    assert len(result.content) > 0\n\nasync def test_resource_access(mcp_client):\n    # List resources\n    resources = await mcp_client.list_resources()\n    assert 'config://app/settings' in [r.uri for r in resources]\n    \n    # Read resource\n    resource = await mcp_client.read_resource('config://app/settings')\n    assert resource.mimeType == 'application/json'\n\n# Integration test with mock server\nasync def test_agent_with_mcp():\n    mock = MockServer()\n    mock.add_tool('search', lambda q: f'Results for {q}')\n    \n    async with mock.run() as server:\n        agent = create_agent(mcp_servers=[server.url])\n        result = await agent.run('Search for Python tutorials')\n        assert 'Results for' in result",
       "best_practices": [
-        "Store state in resources, not server memory",
-        "Use request IDs for tracking",
-        "Handle concurrent requests safely"
-      ],
-      "code_example": "# Good: Stateless server\nclass FileServer:\n    def handle_list_files(self, request):\n        # No server state, reads from filesystem\n        return list_files(request.path)\n\n# Bad: Stateful server\nclass FileServer:\n    def __init__(self):\n        self.cache = {}  # Server state\n    def handle_list_files(self, request):\n        # Relies on server state\n        return self.cache.get(request.path)"
-    },
-    "error_handling": {
-      "description": "Comprehensive error handling",
-      "use_when": "Implementing server methods",
-      "code_example": "from mcp.server import Server\nfrom mcp.types import ErrorCode\n\nasync def handle_tool_call(name, arguments):\n    try:\n        if name == 'search':\n            return await perform_search(arguments)\n        else:\n            raise ValueError(f'Unknown tool: {name}')\n    except ValueError as e:\n        return {\n            'error': {\n                'code': ErrorCode.INVALID_REQUEST,\n                'message': str(e)\n            }\n        }\n    except Exception as e:\n        return {\n            'error': {\n                'code': ErrorCode.INTERNAL_ERROR,\n                'message': 'Internal server error'\n            }\n        }",
-      "best_practices": [
-        "Use appropriate error codes",
-        "Provide helpful error messages",
-        "Log errors for debugging",
-        "Don't expose internal details"
-      ]
-    }
-  },
-  "tool_definition_patterns": {
-    "basic_tool": {
-      "description": "Define a tool with name, description, and input schema",
-      "use_when": "Creating tools for agents",
-      "code_example": "from mcp.server import Server\nfrom mcp.types import Tool\nfrom pydantic import BaseModel, Field\nfrom typing import Literal\n\nclass SearchInput(BaseModel):\n    query: str = Field(description='Search query')\n    max_results: int = Field(default=10, ge=1, le=100, description='Maximum results')\n    filter: Literal['all', 'recent', 'popular'] = Field(default='all', description='Result filter')\n\nsearch_tool = Tool(\n    name='search',\n    description='Search for information in the knowledge base',\n    inputSchema={\n        'type': 'object',\n        'properties': {\n            'query': {'type': 'string', 'description': 'Search query'},\n            'max_results': {'type': 'integer', 'minimum': 1, 'maximum': 100},\n            'filter': {'type': 'string', 'enum': ['all', 'recent', 'popular']}\n        },\n        'required': ['query']\n    }\n)",
-      "best_practices": [
-        "Use descriptive names",
-        "Write clear descriptions",
-        "Define comprehensive input schemas",
-        "Use JSON Schema validation",
-        "Include field descriptions"
-      ]
-    },
-    "async_tool": {
-      "description": "Asynchronous tool implementation",
-      "use_when": "Tool performs I/O operations",
-      "code_example": "import asyncio\nfrom mcp.server import Server\n\nserver = Server('my-server')\n\n@server.list_tools()\nasync def list_tools() -> list[Tool]:\n    return [search_tool]\n\n@server.call_tool()\nasync def call_tool(name: str, arguments: dict) -> list[dict]:\n    if name == 'search':\n        query = arguments.get('query')\n        max_results = arguments.get('max_results', 10)\n        \n        # Async operation\n        results = await async_search(query, max_results)\n        \n        return [{\n            'content': [{\n                'type': 'text',\n                'text': json.dumps(results, indent=2)\n            }]\n        }]",
-      "best_practices": [
-        "Use async for I/O-bound operations",
-        "Handle timeouts appropriately",
-        "Return structured responses",
-        "Use proper error handling"
+        "Unit test server tools independently",
+        "Test resource access permissions",
+        "Use mock servers for agent integration tests",
+        "Test error handling and edge cases"
       ]
     },
-    "tool_with_validation": {
-      "description": "Tool with input validation",
-      "use_when": "Need to validate tool inputs",
-      "code_example": "from pydantic import BaseModel, Field, validator\n\nclass CreateFileInput(BaseModel):\n    path: str = Field(description='File path')\n    content: str = Field(description='File content')\n    \n    @validator('path')\n    def validate_path(cls, v):\n        if '..' in v or v.startswith('/'):\n            raise ValueError('Invalid path')\n        return v\n\n@server.call_tool()\nasync def call_tool(name: str, arguments: dict):\n    if name == 'create_file':\n        try:\n            input_data = CreateFileInput(**arguments)\n            # Use validated input\n            return await create_file(input_data.path, input_data.content)\n        except ValidationError as e:\n            return {'error': {'message': str(e)}}",
+    "packaging": {
+      "description": "Package and distribute MCP servers",
+      "use_when": "Sharing MCP servers with others",
+      "code_example": "# pyproject.toml for Python MCP server\n[project]\nname = \"my-mcp-tools\"\nversion = \"1.0.0\"\n[project.scripts]\nmy-mcp-tools = \"my_mcp_tools.server:main\"\n\n# Install and use: uvx my-mcp-tools",
+      "npm_package": {
+        "code_example": "// package.json\n{\n  \"name\": \"@myorg/mcp-database-tools\",\n  \"version\": \"1.0.0\",\n  \"bin\": {\n    \"mcp-database\": \"./dist/server.js\"\n  },\n  \"mcp\": {\n    \"name\": \"database-tools\",\n    \"description\": \"Database query and management tools\",\n    \"tools\": [\"query\", \"insert\", \"update\"],\n    \"resources\": [\"schema://tables/*\"]\n  }\n}\n\n// Usage\n// npx @myorg/mcp-database-tools"
+      },
+      "python_package": {
+        "code_example": "# pyproject.toml\n[project]\nname = \"mcp-database-tools\"\nversion = \"1.0.0\"\n\n[project.scripts]\nmcp-database = \"mcp_database:main\"\n\n[project.entry-points.mcp]\nserver = \"mcp_database:server\"\n\n# Usage\n# python -m mcp_database\n# or: mcp-database"
+      },
       "best_practices": [
-        "Validate all inputs",
-        "Use Pydantic for validation",
-        "Return clear validation errors",
-        "Sanitize inputs for security"
-      ]
-    }
-  },
-  "resource_patterns": {
-    "basic_resource": {
-      "description": "Define resources that agents can access",
-      "use_when": "Need to expose data or files",
-      "code_example": "from mcp.types import Resource\n\n@server.list_resources()\nasync def list_resources() -> list[Resource]:\n    return [\n        Resource(\n            uri='file:///documents/readme.md',\n            name='README',\n            description='Project README file',\n            mimeType='text/markdown'\n        ),\n        Resource(\n            uri='file:///documents/config.json',\n            name='Configuration',\n            description='Application configuration',\n            mimeType='application/json'\n        )\n    ]",
-      "best_practices": [
-        "Use descriptive URIs",
-        "Provide clear names and descriptions",
-        "Set appropriate MIME types",
-        "Organize resources logically"
+        "Use standard package managers (npm, pip)",
+        "Include MCP metadata in package config",
+        "Document all tools and resources",
+        "Version servers semantically"
       ]
     },
-    "dynamic_resources": {
-      "description": "Resources that change at runtime",
-      "use_when": "Resources are created dynamically",
-      "code_example": "@server.list_resources()\nasync def list_resources() -> list[Resource]:\n    resources = []\n    \n    # List files dynamically\n    for file_path in await list_files():\n        resources.append(\n            Resource(\n                uri=f'file://{file_path}',\n                name=os.path.basename(file_path),\n                description=f'File: {file_path}',\n                mimeType=get_mime_type(file_path)\n            )\n        )\n    \n    return resources",
+    "observability": {
+      "description": "Monitor MCP server health and usage",
+      "use_when": "Production MCP deployments",
+      "code_example": "from mcp.server import Server\nfrom mcp.server.observability import (\n    PrometheusMetrics,\n    OpenTelemetryTracing,\n    HealthCheck\n)\n\nserver = Server('monitored-tools')\n\n# Prometheus metrics\nmetrics = PrometheusMetrics(port=9090)\nserver.add_middleware(metrics)\n\n# OpenTelemetry tracing\ntracing = OpenTelemetryTracing(\n    service_name='mcp-database-tools',\n    exporter='jaeger',\n    endpoint='http://jaeger:14268/api/traces'\n)\nserver.add_middleware(tracing)\n\n# Health checks\nhealth = HealthCheck(\n    checks=[\n        ('database', lambda: db.ping()),\n        ('redis', lambda: redis.ping())\n    ]\n)\nserver.add_endpoint('/health', health)\n\n# Metrics exposed:\n# - mcp_tool_calls_total\n# - mcp_tool_duration_seconds\n# - mcp_tool_errors_total\n# - mcp_resource_reads_total",
       "best_practices": [
-        "Cache resource lists when appropriate",
-        "Handle resource listing errors",
-        "Update resource metadata",
-        "Consider pagination for large lists"
-      ]
-    },
-    "resource_reading": {
-      "description": "Read resource content",
-      "use_when": "Agent needs to access resource data",
-      "code_example": "@server.read_resource()\nasync def read_resource(uri: str) -> str:\n    if uri.startswith('file://'):\n        file_path = uri.replace('file://', '')\n        \n        # Security check\n        if not is_safe_path(file_path):\n            raise ValueError('Invalid file path')\n        \n        # Read file\n        with open(file_path, 'r', encoding='utf-8') as f:\n            return f.read()\n    \n    elif uri.startswith('db://'):\n        # Read from database\n        record_id = uri.replace('db://', '')\n        return await read_database_record(record_id)\n    \n    else:\n        raise ValueError(f'Unknown resource URI: {uri}')",
-      "best_practices": [
-        "Validate URI format",
-        "Implement security checks",
-        "Handle missing resources",
-        "Return appropriate content types"
-      ]
-    }
-  },
-  "gateway_architecture": {
-    "description": "MCP gateway patterns for routing and aggregation",
-    "gateway_server": {
-      "description": "Gateway that routes to multiple servers",
-      "use_when": "Need to aggregate multiple MCP servers",
-      "code_example": "from mcp.server import Server\nfrom mcp.client import Client\n\nclass GatewayServer:\n    def __init__(self):\n        self.servers = {\n            'files': Client('file-server'),\n            'database': Client('db-server'),\n            'search': Client('search-server')\n        }\n    \n    async def route_tool(self, name: str, arguments: dict):\n        # Route based on tool name prefix\n        if name.startswith('file_'):\n            return await self.servers['files'].call_tool(name, arguments)\n        elif name.startswith('db_'):\n            return await self.servers['database'].call_tool(name, arguments)\n        elif name.startswith('search_'):\n            return await self.servers['search'].call_tool(name, arguments)\n        else:\n            raise ValueError(f'Unknown tool: {name}')",
-      "best_practices": [
-        "Use consistent naming conventions",
-        "Handle routing errors",
-        "Aggregate results appropriately",
-        "Monitor gateway performance"
-      ]
-    },
-    "load_balancing": {
-      "description": "Distribute load across multiple server instances",
-      "use_when": "High traffic or redundancy needed",
-      "code_example": "class LoadBalancedGateway:\n    def __init__(self):\n        self.servers = [\n            Client('server-1'),\n            Client('server-2'),\n            Client('server-3')\n        ]\n        self.current = 0\n    \n    def get_server(self):\n        # Round-robin selection\n        server = self.servers[self.current]\n        self.current = (self.current + 1) % len(self.servers)\n        return server",
-      "best_practices": [
+        "Expose Prometheus metrics",
+        "Add distributed tracing",
         "Implement health checks",
-        "Handle server failures",
-        "Consider weighted routing",
-        "Monitor server performance"
-      ]
-    }
-  },
-  "security_patterns": {
-    "authentication": {
-      "description": "Authenticate MCP server access",
-      "use_when": "Server handles sensitive data",
-      "code_example": "from mcp.server import Server\nimport jwt\n\nclass AuthenticatedServer:\n    def __init__(self, secret_key: str):\n        self.secret_key = secret_key\n        self.server = Server('secure-server')\n    \n    def verify_token(self, token: str) -> dict:\n        try:\n            payload = jwt.decode(token, self.secret_key, algorithms=['HS256'])\n            return payload\n        except jwt.InvalidTokenError:\n            raise ValueError('Invalid token')\n    \n    @server.call_tool()\n    async def call_tool(name: str, arguments: dict, token: str = None):\n        if not token:\n            raise ValueError('Authentication required')\n        \n        user = self.verify_token(token)\n        \n        # Check permissions\n        if not self.has_permission(user, name):\n            raise ValueError('Permission denied')\n        \n        return await self.execute_tool(name, arguments)",
-      "best_practices": [
-        "Use JWT or similar tokens",
-        "Validate tokens on every request",
-        "Implement permission checks",
-        "Log authentication events"
-      ]
-    },
-    "input_sanitization": {
-      "description": "Sanitize all inputs",
-      "use_when": "Handling user-provided data",
-      "code_example": "import re\n\ndef sanitize_path(path: str) -> str:\n    # Remove path traversal attempts\n    path = path.replace('..', '')\n    path = path.replace('//', '/')\n    \n    # Remove dangerous characters\n    path = re.sub(r'[^a-zA-Z0-9/._-]', '', path)\n    \n    return path\n\n@server.call_tool()\nasync def call_tool(name: str, arguments: dict):\n    if name == 'read_file':\n        file_path = sanitize_path(arguments.get('path', ''))\n        \n        # Additional validation\n        if not file_path or file_path.startswith('/'):\n            raise ValueError('Invalid file path')\n        \n        return await read_file(file_path)",
-      "best_practices": [
-        "Validate all inputs",
-        "Sanitize file paths",
-        "Prevent path traversal",
-        "Use allowlists when possible"
-      ]
-    },
-    "rate_limiting": {
-      "description": "Limit request rate",
-      "use_when": "Prevent abuse",
-      "code_example": "from collections import defaultdict\nfrom datetime import datetime, timedelta\n\nclass RateLimiter:\n    def __init__(self, max_requests: int, window_seconds: int):\n        self.max_requests = max_requests\n        self.window_seconds = window_seconds\n        self.requests = defaultdict(list)\n    \n    def check_rate_limit(self, client_id: str) -> bool:\n        now = datetime.now()\n        window_start = now - timedelta(seconds=self.window_seconds)\n        \n        # Clean old requests\n        self.requests[client_id] = [\n            req_time for req_time in self.requests[client_id]\n            if req_time > window_start\n        ]\n        \n        if len(self.requests[client_id]) >= self.max_requests:\n            return False\n        \n        self.requests[client_id].append(now)\n        return True",
-      "best_practices": [
-        "Set appropriate limits",
-        "Use sliding window",
-        "Return clear error messages",
-        "Log rate limit violations"
-      ]
-    }
-  },
-  "transport_patterns": {
-    "stdio_transport": {
-      "description": "Use stdio for server communication",
-      "use_when": "Local server or simple setup",
-      "code_example": "from mcp.server.stdio import stdio_server\nimport asyncio\n\nasync def main():\n    server = Server('my-server')\n    \n    # Register handlers\n    @server.list_tools()\n    async def list_tools():\n        return [search_tool]\n    \n    async with stdio_server() as (read_stream, write_stream):\n        await server.run(\n            read_stream,\n            write_stream,\n            server.create_initialization_options()\n        )\n\nif __name__ == '__main__':\n    asyncio.run(main())",
-      "best_practices": [
-        "Use for local servers",
-        "Handle stdio errors",
-        "Implement proper logging"
-      ]
-    },
-    "http_transport": {
-      "description": "Use HTTP for server communication",
-      "use_when": "Remote server or web integration",
-      "code_example": "from mcp.server.fastapi import create_app\nfrom fastapi import FastAPI\n\nserver = Server('my-server')\n\n# Register handlers\n@server.list_tools()\nasync def list_tools():\n    return [search_tool]\n\napp = create_app(server)\n\nif __name__ == '__main__':\n    import uvicorn\n    uvicorn.run(app, host='0.0.0.0', port=8000)",
-      "best_practices": [
-        "Use HTTPS in production",
-        "Implement CORS properly",
-        "Add authentication",
-        "Handle errors gracefully"
-      ]
-    },
-    "sse_transport": {
-      "description": "Use Server-Sent Events for streaming",
-      "use_when": "Need real-time updates",
-      "code_example": "from mcp.server.sse import sse_server\n\nasync def main():\n    server = Server('my-server')\n    \n    async with sse_server(port=8000) as server_instance:\n        await server_instance.run()",
-      "best_practices": [
-        "Handle connection drops",
-        "Implement reconnection logic",
-        "Use for long-running operations"
-      ]
-    }
-  },
-  "error_handling_patterns": {
-    "error_codes": {
-      "description": "Use standard error codes",
-      "code_example": "from mcp.types import ErrorCode\n\nasync def handle_tool_call(name: str, arguments: dict):\n    try:\n        if name not in available_tools:\n            return {\n                'error': {\n                    'code': ErrorCode.METHOD_NOT_FOUND,\n                    'message': f'Tool {name} not found'\n                }\n            }\n        \n        if not validate_arguments(name, arguments):\n            return {\n                'error': {\n                    'code': ErrorCode.INVALID_PARAMS,\n                    'message': 'Invalid arguments'\n                }\n            }\n        \n        return await execute_tool(name, arguments)\n    \n    except PermissionError:\n        return {\n            'error': {\n                'code': ErrorCode.INTERNAL_ERROR,\n                'message': 'Permission denied'\n            }\n        }",
-      "best_practices": [
-        "Use appropriate error codes",
-        "Provide helpful messages",
-        "Log errors for debugging",
-        "Don't expose internal details"
-      ]
-    },
-    "retry_logic": {
-      "description": "Implement retry for transient failures",
-      "code_example": "from tenacity import retry, stop_after_attempt, wait_exponential\n\n@retry(\n    stop=stop_after_attempt(3),\n    wait=wait_exponential(multiplier=1, min=4, max=10)\n)\nasync def call_tool_with_retry(name: str, arguments: dict):\n    try:\n        return await call_tool(name, arguments)\n    except TransientError as e:\n        # Retry will be handled by decorator\n        raise",
-      "best_practices": [
-        "Use exponential backoff",
-        "Set maximum retry attempts",
-        "Distinguish transient vs permanent errors",
-        "Log retry attempts"
+        "Set up alerting for errors"
       ]
     }
   },
   "best_practices": [
-    "Always validate tool inputs before execution using Pydantic models or JSON Schema validation",
-    "Implement proper error handling and fallbacks for external tool calls with retry logic using exponential backoff",
-    "Use async/await for all I/O-bound operations to prevent blocking the event loop",
-    "Sanitize file paths and prevent directory traversal attacks by resolving paths relative to allowed base directories",
-    "Implement rate limiting per client to prevent abuse and ensure fair resource usage",
-    "Return structured error responses with appropriate MCP error codes (INVALID_REQUEST, INTERNAL_ERROR, etc.)",
-    "Log all tool invocations with request IDs for traceability and debugging",
-    "Use stateless server design when possible - store state in resources or external storage, not server memory",
-    "Define comprehensive input schemas with field descriptions, types, and validation rules for all tool parameters",
-    "Implement authentication and authorization checks before executing sensitive operations",
-    "Cache expensive operations (database queries, API calls) when results are idempotent",
-    "Use HTTPS/TLS for all network communication in production environments",
-    "Monitor server performance metrics (latency, error rates, throughput) and set up alerts",
-    "Document all tools with clear descriptions that explain purpose, parameters, and return values",
-    "Test server implementations with various input edge cases and error scenarios"
+    "Use Streamable HTTP for production deployments (SSE is deprecated)",
+    "Use stdio for local development and single-user tools",
+    "Implement least-privilege access with allowed_tools whitelists",
+    "Require human approval for destructive or sensitive operations",
+    "Add authentication (token or JWT) for remote MCP servers",
+    "Log all tool calls for audit and security monitoring",
+    "Use MCP gateway for centralized routing and access control",
+    "Package MCP servers for easy distribution via npm or pip",
+    "Enable Prometheus metrics and health checks in production",
+    "Test MCP servers with unit and integration tests"
   ],
   "anti_patterns": [
     {
-      "name": "God Server Anti-Pattern",
-      "problem": "Creating a single MCP server that handles multiple unrelated domains (filesystem + database + web search) makes the server hard to maintain, test, and scale. Changes in one domain affect others, and the server becomes a bottleneck.",
-      "solution": "Split functionality into focused, single-responsibility servers. Each server should handle one domain (e.g., filesystem server, database server, search server). Use gateway patterns to aggregate multiple servers if needed."
+      "name": "Open Access MCP",
+      "problem": "Any client can call any tool without authentication",
+      "solution": "Implement token or JWT authentication"
     },
     {
-      "name": "Missing Input Validation",
-      "problem": "Accepting tool inputs without validation allows malicious or malformed data to cause security vulnerabilities, crashes, or unexpected behavior. Path traversal attacks, SQL injection, and resource exhaustion become possible.",
-      "solution": "Always validate all tool inputs using Pydantic models or JSON Schema. Sanitize file paths, validate parameter types and ranges, check required fields, and reject invalid inputs with clear error messages before processing."
+      "name": "No Tool Restrictions",
+      "problem": "Agent can call destructive tools without oversight",
+      "solution": "Use allowed_tools and denied_tools filters"
     },
     {
-      "name": "Synchronous I/O in Async Context",
-      "problem": "Using blocking file I/O, database queries, or HTTP requests in async tool handlers blocks the entire event loop, preventing concurrent request handling and causing poor performance and scalability.",
-      "solution": "Use async/await for all I/O operations. Use aiofiles for file I/O, async database drivers (asyncpg, motor), and async HTTP clients (httpx, aiohttp). Never use synchronous I/O libraries in async handlers."
+      "name": "Missing Audit Logs",
+      "problem": "Cannot investigate security incidents",
+      "solution": "Log all tool calls with context"
     },
     {
-      "name": "No Error Handling",
-      "problem": "Unhandled exceptions in tool execution crash the server, expose internal details to clients, and provide no useful error information. Clients cannot distinguish between transient and permanent failures.",
-      "solution": "Wrap all tool execution in try/except blocks. Catch specific exceptions, return structured error responses with appropriate MCP error codes, log errors for debugging, and never expose internal stack traces to clients."
+      "name": "SSE in Production",
+      "problem": "Using deprecated transport",
+      "solution": "Migrate to Streamable HTTP"
     },
     {
-      "name": "Stateful Server Design",
-      "problem": "Storing state in server memory (caches, sessions, in-memory data structures) prevents horizontal scaling, causes state loss on restarts, and creates race conditions in concurrent environments.",
-      "solution": "Design servers to be stateless. Store state in external resources (databases, files, Redis), use request IDs for tracking, and pass all necessary context in each request. If caching is needed, use external cache stores."
+      "name": "Hardcoded Secrets",
+      "problem": "API keys in MCP configuration",
+      "solution": "Use environment variables: ${ENV_VAR}"
     }
   ],
-  "patterns": {
-    "general": {
-      "description": "Best practices and patterns for building MCP servers and clients",
-      "usage": "See detailed sections below"
-    }
-  }
+  "common_mcp_servers": {
+    "official_anthropic": [
+      "@anthropic/mcp-filesystem - File system access",
+      "@anthropic/mcp-github - GitHub API",
+      "@anthropic/mcp-memory - Persistent memory",
+      "@anthropic/mcp-slack - Slack integration"
+    ],
+    "community": [
+      "@mcp/postgres - PostgreSQL database",
+      "@mcp/redis - Redis cache",
+      "@mcp/web-search - Web search APIs",
+      "@mcp/browser - Browser automation"
+    ]
+  },
+  "sources": [
+    "https://modelcontextprotocol.io/",
+    "https://github.com/anthropics/mcp",
+    "https://docs.anthropic.com/en/docs/agents-and-tools/mcp"
+  ]
 }

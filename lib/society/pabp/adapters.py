@@ -162,7 +162,7 @@ class AntigravityAdapter(PlatformAdapter):
         return Path(f".agent/scripts/{name}")
     
     def rules_path(self) -> Path:
-        return Path(".agentrules")
+        return Path(".agent/rules")
     
     def lib_path(self) -> Path:
         return Path("lib")

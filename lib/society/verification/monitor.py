@@ -5,7 +5,7 @@ Central monitor for verifying agent events against all axioms.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 import logging
@@ -243,14 +243,14 @@ class AxiomComplianceMonitor:
         """Record a violation for tracking."""
         if agent_id not in self._violation_history:
             self._violation_history[agent_id] = []
-        self._violation_history[agent_id].append(datetime.utcnow())
+        self._violation_history[agent_id].append(datetime.now(timezone.utc))
     
     def _should_escalate(self, agent_id: str) -> bool:
         """Check if agent has exceeded escalation threshold."""
         if agent_id not in self._violation_history:
             return False
         
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         cutoff = now - self.escalation_window
         recent_violations = [
             v for v in self._violation_history[agent_id]
@@ -278,7 +278,7 @@ class AxiomComplianceMonitor:
             return 0
         
         window = window or self.escalation_window
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         cutoff = now - window
         
         return len([
