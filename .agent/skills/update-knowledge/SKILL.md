@@ -81,7 +81,7 @@ fetch_updates:
   parallel_sources:
     - adapter: github
       enabled: ${sources.github_trending}
-      action: Check tracked repositories for new releases
+      action: Check tracked repositories using `get_latest_release` and `search_repositories`
     
     - adapter: pypi
       enabled: ${sources.package_registries}

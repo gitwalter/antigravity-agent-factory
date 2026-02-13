@@ -141,6 +141,25 @@ def assemble_docs(parsed: dict[str, Any], module_name: str, filepath: str) -> st
     return "\n".join(sections)
 ```
 
+```
+
+### Step 6: Doc Tools Integration (New)
+
+Use the `doc-tools` MCP server for enhanced documentation workflows:
+
+```python
+# Convert local files to documentation snippets
+response = await client.chat.completions.create(
+    messages=[{"role": "user", "content": "Create documentation for the auth module"}],
+    tools=[{
+        "type": "mcp",
+        "name": "doc-tools",
+        "command": "node",
+        "args": ["path/to/doc_tools_adapter.js"] 
+    }]
+)
+```
+
 ## Best Practices
 
 - Use Google or NumPy docstring style consistently

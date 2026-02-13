@@ -62,7 +62,9 @@ Run the repository analyzer to detect existing artifacts:
 python cli/factory_cli.py --analyze <repo_path>
 ```
 
-**MCP Tools:** None required (local operation)
+**MCP Tools:** 
+- **github**: Use `search_repositories` to verify remote existence.
+
 
 Present the analysis results to user:
 - Detected scenario (FRESH, MINIMAL, PARTIAL, UPGRADE, COMPLETE)

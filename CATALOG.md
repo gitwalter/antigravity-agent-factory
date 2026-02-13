@@ -62,6 +62,11 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [ml-engineer](.agent/agents/ml-engineer.md) | ml-engineer |
 | [mlops-engineer](.agent/agents/mlops-engineer.md) | mlops-engineer |
 | [onboarding-architect](.agent/agents/onboarding-architect.md) | onboarding-architect |
+| [personal-assistant](.agent/agents/personal-assistant.md) | personal-assistant |
+| [pm-product-owner](.agent/agents/pm-product-owner.md) | Product Owner Agent |
+| [pm-reporting-agent](.agent/agents/pm-reporting-agent.md) | Reporting Agent |
+| [pm-sprint-master](.agent/agents/pm-sprint-master.md) | Sprint Master Agent |
+| [pm-task-manager](.agent/agents/pm-task-manager.md) | Task Manager Agent |
 | [python-backend-developer](.agent/agents/python-backend-developer.md) | python-backend-developer |
 | [requirements-architect](.agent/agents/requirements-architect.md) | requirements-architect |
 | [s4-domain-expert](.agent/agents/s4-domain-expert.md) | s4-domain-expert |
@@ -119,6 +124,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [ef-core-patterns](.agent/skills/ef-core-patterns/SKILL.md) | Ef Core Patterns |
 | [enforcement-selection](.agent/skills/enforcement-selection/SKILL.md) | Enforcement Selection |
 | [error-handling](.agent/skills/error-handling/SKILL.md) | Error Handling |
+| [excel-processing](.agent/skills/excel-processing/SKILL.md) | Excel Processing |
 | [export-agent-bundle](.agent/skills/export-agent-bundle/SKILL.md) | Export Agent Bundle |
 | [express-onboarding](.agent/skills/express-onboarding/SKILL.md) | Express Onboarding |
 | [extend-knowledge](.agent/skills/extend-knowledge/SKILL.md) | Extend Knowledge |
@@ -128,6 +134,10 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [fiori-development](.agent/skills/fiori-development/SKILL.md) | Fiori Development |
 | [frontend-performance](.agent/skills/frontend-performance/SKILL.md) | Frontend Performance |
 | [frontend-testing](.agent/skills/frontend-testing/SKILL.md) | Frontend Testing |
+| [github-operations](.agent/skills/github-operations/SKILL.md) | GitHub Operations |
+| [google-calendar](.agent/skills/google-calendar/SKILL.md) | Google Calendar Skill |
+| [google-drive](.agent/skills/google-drive/SKILL.md) | Google Drive Skill |
+| [google-workspace](.agent/skills/google-workspace/SKILL.md) | Google Workspace Integration |
 | [grounding-verification](.agent/skills/grounding-verification/SKILL.md) | Grounding Verification |
 | [human-in-the-loop](.agent/skills/human-in-the-loop/SKILL.md) | Human In The Loop |
 | [java-containerization](.agent/skills/java-containerization/SKILL.md) | Java Containerization |
@@ -175,6 +185,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [sap-integration](.agent/skills/sap-integration/SKILL.md) | Sap Integration |
 | [sap-security](.agent/skills/sap-security/SKILL.md) | Sap Security |
 | [security-sandboxing](.agent/skills/security-sandboxing/SKILL.md) | Security Sandboxing |
+| [send-email](.agent/skills/send-email/SKILL.md) | Send Email Skill |
 | [shell-platform](.agent/skills/shell-platform/SKILL.md) | Shell Platform |
 | [skill-generation](.agent/skills/skill-generation/SKILL.md) | Skill Generation |
 | [society-tier-selection](.agent/skills/society-tier-selection/SKILL.md) | Society Tier Selection |
@@ -245,6 +256,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [le-development](.agent/workflows/le-development.md) | Le Development |
 | [llm-app-development](.agent/workflows/llm-app-development.md) | Llm App Development |
 | [logistics-chain-workflow](.agent/workflows/logistics-chain-workflow.md) | Logistics Chain Workflow |
+| [manage-schedule](.agent/workflows/manage-schedule.md) | Manage Schedule Workflow |
 | [migrate-skill-to-jinja2](.agent/workflows/migrate-skill-to-jinja2.md) | Migrate Skill to Jinja2 Template |
 | [ml-deployment-pipeline](.agent/workflows/ml-deployment-pipeline.md) | Ml Deployment Pipeline |
 | [ml-experiment](.agent/workflows/ml-experiment.md) | Ml Experiment |
@@ -485,6 +497,9 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | sap-sd-patterns | [`.agent/knowledge/sap-sd-patterns.json`](.agent/knowledge/sap-sd-patterns.json) |
 | sap-security-patterns | [`.agent/knowledge/sap-security-patterns.json`](.agent/knowledge/sap-security-patterns.json) |
 | sap-vim-vendor-invoice-management-patterns | [`.agent/knowledge/sap-vim-vendor-invoice-management-patterns.json`](.agent/knowledge/sap-vim-vendor-invoice-management-patterns.json) |
+| schemas-changelog-schema | [`.agent/knowledge/schemas-changelog-schema.json`](.agent/knowledge/schemas-changelog-schema.json) |
+| schemas-versioning-schema | [`.agent/knowledge/schemas-versioning-schema.json`](.agent/knowledge/schemas-versioning-schema.json) |
+| schemas-workflow-schema | [`.agent/knowledge/schemas-workflow-schema.json`](.agent/knowledge/schemas-workflow-schema.json) |
 | scikit-learn-patterns | [`.agent/knowledge/scikit-learn-patterns.json`](.agent/knowledge/scikit-learn-patterns.json) |
 | security-checklist | [`.agent/knowledge/security-checklist.json`](.agent/knowledge/security-checklist.json) |
 | security-patterns | [`.agent/knowledge/security-patterns.json`](.agent/knowledge/security-patterns.json) |

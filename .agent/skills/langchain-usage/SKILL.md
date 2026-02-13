@@ -46,6 +46,23 @@ Build production LangChain applications using LCEL, tools, memory, and structure
 | Hardcoded prompts | Use `ChatPromptTemplate` |
 | No type hints | Use Pydantic models |
 
+## MCP Integration (New)
+
+Use the `docs-langchain` MCP server to search for the latest patterns and API references directly:
+
+```python
+# Search for specific patterns
+response = await client.chat.completions.create(
+    messages=[{"role": "user", "content": "How do I use RunnableWithMessageHistory?"}],
+    tools=[{
+        "type": "mcp",
+        "name": "docs-langchain",
+        "command": "npx", # Managed by MCP config
+        "args": [] 
+    }]
+)
+```
+
 ## Bundled Resources
 
 - **QUICKSTART.md** – 5-minute getting started guide

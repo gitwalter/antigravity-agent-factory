@@ -1,6 +1,6 @@
 ﻿# Knowledge Files Catalog
 
-This factory currently includes **256 knowledge files** covering various aspects of AI development, project management, and technology stacks.
+This factory currently includes **259 knowledge files** covering various aspects of AI development, project management, and technology stacks.
 
 | File | Type | Description |
 |------|------|-------------|
@@ -223,6 +223,9 @@ This factory currently includes **256 knowledge files** covering various aspects
 | [sap-sd-patterns](file:///.agent/knowledge/sap-sd-patterns.json) |  |  |
 | [sap-security-patterns](file:///.agent/knowledge/sap-security-patterns.json) |  |  |
 | [sap-vim-vendor-invoice-management-patterns](file:///.agent/knowledge/sap-vim-vendor-invoice-management-patterns.json) |  |  |
+| [schemas-changelog-schema](file:///.agent/knowledge/schemas-changelog-schema.json) |  |  |
+| [schemas-versioning-schema](file:///.agent/knowledge/schemas-versioning-schema.json) |  |  |
+| [schemas-workflow-schema](file:///.agent/knowledge/schemas-workflow-schema.json) |  |  |
 | [scikit-learn-patterns](file:///.agent/knowledge/scikit-learn-patterns.json) |  |  |
 | [security-checklist](file:///.agent/knowledge/security-checklist.json) |  |  |
 | [security-patterns](file:///.agent/knowledge/security-patterns.json) |  |  |

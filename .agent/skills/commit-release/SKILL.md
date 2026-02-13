@@ -321,6 +321,16 @@ git commit -m "feat(scope): description" -m "Detailed body"
 git push origin HEAD
 ```
 
+## GitHub Integration
+
+Use the `github` MCP server for advanced repository management:
+
+### Pull Request Management
+- **Create PR**: Use `create_pull_request` to open a PR for the current branch.
+- **Update PR**: Use `update_pull_request` to modify title/body.
+- **Merge**: Use `merge_pull_request` when checks pass.
+
+
 ## Integration with Pre-Commit Hook
 
 The Factory's pre-commit hook (`.git/hooks/pre-commit`) now:

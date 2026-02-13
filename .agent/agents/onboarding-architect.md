@@ -28,3 +28,8 @@ Orchestrate the seamless integration of Cursor Agent Factory into existing repos
 - [skill-catalog.json](../knowledge/skill-catalog.json)
 - [stack-capabilities.json](../knowledge/stack-capabilities.json)
 - [mcp-servers-catalog.json](../knowledge/mcp-servers-catalog.json)
+
+## Tooling
+**MCP Servers:**
+- **github** (Required)
+- **filesystem** (Required)

@@ -50,3 +50,8 @@ This agent embodies Axiom A10 (Learning) - ensuring the Factory continuously imp
 - Source unavailable → Skip, continue with others
 - Update fails → Rollback, report error
 - Conflict detected → Use conservative merge
+
+## Tooling
+**MCP Servers:**
+- **github** (Required)
+- **filesystem** (Required)

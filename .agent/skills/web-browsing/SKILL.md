@@ -442,6 +442,25 @@ print(answer)
 await browser.close()
 ```
 
+```
+
+### Step 8: Tavily Integration (New)
+
+Use the `tavily` MCP server for advanced search and research capabilities:
+
+```python
+# Perform a comprehensive research task
+response = await client.chat.completions.create(
+    messages=[{"role": "user", "content": "Research the impact of quantum computing on cryptography"}],
+    tools=[{
+        "type": "mcp",
+        "name": "tavily",
+        "command": "npx",
+        "args": ["-y", "tavily-mcp"] 
+    }]
+)
+```
+
 ## Scraping Patterns
 
 | Pattern | Use Case | Tool |

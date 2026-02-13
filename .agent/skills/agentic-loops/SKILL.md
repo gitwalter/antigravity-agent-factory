@@ -559,6 +559,25 @@ result = await agent.execute(
 )
 ```
 
+```
+
+### Step 7: Sequential Thinking Integration (New)
+
+Use the `sequential-thinking` MCP server for complex problem solving:
+
+```python
+# Decompose a complex problem
+response = await client.chat.completions.create(
+    messages=[{"role": "user", "content": "Design a scalable microservices architecture for a banking app"}],
+    tools=[{
+        "type": "mcp",
+        "name": "sequential-thinking",
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"] 
+    }]
+)
+```
+
 ## Agentic Loop Patterns
 
 | Pattern | Description | Use Case |
