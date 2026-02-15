@@ -17,7 +17,7 @@ def verify_links():
     with open(catalog_path, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # Regex to find markdown links: [text](target)
+    # Regex to find markdown links: **text**
     links = re.findall(r'\[.*?\]\((.*?)\)', content)
     
     broken_count = 0

@@ -8,7 +8,7 @@ Test-Driven Development workflow implementing the Red-Green-Refactor cycle. Guid
 **Created:** 2026-02-02  
 **Agent:** test-generator
 
-> **Note:** Directory paths referenced in this workflow (knowledge/, .cursor/skills/, patterns/, etc.) are configurable via `.cursor/config/settings.json`. See [Path Configuration Guide](../docs/PATH_CONFIGURATION.md).
+> **Note:** Directory paths referenced in this workflow (knowledge/, .cursor/skills/, patterns/, etc.) are configurable via `.cursor/config/settings.json`. See [Path Configuration Guide](../../../../docs/setup/configuration.md).
 
 ## Trigger Conditions
 

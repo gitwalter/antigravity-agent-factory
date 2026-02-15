@@ -8,7 +8,7 @@ Systematic workflow for planning sprints, including backlog review, capacity cal
 **Created:** 2026-02-02  
 **Agent:** sprint-master
 
-> **Note:** Directory paths referenced in this workflow (knowledge/, .agent/skills/, patterns/, etc.) are configurable via `.agent/config/settings.json`. See [Path Configuration Guide](../docs/PATH_CONFIGURATION.md).
+> **Note:** Directory paths referenced in this workflow (knowledge/, .agent/skills/, patterns/, etc.) are configurable via `.agent/config/settings.json`. See [Path Configuration Guide](../../../../docs/setup/configuration.md).
 
 ## Trigger Conditions
 

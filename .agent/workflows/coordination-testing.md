@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Multi-agent coordination testing and validation workflow. Covers handoff verification, conflict resolution, result ag...
 ---
 
@@ -42,3 +44,15 @@ This workflow is activated when:
 ### Quality Metrics
 
 ### Report and Recommendations
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

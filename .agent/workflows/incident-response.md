@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Systematic workflow for responding to production incidents. Covers detection, triage, mitigation, resolution, and pos...
 ---
 
@@ -48,3 +50,15 @@ This workflow is activated when:
 ### Close Incident
 
 ### Conduct Post-Mortem
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

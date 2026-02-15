@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Systematic workflow for closing sprints, including status review, velocity calculation, incomplete item handling, and...
 ---
 
@@ -52,3 +54,15 @@ This workflow is activated when:
 ### Generate Sprint Report
 
 ### Communicate Closure
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

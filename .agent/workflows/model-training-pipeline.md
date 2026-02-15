@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Comprehensive workflow for training machine learning models from data preparation through hyperparameter optimization...
 ---
 
@@ -56,3 +58,15 @@ This workflow is activated when:
 ### Export Model
 
 ### Create Deployment Artifacts
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

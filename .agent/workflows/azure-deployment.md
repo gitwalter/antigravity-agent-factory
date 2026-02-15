@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Comprehensive workflow for deploying .NET applications to Azure cloud services including App Service, Container Apps,...
 ---
 
@@ -62,3 +64,15 @@ This workflow is activated when:
 ### Configure Logging
 
 ### Set Up Health Checks
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

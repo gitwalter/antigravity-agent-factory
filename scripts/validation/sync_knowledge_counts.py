@@ -54,7 +54,7 @@ def get_manifest_count() -> int:
 
 def get_docs_count() -> int:
     """Extract knowledge file count from KNOWLEDGE_FILES.md."""
-    docs_path = Path("docs/reference/KNOWLEDGE_FILES.md")
+    docs_path = Path("docs/reference/knowledge-files.md")
     if not docs_path.exists():
         return 0
     
@@ -108,7 +108,7 @@ def update_docs(actual_count: int, dry_run: bool = True) -> bool:
     Returns:
         True if update was needed (or would be needed)
     """
-    docs_path = Path("docs/reference/KNOWLEDGE_FILES.md")
+    docs_path = Path("docs/reference/knowledge-files.md")
     if not docs_path.exists():
         return False
     
@@ -154,7 +154,7 @@ def sync_knowledge_counts(dry_run: bool = True) -> tuple[bool, list[str]]:
             update_manifest(actual_count, dry_run=False)
     
     if docs_count != actual_count:
-        changes.append(f"KNOWLEDGE_FILES.md count: {docs_count} -> {actual_count}")
+        changes.append(f"knowledge-files.md count: {docs_count} -> {actual_count}")
         if not dry_run:
             update_docs(actual_count, dry_run=False)
     

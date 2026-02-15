@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Automated quality gate workflow that enforces code quality standards before merge. Runs comprehensive checks includin...
 ---
 
@@ -49,6 +51,23 @@ This workflow is activated when:
 
 ### Design Pattern Check
 
+### Documentation Integrity Check
+- **Agent**: `system-steward`
+- **Skill**: `repository-governance`
+- **Action**: Run `python scripts/maintenance/link_checker.py` to ensure the PR doesn't introduce broken links or misplace files.
+
 ### Aggregate Results
 
 ### Render Decision
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

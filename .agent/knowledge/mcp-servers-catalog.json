@@ -249,11 +249,13 @@
       "displayName": "Fetch",
       "description": "Fetch and parse web content for LLM consumption",
       "category": "core",
-      "transport": "builtin",
+      "transport": "stdio",
       "authentication": "none",
       "setupDocs": "https://github.com/modelcontextprotocol/servers/tree/main/src/fetch",
       "setupSteps": [
-        "Built-in to Cursor - no setup required"
+        "Install: uvx mcp-server-fetch",
+        "Supports HTML-to-Markdown conversion",
+        "Optional: --ignore-robots-txt, --user-agent"
       ],
       "envVariables": [],
       "capabilities": [
@@ -267,7 +269,14 @@
           "description": "Fetch URL and convert to markdown"
         }
       ],
-      "configExample": {}
+      "configExample": {
+        "fetch": {
+          "command": "uvx",
+          "args": [
+            "mcp-server-fetch"
+          ]
+        }
+      }
     },
     "brave-search": {
       "name": "Brave Search",
@@ -621,10 +630,12 @@
       ],
       "configExample": {
         "playwright": {
-          "command": "npx",
+          "command": "docker",
           "args": [
-            "-y",
-            "@playwright/mcp@latest"
+            "run",
+            "-i",
+            "--rm",
+            "mcp/playwright"
           ]
         }
       }
@@ -1882,45 +1893,44 @@
       }
     },
     "gmail": {
-      "name": "Gmail",
-      "displayName": "Gmail",
-      "description": "Email management via Gmail API",
+      "name": "Gmail (Auto-Auth)",
+      "displayName": "Gmail (Auto-Auth)",
+      "description": "Feature-rich Gmail management with simplified OAuth and attachment support",
       "category": "collab",
       "transport": "stdio",
       "authentication": "oauth",
-      "authenticationNote": "Google OAuth with Gmail API scopes",
-      "setupDocs": "https://github.com/anthropics/mcp-gsuite",
+      "authenticationNote": "Simple OAuth2 with auto-launching browser",
+      "setupDocs": "https://github.com/GongRzhe/Gmail-MCP-Server",
       "setupSteps": [
         "Create Google Cloud project",
         "Enable Gmail API",
-        "Create OAuth credentials",
-        "Configure OAuth consent screen"
+        "Create Desktop OAuth credentials",
+        "Download gcp-oauth.keys.json"
       ],
-      "envVariables": [
-        "GOOGLE_CLIENT_ID",
-        "GOOGLE_CLIENT_SECRET"
-      ],
+      "envVariables": [],
       "capabilities": [
         "email",
-        "gmail",
-        "communication"
+        "attachments",
+        "labels",
+        "filters",
+        "batch-operations"
       ],
       "tools": [
         {
           "name": "send_email",
-          "description": "Send email"
+          "description": "Send a new email with optional attachments"
+        },
+        {
+          "name": "draft_email",
+          "description": "Create a new draft"
         },
         {
           "name": "search_emails",
-          "description": "Search emails"
+          "description": "Search emails with advanced syntax"
         },
         {
-          "name": "get_email",
-          "description": "Get email details"
-        },
-        {
-          "name": "list_labels",
-          "description": "List labels"
+          "name": "read_email",
+          "description": "Read email content and attachment details"
         }
       ],
       "configExample": {
@@ -1928,733 +1938,957 @@
           "command": "npx",
           "args": [
             "-y",
-            "@anthropics/mcp-server-gsuite"
-          ],
-          "env": {
-            "GOOGLE_CLIENT_ID": "${GOOGLE_CLIENT_ID}",
-            "GOOGLE_CLIENT_SECRET": "${GOOGLE_CLIENT_SECRET}"
-          }
+            "@gongrzhe/server-gmail-autoauth-mcp"
+          ]
         }
       }
     },
-    "google-calendar": {
-      "name": "Google Calendar",
-      "displayName": "Google Calendar",
-      "description": "Calendar management via Google Calendar API",
+    "deepwiki": {
+      "name": "DeepWiki",
+      "displayName": "DeepWiki",
+      "description": "AI-powered web research and content processing",
+      "category": "collab",
+      "transport": "sse",
+      "authentication": "none",
+      "setupDocs": "https://mcp.deepwiki.com",
+      "setupSteps": [
+        "Connect via SSE URL"
+      ],
+      "envVariables": [],
+      "capabilities": [
+        "research",
+        "web-processing"
+      ],
+      "tools": [
+        {
+          "name": "search",
+          "description": "Search web content"
+        }
+      ],
+      "configExample": {
+        "deepwiki": {
+          "serverUrl": "https://mcp.deepwiki.com/mcp"
+        }
+      }
+    },
+    "markus-gsuite": {
+      "name": "Google Workspace (Advanced)",
+      "displayName": "Google Workspace (Advanced)",
+      "description": "Deep interaction with Google Docs, Sheets, and Calendar",
       "category": "collab",
       "transport": "stdio",
       "authentication": "oauth",
-      "authenticationNote": "Google OAuth with Calendar API scopes",
-      "setupDocs": "https://github.com/anthropics/mcp-gsuite",
+      "setupDocs": "https://github.com/markuspfundstein/mcp-gsuite",
       "setupSteps": [
         "Create Google Cloud project",
-        "Enable Calendar API",
-        "Create OAuth credentials",
-        "Configure OAuth consent screen"
+        "Enable Gmail, Calendar, Docs, and Sheets APIs",
+        "Create .gauth.json and .accounts.json",
+        "Run authentication flow"
       ],
-      "envVariables": [
-        "GOOGLE_CLIENT_ID",
-        "GOOGLE_CLIENT_SECRET"
-      ],
+      "envVariables": [],
       "capabilities": [
+        "docs",
+        "sheets",
         "calendar",
-        "events",
-        "scheduling"
+        "gmail"
       ],
       "tools": [
         {
-          "name": "create_event",
-          "description": "Create calendar event"
+          "name": "gsuite_search_emails",
+          "description": "Advanced email search"
         },
         {
-          "name": "list_events",
-          "description": "List events"
+          "name": "gsuite_get_document",
+          "description": "Retrieve Google Docs content"
         },
         {
-          "name": "update_event",
-          "description": "Update event"
-        },
-        {
-          "name": "delete_event",
-          "description": "Delete event"
+          "name": "gsuite_update_sheet",
+          "description": "Modify Google Sheets"
         }
       ],
       "configExample": {
-        "google-calendar": {
+        "markus-gsuite": {
           "command": "npx",
           "args": [
             "-y",
-            "@anthropics/mcp-server-gsuite"
-          ],
-          "env": {
-            "GOOGLE_CLIENT_ID": "${GOOGLE_CLIENT_ID}",
-            "GOOGLE_CLIENT_SECRET": "${GOOGLE_CLIENT_SECRET}"
-          }
-        }
-      }
-    },
-    "figma": {
-      "name": "Figma",
-      "displayName": "Figma",
-      "description": "Design to code extraction and Figma integration",
-      "category": "collab",
-      "transport": "sse",
-      "authentication": "oauth",
-      "authenticationNote": "Figma OAuth integration",
-      "setupDocs": "https://developers.figma.com/docs/figma-mcp-server/",
-      "setupSteps": [
-        "Add Figma MCP server",
-        "OAuth login via Figma"
-      ],
-      "envVariables": [],
-      "capabilities": [
-        "design",
-        "figma",
-        "design-to-code"
-      ],
-      "tools": [
-        {
-          "name": "get_file",
-          "description": "Get Figma file"
-        },
-        {
-          "name": "get_frame",
-          "description": "Get frame details"
-        },
-        {
-          "name": "export_assets",
-          "description": "Export assets"
-        },
-        {
-          "name": "get_styles",
-          "description": "Get design styles"
-        }
-      ],
-      "configExample": {
-        "figma": {
-          "url": "https://mcp.figma.com"
-        }
-      }
-    },
-    "canva": {
-      "name": "Canva",
-      "displayName": "Canva",
-      "description": "Canva design and app development",
-      "category": "collab",
-      "transport": "sse",
-      "authentication": "oauth",
-      "authenticationNote": "Canva OAuth integration",
-      "setupDocs": "https://www.canva.dev/docs/apps/mcp-server/",
-      "setupSteps": [
-        "Visit canva.dev for MCP setup",
-        "OAuth login via Canva"
-      ],
-      "envVariables": [],
-      "capabilities": [
-        "design",
-        "canva"
-      ],
-      "tools": [
-        {
-          "name": "get_design",
-          "description": "Get Canva design"
-        },
-        {
-          "name": "create_design",
-          "description": "Create design"
-        }
-      ],
-      "configExample": {
-        "canva": {
-          "url": "https://mcp.canva.dev"
-        }
-      }
-    },
-    "huggingface": {
-      "name": "Hugging Face",
-      "displayName": "Hugging Face Hub",
-      "description": "Models, datasets, Spaces, and ML resources",
-      "category": "aiml",
-      "transport": "sse",
-      "authentication": "api-key",
-      "authenticationNote": "Get token from huggingface.co/settings/tokens",
-      "setupDocs": "https://huggingface.co/docs/hub/en/hf-mcp-server",
-      "setupSteps": [
-        "Get API token from huggingface.co/settings/tokens",
-        "Set HF_TOKEN environment variable"
-      ],
-      "envVariables": [
-        "HF_TOKEN"
-      ],
-      "capabilities": [
-        "models",
-        "datasets",
-        "spaces",
-        "ml-hub"
-      ],
-      "tools": [
-        {
-          "name": "search_models",
-          "description": "Search models"
-        },
-        {
-          "name": "get_model",
-          "description": "Get model info"
-        },
-        {
-          "name": "search_datasets",
-          "description": "Search datasets"
-        },
-        {
-          "name": "list_spaces",
-          "description": "List Spaces"
-        }
-      ],
-      "configExample": {
-        "huggingface": {
-          "url": "https://huggingface.co/mcp",
-          "env": {
-            "HF_TOKEN": "${HF_TOKEN}"
-          }
-        }
-      }
-    },
-    "mlflow": {
-      "name": "MLflow",
-      "displayName": "MLflow",
-      "description": "Experiment tracking, model registry, and traces",
-      "category": "aiml",
-      "transport": "stdio",
-      "authentication": "api-key",
-      "authenticationNote": "MLflow tracking server credentials",
-      "setupDocs": "https://mlflow.org/docs/latest/genai/mcp/",
-      "setupSteps": [
-        "Have MLflow tracking server running",
-        "Set MLFLOW_TRACKING_URI",
-        "Install MLflow MCP server"
-      ],
-      "envVariables": [
-        "MLFLOW_TRACKING_URI",
-        "MLFLOW_TRACKING_TOKEN"
-      ],
-      "capabilities": [
-        "experiments",
-        "models",
-        "traces",
-        "mlops"
-      ],
-      "tools": [
-        {
-          "name": "search_experiments",
-          "description": "Search experiments"
-        },
-        {
-          "name": "get_run",
-          "description": "Get run details"
-        },
-        {
-          "name": "log_metric",
-          "description": "Log metric"
-        },
-        {
-          "name": "search_traces",
-          "description": "Search traces"
-        }
-      ],
-      "configExample": {
-        "mlflow": {
-          "command": "mlflow-mcp-server",
-          "args": [],
-          "env": {
-            "MLFLOW_TRACKING_URI": "${MLFLOW_TRACKING_URI}"
-          }
-        }
-      }
-    },
-    "wandb": {
-      "name": "Weights & Biases",
-      "displayName": "Weights & Biases",
-      "description": "Experiment tracking and ML monitoring",
-      "category": "aiml",
-      "transport": "stdio",
-      "authentication": "api-key",
-      "authenticationNote": "Get API key from wandb.ai/settings",
-      "setupDocs": "https://github.com/wandb/wandb-mcp-server",
-      "setupSteps": [
-        "Get API key from wandb.ai/settings",
-        "Set WANDB_API_KEY environment variable"
-      ],
-      "envVariables": [
-        "WANDB_API_KEY"
-      ],
-      "capabilities": [
-        "experiments",
-        "models",
-        "weave",
-        "mlops"
-      ],
-      "tools": [
-        {
-          "name": "list_runs",
-          "description": "List runs"
-        },
-        {
-          "name": "get_run",
-          "description": "Get run details"
-        },
-        {
-          "name": "log_metric",
-          "description": "Log metric"
-        },
-        {
-          "name": "get_artifact",
-          "description": "Get artifact"
-        }
-      ],
-      "configExample": {
-        "wandb": {
-          "command": "npx",
-          "args": [
-            "-y",
-            "@wandb/mcp-server"
-          ],
-          "env": {
-            "WANDB_API_KEY": "${WANDB_API_KEY}"
-          }
-        }
-      }
-    },
-    "langsmith": {
-      "name": "LangSmith",
-      "displayName": "LangSmith",
-      "description": "LLM application tracing and prompt management",
-      "category": "aiml",
-      "transport": "stdio",
-      "authentication": "api-key",
-      "authenticationNote": "Get API key from smith.langchain.com",
-      "setupDocs": "https://docs.smith.langchain.com/",
-      "setupSteps": [
-        "Sign up at smith.langchain.com",
-        "Get API key",
-        "Set LANGSMITH_API_KEY environment variable"
-      ],
-      "envVariables": [
-        "LANGSMITH_API_KEY"
-      ],
-      "capabilities": [
-        "tracing",
-        "prompts",
-        "datasets",
-        "llm-ops"
-      ],
-      "tools": [
-        {
-          "name": "list_prompts",
-          "description": "List prompts"
-        },
-        {
-          "name": "get_prompt",
-          "description": "Get prompt by name"
-        },
-        {
-          "name": "fetch_runs",
-          "description": "Fetch trace runs"
-        }
-      ],
-      "configExample": {
-        "langsmith": {
-          "command": "npx",
-          "args": [
-            "-y",
-            "langsmith-mcp-server"
-          ],
-          "env": {
-            "LANGSMITH_API_KEY": "${LANGSMITH_API_KEY}"
-          }
-        }
-      }
-    },
-    "jupyter": {
-      "name": "Jupyter",
-      "displayName": "Jupyter",
-      "description": "Interactive notebook execution and data analysis",
-      "category": "aiml",
-      "transport": "stdio",
-      "authentication": "none",
-      "setupDocs": "https://github.com/datalayer/jupyter-mcp-server",
-      "setupSteps": [
-        "Have Jupyter server running",
-        "Install Jupyter MCP server",
-        "Configure notebook directory"
-      ],
-      "envVariables": [
-        "JUPYTER_TOKEN"
-      ],
-      "capabilities": [
-        "notebooks",
-        "python",
-        "data-analysis",
-        "visualization"
-      ],
-      "tools": [
-        {
-          "name": "execute_cell",
-          "description": "Execute notebook cell"
-        },
-        {
-          "name": "create_notebook",
-          "description": "Create notebook"
-        },
-        {
-          "name": "get_notebook",
-          "description": "Get notebook contents"
-        },
-        {
-          "name": "list_notebooks",
-          "description": "List notebooks"
-        }
-      ],
-      "configExample": {
-        "jupyter": {
-          "command": "npx",
-          "args": [
-            "-y",
-            "jupyter-mcp-server"
-          ],
-          "env": {
-            "JUPYTER_TOKEN": "${JUPYTER_TOKEN}"
-          }
-        }
-      }
-    },
-    "langgraph": {
-      "name": "LangGraph Platform",
-      "displayName": "LangGraph Platform",
-      "description": "Agent orchestration and deployment",
-      "category": "aiml",
-      "transport": "sse",
-      "authentication": "api-key",
-      "authenticationNote": "LangChain API key",
-      "setupDocs": "https://docs.langchain.com/langgraph-platform/server-mcp",
-      "setupSteps": [
-        "Deploy LangGraph agent",
-        "Get deployment URL",
-        "Configure MCP endpoint"
-      ],
-      "envVariables": [
-        "LANGCHAIN_API_KEY"
-      ],
-      "capabilities": [
-        "agents",
-        "orchestration",
-        "langgraph"
-      ],
-      "tools": [
-        {
-          "name": "invoke_agent",
-          "description": "Invoke LangGraph agent"
-        },
-        {
-          "name": "get_state",
-          "description": "Get agent state"
-        },
-        {
-          "name": "update_state",
-          "description": "Update agent state"
-        }
-      ],
-      "configExample": {
-        "langgraph": {
-          "url": "https://your-deployment.langchain.app/mcp",
-          "env": {
-            "LANGCHAIN_API_KEY": "${LANGCHAIN_API_KEY}"
-          }
-        }
-      }
-    },
-    "knowledge-graph": {
-      "name": "Knowledge Graph",
-      "displayName": "Knowledge Graph (Agent Memory)",
-      "description": "Persistent knowledge graph memory for AI agents",
-      "category": "aiml",
-      "transport": "stdio",
-      "authentication": "none",
-      "setupDocs": "https://github.com/shaneholloman/mcp-knowledge-graph",
-      "setupSteps": [
-        "Install knowledge graph server",
-        "Configure storage location"
-      ],
-      "envVariables": [],
-      "capabilities": [
-        "memory",
-        "knowledge-graph",
-        "agent-memory",
-        "persistence"
-      ],
-      "tools": [
-        {
-          "name": "add_entity",
-          "description": "Add entity to graph"
-        },
-        {
-          "name": "add_relation",
-          "description": "Add relationship"
-        },
-        {
-          "name": "query",
-          "description": "Query knowledge graph"
-        },
-        {
-          "name": "search",
-          "description": "Search entities"
-        }
-      ],
-      "configExample": {
-        "knowledge-graph": {
-          "command": "npx",
-          "args": [
-            "-y",
-            "mcp-knowledge-graph"
+            "@markuspfundstein/mcp-gsuite"
           ]
         }
       }
     },
-    "neo4j": {
-      "name": "Neo4j",
-      "displayName": "Neo4j",
-      "description": "Graph database for knowledge graphs and relationships",
-      "category": "aiml",
-      "transport": "stdio",
-      "authentication": "connection-string",
-      "authenticationNote": "Neo4j connection credentials",
-      "setupDocs": "https://neo4j.com/docs/mcp/current/",
-      "setupSteps": [
-        "Have Neo4j database running",
-        "Set NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD"
-      ],
-      "envVariables": [
-        "NEO4J_URI",
-        "NEO4J_USER",
-        "NEO4J_PASSWORD"
-      ],
-      "capabilities": [
-        "graph-db",
-        "knowledge-graph",
-        "cypher"
-      ],
-      "tools": [
-        {
-          "name": "query",
-          "description": "Execute Cypher query"
-        },
-        {
-          "name": "get_schema",
-          "description": "Get database schema"
-        },
-        {
-          "name": "create_node",
-          "description": "Create node"
-        },
-        {
-          "name": "create_relationship",
-          "description": "Create relationship"
-        }
-      ],
-      "configExample": {
-        "neo4j": {
-          "command": "npx",
-          "args": [
-            "-y",
-            "@neo4j/mcp-server"
-          ],
-          "env": {
-            "NEO4J_URI": "${NEO4J_URI}",
-            "NEO4J_USER": "${NEO4J_USER}",
-            "NEO4J_PASSWORD": "${NEO4J_PASSWORD}"
-          }
-        }
-      }
-    },
-    "ollama": {
-      "name": "Ollama",
-      "displayName": "Ollama",
-      "description": "Local LLM serving and model management",
-      "category": "aiml",
-      "transport": "stdio",
-      "authentication": "none",
-      "authenticationNote": "Requires Ollama installed and running",
-      "setupDocs": "https://github.com/nighttrek/ollama-mcp",
-      "setupSteps": [
-        "Install Ollama from ollama.ai",
-        "Pull models: ollama pull llama3",
-        "Install Ollama MCP server"
-      ],
-      "envVariables": [
-        "OLLAMA_HOST"
-      ],
-      "capabilities": [
-        "local-llm",
-        "model-serving",
-        "inference"
-      ],
-      "tools": [
-        {
-          "name": "generate",
-          "description": "Generate text"
-        },
-        {
-          "name": "chat",
-          "description": "Chat completion"
-        },
-        {
-          "name": "list_models",
-          "description": "List available models"
-        },
-        {
-          "name": "pull_model",
-          "description": "Pull new model"
-        }
-      ],
-      "configExample": {
-        "ollama": {
-          "command": "npx",
-          "args": [
-            "-y",
-            "ollama-mcp"
-          ],
-          "env": {
-            "OLLAMA_HOST": "${OLLAMA_HOST:-http://localhost:11434}"
-          }
-        }
-      }
-    },
-    "mcp-sap-docs": {
-      "name": "SAP Documentation",
-      "displayName": "SAP Documentation",
-      "description": "SAP Help Portal and Community search - broad SAP coverage (CAP, RAP, CPI, Fiori)",
-      "category": "code",
-      "url": "https://mcp-sap-docs.marianzeis.de/mcp",
-      "transport": "sse",
-      "authentication": "none",
-      "setupDocs": "https://mcp-sap-docs.marianzeis.de",
-      "setupSteps": [
-        "No setup required - remote server",
-        "Add URL to MCP config"
-      ],
-      "envVariables": [],
-      "capabilities": [
-        "documentation",
-        "sap",
-        "search"
-      ],
-      "tools": [
-        {
-          "name": "sap_help_search",
-          "description": "Search SAP Help Portal"
-        },
-        {
-          "name": "sap_community_search",
-          "description": "Search SAP Community"
-        },
-        {
-          "name": "sap_help_get",
-          "description": "Get specific help document"
-        }
-      ],
-      "configExample": {
-        "mcp-sap-docs": {
-          "url": "https://mcp-sap-docs.marianzeis.de/mcp"
-        }
-      }
-    },
-    "famano-office": {
-      "name": "Famano Office",
-      "displayName": "Famano Office (Word)",
-      "description": "Interact with Microsoft Word (.docx) files - read and write capabilities",
+    "isaac-gdrive": {
+      "name": "Google Drive & Sheets",
+      "displayName": "Google Drive & Sheets",
+      "description": "File operations in Drive and direct Sheets data manipulation",
       "category": "collab",
       "transport": "stdio",
-      "authentication": "none",
-      "setupDocs": "https://www.pulsemcp.com/servers/famano-office",
+      "authentication": "oauth",
+      "setupDocs": "https://github.com/isaacphi/mcp-gdrive",
       "setupSteps": [
-        "Install and run via uvx: uvx mcp-server-office",
-        "Requires Python 3.12+",
-        "Add to MCP config"
+        "Enable Google Drive and Sheets APIs",
+        "Create Desktop OAuth credentials",
+        "Place gcp-oauth.keys.json in config directory",
+        "Set GDRIVE_CREDS_DIR, CLIENT_ID, CLIENT_SECRET"
       ],
-      "envVariables": [],
+      "envVariables": [
+        "GDRIVE_CREDS_DIR",
+        "CLIENT_ID",
+        "CLIENT_SECRET"
+      ],
       "capabilities": [
-        "word",
-        "docx",
-        "documentation",
-        "office"
+        "drive",
+        "sheets",
+        "file-operations"
       ],
       "tools": [
         {
-          "name": "read_docx",
-          "description": "Read Word document content"
+          "name": "gdrive_search",
+          "description": "Search for files in Drive"
         },
         {
-          "name": "write_docx",
-          "description": "Write to Word document"
+          "name": "gsheets_read",
+          "description": "Read data from Sheets"
+        },
+        {
+          "name": "gsheets_update_cell",
+          "description": "Update cell in Sheets"
         }
       ],
       "configExample": {
-        "famano-office": {
-          "command": "uvx",
+        "isaac-gdrive": {
+          "command": "npx",
           "args": [
-            "mcp-server-office"
-          ]
-        }
-      }
-    },
-    "sap-abap-documentation": {
-      "name": "SAP ABAP Documentation",
-      "displayName": "SAP ABAP Documentation",
-      "description": "ABAP-focused documentation: keywords, DSAG guidelines, Clean ABAP style guide",
-      "category": "code",
-      "url": "https://mcp-abap.marianzeis.de/mcp",
-      "transport": "sse",
-      "authentication": "none",
-      "setupDocs": "https://github.com/marianfoo/sap-mcp-server",
-      "setupSteps": [
-        "No setup required - remote server",
-        "Add URL to MCP config",
-        "For Eclipse ADT: see {directories.docs}/guides/ECLIPSE_ABAP_MCP_SETUP.md"
-      ],
-      "envVariables": [],
-      "capabilities": [
-        "documentation",
-        "abap",
-        "search",
-        "style-guide",
-        "dsag"
-      ],
-      "tools": [
-        {
-          "name": "search",
-          "description": "Search ABAP docs, style guides, SAP Community"
-        },
-        {
-          "name": "fetch",
-          "description": "Get specific documentation content"
-        },
-        {
-          "name": "sap_help_search",
-          "description": "Search SAP Help Portal (ABAP-focused)"
-        },
-        {
-          "name": "sap_community_search",
-          "description": "Search SAP Community (ABAP-focused)"
-        }
-      ],
-      "configExample": {
-        "sap-abap-documentation": {
-          "url": "https://mcp-abap.marianzeis.de/mcp"
+            "-y",
+            "@isaacphi/mcp-gdrive"
+          ],
+          "env": {
+            "GDRIVE_CREDS_DIR": "/path/to/creds",
+            "CLIENT_ID": "${CLIENT_ID}",
+            "CLIENT_SECRET": "${CLIENT_SECRET}"
+          }
         }
       },
-      "relatedServers": [
-        "sap-documentation"
-      ],
-      "notes": "Use for pure ABAP development. For CAP/RAP/CPI, prefer sap-documentation."
+      "sap-docs": {
+        "name": "SAP Documentation",
+        "displayName": "SAP Documentation",
+        "description": "Fast search for SAPUI5, CAP, OpenUI5, and wdi5 documentation",
+        "category": "dev",
+        "transport": "stdio",
+        "authentication": "none",
+        "setupDocs": "https://github.com/marianfoo/mcp-sap-docs",
+        "setupSteps": [
+          "Install via npx mcp-sap-docs"
+        ],
+        "envVariables": [],
+        "capabilities": [
+          "sap-search",
+          "documentation-retrieval"
+        ],
+        "tools": [
+          {
+            "name": "search",
+            "description": "Search across SAP documentation sources"
+          },
+          {
+            "name": "fetch",
+            "description": "Retrieve complete SAP documents/snippets"
+          },
+          {
+            "name": "sap_community_search",
+            "description": "Search SAP Community posts"
+          },
+          {
+            "name": "sap_help_search",
+            "description": "Search SAP Help Portal"
+          }
+        ],
+        "configExample": {
+          "sap-docs": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "mcp-sap-docs"
+            ]
+          }
+        }
+      },
+      "google-calendar": {
+        "name": "Google Calendar",
+        "displayName": "Google Calendar",
+        "description": "Calendar management via Google Calendar API",
+        "category": "collab",
+        "transport": "stdio",
+        "authentication": "oauth",
+        "authenticationNote": "Google OAuth with Calendar API scopes",
+        "setupDocs": "https://github.com/anthropics/mcp-gsuite",
+        "setupSteps": [
+          "Create Google Cloud project",
+          "Enable Calendar API",
+          "Create OAuth credentials",
+          "Configure OAuth consent screen"
+        ],
+        "envVariables": [
+          "GOOGLE_CLIENT_ID",
+          "GOOGLE_CLIENT_SECRET"
+        ],
+        "capabilities": [
+          "calendar",
+          "events",
+          "scheduling"
+        ],
+        "tools": [
+          {
+            "name": "create_event",
+            "description": "Create calendar event"
+          },
+          {
+            "name": "list_events",
+            "description": "List events"
+          },
+          {
+            "name": "update_event",
+            "description": "Update event"
+          },
+          {
+            "name": "delete_event",
+            "description": "Delete event"
+          }
+        ],
+        "configExample": {
+          "google-calendar": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "@anthropics/mcp-server-gsuite"
+            ],
+            "env": {
+              "GOOGLE_CLIENT_ID": "${GOOGLE_CLIENT_ID}",
+              "GOOGLE_CLIENT_SECRET": "${GOOGLE_CLIENT_SECRET}"
+            }
+          }
+        }
+      },
+      "figma": {
+        "name": "Figma",
+        "displayName": "Figma",
+        "description": "Design to code extraction and Figma integration",
+        "category": "collab",
+        "transport": "sse",
+        "authentication": "oauth",
+        "authenticationNote": "Figma OAuth integration",
+        "setupDocs": "https://developers.figma.com/docs/figma-mcp-server/",
+        "setupSteps": [
+          "Add Figma MCP server",
+          "OAuth login via Figma"
+        ],
+        "envVariables": [],
+        "capabilities": [
+          "design",
+          "figma",
+          "design-to-code"
+        ],
+        "tools": [
+          {
+            "name": "get_file",
+            "description": "Get Figma file"
+          },
+          {
+            "name": "get_frame",
+            "description": "Get frame details"
+          },
+          {
+            "name": "export_assets",
+            "description": "Export assets"
+          },
+          {
+            "name": "get_styles",
+            "description": "Get design styles"
+          }
+        ],
+        "configExample": {
+          "figma": {
+            "url": "https://mcp.figma.com"
+          }
+        }
+      },
+      "canva": {
+        "name": "Canva",
+        "displayName": "Canva",
+        "description": "Canva design and app development",
+        "category": "collab",
+        "transport": "sse",
+        "authentication": "oauth",
+        "authenticationNote": "Canva OAuth integration",
+        "setupDocs": "https://www.canva.dev/docs/apps/mcp-server/",
+        "setupSteps": [
+          "Visit canva.dev for MCP setup",
+          "OAuth login via Canva"
+        ],
+        "envVariables": [],
+        "capabilities": [
+          "design",
+          "canva"
+        ],
+        "tools": [
+          {
+            "name": "get_design",
+            "description": "Get Canva design"
+          },
+          {
+            "name": "create_design",
+            "description": "Create design"
+          }
+        ],
+        "configExample": {
+          "canva": {
+            "url": "https://mcp.canva.dev"
+          }
+        }
+      },
+      "huggingface": {
+        "name": "Hugging Face",
+        "displayName": "Hugging Face Hub",
+        "description": "Models, datasets, Spaces, and ML resources",
+        "category": "aiml",
+        "transport": "sse",
+        "authentication": "api-key",
+        "authenticationNote": "Get token from huggingface.co/settings/tokens",
+        "setupDocs": "https://huggingface.co/docs/hub/en/hf-mcp-server",
+        "setupSteps": [
+          "Get API token from huggingface.co/settings/tokens",
+          "Set HF_TOKEN environment variable"
+        ],
+        "envVariables": [
+          "HF_TOKEN"
+        ],
+        "capabilities": [
+          "models",
+          "datasets",
+          "spaces",
+          "ml-hub"
+        ],
+        "tools": [
+          {
+            "name": "search_models",
+            "description": "Search models"
+          },
+          {
+            "name": "get_model",
+            "description": "Get model info"
+          },
+          {
+            "name": "search_datasets",
+            "description": "Search datasets"
+          },
+          {
+            "name": "list_spaces",
+            "description": "List Spaces"
+          }
+        ],
+        "configExample": {
+          "huggingface": {
+            "url": "https://huggingface.co/mcp",
+            "env": {
+              "HF_TOKEN": "${HF_TOKEN}"
+            }
+          }
+        }
+      },
+      "mlflow": {
+        "name": "MLflow",
+        "displayName": "MLflow",
+        "description": "Experiment tracking, model registry, and traces",
+        "category": "aiml",
+        "transport": "stdio",
+        "authentication": "api-key",
+        "authenticationNote": "MLflow tracking server credentials",
+        "setupDocs": "https://mlflow.org/docs/latest/genai/mcp/",
+        "setupSteps": [
+          "Have MLflow tracking server running",
+          "Set MLFLOW_TRACKING_URI",
+          "Install MLflow MCP server"
+        ],
+        "envVariables": [
+          "MLFLOW_TRACKING_URI",
+          "MLFLOW_TRACKING_TOKEN"
+        ],
+        "capabilities": [
+          "experiments",
+          "models",
+          "traces",
+          "mlops"
+        ],
+        "tools": [
+          {
+            "name": "search_experiments",
+            "description": "Search experiments"
+          },
+          {
+            "name": "get_run",
+            "description": "Get run details"
+          },
+          {
+            "name": "log_metric",
+            "description": "Log metric"
+          },
+          {
+            "name": "search_traces",
+            "description": "Search traces"
+          }
+        ],
+        "configExample": {
+          "mlflow": {
+            "command": "mlflow-mcp-server",
+            "args": [],
+            "env": {
+              "MLFLOW_TRACKING_URI": "${MLFLOW_TRACKING_URI}"
+            }
+          }
+        }
+      },
+      "wandb": {
+        "name": "Weights & Biases",
+        "displayName": "Weights & Biases",
+        "description": "Experiment tracking and ML monitoring",
+        "category": "aiml",
+        "transport": "stdio",
+        "authentication": "api-key",
+        "authenticationNote": "Get API key from wandb.ai/settings",
+        "setupDocs": "https://github.com/wandb/wandb-mcp-server",
+        "setupSteps": [
+          "Get API key from wandb.ai/settings",
+          "Set WANDB_API_KEY environment variable"
+        ],
+        "envVariables": [
+          "WANDB_API_KEY"
+        ],
+        "capabilities": [
+          "experiments",
+          "models",
+          "weave",
+          "mlops"
+        ],
+        "tools": [
+          {
+            "name": "list_runs",
+            "description": "List runs"
+          },
+          {
+            "name": "get_run",
+            "description": "Get run details"
+          },
+          {
+            "name": "log_metric",
+            "description": "Log metric"
+          },
+          {
+            "name": "get_artifact",
+            "description": "Get artifact"
+          }
+        ],
+        "configExample": {
+          "wandb": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "@wandb/mcp-server"
+            ],
+            "env": {
+              "WANDB_API_KEY": "${WANDB_API_KEY}"
+            }
+          }
+        }
+      },
+      "langsmith": {
+        "name": "LangSmith",
+        "displayName": "LangSmith",
+        "description": "LLM application tracing and prompt management",
+        "category": "aiml",
+        "transport": "stdio",
+        "authentication": "api-key",
+        "authenticationNote": "Get API key from smith.langchain.com",
+        "setupDocs": "https://docs.smith.langchain.com/",
+        "setupSteps": [
+          "Sign up at smith.langchain.com",
+          "Get API key",
+          "Set LANGSMITH_API_KEY environment variable"
+        ],
+        "envVariables": [
+          "LANGSMITH_API_KEY"
+        ],
+        "capabilities": [
+          "tracing",
+          "prompts",
+          "datasets",
+          "llm-ops"
+        ],
+        "tools": [
+          {
+            "name": "list_prompts",
+            "description": "List prompts"
+          },
+          {
+            "name": "get_prompt",
+            "description": "Get prompt by name"
+          },
+          {
+            "name": "fetch_runs",
+            "description": "Fetch trace runs"
+          }
+        ],
+        "configExample": {
+          "langsmith": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "langsmith-mcp-server"
+            ],
+            "env": {
+              "LANGSMITH_API_KEY": "${LANGSMITH_API_KEY}"
+            }
+          }
+        }
+      },
+      "jupyter": {
+        "name": "Jupyter",
+        "displayName": "Jupyter",
+        "description": "Interactive notebook execution and data analysis",
+        "category": "aiml",
+        "transport": "stdio",
+        "authentication": "none",
+        "setupDocs": "https://github.com/datalayer/jupyter-mcp-server",
+        "setupSteps": [
+          "Have Jupyter server running",
+          "Install Jupyter MCP server",
+          "Configure notebook directory"
+        ],
+        "envVariables": [
+          "JUPYTER_TOKEN"
+        ],
+        "capabilities": [
+          "notebooks",
+          "python",
+          "data-analysis",
+          "visualization"
+        ],
+        "tools": [
+          {
+            "name": "execute_cell",
+            "description": "Execute notebook cell"
+          },
+          {
+            "name": "create_notebook",
+            "description": "Create notebook"
+          },
+          {
+            "name": "get_notebook",
+            "description": "Get notebook contents"
+          },
+          {
+            "name": "list_notebooks",
+            "description": "List notebooks"
+          }
+        ],
+        "configExample": {
+          "jupyter": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "jupyter-mcp-server"
+            ],
+            "env": {
+              "JUPYTER_TOKEN": "${JUPYTER_TOKEN}"
+            }
+          }
+        }
+      },
+      "langgraph": {
+        "name": "LangGraph Platform",
+        "displayName": "LangGraph Platform",
+        "description": "Agent orchestration and deployment",
+        "category": "aiml",
+        "transport": "sse",
+        "authentication": "api-key",
+        "authenticationNote": "LangChain API key",
+        "setupDocs": "https://docs.langchain.com/langgraph-platform/server-mcp",
+        "setupSteps": [
+          "Deploy LangGraph agent",
+          "Get deployment URL",
+          "Configure MCP endpoint"
+        ],
+        "envVariables": [
+          "LANGCHAIN_API_KEY"
+        ],
+        "capabilities": [
+          "agents",
+          "orchestration",
+          "langgraph"
+        ],
+        "tools": [
+          {
+            "name": "invoke_agent",
+            "description": "Invoke LangGraph agent"
+          },
+          {
+            "name": "get_state",
+            "description": "Get agent state"
+          },
+          {
+            "name": "update_state",
+            "description": "Update agent state"
+          }
+        ],
+        "configExample": {
+          "langgraph": {
+            "url": "https://your-deployment.langchain.app/mcp",
+            "env": {
+              "LANGCHAIN_API_KEY": "${LANGCHAIN_API_KEY}"
+            }
+          }
+        }
+      },
+      "knowledge-graph": {
+        "name": "Knowledge Graph",
+        "displayName": "Knowledge Graph (Agent Memory)",
+        "description": "Persistent knowledge graph memory for AI agents",
+        "category": "aiml",
+        "transport": "stdio",
+        "authentication": "none",
+        "setupDocs": "https://github.com/shaneholloman/mcp-knowledge-graph",
+        "setupSteps": [
+          "Install knowledge graph server",
+          "Configure storage location"
+        ],
+        "envVariables": [],
+        "capabilities": [
+          "memory",
+          "knowledge-graph",
+          "agent-memory",
+          "persistence"
+        ],
+        "tools": [
+          {
+            "name": "add_entity",
+            "description": "Add entity to graph"
+          },
+          {
+            "name": "add_relation",
+            "description": "Add relationship"
+          },
+          {
+            "name": "query",
+            "description": "Query knowledge graph"
+          },
+          {
+            "name": "search",
+            "description": "Search entities"
+          }
+        ],
+        "configExample": {
+          "knowledge-graph": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "mcp-knowledge-graph"
+            ]
+          }
+        }
+      },
+      "neo4j": {
+        "name": "Neo4j",
+        "displayName": "Neo4j",
+        "description": "Graph database for knowledge graphs and relationships",
+        "category": "aiml",
+        "transport": "stdio",
+        "authentication": "connection-string",
+        "authenticationNote": "Neo4j connection credentials",
+        "setupDocs": "https://neo4j.com/docs/mcp/current/",
+        "setupSteps": [
+          "Have Neo4j database running",
+          "Set NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD"
+        ],
+        "envVariables": [
+          "NEO4J_URI",
+          "NEO4J_USER",
+          "NEO4J_PASSWORD"
+        ],
+        "capabilities": [
+          "graph-db",
+          "knowledge-graph",
+          "cypher"
+        ],
+        "tools": [
+          {
+            "name": "query",
+            "description": "Execute Cypher query"
+          },
+          {
+            "name": "get_schema",
+            "description": "Get database schema"
+          },
+          {
+            "name": "create_node",
+            "description": "Create node"
+          },
+          {
+            "name": "create_relationship",
+            "description": "Create relationship"
+          }
+        ],
+        "configExample": {
+          "neo4j": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "@neo4j/mcp-server"
+            ],
+            "env": {
+              "NEO4J_URI": "${NEO4J_URI}",
+              "NEO4J_USER": "${NEO4J_USER}",
+              "NEO4J_PASSWORD": "${NEO4J_PASSWORD}"
+            }
+          }
+        }
+      },
+      "ollama": {
+        "name": "Ollama",
+        "displayName": "Ollama",
+        "description": "Local LLM serving and model management",
+        "category": "aiml",
+        "transport": "stdio",
+        "authentication": "none",
+        "authenticationNote": "Requires Ollama installed and running",
+        "setupDocs": "https://github.com/nighttrek/ollama-mcp",
+        "setupSteps": [
+          "Install Ollama from ollama.ai",
+          "Pull models: ollama pull llama3",
+          "Install Ollama MCP server"
+        ],
+        "envVariables": [
+          "OLLAMA_HOST"
+        ],
+        "capabilities": [
+          "local-llm",
+          "model-serving",
+          "inference"
+        ],
+        "tools": [
+          {
+            "name": "generate",
+            "description": "Generate text"
+          },
+          {
+            "name": "chat",
+            "description": "Chat completion"
+          },
+          {
+            "name": "list_models",
+            "description": "List available models"
+          },
+          {
+            "name": "pull_model",
+            "description": "Pull new model"
+          }
+        ],
+        "configExample": {
+          "ollama": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "ollama-mcp"
+            ],
+            "env": {
+              "OLLAMA_HOST": "${OLLAMA_HOST:-http://localhost:11434}"
+            }
+          }
+        }
+      },
+      "mcp-sap-docs": {
+        "name": "SAP Documentation",
+        "displayName": "SAP Documentation",
+        "description": "SAP Help Portal and Community search - broad SAP coverage (CAP, RAP, CPI, Fiori)",
+        "category": "code",
+        "url": "https://mcp-sap-docs.marianzeis.de/mcp",
+        "transport": "sse",
+        "authentication": "none",
+        "setupDocs": "https://mcp-sap-docs.marianzeis.de",
+        "setupSteps": [
+          "No setup required - remote server",
+          "Add URL to MCP config"
+        ],
+        "envVariables": [],
+        "capabilities": [
+          "documentation",
+          "sap",
+          "search"
+        ],
+        "tools": [
+          {
+            "name": "sap_help_search",
+            "description": "Search SAP Help Portal"
+          },
+          {
+            "name": "sap_community_search",
+            "description": "Search SAP Community"
+          },
+          {
+            "name": "sap_help_get",
+            "description": "Get specific help document"
+          }
+        ],
+        "configExample": {
+          "mcp-sap-docs": {
+            "url": "https://mcp-sap-docs.marianzeis.de/mcp"
+          }
+        }
+      },
+      "famano-office": {
+        "name": "Famano Office",
+        "displayName": "Famano Office (Word)",
+        "description": "Interact with Microsoft Word (.docx) files - read and write capabilities",
+        "category": "collab",
+        "transport": "stdio",
+        "authentication": "none",
+        "setupDocs": "https://www.pulsemcp.com/servers/famano-office",
+        "setupSteps": [
+          "Install and run via uvx: uvx mcp-server-office",
+          "Requires Python 3.12+",
+          "Add to MCP config"
+        ],
+        "envVariables": [],
+        "capabilities": [
+          "word",
+          "docx",
+          "documentation",
+          "office"
+        ],
+        "tools": [
+          {
+            "name": "read_docx",
+            "description": "Read Word document content"
+          },
+          {
+            "name": "write_docx",
+            "description": "Write to Word document"
+          }
+        ],
+        "configExample": {
+          "famano-office": {
+            "command": "uvx",
+            "args": [
+              "mcp-server-office"
+            ]
+          }
+        }
+      },
+      "sap-abap-documentation": {
+        "name": "SAP ABAP Documentation",
+        "displayName": "SAP ABAP Documentation",
+        "description": "ABAP-focused documentation: keywords, DSAG guidelines, Clean ABAP style guide",
+        "category": "code",
+        "url": "https://mcp-abap.marianzeis.de/mcp",
+        "transport": "sse",
+        "authentication": "none",
+        "setupDocs": "https://github.com/marianfoo/sap-mcp-server",
+        "setupSteps": [
+          "No setup required - remote server",
+          "Add URL to MCP config",
+          "For Eclipse ADT: see {directories.docs}/guides/ECLIPSE_ABAP_MCP_SETUP.md"
+        ],
+        "envVariables": [],
+        "capabilities": [
+          "documentation",
+          "abap",
+          "search",
+          "style-guide",
+          "dsag"
+        ],
+        "tools": [
+          {
+            "name": "search",
+            "description": "Search ABAP docs, style guides, SAP Community"
+          },
+          {
+            "name": "fetch",
+            "description": "Get specific documentation content"
+          },
+          {
+            "name": "sap_help_search",
+            "description": "Search SAP Help Portal (ABAP-focused)"
+          },
+          {
+            "name": "sap_community_search",
+            "description": "Search SAP Community (ABAP-focused)"
+          }
+        ],
+        "configExample": {
+          "sap-abap-documentation": {
+            "url": "https://mcp-abap.marianzeis.de/mcp"
+          }
+        },
+        "relatedServers": [
+          "sap-documentation"
+        ],
+        "notes": "Use for pure ABAP development. For CAP/RAP/CPI, prefer sap-documentation."
+      },
+      "google-contacts": {
+        "name": "Google Contacts",
+        "displayName": "Google Contacts",
+        "description": "Manage Google Contacts - list, search, create, update, and delete",
+        "category": "collab",
+        "transport": "stdio",
+        "authentication": "oauth",
+        "authenticationNote": "Google OAuth with Contacts API scopes",
+        "setupDocs": "https://github.com/rayanzaki/mcp-google-contacts-server",
+        "setupSteps": [
+          "Create Google Cloud project",
+          "Enable Google People API",
+          "Create OAuth credentials",
+          "Set GOOGLE_CREDENTIALS_FILE environment variable"
+        ],
+        "envVariables": [
+          "GOOGLE_CREDENTIALS_FILE"
+        ],
+        "capabilities": [
+          "contacts",
+          "communication"
+        ],
+        "tools": [
+          {
+            "name": "list_contacts",
+            "description": "List all contacts"
+          },
+          {
+            "name": "search_contacts",
+            "description": "Search contacts by name or email"
+          },
+          {
+            "name": "create_contact",
+            "description": "Create a new contact"
+          },
+          {
+            "name": "update_contact",
+            "description": "Update an existing contact"
+          },
+          {
+            "name": "delete_contact",
+            "description": "Delete a contact"
+          }
+        ],
+        "configExample": {
+          "google-contacts": {
+            "command": "uvx",
+            "args": [
+              "--from",
+              "git+https://github.com/RayanZaki/mcp-google-contacts-server.git",
+              "mcp-google-contacts-server"
+            ],
+            "env": {
+              "GOOGLE_CREDENTIALS_FILE": "/path/to/credentials.json"
+            }
+          }
+        }
+      }
     }
   },
   "serversByCategory": {
@@ -2710,7 +2944,8 @@
       "gmail",
       "google-calendar",
       "figma",
-      "canva"
+      "canva",
+      "google-contacts"
     ],
     "aiml": [
       "huggingface",
@@ -2733,7 +2968,8 @@
       "github",
       "sentry",
       "playwright",
-      "postgresql"
+      "postgresql",
+      "google-contacts"
     ],
     "frontend-developer": [
       "filesystem",
@@ -2918,27 +3154,27 @@
     {
       "name": "Skipping Setup Documentation",
       "problem": "Adding servers to configuration without reading setupDocs leads to authentication failures, missing environment variables, and runtime errors. Each server has specific setup requirements that must be followed.",
-      "solution": "Always read the setupDocs URL and follow all setupSteps before adding a server to your MCP configuration. Verify authentication, environment variables, and any required dependencies are properly configured."
+      "fix": "Always read the setupDocs URL and follow all setupSteps before adding a server to your MCP configuration. Verify authentication, environment variables, and any required dependencies are properly configured."
     },
     {
       "name": "Hardcoding Credentials",
       "problem": "Placing API keys, tokens, or connection strings directly in MCP configuration files exposes sensitive credentials in version control and makes rotation difficult.",
-      "solution": "Use environment variables for all credentials. Reference them in config using ${VAR_NAME} syntax. Store credentials securely (e.g., .env files excluded from git, secret management systems)."
+      "fix": "Use environment variables for all credentials. Reference them in config using ${VAR_NAME} syntax. Store credentials securely (e.g., .env files excluded from git, secret management systems)."
     },
     {
       "name": "Not Verifying Server Capabilities",
       "problem": "Selecting servers without checking their tools and capabilities leads to discovering missing functionality at runtime, requiring reconfiguration and wasted setup time.",
-      "solution": "Review the tools array for each server before selection to ensure it provides the functionality you need. Check capabilities to understand what the server can do. Test key tools after configuration."
+      "fix": "Review the tools array for each server before selection to ensure it provides the functionality you need. Check capabilities to understand what the server can do. Test key tools after configuration."
     },
     {
       "name": "Ignoring Transport Type Implications",
       "problem": "Not understanding the difference between stdio (local execution) and SSE (remote server) causes confusion when some servers work offline while others require internet connectivity and may have latency.",
-      "solution": "Check the transport field for each server. Prefer stdio servers for local operations when possible. For SSE servers, ensure network connectivity, understand latency implications, and verify server availability."
+      "fix": "Check the transport field for each server. Prefer stdio servers for local operations when possible. For SSE servers, ensure network connectivity, understand latency implications, and verify server availability."
     },
     {
       "name": "Adding Servers Without Testing",
       "problem": "Adding multiple servers to configuration without testing each one leads to cascading failures when agents try to use unavailable or misconfigured servers, making debugging difficult.",
-      "solution": "Add and test servers one at a time. After adding each server, verify connectivity, test authentication, and execute a basic tool call. Check server logs for errors. Only proceed to the next server after confirming the current one works."
+      "fix": "Add and test servers one at a time. After adding each server, verify connectivity, test authentication, and execute a basic tool call. Check server logs for errors. Only proceed to the next server after confirming the current one works."
     }
   ],
   "axiomAlignment": {

@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: End-to-end workflow for deploying SAP applications to SAP Business Technology Platform (BTP). Covers build configurat...
 ---
 
@@ -54,3 +56,15 @@ This workflow is activated when:
 ### Assign Roles (if needed)
 
 ### Set Up Monitoring
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

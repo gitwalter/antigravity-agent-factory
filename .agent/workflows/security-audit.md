@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Comprehensive security audit workflow that systematically reviews code for vulnerabilities, checks dependencies, vali...
 ---
 
@@ -58,3 +60,15 @@ This workflow is activated when:
 ### Compile Security Report
 
 ### Create Remediation Plan
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

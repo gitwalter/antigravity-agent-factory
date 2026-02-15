@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Test-Driven Development workflow implementing the Red-Green-Refactor cycle. Guides developers through writing failing...
 ---
 
@@ -10,7 +12,7 @@ Test-Driven Development workflow implementing the Red-Green-Refactor cycle. Guid
 **Created:** 2026-02-02  
 **Agent:** test-generator
 
-> **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See [Path Configuration Guide](../docs/reference/path-configuration.md).
+> **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.
 
 ## Trigger Conditions
 
@@ -52,3 +54,15 @@ This workflow is activated when:
 ### Run Full Test Suite
 
 ### Document Implementation
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

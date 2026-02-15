@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Comprehensive CI/CD pipeline workflow for Java/Spring Boot applications using Maven/Gradle, Testcontainers, Docker/Ji...
 ---
 
@@ -59,3 +61,15 @@ This workflow is activated when:
 ### Verify Deployment
 
 ### Rollback on Failure
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

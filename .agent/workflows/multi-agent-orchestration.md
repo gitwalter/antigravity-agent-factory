@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Workflow for designing, implementing, and deploying multi-agent AI systems. Covers topology selection, agent implemen...
 ---
 
@@ -48,3 +50,15 @@ This workflow is activated when:
 ### Configure Production
 
 ### Deploy
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

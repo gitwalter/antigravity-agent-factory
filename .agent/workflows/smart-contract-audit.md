@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Comprehensive security audit workflow for smart contracts covering static analysis, vulnerability scanning, gas optim...
 ---
 
@@ -42,3 +44,15 @@ This workflow is activated when:
 ### Analyze Test Suite
 
 ### Generate Audit Report
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

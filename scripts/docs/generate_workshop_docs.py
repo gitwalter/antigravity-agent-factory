@@ -296,7 +296,7 @@ def generate_index(workshops: list[dict[str, Any]]) -> str:
                 name = w.get('name', 'Unknown')
                 stack = w.get('technology', {}).get('stack', 'N/A')
                 level = w.get('level', 'fundamentals').title()
-                lines.append(f"| [{wid}]({wid}.md) | {name} | {stack} | {level} |")
+                lines.append(f"| **{wid}** | {name} | {stack} | {level} |")
             lines.append("")
     
     lines.append("## How to Use")

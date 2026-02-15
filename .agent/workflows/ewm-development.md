@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Workflow for EWM-related development: warehouse structure, movements, custom logic. Embedded EWM in S/4HANA.
 ---
 
@@ -22,3 +24,24 @@ This workflow is activated when:
 - "Enhance putaway strategy logic"
 - "Build custom EWM process for quality inspection"
 - "Implement wave management extension"
+
+## Steps
+
+Standard PABP development phases apply:
+1.  **Define Requirements**
+2.  **Design Architecture**
+3.  **Implementation**
+4.  **Verification**
+5.  **Deployment**
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

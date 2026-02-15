@@ -59,13 +59,6 @@ VERSION_LOCATIONS = [
         "pattern": r'\*Antigravity Agent Factory v(\d+\.\d+\.\d+)\*',
         "replacement": lambda v: f'*Antigravity Agent Factory v{v}*',
     },
-    {
-        "file": "docs/GETTING_STARTED.md",
-        "name": "GETTING_STARTED.md footer",
-        "pattern": r'\*Antigravity Agent Factory v[\d.]+\*',
-        "replacement": lambda v: f'*Antigravity Agent Factory v{v}*',
-        "extract_pattern": r'\*Antigravity Agent Factory v([\d.]+)\*',
-    },
 {
         "file": "scripts/core/generate_project.py",
         "name": "generate_project.py comment",

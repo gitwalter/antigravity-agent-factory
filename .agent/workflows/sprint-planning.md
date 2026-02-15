@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Systematic workflow for planning sprints, including backlog review, capacity calculation, story selection, and sprint...
 ---
 
@@ -10,7 +12,7 @@ Systematic workflow for planning sprints, including backlog review, capacity cal
 **Created:** 2026-02-02  
 **Agent:** sprint-master
 
-> **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See [Path Configuration Guide](../docs/reference/path-configuration.md).
+> **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.
 
 ## Trigger Conditions
 
@@ -54,3 +56,15 @@ This workflow is activated when:
 ### Generate Sprint Summary
 
 ### Notify Stakeholders
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

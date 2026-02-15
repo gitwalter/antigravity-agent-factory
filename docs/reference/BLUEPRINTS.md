@@ -1,6 +1,6 @@
 # Cursor Agent Factory Blueprints Reference
 
-> **Philosophy:** All blueprints embody our [Culture and Values](../CULTURE_AND_VALUES.md)—love, wisdom, and care as foundations for technical decisions.
+> **Philosophy:** All blueprints embody our **Culture and Values**—love, wisdom, and care as foundations for technical decisions.
 
 ## 1. Introduction
 

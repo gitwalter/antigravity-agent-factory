@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Strategy backtesting workflow with walk-forward analysis and Monte Carlo simulation. Covers data preparation, backtes...
 ---
 
@@ -42,3 +44,15 @@ This workflow is activated when:
 ### Monte Carlo Simulation
 
 ### Report and Recommendation
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

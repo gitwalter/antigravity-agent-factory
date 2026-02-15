@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: End-to-end workflow for setting up CI/CD pipelines for SAP applications. Covers build automation, testing, transport ...
 ---
 
@@ -54,3 +56,15 @@ This workflow is activated when:
 ### Configure Pipeline Notifications
 
 ### Configure Deployment Monitoring
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

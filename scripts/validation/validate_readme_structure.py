@@ -26,12 +26,14 @@ SCAN_CONFIG = {
     "agents": {
         "dir": ".agent/agents",
         "pattern": "*.md",
+        "recursive": True,
         "readme_pattern": r"\((\d+)(\+)? agents?\)"
     },
     "skills": {
         "dir": ".agent/skills",
         "count_method": "subdirs_with_file",
         "sentinel": "SKILL.md",
+        "recursive": True,
         "readme_pattern": r"\((\d+)(\+)? skills?\)"
     },
     "blueprints": {
@@ -214,11 +216,18 @@ class StructureValidator:
         if config.get("count_method") == "subdirs_with_file":
             # Count subdirectories containing the sentinel file
             sentinel = config.get("sentinel", "SKILL.md")
+            recursive = config.get("recursive", False)
             count = 0
-            for item in section_dir.iterdir():
-                if item.is_dir():
-                    if (item / sentinel).exists():
+            if recursive:
+                # Find all files matching sentinel and count their parent directories
+                for p in section_dir.rglob(sentinel):
+                    if p.is_file():
                         count += 1
+            else:
+                for item in section_dir.iterdir():
+                    if item.is_dir():
+                        if (item / sentinel).exists():
+                            count += 1
             return count
         
         # Default: count files matching pattern

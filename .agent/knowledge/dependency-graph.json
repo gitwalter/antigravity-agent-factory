@@ -24,6 +24,48 @@
     "version-registry.json"
   ],
   "nodes": {
+    "knowledge:manifest.json": {
+      "type": "knowledge",
+      "version": "1.0.0",
+      "path": ".agent\\knowledge\\manifest.json",
+      "metadata": {
+        "category": "core",
+        "title": "System Manifest",
+        "tags": [
+          "registry",
+          "manifest",
+          "indices"
+        ]
+      }
+    },
+    "knowledge:augmented-coding-patterns.json": {
+      "type": "knowledge",
+      "version": "1.0.0",
+      "path": "knowledge\\augmented-coding-patterns.json",
+      "metadata": {
+        "category": "core",
+        "title": "Augmented Coding Patterns",
+        "tags": [
+          "patterns",
+          "augmentation",
+          "coding"
+        ]
+      }
+    },
+    "knowledge:best-practices.json": {
+      "type": "knowledge",
+      "version": "1.0.0",
+      "path": "knowledge\\best-practices.json",
+      "metadata": {
+        "category": "core",
+        "title": "Best Practices Registry",
+        "tags": [
+          "standard",
+          "quality",
+          "guidelines"
+        ]
+      }
+    },
     "knowledge:fastapi-patterns.json": {
       "type": "knowledge",
       "version": "1.0.0",
@@ -1308,6 +1350,42 @@
         "name": "TypeScript React Blueprint",
         "description": "Web application development with TypeScript and React"
       }
+    }
+  },
+  "agent:system-steward": {
+    "type": "agent",
+    "version": null,
+    "path": ".agent\\agents\\system-steward.md",
+    "metadata": {
+      "description": "Unified agent for repository governance, system maintenance, and documentation quality",
+      "type": "agent"
+    }
+  },
+  "agent:registry-clerk": {
+    "type": "agent",
+    "version": null,
+    "path": ".agent\\agents\\registry-clerk.md",
+    "metadata": {
+      "description": "Specialized agent for automating registration tasks, maintaining registries, and updating dependency graphs",
+      "type": "agent"
+    }
+  },
+  "skill:repository-governance": {
+    "type": "skill",
+    "version": null,
+    "path": ".agent\\skills\\repository-governance\\SKILL.md",
+    "metadata": {
+      "description": "Unified capabilities for maintaining repository health, documentation integrity, and artifact synchronization",
+      "type": "skill"
+    }
+  },
+  "skill:system-registration": {
+    "type": "skill",
+    "version": null,
+    "path": ".agent\\skills\\system-registration\\SKILL.md",
+    "metadata": {
+      "description": "Precise skill for updating JSON registries, dependency graphs, and manifests",
+      "type": "skill"
     }
   },
   "edges": [
@@ -4454,6 +4532,48 @@
       "to": "knowledge:bdd-patterns.json",
       "type": "references",
       "version_constraint": null
+    },
+    {
+      "from": "agent:system-steward",
+      "to": "skill:repository-governance",
+      "type": "uses",
+      "version_constraint": null
+    },
+    {
+      "from": "agent:system-steward",
+      "to": "agent:registry-clerk",
+      "type": "delegates_to",
+      "version_constraint": null
+    },
+    {
+      "from": "agent:registry-clerk",
+      "to": "skill:system-registration",
+      "type": "uses",
+      "version_constraint": null
+    },
+    {
+      "from": "skill:repository-governance",
+      "to": "knowledge:artifact-dependencies.json",
+      "type": "references",
+      "version_constraint": null
+    },
+    {
+      "from": "skill:system-registration",
+      "to": "knowledge:skill-catalog.json",
+      "type": "references",
+      "version_constraint": null
+    },
+    {
+      "from": "skill:system-registration",
+      "to": "knowledge:agent-team-registry.json",
+      "type": "references",
+      "version_constraint": null
+    },
+    {
+      "from": "skill:system-registration",
+      "to": "knowledge:dependency-graph.json",
+      "type": "references",
+      "version_constraint": null
     }
   ],
   "statistics": {
@@ -4526,27 +4646,27 @@
     {
       "name": "Circular Dependency Chains",
       "problem": "Creating dependency cycles between knowledge files, agents, or skills breaks resolution order and causes validation failures",
-      "solution": "Validate dependency graph for cycles before committing. Use dependency-graph.json validation commands to detect automatically"
+      "fix": "Validate dependency graph for cycles before committing. Use dependency-graph.json validation commands to detect automatically"
     },
     {
       "name": "Orphaned Artifacts",
       "problem": "Creating artifacts without adding them to dependency graph makes discovery difficult and breaks impact analysis",
-      "solution": "Always add new artifacts to dependency-graph.json nodes. Create edges for all dependencies and references"
+      "fix": "Always add new artifacts to dependency-graph.json nodes. Create edges for all dependencies and references"
     },
     {
       "name": "Stale Dependency Edges",
       "problem": "Not updating edges when removing dependencies leaves broken references in dependency graph",
-      "solution": "Remove edges when deleting dependencies. Run validation commands to detect stale references automatically"
+      "fix": "Remove edges when deleting dependencies. Run validation commands to detect stale references automatically"
     },
     {
       "name": "Missing Metadata",
       "problem": "Creating nodes without metadata (tags, category, description) reduces discoverability and filtering capabilities",
-      "solution": "Always include complete metadata when adding nodes. Use consistent tags and categories for better filtering"
+      "fix": "Always include complete metadata when adding nodes. Use consistent tags and categories for better filtering"
     },
     {
       "name": "Graph Desynchronization",
       "problem": "Dependency graph not matching actual artifact relationships causes incorrect impact analysis and broken validations",
-      "solution": "Keep dependency graph synchronized with artifact changes. Use automated validation to detect drift"
+      "fix": "Keep dependency graph synchronized with artifact changes. Use automated validation to detect drift"
     }
   ]
 }

@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Iterative prompt engineering and optimization cycle. Covers prompt design, testing, evaluation, and refinement using ...
 ---
 
@@ -42,3 +44,15 @@ This workflow is activated when:
 ### Select and Refine
 
 ### Deploy and Monitor
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

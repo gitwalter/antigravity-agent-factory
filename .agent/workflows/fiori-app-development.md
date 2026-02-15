@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: End-to-end workflow for developing Fiori Elements applications in SAP S/4HANA. Covers CDS data modeling, service defi...
 ---
 
@@ -54,3 +56,15 @@ This workflow is activated when:
 ### Register App in Fiori Launchpad
 
 ### Transport and Deploy
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

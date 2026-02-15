@@ -1151,8 +1151,8 @@ Before implementation:
 
 | Type | Link |
 |------|------|
-| Ticket | [{TICKET_ID}]({TICKET_URL}) |
-| Specification | [{SPEC_NAME}]({SPEC_URL}) |
+| Ticket | **{TICKET_ID}** |
+| Specification | **{SPEC_NAME}** |
 
 ## Problem Summary
 
@@ -1222,7 +1222,7 @@ Before implementation:
 
 ## Requirements Reference
 
-- Specification: [{SPEC_NAME}]({SPEC_URL})
+- Specification: **{SPEC_NAME}**
 
 ## Architecture
 
@@ -1816,7 +1816,7 @@ To render diagrams to PNG, use a Mermaid CLI tool or the diagram rendering scrip
 # CURSOR AGENT FACTORY INTEGRATION
 # Generated: {datetime.now().strftime('%Y-%m-%d')}
 # Blueprint: {self.config.blueprint_id or 'custom'}
-# Factory Version: 0.1.0# ═══════════════════════════════════════════════════════════════════════════════
+# Factory Version: 1.1.0# ═══════════════════════════════════════════════════════════════════════════════
 
 """
         

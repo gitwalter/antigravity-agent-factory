@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: DeFi protocol development with AMM, lending, and staking patterns. Covers protocol design, smart contract implementat...
 ---
 
@@ -42,3 +44,15 @@ This workflow is activated when:
 ### Audit Preparation
 
 ### Governance and Launch
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

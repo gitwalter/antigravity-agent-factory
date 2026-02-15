@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Smart contract security audit workflow covering scope definition, static analysis, manual review, penetration testing...
 ---
 
@@ -42,3 +44,15 @@ This workflow is activated when:
 ### Report Generation
 
 ### Remediation Verification
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

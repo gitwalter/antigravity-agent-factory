@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: End-to-end workflow for developing, validating, and deploying algorithmic trading strategies. Covers hypothesis forma...
 ---
 
@@ -42,3 +44,15 @@ This workflow is activated when:
 ### Prepare Approval Package
 
 ### Human Review
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: End-to-end workflow for developing SAP Cloud Application Programming Model (CAP) services. Covers CDS modeling, servi...
 ---
 
@@ -46,3 +48,15 @@ This workflow is activated when:
 ### Configure MTA
 
 ### Build and Deploy
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

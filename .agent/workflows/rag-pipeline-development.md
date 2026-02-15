@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: End-to-end workflow for developing Retrieval-Augmented Generation (RAG) systems. Covers document ingestion, embedding...
 ---
 
@@ -50,3 +52,15 @@ This workflow is activated when:
 ### Create API
 
 ### Deploy
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

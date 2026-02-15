@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Cross-module workflow for order-to-cash, procure-to-pay, or make-to-stock. For consultants and developers designing o...
 ---
 
@@ -21,3 +23,24 @@ This workflow is activated when:
 - "Which documents and tables for procure-to-pay?"
 - "Implement reporting across sales order to FI"
 - "Map the full logistics chain for a stock transfer"
+
+## Steps
+
+Standard PABP development phases apply:
+1.  **Define Requirements**
+2.  **Design Architecture**
+3.  **Implementation**
+4.  **Verification**
+5.  **Deployment**
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

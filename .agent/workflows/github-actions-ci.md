@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: GitHub Actions CI/CD pipeline setup and maintenance workflow. Covers workflow creation, test automation, linting, dep...
 ---
 
@@ -42,3 +44,15 @@ This workflow is activated when:
 ### Add Monitoring
 
 ### Maintenance Procedures
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

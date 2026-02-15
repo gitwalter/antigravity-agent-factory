@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Comprehensive workflow for performing structured code reviews covering correctness, style, design, performance, secur...
 ---
 
@@ -10,7 +12,7 @@ Comprehensive workflow for performing structured code reviews covering correctne
 **Created:** 2026-02-02  
 **Agent:** code-reviewer
 
-> **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See [Path Configuration Guide](../docs/reference/path-configuration.md).
+> **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.
 
 ## Trigger Conditions
 
@@ -60,3 +62,15 @@ This workflow is activated when:
 ### Compile Review Report
 
 ### Determine Approval Status
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

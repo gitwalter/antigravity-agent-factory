@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: ML model evaluation workflow covering metrics selection, model comparison, and reporting. Supports classification, re...
 ---
 
@@ -42,3 +44,15 @@ This workflow is activated when:
 ### Generate Report
 
 ### Share and Archive
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

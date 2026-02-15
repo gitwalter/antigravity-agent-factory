@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Workflow for FI-related development: reports, enhancements, validations. References BKPF, BSEG, FI-CAX/VIM where rele...
 ---
 
@@ -22,3 +24,24 @@ This workflow is activated when:
 - "Add validation for FI document posting"
 - "Build open items report for vendor accounts"
 - "Enhance FI posting with custom fields"
+
+## Steps
+
+Standard PABP development phases apply:
+1.  **Define Requirements**
+2.  **Design Architecture**
+3.  **Implementation**
+4.  **Verification**
+5.  **Deployment**
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

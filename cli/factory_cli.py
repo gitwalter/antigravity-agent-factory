@@ -92,7 +92,7 @@ def display_error_with_help(error_msg: str, suggestion: str) -> None:
     print(f"  What happened: {error_msg}")
     print(f"  How to fix it: {suggestion}")
     print()
-    print("Still stuck? Check docs/TROUBLESHOOTING.md or open an issue.")
+    print("Still stuck? Check docs/guides/troubleshooting.md or open an issue.")
     print("Remember: Every expert was once a beginner. You've got this!")
     print()
 

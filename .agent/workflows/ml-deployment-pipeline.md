@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Comprehensive workflow for deploying machine learning models to production including model export, containerization, ...
 ---
 
@@ -56,3 +58,15 @@ This workflow is activated when:
 ### Configure Auto-Scaling
 
 ### Monitor Model Performance
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

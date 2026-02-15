@@ -19,7 +19,7 @@ import json
 import os
 
 def fix_text_content(content: str, file_path: Path, root_dir: Path) -> str:
-    # Regex for standard markdown links: [text](path)
+    # Regex for standard markdown links: **text**
     link_pattern = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
     
     def replace_link(match):
@@ -50,7 +50,7 @@ def fix_text_content(content: str, file_path: Path, root_dir: Path) -> str:
                 rel_path = rel_path.replace("\\", "/")
                 if rel_path != clean_path_str:
                     print(f"Fixing path in {file_path.name}: '{path_str}' -> '{rel_path}{anchor}'")
-                    return f"[{text}]({rel_path}{anchor})"
+                    return f"**{text}**"
                 return match.group(0)
             except ValueError:
                 pass # Path calculation failed
@@ -63,7 +63,7 @@ def fix_text_content(content: str, file_path: Path, root_dir: Path) -> str:
                 
                 if rel_path != clean_path_str:
                      print(f"Forcing relative path in {file_path.name}: '{path_str}' -> '{rel_path}{anchor}'")
-                     return f"[{text}]({rel_path}{anchor})"
+                     return f"**{text}**"
             except ValueError:
                 pass
 
@@ -79,7 +79,7 @@ def fix_text_content(content: str, file_path: Path, root_dir: Path) -> str:
                 rel_path = os.path.relpath(target_path_kebab_root, file_path.parent)
                 rel_path = rel_path.replace("\\", "/")
                 print(f"Fixing kebab path in {file_path.name}: '{path_str}' -> '{rel_path}{anchor}'")
-                return f"[{text}]({rel_path}{anchor})"
+                return f"**{text}**"
              except ValueError:
                 pass
 

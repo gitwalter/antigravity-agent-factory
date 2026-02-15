@@ -564,17 +564,17 @@
     "common_errors": {
       "rate_limiting": {
         "description": "Too many requests",
-        "solution": "Implement exponential backoff with retry",
+        "fix": "Implement exponential backoff with retry",
         "code_example": "from tenacity import retry, stop_after_attempt, wait_exponential\nimport openai\n\n@retry(\n    stop=stop_after_attempt(5),\n    wait=wait_exponential(multiplier=1, min=4, max=60),\n    retry=lambda e: isinstance(e, openai.RateLimitError)\n)\ndef call_api(messages):\n    return client.chat.completions.create(\n        model='gpt-4o',\n        messages=messages\n    )"
       },
       "context_length": {
         "description": "Input too long for context window",
-        "solution": "Truncate or chunk input, use longer context model",
+        "fix": "Truncate or chunk input, use longer context model",
         "code_example": "import tiktoken\n\ndef count_tokens(text, model='gpt-4o'):\n    encoding = tiktoken.encoding_for_model(model)\n    return len(encoding.encode(text))\n\ndef truncate_to_tokens(text, max_tokens, model='gpt-4o'):\n    encoding = tiktoken.encoding_for_model(model)\n    tokens = encoding.encode(text)\n    if len(tokens) > max_tokens:\n        tokens = tokens[:max_tokens]\n    return encoding.decode(tokens)"
       },
       "content_filter": {
         "description": "Content blocked by safety filter",
-        "solution": "Rephrase request, use system prompt to guide",
+        "fix": "Rephrase request, use system prompt to guide",
         "code_example": "try:\n    response = client.chat.completions.create(...)\nexcept openai.ContentFilterError as e:\n    print(f'Content filtered: {e}')\n    # Log and handle appropriately"
       }
     }
@@ -749,27 +749,27 @@
     {
       "name": "Provider Lock-in",
       "problem": "Hardcoding provider-specific code makes it difficult to switch providers or compare alternatives",
-      "solution": "Use abstraction layers (LangChain) and design provider-agnostic interfaces to enable easy switching"
+      "fix": "Use abstraction layers (LangChain) and design provider-agnostic interfaces to enable easy switching"
     },
     {
       "name": "Ignoring Cost Implications",
       "problem": "Using expensive models for simple tasks wastes budget and reduces scalability",
-      "solution": "Implement model tiering: route simple tasks to cheaper models, reserve premium models for complex reasoning"
+      "fix": "Implement model tiering: route simple tasks to cheaper models, reserve premium models for complex reasoning"
     },
     {
       "name": "No Error Handling",
       "problem": "Failing to handle rate limits, context length errors, and API failures leads to poor user experience",
-      "solution": "Implement retry logic with exponential backoff, handle context length errors with truncation, add fallback providers"
+      "fix": "Implement retry logic with exponential backoff, handle context length errors with truncation, add fallback providers"
     },
     {
       "name": "Missing Cost Monitoring",
       "problem": "Not tracking token usage and costs leads to unexpected bills and inability to optimize spending",
-      "solution": "Log all API calls with token counts, calculate costs per request, set up budget alerts and dashboards"
+      "fix": "Log all API calls with token counts, calculate costs per request, set up budget alerts and dashboards"
     },
     {
       "name": "No Response Caching",
       "problem": "Repeatedly calling LLMs for identical or similar queries wastes money and increases latency",
-      "solution": "Implement caching layer (Redis, in-memory) for exact matches and semantic similarity for cost reduction"
+      "fix": "Implement caching layer (Redis, in-memory) for exact matches and semantic similarity for cost reduction"
     }
   ]
 }

@@ -199,7 +199,7 @@ These standards are REQUIRED and derive from axioms:
 ### Configuration Variables
 
 Tool paths are configurable via `.agent/config/tools.json` or environment variables.
-See [Configuration Guide](docs/CONFIGURATION.md) for details.
+See [Configuration Guide](../../../docs/setup/configuration.md) for details.
 
 ```
 # Default paths (override via environment variables or config file)

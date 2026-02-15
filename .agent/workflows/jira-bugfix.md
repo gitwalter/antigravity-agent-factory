@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Jira-triggered bugfix workflow from ticket analysis through resolution. Covers ticket fetching, root cause analysis, ...
 ---
 
@@ -42,3 +44,15 @@ This workflow is activated when:
 ### Final Verification
 
 ### Resolve Ticket
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

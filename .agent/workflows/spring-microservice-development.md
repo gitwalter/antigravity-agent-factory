@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Comprehensive workflow for developing production-ready Spring Boot microservices with JPA, REST APIs, testing, securi...
 ---
 
@@ -71,3 +73,15 @@ This workflow is activated when:
 ### Create Helm Chart
 
 ### Observability Setup
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

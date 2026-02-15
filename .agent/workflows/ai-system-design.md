@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Comprehensive workflow for designing AI systems including requirements analysis, architecture selection, cost estimat...
 ---
 
@@ -52,3 +54,15 @@ This workflow is activated when:
 ### Validate Architecture
 
 ### Refine Design
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

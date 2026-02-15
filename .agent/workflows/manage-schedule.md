@@ -1,10 +1,25 @@
 ---
+## Overview
+
 description: Manage daily schedule and communications
 ---
 
 # Manage Schedule Workflow
 
 This workflow demonstrates how the Personal Assistant agent can check the schedule and send emails.
+
+**Version:** 1.0.0
+
+## Trigger Conditions
+
+This workflow is activated when:
+- User asks to check their schedule
+- Schedule summary requested
+- Email summary of calendar events needed
+
+**Trigger Examples:**
+- "Check my schedule for today"
+- "Summarize my meetings and email me"
 
 ## Steps
 
@@ -25,3 +40,15 @@ This workflow demonstrates how the Personal Assistant agent can check the schedu
 ## Usage
 - Ask: "Check my schedule for today and email me a summary"
 - The agent will use `google-calendar` skill to get events and `send-email` skill to send the email.
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

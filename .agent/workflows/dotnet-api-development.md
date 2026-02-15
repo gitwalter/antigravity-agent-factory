@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Comprehensive workflow for developing production-ready ASP.NET Core APIs with Entity Framework Core, authentication, ...
 ---
 
@@ -66,3 +68,15 @@ This workflow is activated when:
 ### Add Health Checks
 
 ### Prepare for Deployment
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

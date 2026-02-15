@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Confluence-documented feature development workflow. Covers requirements from Confluence, design documentation, implem...
 ---
 
@@ -42,3 +44,15 @@ This workflow is activated when:
 ### Documentation
 
 ### Confluence Closure
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

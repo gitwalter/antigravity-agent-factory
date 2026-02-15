@@ -2,7 +2,7 @@
 
 **Build AI-powered development systems that truly understand your project.**
 
-> **Quick Start:** New here? See [docs/QUICKSTART.md](docs/QUICKSTART.md) or run `python cli/factory_cli.py --quickstart` to get running in 5 minutes.
+> **Quick Start:** New here? See [docs/guides/quickstart.md](docs/guides/quickstart.md) or run `python cli/factory_cli.py --quickstart` to get running in 5 minutes.
 
 ![antigravity-ide](https://img.shields.io/badge/antigravity--ide-blue)
 ![ai-agents](https://img.shields.io/badge/ai--agents-purple)
@@ -94,7 +94,7 @@ The Guardian monitors for:
 
 **Invoke manually**: `"Guardian, check this"` or `"check my alignment"`
 
-See [GUARDIAN_COORDINATION.md](docs/reference/GUARDIAN_COORDINATION.md) for complete documentation.
+See **guardian-coordination.md** for complete documentation.
 
 ### Memory System
 
@@ -122,7 +122,7 @@ The Factory includes a **Memory System** that learns from your interactions and 
 "Accept/Reject"                 → Respond to proposals
 ```
 
-See [MEMORY_SYSTEM.md](docs/MEMORY_SYSTEM.md) for complete documentation.
+See **MEMORY_SYSTEM.md** for complete documentation.
 
 ### Formal Verification System
 
@@ -144,7 +144,7 @@ cd proofs && lake build       # Verify all proofs
 scripts/proofs/generate_attestation.sh  # Create cryptographic attestation
 ```
 
-See [docs/VERIFICATION.md](docs/VERIFICATION.md) for complete documentation.
+See **docs/VERIFICATION.md** for complete documentation.
 
 ### Agent Society Verification
 
@@ -168,7 +168,7 @@ system = HybridVerificationSystem.create_default()
 result = system.record_event(event)  # Verify against all axioms
 ```
 
-See [docs/design/AGENT_SOCIETY_VERIFICATION.md](docs/design/AGENT_SOCIETY_VERIFICATION.md) for architecture and [docs/SOCIETY_USAGE.md](docs/SOCIETY_USAGE.md) for complete usage guide.
+See **docs/design/AGENT_SOCIETY_VERIFICATION.md** for architecture and **docs/SOCIETY_USAGE.md** for complete usage guide.
 
 ## Knowledge Evolution System
 
@@ -202,7 +202,7 @@ The Factory includes an automatic **Knowledge Evolution System** that keeps blue
 
 Configure in `.agent/config/settings.json` or use the `system-configuration` skill.
 
-See [docs/KNOWLEDGE_EVOLUTION.md](docs/KNOWLEDGE_EVOLUTION.md) for complete documentation.
+See **docs/KNOWLEDGE_EVOLUTION.md** for complete documentation.
 
 ### Factory -> Generated Project Updates
 
@@ -239,9 +239,9 @@ For visual documentation, see the [diagrams/](diagrams/) folder:
 ```
 antigravity-agent-factory/
 ├── .agent/
-│   ├── agents/                  # Factory's own agents (34 agents)
+│   ├── agents/                  # Factory's own agents (10 agents)
 │   │   └── *.md                 # debug-conductor, git-specialist, integrity-guardian, etc.
-│   └── skills/                  # Factory's own skills (133 skills)
+│   └── skills/                  # Factory's own skills (179 skills)
 │       ├── agent-generation/
 │       ├── ai-agent-dev/
 │       ├── algo-trading/
@@ -252,7 +252,7 @@ antigravity-agent-factory/
 │   ├── patterns/                    # Reusable patterns (113+ files)
 │   ├── templates/                   # Code templates (307+ files)
 │   ├── blueprints/                  # Technology stack blueprints (34 blueprints)
-│   ├── knowledge/                   # Knowledge base (260 files)
+│   ├── knowledge/                   # Knowledge base (261 files)
 │   └── workflows/                   # Workflow definitions
 │       ├── python-fastapi/
 │   ├── python-streamlit/
@@ -415,7 +415,7 @@ This foundational axiom precedes all technical axioms (A1-A5) and ensures that c
 | Medium (6-12) | Breakout groups for games, plenary for synthesis |
 | Large (13+) | Representative groups, async pre-work, sync synthesis |
 
-For complete facilitation instructions, see [docs/TEAM_WORKSHOP_GUIDE.md](docs/TEAM_WORKSHOP_GUIDE.md).
+For complete facilitation instructions, see **docs/TEAM_WORKSHOP_GUIDE.md**.
 
 
 ## Factory Agents
@@ -606,7 +606,7 @@ flowchart TB
 
 ## MCP Server Integration
 
-The factory includes **50+ MCP servers** across 6 categories. See the full [MCP Servers Guide](docs/MCP-SERVERS.md) for details.
+The factory includes **50+ MCP servers** across 6 categories. See the full **MCP Servers Guide** for details.
 
 ### Starter Packs
 
@@ -651,7 +651,7 @@ The factory includes **50+ MCP servers** across 6 categories. See the full [MCP 
 }
 ```
 
-For detailed setup instructions, see [docs/MCP-SERVERS.md](docs/MCP-SERVERS.md).
+For detailed setup instructions, see **docs/MCP-SERVERS.md**.
 
 ## Configuration File Format
 
@@ -714,8 +714,8 @@ mcp_servers:
 - PyYAML (for YAML config support)
 
 > **Tool Paths:** Commands below use default Windows paths from `.agent/config/tools.json`.
-> See [Configuration Guide](docs/CONFIGURATION.md) to customize for your environment.
-> See [Path Configuration Guide](docs/PATH_CONFIGURATION.md) for directory customization and environment variables.
+> See [Configuration Guide](docs/setup/configuration.md) to customize for your environment.
+> See [Path Configuration Guide](docs/setup/configuration.md) for directory customization and environment variables.
 
 ### Installing Development Dependencies
 
@@ -746,14 +746,14 @@ C:\App\Anaconda\python.exe -m pytest tests/unit/test_project_config.py -v
 # Run tests matching a pattern
 C:\App\Anaconda\python.exe -m pytest tests/ -k "blueprint" -v
 ```
-For detailed testing documentation, see [docs/TESTING.md](docs/TESTING.md).
+For detailed testing documentation, see [docs/testing/testing.md](docs/testing/testing.md).
 
 ### Test Suite Structure
 
 ```
 tests/
 ├── conftest.py                 # Shared pytest fixtures
-├── unit/                       # Unit tests (71 tests)
+├── unit/                       # Unit tests (74 tests)
 │   ├── test_project_config.py  # ProjectConfig dataclass tests
 │   ├── test_project_generator.py # ProjectGenerator class tests
 │   └── test_pattern_loading.py # Pattern/blueprint loading tests
@@ -814,28 +814,28 @@ See `.github/workflows/ci.yml` for the full configuration.
 
 | Document | Description |
 |----------|-------------|
-| **[Factory Reference](docs/FACTORY_REFERENCE.md)** | **Start here** - Complete overview of the factory with links to detailed references |
+| ****Factory Reference**** | **Start here** - Complete overview of the factory with links to detailed references |
 | [Blueprints Reference](docs/reference/BLUEPRINTS.md) | All 17 technology blueprints with detailed specifications |
 | [Patterns Reference](docs/reference/PATTERNS.md) | Agent, skill, axiom, methodology, and other patterns |
-| [Knowledge Files Reference](docs/reference/KNOWLEDGE_FILES.md) | All 74 knowledge files categorized and explained |
-| [Factory Components Reference](docs/reference/FACTORY_COMPONENTS.md) | Factory's own 12 agents and 36 skills (plus PM subsystem) |
-| [Generated Output Reference](docs/reference/GENERATED_OUTPUT.md) | What gets generated: structure, formats, examples |
+| **Knowledge Files Reference** | All 74 knowledge files categorized and explained |
+| **Factory Components Reference** | Factory's own 12 agents and 36 skills (plus PM subsystem) |
+| **Generated Output Reference** | What gets generated: structure, formats, examples |
 
 ### Guides and Tutorials
 
 | Document | Description |
 |----------|-------------|
-| [Usage Guide](docs/USAGE_GUIDE.md) | Detailed usage instructions and examples |
-| [Team Workshop Guide](docs/TEAM_WORKSHOP_GUIDE.md) | Complete facilitator's manual for team workshops |
-| [Example Walkthroughs](docs/examples/) | Complete end-to-end examples with real stacks |
-| [Layered Architecture](docs/LAYERED_ARCHITECTURE.md) | 5-layer architecture guide |
-| [Onboarding Concept](docs/LAYERED_ONBOARDING_CONCEPT.md) | Full implementation blueprint |
-| [Extension Guide](docs/EXTENSION_GUIDE.md) | How to extend the factory with new blueprints, patterns, and skills |
-| [Formal Verification](docs/VERIFICATION.md) | Lean 4 proofs, attestation, and trust chain documentation |
-| [Agent Society Verification](docs/design/AGENT_SOCIETY_VERIFICATION.md) | Dynamic multi-agent verification architecture design |
-| [Society Usage Guide](docs/SOCIETY_USAGE.md) | Complete usage guide for lib/society/ module |
-| [Testing Guide](docs/TESTING.md) | Test suite documentation and testing practices |
-| [SAP Grounding Design](docs/SAP_GROUNDING_DESIGN.md) | SAP-specific grounding architecture and MCP integration |
+| **Usage Guide** | Detailed usage instructions and examples |
+| **Team Workshop Guide** | Complete facilitator's manual for team workshops |
+| **Example Walkthroughs** | Complete end-to-end examples with real stacks |
+| **Layered Architecture** | 5-layer architecture guide |
+| **Onboarding Concept** | Full implementation blueprint |
+| [Extension Guide](docs/guides/extension-guide.md) | How to extend the factory with new blueprints, patterns, and skills |
+| **Formal Verification** | Lean 4 proofs, attestation, and trust chain documentation |
+| **Agent Society Verification** | Dynamic multi-agent verification architecture design |
+| **Society Usage Guide** | Complete usage guide for lib/society/ module |
+| [Testing Guide](docs/testing/testing.md) | Test suite documentation and testing practices |
+| **SAP Grounding Design** | SAP-specific grounding architecture and MCP integration |
 
 ### Research Paper Series
 
@@ -843,12 +843,12 @@ Comprehensive academic documentation of the methodology (~150 pages, CC0 license
 
 | Paper | Description |
 |-------|-------------|
-| [Axiom-Based Agent Architecture](docs/research/AXIOM_BASED_AGENT_ARCHITECTURE.md) | Core methodology: 5-layer system, axioms A1-A10, derivation rules |
-| [Sacred Psychology in Software Engineering](docs/research/SACRED_PSYCHOLOGY_SOFTWARE_ENGINEERING.md) | Psychological enforcement, philosophical techniques |
-| [Constitutional AI - Convergent Discovery](docs/research/CONSTITUTIONAL_AI_CONVERGENT_DISCOVERY.md) | Comparison with Anthropic Constitutional AI |
-| [Building Value-Aligned Agents](docs/research/BUILDING_VALUE_ALIGNED_AGENTS.md) | Practical step-by-step implementation guide |
-| [Future of Value-Aligned AI](docs/research/FUTURE_OF_VALUE_ALIGNED_AI.md) | Synthesis, unified framework, recommendations |
-| [Architecture Diagrams](docs/research/ARCHITECTURE_DIAGRAMS.md) | Visual diagrams of all architectures |
+| **Axiom-Based Agent Architecture** | Core methodology: 5-layer system, axioms A1-A10, derivation rules |
+| **Sacred Psychology in Software Engineering** | Psychological enforcement, philosophical techniques |
+| **Constitutional AI - Convergent Discovery** | Comparison with Anthropic Constitutional AI |
+| **Building Value-Aligned Agents** | Practical step-by-step implementation guide |
+| **Future of Value-Aligned AI** | Synthesis, unified framework, recommendations |
+| **Architecture Diagrams** | Visual diagrams of all architectures |
 ## Contributing
 
 1. Fork the repository
@@ -879,14 +879,14 @@ This project incorporates ideas and patterns from several valuable sources:
 | **[ai-dev-agent](https://github.com/gitwalter/antigravity-agent-factory)** | Pedagogical toolkit for AI agent systems that inspired the layered architecture and methodology integration concepts. |
 | **Ancient Wisdom & Philosophy** | Taoist philosophy (Wu Wei response protocol), Hilbert's axiomatic method (5-layer architecture foundation), and sacred value psychology research (Haidt, Tetlock). |
 
-For complete academic references, see [docs/research/REFERENCES.md](docs/research/REFERENCES.md).
+For complete academic references, see **docs/research/REFERENCES.md**.
 ## License
 
 MIT License
 
 ---
 
-*Antigravity Agent Factory v0.1.0*  
+*Antigravity Agent Factory v1.1.0*  
 *Meta-system for generating Antigravity AI agent development systems*  
 *Now with 5-layer architecture: Integrity -> Purpose -> Principles -> Methodology -> Technical*  
 *50+ MCP servers across 6 categories with starter packs and role-based recommendations*  

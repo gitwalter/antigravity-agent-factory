@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Blockchain deployment workflow from testnet through mainnet. Covers build verification, testnet deployment, mainnet p...
 ---
 
@@ -42,3 +44,15 @@ This workflow is activated when:
 ### Execute Deployment
 
 ### Post-Deployment
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

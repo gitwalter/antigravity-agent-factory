@@ -59,7 +59,7 @@ def create_adapter(name: str, config: AdapterConfig) -> Optional[BaseAdapter]:
     """
     if name not in _ADAPTER_REGISTRY:
         raise ValueError(f"Unknown adapter: {name}. Available: {list(_ADAPTER_REGISTRY.keys())}")
-    return _ADAPTER_REGISTRY[name](config)
+    return _ADAPTER_REGISTRY[name]
 
 
 def get_available_adapters() -> Dict[str, Type[BaseAdapter]]:

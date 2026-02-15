@@ -15,7 +15,7 @@ Antigravity agent format reference (from existing project files):
   ## Philosophy
   ## Activation
   ## Skills        ← uses [[wiki-link]] refs
-  ## Knowledge     ← uses [name](../../knowledge/file.json) links
+  ## Knowledge     ← uses **name** links
   ## Tooling
 
 Antigravity skill format reference:
@@ -165,7 +165,7 @@ def render_agent_markdown(pabp_data: dict, *,
         ## Philosophy
         ## Activation
         ## Skills          ← [[wiki-link]] format
-        ## Knowledge       ← [name](../../knowledge/file) links
+        ## Knowledge       ← **name** links
         ## Tooling         ← MCP servers, scripts, CLI tools
     """
     name = pabp_data.get("name", "unknown")
@@ -231,18 +231,18 @@ def render_agent_markdown(pabp_data: dict, *,
             lines.append(f"- [[{s}]]")
         lines.append("")
 
-    # Knowledge — use [name](../knowledge/file) format (Antigravity convention - sibling dir)
+    # Knowledge — use **name** format (Antigravity convention - sibling dir)
     if knowledge:
         lines.append("## Knowledge")
         for k in knowledge:
             # Build relative path from .agent/agents/ to .agent/knowledge/
             if k.endswith(".json"):
-                lines.append(f"- [{k}](../knowledge/{k})")
+                lines.append(f"- **{k}**")
             elif k.endswith(".md"):
                 display = k.replace(".json", "").replace("-", " ").title()
-                lines.append(f"- [{display}](../{k})")
+                lines.append(f"- **{display}**")
             else:
-                lines.append(f"- [{k}](../knowledge/{k})")
+                lines.append(f"- **{k}**")
         lines.append("")
 
     # Tooling — MCP servers, scripts, CLI tools (Antigravity convention)

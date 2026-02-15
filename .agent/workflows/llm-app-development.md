@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Comprehensive workflow for developing production-ready LLM applications from prototype to production, including evalu...
 ---
 
@@ -64,3 +66,15 @@ This workflow is activated when:
 ### Set Up Monitoring
 
 ### Implement Cost Tracking
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

@@ -1,6 +1,6 @@
 # Template System Reference
 
-> **Philosophy:** Templates embody our [Culture and Values](../CULTURE_AND_VALUES.md)—craftsmanship patterns that serve future maintainers with love and care.
+> **Philosophy:** Templates embody our **Culture and Values**—craftsmanship patterns that serve future maintainers with love and care.
 
 The Cursor Agent Factory uses a template-based code generation system to produce consistent, high-quality project artifacts. This document explains how templates work and how to create your own.
 
@@ -513,6 +513,6 @@ Use in templates:
 ## See Also
 
 - [Jinja Documentation](https://jinja.palletsprojects.com/) - Official Jinja docs
-- [FACTORY_COMPONENTS.md](FACTORY_COMPONENTS.md) - How templates integrate with generation
+- [factory-components.md](factory-components.md) - How templates integrate with generation
 - [BLUEPRINTS.md](BLUEPRINTS.md) - Blueprint configuration reference
-- [EXTENSION_GUIDE.md](../EXTENSION_GUIDE.md) - Adding new stacks and templates
+- [extension-guide.md](../guides/extension-guide.md) - Adding new stacks and templates

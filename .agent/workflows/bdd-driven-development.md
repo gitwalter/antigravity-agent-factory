@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Behavior-Driven Development workflow that starts with stakeholder-readable Gherkin scenarios and translates them into...
 ---
 
@@ -52,3 +54,15 @@ This workflow is activated when:
 ### Generate Documentation
 
 ### Share with Stakeholders
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

@@ -1,9 +1,24 @@
 ---
+## Overview
+
 description: How to migrate an existing skill to the new Jinja2 template format
 ---
 # Migrate Skill to Jinja2 Template
 
 Use this workflow to migrate an existing static Markdown skill to the new Jinja2 template format (`.j2`).
+
+**Version:** 1.0.0
+
+## Trigger Conditions
+
+This workflow is activated when:
+- Existing skill needs migration to Jinja2
+- Standardizing skill format requested
+- Refactoring skill templates
+
+**Trigger Examples:**
+- "Migrate the web-browsing skill to Jinja2"
+- "Convert this skill to the new template format"
 
 ## Steps
 
@@ -69,3 +84,15 @@ Use this workflow to migrate an existing static Markdown skill to the new Jinja2
 // turbo
 7.  **Delete Legacy File** (Optional)
     *   Once verified, you *could* remove the static `SKILL.md` from the `patterns` or `skills` source, but usually, we keep the pattern as data and just use the template for rendering.
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

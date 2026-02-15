@@ -130,7 +130,7 @@ class TestCoordinationPatternKnowledge:
         for ap in anti_patterns:
             assert "name" in ap
             assert "problem" in ap
-            assert "solution" in ap
+            assert "fix" in ap
 
 
 class TestQuickReferenceKnowledge:

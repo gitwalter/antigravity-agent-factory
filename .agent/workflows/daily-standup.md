@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Automated workflow for facilitating daily standup meetings, including status collection, blocker identification, and ...
 ---
 
@@ -10,7 +12,7 @@ Automated workflow for facilitating daily standup meetings, including status col
 **Created:** 2026-02-02  
 **Agent:** sprint-master
 
-> **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See [Path Configuration Guide](../docs/reference/path-configuration.md).
+> **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.
 
 ## Trigger Conditions
 
@@ -46,3 +48,15 @@ This workflow is activated when:
 ### Post Standup Report
 
 ### Track Metrics
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

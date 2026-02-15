@@ -230,42 +230,42 @@
       "name": "committing_secrets",
       "description": "Storing secrets in repository files",
       "problem": "Security vulnerability, secrets exposed in history",
-      "solution": "Use platform secret stores, never commit secrets",
+      "fix": "Use platform secret stores, never commit secrets",
       "example": "# Bad\nDATABASE_PASSWORD=secret123\n\n# Good\nDATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}"
     },
     {
       "name": "monolithic_pipelines",
       "description": "Single large pipeline doing everything",
       "problem": "Hard to maintain, slow, difficult to debug",
-      "solution": "Break into stages and jobs, use reusable workflows",
+      "fix": "Break into stages and jobs, use reusable workflows",
       "example": "# Bad: One job doing everything\njobs:\n  everything:\n    steps:\n      - build\n      - test\n      - deploy\n\n# Good: Separate stages\nstages:\n  - build\n  - test\n  - deploy"
     },
     {
       "name": "no_caching",
       "description": "Not caching dependencies",
       "problem": "Slow pipelines, wasted resources",
-      "solution": "Cache package manager dependencies",
+      "fix": "Cache package manager dependencies",
       "example": "# Bad: No caching\n- run: pip install -r requirements.txt\n\n# Good: With caching\n- uses: actions/cache@v4\n  with:\n    path: ~/.cache/pip\n    key: pip-${{ hashFiles('requirements.txt') }}"
     },
     {
       "name": "hardcoded_configurations",
       "description": "Hardcoding environment-specific values",
       "problem": "Not portable, hard to maintain",
-      "solution": "Use variables and secrets",
+      "fix": "Use variables and secrets",
       "example": "# Bad\n- run: deploy --url https://production.example.com\n\n# Good\n- run: deploy --url ${{ env.DEPLOYMENT_URL }}"
     },
     {
       "name": "ignoring_failures",
       "description": "Continuing pipeline after failures",
       "problem": "Deploying broken code",
-      "solution": "Fail fast, fix issues before proceeding",
+      "fix": "Fail fast, fix issues before proceeding",
       "example": "# Bad\n- run: tests || true\n\n# Good\n- run: tests"
     },
     {
       "name": "no_artifact_management",
       "description": "Rebuilding in every job",
       "problem": "Wasted time and resources",
-      "solution": "Upload and download artifacts",
+      "fix": "Upload and download artifacts",
       "example": "# Bad: Rebuild in every job\njobs:\n  test:\n    steps:\n      - run: npm run build\n  deploy:\n    steps:\n      - run: npm run build  # Rebuilding!\n\n# Good: Use artifacts\njobs:\n  build:\n    steps:\n      - run: npm run build\n      - uses: actions/upload-artifact@v4\n  deploy:\n    needs: build\n    steps:\n      - uses: actions/download-artifact@v4"
     }
   ],

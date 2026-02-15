@@ -346,8 +346,8 @@ def main():
     parser.add_argument(
         "--output",
         type=str,
-        default="docs/TEST_CATALOG.md",
-        help="Output catalog file path (default: docs/TEST_CATALOG.md)"
+        default="docs/testing/test-catalog.md",
+        help="Output catalog file path (default: docs/testing/test-catalog.md)"
     )
     parser.add_argument(
         "--root",

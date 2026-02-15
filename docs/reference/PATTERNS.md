@@ -1,6 +1,6 @@
 # Pattern Reference Guide
 
-> **Philosophy:** Patterns embody our [Culture and Values](../CULTURE_AND_VALUES.md)—reusable wisdom distilled from empirical practice (Comte, Hume) and validated against axioms (Russell, Carnap).
+> **Philosophy:** Patterns embody our **Culture and Values**—reusable wisdom distilled from empirical practice (Comte, Hume) and validated against axioms (Russell, Carnap).
 
 ## 1. Introduction
 
@@ -246,7 +246,7 @@ Agent patterns define specialized AI assistants with distinct roles, workflows, 
 
 **Skills Used**: `extend-knowledge`
 
-> **📖 Full System Documentation**: See [KNOWLEDGE_EVOLUTION.md](../KNOWLEDGE_EVOLUTION.md)
+> **📖 Full System Documentation**: See **KNOWLEDGE_EVOLUTION.md**
 
 ---
 

@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: ML experiment workflow from hypothesis formation through results analysis. Covers experiment setup, training, trackin...
 ---
 
@@ -42,3 +44,15 @@ This workflow is activated when:
 ### Evaluate Model
 
 ### Interpret and Report
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

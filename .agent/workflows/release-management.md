@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Systematic workflow for managing software releases including version bumping, changelog generation, tagging, and depl...
 ---
 
@@ -31,6 +33,11 @@ This workflow is activated when:
 
 ### Run Quality Checks
 
+### Link & Documentation Audit
+- **Agent**: `system-steward`
+- **Skill**: `repository-governance`
+- **Action**: Run `python scripts/maintenance/link_checker.py --external` and perform full repository sync.
+
 ### Determine Version
 
 ### Update Version Files
@@ -38,3 +45,15 @@ This workflow is activated when:
 ### Collect Changes
 
 ### Generate Changelog Entry
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

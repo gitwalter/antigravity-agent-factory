@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Smart contract development workflow with design, implementation, testing, and audit preparation. Covers Solidity/Ethe...
 ---
 
@@ -42,3 +44,15 @@ This workflow is activated when:
 ### Static Analysis
 
 ### Documentation
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

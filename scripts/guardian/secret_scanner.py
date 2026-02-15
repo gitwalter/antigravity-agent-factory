@@ -31,13 +31,22 @@ class SecretMatch(NamedTuple):
 def is_false_positive(text: str) -> bool:
     """Check if text is a known false positive."""
     path_str = text.lower()
+    
+    # Precise placeholders that should never be flagged as real secrets
+    # We avoid general words like "password" or "secret" unless part of a clear placeholder string
+    placeholders = [
+        "your-api-key", "example-token", "xxxxxxxxxx", 
+        "${", "<your-", "your-key", "enter-your-", "replace-with-",
+        "example-key", "placeholder", "your-secret-here"
+    ]
+    if any(p in path_str for p in placeholders):
+        return True
+
     for pattern in DEFAULT_EXCLUDE_PATTERNS:
         if re.search(pattern, path_str):
             return True
     
-    # Common placeholders
-    placeholders = ["placeholder", "your-api-key", "example-token", "xxxxxxxxxx", "${", "<your-"]
-    return any(p in path_str for p in placeholders)
+    return False
 
 
 def redact_secret(text: str) -> str:
@@ -68,11 +77,18 @@ def scan_content(content: str) -> List[SecretMatch]:
     # Convert Tuple to SecretMatch
     results = []
     for name, matched, line in findings:
+        if is_false_positive(matched):
+            continue
+            
         severity = "medium"
         masked = redact_secret(matched)
-        # Determine severity based on pattern name
-        if any(kw in name for kw in ["key", "token", "uri", "secret", "private", "api"]):
+        # Determine severity based on pattern name or matched text
+        # If it's a known high-severity pattern or contains sensitive keywords
+        if any(kw in name.lower() for kw in ["key", "token", "uri", "secret", "private", "api"]):
             severity = "high"
+        elif any(kw in matched.lower() for kw in ["secret", "password", "key"]):
+            severity = "medium"
+            
         results.append(SecretMatch(name, matched, line, severity, masked))
     return results
 
@@ -172,7 +188,7 @@ SECRET_PATTERNS = {
         "description": "Google API Key"
     },
     "generic_secret": {
-        "pattern": r"(?i)(?:api_key|secret|password|token|auth_token|access_token)\s*[=:]\s*['\"]([^'\"$\s]{10,})['\"]",
+        "pattern": r"(?i)(?:api_key|secret|password|token|auth_token|access_token)\s*[=:]\s*['\"]?([A-Za-z0-9+/=_-]{8,})['\"]?",
         "description": "Generic Secret"
     },
 }

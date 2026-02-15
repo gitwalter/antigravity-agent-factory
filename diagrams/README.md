@@ -194,7 +194,7 @@ To embed these diagrams in other documentation:
 
 1. **Link to the diagram file:**
    ```markdown
-   See [Factory Workflow](diagrams/factory-workflow.md)
+   See [Factory Workflow](./factory-workflow.md)
    ```
 
 2. **Copy specific diagrams inline:**
@@ -209,10 +209,10 @@ To embed these diagrams in other documentation:
 
 | Document | Related Diagrams |
 |----------|------------------|
-| [docs/MEMORY_SYSTEM.md](../docs/MEMORY_SYSTEM.md) | memory-system.md |
-| [docs/KNOWLEDGE_EVOLUTION.md](../docs/KNOWLEDGE_EVOLUTION.md) | knowledge-management.md |
-| [docs/ONBOARDING_GUIDE.md](../docs/ONBOARDING_GUIDE.md) | onboarding-flows.md |
-| [docs/FACTORY_REFERENCE.md](../docs/FACTORY_REFERENCE.md) | agent-coordination.md |
+| **docs/MEMORY_SYSTEM.md** | memory-system.md |
+| **docs/KNOWLEDGE_EVOLUTION.md** | knowledge-management.md |
+| **docs/ONBOARDING_GUIDE.md** | onboarding-flows.md |
+| **docs/FACTORY_REFERENCE.md** | agent-coordination.md |
 | [proofs/README.md](../proofs/README.md) | formal-verification.md, guardian-state-machine.md |
 
 ## Contributing

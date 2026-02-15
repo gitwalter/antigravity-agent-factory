@@ -1,10 +1,25 @@
 ---
+## Overview
+
 description: Build an AI agent with LangChain
 ---
 
 # Building AI Agents with LangChain
 
 This workflow guides you through building AI agents using LangChain framework.
+
+**Version:** 1.0.0
+
+## Trigger Conditions
+
+This workflow is activated when:
+- New LangChain agent system needed
+- Prompt engineering for LangChain requested
+- User asks to "build a langchain agent"
+
+**Trigger Examples:**
+- "Build a LangChain agent with tools"
+- "Create a ReAct agent using LangChain"
 
 ## Prerequisites
 
@@ -143,3 +158,15 @@ Options for deployment:
 - Implement RAG for knowledge-based agents
 - Add human-in-the-loop capabilities
 - Build multi-agent systems
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

@@ -291,6 +291,6 @@ flowchart LR
 
 ## Related Documents
 
-- [WORKFLOW_SYSTEM.md](../docs/research/WORKFLOW_SYSTEM.md) - Conceptual architecture
-- [WORKFLOW_AUTHORING.md](../docs/WORKFLOW_AUTHORING.md) - Authoring guide
-- [WORKFLOW_PATTERNS.md](../docs/reference/WORKFLOW_PATTERNS.md) - Pattern catalog
+- **WORKFLOW_SYSTEM.md** - Conceptual architecture
+- **WORKFLOW_AUTHORING.md** - Authoring guide
+- **w-o-r-k-f-l-o-w-patterns.md** - Pattern catalog

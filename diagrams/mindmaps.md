@@ -82,7 +82,7 @@ mindmap
         Learning_Hooks
 ```
 
-**Related Documentation**: [README.md](../README.md), [docs/COMPLETE_GUIDE.md](../docs/COMPLETE_GUIDE.md)
+**Related Documentation**: [README.md](../README.md), **docs/COMPLETE_GUIDE.md**
 
 ---
 
@@ -145,7 +145,7 @@ mindmap
       Status_MUTABLE
 ```
 
-**Related Documentation**: [docs/LAYERED_ARCHITECTURE.md](../docs/LAYERED_ARCHITECTURE.md), [diagrams/formal-verification.md](formal-verification.md)
+**Related Documentation**: **docs/LAYERED_ARCHITECTURE.md**, [diagrams/formal-verification.md](formal-verification.md)
 
 ---
 
@@ -204,7 +204,7 @@ mindmap
       Derives_EB5_VC2
 ```
 
-**Related Documentation**: [proofs/Axioms.lean](../proofs/Axioms.lean), [docs/research/AXIOM_BASED_AGENT_ARCHITECTURE.md](../docs/research/AXIOM_BASED_AGENT_ARCHITECTURE.md)
+**Related Documentation**: [proofs/Axioms.lean](../proofs/Axioms.lean), **docs/research/AXIOM_BASED_AGENT_ARCHITECTURE.md**
 
 ---
 
@@ -265,7 +265,7 @@ mindmap
       Verified_Communication
 ```
 
-**Related Documentation**: [docs/reference/FACTORY_COMPONENTS.md](../docs/reference/FACTORY_COMPONENTS.md), [diagrams/agent-coordination.md](agent-coordination.md)
+**Related Documentation**: **docs/reference/FACTORY_COMPONENTS.md**, [diagrams/agent-coordination.md](agent-coordination.md)
 
 ---
 
@@ -331,7 +331,7 @@ mindmap
       health_check
 ```
 
-**Related Documentation**: [.cursor/skills/](../.cursor/skills/), [docs/reference/FACTORY_COMPONENTS.md](../docs/reference/FACTORY_COMPONENTS.md)
+**Related Documentation**: **.cursor/skills/**, **docs/reference/FACTORY_COMPONENTS.md**
 
 ---
 
@@ -402,7 +402,7 @@ mindmap
       manifest
 ```
 
-**Related Documentation**: [docs/reference/KNOWLEDGE_FILES.md](../docs/reference/KNOWLEDGE_FILES.md), [knowledge/](../knowledge/)
+**Related Documentation**: **docs/reference/KNOWLEDGE_FILES.md**, [knowledge/](../knowledge/)
 
 ---
 
@@ -451,7 +451,7 @@ mindmap
       financial_ai_agents
 ```
 
-**Related Documentation**: [docs/reference/BLUEPRINTS.md](../docs/reference/BLUEPRINTS.md), [blueprints/](../blueprints/)
+**Related Documentation**: [docs/reference/BLUEPRINTS.md](../docs/reference/BLUEPRINTS.md), [blueprints/](../docs/reference/BLUEPRINTS.md)
 
 ---
 
@@ -502,7 +502,7 @@ mindmap
       Resolve_With_Love
 ```
 
-**Related Documentation**: [.cursor/agents/integrity-guardian.md](../.cursor/agents/integrity-guardian.md), [diagrams/guardian-state-machine.md](guardian-state-machine.md)
+**Related Documentation**: [.cursor/agents/integrity-guardian.md](../.agent/agents/integrity-guardian.md), [diagrams/guardian-state-machine.md](guardian-state-machine.md)
 
 ---
 
@@ -558,7 +558,7 @@ mindmap
         L4_Technical
 ```
 
-**Related Documentation**: [docs/MEMORY_SYSTEM.md](../docs/MEMORY_SYSTEM.md), [diagrams/memory-system.md](memory-system.md)
+**Related Documentation**: **docs/MEMORY_SYSTEM.md**, [diagrams/memory-system.md](memory-system.md)
 
 ---
 
@@ -621,7 +621,7 @@ mindmap
         Escalate_Approval
 ```
 
-**Related Documentation**: [docs/research/WORKFLOW_SYSTEM.md](../docs/research/WORKFLOW_SYSTEM.md), [diagrams/learning-loops.md](learning-loops.md)
+**Related Documentation**: **docs/research/WORKFLOW_SYSTEM.md**, [diagrams/learning-loops.md](learning-loops.md)
 
 ---
 
@@ -681,7 +681,7 @@ mindmap
           Gratitude_Circle
 ```
 
-**Related Documentation**: [docs/GETTING_STARTED.md](../docs/GETTING_STARTED.md), [docs/TEAM_WORKSHOP_GUIDE.md](../docs/TEAM_WORKSHOP_GUIDE.md)
+**Related Documentation**: [docs/guides/getting-started.md](../docs/guides/getting-started.md), **docs/TEAM_WORKSHOP_GUIDE.md**
 
 ---
 
@@ -744,7 +744,7 @@ mindmap
         Multi_Party
 ```
 
-**Related Documentation**: [docs/VERIFICATION.md](../docs/VERIFICATION.md), [docs/SOCIETY_USAGE.md](../docs/SOCIETY_USAGE.md), [diagrams/formal-verification.md](formal-verification.md)
+**Related Documentation**: **docs/VERIFICATION.md**, **docs/SOCIETY_USAGE.md**, [diagrams/formal-verification.md](formal-verification.md)
 
 ---
 

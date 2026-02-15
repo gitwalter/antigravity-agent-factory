@@ -8,7 +8,7 @@ Systematic workflow for debugging CI/CD pipeline failures. This workflow demonst
 **Created:** 2026-01-31  
 **Agent:** debug-conductor
 
-> **Note:** Directory paths referenced in this workflow (knowledge/, .cursor/skills/, patterns/, etc.) are configurable via `.cursor/config/settings.json`. See [Path Configuration Guide](../docs/PATH_CONFIGURATION.md).
+> **Note:** Directory paths referenced in this workflow (knowledge/, .cursor/skills/, patterns/, etc.) are configurable via `.cursor/config/settings.json`. See [Path Configuration Guide](../../../../docs/setup/configuration.md).
 
 ## Trigger Conditions
 

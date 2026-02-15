@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Comprehensive workflow for developing production-ready FastAPI applications with SQLAlchemy async patterns, Pydantic ...
 ---
 
@@ -66,3 +68,15 @@ This workflow is activated when:
 ### Create Dockerfile
 
 ### Configure Application Server
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

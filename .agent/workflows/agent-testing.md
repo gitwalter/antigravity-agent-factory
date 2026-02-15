@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Agent testing workflow covering unit tests with mocks, integration tests, and LLM evaluation. Ensures agents behave c...
 ---
 
@@ -42,3 +44,15 @@ This workflow is activated when:
 ### Create Evaluation Set
 
 ### Run Evaluation
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

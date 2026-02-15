@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Solana program development with Anchor framework. Covers program design, instruction implementation, testing, and dep...
 ---
 
@@ -42,3 +44,15 @@ This workflow is activated when:
 ### Devnet Deployment
 
 ### Client and Documentation
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

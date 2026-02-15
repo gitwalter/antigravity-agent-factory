@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Comprehensive workflow for designing and implementing microservices architectures with .NET. This workflow covers ser...
 ---
 
@@ -68,3 +70,15 @@ This workflow is activated when:
 ### Configure Metrics
 
 ### Implement Health Checks
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

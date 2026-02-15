@@ -609,7 +609,7 @@ class MarkdownTableSyncStrategy(SyncStrategy):
             row_data = []
             for col in target.columns:
                 if col == target.id_column:
-                    # Link formatting: [ID](link)
+                    # Link formatting: **ID**
                     rel_path = str(artifact.path.relative_to(self.root_path)).replace('\\', '/')
                     row_data.append(f"[{artifact.id}](file:///{rel_path})")
                 else:
@@ -1037,9 +1037,9 @@ def update_testing_md(actual: CategoryTestCounts, dry_run: bool = True,
     if root_path is None:
         root_path = Path.cwd()
     
-    testing_md = root_path / "docs" / "TESTING.md"
+    testing_md = root_path / "docs" / "testing" / "testing.md"
     if not testing_md.exists():
-        return ["docs/TESTING.md not found"]
+        return ["docs/testing/testing.md not found"]
     
     content = testing_md.read_text(encoding='utf-8')
     documented = extract_documented_counts(content)

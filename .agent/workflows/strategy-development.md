@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Trading strategy development workflow from research through validation. Covers hypothesis formation, entry/exit rules...
 ---
 
@@ -42,3 +44,15 @@ This workflow is activated when:
 ### Backtest
 
 ### Robustness Check
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

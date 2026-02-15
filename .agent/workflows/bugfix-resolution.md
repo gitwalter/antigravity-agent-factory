@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Systematic workflow for resolving bugs from ticket analysis through implementation and verification. This workflow en...
 ---
 
@@ -10,7 +12,7 @@ Systematic workflow for resolving bugs from ticket analysis through implementati
 **Created:** 2026-02-02  
 **Agent:** debug-conductor
 
-> **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See [Path Configuration Guide](../docs/reference/path-configuration.md).
+> **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.
 
 ## Trigger Conditions
 
@@ -60,3 +62,15 @@ This workflow is activated when:
 ### Update Ticket
 
 ### Capture Lessons
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...
