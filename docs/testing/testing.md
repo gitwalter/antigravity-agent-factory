@@ -15,11 +15,11 @@ The test suite consists of **2048 tests** organized into five specialized catego
 
 | Category | Count | Purpose |
 |----------|-------|---------|
-| | | | | | | | | | | Unit Tests | ~1020 | | | | | | | | | | | Atomic validation of individual functions and classes. |
-| | | | | | | | | | Integration Tests | ~225 | | | | | | | | | | Verification of component interactions and CLI flows. |
-| | | | | | | | | | | Validation Tests | ~235 | | | | | | | | | | | Ensuring all JSON/Markdown patterns adhere to schemas. |
-| | | | | | | Guardian Tests | ~153 | | | | | | | Testing the active protection and safety engine (A1-A5). |
-| | | | | Memory Tests | ~45 | | | | | Validating the semantic and episodic memory induction system. |
+| Unit Tests | ~1020 | Atomic validation of individual functions and classes. |
+| Integration Tests | ~225 | Verification of component interactions and CLI flows. |
+| Validation Tests | ~235 | Ensuring all JSON/Markdown patterns adhere to schemas. |
+| Guardian Tests | ~153 | Testing the active protection and safety engine (A1-A5). |
+| Memory Tests | ~45 | Validating the semantic and episodic memory induction system. |
 
 ## Test Levels & Rationale
 
@@ -43,7 +43,7 @@ Validated the induction engine and embedding services. We test semantic similari
 ## Technical Appendix
 
 ### Automated Test Catalog
-For a complete, line-by-line list of every single test case and its purpose, see the [Detailed Test Catalog](file:///docs/testing/test-catalog.md).
+For a complete, line-by-line list of every single test case and its purpose, see the [Detailed Test Catalog](test-catalog.md).
 
 ### Running the Suite
 The full suite can be executed via the standard pytest interface:
