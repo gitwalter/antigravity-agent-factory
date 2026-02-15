@@ -58,19 +58,19 @@ check_package:
     package_name: "fastapi"
     current_version: "0.128.0"
     language: "python"
-  
+
   process:
     1_lookup:
       action: Find package in registry.packages.{language}
       registry_version: "0.128.4"
-    
+
     2_compare:
       action: Compare versions
       current: "0.128.0"
       registry: "0.128.4"
       status: "outdated"
       difference: "patch"
-    
+
     3_report:
       format: |
         Package: fastapi
@@ -88,36 +88,36 @@ Check all dependencies in a blueprint:
 audit_blueprint:
   input:
     blueprint_file: "{directories.blueprints}/python-fastapi/blueprint.json"
-  
+
   process:
     1_extract_dependencies:
       sources:
         - stack.frameworks[].version
         - stack.tools[].version
         - Any other version fields
-    
+
     2_map_to_registry:
       for each dependency:
         - Match package name to registry
         - Compare versions
         - Flag mismatches
-    
+
     3_generate_report:
       format: |
         ## Blueprint Version Audit: python-fastapi
-        
+
         ### Frameworks
         | Package | Blueprint | Registry | Status |
         |---------|-----------|----------|--------|
         | FastAPI | 0.128+ | 0.128.4 | ✅ Compatible |
         | Pydantic | 2.10+ | 2.10.0 | ✅ Compatible |
         | SQLAlchemy | 2.0+ | (not in registry) | ⚠️ Not tracked |
-        
+
         ### Tools
         | Package | Blueprint | Registry | Status |
         |---------|-----------|----------|--------|
         | uvicorn | 0.34+ | (not in registry) | ⚠️ Not tracked |
-        
+
         ### Summary
         - ✅ Up to date: 2
         - ⚠️ Not tracked: 2
@@ -138,11 +138,11 @@ scan_project:
       java: ["pom.xml", "build.gradle"]
       dotnet: ["*.csproj", "packages.config"]
       rust: ["Cargo.toml"]
-  
+
   process:
     1_identify_language:
       action: Detect from dependency files present
-    
+
     2_parse_dependencies:
       action: Extract package names and versions
       tools:
@@ -151,11 +151,11 @@ scan_project:
         java: mvn dependency:tree, gradle dependencies
         dotnet: dotnet list package
         rust: cargo tree
-    
+
     3_check_against_registry:
       action: Compare each package to registry
       filter: Only check packages in registry
-    
+
     4_categorize:
       outdated:
         - Major version behind
@@ -167,48 +167,48 @@ scan_project:
       unknown:
         - Not in registry
         - Cannot determine version
-    
+
     5_generate_report:
       format: |
         ## Project Version Audit
-        
+
         **Language**: Python
         **Registry Date**: 2026-02-08
-        
+
         ### Outdated Packages
-        
+
         | Package | Current | Recommended | Update Type | Priority |
         |---------|---------|-------------|-------------|----------|
         | fastapi | 0.128.0 | 0.128.4 | Patch | Low |
         | langchain | 1.2.5 | 1.2.9 | Patch | Medium |
         | pydantic | 2.9.0 | 2.10.0 | Minor | High |
-        
+
         ### Current Packages
-        
+
         | Package | Version | Status |
         |---------|---------|--------|
         | crewai | 1.9.3 | ✅ Current |
         | langgraph | 1.0.8 | ✅ Current |
-        
+
         ### Not Tracked
-        
+
         | Package | Version | Note |
         |---------|---------|------|
         | local-package | 1.0.0 | Custom package |
-        
+
         ### Update Recommendations
-        
+
         **High Priority** (Minor/Major updates):
         - pydantic: 2.9.0 → 2.10.0
           - Review: https://docs.pydantic.dev/latest/migration/
           - Breaking: None expected for patch
           - Action: `pip install --upgrade pydantic==2.10.0`
-        
+
         **Medium Priority** (Security patches):
         - langchain: 1.2.5 → 1.2.9
           - Review: Check changelog for security fixes
           - Action: `pip install --upgrade langchain==1.2.9`
-        
+
         **Low Priority** (Patch updates):
         - fastapi: 0.128.0 → 0.128.4
           - Action: `pip install --upgrade fastapi==0.128.4`
@@ -224,7 +224,7 @@ suggest_updates:
     package: "pydantic"
     current: "2.9.0"
     target: "2.10.0"
-  
+
   process:
     1_research_changes:
       sources:
@@ -232,63 +232,63 @@ suggest_updates:
         - Migration guides
         - Release notes
         - GitHub releases
-    
+
     2_identify_breaking_changes:
       check:
         - API changes
         - Deprecated features
         - Configuration changes
         - Dependency updates
-    
+
     3_generate_migration_plan:
       format: |
         ## Update Plan: pydantic 2.9.0 → 2.10.0
-        
+
         ### Version Information
         - **Current**: 2.9.0
         - **Target**: 2.10.0
         - **Update Type**: Minor
         - **Release Date**: (from changelog)
-        
+
         ### Changes Summary
         - New features: [list]
         - Bug fixes: [list]
         - Performance improvements: [list]
-        
+
         ### Breaking Changes
         ⚠️ **None detected** (minor version update)
-        
+
         ### Migration Steps
-        
+
         1. **Backup current environment**
            ```bash
            pip freeze > requirements.backup.txt
            ```
-        
+
         2. **Update package**
            ```bash
            pip install --upgrade pydantic==2.10.0
            ```
-        
+
         3. **Run tests**
            ```bash
            pytest {directories.tests}/
            ```
-        
+
         4. **Check for deprecation warnings**
            - Review test output
            - Update any deprecated usage
-        
+
         5. **Verify functionality**
            - Run application
            - Check critical paths
-        
+
         ### Rollback Plan
         If issues occur:
         ```bash
         pip install pydantic==2.9.0
         ```
-        
+
         ### References
         - Changelog: https://docs.pydantic.dev/latest/changelog/
         - Migration Guide: https://docs.pydantic.dev/latest/migration/
@@ -425,27 +425,27 @@ version_comparison:
     current: "1.2.3"
     registry: "1.2.3"
     status: "current"
-  
+
   compatible_range:
     current: "1.2.3"
     registry: "1.2+"
     status: "current"
     reason: "Meets minimum requirement"
-  
+
   patch_behind:
     current: "1.2.3"
     registry: "1.2.5"
     status: "outdated"
     update_type: "patch"
     priority: "low"
-  
+
   minor_behind:
     current: "1.2.3"
     registry: "1.3.0"
     status: "outdated"
     update_type: "minor"
     priority: "medium"
-  
+
   major_behind:
     current: "1.2.3"
     registry: "2.0.0"

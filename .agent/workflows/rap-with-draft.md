@@ -8,8 +8,8 @@ description: End-to-end workflow for developing RAP business objects with draft 
 
 End-to-end workflow for developing RAP business objects with draft handling. Covers data model, behavior definition, draft configuration, actions, authorization, and testing.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-09  
+**Version:** 1.0.0
+**Created:** 2026-02-09
 **Applies To:** sap-developer, rap-development
 
 ## Trigger Conditions

@@ -8,8 +8,8 @@ description: Automated workflow for facilitating daily standup meetings, includi
 
 Automated workflow for facilitating daily standup meetings, including status collection, blocker identification, and action item tracking. Keeps standups focused and time-boxed while ensuring important information surfaces.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** sprint-master
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.

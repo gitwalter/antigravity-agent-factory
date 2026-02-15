@@ -35,13 +35,13 @@ To truly absorb the legacy agents, this specialist operates via specialized cogn
 
 ### Module 1: Test Engineering & Quality Gates (The Tester)
 *Target: Testing Specialist, Quality Assurance Guard*
-- **TDD Enforcement**: Prioritize writing failing tests before implementation. 
+- **TDD Enforcement**: Prioritize writing failing tests before implementation.
 - **LLM Evaluation**: Design specialized evaluation prompts to grade LLM outputs on accuracy, safety, and "Love, Truth, Beauty" alignment.
 - **Regression Guard**: Every bugfix MUST include a regression test. If it fails, the "Bugfix" workflow is incomplete.
 
 ### Module 2: Systematic Debugging & Recovery (The Engineer)
 *Target: Debugging Engineer, Pipeline Auditor*
-- **Root Cause Analysis (RCA)**: Use a systematic 5-Whys approach to identify the source of failure. 
+- **Root Cause Analysis (RCA)**: Use a systematic 5-Whys approach to identify the source of failure.
 - **CI/CD Recovery**: When a pipeline fails, automatically analyze logs, identify the culprit (lint, test, build), and propose a targeted fix via the `pipeline-error-fix` blueprint.
 - **Post-Mortem Ops**: Document every major failure as a `Knowledge Item` (KI) to prevent recurrence.
 

@@ -513,13 +513,13 @@ management:
 ```java
 @Component
 public class DatabaseHealthIndicator implements HealthIndicator {
-    
+
     private final DataSource dataSource;
-    
+
     public DatabaseHealthIndicator(DataSource dataSource) {
         this.dataSource = dataSource;
     }
-    
+
     @Override
     public Health health() {
         try (Connection connection = dataSource.getConnection()) {

@@ -28,7 +28,7 @@ class JSONValidator:
         """Validate a single JSON file."""
         if not file_path.exists():
             return False, f"File not found: {file_path}"
-        
+
         try:
             # Try utf-8-sig first to handle potential BOMs quietly
             with open(file_path, "r", encoding="utf-8-sig") as f:
@@ -44,19 +44,32 @@ class JSONValidator:
         try:
             output = subprocess.check_output(
                 ["git", "diff", "--cached", "--name-only", "--diff-filter=ACM"],
-                universal_newlines=True
+                universal_newlines=True,
             )
-            return [self.root_path / f for f in output.splitlines() if f.endswith(".json")]
+            return [
+                self.root_path / f for f in output.splitlines() if f.endswith(".json")
+            ]
         except Exception as e:
             print(f"Warning: Could not get staged files: {e}")
             return []
 
     def get_all_json_files(self) -> List[Path]:
         """Get all JSON files in the repository, excluding common ignore dirs."""
-        ignore_dirs = {".git", "node_modules", "__pycache__", ".venv", "venv", "dist", "build", "fixtures"}
+        ignore_dirs = {
+            ".git",
+            "node_modules",
+            "__pycache__",
+            ".venv",
+            "venv",
+            "dist",
+            "build",
+            "fixtures",
+        }
         json_files = []
         for root, dirs, files in os.walk(self.root_path):
-            dirs[:] = [d for d in dirs if d not in ignore_dirs and not d.startswith(".")]
+            dirs[:] = [
+                d for d in dirs if d not in ignore_dirs and not d.startswith(".")
+            ]
             for file in files:
                 if file.endswith(".json"):
                     json_files.append(Path(root) / file)
@@ -65,14 +78,18 @@ class JSONValidator:
 
 def main():
     parser = argparse.ArgumentParser(description="Validate JSON syntax and encoding.")
-    parser.add_argument("--all", action="store_true", help="Validate all JSON files in the repo")
+    parser.add_argument(
+        "--all", action="store_true", help="Validate all JSON files in the repo"
+    )
     parser.add_argument("--file", type=str, help="Validate a specific JSON file")
-    parser.add_argument("--staged", action="store_true", help="Validate staged JSON files only")
-    
+    parser.add_argument(
+        "--staged", action="store_true", help="Validate staged JSON files only"
+    )
+
     args = parser.parse_args()
     root = Path(__file__).parent.parent.parent
     validator = JSONValidator(root)
-    
+
     files_to_check = []
     if args.file:
         files_to_check.append(Path(args.file))
@@ -102,7 +119,7 @@ def main():
     if errors:
         print(f"\nValidation failed with {len(errors)} errors.")
         return 1
-    
+
     print("\nAll JSON files validated successfully.")
     return 0
 

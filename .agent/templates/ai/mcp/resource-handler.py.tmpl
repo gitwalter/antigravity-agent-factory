@@ -23,18 +23,18 @@ logger = logging.getLogger(__name__)
 class {{HANDLER_CLASS_NAME}}:
     """
     {{HANDLER_NAME}} - MCP Resource Provider
-    
+
     Provides resources to MCP clients:
     - File system resources
     - Database resources
     - API resources
     - Generated resources
-    
+
     Example:
         >>> handler = {{HANDLER_CLASS_NAME}}()
         >>> resources = await handler.list_resources()
     """
-    
+
     def __init__(
         self,
         base_path: Optional[str] = None,
@@ -42,38 +42,38 @@ class {{HANDLER_CLASS_NAME}}:
     ):
         """
         Initialize resource handler.
-        
+
         Args:
             base_path: Base path for file resources
             server: Optional MCP server instance
         """
         self.base_path = base_path or "{{ BASE_PATH | default('./resources') }}"        self.server = server
-        
+
         logger.info(f"Initialized {{HANDLER_NAME}} resource handler")
-    
+
     async def list_resources(self) -> List[EmbeddedResource]:
         """
         List all available resources.
-        
+
         Returns:
             List of resource definitions
-        
+
         Example:
             >>> resources = await handler.list_resources()
             >>> for resource in resources:
             >>>     print(resource.uri)
         """
         logger.info("Listing resources")
-        
+
         resources = []
-        
+
         # File system resources
         if os.path.exists(self.base_path):
             for root, dirs, files in os.walk(self.base_path):
                 for file in files:
                     file_path = os.path.join(root, file)
                     rel_path = os.path.relpath(file_path, self.base_path)
-                    
+
                     resource = EmbeddedResource(
                         uri=f"file://{rel_path}",
                         name=file,
@@ -81,17 +81,17 @@ class {{HANDLER_CLASS_NAME}}:
                         mimeType=self._get_mime_type(file)
                     )
                     resources.append(resource)
-        
+
         # Add custom resources
         resources.extend(self._get_custom_resources())
-        
+
         logger.info(f"Found {len(resources)} resources")
         return resources
-    
+
     def _get_custom_resources(self) -> List[EmbeddedResource]:
         """
         Get custom resources.
-        
+
         Returns:
             List of custom resource definitions
         """
@@ -109,79 +109,79 @@ class {{HANDLER_CLASS_NAME}}:
                 mimeType="{{RESOURCE_2_MIME_TYPE}}"
             )
         ]
-    
+
     async def read_resource(self, uri: str) -> str:
         """
         Read a resource by URI.
-        
+
         Args:
             uri: Resource URI
-        
+
         Returns:
             Resource content
-        
+
         Example:
             >>> content = await handler.read_resource("file://example.txt")
         """
         logger.info(f"Reading resource: {uri}")
-        
+
         try:
             # Handle file:// URIs
             if uri.startswith("file://"):
                 file_path = uri.replace("file://", "")
                 full_path = os.path.join(self.base_path, file_path)
-                
+
                 if not os.path.exists(full_path):
                     raise FileNotFoundError(f"Resource not found: {uri}")
-                
+
                 with open(full_path, "r", encoding="utf-8") as f:
                     content = f.read()
-                
+
                 return content
-            
+
             # Handle custom URIs
             elif uri == "{{RESOURCE_1_URI}}":
                 return self._get_resource_1_content()
             elif uri == "{{RESOURCE_2_URI}}":
                 return self._get_resource_2_content()
-            
+
             else:
                 raise ValueError(f"Unknown resource URI: {uri}")
-                
+
         except Exception as e:
             logger.error(f"Error reading resource {uri}: {e}")
             raise
-    
+
     def _get_resource_1_content(self) -> str:
         """
         Get content for {{RESOURCE_1_NAME}}.
-        
+
         Returns:
             Resource content
         """
         return "{{RESOURCE_1_CONTENT}}"
-    
+
     def _get_resource_2_content(self) -> str:
         """
         Get content for {{RESOURCE_2_NAME}}.
-        
+
         Returns:
             Resource content
         """
         return "{{RESOURCE_2_CONTENT}}"
-    
+
     def _get_mime_type(self, filename: str) -> str:
         """
         Get MIME type for a file.
-        
+
         Args:
             filename: File name
-        
+
         Returns:
             MIME type string
         """
         ext = os.path.splitext(filename)[1].lower()
-        
+
         mime_types = {
             ".txt": "text/plain",
             ".json": "application/json",
@@ -194,9 +194,9 @@ class {{HANDLER_CLASS_NAME}}:
             ".gif": "image/gif",
             ".pdf": "application/pdf"
         }
-        
+
         return mime_types.get(ext, "application/octet-stream")
-    
+
     async def write_resource(
         self,
         uri: str,
@@ -204,26 +204,26 @@ class {{HANDLER_CLASS_NAME}}:
     ) -> None:
         """
         Write content to a resource.
-        
+
         Args:
             uri: Resource URI
             content: Content to write
-        
+
         Example:
             >>> await handler.write_resource("file://example.txt", "Hello")
         """
         logger.info(f"Writing resource: {uri}")
-        
+
         if uri.startswith("file://"):
             file_path = uri.replace("file://", "")
             full_path = os.path.join(self.base_path, file_path)
-            
+
             # Create directory if needed
             os.makedirs(os.path.dirname(full_path), exist_ok=True)
-            
+
             with open(full_path, "w", encoding="utf-8") as f:
                 f.write(content)
-            
+
             logger.info(f"Resource written: {full_path}")
         else:
             raise ValueError(f"Cannot write to URI: {uri}")
@@ -232,17 +232,17 @@ class {{HANDLER_CLASS_NAME}}:
 # Example usage
 if __name__ == "__main__":
     import asyncio
-    
+
     # Create resource handler
     handler = {{HANDLER_CLASS_NAME}}(
         base_path="{{ BASE_PATH | default('./resources') }}"  # Configurable default: can be overridden via BASE_PATH template variable    )
-    
+
     # List resources
     async def main():
         resources = await handler.list_resources()
         print(f"Found {len(resources)} resources")
-        
+
         for resource in resources[:5]:  # Show first 5
             print(f"  - {resource.uri}: {resource.name}")
-    
+
     asyncio.run(main())

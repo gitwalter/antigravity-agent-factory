@@ -41,7 +41,7 @@ class {{AGENT_CLASS_NAME}}Output(BaseModel):
     response: str = Field(description="The main response to the user")
     confidence: float = Field(ge=0, le=1, description="Confidence level (0-1)")
     requires_confirmation: bool = Field(
-        default=False, 
+        default=False,
         description="Whether this action requires user confirmation (A2)"
     )
     warnings: List[str] = Field(
@@ -52,24 +52,24 @@ class {{AGENT_CLASS_NAME}}Output(BaseModel):
 class {{AGENT_CLASS_NAME}}:
     """
     {{AGENT_NAME}} - {{AGENT_DESCRIPTION}}
-    
+
     Powered by Google's Gemini models.
     """
-    
+
     MODEL_NAME = "{{LLM_MODEL}}" # e.g., "gemini-1.5-pro-latest"
     TEMPERATURE = {{TEMPERATURE}}
-    
+
     def __init__(self, model_name: Optional[str] = None, tools: Optional[List] = None):
         """
         Initialize the {{AGENT_NAME}} agent.
-        
+
         Args:
             model_name: Gemini model to use (default: {{LLM_MODEL}})
             tools: List of tools (functions) available to the agent
         """
         self.model_name = model_name or self.MODEL_NAME
         self.tools = tools or []
-        
+
         # Configure safety settings (A4 - Non-Harm)
         self.safety_settings = {
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
@@ -77,14 +77,14 @@ class {{AGENT_CLASS_NAME}}:
             HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
             HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
         }
-        
+
         self._initialize_model()
         logger.info(f"Initialized {{AGENT_NAME}} with model {self.model_name}")
 
     def _initialize_model(self):
         """Initialize the Gemini model with system instruction and tools."""
         system_instruction = self._create_system_instruction()
-        
+
         self.model = genai.GenerativeModel(
             model_name=self.model_name,
             safety_settings=self.safety_settings,
@@ -125,23 +125,23 @@ You must respond with a JSON object matching the {{AGENT_CLASS_NAME}}Output sche
     def invoke(self, input_text: str, context: Optional[str] = None) -> {{AGENT_CLASS_NAME}}Output:
         """
         Invoke the agent with user input.
-        
+
         Args:
             input_text: User's input/question
             context: Optional additional context
-            
+
         Returns:
             Structured output object
         """
         logger.info(f"Processing input: {input_text[:100]}...")
-        
+
         message = input_text
         if context:
             message = f"Context: {context}\n\nUser Input: {input_text}"
-            
+
         try:
             response = self.chat.send_message(message)
-            
+
             # Since we requested JSON response, we can parse it directly
             # Note: The SDK might return a text string that is JSON
             try:
@@ -166,9 +166,9 @@ You must respond with a JSON object matching the {{AGENT_CLASS_NAME}}Output sche
             logger.info(f"Response generated with confidence: {result.confidence}")
             if result.requires_confirmation:
                 logger.info("Action requires user confirmation (A2)")
-                
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Error during invocation: {e}")
             return {{AGENT_CLASS_NAME}}Output(
@@ -188,6 +188,6 @@ if __name__ == "__main__":
 
     agent = {{AGENT_CLASS_NAME}}()
     result = agent.invoke("{{EXAMPLE_INPUT}}")
-    
+
     print(f"Reasoning: {result.reasoning}")
     print(f"Response: {result.response}")

@@ -20,25 +20,25 @@ flowchart TB
         OBS["Observer"]
         PAT["Pattern Detector"]
     end
-    
+
     subgraph Generalization["2. Generalization Layer"]
         IND["Induction Engine"]
         GEN["Pattern Generalizer"]
         CONF["Confidence Scorer"]
     end
-    
+
     subgraph Validation["3. Validation Layer"]
         AX["Axiom Alignment Check"]
         USER["User Approval"]
         REJ["Rejection Check"]
     end
-    
+
     subgraph Integration["4. Integration Layer"]
         MEM["Memory Storage"]
         KNOW["Knowledge Update"]
         PATT["Pattern Library"]
     end
-    
+
     Observation --> Generalization --> Validation --> Integration
     Integration -.->|"Improves"| Observation
 ```
@@ -54,19 +54,19 @@ flowchart TB
         O2["Context metadata"]
         O3["Success/failure outcome"]
     end
-    
+
     subgraph Analysis["Pattern Analysis"]
         A1["Extract key features"]
         A2["Identify variables"]
         A3["Detect structure"]
     end
-    
+
     subgraph Generalization["Generalization"]
         G1["Abstract specific values"]
         G2["Create template pattern"]
         G3["Define applicability conditions"]
     end
-    
+
     subgraph Scoring["Confidence Scoring"]
         subgraph Types["Observation Types"]
             T1["Explicit feedback: 0.9"]
@@ -76,13 +76,13 @@ flowchart TB
             T5["Single observation: 0.3"]
         end
     end
-    
+
     subgraph Output["Pattern Output"]
         P["Proposed Pattern"]
         C["Confidence Score"]
         M["Metadata"]
     end
-    
+
     Input --> Analysis --> Generalization --> Scoring --> Output
 ```
 
@@ -93,22 +93,22 @@ Complete lifecycle of a learning proposal:
 ```mermaid
 stateDiagram-v2
     [*] --> Observed: Pattern detected
-    
+
     Observed --> Pending: Significant (confidence > threshold)
     Observed --> Discarded: Not significant
-    
+
     Pending --> Reviewed: User views proposal
-    
+
     Reviewed --> Approved: User accepts
     Reviewed --> Rejected: User rejects
     Reviewed --> Modified: User edits
     Reviewed --> Deferred: User postpones
-    
+
     Approved --> Integrated: Stored in memory
     Modified --> Integrated: Edited version stored
     Rejected --> Blocked: Similar patterns filtered
     Deferred --> Pending: Re-queue for later
-    
+
     Integrated --> [*]: Learning complete
     Blocked --> [*]: Pattern blocked
     Discarded --> [*]: Not learned
@@ -124,25 +124,25 @@ flowchart TB
         NP["Proposed pattern"]
         NE["Pattern embedding"]
     end
-    
+
     subgraph RejectedDB["Rejected Patterns DB"]
         R1["Rejected pattern 1"]
         R2["Rejected pattern 2"]
         R3["Rejected pattern 3"]
     end
-    
+
     subgraph Check["Similarity Check"]
         SIM["Calculate similarity"]
         THRESH["Threshold: 0.9"]
-        
+
         DEC{Similarity > 0.9?}
     end
-    
+
     subgraph Outcome["Outcome"]
         SKIP["SKIP: Too similar to rejected"]
         PROCEED["PROCEED: New enough to propose"]
     end
-    
+
     NewProposal --> Check
     RejectedDB --> Check
     Check --> DEC
@@ -161,24 +161,24 @@ flowchart TB
         O2["Workflow patterns"]
         O3["Error patterns"]
     end
-    
+
     subgraph Validation["L0 Validation"]
         V1["Check axiom alignment"]
         V2["Verify non-harm"]
         V3["Ensure consistency"]
     end
-    
+
     subgraph Decision["Integration Decision"]
         DEC{Valid pattern?}
         APPROVE["Integrate into L3-L4"]
         REJECT["Discard with reason"]
     end
-    
+
     subgraph Output["Pattern Library Update"]
         PL["patterns/*.json"]
         KN["knowledge/*.json"]
     end
-    
+
     Input --> Validation --> DEC
     DEC -->|"Valid"| APPROVE --> Output
     DEC -->|"Invalid"| REJECT
@@ -194,9 +194,9 @@ sequenceDiagram
     participant L as Learning System
     participant M as Memory
     participant U as User
-    
+
     W->>W: Execute phase
-    
+
     alt Phase Succeeds
         W->>L: on_success hook
         L->>L: Capture success pattern
@@ -206,13 +206,13 @@ sequenceDiagram
         L->>L: Capture failure context
         L->>M: Store for analysis
     end
-    
+
     W->>W: Continue workflow...
-    
+
     Note over L,M: After workflow completes
     L->>L: Analyze patterns
     L->>U: Propose significant learnings
-    
+
     alt User Approves
         U->>L: Accept pattern
         L->>M: Store in semantic memory
@@ -234,26 +234,26 @@ flowchart TB
         D3["Fix applied"]
         D4["Fix verified"]
     end
-    
+
     subgraph Capture["Pattern Capture"]
         C1["Error signature"]
         C2["Root cause pattern"]
         C3["Fix template"]
         C4["Verification steps"]
     end
-    
+
     subgraph Learning["Learning"]
         L1["Generalize error pattern"]
         L2["Create fix template"]
         L3["Calculate confidence"]
     end
-    
+
     subgraph Future["Future Application"]
         F1["Proactive error detection"]
         F2["Suggested fixes"]
         F3["Auto-remediation (if approved)"]
     end
-    
+
     Debug --> Capture --> Learning --> Future
 ```
 
@@ -267,23 +267,23 @@ flowchart TB
         I1["First occurrence"]
         I2["Confidence: 0.3"]
     end
-    
+
     subgraph Accumulation["Confidence Accumulation"]
         A1["Second success: +0.2"]
         A2["Third success: +0.15"]
         A3["User confirms: +0.25"]
         A4["Repeated across projects: +0.1"]
     end
-    
+
     subgraph Final["Final Confidence"]
         F1["Combined confidence"]
         F2["Threshold check"]
-        
+
         DEC{> 0.7?}
         PROPOSE["Auto-propose"]
         WAIT["Wait for more evidence"]
     end
-    
+
     Initial --> Accumulation --> Final
     DEC -->|"Yes"| PROPOSE
     DEC -->|"No"| WAIT
@@ -300,25 +300,25 @@ flowchart TB
         P2["Project B patterns"]
         P3["Project C patterns"]
     end
-    
+
     subgraph Analysis["Cross-Project Analysis"]
         A1["Find common patterns"]
         A2["Identify stack-specific patterns"]
         A3["Detect universal patterns"]
     end
-    
+
     subgraph Promotion["Pattern Promotion"]
         PR1["Project-specific → stays local"]
         PR2["Stack-specific → stack knowledge"]
         PR3["Universal → core patterns"]
     end
-    
+
     subgraph Storage["Storage Location"]
         S1["Project memory"]
         S2["knowledge/*.json"]
         S3["patterns/*.json"]
     end
-    
+
     Projects --> Analysis --> Promotion --> Storage
 ```
 
@@ -334,19 +334,19 @@ flowchart TB
             C2["Bug fixes"]
             C3["Optimizations"]
         end
-        
+
         subgraph Workflow["Workflow Patterns"]
             W1["Effective sequences"]
             W2["Failure recovery"]
             W3["Escalation triggers"]
         end
-        
+
         subgraph User["User Preferences"]
             U1["Style preferences"]
             U2["Tool choices"]
             U3["Communication patterns"]
         end
-        
+
         subgraph Domain["Domain Knowledge"]
             D1["Business rules"]
             D2["API patterns"]
@@ -362,20 +362,20 @@ Ensuring learned patterns align with axioms:
 ```mermaid
 flowchart TD
     PATTERN([Proposed Pattern]) --> CHECK["Axiom Alignment Check"]
-    
+
     CHECK --> A1{A1: Transparent?}
     A1 -->|"No"| REJECT1["Reject: Not explainable"]
     A1 -->|"Yes"| A2{A2: User-centric?}
-    
+
     A2 -->|"No"| REJECT2["Reject: Against user interest"]
     A2 -->|"Yes"| A3{A3: Derivable?}
-    
+
     A3 -->|"No"| REJECT3["Reject: Can't trace to axioms"]
     A3 -->|"Yes"| A4{A4: Non-harmful?}
-    
+
     A4 -->|"No"| REJECT4["Reject: Could cause harm"]
     A4 -->|"Yes"| A5{A5: Consistent?}
-    
+
     A5 -->|"No"| REJECT5["Reject: Contradicts existing"]
     A5 -->|"Yes"| APPROVE["Approve for integration"]
 ```
@@ -393,19 +393,19 @@ flowchart TB
         M4["Application success rate"]
         M5["User satisfaction"]
     end
-    
+
     subgraph Derived["Derived Metrics"]
         D1["Acceptance rate: accepted/proposed"]
         D2["Effectiveness: applications with success"]
         D3["Coverage: unique scenarios learned"]
     end
-    
+
     subgraph Actions["Improvement Actions"]
         A1["Low acceptance → Improve proposals"]
         A2["Low effectiveness → Refine patterns"]
         A3["Low coverage → Expand observation"]
     end
-    
+
     Metrics --> Derived --> Actions
 ```
 
@@ -420,20 +420,20 @@ flowchart TB
         L2["Pattern Generalizer"]
         L3["Confidence Scorer"]
     end
-    
+
     subgraph Memory["Memory System"]
         M1["Episodic: Observations"]
         M2["Pending: Proposals"]
         M3["Semantic: Approved patterns"]
         M4["Rejected: Blocked patterns"]
     end
-    
+
     subgraph Knowledge["Knowledge System"]
         K1["Pattern files"]
         K2["Knowledge files"]
         K3["Workflow patterns"]
     end
-    
+
     Learning --> Memory
     M3 -->|"Promote"| Knowledge
 ```
@@ -452,15 +452,15 @@ flowchart TB
         I["INTEGRATE<br/>Update system"]
         M["MEASURE<br/>Track effectiveness"]
     end
-    
+
     O --> A --> L --> V --> I --> M --> O
-    
+
     subgraph Outcomes["Outcomes"]
         OUT1["Better predictions"]
         OUT2["Faster resolutions"]
         OUT3["Fewer errors"]
         OUT4["Improved user experience"]
     end
-    
+
     M --> Outcomes
 ```

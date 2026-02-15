@@ -8,8 +8,8 @@ description: Behavior-Driven Development workflow that starts with stakeholder-r
 
 Behavior-Driven Development workflow that starts with stakeholder-readable Gherkin scenarios and translates them into executable tests. Emphasizes collaboration between business, development, and QA through the Three Amigos process.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** test-generator
 
 ## Trigger Conditions

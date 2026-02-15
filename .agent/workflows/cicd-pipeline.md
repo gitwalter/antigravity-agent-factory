@@ -8,8 +8,8 @@ description: Comprehensive workflow for managing continuous integration and depl
 
 Comprehensive workflow for managing continuous integration and deployment pipelines. Covers build, test, security scanning, and deployment across multiple environments.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Applies To:** All stacks
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.

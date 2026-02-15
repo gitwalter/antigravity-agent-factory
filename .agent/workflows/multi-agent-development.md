@@ -8,8 +8,8 @@ description: Multi-agent system development workflow including agent design, coo
 
 Multi-agent system development workflow including agent design, coordination setup, communication patterns, and orchestration. Covers hierarchical and collaborative multi-agent architectures.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-10  
+**Version:** 1.0.0
+**Created:** 2026-02-10
 **Applies To:** multi-agent-systems, crewai, langgraph
 
 ## Trigger Conditions

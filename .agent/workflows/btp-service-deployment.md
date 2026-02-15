@@ -8,8 +8,8 @@ description: End-to-end workflow for deploying SAP applications to SAP Business 
 
 End-to-end workflow for deploying SAP applications to SAP Business Technology Platform (BTP). Covers build configuration, service bindings, Cloud Foundry/Kyma deployment, and monitoring setup.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-09  
+**Version:** 1.0.0
+**Created:** 2026-02-09
 **Applies To:** sap-developer, btp-deployment
 
 ## Trigger Conditions

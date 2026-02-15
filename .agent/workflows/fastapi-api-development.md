@@ -8,8 +8,8 @@ description: Comprehensive workflow for developing production-ready FastAPI appl
 
 Comprehensive workflow for developing production-ready FastAPI applications with SQLAlchemy async patterns, Pydantic validation, and best practices. This workflow guides through project setup, domain modeling, API endpoints, testing, and deployment.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-09  
+**Version:** 1.0.0
+**Created:** 2026-02-09
 **Agent:** python-backend-developer
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.

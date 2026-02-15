@@ -57,7 +57,7 @@ def update_prompt(prompt_name: str, new_prompt: ChatPromptTemplate):
         print(f"Current: {current}")
     except Exception:
         print("Creating new prompt")
-    
+
     # Push new version
     hub.push(prompt_name, new_prompt)
     print(f"Pushed new version of {prompt_name}")
@@ -72,18 +72,18 @@ from langsmith import traceable
 @traceable(tags=["ab-test"])
 async def run_with_ab_test(input_data: dict, test_name: str = "prompt_v1_vs_v2"):
     """Run A/B test between prompt versions."""
-    
+
     # Select variant
     variant = random.choice(["control", "treatment"])
-    
+
     if variant == "control":
         prompt = hub.pull("my-org/agent-prompt:v1")
     else:
         prompt = hub.pull("my-org/agent-prompt:v2")
-    
+
     chain = prompt | llm | parser
     result = await chain.ainvoke(input_data)
-    
+
     # Log variant for analysis
     return {"result": result, "variant": variant}
 ```
@@ -111,7 +111,7 @@ def relevance_evaluator(run, example):
     """Check if response is relevant to input."""
     output = run.outputs.get("output", "")
     expected = example.outputs.get("expected", "")
-    
+
     # Simple keyword overlap (use LLM for better eval)
     overlap = len(set(output.split()) & set(expected.split()))
     return {"score": min(overlap / 10, 1.0)}

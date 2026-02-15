@@ -48,10 +48,10 @@ class MCPServerConfig(BaseModel):
 class MCPToolWrapper(BaseTool):
     """
     Wrapper to convert MCP tools to LangChain tools.
-    
+
     This allows MCP server tools to be used seamlessly with LangChain agents.
     """
-    
+
     def __init__(
         self,
         mcp_tool: Tool,
@@ -60,7 +60,7 @@ class MCPToolWrapper(BaseTool):
     ):
         """
         Initialize MCP tool wrapper.
-        
+
         Args:
             mcp_tool: MCP Tool definition
             session: MCP client session
@@ -73,21 +73,21 @@ class MCPToolWrapper(BaseTool):
         self.mcp_tool = mcp_tool
         self.session = session
         self.server_name = server_name
-    
+
     def _run(self, *args, **kwargs) -> str:
         """Synchronous tool execution (not supported for MCP)."""
         raise NotImplementedError(
             "MCP tools are async only. Use _arun() or async context."
         )
-    
+
     async def _arun(self, *args, **kwargs) -> str:
         """
         Async tool execution.
-        
+
         Args:
             *args: Positional arguments
             **kwargs: Keyword arguments matching tool input schema
-            
+
         Returns:
             Tool result as string
         """
@@ -95,14 +95,14 @@ class MCPToolWrapper(BaseTool):
             f"Calling MCP tool {self.mcp_tool.name} "
             f"from server {self.server_name}"
         )
-        
+
         try:
             # Call MCP tool
             result = await self.session.call_tool(
                 self.mcp_tool.name,
                 kwargs
             )
-            
+
             # Extract text content from result
             if isinstance(result, list) and len(result) > 0:
                 content = result[0]
@@ -114,7 +114,7 @@ class MCPToolWrapper(BaseTool):
                     return str(content)
             else:
                 return str(result)
-                
+
         except Exception as e:
             logger.error(f"Error calling MCP tool {self.mcp_tool.name}: {e}")
             raise
@@ -123,10 +123,10 @@ class MCPToolWrapper(BaseTool):
 class {{ tool_class_name | default('MCPTool') }}:
     """
     {{ tool_name | default('MCP Tool') }} - MCP Server Integration for LangChain
-    
+
     Connects to MCP servers and exposes their tools as LangChain-compatible tools.
     Supports multiple MCP servers and automatic tool discovery.
-    
+
     Example:
         >>> mcp_tool = {{ tool_class_name | default('MCPTool') }}()
         >>> await mcp_tool.connect_server(
@@ -137,20 +137,20 @@ class {{ tool_class_name | default('MCPTool') }}:
         >>> tools = await mcp_tool.get_langchain_tools()
         >>> print(f"Available tools: {[t.name for t in tools]}")
     """
-    
+
     def __init__(self):
         """Initialize MCP tool manager."""
         if not MCP_AVAILABLE:
             raise ImportError(
                 "MCP library not available. Install with: pip install mcp"
             )
-        
+
         self.servers: Dict[str, Any] = {}
         self.sessions: Dict[str, Any] = {}
         self.tools: Dict[str, List[BaseTool]] = {}
-        
+
         logger.info("Initialized {{ tool_class_name | default('MCPTool') }}")
-    
+
     async def connect_server(
         self,
         name: str,
@@ -160,13 +160,13 @@ class {{ tool_class_name | default('MCPTool') }}:
     ):
         """
         Connect to an MCP server.
-        
+
         Args:
             name: Server identifier
             command: Command to start server
             args: Command arguments
             env: Environment variables
-            
+
         Example:
             >>> await mcp_tool.connect_server(
             ...     name="github",
@@ -175,7 +175,7 @@ class {{ tool_class_name | default('MCPTool') }}:
             ... )
         """
         logger.info(f"Connecting to MCP server: {name}")
-        
+
         try:
             # Create server parameters
             server_params = StdioServerParameters(
@@ -183,42 +183,42 @@ class {{ tool_class_name | default('MCPTool') }}:
                 args=args or [],
                 env=env
             )
-            
+
             # Create client session
             async with stdio_client(server_params) as (read, write):
                 async with ClientSession(read, write) as session:
                     # Initialize session
                     await session.initialize()
-                    
+
                     # List available tools
                     tools_result = await session.list_tools()
                     tools = tools_result.tools if hasattr(tools_result, 'tools') else []
-                    
+
                     # Convert MCP tools to LangChain tools
                     langchain_tools = [
                         MCPToolWrapper(tool, session, name)
                         for tool in tools
                     ]
-                    
+
                     # Store session and tools
                     self.servers[name] = server_params
                     self.sessions[name] = session
                     self.tools[name] = langchain_tools
-                    
+
                     logger.info(
                         f"Connected to {name}: {len(langchain_tools)} tools available"
                     )
-                    
+
                     return langchain_tools
-                    
+
         except Exception as e:
             logger.error(f"Error connecting to MCP server {name}: {e}")
             raise
-    
+
     async def disconnect_server(self, name: str):
         """
         Disconnect from an MCP server.
-        
+
         Args:
             name: Server identifier
         """
@@ -227,17 +227,17 @@ class {{ tool_class_name | default('MCPTool') }}:
             del self.sessions[name]
             del self.tools[name]
             logger.info(f"Disconnected from MCP server: {name}")
-    
+
     async def get_tools(
         self,
         server_name: Optional[str] = None
     ) -> List[BaseTool]:
         """
         Get LangChain tools from MCP server(s).
-        
+
         Args:
             server_name: Specific server name (None for all servers)
-            
+
         Returns:
             List of LangChain tools
         """
@@ -249,23 +249,23 @@ class {{ tool_class_name | default('MCPTool') }}:
             for tools_list in self.tools.values():
                 all_tools.extend(tools_list)
             return all_tools
-    
+
     async def list_servers(self) -> List[str]:
         """
         List connected MCP servers.
-        
+
         Returns:
             List of server names
         """
         return list(self.servers.keys())
-    
+
     async def list_tools(self, server_name: Optional[str] = None) -> Dict[str, List[str]]:
         """
         List available tools from server(s).
-        
+
         Args:
             server_name: Specific server name (None for all)
-            
+
         Returns:
             Dictionary mapping server names to tool names
         """
@@ -278,7 +278,7 @@ class {{ tool_class_name | default('MCPTool') }}:
                 name: [tool.name for tool in tools]
                 for name, tools in self.tools.items()
             }
-    
+
     async def call_tool(
         self,
         tool_name: str,
@@ -287,12 +287,12 @@ class {{ tool_class_name | default('MCPTool') }}:
     ) -> str:
         """
         Call an MCP tool directly.
-        
+
         Args:
             tool_name: Tool name (with or without server prefix)
             arguments: Tool arguments
             server_name: Server name if tool_name doesn't include prefix
-            
+
         Returns:
             Tool result as string
         """
@@ -304,17 +304,17 @@ class {{ tool_class_name | default('MCPTool') }}:
             tools = []
             for tools_list in self.tools.values():
                 tools.extend(tools_list)
-        
+
         # Find matching tool
         tool = None
         for t in tools:
             if t.name == tool_name or t.name.endswith(f"_{tool_name}"):
                 tool = t
                 break
-        
+
         if not tool:
             raise ValueError(f"Tool {tool_name} not found")
-        
+
         # Call tool
         return await tool._arun(**arguments)
 
@@ -325,13 +325,13 @@ async def create_mcp_tools(
 ) -> List[BaseTool]:
     """
     Create LangChain tools from MCP server configurations.
-    
+
     Args:
         server_configs: List of MCP server configurations
-        
+
     Returns:
         List of LangChain tools
-        
+
     Example:
         >>> configs = [
         ...     MCPServerConfig(
@@ -343,7 +343,7 @@ async def create_mcp_tools(
         >>> tools = await create_mcp_tools(configs)
     """
     mcp_tool = {{ tool_class_name | default('MCPTool') }}()
-    
+
     for config in server_configs:
         await mcp_tool.connect_server(
             name=config.name,
@@ -351,7 +351,7 @@ async def create_mcp_tools(
             args=config.args,
             env=config.env
         )
-    
+
     return await mcp_tool.get_tools()
 
 
@@ -364,18 +364,18 @@ async def {{ tool_function_name | default('mcp_tool_call') }}(
 ) -> str:
     """
     Call an MCP tool from a connected server.
-    
+
     This tool implements A1 (Verifiability) by logging all MCP calls.
     This tool implements A3 (Transparency) by exposing MCP server capabilities.
-    
+
     Args:
         server_name: Name of MCP server
         tool_name: Name of tool to call
         arguments: JSON string of tool arguments
-        
+
     Returns:
         Tool result as string
-        
+
     Example:
         >>> result = await {{ tool_function_name | default('mcp_tool_call') }}(
         ...     server_name="filesystem",
@@ -384,20 +384,20 @@ async def {{ tool_function_name | default('mcp_tool_call') }}(
         ... )
     """
     import json
-    
+
     # Parse arguments
     args_dict = json.loads(arguments) if arguments else {}
-    
+
     # Create tool instance (in production, this should be a singleton)
     mcp_tool = {{ tool_class_name | default('MCPTool') }}()
-    
+
     # Call tool
     result = await mcp_tool.call_tool(
         tool_name=tool_name,
         arguments=args_dict,
         server_name=server_name
     )
-    
+
     return result
 
 
@@ -405,7 +405,7 @@ async def {{ tool_function_name | default('mcp_tool_call') }}(
 if __name__ == "__main__":
     async def main():
         mcp_tool = {{ tool_class_name | default('MCPTool') }}()
-        
+
         try:
             # Connect to MCP server
             # Example: filesystem server
@@ -414,19 +414,19 @@ if __name__ == "__main__":
             #     command="npx",
             #     args=["-y", "@modelcontextprotocol/server-filesystem", "/tmp"]
             # )
-            
+
             # List servers and tools
             servers = await mcp_tool.list_servers()
             print(f"Connected servers: {servers}")
-            
+
             tools_info = await mcp_tool.list_tools()
             print(f"Available tools: {tools_info}")
-            
+
             # Get LangChain tools
             tools = await mcp_tool.get_tools()
             print(f"LangChain tools: {[t.name for t in tools]}")
-            
+
         except Exception as e:
             print(f"Error: {e}")
-    
+
     asyncio.run(main())

@@ -81,17 +81,17 @@ class AnalysisConfig(BaseModel):
 class {{ANALYSIS_CLASS_NAME}}:
     """
     {{ANALYSIS_NAME}} - Image Analysis with Vision LLMs
-    
+
     Analyzes images using vision-capable LLMs like GPT-4o-vision or Claude-3.
     Supports multiple providers and various analysis tasks.
-    
+
     Features:
     - Object detection and scene understanding
     - OCR text extraction
     - Visual question answering
     - Image comparison
     - Custom analysis prompts
-    
+
     Example:
         >>> analyzer = {{ANALYSIS_CLASS_NAME}}(
         ...     provider="openai",
@@ -100,16 +100,16 @@ class {{ANALYSIS_CLASS_NAME}}:
         >>> result = analyzer.analyze_image("path/to/image.jpg")
         >>> print(result.description)
     """
-    
+
     def __init__(self, config: Optional[AnalysisConfig] = None):
         """
         Initialize image analyzer.
-        
+
         Args:
             config: Analysis configuration
         """
         self.config = config or AnalysisConfig()
-        
+
         # Initialize provider client
         if self.config.provider == "openai":
             if not OPENAI_AVAILABLE:
@@ -123,38 +123,38 @@ class {{ANALYSIS_CLASS_NAME}}:
             self.model = self.config.model_name or "claude-3-opus-20240229"
         else:
             raise ValueError(f"Unsupported provider: {self.config.provider}")
-        
+
         logger.info(f"Initialized {{ANALYSIS_NAME}} with {self.config.provider}/{self.model}")
-    
+
     def _load_image(self, image_path: Union[str, Path]) -> bytes:
         """
         Load image from file path.
-        
+
         Args:
             image_path: Path to image file
-            
+
         Returns:
             Image bytes
         """
         path = Path(image_path)
         if not path.exists():
             raise FileNotFoundError(f"Image not found: {image_path}")
-        
+
         with open(path, "rb") as f:
             return f.read()
-    
+
     def _encode_image(self, image_bytes: bytes) -> str:
         """
         Encode image bytes to base64.
-        
+
         Args:
             image_bytes: Image bytes
-            
+
         Returns:
             Base64 encoded string
         """
         return base64.b64encode(image_bytes).decode("utf-8")
-    
+
     def _prepare_image_message(
         self,
         image_path: Union[str, Path],
@@ -162,17 +162,17 @@ class {{ANALYSIS_CLASS_NAME}}:
     ) -> Dict[str, Any]:
         """
         Prepare message with image for API call.
-        
+
         Args:
             image_path: Path to image
             text_prompt: Text prompt/question
-            
+
         Returns:
             Formatted message dict
         """
         image_bytes = self._load_image(image_path)
         image_base64 = self._encode_image(image_bytes)
-        
+
         if self.config.provider == "openai":
             return {
                 "role": "user",
@@ -208,7 +208,7 @@ class {{ANALYSIS_CLASS_NAME}}:
                     }
                 ]
             }
-    
+
     def analyze_image(
         self,
         image_path: Union[str, Path],
@@ -216,21 +216,21 @@ class {{ANALYSIS_CLASS_NAME}}:
     ) -> ImageAnalysisResult:
         """
         Analyze an image with detailed description.
-        
+
         Args:
             image_path: Path to image file
             prompt: Custom analysis prompt (optional)
-            
+
         Returns:
             ImageAnalysisResult with analysis details
-            
+
         Example:
             >>> result = analyzer.analyze_image("photo.jpg")
             >>> print(f"Description: {result.description}")
             >>> print(f"Objects: {result.objects}")
         """
         logger.info(f"Analyzing image: {image_path}")
-        
+
         analysis_prompt = prompt or """Analyze this image in detail. Provide:
 1. A comprehensive description of what you see
 2. List all objects, people, or entities visible
@@ -239,10 +239,10 @@ class {{ANALYSIS_CLASS_NAME}}:
 5. Note any interesting details or patterns
 
 Be specific and thorough."""
-        
+
         try:
             user_message = self._prepare_image_message(image_path, analysis_prompt)
-            
+
             if self.config.provider == "openai":
                 response = self.client.chat.completions.create(
                     model=self.model,
@@ -259,13 +259,13 @@ Be specific and thorough."""
                     messages=[user_message]
                 )
                 content = response.content[0].text
-            
+
             # Parse response (simplified - can be enhanced with structured output)
             description = content
             objects = self._extract_objects(content)
             text_content = self._extract_text_content(content) if self.config.enable_ocr else None
             scene_type = self._extract_scene_type(content)
-            
+
             result = ImageAnalysisResult(
                 description=description,
                 objects=objects,
@@ -279,14 +279,14 @@ Be specific and thorough."""
                     "detail": self.config.detail
                 }
             )
-            
+
             logger.info(f"Analysis complete. Detected {len(result.objects)} objects.")
             return result
-            
+
         except Exception as e:
             logger.error(f"Error analyzing image: {e}")
             raise
-    
+
     def visual_question_answering(
         self,
         image_path: Union[str, Path],
@@ -294,14 +294,14 @@ Be specific and thorough."""
     ) -> str:
         """
         Answer a question about an image.
-        
+
         Args:
             image_path: Path to image file
             question: Question to ask about the image
-            
+
         Returns:
             Answer string
-            
+
         Example:
             >>> answer = analyzer.visual_question_answering(
             ...     "photo.jpg",
@@ -310,10 +310,10 @@ Be specific and thorough."""
             >>> print(answer)
         """
         logger.info(f"Answering question about image: {question}")
-        
+
         try:
             user_message = self._prepare_image_message(image_path, question)
-            
+
             if self.config.provider == "openai":
                 response = self.client.chat.completions.create(
                     model=self.model,
@@ -330,11 +330,11 @@ Be specific and thorough."""
                     messages=[user_message]
                 )
                 return response.content[0].text
-                
+
         except Exception as e:
             logger.error(f"Error in visual Q&A: {e}")
             raise
-    
+
     def compare_images(
         self,
         image1_path: Union[str, Path],
@@ -342,35 +342,35 @@ Be specific and thorough."""
     ) -> ImageComparisonResult:
         """
         Compare two images and identify similarities and differences.
-        
+
         Args:
             image1_path: Path to first image
             image2_path: Path to second image
-            
+
         Returns:
             ImageComparisonResult with comparison details
-            
+
         Example:
             >>> result = analyzer.compare_images("img1.jpg", "img2.jpg")
             >>> print(f"Similarity: {result.similarity_score}")
             >>> print(f"Differences: {result.differences}")
         """
         logger.info(f"Comparing images: {image1_path} vs {image2_path}")
-        
+
         comparison_prompt = """Compare these two images. Provide:
 1. A similarity score from 0.0 to 1.0
 2. List all differences between the images
 3. List common elements or similarities
 4. A detailed analysis of the comparison"""
-        
+
         try:
             # Load both images
             img1_bytes = self._load_image(image1_path)
             img2_bytes = self._load_image(image2_path)
-            
+
             img1_base64 = self._encode_image(img1_bytes)
             img2_base64 = self._encode_image(img2_bytes)
-            
+
             if self.config.provider == "openai":
                 messages = [
                     {
@@ -394,7 +394,7 @@ Be specific and thorough."""
                         ]
                     }
                 ]
-                
+
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,
@@ -430,7 +430,7 @@ Be specific and thorough."""
                         ]
                     }
                 ]
-                
+
                 response = self.client.messages.create(
                     model=self.model,
                     max_tokens=self.config.max_tokens,
@@ -438,23 +438,23 @@ Be specific and thorough."""
                     messages=messages
                 )
                 content = response.content[0].text
-            
+
             # Parse response (simplified - can use structured output)
             similarity_score = self._extract_similarity_score(content)
             differences = self._extract_differences(content)
             common_elements = self._extract_common_elements(content)
-            
+
             return ImageComparisonResult(
                 similarity_score=similarity_score,
                 differences=differences,
                 common_elements=common_elements,
                 analysis=content
             )
-            
+
         except Exception as e:
             logger.error(f"Error comparing images: {e}")
             raise
-    
+
     def _extract_objects(self, text: str) -> List[str]:
         """Extract object list from analysis text."""
         # Simplified extraction - can be enhanced with structured output
@@ -465,7 +465,7 @@ Be specific and thorough."""
                 # Extract objects (simplified)
                 pass
         return objects
-    
+
     def _extract_text_content(self, text: str) -> Optional[str]:
         """Extract OCR text content from analysis."""
         # Look for OCR section in response
@@ -473,7 +473,7 @@ Be specific and thorough."""
             # Extract text content (simplified)
             return text
         return None
-    
+
     def _extract_scene_type(self, text: str) -> Optional[str]:
         """Extract scene type from analysis."""
         scene_keywords = ["indoor", "outdoor", "landscape", "portrait", "urban", "nature"]
@@ -482,7 +482,7 @@ Be specific and thorough."""
             if keyword in text_lower:
                 return keyword
         return None
-    
+
     def _extract_similarity_score(self, text: str) -> float:
         """Extract similarity score from comparison text."""
         import re
@@ -494,7 +494,7 @@ Be specific and thorough."""
                 score = score / 100.0
             return min(1.0, max(0.0, score))
         return 0.5  # Default
-    
+
     def _extract_differences(self, text: str) -> List[str]:
         """Extract differences list from comparison text."""
         differences = []
@@ -507,7 +507,7 @@ Be specific and thorough."""
                 if line.strip().startswith("-") or line.strip()[0].isdigit():
                     differences.append(line.strip())
         return differences[:10]  # Limit to 10 differences
-    
+
     def _extract_common_elements(self, text: str) -> List[str]:
         """Extract common elements from comparison text."""
         common = []
@@ -531,22 +531,22 @@ if __name__ == "__main__":
         detail="{{DETAIL}}",
         enable_ocr={{ENABLE_OCR}}
     )
-    
+
     analyzer = {{ANALYSIS_CLASS_NAME}}(config=config)
-    
+
     # Analyze an image
     # result = analyzer.analyze_image("{{EXAMPLE_IMAGE_PATH}}")
     # print(f"Description: {result.description}")
     # print(f"Objects: {result.objects}")
     # print(f"Scene: {result.scene_type}")
-    
+
     # Visual Q&A
     # answer = analyzer.visual_question_answering(
     #     "{{EXAMPLE_IMAGE_PATH}}",
     #     "{{EXAMPLE_QUESTION}}"
     # )
     # print(f"Answer: {answer}")
-    
+
     # Compare images
     # comparison = analyzer.compare_images("{{IMAGE1_PATH}}", "{{IMAGE2_PATH}}")
     # print(f"Similarity: {comparison.similarity_score}")

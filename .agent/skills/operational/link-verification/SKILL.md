@@ -22,12 +22,12 @@ This skill provides the capability to scan the project's documentation (Markdown
 
 1. **Scan for Broken Links**:
    Use the `run_command` tool to execute the `link_checker.py` script.
-   
+
    *Check internal links only (fastest):*
    ```powershell
    python scripts/maintenance/link_checker.py
    ```
-   
+
    *Check internal and external links:*
    ```powershell
    python scripts/maintenance/link_checker.py --external

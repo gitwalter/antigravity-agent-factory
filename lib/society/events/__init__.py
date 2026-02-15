@@ -14,7 +14,11 @@ from lib.society.events.schema import (
     AxiomContext,
 )
 from lib.society.events.store import EventStore, EventQuery
-from lib.society.events.chain import HashChain, ChainValidationResult, verify_chain_integrity
+from lib.society.events.chain import (
+    HashChain,
+    ChainValidationResult,
+    verify_chain_integrity,
+)
 
 __all__ = [
     "Agent",

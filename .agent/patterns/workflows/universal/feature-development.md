@@ -4,8 +4,8 @@
 
 Comprehensive workflow for developing new features from specifications through to completion. This workflow orchestrates requirements analysis, architecture design, TDD-based implementation, code review, and documentation.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** workflow-architect
 
 > **Note:** Directory paths referenced in this workflow (knowledge/, .cursor/skills/, patterns/, etc.) are configurable via `.cursor/config/settings.json`. See [Path Configuration Guide](../../../../docs/setup/configuration.md).
@@ -31,7 +31,7 @@ This workflow is activated when:
 
 **Description:** Gather and analyze feature requirements from specifications.
 
-**Entry Criteria:** Feature request or specification reference received  
+**Entry Criteria:** Feature request or specification reference received
 **Exit Criteria:** Requirements documented and understood
 
 #### Step 1.1: Fetch Specifications
@@ -84,7 +84,7 @@ This workflow is activated when:
 
 **Description:** Design the technical architecture for the feature.
 
-**Entry Criteria:** Requirements analyzed and understood  
+**Entry Criteria:** Requirements analyzed and understood
 **Exit Criteria:** Architecture documented and approved
 
 #### Step 2.1: Ground Data Model
@@ -149,7 +149,7 @@ This workflow is activated when:
 
 **Description:** Implement the feature using TDD methodology.
 
-**Entry Criteria:** Architecture approved  
+**Entry Criteria:** Architecture approved
 **Exit Criteria:** All tests pass, code implemented
 
 #### Step 3.1: Create Test Plan
@@ -234,7 +234,7 @@ This workflow is activated when:
 
 **Description:** Review implementation for quality and correctness.
 
-**Entry Criteria:** Implementation complete with passing tests  
+**Entry Criteria:** Implementation complete with passing tests
 **Exit Criteria:** Code review approved
 
 #### Step 4.1: Invoke Code Review
@@ -263,7 +263,7 @@ This workflow is activated when:
 
 **Description:** Create comprehensive documentation for the feature.
 
-**Entry Criteria:** Code review approved  
+**Entry Criteria:** Code review approved
 **Exit Criteria:** Documentation complete
 
 #### Step 5.1: Generate Documentation
@@ -289,7 +289,7 @@ This workflow is activated when:
 
 **Description:** Integrate feature and update tracking systems.
 
-**Entry Criteria:** Documentation complete  
+**Entry Criteria:** Documentation complete
 **Exit Criteria:** Feature integrated and ticket updated
 
 #### Step 6.1: Integration Testing

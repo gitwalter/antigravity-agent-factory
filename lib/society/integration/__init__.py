@@ -14,24 +14,24 @@ Usage:
         MessageRouter,
         SocietyContext,
     )
-    
+
     # Create shared society context
     context = SocietyContext.create_default()
-    
+
     # Create bridge for an agent
     bridge = AgentSocietyBridge(
         agent_id="knowledge-manager",
         agent_type="coordinator",
         context=context,
     )
-    
+
     # Send verified message
     result = await bridge.send_message(
         target="template-generator",
         message_type="propose",
         payload={"update": "new-knowledge"},
     )
-    
+
     if result.verified:
         print(f"Message sent: {result.event_id}")
     else:

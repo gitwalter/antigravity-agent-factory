@@ -8,8 +8,8 @@ description: Comprehensive workflow for deploying .NET applications to Azure clo
 
 Comprehensive workflow for deploying .NET applications to Azure cloud services including App Service, Container Apps, and Azure Functions. This workflow covers containerization, Azure resource configuration, deployment, and monitoring setup.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-09  
+**Version:** 1.0.0
+**Created:** 2026-02-09
 **Agent:** dotnet-architect
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.

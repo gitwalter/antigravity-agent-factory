@@ -46,11 +46,14 @@ from typing import Any, Dict, List, Optional
 try:
     from jsonschema import Draft7Validator
 except ImportError:
-    print("ERROR: jsonschema package required. Install with: pip install jsonschema>=4.17.0")
+    print(
+        "ERROR: jsonschema package required. Install with: pip install jsonschema>=4.17.0"
+    )
     sys.exit(1)
 
 try:
     import yaml
+
     HAS_YAML = True
 except ImportError:
     HAS_YAML = False
@@ -82,6 +85,7 @@ SCHEMA_MAP = {
 }
 
 FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---", re.DOTALL)
+
 
 # ---------------------------------------------------------------------------
 @dataclass
@@ -129,6 +133,7 @@ class ValidationReport:
                         lines.append(f"       ... and {len(r.errors) - 5} more")
         return "\n".join(lines)
 
+
 # ---------------------------------------------------------------------------
 def parse_yaml(text: str) -> Dict[str, Any]:
     """Parse YAML text into a dictionary.
@@ -167,7 +172,9 @@ def _parse_yaml_simple(text: str) -> Dict[str, Any]:
         key = key.strip()
         value = value.strip()
         if value.startswith("[") and value.endswith("]"):
-            items = [i.strip().strip("'\"") for i in value[1:-1].split(",") if i.strip()]
+            items = [
+                i.strip().strip("'\"") for i in value[1:-1].split(",") if i.strip()
+            ]
             result[key] = items
         elif value.lower() in ("true", "false"):
             result[key] = value.lower() == "true"
@@ -192,6 +199,7 @@ def extract_frontmatter(content: str) -> Optional[Dict[str, Any]]:
         return None
     return parse_yaml(match.group(1))
 
+
 # ---------------------------------------------------------------------------
 def load_schemas() -> Dict[str, Dict[str, Any]]:
     """Load all JSON schemas from the schemas/ directory.
@@ -212,6 +220,7 @@ def load_schemas() -> Dict[str, Dict[str, Any]]:
         except Exception as exc:
             print(f"WARNING: Failed to load schema {schema_file.name}: {exc}")
     return schemas
+
 
 # ---------------------------------------------------------------------------
 def discover_agents() -> List[Path]:
@@ -259,6 +268,7 @@ def discover_registry() -> List[Path]:
     p = ARTIFACT_DIRS["registry"] / "registry.json"
     return [p] if p.exists() else []
 
+
 # ---------------------------------------------------------------------------
 def validate_data(data: Dict[str, Any], schema: Dict[str, Any]) -> List[str]:
     """Validate a data dict against a JSON schema using Draft7Validator.
@@ -272,7 +282,9 @@ def validate_data(data: Dict[str, Any], schema: Dict[str, Any]) -> List[str]:
     """
     validator = Draft7Validator(schema)
     errors: List[str] = []
-    for error in sorted(validator.iter_errors(data), key=lambda e: list(e.absolute_path)):
+    for error in sorted(
+        validator.iter_errors(data), key=lambda e: list(e.absolute_path)
+    ):
         path = ".".join(str(p) for p in error.absolute_path) or "(root)"
         errors.append(f"{path}: {error.message}")
     return errors
@@ -301,7 +313,9 @@ def validate_frontmatter_file(
 
     data = extract_frontmatter(content)
     if data is None:
-        return ValidationResult(rel, artifact_type, False, ["No YAML frontmatter found"])
+        return ValidationResult(
+            rel, artifact_type, False, ["No YAML frontmatter found"]
+        )
 
     errors = validate_data(data, schema)
     return ValidationResult(rel, artifact_type, len(errors) == 0, errors)
@@ -334,6 +348,7 @@ def validate_json_file(
     errors = validate_data(data, schema)
     return ValidationResult(rel, artifact_type, len(errors) == 0, errors)
 
+
 # ---------------------------------------------------------------------------
 def validate_all(
     types: Optional[List[str]] = None,
@@ -351,7 +366,14 @@ def validate_all(
     """
     schemas = load_schemas()
     report = ValidationReport()
-    all_types = types or ["agent", "skill", "knowledge", "blueprint", "workflow", "registry"]
+    all_types = types or [
+        "agent",
+        "skill",
+        "knowledge",
+        "blueprint",
+        "workflow",
+        "registry",
+    ]
 
     # --- Agents ---
     if "agent" in all_types:
@@ -389,7 +411,9 @@ def validate_all(
         if schema:
             files = discover_knowledge()
             if verbose:
-                print(f"\nValidating {len(files)} knowledge files against knowledge-file.schema.json ...")
+                print(
+                    f"\nValidating {len(files)} knowledge files against knowledge-file.schema.json ..."
+                )
             for path in files:
                 result = validate_json_file(path, schema, "knowledge")
                 report.results.append(result)
@@ -404,7 +428,9 @@ def validate_all(
         if schema:
             files = discover_blueprints()
             if verbose:
-                print(f"\nValidating {len(files)} blueprints against blueprint.schema.json ...")
+                print(
+                    f"\nValidating {len(files)} blueprints against blueprint.schema.json ..."
+                )
             for path in files:
                 result = validate_json_file(path, schema, "blueprint")
                 report.results.append(result)
@@ -419,7 +445,9 @@ def validate_all(
         if schema:
             files = discover_workflows()
             if verbose:
-                print(f"\nValidating {len(files)} workflows against workflow.schema.json ...")
+                print(
+                    f"\nValidating {len(files)} workflows against workflow.schema.json ..."
+                )
             for path in files:
                 result = validate_frontmatter_file(path, schema, "workflow")
                 report.results.append(result)
@@ -446,6 +474,7 @@ def validate_all(
 
     return report
 
+
 # ---------------------------------------------------------------------------
 def _rel(path: Path) -> str:
     """Return path relative to project root as a string."""
@@ -466,6 +495,7 @@ def _print_result(result: ValidationResult) -> None:
         if len(result.errors) > 3:
             print(f"         ... and {len(result.errors) - 3} more")
 
+
 # ---------------------------------------------------------------------------
 def main() -> int:
     """CLI entry point.
@@ -478,12 +508,24 @@ def main() -> int:
     )
     parser.add_argument(
         "--type",
-        choices=["agent", "skill", "knowledge", "blueprint", "workflow", "registry", "all"],
+        choices=[
+            "agent",
+            "skill",
+            "knowledge",
+            "blueprint",
+            "workflow",
+            "registry",
+            "all",
+        ],
         default="all",
         help="Artifact type to validate (default: all)",
     )
-    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose per-file output")
-    parser.add_argument("--summary", action="store_true", help="Print summary only (no per-file detail)")
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Verbose per-file output"
+    )
+    parser.add_argument(
+        "--summary", action="store_true", help="Print summary only (no per-file detail)"
+    )
     args = parser.parse_args()
 
     types = None if args.type == "all" else [args.type]

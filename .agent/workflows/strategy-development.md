@@ -8,8 +8,8 @@ description: Trading strategy development workflow from research through validat
 
 Trading strategy development workflow from research through validation. Covers hypothesis formation, entry/exit rules, position sizing, risk parameters, and strategy validation.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-10  
+**Version:** 1.0.0
+**Created:** 2026-02-10
 **Applies To:** quantitative-trading, algo-trading
 
 ## Trigger Conditions

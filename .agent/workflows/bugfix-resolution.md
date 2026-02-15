@@ -8,8 +8,8 @@ description: Systematic workflow for resolving bugs from ticket analysis through
 
 Systematic workflow for resolving bugs from ticket analysis through implementation and verification. This workflow ensures thorough root cause analysis, proper fix implementation, and comprehensive testing.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** debug-conductor
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.

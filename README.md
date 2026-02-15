@@ -490,26 +490,26 @@ flowchart TB
         A2["stack-builder"]
         A3["template-generator"]
     end
-    
+
     subgraph Skills["Skills (Procedures)"]
         S1["requirements-gathering"]
         S2["stack-configuration"]
         S3["agent-generation"]
         S4["skill-generation"]
     end
-    
+
     subgraph Knowledge["Knowledge (Data)"]
         K1["patterns/*.json"]
         K2["blueprints/*.json"]
     end
-    
+
     A1 --> S1
     A2 --> S2
     A3 --> S3
     A3 --> S4
     S1 --> K1
     S2 --> K2
-    
+
     style Agents fill:#e3f2fd
     style Skills fill:#e8f5e9
     style Knowledge fill:#fff3e0
@@ -595,11 +595,11 @@ flowchart TB
         T["templates/*"]
         CR[".agentrules"]
     end
-    
+
     A -->|"uses"| S
     S -->|"queries"| K
     CR -->|"configures"| A
-    
+
     style Antigravity fill:#e3f2fd
     style K fill:#fff3e0
 ```
@@ -886,9 +886,9 @@ MIT License
 
 ---
 
-*Antigravity Agent Factory v1.1.0*  
-*Meta-system for generating Antigravity AI agent development systems*  
-*Now with 5-layer architecture: Integrity -> Purpose -> Principles -> Methodology -> Technical*  
-*50+ MCP servers across 6 categories with starter packs and role-based recommendations*  
-*Formally verified axiom compliance with Lean 4 mathematical proofs*  
+*Antigravity Agent Factory v1.1.1*
+*Meta-system for generating Antigravity AI agent development systems*
+*Now with 5-layer architecture: Integrity -> Purpose -> Principles -> Methodology -> Technical*
+*50+ MCP servers across 6 categories with starter packs and role-based recommendations*
+*Formally verified axiom compliance with Lean 4 mathematical proofs*
 *Agent Society Verification implementation for dynamic multi-agent systems*

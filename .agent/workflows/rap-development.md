@@ -8,8 +8,8 @@ description: End-to-end workflow for developing RESTful ABAP Programming Model (
 
 End-to-end workflow for developing RESTful ABAP Programming Model (RAP) business objects in SAP S/4HANA. Covers CDS modeling, behavior definition, implementation, Fiori Elements UI, and deployment.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Applies To:** sap-rap, sap-abap
 
 ## Trigger Conditions

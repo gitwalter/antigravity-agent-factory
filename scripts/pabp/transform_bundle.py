@@ -11,6 +11,7 @@ Defaults:
 
 SDG - Love - Truth - Beauty
 """
+
 import argparse
 import sys
 import zipfile
@@ -56,11 +57,17 @@ def extract_bundle(zip_path: Path) -> Path:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Transform a PABP bundle to Antigravity artifacts")
-    parser.add_argument("--output", default=str(ROOT / "pabp_output"),
-                        help="Output directory (default: pabp_output/)")
-    parser.add_argument("--bundle", default=DEFAULT_BUNDLE_URL,
-                        help="URL or local path to bundle ZIP")
+    parser = argparse.ArgumentParser(
+        description="Transform a PABP bundle to Antigravity artifacts"
+    )
+    parser.add_argument(
+        "--output",
+        default=str(ROOT / "pabp_output"),
+        help="Output directory (default: pabp_output/)",
+    )
+    parser.add_argument(
+        "--bundle", default=DEFAULT_BUNDLE_URL, help="URL or local path to bundle ZIP"
+    )
     args = parser.parse_args()
 
     output_dir = Path(args.output).resolve()
@@ -91,8 +98,12 @@ def main():
     print(f"  Target:        {output_dir}\n")
 
     if not has_manifest or not has_components:
-        print("WARNING: This does not look like a PABP bundle (missing manifest.json or components/).")
-        print("         The client will attempt a standard platform-to-platform transfer.\n")
+        print(
+            "WARNING: This does not look like a PABP bundle (missing manifest.json or components/)."
+        )
+        print(
+            "         The client will attempt a standard platform-to-platform transfer.\n"
+        )
 
     # Transform using our PABPClient with explicit AntigravityAdapter
     adapter = AntigravityAdapter()
@@ -100,14 +111,14 @@ def main():
     result = client.pull_updates(source=bundle_root, dry_run=False)
 
     # Summary
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print(f"  Added:    {len(result.added)}")
     print(f"  Modified: {len(result.modified)}")
     print(f"  Errors:   {len(result.errors)}")
     print(f"  Audit:    {result.audit_log}")
 
     if result.errors:
-        print(f"\n  First 10 errors:")
+        print("\n  First 10 errors:")
         for e in result.errors[:10]:
             print(f"    - {e}")
 
@@ -127,7 +138,7 @@ def main():
     for k, v in sorted(type_counts.items()):
         print(f"    {k}: {v}")
 
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
 
     # Cleanup temp files
     if bundle_source.startswith(("http://", "https://")):

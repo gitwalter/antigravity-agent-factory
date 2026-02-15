@@ -56,7 +56,7 @@ spring:
 // GatewayConfig.java
 @Configuration
 public class GatewayConfig {
-    
+
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
@@ -73,7 +73,7 @@ public class GatewayConfig {
                 .uri("lb://user-service"))
             .build();
     }
-    
+
     @Bean
     public GlobalFilter customGlobalFilter() {
         return (exchange, chain) -> {
@@ -173,22 +173,22 @@ Implement circuit breaker pattern:
 // UserServiceClient.java
 @Service
 public class UserServiceClient {
-    
+
     private final RestTemplate restTemplate;
     private final CircuitBreaker circuitBreaker;
-    
+
     public UserServiceClient(RestTemplate restTemplate, CircuitBreakerRegistry circuitBreakerRegistry) {
         this.restTemplate = restTemplate;
         this.circuitBreaker = circuitBreakerRegistry.circuitBreaker("userService");
     }
-    
+
     @CircuitBreaker(name = "userService", fallbackMethod = "getUserFallback")
     public User getUser(Long id) {
-        return circuitBreaker.executeSupplier(() -> 
+        return circuitBreaker.executeSupplier(() ->
             restTemplate.getForObject("http://user-service/api/users/{id}", User.class, id)
         );
     }
-    
+
     public User getUserFallback(Long id, Exception ex) {
         return User.builder()
             .id(id)
@@ -201,7 +201,7 @@ public class UserServiceClient {
 // Resilience4jConfig.java
 @Configuration
 public class Resilience4jConfig {
-    
+
     @Bean
     public CircuitBreakerRegistry circuitBreakerRegistry() {
         CircuitBreakerConfig config = CircuitBreakerConfig.custom()
@@ -209,10 +209,10 @@ public class Resilience4jConfig {
             .waitDurationInOpenState(Duration.ofMillis(1000))
             .slidingWindowSize(10)
             .build();
-        
+
         return CircuitBreakerRegistry.of(config);
     }
-    
+
     @Bean
     public TimeLimiterRegistry timeLimiterRegistry() {
         return TimeLimiterRegistry.of(TimeLimiterConfig.custom()
@@ -249,12 +249,12 @@ management:
 // TracingConfig.java
 @Configuration
 public class TracingConfig {
-    
+
     @Bean
     public Sender sender() {
         return OkHttpSender.create("http://localhost:9411/api/v2/spans");
     }
-    
+
     @Bean
     public AsyncReporter<Span> spanReporter() {
         return AsyncReporter.create(sender());
@@ -270,17 +270,17 @@ Implement event-driven microservices:
 // OrderService.java
 @Service
 public class OrderService {
-    
+
     private final StreamBridge streamBridge;
-    
+
     public OrderService(StreamBridge streamBridge) {
         this.streamBridge = streamBridge;
     }
-    
+
     public void createOrder(Order order) {
         // Process order
         orderRepository.save(order);
-        
+
         // Publish event
         streamBridge.send("orderCreated-out-0", OrderCreatedEvent.builder()
             .orderId(order.getId())
@@ -295,11 +295,11 @@ public class OrderService {
 @SpringBootApplication
 @EnableBinding(Sink.class)
 public class NotificationService {
-    
+
     @StreamListener(Sink.INPUT)
     public void handleOrderCreated(OrderCreatedEvent event) {
         // Send notification
-        notificationService.sendEmail(event.getUserId(), 
+        notificationService.sendEmail(event.getUserId(),
             "Order " + event.getOrderId() + " created");
     }
 }

@@ -17,15 +17,15 @@ Architecture:
 
 Usage:
     from scripts.memory import EmbeddingService, MemoryStore, InductionEngine
-    
+
     # Initialize services
     embeddings = EmbeddingService()
     memory = MemoryStore()
     engine = InductionEngine(memory)
-    
+
     # Observe and propose
     proposal = engine.observe({"type": "user_correction", "content": "Use pytest"})
-    
+
     # User approves
     engine.accept_proposal(proposal.id)
 """
@@ -45,26 +45,23 @@ DEFAULT_MODEL_CACHE = "data/models"
 # Import main classes
 from scripts.memory.embedding_service import EmbeddingService, get_embedding_service
 from scripts.memory.memory_store import (
-    MemoryStore, 
-    Memory, 
+    MemoryStore,
+    Memory,
     MemoryProposal,
-    get_memory_store
+    get_memory_store,
 )
 from scripts.memory.induction_engine import (
     InductionEngine,
     ObservationEvent,
-    get_induction_engine
+    get_induction_engine,
 )
-from scripts.memory.memory_integration import (
-    MemoryIntegration,
-    get_memory_integration
-)
+from scripts.memory.memory_integration import MemoryIntegration, get_memory_integration
 
 # Re-export main classes
 __all__ = [
     # Classes
     "EmbeddingService",
-    "MemoryStore", 
+    "MemoryStore",
     "Memory",
     "MemoryProposal",
     "InductionEngine",

@@ -89,7 +89,7 @@ class MyFlow(Flow):
     @start()
     def begin(self):
         return crew.kickoff(inputs={"topic": "AI"})
-    
+
     @listen(begin)
     def process_result(self, result):
         return result.raw
@@ -166,24 +166,24 @@ class ResearchFlow(Flow):
     def gather_requirements(self):
         # First step - always runs
         return {"topic": self.state.topic}
-    
+
     @listen(gather_requirements)
     def research(self, requirements):
         # Triggered after gather_requirements
         crew = Crew(agents=[researcher], tasks=[research_task])
         return crew.kickoff(inputs=requirements)
-    
+
     @router(research)
     def evaluate_quality(self, result):
         if result.quality_score > 0.8:
             return "publish"
         return "revise"
-    
+
     @listen("publish")
     def publish_results(self, result):
         return result
-    
-    @listen("revise")  
+
+    @listen("revise")
     def revise_research(self, result):
         return self.research(result)
 

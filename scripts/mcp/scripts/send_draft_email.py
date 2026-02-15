@@ -1,18 +1,19 @@
 import os
-import sys
 import re
+
 # Import send_email from the existing script (assuming it's in the same dir)
 from send_gmail import send_email
 
 DRAFT_PATH = r"C:\Users\wpoga\.gemini\antigravity\brain\9803b5fa-661a-48fc-bc2f-20490e0a6280\draft_email_to_andreas.md"
 RECIPIENT = "andreas.graeber@gmail.com"
 
+
 def send_draft():
     if not os.path.exists(DRAFT_PATH):
         print(f"Draft file not found: {DRAFT_PATH}")
         return
 
-    with open(DRAFT_PATH, 'r', encoding='utf-8') as f:
+    with open(DRAFT_PATH, "r", encoding="utf-8") as f:
         content = f.read()
 
     # Extract Subject
@@ -36,6 +37,7 @@ def send_draft():
         print("Draft sent successfully.")
     else:
         print("Failed to send draft.")
+
 
 if __name__ == "__main__":
     send_draft()

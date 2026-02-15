@@ -44,12 +44,12 @@ async def chat_node(state: AgentState) -> AgentState:
 async def tool_node(state: AgentState) -> AgentState:
     """Execute tools based on LLM decision."""
     last_message = state["messages"][-1]
-    
+
     if hasattr(last_message, "tool_calls"):
         for tool_call in last_message.tool_calls:
             result = await execute_tool(tool_call)
             state["messages"].append(result)
-    
+
     return state
 
 async def decision_node(state: AgentState) -> AgentState:
@@ -66,15 +66,15 @@ from langgraph.graph import StateGraph, END
 def create_agent_graph() -> StateGraph:
     # Create graph with state schema
     graph = StateGraph(AgentState)
-    
+
     # Add nodes
     graph.add_node("chat", chat_node)
     graph.add_node("tools", tool_node)
     graph.add_node("decide", decision_node)
-    
+
     # Set entry point
     graph.set_entry_point("chat")
-    
+
     # Add edges
     graph.add_edge("chat", "decide")
     graph.add_conditional_edges(
@@ -87,7 +87,7 @@ def create_agent_graph() -> StateGraph:
         }
     )
     graph.add_edge("tools", "chat")
-    
+
     return graph.compile()
 ```
 
@@ -104,12 +104,12 @@ class SupervisorDecision(BaseModel):
 async def supervisor_node(state: AgentState) -> AgentState:
     """Supervisor decides which worker to call."""
     workers = ["researcher", "writer", "reviewer"]
-    
+
     prompt = f"""You are a supervisor. Available workers: {workers}
     Decide which worker should act next, or 'FINISH' if done."""
-    
+
     response = await llm.ainvoke(state["messages"] + [HumanMessage(content=prompt)])
-    
+
     # Parse decision
     next_agent = parse_decision(response.content)
     return {"next_action": next_agent}
@@ -126,13 +126,13 @@ async def writer_node(state: AgentState) -> AgentState:
 
 def create_supervisor_graph():
     graph = StateGraph(AgentState)
-    
+
     graph.add_node("supervisor", supervisor_node)
     graph.add_node("researcher", researcher_node)
     graph.add_node("writer", writer_node)
-    
+
     graph.set_entry_point("supervisor")
-    
+
     graph.add_conditional_edges(
         "supervisor",
         lambda s: s["next_action"],
@@ -142,11 +142,11 @@ def create_supervisor_graph():
             "FINISH": END,
         }
     )
-    
+
     # Workers return to supervisor
     graph.add_edge("researcher", "supervisor")
     graph.add_edge("writer", "supervisor")
-    
+
     return graph.compile()
 ```
 
@@ -163,17 +163,17 @@ app = graph.compile(checkpointer=checkpointer)
 # Add interrupt points
 def create_hitl_graph():
     graph = StateGraph(AgentState)
-    
+
     graph.add_node("propose", propose_node)
     graph.add_node("execute", execute_node)
-    
+
     # Interrupt before execution
     graph.add_node("human_review", lambda s: s)  # Passthrough
-    
+
     graph.set_entry_point("propose")
     graph.add_edge("propose", "human_review")
     graph.add_edge("human_review", "execute")
-    
+
     return graph.compile(
         checkpointer=checkpointer,
         interrupt_before=["human_review"]
@@ -182,16 +182,16 @@ def create_hitl_graph():
 # Usage with interruption
 async def run_with_approval():
     config = {"configurable": {"thread_id": "task_1"}}
-    
+
     # Run until interrupt
     result = await app.ainvoke(initial_state, config)
-    
+
     # Get proposed action and show to user
     proposed = result["proposed_action"]
-    
+
     # User approves...
     approved_state = {"approved": True, **result}
-    
+
     # Continue execution
     final = await app.ainvoke(approved_state, config)
 ```

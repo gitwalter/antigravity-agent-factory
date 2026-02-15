@@ -4,8 +4,8 @@
 
 End-to-end workflow for developing Retrieval-Augmented Generation (RAG) systems. Covers document ingestion, embedding, vector storage, retrieval optimization, and generation with evaluation.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Applies To:** python-rag-system, starter-rag
 
 ## Trigger Conditions
@@ -29,7 +29,7 @@ This workflow is activated when:
 
 **Description:** Load and preprocess documents.
 
-**Entry Criteria:** Documents available  
+**Entry Criteria:** Documents available
 **Exit Criteria:** Documents chunked
 
 #### Step 1.1: Load Documents
@@ -97,7 +97,7 @@ chunks = splitter.split_documents(documents)
 
 **Description:** Create embeddings and store in vector database.
 
-**Entry Criteria:** Documents chunked  
+**Entry Criteria:** Documents chunked
 **Exit Criteria:** Vector store populated
 
 #### Step 2.1: Select Embedding Model
@@ -160,7 +160,7 @@ vectorstore = Chroma.from_documents(
 
 **Description:** Configure and optimize retrieval.
 
-**Entry Criteria:** Vector store populated  
+**Entry Criteria:** Vector store populated
 **Exit Criteria:** Retrieval optimized
 
 #### Step 3.1: Configure Retriever
@@ -220,7 +220,7 @@ retriever = ContextualCompressionRetriever(
 
 **Description:** Build the generation component.
 
-**Entry Criteria:** Retrieval configured  
+**Entry Criteria:** Retrieval configured
 **Exit Criteria:** RAG chain complete
 
 #### Step 4.1: Create Prompt Template
@@ -290,7 +290,7 @@ rag_chain = (
 
 **Description:** Evaluate RAG system performance.
 
-**Entry Criteria:** RAG chain complete  
+**Entry Criteria:** RAG chain complete
 **Exit Criteria:** Performance validated
 
 #### Step 5.1: Create Test Set
@@ -341,7 +341,7 @@ results = evaluate(
 
 **Description:** Deploy the RAG system.
 
-**Entry Criteria:** Evaluation passed  
+**Entry Criteria:** Evaluation passed
 **Exit Criteria:** System deployed
 
 #### Step 6.1: Create API

@@ -8,8 +8,8 @@ description: Comprehensive workflow for training machine learning models from da
 
 Comprehensive workflow for training machine learning models from data preparation through hyperparameter optimization to model registry and deployment readiness.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-09  
+**Version:** 1.0.0
+**Created:** 2026-02-09
 **Agent:** ml-engineer
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.

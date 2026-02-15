@@ -67,7 +67,9 @@ def get_all_schemas() -> Dict[str, Dict[str, Any]]:
     return {ct: _load_schema(ct) for ct in COMPONENT_TYPES}
 
 
-def validate(data: Dict[str, Any], component_type: Optional[str] = None) -> Tuple[bool, List[str]]:
+def validate(
+    data: Dict[str, Any], component_type: Optional[str] = None
+) -> Tuple[bool, List[str]]:
     """Validate *data* against its PABP schema.
 
     If *component_type* is ``None`` it is inferred from ``data["$type"]``.
@@ -87,7 +89,9 @@ def validate(data: Dict[str, Any], component_type: Optional[str] = None) -> Tupl
     if component_type is None:
         component_type = data.get("$type")
         if component_type is None:
-            return False, ["Missing '$type' field and no component_type argument provided"]
+            return False, [
+                "Missing '$type' field and no component_type argument provided"
+            ]
 
     if component_type not in COMPONENT_TYPES:
         return False, [f"Unknown component type: '{component_type}'"]
@@ -125,7 +129,9 @@ def validate(data: Dict[str, Any], component_type: Optional[str] = None) -> Tupl
     return (len(errors) == 0, errors)
 
 
-def validate_strict(data: Dict[str, Any], component_type: Optional[str] = None) -> Tuple[bool, List[str]]:
+def validate_strict(
+    data: Dict[str, Any], component_type: Optional[str] = None
+) -> Tuple[bool, List[str]]:
     """Full JSON-Schema validation using the ``jsonschema`` library.
 
     Raises:
@@ -142,14 +148,18 @@ def validate_strict(data: Dict[str, Any], component_type: Optional[str] = None) 
     if component_type is None:
         component_type = data.get("$type")
         if component_type is None:
-            return False, ["Missing '$type' field and no component_type argument provided"]
+            return False, [
+                "Missing '$type' field and no component_type argument provided"
+            ]
 
     schema = _load_schema(component_type)
     errors: List[str] = []
 
     validator = jsonschema.Draft7Validator(schema)
     for error in sorted(validator.iter_errors(data), key=lambda e: list(e.path)):
-        errors.append(f"{'.'.join(str(p) for p in error.path) or '(root)'}: {error.message}")
+        errors.append(
+            f"{'.'.join(str(p) for p in error.path) or '(root)'}: {error.message}"
+        )
 
     return (len(errors) == 0, errors)
 

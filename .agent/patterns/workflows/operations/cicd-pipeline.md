@@ -4,8 +4,8 @@
 
 Comprehensive workflow for managing continuous integration and deployment pipelines. Covers build, test, security scanning, and deployment across multiple environments.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Applies To:** All stacks
 
 > **Note:** Directory paths referenced in this workflow (knowledge/, .cursor/skills/, patterns/, etc.) are configurable via `.cursor/config/settings.json`. See [Path Configuration Guide](../../../../docs/setup/configuration.md).
@@ -31,7 +31,7 @@ This workflow is activated when:
 
 **Description:** Compile code and prepare artifacts.
 
-**Entry Criteria:** Code changes committed  
+**Entry Criteria:** Code changes committed
 **Exit Criteria:** Build artifacts created
 
 #### Step 1.1: Install Dependencies
@@ -60,7 +60,7 @@ This workflow is activated when:
 
 **Description:** Execute test suites.
 
-**Entry Criteria:** Build complete  
+**Entry Criteria:** Build complete
 **Exit Criteria:** Tests passed
 
 #### Step 2.1: Unit Tests
@@ -97,7 +97,7 @@ This workflow is activated when:
 
 **Description:** Security scanning and validation.
 
-**Entry Criteria:** Tests passed  
+**Entry Criteria:** Tests passed
 **Exit Criteria:** Security verified
 
 #### Step 3.1: SAST
@@ -129,7 +129,7 @@ This workflow is activated when:
 
 **Description:** Deploy to staging environment.
 
-**Entry Criteria:** Security passed  
+**Entry Criteria:** Security passed
 **Exit Criteria:** Staging deployed
 
 #### Step 4.1: Deploy
@@ -158,7 +158,7 @@ This workflow is activated when:
 
 **Description:** Human approval for production.
 
-**Entry Criteria:** Staging verified  
+**Entry Criteria:** Staging verified
 **Exit Criteria:** Approval received
 
 #### Step 5.1: Request Approval
@@ -184,7 +184,7 @@ This workflow is activated when:
 
 **Description:** Deploy to production environment.
 
-**Entry Criteria:** Approval received  
+**Entry Criteria:** Approval received
 **Exit Criteria:** Production deployed
 
 #### Step 6.1: Production Deploy

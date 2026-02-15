@@ -58,7 +58,7 @@ response = await client.chat.completions.create(
         "type": "mcp",
         "name": "docs-langchain",
         "command": "npx", # Managed by MCP config
-        "args": [] 
+        "args": []
     }]
 )
 ```

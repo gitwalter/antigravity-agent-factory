@@ -155,28 +155,28 @@ import asyncio
 
 class FallbackChain:
     """Execute functions in order until one succeeds."""
-    
+
     def __init__(self, fallbacks: List[Callable]):
         self.fallbacks = fallbacks
-    
+
     async def execute(self, *args, **kwargs) -> Any:
         """Execute fallbacks in order."""
         last_error = None
-        
+
         for i, fallback in enumerate(self.fallbacks):
             try:
                 if asyncio.iscoroutinefunction(fallback):
                     result = await fallback(*args, **kwargs)
                 else:
                     result = fallback(*args, **kwargs)
-                
+
                 # Success - return result
                 return result
             except Exception as e:
                 last_error = e
                 logger.warning(f"Fallback {i} failed: {e}")
                 continue
-        
+
         # All fallbacks failed
         raise Exception(f"All fallbacks failed. Last error: {last_error}")
 
@@ -236,7 +236,7 @@ class CircuitState(Enum):
 
 class CircuitBreaker:
     """Circuit breaker pattern implementation."""
-    
+
     def __init__(
         self,
         failure_threshold: int = 5,
@@ -246,11 +246,11 @@ class CircuitBreaker:
         self.failure_threshold = failure_threshold
         self.timeout = timeout
         self.expected_exception = expected_exception
-        
+
         self.failure_count = 0
         self.last_failure_time: Optional[datetime] = None
         self.state = CircuitState.CLOSED
-    
+
     def call(self, func: Callable, *args, **kwargs):
         """Execute function with circuit breaker protection."""
         if self.state == CircuitState.OPEN:
@@ -262,30 +262,30 @@ class CircuitBreaker:
                     self.failure_count = 0
                 else:
                     raise Exception("Circuit breaker is OPEN")
-        
+
         # Execute function
         try:
             if asyncio.iscoroutinefunction(func):
                 result = asyncio.run(func(*args, **kwargs))
             else:
                 result = func(*args, **kwargs)
-            
+
             # Success - reset if half-open
             if self.state == CircuitState.HALF_OPEN:
                 self.state = CircuitState.CLOSED
                 self.failure_count = 0
-            
+
             return result
-        
+
         except self.expected_exception as e:
             self.failure_count += 1
             self.last_failure_time = datetime.now()
-            
+
             if self.failure_count >= self.failure_threshold:
                 self.state = CircuitState.OPEN
-            
+
             raise e
-    
+
     async def acall(self, func: Callable, *args, **kwargs):
         """Async version of call."""
         if self.state == CircuitState.OPEN:
@@ -296,26 +296,26 @@ class CircuitBreaker:
                     self.failure_count = 0
                 else:
                     raise Exception("Circuit breaker is OPEN")
-        
+
         try:
             if asyncio.iscoroutinefunction(func):
                 result = await func(*args, **kwargs)
             else:
                 result = func(*args, **kwargs)
-            
+
             if self.state == CircuitState.HALF_OPEN:
                 self.state = CircuitState.CLOSED
                 self.failure_count = 0
-            
+
             return result
-        
+
         except self.expected_exception as e:
             self.failure_count += 1
             self.last_failure_time = datetime.now()
-            
+
             if self.failure_count >= self.failure_threshold:
                 self.state = CircuitState.OPEN
-            
+
             raise e
 
 # Usage
@@ -332,7 +332,7 @@ async def protected_api_call(url: str) -> dict:
             response = await client.get(url)
             response.raise_for_status()
             return response.json()
-    
+
     return await circuit_breaker.acall(_call)
 ```
 
@@ -352,12 +352,12 @@ class DegradedResponse(BaseModel):
 
 class GracefulDegradation:
     """Implement graceful degradation patterns."""
-    
+
     async def get_user_profile(self, user_id: str) -> DegradedResponse:
         """Get user profile with graceful degradation."""
         degraded_features = []
         profile = {}
-        
+
         # Try to get full profile
         try:
             full_profile = await self._fetch_full_profile(user_id)
@@ -368,7 +368,7 @@ class GracefulDegradation:
             )
         except Exception as e:
             logger.warning(f"Full profile fetch failed: {e}")
-        
+
         # Degrade to cached profile
         try:
             cached_profile = await self._get_cached_profile(user_id)
@@ -377,7 +377,7 @@ class GracefulDegradation:
         except Exception as e:
             logger.warning(f"Cached profile fetch failed: {e}")
             degraded_features.append("cached_data")
-        
+
         # Degrade to minimal profile
         try:
             minimal_profile = await self._get_minimal_profile(user_id)
@@ -386,23 +386,23 @@ class GracefulDegradation:
             logger.error(f"Minimal profile fetch failed: {e}")
             # Return empty profile as last resort
             profile = {"user_id": user_id, "status": "degraded"}
-        
+
         return DegradedResponse(
             data=profile,
             degraded_features=degraded_features,
             full_response=False
         )
-    
+
     async def _fetch_full_profile(self, user_id: str) -> Dict:
         """Fetch full profile from primary source."""
         # Implementation
         pass
-    
+
     async def _get_cached_profile(self, user_id: str) -> Dict:
         """Get cached profile."""
         # Implementation
         pass
-    
+
     async def _get_minimal_profile(self, user_id: str) -> Dict:
         """Get minimal profile from fallback."""
         # Implementation
@@ -411,7 +411,7 @@ class GracefulDegradation:
 # Graceful degradation for LLM features
 class LLMDegradation:
     """Graceful degradation for LLM features."""
-    
+
     async def generate_response(self, prompt: str) -> str:
         """Generate response with feature degradation."""
         # Try full-featured generation
@@ -419,28 +419,28 @@ class LLMDegradation:
             return await self._full_generation(prompt)
         except Exception as e:
             logger.warning(f"Full generation failed: {e}")
-        
+
         # Degrade to simpler model
         try:
             return await self._simple_generation(prompt)
         except Exception as e:
             logger.warning(f"Simple generation failed: {e}")
-        
+
         # Degrade to template-based response
         return self._template_response(prompt)
-    
+
     async def _full_generation(self, prompt: str) -> str:
         """Full-featured generation."""
         llm = ChatOpenAI(model="gpt-4", temperature=0.7)
         response = await llm.ainvoke(prompt)
         return response.content
-    
+
     async def _simple_generation(self, prompt: str) -> str:
         """Simpler model generation."""
         llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7)
         response = await llm.ainvoke(prompt)
         return response.content
-    
+
     def _template_response(self, prompt: str) -> str:
         """Template-based fallback."""
         return f"I apologize, but I'm experiencing technical difficulties. Your query was: {prompt[:50]}..."
@@ -455,12 +455,12 @@ from typing import Callable, List
 
 class CompensationAction:
     """Represents a compensation action for rollback."""
-    
+
     def __init__(self, action: Callable, *args, **kwargs):
         self.action = action
         self.args = args
         self.kwargs = kwargs
-    
+
     async def execute(self):
         """Execute compensation."""
         if asyncio.iscoroutinefunction(self.action):
@@ -470,21 +470,21 @@ class CompensationAction:
 
 class TransactionalOperation:
     """Transactional operation with compensation."""
-    
+
     def __init__(self):
         self.actions: List[Callable] = []
         self.compensations: List[CompensationAction] = []
-    
+
     def add_action(self, action: Callable, compensation: Callable = None, *args, **kwargs):
         """Add action with optional compensation."""
         self.actions.append(action)
         if compensation:
             self.compensations.append(CompensationAction(compensation, *args, **kwargs))
-    
+
     async def execute(self) -> bool:
         """Execute all actions, compensating on failure."""
         executed = []
-        
+
         try:
             for i, action in enumerate(self.actions):
                 if asyncio.iscoroutinefunction(action):
@@ -492,9 +492,9 @@ class TransactionalOperation:
                 else:
                     action()
                 executed.append(i)
-            
+
             return True
-        
+
         except Exception as e:
             logger.error(f"Operation failed: {e}")
             # Compensate in reverse order
@@ -504,7 +504,7 @@ class TransactionalOperation:
                         await self.compensations[i].execute()
                     except Exception as comp_error:
                         logger.error(f"Compensation failed: {comp_error}")
-            
+
             return False
 
 # Usage

@@ -70,7 +70,7 @@ For each assumption, explicitly check:
 Before proceeding:
 
 ```
-"I'll proceed with [brief summary]. 
+"I'll proceed with [brief summary].
 If this doesn't match what you want, please stop me now."
 ```
 

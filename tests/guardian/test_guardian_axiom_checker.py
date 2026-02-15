@@ -18,7 +18,6 @@ from guardian.axiom_checker import (
     check_content_for_claims,
     validate_operation,
     CheckResult,
-    AxiomViolation,
 )
 
 
@@ -26,19 +25,22 @@ class TestCheckCommand:
     """Tests for shell command checking."""
 
     # Level 4: Critical harm - must be blocked
-    @pytest.mark.parametrize("command,description", [
-        ("rm -rf /", "Root directory deletion"),
-        ("rm -rf ~", "Home directory deletion"),
-        ("rm -rf /home/user", "User directory deletion"),
-        ("rmdir /s /q C:\\", "Windows recursive deletion"),
-        ("Remove-Item -Recurse -Force C:\\", "PowerShell recursive deletion"),
-        ("format C:", "Disk format"),
-        ("dd if=/dev/zero of=/dev/sda", "Direct disk write"),
-        ("DROP DATABASE production", "Database drop"),
-        ("DELETE FROM users", "DELETE without WHERE"),
-        ("TRUNCATE TABLE orders", "Table truncation"),
-        ("kill -9 -1", "Kill all processes"),
-    ])
+    @pytest.mark.parametrize(
+        "command,description",
+        [
+            ("rm -rf /", "Root directory deletion"),
+            ("rm -rf ~", "Home directory deletion"),
+            ("rm -rf /home/user", "User directory deletion"),
+            ("rmdir /s /q C:\\", "Windows recursive deletion"),
+            ("Remove-Item -Recurse -Force C:\\", "PowerShell recursive deletion"),
+            ("format C:", "Disk format"),
+            ("dd if=/dev/zero of=/dev/sda", "Direct disk write"),
+            ("DROP DATABASE production", "Database drop"),
+            ("DELETE FROM users", "DELETE without WHERE"),
+            ("TRUNCATE TABLE orders", "Table truncation"),
+            ("kill -9 -1", "Kill all processes"),
+        ],
+    )
     def test_level_4_critical_commands(self, command, description):
         """Critical commands should trigger Level 4 (Protect)."""
         result = check_command(command)
@@ -47,14 +49,17 @@ class TestCheckCommand:
         assert result.axiom == "A4", f"{description} violates A4 (Non-Harm)"
 
     # Level 2-3: Caution needed - ask user
-    @pytest.mark.parametrize("command,expected_level", [
-        ("cat .env", 2),
-        ("cat .env.local", 2),
-        ("cat secrets.yml", 2),
-        ("cat credentials.json", 2),
-        ("vim ~/.ssh/id_rsa", 2),
-        ("cat ~/.aws/credentials", 2),
-    ])
+    @pytest.mark.parametrize(
+        "command,expected_level",
+        [
+            ("cat .env", 2),
+            ("cat .env.local", 2),
+            ("cat secrets.yml", 2),
+            ("cat credentials.json", 2),
+            ("vim ~/.ssh/id_rsa", 2),
+            ("cat ~/.aws/credentials", 2),
+        ],
+    )
     def test_sensitive_file_access(self, command, expected_level):
         """Access to sensitive files should trigger pause."""
         result = check_command(command)
@@ -62,17 +67,20 @@ class TestCheckCommand:
         assert result.level >= 2, f"Command '{command}' should be at least Level 2"
 
     # Level 0: Safe commands - no intervention
-    @pytest.mark.parametrize("command", [
-        "ls -la",
-        "pwd",
-        "echo 'hello'",
-        "git status",
-        "python --version",
-        "npm install",
-        "cat README.md",
-        "mkdir new_folder",
-        "cp file1.txt file2.txt",
-    ])
+    @pytest.mark.parametrize(
+        "command",
+        [
+            "ls -la",
+            "pwd",
+            "echo 'hello'",
+            "git status",
+            "python --version",
+            "npm install",
+            "cat README.md",
+            "mkdir new_folder",
+            "cp file1.txt file2.txt",
+        ],
+    )
     def test_safe_commands(self, command):
         """Safe commands should pass without intervention."""
         result = check_command(command)
@@ -83,13 +91,16 @@ class TestCheckCommand:
 class TestCheckFileOperation:
     """Tests for file operation checking."""
 
-    @pytest.mark.parametrize("path", [
-        "/etc/passwd",
-        "/etc/shadow",
-        "/usr/bin/python",
-        "C:\\Windows\\System32\\config",
-        "C:\\Program Files\\important.exe",
-    ])
+    @pytest.mark.parametrize(
+        "path",
+        [
+            "/etc/passwd",
+            "/etc/shadow",
+            "/usr/bin/python",
+            "C:\\Windows\\System32\\config",
+            "C:\\Program Files\\important.exe",
+        ],
+    )
     def test_critical_path_deletion(self, path):
         """Deletion of critical system paths should be blocked."""
         result = check_file_operation("delete", path)
@@ -98,13 +109,16 @@ class TestCheckFileOperation:
         if not result.passed:
             assert result.level >= 3, f"Deleting {path} should be high severity"
 
-    @pytest.mark.parametrize("path", [
-        ".env",
-        ".env.local",
-        ".env.production",
-        "secrets.yaml",
-        "credentials.json",
-    ])
+    @pytest.mark.parametrize(
+        "path",
+        [
+            ".env",
+            ".env.local",
+            ".env.production",
+            "secrets.yaml",
+            "credentials.json",
+        ],
+    )
     def test_sensitive_file_deletion(self, path):
         """Deletion of sensitive files should require confirmation."""
         result = check_file_operation("delete", path)
@@ -115,7 +129,7 @@ class TestCheckFileOperation:
         """Normal file operations should pass."""
         result = check_file_operation("write", "src/main.py")
         assert result.passed, "Writing to normal file should pass"
-        
+
         result = check_file_operation("delete", "temp_file.txt")
         assert result.passed, "Deleting normal file should pass"
 
@@ -123,14 +137,17 @@ class TestCheckFileOperation:
 class TestCheckContentForClaims:
     """Tests for content claim checking (A1 - Verifiability)."""
 
-    @pytest.mark.parametrize("content,should_flag", [
-        ("This will always work", True),  # Absolute claim
-        ("This definitely solves the problem", True),  # Absolute claim
-        ("According to John Smith, this is correct", True),  # External reference
-        ("This improves performance by 50%", True),  # Statistical claim
-        ("This function returns a value", False),  # Normal statement
-        ("The code handles errors", False),  # Normal statement
-    ])
+    @pytest.mark.parametrize(
+        "content,should_flag",
+        [
+            ("This will always work", True),  # Absolute claim
+            ("This definitely solves the problem", True),  # Absolute claim
+            ("According to John Smith, this is correct", True),  # External reference
+            ("This improves performance by 50%", True),  # Statistical claim
+            ("This function returns a value", False),  # Normal statement
+            ("The code handles errors", False),  # Normal statement
+        ],
+    )
     def test_claim_detection(self, content, should_flag):
         """Claims should be detected for verification."""
         result = check_content_for_claims(content)

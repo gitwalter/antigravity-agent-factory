@@ -409,29 +409,29 @@ from {MODULE_PATH}.repository import {REPOSITORY_NAME}
 
 class {CLASS_NAME}:
     """Service for managing {ENTITY_NAME} operations."""
-    
+
     def __init__(self, repository: {REPOSITORY_NAME}):
         """Initialize the service.
-        
+
         Args:
             repository: Repository for data access.
         """
         self._repository = repository
-    
+
     def get_by_id(self, id: int) -> Optional[{MODEL_NAME}]:
         """Get {ENTITY_NAME} by ID.
-        
+
         Args:
             id: The {ENTITY_NAME} ID.
-            
+
         Returns:
             The {ENTITY_NAME} if found, None otherwise.
         """
         return self._repository.get(id)
-    
+
     def get_all(self) -> List[{MODEL_NAME}]:
         """Get all {ENTITY_NAME}s.
-        
+
         Returns:
             List of all {ENTITY_NAME}s.
         """
@@ -566,4 +566,3 @@ Check that:
 ---
 
 For more details, see the main [README.md](../../mcp/servers/google-contacts/README.md).
-

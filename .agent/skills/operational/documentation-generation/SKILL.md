@@ -26,10 +26,10 @@ from typing import Any
 
 def parse_module(filepath: str) -> dict[str, Any]:
     """Parse module and extract classes, functions, docstrings.
-    
+
     Args:
         filepath: Path to Python file.
-        
+
     Returns:
         Dict with functions, classes, and docstrings.
     """
@@ -59,10 +59,10 @@ Extract and format docstrings:
 ```python
 def extract_docstring(obj: Any) -> str:
     """Extract docstring from function or class.
-    
+
     Args:
         obj: Callable or class to inspect.
-        
+
     Returns:
         Docstring text or empty string.
     """
@@ -101,11 +101,11 @@ Create simple ASCII architecture diagrams:
 ```python
 def create_module_diagram(parsed: dict[str, Any], module_name: str) -> str:
     """Generate simple module dependency diagram.
-    
+
     Args:
         parsed: Output from parse_module.
         module_name: Name of module.
-        
+
     Returns:
         ASCII diagram string.
     """

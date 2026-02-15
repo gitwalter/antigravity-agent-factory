@@ -8,8 +8,8 @@ description: Automated quality gate workflow that enforces code quality standard
 
 Automated quality gate workflow that enforces code quality standards before merge. Runs comprehensive checks including linting, testing, coverage, security scanning, and code review to ensure only high-quality code enters the codebase.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** code-reviewer
 
 ## Trigger Conditions

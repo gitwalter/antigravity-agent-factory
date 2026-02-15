@@ -4,8 +4,8 @@
 
 Comprehensive security audit workflow that systematically reviews code for vulnerabilities, checks dependencies, validates authentication/authorization, and ensures compliance with security best practices.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** security-auditor
 
 ## Trigger Conditions
@@ -29,7 +29,7 @@ This workflow is activated when:
 
 **Description:** Define the scope and focus of the security audit.
 
-**Entry Criteria:** Audit request received  
+**Entry Criteria:** Audit request received
 **Exit Criteria:** Scope clearly defined
 
 #### Step 1.1: Identify Audit Scope
@@ -82,7 +82,7 @@ This workflow is activated when:
 
 **Description:** Detect exposed secrets and credentials.
 
-**Entry Criteria:** Scope defined  
+**Entry Criteria:** Scope defined
 **Exit Criteria:** No secrets in code
 
 #### Step 2.1: Scan for Secrets
@@ -134,7 +134,7 @@ This workflow is activated when:
 
 **Description:** Review authentication mechanisms.
 
-**Entry Criteria:** Secret scanning complete  
+**Entry Criteria:** Secret scanning complete
 **Exit Criteria:** Auth mechanisms verified
 
 #### Step 3.1: Review Authentication Logic
@@ -186,7 +186,7 @@ This workflow is activated when:
 
 **Description:** Review authorization and access control.
 
-**Entry Criteria:** Authentication reviewed  
+**Entry Criteria:** Authentication reviewed
 **Exit Criteria:** Authorization verified
 
 #### Step 4.1: Review Access Control
@@ -236,7 +236,7 @@ This workflow is activated when:
 
 **Description:** Review input handling for injection vulnerabilities.
 
-**Entry Criteria:** Authorization reviewed  
+**Entry Criteria:** Authorization reviewed
 **Exit Criteria:** Input handling verified
 
 #### Step 5.1: Check Injection Vulnerabilities
@@ -302,7 +302,7 @@ This workflow is activated when:
 
 **Description:** Audit third-party dependencies for vulnerabilities.
 
-**Entry Criteria:** Input validation complete  
+**Entry Criteria:** Input validation complete
 **Exit Criteria:** Dependencies verified
 
 #### Step 6.1: Scan Dependencies
@@ -352,7 +352,7 @@ This workflow is activated when:
 
 **Description:** Review HTTP security headers.
 
-**Entry Criteria:** Dependencies audited  
+**Entry Criteria:** Dependencies audited
 **Exit Criteria:** Headers configured properly
 
 #### Step 7.1: Check Response Headers
@@ -386,7 +386,7 @@ This workflow is activated when:
 
 **Description:** Compile findings into security report.
 
-**Entry Criteria:** All audits complete  
+**Entry Criteria:** All audits complete
 **Exit Criteria:** Report generated
 
 #### Step 8.1: Compile Security Report
@@ -517,8 +517,8 @@ This workflow is activated when:
 
 ### SEC-001: SQL Injection in Login
 
-**Severity:** Critical  
-**Category:** Injection  
+**Severity:** Critical
+**Category:** Injection
 **Location:** `auth/login.py:45`
 
 **Description:**

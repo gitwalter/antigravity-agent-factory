@@ -1,19 +1,19 @@
 /**
  * ${SCRIPT_NAME} - JSON Builder
- * 
+ *
  * Purpose: ${SCRIPT_PURPOSE}
  * Author: ${AUTHOR}
  * Created: ${DATE}
- * 
+ *
  * Input:  ${INPUT_FORMAT} (e.g., XML, properties, or structured data)
  * Output: JSON string
- * 
+ *
  * JSON Structure Generated:
  *   ${JSON_STRUCTURE_DESCRIPTION}
- * 
+ *
  * Properties Used:
  *   - ${PROPERTY_NAME}: ${PROPERTY_DESCRIPTION}
- * 
+ *
  * Notes:
  *   - Uses JsonBuilder for JSON generation
  *   - Handles nested objects and arrays
@@ -25,43 +25,43 @@ import groovy.json.JsonOutput
 
 def Message processData(Message message) {
     def messageLog = messageLogFactory.getMessageLog(message)
-    
+
     try {
         // Get input data
         def inputBody = message.getBody(String)
         messageLog.addAttachmentAsString('InputData', inputBody, 'text/plain')
-        
+
         // =====================================================
         // TODO: Parse input data if needed
         // =====================================================
-        
+
         // Option 1: Parse XML input
         // import groovy.xml.XmlSlurper
         // def data = new XmlSlurper().parseText(inputBody)
-        
+
         // Option 2: Parse JSON input
         // import groovy.json.JsonSlurper
         // def data = new JsonSlurper().parseText(inputBody)
-        
+
         // Option 3: Read from properties
         // def data = [
         //     id: message.getProperty('Id'),
         //     name: message.getProperty('Name')
         // ]
-        
+
         // For this template, assume data is available
         def data = parseInputData(inputBody, message)
-        
+
         // =====================================================
         // Build JSON using JsonBuilder
         // =====================================================
-        
+
         def builder = new JsonBuilder()
-        
+
         // =====================================================
         // TODO: Build JSON structure
         // =====================================================
-        
+
         // Example: Simple JSON structure
         /*
         builder {
@@ -70,7 +70,7 @@ def Message processData(Message message) {
             date new Date().format("yyyy-MM-dd")
         }
         */
-        
+
         // Example: JSON with nested objects
         /*
         builder {
@@ -88,7 +88,7 @@ def Message processData(Message message) {
             }
         }
         */
-        
+
         // Example: JSON with conditional fields
         /*
         builder {
@@ -100,7 +100,7 @@ def Message processData(Message message) {
             items data.items ?: []
         }
         */
-        
+
         // Example: Complex nested structure
         /*
         builder {
@@ -124,40 +124,40 @@ def Message processData(Message message) {
             } ?: []
         }
         */
-        
+
         // Build your JSON structure
         buildJsonStructure(builder, data)
-        
+
         // =====================================================
-        
+
         // Get JSON string
         def jsonOutput = builder.toString()
-        
+
         // Option: Pretty print for readability (remove in production for smaller size)
         // jsonOutput = JsonOutput.prettyPrint(jsonOutput)
-        
+
         // Set output
         message.setBody(jsonOutput)
         messageLog.addAttachmentAsString('OutputJSON', jsonOutput, 'application/json')
-        
+
         // Set content type header
         message.setHeader('Content-Type', 'application/json; charset=UTF-8')
-        
+
     } catch (Exception e) {
-        messageLog.addAttachmentAsString('BuildError', 
+        messageLog.addAttachmentAsString('BuildError',
             "JSON building error: ${e.message}\n" +
-            "Input data:\n${message.getBody(String)}", 
+            "Input data:\n${message.getBody(String)}",
             'text/plain')
-        
+
         message.setProperty('ErrorMessage', e.message)
         message.setProperty('ErrorScript', '${SCRIPT_NAME}')
         message.setProperty('ErrorTimestamp', new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ"))
         message.setProperty('SAP_ErrorModelStepID', '${SCRIPT_NAME}')
         message.setProperty('SAP_ErrorText', "JSON building failed: ${e.message}")
-        
+
         throw e
     }
-    
+
     return message
 }
 
@@ -167,7 +167,7 @@ def Message processData(Message message) {
  */
 def parseInputData(String inputBody, Message message) {
     // TODO: Implement parsing logic based on your input format
-    
+
     // Example: Parse XML
     /*
     import groovy.xml.XmlSlurper
@@ -183,7 +183,7 @@ def parseInputData(String inputBody, Message message) {
         }
     ]
     */
-    
+
     // Example: Read from properties
     /*
     return [
@@ -192,7 +192,7 @@ def parseInputData(String inputBody, Message message) {
         items: message.getProperty('Items')?.split(',').collect { it.trim() }
     ]
     */
-    
+
     // Placeholder
     return [data: inputBody]
 }
@@ -222,7 +222,7 @@ def buildJsonStructure(JsonBuilder builder, data) {
         }
     }
     */
-    
+
     // Placeholder
     builder {
         data data.toString()

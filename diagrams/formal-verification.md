@@ -17,28 +17,28 @@ The complete structure of the formal verification system in Lean 4:
 flowchart TB
     subgraph ProofFiles["Proof File Structure"]
         AX["Axioms.lean<br/>A0-A5 Definitions"]
-        
+
         subgraph Guardian["Guardian/"]
             GS["States.lean<br/>State Machine"]
             GT["Transitions.lean<br/>Transition Proofs"]
             GSF["Safety.lean<br/>Safety Properties"]
             GI["Invariants.lean<br/>Inductive Invariants"]
         end
-        
+
         subgraph Memory["Memory/"]
             MT["Types.lean<br/>Memory Categories"]
             MC["Consent.lean<br/>User Consent Proofs"]
         end
-        
+
         subgraph Layers["Layers/"]
             LI["Immutability.lean<br/>Layer Protection"]
         end
-        
+
         subgraph Project["Project/"]
             PT["Templates.lean<br/>Project Proofs"]
         end
     end
-    
+
     AX --> GS
     AX --> MT
     AX --> LI
@@ -58,7 +58,7 @@ flowchart TB
         TR["Trust Structure<br/>lovePresent + truthPresent + time"]
         FV --> TR
     end
-    
+
     subgraph Derived["Derived Axioms"]
         A1["A1: Transparency<br/>All actions traceable to rules"]
         A2["A2: User Primacy<br/>Explicit intent wins"]
@@ -66,13 +66,13 @@ flowchart TB
         A4["A4: Non-Harm<br/>Irreversible requires consent"]
         A5["A5: Consistency<br/>No contradictions"]
     end
-    
+
     A0 --> A1
     A0 --> A2
     A0 --> A3
     A0 --> A4
     A0 --> A5
-    
+
     subgraph Predicates["Satisfaction Predicates"]
         P1["satisfiesA1: traceComplete = true"]
         P2["satisfiesA2: explicit > inferred"]
@@ -80,7 +80,7 @@ flowchart TB
         P4["satisfiesA4: irreversible → consent"]
         P5["satisfiesA5: isConsistent = true"]
     end
-    
+
     A1 --> P1
     A2 --> P2
     A3 --> P3
@@ -99,14 +99,14 @@ flowchart TB
         L1["Layer 1: Purpose<br/>precedence: 1<br/>isImmutable: true"]
         L2["Layer 2: Principles<br/>precedence: 2<br/>isImmutable: true"]
     end
-    
+
     subgraph Mutable["Mutable Layers (Configurable)"]
         L3["Layer 3: Methodology<br/>precedence: 3<br/>isImmutable: false"]
         L4["Layer 4: Technical<br/>precedence: 4<br/>isImmutable: false"]
     end
-    
+
     L0 -->|derives| L1 -->|derives| L2 -->|configures| L3 -->|implements| L4
-    
+
     subgraph Proofs["Layer Protection Theorems"]
         T0["layer0_modifications_blocked"]
         T1["layer1_modifications_blocked"]
@@ -114,7 +114,7 @@ flowchart TB
         T3["layer3_allows_mutations"]
         T4["layer4_allows_mutations"]
     end
-    
+
     L0 -.-> T0
     L1 -.-> T1
     L2 -.-> T2
@@ -133,18 +133,18 @@ flowchart TB
         PRES["Preservation Proof<br/>If holds before transition,<br/>holds after"]
         IMPL["Implication Proof<br/>Invariant implies<br/>desired property"]
     end
-    
+
     INIT --> INDUCT["Inductive Invariant"]
     PRES --> INDUCT
     INDUCT --> IMPL
     IMPL --> GUARANTEE["Mathematical Guarantee<br/>Property holds for ALL<br/>reachable states"]
-    
+
     subgraph Example["Example: State Preservation"]
         E1["Initial: statePreserved = true"]
         E2["Preserved: escalation → still preserved"]
         E3["Implies: User work never lost"]
     end
-    
+
     E1 -.-> INIT
     E2 -.-> PRES
     E3 -.-> IMPL
@@ -162,7 +162,7 @@ flowchart LR
         ACT[Action]
         RULE[Rule]
     end
-    
+
     subgraph Axioms["Axiom Definitions"]
         A1[TransparencyProperty]
         A2[Intent + IntentType]
@@ -170,7 +170,7 @@ flowchart LR
         A4[HarmAssessment]
         A5[RuleSet]
     end
-    
+
     subgraph Theorems["Key Theorems"]
         T1[explicit_wins]
         T2[irreversible_requires_consent]
@@ -178,11 +178,11 @@ flowchart LR
         T4[consent_always_maintained]
         T5[layer_protection_holds]
     end
-    
+
     FV --> A1 & A2 & A3 & A4 & A5
     ACT --> A1
     RULE --> A1 & A3 & A5
-    
+
     A2 --> T1
     A4 --> T2
     A1 & A2 & A3 & A4 & A5 --> T3
@@ -204,9 +204,9 @@ flowchart TB
         HA["harmAssessment: HarmAssessment"]
         RS["ruleSet: RuleSet"]
     end
-    
+
     AC --> TP & UI & DV & HA & RS
-    
+
     subgraph Checks["Individual Checks"]
         C1["satisfiesA1(transparency)"]
         C2["satisfiesA2(userIntent, userIntent)"]
@@ -214,17 +214,17 @@ flowchart TB
         C4["satisfiesA4(harmAssessment)"]
         C5["satisfiesA5(ruleSet)"]
     end
-    
+
     TP --> C1
     UI --> C2
     DV --> C3
     HA --> C4
     RS --> C5
-    
+
     subgraph Result["Compliance Result"]
         COMPLIANT["isAxiomCompliant<br/>C1 ∧ C2 ∧ C3 ∧ C4 ∧ C5"]
     end
-    
+
     C1 & C2 & C3 & C4 & C5 --> COMPLIANT
 ```
 
@@ -238,27 +238,27 @@ flowchart LR
         FP["Lean 4 Proofs<br/>Verified Axioms"]
         FA["Attestation<br/>GPG/Sigstore Signed"]
     end
-    
+
     subgraph Generated["Generated Project"]
         GP["Inherits Proofs<br/>Via templates"]
         GE["Can Extend<br/>Project-specific theorems"]
     end
-    
+
     subgraph Team["Team Customization"]
         TE["Extends proofs<br/>Domain-specific"]
         TV["Validates<br/>Against inherited axioms"]
     end
-    
+
     subgraph Public["Public Verification"]
         PV["Anyone can verify<br/>Lean 4 reproducible"]
         PI["IPFS Attestation<br/>Decentralized proof"]
     end
-    
+
     FP --> FA --> GP --> GE
     GE --> TE --> TV
     FA --> PV
     FA --> PI
-    
+
     FP -.->|"Proof inheritance"| GP
     TV -.->|"Must align with"| FP
 ```
@@ -277,18 +277,18 @@ flowchart TB
         CP5["Basic safety properties"]
         CP6["Initial state well-formedness"]
     end
-    
+
     subgraph Partial["Proof Holes (sorry)"]
         PH1["Complex case analyses"]
         PH2["List reasoning lemmas"]
         PH3["Operational state matching"]
         PH4["Some transition preservation"]
     end
-    
+
     subgraph Note["Status Note"]
         N["Proof structure is SOUND<br/>sorry proofs marked for<br/>incremental completion"]
     end
-    
+
     Complete --> N
     Partial --> N
 ```
@@ -304,11 +304,11 @@ sequenceDiagram
     participant CI as GitHub Actions
     participant Lean as Lean 4 Compiler
     participant Att as Attestation
-    
+
     Dev->>GH: Push commit/PR
     GH->>CI: Trigger workflow
     CI->>Lean: Run lake build
-    
+
     alt Proofs Compile
         Lean-->>CI: Success
         CI->>Att: Generate attestation
@@ -333,20 +333,20 @@ flowchart TB
         CA["Case Analysis<br/>Exhaustive pattern matching"]
         SI["Structural Induction<br/>Induction on data structure"]
     end
-    
+
     subgraph Application["Application in Factory"]
         DT --> A1["ResponseLevel.toNat : ResponseLevel → Nat"]
         IP --> A2["initialState_wellFormed proof"]
         CA --> A3["Pattern match on HarmCategory"]
         SI --> A4["List.all for RuleSet consistency"]
     end
-    
+
     subgraph Guarantee["What This Guarantees"]
         G1["Compile-time verification"]
         G2["Properties hold for ALL states"]
         G3["No runtime verification needed"]
         G4["Mathematical certainty"]
     end
-    
+
     A1 & A2 & A3 & A4 --> G1 & G2 & G3 & G4
 ```

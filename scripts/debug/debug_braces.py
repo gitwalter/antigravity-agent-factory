@@ -1,5 +1,6 @@
 from pathlib import Path
 
+
 def check_file(path):
     print(f"Checking {path}")
     content = Path(path).read_text(encoding="utf-8")
@@ -10,7 +11,7 @@ def check_file(path):
         o = line.count("{{")
         c = line.count("}}")
         if o != c:
-            print(f"Line {i+1}: {{={o}, }}={c} -> {line.strip()}")
+            print(f"Line {i + 1}: {{={o}, }}={c} -> {line.strip()}")
         total_open += o
         total_close += c
     print(f"Total: {{={total_open}, }}={total_close}")
@@ -20,7 +21,10 @@ def check_file(path):
         print("Balanced.")
     print("-" * 20)
 
-base = Path("d:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory/.agent/templates/ai/graphs")
+
+base = Path(
+    "d:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory/.agent/templates/ai/graphs"
+)
 check_file(base / "simple_graph.py.j2")
 check_file(base / "hitl_graph.py.j2")
 check_file(base / "supervisor_graph.py.j2")

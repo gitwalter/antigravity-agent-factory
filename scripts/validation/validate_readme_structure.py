@@ -27,43 +27,43 @@ SCAN_CONFIG = {
         "dir": ".agent/agents",
         "pattern": "*.md",
         "recursive": True,
-        "readme_pattern": r"\((\d+)(\+)? agents?\)"
+        "readme_pattern": r"\((\d+)(\+)? agents?\)",
     },
     "skills": {
         "dir": ".agent/skills",
         "count_method": "subdirs_with_file",
         "sentinel": "SKILL.md",
         "recursive": True,
-        "readme_pattern": r"\((\d+)(\+)? skills?\)"
+        "readme_pattern": r"\((\d+)(\+)? skills?\)",
     },
     "blueprints": {
         "dir": ".agent/blueprints",
         "count_method": "subdirs_with_file",
         "sentinel": "blueprint.json",
-        "readme_pattern": r"\((\d+)(\+)? blueprints?\)"
+        "readme_pattern": r"\((\d+)(\+)? blueprints?\)",
     },
     "knowledge": {
         "dir": ".agent/knowledge",
         "pattern": "*.json",
-        "readme_pattern": r"\((\d+)(\+)? (?:JSON )?files?\)"
+        "readme_pattern": r"\((\d+)(\+)? (?:JSON )?files?\)",
     },
     "patterns": {
         "dir": ".agent/patterns",
         "pattern": "*.json",
         "recursive": True,
-        "readme_pattern": r"\((\d+)(\+)? (?:patterns|files?)\)"
+        "readme_pattern": r"\((\d+)(\+)? (?:patterns|files?)\)",
     },
     "templates": {
         "dir": ".agent/templates",
         "pattern": "*",
         "recursive": True,
-        "readme_pattern": r"\((\d+)(\+)? (?:templates|files?)\)"
+        "readme_pattern": r"\((\d+)(\+)? (?:templates|files?)\)",
     },
     "tests": {
         "dir": "tests",
         "pattern": "test_*.py",
         "readme_pattern": r"\((\d+)(\+)? tests?\)",
-        "recursive": True
+        "recursive": True,
     },
 }
 
@@ -71,15 +71,20 @@ SCAN_CONFIG = {
 class StructureValidator:
     """
     Validates README.md structure documentation against actual filesystem.
-    
+
     Scans configured directories and compares counts against patterns
     found in README.md.
     """
-    
-    def __init__(self, root_dir: Optional[Path] = None, readme_path: Optional[Path] = None, scan_config: Optional[Dict] = None):
+
+    def __init__(
+        self,
+        root_dir: Optional[Path] = None,
+        readme_path: Optional[Path] = None,
+        scan_config: Optional[Dict] = None,
+    ):
         """
         Initialize validator.
-        
+
         Args:
             root_dir: Project root directory
             readme_path: Path to README.md
@@ -89,20 +94,31 @@ class StructureValidator:
         self.root_path = self.root_dir  # Alias for test compatibility
         self.readme_path = (readme_path or (self.root_dir / "README.md")).resolve()
         self.scan_config = scan_config or SCAN_CONFIG
-        
+
     def _should_ignore(self, path: Path) -> bool:
         """Check if path should be ignored (e.g., __pycache__, .pyc)."""
-        ignore_names = {"__pycache__", ".git", ".pytest_cache", "node_modules", "venv", ".venv"}
+        ignore_names = {
+            "__pycache__",
+            ".git",
+            ".pytest_cache",
+            "node_modules",
+            "venv",
+            ".venv",
+        }
         ignore_exts = {".pyc", ".pyo", ".pyd"}
-        return (any(part in ignore_names for part in path.parts) or 
-                path.suffix in ignore_exts or 
-                (path.name.startswith(".") and path.name != ".agent"))
+        return (
+            any(part in ignore_names for part in path.parts)
+            or path.suffix in ignore_exts
+            or (path.name.startswith(".") and path.name != ".agent")
+        )
 
-    def _count_files_by_extension(self, directory: Path, extension: str, recursive: bool = True) -> int:
+    def _count_files_by_extension(
+        self, directory: Path, extension: str, recursive: bool = True
+    ) -> int:
         """Internal helper to count files by extension, matching test expectations."""
         if not directory.exists():
             return 0
-        
+
         count = 0
         method = directory.rglob if recursive else directory.glob
         # Use *extension but extension might be .json
@@ -119,7 +135,11 @@ class StructureValidator:
         agents_dir = self.root_dir / config["dir"]
         if not agents_dir.exists() and (self.root_dir / "agents").exists():
             agents_dir = self.root_dir / "agents"
-        agents = [f.stem for f in agents_dir.glob(config["pattern"])] if agents_dir.exists() else []
+        agents = (
+            [f.stem for f in agents_dir.glob(config["pattern"])]
+            if agents_dir.exists()
+            else []
+        )
         return {"count": count, "agents": agents}
 
     def scan_skills(self) -> Dict[str, Any]:
@@ -129,7 +149,15 @@ class StructureValidator:
         skills_dir = self.root_dir / config["dir"]
         if not skills_dir.exists() and (self.root_dir / "skills").exists():
             skills_dir = self.root_dir / "skills"
-        skills = [d.name for d in skills_dir.iterdir() if d.is_dir() and (d / config["sentinel"]).exists()] if skills_dir.exists() else []
+        skills = (
+            [
+                d.name
+                for d in skills_dir.iterdir()
+                if d.is_dir() and (d / config["sentinel"]).exists()
+            ]
+            if skills_dir.exists()
+            else []
+        )
         return {"count": count, "skills": skills}
 
     def scan_blueprints(self) -> Dict[str, Any]:
@@ -139,7 +167,15 @@ class StructureValidator:
         blueprints_dir = self.root_dir / config["dir"]
         if not blueprints_dir.exists() and (self.root_dir / "blueprints").exists():
             blueprints_dir = self.root_dir / "blueprints"
-        blueprints = [d.name for d in blueprints_dir.iterdir() if d.is_dir() and (d / config["sentinel"]).exists()] if blueprints_dir.exists() else []
+        blueprints = (
+            [
+                d.name
+                for d in blueprints_dir.iterdir()
+                if d.is_dir() and (d / config["sentinel"]).exists()
+            ]
+            if blueprints_dir.exists()
+            else []
+        )
         return {"count": count, "blueprints": blueprints}
 
     def scan_knowledge(self) -> Dict[str, Any]:
@@ -149,7 +185,9 @@ class StructureValidator:
         kn_dir = self.root_dir / config["dir"]
         if not kn_dir.exists() and (self.root_dir / "knowledge").exists():
             kn_dir = self.root_dir / "knowledge"
-        files = [f.name for f in kn_dir.glob(config["pattern"])] if kn_dir.exists() else []
+        files = (
+            [f.name for f in kn_dir.glob(config["pattern"])] if kn_dir.exists() else []
+        )
         return {"count": count, "files": files}
 
     def scan_patterns(self) -> Dict[str, Any]:
@@ -159,7 +197,7 @@ class StructureValidator:
         pat_dir = self.root_dir / config["dir"]
         if not pat_dir.exists() and (self.root_dir / "patterns").exists():
             pat_dir = self.root_dir / "patterns"
-        
+
         categories = {}
         if pat_dir.exists():
             subdirs = [d for d in pat_dir.iterdir() if d.is_dir()]
@@ -169,7 +207,7 @@ class StructureValidator:
                 categories[d.name] = [f.name for f in d.glob(config["pattern"])]
         else:
             return {"count": count, "total_files": count, "categories": []}
-        
+
         return {"count": count, "total_files": count, "categories": categories}
 
     def scan_templates(self) -> Dict[str, Any]:
@@ -179,31 +217,30 @@ class StructureValidator:
         tm_dir = self.root_dir / config["dir"]
         if not tm_dir.exists() and (self.root_dir / "templates").exists():
             tm_dir = self.root_dir / "templates"
-            
+
         categories = []
         if tm_dir.exists():
             categories = [d.name for d in tm_dir.iterdir() if d.is_dir()]
-            
+
         return {"count": count, "total_files": count, "categories": categories}
 
     def scan_tests(self) -> Dict[str, Any]:
         """Wrapper for tests: scan tests."""
         return {"count": self.scan_section("tests", self.scan_config["tests"])}
 
-        
     def scan_section(self, section_name: str, config: Dict) -> int:
         """
         Scan a single section and return count.
-        
+
         Args:
             section_name: Name of the section
             config: Configuration for this section
-            
+
         Returns:
             Count of items found
         """
         section_dir = self.root_dir / config["dir"]
-        
+
         # Fallback for old structure or generated project
         if not section_dir.exists():
             basename = Path(config["dir"]).name
@@ -212,7 +249,7 @@ class StructureValidator:
                 section_dir = fallback_dir
             else:
                 return 0
-        
+
         if config.get("count_method") == "subdirs_with_file":
             # Count subdirectories containing the sentinel file
             sentinel = config.get("sentinel", "SKILL.md")
@@ -229,22 +266,22 @@ class StructureValidator:
                         if (item / sentinel).exists():
                             count += 1
             return count
-        
+
         # Default: count files matching pattern
         pattern = config.get("pattern", "*")
         recursive = config.get("recursive", False)
-        
+
         if recursive:
             count = len([p for p in section_dir.rglob(pattern) if p.is_file()])
         else:
             count = len([p for p in section_dir.glob(pattern) if p.is_file()])
-            
+
         return count
-    
+
     def scan_all(self) -> Dict[str, int]:
         """
         Scan all configured sections.
-        
+
         Returns:
             Dict mapping section names to actual counts
         """
@@ -252,11 +289,11 @@ class StructureValidator:
         for section_name, config in self.scan_config.items():
             results[section_name] = self.scan_section(section_name, config)
         return results
-        
+
     def generate_counts_summary(self) -> Dict[str, int]:
         """
         Generate a summary of all counts.
-        
+
         Returns:
             Dict mapping section names to actual counts
         """
@@ -280,141 +317,161 @@ class StructureValidator:
         """
         if not self.readme_path.exists():
             return {}
-            
+
         content = self.readme_path.read_text(encoding="utf-8")
         lines = content.splitlines()
         results = {}
-        
+
         for section_name, config in self.scan_config.items():
             pattern = config.get("readme_pattern")
             if not pattern:
-                results[section_name] = {"count": 0, "is_threshold": False, "found": False}
+                results[section_name] = {
+                    "count": 0,
+                    "is_threshold": False,
+                    "found": False,
+                }
                 continue
-                
+
             # Try to find the line containing the section name first
             found = False
             for line in lines:
-                if section_name.lower() in line.lower() or config["dir"].lower() in line.lower():
+                if (
+                    section_name.lower() in line.lower()
+                    or config["dir"].lower() in line.lower()
+                ):
                     match = re.search(pattern, line, re.IGNORECASE)
                     if match:
                         results[section_name] = {
                             "count": int(match.group(1)),
                             "is_threshold": match.group(2) == "+",
-                            "found": True
+                            "found": True,
                         }
                         found = True
                         break
-            
+
             if not found:
-                results[section_name] = {"count": 0, "is_threshold": False, "found": False}
-                
+                results[section_name] = {
+                    "count": 0,
+                    "is_threshold": False,
+                    "found": False,
+                }
+
         return results
-    
+
     def validate(self) -> Tuple[bool, List[str]]:
         """
         Validate structure against README.md.
-        
+
         Returns:
             Tuple of (is_valid, list_of_messages)
         """
         is_valid = True
         messages = []
-        
+
         actual_counts = self.scan_all()
         expected_info = self.extract_readme_counts()
-        
+
         for section, info in expected_info.items():
             actual = actual_counts.get(section, 0)
-            
+
             if not info["found"]:
                 messages.append(f"⚠️  Section '{section}' count not found in README.md")
                 # Don't fail the build for a missing section count in README, just warning
                 continue
-            
+
             expected = info["count"]
             is_threshold = info["is_threshold"]
-                
+
             if is_threshold:
                 if actual < expected:
-                    messages.append(f"❌ '{section}' counts below minimum threshold: actual {actual} < expected {expected}+")
+                    messages.append(
+                        f"❌ '{section}' counts below minimum threshold: actual {actual} < expected {expected}+"
+                    )
                     is_valid = False
                 else:
-                    messages.append(f"✅ '{section}': {actual} (matches README.md threshold {expected}+)")
+                    messages.append(
+                        f"✅ '{section}': {actual} (matches README.md threshold {expected}+)"
+                    )
             else:
                 if actual != expected:
-                    messages.append(f"❌ '{section}' counts mismatch: actual {actual} vs README {expected}")
+                    messages.append(
+                        f"❌ '{section}' counts mismatch: actual {actual} vs README {expected}"
+                    )
                     is_valid = False
                 else:
                     messages.append(f"✅ '{section}': {actual} (matches README.md)")
-                
+
         return is_valid, messages
-    
+
     def update_readme(self) -> bool:
         """
         Update README.md with current counts.
-        
+
         Returns:
             True if updated, False if no changes needed
         """
         if not self.readme_path.exists():
             return False
-            
+
         content = self.readme_path.read_text(encoding="utf-8")
         lines = content.splitlines()
         actual_counts = self.scan_all()
         updated_lines = list(lines)
         modified = False
-        
+
         for section_name, config in self.scan_config.items():
             pattern = config.get("readme_pattern")
             if not pattern:
                 continue
-                
+
             actual = actual_counts.get(section_name, 0)
-            
+
             # Find the line for this section
             for i, line in enumerate(lines):
                 # Context check: line must contain section name or path
-                if section_name.lower() in line.lower() or config["dir"].lower() in line.lower():
+                if (
+                    section_name.lower() in line.lower()
+                    or config["dir"].lower() in line.lower()
+                ):
                     match = re.search(pattern, line, re.IGNORECASE)
                     if match:
                         # Construct replacement
-                        prefix = line[:match.start(1)]
-                        suffix = line[match.end(1):]
+                        prefix = line[: match.start(1)]
+                        suffix = line[match.end(1) :]
                         new_line = f"{prefix}{actual}{suffix}"
-                        
+
                         if new_line != updated_lines[i]:
                             updated_lines[i] = new_line
                             modified = True
                         break
-            
+
         if modified:
             self.readme_path.write_text("\n".join(updated_lines), encoding="utf-8")
             return True
         return False
-    
+
     def generate_structure_markdown(self) -> str:
         """
         Generate markdown documentation of current structure.
-        
+
         Returns:
             Markdown string
         """
         actual_counts = self.scan_all()
         lines = ["# Project Structure", ""]
-        
+
         for section_name, config in self.scan_config.items():
             count = actual_counts.get(section_name, 0)
             dir_path = config.get("dir", "")
             lines.append(f"- **{section_name.title()}**: {count} ({dir_path})")
-            
+
         return "\n".join(lines)
 
 
 def main():
     """Main entry point."""
-    if sys.platform == 'win32':
-        sys.stdout.reconfigure(encoding='utf-8')
+    if sys.platform == "win32":
+        sys.stdout.reconfigure(encoding="utf-8")
 
     parser = argparse.ArgumentParser(
         description="Validate README.md structure documentation"
@@ -422,43 +479,39 @@ def main():
     parser.add_argument(
         "--check",
         action="store_true",
-        help="Check structure and exit with code 1 if mismatched"
+        help="Check structure and exit with code 1 if mismatched",
     )
     parser.add_argument(
         "--generate",
         action="store_true",
-        help="Generate markdown documentation of current structure"
+        help="Generate markdown documentation of current structure",
     )
     parser.add_argument(
-        "--update",
-        action="store_true",
-        help="Update README.md with current counts"
+        "--update", action="store_true", help="Update README.md with current counts"
     )
     parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output counts in JSON format"
+        "--json", action="store_true", help="Output counts in JSON format"
     )
     parser.add_argument(
         "--root",
         type=str,
         default=".",
-        help="Project root directory (default: current directory)"
+        help="Project root directory (default: current directory)",
     )
     parser.add_argument(
         "--readme",
         type=str,
         default="README.md",
-        help="Path to README.md (default: README.md)"
+        help="Path to README.md (default: README.md)",
     )
-    
+
     args = parser.parse_args()
-    
+
     root_dir = Path(args.root).resolve()
     readme_path = root_dir / args.readme
-    
+
     validator = StructureValidator(root_dir, readme_path, SCAN_CONFIG)
-    
+
     if args.json:
         print(json.dumps(validator.scan_all(), indent=2))
         return 0
@@ -466,7 +519,7 @@ def main():
     if args.generate:
         print(validator.generate_structure_markdown())
         return 0
-        
+
     if args.update:
         if validator.update_readme():
             print("✅ Updated README.md with current structure counts")
@@ -474,21 +527,21 @@ def main():
         else:
             print("ℹ️  README.md already up to date")
             return 0
-            
+
     # Default: check mode
     is_valid, messages = validator.validate()
-    
+
     # Matching test expectations for output
     status = "[OK]" if is_valid else "[FAIL]"
     print(f"{status} README structure validation")
-    
+
     for msg in messages:
         print(msg)
-        
+
     if not is_valid:
         print("\n❌ Structure validation failed. Run with --update to fix.")
         return 1
-        
+
     print("\n✅ All structure counts match README.md")
     return 0
 

@@ -31,23 +31,23 @@ class SizingMethod(Enum):
 @dataclass
 class RiskConfig:
     """Risk management configuration."""
-    
+
     # Position sizing
     sizing_method: SizingMethod = SizingMethod.FIXED_FRACTION
     risk_per_trade: float = 0.02  # 2% per trade
     target_volatility: float = 0.15  # 15% annual
     kelly_fraction: float = 0.25  # Quarter Kelly
-    
+
     # Portfolio limits
     max_position_size: float = 0.10  # 10% max per position
     max_portfolio_leverage: float = 1.0  # No leverage
     max_sector_exposure: float = 0.30  # 30% per sector
     max_correlation: float = 0.70  # 70% correlation limit
-    
+
     # Drawdown limits
     max_drawdown_limit: float = 0.20  # 20% max drawdown
     drawdown_reduction_start: float = 0.10  # Start reducing at 10%
-    
+
     # Stop loss
     default_stop_loss_atr: float = 2.0  # 2 ATR stop loss
 
@@ -55,7 +55,7 @@ class RiskConfig:
 @dataclass
 class PositionInfo:
     """Information about a calculated position."""
-    
+
     symbol: str
     units: float
     notional_value: float
@@ -69,13 +69,13 @@ class PositionInfo:
 class PositionSizer:
     """
     Calculate position sizes with risk management.
-    
+
     Supports multiple sizing methods:
     - Fixed fraction: Risk fixed % of capital per trade
     - Volatility target: Size inversely to volatility
     - Kelly criterion: Optimal sizing based on edge
     - Equal weight: Simple equal allocation
-    
+
     Example:
         >>> sizer = PositionSizer(config)
         >>> position = sizer.calculate_position(
@@ -86,11 +86,11 @@ class PositionSizer:
         ... )
         >>> print(f"Buy {position.units} units")
     """
-    
+
     def __init__(self, config: Optional[RiskConfig] = None):
         """
         Initialize position sizer.
-        
+
         Args:
             config: Risk configuration
         """
@@ -98,42 +98,42 @@ class PositionSizer:
         self._current_drawdown = 0.0
         self._peak_equity = 0.0
         logger.info(f"Initialized PositionSizer with method: {self.config.sizing_method.value}")
-    
+
     def update_equity(self, current_equity: float) -> None:
         """
         Update equity tracking for drawdown-based adjustments.
-        
+
         Args:
             current_equity: Current portfolio equity
         """
         if current_equity > self._peak_equity:
             self._peak_equity = current_equity
-        
+
         self._current_drawdown = (self._peak_equity - current_equity) / self._peak_equity
-        
+
         if self._current_drawdown >= self.config.max_drawdown_limit:
             logger.warning(f"Max drawdown limit reached: {self._current_drawdown:.2%}")
-    
+
     def get_risk_multiplier(self) -> float:
         """
         Calculate risk multiplier based on current drawdown.
-        
+
         Returns:
             Multiplier between 0 and 1
         """
         if self._current_drawdown >= self.config.max_drawdown_limit:
             return 0.0  # Stop trading
-        
+
         if self._current_drawdown <= self.config.drawdown_reduction_start:
             return 1.0  # Full risk
-        
+
         # Linear reduction between start and max
         reduction_range = self.config.max_drawdown_limit - self.config.drawdown_reduction_start
         drawdown_excess = self._current_drawdown - self.config.drawdown_reduction_start
-        
+
         multiplier = 1.0 - (drawdown_excess / reduction_range)
         return max(0.25, multiplier)  # Minimum 25% of normal risk
-    
+
     def calculate_position(
         self,
         symbol: str,
@@ -146,7 +146,7 @@ class PositionSizer:
     ) -> PositionInfo:
         """
         Calculate optimal position size.
-        
+
         Args:
             symbol: Asset symbol
             capital: Available capital
@@ -155,12 +155,12 @@ class PositionSizer:
             volatility: Asset volatility (required for vol-target)
             win_rate: Historical win rate (for Kelly)
             avg_win_loss_ratio: Avg win / avg loss (for Kelly)
-            
+
         Returns:
             PositionInfo with calculated size
         """
         risk_multiplier = self.get_risk_multiplier()
-        
+
         if risk_multiplier == 0:
             return PositionInfo(
                 symbol=symbol,
@@ -171,7 +171,7 @@ class PositionSizer:
                 stop_loss=stop_loss,
                 reason="Max drawdown limit reached"
             )
-        
+
         if self.config.sizing_method == SizingMethod.FIXED_FRACTION:
             position = self._fixed_fraction_size(
                 symbol, capital, entry_price, stop_loss, risk_multiplier
@@ -193,7 +193,7 @@ class PositionSizer:
             position = self._equal_weight_size(
                 symbol, capital, entry_price, risk_multiplier
             )
-        
+
         # Apply max position limit
         max_notional = capital * self.config.max_position_size
         if position.notional_value > max_notional:
@@ -203,14 +203,14 @@ class PositionSizer:
             position.weight = self.config.max_position_size
             position.reason += f" (capped from {original_units:.2f} units)"
             logger.info(f"Position capped at max size: {position.units:.2f} units")
-        
+
         logger.info(
             f"Position calculated: {symbol} - {position.units:.2f} units, "
             f"${position.notional_value:,.2f}, weight={position.weight:.2%}"
         )
-        
+
         return position
-    
+
     def _fixed_fraction_size(
         self,
         symbol: str,
@@ -220,19 +220,19 @@ class PositionSizer:
         risk_multiplier: float
     ) -> PositionInfo:
         """Calculate position using fixed fraction method."""
-        
+
         risk_per_unit = abs(entry_price - stop_loss)
         if risk_per_unit == 0:
             return PositionInfo(
                 symbol=symbol, units=0, notional_value=0, weight=0,
                 risk_amount=0, stop_loss=stop_loss, reason="Zero risk per unit"
             )
-        
+
         adjusted_risk = self.config.risk_per_trade * risk_multiplier
         risk_amount = capital * adjusted_risk
         units = risk_amount / risk_per_unit
         notional = units * entry_price
-        
+
         return PositionInfo(
             symbol=symbol,
             units=units,
@@ -242,7 +242,7 @@ class PositionSizer:
             stop_loss=stop_loss,
             reason=f"Fixed fraction: {adjusted_risk:.2%} risk"
         )
-    
+
     def _volatility_target_size(
         self,
         symbol: str,
@@ -252,13 +252,13 @@ class PositionSizer:
         risk_multiplier: float
     ) -> PositionInfo:
         """Calculate position targeting specific volatility."""
-        
+
         adjusted_target = self.config.target_volatility * risk_multiplier
         weight = min(adjusted_target / volatility, self.config.max_portfolio_leverage)
-        
+
         notional = capital * weight
         units = notional / entry_price
-        
+
         return PositionInfo(
             symbol=symbol,
             units=units,
@@ -268,7 +268,7 @@ class PositionSizer:
             stop_loss=entry_price * (1 - self.config.default_stop_loss_atr * volatility),
             reason=f"Vol target: {adjusted_target:.2%}, asset vol: {volatility:.2%}"
         )
-    
+
     def _kelly_size(
         self,
         symbol: str,
@@ -280,22 +280,22 @@ class PositionSizer:
         risk_multiplier: float
     ) -> PositionInfo:
         """Calculate position using Kelly criterion."""
-        
+
         # Kelly formula: f* = (p * b - q) / b
         # where p = win rate, q = 1-p, b = win/loss ratio
         p = win_rate
         q = 1 - win_rate
         b = win_loss_ratio
-        
+
         full_kelly = (p * b - q) / b
         full_kelly = max(0, full_kelly)  # No negative sizing
-        
+
         adjusted_kelly = full_kelly * self.config.kelly_fraction * risk_multiplier
-        
+
         weight = min(adjusted_kelly, self.config.max_position_size)
         notional = capital * weight
         units = notional / entry_price
-        
+
         return PositionInfo(
             symbol=symbol,
             units=units,
@@ -305,7 +305,7 @@ class PositionSizer:
             stop_loss=stop_loss,
             reason=f"Kelly: full={full_kelly:.2%}, adjusted={adjusted_kelly:.2%}"
         )
-    
+
     def _equal_weight_size(
         self,
         symbol: str,
@@ -314,13 +314,13 @@ class PositionSizer:
         risk_multiplier: float
     ) -> PositionInfo:
         """Calculate equal weight position."""
-        
+
         base_weight = self.config.max_position_size
         weight = base_weight * risk_multiplier
-        
+
         notional = capital * weight
         units = notional / entry_price
-        
+
         return PositionInfo(
             symbol=symbol,
             units=units,
@@ -330,7 +330,7 @@ class PositionSizer:
             stop_loss=entry_price * 0.95,  # Default 5% stop
             reason=f"Equal weight: {weight:.2%}"
         )
-    
+
     def check_portfolio_limits(
         self,
         current_positions: Dict[str, float],
@@ -340,13 +340,13 @@ class PositionSizer:
     ) -> Tuple[bool, str]:
         """
         Check if new position violates portfolio limits.
-        
+
         Args:
             current_positions: Dict of symbol -> weight
             new_position: Proposed new position
             sector_map: Optional dict of symbol -> sector
             correlation_matrix: Optional correlation matrix
-            
+
         Returns:
             Tuple of (is_allowed, reason)
         """
@@ -354,19 +354,19 @@ class PositionSizer:
         total_weight = sum(current_positions.values()) + new_position.weight
         if total_weight > self.config.max_portfolio_leverage:
             return False, f"Exceeds max leverage: {total_weight:.2%}"
-        
+
         # Check sector exposure
         if sector_map:
             new_sector = sector_map.get(new_position.symbol, "Unknown")
             sector_exposure = new_position.weight
-            
+
             for symbol, weight in current_positions.items():
                 if sector_map.get(symbol) == new_sector:
                     sector_exposure += weight
-            
+
             if sector_exposure > self.config.max_sector_exposure:
                 return False, f"Exceeds sector limit: {sector_exposure:.2%}"
-        
+
         # Check correlation
         if correlation_matrix is not None:
             for symbol in current_positions:
@@ -374,29 +374,29 @@ class PositionSizer:
                     corr = correlation_matrix.loc[new_position.symbol, symbol]
                     if abs(corr) > self.config.max_correlation:
                         return False, f"High correlation with {symbol}: {corr:.2f}"
-        
+
         return True, "Position allowed"
 
 
 def main():
     """Example usage."""
-    
+
     config = RiskConfig(
         sizing_method=SizingMethod.FIXED_FRACTION,
         risk_per_trade=0.02,
         max_position_size=0.10
     )
-    
+
     sizer = PositionSizer(config)
     sizer.update_equity(100_000)
-    
+
     position = sizer.calculate_position(
         symbol="AAPL",
         capital=100_000,
         entry_price=150.00,
         stop_loss=145.00
     )
-    
+
     print(f"Symbol: {position.symbol}")
     print(f"Units: {position.units:.2f}")
     print(f"Notional: ${position.notional_value:,.2f}")

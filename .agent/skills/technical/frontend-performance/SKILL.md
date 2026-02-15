@@ -65,8 +65,8 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <div className="card" style={{ minHeight: '400px' }}>
       {product.image && (
-        <img 
-          src={product.image} 
+        <img
+          src={product.image}
           alt={product.name}
           width={300}
           height={300}
@@ -87,28 +87,28 @@ import { useMemo, useCallback, useState } from 'react';
 
 export function ProductList({ products }: { products: Product[] }) {
   const [filter, setFilter] = useState('');
-  
+
   // Memoize expensive computations
   const filteredProducts = useMemo(() => {
-    return products.filter(p => 
+    return products.filter(p =>
       p.name.toLowerCase().includes(filter.toLowerCase())
     );
   }, [products, filter]);
-  
+
   // Memoize callbacks to prevent child re-renders
   const handleClick = useCallback((id: string) => {
     console.log('Clicked:', id);
   }, []);
-  
+
   return (
     <div>
-      <input 
-        value={filter} 
-        onChange={(e) => setFilter(e.target.value)} 
+      <input
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
       />
       {filteredProducts.map(product => (
-        <ProductItem 
-          key={product.id} 
+        <ProductItem
+          key={product.id}
           product={product}
           onClick={handleClick}
         />
@@ -133,7 +133,7 @@ export function Dashboard() {
       <Suspense fallback={<div>Loading chart...</div>}>
         <HeavyChart />
       </Suspense>
-      
+
       {isAdmin && (
         <Suspense fallback={<div>Loading admin...</div>}>
           <AdminPanel />
@@ -150,7 +150,7 @@ export function Dashboard() {
 // next/font for automatic font optimization
 import { Inter } from 'next/font/google';
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ['latin'],
   display: 'swap', // Prevent invisible text during font load
   preload: true,
@@ -213,7 +213,7 @@ export const revalidate = 3600; // ISR: revalidate every hour
 // Or per-request caching
 async function getData() {
   const res = await fetch('https://api.example.com/data', {
-    next: { 
+    next: {
       revalidate: 60, // Cache for 60 seconds
       tags: ['products'] // Tag-based revalidation
     }

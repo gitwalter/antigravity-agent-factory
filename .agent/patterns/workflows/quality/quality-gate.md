@@ -4,8 +4,8 @@
 
 Automated quality gate workflow that enforces code quality standards before merge. Runs comprehensive checks including linting, testing, coverage, security scanning, and code review to ensure only high-quality code enters the codebase.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** code-reviewer
 
 ## Trigger Conditions
@@ -29,7 +29,7 @@ This workflow is activated when:
 
 **Description:** Run static code analysis tools.
 
-**Entry Criteria:** Code changes identified  
+**Entry Criteria:** Code changes identified
 **Exit Criteria:** All static analysis complete
 
 #### Step 1.1: Lint Check
@@ -122,7 +122,7 @@ This workflow is activated when:
 
 **Description:** Run test suites and collect results.
 
-**Entry Criteria:** Static analysis passed  
+**Entry Criteria:** Static analysis passed
 **Exit Criteria:** All tests executed
 
 #### Step 2.1: Unit Tests
@@ -207,7 +207,7 @@ This workflow is activated when:
 
 **Description:** Perform security vulnerability scans.
 
-**Entry Criteria:** Tests passed  
+**Entry Criteria:** Tests passed
 **Exit Criteria:** Security scan complete
 
 #### Step 3.1: Dependency Scan
@@ -293,7 +293,7 @@ This workflow is activated when:
 
 **Description:** Automated code review checks.
 
-**Entry Criteria:** Security scans passed  
+**Entry Criteria:** Security scans passed
 **Exit Criteria:** Code review complete
 
 #### Step 4.1: Complexity Analysis
@@ -357,7 +357,7 @@ This workflow is activated when:
 
 **Description:** Make the final quality gate decision.
 
-**Entry Criteria:** All checks complete  
+**Entry Criteria:** All checks complete
 **Exit Criteria:** Gate decision rendered
 
 #### Step 5.1: Aggregate Results

@@ -41,11 +41,11 @@ async def simple_agent(prompt: str, llm, tools: list) -> str:
     """Simple agent that uses LLM and tools."""
     llm_with_tools = llm.bind_tools(tools)
     response = await llm_with_tools.ainvoke(prompt)
-    
+
     if response.tool_calls:
         # Execute tools (simplified)
         return "Tool executed"
-    
+
     return response.content
 
 # Unit test with mocked LLM
@@ -56,10 +56,10 @@ async def test_simple_agent_with_mock():
     mock_llm = AsyncMock()
     mock_response = AIMessage(content="Test response")
     mock_llm.bind_tools.return_value.ainvoke = AsyncMock(return_value=mock_response)
-    
+
     # Test
     result = await simple_agent("test prompt", mock_llm, [])
-    
+
     assert result == "Test response"
     mock_llm.bind_tools.return_value.ainvoke.assert_called_once()
 
@@ -77,12 +77,12 @@ async def test_agent_with_tool_calls():
         }]
     )
     mock_llm.bind_tools.return_value.ainvoke = AsyncMock(return_value=mock_response)
-    
+
     @tool
     def test_tool(arg1: str) -> str:
         """Test tool."""
         return f"Result: {arg1}"
-    
+
     result = await simple_agent("test prompt", mock_llm, [test_tool])
     assert result == "Tool executed"
 
@@ -103,7 +103,7 @@ def sample_tools():
     def get_weather(location: str) -> str:
         """Get weather for location."""
         return f"Weather in {location}: Sunny"
-    
+
     return [get_weather]
 
 @pytest.mark.asyncio
@@ -134,15 +134,15 @@ async def test_agent_integration():
         temperature=0,
         api_key=os.getenv("OPENAI_API_KEY")
     )
-    
+
     @tool
     def add_numbers(a: int, b: int) -> str:
         """Add two numbers."""
         return str(a + b)
-    
+
     # Test agent
     result = await simple_agent("Add 2 and 3", llm, [add_numbers])
-    
+
     # Verify result contains expected content
     assert "5" in result or "tool" in result.lower()
 
@@ -165,14 +165,14 @@ async def test_agent_with_database(test_db):
         """Store data in test database."""
         test_db[key] = value
         return f"Stored {key}"
-    
+
     @tool
     def get_data(key: str) -> str:
         """Get data from test database."""
         return test_db.get(key, "Not found")
-    
+
     llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
-    
+
     # Test storing and retrieving
     await simple_agent("Store test_key with value test_value", llm, [store_data])
     assert test_db["test_key"] == "test_value"
@@ -227,10 +227,10 @@ def evaluate_agent(run, example):
     """Custom evaluation function."""
     predicted = run.outputs.get("output", "")
     expected = example.outputs.get("output", "")
-    
+
     # Simple accuracy check
     accuracy = 1.0 if expected.lower() in predicted.lower() else 0.0
-    
+
     return {
         "accuracy": accuracy,
         "predicted": predicted,
@@ -284,11 +284,11 @@ import statistics
 
 class AgentBenchmark:
     """Benchmark agent performance."""
-    
+
     def __init__(self, agent_func):
         self.agent_func = agent_func
         self.results: List[Dict] = []
-    
+
     async def benchmark(
         self,
         test_cases: List[str],
@@ -298,11 +298,11 @@ class AgentBenchmark:
         latencies = []
         successes = 0
         errors = 0
-        
+
         for test_case in test_cases:
             for _ in range(iterations):
                 start_time = time.time()
-                
+
                 try:
                     result = await self.agent_func(test_case)
                     latency = time.time() - start_time
@@ -317,14 +317,14 @@ class AgentBenchmark:
                         "latency": None
                     })
                     continue
-                
+
                 self.results.append({
                     "test_case": test_case,
                     "success": True,
                     "latency": latency,
                     "result_length": len(str(result))
                 })
-        
+
         return {
             "total_tests": len(test_cases) * iterations,
             "successes": successes,
@@ -370,12 +370,12 @@ async def test_tool_execution():
     def test_tool(param: str) -> str:
         """Test tool."""
         return f"Result: {param}"
-    
+
     # Mock tool execution
     with patch.object(test_tool, 'invoke', return_value="Result: test") as mock_tool:
         # Test agent that uses tool
         # ... agent code ...
-        
+
         # Verify tool was called
         mock_tool.assert_called_once_with({"param": "test"})
 
@@ -387,7 +387,7 @@ async def test_tool_error_handling():
     def failing_tool() -> str:
         """Tool that always fails."""
         raise ValueError("Tool error")
-    
+
     # Agent should handle tool errors gracefully
     # ... test implementation ...
 ```
@@ -406,29 +406,29 @@ async def test_complete_agent_workflow():
     """End-to-end test of agent workflow."""
     # Setup
     llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
-    
+
     @tool
     def get_weather(location: str) -> str:
         """Get weather."""
         return f"Weather in {location}: Sunny, 72°F"
-    
+
     @tool
     def search_kb(query: str) -> str:
         """Search knowledge base."""
         return f"Results for: {query}"
-    
+
     tools = [get_weather, search_kb]
     llm_with_tools = llm.bind_tools(tools)
-    
+
     # Execute workflow
     messages = [HumanMessage(content="What's the weather in NYC and search for Python?")]
-    
+
     response = await llm_with_tools.ainvoke(messages)
-    
+
     # Verify response
     assert response is not None
     assert len(response.tool_calls) > 0
-    
+
     # Verify tool calls
     tool_names = [tc["name"] for tc in response.tool_calls]
     assert "get_weather" in tool_names or "search_kb" in tool_names
@@ -440,16 +440,16 @@ async def test_multi_turn_conversation():
     """Test agent maintains context across turns."""
     llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
     messages = []
-    
+
     # Turn 1
     messages.append(HumanMessage(content="My name is Alice"))
     response1 = await llm.ainvoke(messages)
     messages.append(response1)
-    
+
     # Turn 2
     messages.append(HumanMessage(content="What's my name?"))
     response2 = await llm.ainvoke(messages)
-    
+
     # Verify agent remembers
     assert "Alice" in response2.content.lower()
 ```
@@ -470,7 +470,7 @@ async def test_agent_always_responds(prompt: str):
     """Property: Agent always returns a response."""
     llm = ChatOpenAI(model="gpt-3.5-turbo")
     response = await llm.ainvoke(prompt)
-    
+
     assert response is not None
     assert hasattr(response, 'content')
     assert len(response.content) > 0
@@ -480,14 +480,14 @@ async def test_agent_always_responds(prompt: str):
 async def test_agent_response_time(prompt: str):
     """Property: Agent responds within timeout."""
     llm = ChatOpenAI(model="gpt-3.5-turbo")
-    
+
     start_time = time.time()
     response = await asyncio.wait_for(
         llm.ainvoke(prompt),
         timeout=30.0
     )
     latency = time.time() - start_time
-    
+
     assert latency < 30.0
     assert response is not None
 ```

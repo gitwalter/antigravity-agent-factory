@@ -32,28 +32,41 @@ This workflow is activated when:
 - **Action**: Move misplaced files to correct subdirectories and enforce kebab-case naming.
 - **Verification**: Ensure no files remain in the root that shouldn't be there.
 
-### 2. Full Link Verification
+### 2. Changelog Documentation
+- **Action**: Update `CHANGELOG.md` with all changes since the last release.
+- **Standard**: Follow [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and Semantic Versioning.
+
+### 3. Full Link Verification
 - **Command**: `python scripts/maintenance/link_checker.py --external`
 - **Action**: Identify all broken internal references and dead external URLs.
 - **Goal**: Maintain 100% link integrity across all documentation.
 
-### 3. Reference Remediation
+### 4. Reference Remediation
 - **Action**: Fix broken relative paths using the `system-steward`'s capabilities.
 - **Focus**: Prioritize index files and root-level documentation.
 
-### 4. Artifact Cache Synchronization
+### 5. Artifact Documentation (Proof of Work)
+- **Action**: Create or update `walkthrough.md` in the brain directory for the current session.
+- **Requirement**: Must include proof of testing and a summary of key architectural changes.
+
+### 6. Artifact Cache Synchronization
 - **Command**: `python scripts/validation/update_index.py --full`
 - **Action**: Rebuild the artifact index cache used for fast validation.
 
-### 5. Version Registry Sync
+### 7. Version Registry Sync
 - **Command**: `python scripts/validation/sync_manifest_versions.py --sync`
 - **Action**: Synchronize version numbers from `CHANGELOG.md` to all manifest and documentation footers.
 
-### 6. README Automation
+### 8. README Automation
 - **Command**: `python scripts/validation/validate_readme_structure.py --update`
 - **Action**: Update artifact counts and structural descriptions in `README.md`.
 
-### 7. Maintenance Report
+### 9. Pre-commit Validation
+- **Command**: `python -m pre-commit run --all-files`
+- **Action**: Run linting (`ruff`), type-checking (`mypy`), and structural checks.
+- **Goal**: 100% pass before the final commit.
+
+### 10. Maintenance Report
 - **Action**: Generate a summary of actions taken and current system health status.
 
 

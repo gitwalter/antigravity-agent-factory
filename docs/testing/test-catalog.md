@@ -1,155 +1,232 @@
 # Test Catalog
 
-*Generated on 2026-02-14 17:40:55*
+*Generated on 2026-02-15 15:56:46*
 
 ## Summary
 
 | Category | Files | Classes | Methods |
 |----------|-------|---------|---------|
-| general | 3 | 8 | 35 |
-| guardian | 2 | 4 | 31 |
-| integration | 12 | 63 | 226 |
-| knowledge | 1 | 3 | 16 |
+| guardian | 5 | 22 | 90 |
+| integration | 12 | 63 | 225 |
+| knowledge | 2 | 5 | 27 |
 | lib | 10 | 76 | 343 |
 | memory | 3 | 8 | 45 |
-| unit | 31 | 273 | 988 |
-| validation | 12 | 43 | 211 |
-| **Total** | **74** | **478** | **1895** |
-
-## General Tests
-
-### tests\test_knowledge_structure.py
-
-*Comprehensive tests for knowledge JSON file structure validation.
-
-Tests validate that all knowledge JSON files have:
-- Required fields (id, name, version, category, description)
-- patterns object exists
-- best_practices array exists
-- anti_patterns array exists
-- Valid JSON structure*
-
-#### TestKnowledgeFileStructure
-*Tests for knowledge file structure and required fields.*
-
-- `test_knowledge_files_exist`
-  - Test that knowledge files are found.
-- `test_knowledge_files_valid_json`
-  - Test that all knowledge files are valid JSON.
-- `test_knowledge_files_have_required_fields`
-  - Test that knowledge files have required fields: id, name, version, category, description.
-- `test_knowledge_id_matches_filename`
-  - Test that knowledge file id matches the filename (without extension).
-- `test_knowledge_files_have_patterns`
-  - Test that knowledge files have a patterns object.
-- `test_knowledge_files_have_best_practices`
-  - Test that knowledge files have a best_practices array.
-- `test_knowledge_files_have_anti_patterns`
-  - Test that knowledge files have an anti_patterns array.
-- `test_knowledge_version_format`
-  - Test that knowledge files have valid version format (semver-like).
-- `test_knowledge_category_is_valid`
-  - Test that knowledge files have valid category values.
-
-#### TestKnowledgePatternsStructure
-*Tests for patterns object structure within knowledge files.*
-
-- `test_patterns_is_not_empty`
-  - Test that patterns object is not empty.
-- `test_patterns_have_descriptions`
-  - Test that patterns have description fields.
-
-### tests\test_skills_structure.py
-
-*Comprehensive tests for skill file structure validation.
-
-Tests validate that all skill files have:
-- Valid YAML frontmatter with required fields (name, description, type)
-- Proper markdown sections (When to Use, Prerequisites, Process, Best Practices)
-- Correct file structure and naming conventions*
-
-#### TestSkillFileStructure
-*Tests for skill file structure and organization.*
-
-- `test_skill_files_exist`
-  - Test that skill files are found.
-- `test_skill_files_have_yaml_frontmatter`
-  - Test that all skill files have YAML frontmatter.
-- `test_skill_frontmatter_has_required_fields`
-  - Test that skill frontmatter has required fields: name, description, type.
-- `test_skill_frontmatter_type_is_skill`
-  - Test that skill frontmatter type field is 'skill'.
-- `test_skill_frontmatter_name_matches_directory`
-  - Test that skill name matches the directory name.
-- `test_skill_frontmatter_valid_yaml`
-  - Test that skill frontmatter has valid YAML syntax.
-
-#### TestSkillMarkdownSections
-*Tests for required markdown sections in skill files.*
-
-- `test_skill_has_when_to_use_section`
-  - Test that skill files have 'When to Use' section.
-- `test_skill_has_prerequisites_section`
-  - Test that skill files have 'Prerequisites' section.
-- `test_skill_has_process_section`
-  - Test that skill files have 'Process' section.
-- `test_skill_has_best_practices_section`
-  - Test that skill files have 'Best Practices' section.
-- `test_skill_sections_have_content`
-  - Test that skill sections have actual content (not just headers).
-
-#### TestSkillFileNaming
-*Tests for skill file naming conventions.*
-
-- `test_skill_files_named_skill_md`
-  - Test that skill files are named SKILL.md.
-- `test_skill_directories_use_kebab_case`
-  - Test that skill directories use kebab-case naming.
-
-### tests\test_templates_syntax.py
-
-*Comprehensive tests for Jinja2 template syntax validation.
-
-Tests validate that all Jinja2 templates (.j2 files) have:
-- Valid Jinja2 syntax
-- Required variables documented (if applicable)
-- Proper template structure*
-
-#### TestTemplateSyntax
-*Tests for Jinja2 template syntax validation.*
-
-- `test_jinja2_available`
-  - Test that Jinja2 is available.
-- `test_template_files_exist`
-  - Test that template files are found.
-- `test_templates_have_valid_syntax`
-  - Test that all templates have valid Jinja2 syntax.
-- `test_templates_can_be_compiled`
-  - Test that all templates can be compiled.
-- `test_templates_have_balanced_braces`
-  - Test that templates have balanced Jinja2 braces.
-- `test_templates_have_valid_filters`
-  - Test that templates use valid Jinja2 filters.
-
-#### TestTemplateVariables
-*Tests for template variable usage and documentation.*
-
-- `test_templates_extract_undefined_variables`
-  - Test that we can extract undefined variables from templates.
-- `test_templates_use_default_filter_for_variables`
-  - Test that templates use default filter for optional variables.
-
-#### TestTemplateStructure
-*Tests for template file structure and organization.*
-
-- `test_templates_have_content`
-  - Test that templates are not empty.
-- `test_templates_have_reasonable_length`
-  - Test that templates have reasonable content length.
-- `test_templates_use_j2_extension`
-  - Test that all Jinja2 templates use .j2 extension.
+| unit | 28 | 255 | 929 |
+| validation | 14 | 49 | 235 |
+| **Total** | **74** | **478** | **1894** |
 
 ## Guardian Tests
+
+### tests\guardian\test_guardian_axiom_checker.py
+
+*Unit tests for the Guardian Axiom Checker.
+
+These tests verify that the axiom checker correctly identifies
+potentially harmful operations according to the core axioms.*
+
+#### TestCheckCommand
+*Tests for shell command checking.*
+
+- `test_level_4_critical_commands`
+  - Critical commands should trigger Level 4 (Protect).
+- `test_sensitive_file_access`
+  - Access to sensitive files should trigger pause.
+- `test_safe_commands`
+  - Safe commands should pass without intervention.
+
+#### TestCheckFileOperation
+*Tests for file operation checking.*
+
+- `test_critical_path_deletion`
+  - Deletion of critical system paths should be blocked.
+- `test_sensitive_file_deletion`
+  - Deletion of sensitive files should require confirmation.
+- `test_normal_file_operations`
+  - Normal file operations should pass.
+
+#### TestCheckContentForClaims
+*Tests for content claim checking (A1 - Verifiability).*
+
+- `test_claim_detection`
+  - Claims should be detected for verification.
+
+#### TestValidateOperation
+*Tests for the main validation entry point.*
+
+- `test_command_validation`
+  - Command validation should work through main entry point.
+- `test_file_write_validation`
+  - File write validation should work through main entry point.
+- `test_file_delete_validation`
+  - File delete validation should work through main entry point.
+- `test_content_validation`
+  - Content validation should work through main entry point.
+
+#### TestCheckResultProperties
+*Tests for CheckResult helper properties.*
+
+- `test_requires_user_level_0`
+  - Level 0 should not require user.
+- `test_requires_user_level_2`
+  - Level 2+ should require user.
+- `test_is_emergency_level_3`
+  - Level 3 should not be emergency.
+- `test_is_emergency_level_4`
+  - Level 4 should be emergency.
+
+#### TestAxiomCoverage
+*Tests to ensure all axioms are being checked.*
+
+- `test_a1_verifiability_checked`
+  - A1 (Verifiability) should be checked in content.
+- `test_a4_non_harm_checked`
+  - A4 (Non-Harm) should be checked in commands.
+- `test_a4_non_harm_in_files`
+  - A4 (Non-Harm) should be checked in file operations.
+
+### tests\guardian\test_guardian_harm_detector.py
+
+*Unit tests for the Guardian Harm Detector.
+
+These tests verify the comprehensive harm detection that combines
+axiom checking, secret scanning, and content analysis.*
+
+#### TestAnalyzeCommand
+*Tests for command analysis.*
+
+- `test_safe_command`
+  - Safe commands should produce safe report.
+- `test_dangerous_command`
+  - Dangerous commands should produce unsafe report.
+
+#### TestAnalyzeFileOperation
+*Tests for file operation analysis.*
+
+- `test_normal_file_write`
+  - Writing to normal file should be safe.
+- `test_env_file_write`
+  - Writing to .env should trigger caution.
+- `test_cursorrules_modification`
+  - Modifying .agentrules should trigger caution.
+- `test_file_with_secrets`
+  - File content with secrets should be flagged.
+- `test_dockerfile_modification`
+  - Modifying Dockerfile should trigger caution.
+- `test_cicd_modification`
+  - Modifying CI/CD files should trigger caution.
+
+#### TestAnalyzeContent
+*Tests for content analysis.*
+
+- `test_safe_content`
+  - Normal content should be safe.
+- `test_content_with_secrets`
+  - Content with secrets should be flagged.
+- `test_harmful_patterns`
+  - Harmful content patterns should be flagged.
+
+#### TestComprehensiveCheck
+*Tests for comprehensive harm analysis.*
+
+- `test_nothing_to_check`
+  - Empty check should return safe.
+- `test_command_only`
+  - Command-only check should work.
+- `test_file_only`
+  - File-only check should work.
+- `test_content_only`
+  - Content-only check should work.
+- `test_combined_check`
+  - Combined check should find highest severity.
+- `test_all_safe`
+  - All safe inputs should produce safe report.
+
+#### TestHarmReport
+*Tests for HarmReport structure.*
+
+- `test_safe_report_str`
+  - Safe report string representation.
+- `test_unsafe_report_str`
+  - Unsafe report string representation.
+
+#### TestAxiomAlignment
+*Tests verifying alignment with core axioms.*
+
+- `test_a1_verifiability`
+  - A1: Claims should be flagged for verification.
+- `test_a3_transparency`
+  - A3: Hidden logic should be flagged.
+- `test_a4_non_harm`
+  - A4: Harmful actions should be blocked.
+- `test_a5_consistency`
+  - A5: Instruction override attempts should be flagged.
+
+### tests\guardian\test_guardian_secret_scanner.py
+
+*Unit tests for the Guardian Secret Scanner.
+
+These tests verify that the secret scanner correctly identifies
+credentials and secrets in content to prevent accidental exposure.*
+
+#### TestScanContent
+*Tests for content scanning.*
+
+- `test_high_severity_api_keys`
+  - High severity API keys should be detected.
+- `test_private_keys`
+  - Private keys should be detected as high severity.
+- `test_database_connection_strings`
+  - Database connection strings should be detected.
+- `test_medium_severity_patterns`
+  - Medium severity patterns should be detected.
+- `test_false_positives_filtered`
+  - Placeholder values should not be detected as secrets.
+- `test_multiline_content`
+  - Scanner should handle multiline content correctly.
+
+#### TestRedactSecret
+*Tests for secret redaction.*
+
+- `test_short_secret`
+  - Short secrets should be fully redacted.
+- `test_long_secret`
+  - Long secrets should show first and last 4 chars.
+
+#### TestIsFalsePositive
+*Tests for false positive detection.*
+
+- `test_false_positive_patterns`
+  - False positive patterns should be correctly identified.
+
+#### TestScanDiff
+*Tests for git diff scanning.*
+
+- `test_only_added_lines_checked`
+  - Only added lines (starting with +) should be checked.
+- `test_removed_lines_ignored`
+  - Removed lines (starting with -) should not be checked.
+
+#### TestGetSeverityLevel
+*Tests for severity to Guardian level mapping.*
+
+- `test_no_matches`
+  - No matches should return Level 0.
+- `test_high_severity`
+  - High severity should return Level 4.
+- `test_medium_severity`
+  - Medium severity should return Level 3.
+- `test_low_severity`
+  - Low severity should return Level 2.
+- `test_mixed_severity`
+  - Mixed severity should return highest level.
+
+#### TestScanFile
+*Tests for file scanning.*
+
+- `test_scan_nonexistent_file`
+  - Scanning nonexistent file should return empty list.
+- `test_skip_binary_files`
+  - Binary files should be skipped.
 
 ### tests\guardian\test_mutability_guard.py
 
@@ -759,8 +836,6 @@ SDG - Love - Truth - Beauty*
 #### TestASPDocumentationExists
 *Verify ASP documentation is complete.*
 
-- `test_value_proposition_exists`
-  - ASP value proposition document exists.
 - `test_integration_guide_exists`
   - Society integration guide exists.
 - `test_tier_selection_guide_exists`
@@ -873,7 +948,7 @@ Tests cover:
 
 Tests the complete update flow from Factory -> Generated Projects:
 1. Project generation includes update infrastructure
-2. project-info.json is correctly generated  
+2. project-info.json is correctly generated
 3. factory-updates agent is included
 4. receive-updates skill is included
 5. Update detection and application works
@@ -1064,6 +1139,47 @@ are properly transmitted to every generated project.*
   - Test that Wu Wei is in guardian-protocol.json.
 
 ## Knowledge Tests
+
+### tests\knowledge\test_system_structure.py
+
+*Comprehensive tests for knowledge JSON file structure validation.
+
+Tests validate that all knowledge JSON files have:
+- Required fields (id, name, version, category, description)
+- patterns object exists
+- best_practices array exists
+- anti_patterns array exists
+- Valid JSON structure*
+
+#### TestKnowledgeFileStructure
+*Tests for knowledge file structure and required fields.*
+
+- `test_knowledge_files_exist`
+  - Test that knowledge files are found.
+- `test_knowledge_files_valid_json`
+  - Test that all knowledge files are valid JSON.
+- `test_knowledge_files_have_required_fields`
+  - Test that knowledge files have required fields: id, name, version, category, description.
+- `test_knowledge_id_matches_filename`
+  - Test that knowledge file id matches the filename (without extension).
+- `test_knowledge_files_have_patterns`
+  - Test that knowledge files have a patterns object.
+- `test_knowledge_files_have_best_practices`
+  - Test that knowledge files have a best_practices array.
+- `test_knowledge_files_have_anti_patterns`
+  - Test that knowledge files have an anti_patterns array.
+- `test_knowledge_version_format`
+  - Test that knowledge files have valid version format (semver-like).
+- `test_knowledge_category_is_valid`
+  - Test that knowledge files have valid category values.
+
+#### TestKnowledgePatternsStructure
+*Tests for patterns object structure within knowledge files.*
+
+- `test_patterns_is_not_empty`
+  - Test that patterns object is not empty.
+- `test_patterns_have_descriptions`
+  - Test that patterns have description fields.
 
 ### tests\knowledge\test_tier_selection.py
 
@@ -2320,6 +2436,539 @@ Tests hybrid storage functionality with ChromaDB and proposal queue.*
 
 ## Unit Tests
 
+### tests\unit\sync\test_sync_artifacts.py
+
+*Tests for scripts/validation/sync_artifacts.py
+
+Comprehensive tests for the unified artifact sync system including:
+- Configuration loading from sync_config.json
+- Artifact scanning with inclusion/exclusion logic
+- Sync strategies (count, json_field, category_counts, tree_annotation)
+- Directory-based triggers for CI optimization
+- Integration with actual project files
+
+### Why This Matters
+Artifact synchronization ensures that the factory's documentation (README, guides, catalogs)
+stays perfectly in sync with the actual code and data (agents, skills, tests).
+This prevents documentation rot, provides accurate metrics to users, and ensures
+that generated catalogs always reflect the current capabilities of the factory.
+In CI, these tests prevent pushing changes that would leave documentation in an
+inconsistent state.*
+
+#### TestArtifactScanner
+*Tests for the ArtifactScanner class.*
+
+- `test_scan_finds_matching_files`
+  - Verify that the scanner correctly identifies files matching a glob pattern.
+
+How: Creates a dummy directory structure with matching and non-matching files,
+then runs the scanner with a specific glob pattern.
+Why: Ensures the core scanning logic can distinguish between artifacts and
+other files in the source directory.
+- `test_scan_respects_exclusions`
+  - Verify that the scanner respects the exclusion list in the configuration.
+
+How: Creates a directory structure with a subdirectory that should be excluded,
+then runs the scanner with an exclusion pattern.
+Why: Allows users to skip certain files or directories (like templates or
+internal metadata) when scanning for artifacts.
+- `test_scan_recursive`
+  - Verify that the scanner can perform recursive searches when configured.
+
+How: Creates separate levels of directories and files, then runs the scanner
+with recursive=True and a broad pattern.
+Why: Essential for artifacts that may be nested deep within a directory
+structure, such as workflow definitions or multi-level skills.
+- `test_scan_parent_dir_id_extractor`
+  - Verify that artifact IDs can be extracted from their parent directory names.
+
+How: Places a file in a named subdirectory and runs the scanner with
+id_extractor='parent_dir_name'.
+Why: Supports artifacts where the folder name is the primary identifier
+(e.g., skill or blueprint folders containing a standardized SKILL.md file).
+- `test_scan_returns_empty_for_missing_dir`
+  - Verify that the scanner handles non-existent source directories gracefully.
+
+How: Configures a scan for a directory that does not exist in the filesystem.
+Why: Prevents the sync engine from crashing if a configured directory is
+missing or has been renamed, returning an empty set of artifacts instead.
+
+#### TestCountSyncStrategy
+*Tests for the CountSyncStrategy class.*
+
+- `test_detects_out_of_sync_count`
+  - Verify that the count strategy correctly identifies a mismatch in numbers.
+
+How: Provides a file with a specific count and compares it against a
+different actual count.
+Why: The primary mechanism for ensuring that README footers or guide
+summaries accurately reflect the current file counts in the repo.
+- `test_reports_in_sync_when_matched`
+  - Verify that the count strategy reports no changes when the numbers match.
+
+How: Provides a file with a count that perfectly matches the actual count.
+Why: Ensures that the sync process is idempotent and doesn't perform
+unnecessary file writes when the state is already correct.
+- `test_dry_run_does_not_modify_file`
+  - Verify that dry-run mode correctly avoids any filesystem modifications.
+
+How: Runs the sync logic with dry_run=True and then checks the file content
+remains identical to the original.
+Why: Critical for CI validation where we want to detect drift without
+actually changing the files in the checkout.
+- `test_updates_file_when_sync`
+  - Verify that the strategy correctly updates the file content when syncing.
+
+How: Runs the sync logic with dry_run=False and then checks the file content
+has been updated with the new count.
+Why: Ensures the auto-fix capability of the sync script actually works
+and correctly applies the regex-based replacement.
+
+#### TestJsonFieldSyncStrategy
+*Tests for the JsonFieldSyncStrategy class.*
+
+- `test_updates_nested_json_field`
+  - Verify that the JSON strategy can update values deep within a nested structure.
+
+How: Creates a JSON file with nested property and runs sync with dot-walk path.
+Why: Many project meta-files (like manifest.json) use nested objects for
+organization, and we must be able to target them precisely.
+- `test_creates_missing_nested_structure`
+  - Verify that the JSON strategy creates missing parent objects if they don't exist.
+
+How: Targets a nested path in an empty JSON object.
+Why: Simplifies configuration by allowing the sync process to initialize
+statistics or metadata structures if they are missing from a new file.
+
+#### TestSyncEngine
+*Tests for the SyncEngine class.*
+
+- `test_loads_config_from_file`
+  - Verify that the SyncEngine correctly parses the main sync_config.json file.
+
+How: Creates a valid mock config file and initializes the engine with it.
+Why: The entire sync system is drive by this configuration; failure to
+parse it correctly would break all synchronization tasks.
+- `test_get_directory_triggers`
+  - Verify that the engine correctly maps source directories to artifact types.
+
+How: Configures directory triggers and checks the returned mapping.
+Why: Used by CI to determine which documentation files need re-syncing
+based on which code directories were modified in a pull request.
+- `test_get_artifacts_for_dirs`
+  - Verify that the engine identifies the correct artifacts impacted by changed dirs.
+
+How: Provided a list of changed paths and checks if the corresponding
+artifacts are returned.
+Why: Critical for 'smart sync' where we only run expensive validation and
+sync tasks for components that actually changed.
+- `test_sync_artifact_unknown_returns_error`
+  - Verify that requesting a sync for a non-existent artifact returns an error.
+
+How: Calls sync_artifact with an ID that is not in the configuration.
+Why: Ensures the API provides feedback when invalid artifact types are
+requested, rather than failing silently or with a generic error.
+
+#### TestIntegration
+*Integration tests using actual project files.*
+
+- `test_config_file_exists`
+  - Sanity check that the actual production sync_config.json exists in the repo.
+
+How: Checks for the existence of the config file relative to factory root.
+Why: The entire validation suite relies on this file; its absence would
+be a critical repository misconfiguration.
+- `test_config_is_valid_json`
+  - Verify that the production sync_config.json is valid and readable JSON.
+
+How: Attempts to load the actual config file with the json library.
+Why: Prevents accidental syntax errors in the JSON config from breaking
+the CI pipeline.
+- `test_config_has_all_artifact_types`
+  - Verify that all core factory artifacts are defined in the sync configuration.
+
+How: Checks the artifact list against the expected set of factory types.
+Why: Ensures developers don't forget to add documentation sync rules
+when new artifact types are added to the system.
+- `test_engine_loads_successfully`
+  - Verify that the SyncEngine can initialize with the real production config.
+
+How: Initializes a new SyncEngine instance pointing to the repo root.
+Why: Validates that the production config is not only valid JSON but
+also logically correct for the defined SyncEngine schema.
+- `test_sync_all_dry_run_succeeds`
+  - Perform a full dry-run sync across all artifacts in the actual repository.
+
+How: Runs engine.sync_all(dry_run=True) and checks for errors in the results.
+Why: This is the definitive integration test for the Entire Repo's
+documentation state. It ensures every sync target is valid and reachable.
+- `test_artifacts_are_currently_synced`
+  - Verify that the repository documentation is currently in a perfectly synced state.
+
+How: Runs sync_all and asserts that zero 'changed' status items are returned.
+Why: Used as a CI gate to ensure PRs don't introduce documentation drift.
+If this fails, the developer must run 'sync_artifacts.py --sync' locally.
+
+#### TestDirectoryDetection
+*Tests for directory-based sync triggering.*
+
+- `test_detects_agents_dir`
+  - Verify that changes to the agents directory trigger a sync for that artifact.
+
+How: Simulates a change to an agent file and checks if the 'agents'
+artifact type is correctly identified.
+Why: Documentation for agents (like README counts) must be updated
+whenever an agent is added, removed, or changed.
+- `test_detects_nested_path`
+  - Verify that nested file changes correctly trigger parent artifact syncs.
+
+How: Simulates a change to a deeply nested file within a trigger directory.
+Why: Ensures that changes to sub-components (like a specific skill's
+internal logic) still trigger the high-level artifact sync.
+
+#### TestCategoryTestCounts
+*Tests for the CategoryTestCounts NamedTuple.*
+
+- `test_creates_valid_namedtuple`
+  - Should create a valid CategoryTestCounts instance.
+- `test_counts_are_immutable`
+  - CategoryTestCounts should be immutable.
+
+#### TestGetPythonPath
+*Tests for Python path detection.*
+
+- `test_returns_current_interpreter`
+  - Verify that get_python_path returns the current active Python interpreter.
+
+How: Compares the function result against sys.executable.
+Why: Ensures that sync scripts run by the factory use the same
+environment/interpreter as the factory itself, avoiding dependency issues.
+
+#### TestCollectTestCount
+*Tests for test count collection.*
+
+- `test_returns_integer`
+  - Verify that collect_test_count returns the number of tests as an integer.
+
+How: Mocks the subprocess call to return a standard pytest collection
+output and checks if the correct number is parsed.
+Why: Core helper for the 'tests' artifact count target.
+- `test_handles_subprocess_timeout`
+  - Verify that the collector handles subprocess timeouts gracefully by returning 0.
+
+How: Simulates a TimeoutExpired exception in the mocked subprocess.run call.
+Why: Prevents the entire sync process from hanging if pytest takes too long
+to collect tests (e.g., due to extreme recursion in test generators).
+- `test_handles_missing_directory`
+  - Verify that the collector returns 0 when the target test directory is missing.
+
+How: Attempts to collect tests from a non-existent path.
+Why: Ensures that if a test category is renamed or deleted, the sync
+script doesn't crash, but instead reports 0 tests.
+- `test_parses_plural_tests`
+  - Verify that the parser correctly extracts counts when multiple tests are found.
+
+How: Provides '100 tests collected' string to the parser.
+Why: Pytest uses plural 'tests' when count > 1.
+- `test_parses_singular_test`
+  - Verify that the parser correctly extracts counts when exactly one test is found.
+
+How: Provides '1 test collected' string to the parser.
+Why: Ensure the regex handles the singular 'test' case which has different
+output formatting in pytest.
+
+#### TestExtractDocumentedCounts
+*Tests for extracting counts from TESTING.md content.*
+
+- `test_extracts_total_count`
+  - Should extract total test count.
+- `test_extracts_category_counts`
+  - Should extract all category counts.
+- `test_handles_missing_total`
+  - Verify that the extractor returns 0 for the total if it's not found in content.
+
+How: Provides a string that does not match the 'consists of **X tests**' pattern.
+Why: Robustness against malformed or missing documentation sections.
+- `test_handles_missing_categories`
+  - Verify that the extractor returns 0 for categories missing from the table.
+
+How: Provides a string with a total count but no category table.
+Why: Ensures the sync script doesn't crash if only the total count exists
+but the category breakdown is missing.
+
+#### TestUpdateTestingMd
+*Tests for updating TESTING.md.*
+
+- `test_detects_out_of_sync_total`
+  - Should detect when total count is out of sync.
+- `test_dry_run_does_not_modify_file`
+  - Verify that update_testing_md respects the dry_run flag.
+
+How: Calls the function with dry_run=True and checks that the file
+remains unchanged despite being out of sync.
+Why: Safety mechanism for validation-only runs.
+- `test_sync_updates_file`
+  - Should update file when dry_run=False.
+- `test_reports_missing_file`
+  - Verify that update_testing_md handles the absence of the target file.
+
+How: Calls the function when TESTING.md hasn't been created yet.
+Why: Ensures the sync script provides helpful error messages instead of
+crashing if a target file is missing.
+- `test_no_changes_when_synced`
+  - Verify that update_testing_md returns zero changes when counts match EXACTLY.
+
+How: Provides a file with counts that match the 'actual' parameter.
+Why: Confirms idempotency of the high-level sync operation.
+
+### tests\unit\sync\test_sync_knowledge_counts.py
+
+*Tests for scripts/validation/sync_knowledge_counts.py
+
+Ensures the knowledge count sync script correctly:
+- Counts knowledge files in knowledge/ directory
+- Extracts counts from manifest.json and KNOWLEDGE_FILES.md
+- Updates files when counts differ*
+
+#### TestCountKnowledgeFiles
+*Tests for counting knowledge files.*
+
+- `test_counts_json_files`
+  - Should count all .json files in knowledge/.
+- `test_excludes_underscore_prefixed`
+  - Should exclude files starting with underscore.
+- `test_excludes_subdirectories`
+  - Should not count files in subdirectories.
+- `test_returns_zero_for_missing_dir`
+  - Should return 0 if knowledge/ doesn't exist.
+
+#### TestGetManifestCount
+*Tests for extracting count from manifest.json.*
+
+- `test_extracts_total_files`
+  - Should extract statistics.total_files from manifest.
+- `test_returns_zero_for_missing_manifest`
+  - Should return 0 if manifest doesn't exist.
+- `test_returns_zero_for_missing_statistics`
+  - Should return 0 if statistics key is missing.
+
+#### TestGetDocsCount
+*Tests for extracting count from KNOWLEDGE_FILES.md.*
+
+- `test_extracts_count_from_docs`
+  - Should extract count from KNOWLEDGE_FILES.md.
+- `test_returns_zero_for_missing_file`
+  - Should return 0 if file doesn't exist.
+- `test_returns_zero_for_no_match`
+  - Should return 0 if pattern doesn't match.
+
+#### TestUpdateManifest
+*Tests for updating manifest.json.*
+
+- `test_dry_run_does_not_modify`
+  - Should not modify file when dry_run=True.
+- `test_updates_count`
+  - Should update count when dry_run=False.
+- `test_returns_false_when_synced`
+  - Should return False when counts match.
+
+#### TestUpdateDocs
+*Tests for updating KNOWLEDGE_FILES.md.*
+
+- `test_dry_run_does_not_modify`
+  - Should not modify file when dry_run=True.
+- `test_updates_count`
+  - Should update count when dry_run=False.
+
+#### TestSyncKnowledgeCounts
+*Tests for the main sync function.*
+
+- `test_detects_out_of_sync`
+  - Should detect when counts are out of sync.
+- `test_reports_synced_when_matched`
+  - Should report synced when all counts match.
+
+#### TestIntegration
+*Integration tests using actual project files.*
+
+- `test_knowledge_dir_exists`
+  - knowledge/ directory should exist.
+- `test_manifest_exists`
+  - knowledge/manifest.json should exist.
+- `test_knowledge_files_md_exists`
+  - docs/reference/KNOWLEDGE_FILES.md should exist.
+- `test_counts_are_currently_synced`
+  - Current knowledge counts should be in sync.
+
+### tests\unit\sync\test_sync_manifest_versions.py
+
+*Tests for scripts/validation/sync_manifest_versions.py
+
+Ensures the version sync script correctly:
+- Extracts version from CHANGELOG.md
+- Identifies out-of-sync versions in various files
+- Updates files when --sync is used*
+
+#### TestGetChangelogVersion
+*Tests for extracting version from CHANGELOG.md.*
+
+- `test_extracts_version_from_valid_changelog`
+  - Should extract the first version header from CHANGELOG.md.
+- `test_handles_missing_changelog`
+  - Should return 0.0.0 if CHANGELOG.md doesn't exist.
+- `test_handles_changelog_without_version`
+  - Should return 0.0.0 if no version header found.
+
+#### TestGetFileVersionGeneric
+*Tests for extracting version from files using regex.*
+
+- `test_extracts_version_with_valid_pattern`
+  - Should extract version matching the pattern.
+- `test_returns_none_for_missing_file`
+  - Should return None if file doesn't exist.
+- `test_returns_none_for_no_match`
+  - Should return None if pattern doesn't match.
+
+#### TestSyncFileVersion
+*Tests for syncing version in a file.*
+
+- `test_dry_run_does_not_modify_file`
+  - Should not modify file when dry_run=True.
+- `test_sync_updates_file`
+  - Should update file when dry_run=False.
+- `test_returns_false_for_missing_file`
+  - Should return False if file doesn't exist.
+- `test_returns_false_for_no_pattern_match`
+  - Should return False if pattern doesn't match.
+
+#### TestGetFileVersion
+*Tests for extracting version from JSON knowledge files.*
+
+- `test_extracts_version_from_valid_json`
+  - Should extract version from JSON file.
+- `test_returns_none_for_missing_version`
+  - Should return None if no version field.
+- `test_returns_none_for_invalid_json`
+  - Should return None for invalid JSON.
+- `test_returns_none_for_missing_file`
+  - Should return None if file doesn't exist.
+
+#### TestVersionLocations
+*Tests for VERSION_LOCATIONS configuration.*
+
+- `test_all_locations_have_required_keys`
+  - All VERSION_LOCATIONS entries should have required keys.
+- `test_all_patterns_are_valid_regex`
+  - All patterns should be valid regex.
+- `test_replacement_functions_are_callable`
+  - All replacement functions should be callable.
+- `test_replacement_functions_produce_valid_strings`
+  - Replacement functions should return strings with version.
+
+#### TestSyncManifest
+*Tests for the main sync_manifest function.*
+
+- `test_detects_out_of_sync_factory_version`
+  - Should detect when factory_version is out of sync.
+- `test_reports_synced_when_all_match`
+  - Should report all synced when versions match.
+
+#### TestIntegration
+*Integration tests using actual project files.*
+
+- `test_changelog_exists_and_has_version`
+  - CHANGELOG.md should exist and have a valid version.
+- `test_version_locations_files_exist`
+  - All files in VERSION_LOCATIONS should exist.
+- `test_current_state_is_synced`
+  - Current factory state should be version-synced.
+
+### tests\unit\sync\test_sync_test_counts.py
+
+*Tests for test count synchronization functionality.
+
+Tests the unified sync_artifacts.py test count capabilities:
+- Collects test counts from pytest
+- Extracts documented counts from TESTING.md
+- Updates TESTING.md when counts differ
+
+Note: The deprecated sync_test_counts.py is a thin wrapper that re-exports
+these functions for backward compatibility.*
+
+#### TestCategoryTestCounts
+*Tests for the CategoryTestCounts NamedTuple.*
+
+- `test_creates_valid_namedtuple`
+  - Should create a valid CategoryTestCounts instance.
+- `test_counts_are_immutable`
+  - CategoryTestCounts should be immutable.
+- `test_deprecated_alias_works`
+  - CountsByCategory alias from deprecated module should work.
+
+#### TestGetPythonPath
+*Tests for Python path detection.*
+
+- `test_returns_string`
+  - Should return a string path.
+- `test_returns_current_interpreter`
+  - Should return the current Python interpreter.
+
+#### TestCollectTestCount
+*Tests for test count collection.*
+
+- `test_returns_integer`
+  - Should return an integer count.
+- `test_handles_subprocess_timeout`
+  - Should return 0 on timeout.
+- `test_handles_missing_directory`
+  - Should return 0 for non-existent directory.
+- `test_parses_plural_tests`
+  - Should parse 'tests collected' output.
+- `test_parses_singular_test`
+  - Should parse '1 test collected' output.
+
+#### TestExtractDocumentedCounts
+*Tests for extracting counts from TESTING.md content.*
+
+- `test_extracts_total_count`
+  - Should extract total test count.
+- `test_extracts_category_counts`
+  - Should extract all category counts.
+- `test_handles_missing_total`
+  - Should return 0 for missing total.
+- `test_handles_missing_categories`
+  - Should return 0 for missing categories.
+
+#### TestUpdateTestingMd
+*Tests for updating TESTING.md.*
+
+- `test_detects_out_of_sync_total`
+  - Should detect when total count is out of sync.
+- `test_dry_run_does_not_modify_file`
+  - Should not modify file when dry_run=True.
+- `test_sync_updates_file`
+  - Should update file when dry_run=False.
+- `test_reports_missing_file`
+  - Should report when TESTING.md is missing.
+- `test_no_changes_when_synced`
+  - Should return empty changes when counts match.
+
+#### TestIntegration
+*Integration tests using actual project files.*
+
+- `test_testing_md_exists`
+  - docs/testing/testing.md should exist.
+- `test_testing_md_has_expected_structure`
+  - testing.md should have the expected structure for parsing.
+- `test_can_extract_counts_from_real_file`
+  - Should be able to extract counts from actual testing.md.
+- `test_counts_are_currently_synced`
+  - Current test counts should match documentation.
+
+Note: This test respects A2 Truth - test counts are environment-dependent.
+When TESTING.md uses approximate counts (e.g., "1300+ tests"), exact sync
+is not enforced. The measure of success is that tests pass, not the count.
+
 ### tests\unit\test_adapters.py
 
 *Unit Tests for Knowledge Source Adapters
@@ -3457,217 +4106,6 @@ Tests for GapType and GapPriority enumerations.*
 - `test_priority_from_value`
   - Test creating GapPriority from value.
 
-### tests\unit\test_guardian_axiom_checker.py
-
-*Unit tests for the Guardian Axiom Checker.
-
-These tests verify that the axiom checker correctly identifies
-potentially harmful operations according to the core axioms.*
-
-#### TestCheckCommand
-*Tests for shell command checking.*
-
-- `test_level_4_critical_commands`
-  - Critical commands should trigger Level 4 (Protect).
-- `test_sensitive_file_access`
-  - Access to sensitive files should trigger pause.
-- `test_safe_commands`
-  - Safe commands should pass without intervention.
-
-#### TestCheckFileOperation
-*Tests for file operation checking.*
-
-- `test_critical_path_deletion`
-  - Deletion of critical system paths should be blocked.
-- `test_sensitive_file_deletion`
-  - Deletion of sensitive files should require confirmation.
-- `test_normal_file_operations`
-  - Normal file operations should pass.
-
-#### TestCheckContentForClaims
-*Tests for content claim checking (A1 - Verifiability).*
-
-- `test_claim_detection`
-  - Claims should be detected for verification.
-
-#### TestValidateOperation
-*Tests for the main validation entry point.*
-
-- `test_command_validation`
-  - Command validation should work through main entry point.
-- `test_file_write_validation`
-  - File write validation should work through main entry point.
-- `test_file_delete_validation`
-  - File delete validation should work through main entry point.
-- `test_content_validation`
-  - Content validation should work through main entry point.
-
-#### TestCheckResultProperties
-*Tests for CheckResult helper properties.*
-
-- `test_requires_user_level_0`
-  - Level 0 should not require user.
-- `test_requires_user_level_2`
-  - Level 2+ should require user.
-- `test_is_emergency_level_3`
-  - Level 3 should not be emergency.
-- `test_is_emergency_level_4`
-  - Level 4 should be emergency.
-
-#### TestAxiomCoverage
-*Tests to ensure all axioms are being checked.*
-
-- `test_a1_verifiability_checked`
-  - A1 (Verifiability) should be checked in content.
-- `test_a4_non_harm_checked`
-  - A4 (Non-Harm) should be checked in commands.
-- `test_a4_non_harm_in_files`
-  - A4 (Non-Harm) should be checked in file operations.
-
-### tests\unit\test_guardian_harm_detector.py
-
-*Unit tests for the Guardian Harm Detector.
-
-These tests verify the comprehensive harm detection that combines
-axiom checking, secret scanning, and content analysis.*
-
-#### TestAnalyzeCommand
-*Tests for command analysis.*
-
-- `test_safe_command`
-  - Safe commands should produce safe report.
-- `test_dangerous_command`
-  - Dangerous commands should produce unsafe report.
-
-#### TestAnalyzeFileOperation
-*Tests for file operation analysis.*
-
-- `test_normal_file_write`
-  - Writing to normal file should be safe.
-- `test_env_file_write`
-  - Writing to .env should trigger caution.
-- `test_cursorrules_modification`
-  - Modifying .agentrules should trigger caution.
-- `test_file_with_secrets`
-  - File content with secrets should be flagged.
-- `test_dockerfile_modification`
-  - Modifying Dockerfile should trigger caution.
-- `test_cicd_modification`
-  - Modifying CI/CD files should trigger caution.
-
-#### TestAnalyzeContent
-*Tests for content analysis.*
-
-- `test_safe_content`
-  - Normal content should be safe.
-- `test_content_with_secrets`
-  - Content with secrets should be flagged.
-- `test_harmful_patterns`
-  - Harmful content patterns should be flagged.
-
-#### TestComprehensiveCheck
-*Tests for comprehensive harm analysis.*
-
-- `test_nothing_to_check`
-  - Empty check should return safe.
-- `test_command_only`
-  - Command-only check should work.
-- `test_file_only`
-  - File-only check should work.
-- `test_content_only`
-  - Content-only check should work.
-- `test_combined_check`
-  - Combined check should find highest severity.
-- `test_all_safe`
-  - All safe inputs should produce safe report.
-
-#### TestHarmReport
-*Tests for HarmReport structure.*
-
-- `test_safe_report_str`
-  - Safe report string representation.
-- `test_unsafe_report_str`
-  - Unsafe report string representation.
-
-#### TestAxiomAlignment
-*Tests verifying alignment with core axioms.*
-
-- `test_a1_verifiability`
-  - A1: Claims should be flagged for verification.
-- `test_a3_transparency`
-  - A3: Hidden logic should be flagged.
-- `test_a4_non_harm`
-  - A4: Harmful actions should be blocked.
-- `test_a5_consistency`
-  - A5: Instruction override attempts should be flagged.
-
-### tests\unit\test_guardian_secret_scanner.py
-
-*Unit tests for the Guardian Secret Scanner.
-
-These tests verify that the secret scanner correctly identifies
-credentials and secrets in content to prevent accidental exposure.*
-
-#### TestScanContent
-*Tests for content scanning.*
-
-- `test_high_severity_api_keys`
-  - High severity API keys should be detected.
-- `test_private_keys`
-  - Private keys should be detected as high severity.
-- `test_database_connection_strings`
-  - Database connection strings should be detected.
-- `test_medium_severity_patterns`
-  - Medium severity patterns should be detected.
-- `test_false_positives_filtered`
-  - Placeholder values should not be detected as secrets.
-- `test_multiline_content`
-  - Scanner should handle multiline content correctly.
-
-#### TestRedactSecret
-*Tests for secret redaction.*
-
-- `test_short_secret`
-  - Short secrets should be fully redacted.
-- `test_long_secret`
-  - Long secrets should show first and last 4 chars.
-
-#### TestIsFalsePositive
-*Tests for false positive detection.*
-
-- `test_false_positive_patterns`
-  - False positive patterns should be correctly identified.
-
-#### TestScanDiff
-*Tests for git diff scanning.*
-
-- `test_only_added_lines_checked`
-  - Only added lines (starting with +) should be checked.
-- `test_removed_lines_ignored`
-  - Removed lines (starting with -) should not be checked.
-
-#### TestGetSeverityLevel
-*Tests for severity to Guardian level mapping.*
-
-- `test_no_matches`
-  - No matches should return Level 0.
-- `test_high_severity`
-  - High severity should return Level 4.
-- `test_medium_severity`
-  - Medium severity should return Level 3.
-- `test_low_severity`
-  - Low severity should return Level 2.
-- `test_mixed_severity`
-  - Mixed severity should return highest level.
-
-#### TestScanFile
-*Tests for file scanning.*
-
-- `test_scan_nonexistent_file`
-  - Scanning nonexistent file should return empty list.
-- `test_skip_binary_files`
-  - Binary files should be skipped.
-
 ### tests\unit\test_install_hooks.py
 
 *Unit tests for scripts/git/install_hooks.py
@@ -4573,539 +5011,6 @@ Test Categories:
   - Pattern should be serializable for inclusion in generated projects.
 - `test_no_absolute_paths`
   - Pattern should not contain absolute paths.
-
-### tests\unit\test_sync_artifacts.py
-
-*Tests for scripts/validation/sync_artifacts.py
-
-Comprehensive tests for the unified artifact sync system including:
-- Configuration loading from sync_config.json
-- Artifact scanning with inclusion/exclusion logic
-- Sync strategies (count, json_field, category_counts, tree_annotation)
-- Directory-based triggers for CI optimization
-- Integration with actual project files
-
-### Why This Matters
-Artifact synchronization ensures that the factory's documentation (README, guides, catalogs) 
-stays perfectly in sync with the actual code and data (agents, skills, tests). 
-This prevents documentation rot, provides accurate metrics to users, and ensures 
-that generated catalogs always reflect the current capabilities of the factory.
-In CI, these tests prevent pushing changes that would leave documentation in an 
-inconsistent state.*
-
-#### TestArtifactScanner
-*Tests for the ArtifactScanner class.*
-
-- `test_scan_finds_matching_files`
-  - Verify that the scanner correctly identifies files matching a glob pattern.
-
-How: Creates a dummy directory structure with matching and non-matching files,
-then runs the scanner with a specific glob pattern.
-Why: Ensures the core scanning logic can distinguish between artifacts and 
-other files in the source directory.
-- `test_scan_respects_exclusions`
-  - Verify that the scanner respects the exclusion list in the configuration.
-
-How: Creates a directory structure with a subdirectory that should be excluded,
-then runs the scanner with an exclusion pattern.
-Why: Allows users to skip certain files or directories (like templates or
-internal metadata) when scanning for artifacts.
-- `test_scan_recursive`
-  - Verify that the scanner can perform recursive searches when configured.
-
-How: Creates separate levels of directories and files, then runs the scanner
-with recursive=True and a broad pattern.
-Why: Essential for artifacts that may be nested deep within a directory
-structure, such as workflow definitions or multi-level skills.
-- `test_scan_parent_dir_id_extractor`
-  - Verify that artifact IDs can be extracted from their parent directory names.
-
-How: Places a file in a named subdirectory and runs the scanner with
-id_extractor='parent_dir_name'.
-Why: Supports artifacts where the folder name is the primary identifier
-(e.g., skill or blueprint folders containing a standardized SKILL.md file).
-- `test_scan_returns_empty_for_missing_dir`
-  - Verify that the scanner handles non-existent source directories gracefully.
-
-How: Configures a scan for a directory that does not exist in the filesystem.
-Why: Prevents the sync engine from crashing if a configured directory is 
-missing or has been renamed, returning an empty set of artifacts instead.
-
-#### TestCountSyncStrategy
-*Tests for the CountSyncStrategy class.*
-
-- `test_detects_out_of_sync_count`
-  - Verify that the count strategy correctly identifies a mismatch in numbers.
-
-How: Provides a file with a specific count and compares it against a 
-different actual count.
-Why: The primary mechanism for ensuring that README footers or guide
-summaries accurately reflect the current file counts in the repo.
-- `test_reports_in_sync_when_matched`
-  - Verify that the count strategy reports no changes when the numbers match.
-
-How: Provides a file with a count that perfectly matches the actual count.
-Why: Ensures that the sync process is idempotent and doesn't perform
-unnecessary file writes when the state is already correct.
-- `test_dry_run_does_not_modify_file`
-  - Verify that dry-run mode correctly avoids any filesystem modifications.
-
-How: Runs the sync logic with dry_run=True and then checks the file content
-remains identical to the original.
-Why: Critical for CI validation where we want to detect drift without
-actually changing the files in the checkout.
-- `test_updates_file_when_sync`
-  - Verify that the strategy correctly updates the file content when syncing.
-
-How: Runs the sync logic with dry_run=False and then checks the file content
-has been updated with the new count.
-Why: Ensures the auto-fix capability of the sync script actually works
-and correctly applies the regex-based replacement.
-
-#### TestJsonFieldSyncStrategy
-*Tests for the JsonFieldSyncStrategy class.*
-
-- `test_updates_nested_json_field`
-  - Verify that the JSON strategy can update values deep within a nested structure.
-
-How: Creates a JSON file with nested property and runs sync with dot-walk path.
-Why: Many project meta-files (like manifest.json) use nested objects for 
-organization, and we must be able to target them precisely.
-- `test_creates_missing_nested_structure`
-  - Verify that the JSON strategy creates missing parent objects if they don't exist.
-
-How: Targets a nested path in an empty JSON object.
-Why: Simplifies configuration by allowing the sync process to initialize
-statistics or metadata structures if they are missing from a new file.
-
-#### TestSyncEngine
-*Tests for the SyncEngine class.*
-
-- `test_loads_config_from_file`
-  - Verify that the SyncEngine correctly parses the main sync_config.json file.
-
-How: Creates a valid mock config file and initializes the engine with it.
-Why: The entire sync system is drive by this configuration; failure to 
-parse it correctly would break all synchronization tasks.
-- `test_get_directory_triggers`
-  - Verify that the engine correctly maps source directories to artifact types.
-
-How: Configures directory triggers and checks the returned mapping.
-Why: Used by CI to determine which documentation files need re-syncing
-based on which code directories were modified in a pull request.
-- `test_get_artifacts_for_dirs`
-  - Verify that the engine identifies the correct artifacts impacted by changed dirs.
-
-How: Provided a list of changed paths and checks if the corresponding 
-artifacts are returned.
-Why: Critical for 'smart sync' where we only run expensive validation and
-sync tasks for components that actually changed.
-- `test_sync_artifact_unknown_returns_error`
-  - Verify that requesting a sync for a non-existent artifact returns an error.
-
-How: Calls sync_artifact with an ID that is not in the configuration.
-Why: Ensures the API provides feedback when invalid artifact types are 
-requested, rather than failing silently or with a generic error.
-
-#### TestIntegration
-*Integration tests using actual project files.*
-
-- `test_config_file_exists`
-  - Sanity check that the actual production sync_config.json exists in the repo.
-
-How: Checks for the existence of the config file relative to factory root.
-Why: The entire validation suite relies on this file; its absence would 
-be a critical repository misconfiguration.
-- `test_config_is_valid_json`
-  - Verify that the production sync_config.json is valid and readable JSON.
-
-How: Attempts to load the actual config file with the json library.
-Why: Prevents accidental syntax errors in the JSON config from breaking
-the CI pipeline.
-- `test_config_has_all_artifact_types`
-  - Verify that all core factory artifacts are defined in the sync configuration.
-
-How: Checks the artifact list against the expected set of factory types.
-Why: Ensures developers don't forget to add documentation sync rules 
-when new artifact types are added to the system.
-- `test_engine_loads_successfully`
-  - Verify that the SyncEngine can initialize with the real production config.
-
-How: Initializes a new SyncEngine instance pointing to the repo root.
-Why: Validates that the production config is not only valid JSON but 
-also logically correct for the defined SyncEngine schema.
-- `test_sync_all_dry_run_succeeds`
-  - Perform a full dry-run sync across all artifacts in the actual repository.
-
-How: Runs engine.sync_all(dry_run=True) and checks for errors in the results.
-Why: This is the definitive integration test for the Entire Repo's 
-documentation state. It ensures every sync target is valid and reachable.
-- `test_artifacts_are_currently_synced`
-  - Verify that the repository documentation is currently in a perfectly synced state.
-
-How: Runs sync_all and asserts that zero 'changed' status items are returned.
-Why: Used as a CI gate to ensure PRs don't introduce documentation drift.
-If this fails, the developer must run 'sync_artifacts.py --sync' locally.
-
-#### TestDirectoryDetection
-*Tests for directory-based sync triggering.*
-
-- `test_detects_agents_dir`
-  - Verify that changes to the agents directory trigger a sync for that artifact.
-
-How: Simulates a change to an agent file and checks if the 'agents' 
-artifact type is correctly identified.
-Why: Documentation for agents (like README counts) must be updated 
-whenever an agent is added, removed, or changed.
-- `test_detects_nested_path`
-  - Verify that nested file changes correctly trigger parent artifact syncs.
-
-How: Simulates a change to a deeply nested file within a trigger directory.
-Why: Ensures that changes to sub-components (like a specific skill's 
-internal logic) still trigger the high-level artifact sync.
-
-#### TestCategoryTestCounts
-*Tests for the CategoryTestCounts NamedTuple.*
-
-- `test_creates_valid_namedtuple`
-  - Should create a valid CategoryTestCounts instance.
-- `test_counts_are_immutable`
-  - CategoryTestCounts should be immutable.
-
-#### TestGetPythonPath
-*Tests for Python path detection.*
-
-- `test_returns_current_interpreter`
-  - Verify that get_python_path returns the current active Python interpreter.
-
-How: Compares the function result against sys.executable.
-Why: Ensures that sync scripts run by the factory use the same 
-environment/interpreter as the factory itself, avoiding dependency issues.
-
-#### TestCollectTestCount
-*Tests for test count collection.*
-
-- `test_returns_integer`
-  - Verify that collect_test_count returns the number of tests as an integer.
-
-How: Mocks the subprocess call to return a standard pytest collection 
-output and checks if the correct number is parsed.
-Why: Core helper for the 'tests' artifact count target.
-- `test_handles_subprocess_timeout`
-  - Verify that the collector handles subprocess timeouts gracefully by returning 0.
-
-How: Simulates a TimeoutExpired exception in the mocked subprocess.run call.
-Why: Prevents the entire sync process from hanging if pytest takes too long
-to collect tests (e.g., due to extreme recursion in test generators).
-- `test_handles_missing_directory`
-  - Verify that the collector returns 0 when the target test directory is missing.
-
-How: Attempts to collect tests from a non-existent path.
-Why: Ensures that if a test category is renamed or deleted, the sync 
-script doesn't crash, but instead reports 0 tests.
-- `test_parses_plural_tests`
-  - Verify that the parser correctly extracts counts when multiple tests are found.
-
-How: Provides '100 tests collected' string to the parser.
-Why: Pytest uses plural 'tests' when count > 1.
-- `test_parses_singular_test`
-  - Verify that the parser correctly extracts counts when exactly one test is found.
-
-How: Provides '1 test collected' string to the parser.
-Why: Ensure the regex handles the singular 'test' case which has different 
-output formatting in pytest.
-
-#### TestExtractDocumentedCounts
-*Tests for extracting counts from TESTING.md content.*
-
-- `test_extracts_total_count`
-  - Should extract total test count.
-- `test_extracts_category_counts`
-  - Should extract all category counts.
-- `test_handles_missing_total`
-  - Verify that the extractor returns 0 for the total if it's not found in content.
-
-How: Provides a string that does not match the 'consists of **X tests**' pattern.
-Why: Robustness against malformed or missing documentation sections.
-- `test_handles_missing_categories`
-  - Verify that the extractor returns 0 for categories missing from the table.
-
-How: Provides a string with a total count but no category table.
-Why: Ensures the sync script doesn't crash if only the total count exists
-but the category breakdown is missing.
-
-#### TestUpdateTestingMd
-*Tests for updating TESTING.md.*
-
-- `test_detects_out_of_sync_total`
-  - Should detect when total count is out of sync.
-- `test_dry_run_does_not_modify_file`
-  - Verify that update_testing_md respects the dry_run flag.
-
-How: Calls the function with dry_run=True and checks that the file 
-remains unchanged despite being out of sync.
-Why: Safety mechanism for validation-only runs.
-- `test_sync_updates_file`
-  - Should update file when dry_run=False.
-- `test_reports_missing_file`
-  - Verify that update_testing_md handles the absence of the target file.
-
-How: Calls the function when TESTING.md hasn't been created yet.
-Why: Ensures the sync script provides helpful error messages instead of 
-crashing if a target file is missing.
-- `test_no_changes_when_synced`
-  - Verify that update_testing_md returns zero changes when counts match EXACTLY.
-
-How: Provides a file with counts that match the 'actual' parameter.
-Why: Confirms idempotency of the high-level sync operation.
-
-### tests\unit\test_sync_knowledge_counts.py
-
-*Tests for scripts/validation/sync_knowledge_counts.py
-
-Ensures the knowledge count sync script correctly:
-- Counts knowledge files in knowledge/ directory
-- Extracts counts from manifest.json and KNOWLEDGE_FILES.md
-- Updates files when counts differ*
-
-#### TestCountKnowledgeFiles
-*Tests for counting knowledge files.*
-
-- `test_counts_json_files`
-  - Should count all .json files in knowledge/.
-- `test_excludes_underscore_prefixed`
-  - Should exclude files starting with underscore.
-- `test_excludes_subdirectories`
-  - Should not count files in subdirectories.
-- `test_returns_zero_for_missing_dir`
-  - Should return 0 if knowledge/ doesn't exist.
-
-#### TestGetManifestCount
-*Tests for extracting count from manifest.json.*
-
-- `test_extracts_total_files`
-  - Should extract statistics.total_files from manifest.
-- `test_returns_zero_for_missing_manifest`
-  - Should return 0 if manifest doesn't exist.
-- `test_returns_zero_for_missing_statistics`
-  - Should return 0 if statistics key is missing.
-
-#### TestGetDocsCount
-*Tests for extracting count from KNOWLEDGE_FILES.md.*
-
-- `test_extracts_count_from_docs`
-  - Should extract count from KNOWLEDGE_FILES.md.
-- `test_returns_zero_for_missing_file`
-  - Should return 0 if file doesn't exist.
-- `test_returns_zero_for_no_match`
-  - Should return 0 if pattern doesn't match.
-
-#### TestUpdateManifest
-*Tests for updating manifest.json.*
-
-- `test_dry_run_does_not_modify`
-  - Should not modify file when dry_run=True.
-- `test_updates_count`
-  - Should update count when dry_run=False.
-- `test_returns_false_when_synced`
-  - Should return False when counts match.
-
-#### TestUpdateDocs
-*Tests for updating KNOWLEDGE_FILES.md.*
-
-- `test_dry_run_does_not_modify`
-  - Should not modify file when dry_run=True.
-- `test_updates_count`
-  - Should update count when dry_run=False.
-
-#### TestSyncKnowledgeCounts
-*Tests for the main sync function.*
-
-- `test_detects_out_of_sync`
-  - Should detect when counts are out of sync.
-- `test_reports_synced_when_matched`
-  - Should report synced when all counts match.
-
-#### TestIntegration
-*Integration tests using actual project files.*
-
-- `test_knowledge_dir_exists`
-  - knowledge/ directory should exist.
-- `test_manifest_exists`
-  - knowledge/manifest.json should exist.
-- `test_knowledge_files_md_exists`
-  - docs/reference/KNOWLEDGE_FILES.md should exist.
-- `test_counts_are_currently_synced`
-  - Current knowledge counts should be in sync.
-
-### tests\unit\test_sync_manifest_versions.py
-
-*Tests for scripts/validation/sync_manifest_versions.py
-
-Ensures the version sync script correctly:
-- Extracts version from CHANGELOG.md
-- Identifies out-of-sync versions in various files
-- Updates files when --sync is used*
-
-#### TestGetChangelogVersion
-*Tests for extracting version from CHANGELOG.md.*
-
-- `test_extracts_version_from_valid_changelog`
-  - Should extract the first version header from CHANGELOG.md.
-- `test_handles_missing_changelog`
-  - Should return 0.0.0 if CHANGELOG.md doesn't exist.
-- `test_handles_changelog_without_version`
-  - Should return 0.0.0 if no version header found.
-
-#### TestGetFileVersionGeneric
-*Tests for extracting version from files using regex.*
-
-- `test_extracts_version_with_valid_pattern`
-  - Should extract version matching the pattern.
-- `test_returns_none_for_missing_file`
-  - Should return None if file doesn't exist.
-- `test_returns_none_for_no_match`
-  - Should return None if pattern doesn't match.
-
-#### TestSyncFileVersion
-*Tests for syncing version in a file.*
-
-- `test_dry_run_does_not_modify_file`
-  - Should not modify file when dry_run=True.
-- `test_sync_updates_file`
-  - Should update file when dry_run=False.
-- `test_returns_false_for_missing_file`
-  - Should return False if file doesn't exist.
-- `test_returns_false_for_no_pattern_match`
-  - Should return False if pattern doesn't match.
-
-#### TestGetFileVersion
-*Tests for extracting version from JSON knowledge files.*
-
-- `test_extracts_version_from_valid_json`
-  - Should extract version from JSON file.
-- `test_returns_none_for_missing_version`
-  - Should return None if no version field.
-- `test_returns_none_for_invalid_json`
-  - Should return None for invalid JSON.
-- `test_returns_none_for_missing_file`
-  - Should return None if file doesn't exist.
-
-#### TestVersionLocations
-*Tests for VERSION_LOCATIONS configuration.*
-
-- `test_all_locations_have_required_keys`
-  - All VERSION_LOCATIONS entries should have required keys.
-- `test_all_patterns_are_valid_regex`
-  - All patterns should be valid regex.
-- `test_replacement_functions_are_callable`
-  - All replacement functions should be callable.
-- `test_replacement_functions_produce_valid_strings`
-  - Replacement functions should return strings with version.
-
-#### TestSyncManifest
-*Tests for the main sync_manifest function.*
-
-- `test_detects_out_of_sync_factory_version`
-  - Should detect when factory_version is out of sync.
-- `test_reports_synced_when_all_match`
-  - Should report all synced when versions match.
-
-#### TestIntegration
-*Integration tests using actual project files.*
-
-- `test_changelog_exists_and_has_version`
-  - CHANGELOG.md should exist and have a valid version.
-- `test_version_locations_files_exist`
-  - All files in VERSION_LOCATIONS should exist.
-- `test_current_state_is_synced`
-  - Current factory state should be version-synced.
-
-### tests\unit\test_sync_test_counts.py
-
-*Tests for test count synchronization functionality.
-
-Tests the unified sync_artifacts.py test count capabilities:
-- Collects test counts from pytest
-- Extracts documented counts from TESTING.md
-- Updates TESTING.md when counts differ
-
-Note: The deprecated sync_test_counts.py is a thin wrapper that re-exports
-these functions for backward compatibility.*
-
-#### TestCategoryTestCounts
-*Tests for the CategoryTestCounts NamedTuple.*
-
-- `test_creates_valid_namedtuple`
-  - Should create a valid CategoryTestCounts instance.
-- `test_counts_are_immutable`
-  - CategoryTestCounts should be immutable.
-- `test_deprecated_alias_works`
-  - CountsByCategory alias from deprecated module should work.
-
-#### TestGetPythonPath
-*Tests for Python path detection.*
-
-- `test_returns_string`
-  - Should return a string path.
-- `test_returns_current_interpreter`
-  - Should return the current Python interpreter.
-
-#### TestCollectTestCount
-*Tests for test count collection.*
-
-- `test_returns_integer`
-  - Should return an integer count.
-- `test_handles_subprocess_timeout`
-  - Should return 0 on timeout.
-- `test_handles_missing_directory`
-  - Should return 0 for non-existent directory.
-- `test_parses_plural_tests`
-  - Should parse 'tests collected' output.
-- `test_parses_singular_test`
-  - Should parse '1 test collected' output.
-
-#### TestExtractDocumentedCounts
-*Tests for extracting counts from TESTING.md content.*
-
-- `test_extracts_total_count`
-  - Should extract total test count.
-- `test_extracts_category_counts`
-  - Should extract all category counts.
-- `test_handles_missing_total`
-  - Should return 0 for missing total.
-- `test_handles_missing_categories`
-  - Should return 0 for missing categories.
-
-#### TestUpdateTestingMd
-*Tests for updating TESTING.md.*
-
-- `test_detects_out_of_sync_total`
-  - Should detect when total count is out of sync.
-- `test_dry_run_does_not_modify_file`
-  - Should not modify file when dry_run=True.
-- `test_sync_updates_file`
-  - Should update file when dry_run=False.
-- `test_reports_missing_file`
-  - Should report when TESTING.md is missing.
-- `test_no_changes_when_synced`
-  - Should return empty changes when counts match.
-
-#### TestIntegration
-*Integration tests using actual project files.*
-
-- `test_testing_md_exists`
-  - docs/testing/testing.md should exist.
-- `test_testing_md_has_expected_structure`
-  - testing.md should have the expected structure for parsing.
-- `test_can_extract_counts_from_real_file`
-  - Should be able to extract counts from actual testing.md.
-- `test_counts_are_currently_synced`
-  - Current test counts should match documentation.
-
-Note: This test respects A2 Truth - test counts are environment-dependent.
-When TESTING.md uses approximate counts (e.g., "1300+ tests"), exact sync
-is not enforced. The measure of success is that tests pass, not the count.
 
 ### tests\unit\test_taxonomy.py
 
@@ -6246,6 +6151,53 @@ as the project evolves, catching drift before it reaches production.*
 - `test_has_minimum_blueprints`
   - Test that project has at least some blueprints defined.
 
+### tests\validation\test_skills_structure.py
+
+*Comprehensive tests for skill file structure validation.
+
+Tests validate that all skill files have:
+- Valid YAML frontmatter with required fields (name, description, type)
+- Proper markdown sections (When to Use, Prerequisites, Process, Best Practices)
+- Correct file structure and naming conventions*
+
+#### TestSkillFileStructure
+*Tests for skill file structure and organization.*
+
+- `test_skill_files_exist`
+  - Test that skill files are found.
+- `test_skill_files_have_yaml_frontmatter`
+  - Test that all skill files have YAML frontmatter.
+- `test_skill_frontmatter_has_required_fields`
+  - Test that skill frontmatter has required fields: name, description, type.
+- `test_skill_frontmatter_type_is_skill`
+  - Test that skill frontmatter type field is 'skill'.
+- `test_skill_frontmatter_name_matches_directory`
+  - Test that skill name matches the directory name.
+- `test_skill_frontmatter_valid_yaml`
+  - Test that skill frontmatter has valid YAML syntax.
+
+#### TestSkillMarkdownSections
+*Tests for required markdown sections in skill files.*
+
+- `test_skill_has_when_to_use_section`
+  - Test that skill files have 'When to Use' section.
+- `test_skill_has_prerequisites_section`
+  - Test that skill files have 'Prerequisites' section.
+- `test_skill_has_process_section`
+  - Test that skill files have 'Process' section.
+- `test_skill_has_best_practices_section`
+  - Test that skill files have 'Best Practices' section.
+- `test_skill_sections_have_content`
+  - Test that skill sections have actual content (not just headers).
+
+#### TestSkillFileNaming
+*Tests for skill file naming conventions.*
+
+- `test_skill_files_named_skill_md`
+  - Test that skill files are named SKILL.md.
+- `test_skill_directories_use_kebab_case`
+  - Test that skill directories use kebab-case naming.
+
 ### tests\validation\test_society_linting.py
 
 #### Standalone Tests
@@ -6303,6 +6255,49 @@ Tests validate that taxonomy JSON files conform to expected structure.*
   - Test that metadata defines coverage scale.
 - `test_coverage_scale_has_levels`
   - Test that coverage scale defines levels 0-3.
+
+### tests\validation\test_templates_syntax.py
+
+*Comprehensive tests for Jinja2 template syntax validation.
+
+Tests validate that all Jinja2 templates (.j2 files) have:
+- Valid Jinja2 syntax
+- Required variables documented (if applicable)
+- Proper template structure*
+
+#### TestTemplateSyntax
+*Tests for Jinja2 template syntax validation.*
+
+- `test_jinja2_available`
+  - Test that Jinja2 is available.
+- `test_template_files_exist`
+  - Test that template files are found.
+- `test_templates_have_valid_syntax`
+  - Test that all templates have valid Jinja2 syntax.
+- `test_templates_can_be_compiled`
+  - Test that all templates can be compiled.
+- `test_templates_have_balanced_braces`
+  - Test that templates have balanced Jinja2 braces.
+- `test_templates_have_valid_filters`
+  - Test that templates use valid Jinja2 filters.
+
+#### TestTemplateVariables
+*Tests for template variable usage and documentation.*
+
+- `test_templates_extract_undefined_variables`
+  - Test that we can extract undefined variables from templates.
+- `test_templates_use_default_filter_for_variables`
+  - Test that templates use default filter for optional variables.
+
+#### TestTemplateStructure
+*Tests for template file structure and organization.*
+
+- `test_templates_have_content`
+  - Test that templates are not empty.
+- `test_templates_have_reasonable_length`
+  - Test that templates have reasonable content length.
+- `test_templates_use_j2_extension`
+  - Test that all Jinja2 templates use .j2 extension.
 
 ### tests\validation\test_value_propagation.py
 

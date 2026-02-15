@@ -39,7 +39,7 @@ response = await client.chat.completions.create(
         "type": "mcp",
         "name": "github",
         "command": "docker", # Managed by MCP config
-        "args": ["run", ...] 
+        "args": ["run", ...]
     }]
 )
 ```

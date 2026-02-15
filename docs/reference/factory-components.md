@@ -74,7 +74,7 @@ For team onboarding, the **Workshop Facilitator** orchestrates a 5-workshop seri
 
 **Motto**: SDG • Love • Truth • Beauty
 
-**When Activated**: 
+**When Activated**:
 - Always active (embedded in system prompt)
 - Explicitly via "Guardian, check this" or "check my alignment"
 - Automatically when axiom boundaries are detected
@@ -139,7 +139,7 @@ For team onboarding, the **Workshop Facilitator** orchestrates a 5-workshop seri
 
 **Name and Description**: The Requirements Architect orchestrates the complete requirements gathering process for generating new Cursor agent development systems. This agent guides users through a structured 5-phase questionnaire implementing the 5-layer architecture (Axioms → Purpose → Principles → Methodology → Technical) to capture all information needed to generate a complete, working project.
 
-**When Activated**: 
+**When Activated**:
 - When user mentions "create agent system", "generate project", "new cursor project"
 - When user mentions "build workflow", "create development system"
 - When user wants to scaffold a new Cursor-based development environment
@@ -157,7 +157,7 @@ For team onboarding, the **Workshop Facilitator** orchestrates a 5-workshop seri
 
 **Name and Description**: The Stack Builder configures the technology stack for a new Cursor agent project based on requirements gathered by the requirements-architect agent. It matches requirements to available blueprints and suggests optimal configurations.
 
-**When Activated**: 
+**When Activated**:
 - After requirements-architect completes Phase 2 (Technology Stack)
 - When user asks about supported stacks or frameworks
 - When selecting or customizing a blueprint
@@ -174,7 +174,7 @@ For team onboarding, the **Workshop Facilitator** orchestrates a 5-workshop seri
 
 **Name and Description**: The Template Generator generates code templates and document templates for the target project based on the configured stack and style guide. It creates the `.cursorrules` file that governs agent behavior.
 
-**When Activated**: 
+**When Activated**:
 - After knowledge-manager completes knowledge generation
 - As final step before project output
 - When user requests additional templates
@@ -191,7 +191,7 @@ For team onboarding, the **Workshop Facilitator** orchestrates a 5-workshop seri
 
 **Name and Description**: The Knowledge Manager structures domain knowledge and generates knowledge files for generated projects. It creates reference data that agents and skills will use during development.
 
-**When Activated**: 
+**When Activated**:
 - After workflow-designer completes workflow configuration
 - When user wants to add domain-specific knowledge
 - When importing knowledge from external sources
@@ -208,7 +208,7 @@ For team onboarding, the **Workshop Facilitator** orchestrates a 5-workshop seri
 
 **Name and Description**: The Workflow Designer designs development workflows based on project methodology and trigger sources. It configures appropriate MCP server integrations and creates workflow documentation.
 
-**When Activated**: 
+**When Activated**:
 - After stack-builder completes stack configuration
 - When user wants to add or modify workflows
 - When configuring MCP server integrations
@@ -225,7 +225,7 @@ For team onboarding, the **Workshop Facilitator** orchestrates a 5-workshop seri
 
 **Name and Description**: The Onboarding Architect orchestrates the seamless integration of Cursor Agent Factory into existing repositories. This agent guides users through the onboarding process, ensuring non-destructive integration while adding factory capabilities.
 
-**When Activated**: 
+**When Activated**:
 - User mentions wanting to "onboard", "integrate", or "enhance" an existing repository
 - User provides a path to an existing repository
 - User asks about adding Cursor agents to their current project
@@ -243,7 +243,7 @@ For team onboarding, the **Workshop Facilitator** orchestrates a 5-workshop seri
 
 **Name and Description**: The Workshop Facilitator guides teams through a series of collaborative workshops to design their customized Cursor agent development system. This agent facilitates games, discussions, and questionnaires while embodying Axiom 0: Love, Truth, and Beauty as the foundation for all interactions.
 
-**When Activated**: 
+**When Activated**:
 - When user mentions "team workshop", "collaborative onboarding", "workshop series"
 - When user says "onboard our team", "team alignment", "vision workshop"
 - When user requests "facilitate discussion", "run a game", "team exercise"
@@ -261,7 +261,7 @@ For team onboarding, the **Workshop Facilitator** orchestrates a 5-workshop seri
 
 **Name and Description**: The Knowledge Extender extends the Factory's own knowledge base, creates new skills, templates, and agents through research, document reading, and synthesis. This agent enables continuous improvement of the Factory itself.
 
-**When Activated**: 
+**When Activated**:
 - When user says "extend knowledge for X", "add knowledge about X"
 - When user provides links or documents to incorporate
 - When gap analysis identifies missing or shallow topics
@@ -281,7 +281,7 @@ For team onboarding, the **Workshop Facilitator** orchestrates a 5-workshop seri
 
 > **📖 Full Documentation**: See **KNOWLEDGE_EVOLUTION.md** for complete system architecture, configuration options, update modes, and source adapters.
 
-**When Activated**: 
+**When Activated**:
 - When running `--check-updates` command
 - When external sources have new releases
 - When manual update is triggered
@@ -298,7 +298,7 @@ For team onboarding, the **Workshop Facilitator** orchestrates a 5-workshop seri
 
 **Name and Description**: The Workflow Architect designs, creates, and manages sophisticated workflows that orchestrate complex multi-step tasks. It understands workflow entities, patterns, and best practices to create maintainable, extensible workflows that integrate with the Factory's skill and MCP ecosystem.
 
-**When Activated**: 
+**When Activated**:
 - When user says "create workflow for X", "design workflow"
 - When user wants to extend existing workflows
 - When user needs to orchestrate complex multi-step tasks
@@ -320,7 +320,7 @@ For team onboarding, the **Workshop Facilitator** orchestrates a 5-workshop seri
 
 **Philosophy**: Every bug is a gift - an opportunity to improve the system and prevent future failures.
 
-**When Activated**: 
+**When Activated**:
 - When CI/CD pipeline fails
 - When tests fail after changes
 - When user says "debug this", "fix the pipeline"
@@ -754,7 +754,7 @@ debug-conductor
        ├─→ Phase 4: Implementation (fix, verify)
        ├─→ Phase 5: Verification (full suite, regressions)
        └─→ Phase 6: Learning (capture pattern, update knowledge)
-       
+
        MCP Servers: git, github, filesystem, sentry (optional)
        Skills: pipeline-error-fix, tdd, extend-workflow, grounding
 ```

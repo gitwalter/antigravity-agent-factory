@@ -83,9 +83,9 @@ class ModelConfig:
 class TritonConfigGenerator:
     """
     Generator for Triton Inference Server model configurations.
-    
+
     This class helps create config.pbtxt files for Triton model repository.
-    
+
     Example:
         >>> generator = TritonConfigGenerator()
         >>> config = ModelConfig(
@@ -96,7 +96,7 @@ class TritonConfigGenerator:
         ... )
         >>> generator.generate_config(config, "models/my_model/1/config.pbtxt")
     """
-    
+
     TYPE_MAP = {
         "float32": "TYPE_FP32",
         "float16": "TYPE_FP16",
@@ -106,11 +106,11 @@ class TritonConfigGenerator:
         "bool": "TYPE_BOOL",
         "string": "TYPE_STRING",
     }
-    
+
     def __init__(self):
         """Initialize the config generator."""
         pass
-    
+
     def generate_config(
         self,
         config: ModelConfig,
@@ -119,7 +119,7 @@ class TritonConfigGenerator:
     ) -> None:
         """
         Generate Triton config.pbtxt file.
-        
+
         Args:
             config: Model configuration
             output_path: Path to write config.pbtxt
@@ -127,29 +127,29 @@ class TritonConfigGenerator:
         """
         path = Path(output_path)
         path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         config_text = self._build_config_text(config, version)
-        
+
         with open(path, "w") as f:
             f.write(config_text)
-        
+
         logger.info(f"Generated Triton config: {output_path}")
-    
+
     def _build_config_text(self, config: ModelConfig, version: int) -> str:
         """Build config.pbtxt text content."""
         lines = []
-        
+
         # Model name
         lines.append(f'name: "{config.name}"')
         lines.append(f'platform: "{config.platform}"')
-        
+
         if config.backend:
             lines.append(f'backend: "{config.backend}"')
-        
+
         lines.append(f'default_model_filename: "{config.default_model_filename}"')
         lines.append(f'max_batch_size: {config.max_batch_size}')
         lines.append("")
-        
+
         # Version policy
         if config.version_policy:
             lines.append("version_policy: {")
@@ -167,7 +167,7 @@ class TritonConfigGenerator:
                 lines.append("  }")
             lines.append("}")
             lines.append("")
-        
+
         # Inputs
         if config.inputs:
             lines.append("input [")
@@ -183,7 +183,7 @@ class TritonConfigGenerator:
                 lines.append("  }")
             lines.append("]")
             lines.append("")
-        
+
         # Outputs
         if config.outputs:
             lines.append("output [")
@@ -197,7 +197,7 @@ class TritonConfigGenerator:
                 lines.append("  }")
             lines.append("]")
             lines.append("")
-        
+
         # Instance groups
         if config.instance_groups:
             lines.append("instance_group [")
@@ -210,7 +210,7 @@ class TritonConfigGenerator:
                 lines.append("  }")
             lines.append("]")
             lines.append("")
-        
+
         # Dynamic batching
         if config.dynamic_batching:
             db = config.dynamic_batching
@@ -225,7 +225,7 @@ class TritonConfigGenerator:
                 lines.append("  preserve_ordering: true")
             lines.append("}")
             lines.append("")
-        
+
         # Optimization
         if config.optimization:
             lines.append("optimization {")
@@ -245,7 +245,7 @@ class TritonConfigGenerator:
                 lines.append("  }")
             lines.append("}")
             lines.append("")
-        
+
         # Model warmup
         if config.model_warmup:
             lines.append("model_warmup [")
@@ -270,7 +270,7 @@ class TritonConfigGenerator:
                 lines.append("  }")
             lines.append("]")
             lines.append("")
-        
+
         # Parameters
         if config.parameters:
             lines.append("parameters {")
@@ -279,9 +279,9 @@ class TritonConfigGenerator:
                 lines.append(f'    string_value: "{value}"')
                 lines.append("  }")
             lines.append("}")
-        
+
         return "\n".join(lines)
-    
+
     def create_model_repository(
         self,
         model_name: str,
@@ -291,29 +291,29 @@ class TritonConfigGenerator:
     ) -> Path:
         """
         Create Triton model repository structure.
-        
+
         Args:
             model_name: Name of the model
             model_path: Path to model file
             config: Model configuration
             version: Model version
-            
+
         Returns:
             Path to created model directory
         """
         repo_path = Path("{{MODEL_REPOSITORY_PATH}}") / model_name / str(version)
         repo_path.mkdir(parents=True, exist_ok=True)
-        
+
         # Copy model file
         import shutil
         model_file = Path(model_path)
         target_model = repo_path / config.default_model_filename
         shutil.copy(model_file, target_model)
-        
+
         # Generate config
         config_path = repo_path / "config.pbtxt"
         self.generate_config(config, str(config_path), version)
-        
+
         logger.info(f"Created model repository: {repo_path}")
         return repo_path
 
@@ -330,7 +330,7 @@ def create_onnx_config(
 ) -> ModelConfig:
     """
     Create configuration for ONNX model.
-    
+
     Args:
         model_name: Model name
         input_shape: Input shape (with batch dimension as -1)
@@ -338,7 +338,7 @@ def create_onnx_config(
         input_dtype: Input data type
         output_dtype: Output data type
         max_batch_size: Maximum batch size
-        
+
     Returns:
         ModelConfig for ONNX model
     """
@@ -367,7 +367,7 @@ def create_pytorch_config(
 ) -> ModelConfig:
     """
     Create configuration for PyTorch model.
-    
+
     Args:
         model_name: Model name
         input_shape: Input shape (with batch dimension as -1)
@@ -375,7 +375,7 @@ def create_pytorch_config(
         input_dtype: Input data type
         output_dtype: Output data type
         max_batch_size: Maximum batch size
-        
+
     Returns:
         ModelConfig for PyTorch model
     """
@@ -404,7 +404,7 @@ def create_tensorrt_config(
 ) -> ModelConfig:
     """
     Create configuration for TensorRT model.
-    
+
     Args:
         model_name: Model name
         input_shape: Input shape (with batch dimension as -1)
@@ -412,7 +412,7 @@ def create_tensorrt_config(
         input_dtype: Input data type
         output_dtype: Output data type
         max_batch_size: Maximum batch size
-        
+
     Returns:
         ModelConfig for TensorRT model
     """
@@ -440,7 +440,7 @@ def create_tensorrt_config(
 # Example usage
 if __name__ == "__main__":
     generator = TritonConfigGenerator()
-    
+
     # Example: ONNX model
     config = create_onnx_config(
         model_name="{{MODEL_NAME}}",
@@ -448,11 +448,11 @@ if __name__ == "__main__":
         output_shape=[-1, 1000],
         max_batch_size={{MAX_BATCH_SIZE}}
     )
-    
+
     generator.generate_config(
         config,
         "{{MODEL_REPOSITORY_PATH}}/{{MODEL_NAME}}/1/config.pbtxt",
         version=1
     )
-    
+
     print(f"Generated Triton config for {{MODEL_NAME}}")

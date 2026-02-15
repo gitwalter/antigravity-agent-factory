@@ -282,4 +282,3 @@ We can't wait to see what you create!
 ---
 
 *[Back to README](../../mcp/servers/google-contacts/README.md)*
-

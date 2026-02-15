@@ -41,10 +41,10 @@ class MessageMetadata(BaseModel):
 class {{ memory_class_name | default('RedisMemory') }}(BaseChatMessageHistory):
     """
     {{ memory_name | default('Redis Memory') }} - Redis-backed Chat Message History
-    
+
     Stores conversation messages in Redis with TTL support and session management.
     Provides efficient storage and retrieval for agent conversations.
-    
+
     Example:
         >>> memory = {{ memory_class_name | default('RedisMemory') }}(
         ...     redis_url="redis://localhost:6379",
@@ -55,7 +55,7 @@ class {{ memory_class_name | default('RedisMemory') }}(BaseChatMessageHistory):
         >>> messages = memory.messages
         >>> print(f"Stored {len(messages)} messages")
     """
-    
+
     def __init__(
         self,
         session_id: str,
@@ -66,7 +66,7 @@ class {{ memory_class_name | default('RedisMemory') }}(BaseChatMessageHistory):
     ):
         """
         Initialize Redis memory backend.
-        
+
         Args:
             session_id: Unique session identifier
             redis_url: Redis connection URL
@@ -82,15 +82,15 @@ class {{ memory_class_name | default('RedisMemory') }}(BaseChatMessageHistory):
         self._redis_client = redis_client
         self._messages: List[BaseMessage] = []
         self._loaded = False
-        
+
         # Redis key for this session
         self.redis_key = f"{key_prefix}{session_id}"
-        
+
         logger.info(
             f"Initialized {{ memory_class_name | default('RedisMemory') }} "
             f"for session {session_id}"
         )
-    
+
     @property
     def redis_client(self) -> redis.Redis:
         """Get or create Redis client."""
@@ -100,7 +100,7 @@ class {{ memory_class_name | default('RedisMemory') }}(BaseChatMessageHistory):
                 decode_responses=True
             )
         return self._redis_client
-    
+
     async def _ensure_connection(self):
         """Ensure Redis connection is active."""
         try:
@@ -111,14 +111,14 @@ class {{ memory_class_name | default('RedisMemory') }}(BaseChatMessageHistory):
                 self.redis_url,
                 decode_responses=True
             )
-    
+
     def _serialize_message(self, message: BaseMessage) -> Dict[str, Any]:
         """
         Serialize message for Redis storage.
-        
+
         Args:
             message: LangChain message
-            
+
         Returns:
             Serialized message dictionary
         """
@@ -131,7 +131,7 @@ class {{ memory_class_name | default('RedisMemory') }}(BaseChatMessageHistory):
             msg_type = "system"
         else:
             msg_type = "unknown"
-        
+
         return {
             "type": msg_type,
             "content": message.content,
@@ -139,14 +139,14 @@ class {{ memory_class_name | default('RedisMemory') }}(BaseChatMessageHistory):
             "response_metadata": getattr(message, "response_metadata", {}),
             "timestamp": datetime.now().isoformat()
         }
-    
+
     def _deserialize_message(self, data: Dict[str, Any]) -> BaseMessage:
         """
         Deserialize message from Redis storage.
-        
+
         Args:
             data: Serialized message dictionary
-            
+
         Returns:
             LangChain message object
         """
@@ -154,7 +154,7 @@ class {{ memory_class_name | default('RedisMemory') }}(BaseChatMessageHistory):
         content = data.get("content", "")
         additional_kwargs = data.get("additional_kwargs", {})
         response_metadata = data.get("response_metadata", {})
-        
+
         if msg_type == "human":
             return HumanMessage(
                 content=content,
@@ -176,12 +176,12 @@ class {{ memory_class_name | default('RedisMemory') }}(BaseChatMessageHistory):
         else:
             # Fallback to HumanMessage
             return HumanMessage(content=content)
-    
+
     @property
     def messages(self) -> List[BaseMessage]:
         """
         Get all messages for this session.
-        
+
         Returns:
             List of messages
         """
@@ -199,25 +199,25 @@ class {{ memory_class_name | default('RedisMemory') }}(BaseChatMessageHistory):
                 # No event loop, create new one
                 self._messages = asyncio.run(self._load_messages())
             self._loaded = True
-        
+
         return self._messages
-    
+
     async def _load_messages(self) -> List[BaseMessage]:
         """
         Load messages from Redis.
-        
+
         Returns:
             List of messages
         """
         await self._ensure_connection()
-        
+
         try:
             # Get messages from Redis list
             messages_data = await self.redis_client.lrange(self.redis_key, 0, -1)
-            
+
             if not messages_data:
                 return []
-            
+
             # Deserialize messages
             messages = []
             for msg_json in messages_data:
@@ -228,67 +228,67 @@ class {{ memory_class_name | default('RedisMemory') }}(BaseChatMessageHistory):
                 except Exception as e:
                     logger.warning(f"Error deserializing message: {e}")
                     continue
-            
+
             logger.info(f"Loaded {len(messages)} messages from Redis")
             return messages
-            
+
         except Exception as e:
             logger.error(f"Error loading messages from Redis: {e}")
             return []
-    
+
     async def add_message(self, message: BaseMessage) -> None:
         """
         Add a message to the conversation history.
-        
+
         Args:
             message: Message to add
         """
         await self._ensure_connection()
-        
+
         try:
             # Serialize message
             msg_data = self._serialize_message(message)
             msg_json = json.dumps(msg_data)
-            
+
             # Add to Redis list
             await self.redis_client.rpush(self.redis_key, msg_json)
-            
+
             # Set TTL if configured
             if self.ttl_seconds:
                 await self.redis_client.expire(self.redis_key, self.ttl_seconds)
-            
+
             # Update local cache
             if self._loaded:
                 self._messages.append(message)
-            
+
             logger.info(f"Added {type(message).__name__} message to session {self.session_id}")
-            
+
         except Exception as e:
             logger.error(f"Error adding message to Redis: {e}")
             raise
-    
+
     async def add_user_message(self, message: str) -> None:
         """Add a user message."""
         await self.add_message(HumanMessage(content=message))
-    
+
     async def add_ai_message(self, message: str) -> None:
         """Add an AI message."""
         await self.add_message(AIMessage(content=message))
-    
+
     async def clear(self) -> None:
         """Clear all messages for this session."""
         await self._ensure_connection()
-        
+
         try:
             await self.redis_client.delete(self.redis_key)
             self._messages = []
             self._loaded = False
             logger.info(f"Cleared messages for session {self.session_id}")
-            
+
         except Exception as e:
             logger.error(f"Error clearing messages: {e}")
             raise
-    
+
     async def get_messages(
         self,
         limit: Optional[int] = None,
@@ -296,16 +296,16 @@ class {{ memory_class_name | default('RedisMemory') }}(BaseChatMessageHistory):
     ) -> List[BaseMessage]:
         """
         Get messages with optional filtering.
-        
+
         Args:
             limit: Maximum number of messages to return
             before: Only return messages before this timestamp
-            
+
         Returns:
             List of messages
         """
         messages = await self._load_messages()
-        
+
         # Filter by timestamp if specified
         if before:
             filtered = []
@@ -323,43 +323,43 @@ class {{ memory_class_name | default('RedisMemory') }}(BaseChatMessageHistory):
                 else:
                     filtered.append(msg)
             messages = filtered
-        
+
         # Apply limit
         if limit:
             messages = messages[-limit:]
-        
+
         return messages
-    
+
     async def get_session_info(self) -> Dict[str, Any]:
         """
         Get session information.
-        
+
         Returns:
             Session metadata dictionary
         """
         await self._ensure_connection()
-        
+
         try:
             # Get message count
             count = await self.redis_client.llen(self.redis_key)
-            
+
             # Get TTL
             ttl = await self.redis_client.ttl(self.redis_key)
-            
+
             return {
                 "session_id": self.session_id,
                 "message_count": count,
                 "ttl_seconds": ttl if ttl > 0 else None,
                 "redis_key": self.redis_key
             }
-            
+
         except Exception as e:
             logger.error(f"Error getting session info: {e}")
             return {
                 "session_id": self.session_id,
                 "error": str(e)
             }
-    
+
     async def close(self):
         """Close Redis connection."""
         if self._redis_client:
@@ -370,7 +370,7 @@ class {{ memory_class_name | default('RedisMemory') }}(BaseChatMessageHistory):
 # Example usage
 if __name__ == "__main__":
     import asyncio
-    
+
     async def main():
         # Create memory instance
         memory = {{ memory_class_name | default('RedisMemory') }}(
@@ -378,24 +378,24 @@ if __name__ == "__main__":
             redis_url="{{ redis_url | default('redis://localhost:6379') }}",
             ttl_seconds={{ ttl_seconds | default(3600) }}
         )
-        
+
         try:
             # Add messages
             await memory.add_user_message("Hello, how are you?")
             await memory.add_ai_message("I'm doing well, thank you!")
             await memory.add_user_message("What's the weather like?")
-            
+
             # Get messages
             messages = await memory.get_messages()
             print(f"Stored {len(messages)} messages")
             for msg in messages:
                 print(f"  {type(msg).__name__}: {msg.content[:50]}...")
-            
+
             # Get session info
             info = await memory.get_session_info()
             print(f"\nSession info: {info}")
-            
+
         finally:
             await memory.close()
-    
+
     asyncio.run(main())

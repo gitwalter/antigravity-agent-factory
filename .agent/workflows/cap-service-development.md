@@ -8,8 +8,8 @@ description: End-to-end workflow for developing SAP Cloud Application Programmin
 
 End-to-end workflow for developing SAP Cloud Application Programming Model (CAP) services. Covers CDS modeling, service implementation, testing, and deployment to SAP BTP.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Applies To:** sap-cap
 
 ## Trigger Conditions

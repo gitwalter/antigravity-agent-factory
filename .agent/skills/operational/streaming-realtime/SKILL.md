@@ -49,7 +49,7 @@ app = FastAPI()
 @app.get("/stream")
 async def stream_chat(query: str):
     """Stream LLM response as Server-Sent Events."""
-    
+
     async def event_generator():
         async for chunk in chain.astream({"input": query}):
             if chunk.content:
@@ -64,7 +64,7 @@ async def stream_chat(query: str):
             "event": "done",
             "data": json.dumps({"status": "complete"})
         }
-    
+
     return EventSourceResponse(event_generator())
 ```
 
@@ -79,19 +79,19 @@ app = FastAPI()
 @app.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
     await websocket.accept()
-    
+
     try:
         while True:
             # Receive message
             data = await websocket.receive_json()
             user_message = data.get("message", "")
-            
+
             # Send acknowledgment
             await websocket.send_json({
                 "type": "status",
                 "content": "Processing..."
             })
-            
+
             # Stream response
             full_response = ""
             async for chunk in chain.astream({"input": user_message}):
@@ -101,13 +101,13 @@ async def websocket_chat(websocket: WebSocket):
                         "type": "token",
                         "content": chunk.content
                     })
-            
+
             # Send completion
             await websocket.send_json({
                 "type": "complete",
                 "content": full_response
             })
-            
+
     except WebSocketDisconnect:
         print("Client disconnected")
 ```
@@ -119,14 +119,14 @@ from langchain_core.runnables import RunnableConfig
 
 async def stream_agent_events(chain, input_data: dict):
     """Stream detailed execution events from chain."""
-    
+
     async for event in chain.astream_events(
         input_data,
         version="v2",
         include_names=["ChatGoogleGenerativeAI", "ChatPromptTemplate"]
     ):
         kind = event["event"]
-        
+
         if kind == "on_chat_model_stream":
             # Token streaming
             chunk = event["data"]["chunk"]
@@ -136,7 +136,7 @@ async def stream_agent_events(chain, input_data: dict):
                     "content": chunk.content,
                     "model": event["name"]
                 }
-        
+
         elif kind == "on_chain_start":
             # Chain started
             yield {
@@ -144,7 +144,7 @@ async def stream_agent_events(chain, input_data: dict):
                 "name": event["name"],
                 "input": event["data"]["input"]
             }
-        
+
         elif kind == "on_chain_end":
             # Chain completed
             yield {
@@ -152,7 +152,7 @@ async def stream_agent_events(chain, input_data: dict):
                 "name": event["name"],
                 "output": event["data"]["output"]
             }
-        
+
         elif kind == "on_tool_start":
             # Tool execution started
             yield {
@@ -160,7 +160,7 @@ async def stream_agent_events(chain, input_data: dict):
                 "name": event["name"],
                 "input": event["data"]["input"]
             }
-        
+
         elif kind == "on_tool_end":
             # Tool execution completed
             yield {
@@ -182,20 +182,20 @@ from typing import AsyncIterator
 
 class StreamingAgent:
     """Agent that streams state updates in real-time."""
-    
+
     def __init__(self, chain):
         self.chain = chain
-    
+
     async def stream_with_state(self, input_data: dict, websocket: WebSocket):
         """Stream agent execution with state updates."""
-        
+
         async def send_update(update_type: str, data: dict):
             await websocket.send_json({
                 "type": update_type,
                 "timestamp": datetime.now().isoformat(),
                 **data
             })
-        
+
         # Track state
         state = {
             "status": "starting",
@@ -203,29 +203,29 @@ class StreamingAgent:
             "tools_called": [],
             "current_step": None
         }
-        
+
         await send_update("state", state)
-        
+
         async for event in self.chain.astream_events(input_data, version="v2"):
             kind = event["event"]
-            
+
             if kind == "on_chat_model_stream":
                 state["tokens_received"] += len(event["data"]["chunk"].content)
                 await send_update("token", {
                     "content": event["data"]["chunk"].content,
                     "total_tokens": state["tokens_received"]
                 })
-            
+
             elif kind == "on_tool_start":
                 tool_name = event["name"]
                 state["tools_called"].append(tool_name)
                 state["current_step"] = f"Calling {tool_name}"
                 await send_update("state", state)
-            
+
             elif kind == "on_tool_end":
                 state["current_step"] = None
                 await send_update("state", state)
-            
+
             elif kind == "on_chain_end":
                 state["status"] = "complete"
                 await send_update("state", state)
@@ -254,9 +254,9 @@ chain_with_memory = RunnableWithMessageHistory(
 
 async def stream_with_memory(query: str, session_id: str):
     """Stream response with conversation memory."""
-    
+
     config = {"configurable": {"session_id": session_id}}
-    
+
     async for chunk in chain_with_memory.astream(
         {"input": query},
         config=config
@@ -275,17 +275,17 @@ async function streamChat(message: string, onToken: (token: string) => void) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message })
     });
-    
+
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
-    
+
     while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         const chunk = decoder.decode(value);
         const lines = chunk.split('\n');
-        
+
         for (const line of lines) {
             if (line.startsWith('data: ')) {
                 const data = JSON.parse(line.slice(6));
@@ -302,7 +302,7 @@ const ws = new WebSocket('ws://localhost:8000/ws/chat');
 
 ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
-    
+
     switch (data.type) {
         case 'token':
             appendTokenToUI(data.content);
@@ -331,16 +331,16 @@ async def stream_search(query: str) -> str:
     async for result in search_api.stream(query):
         results.append(result)
         yield result  # Stream partial results
-    
+
     return "\n".join(results)
 
 # Agent that streams tool execution
 async def stream_agent_with_tools(input_text: str):
     """Agent that streams both LLM and tool outputs."""
-    
+
     llm_with_tools = llm.bind_tools([stream_search])
     response = await llm_with_tools.ainvoke(input_text)
-    
+
     if response.tool_calls:
         for tool_call in response.tool_calls:
             # Stream tool execution

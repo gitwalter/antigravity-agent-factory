@@ -33,7 +33,7 @@ class Base(DeclarativeBase):
 # src/domains/users/models.py
 class User(Base):
     __tablename__ = "users"
-    
+
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
@@ -41,20 +41,20 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, onupdate=datetime.utcnow)
-    
+
     # Relationships
     posts: Mapped[List["Post"]] = relationship(back_populates="author", cascade="all, delete-orphan")
 
 # src/domains/posts/models.py
 class Post(Base):
     __tablename__ = "posts"
-    
+
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(255))
     content: Mapped[str] = mapped_column(Text)
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    
+
     # Relationships
     author: Mapped["User"] = relationship(back_populates="posts")
 ```
@@ -242,21 +242,21 @@ class Repository(Generic[ModelType]):
     def __init__(self, model: type[ModelType], session: AsyncSession):
         self.model = model
         self.session = session
-    
+
     async def get_by_id(self, id: int) -> Optional[ModelType]:
         """Get entity by ID."""
         result = await self.session.execute(
             select(self.model).where(self.model.id == id)
         )
         return result.scalar_one_or_none()
-    
+
     async def get_all(self, skip: int = 0, limit: int = 100) -> List[ModelType]:
         """Get all entities with pagination."""
         result = await self.session.execute(
             select(self.model).offset(skip).limit(limit)
         )
         return list(result.scalars().all())
-    
+
     async def create(self, **kwargs) -> ModelType:
         """Create new entity."""
         instance = self.model(**kwargs)
@@ -264,7 +264,7 @@ class Repository(Generic[ModelType]):
         await self.session.flush()
         await self.session.refresh(instance)
         return instance
-    
+
     async def update(self, id: int, **kwargs) -> Optional[ModelType]:
         """Update entity."""
         await self.session.execute(
@@ -274,7 +274,7 @@ class Repository(Generic[ModelType]):
         )
         await self.session.flush()
         return await self.get_by_id(id)
-    
+
     async def delete(self, id: int) -> bool:
         """Delete entity."""
         result = await self.session.execute(
@@ -295,7 +295,7 @@ class UserRepository(Repository[User]):
             select(User).where(User.email == email)
         )
         return result.scalar_one_or_none()
-    
+
     async def get_active_users(self) -> List[User]:
         """Get all active users."""
         result = await self.session.execute(

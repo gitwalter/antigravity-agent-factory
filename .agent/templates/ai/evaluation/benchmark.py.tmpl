@@ -36,33 +36,33 @@ class BenchmarkResult:
 class {{BENCHMARK_CLASS_NAME}}:
     """
     {{BENCHMARK_NAME}} - Performance Benchmarking Framework
-    
+
     Implements comprehensive benchmarking:
     - Latency measurement
     - Throughput testing
     - Resource usage tracking
     - Statistical analysis
-    
+
     Example:
         >>> benchmark = {{BENCHMARK_CLASS_NAME}}()
         >>> results = benchmark.run(chain, test_cases, iterations=10)
     """
-    
+
     def __init__(
         self,
         results_file: Optional[str] = None
     ):
         """
         Initialize benchmark framework.
-        
+
         Args:
             results_file: File to save benchmark results
         """
         self.results_file = results_file or "benchmark_results.json"
         self.results: List[BenchmarkResult] = []
-        
+
         logger.info("Initialized {{BENCHMARK_NAME}} benchmark framework")
-    
+
     def run(
         self,
         chain: Callable,
@@ -72,54 +72,54 @@ class {{BENCHMARK_CLASS_NAME}}:
     ) -> Dict[str, Any]:
         """
         Run benchmark suite.
-        
+
         Args:
             chain: Chain/agent to benchmark
             test_cases: List of test cases
             iterations: Number of iterations per test case
             warmup_iterations: Warmup iterations (not counted)
-        
+
         Returns:
             Benchmark summary
-        
+
         Example:
             >>> test_cases = [{"input": "test1"}, {"input": "test2"}]
             >>> summary = benchmark.run(chain, test_cases, iterations=5)
         """
         logger.info(f"Running benchmark: {len(test_cases)} test cases, {iterations} iterations")
-        
+
         all_results = []
-        
+
         for test_case in test_cases:
             test_name = test_case.get("name", "unnamed")
             logger.info(f"Benchmarking: {test_name}")
-            
+
             # Warmup
             for _ in range(warmup_iterations):
                 try:
                     chain.invoke(test_case["input"])
                 except Exception:
                     pass
-            
+
             # Benchmark iterations
             test_results = []
             for i in range(iterations):
                 result = self._run_single(chain, test_case, f"{test_name}_iter_{i}")
                 test_results.append(result)
-            
+
             all_results.extend(test_results)
-        
+
         self.results = all_results
-        
+
         # Calculate statistics
         summary = self._calculate_summary(all_results)
-        
+
         # Save results
         self._save_results(summary)
-        
+
         logger.info("Benchmark completed")
         return summary
-    
+
     def _run_single(
         self,
         chain: Callable,
@@ -128,12 +128,12 @@ class {{BENCHMARK_CLASS_NAME}}:
     ) -> BenchmarkResult:
         """
         Run a single benchmark iteration.
-        
+
         Args:
             chain: Chain to benchmark
             test_case: Test case
             name: Test name
-        
+
         Returns:
             Benchmark result
         """
@@ -141,25 +141,25 @@ class {{BENCHMARK_CLASS_NAME}}:
         token_count = 0
         success = False
         error = None
-        
+
         try:
             # Execute chain
             result = chain.invoke(test_case["input"])
-            
+
             # Extract token count if available
             if hasattr(result, "response_metadata"):
                 metadata = result.response_metadata
                 token_usage = metadata.get("token_usage", {})
                 token_count = token_usage.get("total_tokens", 0)
-            
+
             execution_time = time.time() - start_time
             success = True
-            
+
         except Exception as e:
             execution_time = time.time() - start_time
             error = str(e)
             logger.error(f"Error in benchmark {name}: {e}")
-        
+
         return BenchmarkResult(
             name=name,
             execution_time=execution_time,
@@ -168,29 +168,29 @@ class {{BENCHMARK_CLASS_NAME}}:
             error=error,
             metadata=test_case.get("metadata", {})
         )
-    
+
     def _calculate_summary(self, results: List[BenchmarkResult]) -> Dict[str, Any]:
         """
         Calculate benchmark statistics.
-        
+
         Args:
             results: List of benchmark results
-        
+
         Returns:
             Summary statistics
         """
         successful_results = [r for r in results if r.success]
-        
+
         if not successful_results:
             return {
                 "error": "No successful benchmark runs",
                 "total_runs": len(results),
                 "successful_runs": 0
             }
-        
+
         execution_times = [r.execution_time for r in successful_results]
         token_counts = [r.token_count for r in successful_results]
-        
+
         summary = {
             "timestamp": datetime.now().isoformat(),
             "total_runs": len(results),
@@ -214,30 +214,30 @@ class {{BENCHMARK_CLASS_NAME}}:
                 "requests_per_second": len(successful_results) / sum(execution_times) if execution_times else 0
             }
         }
-        
+
         return summary
-    
+
     def _percentile(self, data: List[float], percentile: int) -> float:
         """
         Calculate percentile.
-        
+
         Args:
             data: Data list
             percentile: Percentile value (0-100)
-        
+
         Returns:
             Percentile value
         """
         sorted_data = sorted(data)
         index = (percentile / 100) * (len(sorted_data) - 1)
-        
+
         if index.is_integer():
             return sorted_data[int(index)]
         else:
             lower = sorted_data[int(index)]
             upper = sorted_data[int(index) + 1]
             return lower + (upper - lower) * (index - int(index))
-    
+
     def _save_results(self, summary: Dict[str, Any]) -> None:
         """Save benchmark results."""
         try:
@@ -245,37 +245,37 @@ class {{BENCHMARK_CLASS_NAME}}:
                 "summary": summary,
                 "results": [asdict(r) for r in self.results]
             }
-            
+
             with open(self.results_file, "w") as f:
                 json.dump(results_data, f, indent=2)
-            
+
             logger.info(f"Results saved to {self.results_file}")
-            
+
         except Exception as e:
             logger.error(f"Error saving results: {e}")
-    
+
     def compare_with_baseline(
         self,
         baseline_file: str
     ) -> Dict[str, Any]:
         """
         Compare current results with baseline.
-        
+
         Args:
             baseline_file: Path to baseline results file
-        
+
         Returns:
             Comparison result
         """
         logger.info(f"Comparing with baseline: {baseline_file}")
-        
+
         try:
             with open(baseline_file, "r") as f:
                 baseline = json.load(f)
-            
+
             baseline_summary = baseline.get("summary", {})
             current_summary = self._calculate_summary(self.results)
-            
+
             comparison = {
                 "baseline_file": baseline_file,
                 "comparison_timestamp": datetime.now().isoformat(),
@@ -296,13 +296,13 @@ class {{BENCHMARK_CLASS_NAME}}:
                     )
                 }
             }
-            
+
             return comparison
-            
+
         except Exception as e:
             logger.error(f"Error comparing with baseline: {e}")
             return {"error": str(e)}
-    
+
     def _calculate_change_percent(self, baseline: float, current: float) -> float:
         """Calculate percentage change."""
         if baseline == 0:
@@ -314,24 +314,24 @@ class {{BENCHMARK_CLASS_NAME}}:
 if __name__ == "__main__":
     from langchain_core.prompts import ChatPromptTemplate
     from langchain_openai import ChatOpenAI
-    
+
     # Create benchmark
     benchmark = {{BENCHMARK_CLASS_NAME}}()
-    
+
     # Create chain
     prompt = ChatPromptTemplate.from_template("Say hello to {name}")
     llm = ChatOpenAI()
     chain = prompt | llm
-    
+
     # Test cases
     test_cases = [
         {"name": "test_1", "input": {"name": "Alice"}},
         {"name": "test_2", "input": {"name": "Bob"}}
     ]
-    
+
     # Run benchmark
     summary = benchmark.run(chain, test_cases, iterations=5)
-    
+
     print("Benchmark Summary:")
     print(f"  Successful runs: {summary['successful_runs']}/{summary['total_runs']}")
     print(f"  Mean execution time: {summary['execution_time']['mean']:.3f}s")

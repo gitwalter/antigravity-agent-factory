@@ -62,15 +62,15 @@ from structlog import contextvars
 
 class AgentLogger:
     """Logger with request context."""
-    
+
     def __init__(self):
         self.logger = structlog.get_logger()
-    
+
     def bind_context(self, **kwargs):
         """Bind context variables."""
         contextvars.bind_contextvars(**kwargs)
         return self.logger
-    
+
     def log_request(self, user_id: str, query: str, **kwargs):
         """Log agent request."""
         self.bind_context(user_id=user_id, request_id=kwargs.get("request_id"))
@@ -79,7 +79,7 @@ class AgentLogger:
             query=query,
             **kwargs
         )
-    
+
     def log_response(self, response: str, latency: float, **kwargs):
         """Log agent response."""
         self.logger.info(
@@ -88,7 +88,7 @@ class AgentLogger:
             latency_ms=latency * 1000,
             **kwargs
         )
-    
+
     def log_error(self, error: Exception, **kwargs):
         """Log error with context."""
         self.logger.error(
@@ -149,27 +149,27 @@ agent_active_requests = Gauge(
 
 class MetricsCollector:
     """Collect agent metrics."""
-    
+
     @staticmethod
     def record_request(model: str, status: str = "success"):
         """Record agent request."""
         agent_requests_total.labels(model=model, status=status).inc()
-    
+
     @staticmethod
     def record_duration(model: str, duration: float):
         """Record request duration."""
         agent_request_duration.labels(model=model).observe(duration)
-    
+
     @staticmethod
     def record_tokens(model: str, count: int):
         """Record tokens generated."""
         agent_tokens_generated.labels(model=model).inc(count)
-    
+
     @staticmethod
     def increment_active():
         """Increment active requests."""
         agent_active_requests.inc()
-    
+
     @staticmethod
     def decrement_active():
         """Decrement active requests."""
@@ -182,18 +182,18 @@ async def monitored_agent_call(query: str, model: str):
     """Agent call with metrics."""
     MetricsCollector.increment_active()
     start_time = time.time()
-    
+
     try:
         response = await agent.ainvoke(query)
-        
+
         # Record metrics
         MetricsCollector.record_request(model, "success")
         MetricsCollector.record_duration(model, time.time() - start_time)
-        
+
         # Estimate tokens (rough)
         token_count = len(response.content.split()) * 1.3
         MetricsCollector.record_tokens(model, int(token_count))
-        
+
         return response
     except Exception as e:
         MetricsCollector.record_request(model, "error")
@@ -209,53 +209,53 @@ from prometheus_client import Counter, Histogram, Gauge
 
 class AgentMetrics:
     """Custom agent metrics."""
-    
+
     def __init__(self):
         self.tool_calls = Counter(
             'agent_tool_calls_total',
             'Total tool calls',
             ['tool_name', 'status']
         )
-        
+
         self.cache_hits = Counter(
             'agent_cache_hits_total',
             'Cache hits',
             ['cache_type']
         )
-        
+
         self.cache_misses = Counter(
             'agent_cache_misses_total',
             'Cache misses',
             ['cache_type']
         )
-        
+
         self.queue_size = Gauge(
             'agent_queue_size',
             'Request queue size'
         )
-        
+
         self.error_rate = Gauge(
             'agent_error_rate',
             'Error rate (errors per minute)'
         )
-    
+
     def record_tool_call(self, tool_name: str, success: bool):
         """Record tool call."""
         status = "success" if success else "error"
         self.tool_calls.labels(tool_name=tool_name, status=status).inc()
-    
+
     def record_cache_hit(self, cache_type: str):
         """Record cache hit."""
         self.cache_hits.labels(cache_type=cache_type).inc()
-    
+
     def record_cache_miss(self, cache_type: str):
         """Record cache miss."""
         self.cache_misses.labels(cache_type=cache_type).inc()
-    
+
     def set_queue_size(self, size: int):
         """Set queue size."""
         self.queue_size.set(size)
-    
+
     def set_error_rate(self, rate: float):
         """Set error rate."""
         self.error_rate.set(rate)
@@ -275,38 +275,38 @@ from collections import deque
 
 class AlertManager:
     """Manage alerts based on metrics."""
-    
+
     def __init__(self):
         self.alerts: dict[str, dict] = {}
         self.error_history: deque = deque(maxlen=100)
-    
+
     def check_error_rate(self, threshold: float = 0.1) -> Optional[str]:
         """Check if error rate exceeds threshold."""
         if len(self.error_history) < 10:
             return None
-        
+
         recent_errors = sum(
             1 for entry in list(self.error_history)[-10:]
             if entry.get("status") == "error"
         )
-        
+
         error_rate = recent_errors / 10
         if error_rate > threshold:
             return f"High error rate: {error_rate:.1%} (threshold: {threshold:.1%})"
-        
+
         return None
-    
+
     def check_latency(self, recent_latencies: list[float], threshold: float = 5.0) -> Optional[str]:
         """Check if latency exceeds threshold."""
         if not recent_latencies:
             return None
-        
+
         avg_latency = sum(recent_latencies) / len(recent_latencies)
         if avg_latency > threshold:
             return f"High latency: {avg_latency:.2f}s (threshold: {threshold}s)"
-        
+
         return None
-    
+
     def record_request(self, status: str, latency: float):
         """Record request for alerting."""
         self.error_history.append({
@@ -314,16 +314,16 @@ class AlertManager:
             "latency": latency,
             "timestamp": datetime.now()
         })
-    
+
     def check_alerts(self) -> list[str]:
         """Check all alert conditions."""
         alerts = []
-        
+
         # Check error rate
         error_alert = self.check_error_rate()
         if error_alert:
             alerts.append(error_alert)
-        
+
         # Check latency
         recent_latencies = [
             entry["latency"]
@@ -332,7 +332,7 @@ class AlertManager:
         latency_alert = self.check_latency(recent_latencies)
         if latency_alert:
             alerts.append(latency_alert)
-        
+
         return alerts
 
 # Usage
@@ -380,14 +380,14 @@ async def traced_agent_call(query: str):
     with tracer.start_as_current_span("agent.request") as span:
         span.set_attribute("query", query)
         span.set_attribute("model", "gemini-2.5-flash")
-        
+
         try:
             with tracer.start_as_current_span("agent.llm_call"):
                 response = await llm.ainvoke(query)
-            
+
             span.set_attribute("response_length", len(response.content))
             span.set_status(trace.Status(trace.StatusCode.OK))
-            
+
             return response
         except Exception as e:
             span.set_status(trace.Status(trace.StatusCode.ERROR))
@@ -404,21 +404,21 @@ import asyncio
 
 class HealthChecker:
     """Check agent system health."""
-    
+
     def __init__(self):
         self.checks: dict[str, Callable] = {}
-    
+
     def register_check(self, name: str, check_func: Callable):
         """Register a health check."""
         self.checks[name] = check_func
-    
+
     async def check_llm_health(self) -> dict[str, Any]:
         """Check LLM availability."""
         try:
             start = time.time()
             response = await llm.ainvoke("health check")
             latency = time.time() - start
-            
+
             return {
                 "status": "healthy",
                 "latency_ms": latency * 1000,
@@ -429,7 +429,7 @@ class HealthChecker:
                 "status": "unhealthy",
                 "error": str(e)
             }
-    
+
     async def check_cache_health(self) -> dict[str, Any]:
         """Check cache health."""
         try:
@@ -437,7 +437,7 @@ class HealthChecker:
             test_key = "health_check"
             cache.set(test_key, "test")
             value = cache.get(test_key)
-            
+
             return {
                 "status": "healthy" if value == "test" else "unhealthy",
                 "read_write_ok": value == "test"
@@ -447,11 +447,11 @@ class HealthChecker:
                 "status": "unhealthy",
                 "error": str(e)
             }
-    
+
     async def run_all_checks(self) -> dict[str, Any]:
         """Run all health checks."""
         results = {}
-        
+
         for name, check_func in self.checks.items():
             try:
                 if asyncio.iscoroutinefunction(check_func):
@@ -463,13 +463,13 @@ class HealthChecker:
                     "status": "error",
                     "error": str(e)
                 }
-        
+
         # Overall status
         all_healthy = all(
             result.get("status") == "healthy"
             for result in results.values()
         )
-        
+
         return {
             "status": "healthy" if all_healthy else "unhealthy",
             "timestamp": datetime.now().isoformat(),
@@ -496,7 +496,7 @@ import json
 
 class StructuredFileHandler(RotatingFileHandler):
     """File handler that writes structured logs."""
-    
+
     def emit(self, record):
         """Emit structured log record."""
         log_entry = {
@@ -507,17 +507,17 @@ class StructuredFileHandler(RotatingFileHandler):
             "function": record.funcName,
             "line": record.lineno,
         }
-        
+
         # Add extra fields
         if hasattr(record, "user_id"):
             log_entry["user_id"] = record.user_id
         if hasattr(record, "request_id"):
             log_entry["request_id"] = record.request_id
-        
+
         # Add exception info
         if record.exc_info:
             log_entry["exception"] = self.format(record)
-        
+
         self.stream.write(json.dumps(log_entry) + "\n")
         self.stream.flush()
 
@@ -529,7 +529,7 @@ def setup_logging(log_file: str = "agent.log"):
         maxBytes=10 * 1024 * 1024,  # 10MB
         backupCount=5
     )
-    
+
     logging.basicConfig(
         level=logging.INFO,
         handlers=[handler],

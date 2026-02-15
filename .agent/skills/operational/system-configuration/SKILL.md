@@ -51,7 +51,7 @@ detection_tasks:
   platform:
     action: Detect operating system (Windows, Linux, macOS)
     output: Platform identifier and shell type
-  
+
   python:
     action: Find Python installation
     checks:
@@ -59,7 +59,7 @@ detection_tasks:
       - cursor-factory conda environment
       - System Python (python3, python.exe)
     output: Python path and version
-  
+
   git:
     action: Find Git installation
     checks:
@@ -67,7 +67,7 @@ detection_tasks:
       - git in PATH
       - Common installation paths
     output: Git path and version
-  
+
   other_tools:
     action: Detect additional tools
     tools: [conda, pip, pytest, gh]
@@ -110,7 +110,7 @@ tool_configuration:
       - Specify different path
       - Use conda environment
     validation: Check Python version >= 3.10
-  
+
   git:
     question: "Git path detected: {path}. Is this correct?"
     options:
@@ -129,7 +129,7 @@ credential_configuration:
     required_scopes: [public_repo, read:org]
     storage: Environment variable reference (${GITHUB_TOKEN})
     validation: Test API access
-  
+
   npm_token:
     question: "Enter NPM token (optional, for JS/TS package updates)"
     hint: "Create at https://www.npmjs.com/settings/tokens"
@@ -156,7 +156,7 @@ knowledge_evolution_configuration:
       - name: Subscription
         value: subscription
         description: Subscribe to specific stacks/topics
-  
+
   sources:
     question: "Which knowledge sources should be enabled?"
     multi_select: true
@@ -166,7 +166,7 @@ knowledge_evolution_configuration:
       - Package Registries (PyPI, NPM)
       - Community Curated Sources
       - User Feedback from Projects
-  
+
   subscriptions:
     when: mode == subscription
     question: "Which topics should you subscribe to?"
@@ -183,21 +183,21 @@ validation_steps:
   schema_validation:
     action: Validate against settings-schema.json
     on_error: Show specific validation errors
-  
+
   tool_validation:
     action: Test each tool path
     tests:
       - python --version
       - git --version
     on_error: Warn but allow save
-  
+
   credential_validation:
     action: Test API credentials
     tests:
       - GitHub: GET /rate_limit
       - NPM: npm whoami (if token provided)
     on_error: Warn but allow save
-  
+
   knowledge_validation:
     action: Verify knowledge evolution settings
     checks:
@@ -215,15 +215,15 @@ save_actions:
   backup:
     action: Backup existing settings.json if exists
     path: settings.json.bak.{timestamp}
-  
+
   save:
     action: Write new settings.json
     path: {directories.config}/settings.json
-  
+
   migrate_legacy:
     when: tools.json exists
     action: Rename to tools.json.migrated
-  
+
   report:
     action: Show configuration summary
     include:

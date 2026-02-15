@@ -76,8 +76,8 @@ Agent patterns define specialized AI assistants with distinct roles, workflows, 
 
 ### Code Reviewer Agent
 
-**Pattern ID**: `code-reviewer`  
-**Category**: Quality  
+**Pattern ID**: `code-reviewer`
+**Category**: Quality
 **Purpose**: Reviews code against best practices, style guides, and quality standards
 
 **When Activated**:
@@ -106,8 +106,8 @@ Agent patterns define specialized AI assistants with distinct roles, workflows, 
 
 ### Test Generator Agent
 
-**Pattern ID**: `test-generator`  
-**Category**: Testing  
+**Pattern ID**: `test-generator`
+**Category**: Testing
 **Purpose**: Generates comprehensive unit tests following TDD principles and Given-When-Then patterns
 
 **When Activated**:
@@ -135,8 +135,8 @@ Agent patterns define specialized AI assistants with distinct roles, workflows, 
 
 ### Documentation Agent
 
-**Pattern ID**: `documentation-agent`  
-**Category**: Documentation  
+**Pattern ID**: `documentation-agent`
+**Category**: Documentation
 **Purpose**: Generates and maintains project documentation, READMEs, API docs, and architecture decision records
 
 **When Activated**:
@@ -171,8 +171,8 @@ Agent patterns define specialized AI assistants with distinct roles, workflows, 
 
 ### Explorer Agent
 
-**Pattern ID**: `explorer`  
-**Category**: Exploration  
+**Pattern ID**: `explorer`
+**Category**: Exploration
 **Purpose**: Explores external documentation and searches for reference information
 
 **When Activated**:
@@ -203,9 +203,9 @@ Agent patterns define specialized AI assistants with distinct roles, workflows, 
 
 #### Knowledge Extender Agent
 
-**Pattern ID**: `knowledge-extender`  
-**Category**: Knowledge  
-**Purpose**: Add new knowledge to projects through research and synthesis  
+**Pattern ID**: `knowledge-extender`
+**Category**: Knowledge
+**Purpose**: Add new knowledge to projects through research and synthesis
 **Pattern File**: `patterns/agents/knowledge-extender.json`
 
 **When Activated**:
@@ -227,9 +227,9 @@ Agent patterns define specialized AI assistants with distinct roles, workflows, 
 
 #### Knowledge Evolution Agent
 
-**Pattern ID**: `knowledge-evolution`  
-**Category**: Knowledge  
-**Purpose**: Track and manage project knowledge independently  
+**Pattern ID**: `knowledge-evolution`
+**Category**: Knowledge
+**Purpose**: Track and manage project knowledge independently
 **Pattern File**: `patterns/agents/knowledge-evolution.json`
 
 **When Activated**:
@@ -252,9 +252,9 @@ Agent patterns define specialized AI assistants with distinct roles, workflows, 
 
 #### Factory Updates Agent
 
-**Pattern ID**: `factory-updates`  
-**Category**: Knowledge  
-**Purpose**: Receive updates from the Cursor Agent Factory  
+**Pattern ID**: `factory-updates`
+**Category**: Knowledge
+**Purpose**: Receive updates from the Cursor Agent Factory
 **Pattern File**: `patterns/agents/factory-updates.json`
 
 **When Activated**:
@@ -281,9 +281,9 @@ Skill patterns define reusable capabilities that agents can invoke. Skills are c
 
 #### Grounding Skill
 
-**Pattern ID**: `grounding`  
-**Category**: Core  
-**Purpose**: Verify data structures and assumptions before implementation  
+**Pattern ID**: `grounding`
+**Category**: Core
+**Purpose**: Verify data structures and assumptions before implementation
 **Verification Profile**: `data` (strict thresholds)
 
 **When to Use**:
@@ -321,8 +321,8 @@ Skill patterns define reusable capabilities that agents can invoke. Skills are c
 
 #### Grounding Verification Skill (Base Pattern)
 
-**Pattern ID**: `grounding-verification`  
-**Category**: Core  
+**Pattern ID**: `grounding-verification`
+**Category**: Core
 **Purpose**: Universal two-pass verification for all LLM grounding scenarios
 
 **Core Principle**:
@@ -374,9 +374,9 @@ Skill patterns define reusable capabilities that agents can invoke. Skills are c
 
 #### Strawberry Verification Skill
 
-**Pattern ID**: `strawberry-verification`  
-**Category**: Core  
-**Extends**: `grounding-verification` (profile: strawberry)  
+**Pattern ID**: `strawberry-verification`
+**Category**: Core
+**Extends**: `grounding-verification` (profile: strawberry)
 **Purpose**: Factual claim verification - the canonical profile of grounding-verification
 
 **Relationship to Base**:
@@ -419,9 +419,9 @@ Ask an LLM: "How many r's are in 'strawberry'?" The LLM might write out "s-t-r-a
 
 #### Extend Knowledge Skill
 
-**Pattern ID**: `extend-knowledge`  
-**Category**: Core  
-**Purpose**: Extend project knowledge base with new topics, patterns, and skills  
+**Pattern ID**: `extend-knowledge`
+**Category**: Core
+**Purpose**: Extend project knowledge base with new topics, patterns, and skills
 **Pattern File**: `patterns/skills/extend-knowledge.json`
 
 **When to Use**:
@@ -447,9 +447,9 @@ Ask an LLM: "How many r's are in 'strawberry'?" The LLM might write out "s-t-r-a
 
 #### Receive Updates Skill
 
-**Pattern ID**: `receive-updates`  
-**Category**: Core  
-**Purpose**: Receive and apply updates from the Cursor Agent Factory  
+**Pattern ID**: `receive-updates`
+**Category**: Core
+**Purpose**: Receive and apply updates from the Cursor Agent Factory
 **Pattern File**: `patterns/skills/receive-updates.json`
 
 **When to Use**:
@@ -476,8 +476,8 @@ Ask an LLM: "How many r's are in 'strawberry'?" The LLM might write out "s-t-r-a
 
 #### Bugfix Workflow Skill
 
-**Pattern ID**: `bugfix-workflow`  
-**Category**: Workflow  
+**Pattern ID**: `bugfix-workflow`
+**Category**: Workflow
 **Purpose**: Ticket-initiated bugfix workflow from analysis to implementation
 
 **When to Use**:
@@ -507,8 +507,8 @@ Ask an LLM: "How many r's are in 'strawberry'?" The LLM might write out "s-t-r-a
 
 #### Feature Workflow Skill
 
-**Pattern ID**: `feature-workflow`  
-**Category**: Workflow  
+**Pattern ID**: `feature-workflow`
+**Category**: Workflow
 **Purpose**: Specification-initiated feature development workflow
 
 **When to Use**:
@@ -541,8 +541,8 @@ Ask an LLM: "How many r's are in 'strawberry'?" The LLM might write out "s-t-r-a
 
 #### TDD Skill
 
-**Pattern ID**: `tdd`  
-**Category**: Testing  
+**Pattern ID**: `tdd`
+**Category**: Testing
 **Purpose**: Test-driven development process with Given-When-Then pattern
 
 **When to Use**:
@@ -571,15 +571,15 @@ Ask an LLM: "How many r's are in 'strawberry'?" The LLM might write out "s-t-r-a
 - Descriptive names - Test names should describe scenario
 - Independent tests - Tests should not depend on each other
 
-**Knowledge Files**: `test-patterns.json`  
+**Knowledge Files**: `test-patterns.json`
 **Templates**: `templates/test-class/`
 
 ---
 
 #### BDD Skill
 
-**Pattern ID**: `bdd`  
-**Category**: Testing  
+**Pattern ID**: `bdd`
+**Category**: Testing
 **Purpose**: Stakeholder-readable executable specifications using Gherkin syntax
 
 **When to Use**:
@@ -633,15 +633,15 @@ BDD and TDD serve complementary purposes:
 
 When using both, follow the testing pyramid: many unit tests at the bottom, fewer acceptance tests at the top.
 
-**Knowledge Files**: `bdd-patterns.json`  
+**Knowledge Files**: `bdd-patterns.json`
 **Templates**: `templates/bdd/`
 
 ---
 
 #### Test Translation Skill
 
-**Pattern ID**: `test-translation`  
-**Category**: Testing  
+**Pattern ID**: `test-translation`
+**Category**: Testing
 **Purpose**: Bidirectional translation between BDD scenarios and TDD unit tests with full traceability
 
 **When to Use**:
@@ -688,7 +688,7 @@ When using both, follow the testing pyramid: many unit tests at the bottom, fewe
 - Traceable links - All translations include bidirectional references
 - Non-destructive - Never overwrite manual modifications
 
-**Knowledge Files**: `test-traceability.json`  
+**Knowledge Files**: `test-traceability.json`
 **Templates**: `templates/translation/`
 
 ---
@@ -697,8 +697,8 @@ When using both, follow the testing pyramid: many unit tests at the bottom, fewe
 
 #### Code Templates Skill
 
-**Pattern ID**: `code-templates`  
-**Category**: Quality  
+**Pattern ID**: `code-templates`
+**Category**: Quality
 **Purpose**: Generate code from templates following project patterns
 
 **When to Use**:
@@ -728,15 +728,15 @@ When using both, follow the testing pyramid: many unit tests at the bottom, fewe
 - Follow patterns - Use established project patterns
 - Complete code - Templates should produce functional code
 
-**Knowledge Files**: `naming-conventions.json`  
+**Knowledge Files**: `naming-conventions.json`
 **Templates**: `templates/`
 
 ---
 
 #### Security Audit Skill
 
-**Pattern ID**: `security-audit`  
-**Category**: Verification  
+**Pattern ID**: `security-audit`
+**Category**: Verification
 **Purpose**: Comprehensive security vulnerability detection and remediation guidance
 
 **When to Use**:
@@ -762,7 +762,7 @@ When using both, follow the testing pyramid: many unit tests at the bottom, fewe
 - **Medium**: Plan to fix - defense in depth improvement
 - **Low**: Consider fixing - minor security enhancement
 
-**Skills Invoked**: `grounding`  
+**Skills Invoked**: `grounding`
 **Knowledge Files**: `security-checklist.json`
 
 **Fallback Procedures**:
@@ -774,8 +774,8 @@ When using both, follow the testing pyramid: many unit tests at the bottom, fewe
 
 #### Code Review Skill
 
-**Pattern ID**: `code-review`  
-**Category**: Workflow  
+**Pattern ID**: `code-review`
+**Category**: Workflow
 **Purpose**: Structured code review process covering quality, performance, security, and maintainability
 
 **When to Use**:
@@ -802,7 +802,7 @@ When using both, follow the testing pyramid: many unit tests at the bottom, fewe
 - **Request Changes**: Any critical issues, or multiple high issues
 - **Comment**: Minor suggestions only, approve with comments
 
-**Skills Invoked**: `grounding`, `security-audit`  
+**Skills Invoked**: `grounding`, `security-audit`
 **Knowledge Files**: `design-patterns.json`, `security-checklist.json`
 
 **Fallback Procedures**:
@@ -821,40 +821,40 @@ Axioms are immutable foundational principles that govern all agent behavior. The
 These axioms apply to all generated agent systems and cannot be disabled.
 
 #### A1: Verifiability
-**Statement**: All agent outputs must be verifiable against source  
-**Rationale**: Prevents hallucination and ensures trustworthiness  
+**Statement**: All agent outputs must be verifiable against source
+**Rationale**: Prevents hallucination and ensures trustworthiness
 **Derivations**:
 - Code must have tests
 - Claims must cite sources
 - Outputs must be reproducible
 
 #### A2: User Primacy
-**Statement**: User intent takes precedence over agent convenience  
-**Rationale**: Agents serve users, not themselves  
+**Statement**: User intent takes precedence over agent convenience
+**Rationale**: Agents serve users, not themselves
 **Derivations**:
 - Clarify ambiguous requests before acting
 - Prefer user preferences over defaults
 - Respect user decisions even if suboptimal
 
 #### A3: Transparency
-**Statement**: Agent reasoning must be explainable on request  
-**Rationale**: Black-box behavior undermines trust  
+**Statement**: Agent reasoning must be explainable on request
+**Rationale**: Black-box behavior undermines trust
 **Derivations**:
 - Document decision rationale
 - Provide reasoning on request
 - No hidden logic or silent failures
 
 #### A4: Non-Harm
-**Statement**: No action may knowingly cause harm to users or systems  
-**Rationale**: Safety is foundational to all operations  
+**Statement**: No action may knowingly cause harm to users or systems
+**Rationale**: Safety is foundational to all operations
 **Derivations**:
 - Validate before destructive operations
 - Warn about risky actions
 - Refuse clearly harmful requests
 
 #### A5: Consistency
-**Statement**: No rule may contradict these axioms  
-**Rationale**: Axioms are the logical foundation  
+**Statement**: No rule may contradict these axioms
+**Rationale**: Axioms are the logical foundation
 **Derivations**:
 - All derived rules trace to axioms
 - Conflicts resolved by axiom precedence
@@ -862,10 +862,10 @@ These axioms apply to all generated agent systems and cannot be disabled.
 
 ### Derivation Rules
 
-**D1**: Verification implies testing - If output is code, require evidence of testing  
-**D2**: User primacy resolves conflicts - When multiple valid paths exist, defer to user preference  
-**D3**: Non-harm requires confirmation - Destructive or irreversible actions need double-confirmation  
-**D4**: Transparency enables debugging - Provide clear error explanation and context  
+**D1**: Verification implies testing - If output is code, require evidence of testing
+**D2**: User primacy resolves conflicts - When multiple valid paths exist, defer to user preference
+**D3**: Non-harm requires confirmation - Destructive or irreversible actions need double-confirmation
+**D4**: Transparency enables debugging - Provide clear error explanation and context
 **D5**: Consistency validates rules - Validate rule against all axioms before acceptance
 
 ### Optional Axioms (A6-A10)
@@ -873,37 +873,37 @@ These axioms apply to all generated agent systems and cannot be disabled.
 These can be selected during onboarding based on project needs.
 
 #### A6: Minimalism
-**Statement**: Prefer simple solutions over complex ones  
-**Use When**: Maintenance and understandability are priorities  
+**Statement**: Prefer simple solutions over complex ones
+**Use When**: Maintenance and understandability are priorities
 **Derivations**: Choose simplest implementation, avoid over-engineering, reduce dependencies
 
 #### A7: Reversibility
-**Statement**: Prefer reversible actions over irreversible ones  
-**Use When**: Safety and recoverability are paramount  
+**Statement**: Prefer reversible actions over irreversible ones
+**Use When**: Safety and recoverability are paramount
 **Derivations**: Create backups before destructive changes, prefer soft-delete, design for rollback
 
 #### A8: Privacy
-**Statement**: Minimize data exposure and collection  
-**Use When**: Handling sensitive user data  
+**Statement**: Minimize data exposure and collection
+**Use When**: Handling sensitive user data
 **Derivations**: Collect only necessary data, anonymize when possible, encrypt sensitive information
 
 #### A9: Performance
-**Statement**: Optimize for speed when correctness is ensured  
-**Use When**: Performance-critical applications  
-**Conflicts With**: A6 (Minimalism) - when both selected, apply A6 by default, A9 only when profiling identifies bottlenecks  
+**Statement**: Optimize for speed when correctness is ensured
+**Use When**: Performance-critical applications
+**Conflicts With**: A6 (Minimalism) - when both selected, apply A6 by default, A9 only when profiling identifies bottlenecks
 **Derivations**: Profile before optimizing, cache expensive operations, use efficient algorithms
 
 #### A10: Learning
-**Statement**: Every failure is an opportunity to improve  
-**Use When**: Continuous improvement culture, AI/ML development  
+**Statement**: Every failure is an opportunity to improve
+**Use When**: Continuous improvement culture, AI/ML development
 **Derivations**: Log failures with context, implement feedback loops, update patterns based on outcomes
 
 ### Validation Constraints
 
-**VC1**: Axiom Traceability - Every derived rule traces to at least one axiom  
-**VC2**: No Axiom Contradiction - No rule contradicts any axiom  
-**VC3**: Derivation Soundness - Rule follows from premises via valid derivation  
-**VC4**: Conflict Resolution - When rules conflict, higher-layer rule takes precedence (L0 > L1 > L2 > L3 > L4)  
+**VC1**: Axiom Traceability - Every derived rule traces to at least one axiom
+**VC2**: No Axiom Contradiction - No rule contradicts any axiom
+**VC3**: Derivation Soundness - Rule follows from premises via valid derivation
+**VC4**: Conflict Resolution - When rules conflict, higher-layer rule takes precedence (L0 > L1 > L2 > L3 > L4)
 **VC5**: Halt on Axiom Conflict - If action would violate an axiom, halt execution and request human guidance
 
 ---
@@ -914,8 +914,8 @@ Methodology patterns define development workflows with specific ceremonies, qual
 
 ### Agile Development Swarm
 
-**Pattern ID**: `agile-scrum`  
-**Pattern Type**: `domain_expert_swarm + peer_collaboration`  
+**Pattern ID**: `agile-scrum`
+**Pattern Type**: `domain_expert_swarm + peer_collaboration`
 **Maturity**: Proven
 
 **Use Cases**:
@@ -950,8 +950,8 @@ Methodology patterns define development workflows with specific ceremonies, qual
 
 ### Kanban Flow
 
-**Pattern ID**: `kanban`  
-**Pattern Type**: `continuous_flow + pull_based_work`  
+**Pattern ID**: `kanban`
+**Pattern Type**: `continuous_flow + pull_based_work`
 **Maturity**: Proven
 
 **Use Cases**:
@@ -985,8 +985,8 @@ Methodology patterns define development workflows with specific ceremonies, qual
 
 ### Research & Development Swarm
 
-**Pattern ID**: `research-development`  
-**Pattern Type**: `knowledge_mesh + adaptive_learning`  
+**Pattern ID**: `research-development`
+**Pattern Type**: `knowledge_mesh + adaptive_learning`
 **Maturity**: Emerging
 
 **Use Cases**:
@@ -1022,8 +1022,8 @@ Methodology patterns define development workflows with specific ceremonies, qual
 
 ### Enterprise Integration Swarm
 
-**Pattern ID**: `enterprise-integration`  
-**Pattern Type**: `hierarchical_command + pipeline_processing + resource_pool`  
+**Pattern ID**: `enterprise-integration`
+**Pattern Type**: `hierarchical_command + pipeline_processing + resource_pool`
 **Maturity**: Proven
 
 **Use Cases**:

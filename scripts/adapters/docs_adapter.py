@@ -41,7 +41,7 @@ from .base_adapter import (
 @dataclass
 class DocumentationSource:
     """A documentation source being tracked.
-    
+
     Attributes:
         name: Framework name
         knowledge_file: Target knowledge file
@@ -49,6 +49,7 @@ class DocumentationSource:
         version_url: URL to check for version
         trust_level: Trust level for this source
     """
+
     name: str
     knowledge_file: str
     docs_url: str
@@ -58,16 +59,16 @@ class DocumentationSource:
 
 class DocsAdapter(BaseAdapter):
     """Adapter for fetching updates from official documentation.
-    
+
     This adapter monitors official framework documentation for changes
     and extracts relevant patterns and best practices.
-    
+
     Example:
         config = AdapterConfig(trust_level=TrustLevel.OFFICIAL)
         adapter = DocsAdapter(config)
         updates = await adapter.fetch_updates()
     """
-    
+
     # Documentation sources to track
     DOCUMENTATION_SOURCES: List[DocumentationSource] = [
         DocumentationSource(
@@ -100,48 +101,49 @@ class DocsAdapter(BaseAdapter):
             version_url="https://registry.npmjs.org/react",
         ),
     ]
-    
+
     def __init__(self, config: AdapterConfig):
         """Initialize the documentation adapter.
-        
+
         Args:
             config: Adapter configuration
         """
         super().__init__(config)
         self._session: Optional[aiohttp.ClientSession] = None
-    
+
     @property
     def name(self) -> str:
         """Adapter identifier."""
         return "official_docs"
-    
+
     @property
     def description(self) -> str:
         """Human-readable description."""
         return "Fetches updates from official framework documentation"
-    
+
     @property
     def supported_knowledge_files(self) -> List[str]:
         """Knowledge files this adapter can update."""
         return list(set(src.knowledge_file for src in self.DOCUMENTATION_SOURCES))
-    
+
     async def _get_session(self) -> "aiohttp.ClientSession":
         """Get or create the HTTP session."""
         if aiohttp is None:
             raise ImportError("aiohttp required for DocsAdapter")
-        
+
         if self._session is None or self._session.closed:
             self._session = aiohttp.ClientSession(
-                headers={"User-Agent": "Antigravity-Agent-Factory/1.0"},                timeout=aiohttp.ClientTimeout(total=self.config.timeout_seconds)
+                headers={"User-Agent": "Antigravity-Agent-Factory/1.0"},
+                timeout=aiohttp.ClientTimeout(total=self.config.timeout_seconds),
             )
-        
+
         return self._session
-    
+
     async def _close_session(self) -> None:
         """Close the HTTP session."""
         if self._session and not self._session.closed:
             await self._session.close()
-    
+
     async def validate_connection(self) -> bool:
         """Validate documentation sources are reachable."""
         try:
@@ -150,59 +152,55 @@ class DocsAdapter(BaseAdapter):
                 return resp.status < 400
         except Exception:
             return False
-    
+
     async def fetch_updates(
-        self,
-        target_files: Optional[List[str]] = None,
-        since: Optional[datetime] = None
+        self, target_files: Optional[List[str]] = None, since: Optional[datetime] = None
     ) -> List[KnowledgeUpdate]:
         """Fetch updates from documentation sources.
-        
+
         Args:
             target_files: Optional filter by knowledge files
             since: Optional date filter
-            
+
         Returns:
             List of knowledge updates
         """
         updates: List[KnowledgeUpdate] = []
-        
+
         sources = self.DOCUMENTATION_SOURCES
         if target_files:
             sources = [s for s in sources if s.knowledge_file in target_files]
-        
+
         for source in sources:
             source_updates = await self._check_source(source, since)
             updates.extend(source_updates)
-        
+
         await self._close_session()
         return updates
-    
+
     async def _check_source(
-        self,
-        source: DocumentationSource,
-        since: Optional[datetime]
+        self, source: DocumentationSource, since: Optional[datetime]
     ) -> List[KnowledgeUpdate]:
         """Check a documentation source for updates.
-        
+
         This is a simplified implementation. A full version would:
         1. Fetch documentation content
         2. Parse and extract patterns
         3. Compare against cached version
         4. Generate detailed changes
-        
+
         Args:
             source: Documentation source to check
             since: Date filter
-            
+
         Returns:
             List of updates from this source
         """
         updates: List[KnowledgeUpdate] = []
-        
+
         # Check if we can get version info
         version = await self._get_framework_version(source)
-        
+
         if version:
             # Create an update indicating new documentation available
             changes = [
@@ -214,7 +212,7 @@ class DocsAdapter(BaseAdapter):
                     impact="low",
                 )
             ]
-            
+
             update = KnowledgeUpdate(
                 target_file=source.knowledge_file,
                 priority=UpdatePriority.LOW,  # Docs updates are low priority
@@ -230,46 +228,45 @@ class DocsAdapter(BaseAdapter):
                 axiom_alignment={
                     "A1": "Verified from official documentation",
                     "A10": "Learning from authoritative source",
-                }
+                },
             )
             updates.append(update)
-        
+
         return updates
-    
+
     async def _get_framework_version(
-        self,
-        source: DocumentationSource
+        self, source: DocumentationSource
     ) -> Optional[str]:
         """Get the current version of a framework.
-        
+
         Args:
             source: Documentation source
-            
+
         Returns:
             Version string or None
         """
         if not source.version_url:
             return None
-        
+
         session = await self._get_session()
-        
+
         try:
             async with session.get(source.version_url) as resp:
                 if resp.status == 200:
                     data = await resp.json()
-                    
+
                     # PyPI format
                     if "info" in data and "version" in data["info"]:
                         return data["info"]["version"]
-                    
+
                     # NPM format
                     if "dist-tags" in data and "latest" in data["dist-tags"]:
                         return data["dist-tags"]["latest"]
         except Exception:
             pass
-        
+
         return None
-    
+
     def _suggest_version(self, framework_version: str) -> str:
         """Suggest knowledge file version based on framework version."""
         parts = framework_version.split(".")

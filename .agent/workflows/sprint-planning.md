@@ -8,8 +8,8 @@ description: Systematic workflow for planning sprints, including backlog review,
 
 Systematic workflow for planning sprints, including backlog review, capacity calculation, story selection, and sprint goal definition. Integrates with project management tools to automate repetitive planning tasks.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** sprint-master
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.

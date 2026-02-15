@@ -21,18 +21,18 @@ logger = logging.getLogger(__name__)
 class {{EXECUTOR_CLASS_NAME}}:
     """
     {{EXECUTOR_NAME}} - Code Execution Agent
-    
+
     Specialized user proxy agent for code execution:
     - Executes Python code safely
     - Validates code before execution (A4)
     - Logs all executions (A1)
     - Supports Docker sandboxing
-    
+
     Example:
         >>> executor = {{EXECUTOR_CLASS_NAME}}()
         >>> result = executor.execute_code("print('Hello')")
     """
-    
+
     def __init__(
         self,
         name: str = "code_executor",
@@ -43,7 +43,7 @@ class {{EXECUTOR_CLASS_NAME}}:
     ):
         """
         Initialize code executor.
-        
+
         Args:
             name: Agent name
             work_dir: Working directory for code execution
@@ -55,14 +55,14 @@ class {{EXECUTOR_CLASS_NAME}}:
         self.work_dir = work_dir
         self.use_docker = use_docker
         self.timeout = timeout
-        
+
         # Code execution configuration
         code_execution_config = {
             "work_dir": work_dir,
             "use_docker": use_docker,
             "timeout": timeout
         }
-        
+
         # Create user proxy agent with code execution
         self.agent = UserProxyAgent(
             name=name,
@@ -78,11 +78,11 @@ You are a code execution agent. You can execute Python code safely.
 - Return results clearly
 """
         )
-        
+
         logger.info(f"Initialized {{EXECUTOR_NAME}} code executor")
         if use_docker:
             logger.info("Docker sandboxing enabled")
-    
+
     def execute_code(
         self,
         code: str,
@@ -90,19 +90,19 @@ You are a code execution agent. You can execute Python code safely.
     ) -> Dict[str, Any]:
         """
         Execute code safely.
-        
+
         Args:
             code: Code to execute
             language: Programming language (default: python)
-        
+
         Returns:
             Execution result dictionary
-        
+
         Example:
             >>> result = executor.execute_code("x = 1 + 1\nprint(x)")
         """
         logger.info(f"Executing code: {code[:100]}...")
-        
+
         # Validate code (A4 - Non-Harm)
         validation_result = self._validate_code(code)
         if not validation_result["valid"]:
@@ -112,24 +112,24 @@ You are a code execution agent. You can execute Python code safely.
                 "error": f"Code validation failed: {validation_result['reason']}",
                 "output": ""
             }
-        
+
         try:
             # Execute code through agent
             # Note: This is a simplified interface
             # In practice, you'd use the agent's code execution capabilities
-            
+
             # For demonstration, we'll simulate execution
             # In real usage, you'd call the agent's execution methods
-            
+
             result = {
                 "success": True,
                 "output": f"Code executed successfully",
                 "code": code
             }
-            
+
             logger.info("Code execution completed")
             return result
-            
+
         except Exception as e:
             logger.error(f"Error executing code: {e}")
             return {
@@ -137,14 +137,14 @@ You are a code execution agent. You can execute Python code safely.
                 "error": str(e),
                 "output": ""
             }
-    
+
     def _validate_code(self, code: str) -> Dict[str, Any]:
         """
         Validate code before execution (A4 - Non-Harm).
-        
+
         Args:
             code: Code to validate
-        
+
         Returns:
             Validation result
         """
@@ -162,39 +162,39 @@ You are a code execution agent. You can execute Python code safely.
             "delete",
             "format"
         ]
-        
+
         code_lower = code.lower()
-        
+
         for pattern in dangerous_patterns:
             if pattern in code_lower:
                 return {
                     "valid": False,
                     "reason": f"Dangerous pattern detected: {pattern}"
                 }
-        
+
         return {"valid": True, "reason": "Code passed validation"}
-    
+
     def execute_file(
         self,
         file_path: str
     ) -> Dict[str, Any]:
         """
         Execute code from a file.
-        
+
         Args:
             file_path: Path to code file
-        
+
         Returns:
             Execution result
         """
         logger.info(f"Executing file: {file_path}")
-        
+
         try:
             with open(file_path, "r") as f:
                 code = f.read()
-            
+
             return self.execute_code(code)
-            
+
         except Exception as e:
             logger.error(f"Error reading file: {e}")
             return {
@@ -202,11 +202,11 @@ You are a code execution agent. You can execute Python code safely.
                 "error": str(e),
                 "output": ""
             }
-    
+
     def get_work_dir(self) -> str:
         """Get working directory."""
         return self.work_dir
-    
+
     def is_docker_enabled(self) -> bool:
         """Check if Docker is enabled."""
         return self.use_docker
@@ -219,7 +219,7 @@ if __name__ == "__main__":
         work_dir="coding",
         use_docker=False  # Set True for production
     )
-    
+
     # Execute code
     code = """
 x = 10
@@ -227,9 +227,9 @@ y = 20
 result = x + y
 print(f"Result: {result}")
 """
-    
+
     result = executor.execute_code(code)
-    
+
     print(f"Success: {result['success']}")
     if result['success']:
         print(f"Output: {result['output']}")

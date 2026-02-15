@@ -23,49 +23,49 @@ Implement custom metrics:
 ```java
 @Service
 public class ProductService {
-    
+
     private final ProductRepository productRepository;
     private final MeterRegistry meterRegistry;
     private final Counter productCreatedCounter;
     private final Timer productQueryTimer;
     private final Gauge productCountGauge;
-    
-    public ProductService(ProductRepository productRepository, 
+
+    public ProductService(ProductRepository productRepository,
                          MeterRegistry meterRegistry) {
         this.productRepository = productRepository;
         this.meterRegistry = meterRegistry;
-        
+
         // Counter for product creation
         this.productCreatedCounter = Counter.builder("products.created")
             .description("Total number of products created")
             .tag("service", "product-service")
             .register(meterRegistry);
-        
+
         // Timer for query operations
         this.productQueryTimer = Timer.builder("products.query.duration")
             .description("Time taken to query products")
             .tag("service", "product-service")
             .register(meterRegistry);
-        
+
         // Gauge for current product count
-        this.productCountGauge = Gauge.builder("products.count", 
+        this.productCountGauge = Gauge.builder("products.count",
             productRepository, ProductRepository::count)
             .description("Current number of products")
             .register(meterRegistry);
     }
-    
+
     @Transactional
     public ProductDto create(CreateProductDto dto) {
         Product product = productMapper.toEntity(dto);
         Product saved = productRepository.save(product);
-        
+
         // Increment counter
         productCreatedCounter.increment(
             Tags.of("category", saved.getCategory().getName()));
-        
+
         return productMapper.toDto(saved);
     }
-    
+
     public List<ProductDto> findAll(int page, int size) {
         // Measure query time
         return productQueryTimer.recordCallable(() -> {
@@ -81,13 +81,13 @@ public class ProductService {
 // Using @Timed annotation
 @RestController
 public class ProductController {
-    
+
     @GetMapping("/products")
     @Timed(value = "products.list", description = "Time to list products")
     public ResponseEntity<List<ProductDto>> getAllProducts() {
         // Implementation
     }
-    
+
     @PostMapping("/products")
     @Timed(value = "products.create", description = "Time to create product")
     @Counted(value = "products.create.requests", description = "Product creation requests")
@@ -128,21 +128,21 @@ management:
 ```java
 @Service
 public class ProductService {
-    
+
     private final Tracer tracer;
     private final RestTemplate restTemplate;
-    
+
     public ProductService(Tracer tracer, RestTemplate restTemplate) {
         this.tracer = tracer;
         this.restTemplate = restTemplate;
     }
-    
+
     public ProductDto getProduct(Long id) {
         Span span = tracer.nextSpan()
             .name("get-product")
             .tag("product.id", String.valueOf(id))
             .start();
-        
+
         try (Tracer.SpanInScope ws = tracer.withSpanInScope(span)) {
             span.event("Fetching product");
             ProductDto product = restTemplate.getForObject(
@@ -164,12 +164,12 @@ public class ProductService {
 // Automatic tracing with @NewSpan
 @Service
 public class OrderService {
-    
+
     @NewSpan("process-order")
     public OrderDto processOrder(CreateOrderDto dto) {
         // Method automatically traced
     }
-    
+
     @ContinueSpan(log = "validate-order")
     public void validateOrder(@SpanTag("order.id") Long orderId) {
         // Continue existing span
@@ -186,7 +186,7 @@ Configure JSON logging with Logback:
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-    
+
     <springProfile name="prod">
         <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
@@ -194,19 +194,19 @@ Configure JSON logging with Logback:
                 <customFields>{"service":"product-service","environment":"prod"}</customFields>
             </encoder>
         </appender>
-        
+
         <root level="INFO">
             <appender-ref ref="JSON"/>
         </root>
     </springProfile>
-    
+
     <springProfile name="dev">
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
                 <pattern>%d{yyyy-MM-dd HH:mm:ss} - %msg%n</pattern>
             </encoder>
         </appender>
-        
+
         <root level="DEBUG">
             <appender-ref ref="CONSOLE"/>
         </root>
@@ -219,24 +219,24 @@ Configure JSON logging with Logback:
 @RestController
 @Slf4j
 public class ProductController {
-    
+
     @GetMapping("/products/{id}")
     public ResponseEntity<ProductDto> getProduct(@PathVariable Long id) {
         MDC.put("productId", String.valueOf(id));
         MDC.put("operation", "getProduct");
-        
-        log.info("Fetching product", 
+
+        log.info("Fetching product",
             kv("productId", id),
             kv("timestamp", Instant.now()));
-        
+
         try {
             ProductDto product = productService.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
-            
+
             log.info("Product fetched successfully",
                 kv("productId", id),
                 kv("productName", product.getName()));
-            
+
             return ResponseEntity.ok(product);
         } catch (ProductNotFoundException e) {
             log.warn("Product not found",
@@ -291,7 +291,7 @@ management:
 ```java
 @Component
 public class CustomInfoContributor implements InfoContributor {
-    
+
     @Override
     public void contribute(Info.Builder builder) {
         builder.withDetail("app", Map.of(
@@ -310,13 +310,13 @@ Create custom health checks:
 ```java
 @Component
 public class DatabaseHealthIndicator implements HealthIndicator {
-    
+
     private final DataSource dataSource;
-    
+
     public DatabaseHealthIndicator(DataSource dataSource) {
         this.dataSource = dataSource;
     }
-    
+
     @Override
     public Health health() {
         try (Connection connection = dataSource.getConnection()) {
@@ -339,20 +339,20 @@ public class DatabaseHealthIndicator implements HealthIndicator {
 
 @Component
 public class ExternalServiceHealthIndicator implements HealthIndicator {
-    
+
     private final RestTemplate restTemplate;
-    
+
     public ExternalServiceHealthIndicator(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
-    
+
     @Override
     public Health health() {
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(
                 "http://external-service/health",
                 String.class);
-            
+
             if (response.getStatusCode().is2xxSuccessful()) {
                 return Health.up()
                     .withDetail("external-service", "Available")

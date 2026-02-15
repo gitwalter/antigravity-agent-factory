@@ -4,8 +4,8 @@ This factory currently includes **260 knowledge files** covering various aspects
 
 | File | Type | Description |
 |------|------|-------------|
-| [patterns.json](file:///../../knowledge/patterns.json) | Index | Core patterns for agents and skills |
-| [axioms.md](file:///../../knowledge/axioms.md) | Ethics | Core Antigravity axioms |
+| [patterns.json](../../.agent/knowledge/patterns.json) | Index | Core patterns for agents and skills |
+| [axioms.md](../../.agent/knowledge/axioms.md) | Ethics | Core Antigravity axioms |
 
 
 <!-- The count above is automatically updated by scripts/validation/sync_knowledge_counts.py -->

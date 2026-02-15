@@ -133,29 +133,29 @@ def estimate_item(scope, complexity, dependencies, risk, testing):
         "medium": 5,
         "large": 8
     }
-    
+
     points = base_points[scope]
-    
+
     # Adjust for complexity
     if complexity == "complex":
         points += 3
     elif complexity == "moderate":
         points += 1
-    
+
     # Adjust for risk
     if risk == "high":
         points += 2
     elif risk == "medium":
         points += 1
-    
+
     # Adjust for dependencies
     if dependencies == "many":
         points += 1
-    
+
     # Adjust for testing
     if testing == "comprehensive":
         points += 1
-    
+
     # Round to Fibonacci sequence
     return round_to_fibonacci(points)
 ```

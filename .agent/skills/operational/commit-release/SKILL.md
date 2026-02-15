@@ -29,37 +29,37 @@ Traditional commit workflows block developers with cryptic errors. This skill:
 flowchart TD
     Start([Commit Request]) --> CheckFiles[Check Staged Files]
     CheckFiles --> HasChanges{Changes?}
-    
+
     HasChanges -->|No| NoChanges([Nothing to commit])
     HasChanges -->|Yes| RunSync[Run Artifact Sync]
-    
+
     RunSync --> SyncOK{Sync OK?}
     SyncOK -->|No| AutoFix[Auto-fix & Restage]
     AutoFix --> RunSync
     SyncOK -->|Yes| ValidateSecrets[Validate No Secrets]
-    
+
     ValidateSecrets --> SecretsFound{Secrets?}
     SecretsFound -->|Yes| Block([BLOCKED - Remove Secrets])
     SecretsFound -->|No| ValidateSyntax[Validate JSON/YAML]
-    
+
     ValidateSyntax --> SyntaxOK{Syntax OK?}
     SyntaxOK -->|No| FixSyntax[Fix Syntax Errors]
     FixSyntax --> ValidateSyntax
     SyntaxOK -->|Yes| UpdateChangelog[Update CHANGELOG]
-    
+
     UpdateChangelog --> CreateMessage[Generate Commit Message]
     CreateMessage --> Commit[git commit]
-    
+
     Commit --> CommitOK{Success?}
     CommitOK -->|No| LearnFailure[Document Failure Lesson]
     LearnFailure --> RetryOrEscalate{Can Retry?}
     RetryOrEscalate -->|Yes| RunSync
     RetryOrEscalate -->|No| Escalate([Escalate to Human])
-    
+
     CommitOK -->|Yes| PushRequested{Push Requested?}
     PushRequested -->|Yes| Push[git push]
     PushRequested -->|No| Complete([Commit Complete])
-    
+
     Push --> PushOK{Push OK?}
     PushOK -->|Yes| Complete
     PushOK -->|No| LearnFailure
@@ -95,7 +95,7 @@ Before committing, use the **unified pre-commit runner**:
 # Full sync mode - runs all validations in parallel and auto-fixes
 {PYTHON_PATH} {directories.scripts}/git/pre_commit_runner.py --sync
 
-# Check mode - validate only, no modifications  
+# Check mode - validate only, no modifications
 {PYTHON_PATH} {directories.scripts}/git/pre_commit_runner.py --check
 
 # Fast mode - skip slow validation checks

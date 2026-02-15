@@ -43,7 +43,7 @@ Practices are the regular disciplines that maintain excellence.
 
 They are not bureaucracy - they are:
 - Moments of intentional reflection
-- Opportunities for continuous improvement  
+- Opportunities for continuous improvement
 - Rhythms that keep us aligned with purpose
 
 "Each day is an opportunity to serve well and grow in craft."
@@ -85,11 +85,11 @@ P3 - Focused Stand-up:
   Time: [9:00 AM]
   Duration: [15 minutes]
   Format: [Progress, Focus, Blockers, Offers]
-  
+
 P4 - Code as Craft Review:
   Checklist enabled: [yes]
   Commit message format: [Conventional Commits]
-  
+
 P8 - Sprint Retrospective:
   Duration: [1 hour]
   Format: [Start/Stop/Continue]

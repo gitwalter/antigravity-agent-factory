@@ -35,17 +35,17 @@ define view entity ZC_TravelBooking
       CurrencyCode,
       Description,
       Status,
-      
+
       /* List Report Annotations */
       @UI: {
-        lineItem: [ { 
-          position: 10, 
+        lineItem: [ {
+          position: 10,
           importance: #HIGH,
           type: #AS_LINK,
           semanticObjectAction: 'display'
         } ],
-        identification: [ { 
-          position: 10, 
+        identification: [ {
+          position: 10,
           label: 'Travel ID',
           type: #AS_LINK,
           semanticObjectAction: 'display'
@@ -53,7 +53,7 @@ define view entity ZC_TravelBooking
         selectionField: [ { position: 10 } ]
       }
       TravelID,
-      
+
       @UI: {
         lineItem: [ { position: 20 } ],
         identification: [ { position: 20 } ],
@@ -61,9 +61,9 @@ define view entity ZC_TravelBooking
         selectionField: [ { position: 20 } ]
       }
       Description,
-      
+
       @UI: {
-        lineItem: [ { 
+        lineItem: [ {
           position: 30,
           type: #AS_DATETIME,
           formatOptions: { displayMode: #DATE_ONLY }
@@ -73,9 +73,9 @@ define view entity ZC_TravelBooking
         selectionField: [ { position: 30 } ]
       }
       BeginDate,
-      
+
       @UI: {
-        lineItem: [ { 
+        lineItem: [ {
           position: 40,
           type: #AS_DATETIME,
           formatOptions: { displayMode: #DATE_ONLY }
@@ -85,9 +85,9 @@ define view entity ZC_TravelBooking
         selectionField: [ { position: 40 } ]
       }
       EndDate,
-      
+
       @UI: {
-        lineItem: [ { 
+        lineItem: [ {
           position: 50,
           type: #AS_NUMERIC,
           unit: CurrencyCode
@@ -96,9 +96,9 @@ define view entity ZC_TravelBooking
         fieldGroup: [ { qualifier: 'General', position: 50 } ]
       }
       TotalPrice,
-      
+
       @UI: {
-        lineItem: [ { 
+        lineItem: [ {
           position: 60,
           type: #AS_STATUS,
           criticality: 'StatusCriticality'
@@ -108,21 +108,21 @@ define view entity ZC_TravelBooking
         selectionField: [ { position: 60 } ]
       }
       Status,
-      
+
       /* Value Helps */
-      @Consumption.valueHelpDefinition: [ { 
-        entity: { 
-          name: 'ZC_Agency', 
-          element: 'AgencyID' 
+      @Consumption.valueHelpDefinition: [ {
+        entity: {
+          name: 'ZC_Agency',
+          element: 'AgencyID'
         },
         useForValidation: true
       } ]
       AgencyID,
-      
-      @Consumption.valueHelpDefinition: [ { 
-        entity: { 
-          name: 'ZC_Customer', 
-          element: 'CustomerID' 
+
+      @Consumption.valueHelpDefinition: [ {
+        entity: {
+          name: 'ZC_Customer',
+          element: 'CustomerID'
         },
         useForValidation: true
       } ]
@@ -157,7 +157,7 @@ define view entity ZC_TravelBooking
   as projection on ZI_TravelBooking
 {
   // ... fields ...
-  
+
   /* Object Page Facets */
   @UI.facet: [
     {
@@ -197,80 +197,80 @@ define view entity ZC_TravelBooking
       position: 30
     }
   ]
-  
+
   /* Field Groups */
-  @UI.fieldGroup: [ { 
-    qualifier: 'TravelData', 
+  @UI.fieldGroup: [ {
+    qualifier: 'TravelData',
     position: 10,
     label: 'Travel Details'
   } ]
   TravelID,
-  
-  @UI.fieldGroup: [ { 
-    qualifier: 'TravelData', 
-    position: 20 
+
+  @UI.fieldGroup: [ {
+    qualifier: 'TravelData',
+    position: 20
   } ]
   Description,
-  
-  @UI.fieldGroup: [ { 
-    qualifier: 'TravelData', 
-    position: 30 
+
+  @UI.fieldGroup: [ {
+    qualifier: 'TravelData',
+    position: 30
   } ]
   AgencyID,
-  
-  @UI.fieldGroup: [ { 
-    qualifier: 'TravelData', 
-    position: 40 
+
+  @UI.fieldGroup: [ {
+    qualifier: 'TravelData',
+    position: 40
   } ]
   CustomerID,
-  
-  @UI.fieldGroup: [ { 
-    qualifier: 'TravelData', 
-    position: 50 
+
+  @UI.fieldGroup: [ {
+    qualifier: 'TravelData',
+    position: 50
   } ]
   BeginDate,
-  
-  @UI.fieldGroup: [ { 
-    qualifier: 'TravelData', 
-    position: 60 
+
+  @UI.fieldGroup: [ {
+    qualifier: 'TravelData',
+    position: 60
   } ]
   EndDate,
-  
-  @UI.fieldGroup: [ { 
-    qualifier: 'FinancialData', 
+
+  @UI.fieldGroup: [ {
+    qualifier: 'FinancialData',
     position: 10,
     label: 'Financial Information'
   } ]
   BookingFee,
-  
-  @UI.fieldGroup: [ { 
-    qualifier: 'FinancialData', 
-    position: 20 
+
+  @UI.fieldGroup: [ {
+    qualifier: 'FinancialData',
+    position: 20
   } ]
   TotalPrice,
-  
-  @UI.fieldGroup: [ { 
-    qualifier: 'FinancialData', 
-    position: 30 
+
+  @UI.fieldGroup: [ {
+    qualifier: 'FinancialData',
+    position: 30
   } ]
   CurrencyCode,
-  
-  @UI.fieldGroup: [ { 
-    qualifier: 'StatusData', 
+
+  @UI.fieldGroup: [ {
+    qualifier: 'StatusData',
     position: 10,
     label: 'Status'
   } ]
   Status,
-  
-  @UI.fieldGroup: [ { 
-    qualifier: 'StatusData', 
-    position: 20 
+
+  @UI.fieldGroup: [ {
+    qualifier: 'StatusData',
+    position: 20
   } ]
   CreatedBy,
-  
-  @UI.fieldGroup: [ { 
-    qualifier: 'StatusData', 
-    position: 30 
+
+  @UI.fieldGroup: [ {
+    qualifier: 'StatusData',
+    position: 30
   } ]
   CreatedAt
 }
@@ -280,7 +280,7 @@ define view entity ZC_TravelBooking
 
 ```abap
 @UI: {
-  lineItem: [ { 
+  lineItem: [ {
     position: 10,
     type: #FOR_ACTION,
     dataAction: 'submit',
@@ -291,7 +291,7 @@ define view entity ZC_TravelBooking
 TravelID,
 
 @UI: {
-  lineItem: [ { 
+  lineItem: [ {
     position: 20,
     type: #FOR_ACTION,
     dataAction: 'cancel',
@@ -322,20 +322,20 @@ Status,
 
 ```abap
 /* Simple Value Help */
-@Consumption.valueHelpDefinition: [ { 
-  entity: { 
-    name: 'ZC_Agency', 
-    element: 'AgencyID' 
+@Consumption.valueHelpDefinition: [ {
+  entity: {
+    name: 'ZC_Agency',
+    element: 'AgencyID'
   },
   useForValidation: true
 } ]
 AgencyID,
 
 /* Value Help with Additional Properties */
-@Consumption.valueHelpDefinition: [ { 
-  entity: { 
-    name: 'ZC_Customer', 
-    element: 'CustomerID' 
+@Consumption.valueHelpDefinition: [ {
+  entity: {
+    name: 'ZC_Customer',
+    element: 'CustomerID'
   },
   additionalBinding: [
     {
@@ -354,10 +354,10 @@ AgencyID,
 CustomerID,
 
 /* Value Help with Filter */
-@Consumption.valueHelpDefinition: [ { 
-  entity: { 
-    name: 'ZC_Material', 
-    element: 'MaterialID' 
+@Consumption.valueHelpDefinition: [ {
+  entity: {
+    name: 'ZC_Material',
+    element: 'MaterialID'
   },
   filter: {
     materialType: 'SERVICE'
@@ -384,7 +384,7 @@ define view entity ZC_TravelBookingAnalytics
   Status,
   @Aggregation.default: #SUM
   TotalPrice,
-  
+
   @UI.chart: [ {
     qualifier: 'StatusChart',
     dimension: [ 'Status' ],
@@ -404,7 +404,7 @@ lock master total etag LastChangedAt
 with draft
 {
   // ... CRUD operations ...
-  
+
   draft action Resume;
   draft action Edit;
   draft action Activate;

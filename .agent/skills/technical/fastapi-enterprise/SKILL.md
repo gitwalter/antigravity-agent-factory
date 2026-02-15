@@ -19,7 +19,7 @@ This blueprint provides the **procedural truth** for engineering, testing, and d
 Follow these procedures to implement the capability:
 
 ### Procedure 1: Scaffolding a Feature Domain
-FastAPI applications in this factory follow a **Domain-Driven Design (DDD)** structure. 
+FastAPI applications in this factory follow a **Domain-Driven Design (DDD)** structure.
 Execute these steps to add a new domain:
 1.  **Create Directory**: `mkdir -p src/domains/[domain_name]/{models,schemas,routers,services}`.
 2.  **Initialize Models**: Create `models.py` using SQLAlchemy 2.0 `Mapped` syntax.
@@ -51,7 +51,7 @@ Execute these steps to add a new domain:
 class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8)
-    
+
     @field_validator("password")
     def password_complexity(cls, v: str) -> str:
         if not any(c.isdigit() for c in v):

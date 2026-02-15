@@ -49,17 +49,17 @@ observation_sources:
     - common_issues_found
     - frequently_applied_fixes
     - quality_improvements
-  
+
   test_results:
     - recurring_failure_patterns
     - coverage_gaps
     - performance_regressions
-  
+
   user_interactions:
     - clarification_requests
     - repeated_questions
     - confusion_points
-  
+
   workflow_execution:
     - bottlenecks_identified
     - skipped_steps
@@ -74,17 +74,17 @@ Analyze observations to identify patterns:
 def identify_patterns(observations: List[Observation]) -> List[Pattern]:
     """
     Identify recurring patterns from observations.
-    
+
     Pattern criteria:
     - Occurs 3+ times
     - Has consistent characteristics
     - Suggests actionable improvement
     """
     patterns = []
-    
+
     # Group by similarity
     grouped = cluster_by_similarity(observations)
-    
+
     for group in grouped:
         if len(group) >= 3:
             pattern = Pattern(
@@ -94,7 +94,7 @@ def identify_patterns(observations: List[Observation]) -> List[Pattern]:
                 suggested_action=derive_action(group)
             )
             patterns.append(pattern)
-    
+
     return patterns
 ```
 
@@ -107,15 +107,15 @@ generalization_process:
   1_identify_commonality:
     question: "What do all instances share?"
     output: "Common characteristics"
-  
+
   2_abstract_to_rule:
     question: "What general rule would prevent/encourage this?"
     output: "Proposed rule statement"
-  
+
   3_trace_to_axiom:
     question: "Which axiom does this support?"
     output: "Axiom alignment justification"
-  
+
   4_validate_consistency:
     question: "Does this contradict any existing rule?"
     output: "Consistency check result"
@@ -177,17 +177,17 @@ integration_targets:
     when: "Pattern reveals need for new foundational principle"
     how: "Add to optional-axioms.json, document rationale"
     validation: "Peer review, conflict check"
-  
+
   layer2_principle:
     when: "Pattern suggests new quality standard or boundary"
     how: "Add to .cursorrules principles section"
     validation: "Trace to axiom, consistency check"
-  
+
   layer3_methodology:
     when: "Pattern suggests process improvement"
     how: "Update methodology.yaml or ceremony definitions"
     validation: "Trial period, metric tracking"
-  
+
   layer4_technical:
     when: "Pattern suggests code/tool improvement"
     how: "Update templates, knowledge files, or skills"

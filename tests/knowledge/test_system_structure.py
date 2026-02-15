@@ -12,7 +12,7 @@ Tests validate that all knowledge JSON files have:
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import List
 
 import pytest
 
@@ -42,40 +42,46 @@ class TestKnowledgeFileStructure:
         errors = []
         for knowledge_file in all_knowledge_files:
             try:
-                with open(knowledge_file, 'r', encoding='utf-8') as f:
+                with open(knowledge_file, "r", encoding="utf-8") as f:
                     json.load(f)
             except json.JSONDecodeError as e:
                 rel_path = knowledge_file.relative_to(knowledge_file.parent.parent)
                 errors.append(f"{rel_path}: Invalid JSON - {e}")
-        
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} knowledge file(s) with invalid JSON:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} knowledge file(s) with invalid JSON:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
-    def test_knowledge_files_have_required_fields(self, all_knowledge_files: List[Path]):
+    def test_knowledge_files_have_required_fields(
+        self, all_knowledge_files: List[Path]
+    ):
         """Test that knowledge files have required fields: id, name, version, category, description."""
         errors = []
         for knowledge_file in all_knowledge_files:
             try:
-                with open(knowledge_file, 'r', encoding='utf-8') as f:
+                with open(knowledge_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                
+
                 required_fields = ["id", "name", "version", "category", "description"]
-                missing_fields = [field for field in required_fields if field not in data]
-                
+                missing_fields = [
+                    field for field in required_fields if field not in data
+                ]
+
                 if missing_fields:
                     rel_path = knowledge_file.relative_to(knowledge_file.parent.parent)
-                    errors.append(f"{rel_path}: Missing required fields - {', '.join(missing_fields)}")
+                    errors.append(
+                        f"{rel_path}: Missing required fields - {', '.join(missing_fields)}"
+                    )
             except (json.JSONDecodeError, KeyError) as e:
                 rel_path = knowledge_file.relative_to(knowledge_file.parent.parent)
                 errors.append(f"{rel_path}: Error reading file - {e}")
-        
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} knowledge file(s) with missing required fields:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} knowledge file(s) with missing required fields:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
     def test_knowledge_id_matches_filename(self, all_knowledge_files: List[Path]):
@@ -83,12 +89,12 @@ class TestKnowledgeFileStructure:
         errors = []
         for knowledge_file in all_knowledge_files:
             try:
-                with open(knowledge_file, 'r', encoding='utf-8') as f:
+                with open(knowledge_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                
+
                 file_id = knowledge_file.stem  # Filename without extension
                 knowledge_id = data.get("id", "")
-                
+
                 if knowledge_id != file_id:
                     rel_path = knowledge_file.relative_to(knowledge_file.parent.parent)
                     errors.append(
@@ -96,11 +102,11 @@ class TestKnowledgeFileStructure:
                     )
             except (json.JSONDecodeError, KeyError):
                 continue
-        
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} knowledge file(s) with id mismatch:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} knowledge file(s) with id mismatch:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
     def test_knowledge_files_have_patterns(self, all_knowledge_files: List[Path]):
@@ -108,9 +114,9 @@ class TestKnowledgeFileStructure:
         errors = []
         for knowledge_file in all_knowledge_files:
             try:
-                with open(knowledge_file, 'r', encoding='utf-8') as f:
+                with open(knowledge_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                
+
                 if "patterns" not in data:
                     rel_path = knowledge_file.relative_to(knowledge_file.parent.parent)
                     errors.append(f"{rel_path}: Missing 'patterns' field")
@@ -119,11 +125,11 @@ class TestKnowledgeFileStructure:
                     errors.append(f"{rel_path}: 'patterns' should be an object/dict")
             except (json.JSONDecodeError, KeyError):
                 continue
-        
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} knowledge file(s) without patterns:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} knowledge file(s) without patterns:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
     def test_knowledge_files_have_best_practices(self, all_knowledge_files: List[Path]):
@@ -131,22 +137,24 @@ class TestKnowledgeFileStructure:
         errors = []
         for knowledge_file in all_knowledge_files:
             try:
-                with open(knowledge_file, 'r', encoding='utf-8') as f:
+                with open(knowledge_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                
+
                 if "best_practices" not in data:
                     rel_path = knowledge_file.relative_to(knowledge_file.parent.parent)
                     errors.append(f"{rel_path}: Missing 'best_practices' field")
                 elif not isinstance(data["best_practices"], list):
                     rel_path = knowledge_file.relative_to(knowledge_file.parent.parent)
-                    errors.append(f"{rel_path}: 'best_practices' should be an array/list")
+                    errors.append(
+                        f"{rel_path}: 'best_practices' should be an array/list"
+                    )
             except (json.JSONDecodeError, KeyError):
                 continue
-        
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} knowledge file(s) without best_practices:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} knowledge file(s) without best_practices:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
     def test_knowledge_files_have_anti_patterns(self, all_knowledge_files: List[Path]):
@@ -154,22 +162,24 @@ class TestKnowledgeFileStructure:
         errors = []
         for knowledge_file in all_knowledge_files:
             try:
-                with open(knowledge_file, 'r', encoding='utf-8') as f:
+                with open(knowledge_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                
+
                 if "anti_patterns" not in data:
                     rel_path = knowledge_file.relative_to(knowledge_file.parent.parent)
                     errors.append(f"{rel_path}: Missing 'anti_patterns' field")
                 elif not isinstance(data["anti_patterns"], list):
                     rel_path = knowledge_file.relative_to(knowledge_file.parent.parent)
-                    errors.append(f"{rel_path}: 'anti_patterns' should be an array/list")
+                    errors.append(
+                        f"{rel_path}: 'anti_patterns' should be an array/list"
+                    )
             except (json.JSONDecodeError, KeyError):
                 continue
-        
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} knowledge file(s) without anti_patterns:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} knowledge file(s) without anti_patterns:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
     def test_knowledge_version_format(self, all_knowledge_files: List[Path]):
@@ -177,25 +187,28 @@ class TestKnowledgeFileStructure:
         errors = []
         for knowledge_file in all_knowledge_files:
             try:
-                with open(knowledge_file, 'r', encoding='utf-8') as f:
+                with open(knowledge_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                
+
                 version = data.get("version", "")
                 if not version:
                     continue
-                
+
                 # Check for semver-like format (x.y.z or x.y)
                 import re
-                if not re.match(r'^\d+\.\d+(\.\d+)?', version):
+
+                if not re.match(r"^\d+\.\d+(\.\d+)?", version):
                     rel_path = knowledge_file.relative_to(knowledge_file.parent.parent)
-                    errors.append(f"{rel_path}: Invalid version format '{version}' (expected x.y.z or x.y)")
+                    errors.append(
+                        f"{rel_path}: Invalid version format '{version}' (expected x.y.z or x.y)"
+                    )
             except (json.JSONDecodeError, KeyError):
                 continue
-        
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} knowledge file(s) with invalid version format:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} knowledge file(s) with invalid version format:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
     def test_knowledge_category_is_valid(self, all_knowledge_files: List[Path]):
@@ -212,13 +225,13 @@ class TestKnowledgeFileStructure:
             "integration",
             "patterns",
         }
-        
+
         errors = []
         for knowledge_file in all_knowledge_files:
             try:
-                with open(knowledge_file, 'r', encoding='utf-8') as f:
+                with open(knowledge_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                
+
                 category = data.get("category", "")
                 if category and category not in valid_categories:
                     # Warn but don't fail - categories may expand
@@ -227,7 +240,7 @@ class TestKnowledgeFileStructure:
                     pass
             except (json.JSONDecodeError, KeyError):
                 continue
-        
+
         # This test doesn't fail, just validates structure
 
 
@@ -249,20 +262,20 @@ class TestKnowledgePatternsStructure:
         errors = []
         for knowledge_file in all_knowledge_files:
             try:
-                with open(knowledge_file, 'r', encoding='utf-8') as f:
+                with open(knowledge_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                
+
                 patterns = data.get("patterns", {})
                 if isinstance(patterns, dict) and len(patterns) == 0:
                     rel_path = knowledge_file.relative_to(knowledge_file.parent.parent)
                     errors.append(f"{rel_path}: 'patterns' object is empty")
             except (json.JSONDecodeError, KeyError):
                 continue
-        
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} knowledge file(s) with empty patterns:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} knowledge file(s) with empty patterns:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
     def test_patterns_have_descriptions(self, all_knowledge_files: List[Path]):
@@ -270,13 +283,13 @@ class TestKnowledgePatternsStructure:
         errors = []
         for knowledge_file in all_knowledge_files:
             try:
-                with open(knowledge_file, 'r', encoding='utf-8') as f:
+                with open(knowledge_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                
+
                 patterns = data.get("patterns", {})
                 if not isinstance(patterns, dict):
                     continue
-                
+
                 # Check nested patterns (patterns can be nested)
                 def check_patterns(obj, path=""):
                     if isinstance(obj, dict):
@@ -284,7 +297,11 @@ class TestKnowledgePatternsStructure:
                             current_path = f"{path}.{key}" if path else key
                             if isinstance(value, dict):
                                 # If it looks like a pattern (has description or code_example)
-                                if "description" in value or "code_example" in value or "example" in value:
+                                if (
+                                    "description" in value
+                                    or "code_example" in value
+                                    or "example" in value
+                                ):
                                     if "description" not in value:
                                         errors.append(
                                             f"{knowledge_file.name}{current_path}: Pattern missing 'description'"
@@ -292,14 +309,11 @@ class TestKnowledgePatternsStructure:
                                 else:
                                     # Recursively check nested objects
                                     check_patterns(value, current_path)
-                
+
                 check_patterns(patterns)
             except (json.JSONDecodeError, KeyError):
                 continue
-        
+
         # Don't fail on this - some patterns may be structured differently
         if errors and len(errors) < 10:  # Only fail if many errors
             pass  # Just log for now
-
-
-

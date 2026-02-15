@@ -8,8 +8,8 @@ description: Jira-triggered bugfix workflow from ticket analysis through resolut
 
 Jira-triggered bugfix workflow from ticket analysis through resolution. Covers ticket fetching, root cause analysis, fix implementation, verification, and ticket closure.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-10  
+**Version:** 1.0.0
+**Created:** 2026-02-10
 **Applies To:** bugfix, jira-integration
 
 ## Trigger Conditions

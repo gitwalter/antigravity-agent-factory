@@ -8,8 +8,8 @@ description: Agent testing workflow covering unit tests with mocks, integration 
 
 Agent testing workflow covering unit tests with mocks, integration tests, and LLM evaluation. Ensures agents behave correctly across isolated and end-to-end scenarios.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-10  
+**Version:** 1.0.0
+**Created:** 2026-02-10
 **Applies To:** langgraph-agent, langchain-agent
 
 ## Trigger Conditions

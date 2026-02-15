@@ -19,7 +19,7 @@ This blueprint provides the **procedural truth** for engineering, testing, and d
 Follow these procedures to implement the capability:
 
 ### Procedure 1: Scaffolding a Route Domain
-Next.js applications in this factory follow a **Segment-Based Architecture**. 
+Next.js applications in this factory follow a **Segment-Based Architecture**.
 Execute these steps to add a new feature:
 1.  **Create Segment**: `mkdir -p app/(features)/[feature-name]`.
 2.  **Define Layout**: Create `layout.tsx` with shared UI and `Suspense` boundaries for slots.
@@ -29,7 +29,7 @@ Execute these steps to add a new feature:
 ### Procedure 2: Implementing a Data-Driven Feature (RSC + Actions)
 1.  **Data Fetching**: Fetch data directly in the `page.tsx` (RSC) using `await` and appropriate `cache` or `revalidate` tags.
 2.  **Stateful Interactivity**: If the feature requires state (e.g., a form), create a Client Component (`'use client'`) and pass data as props.
-3.  **Mutation**: Use **Server Actions** (`'use server'`) for all POST/PUT/DELETE operations. 
+3.  **Mutation**: Use **Server Actions** (`'use server'`) for all POST/PUT/DELETE operations.
     - *Axiom Check*: Always wrap actions in `useActionState` (React 19) for pending and error truth.
 
 ### Procedure 3: Production Optimization & Hydration
@@ -59,7 +59,7 @@ const Schema = z.object({ name: z.string().min(3) })
 export async function createItem(prevState: any, formData: FormData) {
   const validated = Schema.safeParse({ name: formData.get('name') })
   if (!validated.success) return { error: "Invalid name truth" }
-  
+
   await db.item.create({ data: validated.data })
   revalidatePath('/items')
   return { success: true }

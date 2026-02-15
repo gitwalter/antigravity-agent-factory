@@ -114,13 +114,13 @@ class XSUAAClient {
         this.token = null;
         this.tokenExpiry = null;
     }
-    
+
     async getAccessToken() {
         // Check if token is still valid
         if (this.token && this.tokenExpiry && Date.now() < this.tokenExpiry) {
             return this.token;
         }
-        
+
         try {
             const response = await axios.post(
                 `${this.xsuaaUrl}/oauth/token`,
@@ -138,18 +138,18 @@ class XSUAAClient {
                     })
                 }
             );
-            
+
             this.token = response.data.access_token;
             const expiresIn = response.data.expires_in || 3600;
             this.tokenExpiry = Date.now() + (expiresIn * 1000) - 60000; // Refresh 1 minute before expiry
-            
+
             return this.token;
         } catch (error) {
             console.error('Error getting access token:', error);
             throw error;
         }
     }
-    
+
     async validateToken(token) {
         try {
             const response = await axios.get(
@@ -197,7 +197,7 @@ app.get('/login', (req, res) => {
         `redirect_uri=${encodeURIComponent(redirectUri)}&` +
         `scope=${encodeURIComponent(scope)}&` +
         `state=${req.session.state || 'random-state'}`;
-    
+
     req.session.state = 'random-state';
     res.redirect(authUrl);
 });
@@ -205,11 +205,11 @@ app.get('/login', (req, res) => {
 // Step 2: Handle callback and exchange code for token
 app.get('/callback', async (req, res) => {
     const { code, state } = req.query;
-    
+
     if (state !== req.session.state) {
         return res.status(400).send('Invalid state parameter');
     }
-    
+
     try {
         const response = await axios.post(
             `${xsuaaUrl}/oauth/token`,
@@ -226,10 +226,10 @@ app.get('/callback', async (req, res) => {
                 }
             }
         );
-        
+
         req.session.accessToken = response.data.access_token;
         req.session.refreshToken = response.data.refresh_token;
-        
+
         res.redirect('/dashboard');
     } catch (error) {
         console.error('Error exchanging code for token:', error);
@@ -242,7 +242,7 @@ app.get('/api/travel-bookings', async (req, res) => {
     if (!req.session.accessToken) {
         return res.redirect('/login');
     }
-    
+
     try {
         const response = await axios.get(
             'https://your-api.cfapps.us10.hana.ondemand.com/api/travel-bookings',
@@ -252,7 +252,7 @@ app.get('/api/travel-bookings', async (req, res) => {
                 }
             }
         );
-        
+
         res.json(response.data);
     } catch (error) {
         if (error.response?.status === 401) {
@@ -276,19 +276,19 @@ class PrincipalPropagationClient {
         this.destinationName = destinationName;
         this.xsuaaClient = xsuaaClient;
     }
-    
+
     async callOnPremiseService(endpoint, userToken) {
         try {
             // Get destination configuration
             const destination = await this.getDestination(this.destinationName);
-            
+
             // Add principal propagation headers
             const headers = {
                 'Authorization': `Bearer ${userToken}`,
                 'SAP-Connectivity-Authentication': 'PrincipalPropagation',
                 'Content-Type': 'application/json'
             };
-            
+
             // Call on-premise service through Cloud Connector
             const response = await axios.get(
                 `${destination.url}${endpoint}`,
@@ -299,18 +299,18 @@ class PrincipalPropagationClient {
                     })
                 }
             );
-            
+
             return response.data;
         } catch (error) {
             console.error('Error calling on-premise service:', error);
             throw error;
         }
     }
-    
+
     async getDestination(name) {
         // Get destination from Destination service
         const token = await this.xsuaaClient.getAccessToken();
-        
+
         const response = await axios.get(
             `https://destination-configuration.cfapps.us10.hana.ondemand.com/destination-configuration/v1/destinations/${name}`,
             {
@@ -319,7 +319,7 @@ class PrincipalPropagationClient {
                 }
             }
         );
-        
+
         return response.data;
     }
 }
@@ -364,17 +364,17 @@ class AuthenticationMiddleware {
         this.clientId = clientId;
         this.publicKey = null;
     }
-    
+
     async getPublicKey() {
         if (this.publicKey) {
             return this.publicKey;
         }
-        
+
         try {
             const response = await axios.get(
                 `${this.xsuaaUrl}/token_keys`
             );
-            
+
             // Get the first key (in production, select based on kid)
             this.publicKey = response.data.keys[0];
             return this.publicKey;
@@ -383,25 +383,25 @@ class AuthenticationMiddleware {
             throw error;
         }
     }
-    
+
     async authenticate(req, res, next) {
         try {
             const authHeader = req.headers.authorization;
-            
+
             if (!authHeader || !authHeader.startsWith('Bearer ')) {
                 return res.status(401).json({ error: 'Missing or invalid authorization header' });
             }
-            
+
             const token = authHeader.substring(7);
             const publicKey = await this.getPublicKey();
-            
+
             // Verify token
             const decoded = jwt.verify(token, publicKey, {
                 algorithms: ['RS256'],
                 issuer: `${this.xsuaaUrl}/oauth/token`,
                 audience: this.clientId
             });
-            
+
             // Check scopes
             const scopes = decoded.scope || [];
             req.user = {
@@ -409,14 +409,14 @@ class AuthenticationMiddleware {
                 email: decoded.email,
                 scopes: scopes
             };
-            
+
             next();
         } catch (error) {
             console.error('Authentication error:', error);
             return res.status(401).json({ error: 'Invalid or expired token' });
         }
     }
-    
+
     requireScope(scope) {
         return (req, res, next) => {
             if (!req.user || !req.user.scopes.includes(scope)) {

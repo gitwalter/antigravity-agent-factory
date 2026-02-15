@@ -17,7 +17,7 @@ graph LR
     Roles --> R4["CSS Architect"]
     Roles --> R5["Web Performance Specialist"]
     Roles --> R6["Accessibility Auditor"]
-    
+
     Agent --> Skills["Specialist Skills"]
     Skills --> S1["nextjs-enterprise"]
     Skills --> S2["react-component-mastery"]

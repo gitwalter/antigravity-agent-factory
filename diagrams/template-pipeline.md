@@ -20,32 +20,32 @@ flowchart TB
         D2["Locate template files"]
         D3["Resolve inheritance"]
     end
-    
+
     subgraph Loading["Template Loading"]
         L1["Load base templates"]
         L2["Load overrides"]
         L3["Merge template chains"]
     end
-    
+
     subgraph Context["Context Building"]
         C1["Gather requirements"]
         C2["Apply blueprint"]
         C3["Include patterns"]
         C4["Add metadata"]
     end
-    
+
     subgraph Rendering["Template Rendering"]
         R1["Jinja2 processing"]
         R2["Variable substitution"]
         R3["Conditional logic"]
     end
-    
+
     subgraph Output["Output Generation"]
         O1["Write files"]
         O2["Create directories"]
         O3["Set permissions"]
     end
-    
+
     Discovery --> Loading --> Context --> Rendering --> Output
 ```
 
@@ -60,27 +60,27 @@ flowchart TB
         I2["Required artifacts"]
         I3["Custom templates"]
     end
-    
+
     subgraph Resolution["Template Resolution"]
         R1["Check blueprint templates/"]
         R2["Check factory templates/"]
         R3["Check custom templates/"]
         R4["Apply inheritance chain"]
     end
-    
+
     subgraph Hierarchy["Template Hierarchy"]
         H1["1. Custom (highest priority)"]
         H2["2. Blueprint-specific"]
         H3["3. Stack-specific"]
         H4["4. Generic (fallback)"]
     end
-    
+
     subgraph Output["Resolved Templates"]
         O1["List of template files"]
         O2["Inheritance order"]
         O3["Override mapping"]
     end
-    
+
     Input --> Resolution --> Hierarchy --> Output
 ```
 
@@ -96,25 +96,25 @@ flowchart TB
             F2["PURPOSE.md.tmpl"]
             F3["README.md.tmpl"]
         end
-        
+
         subgraph Python["python/"]
             P1["requirements.txt.tmpl"]
             P2["setup.py.tmpl"]
             P3["main.py.tmpl"]
         end
-        
+
         subgraph TypeScript["typescript/"]
             T1["package.json.tmpl"]
             T2["tsconfig.json.tmpl"]
             T3["index.ts.tmpl"]
         end
-        
+
         subgraph AI["ai/"]
             A1["agent.py.tmpl"]
             A2["skill.py.tmpl"]
             A3["workflow.yaml.tmpl"]
         end
-        
+
         subgraph Workflows["workflows/"]
             W1["github-actions.yml.tmpl"]
             W2["gitlab-ci.yml.tmpl"]
@@ -134,36 +134,36 @@ flowchart TB
         S3["Patterns<br/>(selected)"]
         S4["Metadata<br/>(computed)"]
     end
-    
+
     subgraph Building["Context Assembly"]
         B1["Merge sources"]
         B2["Apply defaults"]
         B3["Compute derived values"]
         B4["Validate completeness"]
     end
-    
+
     subgraph Context["Final Context"]
         subgraph Project["project.*"]
             P1["name, description"]
             P2["version, author"]
         end
-        
+
         subgraph Stack["stack.*"]
             ST1["language, framework"]
             ST2["database, apis"]
         end
-        
+
         subgraph Agents["agents.*"]
             AG1["list of agents"]
             AG2["capabilities"]
         end
-        
+
         subgraph Meta["meta.*"]
             M1["timestamp"]
             M2["factory_version"]
         end
     end
-    
+
     Sources --> Building --> Context
 ```
 
@@ -179,14 +179,14 @@ flowchart TB
         T3["{% control flow %}"]
         T4["{# comments #}"]
     end
-    
+
     subgraph Environment["Jinja Environment"]
         E1["Configure autoescape"]
         E2["Register filters"]
         E3["Register globals"]
         E4["Set up loader"]
     end
-    
+
     subgraph Processing["Rendering Steps"]
         P1["Parse template"]
         P2["Build AST"]
@@ -194,12 +194,12 @@ flowchart TB
         P4["Execute control flow"]
         P5["Substitute variables"]
     end
-    
+
     subgraph Output["Rendered Output"]
         O1["Final text content"]
         O2["Ready to write"]
     end
-    
+
     Template --> Environment --> Processing --> Output
 ```
 
@@ -210,19 +210,19 @@ Where variables come from:
 ```mermaid
 flowchart TD
     VAR([Variable Lookup]) --> CHECK1{In user input?}
-    
+
     CHECK1 -->|"Yes"| USE1["Use user value"]
     CHECK1 -->|"No"| CHECK2{In blueprint?}
-    
+
     CHECK2 -->|"Yes"| USE2["Use blueprint value"]
     CHECK2 -->|"No"| CHECK3{In patterns?}
-    
+
     CHECK3 -->|"Yes"| USE3["Use pattern value"]
     CHECK3 -->|"No"| CHECK4{Has default?}
-    
+
     CHECK4 -->|"Yes"| USE4["Use default value"]
     CHECK4 -->|"No"| ERROR["Raise: Missing variable"]
-    
+
     USE1 & USE2 & USE3 & USE4 --> RENDER["Render template"]
 ```
 
@@ -236,10 +236,10 @@ sequenceDiagram
     participant TE as Template Engine
     participant CTX as Context Builder
     participant FS as Filesystem
-    
+
     TG->>CTX: Build shared context
     CTX-->>TG: Context object
-    
+
     loop For each template
         TG->>TE: Render template with context
         TE->>TE: Load template
@@ -248,7 +248,7 @@ sequenceDiagram
         TE-->>TG: Rendered content
         TG->>FS: Write to output path
     end
-    
+
     TG->>TG: Verify all files written
     TG-->>TG: Generation complete
 ```
@@ -264,18 +264,18 @@ flowchart TB
         B2["{% block content %}...{% endblock %}"]
         B3["{% block footer %}...{% endblock %}"]
     end
-    
+
     subgraph Child["Child Template"]
         C1["{% extends 'base.tmpl' %}"]
         C2["{% block content %}<br/>Custom content<br/>{% endblock %}"]
     end
-    
+
     subgraph Result["Rendered Result"]
         R1["Base header"]
         R2["Custom content"]
         R3["Base footer"]
     end
-    
+
     Base --> Child --> Result
 ```
 
@@ -289,24 +289,24 @@ flowchart TB
         T1["{% if stack.database %}"]
         T2["Include database config"]
         T3["{% endif %}"]
-        
+
         T4["{% if methodology == 'agile' %}"]
         T5["Include sprint workflow"]
         T6["{% else %}"]
         T7["Include kanban workflow"]
         T8["{% endif %}"]
     end
-    
+
     subgraph Context["Context Values"]
         C1["stack.database = 'postgresql'"]
         C2["methodology = 'agile'"]
     end
-    
+
     subgraph Output["Rendered Output"]
         O1["Database config included"]
         O2["Sprint workflow included"]
     end
-    
+
     Template --> Context --> Output
 ```
 
@@ -326,7 +326,7 @@ flowchart TB
         F7["| quote<br/>Add quotes"]
         F8["| escape_json<br/>JSON-safe escape"]
     end
-    
+
     subgraph Usage["Usage Examples"]
         U1["{{ name | snake_case }}"]
         U2["{{ agents | length }}"]
@@ -347,14 +347,14 @@ flowchart TB
         C4["Custom filters"]
         C5["Global functions"]
     end
-    
+
     subgraph Settings["Default Settings"]
         S1["autoescape = select_autoescape(['html'])"]
         S2["undefined = StrictUndefined"]
         S3["trim_blocks = True"]
         S4["lstrip_blocks = True"]
     end
-    
+
     Config --> Settings
 ```
 
@@ -369,13 +369,13 @@ flowchart TB
         I2["Target path"]
         I3["File mode"]
     end
-    
+
     subgraph Preparation["Write Preparation"]
         P1["Resolve absolute path"]
         P2["Create parent directories"]
         P3["Check for existing file"]
     end
-    
+
     subgraph Conflict["Conflict Handling"]
         CH{File exists?}
         OVER["Overwrite if --force"]
@@ -383,13 +383,13 @@ flowchart TB
         SKIP["Skip if --no-overwrite"]
         BACKUP["Backup if --backup"]
     end
-    
+
     subgraph Write["File Writing"]
         W1["Write content"]
         W2["Set permissions"]
         W3["Verify written"]
     end
-    
+
     Input --> Preparation --> CH
     CH -->|"Yes"| Conflict --> Write
     CH -->|"No"| Write
@@ -407,29 +407,29 @@ flowchart TB
             G1B["PURPOSE.md"]
             G1C["README.md"]
         end
-        
+
         subgraph Group2["Group 2: Agent Files"]
             G2A["agent-1.md"]
             G2B["agent-2.md"]
             G2C["agent-n.md"]
         end
-        
+
         subgraph Group3["Group 3: Skill Files"]
             G3A["skill-1/SKILL.md"]
             G3B["skill-2/SKILL.md"]
         end
     end
-    
+
     subgraph Processing["Parallel Processing"]
         P1["Process Group 1"]
         P2["Process Group 2"]
         P3["Process Group 3"]
     end
-    
+
     Group1 --> P1
     Group2 --> P2
     Group3 --> P3
-    
+
     P1 & P2 & P3 --> COMPLETE["All files written"]
 ```
 
@@ -440,18 +440,18 @@ Pre-render validation:
 ```mermaid
 flowchart TD
     START([Template Validation]) --> SYNTAX["Check Jinja syntax"]
-    
+
     SYNTAX --> SYN_OK{Valid syntax?}
     SYN_OK -->|"No"| SYNTAX_ERR["Syntax error report"]
     SYN_OK -->|"Yes"| VARS["Check required variables"]
-    
+
     VARS --> VARS_OK{All variables available?}
     VARS_OK -->|"No"| VARS_ERR["Missing variable report"]
     VARS_OK -->|"Yes"| DEPS["Check template dependencies"]
-    
+
     DEPS --> DEPS_OK{Dependencies exist?}
     DEPS_OK -->|"No"| DEPS_ERR["Missing dependency report"]
     DEPS_OK -->|"Yes"| VALID["Template valid ✓"]
-    
+
     SYNTAX_ERR & VARS_ERR & DEPS_ERR --> FAIL["Validation failed"]
 ```

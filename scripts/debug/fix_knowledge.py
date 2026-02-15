@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+
 def fix_knowledge():
     root = Path(".agent/knowledge")
     if not root.exists():
@@ -8,9 +9,9 @@ def fix_knowledge():
         return
 
     print(f"Fixing knowledge files in {root}...\n")
-    
+
     fixed_count = 0
-    
+
     for knowledge_file in root.glob("*.json"):
         try:
             content = knowledge_file.read_text(encoding="utf-8")
@@ -23,36 +24,36 @@ def fix_knowledge():
         except json.JSONDecodeError:
             print(f"[INVALID JSON] {knowledge_file.name}")
             data = {}
-            
+
         modified = False
         file_id = knowledge_file.stem
-        
+
         # Fix required fields
         if "id" not in data or data["id"] != file_id:
             data["id"] = file_id
             modified = True
-            
+
         if "name" not in data:
             data["name"] = file_id.replace("-", " ").title()
             modified = True
-            
+
         if "version" not in data:
             data["version"] = "1.0.0"
             modified = True
-            
+
         if "category" not in data:
-            data["category"] = "patterns" # Default category
+            data["category"] = "patterns"  # Default category
             modified = True
-            
+
         if "description" not in data:
             data["description"] = f"Knowledge patterns for {file_id.replace('-', ' ')}."
             modified = True
-            
+
         # Fix structures
         if "patterns" not in data:
             data["patterns"] = {}
             modified = True
-            
+
         # Fix best_practices type
         if "best_practices" not in data:
             data["best_practices"] = []
@@ -76,7 +77,7 @@ def fix_knowledge():
                     new_bp.append({"name": k, "description": str(v)})
             data["best_practices"] = new_bp
             modified = True
-            
+
         # Fix anti_patterns type
         if "anti_patterns" not in data:
             data["anti_patterns"] = []
@@ -93,13 +94,14 @@ def fix_knowledge():
                     new_ap.append({"name": k, "description": str(v)})
             data["anti_patterns"] = new_ap
             modified = True
-            
+
         if modified:
             knowledge_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
             print(f"[FIXED] {knowledge_file.name}")
             fixed_count += 1
-            
+
     print(f"\nFixed {fixed_count} knowledge files.")
+
 
 if __name__ == "__main__":
     fix_knowledge()

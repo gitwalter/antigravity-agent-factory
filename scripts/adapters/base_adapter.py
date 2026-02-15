@@ -30,29 +30,32 @@ import json
 
 class UpdatePriority(Enum):
     """Priority levels for knowledge updates.
-    
+
     Determines order of processing and notification urgency.
     """
-    CRITICAL = 1    # Security fixes, breaking changes
-    HIGH = 2        # Important new patterns, deprecations
-    MEDIUM = 3      # New features, improvements
-    LOW = 4         # Minor updates, cosmetic changes
-    INFO = 5        # Informational only, no action needed
+
+    CRITICAL = 1  # Security fixes, breaking changes
+    HIGH = 2  # Important new patterns, deprecations
+    MEDIUM = 3  # New features, improvements
+    LOW = 4  # Minor updates, cosmetic changes
+    INFO = 5  # Informational only, no action needed
 
 
 class TrustLevel(Enum):
     """Trust levels for knowledge sources.
-    
+
     Affects merge strategy and user confirmation requirements.
     """
-    OFFICIAL = 1      # Official framework/library documentation
-    VERIFIED = 2      # Verified community contributors
-    COMMUNITY = 3     # General community sources
+
+    OFFICIAL = 1  # Official framework/library documentation
+    VERIFIED = 2  # Verified community contributors
+    COMMUNITY = 3  # General community sources
     EXPERIMENTAL = 4  # Experimental or unverified sources
 
 
 class ChangeType(Enum):
     """Types of changes to knowledge content."""
+
     ADDED = "added"
     CHANGED = "changed"
     DEPRECATED = "deprecated"
@@ -64,7 +67,7 @@ class ChangeType(Enum):
 @dataclass
 class AdapterConfig:
     """Configuration for a knowledge source adapter.
-    
+
     Attributes:
         enabled: Whether this adapter is active
         api_key: Optional API key for authenticated access
@@ -75,6 +78,7 @@ class AdapterConfig:
         trust_level: Default trust level for this source
         custom_settings: Additional adapter-specific settings
     """
+
     enabled: bool = True
     api_key: Optional[str] = None
     base_url: Optional[str] = None
@@ -88,10 +92,10 @@ class AdapterConfig:
 @dataclass
 class UpdateSource:
     """Represents the source of a knowledge update.
-    
+
     Provides full traceability for where knowledge came from,
     supporting Axiom A3 (Transparency).
-    
+
     Attributes:
         adapter_type: Which adapter produced this (github, pypi, etc.)
         identifier: Unique identifier within the source (repo URL, package name)
@@ -101,6 +105,7 @@ class UpdateSource:
         trust_level: Trust level of this specific source
         raw_data: Original data from the source (for debugging)
     """
+
     adapter_type: str
     identifier: str
     version: Optional[str] = None
@@ -113,7 +118,7 @@ class UpdateSource:
 @dataclass
 class KnowledgeChange:
     """Represents a single change to knowledge content.
-    
+
     Attributes:
         change_type: Type of change (added, changed, etc.)
         path: JSON path to the changed element
@@ -124,6 +129,7 @@ class KnowledgeChange:
         related_blueprints: Blueprints affected by this change
         related_skills: Skills affected by this change
     """
+
     change_type: ChangeType
     path: str
     description: str
@@ -137,10 +143,10 @@ class KnowledgeChange:
 @dataclass
 class KnowledgeUpdate:
     """Represents a proposed update to a knowledge file.
-    
+
     This is the primary output of adapters - a structured proposal
     for updating knowledge that can be reviewed, approved, and merged.
-    
+
     Attributes:
         target_file: Knowledge file to update (e.g., "fastapi-patterns.json")
         priority: Priority level for this update
@@ -155,6 +161,7 @@ class KnowledgeUpdate:
         rationale: Why this update is recommended
         axiom_alignment: Which axioms this update supports
     """
+
     target_file: str
     priority: UpdatePriority
     source: UpdateSource
@@ -167,16 +174,16 @@ class KnowledgeUpdate:
     proposed_content: Optional[Dict[str, Any]] = None
     rationale: str = ""
     axiom_alignment: Dict[str, str] = field(default_factory=dict)
-    
+
     def __post_init__(self):
         """Calculate checksum if content provided."""
         if self.proposed_content and not self.checksum:
             content_str = json.dumps(self.proposed_content, sort_keys=True)
             self.checksum = hashlib.sha256(content_str.encode()).hexdigest()
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization.
-        
+
         Returns:
             Dictionary representation of the update
         """
@@ -211,121 +218,119 @@ class KnowledgeUpdate:
 
 class BaseAdapter(ABC):
     """Abstract base class for all knowledge source adapters.
-    
+
     Adapters are responsible for:
     1. Connecting to external knowledge sources
     2. Fetching relevant updates
     3. Transforming raw data into KnowledgeUpdate objects
     4. Handling rate limiting and caching
     5. Providing source attribution
-    
+
     Example:
         class GitHubAdapter(BaseAdapter):
             async def fetch_updates(self) -> List[KnowledgeUpdate]:
                 # Fetch trending repos, analyze patterns
                 ...
     """
-    
+
     def __init__(self, config: AdapterConfig):
         """Initialize the adapter with configuration.
-        
+
         Args:
             config: Adapter configuration including credentials
         """
         self.config = config
         self._cache: Dict[str, Any] = {}
         self._last_fetch: Optional[datetime] = None
-    
+
     @property
     @abstractmethod
     def name(self) -> str:
         """Unique name of this adapter (e.g., 'github', 'pypi').
-        
+
         Returns:
             Adapter identifier string
         """
         pass
-    
+
     @property
     @abstractmethod
     def description(self) -> str:
         """Human-readable description of what this adapter does.
-        
+
         Returns:
             Description string
         """
         pass
-    
+
     @property
     def supported_knowledge_files(self) -> List[str]:
         """List of knowledge files this adapter can update.
-        
+
         Override this to restrict which files an adapter can modify.
         Default is all files (empty list means no restriction).
-        
+
         Returns:
             List of knowledge file names, or empty for all
         """
         return []
-    
+
     @abstractmethod
     async def fetch_updates(
-        self,
-        target_files: Optional[List[str]] = None,
-        since: Optional[datetime] = None
+        self, target_files: Optional[List[str]] = None, since: Optional[datetime] = None
     ) -> List[KnowledgeUpdate]:
         """Fetch available updates from this source.
-        
+
         This is the main method adapters must implement. It should:
         1. Query the external source for new/updated content
         2. Compare against current knowledge
         3. Generate KnowledgeUpdate objects for changes
-        
+
         Args:
             target_files: Optional list of specific files to check
             since: Optional datetime to only fetch updates after
-            
+
         Returns:
             List of proposed knowledge updates
         """
         pass
-    
+
     @abstractmethod
     async def validate_connection(self) -> bool:
         """Validate that the adapter can connect to its source.
-        
+
         Used for health checks and configuration validation.
-        
+
         Returns:
             True if connection is valid, False otherwise
         """
         pass
-    
+
     async def get_source_version(self) -> Optional[str]:
         """Get the current version/timestamp of the source.
-        
+
         Optional method for sources that have versioning.
-        
+
         Returns:
             Version string or None if not applicable
         """
         return None
-    
+
     def create_source(
         self,
         identifier: str,
         version: Optional[str] = None,
         url: Optional[str] = None,
-        raw_data: Optional[Dict[str, Any]] = None
+        raw_data: Optional[Dict[str, Any]] = None,
     ) -> UpdateSource:
         """Helper to create an UpdateSource with this adapter's info.
-        
+
         Args:
             identifier: Source identifier (repo URL, package name)
             version: Source version if applicable
             url: Direct link to source
             raw_data: Original data for debugging
-            
+
         Returns:
             UpdateSource object with adapter info filled in
         """
@@ -337,44 +342,44 @@ class BaseAdapter(ABC):
             trust_level=self.config.trust_level,
             raw_data=raw_data,
         )
-    
+
     def _should_refresh_cache(self, cache_key: str) -> bool:
         """Check if cached data should be refreshed.
-        
+
         Args:
             cache_key: Key for the cached data
-            
+
         Returns:
             True if cache should be refreshed
         """
         if cache_key not in self._cache:
             return True
-        
+
         cached = self._cache[cache_key]
         if "timestamp" not in cached:
             return True
-        
+
         cache_age = datetime.now(timezone.utc) - cached["timestamp"]
         cache_ttl = self.config.cache_ttl_hours * 3600
-        
+
         return cache_age.total_seconds() > cache_ttl
-    
+
     def _get_cached(self, cache_key: str) -> Optional[Any]:
         """Get data from cache if valid.
-        
+
         Args:
             cache_key: Key for the cached data
-            
+
         Returns:
             Cached data or None if not available/expired
         """
         if self._should_refresh_cache(cache_key):
             return None
         return self._cache[cache_key].get("data")
-    
+
     def _set_cached(self, cache_key: str, data: Any) -> None:
         """Store data in cache.
-        
+
         Args:
             cache_key: Key for the cached data
             data: Data to cache
@@ -383,7 +388,7 @@ class BaseAdapter(ABC):
             "data": data,
             "timestamp": datetime.now(timezone.utc),
         }
-    
+
     def __repr__(self) -> str:
         """String representation of the adapter."""
         status = "enabled" if self.config.enabled else "disabled"

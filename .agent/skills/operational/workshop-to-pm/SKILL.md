@@ -97,7 +97,7 @@ Transform workshop outputs into PM system structures:
 ```yaml
 Workshop Output:
   headline: "Local news platform connects neighbors during crisis"
-  
+
 PM Artifact:
   type: epic
   title: "Local News Platform - Crisis Connection"
@@ -117,13 +117,13 @@ Workshop Output:
     name: "Local Residents"
     priority: 1
     needs: ["real-time updates", "trusted information", "community connection"]
-    
+
 PM Artifact:
   type: label
   name: "stakeholder:local-residents"
   color: "#4A90E2"  # Primary stakeholder color
   description: "Primary stakeholder - local residents seeking community connection"
-  
+
   user_story_template:
     as_a: "local resident"
     i_want: "{capability}"
@@ -138,7 +138,7 @@ Workshop Output:
     core_values: ["Privacy", "Transparency", "Accessibility"]
     boundaries: ["Never sell user data", "Never hide data usage"]
     principles: ["User consent required", "Open source when possible"]
-    
+
 PM Artifact:
   type: definition_of_done
   checklist:
@@ -158,7 +158,7 @@ Workshop Output:
     name: "Code Review Flow"
     agents: ["code-reviewer", "security-auditor"]
     steps: ["analyze", "review", "approve"]
-    
+
 PM Artifact:
   type: task_template
   name: "Code Review Task Template"
@@ -381,12 +381,12 @@ Epics:
     acceptance_criteria:
       - "Platform enables real-time neighbor communication"
       - "Crisis events trigger automatic connection flows"
-  
+
   - id: EPIC-102
     title: "Community Garden App"
     description: "Help urban residents grow food through community gardens"
     labels: ["stakeholder:local-residents"]
-  
+
   - id: EPIC-103
     title: "Neighborhood Safety Network"
     description: "Reduce crime by 40% through neighborhood safety network"
@@ -396,11 +396,11 @@ Labels:
   - name: "stakeholder:local-residents"
     color: "#4A90E2"
     priority: 1
-  
+
   - name: "stakeholder:community-organizers"
     color: "#7B68EE"
     priority: 2
-  
+
   - name: "stakeholder:city-officials"
     color: "#20B2AA"
     priority: 3
@@ -479,11 +479,11 @@ Task Template:
     - title: "Code Review"
       description: "Code Reviewer analyzes changes against best practices"
       tags: ["code-review", "quality"]
-    
+
     - title: "Test Generation"
       description: "Test Generator creates comprehensive test suite"
       tags: ["testing", "quality"]
-    
+
     - title: "Documentation Update"
       description: "Documentation agent updates user guides"
       tags: ["documentation", "user-experience"]

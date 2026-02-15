@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 class {{GRAPH_CLASS_NAME}}State(TypedDict):
     """
     State for nested graph workflow.
-    
+
     Attributes:
         messages: Conversation messages
         input: Original input
@@ -41,17 +41,17 @@ class {{GRAPH_CLASS_NAME}}State(TypedDict):
 class {{GRAPH_CLASS_NAME}}:
     """
     {{GRAPH_NAME}} - Nested Graph Pattern
-    
+
     Demonstrates how to compose graphs within graphs:
     - Parent graph coordinates workflow
     - Subgraphs handle specific sub-tasks
     - Results are aggregated
-    
+
     Example:
         >>> graph = {{GRAPH_CLASS_NAME}}()
         >>> result = graph.run("Process this task")
     """
-    
+
     def __init__(
         self,
         model_name: str = "{{MODEL_NAME}}",
@@ -59,82 +59,82 @@ class {{GRAPH_CLASS_NAME}}:
     ):
         """
         Initialize nested graph.
-        
+
         Args:
             model_name: LLM model identifier
             temperature: Sampling temperature
         """
         self.model_name = model_name
         self.temperature = temperature
-        
+
         # Initialize LLM
         self.llm = ChatOpenAI(
             model=model_name,
             temperature=temperature
         )
-        
+
         # Build subgraph first
         self.subgraph = self._build_subgraph()
-        
+
         # Build main graph
         self.graph = self._build_main_graph()
         self.app = self.graph.compile(checkpointer=MemorySaver())
-        
+
         logger.info("Initialized {{GRAPH_NAME}} with nested subgraph")
-    
+
     def _build_subgraph(self) -> StateGraph:
         """
         Build the subgraph for {{SUBGRAPH_PURPOSE}}.
-        
+
         Returns:
             Compiled subgraph
         """
         subgraph = StateGraph({{GRAPH_CLASS_NAME}}State)
-        
+
         # Add subgraph nodes
         subgraph.add_node("subgraph_prepare", self._subgraph_prepare_node)
         subgraph.add_node("subgraph_process", self._subgraph_process_node)
         subgraph.add_node("subgraph_finish", self._subgraph_finish_node)
-        
+
         # Add edges
         subgraph.add_edge(START, "subgraph_prepare")
         subgraph.add_edge("subgraph_prepare", "subgraph_process")
         subgraph.add_edge("subgraph_process", "subgraph_finish")
         subgraph.add_edge("subgraph_finish", END)
-        
+
         return subgraph.compile()
-    
+
     def _subgraph_prepare_node(self, state: {{GRAPH_CLASS_NAME}}State) -> dict:
         """Prepare for subgraph processing."""
         logger.info("Subgraph: Preparing...")
-        
+
         return {
             "current_subgraph": "prepare",
             "messages": state["messages"] + [
                 AIMessage(content="[Subgraph] Preparation complete")
             ]
         }
-    
+
     def _subgraph_process_node(self, state: {{GRAPH_CLASS_NAME}}State) -> dict:
         """Process in subgraph."""
         logger.info("Subgraph: Processing...")
-        
+
         input_text = state["input"]
-        
+
         # Process with LLM
         response = self.llm.invoke(f"{{SUBGRAPH_PROMPT}}\n\nInput: {input_text}")
-        
+
         return {
             "current_subgraph": "process",
             "messages": state["messages"] + [
                 AIMessage(content=f"[Subgraph] {response.content}")
             ]
         }
-    
+
     def _subgraph_finish_node(self, state: {{GRAPH_CLASS_NAME}}State) -> dict:
         """Finish subgraph execution."""
         logger.info("Subgraph: Finishing...")
-        
+
         return {
             "current_subgraph": None,
             "subgraph_results": {
@@ -142,47 +142,47 @@ class {{GRAPH_CLASS_NAME}}:
                 "{{SUBGRAPH_NAME}}": "completed"
             }
         }
-    
+
     def _build_main_graph(self) -> StateGraph:
         """Build the main parent graph."""
         graph = StateGraph({{GRAPH_CLASS_NAME}}State)
-        
+
         # Add main graph nodes
         graph.add_node("main_prepare", self._main_prepare_node)
         graph.add_node("execute_subgraph", self._execute_subgraph_node)
         graph.add_node("main_finish", self._main_finish_node)
-        
+
         # Add edges
         graph.add_edge(START, "main_prepare")
         graph.add_edge("main_prepare", "execute_subgraph")
         graph.add_edge("execute_subgraph", "main_finish")
         graph.add_edge("main_finish", END)
-        
+
         return graph
-    
+
     def _main_prepare_node(self, state: {{GRAPH_CLASS_NAME}}State) -> dict:
         """Prepare main graph execution."""
         logger.info("Main graph: Preparing...")
-        
+
         return {
             "messages": state["messages"] + [
                 AIMessage(content="[Main] Preparation complete")
             ]
         }
-    
+
     def _execute_subgraph_node(self, state: {{GRAPH_CLASS_NAME}}State) -> dict:
         """
         Execute the subgraph.
-        
+
         This demonstrates how to invoke a subgraph from a parent graph.
         """
         logger.info("Main graph: Executing subgraph...")
-        
+
         # Invoke subgraph with current state
         subgraph_result = self.subgraph.invoke(state)
-        
+
         logger.info("Subgraph execution complete")
-        
+
         return {
             "subgraph_results": {
                 **state.get("subgraph_results", {}),
@@ -190,17 +190,17 @@ class {{GRAPH_CLASS_NAME}}:
             },
             "messages": state["messages"] + subgraph_result.get("messages", [])
         }
-    
+
     def _main_finish_node(self, state: {{GRAPH_CLASS_NAME}}State) -> dict:
         """Finish main graph execution."""
         logger.info("Main graph: Finishing...")
-        
+
         return {
             "messages": state["messages"] + [
                 AIMessage(content="[Main] All processing complete")
             ]
         }
-    
+
     def run(
         self,
         input_text: str,
@@ -208,32 +208,32 @@ class {{GRAPH_CLASS_NAME}}:
     ) -> {{GRAPH_CLASS_NAME}}State:
         """
         Run the nested graph.
-        
+
         Args:
             input_text: User input
             thread_id: Optional thread ID
-        
+
         Returns:
             Final state
         """
         logger.info(f"Running nested graph with input: {input_text[:100]}...")
-        
+
         initial_state: {{GRAPH_CLASS_NAME}}State = {
             "messages": [HumanMessage(content=input_text)],
             "input": input_text,
             "subgraph_results": {},
             "current_subgraph": None
         }
-        
+
         config = {}
         if thread_id:
             config = {"configurable": {"thread_id": thread_id}}
-        
+
         result = self.app.invoke(initial_state, config)
-        
+
         logger.info("Nested graph execution complete")
         return result
-    
+
     def visualize(self) -> str:
         """Generate Mermaid diagram."""
         return self.app.get_graph().draw_mermaid()
@@ -243,17 +243,17 @@ class {{GRAPH_CLASS_NAME}}:
 if __name__ == "__main__":
     # Create nested graph
     graph = {{GRAPH_CLASS_NAME}}()
-    
+
     # Visualize
     print("Graph Structure:")
     print(graph.visualize())
     print()
-    
+
     # Run
     result = graph.run("{{EXAMPLE_INPUT}}")
-    
+
     print(f"Subgraph Results: {result.get('subgraph_results', {})}")
-    
+
     # Print messages
     for msg in result["messages"]:
         print(f"{msg.__class__.__name__}: {msg.content[:100]}...")

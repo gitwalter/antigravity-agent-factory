@@ -1,5 +1,5 @@
-import os
 from pathlib import Path
+
 
 def diagnose():
     print("=== Diagnosing Knowledge Files ===")
@@ -26,20 +26,22 @@ def diagnose():
         if d.is_dir():
             if d.name != d.name.lower() or "_" in d.name or " " in d.name:
                 non_kebab.append(d.name)
-    
+
     print(f"Non-kebab directories ({len(non_kebab)}): {non_kebab}")
 
     print("\n=== Diagnosing Templates ===")
     templates_root = Path(".agent/templates")
     print(f"Templates Root Absolute: {templates_root.absolute()}")
     from jinja2 import Environment
+
     env = Environment()
-    
+
     for f in templates_root.rglob("*.j2"):
         try:
             env.parse(f.read_text(encoding="utf-8"))
         except Exception as e:
             print(f"Syntax Error in {f.relative_to(templates_root)}: {e}")
+
 
 if __name__ == "__main__":
     diagnose()

@@ -17,7 +17,7 @@ graph LR
     Roles --> R4["FastAPI Developer"]
     Roles --> R5["RAG Engineer"]
     Roles --> R6["Python Quality Warden"]
-    
+
     Agent --> Skills["Specialist Skills"]
     Skills --> S1["fastapi-enterprise"]
     Skills --> S2["agentic-loop-mastery"]

@@ -8,8 +8,8 @@ description: Comprehensive security audit workflow for smart contracts covering 
 
 Comprehensive security audit workflow for smart contracts covering static analysis, vulnerability scanning, gas optimization, and business logic review. Designed for Ethereum/Solidity and Solana/Rust ecosystems.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Applies To:** solidity-ethereum, solana-rust, defi-protocols
 
 ## Trigger Conditions

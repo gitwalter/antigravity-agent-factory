@@ -176,7 +176,7 @@ from crewai.tools import tool
 @tool("Custom API Tool")
 def fetch_user_data(user_id: str) -> str:
     """Fetch user data from internal API.
-    
+
     Args:
         user_id: The unique identifier for the user
     """

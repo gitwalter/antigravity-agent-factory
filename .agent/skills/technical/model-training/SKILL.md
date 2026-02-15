@@ -32,10 +32,10 @@ class SimpleDataset(Dataset):
     def __init__(self, size=1000):
         self.data = torch.randn(size, 10)
         self.labels = torch.randint(0, 2, (size,))
-    
+
     def __len__(self):
         return len(self.data)
-    
+
     def __getitem__(self, idx):
         return self.data[idx], self.labels[idx]
 
@@ -47,7 +47,7 @@ class SimpleModel(nn.Module):
         self.fc2 = nn.Linear(64, 32)
         self.fc3 = nn.Linear(32, 2)
         self.relu = nn.ReLU()
-    
+
     def forward(self, x):
         x = self.relu(self.fc1(x))
         x = self.relu(self.fc2(x))
@@ -70,85 +70,85 @@ def train_with_accelerate(
         log_with="tensorboard",  # or "wandb", "mlflow"
         project_dir="./logs"
     )
-    
+
     # Set seed for reproducibility
     set_seed(42)
-    
+
     # Prepare model, optimizer, and dataloader
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
     criterion = nn.CrossEntropyLoss()
-    
+
     model, optimizer, train_loader, val_loader = accelerator.prepare(
         model, optimizer, train_loader, val_loader
     )
-    
+
     # Training loop
     for epoch in range(num_epochs):
         model.train()
         total_loss = 0
-        
+
         for batch_idx, (data, target) in enumerate(train_loader):
             # Forward pass
             outputs = model(data)
             loss = criterion(outputs, target)
-            
+
             # Backward pass with gradient accumulation
             accelerator.backward(loss)
-            
+
             # Optimizer step (only after accumulation)
             if (batch_idx + 1) % accelerator.gradient_accumulation_steps == 0:
                 optimizer.step()
                 optimizer.zero_grad()
-            
+
             total_loss += loss.item()
-            
+
             # Logging
             if batch_idx % 100 == 0:
                 accelerator.log(
                     {"train_loss": loss.item()},
                     step=epoch * len(train_loader) + batch_idx
                 )
-        
+
         # Validation
         model.eval()
         val_loss = 0
         correct = 0
         total = 0
-        
+
         with torch.no_grad():
             for data, target in val_loader:
                 outputs = model(data)
                 loss = criterion(outputs, target)
                 val_loss += loss.item()
-                
+
                 _, predicted = torch.max(outputs.data, 1)
                 total += target.size(0)
                 correct += (predicted == target).sum().item()
-        
+
         avg_train_loss = total_loss / len(train_loader)
         avg_val_loss = val_loss / len(val_loader)
         accuracy = 100 * correct / total
-        
+
         accelerator.log({
             "epoch": epoch,
             "train_loss": avg_train_loss,
             "val_loss": avg_val_loss,
             "val_accuracy": accuracy
         }, step=epoch)
-        
+
         # Save checkpoint
         if accelerator.is_main_process:
             checkpoint_path = os.path.join(checkpoint_dir, f"checkpoint_epoch_{epoch}.pt")
             accelerator.save_state(checkpoint_path)
-            
+
             # Save best model
             if epoch == 0 or accuracy > best_accuracy:
                 best_accuracy = accuracy
                 accelerator.save_model(model, os.path.join(checkpoint_dir, "best_model.pt"))
-        
+
         accelerator.print(f"Epoch {epoch}: Train Loss={avg_train_loss:.4f}, "
                          f"Val Loss={avg_val_loss:.4f}, Accuracy={accuracy:.2f}%")
-    
+
     accelerator.end_training()
 
 # Usage
@@ -247,7 +247,7 @@ def train_with_deepspeed(
     config = create_deepspeed_config(zero_stage=2, offload_optimizer=False)
     with open(config_path, "w") as f:
         json.dump(config, f, indent=2)
-    
+
     # Initialize DeepSpeed
     model_engine, optimizer, train_loader, _ = deepspeed.initialize(
         model=model,
@@ -255,7 +255,7 @@ def train_with_deepspeed(
         training_data=train_dataset,
         config=config_path
     )
-    
+
     # Training loop
     for epoch in range(num_epochs):
         model_engine.train()
@@ -263,17 +263,17 @@ def train_with_deepspeed(
             # Forward pass
             outputs = model_engine(data)
             loss = criterion(outputs, target)
-            
+
             # Backward pass
             model_engine.backward(loss)
-            
+
             # Optimizer step
             model_engine.step()
-            
+
             # Logging
             if batch_idx % 100 == 0:
                 print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
-        
+
         # Save checkpoint
         model_engine.save_checkpoint(
             save_dir=f"./checkpoints/epoch_{epoch}",
@@ -299,10 +299,10 @@ def train_with_fsdp(
     """Training with FSDP."""
     # Initialize distributed
     dist.init_process_group(backend="nccl")
-    
+
     # Auto-wrap policy for transformer layers
     auto_wrap_policy = transformer_auto_wrap_policy
-    
+
     # Create FSDP model
     model = FSDP(
         model,
@@ -315,32 +315,32 @@ def train_with_fsdp(
         ),
         device_id=torch.cuda.current_device()
     )
-    
+
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
-    
+
     # Training loop
     for epoch in range(num_epochs):
         model.train()
         for batch_idx, (data, target) in enumerate(train_loader):
             data = data.cuda()
             target = target.cuda()
-            
+
             optimizer.zero_grad()
             outputs = model(data)
             loss = criterion(outputs, target)
             loss.backward()
             optimizer.step()
-            
+
             if batch_idx % 100 == 0:
                 print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
-        
+
         # Save checkpoint
         if dist.get_rank() == 0:
             save_policy = torch.distributed.fsdp.FullStateDictConfig(offload_to_cpu=True)
             with FSDP.state_dict_type(model, StateDictType.FULL_STATE_DICT, save_policy):
                 state_dict = model.state_dict()
                 torch.save(state_dict, f"./checkpoints/epoch_{epoch}.pt")
-    
+
     dist.destroy_process_group()
 ```
 
@@ -360,22 +360,22 @@ def objective(trial: optuna.Trial, train_loader: DataLoader, val_loader: DataLoa
     batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
     weight_decay = trial.suggest_loguniform("weight_decay", 1e-6, 1e-3)
     dropout_rate = trial.suggest_uniform("dropout_rate", 0.0, 0.5)
-    
+
     # Create model with suggested dropout
     model = SimpleModel()
     # Add dropout layers based on dropout_rate
-    
+
     # Create optimizer
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=learning_rate,
         weight_decay=weight_decay
     )
-    
+
     # Training loop (simplified)
     num_epochs = 5  # Fewer epochs for hyperparameter search
     best_val_loss = float("inf")
-    
+
     for epoch in range(num_epochs):
         model.train()
         for data, target in train_loader:
@@ -384,7 +384,7 @@ def objective(trial: optuna.Trial, train_loader: DataLoader, val_loader: DataLoa
             loss = criterion(outputs, target)
             loss.backward()
             optimizer.step()
-        
+
         # Validation
         model.eval()
         val_loss = 0
@@ -393,19 +393,19 @@ def objective(trial: optuna.Trial, train_loader: DataLoader, val_loader: DataLoa
                 outputs = model(data)
                 loss = criterion(outputs, target)
                 val_loss += loss.item()
-        
+
         avg_val_loss = val_loss / len(val_loader)
-        
+
         # Report intermediate value
         trial.report(avg_val_loss, epoch)
-        
+
         # Pruning
         if trial.should_prune():
             raise optuna.TrialPruned()
-        
+
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
-    
+
     return best_val_loss
 
 def run_hyperparameter_search(
@@ -421,29 +421,29 @@ def run_hyperparameter_search(
         study_name=study_name,
         pruner=optuna.pruners.MedianPruner(n_startup_trials=5, n_warmup_steps=3)
     )
-    
+
     # Optimize
     study.optimize(
         lambda trial: objective(trial, train_loader, val_loader),
         n_trials=n_trials,
         timeout=3600  # 1 hour timeout
     )
-    
+
     # Print results
     print("Number of finished trials: ", len(study.trials))
     print("Number of pruned trials: ", len([t for t in study.trials if t.state == TrialState.PRUNED]))
     print("Number of complete trials: ", len([t for t in study.trials if t.state == TrialState.COMPLETE]))
-    
+
     print("\nBest trial:")
     trial = study.best_trial
     print(f"  Value: {trial.value}")
     print("  Params: ")
     for key, value in trial.params.items():
         print(f"    {key}: {value}")
-    
+
     # Save study
     joblib.dump(study, f"{study_name}.pkl")
-    
+
     # Visualize
     try:
         import optuna.visualization as vis
@@ -451,7 +451,7 @@ def run_hyperparameter_search(
         fig.show()
     except:
         pass
-    
+
     return study
 
 # Usage
@@ -478,7 +478,7 @@ def train_with_mlflow(
     """Training with MLflow tracking."""
     # Set experiment
     mlflow.set_experiment(experiment_name)
-    
+
     # Start run
     with mlflow.start_run(run_name=run_name):
         # Log hyperparameters
@@ -488,15 +488,15 @@ def train_with_mlflow(
             "num_epochs": 10,
             "optimizer": "AdamW"
         })
-        
+
         # Training loop
         optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
         criterion = nn.CrossEntropyLoss()
-        
+
         for epoch in range(10):
             model.train()
             train_loss = 0
-            
+
             for data, target in train_loader:
                 optimizer.zero_grad()
                 outputs = model(data)
@@ -504,43 +504,43 @@ def train_with_mlflow(
                 loss.backward()
                 optimizer.step()
                 train_loss += loss.item()
-            
+
             # Validation
             model.eval()
             val_loss = 0
             correct = 0
             total = 0
-            
+
             with torch.no_grad():
                 for data, target in val_loader:
                     outputs = model(data)
                     loss = criterion(outputs, target)
                     val_loss += loss.item()
-                    
+
                     _, predicted = torch.max(outputs.data, 1)
                     total += target.size(0)
                     correct += (predicted == target).sum().item()
-            
+
             # Log metrics
             mlflow.log_metrics({
                 "train_loss": train_loss / len(train_loader),
                 "val_loss": val_loss / len(val_loader),
                 "val_accuracy": 100 * correct / total
             }, step=epoch)
-        
+
         # Log model
         mlflow.pytorch.log_model(model, "model")
-        
+
         # Log artifacts
         mlflow.log_artifact("./checkpoints/best_model.pt")
-        
+
         # Register model (optional)
         mlflow.pytorch.log_model(
             model,
             "model",
             registered_model_name="SimpleModel"
         )
-    
+
     print(f"MLflow run completed. View at: {mlflow.get_tracking_uri()}")
 
 # Usage
@@ -564,24 +564,24 @@ def train_with_amp(
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
     criterion = nn.CrossEntropyLoss()
     scaler = GradScaler()  # For gradient scaling
-    
+
     for epoch in range(num_epochs):
         model.train()
         for batch_idx, (data, target) in enumerate(train_loader):
             data, target = data.cuda(), target.cuda()
-            
+
             optimizer.zero_grad()
-            
+
             # Forward pass with autocast
             with autocast():
                 outputs = model(data)
                 loss = criterion(outputs, target)
-            
+
             # Backward pass with scaler
             scaler.scale(loss).backward()
             scaler.step(optimizer)
             scaler.update()
-            
+
             if batch_idx % 100 == 0:
                 print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
 ```
@@ -596,12 +596,12 @@ from pathlib import Path
 
 class CheckpointManager:
     """Manage model checkpoints and resume training."""
-    
+
     def __init__(self, checkpoint_dir: str = "./checkpoints"):
         self.checkpoint_dir = Path(checkpoint_dir)
         self.checkpoint_dir.mkdir(exist_ok=True)
         self.best_loss = float("inf")
-    
+
     def save_checkpoint(
         self,
         model: nn.Module,
@@ -620,22 +620,22 @@ class CheckpointManager:
             "best_loss": self.best_loss,
             "metadata": metadata or {}
         }
-        
+
         # Save regular checkpoint
         checkpoint_path = self.checkpoint_dir / f"checkpoint_epoch_{epoch}.pt"
         torch.save(checkpoint, checkpoint_path)
-        
+
         # Save best model
         if is_best or loss < self.best_loss:
             self.best_loss = loss
             best_path = self.checkpoint_dir / "best_model.pt"
             torch.save(checkpoint, best_path)
             print(f"Saved best model with loss: {loss:.4f}")
-        
+
         # Save latest checkpoint
         latest_path = self.checkpoint_dir / "latest_checkpoint.pt"
         torch.save(checkpoint, latest_path)
-    
+
     def load_checkpoint(
         self,
         model: nn.Module,
@@ -646,23 +646,23 @@ class CheckpointManager:
         """Load checkpoint."""
         if checkpoint_path is None:
             checkpoint_path = self.checkpoint_dir / "latest_checkpoint.pt"
-        
+
         if not os.path.exists(checkpoint_path):
             print(f"No checkpoint found at {checkpoint_path}")
             return 0
-        
+
         checkpoint = torch.load(checkpoint_path)
         model.load_state_dict(checkpoint["model_state_dict"])
-        
+
         if optimizer and resume:
             optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-        
+
         start_epoch = checkpoint["epoch"] + 1 if resume else 0
         self.best_loss = checkpoint.get("best_loss", float("inf"))
-        
+
         print(f"Loaded checkpoint from epoch {checkpoint['epoch']}")
         print(f"Resume training from epoch {start_epoch}")
-        
+
         return start_epoch
 
 # Usage in training loop
@@ -674,7 +674,7 @@ start_epoch = checkpoint_manager.load_checkpoint(model, optimizer, resume=True)
 for epoch in range(start_epoch, num_epochs):
     # Training...
     val_loss = validate(model, val_loader)
-    
+
     # Save checkpoint
     is_best = val_loss < checkpoint_manager.best_loss
     checkpoint_manager.save_checkpoint(

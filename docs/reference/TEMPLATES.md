@@ -264,10 +264,10 @@ import asyncio
 
 class {{ service_name }}Service:
     """{{ description }}"""
-    
+
     def __init__(self):
         self._initialized = False
-    
+
     {% if use_async %}
     async def initialize(self) -> None:
     {% else %}
@@ -275,7 +275,7 @@ class {{ service_name }}Service:
     {% endif %}
         """Initialize the service."""
         self._initialized = True
-    
+
     {% for method in methods %}
     {% if use_async %}
     async def {{ method.name }}(self{{ method.params }}) -> {{ method.return_type }}:
@@ -284,7 +284,7 @@ class {{ service_name }}Service:
     {% endif %}
         """{{ method.description }}"""
         raise NotImplementedError()
-    
+
     {% endfor %}
 ```
 

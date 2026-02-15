@@ -4,8 +4,8 @@
 
 Systematic workflow for planning sprints, including backlog review, capacity calculation, story selection, and sprint goal definition. Integrates with project management tools to automate repetitive planning tasks.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** sprint-master
 
 > **Note:** Directory paths referenced in this workflow (knowledge/, .agent/skills/, patterns/, etc.) are configurable via `.agent/config/settings.json`. See [Path Configuration Guide](../../../../docs/setup/configuration.md).
@@ -31,7 +31,7 @@ This workflow is activated when:
 
 **Description:** Gather information needed for sprint planning.
 
-**Entry Criteria:** Previous sprint closed or first sprint  
+**Entry Criteria:** Previous sprint closed or first sprint
 **Exit Criteria:** Planning data collected
 
 #### Step 1.1: Review Previous Sprint
@@ -88,7 +88,7 @@ Story Points Capacity = Velocity × (Capacity% of normal)
 
 **Description:** Review and prepare the backlog for selection.
 
-**Entry Criteria:** Preparation complete  
+**Entry Criteria:** Preparation complete
 **Exit Criteria:** Backlog prioritized and ready
 
 #### Step 2.1: Review Backlog Priority
@@ -161,7 +161,7 @@ Story Points Capacity = Velocity × (Capacity% of normal)
 
 **Description:** Select stories for the sprint.
 
-**Entry Criteria:** Backlog reviewed  
+**Entry Criteria:** Backlog reviewed
 **Exit Criteria:** Sprint scope defined
 
 #### Step 3.1: Select Stories by Priority
@@ -215,7 +215,7 @@ Story Points Capacity = Velocity × (Capacity% of normal)
 
 **Description:** Define the sprint goal and create sprint.
 
-**Entry Criteria:** Stories selected  
+**Entry Criteria:** Stories selected
 **Exit Criteria:** Sprint created with goal
 
 #### Step 4.1: Define Sprint Goal
@@ -271,7 +271,7 @@ Success criteria:
 
 **Description:** Break stories into tasks.
 
-**Entry Criteria:** Sprint created  
+**Entry Criteria:** Sprint created
 **Exit Criteria:** Tasks created for stories
 
 #### Step 5.1: Create Tasks
@@ -321,7 +321,7 @@ Success criteria:
 
 **Description:** Communicate sprint plan to stakeholders.
 
-**Entry Criteria:** Planning complete  
+**Entry Criteria:** Planning complete
 **Exit Criteria:** Team and stakeholders informed
 
 #### Step 6.1: Generate Sprint Summary
@@ -524,7 +524,7 @@ Stretch goal identified: PROJ-503
 Defining sprint goal...
 
 Sprint 15 Goal:
-"Enable users to manage their profiles and receive 
+"Enable users to manage their profiles and receive
 email notifications, improving user engagement."
 
 Success criteria:

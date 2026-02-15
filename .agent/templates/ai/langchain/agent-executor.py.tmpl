@@ -44,10 +44,10 @@ class {{AGENT_CLASS_NAME}}Output(BaseModel):
 def {{TOOL_FUNCTION_NAME}}(input_text: str) -> str:
     """
     {{TOOL_DESCRIPTION}}
-    
+
     Args:
         input_text: Input text to process
-    
+
     Returns:
         Tool output
     """
@@ -59,18 +59,18 @@ def {{TOOL_FUNCTION_NAME}}(input_text: str) -> str:
 class {{AGENT_CLASS_NAME}}:
     """
     {{AGENT_NAME}} - Tool-Calling Agent Executor
-    
+
     Implements a ReAct-style agent that can:
     - Use tools to interact with external systems
     - Reason about which tools to use
     - Iterate until task completion
-    
+
     Example:
         >>> agent = {{AGENT_CLASS_NAME}}()
         >>> result = agent.run("{{EXAMPLE_TASK}}")
         >>> print(result.output)
     """
-    
+
     def __init__(
         self,
         model_name: str = "{{MODEL_NAME}}",
@@ -82,7 +82,7 @@ class {{AGENT_CLASS_NAME}}:
     ):
         """
         Initialize agent executor.
-        
+
         Args:
             model_name: LLM model identifier
             temperature: Sampling temperature
@@ -96,26 +96,26 @@ class {{AGENT_CLASS_NAME}}:
         self.max_iterations = max_iterations
         self.max_execution_time = max_execution_time
         self.verbose = verbose
-        
+
         # Initialize LLM
         self.llm = ChatOpenAI(
             model=self.model_name,
             temperature=self.temperature
         )
-        
+
         # Default tools if none provided
         self.tools = tools or [{{TOOL_FUNCTION_NAME}}]
-        
+
         # Create prompt
         self.prompt = self._create_prompt()
-        
+
         # Create agent
         self.agent = create_openai_tools_agent(
             llm=self.llm,
             tools=self.tools,
             prompt=self.prompt
         )
-        
+
         # Create executor
         self.executor = AgentExecutor(
             agent=self.agent,
@@ -126,9 +126,9 @@ class {{AGENT_CLASS_NAME}}:
             handle_parsing_errors=True,
             return_intermediate_steps=True
         )
-        
+
         logger.info(f"Initialized {{AGENT_NAME}} with {len(self.tools)} tools")
-    
+
     def _create_prompt(self) -> ChatPromptTemplate:
         """Create agent prompt template."""
         system_message = """{{SYSTEM_PROMPT}}
@@ -154,14 +154,14 @@ You have access to the following tools:
 
 If an action could have significant consequences, ask for user confirmation first (A2).
 """
-        
+
         return ChatPromptTemplate.from_messages([
             ("system", system_message),
             MessagesPlaceholder(variable_name="chat_history"),
             ("human", "{input}"),
             MessagesPlaceholder(variable_name="agent_scratchpad")
         ])
-    
+
     def run(
         self,
         input_text: str,
@@ -169,26 +169,26 @@ If an action could have significant consequences, ask for user confirmation firs
     ) -> {{AGENT_CLASS_NAME}}Output:
         """
         Run the agent with given input.
-        
+
         Args:
             input_text: User input/task
             chat_history: Optional conversation history
-        
+
         Returns:
             Structured output with result and tool calls
         """
         logger.info(f"Running agent with input: {input_text[:100]}...")
-        
+
         try:
             # Prepare input
             agent_input = {
                 "input": input_text,
                 "chat_history": chat_history or []
             }
-            
+
             # Execute agent
             result = self.executor.invoke(agent_input)
-            
+
             # Extract tool calls from intermediate steps
             tool_calls = []
             if "intermediate_steps" in result:
@@ -198,23 +198,23 @@ If an action could have significant consequences, ask for user confirmation firs
                         "input": step[0].tool_input,
                         "output": str(step[1])[:200]  # Truncate long outputs
                     })
-            
+
             # Check if confirmation is needed (A2)
             requires_confirmation = self._check_confirmation_needed(result["output"])
-            
+
             output = {{AGENT_CLASS_NAME}}Output(
                 output=result["output"],
                 tool_calls=tool_calls,
                 iterations=len(tool_calls),
                 requires_confirmation=requires_confirmation
             )
-            
+
             logger.info(f"Agent completed in {len(tool_calls)} iterations")
             if tool_calls:
                 logger.info(f"Tools used: {[tc['tool'] for tc in tool_calls]}")
-            
+
             return output
-            
+
         except Exception as e:
             logger.error(f"Error during agent execution: {e}")
             return {{AGENT_CLASS_NAME}}Output(
@@ -223,14 +223,14 @@ If an action could have significant consequences, ask for user confirmation firs
                 iterations=0,
                 requires_confirmation=False
             )
-    
+
     def _check_confirmation_needed(self, output: str) -> bool:
         """
         Check if output indicates confirmation is needed (A2).
-        
+
         Args:
             output: Agent output text
-        
+
         Returns:
             True if confirmation is needed
         """
@@ -239,7 +239,7 @@ If an action could have significant consequences, ask for user confirmation firs
             "delete", "remove", "modify", "change"
         ]
         return any(keyword in output.lower() for keyword in confirmation_keywords)
-    
+
     async def arun(
         self,
         input_text: str,
@@ -247,15 +247,15 @@ If an action could have significant consequences, ask for user confirmation firs
     ) -> {{AGENT_CLASS_NAME}}Output:
         """Async version of run."""
         logger.info(f"Async running agent with input: {input_text[:100]}...")
-        
+
         try:
             agent_input = {
                 "input": input_text,
                 "chat_history": chat_history or []
             }
-            
+
             result = await self.executor.ainvoke(agent_input)
-            
+
             tool_calls = []
             if "intermediate_steps" in result:
                 for step in result["intermediate_steps"]:
@@ -264,16 +264,16 @@ If an action could have significant consequences, ask for user confirmation firs
                         "input": step[0].tool_input,
                         "output": str(step[1])[:200]
                     })
-            
+
             requires_confirmation = self._check_confirmation_needed(result["output"])
-            
+
             return {{AGENT_CLASS_NAME}}Output(
                 output=result["output"],
                 tool_calls=tool_calls,
                 iterations=len(tool_calls),
                 requires_confirmation=requires_confirmation
             )
-            
+
         except Exception as e:
             logger.error(f"Error during async agent execution: {e}")
             return {{AGENT_CLASS_NAME}}Output(
@@ -291,10 +291,10 @@ if __name__ == "__main__":
         model_name="{{MODEL_NAME}}",
         verbose=True
     )
-    
+
     # Run agent
     result = agent.run("{{EXAMPLE_TASK}}")
-    
+
     print(f"Output: {result.output}")
     print(f"Iterations: {result.iterations}")
     print(f"Tool calls: {len(result.tool_calls)}")

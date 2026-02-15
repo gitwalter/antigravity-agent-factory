@@ -215,8 +215,8 @@ References methodology configuration and coordination patterns:
 ```markdown
 ## Layer 3: Methodology
 
-**Methodology**: Agile Scrum  
-**Pattern**: domain_expert_swarm + peer_collaboration  
+**Methodology**: Agile Scrum
+**Pattern**: domain_expert_swarm + peer_collaboration
 **Reference**: See `workflows/methodology.yaml` for complete configuration.
 
 ### Team Coordination

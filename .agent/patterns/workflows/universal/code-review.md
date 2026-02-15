@@ -4,8 +4,8 @@
 
 Comprehensive workflow for performing structured code reviews covering correctness, style, design, performance, security, and maintainability. Generates actionable feedback with severity ratings and clear recommendations.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** code-reviewer
 
 > **Note:** Directory paths referenced in this workflow (knowledge/, .cursor/skills/, patterns/, etc.) are configurable via `.cursor/config/settings.json`. See [Path Configuration Guide](../../../../docs/setup/configuration.md).
@@ -31,7 +31,7 @@ This workflow is activated when:
 
 **Description:** Understand the change context and scope.
 
-**Entry Criteria:** Code changes identified for review  
+**Entry Criteria:** Code changes identified for review
 **Exit Criteria:** Change context fully understood
 
 #### Step 1.1: Fetch Change Details
@@ -99,7 +99,7 @@ This workflow is activated when:
 
 **Description:** Verify the code does what it should do.
 
-**Entry Criteria:** Context understood  
+**Entry Criteria:** Context understood
 **Exit Criteria:** Correctness issues identified
 
 #### Step 2.1: Logic Verification
@@ -154,7 +154,7 @@ This workflow is activated when:
 
 **Description:** Check adherence to coding standards.
 
-**Entry Criteria:** Style guide identified  
+**Entry Criteria:** Style guide identified
 **Exit Criteria:** Style issues documented
 
 #### Step 3.1: Naming Convention Review
@@ -201,7 +201,7 @@ This workflow is activated when:
 
 **Description:** Evaluate architectural and design decisions.
 
-**Entry Criteria:** Correctness verified  
+**Entry Criteria:** Correctness verified
 **Exit Criteria:** Design issues identified
 
 #### Step 4.1: Architecture Assessment
@@ -252,7 +252,7 @@ This workflow is activated when:
 
 **Description:** Identify performance concerns.
 
-**Entry Criteria:** Design reviewed  
+**Entry Criteria:** Design reviewed
 **Exit Criteria:** Performance issues identified
 
 #### Step 5.1: Algorithm Complexity
@@ -305,7 +305,7 @@ This workflow is activated when:
 
 **Description:** Check for security vulnerabilities.
 
-**Entry Criteria:** Performance reviewed  
+**Entry Criteria:** Performance reviewed
 **Exit Criteria:** Security issues identified
 
 #### Step 6.1: Security Vulnerability Scan
@@ -342,7 +342,7 @@ This workflow is activated when:
 
 **Description:** Assess long-term maintainability.
 
-**Entry Criteria:** Security reviewed  
+**Entry Criteria:** Security reviewed
 **Exit Criteria:** Maintainability concerns identified
 
 #### Step 7.1: Code Clarity
@@ -391,7 +391,7 @@ This workflow is activated when:
 
 **Description:** Compile findings into structured feedback.
 
-**Entry Criteria:** All reviews complete  
+**Entry Criteria:** All reviews complete
 **Exit Criteria:** Review report generated
 
 #### Step 8.1: Compile Review Report

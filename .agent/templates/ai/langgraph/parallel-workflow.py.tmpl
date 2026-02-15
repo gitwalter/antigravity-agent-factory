@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 class {{GRAPH_CLASS_NAME}}State(TypedDict):
     """
     State for parallel workflow.
-    
+
     Attributes:
         messages: Conversation messages
         input: Original input
@@ -41,17 +41,17 @@ class {{GRAPH_CLASS_NAME}}State(TypedDict):
 class {{GRAPH_CLASS_NAME}}:
     """
     {{GRAPH_NAME}} - Parallel Workflow Pattern
-    
+
     Implements fanout/fanin pattern:
     1. Fanout: Split input to multiple parallel branches
     2. Process: Each branch processes independently
     3. Fanin: Aggregate results from all branches
-    
+
     Example:
         >>> workflow = {{GRAPH_CLASS_NAME}}()
         >>> result = workflow.run("Process this in parallel")
     """
-    
+
     def __init__(
         self,
         model_name: str = "{{MODEL_NAME}}",
@@ -59,62 +59,62 @@ class {{GRAPH_CLASS_NAME}}:
     ):
         """
         Initialize parallel workflow.
-        
+
         Args:
             model_name: LLM model identifier
             temperature: Sampling temperature
         """
         self.model_name = model_name
         self.temperature = temperature
-        
+
         # Initialize LLM
         self.llm = ChatOpenAI(
             model=model_name,
             temperature=temperature
         )
-        
+
         # Build graph
         self.graph = self._build_graph()
         self.app = self.graph.compile()
-        
+
         logger.info("Initialized {{GRAPH_NAME}} parallel workflow")
-    
+
     def _build_graph(self) -> StateGraph:
         """Build the parallel workflow graph."""
         graph = StateGraph({{GRAPH_CLASS_NAME}}State)
-        
+
         # Add nodes
         graph.add_node("fanout", self._fanout_node)
         graph.add_node("{{BRANCH_1_NAME}}", self._branch_1_node)
         graph.add_node("{{BRANCH_2_NAME}}", self._branch_2_node)
         graph.add_node("{{BRANCH_3_NAME}}", self._branch_3_node)
         graph.add_node("fanin", self._fanin_node)
-        
+
         # Add edges
         graph.add_edge(START, "fanout")
-        
+
         # Fanout to all branches (parallel execution)
         graph.add_edge("fanout", "{{BRANCH_1_NAME}}")
         graph.add_edge("fanout", "{{BRANCH_2_NAME}}")
         graph.add_edge("fanout", "{{BRANCH_3_NAME}}")
-        
+
         # All branches converge to fanin
         graph.add_edge("{{BRANCH_1_NAME}}", "fanin")
         graph.add_edge("{{BRANCH_2_NAME}}", "fanin")
         graph.add_edge("{{BRANCH_3_NAME}}", "fanin")
-        
+
         graph.add_edge("fanin", END)
-        
+
         return graph
-    
+
     def _fanout_node(self, state: {{GRAPH_CLASS_NAME}}State) -> dict:
         """
         Fanout node - prepares input for parallel branches.
-        
+
         Implements A3 (Transparency) by logging fanout.
         """
         logger.info("Fanout: Preparing for parallel execution...")
-        
+
         return {
             "parallel_results": {},
             "all_complete": False,
@@ -122,20 +122,20 @@ class {{GRAPH_CLASS_NAME}}:
                 AIMessage(content="[Fanout] Starting parallel branches")
             ]
         }
-    
+
     def _branch_1_node(self, state: {{GRAPH_CLASS_NAME}}State) -> dict:
         """
         Branch 1 - {{BRANCH_1_DESCRIPTION}}.
-        
+
         Implements A1 (Verifiability) by logging branch execution.
         """
         logger.info("{{BRANCH_1_NAME}}: Executing...")
-        
+
         input_text = state["input"]
-        
+
         # Process with LLM
         response = self.llm.invoke(f"{{BRANCH_1_PROMPT}}\n\nInput: {input_text}")
-        
+
         return {
             "parallel_results": {
                 **state.get("parallel_results", {}),
@@ -145,19 +145,19 @@ class {{GRAPH_CLASS_NAME}}:
                 AIMessage(content=f"[{{BRANCH_1_NAME}}] {response.content[:100]}...")
             ]
         }
-    
+
     def _branch_2_node(self, state: {{GRAPH_CLASS_NAME}}State) -> dict:
         """
         Branch 2 - {{BRANCH_2_DESCRIPTION}}.
-        
+
         Implements A1 (Verifiability) by logging branch execution.
         """
         logger.info("{{BRANCH_2_NAME}}: Executing...")
-        
+
         input_text = state["input"]
-        
+
         response = self.llm.invoke(f"{{BRANCH_2_PROMPT}}\n\nInput: {input_text}")
-        
+
         return {
             "parallel_results": {
                 **state.get("parallel_results", {}),
@@ -167,19 +167,19 @@ class {{GRAPH_CLASS_NAME}}:
                 AIMessage(content=f"[{{BRANCH_2_NAME}}] {response.content[:100]}...")
             ]
         }
-    
+
     def _branch_3_node(self, state: {{GRAPH_CLASS_NAME}}State) -> dict:
         """
         Branch 3 - {{BRANCH_3_DESCRIPTION}}.
-        
+
         Implements A1 (Verifiability) by logging branch execution.
         """
         logger.info("{{BRANCH_3_NAME}}: Executing...")
-        
+
         input_text = state["input"]
-        
+
         response = self.llm.invoke(f"{{BRANCH_3_PROMPT}}\n\nInput: {input_text}")
-        
+
         return {
             "parallel_results": {
                 **state.get("parallel_results", {}),
@@ -189,30 +189,30 @@ class {{GRAPH_CLASS_NAME}}:
                 AIMessage(content=f"[{{BRANCH_3_NAME}}] {response.content[:100]}...")
             ]
         }
-    
+
     def _fanin_node(self, state: {{GRAPH_CLASS_NAME}}State) -> dict:
         """
         Fanin node - aggregates results from all branches.
-        
+
         Implements A1 (Verifiability) by ensuring all results are collected.
         """
         logger.info("Fanin: Aggregating results...")
-        
+
         parallel_results = state.get("parallel_results", {})
-        
+
         # Check if all branches completed
         expected_branches = ["{{BRANCH_1_NAME}}", "{{BRANCH_2_NAME}}", "{{BRANCH_3_NAME}}"]
         all_complete = all(branch in parallel_results for branch in expected_branches)
-        
+
         if not all_complete:
             logger.warning("Not all branches completed")
-        
+
         # Aggregate results
         aggregated = "\n\n".join([
             f"{branch}: {result[:200]}"
             for branch, result in parallel_results.items()
         ])
-        
+
         # Generate final summary
         summary_prompt = f"""{{FANIN_PROMPT}}
 
@@ -221,69 +221,69 @@ Parallel Results:
 
 Provide a comprehensive summary of all results.
 """
-        
+
         summary = self.llm.invoke(summary_prompt)
-        
+
         return {
             "all_complete": all_complete,
             "messages": state["messages"] + [
                 AIMessage(content=f"[Fanin] Summary: {summary.content}")
             ]
         }
-    
+
     def run(
         self,
         input_text: str
     ) -> {{GRAPH_CLASS_NAME}}State:
         """
         Run the parallel workflow.
-        
+
         Args:
             input_text: User input
-        
+
         Returns:
             Final state with aggregated results
         """
         logger.info(f"Running parallel workflow with input: {input_text[:100]}...")
-        
+
         initial_state: {{GRAPH_CLASS_NAME}}State = {
             "messages": [HumanMessage(content=input_text)],
             "input": input_text,
             "parallel_results": {},
             "all_complete": False
         }
-        
+
         result = self.app.invoke(initial_state)
-        
+
         logger.info(f"Parallel workflow complete. Branches: {len(result.get('parallel_results', {}))}")
         return result
-    
+
     async def arun(
         self,
         input_text: str
     ) -> {{GRAPH_CLASS_NAME}}State:
         """
         Async version of run.
-        
+
         Args:
             input_text: User input
-        
+
         Returns:
             Final state
         """
         logger.info(f"Async running parallel workflow...")
-        
+
         initial_state: {{GRAPH_CLASS_NAME}}State = {
             "messages": [HumanMessage(content=input_text)],
             "input": input_text,
             "parallel_results": {},
             "all_complete": False
         }
-        
+
         result = await self.app.ainvoke(initial_state)
-        
+
         return result
-    
+
     def visualize(self) -> str:
         """Generate Mermaid diagram."""
         return self.app.get_graph().draw_mermaid()
@@ -293,18 +293,18 @@ Provide a comprehensive summary of all results.
 if __name__ == "__main__":
     # Create parallel workflow
     workflow = {{GRAPH_CLASS_NAME}}()
-    
+
     # Visualize
     print("Workflow Structure:")
     print(workflow.visualize())
     print()
-    
+
     # Run
     result = workflow.run("{{EXAMPLE_INPUT}}")
-    
+
     print(f"All Complete: {result['all_complete']}")
     print(f"Parallel Results: {list(result['parallel_results'].keys())}")
-    
+
     # Print aggregated results
     for branch, result_text in result["parallel_results"].items():
         print(f"\n{branch}:")

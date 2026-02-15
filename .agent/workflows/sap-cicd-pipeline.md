@@ -8,8 +8,8 @@ description: End-to-end workflow for setting up CI/CD pipelines for SAP applicat
 
 End-to-end workflow for setting up CI/CD pipelines for SAP applications. Covers build automation, testing, transport management, and deployment to SAP systems.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-09  
+**Version:** 1.0.0
+**Created:** 2026-02-09
 **Applies To:** sap-developer, btp-deployment
 
 ## Trigger Conditions

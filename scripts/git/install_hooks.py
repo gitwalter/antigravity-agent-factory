@@ -83,19 +83,19 @@ exit /b 0
 def install_hook(git_dir: Path, overwrite: bool = False) -> bool:
     """
     Install pre-commit hook.
-    
+
     Args:
         git_dir: Path to .git directory
         overwrite: If True, overwrite existing hook
-        
+
     Returns:
         True if installed successfully
     """
     hooks_dir = git_dir / "hooks"
     hooks_dir.mkdir(exist_ok=True)
-    
+
     hook_path = hooks_dir / "pre-commit"
-    
+
     # Check if hook already exists
     if hook_path.exists() and not overwrite:
         print(f"⚠️  Pre-commit hook already exists at {hook_path}")
@@ -103,23 +103,23 @@ def install_hook(git_dir: Path, overwrite: bool = False) -> bool:
         if response != "y":
             print("Skipping hook installation")
             return False
-    
+
     # Determine which script to use based on platform
     is_windows = os.name == "nt"
-    
+
     if is_windows:
         hook_content = PRE_COMMIT_HOOK_WINDOWS
     else:
         hook_content = PRE_COMMIT_HOOK
-    
+
     # Write hook file
     hook_path.write_text(hook_content, encoding="utf-8")
-    
+
     # Make executable on Unix
     if not is_windows:
         current_mode = hook_path.stat().st_mode
         hook_path.chmod(current_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
-    
+
     print(f"✅ Installed pre-commit hook at {hook_path}")
     return True
 
@@ -127,27 +127,29 @@ def install_hook(git_dir: Path, overwrite: bool = False) -> bool:
 def uninstall_hook(git_dir: Path) -> bool:
     """
     Uninstall pre-commit hook.
-    
+
     Args:
         git_dir: Path to .git directory
-        
+
     Returns:
         True if uninstalled successfully
     """
     hook_path = git_dir / "hooks" / "pre-commit"
-    
+
     if not hook_path.exists():
         print("ℹ️  No pre-commit hook found")
         return False
-    
+
     # Check if it's our hook
     content = hook_path.read_text(encoding="utf-8")
     if "Cursor Agent Factory" not in content:
-        print("⚠️  Pre-commit hook exists but doesn't appear to be from Cursor Agent Factory")
+        print(
+            "⚠️  Pre-commit hook exists but doesn't appear to be from Cursor Agent Factory"
+        )
         response = input("Remove anyway? (y/N): ").strip().lower()
         if response != "y":
             return False
-    
+
     hook_path.unlink()
     print(f"✅ Removed pre-commit hook at {hook_path}")
     return True
@@ -159,31 +161,29 @@ def main():
         description="Install or uninstall git pre-commit hooks"
     )
     parser.add_argument(
-        "--uninstall",
-        action="store_true",
-        help="Uninstall existing hook"
+        "--uninstall", action="store_true", help="Uninstall existing hook"
     )
     parser.add_argument(
         "--overwrite",
         action="store_true",
-        help="Overwrite existing hook without prompting"
+        help="Overwrite existing hook without prompting",
     )
     parser.add_argument(
         "--root",
         type=str,
         default=".",
-        help="Project root directory (default: current directory)"
+        help="Project root directory (default: current directory)",
     )
-    
+
     args = parser.parse_args()
-    
+
     root_dir = Path(args.root).resolve()
     git_dir = root_dir / ".git"
-    
+
     if not git_dir.exists():
         print("❌ Not a git repository. Run 'git init' first.")
         return 1
-    
+
     if args.uninstall:
         if uninstall_hook(git_dir):
             return 0

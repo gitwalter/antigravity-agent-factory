@@ -48,31 +48,31 @@
         {'name': 'log_format', 'type': 'str', 'field': 'default="json", description="Log format (json, text)"'}
     ]
 ) }}
-    
+
     # External Services (add as needed)
     # redis_url: Optional[str] = Field(None, description="Redis connection URL")
     # redis_ttl: int = Field(default=3600, description="Redis TTL in seconds")
-    
+
     class Config:
         """Pydantic configuration."""
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = False
-        
+
         # Allow nested settings
         env_nested_delimiter = "__"
-    
+
     @validator("environment")
     def validate_environment(cls, v):
         """
         Validate environment value.
-        
+
         Args:
             v: Environment value
-            
+
         Returns:
             Validated environment
-            
+
         Raises:
             ValueError: If environment is invalid
         """
@@ -80,18 +80,18 @@
         if v not in allowed:
             raise ValueError(f"Environment must be one of {allowed}")
         return v
-    
+
     @validator("log_level")
     def validate_log_level(cls, v):
         """
         Validate log level value.
-        
+
         Args:
             v: Log level value
-            
+
         Returns:
             Validated log level
-            
+
         Raises:
             ValueError: If log level is invalid
         """
@@ -99,34 +99,34 @@
         if v.upper() not in allowed:
             raise ValueError(f"Log level must be one of {allowed}")
         return v.upper()
-    
+
     @property
     def database_url_sync(self) -> str:
         """
         Get synchronous database URL (for Alembic migrations).
-        
+
         Returns:
             Synchronous database URL
         """
         # Convert async URL to sync if needed
         # Example: postgresql+asyncpg:// -> postgresql://
         return self.database_url.replace("+asyncpg", "").replace("+aiomysql", "")
-    
+
     @property
     def is_production(self) -> bool:
         """
         Check if running in production environment.
-        
+
         Returns:
             True if production, False otherwise
         """
         return self.environment == "production"
-    
+
     @property
     def is_development(self) -> bool:
         """
         Check if running in development environment.
-        
+
         Returns:
             True if development, False otherwise
         """

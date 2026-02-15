@@ -4,8 +4,8 @@
 
 End-to-end workflow for developing SAP Cloud Application Programming Model (CAP) services. Covers CDS modeling, service implementation, testing, and deployment to SAP BTP.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Applies To:** sap-cap
 
 ## Trigger Conditions
@@ -29,7 +29,7 @@ This workflow is activated when:
 
 **Description:** Define the domain model using CDS.
 
-**Entry Criteria:** Requirements defined  
+**Entry Criteria:** Requirements defined
 **Exit Criteria:** Domain model complete
 
 #### Step 1.1: Create Entity Definitions
@@ -92,7 +92,7 @@ entity Books : cuid, managed {
 
 **Description:** Define and expose services.
 
-**Entry Criteria:** Domain model complete  
+**Entry Criteria:** Domain model complete
 **Exit Criteria:** Services defined
 
 #### Step 2.1: Create Service Definitions
@@ -110,7 +110,7 @@ using my.bookshop from '../db/schema';
 service CatalogService {
   @readonly entity Books as projection on bookshop.Books;
   @readonly entity Authors as projection on bookshop.Authors;
-  
+
   action submitOrder(book : Books:ID, quantity : Integer);
   function getBooksByAuthor(author : String) returns array of Books;
 }
@@ -133,7 +133,7 @@ service AdminService @(requires: 'admin') {
 
 **Description:** Implement custom handlers and logic.
 
-**Entry Criteria:** Services defined  
+**Entry Criteria:** Services defined
 **Exit Criteria:** Handlers implemented
 
 #### Step 3.1: Implement Event Handlers
@@ -151,18 +151,18 @@ const cds = require('@sap/cds');
 module.exports = class CatalogService extends cds.ApplicationService {
   async init() {
     const { Books } = this.entities;
-    
+
     this.before('CREATE', Books, req => {
       if (req.data.stock < 0) {
         req.error(400, 'Stock cannot be negative');
       }
     });
-    
+
     this.on('submitOrder', async req => {
       const { book, quantity } = req.data;
       // Implementation
     });
-    
+
     await super.init();
   }
 };
@@ -173,7 +173,7 @@ module.exports = class CatalogService extends cds.ApplicationService {
 @Component
 @ServiceName(CatalogService_.CDS_NAME)
 public class CatalogServiceHandler implements EventHandler {
-    
+
     @Before(event = CqnService.EVENT_CREATE, entity = Books_.CDS_NAME)
     public void beforeCreateBook(Books book) {
         if (book.getStock() < 0) {
@@ -195,7 +195,7 @@ public class CatalogServiceHandler implements EventHandler {
 
 **Description:** Test the CAP service.
 
-**Entry Criteria:** Handlers implemented  
+**Entry Criteria:** Handlers implemented
 **Exit Criteria:** Tests passing
 
 #### Step 4.1: Unit Testing
@@ -213,16 +213,16 @@ const { expect } = require('chai');
 
 describe('CatalogService', () => {
   let srv;
-  
+
   before(async () => {
     srv = await cds.connect.to('CatalogService');
   });
-  
+
   it('should read books', async () => {
     const books = await srv.read('Books');
     expect(books).to.be.an('array');
   });
-  
+
   it('should reject negative stock', async () => {
     const result = await srv.create('Books', { stock: -1 })
       .catch(e => e);
@@ -251,7 +251,7 @@ describe('CatalogService', () => {
 
 **Description:** Add Fiori Elements UI.
 
-**Entry Criteria:** Service tested  
+**Entry Criteria:** Service tested
 **Exit Criteria:** UI configured
 
 #### Step 5.1: Add UI Annotations
@@ -302,7 +302,7 @@ annotate CatalogService.Books with @(
 
 **Description:** Deploy to SAP BTP Cloud Foundry.
 
-**Entry Criteria:** Testing complete  
+**Entry Criteria:** Testing complete
 **Exit Criteria:** Deployed to BTP
 
 #### Step 6.1: Configure MTA
@@ -419,7 +419,7 @@ Creating entities...
 
 db/schema.cds:
 ✓ Orders entity
-✓ OrderItems entity  
+✓ OrderItems entity
 ✓ Products entity
 ✓ Associations defined
 

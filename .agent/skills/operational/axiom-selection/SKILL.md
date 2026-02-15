@@ -45,7 +45,7 @@ This means:
 - We trust team members to contribute their best
 - We build systems that serve human flourishing
 
-This axiom is always included and cannot be removed. It is the soil from which 
+This axiom is always included and cannot be removed. It is the soil from which
 all other axioms grow.
 
 Do you want to take a moment to reflect on how A0 applies to your project?

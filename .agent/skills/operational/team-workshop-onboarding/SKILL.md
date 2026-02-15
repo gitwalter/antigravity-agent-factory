@@ -218,7 +218,7 @@ Any custom agent you'd love to have? Describe it briefly."
 **Workflow Quick Design (10 min)**
 
 ```
-"What tasks do you want to automate? 
+"What tasks do you want to automate?
 
 Quick brainstorm - shout out repetitive tasks:
 - Bug fixing process?
@@ -926,7 +926,7 @@ First to complete a pattern: BINGO!"
 **Purpose:** Identify tasks to automate as workflows
 
 ```
-"Now let's think about your daily work. What tasks would you LOVE 
+"Now let's think about your daily work. What tasks would you LOVE
 to automate? What repetitive processes drain your energy?
 
 Think about:
@@ -947,7 +947,7 @@ No task is too small or too ambitious!
 
 Let's categorize them:
 - 🐛 Debugging & Fixes
-- ✨ Feature Development  
+- ✨ Feature Development
 - 📝 Documentation
 - 🔍 Research & Analysis
 - 🚀 Deployment & Operations
@@ -1010,8 +1010,8 @@ Let's sketch these out together!"
 #### Part 3: Priority Voting (10 min)
 
 ```
-"Each person gets 5 votes. Put them on the workflows you 
-want built first. You can put multiple votes on one workflow 
+"Each person gets 5 votes. Put them on the workflows you
+want built first. You can put multiple votes on one workflow
 if you feel strongly!
 
 Top 3 workflows will be generated with your project."
@@ -1051,7 +1051,7 @@ Agents:
 
 Top Workflows:
 {WORKFLOW_1} - Ready to generate
-{WORKFLOW_2} - Ready to generate  
+{WORKFLOW_2} - Ready to generate
 {WORKFLOW_3} - Queued for future
 
 Next workshop: We bring it all together!"
@@ -1211,7 +1211,7 @@ At the end of the workshop series, the following artifacts are generated:
 ```
 User: We want to do collaborative onboarding for our team
 
-Agent: Wonderful! I'll guide your team through a workshop series to 
+Agent: Wonderful! I'll guide your team through a workshop series to
 co-create your customized Cursor agent system.
 
 Before we begin, let me understand your team:

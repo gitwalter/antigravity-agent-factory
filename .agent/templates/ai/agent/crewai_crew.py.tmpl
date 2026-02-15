@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 class {{CREW_CLASS_NAME}}Output(BaseModel):
     """
     Structured output from {{CREW_NAME}} crew execution.
-    
+
     Provides complete execution trace for verifiability (A1).
     """
     result: str = Field(description="Final crew result")
@@ -55,17 +55,17 @@ class {{CREW_CLASS_NAME}}Output(BaseModel):
 class {{CREW_CLASS_NAME}}:
     """
     {{CREW_NAME}} - CrewAI Crew Definition
-    
+
     Defines a crew of agents working together to accomplish goals.
     Each agent has a specific role, goal, and backstory.
-    
+
     Features:
     - Multi-agent collaboration
     - Sequential or hierarchical process execution
     - Task dependencies and orchestration
     - Memory support for context retention
     - Structured output with execution trace
-    
+
     Example:
         >>> crew = {{CREW_CLASS_NAME}}(
         ...     verbose=True,
@@ -75,7 +75,7 @@ class {{CREW_CLASS_NAME}}:
         >>> print(result.result)
         >>> print(f"Completed {result.tasks_completed} tasks")
     """
-    
+
     def __init__(
         self,
         verbose: bool = True,
@@ -87,7 +87,7 @@ class {{CREW_CLASS_NAME}}:
     ):
         """
         Initialize {{CREW_NAME}} crew.
-        
+
         Args:
             verbose: Enable verbose logging for transparency (A3)
             process: Process type (sequential, hierarchical, or consensual)
@@ -102,13 +102,13 @@ class {{CREW_CLASS_NAME}}:
         self.memory = memory
         self.model_name = model_name
         self.temperature = temperature
-        
+
         # Create agents
         self.agents = self._create_agents()
-        
+
         # Create tasks
         self.tasks = self._create_tasks()
-        
+
         # Create crew
         self.crew = Crew(
             agents=self.agents,
@@ -118,29 +118,29 @@ class {{CREW_CLASS_NAME}}:
             max_iter=max_iter,
             memory=memory
         )
-        
+
         logger.info(
             f"Initialized {{CREW_NAME}} with {len(self.agents)} agents, "
             f"{len(self.tasks)} tasks, process={process}"
         )
-    
+
     def _create_agents(self) -> List[Agent]:
         """
         Create agents for the crew.
-        
+
         Override this method to customize agent configuration.
-        
+
         Returns:
             List of Agent instances
         """
         agents = []
-        
+
         # Agent 1: {{AGENT_1_ROLE}}
         agent_1 = Agent(
             role="{{AGENT_1_ROLE}}",
             goal="{{AGENT_1_GOAL}}",
             backstory="""{{AGENT_1_BACKSTORY}}
-            
+
 ## Core Principles
 - VERIFIABILITY (A1): Provide reasoning for decisions
 - USER PRIMACY (A2): Prioritize user goals
@@ -153,13 +153,13 @@ class {{CREW_CLASS_NAME}}:
             tools=self._get_agent_1_tools()
         )
         agents.append(agent_1)
-        
+
         # Agent 2: {{AGENT_2_ROLE}}
         agent_2 = Agent(
             role="{{AGENT_2_ROLE}}",
             goal="{{AGENT_2_GOAL}}",
             backstory="""{{AGENT_2_BACKSTORY}}
-            
+
 ## Core Principles
 - VERIFIABILITY (A1): Provide reasoning for decisions
 - USER PRIMACY (A2): Prioritize user goals
@@ -172,59 +172,59 @@ class {{CREW_CLASS_NAME}}:
             tools=self._get_agent_2_tools()
         )
         agents.append(agent_2)
-        
+
         # Add more agents as needed
         # Agent 3: {{AGENT_3_ROLE}}
         # agent_3 = Agent(...)
         # agents.append(agent_3)
-        
+
         return agents
-    
+
     def _create_tasks(self) -> List[Task]:
         """
         Create tasks for the crew.
-        
+
         Override this method to customize task configuration.
-        
+
         Returns:
             List of Task instances
         """
         tasks = []
-        
+
         # Task 1: {{TASK_1_DESCRIPTION}}
         task_1 = Task(
             description="""{{TASK_1_DESCRIPTION}}
-            
+
 Expected Output: {{TASK_1_EXPECTED_OUTPUT}}""",
             agent=self.agents[0],  # Assign to first agent
             expected_output="{{TASK_1_EXPECTED_OUTPUT}}"
         )
         tasks.append(task_1)
-        
+
         # Task 2: {{TASK_2_DESCRIPTION}}
         task_2 = Task(
             description="""{{TASK_2_DESCRIPTION}}
-            
+
 Expected Output: {{TASK_2_EXPECTED_OUTPUT}}""",
             agent=self.agents[1],  # Assign to second agent
             expected_output="{{TASK_2_EXPECTED_OUTPUT}}",
             context=[task_1]  # Task 2 depends on task 1
         )
         tasks.append(task_2)
-        
+
         # Add more tasks as needed
         # Task 3: {{TASK_3_DESCRIPTION}}
         # task_3 = Task(...)
         # tasks.append(task_3)
-        
+
         return tasks
-    
+
     def _get_agent_1_tools(self) -> List[BaseTool]:
         """
         Get tools for agent 1.
-        
+
         Override this method to provide custom tools.
-        
+
         Returns:
             List of tools for agent 1
         """
@@ -232,13 +232,13 @@ Expected Output: {{TASK_2_EXPECTED_OUTPUT}}""",
         # from your_tools import tool1, tool2
         # return [tool1, tool2]
         return []
-    
+
     def _get_agent_2_tools(self) -> List[BaseTool]:
         """
         Get tools for agent 2.
-        
+
         Override this method to provide custom tools.
-        
+
         Returns:
             List of tools for agent 2
         """
@@ -246,18 +246,18 @@ Expected Output: {{TASK_2_EXPECTED_OUTPUT}}""",
         # from your_tools import tool3, tool4
         # return [tool3, tool4]
         return []
-    
+
     def kickoff(self, inputs: Dict[str, Any]) -> {{CREW_CLASS_NAME}}Output:
         """
         Kickoff crew execution.
-        
+
         Args:
             inputs: Input dictionary for crew execution
                 Example: {"topic": "AI research", "format": "report"}
-        
+
         Returns:
             {{CREW_CLASS_NAME}}Output with results and execution trace
-            
+
         Example:
             >>> result = crew.kickoff({
             ...     "topic": "Machine Learning",
@@ -267,21 +267,21 @@ Expected Output: {{TASK_2_EXPECTED_OUTPUT}}""",
             >>> print(f"Execution time: {result.execution_time:.2f}s")
         """
         import time
-        
+
         logger.info(f"Kicking off {{CREW_NAME}} with inputs: {inputs}")
         start_time = time.time()
-        
+
         try:
             # Execute crew
             crew_result = self.crew.kickoff(inputs=inputs)
-            
+
             execution_time = time.time() - start_time
-            
+
             # Extract agent results
             agent_results = {}
             task_results = {}
             agents_involved = []
-            
+
             # Extract from crew result
             if hasattr(crew_result, 'tasks_output'):
                 for task in self.tasks:
@@ -290,25 +290,25 @@ Expected Output: {{TASK_2_EXPECTED_OUTPUT}}""",
                     task_results[task_key] = str(
                         task_output.get(task.description, "")
                     )
-                    
+
                     # Track agent involvement
                     agent_role = task.agent.role
                     if agent_role not in agents_involved:
                         agents_involved.append(agent_role)
-                    
+
                     # Aggregate agent results
                     if agent_role not in agent_results:
                         agent_results[agent_role] = []
                     agent_results[agent_role].append(
                         str(task_output.get(task.description, ""))
                     )
-            
+
             # Convert agent results lists to strings
             agent_results_str = {
                 role: "\n".join(results)
                 for role, results in agent_results.items()
             }
-            
+
             output = {{CREW_CLASS_NAME}}Output(
                 result=str(crew_result),
                 agent_results=agent_results_str,
@@ -317,14 +317,14 @@ Expected Output: {{TASK_2_EXPECTED_OUTPUT}}""",
                 tasks_completed=len(self.tasks),
                 agents_involved=agents_involved
             )
-            
+
             logger.info(
                 f"{{CREW_NAME}} execution completed in {execution_time:.2f}s. "
                 f"Completed {len(self.tasks)} tasks with {len(agents_involved)} agents"
             )
-            
+
             return output
-            
+
         except Exception as e:
             logger.error(f"Error during {{CREW_NAME}} execution: {e}", exc_info=True)
             execution_time = time.time() - start_time
@@ -336,30 +336,30 @@ Expected Output: {{TASK_2_EXPECTED_OUTPUT}}""",
                 tasks_completed=0,
                 agents_involved=[]
             )
-    
+
     async def akickoff(self, inputs: Dict[str, Any]) -> {{CREW_CLASS_NAME}}Output:
         """
         Async version of kickoff.
-        
+
         Args:
             inputs: Input dictionary for crew execution
-        
+
         Returns:
             {{CREW_CLASS_NAME}}Output with results and execution trace
         """
         import time
-        
+
         logger.info(f"Async kicking off {{CREW_NAME}}...")
         start_time = time.time()
-        
+
         try:
             crew_result = await self.crew.akickoff(inputs=inputs)
             execution_time = time.time() - start_time
-            
+
             agent_results = {}
             task_results = {}
             agents_involved = []
-            
+
             if hasattr(crew_result, 'tasks_output'):
                 for task in self.tasks:
                     task_key = task.description[:50]
@@ -367,22 +367,22 @@ Expected Output: {{TASK_2_EXPECTED_OUTPUT}}""",
                     task_results[task_key] = str(
                         task_output.get(task.description, "")
                     )
-                    
+
                     agent_role = task.agent.role
                     if agent_role not in agents_involved:
                         agents_involved.append(agent_role)
-                    
+
                     if agent_role not in agent_results:
                         agent_results[agent_role] = []
                     agent_results[agent_role].append(
                         str(task_output.get(task.description, ""))
                     )
-            
+
             agent_results_str = {
                 role: "\n".join(results)
                 for role, results in agent_results.items()
             }
-            
+
             return {{CREW_CLASS_NAME}}Output(
                 result=str(crew_result),
                 agent_results=agent_results_str,
@@ -391,7 +391,7 @@ Expected Output: {{TASK_2_EXPECTED_OUTPUT}}""",
                 tasks_completed=len(self.tasks),
                 agents_involved=agents_involved
             )
-            
+
         except Exception as e:
             logger.error(f"Error during async {{CREW_NAME}} execution: {e}")
             execution_time = time.time() - start_time
@@ -413,13 +413,13 @@ if __name__ == "__main__":
         process=Process.sequential,
         memory=True
     )
-    
+
     # Execute crew
     result = crew.kickoff({
         "{{INPUT_KEY_1}}": "{{EXAMPLE_INPUT_1}}",
         "{{INPUT_KEY_2}}": "{{EXAMPLE_INPUT_2}}"
     })
-    
+
     print(f"Result: {result.result}")
     print(f"Execution Time: {result.execution_time:.2f}s")
     print(f"Tasks Completed: {result.tasks_completed}")

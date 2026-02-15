@@ -4,8 +4,8 @@
 
 Systematic workflow for closing sprints, including status review, velocity calculation, incomplete item handling, and retrospective facilitation. Captures lessons learned and prepares for the next sprint.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** sprint-master
 
 ## Trigger Conditions
@@ -29,7 +29,7 @@ This workflow is activated when:
 
 **Description:** Review the current state of all sprint items.
 
-**Entry Criteria:** Sprint end date reached  
+**Entry Criteria:** Sprint end date reached
 **Exit Criteria:** All items status confirmed
 
 #### Step 1.1: Gather Sprint Items
@@ -83,7 +83,7 @@ This workflow is activated when:
 
 **Description:** Calculate sprint metrics and velocity.
 
-**Entry Criteria:** Status verified  
+**Entry Criteria:** Status verified
 **Exit Criteria:** Metrics calculated
 
 #### Step 2.1: Calculate Velocity
@@ -144,7 +144,7 @@ Completion Rate = Completed Points / Committed Points × 100%
 
 **Description:** Handle items not completed in the sprint.
 
-**Entry Criteria:** Metrics calculated  
+**Entry Criteria:** Metrics calculated
 **Exit Criteria:** Incomplete items addressed
 
 #### Step 3.1: Review Incomplete Items
@@ -206,7 +206,7 @@ Completion Rate = Completed Points / Committed Points × 100%
 
 **Description:** Analyze the sprint burndown.
 
-**Entry Criteria:** Items handled  
+**Entry Criteria:** Items handled
 **Exit Criteria:** Burndown analyzed
 
 #### Step 4.1: Generate Burndown
@@ -260,7 +260,7 @@ Completion Rate = Completed Points / Committed Points × 100%
 
 **Description:** Conduct or prepare for retrospective.
 
-**Entry Criteria:** Burndown analyzed  
+**Entry Criteria:** Burndown analyzed
 **Exit Criteria:** Retro insights captured
 
 #### Step 5.1: Gather Feedback
@@ -313,7 +313,7 @@ Action Items:
 
 **Description:** Officially close the sprint.
 
-**Entry Criteria:** Retro complete  
+**Entry Criteria:** Retro complete
 **Exit Criteria:** Sprint closed
 
 #### Step 6.1: Close Sprint

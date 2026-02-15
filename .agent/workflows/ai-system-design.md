@@ -8,8 +8,8 @@ description: Comprehensive workflow for designing AI systems including requireme
 
 Comprehensive workflow for designing AI systems including requirements analysis, architecture selection, cost estimation, and proof-of-concept validation.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-09  
+**Version:** 1.0.0
+**Created:** 2026-02-09
 **Agent:** ai-architect
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.

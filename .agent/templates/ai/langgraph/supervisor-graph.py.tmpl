@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 class {{GRAPH_CLASS_NAME}}State(TypedDict):
     """
     State for {{GRAPH_NAME}} supervisor graph.
-    
+
     Attributes:
         messages: Conversation messages
         next_agent: Next agent to route to
@@ -45,17 +45,17 @@ class {{GRAPH_CLASS_NAME}}State(TypedDict):
 class {{GRAPH_CLASS_NAME}}:
     """
     {{GRAPH_NAME}} - Supervisor Multi-Agent Graph
-    
+
     Implements supervisor pattern where:
     - Supervisor agent routes tasks to specialized workers
     - Workers perform specific tasks
     - Results are aggregated and returned
-    
+
     Example:
         >>> graph = {{GRAPH_CLASS_NAME}}()
         >>> result = graph.run("Analyze this code")
     """
-    
+
     def __init__(
         self,
         supervisor_model: str = "{{SUPERVISOR_MODEL}}",
@@ -65,7 +65,7 @@ class {{GRAPH_CLASS_NAME}}:
     ):
         """
         Initialize supervisor graph.
-        
+
         Args:
             supervisor_model: LLM model for supervisor
             worker_model: LLM model for workers
@@ -76,7 +76,7 @@ class {{GRAPH_CLASS_NAME}}:
         self.worker_model = worker_model
         self.temperature = temperature
         self.max_iterations = max_iterations
-        
+
         # Initialize LLMs
         self.supervisor_llm = ChatOpenAI(
             model=supervisor_model,
@@ -86,26 +86,26 @@ class {{GRAPH_CLASS_NAME}}:
             model=worker_model,
             temperature=temperature
         )
-        
+
         # Build graph
         self.graph = self._build_graph()
         self.app = self.graph.compile(checkpointer=MemorySaver())
-        
+
         logger.info(f"Initialized {{GRAPH_NAME}} supervisor graph")
-    
+
     def _build_graph(self) -> StateGraph:
         """Build the supervisor graph."""
         graph = StateGraph({{GRAPH_CLASS_NAME}}State)
-        
+
         # Add nodes
         graph.add_node("supervisor", self._supervisor_node)
         graph.add_node("{{WORKER_1_NAME}}", self._worker_1_node)
         graph.add_node("{{WORKER_2_NAME}}", self._worker_2_node)
         # Add more workers as needed
-        
+
         # Add edges
         graph.add_edge(START, "supervisor")
-        
+
         # Conditional routing from supervisor
         graph.add_conditional_edges(
             "supervisor",
@@ -116,21 +116,21 @@ class {{GRAPH_CLASS_NAME}}:
                 "end": END
             }
         )
-        
+
         # Workers route back to supervisor
         graph.add_edge("{{WORKER_1_NAME}}", "supervisor")
         graph.add_edge("{{WORKER_2_NAME}}", "supervisor")
-        
+
         return graph
-    
+
     def _supervisor_node(self, state: {{GRAPH_CLASS_NAME}}State) -> dict:
         """
         Supervisor node - routes tasks to workers.
-        
+
         Implements A3 (Transparency) by logging routing decisions.
         """
         logger.info("Supervisor node executing...")
-        
+
         # Check iteration limit (A4 - Non-Harm)
         if state.get("iteration", 0) >= self.max_iterations:
             logger.warning("Maximum iterations reached")
@@ -141,10 +141,10 @@ class {{GRAPH_CLASS_NAME}}:
                     AIMessage(content="Maximum iterations reached. Task complete.")
                 ]
             }
-        
+
         # Get last message
         last_message = state["messages"][-1] if state["messages"] else None
-        
+
         if not last_message or isinstance(last_message, AIMessage):
             # No new user input, check if we should continue
             if state.get("worker_results"):
@@ -154,7 +154,7 @@ class {{GRAPH_CLASS_NAME}}:
                     "next_agent": None
                 }
             return {"supervisor_decision": "end", "next_agent": None}
-        
+
         # Supervisor decides which worker to use
         routing_prompt = f"""You are a supervisor routing tasks to specialized workers.
 
@@ -166,49 +166,49 @@ User request: {last_message.content}
 
 Which worker should handle this? Respond with only the worker name or "end" if complete.
 """
-        
+
         response = self.supervisor_llm.invoke(routing_prompt)
         decision = response.content.strip().lower()
-        
+
         logger.info(f"Supervisor decision: {decision}")
-        
+
         return {
             "supervisor_decision": decision,
             "next_agent": decision,
             "iteration": state.get("iteration", 0) + 1
         }
-    
+
     def _route_supervisor(self, state: {{GRAPH_CLASS_NAME}}State) -> str:
         """
         Route based on supervisor decision.
-        
+
         Args:
             state: Current state
-        
+
         Returns:
             Next node name
         """
         decision = state.get("supervisor_decision", "").lower()
-        
+
         if decision == "{{WORKER_1_NAME}}":
             return "{{WORKER_1_NAME}}"
         elif decision == "{{WORKER_2_NAME}}":
             return "{{WORKER_2_NAME}}"
         else:
             return "end"
-    
+
     def _worker_1_node(self, state: {{GRAPH_CLASS_NAME}}State) -> dict:
         """
         Worker 1 node - performs {{WORKER_1_TASK}}.
-        
+
         Implements A1 (Verifiability) by logging work performed.
         """
         logger.info("{{WORKER_1_NAME}} worker executing...")
-        
+
         last_message = state["messages"][-1] if state["messages"] else None
         if not last_message:
             return {}
-        
+
         # Worker processes the task
         worker_prompt = f"""{{WORKER_1_SYSTEM_PROMPT}}
 
@@ -216,9 +216,9 @@ User request: {last_message.content}
 
 Process this request and provide a detailed response.
 """
-        
+
         response = self.worker_llm.invoke(worker_prompt)
-        
+
         result = {
             "worker_results": {
                 **state.get("worker_results", {}),
@@ -228,31 +228,31 @@ Process this request and provide a detailed response.
                 AIMessage(content=f"[{{WORKER_1_NAME}}] {response.content}")
             ]
         }
-        
+
         logger.info("{{WORKER_1_NAME}} completed")
         return result
-    
+
     def _worker_2_node(self, state: {{GRAPH_CLASS_NAME}}State) -> dict:
         """
         Worker 2 node - performs {{WORKER_2_TASK}}.
-        
+
         Implements A1 (Verifiability) by logging work performed.
         """
         logger.info("{{WORKER_2_NAME}} worker executing...")
-        
+
         last_message = state["messages"][-1] if state["messages"] else None
         if not last_message:
             return {}
-        
+
         worker_prompt = f"""{{WORKER_2_SYSTEM_PROMPT}}
 
 User request: {last_message.content}
 
 Process this request and provide a detailed response.
 """
-        
+
         response = self.worker_llm.invoke(worker_prompt)
-        
+
         result = {
             "worker_results": {
                 **state.get("worker_results", {}),
@@ -262,10 +262,10 @@ Process this request and provide a detailed response.
                 AIMessage(content=f"[{{WORKER_2_NAME}}] {response.content}")
             ]
         }
-        
+
         logger.info("{{WORKER_2_NAME}} completed")
         return result
-    
+
     def run(
         self,
         input_text: str,
@@ -273,16 +273,16 @@ Process this request and provide a detailed response.
     ) -> {{GRAPH_CLASS_NAME}}State:
         """
         Run the supervisor graph.
-        
+
         Args:
             input_text: User input
             thread_id: Optional thread ID for conversation tracking
-        
+
         Returns:
             Final state
         """
         logger.info(f"Running graph with input: {input_text[:100]}...")
-        
+
         initial_state: {{GRAPH_CLASS_NAME}}State = {
             "messages": [HumanMessage(content=input_text)],
             "next_agent": None,
@@ -290,16 +290,16 @@ Process this request and provide a detailed response.
             "supervisor_decision": None,
             "iteration": 0
         }
-        
+
         config = {}
         if thread_id:
             config = {"configurable": {"thread_id": thread_id}}
-        
+
         result = self.app.invoke(initial_state, config)
-        
+
         logger.info(f"Graph completed. Iterations: {result.get('iteration', 0)}")
         return result
-    
+
     def visualize(self) -> str:
         """Generate Mermaid diagram of the graph."""
         return self.app.get_graph().draw_mermaid()
@@ -309,18 +309,18 @@ Process this request and provide a detailed response.
 if __name__ == "__main__":
     # Create graph
     graph = {{GRAPH_CLASS_NAME}}()
-    
+
     # Visualize
     print("Graph Structure:")
     print(graph.visualize())
     print()
-    
+
     # Run
     result = graph.run("{{EXAMPLE_INPUT}}")
-    
+
     print(f"Iterations: {result.get('iteration', 0)}")
     print(f"Worker Results: {list(result.get('worker_results', {}).keys())}")
-    
+
     # Print final messages
     for msg in result["messages"]:
         if isinstance(msg, AIMessage):

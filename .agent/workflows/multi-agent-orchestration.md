@@ -8,8 +8,8 @@ description: Workflow for designing, implementing, and deploying multi-agent AI 
 
 Workflow for designing, implementing, and deploying multi-agent AI systems. Covers topology selection, agent implementation, coordination patterns, and testing using LangGraph, CrewAI, or AutoGen.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Applies To:** ai-agent-development, multi-agent-systems, python-multi-agent
 
 ## Trigger Conditions

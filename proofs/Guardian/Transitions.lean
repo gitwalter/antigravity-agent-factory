@@ -1,10 +1,10 @@
 /-
   Guardian/Transitions.lean - State Transition Proofs
-  
+
   Cursor Agent Factory - Formal Verification System
-  
+
   This file defines and proves properties of Guardian state transitions.
-  
+
   Key Properties:
   1. Monotonic escalation (can only go up in severity)
   2. De-escalation requires user acknowledgment
@@ -17,7 +17,7 @@ namespace CursorAgentFactory.Guardian
 
 /-!
   # Transition Relation
-  
+
   Defines valid transitions between Guardian states.
 -/
 
@@ -39,17 +39,17 @@ def canDeescalate (from to : ResponseLevel) (userAcknowledged : Bool) : Bool :=
 /-- A transition is valid if it satisfies transition rules -/
 def isValidTransition (t : Transition) : Prop :=
   -- Rule 1: Level transitions must be valid (escalation or acknowledged de-escalation)
-  (canEscalate t.from.responseLevel t.to.responseLevel ∨ 
+  (canEscalate t.from.responseLevel t.to.responseLevel ∨
    canDeescalate t.from.responseLevel t.to.responseLevel t.to.userNotified) ∧
   -- Rule 2: Target state must satisfy invariants
   stateInvariant t.to ∧
   -- Rule 3: Trigger event matches target level
-  (t.to.responseLevel = t.trigger.toResponseLevel ∨ 
+  (t.to.responseLevel = t.trigger.toResponseLevel ∨
    t.to.responseLevel.toNat > t.trigger.toResponseLevel.toNat)
 
 /-!
   # State Transition Functions
-  
+
   Functions that compute the next state given current state and trigger.
 -/
 
@@ -64,7 +64,7 @@ def computeOperational (level : ResponseLevel) : OperationalState :=
 def transitionTo (current : GuardianState) (trigger : TriggerEvent) : GuardianState :=
   let newLevel := trigger.toResponseLevel
   -- Only escalate, never de-escalate without user acknowledgment
-  let effectiveLevel := 
+  let effectiveLevel :=
     if newLevel.toNat >= current.responseLevel.toNat then newLevel
     else current.responseLevel
   {
@@ -77,7 +77,7 @@ def transitionTo (current : GuardianState) (trigger : TriggerEvent) : GuardianSt
   }
 
 /-- De-escalate with user acknowledgment -/
-def deescalateTo (current : GuardianState) (targetLevel : ResponseLevel) 
+def deescalateTo (current : GuardianState) (targetLevel : ResponseLevel)
     (userAcknowledged : Bool) : GuardianState :=
   if userAcknowledged && targetLevel.toNat < current.responseLevel.toNat then
     {
@@ -93,7 +93,7 @@ def deescalateTo (current : GuardianState) (targetLevel : ResponseLevel)
 
 /-!
   # Transition Theorems
-  
+
   Proofs that transitions preserve important properties.
 -/
 
@@ -147,7 +147,7 @@ theorem acknowledged_deescalation (current : GuardianState) (target : ResponseLe
 
 /-!
   # Transition Sequences
-  
+
   Properties of sequences of transitions.
 -/
 
@@ -159,7 +159,7 @@ def allValid (seq : TransitionSequence) : Prop :=
   seq.all fun t => isValidTransition t
 
 /-- Theorem: composition of valid transitions preserves invariants -/
-theorem valid_sequence_preserves_invariants (seq : TransitionSequence) 
+theorem valid_sequence_preserves_invariants (seq : TransitionSequence)
     (initial : WellFormedState) (hvalid : allValid seq) :
     -- If we start well-formed and all transitions are valid,
     -- we end in a well-formed state

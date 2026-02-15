@@ -195,9 +195,9 @@ The factory analyzes requirements and matches them to the most appropriate bluep
 
 ### 5.1 Python FastAPI Blueprint
 
-**Blueprint ID**: `python-fastapi`  
-**Version**: 1.0.0  
-**Description**: REST API development with Python and FastAPI  
+**Blueprint ID**: `python-fastapi`
+**Version**: 1.0.0
+**Description**: REST API development with Python and FastAPI
 **Tags**: python, api, rest, fastapi, backend
 
 #### Use Cases
@@ -221,7 +221,7 @@ The factory analyzes requirements and matches them to the most appropriate bluep
 
 #### Technology Stack
 
-**Primary Language**: Python  
+**Primary Language**: Python
 **Frameworks**:
 - FastAPI 0.115+ - Modern async web framework
 - SQLAlchemy 2.0+ - ORM for database operations
@@ -273,9 +273,9 @@ No specific axiom alignment defaults defined.
 
 ### 5.2 TypeScript React Blueprint
 
-**Blueprint ID**: `typescript-react`  
-**Version**: 1.0.0  
-**Description**: Web application development with TypeScript and React  
+**Blueprint ID**: `typescript-react`
+**Version**: 1.0.0
+**Description**: Web application development with TypeScript and React
 **Tags**: typescript, react, frontend, web
 
 #### Use Cases
@@ -299,7 +299,7 @@ No specific axiom alignment defaults defined.
 
 #### Technology Stack
 
-**Primary Language**: TypeScript  
+**Primary Language**: TypeScript
 **Frameworks**:
 - React 19 - UI framework with latest features
 - Vite 5+ - Fast build tool
@@ -345,9 +345,9 @@ No specific axiom alignment defaults defined.
 
 ### 5.3 Next.js Full-Stack Blueprint
 
-**Blueprint ID**: `nextjs-fullstack`  
-**Version**: 1.0.0  
-**Description**: Full-stack TypeScript development with Next.js 15 App Router, Server Actions, and React Server Components  
+**Blueprint ID**: `nextjs-fullstack`
+**Version**: 1.0.0
+**Description**: Full-stack TypeScript development with Next.js 15 App Router, Server Actions, and React Server Components
 **Tags**: typescript, nextjs, react, fullstack, frontend, backend
 
 #### Use Cases
@@ -371,7 +371,7 @@ No specific axiom alignment defaults defined.
 
 #### Technology Stack
 
-**Primary Language**: TypeScript  
+**Primary Language**: TypeScript
 **Frameworks**:
 - Next.js 15 - Full-stack framework with App Router
 - React 19 - UI library
@@ -425,9 +425,9 @@ No specific axiom alignment defaults defined.
 
 ### 5.4 Java Spring Boot Blueprint
 
-**Blueprint ID**: `java-spring`  
-**Version**: 1.0.0  
-**Description**: Enterprise application development with Java, Spring Boot 3.4, and Spring Modulith  
+**Blueprint ID**: `java-spring`
+**Version**: 1.0.0
+**Description**: Enterprise application development with Java, Spring Boot 3.4, and Spring Modulith
 **Tags**: java, spring, backend, enterprise
 
 #### Use Cases
@@ -451,7 +451,7 @@ No specific axiom alignment defaults defined.
 
 #### Technology Stack
 
-**Primary Language**: Java  
+**Primary Language**: Java
 **Frameworks**:
 - Spring Boot 3.4 - Application framework
 - Spring Data JPA 3.4 - Data access layer
@@ -503,9 +503,9 @@ No specific axiom alignment defaults defined.
 
 ### 5.5 Kotlin Spring Boot Blueprint
 
-**Blueprint ID**: `kotlin-spring`  
-**Version**: 1.0.0  
-**Description**: Modern microservice development with Kotlin, Spring Boot 3, and reactive programming  
+**Blueprint ID**: `kotlin-spring`
+**Version**: 1.0.0
+**Description**: Modern microservice development with Kotlin, Spring Boot 3, and reactive programming
 **Tags**: kotlin, spring, spring-boot, reactive, microservice, jvm, coroutines
 
 #### Use Cases
@@ -529,7 +529,7 @@ No specific axiom alignment defaults defined.
 
 #### Technology Stack
 
-**Primary Language**: Kotlin  
+**Primary Language**: Kotlin
 **Frameworks**:
 - Spring Boot 3.2+ - Application framework
 - Spring WebFlux 6.1+ - Reactive web framework
@@ -584,9 +584,9 @@ No specific axiom alignment defaults defined.
 
 ### 5.6 C# .NET Blueprint
 
-**Blueprint ID**: `csharp-dotnet`  
-**Version**: 1.0.0  
-**Description**: Enterprise API and web development with .NET 9, ASP.NET Core, Clean Architecture, CQRS, MediatR, and FluentValidation  
+**Blueprint ID**: `csharp-dotnet`
+**Version**: 1.0.0
+**Description**: Enterprise API and web development with .NET 9, ASP.NET Core, Clean Architecture, CQRS, MediatR, and FluentValidation
 **Tags**: csharp, dotnet, aspnet, api, enterprise, backend
 
 #### Use Cases
@@ -610,7 +610,7 @@ No specific axiom alignment defaults defined.
 
 #### Technology Stack
 
-**Primary Language**: C#  
+**Primary Language**: C#
 **Frameworks**:
 - .NET 9 - Runtime and framework
 - ASP.NET Core 9 - Web framework
@@ -664,9 +664,9 @@ No specific axiom alignment defaults defined.
 
 ### 5.7 Python Streamlit Blueprint
 
-**Blueprint ID**: `python-streamlit`  
-**Version**: 1.0.0  
-**Description**: Data applications and dashboards with Python and Streamlit  
+**Blueprint ID**: `python-streamlit`
+**Version**: 1.0.0
+**Description**: Data applications and dashboards with Python and Streamlit
 **Tags**: python, streamlit, data-science, dashboard, visualization, ml
 
 #### Use Cases
@@ -690,7 +690,7 @@ No specific axiom alignment defaults defined.
 
 #### Technology Stack
 
-**Primary Language**: Python  
+**Primary Language**: Python
 **Frameworks**:
 - Streamlit 1.28+ - Web app framework
 - Pandas 2.0+ - Data manipulation
@@ -743,10 +743,10 @@ No specific axiom alignment defaults defined.
 
 ### 5.8 AI Agent Development Blueprint
 
-**Blueprint ID**: `ai-agent-development`  
-**Version**: 1.0.0  
-**Description**: Build AI agent systems with LangChain, LangGraph, and modern LLM frameworks  
-**Tags**: python, ai, agents, langchain, langgraph, llm, ml  
+**Blueprint ID**: `ai-agent-development`
+**Version**: 1.0.0
+**Description**: Build AI agent systems with LangChain, LangGraph, and modern LLM frameworks
+**Tags**: python, ai, agents, langchain, langgraph, llm, ml
 **Purpose**: Enable developers to create intelligent, coordinated AI agent systems that serve users with integrity
 
 #### Use Cases
@@ -770,7 +770,7 @@ No specific axiom alignment defaults defined.
 
 #### Technology Stack
 
-**Primary Language**: Python  
+**Primary Language**: Python
 **Frameworks**:
 - LangChain 0.3+ - Agent framework and chains
 - LangGraph 0.2+ - Stateful agent orchestration
@@ -823,8 +823,8 @@ No specific axiom alignment defaults defined.
 
 #### Layer Defaults
 
-**Layer 0**: Core axioms A1-A5, optional A10 (Learning)  
-**Layer 1**: Purpose template for intelligent AI agents serving users with integrity  
+**Layer 0**: Core axioms A1-A5, optional A10 (Learning)
+**Layer 1**: Purpose template for intelligent AI agents serving users with integrity
 **Layer 3**: Research-development methodology (70/30 exploration/exploitation)
 
 **Axiom Alignment**:
@@ -839,10 +839,10 @@ No specific axiom alignment defaults defined.
 
 ### 5.9 Multi-Agent Systems Blueprint
 
-**Blueprint ID**: `multi-agent-systems`  
-**Version**: 1.0.0  
-**Description**: Build orchestrated multi-agent systems with LangGraph, supervisor patterns, and agent coordination  
-**Tags**: python, ai, agents, multi-agent, langgraph, orchestration, coordination  
+**Blueprint ID**: `multi-agent-systems`
+**Version**: 1.0.0
+**Description**: Build orchestrated multi-agent systems with LangGraph, supervisor patterns, and agent coordination
+**Tags**: python, ai, agents, multi-agent, langgraph, orchestration, coordination
 **Purpose**: Enable developers to create coordinated multi-agent systems that collaborate effectively with integrity
 
 #### Use Cases
@@ -866,7 +866,7 @@ No specific axiom alignment defaults defined.
 
 #### Technology Stack
 
-**Primary Language**: Python  
+**Primary Language**: Python
 **Frameworks**:
 - LangGraph 0.1+ - Multi-agent orchestration and state machines
 - LangChain 0.2+ - Agent framework and tools
@@ -918,16 +918,16 @@ No specific axiom alignment defaults defined.
 
 #### Multi-Agent Patterns
 
-**Supervisor/Worker**: Central supervisor delegates tasks to specialized workers  
-**Hierarchical**: Multi-level coordination with team leads and specialists  
-**Collaborative**: Peer agents collaborate through consensus  
-**Sequential**: Agents process in sequence, each building on previous output  
+**Supervisor/Worker**: Central supervisor delegates tasks to specialized workers
+**Hierarchical**: Multi-level coordination with team leads and specialists
+**Collaborative**: Peer agents collaborate through consensus
+**Sequential**: Agents process in sequence, each building on previous output
 **Distributed**: Agents distributed across services with MCP-based communication
 
 #### Layer Defaults
 
-**Layer 0**: Core axioms A1-A5, optional A8 (Collaboration) and A10 (Learning)  
-**Layer 1**: Purpose template for coordinated multi-agent systems  
+**Layer 0**: Core axioms A1-A5, optional A8 (Collaboration) and A10 (Learning)
+**Layer 1**: Purpose template for coordinated multi-agent systems
 **Layer 3**: Research-development methodology (70/30 exploration/exploitation)
 
 **Axiom Alignment**:
@@ -943,10 +943,10 @@ No specific axiom alignment defaults defined.
 
 ### 5.10 SAP ABAP Blueprint
 
-**Blueprint ID**: `sap-abap`  
-**Version**: 2.0.0  
-**Description**: SAP ABAP development with RAP, CAP, ABAP Cloud, and Fiori integration  
-**Tags**: sap, abap, rap, cap, abap-cloud, fiori, btp, enterprise  
+**Blueprint ID**: `sap-abap`
+**Version**: 2.0.0
+**Description**: SAP ABAP development with RAP, CAP, ABAP Cloud, and Fiori integration
+**Tags**: sap, abap, rap, cap, abap-cloud, fiori, btp, enterprise
 **Reference**: https://github.com/fielmann-ag/cursor-sap-development-workflow
 
 #### Use Cases
@@ -971,8 +971,8 @@ No specific axiom alignment defaults defined.
 
 #### Technology Stack
 
-**Primary Language**: ABAP  
-**Secondary Languages**: CDS, JavaScript, TypeScript  
+**Primary Language**: ABAP
+**Secondary Languages**: CDS, JavaScript, TypeScript
 **Frameworks**:
 - RAP 2.x - RESTful Application Programming
 - CAP 7.x - Cloud Application Programming
@@ -1032,10 +1032,10 @@ No specific axiom alignment defaults defined.
 
 ### 5.11 SAP CPI/PI Integration Blueprint
 
-**Blueprint ID**: `sap-cpi-pi`  
-**Version**: 2.0.0  
-**Description**: SAP Cloud Platform Integration and Process Integration development with Groovy scripts, Java adapters, and iFlow patterns  
-**Tags**: sap, cpi, pi, integration, groovy, java, iflow, b2b, edi  
+**Blueprint ID**: `sap-cpi-pi`
+**Version**: 2.0.0
+**Description**: SAP Cloud Platform Integration and Process Integration development with Groovy scripts, Java adapters, and iFlow patterns
+**Tags**: sap, cpi, pi, integration, groovy, java, iflow, b2b, edi
 **Purpose**: Enable SAP integration developers to build robust iFlows with proper patterns, error handling, and testing
 
 #### Use Cases
@@ -1061,8 +1061,8 @@ No specific axiom alignment defaults defined.
 
 #### Technology Stack
 
-**Primary Language**: Groovy 4.0.x  
-**Secondary Language**: Java  
+**Primary Language**: Groovy 4.0.x
+**Secondary Language**: Java
 **Frameworks**:
 - SAP CPI Groovy SDK 1.x - Cloud Platform Integration scripting
 - SAP PI Adapter Framework 7.5+ - On-premise adapter development
@@ -1125,17 +1125,17 @@ No specific axiom alignment defaults defined.
 
 #### Layer Defaults
 
-**Layer 0**: Core axioms A1-A5, optional A6 (Minimalism) and A7 (Reversibility)  
-**Layer 1**: Purpose template for reliable SAP integrations  
+**Layer 0**: Core axioms A1-A5, optional A6 (Minimalism) and A7 (Reversibility)
+**Layer 1**: Purpose template for reliable SAP integrations
 **Layer 3**: Kanban methodology (interrupt-driven integration support work)
 
 ---
 
 ### 5.12 n8n Automation Blueprint
 
-**Blueprint ID**: `n8n-automation`  
-**Version**: 1.0.0  
-**Description**: Workflow automation with n8n, JavaScript/TypeScript, and AI agent integrations  
+**Blueprint ID**: `n8n-automation`
+**Version**: 1.0.0
+**Description**: Workflow automation with n8n, JavaScript/TypeScript, and AI agent integrations
 **Tags**: n8n, automation, workflow, javascript, typescript, ai, integration
 
 #### Use Cases
@@ -1159,7 +1159,7 @@ No specific axiom alignment defaults defined.
 
 #### Technology Stack
 
-**Primary Language**: JavaScript  
+**Primary Language**: JavaScript
 **Frameworks**:
 - n8n 1.0+ - Workflow automation platform
 - Node.js 18+ - Runtime environment

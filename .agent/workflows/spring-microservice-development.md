@@ -8,8 +8,8 @@ description: Comprehensive workflow for developing production-ready Spring Boot 
 
 Comprehensive workflow for developing production-ready Spring Boot microservices with JPA, REST APIs, testing, security, and deployment. This workflow guides through service design, implementation, communication patterns, testing strategies, and containerized deployment.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-09  
+**Version:** 1.0.0
+**Created:** 2026-02-09
 **Agent:** spring-developer, java-architect
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.
@@ -26,7 +26,7 @@ This workflow is activated when:
 **Trigger Examples:**
 - "Create a Spring Boot microservice for product management"
 - "Build a REST API with Spring Boot and JPA"
-- "Design a microservices 
+- "Design a microservices
 
 ## Steps
 

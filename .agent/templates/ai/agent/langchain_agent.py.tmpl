@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 class {{AGENT_CLASS_NAME}}Output(BaseModel):
     """
     Structured output for {{AGENT_NAME}} agent execution.
-    
+
     Provides verifiable results (A1) with complete execution trace.
     """
     output: str = Field(description="Final agent output")
@@ -57,19 +57,19 @@ class {{AGENT_CLASS_NAME}}Output(BaseModel):
 class {{AGENT_CLASS_NAME}}:
     """
     {{AGENT_NAME}} - LangChain Agent with Tool Integration
-    
+
     Implements a ReAct-style agent using LangChain 1.x patterns:
     - Tool calling with structured tools
     - Conversation history management
     - Error handling and recovery
     - Structured output generation
-    
+
     Features:
     - Multiple tool support
     - Configurable model and temperature
     - Iteration limits and timeout protection
     - Comprehensive logging (A1, A3)
-    
+
     Example:
         >>> agent = {{AGENT_CLASS_NAME}}(
         ...     model_name="gpt-4",
@@ -79,7 +79,7 @@ class {{AGENT_CLASS_NAME}}:
         >>> print(result.output)
         >>> print(f"Used {len(result.tool_calls)} tools")
     """
-    
+
     def __init__(
         self,
         model_name: str = "{{MODEL_NAME}}",
@@ -92,7 +92,7 @@ class {{AGENT_CLASS_NAME}}:
     ):
         """
         Initialize {{AGENT_NAME}} agent.
-        
+
         Args:
             model_name: LLM model identifier (e.g., "gpt-4", "gpt-3.5-turbo")
             temperature: Sampling temperature (0.0-2.0)
@@ -107,27 +107,27 @@ class {{AGENT_CLASS_NAME}}:
         self.max_iterations = max_iterations
         self.max_execution_time = max_execution_time
         self.verbose = verbose
-        
+
         # Initialize LLM
         self.llm = ChatOpenAI(
             model=self.model_name,
             temperature=self.temperature
         )
-        
+
         # Setup tools
         self.tools = tools or self._get_default_tools()
-        
+
         # Create prompt template
         self.system_prompt = system_prompt or self._default_system_prompt()
         self.prompt = self._create_prompt()
-        
+
         # Create agent
         self.agent = create_openai_tools_agent(
             llm=self.llm,
             tools=self.tools,
             prompt=self.prompt
         )
-        
+
         # Create executor
         self.executor = AgentExecutor(
             agent=self.agent,
@@ -138,12 +138,12 @@ class {{AGENT_CLASS_NAME}}:
             handle_parsing_errors=True,
             return_intermediate_steps=True
         )
-        
+
         logger.info(
             f"Initialized {{AGENT_NAME}} with model {model_name}, "
             f"{len(self.tools)} tools, max_iterations={max_iterations}"
         )
-    
+
     def _default_system_prompt(self) -> str:
         """Get default system prompt with axiom alignment."""
         return """{{SYSTEM_PROMPT}}
@@ -172,11 +172,11 @@ You have access to the following tools:
 
 If an action could have significant consequences (deletion, modification, etc.),
 ask for user confirmation first (A2 - User Primacy)."""
-    
+
     def _create_prompt(self) -> ChatPromptTemplate:
         """
         Create agent prompt template with conversation history support.
-        
+
         Returns:
             ChatPromptTemplate configured for tool-calling agent
         """
@@ -186,13 +186,13 @@ ask for user confirmation first (A2 - User Primacy)."""
             ("human", "{input}"),
             MessagesPlaceholder(variable_name="agent_scratchpad")
         ])
-    
+
     def _get_default_tools(self) -> List[BaseTool]:
         """
         Get default tools if none provided.
-        
+
         Override this method to provide custom default tools.
-        
+
         Returns:
             List of default tools
         """
@@ -201,9 +201,9 @@ ask for user confirmation first (A2 - User Primacy)."""
         def example_tool(query: str) -> str:
             """Example tool that processes a query."""
             return f"Processed: {query}"
-        
+
         return [example_tool]
-    
+
     def run(
         self,
         input_text: str,
@@ -211,14 +211,14 @@ ask for user confirmation first (A2 - User Primacy)."""
     ) -> {{AGENT_CLASS_NAME}}Output:
         """
         Run the agent with given input.
-        
+
         Args:
             input_text: User input/task description
             chat_history: Optional conversation history (list of BaseMessage)
-        
+
         Returns:
             {{AGENT_CLASS_NAME}}Output with result, tool calls, and metadata
-            
+
         Example:
             >>> result = agent.run("Analyze this data", chat_history=messages)
             >>> print(result.output)
@@ -226,17 +226,17 @@ ask for user confirmation first (A2 - User Primacy)."""
             ...     print("⚠️  Confirmation needed")
         """
         logger.info(f"Running {{AGENT_NAME}} with input: {input_text[:100]}...")
-        
+
         try:
             # Prepare input
             agent_input = {
                 "input": input_text,
                 "chat_history": chat_history or []
             }
-            
+
             # Execute agent
             result = self.executor.invoke(agent_input)
-            
+
             # Extract tool calls from intermediate steps (A1 - Verifiability)
             tool_calls = []
             if "intermediate_steps" in result:
@@ -249,16 +249,16 @@ ask for user confirmation first (A2 - User Primacy)."""
                     }
                     tool_calls.append(tool_call_info)
                     logger.debug(f"Tool call: {tool_call_info['tool']}")
-            
+
             # Extract reasoning if available
             reasoning = self._extract_reasoning(result)
-            
+
             # Check if confirmation is needed (A2)
             requires_confirmation = self._check_confirmation_needed(
                 result["output"],
                 tool_calls
             )
-            
+
             output = {{AGENT_CLASS_NAME}}Output(
                 output=result["output"],
                 tool_calls=tool_calls,
@@ -266,14 +266,14 @@ ask for user confirmation first (A2 - User Primacy)."""
                 requires_confirmation=requires_confirmation,
                 reasoning=reasoning
             )
-            
+
             logger.info(
                 f"{{AGENT_NAME}} completed in {len(tool_calls)} iterations. "
                 f"Confirmation needed: {requires_confirmation}"
             )
-            
+
             return output
-            
+
         except Exception as e:
             logger.error(f"Error during {{AGENT_NAME}} execution: {e}", exc_info=True)
             return {{AGENT_CLASS_NAME}}Output(
@@ -283,14 +283,14 @@ ask for user confirmation first (A2 - User Primacy)."""
                 requires_confirmation=False,
                 reasoning=f"Error occurred: {str(e)}"
             )
-    
+
     def _extract_reasoning(self, result: Dict[str, Any]) -> Optional[str]:
         """
         Extract reasoning from agent execution result.
-        
+
         Args:
             result: Agent execution result dictionary
-            
+
         Returns:
             Reasoning string or None
         """
@@ -303,7 +303,7 @@ ask for user confirmation first (A2 - User Primacy)."""
             if reasoning_parts:
                 return "\n".join(reasoning_parts)
         return None
-    
+
     def _check_confirmation_needed(
         self,
         output: str,
@@ -311,11 +311,11 @@ ask for user confirmation first (A2 - User Primacy)."""
     ) -> bool:
         """
         Check if output indicates confirmation is needed (A2 - User Primacy).
-        
+
         Args:
             output: Agent output text
             tool_calls: List of tool calls made
-            
+
         Returns:
             True if confirmation is needed
         """
@@ -324,21 +324,21 @@ ask for user confirmation first (A2 - User Primacy)."""
             "delete", "remove", "modify", "change", "update",
             "overwrite", "replace", "destroy"
         ]
-        
+
         # Check output text
         output_lower = output.lower()
         if any(keyword in output_lower for keyword in confirmation_keywords):
             return True
-        
+
         # Check tool names for dangerous operations
         dangerous_tools = ["delete", "remove", "modify", "update"]
         for tool_call in tool_calls:
             tool_name = tool_call.get("tool", "").lower()
             if any(danger in tool_name for danger in dangerous_tools):
                 return True
-        
+
         return False
-    
+
     async def arun(
         self,
         input_text: str,
@@ -346,24 +346,24 @@ ask for user confirmation first (A2 - User Primacy)."""
     ) -> {{AGENT_CLASS_NAME}}Output:
         """
         Async version of run.
-        
+
         Args:
             input_text: User input/task description
             chat_history: Optional conversation history
-        
+
         Returns:
             {{AGENT_CLASS_NAME}}Output with result and metadata
         """
         logger.info(f"Async running {{AGENT_NAME}} with input: {input_text[:100]}...")
-        
+
         try:
             agent_input = {
                 "input": input_text,
                 "chat_history": chat_history or []
             }
-            
+
             result = await self.executor.ainvoke(agent_input)
-            
+
             tool_calls = []
             if "intermediate_steps" in result:
                 for step in result["intermediate_steps"]:
@@ -373,13 +373,13 @@ ask for user confirmation first (A2 - User Primacy)."""
                         "output": str(step[1])[:500],
                         "iteration": len(tool_calls) + 1
                     })
-            
+
             reasoning = self._extract_reasoning(result)
             requires_confirmation = self._check_confirmation_needed(
                 result["output"],
                 tool_calls
             )
-            
+
             return {{AGENT_CLASS_NAME}}Output(
                 output=result["output"],
                 tool_calls=tool_calls,
@@ -387,7 +387,7 @@ ask for user confirmation first (A2 - User Primacy)."""
                 requires_confirmation=requires_confirmation,
                 reasoning=reasoning
             )
-            
+
         except Exception as e:
             logger.error(f"Error during async {{AGENT_NAME}} execution: {e}")
             return {{AGENT_CLASS_NAME}}Output(
@@ -408,16 +408,16 @@ if __name__ == "__main__":
     #     tools=[custom_tool1, custom_tool2],
     #     verbose=True
     # )
-    
+
     # Or use default tools
     agent = {{AGENT_CLASS_NAME}}(
         model_name="{{MODEL_NAME}}",
         verbose=True
     )
-    
+
     # Run agent
     result = agent.run("{{EXAMPLE_TASK}}")
-    
+
     print(f"Output: {result.output}")
     print(f"Iterations: {result.iterations}")
     print(f"Tool calls: {len(result.tool_calls)}")

@@ -1,14 +1,14 @@
 /-
   Memory/Consent.lean - User Consent Proofs
-  
+
   Cursor Agent Factory - Formal Verification System
-  
+
   This file proves that the Memory System requires explicit user
   consent before storing permanent memories.
-  
+
   This is a critical property aligned with A2 (User Primacy):
   "The user's explicitly stated intent takes precedence."
-  
+
   Users control what the agent learns. Period.
 -/
 
@@ -18,7 +18,7 @@ namespace CursorAgentFactory.Memory.Consent
 
 /-!
   # Consent Property
-  
+
   Core property: Semantic memories require user approval.
 -/
 
@@ -27,14 +27,14 @@ def consentProperty (m : Memory) : Prop :=
   m.memoryType = MemoryType.semantic → m.userApproved = true
 
 /-- Theorem: Approved memories satisfy consent -/
-theorem approved_satisfies_consent (m : Memory) 
+theorem approved_satisfies_consent (m : Memory)
     (h : m.memoryType = MemoryType.pending) :
     consentProperty (approveMemory m) := by
   unfold consentProperty approveMemory
   simp [h]
 
 /-- Theorem: Rejected memories are not semantic -/
-theorem rejected_not_semantic (m : Memory) 
+theorem rejected_not_semantic (m : Memory)
     (h : m.memoryType = MemoryType.pending) :
     (rejectMemory m).memoryType ≠ MemoryType.semantic := by
   unfold rejectMemory
@@ -42,7 +42,7 @@ theorem rejected_not_semantic (m : Memory)
 
 /-!
   # Transition Proofs
-  
+
   Prove that state transitions preserve consent requirements.
 -/
 
@@ -58,19 +58,19 @@ inductive MemoryTransition where
 def applyTransition (state : MemoryState) (t : MemoryTransition) : MemoryState :=
   match t with
   | .propose m => { state with pendingProposals := m :: state.pendingProposals }
-  | .approve id => 
+  | .approve id =>
       let (toApprove, remaining) := state.pendingProposals.partition (·.id == id)
       let approved := toApprove.map approveMemory
-      { state with 
+      { state with
         pendingProposals := remaining
-        semanticMemories := approved ++ state.semanticMemories 
+        semanticMemories := approved ++ state.semanticMemories
       }
   | .reject id =>
       let (toReject, remaining) := state.pendingProposals.partition (·.id == id)
       let rejected := toReject.map rejectMemory
-      { state with 
+      { state with
         pendingProposals := remaining
-        rejectedPatterns := rejected ++ state.rejectedPatterns 
+        rejectedPatterns := rejected ++ state.rejectedPatterns
       }
   | .clearSession => { state with episodicMemories := [] }
 
@@ -88,7 +88,7 @@ theorem initial_allSemanticApproved : allSemanticApproved initialMemoryState := 
   simp
 
 /-- Propose transition preserves invariant -/
-theorem propose_preserves_approved (state : MemoryState) (m : Memory) 
+theorem propose_preserves_approved (state : MemoryState) (m : Memory)
     (h : allSemanticApproved state) :
     allSemanticApproved (applyTransition state (.propose m)) := by
   unfold allSemanticApproved applyTransition at h ⊢
@@ -123,7 +123,7 @@ theorem clearSession_preserves_approved (state : MemoryState)
 
 /-!
   # Master Consent Theorem
-  
+
   All transitions preserve the consent invariant.
 -/
 
@@ -149,7 +149,7 @@ theorem consent_always_maintained (transitions : List MemoryTransition) :
 
 /-!
   # No Backdoor Theorem
-  
+
   There is no way to create semantic memory without approval.
 -/
 
@@ -158,8 +158,8 @@ def pendingNotSemantic (m : Memory) : Prop :=
   m.memoryType = MemoryType.pending → m.memoryType ≠ MemoryType.semantic
 
 /-- Theorem: Pending and semantic are distinct -/
-theorem pending_distinct_from_semantic : 
-    ∀ m : Memory, m.memoryType = MemoryType.pending → 
+theorem pending_distinct_from_semantic :
+    ∀ m : Memory, m.memoryType = MemoryType.pending →
     m.memoryType ≠ MemoryType.semantic := by
   intro m h
   simp [h]
@@ -177,13 +177,13 @@ theorem only_approve_creates_semantic (state : MemoryState) (t : MemoryTransitio
 
 /-!
   # Axiom Alignment
-  
+
   Prove that consent properties align with A2 (User Primacy).
 -/
 
 /-- Memory system respects A2 -/
-theorem memory_respects_A2 (state : MemoryState) 
-    (h : allSemanticApproved state) (m : Memory) 
+theorem memory_respects_A2 (state : MemoryState)
+    (h : allSemanticApproved state) (m : Memory)
     (hm : m ∈ state.semanticMemories) :
     m.userApproved = true := by
   unfold allSemanticApproved at h

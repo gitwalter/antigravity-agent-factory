@@ -8,7 +8,7 @@ description: Workflow for MM-related development: procurement, inventory, moveme
 
 Workflow for MM-related development: procurement, inventory, movements, reports, RAP. References EKKO, EKPO, MKPF, MSEG, RSEG.
 
-**Version:** 1.0.0  
+**Version:** 1.0.0
 **Applies To:** sap-s4-enterprise, sap-abap, sap-rap
 
 ## Trigger Conditions

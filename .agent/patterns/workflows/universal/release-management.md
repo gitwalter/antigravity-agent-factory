@@ -4,8 +4,8 @@
 
 Systematic workflow for managing software releases including version bumping, changelog generation, tagging, and deployment coordination.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Applies To:** All stacks
 
 ## Trigger Conditions
@@ -29,7 +29,7 @@ This workflow is activated when:
 
 **Description:** Verify readiness for release.
 
-**Entry Criteria:** Release decision made  
+**Entry Criteria:** Release decision made
 **Exit Criteria:** Ready for release
 
 #### Step 1.1: Verify Branch Status
@@ -60,7 +60,7 @@ This workflow is activated when:
 
 **Description:** Determine and apply version.
 
-**Entry Criteria:** Quality checks passed  
+**Entry Criteria:** Quality checks passed
 **Exit Criteria:** Version updated
 
 #### Step 2.1: Determine Version
@@ -96,7 +96,7 @@ This workflow is activated when:
 
 **Description:** Generate release notes.
 
-**Entry Criteria:** Version determined  
+**Entry Criteria:** Version determined
 **Exit Criteria:** Changelog updated
 
 #### Step 3.1: Collect Changes
@@ -154,7 +154,7 @@ This workflow is activated when:
 
 **Description:** Create the release artifacts.
 
-**Entry Criteria:** Changelog generated  
+**Entry Criteria:** Changelog generated
 **Exit Criteria:** Release created
 
 #### Step 4.1: Create Git Tag
@@ -187,7 +187,7 @@ This workflow is activated when:
 
 **Description:** Deploy the release.
 
-**Entry Criteria:** Release created  
+**Entry Criteria:** Release created
 **Exit Criteria:** Deployed to production
 
 #### Step 5.1: Deploy to Staging
@@ -216,7 +216,7 @@ This workflow is activated when:
 
 **Description:** Announce the release.
 
-**Entry Criteria:** Deployment complete  
+**Entry Criteria:** Deployment complete
 **Exit Criteria:** Stakeholders notified
 
 #### Step 6.1: Notify Stakeholders

@@ -1,14 +1,14 @@
 /-
   Cursor Agent Factory - Formal Verification System
-  
+
   This Lean 4 project provides mathematical proofs that the Cursor Agent Factory
   satisfies its foundational axioms (A0-A5).
-  
+
   Philosophy:
   - Love: Free and accessible to all
-  - Truth: Mathematical certainty, verifiable by anyone  
+  - Truth: Mathematical certainty, verifiable by anyone
   - Beauty: Elegant, harmonious proofs
-  
+
   To verify: `lake build`
   All proofs type-check → System satisfies axioms
 -/

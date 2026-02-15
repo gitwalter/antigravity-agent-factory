@@ -4,8 +4,8 @@
 
 Behavior-Driven Development workflow that starts with stakeholder-readable Gherkin scenarios and translates them into executable tests. Emphasizes collaboration between business, development, and QA through the Three Amigos process.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** test-generator
 
 ## Trigger Conditions
@@ -29,7 +29,7 @@ This workflow is activated when:
 
 **Description:** Collaborative session to understand and define behavior.
 
-**Entry Criteria:** Feature or requirement identified  
+**Entry Criteria:** Feature or requirement identified
 **Exit Criteria:** Shared understanding of behavior
 
 #### Step 1.1: Gather Stakeholders
@@ -88,7 +88,7 @@ Then [expected outcome]
 
 **Description:** Write Gherkin feature files from examples.
 
-**Entry Criteria:** Examples defined  
+**Entry Criteria:** Examples defined
 **Exit Criteria:** Feature file complete
 
 #### Step 2.1: Write Feature Description
@@ -174,7 +174,7 @@ Background:
 
 **Description:** Implement step definitions for scenarios.
 
-**Entry Criteria:** Feature file complete  
+**Entry Criteria:** Feature file complete
 **Exit Criteria:** Step definitions implemented
 
 #### Step 3.1: Generate Step Stubs
@@ -256,7 +256,7 @@ def step_login_successful(context):
 
 **Description:** Implement underlying functionality using TDD.
 
-**Entry Criteria:** Step definitions calling production code  
+**Entry Criteria:** Step definitions calling production code
 **Exit Criteria:** All scenarios passing
 
 #### Step 4.1: Translate to Unit Tests
@@ -319,7 +319,7 @@ def step_login_successful(context):
 
 **Description:** Generate stakeholder-readable documentation.
 
-**Entry Criteria:** All scenarios passing  
+**Entry Criteria:** All scenarios passing
 **Exit Criteria:** Documentation generated
 
 #### Step 5.1: Generate Documentation

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   Exception Subprocess iFlow Snippet
-  
+
   Purpose: ${PURPOSE}
   Author: ${AUTHOR}
   Created: ${DATE}
-  
+
   Usage:
     1. Add Exception Subprocess to your integration process
     2. Configure exception subprocess to catch all exceptions
     3. Add the steps below inside the exception subprocess
     4. Customize error handling logic as needed
-  
+
   Steps in Exception Subprocess:
     1. Capture error details
     2. Log error with business context
@@ -22,7 +22,7 @@
 <IntegrationProcess>
   <!-- Exception Subprocess Configuration -->
   <ExceptionSubprocess name="${EXCEPTION_SUBPROCESS_NAME}">
-    
+
     <!-- Step 1: Capture Error Details -->
     <GroovyScript name="CaptureErrorDetails">
       <Script>
@@ -31,26 +31,26 @@ import com.sap.gateway.ip.core.customdev.util.Message
 
 def Message processData(Message message) {
     def messageLog = messageLogFactory.getMessageLog(message)
-    
+
     try {
         // Capture error details from exception
-        def errorMessage = message.getProperty('SAP_ErrorText') ?: 
-                          message.getProperty('ErrorMessage') ?: 
+        def errorMessage = message.getProperty('SAP_ErrorText') ?:
+                          message.getProperty('ErrorMessage') ?:
                           'Unknown error'
         def errorStep = message.getProperty('SAP_ErrorModelStepID') ?: 'Unknown'
-        def errorTimestamp = message.getProperty('ErrorTimestamp') ?: 
+        def errorTimestamp = message.getProperty('ErrorTimestamp') ?:
                             new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-        def correlationId = message.getProperty('SAP_CorrelationID') ?: 
+        def correlationId = message.getProperty('SAP_CorrelationID') ?:
                            message.getProperty('ErrorCorrelationId') ?:
                            UUID.randomUUID().toString()
-        
+
         // Set comprehensive error properties
         message.setProperty('ErrorCaptured', 'true')
         message.setProperty('ErrorTimestamp', errorTimestamp)
         message.setProperty('ErrorCorrelationId', correlationId)
         message.setProperty('ErrorStep', errorStep)
         message.setProperty('ErrorSummary', "${errorStep}: ${errorMessage}")
-        
+
         // Log error details
         def errorDetails = """Exception Subprocess - Error Captured
 Timestamp: ${errorTimestamp}
@@ -59,7 +59,7 @@ Error Step: ${errorStep}
 Error Message: ${errorMessage}
 """
         messageLog.addAttachmentAsString('ErrorDetails', errorDetails, 'text/plain')
-        
+
         // Preserve original message body if available
         try {
             def originalBody = message.getBody(String)
@@ -69,19 +69,19 @@ Error Message: ${errorMessage}
         } catch (Exception e) {
             // Ignore if body cannot be read
         }
-        
+
     } catch (Exception e) {
         // Even error handling can fail - log it
-        messageLog.addAttachmentAsString('ErrorCaptureFailed', 
+        messageLog.addAttachmentAsString('ErrorCaptureFailed',
             "Failed to capture error details: ${e.message}", 'text/plain')
     }
-    
+
     return message
 }
         ]]>
       </Script>
     </GroovyScript>
-    
+
     <!-- Step 2: Log Error with Business Context -->
     <GroovyScript name="LogErrorWithContext">
       <Script>
@@ -90,17 +90,17 @@ import com.sap.gateway.ip.core.customdev.util.Message
 
 def Message processData(Message message) {
     def messageLog = messageLogFactory.getMessageLog(message)
-    
+
     try {
         // Extract business context from message
         def businessId = message.getProperty('BusinessId') ?: 'N/A'
         def businessType = message.getProperty('BusinessType') ?: 'N/A'
         def sourceSystem = message.getProperty('SourceSystem') ?: 'N/A'
         def targetSystem = message.getProperty('TargetSystem') ?: 'N/A'
-        
-        def correlationId = message.getProperty('ErrorCorrelationId') ?: 
+
+        def correlationId = message.getProperty('ErrorCorrelationId') ?:
                            message.getProperty('SAP_CorrelationID') ?: 'N/A'
-        
+
         // Build comprehensive error log
         def errorLog = """Exception Subprocess - Error Log
 ========================================
@@ -109,90 +109,90 @@ Business Context:
   Business Type: ${businessType}
   Source System: ${sourceSystem}
   Target System: ${targetSystem}
-  
+
 Error Details:
   Correlation ID: ${correlationId}
   Error Step: ${message.getProperty('ErrorStep')}
   Error Message: ${message.getProperty('ErrorSummary')}
   Timestamp: ${message.getProperty('ErrorTimestamp')}
-  
+
 Message Properties:
-${message.getProperties().collect { key, value -> 
-    "  ${key}: ${value}" 
+${message.getProperties().collect { key, value ->
+    "  ${key}: ${value}"
 }.join('\n')}
 ========================================
 """
-        
+
         messageLog.addAttachmentAsString('ErrorLog', errorLog, 'text/plain')
-        
+
         // Set error severity based on business rules
         def errorSeverity = determineErrorSeverity(message)
         message.setProperty('ErrorSeverity', errorSeverity)
-        
+
     } catch (Exception e) {
-        messageLog.addAttachmentAsString('ErrorLoggingFailed', 
+        messageLog.addAttachmentAsString('ErrorLoggingFailed',
             "Failed to log error context: ${e.message}", 'text/plain')
     }
-    
+
     return message
 }
 
 def determineErrorSeverity(Message message) {
     def errorMessage = message.getProperty('ErrorSummary') ?: ''
     def errorStep = message.getProperty('ErrorStep') ?: ''
-    
+
     // Critical errors
-    if (errorMessage.toLowerCase().contains('critical') || 
+    if (errorMessage.toLowerCase().contains('critical') ||
         errorMessage.toLowerCase().contains('fatal') ||
         errorStep.contains('Critical')) {
         return 'CRITICAL'
     }
-    
+
     // High severity errors
     if (errorMessage.toLowerCase().contains('timeout') ||
         errorMessage.toLowerCase().contains('connection')) {
         return 'HIGH'
     }
-    
+
     // Default to medium
     return 'MEDIUM'
 }
         ]]>
       </Script>
     </GroovyScript>
-    
+
     <!-- Step 3: Send Alert Notification (if critical) -->
     <!-- Configure HTTP adapter or Mail adapter here -->
     <!-- Example: Send to monitoring system or email -->
-    
+
     <!-- Step 4: Route to Error Handling Flow or Dead Letter Queue -->
     <Router name="RouteError">
       <Condition>${ERROR_ROUTING_CONDITION}</Condition>
       <!-- Route to different endpoints based on error type -->
       <!-- Example: Critical errors -> Alert system, Others -> Dead letter queue -->
     </Router>
-    
+
   </ExceptionSubprocess>
 </IntegrationProcess>
 
 <!--
   Configuration Notes:
-  
+
   1. Exception Subprocess Setup:
      - Right-click on Integration Process
      - Select "Add Exception Subprocess"
      - Configure to catch all exceptions
-  
+
   2. Error Routing:
      - Use Router step to route based on error severity
      - Configure JMS queue for dead letter channel
      - Set up HTTP adapter for alert notifications
-  
+
   3. Monitoring:
      - Error properties are visible in CPI monitoring
      - Use correlation IDs for end-to-end tracing
      - Set up alerts based on error severity
-  
+
   4. Customization:
      - Adjust error severity determination logic
      - Add custom error routing rules

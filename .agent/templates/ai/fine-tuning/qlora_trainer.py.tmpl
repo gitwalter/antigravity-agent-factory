@@ -54,11 +54,11 @@ class QLoRATrainingConfig(BaseModel):
 class {{TRAINER_CLASS_NAME}}:
     """
     {{TRAINER_NAME}} - QLoRA Fine-Tuning Trainer
-    
+
     Fine-tunes language models using Quantized Low-Rank Adaptation (QLoRA) with
     4-bit quantization. QLoRA enables efficient fine-tuning of large models
     on consumer hardware by combining 4-bit quantization with LoRA adapters.
-    
+
     Example:
         >>> trainer = {{TRAINER_CLASS_NAME}}(
         ...     base_model_name="meta-llama/Llama-2-7b-hf",
@@ -70,7 +70,7 @@ class {{TRAINER_CLASS_NAME}}:
         ...     per_device_train_batch_size=4
         ... )
     """
-    
+
     def __init__(
         self,
         base_model_name: str = "{{BASE_MODEL_NAME}}",
@@ -87,7 +87,7 @@ class {{TRAINER_CLASS_NAME}}:
     ):
         """
         Initialize QLoRA trainer with 4-bit quantization.
-        
+
         Args:
             base_model_name: HuggingFace model identifier
             output_dir: Directory to save checkpoints and final model
@@ -104,19 +104,19 @@ class {{TRAINER_CLASS_NAME}}:
         self.base_model_name = base_model_name
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         self.lora_r = lora_r
         self.lora_alpha = lora_alpha
         self.lora_dropout = lora_dropout
-        
+
         # Default target modules for common architectures
         if target_modules is None:
             target_modules = {{TARGET_MODULES}}
         self.target_modules = target_modules
-        
+
         self.device_map = device_map
         self.use_cache = use_cache
-        
+
         # Configure 4-bit quantization
         logger.info("Configuring 4-bit quantization...")
         self.bnb_config = BitsAndBytesConfig(
@@ -125,15 +125,15 @@ class {{TRAINER_CLASS_NAME}}:
             bnb_4bit_quant_type=bnb_4bit_quant_type,
             bnb_4bit_use_double_quant=use_nested_quant,
         )
-        
+
         # Initialize tokenizer
         logger.info(f"Loading tokenizer: {base_model_name}")
         self.tokenizer = AutoTokenizer.from_pretrained(base_model_name)
-        
+
         # Set padding token if not present
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
-        
+
         # Load model with 4-bit quantization
         logger.info(f"Loading base model with 4-bit quantization: {base_model_name}")
         self.model = AutoModelForCausalLM.from_pretrained(
@@ -143,11 +143,11 @@ class {{TRAINER_CLASS_NAME}}:
             use_cache=use_cache,
             trust_remote_code={{TRUST_REMOTE_CODE}},
         )
-        
+
         # Prepare model for k-bit training
         logger.info("Preparing model for k-bit training...")
         self.model = prepare_model_for_kbit_training(self.model)
-        
+
         # Configure LoRA
         self.lora_config = LoraConfig(
             r=lora_r,
@@ -157,25 +157,25 @@ class {{TRAINER_CLASS_NAME}}:
             bias="none",
             task_type=TaskType.CAUSAL_LM,
         )
-        
+
         # Apply LoRA to model
         logger.info("Applying LoRA adapters...")
         self.model = get_peft_model(self.model, self.lora_config)
-        
+
         # Print trainable parameters
         trainable_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         total_params = sum(p.numel() for p in self.model.parameters())
         logger.info(
             f"Trainable parameters: {trainable_params:,} ({100 * trainable_params / total_params:.2f}%)"
         )
-        
+
         # Enable gradient checkpointing for memory efficiency
         if hasattr(self.model, "gradient_checkpointing_enable"):
             self.model.gradient_checkpointing_enable()
             logger.info("Gradient checkpointing enabled")
-        
+
         self.trainer: Optional[Trainer] = None
-    
+
     def prepare_dataset(
         self,
         dataset: Union[Dataset, List[Dict[str, str]]],
@@ -184,15 +184,15 @@ class {{TRAINER_CLASS_NAME}}:
     ) -> Dataset:
         """
         Prepare dataset for training.
-        
+
         Args:
             dataset: Dataset or list of dictionaries with text data
             text_column: Column name containing text
             max_length: Maximum sequence length
-            
+
         Returns:
             Tokenized dataset ready for training
-            
+
         Example:
             >>> dataset = trainer.prepare_dataset(
             ...     [{"text": "Example text..."}],
@@ -200,10 +200,10 @@ class {{TRAINER_CLASS_NAME}}:
             ... )
         """
         logger.info("Preparing dataset...")
-        
+
         if isinstance(dataset, list):
             dataset = Dataset.from_list(dataset)
-        
+
         def tokenize_function(examples):
             """Tokenize text examples."""
             texts = examples[text_column]
@@ -216,16 +216,16 @@ class {{TRAINER_CLASS_NAME}}:
             )
             tokenized["labels"] = tokenized["input_ids"].clone()
             return tokenized
-        
+
         tokenized_dataset = dataset.map(
             tokenize_function,
             batched=True,
             remove_columns=dataset.column_names,
         )
-        
+
         logger.info(f"Prepared dataset with {len(tokenized_dataset)} examples")
         return tokenized_dataset
-    
+
     def train(
         self,
         train_dataset: Dataset,
@@ -246,7 +246,7 @@ class {{TRAINER_CLASS_NAME}}:
     ) -> None:
         """
         Train the model with QLoRA.
-        
+
         Args:
             train_dataset: Training dataset
             num_epochs: Number of training epochs
@@ -263,7 +263,7 @@ class {{TRAINER_CLASS_NAME}}:
             bf16: Use BF16 mixed precision
             dataloader_num_workers: Number of dataloader workers
             gradient_checkpointing: Enable gradient checkpointing
-            
+
         Example:
             >>> trainer.train(
             ...     train_dataset=tokenized_train,
@@ -272,11 +272,11 @@ class {{TRAINER_CLASS_NAME}}:
             ... )
         """
         logger.info("Starting QLoRA fine-tuning...")
-        
+
         # Enable gradient checkpointing if requested
         if gradient_checkpointing and hasattr(self.model, "gradient_checkpointing_enable"):
             self.model.gradient_checkpointing_enable()
-        
+
         # Training arguments
         training_args = TrainingArguments(
             output_dir=str(self.output_dir),
@@ -295,13 +295,13 @@ class {{TRAINER_CLASS_NAME}}:
             gradient_checkpointing=gradient_checkpointing,
             report_to="none",  # Set to "tensorboard" or "wandb" for logging
         )
-        
+
         # Data collator
         data_collator = DataCollatorForLanguageModeling(
             tokenizer=self.tokenizer,
             mlm=False,  # Causal LM, not masked LM
         )
-        
+
         # Create trainer
         self.trainer = Trainer(
             model=self.model,
@@ -310,54 +310,54 @@ class {{TRAINER_CLASS_NAME}}:
             eval_dataset=eval_dataset,
             data_collator=data_collator,
         )
-        
+
         # Train
         logger.info("Training started...")
         train_result = self.trainer.train()
-        
+
         logger.info(f"Training completed. Loss: {train_result.training_loss:.4f}")
-        
+
         # Save final model
         self.save_model()
-    
+
     def save_model(self, save_path: Optional[str] = None) -> None:
         """
         Save the fine-tuned QLoRA model and tokenizer.
-        
+
         Args:
             save_path: Optional custom save path (defaults to output_dir)
-            
+
         Example:
             >>> trainer.save_model("./models/my-qlora-model")
         """
         save_path = save_path or str(self.output_dir)
         save_path = Path(save_path)
         save_path.mkdir(parents=True, exist_ok=True)
-        
+
         logger.info(f"Saving QLoRA model to {save_path}...")
-        
+
         # Save PEFT model (LoRA adapters only - base model stays quantized)
         self.model.save_pretrained(save_path)
-        
+
         # Save tokenizer
         self.tokenizer.save_pretrained(save_path)
-        
+
         logger.info("Model saved successfully")
-    
+
     def load_model(self, model_path: str) -> None:
         """
         Load a fine-tuned QLoRA model.
-        
+
         Args:
             model_path: Path to saved model
-            
+
         Example:
             >>> trainer.load_model("./models/my-qlora-model")
         """
         logger.info(f"Loading QLoRA model from {model_path}...")
-        
+
         from peft import PeftModel
-        
+
         # Load base model with 4-bit quantization
         self.model = AutoModelForCausalLM.from_pretrained(
             self.base_model_name,
@@ -365,15 +365,15 @@ class {{TRAINER_CLASS_NAME}}:
             device_map=self.device_map,
             use_cache=self.use_cache,
         )
-        
+
         # Load LoRA adapters
         self.model = PeftModel.from_pretrained(self.model, model_path)
-        
+
         # Load tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-        
+
         logger.info("Model loaded successfully")
-    
+
     def merge_and_save(
         self,
         output_path: str,
@@ -381,22 +381,22 @@ class {{TRAINER_CLASS_NAME}}:
     ) -> None:
         """
         Merge LoRA adapters with base model and save full model.
-        
+
         Args:
             output_path: Path to save merged model
             save_quantized: Whether to save quantized version (default: False, saves FP16)
-            
+
         Example:
             >>> trainer.merge_and_save("./models/merged-model")
         """
         logger.info("Merging LoRA adapters with base model...")
-        
+
         # Merge adapters
         merged_model = self.model.merge_and_unload()
-        
+
         output_path = Path(output_path)
         output_path.mkdir(parents=True, exist_ok=True)
-        
+
         if save_quantized:
             # Save quantized model
             merged_model.save_pretrained(output_path)
@@ -404,12 +404,12 @@ class {{TRAINER_CLASS_NAME}}:
             # Save FP16 model
             merged_model = merged_model.half()
             merged_model.save_pretrained(output_path)
-        
+
         # Save tokenizer
         self.tokenizer.save_pretrained(output_path)
-        
+
         logger.info(f"Merged model saved to {output_path}")
-    
+
     def generate(
         self,
         prompt: str,
@@ -420,23 +420,23 @@ class {{TRAINER_CLASS_NAME}}:
     ) -> str:
         """
         Generate text using the fine-tuned QLoRA model.
-        
+
         Args:
             prompt: Input prompt text
             max_new_tokens: Maximum tokens to generate
             temperature: Sampling temperature
             top_p: Nucleus sampling parameter
             do_sample: Whether to use sampling
-            
+
         Returns:
             Generated text
-            
+
         Example:
             >>> output = trainer.generate("The future of AI is", max_new_tokens=100)
             >>> print(output)
         """
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
-        
+
         with torch.no_grad():
             outputs = self.model.generate(
                 **inputs,
@@ -446,7 +446,7 @@ class {{TRAINER_CLASS_NAME}}:
                 do_sample=do_sample,
                 pad_token_id=self.tokenizer.eos_token_id,
             )
-        
+
         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         return generated_text
 
@@ -454,7 +454,7 @@ class {{TRAINER_CLASS_NAME}}:
 # Example usage
 if __name__ == "__main__":
     from datasets import load_dataset
-    
+
     # Initialize QLoRA trainer
     trainer = {{TRAINER_CLASS_NAME}}(
         base_model_name="{{BASE_MODEL_NAME}}",
@@ -463,14 +463,14 @@ if __name__ == "__main__":
         lora_alpha={{LORA_ALPHA}},
         use_nested_quant={{USE_NESTED_QUANT}},
     )
-    
+
     # Prepare dataset (example with dummy data)
     train_data = [
         {"text": "{{EXAMPLE_TEXT_1}}"},
         {"text": "{{EXAMPLE_TEXT_2}}"},
     ]
     train_dataset = trainer.prepare_dataset(train_data, max_length={{MAX_LENGTH}})
-    
+
     # Train
     trainer.train(
         train_dataset=train_dataset,
@@ -479,10 +479,10 @@ if __name__ == "__main__":
         learning_rate={{LEARNING_RATE}},
         gradient_checkpointing=True,
     )
-    
+
     # Generate text
     output = trainer.generate("{{EXAMPLE_PROMPT}}")
     print(f"Generated: {output}")
-    
+
     # Optionally merge and save full model
     # trainer.merge_and_save("./models/merged-qlora-model")

@@ -8,8 +8,8 @@ description: Systematic workflow for maintaining a healthy product backlog throu
 
 Systematic workflow for maintaining a healthy product backlog through prioritization, estimation, story refinement, and readiness verification. Ensures the backlog is always ready for sprint planning.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** product-owner
 
 ## Trigger Conditions

@@ -4,8 +4,8 @@
 
 End-to-end workflow for developing RESTful ABAP Programming Model (RAP) business objects in SAP S/4HANA. Covers CDS modeling, behavior definition, implementation, Fiori Elements UI, and deployment.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Applies To:** sap-rap, sap-abap
 
 ## Trigger Conditions
@@ -29,7 +29,7 @@ This workflow is activated when:
 
 **Description:** Create the CDS data model for the business object.
 
-**Entry Criteria:** Requirements defined  
+**Entry Criteria:** Requirements defined
 **Exit Criteria:** CDS views created
 
 #### Step 1.1: Create Database Table
@@ -104,7 +104,7 @@ define root view entity ZI_PurchaseOrder
 
 **Description:** Define the behavior of the business object.
 
-**Entry Criteria:** CDS model complete  
+**Entry Criteria:** CDS model complete
 **Exit Criteria:** Behavior definition created
 
 #### Step 2.1: Create Behavior Definition
@@ -156,7 +156,7 @@ authorization master ( instance )
 
 **Description:** Implement the business logic.
 
-**Entry Criteria:** Behavior defined  
+**Entry Criteria:** Behavior defined
 **Exit Criteria:** Implementation complete
 
 #### Step 3.1: Implement Behavior Pool
@@ -209,7 +209,7 @@ ENDCLASS.
 
 **Description:** Expose the business object as an OData service.
 
-**Entry Criteria:** Behavior implemented  
+**Entry Criteria:** Behavior implemented
 **Exit Criteria:** Service published
 
 #### Step 4.1: Create Service Definition
@@ -247,7 +247,7 @@ define service ZUI_PURCHASEORDER_O4 {
 
 **Description:** Configure the Fiori Elements UI.
 
-**Entry Criteria:** Service published  
+**Entry Criteria:** Service published
 **Exit Criteria:** UI configured
 
 #### Step 5.1: Add UI Annotations
@@ -296,7 +296,7 @@ OrderID;
 
 **Description:** Test and deploy the RAP application.
 
-**Entry Criteria:** UI configured  
+**Entry Criteria:** UI configured
 **Exit Criteria:** Deployed to target system
 
 #### Step 6.1: Unit Testing

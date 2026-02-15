@@ -10,7 +10,7 @@ Tests validate that all skill files have:
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List
 
 import pytest
 import yaml
@@ -51,12 +51,14 @@ class TestSkillFileStructure:
             content = skill_file.read_text(encoding="utf-8")
             frontmatter = extract_frontmatter(content)
             if not frontmatter:
-                errors.append(f"{skill_file.relative_to(skill_file.parent.parent.parent.parent)}: Missing YAML frontmatter")
-        
+                errors.append(
+                    f"{skill_file.relative_to(skill_file.parent.parent.parent.parent)}: Missing YAML frontmatter"
+                )
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} skill file(s) without YAML frontmatter:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} skill file(s) without YAML frontmatter:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
     def test_skill_frontmatter_has_required_fields(self, all_skill_files: List[Path]):
@@ -67,23 +69,31 @@ class TestSkillFileStructure:
             frontmatter = extract_frontmatter(content)
             if not frontmatter:
                 continue
-            
+
             try:
                 data = yaml.safe_load(frontmatter)
                 required_fields = ["name", "description", "type"]
-                missing_fields = [field for field in required_fields if field not in data]
-                
+                missing_fields = [
+                    field for field in required_fields if field not in data
+                ]
+
                 if missing_fields:
-                    rel_path = skill_file.relative_to(skill_file.parent.parent.parent.parent)
-                    errors.append(f"{rel_path}: Missing required fields: {', '.join(missing_fields)}")
+                    rel_path = skill_file.relative_to(
+                        skill_file.parent.parent.parent.parent
+                    )
+                    errors.append(
+                        f"{rel_path}: Missing required fields: {', '.join(missing_fields)}"
+                    )
             except yaml.YAMLError as e:
-                rel_path = skill_file.relative_to(skill_file.parent.parent.parent.parent)
+                rel_path = skill_file.relative_to(
+                    skill_file.parent.parent.parent.parent
+                )
                 errors.append(f"{rel_path}: Invalid YAML: {e}")
-        
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} skill file(s) with missing required fields:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} skill file(s) with missing required fields:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
     def test_skill_frontmatter_type_is_skill(self, all_skill_files: List[Path]):
@@ -94,23 +104,29 @@ class TestSkillFileStructure:
             frontmatter = extract_frontmatter(content)
             if not frontmatter:
                 continue
-            
+
             try:
                 data = yaml.safe_load(frontmatter)
                 skill_type = data.get("type", "")
                 if skill_type != "skill":
-                    rel_path = skill_file.relative_to(skill_file.parent.parent.parent.parent)
-                    errors.append(f"{rel_path}: type should be 'skill', got '{skill_type}'")
+                    rel_path = skill_file.relative_to(
+                        skill_file.parent.parent.parent.parent
+                    )
+                    errors.append(
+                        f"{rel_path}: type should be 'skill', got '{skill_type}'"
+                    )
             except yaml.YAMLError:
                 continue
-        
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} skill file(s) with incorrect type:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} skill file(s) with incorrect type:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
-    def test_skill_frontmatter_name_matches_directory(self, all_skill_files: List[Path]):
+    def test_skill_frontmatter_name_matches_directory(
+        self, all_skill_files: List[Path]
+    ):
         """Test that skill name matches the directory name."""
         errors = []
         for skill_file in all_skill_files:
@@ -118,25 +134,26 @@ class TestSkillFileStructure:
             frontmatter = extract_frontmatter(content)
             if not frontmatter:
                 continue
-            
+
             try:
                 data = yaml.safe_load(frontmatter)
                 skill_name = data.get("name", "")
                 directory_name = skill_file.parent.name
-                
-                
+
                 if skill_name != directory_name:
-                    rel_path = skill_file.relative_to(skill_file.parent.parent.parent.parent)
+                    rel_path = skill_file.relative_to(
+                        skill_file.parent.parent.parent.parent
+                    )
                     errors.append(
                         f"{rel_path}: name '{skill_name}' doesn't match directory '{directory_name}'"
                     )
             except yaml.YAMLError:
                 continue
-        
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} skill file(s) with name mismatch:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} skill file(s) with name mismatch:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
     def test_skill_frontmatter_valid_yaml(self, all_skill_files: List[Path]):
@@ -147,16 +164,18 @@ class TestSkillFileStructure:
             frontmatter = extract_frontmatter(content)
             if not frontmatter:
                 continue
-            
+
             error = validate_yaml_syntax(frontmatter, str(skill_file))
             if error:
-                rel_path = skill_file.relative_to(skill_file.parent.parent.parent.parent)
+                rel_path = skill_file.relative_to(
+                    skill_file.parent.parent.parent.parent
+                )
                 errors.append(f"{rel_path}: {error}")
-        
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} skill file(s) with invalid YAML:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} skill file(s) with invalid YAML:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
 
@@ -182,14 +201,18 @@ class TestSkillMarkdownSections:
         for skill_file in all_skill_files:
             content = skill_file.read_text(encoding="utf-8")
             # Check for "## When to Use" or "### When to Use"
-            if not re.search(r"^##+\s+When to Use", content, re.MULTILINE | re.IGNORECASE):
-                rel_path = skill_file.relative_to(skill_file.parent.parent.parent.parent)
+            if not re.search(
+                r"^##+\s+When to Use", content, re.MULTILINE | re.IGNORECASE
+            ):
+                rel_path = skill_file.relative_to(
+                    skill_file.parent.parent.parent.parent
+                )
                 errors.append(f"{rel_path}: Missing 'When to Use' section")
-        
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} skill file(s) without 'When to Use' section:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} skill file(s) without 'When to Use' section:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
     def test_skill_has_prerequisites_section(self, all_skill_files: List[Path]):
@@ -198,14 +221,18 @@ class TestSkillMarkdownSections:
         for skill_file in all_skill_files:
             content = skill_file.read_text(encoding="utf-8")
             # Check for "## Prerequisites" or "### Prerequisites"
-            if not re.search(r"^##+\s+Prerequisites", content, re.MULTILINE | re.IGNORECASE):
-                rel_path = skill_file.relative_to(skill_file.parent.parent.parent.parent)
+            if not re.search(
+                r"^##+\s+Prerequisites", content, re.MULTILINE | re.IGNORECASE
+            ):
+                rel_path = skill_file.relative_to(
+                    skill_file.parent.parent.parent.parent
+                )
                 errors.append(f"{rel_path}: Missing 'Prerequisites' section")
-        
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} skill file(s) without 'Prerequisites' section:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} skill file(s) without 'Prerequisites' section:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
     def test_skill_has_process_section(self, all_skill_files: List[Path]):
@@ -215,13 +242,15 @@ class TestSkillMarkdownSections:
             content = skill_file.read_text(encoding="utf-8")
             # Check for "## Process" or "### Process"
             if not re.search(r"^##+\s+Process", content, re.MULTILINE | re.IGNORECASE):
-                rel_path = skill_file.relative_to(skill_file.parent.parent.parent.parent)
+                rel_path = skill_file.relative_to(
+                    skill_file.parent.parent.parent.parent
+                )
                 errors.append(f"{rel_path}: Missing 'Process' section")
-        
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} skill file(s) without 'Process' section:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} skill file(s) without 'Process' section:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
     def test_skill_has_best_practices_section(self, all_skill_files: List[Path]):
@@ -230,14 +259,18 @@ class TestSkillMarkdownSections:
         for skill_file in all_skill_files:
             content = skill_file.read_text(encoding="utf-8")
             # Check for "## Best Practices" or "### Best Practices"
-            if not re.search(r"^##+\s+Best Practices", content, re.MULTILINE | re.IGNORECASE):
-                rel_path = skill_file.relative_to(skill_file.parent.parent.parent.parent)
+            if not re.search(
+                r"^##+\s+Best Practices", content, re.MULTILINE | re.IGNORECASE
+            ):
+                rel_path = skill_file.relative_to(
+                    skill_file.parent.parent.parent.parent
+                )
                 errors.append(f"{rel_path}: Missing 'Best Practices' section")
-        
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} skill file(s) without 'Best Practices' section:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} skill file(s) without 'Best Practices' section:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
     def test_skill_sections_have_content(self, all_skill_files: List[Path]):
@@ -245,30 +278,50 @@ class TestSkillMarkdownSections:
         errors = []
         for skill_file in all_skill_files:
             content = skill_file.read_text(encoding="utf-8")
-            
+
             # Extract content after each section header
             sections = {
-                "When to Use": re.search(r"^##+\s+When to Use\s*\n(.*?)(?=^##+|\Z)", content, re.MULTILINE | re.DOTALL | re.IGNORECASE),
-                "Prerequisites": re.search(r"^##+\s+Prerequisites\s*\n(.*?)(?=^##+|\Z)", content, re.MULTILINE | re.DOTALL | re.IGNORECASE),
-                "Process": re.search(r"^##+\s+Process\s*\n(.*?)(?=^##+|\Z)", content, re.MULTILINE | re.DOTALL | re.IGNORECASE),
-                "Best Practices": re.search(r"^##+\s+Best Practices\s*\n(.*?)(?=^##+|\Z)", content, re.MULTILINE | re.DOTALL | re.IGNORECASE),
+                "When to Use": re.search(
+                    r"^##+\s+When to Use\s*\n(.*?)(?=^##+|\Z)",
+                    content,
+                    re.MULTILINE | re.DOTALL | re.IGNORECASE,
+                ),
+                "Prerequisites": re.search(
+                    r"^##+\s+Prerequisites\s*\n(.*?)(?=^##+|\Z)",
+                    content,
+                    re.MULTILINE | re.DOTALL | re.IGNORECASE,
+                ),
+                "Process": re.search(
+                    r"^##+\s+Process\s*\n(.*?)(?=^##+|\Z)",
+                    content,
+                    re.MULTILINE | re.DOTALL | re.IGNORECASE,
+                ),
+                "Best Practices": re.search(
+                    r"^##+\s+Best Practices\s*\n(.*?)(?=^##+|\Z)",
+                    content,
+                    re.MULTILINE | re.DOTALL | re.IGNORECASE,
+                ),
             }
-            
+
             rel_path = skill_file.relative_to(skill_file.parent.parent.parent.parent)
             for section_name, match in sections.items():
                 if match:
                     section_content = match.group(1).strip()
                     # Check if section has meaningful content (more than just whitespace)
                     if len(section_content) < 10:  # Arbitrary minimum length
-                        errors.append(f"{rel_path}: '{section_name}' section has insufficient content")
+                        errors.append(
+                            f"{rel_path}: '{section_name}' section has insufficient content"
+                        )
                 else:
-                    errors.append(f"{rel_path}: '{section_name}' section not found or empty")
-        
+                    errors.append(
+                        f"{rel_path}: '{section_name}' section not found or empty"
+                    )
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} skill file(s) with empty or missing sections:\n" +
-                "\n".join(f"  - {e}" for e in errors[:20]) +  # Limit output
-                (f"\n... and {len(errors) - 20} more" if len(errors) > 20 else "")
+                f"Found {len(errors)} skill file(s) with empty or missing sections:\n"
+                + "\n".join(f"  - {e}" for e in errors[:20])  # Limit output
+                + (f"\n... and {len(errors) - 20} more" if len(errors) > 20 else "")
             )
 
 
@@ -285,13 +338,17 @@ class TestSkillFileNaming:
         errors = []
         for skill_file in skills_dir.rglob("*.md"):
             if skill_file.name != "SKILL.md":
-                rel_path = skill_file.relative_to(skill_file.parent.parent.parent.parent)
-                errors.append(f"{rel_path}: Should be named SKILL.md, got {skill_file.name}")
-        
+                rel_path = skill_file.relative_to(
+                    skill_file.parent.parent.parent.parent
+                )
+                errors.append(
+                    f"{rel_path}: Should be named SKILL.md, got {skill_file.name}"
+                )
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} skill file(s) with incorrect naming:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} skill file(s) with incorrect naming:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
 
     def test_skill_directories_use_kebab_case(self, skills_dir: Path):
@@ -307,12 +364,9 @@ class TestSkillFileNaming:
                     errors.append(f"{dir_name}: Should use hyphens, not underscores")
                 if " " in dir_name:
                     errors.append(f"{dir_name}: Should not contain spaces")
-        
+
         if errors:
             pytest.fail(
-                f"Found {len(errors)} skill directory(ies) with incorrect naming:\n" +
-                "\n".join(f"  - {e}" for e in errors)
+                f"Found {len(errors)} skill directory(ies) with incorrect naming:\n"
+                + "\n".join(f"  - {e}" for e in errors)
             )
-
-
-

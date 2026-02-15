@@ -25,7 +25,7 @@ Execute these steps in sequence to ensure standard factory hygiene:
 3.  **Truth Check**: Validate that `pom.xml` contains the `spring-boot-starter-validation` and `spring-boot-starter-actuator`.
 
 ### Procedure 2: Implementing a Domain Feature (Red-Green-Refactor)
-1.  **Red**: Create a Slice Test (e.g., `@WebMvcTest` for API or `@DataJpaTest` for Persistence). 
+1.  **Red**: Create a Slice Test (e.g., `@WebMvcTest` for API or `@DataJpaTest` for Persistence).
     - *Tool*: `mvn test -Dtest=MyFeatureTest`
 2.  **Green**: Implement the service logic.
     - *Axiom Check*: Use a `record` for DTOs. Never leak Entities through the Controller.

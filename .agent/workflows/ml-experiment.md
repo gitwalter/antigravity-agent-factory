@@ -8,8 +8,8 @@ description: ML experiment workflow from hypothesis formation through results an
 
 ML experiment workflow from hypothesis formation through results analysis. Covers experiment setup, training, tracking, and interpretation for reproducible research.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-10  
+**Version:** 1.0.0
+**Created:** 2026-02-10
 **Applies To:** model-training, ml-research
 
 ## Trigger Conditions

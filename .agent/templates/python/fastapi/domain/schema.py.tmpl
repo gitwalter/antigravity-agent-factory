@@ -20,17 +20,17 @@ from pydantic.utils import GetterDict
 class {{REQUEST_SCHEMA}}(BaseModel):
     """
     Request schema for creating/updating {{ENTITY_NAME}}.
-    
+
     This schema defines the structure and validation rules for
     {{ENTITY_NAME}} creation and update requests.
-    
+
     Example:
         >>> request = {{REQUEST_SCHEMA}}(
         >>>     name="Example",
         >>>     description="An example {{ENTITY_NAME}}"
         >>> )
     """
-    
+
     name: str = Field(
         ...,
         min_length=1,
@@ -43,7 +43,7 @@ class {{REQUEST_SCHEMA}}(BaseModel):
         description="Optional description"
     )
     # Add additional fields as needed
-    
+
     class Config:
         """Pydantic configuration."""
         schema_extra = {
@@ -52,18 +52,18 @@ class {{REQUEST_SCHEMA}}(BaseModel):
                 "description": "An example {{ENTITY_NAME}} description"
             }
         }
-    
+
     @validator('name')
     def validate_name(cls, v):
         """
         Validate name field.
-        
+
         Args:
             v: Name value
-            
+
         Returns:
             Validated name
-            
+
         Raises:
             ValueError: If validation fails
         """
@@ -75,10 +75,10 @@ class {{REQUEST_SCHEMA}}(BaseModel):
 class {{RESPONSE_SCHEMA}}(BaseModel):
     """
     Response schema for {{ENTITY_NAME}} data.
-    
+
     This schema defines the structure of {{ENTITY_NAME}} responses,
     including all fields that should be exposed to API consumers.
-    
+
     Example:
         >>> response = {{RESPONSE_SCHEMA}}(
         >>>     id=1,
@@ -86,14 +86,14 @@ class {{RESPONSE_SCHEMA}}(BaseModel):
         >>>     created_at=datetime.now()
         >>> )
     """
-    
+
     id: int = Field(..., description="Unique identifier")
     name: str = Field(..., description="{{ENTITY_NAME}} name")
     description: Optional[str] = Field(None, description="Description")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
     # Add additional fields as needed
-    
+
     class Config:
         """Pydantic configuration."""
         orm_mode = True
@@ -111,9 +111,9 @@ class {{RESPONSE_SCHEMA}}(BaseModel):
 class {{LIST_RESPONSE_SCHEMA}}(BaseModel):
     """
     Response schema for paginated list of {{ENTITY_NAME}}s.
-    
+
     This schema wraps a list of {{ENTITY_NAME}}s with pagination metadata.
-    
+
     Example:
         >>> response = {{LIST_RESPONSE_SCHEMA}}(
         >>>     items=[{{RESPONSE_SCHEMA}}(...)],
@@ -122,12 +122,12 @@ class {{LIST_RESPONSE_SCHEMA}}(BaseModel):
         >>>     limit=10
         >>> )
     """
-    
+
     items: List[{{RESPONSE_SCHEMA}}] = Field(..., description="List of {{ENTITY_NAME}}s")
     total: int = Field(..., description="Total number of items")
     skip: int = Field(..., ge=0, description="Number of items skipped")
     limit: int = Field(..., ge=1, description="Maximum number of items returned")
-    
+
     class Config:
         """Pydantic configuration."""
         schema_extra = {
@@ -150,21 +150,21 @@ class {{LIST_RESPONSE_SCHEMA}}(BaseModel):
 class {{FILTER_SCHEMA}}(BaseModel):
     """
     Filter schema for querying {{ENTITY_NAME}}s.
-    
+
     This schema defines filter criteria for advanced queries.
-    
+
     Example:
         >>> filters = {{FILTER_SCHEMA}}(
         >>>     name_contains="example",
         >>>     created_after=datetime(2024, 1, 1)
         >>> )
     """
-    
+
     name_contains: Optional[str] = Field(None, description="Filter by name containing")
     created_after: Optional[datetime] = Field(None, description="Filter by creation date after")
     created_before: Optional[datetime] = Field(None, description="Filter by creation date before")
     # Add additional filter fields as needed
-    
+
     class Config:
         """Pydantic configuration."""
         schema_extra = {

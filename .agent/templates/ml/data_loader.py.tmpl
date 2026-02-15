@@ -43,31 +43,31 @@ class DataConfig:
     train_file: Optional[str] = "{{TRAIN_FILE}}"
     val_file: Optional[str] = "{{VAL_FILE}}"
     test_file: Optional[str] = "{{TEST_FILE}}"
-    
+
     # Data loading
     batch_size: int = {{BATCH_SIZE}}
     num_workers: int = {{NUM_WORKERS}}
     shuffle: bool = True
     pin_memory: bool = True
-    
+
     # Preprocessing
     normalize: bool = True
     normalize_method: str = "standard"  # Options: "standard", "minmax", "none"
     augment: bool = True
-    
+
     # Data validation
     validate_data: bool = True
     cache_data: bool = True
     cache_dir: str = "{{CACHE_DIR}}"
-    
+
     # Image-specific
     image_size: Tuple[int, int] = ({{IMAGE_HEIGHT}}, {{IMAGE_WIDTH}})
     image_channels: int = {{IMAGE_CHANNELS}}
-    
+
     # Text-specific
     max_sequence_length: int = {{MAX_SEQUENCE_LENGTH}}
     tokenizer_name: Optional[str] = "{{TOKENIZER_NAME}}"
-    
+
     # Split configuration
     val_split: float = {{VAL_SPLIT}}
     test_split: float = {{TEST_SPLIT}}
@@ -77,11 +77,11 @@ class DataConfig:
 class BaseDataset(Dataset, ABC):
     """
     Abstract base class for datasets.
-    
+
     This class provides a common interface for all dataset types
     and includes caching functionality.
     """
-    
+
     def __init__(
         self,
         data_path: str,
@@ -91,7 +91,7 @@ class BaseDataset(Dataset, ABC):
     ):
         """
         Initialize dataset.
-        
+
         Args:
             data_path: Path to data file or directory
             transform: Optional transform to apply to samples
@@ -102,34 +102,34 @@ class BaseDataset(Dataset, ABC):
         self.transform = transform
         self.cache = cache
         self.cache_dir = Path(cache_dir) if cache_dir else None
-        
+
         if self.cache and self.cache_dir:
             self.cache_dir.mkdir(parents=True, exist_ok=True)
-        
+
         self._load_data()
-    
+
     @abstractmethod
     def _load_data(self) -> None:
         """Load and preprocess data."""
         pass
-    
+
     @abstractmethod
     def __len__(self) -> int:
         """Return dataset size."""
         pass
-    
+
     @abstractmethod
     def __getitem__(self, idx: int) -> Tuple[Any, Any]:
         """Get a sample from the dataset."""
         pass
-    
+
     def _get_cache_path(self) -> Optional[Path]:
         """Get cache file path."""
         if not self.cache or not self.cache_dir:
             return None
         cache_name = f"{self.data_path.stem}_{hash(str(self.data_path))}.pkl"
         return self.cache_dir / cache_name
-    
+
     def _load_from_cache(self) -> Optional[Any]:
         """Load data from cache if available."""
         cache_path = self._get_cache_path()
@@ -138,7 +138,7 @@ class BaseDataset(Dataset, ABC):
             with open(cache_path, 'rb') as f:
                 return pickle.load(f)
         return None
-    
+
     def _save_to_cache(self, data: Any) -> None:
         """Save data to cache."""
         cache_path = self._get_cache_path()
@@ -151,11 +151,11 @@ class BaseDataset(Dataset, ABC):
 class ImageDataset(BaseDataset):
     """
     Dataset for image data with augmentation support.
-    
+
     Supports common image formats (PNG, JPG, JPEG) and provides
     data augmentation capabilities.
     """
-    
+
     def __init__(
         self,
         data_path: str,
@@ -166,7 +166,7 @@ class ImageDataset(BaseDataset):
     ):
         """
         Initialize image dataset.
-        
+
         Args:
             data_path: Path to image directory or CSV file with image paths
             image_size: Target image size (height, width)
@@ -176,24 +176,24 @@ class ImageDataset(BaseDataset):
         self.image_size = image_size
         self.augment = augment
         self.normalize = normalize
-        
+
         # Setup transforms
         self.transform = self._create_transforms()
-        
+
         super().__init__(data_path, transform=self.transform, **kwargs)
-    
+
     def _create_transforms(self) -> transforms.Compose:
         """
         Create image transforms pipeline.
-        
+
         Returns:
             Composed transforms
         """
         transform_list = []
-        
+
         # Resize
         transform_list.append(transforms.Resize(self.image_size))
-        
+
         # Augmentation (only for training)
         if self.augment:
             transform_list.extend([
@@ -202,10 +202,10 @@ class ImageDataset(BaseDataset):
                 transforms.ColorJitter(brightness=0.2, contrast=0.2),
                 transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),
             ])
-        
+
         # Convert to tensor
         transform_list.append(transforms.ToTensor())
-        
+
         # Normalize
         if self.normalize:
             transform_list.append(
@@ -214,18 +214,18 @@ class ImageDataset(BaseDataset):
                     std=[0.229, 0.224, 0.225]
                 )
             )
-        
+
         return transforms.Compose(transform_list)
-    
+
     def _load_data(self) -> None:
         """Load image paths and labels."""
         cached_data = self._load_from_cache()
         if cached_data:
             self.samples = cached_data
             return
-        
+
         self.samples = []
-        
+
         if self.data_path.is_dir():
             # Load from directory structure: data_dir/class_name/image.jpg
             for class_dir in self.data_path.iterdir():
@@ -240,45 +240,45 @@ class ImageDataset(BaseDataset):
                 self.samples.append((row['{{IMAGE_PATH_COL}}'], row['{{LABEL_COL}}']))
         else:
             raise ValueError(f"Unsupported data path format: {self.data_path}")
-        
+
         if self.cache:
             self._save_to_cache(self.samples)
-        
+
         logger.info(f"Loaded {len(self.samples)} image samples")
-    
+
     def __len__(self) -> int:
         """Return dataset size."""
         return len(self.samples)
-    
+
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, Any]:
         """
         Get an image sample.
-        
+
         Args:
             idx: Sample index
-            
+
         Returns:
             Tuple of (image tensor, label)
         """
         img_path, label = self.samples[idx]
-        
+
         # Load image
         image = Image.open(img_path).convert('RGB')
-        
+
         # Apply transforms
         if self.transform:
             image = self.transform(image)
-        
+
         return image, label
 
 
 class TabularDataset(BaseDataset):
     """
     Dataset for tabular data with preprocessing.
-    
+
     Supports CSV files and provides normalization and encoding capabilities.
     """
-    
+
     def __init__(
         self,
         data_path: str,
@@ -290,7 +290,7 @@ class TabularDataset(BaseDataset):
     ):
         """
         Initialize tabular dataset.
-        
+
         Args:
             data_path: Path to CSV file
             target_column: Name of target column
@@ -304,9 +304,9 @@ class TabularDataset(BaseDataset):
         self.normalize_method = normalize_method
         self.scaler = None
         self.label_encoder = LabelEncoder()
-        
+
         super().__init__(data_path, **kwargs)
-    
+
     def _load_data(self) -> None:
         """Load and preprocess tabular data."""
         cached_data = self._load_from_cache()
@@ -315,21 +315,21 @@ class TabularDataset(BaseDataset):
             self.labels = cached_data['labels']
             self.scaler = cached_data.get('scaler')
             return
-        
+
         # Load CSV
         df = pd.read_csv(self.data_path)
-        
+
         # Extract features and target
         if self.feature_columns is None:
             self.feature_columns = [col for col in df.columns if col != self.target_column]
-        
+
         X = df[self.feature_columns].values
         y = df[self.target_column].values
-        
+
         # Encode labels if needed
         if y.dtype == object:
             y = self.label_encoder.fit_transform(y)
-        
+
         # Normalize features
         if self.normalize:
             if self.normalize_method == "standard":
@@ -338,32 +338,32 @@ class TabularDataset(BaseDataset):
                 self.scaler = MinMaxScaler()
             else:
                 raise ValueError(f"Unknown normalization method: {self.normalize_method}")
-            
+
             X = self.scaler.fit_transform(X)
-        
+
         self.data = torch.FloatTensor(X)
         self.labels = torch.LongTensor(y)
-        
+
         if self.cache:
             self._save_to_cache({
                 'data': self.data,
                 'labels': self.labels,
                 'scaler': self.scaler
             })
-        
+
         logger.info(f"Loaded {len(self.data)} samples with {len(self.feature_columns)} features")
-    
+
     def __len__(self) -> int:
         """Return dataset size."""
         return len(self.data)
-    
+
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Get a tabular sample.
-        
+
         Args:
             idx: Sample index
-            
+
         Returns:
             Tuple of (features tensor, label tensor)
         """
@@ -373,11 +373,11 @@ class TabularDataset(BaseDataset):
 class DataLoaderFactory:
     """
     Factory class for creating data loaders with proper configuration.
-    
+
     Provides convenient methods for creating train/val/test splits
     and data loaders with appropriate settings.
     """
-    
+
     @staticmethod
     def create_image_loaders(
         data_dir: str,
@@ -391,7 +391,7 @@ class DataLoaderFactory:
     ) -> Tuple[DataLoader, Optional[DataLoader], Optional[DataLoader]]:
         """
         Create image data loaders with train/val/test splits.
-        
+
         Args:
             data_dir: Path to image data directory
             batch_size: Batch size
@@ -400,7 +400,7 @@ class DataLoaderFactory:
             test_split: Test split ratio
             augment_train: Whether to augment training data
             num_workers: Number of data loading workers
-            
+
         Returns:
             Tuple of (train_loader, val_loader, test_loader)
         """
@@ -411,21 +411,21 @@ class DataLoaderFactory:
             augment=False,  # Will set per split
             **kwargs
         )
-        
+
         # Split dataset
         train_size = int((1 - val_split - test_split) * len(full_dataset))
         val_size = int(val_split * len(full_dataset))
         test_size = len(full_dataset) - train_size - val_size
-        
+
         train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(
             full_dataset,
             [train_size, val_size, test_size]
         )
-        
+
         # Enable augmentation for training
         train_dataset.dataset.augment = augment_train
         train_dataset.dataset.transform = train_dataset.dataset._create_transforms()
-        
+
         # Create data loaders
         train_loader = DataLoader(
             train_dataset,
@@ -434,7 +434,7 @@ class DataLoaderFactory:
             num_workers=num_workers,
             pin_memory=True
         )
-        
+
         val_loader = DataLoader(
             val_dataset,
             batch_size=batch_size,
@@ -442,7 +442,7 @@ class DataLoaderFactory:
             num_workers=num_workers,
             pin_memory=True
         ) if val_size > 0 else None
-        
+
         test_loader = DataLoader(
             test_dataset,
             batch_size=batch_size,
@@ -450,9 +450,9 @@ class DataLoaderFactory:
             num_workers=num_workers,
             pin_memory=True
         ) if test_size > 0 else None
-        
+
         return train_loader, val_loader, test_loader
-    
+
     @staticmethod
     def create_tabular_loaders(
         data_path: str,
@@ -466,7 +466,7 @@ class DataLoaderFactory:
     ) -> Tuple[DataLoader, Optional[DataLoader], Optional[DataLoader]]:
         """
         Create tabular data loaders with train/val/test splits.
-        
+
         Args:
             data_path: Path to CSV file
             target_column: Name of target column
@@ -475,13 +475,13 @@ class DataLoaderFactory:
             test_split: Test split ratio
             normalize: Whether to normalize features
             num_workers: Number of data loading workers
-            
+
         Returns:
             Tuple of (train_loader, val_loader, test_loader)
         """
         # Load and split data
         df = pd.read_csv(data_path)
-        
+
         # Split indices
         indices = np.arange(len(df))
         train_idx, temp_idx = train_test_split(
@@ -494,7 +494,7 @@ class DataLoaderFactory:
             test_size=test_split / (val_split + test_split),
             random_state=42
         )
-        
+
         # Create datasets
         train_dataset = TabularDataset(
             data_path=data_path,
@@ -505,7 +505,7 @@ class DataLoaderFactory:
         # Filter to train indices
         train_dataset.data = train_dataset.data[train_idx]
         train_dataset.labels = train_dataset.labels[train_idx]
-        
+
         val_dataset = TabularDataset(
             data_path=data_path,
             target_column=target_column,
@@ -515,7 +515,7 @@ class DataLoaderFactory:
         )
         val_dataset.data = val_dataset.data[val_idx]
         val_dataset.labels = val_dataset.labels[val_idx]
-        
+
         test_dataset = TabularDataset(
             data_path=data_path,
             target_column=target_column,
@@ -525,7 +525,7 @@ class DataLoaderFactory:
         )
         test_dataset.data = test_dataset.data[test_idx]
         test_dataset.labels = test_dataset.labels[test_idx]
-        
+
         # Create data loaders
         train_loader = DataLoader(
             train_dataset,
@@ -533,21 +533,21 @@ class DataLoaderFactory:
             shuffle=True,
             num_workers=num_workers
         )
-        
+
         val_loader = DataLoader(
             val_dataset,
             batch_size=batch_size,
             shuffle=False,
             num_workers=num_workers
         ) if len(val_idx) > 0 else None
-        
+
         test_loader = DataLoader(
             test_dataset,
             batch_size=batch_size,
             shuffle=False,
             num_workers=num_workers
         ) if len(test_idx) > 0 else None
-        
+
         return train_loader, val_loader, test_loader
 
 
@@ -561,7 +561,7 @@ if __name__ == "__main__":
     #     val_split=0.2,
     #     test_split=0.1
     # )
-    # 
+    #
     # # Example: Create tabular data loaders
     # train_loader, val_loader, test_loader = DataLoaderFactory.create_tabular_loaders(
     #     data_path="./data/tabular_data.csv",

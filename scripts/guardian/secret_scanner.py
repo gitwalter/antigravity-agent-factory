@@ -16,11 +16,12 @@ import argparse
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, NamedTuple, Union
+from typing import Dict, List, Tuple, NamedTuple, Union
 
 
 class SecretMatch(NamedTuple):
     """Represents a detected secret."""
+
     pattern_name: str
     matched_text: str
     line_number: int
@@ -31,13 +32,21 @@ class SecretMatch(NamedTuple):
 def is_false_positive(text: str) -> bool:
     """Check if text is a known false positive."""
     path_str = text.lower()
-    
+
     # Precise placeholders that should never be flagged as real secrets
     # We avoid general words like "password" or "secret" unless part of a clear placeholder string
     placeholders = [
-        "your-api-key", "example-token", "xxxxxxxxxx", 
-        "${", "<your-", "your-key", "enter-your-", "replace-with-",
-        "example-key", "placeholder", "your-secret-here"
+        "your-api-key",
+        "example-token",
+        "xxxxxxxxxx",
+        "${",
+        "<your-",
+        "your-key",
+        "enter-your-",
+        "replace-with-",
+        "example-key",
+        "placeholder",
+        "your-secret-here",
     ]
     if any(p in path_str for p in placeholders):
         return True
@@ -45,7 +54,7 @@ def is_false_positive(text: str) -> bool:
     for pattern in DEFAULT_EXCLUDE_PATTERNS:
         if re.search(pattern, path_str):
             return True
-    
+
     return False
 
 
@@ -60,7 +69,7 @@ def get_severity_level(matches: List[SecretMatch]) -> int:
     """Map secret matches to Guardian severity level (0-4)."""
     if not matches:
         return 0
-    
+
     severity_map = {"high": 4, "medium": 3, "low": 2, "info": 1}
     max_level = 0
     for match in matches:
@@ -79,16 +88,19 @@ def scan_content(content: str) -> List[SecretMatch]:
     for name, matched, line in findings:
         if is_false_positive(matched):
             continue
-            
+
         severity = "medium"
         masked = redact_secret(matched)
         # Determine severity based on pattern name or matched text
         # If it's a known high-severity pattern or contains sensitive keywords
-        if any(kw in name.lower() for kw in ["key", "token", "uri", "secret", "private", "api"]):
+        if any(
+            kw in name.lower()
+            for kw in ["key", "token", "uri", "secret", "private", "api"]
+        ):
             severity = "high"
         elif any(kw in matched.lower() for kw in ["secret", "password", "key"]):
             severity = "medium"
-            
+
         results.append(SecretMatch(name, matched, line, severity, masked))
     return results
 
@@ -117,79 +129,79 @@ def scan_diff(diff_content: str) -> List[SecretMatch]:
 SECRET_PATTERNS = {
     "aws_access_key": {
         "pattern": r"AKIA[0-9A-Z]{16}",
-        "description": "AWS Access Key ID"
+        "description": "AWS Access Key ID",
     },
     "aws_secret_key": {
         "pattern": r"(?i)(aws[_-]?secret[_-]?access[_-]?key|aws[_-]?secret[_-]?key)\s*[=:]\s*['\"]?([A-Za-z0-9/+=]{40})['\"]?",
-        "description": "AWS Secret Access Key"
+        "description": "AWS Secret Access Key",
     },
     "openai_key": {
         "pattern": r"sk-(?:proj-)?[A-Za-z0-9-]{20,}",
-        "description": "OpenAI API Key"
+        "description": "OpenAI API Key",
     },
     "github_token": {
         "pattern": r"ghp_[A-Za-z0-9]{36}",
-        "description": "GitHub Personal Access Token"
+        "description": "GitHub Personal Access Token",
     },
     "github_oauth": {
         "pattern": r"gho_[A-Za-z0-9]{36}",
-        "description": "GitHub OAuth Token"
+        "description": "GitHub OAuth Token",
     },
     "private_key": {
         "pattern": r"-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----",
-        "description": "Private Key"
+        "description": "Private Key",
     },
     "mongodb_uri": {
         "pattern": r"mongodb(?:\+srv)?://[^\s]+",
-        "description": "MongoDB Connection String"
+        "description": "MongoDB Connection String",
     },
     "postgres_uri": {
         "pattern": r"postgres(ql)?://[^\s]+",
-        "description": "PostgreSQL Connection String"
+        "description": "PostgreSQL Connection String",
     },
     "mysql_uri": {
         "pattern": r"mysql://[^\s]+",
-        "description": "MySQL Connection String"
+        "description": "MySQL Connection String",
     },
     "redis_uri": {
         "pattern": r"redis://[^\s]+",
-        "description": "Redis Connection String"
+        "description": "Redis Connection String",
     },
     "slack_token": {
         "pattern": r"xox[baprs]-[0-9a-zA-Z-]{10,}",
-        "description": "Slack Token"
+        "description": "Slack Token",
     },
     "stripe_key": {
         "pattern": r"sk_live_[0-9a-zA-Z]{24,}",
-        "description": "Stripe Secret Key"
+        "description": "Stripe Secret Key",
     },
     "jwt_secret": {
         "pattern": r"(?i)(jwt[_-]?secret|jwt[_-]?key)\s*[=:]\s*['\"]?([A-Za-z0-9+/=]{32,})['\"]?",
-        "description": "JWT Secret"
+        "description": "JWT Secret",
     },
     "google_api": {
         "pattern": r"AIza[0-9A-Za-z-_]{35}",
-        "description": "Google API Key"
+        "description": "Google API Key",
     },
     "sendgrid_api": {
         "pattern": r"SG\.[0-9A-Za-z-_]{22}\.[0-9A-Za-z-_]{43}",
-        "description": "SendGrid API Key"
+        "description": "SendGrid API Key",
     },
     "gitlab_token": {
         "pattern": r"glpat-[0-9A-Za-z-]{20}",
-        "description": "GitLab Personal Access Token"
+        "description": "GitLab Personal Access Token",
     },
     "pgp_private_key": {
         "pattern": r"-----BEGIN PGP PRIVATE KEY BLOCK-----",
-        "description": "PGP Private Key"
+        "description": "PGP Private Key",
     },
     "google_api": {
         "pattern": r"AIza[0-9A-Za-z-_]{20,}",
-        "description": "Google API Key"
+        "description": "Google API Key",
     },
     "generic_secret": {
         "pattern": r"(?i)(?:api_key|secret|password|token|auth_token|access_token)\s*[=:]\s*['\"]?([A-Za-z0-9+/=_-]{8,})['\"]?",
-        "description": "Generic Secret"
+        "description": "Generic Secret",
     },
 }
 
@@ -210,20 +222,20 @@ DEFAULT_EXCLUDE_PATTERNS = [
 class SecretScanner:
     """
     Scans files for secret patterns.
-    
+
     Supports configurable patterns, exclude rules, and multiple
     output modes for CI/CD integration.
     """
-    
+
     def __init__(
         self,
         root_dir: Path,
         exclude_patterns: List[str] = None,
-        custom_patterns: Dict = None
+        custom_patterns: Dict = None,
     ):
         """
         Initialize scanner.
-        
+
         Args:
             root_dir: Root directory to scan
             exclude_patterns: List of regex patterns for files to exclude
@@ -234,14 +246,14 @@ class SecretScanner:
         self.patterns = SECRET_PATTERNS.copy()
         if custom_patterns:
             self.patterns.update(custom_patterns)
-    
+
     def should_exclude(self, file_path: Path) -> bool:
         """
         Check if file should be excluded from scanning.
-        
+
         Args:
             file_path: Path to check
-            
+
         Returns:
             True if file should be excluded
         """
@@ -250,20 +262,20 @@ class SecretScanner:
             if re.search(pattern, path_str):
                 return True
         return False
-    
+
     def scan_content(self, content: str) -> List[Tuple[str, str, int]]:
         """
         Scan string content for secrets.
-        
+
         Args:
             content: String to scan
-            
+
         Returns:
             List of tuples: (pattern_name, matched_text, line_number)
         """
         findings = []
         lines = content.splitlines()
-        
+
         for line_num, line in enumerate(lines, 1):
             for pattern_name, pattern_info in self.patterns.items():
                 pattern = pattern_info["pattern"]
@@ -273,125 +285,119 @@ class SecretScanner:
                     # Use redact_secret for masking
                     masked = redact_secret(matched_text)
                     findings.append((pattern_name, matched_text, line_num))
-        
+
         return findings
 
     def scan_file(self, file_path: Path) -> List[Tuple[str, str, int]]:
         """
         Scan a single file for secrets.
-        
+
         Args:
             file_path: Path to file
-            
+
         Returns:
             List of tuples: (pattern_name, masked_text, line_number)
         """
         if self.should_exclude(file_path):
             return []
-        
+
         try:
             content = file_path.read_text(encoding="utf-8", errors="ignore")
             return self.scan_content(content)
         except Exception:
             return []
-    
+
     def scan_directory(self) -> Dict[Path, List[Tuple[str, str, int]]]:
         """
         Scan entire directory recursively.
-        
+
         Returns:
             Dict mapping file paths to lists of findings
         """
         results = {}
-        
+
         # Find all files
         for file_path in self.root_dir.rglob("*"):
             if file_path.is_file():
                 findings = self.scan_file(file_path)
                 if findings:
                     results[file_path] = findings
-                    
+
         return results
-    
+
     def format_findings(self, results: Dict[Path, List[Tuple[str, str, int]]]) -> str:
         """
         Format findings for output.
-        
+
         Args:
             results: Dict of findings
-            
+
         Returns:
             Formatted string
         """
         if not results:
             return "✅ No secrets found"
-        
+
         lines = ["❌ Potential secrets found:\n"]
-        
+
         for file_path, findings in sorted(results.items()):
             rel_path = file_path.relative_to(self.root_dir)
             lines.append(f"📄 {rel_path}")
-            
+
             # Group by pattern type
             by_pattern = {}
             for pattern_name, masked_text, line_num in findings:
                 if pattern_name not in by_pattern:
                     by_pattern[pattern_name] = []
                 by_pattern[pattern_name].append((masked_text, line_num))
-            
+
             for pattern_name, matches in sorted(by_pattern.items()):
                 pattern_desc = self.patterns[pattern_name]["description"]
                 lines.append(f"   ⚠️  {pattern_desc} ({pattern_name})")
                 for masked_text, line_num in matches:
                     lines.append(f"      Line {line_num}: {masked_text}")
-            
+
             lines.append("")
-        
+
         return "\n".join(lines)
 
 
 def main():
     """Main entry point."""
-    parser = argparse.ArgumentParser(
-        description="Scan files for secret patterns"
-    )
-    parser.add_argument(
-        "--scan",
-        action="store_true",
-        help="Scan and report findings"
-    )
+    parser = argparse.ArgumentParser(description="Scan files for secret patterns")
+    parser.add_argument("--scan", action="store_true", help="Scan and report findings")
     parser.add_argument(
         "--check",
         action="store_true",
-        help="Check mode: exit with code 1 if secrets found"
+        help="Check mode: exit with code 1 if secrets found",
     )
     parser.add_argument(
         "--root",
         type=str,
         default=".",
-        help="Root directory to scan (default: current directory)"
+        help="Root directory to scan (default: current directory)",
     )
     parser.add_argument(
         "--exclude",
         type=str,
         action="append",
-        help="Additional exclude patterns (can be used multiple times)"
+        help="Additional exclude patterns (can be used multiple times)",
     )
-    
+
     args = parser.parse_args()
-    
+
     root_dir = Path(args.root).resolve()
-    
+
     exclude_patterns = DEFAULT_EXCLUDE_PATTERNS.copy()
     if args.exclude:
         exclude_patterns.extend(args.exclude)
-    
+
     scanner = SecretScanner(root_dir, exclude_patterns=exclude_patterns)
     results = scanner.scan_directory()
-    
+
     output = scanner.format_findings(results)
     print(output)
-    
+
     if args.check or args.scan:
         if results:
             if args.check:
@@ -401,7 +407,7 @@ def main():
             if args.check:
                 print("\n✅ Secret scan passed")
             return 0
-    
+
     # Default: just scan
     return 0 if not results else 1
 

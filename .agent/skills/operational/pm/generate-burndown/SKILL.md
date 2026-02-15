@@ -96,33 +96,33 @@ def calculate_burndown(sprint, items):
     start_date = sprint['startDate']
     end_date = sprint['endDate']
     total_days = (end_date - start_date).days
-    
+
     # Initial points
     initial_points = sum(item['estimate'] for item in items)
-    
+
     # Daily data points
     burndown_data = []
     for day in range(total_days + 1):
         current_date = start_date + timedelta(days=day)
-        
+
         # Calculate remaining points
         completed_items = [
-            item for item in items 
+            item for item in items
             if item['status'] == 'Done' and item['completedAt'] <= current_date
         ]
         completed_points = sum(item['estimate'] for item in completed_items)
         remaining_points = initial_points - completed_points
-        
+
         # Ideal burndown (linear)
         ideal_remaining = initial_points * (1 - day / total_days)
-        
+
         burndown_data.append({
             'date': current_date,
             'remaining': remaining_points,
             'ideal': ideal_remaining,
             'completed': completed_points
         })
-    
+
     return burndown_data
 ```
 

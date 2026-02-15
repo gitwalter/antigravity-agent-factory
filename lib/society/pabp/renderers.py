@@ -39,8 +39,11 @@ import re
 from typing import Dict
 
 
-def _apply_rewrites(text: str, path_rewrites: Dict[str, str] = None,
-                    term_rewrites: Dict[str, str] = None) -> str:
+def _apply_rewrites(
+    text: str,
+    path_rewrites: Dict[str, str] = None,
+    term_rewrites: Dict[str, str] = None,
+) -> str:
     """Apply path and term rewrites to text content."""
     if path_rewrites:
         for pattern, replacement in path_rewrites.items():
@@ -53,12 +56,15 @@ def _apply_rewrites(text: str, path_rewrites: Dict[str, str] = None,
 
 def _content_has_code_blocks(content: str) -> bool:
     """Check if a content string already contains fenced code blocks."""
-    return bool(re.search(r'```\w*\n', content))
+    return bool(re.search(r"```\w*\n", content))
 
 
-def render_skill_markdown(pabp_data: dict, *,
-                          path_rewrites: Dict[str, str] = None,
-                          term_rewrites: Dict[str, str] = None) -> str:
+def render_skill_markdown(
+    pabp_data: dict,
+    *,
+    path_rewrites: Dict[str, str] = None,
+    term_rewrites: Dict[str, str] = None,
+) -> str:
     """Render PABP Skill JSON to Antigravity SKILL.md format.
 
     Antigravity format:
@@ -106,7 +112,7 @@ def render_skill_markdown(pabp_data: dict, *,
             # Only include if content adds new info beyond the description
             if content and content.strip() != description.strip():
                 # Strip leading "# Title\n\n" from content if present
-                cleaned = re.sub(r'^#\s+.*?\n\n', '', content.strip())
+                cleaned = re.sub(r"^#\s+.*?\n\n", "", content.strip())
                 if cleaned and cleaned != description:
                     # Skip if we already emitted this exact content
                     content_hash = hash(cleaned)
@@ -148,9 +154,12 @@ def render_skill_markdown(pabp_data: dict, *,
     return _apply_rewrites(result, path_rewrites, term_rewrites)
 
 
-def render_agent_markdown(pabp_data: dict, *,
-                          path_rewrites: Dict[str, str] = None,
-                          term_rewrites: Dict[str, str] = None) -> str:
+def render_agent_markdown(
+    pabp_data: dict,
+    *,
+    path_rewrites: Dict[str, str] = None,
+    term_rewrites: Dict[str, str] = None,
+) -> str:
     """Render PABP Agent JSON to Antigravity agent Markdown format.
 
     Antigravity format:
@@ -268,19 +277,31 @@ def render_agent_markdown(pabp_data: dict, *,
             if scripts:
                 lines.append("**Scripts:**")
                 for script in scripts:
-                    ref = script.get("ref", "unknown") if isinstance(script, dict) else str(script)
+                    ref = (
+                        script.get("ref", "unknown")
+                        if isinstance(script, dict)
+                        else str(script)
+                    )
                     lines.append(f"- `{ref}`")
                 lines.append("")
             if cli_tools:
                 lines.append("**CLI Tools:**")
                 for tool in cli_tools:
-                    tool_name = tool.get("name", "unknown") if isinstance(tool, dict) else str(tool)
+                    tool_name = (
+                        tool.get("name", "unknown")
+                        if isinstance(tool, dict)
+                        else str(tool)
+                    )
                     lines.append(f"- `{tool_name}`")
                 lines.append("")
             if apis:
                 lines.append("**APIs:**")
                 for api in apis:
-                    api_name = api.get("name", "unknown") if isinstance(api, dict) else str(api)
+                    api_name = (
+                        api.get("name", "unknown")
+                        if isinstance(api, dict)
+                        else str(api)
+                    )
                     lines.append(f"- `{api_name}`")
                 lines.append("")
 
@@ -301,9 +322,12 @@ def render_agent_markdown(pabp_data: dict, *,
     return _apply_rewrites(result, path_rewrites, term_rewrites)
 
 
-def render_workflow_markdown(pabp_data: dict, *,
-                             path_rewrites: Dict[str, str] = None,
-                             term_rewrites: Dict[str, str] = None) -> str:
+def render_workflow_markdown(
+    pabp_data: dict,
+    *,
+    path_rewrites: Dict[str, str] = None,
+    term_rewrites: Dict[str, str] = None,
+) -> str:
     """Render PABP Workflow JSON to Antigravity workflow Markdown format.
 
     Antigravity format:
@@ -321,7 +345,7 @@ def render_workflow_markdown(pabp_data: dict, *,
     # Clean the title
     raw_name = name.strip()
     if raw_name.endswith("_workflow"):
-        raw_name = raw_name[:-len("_workflow")]
+        raw_name = raw_name[: -len("_workflow")]
     title = raw_name.replace("-", " ").replace("_", " ").title()
 
     # Short description for frontmatter

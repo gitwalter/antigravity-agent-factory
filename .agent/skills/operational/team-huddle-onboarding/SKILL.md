@@ -663,22 +663,22 @@ teamHuddle:
   date: "{DATE}"
   participants: {COUNT}
   duration: "{DURATION}"
-  
+
 vision:
   hopes: ["{HOPE_1}", "{HOPE_2}", "..."]
   headlines: ["{HEADLINE_1}", "{HEADLINE_2}", "{HEADLINE_3}"]
   themes: ["{THEME_1}", "{THEME_2}"]
-  
+
 values:
   selected: ["{VALUE_1}", "{VALUE_2}", "{VALUE_3}"]
   votes: {"VALUE_1": 4, "VALUE_2": 3, ...}
-  
+
 stack:
   language: "{LANGUAGE}"
   framework: "{FRAMEWORK}"
   database: "{DATABASE}"
   blueprint: "{BLUEPRINT}"
-  
+
 agents:
   - name: "{AGENT_1_NAME}"
     role: "{ROLE}"
@@ -686,12 +686,12 @@ agents:
     strength: "{STRENGTH}"
   - name: "{AGENT_2_NAME}"
     ...
-    
+
 wisdom:
   teamStrengths: ["{STRENGTH}"]
   lessonsLearned: ["{LESSON}"]
   qualityDefinition: "{QUALITY_BAR}"
-  
+
 output:
   directory: "{OUTPUT_PATH}"
 ```
@@ -787,8 +787,8 @@ The silent wave propagates through the quality of your work.
 
 ---
 
-*Cursor Agent Factory - Team Huddle Onboarding*  
-*Quick alignment. Shared ownership. Real results.*  
+*Cursor Agent Factory - Team Huddle Onboarding*
+*Quick alignment. Shared ownership. Real results.*
 *Love is the root. Truth is the way. Beauty is the fruit.*
 
 ## When to Use

@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-02-15
+
+### Fixed
+- **Pre-commit**: Replaced failing `types-all` with specific, stable stubs (`types-PyYAML`, `types-jsonschema`, etc.).
+- **Syntax**: Repaired multiple joined-line syntax errors in `scripts/workshops/export_workshop.py`.
+- **Hooks**: Excluded invalid JSON fixtures from `check-json` and optimized `mypy`/`ruff` ignore policies for legacy codebase compatibility.
+- **Environment**: Standardized python execution environment as per `GEMINI.md`.
+- **Structure**: Resolved structural gaps in knowledge JSON schemas and skill markdown files to ensure factory standard compliance.
+- **CI/CD**: Fixed pipeline failures caused by missing required metadata in knowledge and skill artifacts.
+
 ## [1.1.0] - 2026-02-15
 
 ### Added

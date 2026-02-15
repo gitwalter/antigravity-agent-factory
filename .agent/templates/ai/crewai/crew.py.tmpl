@@ -36,15 +36,15 @@ class {{CREW_CLASS_NAME}}Output(BaseModel):
 class {{CREW_CLASS_NAME}}:
     """
     {{CREW_NAME}} - CrewAI Crew Definition
-    
+
     Defines a crew of agents working together to accomplish goals.
     Each agent has a specific role, goal, and backstory.
-    
+
     Example:
         >>> crew = {{CREW_CLASS_NAME}}()
         >>> result = crew.kickoff(inputs={"topic": "AI research"})
     """
-    
+
     def __init__(
         self,
         verbose: bool = True,
@@ -54,7 +54,7 @@ class {{CREW_CLASS_NAME}}:
     ):
         """
         Initialize crew.
-        
+
         Args:
             verbose: Enable verbose logging
             process: Process type (sequential, hierarchical)
@@ -65,13 +65,13 @@ class {{CREW_CLASS_NAME}}:
         self.process = process
         self.max_iter = max_iter
         self.memory = memory
-        
+
         # Create agents
         self.agents = self._create_agents()
-        
+
         # Create tasks
         self.tasks = self._create_tasks()
-        
+
         # Create crew
         self.crew = Crew(
             agents=self.agents,
@@ -81,18 +81,18 @@ class {{CREW_CLASS_NAME}}:
             max_iter=max_iter,
             memory=memory
         )
-        
+
         logger.info(f"Initialized {{CREW_NAME}} with {len(self.agents)} agents")
-    
+
     def _create_agents(self) -> List[Agent]:
         """
         Create agents for the crew.
-        
+
         Returns:
             List of Agent instances
         """
         agents = []
-        
+
         # Agent 1: {{AGENT_1_ROLE}}
         agent_1 = Agent(
             role="{{AGENT_1_ROLE}}",
@@ -105,7 +105,7 @@ class {{CREW_CLASS_NAME}}:
             tools=[]  # Add tools as needed
         )
         agents.append(agent_1)
-        
+
         # Agent 2: {{AGENT_2_ROLE}}
         agent_2 = Agent(
             role="{{AGENT_2_ROLE}}",
@@ -118,20 +118,20 @@ class {{CREW_CLASS_NAME}}:
             tools=[]  # Add tools as needed
         )
         agents.append(agent_2)
-        
+
         # Add more agents as needed
-        
+
         return agents
-    
+
     def _create_tasks(self) -> List[Task]:
         """
         Create tasks for the crew.
-        
+
         Returns:
             List of Task instances
         """
         tasks = []
-        
+
         # Task 1: {{TASK_1_DESCRIPTION}}
         task_1 = Task(
             description="""{{TASK_1_DESCRIPTION}}""",
@@ -139,7 +139,7 @@ class {{CREW_CLASS_NAME}}:
             expected_output="{{TASK_1_EXPECTED_OUTPUT}}"
         )
         tasks.append(task_1)
-        
+
         # Task 2: {{TASK_2_DESCRIPTION}}
         task_2 = Task(
             description="""{{TASK_2_DESCRIPTION}}""",
@@ -148,53 +148,53 @@ class {{CREW_CLASS_NAME}}:
             context=[task_1]  # Task 2 depends on task 1
         )
         tasks.append(task_2)
-        
+
         # Add more tasks as needed
-        
+
         return tasks
-    
+
     def kickoff(self, inputs: Dict[str, Any]) -> {{CREW_CLASS_NAME}}Output:
         """
         Kickoff crew execution.
-        
+
         Args:
             inputs: Input dictionary for crew execution
-        
+
         Returns:
             Structured output with results
-        
+
         Example:
             >>> result = crew.kickoff({"topic": "AI research"})
             >>> print(result.result)
         """
         import time
-        
+
         logger.info(f"Kicking off {{CREW_NAME}} with inputs: {inputs}")
         start_time = time.time()
-        
+
         try:
             # Execute crew
             crew_result = self.crew.kickoff(inputs=inputs)
-            
+
             execution_time = time.time() - start_time
-            
+
             # Extract agent results
             agent_results = {}
             if hasattr(crew_result, 'tasks_output'):
                 for task in self.tasks:
                     task_output = getattr(crew_result, 'tasks_output', {})
                     agent_results[task.agent.role] = str(task_output.get(task.description, ""))
-            
+
             output = {{CREW_CLASS_NAME}}Output(
                 result=str(crew_result),
                 agent_results=agent_results,
                 execution_time=execution_time,
                 tasks_completed=len(self.tasks)
             )
-            
+
             logger.info(f"Crew execution completed in {execution_time:.2f}s")
             return output
-            
+
         except Exception as e:
             logger.error(f"Error during crew execution: {e}")
             execution_time = time.time() - start_time
@@ -204,39 +204,39 @@ class {{CREW_CLASS_NAME}}:
                 execution_time=execution_time,
                 tasks_completed=0
             )
-    
+
     async def akickoff(self, inputs: Dict[str, Any]) -> {{CREW_CLASS_NAME}}Output:
         """
         Async version of kickoff.
-        
+
         Args:
             inputs: Input dictionary
-        
+
         Returns:
             Structured output
         """
         import time
-        
+
         logger.info(f"Async kicking off {{CREW_NAME}}...")
         start_time = time.time()
-        
+
         try:
             crew_result = await self.crew.akickoff(inputs=inputs)
             execution_time = time.time() - start_time
-            
+
             agent_results = {}
             if hasattr(crew_result, 'tasks_output'):
                 for task in self.tasks:
                     task_output = getattr(crew_result, 'tasks_output', {})
                     agent_results[task.agent.role] = str(task_output.get(task.description, ""))
-            
+
             return {{CREW_CLASS_NAME}}Output(
                 result=str(crew_result),
                 agent_results=agent_results,
                 execution_time=execution_time,
                 tasks_completed=len(self.tasks)
             )
-            
+
         except Exception as e:
             logger.error(f"Error during async crew execution: {e}")
             execution_time = time.time() - start_time
@@ -255,12 +255,12 @@ if __name__ == "__main__":
         verbose=True,
         process=Process.sequential
     )
-    
+
     # Execute crew
     result = crew.kickoff({
         "{{INPUT_KEY}}": "{{EXAMPLE_INPUT}}"
     })
-    
+
     print(f"Result: {result.result}")
     print(f"Execution Time: {result.execution_time:.2f}s")
     print(f"Tasks Completed: {result.tasks_completed}")

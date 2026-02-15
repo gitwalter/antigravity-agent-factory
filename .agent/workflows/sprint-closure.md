@@ -8,8 +8,8 @@ description: Systematic workflow for closing sprints, including status review, v
 
 Systematic workflow for closing sprints, including status review, velocity calculation, incomplete item handling, and retrospective facilitation. Captures lessons learned and prepares for the next sprint.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** sprint-master
 
 ## Trigger Conditions

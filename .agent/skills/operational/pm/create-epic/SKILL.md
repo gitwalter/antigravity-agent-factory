@@ -42,7 +42,7 @@ Collect essential information about the epic:
 ```
 "I'll help you create an epic. Let me gather a few details:
 
-**Epic Title:** 
+**Epic Title:**
 [What should this epic be called?]
 
 **Epic Description:**
@@ -190,7 +190,7 @@ The epic is ready for planning!"
 
 **Agent:** "I'll help you create an epic for user authentication.
 
-**Epic Title:** 
+**Epic Title:**
 User Authentication System
 
 **Epic Description:**

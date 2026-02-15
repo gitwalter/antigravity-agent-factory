@@ -45,8 +45,8 @@ In 30 seconds, you'll have a complete demo project. See [quickstart.md](quicksta
 
 ## Express Lane
 
-**Duration:** 10-15 minutes  
-**Team Size:** Individual  
+**Duration:** 10-15 minutes
+**Team Size:** Individual
 **Best For:** Developers who know what they want and want to get started quickly
 
 ### What You'll Do
@@ -91,8 +91,8 @@ Or use the skill directly:
 
 ## Team Huddle
 
-**Duration:** 1-2 hours  
-**Team Size:** 2-5 people  
+**Duration:** 1-2 hours
+**Team Size:** 2-5 people
 **Best For:** Small teams who want alignment without a multi-day workshop
 
 ### What You'll Do Together
@@ -137,8 +137,8 @@ Or use the skill directly:
 
 ## Workshop Series
 
-**Duration:** 11-15 hours (across 5 sessions)  
-**Team Size:** 6+ people  
+**Duration:** 11-15 hours (across 5 sessions)
+**Team Size:** 6+ people
 **Best For:** Enterprise teams, major projects, organizational transformation
 
 ### The 5 Workshops
@@ -175,8 +175,8 @@ Everything from Team Huddle, plus:
 
 ## Existing Repository
 
-**Duration:** 15-30 minutes  
-**Team Size:** Any  
+**Duration:** 15-30 minutes
+**Team Size:** Any
 **Best For:** Adding AI agents to projects that already have code
 
 ### What Happens
@@ -279,7 +279,7 @@ The Foundation layer provides integrity verification and hallucination preventio
 
 Development Autonomy enables self-healing CI/CD pipelines and automatic error detection. Your project can monitor its own CI/CD status, detect failures, and automatically fix common pipeline issues without manual intervention.
 
-**Try it:** 
+**Try it:**
 - `"Monitor CI pipeline"` - Set up continuous monitoring
 - `"Fix pipeline errors"` - Automatically diagnose and fix CI/CD failures
 
@@ -382,5 +382,5 @@ See **Guardian Coordination** for complete documentation.
 
 ---
 
-*Cursor Agent Factory v4.0.0*  
+*Cursor Agent Factory v4.0.0*
 *Start with purpose. Build with excellence. Serve with love.*

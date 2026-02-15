@@ -8,8 +8,8 @@ description: SAP Cloud Platform Integration (CPI) iFlow development workflow. Co
 
 SAP Cloud Platform Integration (CPI) iFlow development workflow. Covers integration design, iFlow development, Groovy scripting, testing, and deployment to CPI tenant.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-10  
+**Version:** 1.0.0
+**Created:** 2026-02-10
 **Applies To:** sap-integration, cpi-iflow
 
 ## Trigger Conditions

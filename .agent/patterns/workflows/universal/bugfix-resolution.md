@@ -4,8 +4,8 @@
 
 Systematic workflow for resolving bugs from ticket analysis through implementation and verification. This workflow ensures thorough root cause analysis, proper fix implementation, and comprehensive testing.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** debug-conductor
 
 > **Note:** Directory paths referenced in this workflow (knowledge/, .cursor/skills/, patterns/, etc.) are configurable via `.cursor/config/settings.json`. See [Path Configuration Guide](../../../../docs/setup/configuration.md).
@@ -31,7 +31,7 @@ This workflow is activated when:
 
 **Description:** Gather and analyze bug report information.
 
-**Entry Criteria:** Bug ticket or report received  
+**Entry Criteria:** Bug ticket or report received
 **Exit Criteria:** Bug understood with reproduction steps
 
 #### Step 1.1: Fetch Ticket Details
@@ -90,7 +90,7 @@ This workflow is activated when:
 
 **Description:** Verify understanding of the system context.
 
-**Entry Criteria:** Bug classified  
+**Entry Criteria:** Bug classified
 **Exit Criteria:** System context understood
 
 #### Step 2.1: Ground Data Model
@@ -144,7 +144,7 @@ This workflow is activated when:
 
 **Description:** Identify the underlying cause of the bug.
 
-**Entry Criteria:** Context gathered  
+**Entry Criteria:** Context gathered
 **Exit Criteria:** Root cause identified with evidence
 
 #### Step 3.1: Reproduce the Bug
@@ -228,7 +228,7 @@ This workflow is activated when:
 
 **Description:** Implement the bug fix.
 
-**Entry Criteria:** Root cause identified  
+**Entry Criteria:** Root cause identified
 **Exit Criteria:** Fix implemented with passing tests
 
 #### Step 4.1: Create Implementation Plan
@@ -308,7 +308,7 @@ This workflow is activated when:
 
 **Description:** Comprehensive verification of the fix.
 
-**Entry Criteria:** Fix implemented and locally verified  
+**Entry Criteria:** Fix implemented and locally verified
 **Exit Criteria:** All tests pass, no regressions
 
 #### Step 5.1: Run Full Test Suite
@@ -354,7 +354,7 @@ This workflow is activated when:
 
 **Description:** Complete the fix and update tracking.
 
-**Entry Criteria:** Fix verified  
+**Entry Criteria:** Fix verified
 **Exit Criteria:** Ticket closed, lessons captured
 
 #### Step 6.1: Update Ticket

@@ -52,11 +52,11 @@ class EvaluationMetrics(BaseModel):
 class {{EVALUATOR_CLASS_NAME}}:
     """
     {{EVALUATOR_NAME}} - Fine-Tuned Model Evaluation
-    
+
     Evaluates fine-tuned language models using various metrics including
     perplexity, accuracy, BLEU, ROUGE, and generation quality. Supports
     both automatic metrics and human evaluation.
-    
+
     Example:
         >>> evaluator = {{EVALUATOR_CLASS_NAME}}(
         ...     model_path="./models/fine-tuned-model",
@@ -68,7 +68,7 @@ class {{EVALUATOR_CLASS_NAME}}:
         ... )
         >>> print(f"Perplexity: {metrics.perplexity}")
     """
-    
+
     def __init__(
         self,
         model_path: str,
@@ -79,7 +79,7 @@ class {{EVALUATOR_CLASS_NAME}}:
     ):
         """
         Initialize evaluator.
-        
+
         Args:
             model_path: Path to fine-tuned model (PEFT adapters)
             base_model_name: Base model name (required if loading PEFT)
@@ -89,36 +89,36 @@ class {{EVALUATOR_CLASS_NAME}}:
         """
         self.model_path = Path(model_path)
         self.base_model_name = base_model_name
-        
+
         logger.info(f"Loading model from {model_path}...")
-        
+
         # Load tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(str(self.model_path))
-        
+
         # Load model
         if self.model_path.exists() and (self.model_path / "adapter_config.json").exists():
             # PEFT model
             if base_model_name is None:
                 raise ValueError("base_model_name required for PEFT models")
-            
+
             logger.info(f"Loading base model: {base_model_name}")
             from transformers import BitsAndBytesConfig
-            
+
             model_kwargs = {
                 "device_map": device,
                 "torch_dtype": torch_dtype,
             }
-            
+
             if load_in_4bit:
                 model_kwargs["quantization_config"] = BitsAndBytesConfig(
                     load_in_4bit=True
                 )
-            
+
             base_model = AutoModelForCausalLM.from_pretrained(
                 base_model_name,
                 **model_kwargs
             )
-            
+
             logger.info("Loading PEFT adapters...")
             self.model = PeftModel.from_pretrained(base_model, str(self.model_path))
         else:
@@ -128,10 +128,10 @@ class {{EVALUATOR_CLASS_NAME}}:
                 device_map=device,
                 torch_dtype=torch_dtype,
             )
-        
+
         self.model.eval()
         logger.info("Model loaded successfully")
-    
+
     def compute_perplexity(
         self,
         dataset: Dataset,
@@ -141,30 +141,30 @@ class {{EVALUATOR_CLASS_NAME}}:
     ) -> float:
         """
         Compute perplexity on dataset.
-        
+
         Args:
             dataset: Evaluation dataset
             text_column: Column name containing text
             max_length: Maximum sequence length
             batch_size: Batch size for evaluation
-            
+
         Returns:
             Perplexity score
-            
+
         Example:
             >>> perplexity = evaluator.compute_perplexity(test_dataset)
             >>> print(f"Perplexity: {perplexity:.2f}")
         """
         logger.info("Computing perplexity...")
-        
+
         total_loss = 0.0
         total_tokens = 0
-        
+
         # Process in batches
         for i in tqdm(range(0, len(dataset), batch_size)):
             batch = dataset[i:i+batch_size]
             texts = batch[text_column] if isinstance(batch, dict) else [item[text_column] for item in batch]
-            
+
             # Tokenize
             inputs = self.tokenizer(
                 texts,
@@ -173,23 +173,23 @@ class {{EVALUATOR_CLASS_NAME}}:
                 truncation=True,
                 max_length=max_length,
             ).to(self.model.device)
-            
+
             # Compute loss
             with torch.no_grad():
                 outputs = self.model(**inputs, labels=inputs["input_ids"])
                 loss = outputs.loss
-            
+
             # Accumulate
             total_loss += loss.item() * inputs["input_ids"].numel()
             total_tokens += inputs["input_ids"].numel()
-        
+
         # Calculate perplexity
         avg_loss = total_loss / total_tokens
         perplexity = np.exp(avg_loss)
-        
+
         logger.info(f"Perplexity: {perplexity:.4f}")
         return perplexity
-    
+
     def generate_texts(
         self,
         prompts: List[str],
@@ -201,7 +201,7 @@ class {{EVALUATOR_CLASS_NAME}}:
     ) -> List[str]:
         """
         Generate texts from prompts.
-        
+
         Args:
             prompts: List of input prompts
             max_new_tokens: Maximum tokens to generate
@@ -209,21 +209,21 @@ class {{EVALUATOR_CLASS_NAME}}:
             top_p: Nucleus sampling parameter
             do_sample: Whether to use sampling
             num_return_sequences: Number of sequences to generate per prompt
-            
+
         Returns:
             List of generated texts
-            
+
         Example:
             >>> prompts = ["What is AI?", "Explain machine learning"]
             >>> outputs = evaluator.generate_texts(prompts, max_new_tokens=50)
         """
         logger.info(f"Generating texts for {len(prompts)} prompts...")
-        
+
         generated_texts = []
-        
+
         for prompt in tqdm(prompts):
             inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
-            
+
             with torch.no_grad():
                 outputs = self.model.generate(
                     **inputs,
@@ -234,15 +234,15 @@ class {{EVALUATOR_CLASS_NAME}}:
                     num_return_sequences=num_return_sequences,
                     pad_token_id=self.tokenizer.eos_token_id,
                 )
-            
+
             for output in outputs:
                 generated = self.tokenizer.decode(output, skip_special_tokens=True)
                 # Remove prompt from generated text
                 generated = generated[len(prompt):].strip()
                 generated_texts.append(generated)
-        
+
         return generated_texts
-    
+
     def compute_bleu_score(
         self,
         predictions: List[str],
@@ -250,33 +250,33 @@ class {{EVALUATOR_CLASS_NAME}}:
     ) -> float:
         """
         Compute BLEU score.
-        
+
         Args:
             predictions: Generated texts
             references: Reference texts
-            
+
         Returns:
             BLEU score
-            
+
         Example:
             >>> bleu = evaluator.compute_bleu_score(predictions, references)
         """
         try:
             from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
             smooth = SmoothingFunction().method1
-            
+
             scores = []
             for pred, ref in zip(predictions, references):
                 pred_tokens = pred.split()
                 ref_tokens = ref.split()
                 score = sentence_bleu([ref_tokens], pred_tokens, smoothing_function=smooth)
                 scores.append(score)
-            
+
             return np.mean(scores)
         except ImportError:
             logger.warning("nltk not installed, skipping BLEU score")
             return None
-    
+
     def compute_rouge_scores(
         self,
         predictions: List[str],
@@ -284,31 +284,31 @@ class {{EVALUATOR_CLASS_NAME}}:
     ) -> Dict[str, float]:
         """
         Compute ROUGE scores.
-        
+
         Args:
             predictions: Generated texts
             references: Reference texts
-            
+
         Returns:
             Dictionary of ROUGE scores
-            
+
         Example:
             >>> rouge = evaluator.compute_rouge_scores(predictions, references)
             >>> print(f"ROUGE-L: {rouge['rougeL']:.4f}")
         """
         try:
             from rouge_score import rouge_scorer
-            
+
             scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
-            
+
             scores = {'rouge1': [], 'rouge2': [], 'rougeL': []}
-            
+
             for pred, ref in zip(predictions, references):
                 result = scorer.score(ref, pred)
                 scores['rouge1'].append(result['rouge1'].fmeasure)
                 scores['rouge2'].append(result['rouge2'].fmeasure)
                 scores['rougeL'].append(result['rougeL'].fmeasure)
-            
+
             return {
                 'rouge1': np.mean(scores['rouge1']),
                 'rouge2': np.mean(scores['rouge2']),
@@ -317,7 +317,7 @@ class {{EVALUATOR_CLASS_NAME}}:
         except ImportError:
             logger.warning("rouge-score not installed, skipping ROUGE scores")
             return None
-    
+
     def evaluate_classification(
         self,
         dataset: Dataset,
@@ -328,17 +328,17 @@ class {{EVALUATOR_CLASS_NAME}}:
     ) -> Dict[str, float]:
         """
         Evaluate model on classification task.
-        
+
         Args:
             dataset: Evaluation dataset
             prompt_column: Column with prompts
             label_column: Column with labels
             label_mapping: Optional mapping from label strings to integers
             max_new_tokens: Maximum tokens to generate
-            
+
         Returns:
             Dictionary of classification metrics
-            
+
         Example:
             >>> metrics = evaluator.evaluate_classification(
             ...     test_dataset,
@@ -347,10 +347,10 @@ class {{EVALUATOR_CLASS_NAME}}:
             ... )
         """
         logger.info("Evaluating classification task...")
-        
+
         prompts = dataset[prompt_column]
         true_labels = dataset[label_column]
-        
+
         # Generate predictions
         predictions = self.generate_texts(
             prompts,
@@ -358,7 +358,7 @@ class {{EVALUATOR_CLASS_NAME}}:
             temperature=0.0,  # Deterministic for classification
             do_sample=False,
         )
-        
+
         # Extract labels from predictions (simple extraction)
         if label_mapping:
             # Map predictions to labels
@@ -374,22 +374,22 @@ class {{EVALUATOR_CLASS_NAME}}:
         else:
             # Assume numeric labels
             pred_labels = [int(p.strip().split()[0]) if p.strip() else 0 for p in predictions]
-        
+
         # Compute metrics
         accuracy = accuracy_score(true_labels, pred_labels)
         f1 = f1_score(true_labels, pred_labels, average='weighted')
         precision = precision_score(true_labels, pred_labels, average='weighted', zero_division=0)
         recall = recall_score(true_labels, pred_labels, average='weighted', zero_division=0)
-        
+
         logger.info(f"Accuracy: {accuracy:.4f}, F1: {f1:.4f}")
-        
+
         return {
             'accuracy': accuracy,
             'f1_score': f1,
             'precision': precision,
             'recall': recall,
         }
-    
+
     def evaluate(
         self,
         test_dataset: Dataset,
@@ -403,7 +403,7 @@ class {{EVALUATOR_CLASS_NAME}}:
     ) -> EvaluationMetrics:
         """
         Comprehensive evaluation of the model.
-        
+
         Args:
             test_dataset: Test dataset
             text_column: Column with text (for perplexity)
@@ -413,10 +413,10 @@ class {{EVALUATOR_CLASS_NAME}}:
             compute_generation_metrics: Whether to compute BLEU/ROUGE
             num_samples: Number of samples for generation evaluation
             max_new_tokens: Maximum tokens to generate
-            
+
         Returns:
             EvaluationMetrics object
-            
+
         Example:
             >>> metrics = evaluator.evaluate(
             ...     test_dataset,
@@ -425,16 +425,16 @@ class {{EVALUATOR_CLASS_NAME}}:
             ... )
         """
         logger.info("Starting comprehensive evaluation...")
-        
+
         metrics = EvaluationMetrics()
-        
+
         # Compute perplexity
         if compute_perplexity:
             metrics.perplexity = self.compute_perplexity(
                 test_dataset,
                 text_column=text_column,
             )
-        
+
         # Generation evaluation
         if compute_generation_metrics and prompt_column and reference_column:
             # Sample dataset
@@ -443,22 +443,22 @@ class {{EVALUATOR_CLASS_NAME}}:
                 sampled_dataset = test_dataset.select(indices)
             else:
                 sampled_dataset = test_dataset
-            
+
             prompts = sampled_dataset[prompt_column]
             references = sampled_dataset[reference_column]
-            
+
             # Generate predictions
             predictions = self.generate_texts(
                 prompts,
                 max_new_tokens=max_new_tokens,
             )
-            
+
             # Compute BLEU
             metrics.bleu_score = self.compute_bleu_score(predictions, references)
-            
+
             # Compute ROUGE
             metrics.rouge_scores = self.compute_rouge_scores(predictions, references)
-            
+
             # Store samples
             metrics.generation_samples = [
                 {
@@ -468,10 +468,10 @@ class {{EVALUATOR_CLASS_NAME}}:
                 }
                 for p, r, pred in zip(prompts[:5], references[:5], predictions[:5])
             ]
-        
+
         logger.info("Evaluation complete")
         return metrics
-    
+
     def save_results(
         self,
         metrics: EvaluationMetrics,
@@ -479,38 +479,38 @@ class {{EVALUATOR_CLASS_NAME}}:
     ) -> None:
         """
         Save evaluation results to JSON.
-        
+
         Args:
             metrics: EvaluationMetrics object
             output_path: Path to save results
-            
+
         Example:
             >>> evaluator.save_results(metrics, "results/evaluation.json")
         """
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         results_dict = metrics.dict(exclude_none=True)
-        
+
         with open(output_path, "w") as f:
             json.dump(results_dict, f, indent=2)
-        
+
         logger.info(f"Results saved to {output_path}")
 
 
 # Example usage
 if __name__ == "__main__":
     from datasets import load_dataset
-    
+
     # Initialize evaluator
     evaluator = {{EVALUATOR_CLASS_NAME}}(
         model_path="{{MODEL_PATH}}",
         base_model_name="{{BASE_MODEL_NAME}}",
     )
-    
+
     # Load test dataset
     test_dataset = load_dataset("{{TEST_DATASET_PATH}}", split="test")
-    
+
     # Evaluate
     metrics = evaluator.evaluate(
         test_dataset=test_dataset,
@@ -519,7 +519,7 @@ if __name__ == "__main__":
         prompt_column="{{PROMPT_COLUMN}}",
         reference_column="{{REFERENCE_COLUMN}}",
     )
-    
+
     # Print results
     print("\n" + "=" * 50)
     print("Evaluation Results")
@@ -533,6 +533,6 @@ if __name__ == "__main__":
         print(f"ROUGE-2: {metrics.rouge_scores['rouge2']:.4f}")
         print(f"ROUGE-L: {metrics.rouge_scores['rougeL']:.4f}")
     print("=" * 50)
-    
+
     # Save results
     evaluator.save_results(metrics, "{{OUTPUT_RESULTS_PATH}}")

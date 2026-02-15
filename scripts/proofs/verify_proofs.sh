@@ -65,7 +65,7 @@ print_help() {
 # Check if Lean 4 is installed
 check_lean() {
     echo -e "${BLUE}[1/4] Checking Lean 4 installation...${NC}"
-    
+
     if ! command -v lake &> /dev/null; then
         echo -e "${RED}ERROR: Lean 4 (lake) not found.${NC}"
         echo ""
@@ -76,7 +76,7 @@ check_lean() {
         echo "  Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/leanprover/elan/master/elan-init.ps1' -OutFile 'elan-init.ps1'; .\\elan-init.ps1"
         exit 1
     fi
-    
+
     LEAN_VERSION=$(lake --version 2>&1 | head -n1)
     echo -e "${GREEN}✓ Found: $LEAN_VERSION${NC}"
 }
@@ -84,17 +84,17 @@ check_lean() {
 # Check proofs directory exists
 check_proofs_dir() {
     echo -e "${BLUE}[2/4] Checking proofs directory...${NC}"
-    
+
     if [ ! -d "$PROOFS_DIR" ]; then
         echo -e "${RED}ERROR: Proofs directory not found: $PROOFS_DIR${NC}"
         exit 1
     fi
-    
+
     if [ ! -f "$PROOFS_DIR/lakefile.lean" ]; then
         echo -e "${RED}ERROR: lakefile.lean not found in $PROOFS_DIR${NC}"
         exit 1
     fi
-    
+
     echo -e "${GREEN}✓ Proofs directory: $PROOFS_DIR${NC}"
 }
 
@@ -102,14 +102,14 @@ check_proofs_dir() {
 build_proofs() {
     echo -e "${BLUE}[3/4] Building proofs...${NC}"
     echo ""
-    
+
     cd "$PROOFS_DIR"
-    
+
     if [ "$CLEAN" = true ]; then
         echo -e "${YELLOW}Cleaning build artifacts...${NC}"
         lake clean
     fi
-    
+
     if [ "$QUICK" = true ]; then
         echo -e "${YELLOW}Running quick check...${NC}"
         lake check
@@ -121,7 +121,7 @@ build_proofs() {
             lake build 2>&1 | tail -20
         fi
     fi
-    
+
     echo ""
     echo -e "${GREEN}✓ All proofs type-check successfully!${NC}"
 }

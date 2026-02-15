@@ -21,24 +21,24 @@ from pathlib import Path
 def run_pre_commit(root_dir: Path) -> bool:
     """
     Run pre-commit validation.
-    
+
     Args:
         root_dir: Project root directory
-        
+
     Returns:
         True if validation passed
     """
     pre_commit_script = root_dir / "scripts" / "git" / "pre_commit_runner.py"
-    
+
     if not pre_commit_script.exists():
         print("[WARN] Pre-commit runner not found. Skipping validation.")
         return True
-    
+
     try:
         result = subprocess.run(
             [sys.executable, str(pre_commit_script), "--sync"],
             cwd=root_dir,
-            capture_output=False
+            capture_output=False,
         )
         return result.returncode == 0
     except Exception as e:
@@ -49,19 +49,17 @@ def run_pre_commit(root_dir: Path) -> bool:
 def commit(root_dir: Path, message: str) -> bool:
     """
     Create git commit.
-    
+
     Args:
         root_dir: Project root directory
         message: Commit message
-        
+
     Returns:
         True if commit succeeded
     """
     try:
         result = subprocess.run(
-            ["git", "commit", "-m", message],
-            cwd=root_dir,
-            capture_output=False
+            ["git", "commit", "-m", message], cwd=root_dir, capture_output=False
         )
         return result.returncode == 0
     except Exception as e:
@@ -72,19 +70,15 @@ def commit(root_dir: Path, message: str) -> bool:
 def push(root_dir: Path) -> bool:
     """
     Push commits to remote.
-    
+
     Args:
         root_dir: Project root directory
-        
+
     Returns:
         True if push succeeded
     """
     try:
-        result = subprocess.run(
-            ["git", "push"],
-            cwd=root_dir,
-            capture_output=False
-        )
+        result = subprocess.run(["git", "push"], cwd=root_dir, capture_output=False)
         return result.returncode == 0
     except Exception as e:
         print(f"[FAIL] Error pushing: {e}")
@@ -96,54 +90,50 @@ def main():
     parser = argparse.ArgumentParser(
         description="Safe commit with pre-commit validation"
     )
+    parser.add_argument("message", type=str, help="Commit message")
     parser.add_argument(
-        "message",
-        type=str,
-        help="Commit message"
-    )
-    parser.add_argument(
-        "--push",
-        action="store_true",
-        help="Push to remote after commit"
+        "--push", action="store_true", help="Push to remote after commit"
     )
     parser.add_argument(
         "--skip-validation",
         action="store_true",
-        help="Skip pre-commit validation (not recommended)"
+        help="Skip pre-commit validation (not recommended)",
     )
     parser.add_argument(
         "--root",
         type=str,
         default=".",
-        help="Project root directory (default: current directory)"
+        help="Project root directory (default: current directory)",
     )
-    
+
     args = parser.parse_args()
-    
+
     root_dir = Path(args.root).resolve()
-    
+
     # Check if we're in a git repository
     git_dir = root_dir / ".git"
     if not git_dir.exists():
         print("[FAIL] Not a git repository. Run 'git init' first.")
         return 1
-    
+
     # Run pre-commit validation
     if not args.skip_validation:
         print("[INFO] Running pre-commit validation...")
         if not run_pre_commit(root_dir):
             print("[FAIL] Pre-commit validation failed. Commit aborted.")
-            print("   Fix the issues above or use --skip-validation to bypass (not recommended)")
+            print(
+                "   Fix the issues above or use --skip-validation to bypass (not recommended)"
+            )
             return 1
         print("[OK] Pre-commit validation passed")
-    
+
     # Create commit
     print(f"[EDIT] Creating commit: {args.message}")
     if not commit(root_dir, args.message):
         print("[FAIL] Commit failed")
         return 1
     print("[OK] Commit created successfully")
-    
+
     # Push if requested
     if args.push:
         print("[INFO] Pushing to remote...")
@@ -151,7 +141,7 @@ def main():
             print("[FAIL] Push failed")
             return 1
         print("[OK] Pushed to remote")
-    
+
     return 0
 
 

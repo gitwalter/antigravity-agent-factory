@@ -8,8 +8,8 @@ description: ML model evaluation workflow covering metrics selection, model comp
 
 ML model evaluation workflow covering metrics selection, model comparison, and reporting. Supports classification, regression, and LLM evaluation with structured reporting.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-10  
+**Version:** 1.0.0
+**Created:** 2026-02-10
 **Applies To:** ml-models, llm-applications
 
 ## Trigger Conditions

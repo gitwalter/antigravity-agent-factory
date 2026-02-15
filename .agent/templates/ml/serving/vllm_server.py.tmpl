@@ -148,16 +148,16 @@ class HealthResponse(BaseModel):
 async def initialize_engine():
     """
     Initialize vLLM async engine.
-    
+
     This function sets up the vLLM engine with the specified configuration.
     """
     global engine
-    
+
     logger.info("Initializing vLLM engine")
     logger.info(f"Model: {{MODEL_NAME}}")
     logger.info(f"Tensor parallel size: {{TENSOR_PARALLEL_SIZE}}")
     logger.info(f"Pipeline parallel size: {{PIPELINE_PARALLEL_SIZE}}")
-    
+
     try:
         engine_args = AsyncEngineArgs(
             model="{{MODEL_NAME}}",
@@ -176,11 +176,11 @@ async def initialize_engine():
             engine_use_ray={{ENGINE_USE_RAY}},
             disable_custom_all_reduce={{DISABLE_CUSTOM_ALL_REDUCE}},
         )
-        
+
         engine = AsyncLLMEngine.from_engine_args(engine_args)
-        
+
         logger.info("vLLM engine initialized successfully")
-        
+
     except Exception as e:
         logger.error(f"Failed to initialize vLLM engine: {e}", exc_info=True)
         raise
@@ -192,20 +192,20 @@ async def generate_stream(
 ) -> AsyncIterator[str]:
     """
     Stream generation results.
-    
+
     Args:
         request: Generation request
         request_id: Unique request ID
-        
+
     Yields:
         JSON strings with token updates
     """
     global engine
-    
+
     if engine is None:
         yield json.dumps({"error": "Engine not initialized"})
         return
-    
+
     # Create sampling params
     sampling_params = SamplingParams(
         temperature=request.temperature,
@@ -218,10 +218,10 @@ async def generate_stream(
         stop_token_ids=request.stop_token_ids,
         logprobs=request.logprobs,
     )
-    
+
     # Prepare prompts
     prompts = [request.prompt] if isinstance(request.prompt, str) else request.prompt
-    
+
     try:
         # Stream results
         async for request_output in engine.generate(
@@ -243,7 +243,7 @@ async def generate_stream(
                     "texts": [out.text for out in request_output.outputs],
                     "finish_reasons": [out.finish_reason for out in request_output.outputs]
                 }) + "\n"
-                
+
     except Exception as e:
         logger.error(f"Generation error: {e}", exc_info=True)
         yield json.dumps({"error": str(e)}) + "\n"
@@ -252,7 +252,7 @@ async def generate_stream(
 def create_app() -> FastAPI:
     """
     Create and configure FastAPI application.
-    
+
     Returns:
         Configured FastAPI application instance
     """
@@ -262,13 +262,13 @@ def create_app() -> FastAPI:
         description="{{API_DESCRIPTION}}",
         docs_url="/docs" if {{ENABLE_DOCS}} else None,
     )
-    
+
     # Startup event
     @app.on_event("startup")
     async def startup_event():
         """Initialize engine on startup."""
         await initialize_engine()
-    
+
     # Shutdown event
     @app.on_event("shutdown")
     async def shutdown_event():
@@ -277,41 +277,41 @@ def create_app() -> FastAPI:
         if engine:
             # vLLM engine cleanup is handled automatically
             logger.info("Shutting down vLLM engine")
-    
+
     # Register routes
     setup_routes(app)
-    
+
     return app
 
 
 def setup_routes(app: FastAPI) -> None:
     """
     Register API routes.
-    
+
     Args:
         app: FastAPI application instance
     """
     import uuid
-    
+
     @app.post("/generate", response_model=GenerationResponse, tags=["Generation"])
     async def generate(request: GenerationRequest):
         """
         Generate text using the loaded model.
-        
+
         Args:
             request: Generation request with prompt and parameters
-            
+
         Returns:
             GenerationResponse with generated text and metadata
         """
         global engine
-        
+
         if engine is None:
             raise HTTPException(
                 status_code=503,
                 detail="Engine not initialized"
             )
-        
+
         if request.stream:
             # Return streaming response
             request_id = str(uuid.uuid4())
@@ -319,7 +319,7 @@ def setup_routes(app: FastAPI) -> None:
                 generate_stream(request, request_id),
                 media_type="application/x-ndjson"
             )
-        
+
         # Non-streaming generation
         try:
             sampling_params = SamplingParams(
@@ -333,13 +333,13 @@ def setup_routes(app: FastAPI) -> None:
                 stop_token_ids=request.stop_token_ids,
                 logprobs=request.logprobs,
             )
-            
+
             prompts = [request.prompt] if isinstance(request.prompt, str) else request.prompt
-            
+
             # Generate
             request_id = str(uuid.uuid4())
             results = []
-            
+
             async for request_output in engine.generate(
                 prompt=prompts[0] if len(prompts) == 1 else prompts,
                 sampling_params=sampling_params,
@@ -357,17 +357,17 @@ def setup_routes(app: FastAPI) -> None:
                         "texts": [out.text for out in request_output.outputs],
                         "finish_reasons": [out.finish_reason for out in request_output.outputs]
                     })
-            
+
             # Get final result
             final_result = results[-1] if results else {}
-            
+
             # Calculate usage (simplified - vLLM provides this in request_output)
             usage = {
                 "prompt_tokens": 0,  # Would need to tokenize to get exact count
                 "completion_tokens": 0,
                 "total_tokens": 0
             }
-            
+
             if len(prompts) == 1:
                 return GenerationResponse(
                     text=final_result.get("text", ""),
@@ -387,28 +387,28 @@ def setup_routes(app: FastAPI) -> None:
                     model="{{MODEL_NAME}}",
                     timestamp=datetime.utcnow().isoformat()
                 )
-                
+
         except Exception as e:
             logger.error(f"Generation failed: {e}", exc_info=True)
             raise HTTPException(
                 status_code=500,
                 detail=f"Generation failed: {str(e)}"
             )
-    
+
     @app.get("/health", response_model=HealthResponse, tags=["Health"])
     async def health_check():
         """
         Health check endpoint.
-        
+
         Returns:
             Health status and model information
         """
         global engine
-        
+
         import torch
-        
+
         gpu_count = torch.cuda.device_count() if torch.cuda.is_available() else 0
-        
+
         return HealthResponse(
             status="healthy" if engine is not None else "unhealthy",
             model_loaded=engine is not None,
@@ -416,23 +416,23 @@ def setup_routes(app: FastAPI) -> None:
             gpu_count=gpu_count,
             tensor_parallel_size={{TENSOR_PARALLEL_SIZE}}
         )
-    
+
     @app.get("/model/info", tags=["Model"])
     async def get_model_info():
         """
         Get model information.
-        
+
         Returns:
             Model metadata and configuration
         """
         global engine
-        
+
         if engine is None:
             raise HTTPException(
                 status_code=503,
                 detail="Engine not initialized"
             )
-        
+
         return {
             "model": "{{MODEL_NAME}}",
             "tensor_parallel_size": {{TENSOR_PARALLEL_SIZE}},
@@ -443,7 +443,7 @@ def setup_routes(app: FastAPI) -> None:
             "gpu_memory_utilization": {{GPU_MEMORY_UTILIZATION}},
             "max_num_seqs": {{MAX_NUM_SEQS}}
         }
-    
+
     logger.info("Routes registered")
 
 
@@ -456,7 +456,7 @@ def main():
     Main entry point for running the server.
     """
     import uvicorn
-    
+
     uvicorn.run(
         "{{MODULE_NAME}}.serving.vllm_server:app",
         host="{{HOST}}",

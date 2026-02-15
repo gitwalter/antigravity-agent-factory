@@ -26,11 +26,11 @@ import java.util.HashMap
 def Message processData(Message message) {
     def body = message.getBody(java.lang.String)
     def messageLog = messageLogFactory.getMessageLog(message)
-    
+
     // Parse message
     def xml = new XmlSlurper().parseText(body)
     def orderType = xml.OrderType.text()
-    
+
     // Route based on content
     if (orderType == 'STANDARD') {
         message.setProperty('Route', 'StandardOrderChannel')
@@ -42,7 +42,7 @@ def Message processData(Message message) {
         message.setProperty('Route', 'DefaultChannel')
         messageLog.addAttachmentAsString('Routing', 'Routed to Default Channel', 'text/plain')
     }
-    
+
     return message
 }
 ```
@@ -59,11 +59,11 @@ import groovy.json.JsonSlurper
 def Message processData(Message message) {
     def body = message.getBody(java.lang.String)
     def messageLog = messageLogFactory.getMessageLog(message)
-    
+
     try {
         // Parse XML input
         def xml = new XmlSlurper().parseText(body)
-        
+
         // Transform to JSON
         def json = [
             orderId: xml.OrderID.text(),
@@ -80,22 +80,22 @@ def Message processData(Message message) {
             totalAmount: xml.TotalAmount.text() as BigDecimal,
             currency: xml.Currency.text()
         ]
-        
+
         // Convert to JSON string
         def jsonBuilder = new JsonBuilder(json)
         def jsonString = jsonBuilder.toPrettyString()
-        
+
         // Set output
         message.setBody(jsonString)
         message.setHeader('Content-Type', 'application/json')
-        
+
         messageLog.addAttachmentAsString('Transformation', 'XML to JSON transformation successful', 'text/plain')
-        
+
     } catch (Exception e) {
         messageLog.addAttachmentAsString('Error', "Transformation error: ${e.message}", 'text/plain')
         throw new Exception("Transformation failed: ${e.message}", e)
     }
-    
+
     return message
 }
 ```
@@ -110,14 +110,14 @@ import groovy.xml.XmlUtil
 def Message processData(Message message) {
     def body = message.getBody(java.lang.String)
     def xml = new XmlSlurper().parseText(body)
-    
+
     // Get order header
     def orderHeader = [
         orderId: xml.OrderID.text(),
         customerId: xml.CustomerID.text(),
         orderDate: xml.OrderDate.text()
     ]
-    
+
     // Split items
     def items = xml.Items.Item.collect { item ->
         def itemXml = """
@@ -133,11 +133,11 @@ def Message processData(Message message) {
         """
         return itemXml
     }
-    
+
     // Store items for aggregation
     message.setProperty('SplitItems', items.join('|'))
     message.setProperty('ItemCount', items.size().toString())
-    
+
     return message
 }
 ```
@@ -152,10 +152,10 @@ import groovy.xml.XmlUtil
 def Message processData(Message message) {
     def splitItems = message.getProperty('SplitItems')
     def itemCount = message.getProperty('ItemCount') as Integer
-    
+
     if (splitItems && itemCount > 0) {
         def items = splitItems.split('\\|')
-        
+
         // Build aggregated XML
         def aggregatedXml = new groovy.xml.StreamingMarkupBuilder().bind {
             Order {
@@ -175,10 +175,10 @@ def Message processData(Message message) {
                 }
             }
         }
-        
+
         message.setBody(XmlUtil.serialize(aggregatedXml))
     }
-    
+
     return message
 }
 ```
@@ -192,7 +192,7 @@ import com.sap.gateway.ip.core.customdev.util.Message
 def Message processData(Message message) {
     def exception = message.getProperty('CamelExceptionCaught')
     def messageLog = messageLogFactory.getMessageLog(message)
-    
+
     if (exception) {
         def errorDetails = [
             timestamp: new Date().toString(),
@@ -201,13 +201,13 @@ def Message processData(Message message) {
             exchangeId: message.getExchange().getExchangeId(),
             retryCount: message.getProperty('RetryCount') ?: '0'
         ]
-        
-        messageLog.addAttachmentAsString('Error', 
+
+        messageLog.addAttachmentAsString('Error',
             "Error occurred: ${errorDetails.errorMessage}\n" +
             "Class: ${errorDetails.errorClass}\n" +
             "Retry Count: ${errorDetails.retryCount}",
             'text/plain')
-        
+
         // Check retry count
         def retryCount = (errorDetails.retryCount as Integer) ?: 0
         if (retryCount < 3) {
@@ -220,7 +220,7 @@ def Message processData(Message message) {
             message.setProperty('DeadLetter', 'true')
         }
     }
-    
+
     return message
 }
 ```
@@ -347,7 +347,7 @@ class ODataClient {
             }
         });
     }
-    
+
     async getEntitySet(entitySet, options = {}) {
         try {
             const params = {
@@ -357,7 +357,7 @@ class ODataClient {
                 $orderby: options.orderby,
                 $select: options.select
             };
-            
+
             const response = await this.client.get(`/${entitySet}`, { params });
             return response.data.value;
         } catch (error) {
@@ -365,13 +365,13 @@ class ODataClient {
             throw error;
         }
     }
-    
+
     async getEntity(entitySet, key, options = {}) {
         try {
             const params = {
                 $select: options.select
             };
-            
+
             const response = await this.client.get(`/${entitySet}(${key})`, { params });
             return response.data;
         } catch (error) {
@@ -379,7 +379,7 @@ class ODataClient {
             throw error;
         }
     }
-    
+
     async createEntity(entitySet, data) {
         try {
             const response = await this.client.post(`/${entitySet}`, data);
@@ -389,7 +389,7 @@ class ODataClient {
             throw error;
         }
     }
-    
+
     async updateEntity(entitySet, key, data) {
         try {
             const response = await this.client.patch(`/${entitySet}(${key})`, data);
@@ -399,7 +399,7 @@ class ODataClient {
             throw error;
         }
     }
-    
+
     async deleteEntity(entitySet, key) {
         try {
             await this.client.delete(`/${entitySet}(${key})`);

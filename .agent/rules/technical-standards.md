@@ -3,8 +3,9 @@
 ## Context
 Enforces technical best practices and platform-specific reliability standards.
 
-## Execution Environment
-- **Conda**: ALWAYS use `conda run -n cursor-factory` for all Python-based tool calls.
+## 1. Execution Environment
+- **Python**: ALWAYS use `python` for all Python-based tool calls. NEVER assume the system python is correct.
+- **NEVER** modify `.cursorrules` (use `.agent/rules/` instead).
 - **Shell**: Consistently use PowerShell syntax.
 - **Windows Reliability**:
     - Use `;` for command chaining.

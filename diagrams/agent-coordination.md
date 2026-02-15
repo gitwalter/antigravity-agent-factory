@@ -20,7 +20,7 @@ flowchart TB
         subgraph Layer0["Layer 0 Protection"]
             IG["integrity-guardian<br/>Always active, embedded"]
         end
-        
+
         subgraph Generation["Generation Pipeline"]
             RA["requirements-architect<br/>5-phase gathering"]
             SB["stack-builder<br/>Blueprint matching"]
@@ -31,24 +31,24 @@ flowchart TB
             KEV["knowledge-evolution<br/>Update coordination"]
             TG["template-generator<br/>Code generation"]
         end
-        
+
         subgraph Onboarding["Onboarding"]
             OA["onboarding-architect<br/>Repo integration"]
             WF["workshop-facilitator<br/>Team workshops"]
         end
-        
+
         subgraph Debug["Debug"]
             DC["debug-conductor<br/>Autonomous debugging"]
         end
     end
-    
+
     subgraph PM["PM Agents (4)"]
         PO["product-owner<br/>Backlog management"]
         SM["sprint-master<br/>Agile ceremonies"]
         TM["task-manager<br/>Task creation"]
         REP["reporting-agent<br/>Metrics generation"]
     end
-    
+
     IG -.->|"monitors all"| Generation & Onboarding & Debug & PM
 ```
 
@@ -62,22 +62,22 @@ flowchart TB
         S1["Output from one agent<br/>becomes input to next"]
         RA1[Requirements] --> SB1[Stack] --> WD1[Workflow] --> KM1[Knowledge] --> TG1[Template]
     end
-    
+
     subgraph P2["Pattern 2: Embedded Harmony"]
         S2["Shared axiom awareness<br/>No explicit calls"]
         G2[Guardian] -.->|"constitutional preamble"| A2a[Agent A] & A2b[Agent B] & A2c[Agent C]
     end
-    
+
     subgraph P3["Pattern 3: Supervisor-Worker"]
         S3["Supervisor delegates<br/>Workers report back"]
         KEV3[Knowledge Evolution] --> GH[GitHub] & PY[PyPI] & NP[NPM] & DOC[Docs]
     end
-    
+
     subgraph P4["Pattern 4: Hierarchical"]
         S4["Clear authority chain<br/>Escalation path"]
         PO4[Product Owner] --> SM4[Sprint Master] --> TM4[Task Manager] --> REP4[Reporting]
     end
-    
+
     subgraph P5["Pattern 5: Verified Communication"]
         S5["Signed, verified, recorded<br/>Audit trail"]
         A5a[Agent A] -->|"SocietyContext"| A5b[Agent B]
@@ -97,35 +97,35 @@ sequenceDiagram
     participant KM as Knowledge Manager
     participant TG as Template Generator
     participant IG as Integrity Guardian
-    
+
     U->>RA: Create agent system
-    
+
     Note over RA: Phase 1-5 Gathering
     RA->>RA: Phase 1: Context
     RA->>RA: Phase 2: Stack
     RA->>RA: Phase 3: Workflow
     RA->>RA: Phase 4: Knowledge
     RA->>RA: Phase 5: Agents
-    
+
     RA->>SB: Handoff: requirements.json
     IG-->>SB: Monitor for axiom compliance
-    
+
     SB->>SB: Match blueprint
     SB->>SB: Select patterns
-    
+
     SB->>WD: Handoff: stack config
     IG-->>WD: Monitor for axiom compliance
-    
+
     WD->>WD: Configure workflows
-    
+
     WD->>KM: Handoff: workflow config
     IG-->>KM: Monitor for axiom compliance
-    
+
     KM->>KM: Generate knowledge files
-    
+
     KM->>TG: Handoff: knowledge files
     IG-->>TG: Monitor for axiom compliance
-    
+
     TG->>TG: Generate all artifacts
     TG->>U: Complete project
 ```
@@ -142,7 +142,7 @@ flowchart TB
         A["Acknowledgment<br/>Next agent confirms receipt"]
         F["Fallback<br/>Escalate to user if handoff fails"]
     end
-    
+
     subgraph Flow["Handoff Flow"]
         A1["Agent A completes phase"]
         V["Validate output"]
@@ -150,9 +150,9 @@ flowchart TB
         R["Agent B confirms"]
         P["Agent B proceeds"]
     end
-    
+
     A1 --> V --> S --> R --> P
-    
+
     subgraph Example["Example: Requirements → Stack"]
         E1["Requirements Architect<br/>completes Phase 2"]
         E2["Validates stack requirements"]
@@ -171,7 +171,7 @@ flowchart TB
     subgraph Center["Guardian (Center)"]
         IG["Integrity Guardian<br/>Layer 0 Protector"]
     end
-    
+
     subgraph Field["Harmony Field (Embedded Awareness)"]
         A1[Agent 1]
         A2[Agent 2]
@@ -180,15 +180,15 @@ flowchart TB
         A5[Agent 5]
         A6[Agent 6]
     end
-    
+
     IG -.->|"constitutional<br/>preamble"| A1 & A2 & A3 & A4 & A5 & A6
-    
+
     subgraph Awareness["Shared Awareness"]
         AW1["A0-A5 Axioms"]
         AW2["PURPOSE.md"]
         AW3["5-Layer Architecture"]
     end
-    
+
     IG --> Awareness
     Awareness -.-> Field
 ```
@@ -200,19 +200,19 @@ How conflicts between agents are resolved:
 ```mermaid
 flowchart TD
     START([Conflict Detected]) --> TYPE{Conflict Type?}
-    
+
     TYPE -->|Authority| AUTH["Authority-Based<br/>Higher authority decides"]
     TYPE -->|Evidence| EVID["Evidence-Based<br/>Better evidence wins"]
     TYPE -->|Opinion| CONS["Consensus-Based<br/>Voting or deliberation"]
     TYPE -->|Values| GUARD["Guardian-Mediated<br/>Water Way protocol"]
     TYPE -->|Critical| HUMAN["Human Escalation<br/>User decides"]
-    
+
     AUTH --> RESOLVE([Resolution])
     EVID --> RESOLVE
     CONS --> RESOLVE
     GUARD --> RESOLVE
     HUMAN --> RESOLVE
-    
+
     subgraph Mechanisms["Resolution Mechanisms"]
         M1["Authority: PM hierarchy"]
         M2["Evidence: Trust levels, source quality"]
@@ -233,31 +233,31 @@ flowchart TB
         D2["Identify conflicting approaches"]
         D3["Note affected axioms"]
     end
-    
+
     subgraph NoForce["2. Don't Force"]
         N1["Allow natural resolution first"]
         N2["Wait for agents to self-correct"]
         N3["Observe without intervening"]
     end
-    
+
     subgraph Context["3. Provide Context"]
         C1["Share relevant axioms"]
         C2["Remind of shared purpose"]
         C3["Highlight common ground"]
     end
-    
+
     subgraph Path["4. Find Path"]
         P1["Seek path serving all values"]
         P2["Look for synthesis, not compromise"]
         P3["Consider creative alternatives"]
     end
-    
+
     subgraph Love["5. Resolve with Love"]
         L1["No winner, no loser"]
         L2["All agents maintain dignity"]
         L3["Relationship preserved"]
     end
-    
+
     Detection --> NoForce --> Context --> Path --> Love
 ```
 
@@ -272,25 +272,25 @@ flowchart TB
         SF2["All agents read/write"]
         SF3["Atomic writes, no locking"]
     end
-    
+
     subgraph Message["Pattern 2: Message Passing"]
         MP1["lib/society/ event store"]
         MP2["Immutable, hash-chained"]
         MP3["Cryptographically signed"]
     end
-    
+
     subgraph Workflow["Pattern 3: Workflow State"]
         WS1["LangGraph StateGraph"]
         WS2["Typed state (Pydantic)"]
         WS3["Versioning, persistence"]
     end
-    
+
     subgraph Usage["When to Use"]
         U1["Shared: Knowledge updates,<br/>configuration changes"]
         U2["Message: Critical operations,<br/>audit requirements"]
         U3["Workflow: Complex multi-step<br/>processes"]
     end
-    
+
     Shared --> U1
     Message --> U2
     Workflow --> U3
@@ -308,7 +308,7 @@ flowchart TB
         PRI["Prioritizes updates"]
         MRG["Merges changes"]
     end
-    
+
     subgraph Workers["Source Adapter Workers"]
         GH["GitHub Adapter<br/>Repository changes"]
         PY["PyPI Adapter<br/>Package updates"]
@@ -316,17 +316,17 @@ flowchart TB
         DOC["Docs Adapter<br/>Documentation changes"]
         COM["Community Adapter<br/>Community content"]
     end
-    
+
     KEV -->|"dispatch"| GH & PY & NP & DOC & COM
     GH & PY & NP & DOC & COM -->|"results"| AGG
     AGG --> PRI --> MRG
-    
+
     subgraph Output["Knowledge Files Updated"]
         K1["knowledge/*.json"]
         K2["User notification"]
         K3["Conflict resolution"]
     end
-    
+
     MRG --> Output
 ```
 
@@ -342,9 +342,9 @@ flowchart TB
         TM["Task Manager<br/>Task creation<br/>Task tracking"]
         REP["Reporting Agent<br/>Metrics generation<br/>Burndown charts"]
     end
-    
+
     PO --> SM --> TM --> REP
-    
+
     subgraph Backend["Backend Abstraction"]
         BA["PM Backend Layer"]
         JIRA["Jira"]
@@ -352,17 +352,17 @@ flowchart TB
         LIN["Linear"]
         LOC["Local JSON"]
     end
-    
+
     PMAgents --> BA
     BA --> JIRA & GHI & LIN & LOC
-    
+
     subgraph Ceremonies["Agile Ceremonies"]
         PLAN["Sprint Planning"]
         STAND["Daily Standup"]
         RETRO["Retrospective"]
         CLOSE["Sprint Close"]
     end
-    
+
     SM --> Ceremonies
 ```
 
@@ -377,11 +377,11 @@ sequenceDiagram
     participant ES as Event Store
     participant B as Agent B
     participant G as Guardian
-    
+
     A->>SC: Create communication context
     SC->>ES: Log event (hash-chained)
     SC->>SC: Verify axiom compliance
-    
+
     alt Compliant
         SC->>B: Deliver message
         B->>ES: Log acknowledgment
@@ -405,24 +405,24 @@ flowchart LR
         WF["workshop-facilitator"]
         DC["debug-conductor"]
     end
-    
+
     subgraph Dependent["Dependent on Pipeline"]
         SB["stack-builder<br/>needs: requirements"]
         WD["workflow-designer<br/>needs: stack config"]
         KM["knowledge-manager<br/>needs: workflow config"]
         TG["template-generator<br/>needs: all above"]
     end
-    
+
     subgraph Support["Support Agents"]
         KE["knowledge-extender<br/>updates Factory knowledge"]
         KEV["knowledge-evolution<br/>monitors sources"]
         WA["workflow-architect<br/>complex workflows"]
     end
-    
+
     subgraph Always["Always Active"]
         IG["integrity-guardian<br/>monitors everything"]
     end
-    
+
     RA --> SB --> WD --> KM --> TG
     IG -.-> Independent & Dependent & Support
 ```
@@ -436,34 +436,34 @@ flowchart TB
     subgraph Trigger["Trigger"]
         REQ["User: Debug failing test"]
     end
-    
+
     subgraph Phase1["Phase 1: Analysis"]
         DC["debug-conductor"]
         DC --> AN["Analyze failure"]
         AN --> ID["Identify root cause"]
     end
-    
+
     subgraph Decision["Decision Point"]
         ID --> D{Can fix directly?}
     end
-    
+
     subgraph Phase2A["Phase 2A: Direct Fix"]
         D -->|Yes| FIX["Apply fix"]
         FIX --> TEST["Run tests"]
     end
-    
+
     subgraph Phase2B["Phase 2B: Escalate"]
         D -->|No| ESC["Escalate to user"]
         ESC --> OPT["Present options"]
         OPT --> USER["User decides"]
     end
-    
+
     subgraph Phase3["Phase 3: Learn"]
         TEST --> LEARN["Capture pattern"]
         USER --> LEARN
         LEARN --> MEM["Store in memory"]
     end
-    
+
     REQ --> DC
 ```
 
@@ -482,7 +482,7 @@ flowchart TB
         P6["Non-Harm (A4)<br/>Guardian prevents<br/>harmful coordination"]
         P7["Learning<br/>Coordination patterns<br/>improve through experience"]
     end
-    
+
     P1 --> P2 --> P3
     P4 --> P5 --> P6 --> P7
 ```

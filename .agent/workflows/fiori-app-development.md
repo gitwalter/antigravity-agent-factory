@@ -8,8 +8,8 @@ description: End-to-end workflow for developing Fiori Elements applications in S
 
 End-to-end workflow for developing Fiori Elements applications in SAP S/4HANA. Covers CDS data modeling, service definition, UI annotations, app generation, testing, and deployment.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-09  
+**Version:** 1.0.0
+**Created:** 2026-02-09
 **Applies To:** sap-developer, fiori-development
 
 ## Trigger Conditions

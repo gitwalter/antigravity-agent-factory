@@ -17,24 +17,24 @@ CLASS ${CLASS_NAME} DEFINITION PUBLIC ABSTRACT FINAL FOR BEHAVIOR OF ${ENTITY_NA
 ENDCLASS.
 
 CLASS ${CLASS_NAME} IMPLEMENTATION.
-  
+
   METHOD ${ACTION_METHOD_NAME}.
     " Custom action implementation
     " Perform business logic and return results
-    
+
     " Read input data
     READ ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
       ENTITY ${ENTITY_NAME}
         FIELDS ( ${FIELD_1} ${FIELD_2} )
         WITH CORRESPONDING #( keys )
       RESULT DATA(lt_${ENTITY_NAME}).
-    
+
     " Perform action logic
     LOOP AT lt_${ENTITY_NAME} INTO DATA(ls_${ENTITY_NAME}).
       " Add action logic here
       " Example: Update status, call external service, etc.
     ENDLOOP.
-    
+
     " Update entities if needed
     MODIFY ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
       ENTITY ${ENTITY_NAME}
@@ -42,37 +42,37 @@ CLASS ${CLASS_NAME} IMPLEMENTATION.
         WITH VALUE #( FOR ls_${ENTITY_NAME} IN lt_${ENTITY_NAME}
                       ( %tky = ls_${ENTITY_NAME}-%tky
                         ${STATUS_FIELD} = ${NEW_STATUS_VALUE} ) ).
-    
+
     " Read updated data for result
     READ ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
       ENTITY ${ENTITY_NAME}
         ALL FIELDS WITH CORRESPONDING #( keys )
       RESULT DATA(lt_${ENTITY_NAME}_updated).
-    
+
     " Return result
     result = VALUE #( FOR ls_${ENTITY_NAME} IN lt_${ENTITY_NAME}_updated
                       ( %tky = ls_${ENTITY_NAME}-%tky
                         %param = ls_${ENTITY_NAME} ) ).
-    
+
   ENDMETHOD.
-  
+
   METHOD ${ACTION_METHOD_NAME_WITH_PARAM}.
     " Action with parameter implementation
     " Process action with input parameters
-    
+
     " Read input data
     READ ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
       ENTITY ${ENTITY_NAME}
         FIELDS ( ${FIELD_1} )
         WITH CORRESPONDING #( keys )
       RESULT DATA(lt_${ENTITY_NAME}).
-    
+
     " Process action with parameters
     LOOP AT lt_${ENTITY_NAME} INTO DATA(ls_${ENTITY_NAME}).
       " Access parameter: ls_${ENTITY_NAME}-%param-${PARAMETER_NAME}
       " Add action logic here
     ENDLOOP.
-    
+
     " Update entities if needed
     MODIFY ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
       ENTITY ${ENTITY_NAME}
@@ -80,18 +80,18 @@ CLASS ${CLASS_NAME} IMPLEMENTATION.
         WITH VALUE #( FOR ls_${ENTITY_NAME} IN lt_${ENTITY_NAME}
                       ( %tky = ls_${ENTITY_NAME}-%tky
                         ${TARGET_FIELD} = ls_${ENTITY_NAME}-%param-${PARAMETER_NAME} ) ).
-    
+
     " Read updated data for result
     READ ENTITIES OF ${ENTITY_NAME} IN LOCAL MODE
       ENTITY ${ENTITY_NAME}
         ALL FIELDS WITH CORRESPONDING #( keys )
       RESULT DATA(lt_${ENTITY_NAME}_updated).
-    
+
     " Return result
     result = VALUE #( FOR ls_${ENTITY_NAME} IN lt_${ENTITY_NAME}_updated
                       ( %tky = ls_${ENTITY_NAME}-%tky
                         %param = ls_${ENTITY_NAME} ) ).
-    
+
   ENDMETHOD.
-  
+
 ENDCLASS.

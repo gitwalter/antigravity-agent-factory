@@ -56,37 +56,37 @@ class ModelMetadata:
     model_name: str
     version: str
     model_id: str
-    
+
     # Model information
     model_type: str  # e.g., "pytorch", "sklearn", "tensorflow"
     architecture: Optional[str] = None
     input_shape: Optional[Tuple[int, ...]] = None
     output_shape: Optional[Tuple[int, ...]] = None
-    
+
     # Training information
     training_config: Optional[Dict[str, Any]] = None
     hyperparameters: Optional[Dict[str, Any]] = None
     training_metrics: Optional[Dict[str, float]] = None
     validation_metrics: Optional[Dict[str, float]] = None
-    
+
     # Model performance
     test_metrics: Optional[Dict[str, float]] = None
     performance_summary: Optional[str] = None
-    
+
     # Lifecycle
     stage: ModelStage = ModelStage.NONE
     created_at: str = None
     updated_at: str = None
-    
+
     # Storage
     model_path: Optional[str] = None
     checkpoint_path: Optional[str] = None
-    
+
     # Additional metadata
     tags: List[str] = None
     description: Optional[str] = None
     author: Optional[str] = None
-    
+
     def __post_init__(self):
         """Initialize default values."""
         if self.created_at is None:
@@ -97,18 +97,18 @@ class ModelMetadata:
             self.tags = []
         if self.model_id is None:
             self.model_id = self._generate_id()
-    
+
     def _generate_id(self) -> str:
         """Generate unique model ID."""
         content = f"{self.model_name}_{self.version}_{self.created_at}"
         return hashlib.md5(content.encode()).hexdigest()
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert metadata to dictionary."""
         data = asdict(self)
         data['stage'] = self.stage.value
         return data
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ModelMetadata':
         """Create metadata from dictionary."""
@@ -120,18 +120,18 @@ class ModelMetadata:
 class ModelRegistry:
     """
     Model registry for versioning and managing ML models.
-    
+
     This class provides comprehensive model management including:
     - Model registration and versioning
     - Metadata storage and retrieval
     - Model loading and serving
     - Model comparison and evaluation
     - Integration with MLflow model registry
-    
+
     Attributes:
         registry_dir: Directory for storing registered models
         metadata_file: Path to metadata JSON file
-        
+
     Example:
         >>> registry = ModelRegistry(registry_dir="./models")
         >>> metadata = ModelMetadata(
@@ -142,7 +142,7 @@ class ModelRegistry:
         >>> registry.register_model(model, metadata)
         >>> loaded_model = registry.load_model("my_model", "1.0.0")
     """
-    
+
     def __init__(
         self,
         registry_dir: str = "{{REGISTRY_DIR}}",
@@ -151,7 +151,7 @@ class ModelRegistry:
     ):
         """
         Initialize model registry.
-        
+
         Args:
             registry_dir: Directory for storing registered models
             use_mlflow: Whether to use MLflow model registry
@@ -159,19 +159,19 @@ class ModelRegistry:
         """
         self.registry_dir = Path(registry_dir)
         self.registry_dir.mkdir(parents=True, exist_ok=True)
-        
+
         self.metadata_file = self.registry_dir / "metadata.json"
         self.use_mlflow = use_mlflow and MLFLOW_AVAILABLE
-        
+
         if self.use_mlflow:
             if mlflow_tracking_uri:
                 mlflow.set_tracking_uri(mlflow_tracking_uri)
             logger.info("MLflow model registry enabled")
-        
+
         # Load existing metadata
         self.metadata: Dict[str, Dict[str, ModelMetadata]] = {}
         self._load_metadata()
-    
+
     def _load_metadata(self) -> None:
         """Load metadata from file."""
         if self.metadata_file.exists():
@@ -191,7 +191,7 @@ class ModelRegistry:
                 self.metadata = {}
         else:
             self.metadata = {}
-    
+
     def _save_metadata(self) -> None:
         """Save metadata to file."""
         data = {
@@ -201,10 +201,10 @@ class ModelRegistry:
             }
             for model_name, versions in self.metadata.items()
         }
-        
+
         with open(self.metadata_file, 'w') as f:
             json.dump(data, f, indent=2)
-    
+
     def register_model(
         self,
         model: nn.Module,
@@ -214,53 +214,53 @@ class ModelRegistry:
     ) -> str:
         """
         Register a model in the registry.
-        
+
         Args:
             model: PyTorch model to register
             metadata: Model metadata
             save_state_dict: Whether to save state dict
             save_full_model: Whether to save full model
-            
+
         Returns:
             Model ID
         """
         # Create model directory
         model_dir = self.registry_dir / metadata.model_name / metadata.version
         model_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Save model
         if save_state_dict:
             model_path = model_dir / "model_state_dict.pt"
             torch.save(model.state_dict(), model_path)
             metadata.model_path = str(model_path)
-        
+
         if save_full_model:
             full_model_path = model_dir / "model_full.pt"
             torch.save(model, full_model_path)
             metadata.checkpoint_path = str(full_model_path)
-        
+
         # Save metadata
         metadata.updated_at = datetime.now().isoformat()
-        
+
         if metadata.model_name not in self.metadata:
             self.metadata[metadata.model_name] = {}
-        
+
         self.metadata[metadata.model_name][metadata.version] = metadata
-        
+
         # Save metadata file
         self._save_metadata()
-        
+
         # Register with MLflow if enabled
         if self.use_mlflow:
             self._register_with_mlflow(model, metadata)
-        
+
         logger.info(
             f"Registered model: {metadata.model_name} v{metadata.version} "
             f"(ID: {metadata.model_id})"
         )
-        
+
         return metadata.model_id
-    
+
     def _register_with_mlflow(
         self,
         model: nn.Module,
@@ -275,19 +275,19 @@ class ModelRegistry:
                     "model",
                     registered_model_name=metadata.model_name
                 )
-                
+
                 # Log metadata
                 if metadata.hyperparameters:
                     mlflow.log_params(metadata.hyperparameters)
-                
+
                 if metadata.training_metrics:
                     mlflow.log_metrics(metadata.training_metrics)
-                
+
                 if metadata.tags:
                     mlflow.set_tags({tag: "" for tag in metadata.tags})
         except Exception as e:
             logger.warning(f"Failed to register with MLflow: {e}")
-    
+
     def load_model(
         self,
         model_name: str,
@@ -297,31 +297,31 @@ class ModelRegistry:
     ) -> nn.Module:
         """
         Load a registered model.
-        
+
         Args:
             model_name: Name of the model
             version: Model version (None for latest)
             model_class: Model class (required if loading state dict)
             device: Device to load model on
-            
+
         Returns:
             Loaded PyTorch model
         """
         # Get metadata
         if model_name not in self.metadata:
             raise ValueError(f"Model {model_name} not found in registry")
-        
+
         versions = self.metadata[model_name]
-        
+
         if version is None:
             # Get latest version
             version = max(versions.keys(), key=lambda v: versions[v].created_at)
-        
+
         if version not in versions:
             raise ValueError(f"Version {version} not found for model {model_name}")
-        
+
         metadata = versions[version]
-        
+
         # Load model
         if metadata.checkpoint_path and Path(metadata.checkpoint_path).exists():
             # Load full model
@@ -333,62 +333,62 @@ class ModelRegistry:
                     "model_class required when loading state dict. "
                     "Provide the model class or use save_full_model=True when registering."
                 )
-            
+
             model = model_class()
             state_dict = torch.load(metadata.model_path, map_location=device)
             model.load_state_dict(state_dict)
         else:
             raise FileNotFoundError(f"Model files not found for {model_name} v{version}")
-        
+
         model = model.to(device)
         model.eval()
-        
+
         logger.info(f"Loaded model: {model_name} v{version}")
         return model
-    
+
     def get_latest_version(self, model_name: str) -> Optional[str]:
         """
         Get the latest version of a model.
-        
+
         Args:
             model_name: Name of the model
-            
+
         Returns:
             Latest version string or None
         """
         if model_name not in self.metadata:
             return None
-        
+
         versions = self.metadata[model_name]
         if not versions:
             return None
-        
+
         return max(versions.keys(), key=lambda v: versions[v].created_at)
-    
+
     def list_models(self) -> List[str]:
         """
         List all registered model names.
-        
+
         Returns:
             List of model names
         """
         return list(self.metadata.keys())
-    
+
     def list_versions(self, model_name: str) -> List[str]:
         """
         List all versions of a model.
-        
+
         Args:
             model_name: Name of the model
-            
+
         Returns:
             List of version strings
         """
         if model_name not in self.metadata:
             return []
-        
+
         return sorted(self.metadata[model_name].keys())
-    
+
     def get_metadata(
         self,
         model_name: str,
@@ -396,27 +396,27 @@ class ModelRegistry:
     ) -> Optional[ModelMetadata]:
         """
         Get metadata for a model.
-        
+
         Args:
             model_name: Name of the model
             version: Model version (None for latest)
-            
+
         Returns:
             Model metadata or None
         """
         if model_name not in self.metadata:
             return None
-        
+
         versions = self.metadata[model_name]
-        
+
         if version is None:
             version = self.get_latest_version(model_name)
-        
+
         if version is None or version not in versions:
             return None
-        
+
         return versions[version]
-    
+
     def update_stage(
         self,
         model_name: str,
@@ -425,7 +425,7 @@ class ModelRegistry:
     ) -> None:
         """
         Update the lifecycle stage of a model.
-        
+
         Args:
             model_name: Name of the model
             version: Model version
@@ -434,14 +434,14 @@ class ModelRegistry:
         metadata = self.get_metadata(model_name, version)
         if metadata is None:
             raise ValueError(f"Model {model_name} v{version} not found")
-        
+
         metadata.stage = stage
         metadata.updated_at = datetime.now().isoformat()
-        
+
         self._save_metadata()
-        
+
         logger.info(f"Updated {model_name} v{version} to stage: {stage.value}")
-    
+
     def compare_models(
         self,
         model_name: str,
@@ -449,11 +449,11 @@ class ModelRegistry:
     ) -> Dict[str, Any]:
         """
         Compare multiple versions of a model.
-        
+
         Args:
             model_name: Name of the model
             versions: List of versions to compare
-            
+
         Returns:
             Comparison dictionary
         """
@@ -463,17 +463,17 @@ class ModelRegistry:
             "metrics": {},
             "metadata": {}
         }
-        
+
         for version in versions:
             metadata = self.get_metadata(model_name, version)
             if metadata:
                 comparison["metadata"][version] = metadata.to_dict()
-                
+
                 if metadata.test_metrics:
                     comparison["metrics"][version] = metadata.test_metrics
-        
+
         return comparison
-    
+
     def delete_model(
         self,
         model_name: str,
@@ -482,7 +482,7 @@ class ModelRegistry:
     ) -> None:
         """
         Delete a model from the registry.
-        
+
         Args:
             model_name: Name of the model
             version: Model version
@@ -490,25 +490,25 @@ class ModelRegistry:
         """
         if model_name not in self.metadata or version not in self.metadata[model_name]:
             raise ValueError(f"Model {model_name} v{version} not found")
-        
+
         metadata = self.metadata[model_name][version]
-        
+
         # Delete files if requested
         if delete_files:
             if metadata.model_path and Path(metadata.model_path).exists():
                 Path(metadata.model_path).unlink()
             if metadata.checkpoint_path and Path(metadata.checkpoint_path).exists():
                 Path(metadata.checkpoint_path).unlink()
-        
+
         # Remove from metadata
         del self.metadata[model_name][version]
-        
+
         # Remove model entry if no versions left
         if not self.metadata[model_name]:
             del self.metadata[model_name]
-        
+
         self._save_metadata()
-        
+
         logger.info(f"Deleted model: {model_name} v{version}")
 
 
@@ -516,18 +516,18 @@ class ModelRegistry:
 if __name__ == "__main__":
     # Example: Register a model
     # registry = ModelRegistry(registry_dir="./model_registry")
-    # 
+    #
     # # Create a simple model
     # class SimpleModel(nn.Module):
     #     def __init__(self):
     #         super().__init__()
     #         self.fc = nn.Linear(10, 1)
-    #     
+    #
     #     def forward(self, x):
     #         return self.fc(x)
-    # 
+    #
     # model = SimpleModel()
-    # 
+    #
     # metadata = ModelMetadata(
     #     model_name="simple_model",
     #     version="1.0.0",
@@ -539,12 +539,12 @@ if __name__ == "__main__":
     #     tags=["baseline", "experimental"],
     #     description="Simple baseline model"
     # )
-    # 
+    #
     # model_id = registry.register_model(model, metadata)
-    # 
+    #
     # # Load the model
     # loaded_model = registry.load_model("simple_model", "1.0.0", model_class=SimpleModel)
-    # 
+    #
     # # Update stage
     # registry.update_stage("simple_model", "1.0.0", ModelStage.PRODUCTION)
     pass

@@ -35,16 +35,16 @@ class Subagent:
         self.llm = llm
         self.messages = []
         self.status = "idle"
-    
+
     async def execute_task(self, task: str) -> str:
         """Execute a task assigned by parent."""
         self.status = "working"
         self.messages.append(HumanMessage(content=task))
-        
+
         response = await self.llm.ainvoke(self.messages)
         self.messages.append(response)
         self.status = "completed"
-        
+
         return response.content
 
 class ParentAgent:
@@ -53,22 +53,22 @@ class ParentAgent:
         self.llm = llm
         self.subagents: Dict[str, Subagent] = {}
         self.task_queue = []
-    
+
     async def spawn_subagent(self, agent_id: str, role: str) -> Subagent:
         """Spawn a new subagent."""
         subagent = Subagent(agent_id, role, self.llm)
         self.subagents[agent_id] = subagent
         return subagent
-    
+
     async def delegate_task(self, agent_id: str, task: str) -> str:
         """Delegate a task to a subagent."""
         if agent_id not in self.subagents:
             raise ValueError(f"Subagent {agent_id} not found")
-        
+
         subagent = self.subagents[agent_id]
         result = await subagent.execute_task(task)
         return result
-    
+
     async def cleanup_subagent(self, agent_id: str):
         """Clean up a subagent."""
         if agent_id in self.subagents:
@@ -99,24 +99,24 @@ class TaskDecomposer:
     """Decomposes complex tasks into subtasks."""
     def __init__(self, llm):
         self.llm = llm
-    
+
     async def decompose_task(self, task: str) -> List[Dict]:
         """Break down a task into subtasks with agent assignments."""
         prompt = f"""Break down this task into subtasks and assign each to a specialist agent.
-        
+
         Task: {task}
-        
+
         Return a JSON list of subtasks, each with:
         - subtask: description
         - agent_role: required specialist role
         - dependencies: list of subtask IDs this depends on
-        
+
         Example format:
         [
             {{"id": 1, "subtask": "Research topic", "agent_role": "Researcher", "dependencies": []}},
             {{"id": 2, "subtask": "Write content", "agent_role": "Writer", "dependencies": [1]}}
         ]"""
-        
+
         response = await self.llm.ainvoke(prompt)
         # Parse JSON response
         import json
@@ -130,19 +130,19 @@ class Orchestrator:
         self.decomposer = TaskDecomposer(llm)
         self.subagents: Dict[str, Subagent] = {}
         self.results: Dict[int, str] = {}
-    
+
     async def execute_complex_task(self, task: str):
         """Execute a complex task by decomposing and delegating."""
         # Decompose task
         subtasks = await self.decomposer.decompose_task(task)
-        
+
         # Spawn subagents as needed
         agent_roles = set(st["agent_role"] for st in subtasks)
         for role in agent_roles:
             agent_id = f"{role.lower()}_1"
             if agent_id not in self.subagents:
                 await self.spawn_subagent(agent_id, role)
-        
+
         # Execute subtasks respecting dependencies
         completed = set()
         while len(completed) < len(subtasks):
@@ -150,7 +150,7 @@ class Orchestrator:
                 subtask_id = subtask["id"]
                 if subtask_id in completed:
                     continue
-                
+
                 # Check dependencies
                 deps_met = all(dep in completed for dep in subtask.get("dependencies", []))
                 if deps_met:
@@ -159,33 +159,33 @@ class Orchestrator:
                     result = await self.delegate_task(agent_id, subtask["subtask"])
                     self.results[subtask_id] = result
                     completed.add(subtask_id)
-        
+
         # Aggregate results
         final_result = await self.aggregate_results(subtasks)
         return final_result
-    
+
     async def spawn_subagent(self, agent_id: str, role: str):
         """Spawn a subagent."""
         subagent = Subagent(agent_id, role, self.llm)
         self.subagents[agent_id] = subagent
-    
+
     async def delegate_task(self, agent_id: str, task: str) -> str:
         """Delegate task to subagent."""
         return await self.subagents[agent_id].execute_task(task)
-    
+
     async def aggregate_results(self, subtasks: List[Dict]) -> str:
         """Aggregate subagent results into final output."""
         results_text = "\n".join([
             f"Subtask {st['id']}: {self.results[st['id']]}"
             for st in subtasks
         ])
-        
+
         prompt = f"""Synthesize these subagent results into a cohesive final output:
-        
+
         {results_text}
-        
+
         Provide a comprehensive summary."""
-        
+
         response = await self.llm.ainvoke(prompt)
         return response.content
 
@@ -227,7 +227,7 @@ class CommunicatingSubagent(Subagent):
         super().__init__(agent_id, role, llm)
         self.parent_id = parent_id
         self.message_queue = []
-    
+
     async def send_to_parent(self, message_type: MessageType, content: str, task_id: str = None):
         """Send message to parent agent."""
         message = AgentMessage(
@@ -239,7 +239,7 @@ class CommunicatingSubagent(Subagent):
         )
         self.message_queue.append(message)
         return message
-    
+
     async def receive_from_parent(self) -> Optional[AgentMessage]:
         """Receive message from parent."""
         if self.message_queue:
@@ -252,12 +252,12 @@ class CommunicatingParentAgent(ParentAgent):
         super().__init__(llm)
         self.parent_id = parent_id
         self.message_queue = []
-    
+
     async def send_to_subagent(self, agent_id: str, message_type: MessageType, content: str, task_id: str = None):
         """Send message to subagent."""
         if agent_id not in self.subagents:
             raise ValueError(f"Subagent {agent_id} not found")
-        
+
         message = AgentMessage(
             message_type=message_type,
             content=content,
@@ -265,13 +265,13 @@ class CommunicatingParentAgent(ParentAgent):
             receiver_id=agent_id,
             task_id=task_id
         )
-        
+
         subagent = self.subagents[agent_id]
         if isinstance(subagent, CommunicatingSubagent):
             subagent.message_queue.append(message)
-        
+
         return message
-    
+
     async def receive_from_subagent(self) -> Optional[AgentMessage]:
         """Receive message from any subagent."""
         # Check all subagents for messages
@@ -282,7 +282,7 @@ class CommunicatingParentAgent(ParentAgent):
                     self.message_queue.append(message)
                     return message
         return None
-    
+
     async def query_subagent_status(self, agent_id: str) -> str:
         """Query subagent status."""
         message = await self.send_to_subagent(
@@ -322,57 +322,57 @@ class ResultAggregator:
     """Aggregates results from multiple subagents."""
     def __init__(self, llm):
         self.llm = llm
-    
+
     async def aggregate_parallel_results(self, results: Dict[str, str]) -> str:
         """Aggregate results from parallel subagent execution."""
         results_text = "\n".join([
             f"Agent {agent_id}: {result}"
             for agent_id, result in results.items()
         ])
-        
+
         prompt = f"""Synthesize these parallel results into a unified output:
-        
+
         {results_text}
-        
+
         Provide a comprehensive synthesis."""
-        
+
         response = await self.llm.ainvoke(prompt)
         return response.content
-    
+
     async def aggregate_sequential_results(self, results: List[str], context: str = "") -> str:
         """Aggregate results from sequential subagent execution."""
         results_text = "\n\n".join([
             f"Step {i+1}: {result}"
             for i, result in enumerate(results)
         ])
-        
+
         prompt = f"""Synthesize these sequential results into a final output:
-        
+
         Context: {context}
-        
+
         {results_text}
-        
+
         Provide a cohesive final result."""
-        
+
         response = await self.llm.ainvoke(prompt)
         return response.content
-    
+
     async def aggregate_with_voting(self, results: List[str], question: str) -> str:
         """Aggregate results using voting/consensus."""
         results_text = "\n".join([
             f"Agent {i+1}: {result}"
             for i, result in enumerate(results)
         ])
-        
+
         prompt = f"""Multiple agents answered this question. Determine the consensus:
-        
+
         Question: {question}
-        
+
         Answers:
         {results_text}
-        
+
         Provide the consensus answer, noting any disagreements."""
-        
+
         response = await self.llm.ainvoke(prompt)
         return response.content
 
@@ -409,12 +409,12 @@ class ResourceManager:
     def __init__(self):
         self.subagents: Dict[str, Subagent] = {}
         self.resource_tracking: Dict[str, Dict] = {}
-    
+
     async def spawn_with_tracking(self, agent_id: str, role: str, llm) -> Subagent:
         """Spawn subagent with resource tracking."""
         subagent = Subagent(agent_id, role, llm)
         self.subagents[agent_id] = subagent
-        
+
         # Track resources
         self.resource_tracking[agent_id] = {
             "created_at": asyncio.get_event_loop().time(),
@@ -422,35 +422,35 @@ class ResourceManager:
             "task_count": 0,
             "memory_usage": 0
         }
-        
+
         return subagent
-    
+
     async def cleanup_subagent(self, agent_id: str):
         """Clean up subagent and release resources."""
         if agent_id not in self.subagents:
             return
-        
+
         subagent = self.subagents[agent_id]
-        
+
         # Save any necessary state
         # Clear messages if not needed
         subagent.messages = []
         subagent.status = "terminated"
-        
+
         # Update tracking
         if agent_id in self.resource_tracking:
             self.resource_tracking[agent_id]["status"] = "terminated"
             self.resource_tracking[agent_id]["terminated_at"] = asyncio.get_event_loop().time()
-        
+
         # Remove from active subagents
         del self.subagents[agent_id]
-    
+
     async def cleanup_all(self):
         """Clean up all subagents."""
         agent_ids = list(self.subagents.keys())
         for agent_id in agent_ids:
             await self.cleanup_subagent(agent_id)
-    
+
     def get_resource_stats(self) -> Dict:
         """Get resource usage statistics."""
         return {
@@ -458,7 +458,7 @@ class ResourceManager:
             "total_agents": len(self.resource_tracking),
             "resource_tracking": self.resource_tracking
         }
-    
+
     @asynccontextmanager
     async def managed_subagent(self, agent_id: str, role: str, llm):
         """Context manager for automatic cleanup."""
@@ -499,16 +499,16 @@ async def execute_concurrent_subagents(
     """Execute multiple subagents concurrently."""
     async def execute_task(agent_id: str, task: str):
         return agent_id, await parent.delegate_task(agent_id, task)
-    
+
     # Create tasks for concurrent execution
     coroutines = [
         execute_task(agent_id, task)
         for agent_id, task in tasks.items()
     ]
-    
+
     # Execute concurrently
     results = await asyncio.gather(*coroutines)
-    
+
     # Convert to dictionary
     return {agent_id: result for agent_id, result in results}
 
@@ -540,13 +540,13 @@ class SubagentPool:
         self.available: List[Subagent] = []
         self.in_use: Dict[str, Subagent] = {}
         self._initialize_pool()
-    
+
     def _initialize_pool(self):
         """Initialize the subagent pool."""
         for i in range(self.pool_size):
             agent = Subagent(f"pool_agent_{i}", "Worker", self.llm)
             self.available.append(agent)
-    
+
     async def acquire(self) -> Subagent:
         """Acquire a subagent from the pool."""
         if self.available:
@@ -559,7 +559,7 @@ class SubagentPool:
             agent = Subagent(agent_id, "Worker", self.llm)
             self.in_use[agent_id] = agent
             return agent
-    
+
     async def release(self, agent: Subagent):
         """Release a subagent back to the pool."""
         if agent.agent_id in self.in_use:
@@ -568,7 +568,7 @@ class SubagentPool:
             agent.messages = []
             agent.status = "idle"
             self.available.append(agent)
-    
+
     @asynccontextmanager
     async def get_agent(self):
         """Context manager for acquiring/releasing agents."""

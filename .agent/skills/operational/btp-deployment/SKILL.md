@@ -37,7 +37,7 @@ modules:
     parameters:
       memory: 512M
       disk-quota: 512M
-      
+
   - name: travel-booking-ui
     type: html5
     path: app
@@ -51,7 +51,7 @@ modules:
           url: ~{srv-api/srv-url}
     build-parameters:
       supported-platforms: []
-      
+
   - name: travel-booking-db-deployer
     type: hdb
     path: db
@@ -66,7 +66,7 @@ resources:
     parameters:
       service: hana
       service-plan: hdi-shared
-      
+
   - name: travel-booking-auth
     type: org.cloudfoundry.managed-service
     parameters:
@@ -109,7 +109,7 @@ resources:
           - name: TravelBookingAdmin
             role-template-references:
               - $XSAPPNAME.TravelBookingAdmin
-              
+
   - name: travel-booking-destination
     type: org.cloudfoundry.managed-service
     parameters:
@@ -125,7 +125,7 @@ resources:
             proxyType: Internet
             username: ${S4HANA_USER}
             password: ${S4HANA_PASSWORD}
-            
+
   - name: travel-booking-connectivity
     type: org.cloudfoundry.managed-service
     parameters:
@@ -231,7 +231,7 @@ applications:
       CDS_REQUIRES_DB: true
     routes:
       - route: travel-booking-srv.cfapps.us10.hana.ondemand.com
-      
+
   - name: travel-booking-ui
     memory: 128M
     disk-quota: 128M
@@ -329,18 +329,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          
+
       - name: Install dependencies
         run: npm install
-        
+
       - name: Build MTA
         run: mbt build
-        
+
       - name: Deploy to BTP
         env:
           CF_API: ${{ secrets.CF_API }}

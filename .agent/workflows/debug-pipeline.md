@@ -8,8 +8,8 @@ description: Systematic workflow for debugging CI/CD pipeline failures. This wor
 
 Systematic workflow for debugging CI/CD pipeline failures. This workflow demonstrates the Cursor Agent Factory workflow system architecture with phases, decision points, escalation paths, and learning hooks.
 
-**Version:** 1.0.0  
-**Created:** 2026-01-31  
+**Version:** 1.0.0
+**Created:** 2026-01-31
 **Agent:** debug-conductor
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.

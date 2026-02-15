@@ -114,22 +114,22 @@ _metrics = {
 async def lifespan(app: FastAPI):
     """
     Application lifespan context manager.
-    
+
     Handles model loading on startup and cleanup on shutdown.
-    
+
     Args:
         app: FastAPI application instance
-        
+
     Yields:
         None
     """
     global model_loader
-    
+
     # Startup
     logger.info("Starting FastAPI Model Server")
     logger.info(f"Model path: {{MODEL_PATH}}")
     logger.info(f"Model type: {{MODEL_TYPE}}")
-    
+
     try:
         # Initialize model loader
         model_config = ModelConfig(
@@ -141,19 +141,19 @@ async def lifespan(app: FastAPI):
             use_gpu={{USE_GPU}},
             model_kwargs={{MODEL_KWARGS}} if "{{MODEL_KWARGS}}" else {}
         )
-        
+
         model_loader = ModelLoader(config=model_config)
         await model_loader.load()
-        
+
         logger.info(f"Model loaded successfully: {model_loader.model_name}")
         logger.info(f"Model version: {model_loader.model_version}")
-        
+
     except Exception as e:
         logger.error(f"Failed to load model: {e}")
         raise
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down FastAPI Model Server")
     if model_loader:
@@ -164,7 +164,7 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     """
     Create and configure FastAPI application.
-    
+
     Returns:
         Configured FastAPI application instance
     """
@@ -176,7 +176,7 @@ def create_app() -> FastAPI:
         redoc_url="/redoc" if {{ENABLE_DOCS}} else None,
         lifespan=lifespan
     )
-    
+
     # Add CORS middleware
     app.add_middleware(
         CORSMiddleware,
@@ -185,61 +185,61 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    
+
     # Register routes
     setup_routes(app)
-    
+
     return app
 
 
 def setup_routes(app: FastAPI) -> None:
     """
     Register API routes.
-    
+
     Args:
         app: FastAPI application instance
     """
-    
+
     @app.post("/predict", response_model=PredictionResponse, tags=["Inference"])
     async def predict(request: PredictionRequest):
         """
         Make a prediction using the loaded model.
-        
+
         Args:
             request: Prediction request with inputs and optional parameters
-            
+
         Returns:
             PredictionResponse with predictions and metadata
-            
+
         Raises:
             HTTPException: If model is not loaded or prediction fails
         """
         global model_loader, _metrics
-        
+
         if model_loader is None:
             raise HTTPException(
                 status_code=503,
                 detail="Model not loaded"
             )
-        
+
         _metrics["total_requests"] += 1
         start_time = time.time()
-        
+
         try:
             # Perform prediction
             result = await model_loader.predict(
                 inputs=request.inputs,
                 parameters=request.parameters or {}
             )
-            
+
             inference_time = (time.time() - start_time) * 1000  # Convert to ms
             _metrics["successful_requests"] += 1
             _metrics["inference_times"].append(inference_time)
-            
+
             # Keep only last 100 inference times for metrics
             if len(_metrics["inference_times"]) > 100:
                 _metrics["inference_times"] = _metrics["inference_times"][-100:]
-            
+
             response = PredictionResponse(
                 predictions=result["predictions"],
                 model_name=model_loader.model_name,
@@ -248,14 +248,14 @@ def setup_routes(app: FastAPI) -> None:
                 timestamp=datetime.utcnow().isoformat(),
                 metadata=result.get("metadata") if request.return_metadata else None
             )
-            
+
             logger.info(
                 f"Prediction completed in {inference_time:.2f}ms - "
                 f"Model: {model_loader.model_name}"
             )
-            
+
             return response
-            
+
         except Exception as e:
             _metrics["failed_requests"] += 1
             logger.error(f"Prediction failed: {e}", exc_info=True)
@@ -263,49 +263,49 @@ def setup_routes(app: FastAPI) -> None:
                 status_code=500,
                 detail=f"Prediction failed: {str(e)}"
             )
-    
+
     @app.post("/predict/batch", response_model=List[PredictionResponse], tags=["Inference"])
     async def predict_batch(requests: List[PredictionRequest]):
         """
         Make batch predictions.
-        
+
         Args:
             requests: List of prediction requests
-            
+
         Returns:
             List of prediction responses
         """
         global model_loader, _metrics
-        
+
         if model_loader is None:
             raise HTTPException(
                 status_code=503,
                 detail="Model not loaded"
             )
-        
+
         if len(requests) > {{MAX_BATCH_SIZE}}:
             raise HTTPException(
                 status_code=400,
                 detail=f"Batch size exceeds maximum of {{MAX_BATCH_SIZE}}"
             )
-        
+
         _metrics["total_requests"] += 1
         start_time = time.time()
-        
+
         try:
             # Extract all inputs
             batch_inputs = [req.inputs for req in requests]
-            
+
             # Perform batch prediction
             results = await model_loader.predict_batch(
                 inputs=batch_inputs,
                 parameters=requests[0].parameters if requests else {}
             )
-            
+
             inference_time = (time.time() - start_time) * 1000
             _metrics["successful_requests"] += 1
             _metrics["inference_times"].append(inference_time)
-            
+
             responses = []
             for i, result in enumerate(results):
                 responses.append(PredictionResponse(
@@ -316,13 +316,13 @@ def setup_routes(app: FastAPI) -> None:
                     timestamp=datetime.utcnow().isoformat(),
                     metadata=result.get("metadata") if requests[i].return_metadata else None
                 ))
-            
+
             logger.info(
                 f"Batch prediction completed: {len(requests)} items in {inference_time:.2f}ms"
             )
-            
+
             return responses
-            
+
         except Exception as e:
             _metrics["failed_requests"] += 1
             logger.error(f"Batch prediction failed: {e}", exc_info=True)
@@ -330,19 +330,19 @@ def setup_routes(app: FastAPI) -> None:
                 status_code=500,
                 detail=f"Batch prediction failed: {str(e)}"
             )
-    
+
     @app.get("/health", response_model=HealthResponse, tags=["Health"])
     async def health_check():
         """
         Health check endpoint.
-        
+
         Returns:
             Health status and model information
         """
         global model_loader, _metrics
-        
+
         uptime = time.time() - _metrics["start_time"]
-        
+
         return HealthResponse(
             status="healthy" if model_loader is not None else "unhealthy",
             model_loaded=model_loader is not None,
@@ -350,25 +350,25 @@ def setup_routes(app: FastAPI) -> None:
             model_version=model_loader.model_version if model_loader else None,
             uptime_seconds=uptime
         )
-    
+
     @app.get("/metrics", response_model=MetricsResponse, tags=["Metrics"])
     async def get_metrics():
         """
         Get server metrics.
-        
+
         Returns:
             Current metrics including request counts and performance stats
         """
         global _metrics
-        
+
         avg_inference_time = (
             sum(_metrics["inference_times"]) / len(_metrics["inference_times"])
             if _metrics["inference_times"] else 0.0
         )
-        
+
         uptime = time.time() - _metrics["start_time"]
         rps = _metrics["total_requests"] / uptime if uptime > 0 else 0.0
-        
+
         return MetricsResponse(
             total_requests=_metrics["total_requests"],
             successful_requests=_metrics["successful_requests"],
@@ -376,23 +376,23 @@ def setup_routes(app: FastAPI) -> None:
             average_inference_time_ms=avg_inference_time,
             requests_per_second=rps
         )
-    
+
     @app.get("/model/info", tags=["Model"])
     async def get_model_info():
         """
         Get model information.
-        
+
         Returns:
             Model metadata and configuration
         """
         global model_loader
-        
+
         if model_loader is None:
             raise HTTPException(
                 status_code=503,
                 detail="Model not loaded"
             )
-        
+
         return {
             "name": model_loader.model_name,
             "version": model_loader.model_version,
@@ -401,7 +401,7 @@ def setup_routes(app: FastAPI) -> None:
             "batch_size": model_loader.config.batch_size,
             "config": model_loader.config.model_kwargs
         }
-    
+
     logger.info("Routes registered")
 
 

@@ -362,7 +362,9 @@ class BlueprintVersionUpdater:
     def scan_all_blueprints(self) -> None:
         """Scan all blueprint files in the blueprints directory."""
         if not self.blueprints_dir.exists():
-            raise FileNotFoundError(f"Blueprints directory not found: {self.blueprints_dir}")
+            raise FileNotFoundError(
+                f"Blueprints directory not found: {self.blueprints_dir}"
+            )
 
         blueprint_files = list(self.blueprints_dir.glob("*/blueprint.json"))
         if not blueprint_files:
@@ -402,7 +404,7 @@ class BlueprintVersionUpdater:
             1 for c in self.comparisons if c.status == UpdateStatus.NOT_IN_REGISTRY
         )
 
-        report_lines.append(f"Summary:")
+        report_lines.append("Summary:")
         report_lines.append(f"  Outdated versions: {outdated_count}")
         report_lines.append(f"  Up-to-date versions: {up_to_date_count}")
         report_lines.append(f"  Not in registry: {not_in_registry_count}")
@@ -417,18 +419,10 @@ class BlueprintVersionUpdater:
                 report_lines.append(f"Blueprint: {blueprint_name}")
                 report_lines.append("-" * 80)
                 for comp in outdated:
-                    report_lines.append(
-                        f"  {comp.framework_name}:"
-                    )
-                    report_lines.append(
-                        f"    Current: {comp.current_version}"
-                    )
-                    report_lines.append(
-                        f"    Registry: {comp.registry_version}"
-                    )
-                    report_lines.append(
-                        f"    Suggested: {comp.suggested_version}"
-                    )
+                    report_lines.append(f"  {comp.framework_name}:")
+                    report_lines.append(f"    Current: {comp.current_version}")
+                    report_lines.append(f"    Registry: {comp.registry_version}")
+                    report_lines.append(f"    Suggested: {comp.suggested_version}")
                     report_lines.append("")
                 report_lines.append("")
 

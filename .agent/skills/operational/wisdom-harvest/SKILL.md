@@ -179,7 +179,7 @@ For comprehensive onboarding or dedicated knowledge capture sessions.
   "capturedDate": "2026-01-31",
   "capturedDuring": "Team Huddle",
   "participants": 4,
-  
+
   "strengths": [
     {
       "insight": "We always pair on complex features",
@@ -187,7 +187,7 @@ For comprehensive onboarding or dedicated knowledge capture sessions.
       "source": "team"
     }
   ],
-  
+
   "lessonsLearned": [
     {
       "insight": "Never deploy on Fridays",
@@ -196,13 +196,13 @@ For comprehensive onboarding or dedicated knowledge capture sessions.
       "source": "team"
     }
   ],
-  
+
   "qualityDefinition": {
     "doneWell": "Code is tested, documented, and reviewed",
     "nonNegotiables": ["tests", "security review"],
     "readinessCriteria": ["CI passes", "PR approved", "staging verified"]
   },
-  
+
   "domainKnowledge": {
     "gotchas": [
       "Payment retries must use idempotency keys"
@@ -215,7 +215,7 @@ For comprehensive onboarding or dedicated knowledge capture sessions.
       "Refunds older than 90 days must go through manual review"
     ]
   },
-  
+
   "toolWisdom": {
     "productivityTips": [
       "Use 'just db:reset' to rebuild test database"
@@ -241,12 +241,12 @@ wisdom_integration:
     uses:
       - lessonsLearned (check for known pitfalls)
       - qualityDefinition (apply quality bar)
-      
+
   - skill: bugfix-workflow
     uses:
       - toolWisdom.debuggingProcess (follow team's debug approach)
       - domainKnowledge.gotchas (warn about known issues)
-      
+
   - skill: grounding
     uses:
       - domainKnowledge.glossary (understand terminology)
@@ -343,7 +343,7 @@ This presents the current wisdom and asks:
 
 **Team Member 1:** We once deployed a migration that couldn't be rolled back. The table was already in production with data. Now we always require rollback scripts.
 
-**Facilitator:** 
+**Facilitator:**
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║  ✓ WISDOM CAPTURED                                           ║
@@ -414,8 +414,8 @@ After every wisdom harvest session:
 
 ---
 
-*Cursor Agent Factory - Wisdom Harvest Skill*  
-*Capturing the knowledge that matters.*  
+*Cursor Agent Factory - Wisdom Harvest Skill*
+*Capturing the knowledge that matters.*
 *Love is the root. Wisdom is the light.*
 
 ## When to Use

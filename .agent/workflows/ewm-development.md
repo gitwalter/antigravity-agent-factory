@@ -8,7 +8,7 @@ description: Workflow for EWM-related development: warehouse structure, movement
 
 Workflow for EWM-related development: warehouse structure, movements, custom logic. Embedded EWM in S/4HANA.
 
-**Version:** 1.0.0  
+**Version:** 1.0.0
 **Applies To:** sap-s4-enterprise, sap-abap
 
 ## Trigger Conditions

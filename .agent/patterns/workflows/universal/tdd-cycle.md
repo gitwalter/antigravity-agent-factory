@@ -4,8 +4,8 @@
 
 Test-Driven Development workflow implementing the Red-Green-Refactor cycle. Guides developers through writing failing tests first, implementing minimal code to pass, and then refactoring for quality.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** test-generator
 
 > **Note:** Directory paths referenced in this workflow (knowledge/, .cursor/skills/, patterns/, etc.) are configurable via `.cursor/config/settings.json`. See [Path Configuration Guide](../../../../docs/setup/configuration.md).
@@ -31,7 +31,7 @@ This workflow is activated when:
 
 **Description:** Write a test that defines expected behavior before implementation.
 
-**Entry Criteria:** Feature or behavior requirement defined  
+**Entry Criteria:** Feature or behavior requirement defined
 **Exit Criteria:** Test written and confirmed failing
 
 #### Step 1.1: Define Test Scenario
@@ -106,7 +106,7 @@ Examples:
 
 **Description:** Write minimum code to make the test pass.
 
-**Entry Criteria:** Failing test exists  
+**Entry Criteria:** Failing test exists
 **Exit Criteria:** Test passes with minimal implementation
 
 #### Step 2.1: Implement Minimal Code
@@ -155,7 +155,7 @@ Examples:
 
 **Description:** Improve code quality while keeping tests green.
 
-**Entry Criteria:** Test passing  
+**Entry Criteria:** Test passing
 **Exit Criteria:** Code improved, tests still passing
 
 #### Step 3.1: Identify Refactoring Opportunities
@@ -228,7 +228,7 @@ Examples:
 
 **Description:** Continue the cycle for additional behaviors.
 
-**Entry Criteria:** Current cycle complete  
+**Entry Criteria:** Current cycle complete
 **Exit Criteria:** All required behaviors implemented
 
 #### Step 4.1: Check Remaining Requirements
@@ -268,7 +268,7 @@ Examples:
 
 **Description:** Finalize the TDD session.
 
-**Entry Criteria:** All behaviors implemented  
+**Entry Criteria:** All behaviors implemented
 **Exit Criteria:** Documentation complete
 
 #### Step 5.1: Run Full Test Suite
@@ -388,7 +388,7 @@ Examples:
 ```python
 def test_<unit>_<scenario>_<expected>():
     # Given (Arrange)
-    # When (Act)  
+    # When (Act)
     # Then (Assert)
 ```
 
@@ -398,10 +398,10 @@ def test_<unit>_<scenario>_<expected>():
 def test_add_positive_numbers_returns_sum():
     # Given
     calculator = Calculator()
-    
+
     # When
     result = calculator.add(2, 3)
-    
+
     # Then
     assert result == 5
 ```
@@ -442,10 +442,10 @@ Writing test:
 def test_add_positive_numbers_returns_sum():
     # Given
     calc = Calculator()
-    
+
     # When
     result = calc.add(2, 3)
-    
+
     # Then
     assert result == 5
 ```

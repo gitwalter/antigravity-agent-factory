@@ -5,7 +5,6 @@ These tests verify the comprehensive harm detection that combines
 axiom checking, secret scanning, and content analysis.
 """
 
-import pytest
 import sys
 from pathlib import Path
 
@@ -59,7 +58,10 @@ class TestAnalyzeFileOperation:
         report = analyze_file_operation("write", ".agentrules")
         assert not report.safe
         assert report.level >= 2
-        assert "agent behavior" in str(report.details).lower() or "caution" in str(report.details).lower()
+        assert (
+            "agent behavior" in str(report.details).lower()
+            or "caution" in str(report.details).lower()
+        )
 
     def test_file_with_secrets(self):
         """File content with secrets should be flagged."""
@@ -147,7 +149,7 @@ class TestComprehensiveCheck:
             command="ls -la",  # Safe
             file_path="config.py",
             file_operation="write",
-            content=content  # Has secrets
+            content=content,  # Has secrets
         )
         assert not report.safe
         assert report.level >= 3  # Secret detection level
@@ -158,7 +160,7 @@ class TestComprehensiveCheck:
             command="ls -la",
             file_path="README.md",
             file_operation="write",
-            content="This is a normal readme file."
+            content="This is a normal readme file.",
         )
         assert report.safe
 
@@ -174,7 +176,7 @@ class TestHarmReport:
             category="test",
             summary="All good",
             details=[],
-            recommendations=[]
+            recommendations=[],
         )
         assert "No harm" in str(report)
 
@@ -186,7 +188,7 @@ class TestHarmReport:
             category="command",
             summary="Danger detected",
             details=["Detail 1"],
-            recommendations=["Recommendation 1"]
+            recommendations=["Recommendation 1"],
         )
         report_str = str(report)
         assert "LEVEL 4" in report_str

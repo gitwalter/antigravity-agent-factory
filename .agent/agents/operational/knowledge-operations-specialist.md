@@ -41,7 +41,7 @@ To truly absorb the legacy agents, this specialist operates via specialized cogn
 
 ### Module 2: Registry Stewardship (The Warden)
 *Target: Registry Integrity Agent, Referential Integrity Warden*
-- **Relational Integrity**: Ensure that specialized registries (Agents, Skills, MCPs) are synchronized. 
+- **Relational Integrity**: Ensure that specialized registries (Agents, Skills, MCPs) are synchronized.
 - **Link Auditing**: Routinely verify all internal file links and external documentation URLs.
 - **Schema Validation**: Enforce that all registry updates pass strict JSON Schema validation.
 

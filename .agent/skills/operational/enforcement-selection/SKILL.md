@@ -97,7 +97,7 @@ E2 - Peer Review Gate:
 ```
 Override policies define when rules can be bypassed:
 
-E1 (Test Coverage): 
+E1 (Test Coverage):
   [ ] Never - Must always pass
   [x] With justification - Document why
   [ ] With approval - Requires senior sign-off
@@ -122,29 +122,29 @@ enforcements:
       threshold: 80
       severity: blocking
       override: with_justification
-    
+
     E2_code_review:
       enabled: true
       min_reviewers: 1
       require_approval: true
       override: with_approval
-    
+
     E4_style_consistency:
       enabled: true
       severity: blocking
       override: never
-  
+
   safety:
     E5_destructive_confirmation:
       enabled: true
       severity: blocking
       override: never
-    
+
     E8_production_safeguard:
       enabled: true
       require_staging_test: true
       override: with_approval
-  
+
   integrity:
     E9_axiom_compliance:
       enabled: true

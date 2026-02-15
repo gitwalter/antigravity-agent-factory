@@ -40,16 +40,16 @@ response2 = await llm.ainvoke("What is Python?")  # Cached
 # Custom cache implementation
 class SimpleCache:
     """Simple in-memory cache for LLM responses."""
-    
+
     def __init__(self, ttl: int = 3600):
         self.cache: dict = {}
         self.ttl = ttl
-    
+
     def _key(self, prompt: str, model: str, temperature: float) -> str:
         """Generate cache key."""
         content = f"{prompt}:{model}:{temperature}"
         return hashlib.md5(content.encode()).hexdigest()
-    
+
     def get(self, prompt: str, model: str, temperature: float) -> Optional[str]:
         """Get cached response."""
         key = self._key(prompt, model, temperature)
@@ -61,7 +61,7 @@ class SimpleCache:
             else:
                 del self.cache[key]
         return None
-    
+
     def set(self, prompt: str, model: str, temperature: float, response: str) -> None:
         """Cache response."""
         key = self._key(prompt, model, temperature)
@@ -91,16 +91,16 @@ from datetime import timedelta
 
 class RedisCache:
     """Redis-backed cache for LLM responses."""
-    
+
     def __init__(self, redis_url: str = "redis://localhost:6379", ttl: int = 3600):
         self.client = redis.from_url(redis_url)
         self.ttl = ttl
-    
+
     def _key(self, prompt: str, model: str, temperature: float) -> str:
         """Generate cache key."""
         content = f"{prompt}:{model}:{temperature}"
         return f"llm_cache:{hashlib.md5(content.encode()).hexdigest()}"
-    
+
     def get(self, prompt: str, model: str, temperature: float) -> Optional[str]:
         """Get cached response."""
         key = self._key(prompt, model, temperature)
@@ -108,7 +108,7 @@ class RedisCache:
         if data:
             return json.loads(data)["response"]
         return None
-    
+
     def set(self, prompt: str, model: str, temperature: float, response: str) -> None:
         """Cache response."""
         key = self._key(prompt, model, temperature)
@@ -118,17 +118,17 @@ class RedisCache:
             "temperature": temperature
         }
         self.client.setex(key, self.ttl, json.dumps(data))
-    
+
     def invalidate(self, pattern: str = None) -> None:
         """Invalidate cache entries matching pattern."""
         if pattern:
             keys = self.client.keys(f"llm_cache:*{pattern}*")
         else:
             keys = self.client.keys("llm_cache:*")
-        
+
         if keys:
             self.client.delete(*keys)
-    
+
     def clear(self) -> None:
         """Clear all cache entries."""
         keys = self.client.keys("llm_cache:*")
@@ -143,7 +143,7 @@ async def cached_llm_call(prompt: str, model: str = "gpt-4", temperature: float 
     cached = redis_cache.get(prompt, model, temperature)
     if cached:
         return cached
-    
+
     llm = ChatOpenAI(model=model, temperature=temperature)
     response = await llm.ainvoke(prompt)
     redis_cache.set(prompt, model, temperature, response.content)
@@ -163,51 +163,51 @@ import hashlib
 
 class SemanticCache:
     """Semantic similarity-based cache."""
-    
+
     def __init__(self, similarity_threshold: float = 0.85):
         self.embedder = SentenceTransformer("all-MiniLM-L6-v2")
         self.threshold = similarity_threshold
         self.cache: List[dict] = []
-    
+
     def _normalize(self, vector: np.ndarray) -> np.ndarray:
         """Normalize vector for cosine similarity."""
         norm = np.linalg.norm(vector)
         return vector / norm if norm > 0 else vector
-    
+
     def add(self, prompt: str, response: str) -> None:
         """Add prompt-response pair to cache."""
         embedding = self.embedder.encode(prompt)
         embedding = self._normalize(embedding)
-        
+
         self.cache.append({
             "prompt": prompt,
             "response": response,
             "embedding": embedding
         })
-    
+
     def get(self, prompt: str) -> Tuple[Optional[str], float]:
         """Get cached response if semantically similar."""
         if len(self.cache) == 0:
             return None, 0.0
-        
+
         query_embedding = self.embedder.encode(prompt)
         query_embedding = self._normalize(query_embedding)
-        
+
         # Find most similar
         best_similarity = 0.0
         best_response = None
-        
+
         for entry in self.cache:
             similarity = np.dot(query_embedding, entry["embedding"])
             if similarity > best_similarity:
                 best_similarity = similarity
                 best_response = entry["response"]
-        
+
         if best_similarity >= self.threshold:
             return best_response, best_similarity
-        
+
         return None, best_similarity
-    
+
     def clear(self) -> None:
         """Clear cache."""
         self.cache = []
@@ -215,32 +215,32 @@ class SemanticCache:
 # Usage with ChromaDB (alternative)
 class ChromaSemanticCache:
     """Semantic cache using ChromaDB."""
-    
+
     def __init__(self, similarity_threshold: float = 0.85):
         self.client = chromadb.Client()
         self.collection = self.client.get_or_create_collection("semantic_cache")
         self.embedder = SentenceTransformer("all-MiniLM-L6-v2")
         self.threshold = similarity_threshold
-    
+
     def get(self, prompt: str) -> Optional[str]:
         """Get semantically similar cached response."""
         query_embedding = self.embedder.encode(prompt).tolist()
-        
+
         results = self.collection.query(
             query_embeddings=[query_embedding],
             n_results=1
         )
-        
+
         if results["distances"] and results["distances"][0][0] <= (1 - self.threshold):
             # ChromaDB returns distance, convert to similarity
             return results["documents"][0][0]
-        
+
         return None
-    
+
     def add(self, prompt: str, response: str) -> None:
         """Add to semantic cache."""
         embedding = self.embedder.encode(prompt).tolist()
-        
+
         self.collection.add(
             ids=[hashlib.md5(prompt.encode()).hexdigest()],
             embeddings=[embedding],
@@ -255,7 +255,7 @@ async def semantically_cached_llm(prompt: str):
     cached, similarity = semantic_cache.get(prompt)
     if cached:
         return cached
-    
+
     llm = ChatOpenAI(model="gpt-4")
     response = await llm.ainvoke(prompt)
     semantic_cache.add(prompt, response.content)
@@ -275,14 +275,14 @@ import asyncio
 
 def memoize(ttl: int = 3600, cache_backend: str = "memory"):
     """Decorator for memoizing function results."""
-    
+
     if cache_backend == "memory":
         cache = {}
     elif cache_backend == "redis":
         cache = redis.from_url("redis://localhost:6379")
     else:
         cache = {}
-    
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         async def async_wrapper(*args, **kwargs):
@@ -294,7 +294,7 @@ def memoize(ttl: int = 3600, cache_backend: str = "memory"):
             }
             key = hashlib.md5(pickle.dumps(key_data)).hexdigest()
             cache_key = f"memoize:{func.__name__}:{key}"
-            
+
             # Check cache
             if cache_backend == "redis":
                 cached = cache.get(cache_key)
@@ -307,13 +307,13 @@ def memoize(ttl: int = 3600, cache_backend: str = "memory"):
                         return entry["value"]
                     else:
                         del cache[cache_key]
-            
+
             # Execute function
             if asyncio.iscoroutinefunction(func):
                 result = await func(*args, **kwargs)
             else:
                 result = func(*args, **kwargs)
-            
+
             # Cache result
             if cache_backend == "redis":
                 cache.setex(cache_key, ttl, pickle.dumps(result))
@@ -322,9 +322,9 @@ def memoize(ttl: int = 3600, cache_backend: str = "memory"):
                     "value": result,
                     "timestamp": time.time()
                 }
-            
+
             return result
-        
+
         return async_wrapper
     return decorator
 
@@ -355,15 +355,15 @@ from typing import List, Callable
 
 class CacheManager:
     """Advanced cache management with invalidation strategies."""
-    
+
     def __init__(self, redis_url: str = "redis://localhost:6379"):
         self.client = redis.from_url(redis_url)
         self.invalidation_callbacks: List[Callable] = []
-    
+
     def add_invalidation_callback(self, callback: Callable) -> None:
         """Add callback to execute on cache invalidation."""
         self.invalidation_callbacks.append(callback)
-    
+
     def invalidate_by_pattern(self, pattern: str) -> int:
         """Invalidate entries matching pattern."""
         keys = self.client.keys(f"*{pattern}*")
@@ -372,12 +372,12 @@ class CacheManager:
             self._trigger_callbacks(pattern)
             return count
         return 0
-    
+
     def invalidate_by_ttl(self, max_age: int) -> int:
         """Invalidate entries older than max_age seconds."""
         keys = self.client.keys("*")
         count = 0
-        
+
         for key in keys:
             ttl = self.client.ttl(key)
             if ttl == -1:  # No expiration
@@ -396,27 +396,27 @@ class CacheManager:
             elif ttl > max_age:
                 # Set new TTL
                 self.client.expire(key, max_age)
-        
+
         return count
-    
+
     def invalidate_by_tag(self, tag: str) -> int:
         """Invalidate entries tagged with specific tag."""
         tag_key = f"tag:{tag}"
         keys = self.client.smembers(tag_key)
-        
+
         if keys:
             count = self.client.delete(*keys)
             self.client.delete(tag_key)
             self._trigger_callbacks(f"tag:{tag}")
             return count
         return 0
-    
+
     def tag_entry(self, key: str, tags: List[str]) -> None:
         """Tag cache entry for later invalidation."""
         for tag in tags:
             tag_key = f"tag:{tag}"
             self.client.sadd(tag_key, key)
-    
+
     def _trigger_callbacks(self, pattern: str) -> None:
         """Trigger invalidation callbacks."""
         for callback in self.invalidation_callbacks:
@@ -424,7 +424,7 @@ class CacheManager:
                 callback(pattern)
             except Exception as e:
                 print(f"Callback error: {e}")
-    
+
     def clear_all(self) -> None:
         """Clear all cache entries."""
         keys = self.client.keys("*")
@@ -476,25 +476,25 @@ if isinstance(cache, RedisCache):
 # Custom cache with TTL
 class TTLCache(InMemoryCache):
     """In-memory cache with TTL."""
-    
+
     def __init__(self, ttl: int = 3600):
         super().__init__()
         self.ttl = ttl
         self.timestamps = {}
-    
+
     def lookup(self, prompt: str, llm_string: str) -> Optional[str]:
         """Lookup with TTL check."""
         key = self._generate_key(prompt, llm_string)
-        
+
         if key in self.cache:
             if time.time() - self.timestamps.get(key, 0) < self.ttl:
                 return self.cache[key]
             else:
                 del self.cache[key]
                 del self.timestamps[key]
-        
+
         return None
-    
+
     def update(self, prompt: str, llm_string: str, return_val: str) -> None:
         """Update cache with timestamp."""
         key = self._generate_key(prompt, llm_string)

@@ -79,7 +79,7 @@ import backtrader as bt
 class MyStrategy(bt.Strategy):
     def __init__(self):
         self.sma = bt.indicators.SMA(period=20)
-    
+
     def next(self):
         if self.data.close > self.sma:
             self.buy()

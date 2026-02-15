@@ -4,8 +4,8 @@
 
 Workflow for designing, implementing, and deploying multi-agent AI systems. Covers topology selection, agent implementation, coordination patterns, and testing using LangGraph, CrewAI, or AutoGen.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Applies To:** ai-agent-development, multi-agent-systems, python-multi-agent
 
 ## Trigger Conditions
@@ -29,7 +29,7 @@ This workflow is activated when:
 
 **Description:** Design the agent coordination topology.
 
-**Entry Criteria:** Use case defined  
+**Entry Criteria:** Use case defined
 **Exit Criteria:** Topology selected
 
 #### Step 1.1: Analyze Requirements
@@ -85,7 +85,7 @@ This workflow is activated when:
 
 **Description:** Implement individual agents.
 
-**Entry Criteria:** Topology designed  
+**Entry Criteria:** Topology designed
 **Exit Criteria:** Agents implemented
 
 #### Step 2.1: Define Agent Specifications
@@ -154,7 +154,7 @@ workflow.add_edge("researcher", "writer")
 
 **Description:** Implement coordination between agents.
 
-**Entry Criteria:** Agents implemented  
+**Entry Criteria:** Agents implemented
 **Exit Criteria:** Coordination working
 
 #### Step 3.1: Implement Handoffs
@@ -216,7 +216,7 @@ workflow.add_conditional_edges(
 
 **Description:** Test the multi-agent system.
 
-**Entry Criteria:** Coordination implemented  
+**Entry Criteria:** Coordination implemented
 **Exit Criteria:** Tests passing
 
 #### Step 4.1: Unit Test Agents
@@ -261,7 +261,7 @@ workflow.add_conditional_edges(
 
 **Description:** Deploy the multi-agent system.
 
-**Entry Criteria:** Tests passing  
+**Entry Criteria:** Tests passing
 **Exit Criteria:** System deployed
 
 #### Step 5.1: Configure Production

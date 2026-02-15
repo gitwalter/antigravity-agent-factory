@@ -8,8 +8,8 @@ description: Comprehensive workflow for developing production-ready LLM applicat
 
 Comprehensive workflow for developing production-ready LLM applications from prototype to production, including evaluation, security, and monitoring.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-09  
+**Version:** 1.0.0
+**Created:** 2026-02-09
 **Agent:** ai-app-developer
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.

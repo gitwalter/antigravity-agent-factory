@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 class STTConfig:
     """
     Configuration for Speech-to-Text service.
-    
+
     Attributes:
         model_size: Whisper model size (tiny, base, small, medium, large)
         language: Language code (e.g., 'en', 'es', 'fr') or None for auto-detect
@@ -52,7 +52,7 @@ class STTConfig:
         fp16: Use FP16 precision (faster, less accurate)
         device: Device to use ('cpu', 'cuda', 'mps')
     """
-    
+
     def __init__(
         self,
         model_size: str = "{{MODEL_SIZE}}",
@@ -75,14 +75,14 @@ class STTConfig:
 class TranscriptionResult:
     """
     Result from speech-to-text transcription.
-    
+
     Attributes:
         text: Transcribed text
         language: Detected language code
         segments: List of transcription segments with timestamps
         confidence: Overall confidence score (if available)
     """
-    
+
     def __init__(
         self,
         text: str,
@@ -94,10 +94,10 @@ class TranscriptionResult:
         self.language = language
         self.segments = segments or []
         self.confidence = confidence
-    
+
     def __str__(self) -> str:
         return self.text
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert result to dictionary."""
         return {
@@ -111,28 +111,28 @@ class TranscriptionResult:
 class {{STT_CLASS_NAME}}:
     """
     {{STT_CLASS_NAME}} - Speech-to-Text transcription using OpenAI Whisper.
-    
+
     Provides high-quality speech transcription with support for multiple
     languages and audio formats. Uses OpenAI's Whisper model for accurate
     transcription.
-    
+
     Features:
     - Multiple model sizes (tiny to large)
     - Automatic language detection
     - Audio format conversion
     - Timestamped segments
     - Batch processing support
-    
+
     Example:
         >>> stt = {{STT_CLASS_NAME}}()
         >>> result = stt.transcribe("audio.mp3")
         >>> print(result.text)
     """
-    
+
     def __init__(self, config: Optional[STTConfig] = None):
         """
         Initialize the Speech-to-Text service.
-        
+
         Args:
             config: Configuration object (uses defaults if None)
         """
@@ -140,13 +140,13 @@ class {{STT_CLASS_NAME}}:
             raise ImportError(
                 "OpenAI Whisper is required. Install with: pip install openai-whisper"
             )
-        
+
         self.config = config or STTConfig()
         self.model = None
         self._model_loaded = False
-        
+
         logger.info(f"Initialized {{STT_CLASS_NAME}} with model size: {self.config.model_size}")
-    
+
     def _load_model(self):
         """Load the Whisper model (lazy loading)."""
         if not self._model_loaded:
@@ -157,7 +157,7 @@ class {{STT_CLASS_NAME}}:
             )
             self._model_loaded = True
             logger.info("Model loaded successfully")
-    
+
     def _convert_audio_format(
         self,
         audio_path: Union[str, Path, BinaryIO],
@@ -165,11 +165,11 @@ class {{STT_CLASS_NAME}}:
     ) -> str:
         """
         Convert audio file to target format.
-        
+
         Args:
             audio_path: Path to audio file or file-like object
             target_format: Target format (wav, mp3, etc.)
-            
+
         Returns:
             Path to converted audio file
         """
@@ -179,14 +179,14 @@ class {{STT_CLASS_NAME}}:
                 return str(audio_path)
             else:
                 raise ValueError("Cannot convert file-like object without pydub")
-        
+
         # Create temporary output file
         temp_output = tempfile.NamedTemporaryFile(
             suffix=f".{target_format}",
             delete=False
         )
         temp_output.close()
-        
+
         try:
             # Load audio
             if isinstance(audio_path, (str, Path)):
@@ -196,19 +196,19 @@ class {{STT_CLASS_NAME}}:
                 audio_data = audio_path.read()
                 audio_path.seek(0)  # Reset file pointer
                 audio = AudioSegment.from_file(io.BytesIO(audio_data))
-            
+
             # Export to target format
             audio.export(temp_output.name, format=target_format)
             logger.info(f"Converted audio to {target_format} format")
-            
+
             return temp_output.name
-            
+
         except Exception as e:
             # Clean up temp file on error
             if os.path.exists(temp_output.name):
                 os.unlink(temp_output.name)
             raise ValueError(f"Failed to convert audio format: {e}")
-    
+
     def transcribe(
         self,
         audio_path: Union[str, Path, BinaryIO],
@@ -217,25 +217,25 @@ class {{STT_CLASS_NAME}}:
     ) -> TranscriptionResult:
         """
         Transcribe audio file to text.
-        
+
         Args:
             audio_path: Path to audio file or file-like object
             language: Language code (overrides config) or None for auto-detect
             **kwargs: Additional Whisper transcription options
-            
+
         Returns:
             TranscriptionResult with transcribed text and metadata
-            
+
         Example:
             >>> result = stt.transcribe("recording.mp3")
             >>> print(f"Transcribed: {result.text}")
             >>> print(f"Language: {result.language}")
         """
         self._load_model()
-        
+
         # Use provided language or config default
         transcription_language = language or self.config.language
-        
+
         # Prepare transcription options
         options = {
             "language": transcription_language,
@@ -245,12 +245,12 @@ class {{STT_CLASS_NAME}}:
             "fp16": self.config.fp16,
             **kwargs
         }
-        
+
         # Remove None values
         options = {k: v for k, v in options.items() if v is not None}
-        
+
         logger.info(f"Transcribing audio: {audio_path}")
-        
+
         try:
             # Handle file-like objects
             if isinstance(audio_path, (str, Path)):
@@ -261,14 +261,14 @@ class {{STT_CLASS_NAME}}:
                 temp_file.write(audio_path.read())
                 temp_file.close()
                 audio_file = temp_file.name
-            
+
             # Transcribe
             result = self.model.transcribe(audio_file, **options)
-            
+
             # Clean up temp file if created
             if isinstance(audio_path, BinaryIO) and os.path.exists(audio_file):
                 os.unlink(audio_file)
-            
+
             # Extract segments
             segments = []
             if "segments" in result:
@@ -281,23 +281,23 @@ class {{STT_CLASS_NAME}}:
                     }
                     for seg in result["segments"]
                 ]
-            
+
             transcription_result = TranscriptionResult(
                 text=result["text"].strip(),
                 language=result.get("language"),
                 segments=segments,
                 confidence=None  # Whisper doesn't provide confidence scores
             )
-            
+
             logger.info(f"Transcription completed. Language: {transcription_result.language}")
             logger.debug(f"Transcribed text length: {len(transcription_result.text)}")
-            
+
             return transcription_result
-            
+
         except Exception as e:
             logger.error(f"Error during transcription: {e}")
             raise RuntimeError(f"Transcription failed: {e}")
-    
+
     def transcribe_batch(
         self,
         audio_paths: list[Union[str, Path]],
@@ -305,14 +305,14 @@ class {{STT_CLASS_NAME}}:
     ) -> list[TranscriptionResult]:
         """
         Transcribe multiple audio files.
-        
+
         Args:
             audio_paths: List of paths to audio files
             language: Language code (applied to all files)
-            
+
         Returns:
             List of TranscriptionResult objects
-            
+
         Example:
             >>> results = stt.transcribe_batch(["file1.mp3", "file2.mp3"])
             >>> for result in results:
@@ -320,7 +320,7 @@ class {{STT_CLASS_NAME}}:
         """
         logger.info(f"Batch transcribing {len(audio_paths)} files")
         results = []
-        
+
         for i, audio_path in enumerate(audio_paths):
             try:
                 logger.info(f"Processing file {i+1}/{len(audio_paths)}: {audio_path}")
@@ -337,51 +337,51 @@ class {{STT_CLASS_NAME}}:
                         confidence=0.0
                     )
                 )
-        
+
         logger.info(f"Batch transcription completed: {len(results)} results")
         return results
-    
+
     def get_supported_languages(self) -> list[str]:
         """
         Get list of supported language codes.
-        
+
         Returns:
             List of ISO 639-1 language codes
         """
         if not self._model_loaded:
             self._load_model()
-        
+
         return list(whisper.tokenizer.LANGUAGES.keys())
-    
+
     def detect_language(self, audio_path: Union[str, Path]) -> str:
         """
         Detect the language of an audio file.
-        
+
         Args:
             audio_path: Path to audio file
-            
+
         Returns:
             Language code (ISO 639-1)
-            
+
         Example:
             >>> lang = stt.detect_language("audio.mp3")
             >>> print(f"Detected language: {lang}")
         """
         self._load_model()
-        
+
         logger.info(f"Detecting language for: {audio_path}")
-        
+
         # Load audio and detect language
         audio = whisper.load_audio(str(audio_path))
         audio = whisper.pad_or_trim(audio)
-        
+
         # Make log-Mel spectrogram
         mel = whisper.log_mel_spectrogram(audio).to(self.model.device)
-        
+
         # Detect language
         _, probs = self.model.detect_language(mel)
         detected_language = max(probs, key=probs.get)
-        
+
         logger.info(f"Detected language: {detected_language}")
         return detected_language
 
@@ -394,19 +394,19 @@ if __name__ == "__main__":
         language={{LANGUAGE}},
         temperature={{TEMPERATURE}}
     )
-    
+
     stt = {{STT_CLASS_NAME}}(config=config)
-    
+
     # Transcribe a single file
     # result = stt.transcribe("{{AUDIO_FILE_PATH}}")
     # print(f"Transcribed text: {result.text}")
     # print(f"Language: {result.language}")
     # print(f"Segments: {len(result.segments)}")
-    
+
     # Detect language
     # lang = stt.detect_language("{{AUDIO_FILE_PATH}}")
     # print(f"Detected language: {lang}")
-    
+
     # Batch transcription
     # results = stt.transcribe_batch(["{{AUDIO_FILE_1}}", "{{AUDIO_FILE_2}}"])
     # for i, result in enumerate(results):

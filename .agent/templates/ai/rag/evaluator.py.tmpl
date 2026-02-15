@@ -89,14 +89,14 @@ class EvaluationResult(BaseModel):
 class {{EVALUATOR_CLASS_NAME}}:
     """
     {{EVALUATOR_NAME}} - RAG Evaluation System
-    
+
     Evaluates RAG system quality using multiple metrics:
     - Faithfulness: Is answer grounded in context?
     - Answer Relevancy: Is answer relevant to question?
     - Context Precision: Are retrieved contexts relevant?
     - Context Recall: Did we retrieve all needed context?
     - Answer Correctness: Does answer match ground truth?
-    
+
     Example:
         >>> evaluator = {{EVALUATOR_CLASS_NAME}}(
         ...     llm_model="gpt-4o",
@@ -109,7 +109,7 @@ class {{EVALUATOR_CLASS_NAME}}:
         ... )
         >>> print(f"Faithfulness: {result.metrics.faithfulness:.3f}")
     """
-    
+
     def __init__(
         self,
         llm_model: str = "{{LLM_MODEL}}",
@@ -119,7 +119,7 @@ class {{EVALUATOR_CLASS_NAME}}:
     ):
         """
         Initialize RAG evaluator.
-        
+
         Args:
             llm_model: LLM model for evaluation
             temperature: Sampling temperature (use 0 for deterministic)
@@ -129,16 +129,16 @@ class {{EVALUATOR_CLASS_NAME}}:
         self.llm_model = llm_model
         self.temperature = temperature
         self.use_ragas = use_ragas and RAGAS_AVAILABLE
-        
+
         if self.use_ragas and not RAGAS_AVAILABLE:
             logger.warning(
                 "RAGAS requested but not available. Falling back to custom evaluation."
             )
             self.use_ragas = False
-        
+
         # Initialize LLM for custom evaluation
         self.llm = ChatOpenAI(model=llm_model, temperature=temperature)
-        
+
         # RAGAS metrics
         if ragas_metrics is None:
             ragas_metrics = [
@@ -148,12 +148,12 @@ class {{EVALUATOR_CLASS_NAME}}:
                 "context_recall",
             ]
         self.ragas_metrics = ragas_metrics
-        
+
         logger.info(
             f"Initialized {{EVALUATOR_NAME}} with model {llm_model}, "
             f"use_ragas={self.use_ragas}"
         )
-    
+
     def evaluate_faithfulness(
         self,
         question: str,
@@ -162,22 +162,22 @@ class {{EVALUATOR_CLASS_NAME}}:
     ) -> float:
         """
         Evaluate if answer is faithful to contexts.
-        
+
         Args:
             question: Question asked
             answer: Generated answer
             contexts: Retrieved contexts
-            
+
         Returns:
             Faithfulness score (0-1)
         """
         context_str = "\n\n".join(
             [f"Context {i+1}: {ctx}" for i, ctx in enumerate(contexts)]
         )
-        
+
         prompt = ChatPromptTemplate.from_messages([
             ("system", """You are an evaluator assessing if an answer is faithful to provided contexts.
-            
+
 Rate faithfulness on a scale of 0.0 to 1.0:
 - 1.0 = Answer is fully supported by contexts, no unsupported claims
 - 0.7 = Answer is mostly supported, minor unsupported details
@@ -195,27 +195,27 @@ Answer: {answer}
 
 Evaluate faithfulness:""")
         ])
-        
+
         chain = prompt | self.llm | StrOutputParser()
-        
+
         try:
             response = chain.invoke({
                 "question": question,
                 "contexts": context_str,
                 "answer": answer,
             })
-            
+
             # Parse JSON response
             response_json = json.loads(response)
             score = float(response_json.get("score", 0.5))
-            
+
             logger.debug(f"Faithfulness evaluation: {score:.3f}")
             return max(0.0, min(1.0, score))
-            
+
         except Exception as e:
             logger.error(f"Error evaluating faithfulness: {e}")
             return 0.5  # Default neutral score
-    
+
     def evaluate_relevancy(
         self,
         question: str,
@@ -223,17 +223,17 @@ Evaluate faithfulness:""")
     ) -> float:
         """
         Evaluate if answer is relevant to question.
-        
+
         Args:
             question: Question asked
             answer: Generated answer
-            
+
         Returns:
             Relevancy score (0-1)
         """
         prompt = ChatPromptTemplate.from_messages([
             ("system", """You are an evaluator assessing if an answer is relevant to a question.
-            
+
 Rate relevancy on a scale of 0.0 to 1.0:
 - 1.0 = Answer directly and completely addresses the question
 - 0.7 = Answer mostly addresses the question, minor gaps
@@ -248,25 +248,25 @@ Answer: {answer}
 
 Evaluate relevancy:""")
         ])
-        
+
         chain = prompt | self.llm | StrOutputParser()
-        
+
         try:
             response = chain.invoke({
                 "question": question,
                 "answer": answer,
             })
-            
+
             response_json = json.loads(response)
             score = float(response_json.get("score", 0.5))
-            
+
             logger.debug(f"Relevancy evaluation: {score:.3f}")
             return max(0.0, min(1.0, score))
-            
+
         except Exception as e:
             logger.error(f"Error evaluating relevancy: {e}")
             return 0.5
-    
+
     def evaluate_context_precision(
         self,
         question: str,
@@ -274,20 +274,20 @@ Evaluate relevancy:""")
     ) -> float:
         """
         Evaluate precision of retrieved contexts.
-        
+
         Args:
             question: Question asked
             contexts: Retrieved contexts
-            
+
         Returns:
             Context precision score (0-1)
         """
         if not contexts:
             return 0.0
-        
+
         prompt = ChatPromptTemplate.from_messages([
             ("system", """You are an evaluator assessing if retrieved contexts are relevant to a question.
-            
+
 Rate precision on a scale of 0.0 to 1.0:
 - 1.0 = All contexts are highly relevant
 - 0.7 = Most contexts are relevant
@@ -303,9 +303,9 @@ Contexts:
 
 Evaluate context precision:""")
         ])
-        
+
         chain = prompt | self.llm | StrOutputParser()
-        
+
         try:
             context_str = "\n\n".join(
                 [f"Context {i+1}: {ctx}" for i, ctx in enumerate(contexts)]
@@ -314,17 +314,17 @@ Evaluate context precision:""")
                 "question": question,
                 "contexts": context_str,
             })
-            
+
             response_json = json.loads(response)
             score = float(response_json.get("score", 0.5))
-            
+
             logger.debug(f"Context precision evaluation: {score:.3f}")
             return max(0.0, min(1.0, score))
-            
+
         except Exception as e:
             logger.error(f"Error evaluating context precision: {e}")
             return 0.5
-    
+
     def evaluate_with_ragas(
         self,
         question: str,
@@ -334,33 +334,33 @@ Evaluate context precision:""")
     ) -> EvaluationMetrics:
         """
         Evaluate using RAGAS framework.
-        
+
         Args:
             question: Question asked
             answer: Generated answer
             contexts: Retrieved contexts
             ground_truth: Ground truth answer (optional)
-            
+
         Returns:
             EvaluationMetrics with RAGAS scores
         """
         if not self.use_ragas:
             raise ValueError("RAGAS not available or not enabled")
-        
+
         logger.info("Evaluating with RAGAS...")
-        
+
         # Prepare data for RAGAS
         eval_data = {
             "question": [question],
             "answer": [answer],
             "contexts": [contexts],
         }
-        
+
         if ground_truth:
             eval_data["ground_truth"] = [ground_truth]
-        
+
         dataset = Dataset.from_dict(eval_data)
-        
+
         # Select metrics
         metrics_list = []
         if "faithfulness" in self.ragas_metrics:
@@ -373,10 +373,10 @@ Evaluate context precision:""")
             metrics_list.append(context_recall)
         if "answer_correctness" in self.ragas_metrics and ground_truth:
             metrics_list.append(answer_correctness)
-        
+
         # Evaluate
         results = evaluate(dataset, metrics=metrics_list)
-        
+
         # Extract scores
         metrics_dict = {
             "faithfulness": results.get("faithfulness", 0.0),
@@ -389,9 +389,9 @@ Evaluate context precision:""")
                 "metrics_used": self.ragas_metrics,
             },
         }
-        
+
         return EvaluationMetrics(**metrics_dict)
-    
+
     def evaluate(
         self,
         question: str,
@@ -401,16 +401,16 @@ Evaluate context precision:""")
     ) -> EvaluationResult:
         """
         Comprehensive evaluation of RAG response.
-        
+
         Args:
             question: Question asked
             answer: Generated answer
             contexts: Retrieved contexts
             ground_truth: Ground truth answer (optional)
-            
+
         Returns:
             EvaluationResult with metrics
-            
+
         Example:
             >>> result = evaluator.evaluate(
             ...     question="What is ML?",
@@ -421,7 +421,7 @@ Evaluate context precision:""")
             >>> print(f"Faithfulness: {result.metrics.faithfulness:.3f}")
         """
         logger.info(f"Evaluating RAG response for question: {question[:50]}...")
-        
+
         # Use RAGAS if available
         if self.use_ragas:
             try:
@@ -433,7 +433,7 @@ Evaluate context precision:""")
                 metrics = self._evaluate_custom(question, answer, contexts, ground_truth)
         else:
             metrics = self._evaluate_custom(question, answer, contexts, ground_truth)
-        
+
         result = EvaluationResult(
             metrics=metrics,
             question=question,
@@ -441,14 +441,14 @@ Evaluate context precision:""")
             contexts=contexts,
             ground_truth=ground_truth,
         )
-        
+
         logger.info(
             f"Evaluation complete - Faithfulness: {metrics.faithfulness:.3f}, "
             f"Relevancy: {metrics.answer_relevancy:.3f}"
         )
-        
+
         return result
-    
+
     def _evaluate_custom(
         self,
         question: str,
@@ -458,16 +458,16 @@ Evaluate context precision:""")
     ) -> EvaluationMetrics:
         """Custom evaluation using LLM."""
         logger.info("Using custom LLM-based evaluation...")
-        
+
         # Evaluate faithfulness
         faithfulness_score = self.evaluate_faithfulness(question, answer, contexts)
-        
+
         # Evaluate relevancy
         relevancy_score = self.evaluate_relevancy(question, answer)
-        
+
         # Evaluate context precision
         precision_score = self.evaluate_context_precision(question, contexts)
-        
+
         return EvaluationMetrics(
             faithfulness=faithfulness_score,
             answer_relevancy=relevancy_score,
@@ -477,7 +477,7 @@ Evaluate context precision:""")
                 "llm_model": self.llm_model,
             },
         )
-    
+
     def evaluate_batch(
         self,
         questions: List[str],
@@ -487,16 +487,16 @@ Evaluate context precision:""")
     ) -> List[EvaluationResult]:
         """
         Evaluate multiple RAG responses in batch.
-        
+
         Args:
             questions: List of questions
             answers: List of answers
             contexts_list: List of context lists
             ground_truths: List of ground truth answers (optional)
-            
+
         Returns:
             List of EvaluationResult
-            
+
         Example:
             >>> results = evaluator.evaluate_batch(
             ...     questions=["Q1", "Q2"],
@@ -505,7 +505,7 @@ Evaluate context precision:""")
             ... )
         """
         logger.info(f"Evaluating batch of {len(questions)} questions...")
-        
+
         results = []
         for i, (question, answer, contexts) in enumerate(
             zip(questions, answers, contexts_list)
@@ -513,7 +513,7 @@ Evaluate context precision:""")
             ground_truth = ground_truths[i] if ground_truths else None
             result = self.evaluate(question, answer, contexts, ground_truth)
             results.append(result)
-        
+
         logger.info(f"Batch evaluation complete: {len(results)} results")
         return results
 
@@ -525,7 +525,7 @@ if __name__ == "__main__":
         llm_model="{{LLM_MODEL}}",
         use_ragas={{USE_RAGAS}},
     )
-    
+
     # Evaluate single response
     result = evaluator.evaluate(
         question="{{EXAMPLE_QUESTION}}",
@@ -533,7 +533,7 @@ if __name__ == "__main__":
         contexts=["{{EXAMPLE_CONTEXT_1}}", "{{EXAMPLE_CONTEXT_2}}"],
         ground_truth="{{EXAMPLE_GROUND_TRUTH}}",
     )
-    
+
     print(f"\nEvaluation Results:")
     print(f"Question: {result.question}")
     print(f"\nMetrics:")
@@ -545,6 +545,6 @@ if __name__ == "__main__":
         print(f"  Context Recall: {result.metrics.context_recall:.3f}")
     if result.metrics.answer_correctness is not None:
         print(f"  Answer Correctness: {result.metrics.answer_correctness:.3f}")
-    
+
     print(f"\nAnswer: {result.answer[:100]}...")
     print(f"\nContexts: {len(result.contexts)} retrieved")

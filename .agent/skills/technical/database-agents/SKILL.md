@@ -45,7 +45,7 @@ def get_database_schema(engine: Engine) -> Dict[str, List[Dict]]:
     """Extract database schema information."""
     inspector = inspect(engine)
     schema = {}
-    
+
     for table_name in inspector.get_table_names():
         columns = []
         for column in inspector.get_columns(table_name):
@@ -55,7 +55,7 @@ def get_database_schema(engine: Engine) -> Dict[str, List[Dict]]:
                 "nullable": column["nullable"],
                 "default": str(column.get("default", ""))
             })
-        
+
         # Get foreign keys
         foreign_keys = []
         for fk in inspector.get_foreign_keys(table_name):
@@ -64,7 +64,7 @@ def get_database_schema(engine: Engine) -> Dict[str, List[Dict]]:
                 "referred_table": fk["referred_table"],
                 "referred_columns": fk["referred_columns"]
             })
-        
+
         # Get indexes
         indexes = []
         for idx in inspector.get_indexes(table_name):
@@ -73,13 +73,13 @@ def get_database_schema(engine: Engine) -> Dict[str, List[Dict]]:
                 "columns": idx["column_names"],
                 "unique": idx["unique"]
             })
-        
+
         schema[table_name] = {
             "columns": columns,
             "foreign_keys": foreign_keys,
             "indexes": indexes
         }
-    
+
     return schema
 
 def format_schema_for_llm(schema: Dict) -> str:
@@ -91,14 +91,14 @@ def format_schema_for_llm(schema: Dict) -> str:
         for col in info["columns"]:
             nullable = "NULL" if col["nullable"] else "NOT NULL"
             lines.append(f"  - {col['name']} ({col['type']}) {nullable}")
-        
+
         if info["foreign_keys"]:
             lines.append("Foreign Keys:")
             for fk in info["foreign_keys"]:
                 cols = ", ".join(fk["constrained_columns"])
                 ref_cols = ", ".join(fk["referred_columns"])
                 lines.append(f"  - {cols} -> {fk['referred_table']}.{ref_cols}")
-    
+
     return "\n".join(lines)
 
 # Usage
@@ -137,12 +137,12 @@ async def generate_sql(question: str, schema_text: str) -> str:
     """Generate SQL query from natural language question."""
     prompt = create_sql_prompt(schema_text)
     chain = prompt | llm | StrOutputParser()
-    
+
     result = await chain.ainvoke({
         "schema": schema_text,
         "question": question
     })
-    
+
     # Extract SQL from response (remove markdown code blocks if present)
     sql = result.strip()
     if sql.startswith("```sql"):
@@ -151,7 +151,7 @@ async def generate_sql(question: str, schema_text: str) -> str:
         sql = sql[3:]
     if sql.endswith("```"):
         sql = sql[:-3]
-    
+
     return sql.strip()
 
 # Usage
@@ -176,17 +176,17 @@ async def execute_query(engine: Engine, query: str, limit: int = 100) -> Dict[st
             "error": "Only SELECT queries are allowed",
             "results": None
         }
-    
+
     try:
         with engine.connect() as conn:
             # Add LIMIT if not present (safety measure)
             if "LIMIT" not in query_upper:
                 query = f"{query.rstrip(';')} LIMIT {limit}"
-            
+
             result = conn.execute(text(query))
             columns = result.keys()
             rows = [dict(row) for row in result.fetchall()]
-            
+
             return {
                 "error": None,
                 "columns": list(columns),
@@ -222,7 +222,7 @@ class SQLQuery(BaseModel):
 
 def create_advanced_sql_prompt(schema_text: str, sample_data: Dict[str, List[Dict]] = None) -> ChatPromptTemplate:
     """Create advanced prompt with schema and sample data."""
-    
+
     sample_text = ""
     if sample_data:
         sample_text = "\n\nSample Data:\n"
@@ -230,7 +230,7 @@ def create_advanced_sql_prompt(schema_text: str, sample_data: Dict[str, List[Dic
             sample_text += f"\n{table}:\n"
             for row in rows[:3]:  # Show first 3 rows
                 sample_text += f"  {row}\n"
-    
+
     return ChatPromptTemplate.from_messages([
         ("system", """You are an expert SQL query generator. You understand database schemas and can generate efficient queries.
 
@@ -260,18 +260,18 @@ async def generate_schema_aware_sql(
 ) -> SQLQuery:
     """Generate SQL with schema awareness."""
     from langchain_core.output_parsers import PydanticOutputParser
-    
+
     prompt = create_advanced_sql_prompt(schema_text, sample_data)
     parser = PydanticOutputParser(pydantic_object=SQLQuery)
-    
+
     chain = prompt.partial(format_instructions=parser.get_format_instructions()) | llm | parser
-    
+
     result = await chain.ainvoke({
         "schema": schema_text,
         "samples": sample_text if sample_data else "",
         "question": question
     })
-    
+
     return result
 
 # Usage
@@ -288,9 +288,9 @@ from langchain_core.prompts import ChatPromptTemplate
 
 def create_optimization_prompt(original_query: str, schema_text: str, execution_plan: str = None) -> ChatPromptTemplate:
     """Create prompt for query optimization."""
-    
+
     plan_text = f"\n\nExecution Plan:\n{execution_plan}" if execution_plan else ""
-    
+
     return ChatPromptTemplate.from_messages([
         ("system", """You are a SQL query optimizer. Analyze queries and suggest improvements.
 
@@ -317,19 +317,19 @@ async def optimize_query(
     """Optimize a SQL query."""
     prompt = create_optimization_prompt(query, schema_text, execution_plan)
     chain = prompt | llm | StrOutputParser()
-    
+
     result = await chain.ainvoke({
         "schema": schema_text,
         "plan": execution_plan or "",
         "query": query
     })
-    
+
     # Parse optimized query and explanation
     lines = result.split("\n")
     optimized_query = ""
     explanation = ""
     in_query = False
-    
+
     for line in lines:
         if "```sql" in line or "```" in line:
             in_query = not in_query
@@ -338,7 +338,7 @@ async def optimize_query(
             optimized_query += line + "\n"
         else:
             explanation += line + "\n"
-    
+
     return {
         "original": query,
         "optimized": optimized_query.strip(),
@@ -359,25 +359,25 @@ from typing import Dict, Any
 
 class DatabaseAgent:
     """Complete database agent with text-to-SQL pipeline."""
-    
+
     def __init__(self, engine: Engine, llm):
         self.engine = engine
         self.llm = llm
         self.schema = get_database_schema(engine)
         self.schema_text = format_schema_for_llm(self.schema)
-    
+
     async def query(self, question: str) -> Dict[str, Any]:
         """Complete pipeline: question -> SQL -> results."""
-        
+
         # Step 1: Generate SQL
         sql_result = await generate_schema_aware_sql(
             question,
             self.schema_text
         )
-        
+
         # Step 2: Execute query
         query_result = await execute_query(self.engine, sql_result.query)
-        
+
         # Step 3: Format response
         if query_result["error"]:
             return {
@@ -386,14 +386,14 @@ class DatabaseAgent:
                 "generated_sql": sql_result.query,
                 "confidence": sql_result.confidence
             }
-        
+
         # Step 4: Generate natural language summary
         summary = await self._generate_summary(
             question,
             sql_result.query,
             query_result
         )
-        
+
         return {
             "success": True,
             "question": question,
@@ -404,7 +404,7 @@ class DatabaseAgent:
             "row_count": query_result["row_count"],
             "summary": summary
         }
-    
+
     async def _generate_summary(
         self,
         question: str,
@@ -421,7 +421,7 @@ Row count: {count}
 
 Provide a concise summary answering the original question.""")
         ])
-        
+
         chain = prompt | self.llm | StrOutputParser()
         summary = await chain.ainvoke({
             "question": question,
@@ -429,7 +429,7 @@ Provide a concise summary answering the original question.""")
             "results": json.dumps(results["rows"][:10], indent=2),
             "count": results["row_count"]
         })
-        
+
         return summary
 
 # Usage

@@ -53,7 +53,7 @@ class CVResults:
     std_score: float
     fit_times: Optional[np.ndarray] = None
     score_times: Optional[np.ndarray] = None
-    
+
     def __repr__(self) -> str:
         """String representation."""
         return f"CVResults(mean={self.mean_score:.4f}, std={self.std_score:.4f})"
@@ -62,16 +62,16 @@ class CVResults:
 class CrossValidator:
     """
     Advanced cross-validation utilities.
-    
+
     Provides various cross-validation strategies with comprehensive
     result reporting and visualization.
-    
+
     Example:
         >>> cv = CrossValidator(strategy=CVStrategy.STRATIFIED_KFOLD, n_splits=5)
         >>> results = cv.cross_validate(model, X, y, scoring='accuracy')
         >>> cv.plot_learning_curve(model, X, y)
     """
-    
+
     def __init__(
         self,
         strategy: CVStrategy = CVStrategy.{{DEFAULT_STRATEGY}},
@@ -83,7 +83,7 @@ class CrossValidator:
     ):
         """
         Initialize cross-validator.
-        
+
         Args:
             strategy: Cross-validation strategy
             n_splits: Number of folds
@@ -98,11 +98,11 @@ class CrossValidator:
         self.shuffle = shuffle
         self.random_state = random_state
         self.test_size = test_size
-        
+
         self.cv_splitter_ = self._create_splitter()
-        
+
         logger.info(f"Initialized CrossValidator with {strategy.value}, {n_splits} splits")
-    
+
     def _create_splitter(self):
         """Create the appropriate CV splitter."""
         if self.strategy == CVStrategy.KFOLD:
@@ -111,37 +111,37 @@ class CrossValidator:
                 shuffle=self.shuffle,
                 random_state=self.random_state
             )
-        
+
         elif self.strategy == CVStrategy.STRATIFIED_KFOLD:
             return StratifiedKFold(
                 n_splits=self.n_splits,
                 shuffle=self.shuffle,
                 random_state=self.random_state
             )
-        
+
         elif self.strategy == CVStrategy.TIME_SERIES_SPLIT:
             return TimeSeriesSplit(n_splits=self.n_splits)
-        
+
         elif self.strategy == CVStrategy.GROUP_KFOLD:
             return GroupKFold(n_splits=self.n_splits)
-        
+
         elif self.strategy == CVStrategy.REPEATED_KFOLD:
             return RepeatedKFold(
                 n_splits=self.n_splits,
                 n_repeats=self.n_repeats,
                 random_state=self.random_state
             )
-        
+
         elif self.strategy == CVStrategy.REPEATED_STRATIFIED_KFOLD:
             return RepeatedStratifiedKFold(
                 n_splits=self.n_splits,
                 n_repeats=self.n_repeats,
                 random_state=self.random_state
             )
-        
+
         else:
             raise ValueError(f"Unknown strategy: {self.strategy}")
-    
+
     def cross_validate(
         self,
         estimator: BaseEstimator,
@@ -155,7 +155,7 @@ class CrossValidator:
     ) -> Dict[str, np.ndarray]:
         """
         Perform cross-validation.
-        
+
         Args:
             estimator: Scikit-learn estimator
             X: Feature data
@@ -165,16 +165,16 @@ class CrossValidator:
             return_train_score: Whether to return training scores
             n_jobs: Number of parallel jobs
             verbose: Verbosity level
-            
+
         Returns:
             Dictionary with CV results
         """
         logger.info(f"Performing {self.strategy.value} CV with {self.n_splits} folds")
-        
+
         cv_kwargs = {}
         if self.strategy == CVStrategy.GROUP_KFOLD and groups is not None:
             cv_kwargs['groups'] = groups
-        
+
         results = cross_validate(
             estimator=estimator,
             X=X,
@@ -186,11 +186,11 @@ class CrossValidator:
             verbose=verbose,
             **cv_kwargs
         )
-        
+
         logger.info(f"CV completed. Mean test score: {results['test_score'].mean():.4f}")
-        
+
         return results
-    
+
     def cross_val_score(
         self,
         estimator: BaseEstimator,
@@ -203,7 +203,7 @@ class CrossValidator:
     ) -> CVResults:
         """
         Get cross-validation scores.
-        
+
         Args:
             estimator: Scikit-learn estimator
             X: Feature data
@@ -212,14 +212,14 @@ class CrossValidator:
             scoring: Scoring metric
             n_jobs: Number of parallel jobs
             verbose: Verbosity level
-            
+
         Returns:
             CVResults object
         """
         cv_kwargs = {}
         if self.strategy == CVStrategy.GROUP_KFOLD and groups is not None:
             cv_kwargs['groups'] = groups
-        
+
         scores = cross_val_score(
             estimator=estimator,
             X=X,
@@ -230,13 +230,13 @@ class CrossValidator:
             verbose=verbose,
             **cv_kwargs
         )
-        
+
         return CVResults(
             scores=scores,
             mean_score=scores.mean(),
             std_score=scores.std()
         )
-    
+
     def get_splits(
         self,
         X: Union[pd.DataFrame, np.ndarray],
@@ -245,17 +245,17 @@ class CrossValidator:
     ) -> List[Tuple[np.ndarray, np.ndarray]]:
         """
         Get train/test splits.
-        
+
         Args:
             X: Feature data
             y: Target data (required for stratified splits)
             groups: Group labels (for GroupKFold)
-            
+
         Returns:
             List of (train_indices, test_indices) tuples
         """
         splits = []
-        
+
         if self.strategy == CVStrategy.GROUP_KFOLD:
             if groups is None:
                 raise ValueError("groups parameter required for GroupKFold")
@@ -264,9 +264,9 @@ class CrossValidator:
         else:
             for train_idx, test_idx in self.cv_splitter_.split(X, y):
                 splits.append((train_idx, test_idx))
-        
+
         return splits
-    
+
     def plot_learning_curve(
         self,
         estimator: BaseEstimator,
@@ -279,7 +279,7 @@ class CrossValidator:
     ):
         """
         Plot learning curve.
-        
+
         Args:
             estimator: Scikit-learn estimator
             X: Feature data
@@ -288,12 +288,12 @@ class CrossValidator:
             scoring: Scoring metric
             n_jobs: Number of parallel jobs
             figsize: Figure size
-            
+
         Returns:
             Matplotlib figure
         """
         import matplotlib.pyplot as plt
-        
+
         train_sizes_abs, train_scores, val_scores = learning_curve(
             estimator=estimator,
             X=X,
@@ -303,29 +303,29 @@ class CrossValidator:
             scoring=scoring,
             n_jobs=n_jobs
         )
-        
+
         train_mean = train_scores.mean(axis=1)
         train_std = train_scores.std(axis=1)
         val_mean = val_scores.mean(axis=1)
         val_std = val_scores.std(axis=1)
-        
+
         fig, ax = plt.subplots(figsize=figsize)
-        
+
         ax.plot(train_sizes_abs, train_mean, 'o-', color='blue', label='Training Score')
         ax.fill_between(train_sizes_abs, train_mean - train_std, train_mean + train_std, alpha=0.1, color='blue')
-        
+
         ax.plot(train_sizes_abs, val_mean, 'o-', color='red', label='Validation Score')
         ax.fill_between(train_sizes_abs, val_mean - val_std, val_mean + val_std, alpha=0.1, color='red')
-        
+
         ax.set_xlabel('Training Set Size')
         ax.set_ylabel('Score')
         ax.set_title('Learning Curve')
         ax.legend()
         ax.grid(True, alpha=0.3)
-        
+
         plt.tight_layout()
         return fig
-    
+
     def plot_validation_curve(
         self,
         estimator: BaseEstimator,
@@ -339,7 +339,7 @@ class CrossValidator:
     ):
         """
         Plot validation curve.
-        
+
         Args:
             estimator: Scikit-learn estimator
             X: Feature data
@@ -349,12 +349,12 @@ class CrossValidator:
             scoring: Scoring metric
             n_jobs: Number of parallel jobs
             figsize: Figure size
-            
+
         Returns:
             Matplotlib figure
         """
         import matplotlib.pyplot as plt
-        
+
         train_scores, val_scores = validation_curve(
             estimator=estimator,
             X=X,
@@ -365,29 +365,29 @@ class CrossValidator:
             scoring=scoring,
             n_jobs=n_jobs
         )
-        
+
         train_mean = train_scores.mean(axis=1)
         train_std = train_scores.std(axis=1)
         val_mean = val_scores.mean(axis=1)
         val_std = val_scores.std(axis=1)
-        
+
         fig, ax = plt.subplots(figsize=figsize)
-        
+
         ax.plot(param_range, train_mean, 'o-', color='blue', label='Training Score')
         ax.fill_between(param_range, train_mean - train_std, train_mean + train_std, alpha=0.1, color='blue')
-        
+
         ax.plot(param_range, val_mean, 'o-', color='red', label='Validation Score')
         ax.fill_between(param_range, val_mean - val_std, val_mean + val_std, alpha=0.1, color='red')
-        
+
         ax.set_xlabel(param_name)
         ax.set_ylabel('Score')
         ax.set_title(f'Validation Curve: {param_name}')
         ax.legend()
         ax.grid(True, alpha=0.3)
-        
+
         plt.tight_layout()
         return fig
-    
+
     def generate_report(
         self,
         cv_results: Dict[str, np.ndarray],
@@ -395,16 +395,16 @@ class CrossValidator:
     ) -> str:
         """
         Generate CV results report.
-        
+
         Args:
             cv_results: Results from cross_validate
             metric_name: Name of the metric
-            
+
         Returns:
             Formatted report string
         """
         test_scores = cv_results[f'test_{metric_name}']
-        
+
         report_lines = [
             "=" * 60,
             "CROSS-VALIDATION REPORT",
@@ -419,23 +419,23 @@ class CrossValidator:
             f"Min {metric_name}:  {test_scores.min():.4f}",
             f"Max {metric_name}:  {test_scores.max():.4f}",
         ]
-        
+
         if f'train_{metric_name}' in cv_results:
             train_scores = cv_results[f'train_{metric_name}']
             report_lines.extend([
                 f"\nTrain Mean {metric_name}: {train_scores.mean():.4f}",
                 f"Train Std {metric_name}:  {train_scores.std():.4f}",
             ])
-        
+
         if 'fit_time' in cv_results:
             fit_times = cv_results['fit_time']
             report_lines.extend([
                 f"\nMean Fit Time: {fit_times.mean():.4f}s",
                 f"Total Fit Time: {fit_times.sum():.4f}s",
             ])
-        
+
         report_lines.append("\n" + "=" * 60)
-        
+
         return "\n".join(report_lines)
 
 
@@ -443,7 +443,7 @@ class CrossValidator:
 if __name__ == "__main__":
     from sklearn.ensemble import RandomForestClassifier
     from sklearn.datasets import make_classification
-    
+
     # Generate sample data
     X, y = make_classification(
         n_samples=1000,
@@ -453,17 +453,17 @@ if __name__ == "__main__":
         n_classes=2,
         random_state=42
     )
-    
+
     # Initialize cross-validator
     cv = CrossValidator(
         strategy=CVStrategy.STRATIFIED_KFOLD,
         n_splits=5,
         random_state=42
     )
-    
+
     # Create model
     model = RandomForestClassifier(n_estimators=100, random_state=42)
-    
+
     # Perform cross-validation
     cv_results = cv.cross_validate(
         estimator=model,
@@ -472,10 +472,10 @@ if __name__ == "__main__":
         scoring='accuracy',
         return_train_score=True
     )
-    
+
     # Generate report
     print(cv.generate_report(cv_results, metric_name='score'))
-    
+
     # Get CV scores
     cv_scores = cv.cross_val_score(model, X, y, scoring='accuracy')
     print(f"\nCV Scores: {cv_scores}")

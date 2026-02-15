@@ -29,10 +29,10 @@ def create_delegation_contract(
 ) -> AgentContract:
     """
     Create a task delegation contract.
-    
+
     The delegator can assign tasks to the executor, who must
     respond within the timeout and follow modification rules.
-    
+
     Args:
         society: The society to register the contract with.
         delegator_id: ID of the delegating agent.
@@ -40,10 +40,10 @@ def create_delegation_contract(
         task_type: Type of task being delegated.
         timeout_seconds: Maximum response time.
         allow_modification: Whether executor can modify files/state.
-        
+
     Returns:
         Signed AgentContract.
-        
+
     Example:
         contract = create_delegation_contract(
             society, "orchestrator", "code_analyzer", "analyze_code"
@@ -52,7 +52,7 @@ def create_delegation_contract(
     prohibitions = []
     if not allow_modification:
         prohibitions.append((executor_id, "modify_files"))
-    
+
     return society.create_contract(
         contract_id=f"delegation-{delegator_id}-{executor_id}-{task_type}",
         parties=[
@@ -81,16 +81,16 @@ def create_collaboration_contract(
 ) -> AgentContract:
     """
     Create a resource sharing contract between collaborators.
-    
+
     All collaborators agree to fair resource access and
     conflict resolution through the society.
-    
+
     Args:
         society: The society to register the contract with.
         collaborator_ids: List of collaborating agent IDs.
         shared_resource: Name of the shared resource.
         max_concurrent: Maximum concurrent access allowed.
-        
+
     Returns:
         Signed AgentContract.
     """
@@ -123,36 +123,36 @@ def create_review_contract(
 ) -> AgentContract:
     """
     Create a review/approval contract.
-    
+
     Author submits artifacts for review, reviewers provide
     feedback and approval decisions.
-    
+
     Args:
         society: The society to register the contract with.
         author_id: ID of the authoring agent.
         reviewer_ids: List of reviewer agent IDs.
         artifact_type: Type of artifact being reviewed.
         require_all_approvals: If True, all reviewers must approve.
-        
+
     Returns:
         Signed AgentContract.
     """
     parties = [(author_id, "author")]
     parties.extend((rid, "reviewer") for rid in reviewer_ids)
-    
+
     capabilities = [(author_id, f"submit_{artifact_type}")]
     capabilities.extend((rid, "review") for rid in reviewer_ids)
     capabilities.extend((rid, "approve") for rid in reviewer_ids)
     capabilities.extend((rid, "reject") for rid in reviewer_ids)
-    
+
     obligations = [(rid, "provide_feedback", {}) for rid in reviewer_ids]
     obligations.append((author_id, "address_feedback", {}))
-    
+
     if require_all_approvals:
         obligations.extend(
             (rid, "vote_required", {}) for rid in reviewer_ids
         )
-    
+
     return society.create_contract(
         contract_id=f"review-{artifact_type}-{author_id}",
         parties=parties,
@@ -172,37 +172,37 @@ def create_pipeline_contract(
 ) -> AgentContract:
     """
     Create a sequential pipeline contract.
-    
+
     Each stage must complete before the next can begin.
     Stages cannot skip or reorder.
-    
+
     Args:
         society: The society to register the contract with.
         stage_ids: Ordered list of stage agent IDs.
         pipeline_name: Name of the pipeline.
-        
+
     Returns:
         Signed AgentContract.
     """
     parties = []
     capabilities = []
     obligations = []
-    
+
     for i, stage_id in enumerate(stage_ids):
         parties.append((stage_id, f"stage_{i}"))
         capabilities.append((stage_id, "process"))
-        
+
         if i < len(stage_ids) - 1:
             capabilities.append((stage_id, "handoff"))
             obligations.append((stage_id, "handoff_on_complete", {
                 "next_stage": stage_ids[i + 1]
             }))
-        
+
         if i > 0:
             obligations.append((stage_id, "wait_for_input", {
                 "previous_stage": stage_ids[i - 1]
             }))
-    
+
     return society.create_contract(
         contract_id=f"pipeline-{pipeline_name}",
         parties=parties,

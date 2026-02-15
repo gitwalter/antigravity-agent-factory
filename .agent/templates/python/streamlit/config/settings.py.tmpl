@@ -19,15 +19,15 @@ import os
 class Settings(BaseSettings):
     """
     Application settings with environment variable support.
-    
+
     This class uses Pydantic BaseSettings to automatically load
     configuration from environment variables or .env file.
-    
+
     Example:
         >>> settings = get_settings()
         >>> print(settings.app_name)
     """
-    
+
     # Application
     app_name: str = Field(
         default="{{APP_NAME}}",
@@ -41,7 +41,7 @@ class Settings(BaseSettings):
         default=False,
         description="Debug mode"
     )
-    
+
     # API Configuration (if connecting to backend)
     api_url: Optional[str] = Field(
         default=None,
@@ -52,13 +52,13 @@ class Settings(BaseSettings):
         ge=1,
         description="API request timeout in seconds"
     )
-    
+
     # Data Source Configuration
     database_url: Optional[str] = Field(
         default=None,
         description="Database connection URL"
     )
-    
+
     # Feature Flags
     enable_chat: bool = Field(
         default=True,
@@ -72,7 +72,7 @@ class Settings(BaseSettings):
         default=False,
         description="Enable analytics tracking"
     )
-    
+
     # UI Configuration
     default_theme: str = Field(
         default="Light",
@@ -94,7 +94,7 @@ class Settings(BaseSettings):
         default="wide",
         description="Layout mode (wide, centered)"
     )
-    
+
     # Cache Configuration
     default_cache_ttl: int = Field(
         default=300,
@@ -105,30 +105,30 @@ class Settings(BaseSettings):
         default=True,
         description="Enable caching"
     )
-    
+
     # Logging
     log_level: str = Field(
         default="INFO",
         description="Logging level"
     )
-    
+
     class Config:
         """Pydantic configuration."""
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = False
-    
+
     @validator("default_theme")
     def validate_theme(cls, v):
         """
         Validate theme value.
-        
+
         Args:
             v: Theme value
-            
+
         Returns:
             Validated theme
-            
+
         Raises:
             ValueError: If theme is invalid
         """
@@ -136,18 +136,18 @@ class Settings(BaseSettings):
         if v not in allowed:
             raise ValueError(f"Theme must be one of {allowed}")
         return v
-    
+
     @validator("layout")
     def validate_layout(cls, v):
         """
         Validate layout value.
-        
+
         Args:
             v: Layout value
-            
+
         Returns:
             Validated layout
-            
+
         Raises:
             ValueError: If layout is invalid
         """
@@ -155,18 +155,18 @@ class Settings(BaseSettings):
         if v not in allowed:
             raise ValueError(f"Layout must be one of {allowed}")
         return v
-    
+
     @validator("log_level")
     def validate_log_level(cls, v):
         """
         Validate log level value.
-        
+
         Args:
             v: Log level value
-            
+
         Returns:
             Validated log level
-            
+
         Raises:
             ValueError: If log level is invalid
         """
@@ -174,12 +174,12 @@ class Settings(BaseSettings):
         if v.upper() not in allowed:
             raise ValueError(f"Log level must be one of {allowed}")
         return v.upper()
-    
+
     @property
     def is_debug(self) -> bool:
         """
         Check if running in debug mode.
-        
+
         Returns:
             True if debug, False otherwise
         """
@@ -190,10 +190,10 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """
     Get cached settings instance.
-    
+
     This function uses LRU cache to ensure settings are loaded
     only once and reused across the application.
-    
+
     Returns:
         Settings instance
     """

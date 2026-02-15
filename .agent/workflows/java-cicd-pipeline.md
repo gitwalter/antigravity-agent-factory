@@ -8,8 +8,8 @@ description: Comprehensive CI/CD pipeline workflow for Java/Spring Boot applicat
 
 Comprehensive CI/CD pipeline workflow for Java/Spring Boot applications using Maven/Gradle, Testcontainers, Docker/Jib, and Kubernetes/Helm deployment. This workflow covers build, test, package, and deployment phases with quality gates and security scanning.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-09  
+**Version:** 1.0.0
+**Created:** 2026-02-09
 **Agent:** spring-developer, java-architect
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.

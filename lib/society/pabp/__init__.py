@@ -29,7 +29,7 @@ from lib.society.pabp.transfer import (
     import_bundle,
     verify_bundle,
     TransferMode,
-    TransferResult
+    TransferResult,
 )
 from lib.society.pabp.adapters import (
     PlatformAdapter,
@@ -37,7 +37,7 @@ from lib.society.pabp.adapters import (
     CursorAdapter,
     GenericAdapter,
     detect_platform,
-    get_adapter
+    get_adapter,
 )
 from lib.society.pabp.client import PABPClient, UpdateResult
 

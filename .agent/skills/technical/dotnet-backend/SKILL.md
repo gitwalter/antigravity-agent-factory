@@ -27,7 +27,7 @@ var app = builder.Build();
 app.MapGet("/", () => "Hello World!");
 
 // GET with route parameter
-app.MapGet("/users/{id:int}", (int id) => 
+app.MapGet("/users/{id:int}", (int id) =>
     Results.Ok(new { UserId = id, Name = "John Doe" }));
 
 // POST with request body
@@ -88,7 +88,7 @@ public class ProductsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var product = await _productService.GetByIdAsync(id, cancellationToken);
-        
+
         if (product == null)
             return NotFound();
 
@@ -188,9 +188,9 @@ app.Use(async (context, next) =>
 {
     // Before request
     var stopwatch = Stopwatch.StartNew();
-    
+
     await next();
-    
+
     // After request
     stopwatch.Stop();
     context.Response.Headers.Add("X-Response-Time", stopwatch.ElapsedMilliseconds.ToString());
@@ -271,7 +271,7 @@ Strongly-typed configuration:
 public class EmailSettings
 {
     public const string SectionName = "EmailSettings";
-    
+
     public string SmtpServer { get; set; } = string.Empty;
     public int Port { get; set; }
     public string FromEmail { get; set; } = string.Empty;

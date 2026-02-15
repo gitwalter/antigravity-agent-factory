@@ -1,15 +1,15 @@
 /-
   Guardian/Safety.lean - Safety Property Proofs
-  
+
   Cursor Agent Factory - Formal Verification System
-  
+
   This file proves critical safety properties of the Guardian:
-  
+
   1. State Preservation: User work is never lost
   2. User Notification: User is always informed at Pause+
   3. Alternatives Offered: Block always provides options
   4. Harm Prevention: Protect level prevents irreversible harm
-  
+
   These proofs provide mathematical certainty that the Guardian
   behaves according to its specifications.
 -/
@@ -21,7 +21,7 @@ namespace CursorAgentFactory.Guardian.Safety
 
 /-!
   # Safety Property 1: State Preservation
-  
+
   The Guardian NEVER causes loss of user work.
   This is a critical safety property aligned with A4 (Non-Harm).
 -/
@@ -42,7 +42,7 @@ theorem transitions_preserve_state (current : GuardianState) (trigger : TriggerE
   exact escalation_preserves_state current trigger
 
 /-- Theorem: De-escalation preserves state -/
-theorem deescalation_preserves_state (current : GuardianState) 
+theorem deescalation_preserves_state (current : GuardianState)
     (target : ResponseLevel) (ack : Bool) :
     statePreservationProperty (deescalateTo current target ack) := by
   unfold statePreservationProperty deescalateTo
@@ -54,7 +54,7 @@ theorem deescalation_preserves_state (current : GuardianState)
 
 /-!
   # Safety Property 2: User Notification
-  
+
   Users are ALWAYS notified when the Guardian reaches Pause level or above.
   This ensures transparency (A1) and user primacy (A2).
 -/
@@ -73,7 +73,7 @@ theorem wellformed_notifies_user (ws : WellFormedState) :
 
 /-!
   # Safety Property 3: Alternatives Offered
-  
+
   Block level ALWAYS offers alternatives to the user.
   This respects user autonomy (A2) and provides constructive paths forward.
 -/
@@ -92,14 +92,14 @@ theorem wellformed_offers_alternatives (ws : WellFormedState) :
 
 /-!
   # Safety Property 4: Harm Prevention
-  
+
   Protect level PREVENTS irreversible harm before explaining.
   This is the strongest safety guarantee, aligned with A4 (Non-Harm).
 -/
 
 /-- Harm prevention property at Protect -/
 def harmPreventionProperty (s : GuardianState) : Prop :=
-  s.responseLevel = ResponseLevel.protect → 
+  s.responseLevel = ResponseLevel.protect →
   (s.statePreserved = true ∧ s.explanationProvided = true)
 
 /-- Theorem: Well-formed Protect states prevent harm -/
@@ -118,7 +118,7 @@ theorem wellformed_prevents_harm (ws : WellFormedState) :
 
 /-!
   # Composite Safety Theorem
-  
+
   All safety properties hold for well-formed states.
 -/
 
@@ -130,7 +130,7 @@ structure SafetyProperties (s : GuardianState) where
   harmPrevented : harmPreventionProperty s
 
 /-- Theorem: Well-formed states satisfy all safety properties -/
-theorem wellformed_is_safe (ws : WellFormedState) : 
+theorem wellformed_is_safe (ws : WellFormedState) :
     SafetyProperties ws.state := by
   constructor
   · -- State preservation
@@ -145,7 +145,7 @@ theorem wellformed_is_safe (ws : WellFormedState) :
 
 /-!
   # Axiom Alignment Proofs
-  
+
   Connect safety properties to foundational axioms.
 -/
 

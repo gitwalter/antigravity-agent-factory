@@ -35,7 +35,7 @@ AZURE_DEVOPS_ORG=yourorganization
 AZURE_DEVOPS_PROJECT=yourproject
 ```
 
-**Note**: 
+**Note**:
 - Organization name is the part after `dev.azure.com/` in your URL
 - Project name is optional but recommended for default operations
 - For Azure DevOps Server (on-premises), also set `AZURE_DEVOPS_URL`

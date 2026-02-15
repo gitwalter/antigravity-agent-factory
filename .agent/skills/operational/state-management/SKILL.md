@@ -24,11 +24,11 @@ class AgentState(TypedDict):
     """State schema for the agent."""
     # Messages with reducer (accumulates)
     messages: Annotated[list, add_messages]
-    
+
     # Simple fields (overwrite on update)
     current_step: str
     iteration: int
-    
+
     # Complex nested state
     context: dict
     results: list
@@ -51,16 +51,16 @@ def append_unique(left: list, right: list) -> list:
 class AdvancedState(TypedDict):
     # Accumulate messages
     messages: Annotated[list, add_messages]
-    
+
     # Accumulate numeric values
     token_count: Annotated[int, add]
-    
+
     # Merge dictionaries
     metadata: Annotated[dict, merge_dicts]
-    
+
     # Unique list items
     visited_nodes: Annotated[list[str], append_unique]
-    
+
     # Simple overwrite
     status: str
 ```
@@ -126,18 +126,18 @@ from datetime import datetime
 
 class RedisCheckpointer(BaseCheckpointSaver):
     """Redis-backed checkpointer for distributed systems."""
-    
+
     def __init__(self, redis_url: str = "redis://localhost:6379"):
         self.client = redis.from_url(redis_url)
         self.ttl = 86400 * 7  # 7 days
-    
+
     def _key(self, thread_id: str, checkpoint_id: str) -> str:
         return f"checkpoint:{thread_id}:{checkpoint_id}"
-    
+
     def get(self, config: dict) -> dict | None:
         thread_id = config["configurable"]["thread_id"]
         checkpoint_id = config["configurable"].get("checkpoint_id", "latest")
-        
+
         if checkpoint_id == "latest":
             # Get most recent
             keys = self.client.keys(f"checkpoint:{thread_id}:*")
@@ -147,16 +147,16 @@ class RedisCheckpointer(BaseCheckpointSaver):
             data = self.client.get(latest_key)
         else:
             data = self.client.get(self._key(thread_id, checkpoint_id))
-        
+
         return json.loads(data) if data else None
-    
+
     def put(self, config: dict, checkpoint: dict) -> dict:
         thread_id = config["configurable"]["thread_id"]
         checkpoint_id = datetime.now().isoformat()
-        
+
         key = self._key(thread_id, checkpoint_id)
         self.client.setex(key, self.ttl, json.dumps(checkpoint))
-        
+
         return {"configurable": {"thread_id": thread_id, "checkpoint_id": checkpoint_id}}
 
 # Use Redis checkpointer
@@ -173,7 +173,7 @@ import asyncpg
 # Async PostgreSQL checkpointer
 async def create_postgres_checkpointer():
     conn = await asyncpg.connect("postgresql://user:pass@localhost/db")
-    
+
     # Create table if not exists
     await conn.execute("""
         CREATE TABLE IF NOT EXISTS checkpoints (
@@ -184,7 +184,7 @@ async def create_postgres_checkpointer():
             PRIMARY KEY (thread_id, checkpoint_id)
         )
     """)
-    
+
     return PostgresSaver(conn)
 
 # Use
@@ -204,10 +204,10 @@ def visualize_state(state: AgentState) -> str:
         f"│ Messages: {len(state['messages']):<18} │",
         "├───────────────────────────────┤",
     ]
-    
+
     for key, value in state.get('context', {}).items():
         lines.append(f"│ {key}: {str(value)[:20]:<20} │")
-    
+
     lines.append("└───────────────────────────────┘")
     return "\n".join(lines)
 

@@ -26,21 +26,21 @@ logger = logging.getLogger(__name__)
 class {{SERVICE_CLASS_NAME}}:
     """
     Service class for {{DOMAIN_NAME}} operations.
-    
+
     This service implements business logic and orchestrates data access
     through the repository layer. All operations are async for better
     performance and scalability.
-    
+
     Example:
         >>> service = {{SERVICE_CLASS_NAME}}()
         >>> result = await service.create({{REQUEST_SCHEMA}}(...))
         >>> print(result.id)
     """
-    
+
     def __init__(self, db_session: Optional[AsyncSession] = None):
         """
         Initialize the service.
-        
+
         Args:
             db_session: Optional database session. If not provided,
                        a new session will be created for each operation.
@@ -48,26 +48,26 @@ class {{SERVICE_CLASS_NAME}}:
         self.db_session = db_session
         self.repository = {{REPOSITORY_CLASS_NAME}}(db_session)
         logger.info(f"Initialized {{SERVICE_CLASS_NAME}}")
-    
+
     async def create(self, request: {{REQUEST_SCHEMA}}) -> {{RESPONSE_SCHEMA}}:
         """
         Create a new {{ENTITY_NAME}}.
-        
+
         Args:
             request: {{ENTITY_NAME}} creation data
-            
+
         Returns:
             Created {{ENTITY_NAME}} with generated ID
-            
+
         Raises:
             ValueError: If validation fails
             IntegrityError: If database constraint violation occurs
         """
         logger.info(f"Creating {{ENTITY_NAME}}: {request}")
-        
+
         # Business logic validation
         await self._validate_create(request)
-        
+
         # Create through repository
         async with get_db_session(self.db_session) as session:
             try:
@@ -79,25 +79,25 @@ class {{SERVICE_CLASS_NAME}}:
                 await session.rollback()
                 logger.error(f"Integrity error creating {{ENTITY_NAME}}: {e}")
                 raise ValueError(f"Failed to create {{ENTITY_NAME}}: {str(e)}")
-    
+
     async def get_by_id(self, id: int) -> Optional[{{RESPONSE_SCHEMA}}]:
         """
         Get a {{ENTITY_NAME}} by ID.
-        
+
         Args:
             id: {{ENTITY_NAME}} identifier
-            
+
         Returns:
             {{ENTITY_NAME}} data if found, None otherwise
         """
         logger.info(f"Fetching {{ENTITY_NAME}} with ID: {id}")
-        
+
         async with get_db_session(self.db_session) as session:
             result = await self.repository.get_by_id(session, id)
             if result:
                 return {{RESPONSE_SCHEMA}}.from_orm(result)
             return None
-    
+
     async def list_all(
         self,
         skip: int = 0,
@@ -106,17 +106,17 @@ class {{SERVICE_CLASS_NAME}}:
     ) -> List[{{RESPONSE_SCHEMA}}]:
         """
         List all {{ENTITY_NAME}}s with pagination and optional filtering.
-        
+
         Args:
             skip: Number of records to skip
             limit: Maximum number of records to return
             filter_by: Optional filter criteria
-            
+
         Returns:
             List of {{ENTITY_NAME}}s
         """
         logger.info(f"Listing {{ENTITY_NAME}}s: skip={skip}, limit={limit}, filter={filter_by}")
-        
+
         async with get_db_session(self.db_session) as session:
             results = await self.repository.list_all(
                 session,
@@ -125,7 +125,7 @@ class {{SERVICE_CLASS_NAME}}:
                 filter_by=filter_by
             )
             return [{{RESPONSE_SCHEMA}}.from_orm(r) for r in results]
-    
+
     async def update(
         self,
         id: int,
@@ -133,22 +133,22 @@ class {{SERVICE_CLASS_NAME}}:
     ) -> Optional[{{RESPONSE_SCHEMA}}]:
         """
         Update an existing {{ENTITY_NAME}}.
-        
+
         Args:
             id: {{ENTITY_NAME}} identifier
             request: Updated {{ENTITY_NAME}} data
-            
+
         Returns:
             Updated {{ENTITY_NAME}} if found, None otherwise
-            
+
         Raises:
             ValueError: If validation fails
         """
         logger.info(f"Updating {{ENTITY_NAME}} with ID: {id}")
-        
+
         # Business logic validation
         await self._validate_update(id, request)
-        
+
         async with get_db_session(self.db_session) as session:
             try:
                 result = await self.repository.update(session, id, request)
@@ -161,65 +161,65 @@ class {{SERVICE_CLASS_NAME}}:
                 await session.rollback()
                 logger.error(f"Integrity error updating {{ENTITY_NAME}}: {e}")
                 raise ValueError(f"Failed to update {{ENTITY_NAME}}: {str(e)}")
-    
+
     async def delete(self, id: int) -> bool:
         """
         Delete a {{ENTITY_NAME}}.
-        
+
         Args:
             id: {{ENTITY_NAME}} identifier
-            
+
         Returns:
             True if deleted, False if not found
         """
         logger.info(f"Deleting {{ENTITY_NAME}} with ID: {id}")
-        
+
         # Business logic validation
         await self._validate_delete(id)
-        
+
         async with get_db_session(self.db_session) as session:
             success = await self.repository.delete(session, id)
             if success:
                 await session.commit()
                 logger.info(f"Deleted {{ENTITY_NAME}} with ID: {id}")
             return success
-    
+
     async def _validate_create(self, request: {{REQUEST_SCHEMA}}) -> None:
         """
         Validate {{ENTITY_NAME}} creation request.
-        
+
         Args:
             request: Creation request data
-            
+
         Raises:
             ValueError: If validation fails
         """
         # Add business logic validation here
         # Example: Check for duplicate names, validate relationships, etc.
         pass
-    
+
     async def _validate_update(self, id: int, request: {{REQUEST_SCHEMA}}) -> None:
         """
         Validate {{ENTITY_NAME}} update request.
-        
+
         Args:
             id: {{ENTITY_NAME}} identifier
             request: Update request data
-            
+
         Raises:
             ValueError: If validation fails
         """
         # Add business logic validation here
         # Example: Check if update is allowed, validate state transitions, etc.
         pass
-    
+
     async def _validate_delete(self, id: int) -> None:
         """
         Validate {{ENTITY_NAME}} deletion request.
-        
+
         Args:
             id: {{ENTITY_NAME}} identifier
-            
+
         Raises:
             ValueError: If deletion is not allowed
         """

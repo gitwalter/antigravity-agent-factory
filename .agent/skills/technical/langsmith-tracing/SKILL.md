@@ -59,15 +59,15 @@ async def complex_workflow(input_data: dict):
     # Access current trace
     run_tree = get_current_run_tree()
     run_id = run_tree.id if run_tree else None
-    
+
     # Add metadata to trace
     if run_tree:
         run_tree.extra["custom_field"] = "value"
-    
+
     # Nested traces
     result1 = await step_one(input_data)
     result2 = await step_two(result1)
-    
+
     return result2
 
 # Manual trace context

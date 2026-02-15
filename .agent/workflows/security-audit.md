@@ -8,8 +8,8 @@ description: Comprehensive security audit workflow that systematically reviews c
 
 Comprehensive security audit workflow that systematically reviews code for vulnerabilities, checks dependencies, validates authentication/authorization, and ensures compliance with security best practices.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** security-auditor
 
 ## Trigger Conditions

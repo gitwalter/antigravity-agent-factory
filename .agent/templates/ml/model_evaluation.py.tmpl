@@ -60,7 +60,7 @@ class EvaluationMetrics:
     rmse: Optional[float] = None
     r2: Optional[float] = None
     metrics_dict: Optional[Dict[str, float]] = None
-    
+
     def to_dict(self) -> Dict[str, float]:
         """Convert to dictionary."""
         return {
@@ -72,16 +72,16 @@ class EvaluationMetrics:
 class ModelEvaluator:
     """
     Comprehensive model evaluation utilities.
-    
+
     Provides evaluation metrics, visualization, and reporting for
     both classification and regression models.
-    
+
     Example:
         >>> evaluator = ModelEvaluator(problem_type=ProblemType.CLASSIFICATION)
         >>> metrics = evaluator.evaluate(y_true, y_pred, y_proba)
         >>> evaluator.plot_confusion_matrix(y_true, y_pred)
     """
-    
+
     def __init__(
         self,
         problem_type: ProblemType = ProblemType.CLASSIFICATION,
@@ -90,7 +90,7 @@ class ModelEvaluator:
     ):
         """
         Initialize model evaluator.
-        
+
         Args:
             problem_type: Type of problem (classification/regression)
             average: Averaging method for multiclass ('macro', 'micro', 'weighted')
@@ -99,9 +99,9 @@ class ModelEvaluator:
         self.problem_type = problem_type
         self.average = average
         self.pos_label = pos_label
-        
+
         logger.info(f"Initialized ModelEvaluator for {problem_type.value}")
-    
+
     def evaluate(
         self,
         y_true: np.ndarray,
@@ -110,24 +110,24 @@ class ModelEvaluator:
     ) -> EvaluationMetrics:
         """
         Evaluate model predictions.
-        
+
         Args:
             y_true: True labels/values
             y_pred: Predicted labels/values
             y_proba: Predicted probabilities (for classification)
-            
+
         Returns:
             EvaluationMetrics object with computed metrics
         """
         logger.info(f"Evaluating {len(y_true)} predictions")
-        
+
         if self.problem_type in [ProblemType.CLASSIFICATION, ProblemType.BINARY_CLASSIFICATION]:
             return self._evaluate_classification(y_true, y_pred, y_proba)
         elif self.problem_type == ProblemType.REGRESSION:
             return self._evaluate_regression(y_true, y_pred)
         else:
             raise ValueError(f"Unknown problem type: {self.problem_type}")
-    
+
     def _evaluate_classification(
         self,
         y_true: np.ndarray,
@@ -136,7 +136,7 @@ class ModelEvaluator:
     ) -> EvaluationMetrics:
         """Evaluate classification model."""
         metrics = EvaluationMetrics()
-        
+
         # Basic metrics
         metrics.accuracy = accuracy_score(y_true, y_pred)
         metrics.precision = precision_score(
@@ -148,7 +148,7 @@ class ModelEvaluator:
         metrics.f1 = f1_score(
             y_true, y_pred, average=self.average, zero_division=0
         )
-        
+
         # ROC AUC (requires probabilities)
         if y_proba is not None:
             try:
@@ -161,19 +161,19 @@ class ModelEvaluator:
                     )
             except Exception as e:
                 logger.warning(f"Could not compute ROC AUC: {e}")
-        
+
         metrics.metrics_dict = {
             'accuracy': metrics.accuracy,
             'precision': metrics.precision,
             'recall': metrics.recall,
             'f1': metrics.f1
         }
-        
+
         if metrics.roc_auc is not None:
             metrics.metrics_dict['roc_auc'] = metrics.roc_auc
-        
+
         return metrics
-    
+
     def _evaluate_regression(
         self,
         y_true: np.ndarray,
@@ -181,21 +181,21 @@ class ModelEvaluator:
     ) -> EvaluationMetrics:
         """Evaluate regression model."""
         metrics = EvaluationMetrics()
-        
+
         metrics.mse = mean_squared_error(y_true, y_pred)
         metrics.mae = mean_absolute_error(y_true, y_pred)
         metrics.rmse = np.sqrt(metrics.mse)
         metrics.r2 = r2_score(y_true, y_pred)
-        
+
         metrics.metrics_dict = {
             'mse': metrics.mse,
             'mae': metrics.mae,
             'rmse': metrics.rmse,
             'r2': metrics.r2
         }
-        
+
         return metrics
-    
+
     def plot_confusion_matrix(
         self,
         y_true: np.ndarray,
@@ -206,22 +206,22 @@ class ModelEvaluator:
     ) -> plt.Figure:
         """
         Plot confusion matrix.
-        
+
         Args:
             y_true: True labels
             y_pred: Predicted labels
             labels: Optional label names
             figsize: Figure size
             normalize: Whether to normalize the matrix
-            
+
         Returns:
             Matplotlib figure
         """
         cm = confusion_matrix(y_true, y_pred, labels=labels)
-        
+
         if normalize:
             cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-        
+
         fig, ax = plt.subplots(figsize=figsize)
         sns.heatmap(
             cm,
@@ -232,14 +232,14 @@ class ModelEvaluator:
             yticklabels=labels,
             ax=ax
         )
-        
+
         ax.set_xlabel('Predicted')
         ax.set_ylabel('Actual')
         ax.set_title('Confusion Matrix' + (' (Normalized)' if normalize else ''))
-        
+
         plt.tight_layout()
         return fig
-    
+
     def plot_roc_curve(
         self,
         y_true: np.ndarray,
@@ -248,18 +248,18 @@ class ModelEvaluator:
     ) -> plt.Figure:
         """
         Plot ROC curve.
-        
+
         Args:
             y_true: True labels
             y_proba: Predicted probabilities
             figsize: Figure size
-            
+
         Returns:
             Matplotlib figure
         """
         fpr, tpr, thresholds = roc_curve(y_true, y_proba, pos_label=self.pos_label)
         auc_score = roc_auc_score(y_true, y_proba)
-        
+
         fig, ax = plt.subplots(figsize=figsize)
         ax.plot(fpr, tpr, label=f'ROC Curve (AUC = {auc_score:.3f})')
         ax.plot([0, 1], [0, 1], 'k--', label='Random')
@@ -268,10 +268,10 @@ class ModelEvaluator:
         ax.set_title('ROC Curve')
         ax.legend()
         ax.grid(True, alpha=0.3)
-        
+
         plt.tight_layout()
         return fig
-    
+
     def plot_precision_recall_curve(
         self,
         y_true: np.ndarray,
@@ -280,12 +280,12 @@ class ModelEvaluator:
     ) -> plt.Figure:
         """
         Plot precision-recall curve.
-        
+
         Args:
             y_true: True labels
             y_proba: Predicted probabilities
             figsize: Figure size
-            
+
         Returns:
             Matplotlib figure
         """
@@ -293,7 +293,7 @@ class ModelEvaluator:
             y_true, y_proba, pos_label=self.pos_label
         )
         ap_score = average_precision_score(y_true, y_proba)
-        
+
         fig, ax = plt.subplots(figsize=figsize)
         ax.plot(recall, precision, label=f'PR Curve (AP = {ap_score:.3f})')
         ax.set_xlabel('Recall')
@@ -301,10 +301,10 @@ class ModelEvaluator:
         ax.set_title('Precision-Recall Curve')
         ax.legend()
         ax.grid(True, alpha=0.3)
-        
+
         plt.tight_layout()
         return fig
-    
+
     def plot_residuals(
         self,
         y_true: np.ndarray,
@@ -313,19 +313,19 @@ class ModelEvaluator:
     ) -> plt.Figure:
         """
         Plot residual plots for regression.
-        
+
         Args:
             y_true: True values
             y_pred: Predicted values
             figsize: Figure size
-            
+
         Returns:
             Matplotlib figure
         """
         residuals = y_true - y_pred
-        
+
         fig, axes = plt.subplots(1, 2, figsize=figsize)
-        
+
         # Residuals vs predicted
         axes[0].scatter(y_pred, residuals, alpha=0.5)
         axes[0].axhline(y=0, color='r', linestyle='--')
@@ -333,17 +333,17 @@ class ModelEvaluator:
         axes[0].set_ylabel('Residuals')
         axes[0].set_title('Residuals vs Predicted')
         axes[0].grid(True, alpha=0.3)
-        
+
         # Residuals distribution
         axes[1].hist(residuals, bins=30, edgecolor='black')
         axes[1].set_xlabel('Residuals')
         axes[1].set_ylabel('Frequency')
         axes[1].set_title('Residuals Distribution')
         axes[1].grid(True, alpha=0.3)
-        
+
         plt.tight_layout()
         return fig
-    
+
     def generate_report(
         self,
         y_true: np.ndarray,
@@ -353,18 +353,18 @@ class ModelEvaluator:
     ) -> str:
         """
         Generate comprehensive evaluation report.
-        
+
         Args:
             y_true: True labels/values
             y_pred: Predicted labels/values
             y_proba: Predicted probabilities
             target_names: Optional class names
-            
+
         Returns:
             Formatted report string
         """
         metrics = self.evaluate(y_true, y_pred, y_proba)
-        
+
         report_lines = [
             "=" * 60,
             "MODEL EVALUATION REPORT",
@@ -375,7 +375,7 @@ class ModelEvaluator:
             "METRICS",
             "-" * 60
         ]
-        
+
         if self.problem_type in [ProblemType.CLASSIFICATION, ProblemType.BINARY_CLASSIFICATION]:
             report_lines.extend([
                 f"Accuracy:  {metrics.accuracy:.4f}",
@@ -383,10 +383,10 @@ class ModelEvaluator:
                 f"Recall:   {metrics.recall:.4f}",
                 f"F1 Score:  {metrics.f1:.4f}"
             ])
-            
+
             if metrics.roc_auc is not None:
                 report_lines.append(f"ROC AUC:   {metrics.roc_auc:.4f}")
-            
+
             # Classification report
             report_lines.extend([
                 "\n" + "-" * 60,
@@ -394,7 +394,7 @@ class ModelEvaluator:
                 "-" * 60,
                 classification_report(y_true, y_pred, target_names=target_names)
             ])
-        
+
         else:  # Regression
             report_lines.extend([
                 f"MSE:  {metrics.mse:.4f}",
@@ -402,9 +402,9 @@ class ModelEvaluator:
                 f"RMSE: {metrics.rmse:.4f}",
                 f"R²:   {metrics.r2:.4f}"
             ])
-        
+
         report_lines.append("\n" + "=" * 60)
-        
+
         return "\n".join(report_lines)
 
 
@@ -413,26 +413,26 @@ if __name__ == "__main__":
     # Classification example
     np.random.seed(42)
     n_samples = 1000
-    
+
     # Generate sample data
     y_true_clf = np.random.randint(0, 2, n_samples)
     y_pred_clf = np.random.randint(0, 2, n_samples)
     y_proba_clf = np.random.rand(n_samples)
-    
+
     evaluator_clf = ModelEvaluator(problem_type=ProblemType.BINARY_CLASSIFICATION)
     metrics_clf = evaluator_clf.evaluate(y_true_clf, y_pred_clf, y_proba_clf)
-    
+
     print("Classification Metrics:")
     print(metrics_clf.to_dict())
     print("\n" + evaluator_clf.generate_report(y_true_clf, y_pred_clf, y_proba_clf))
-    
+
     # Regression example
     y_true_reg = np.random.normal(0, 1, n_samples)
     y_pred_reg = y_true_reg + np.random.normal(0, 0.1, n_samples)
-    
+
     evaluator_reg = ModelEvaluator(problem_type=ProblemType.REGRESSION)
     metrics_reg = evaluator_reg.evaluate(y_true_reg, y_pred_reg)
-    
+
     print("\n\nRegression Metrics:")
     print(metrics_reg.to_dict())
     print("\n" + evaluator_reg.generate_report(y_true_reg, y_pred_reg))

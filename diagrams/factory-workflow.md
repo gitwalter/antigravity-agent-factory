@@ -47,14 +47,14 @@ flowchart TB
     A --> D
     B --> J
     C --> J
-    
+
     I --> J
     J --> K
     K --> L
     L --> M
     M --> N
     N --> O
-    
+
     O --> P
     O --> Q
     O --> R
@@ -146,7 +146,7 @@ flowchart TB
     BLUEPRINT --> VALIDATE
     CONFIG --> VALIDATE
     INTERACTIVE --> VALIDATE
-    
+
     VALIDATE --> MATCH --> GENERATE --> PROJECT
 
     style Entry fill:#e3f2fd
@@ -160,19 +160,19 @@ flowchart TB
 ```mermaid
 flowchart TD
     START([User specifies stack]) --> CHECK{Blueprint exists?}
-    
+
     CHECK -->|Yes| USE[Use matching blueprint]
     CHECK -->|No| GENERIC[Use generic patterns]
-    
+
     USE --> CUSTOMIZE{Customize?}
     GENERIC --> CUSTOMIZE
-    
+
     CUSTOMIZE -->|Yes| MODIFY[Modify blueprint settings]
     CUSTOMIZE -->|No| PROCEED[Proceed to generation]
-    
+
     MODIFY --> PROCEED
     PROCEED --> GENERATE[Generate project]
-    
+
     style START fill:#e8f5e9
     style GENERATE fill:#c8e6c9
 ```

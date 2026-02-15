@@ -101,7 +101,7 @@ class UserResponse(BaseModel):
 @app.post("/api/v1/users", response_model=UserResponse, status_code=201)
 async def create_user(user: UserCreate):
     """Create a new user.
-    
+
     - **email**: User email address
     - **name**: User full name
     """

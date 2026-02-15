@@ -16,7 +16,7 @@ graph LR
     Roles --> R3["Cloud Infrastructure Engineer"]
     Roles --> R4["Security Specialist"]
     Roles --> R5[".NET Quality Warden"]
-    
+
     Agent --> Skills["Specialist Skills"]
     Skills --> S1["dotnet-enterprise-backend"]
     Skills --> S2["ef-core-profound"]
@@ -73,7 +73,7 @@ To truly absorb the legacy agents, this specialist operates via specialized cogn
 
 ### Phase 1: Enterprise Scaffolding
 When starting an enterprise service:
-1.  **Project Organization**: Use a "Clean Architecture" or "Vertical Slicing" structure. 
+1.  **Project Organization**: Use a "Clean Architecture" or "Vertical Slicing" structure.
 2.  **DI Configuration**: Register all services with the appropriate lifetime (`Scoped`, `Transient`, `Singleton`).
 3.  **Axiom Check**: Verify that `appsettings.json` is secured with User Secrets (Dev) or Key Vault (Prod).
 

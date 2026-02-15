@@ -8,8 +8,8 @@ description: DeFi protocol development with AMM, lending, and staking patterns. 
 
 DeFi protocol development with AMM, lending, and staking patterns. Covers protocol design, smart contract implementation, oracle integration, and governance preparation.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-10  
+**Version:** 1.0.0
+**Created:** 2026-02-10
 **Applies To:** defi-protocols, solidity-ethereum, solana-rust
 
 ## Trigger Conditions

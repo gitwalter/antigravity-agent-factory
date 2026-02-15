@@ -48,13 +48,13 @@ define view entity ZI_TravelBooking
 @AccessControl.authorizationCheck: #CHECK
 define view entity ZI_TravelBooking
   as select from ztravelbook
-  association [0..*] to ZI_TravelBookingItem as _Items 
+  association [0..*] to ZI_TravelBookingItem as _Items
     on $projection.TravelUUID = _Items.TravelUUID
-  association [0..1] to ZI_Agency as _Agency 
+  association [0..1] to ZI_Agency as _Agency
     on $projection.AgencyID = _Agency.AgencyID
-  association [0..1] to ZI_Customer as _Customer 
+  association [0..1] to ZI_Customer as _Customer
     on $projection.CustomerID = _Customer.CustomerID
-  association [0..1] to ZI_Currency as _Currency 
+  association [0..1] to ZI_Currency as _Currency
     on $projection.CurrencyCode = _Currency.CurrencyCode
 {
   key travel_uuid as TravelUUID,
@@ -72,7 +72,7 @@ define view entity ZI_TravelBooking
       created_at as CreatedAt,
       last_changed_by as LastChangedBy,
       last_changed_at as LastChangedAt,
-      
+
       /* Associations */
       _Items,
       _Agency {
@@ -89,13 +89,13 @@ define view entity ZI_TravelBooking
         CurrencyCode,
         CurrencyName
       },
-      
+
       /* Calculated Fields */
       @EndUserText.label: 'Duration in Days'
       cast(end_date - begin_date as abap.int4) as DurationInDays,
-      
+
       @EndUserText.label: 'Is Active'
-      case 
+      case
         when status = 'A' then cast('X' as abap.boolean)
         else cast('' as abap.boolean)
       end as IsActive
@@ -126,7 +126,7 @@ define root view entity ZI_TravelBooking
       created_at as CreatedAt,
       last_changed_by as LastChangedBy,
       last_changed_at as LastChangedAt,
-      
+
       /* Composition */
       _Items
 }
@@ -135,9 +135,9 @@ define root view entity ZI_TravelBooking
 @AccessControl.authorizationCheck: #CHECK
 define view entity ZI_TravelBookingItem
   as select from ztravelbookitem
-  association [0..1] to ZI_TravelBooking as _TravelBooking 
+  association [0..1] to ZI_TravelBooking as _TravelBooking
     on $projection.TravelUUID = _TravelBooking.TravelUUID
-  association [0..1] to ZI_Material as _Material 
+  association [0..1] to ZI_Material as _Material
     on $projection.MaterialID = _Material.MaterialID
 {
   key travel_uuid as TravelUUID,
@@ -150,7 +150,7 @@ define view entity ZI_TravelBookingItem
       unit as Unit,
       price as Price,
       currency_code as CurrencyCode,
-      
+
       /* Associations */
       _TravelBooking,
       _Material {
@@ -158,7 +158,7 @@ define view entity ZI_TravelBookingItem
         MaterialName,
         MaterialDescription
       },
-      
+
       /* Calculated Fields */
       @EndUserText.label: 'Line Total'
       cast(quantity * price as abap.curr(17,2)) as LineTotal
@@ -192,35 +192,35 @@ define view entity ZC_TravelBooking
       LastChangedAt,
       DurationInDays,
       IsActive,
-      
+
       /* Associations */
       _Items,
       _Agency,
       _Customer,
       _Currency,
-      
+
       /* Semantic Annotations */
       @Semantics.amount.currencyCode: 'CurrencyCode'
       TotalPrice,
-      
+
       @Semantics.amount.currencyCode: 'CurrencyCode'
       BookingFee,
-      
+
       @Semantics.currencyCode: true
       CurrencyCode,
-      
+
       @Semantics.user.createdBy: true
       CreatedBy,
-      
+
       @Semantics.systemDateTime.createdAt: true
       CreatedAt,
-      
+
       @Semantics.user.lastChangedBy: true
       LastChangedBy,
-      
+
       @Semantics.systemDateTime.lastChangedAt: true
       LastChangedAt,
-      
+
       /* UI Annotations */
       @UI: {
         lineItem: [ { position: 10, importance: #HIGH } ],
@@ -228,22 +228,22 @@ define view entity ZC_TravelBooking
         selectionField: [ { position: 10 } ]
       }
       TravelID,
-      
+
       @UI: {
         lineItem: [ { position: 20 } ],
         identification: [ { position: 20 } ],
         fieldGroup: [ { qualifier: 'General', position: 20 } ]
       }
       Description,
-      
+
       /* Value Helps */
-      @Consumption.valueHelpDefinition: [ { 
-        entity: { name: 'ZC_Agency', element: 'AgencyID' } 
+      @Consumption.valueHelpDefinition: [ {
+        entity: { name: 'ZC_Agency', element: 'AgencyID' }
       } ]
       AgencyID,
-      
-      @Consumption.valueHelpDefinition: [ { 
-        entity: { name: 'ZC_Customer', element: 'CustomerID' } 
+
+      @Consumption.valueHelpDefinition: [ {
+        entity: { name: 'ZC_Customer', element: 'CustomerID' }
       } ]
       CustomerID
 }

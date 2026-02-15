@@ -8,8 +8,8 @@ description: Smart contract development workflow with design, implementation, te
 
 Smart contract development workflow with design, implementation, testing, and audit preparation. Covers Solidity/Ethereum and Solana/Rust patterns including security best practices.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-10  
+**Version:** 1.0.0
+**Created:** 2026-02-10
 **Applies To:** solidity-ethereum, solana-rust
 
 ## Trigger Conditions

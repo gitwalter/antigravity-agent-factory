@@ -21,7 +21,7 @@ Follow these procedures to engineer high-fidelity RAG systems:
 ### Procedure 1: Document Ingestion (The Ingestion Truth)
 Execute these steps to ensure contextual integrity:
 1.  **Partitioning**: Use `Unstructured` or `LangChain` loaders with `mode="elements"` to preserve metadata (headers, page numbers, tables).
-2.  **Chunking Strategy**: 
+2.  **Chunking Strategy**:
     - *Default*: Recursive Character Text Splitting (1000 chars, 200 overlap).
     - *Expert*: Semantic Chunking (split by AI-detected meaning boundaries).
 3.  **Indexing**: Always include a `source_id` and `timestamp` in the metadata to enable the "Chain of Truth" (Citations).
@@ -66,8 +66,8 @@ CONTEXT:
 {context}
 ---
 
-INSTRUCTION: 
-Answer the user query ONLY using the context above. 
+INSTRUCTION:
+Answer the user query ONLY using the context above.
 For every claim, provide a bracketed citation pointing to the source id, e.g., [source_123].
 If the context is insufficient, explicitly state "I do not have enough specific truth to answer this."
 ```

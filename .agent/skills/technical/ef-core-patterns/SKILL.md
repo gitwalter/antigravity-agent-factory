@@ -39,7 +39,7 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.HasIndex(e => e.Name);
-            
+
             // Configure relationships
             entity.HasOne(e => e.Category)
                   .WithMany(c => c.Products)
@@ -81,12 +81,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 public class MigrationService
 {
     private readonly ApplicationDbContext _context;
-    
+
     public MigrationService(ApplicationDbContext context)
     {
         _context = context;
     }
-    
+
     public async Task ApplyMigrationsAsync()
     {
         var pendingMigrations = await _context.Database.GetPendingMigrationsAsync();
@@ -95,7 +95,7 @@ public class MigrationService
             await _context.Database.MigrateAsync();
         }
     }
-    
+
     public string GenerateMigrationScript(string fromMigration, string toMigration)
     {
         return _context.Database.GenerateCreateScript();

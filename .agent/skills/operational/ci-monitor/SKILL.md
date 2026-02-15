@@ -26,30 +26,30 @@ Traditional debugging is reactive - wait for failure, then investigate. This ski
 flowchart TD
     Start([Start Monitoring]) --> CheckStatus[Check CI Status]
     CheckStatus --> IsComplete{Run Complete?}
-    
+
     IsComplete -->|No| Wait[Wait 30s]
     Wait --> CheckStatus
-    
+
     IsComplete -->|Yes| IsSuccess{Success?}
-    
+
     IsSuccess -->|Yes| Complete([Pipeline Green ✅])
     IsSuccess -->|No| FetchLogs[Fetch Error Logs]
-    
+
     FetchLogs --> ParseErrors[Parse All Errors]
     ParseErrors --> Categorize[Categorize Errors]
-    
+
     Categorize --> FixLoop[For Each Error]
     FixLoop --> Analyze[Analyze Root Cause]
     Analyze --> Fix[Implement Fix]
     Fix --> MoreErrors{More Errors?}
-    
+
     MoreErrors -->|Yes| FixLoop
     MoreErrors -->|No| LocalTest[Run Local Tests]
-    
+
     LocalTest --> TestPass{Tests Pass?}
     TestPass -->|No| FixLoop
     TestPass -->|Yes| Commit[Commit & Push]
-    
+
     Commit --> CheckStatus
 ```
 
@@ -239,7 +239,7 @@ CI Monitor:
 [ALERT] 🔴 CI Failed: 2 errors detected
   - F401 in adapter.py
   - Sync drift in README.md
-  
+
 Would you like me to fix these automatically? [Y/n]
 ```
 

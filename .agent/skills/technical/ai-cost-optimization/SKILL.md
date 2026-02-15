@@ -35,11 +35,11 @@ class TokenUsage:
 
 class TokenTracker:
     """Track and analyze token usage."""
-    
+
     def __init__(self):
         self.usage_history: List[TokenUsage] = []
         self.encodings = {}  # Cache encodings
-    
+
     def _get_encoding(self, model: str):
         """Get tokenizer encoding for model."""
         if model not in self.encodings:
@@ -49,12 +49,12 @@ class TokenTracker:
                 # Fallback to cl100k_base for most OpenAI models
                 self.encodings[model] = tiktoken.get_encoding("cl100k_base")
         return self.encodings[model]
-    
+
     def count_tokens(self, text: str, model: str = "gpt-3.5-turbo") -> int:
         """Count tokens in text."""
         encoding = self._get_encoding(model)
         return len(encoding.encode(text))
-    
+
     def record_usage(
         self,
         model: str,
@@ -66,7 +66,7 @@ class TokenTracker:
         prompt_tokens = self.count_tokens(prompt, model)
         completion_tokens = self.count_tokens(completion, model)
         cost = self._calculate_cost(model, prompt_tokens, completion_tokens)
-        
+
         usage = TokenUsage(
             timestamp=datetime.now(),
             model=model,
@@ -75,10 +75,10 @@ class TokenTracker:
             cost_usd=cost,
             task_type=task_type,
         )
-        
+
         self.usage_history.append(usage)
         return usage
-    
+
     def _calculate_cost(
         self,
         model: str,
@@ -95,40 +95,40 @@ class TokenTracker:
             "claude-3-sonnet": {"input": 3.0, "output": 15.0},
             "claude-3-haiku": {"input": 0.25, "output": 1.25},
         }
-        
+
         model_pricing = pricing.get(model, {"input": 1.0, "output": 1.0})
-        
+
         cost = (
             (prompt_tokens / 1_000_000) * model_pricing["input"] +
             (completion_tokens / 1_000_000) * model_pricing["output"]
         )
-        
+
         return cost
-    
+
     def get_cost_analytics(self, days: int = 7) -> Dict:
         """Get cost analytics."""
         cutoff = datetime.now() - timedelta(days=days)
         recent = [u for u in self.usage_history if u.timestamp >= cutoff]
-        
+
         if not recent:
             return {}
-        
+
         total_cost = sum(u.cost_usd for u in recent)
         total_tokens = sum(u.prompt_tokens + u.completion_tokens for u in recent)
-        
+
         # Cost by model
         cost_by_model = {}
         for usage in recent:
             cost_by_model[usage.model] = cost_by_model.get(usage.model, 0) + usage.cost_usd
-        
+
         # Cost by task type
         cost_by_task = {}
         for usage in recent:
             cost_by_task[usage.task_type] = cost_by_task.get(usage.task_type, 0) + usage.cost_usd
-        
+
         # Average cost per request
         avg_cost_per_request = total_cost / len(recent)
-        
+
         return {
             "total_cost_usd": total_cost,
             "total_tokens": total_tokens,
@@ -155,35 +155,35 @@ class TaskComplexity(Enum):
 
 class ModelRouter:
     """Route requests to appropriate model based on complexity."""
-    
+
     def __init__(self):
         self.model_mapping = {
             TaskComplexity.SIMPLE: "gpt-3.5-turbo",
             TaskComplexity.MEDIUM: "gpt-4-turbo",
             TaskComplexity.COMPLEX: "gpt-4",
         }
-        
+
         # Cost per 1M tokens
         self.cost_per_million = {
             "gpt-3.5-turbo": {"input": 0.5, "output": 1.5},
             "gpt-4-turbo": {"input": 10.0, "output": 30.0},
             "gpt-4": {"input": 30.0, "output": 60.0},
         }
-    
+
     def assess_complexity(self, prompt: str, task_type: str = None) -> TaskComplexity:
         """Assess task complexity."""
         prompt_lower = prompt.lower()
         prompt_length = len(prompt)
-        
+
         # Simple heuristics
         complexity_score = 0
-        
+
         # Length-based
         if prompt_length > 2000:
             complexity_score += 2
         elif prompt_length > 1000:
             complexity_score += 1
-        
+
         # Keyword-based complexity indicators
         complex_keywords = [
             "analyze", "compare", "evaluate", "synthesize",
@@ -192,22 +192,22 @@ class ModelRouter:
         simple_keywords = [
             "summarize", "translate", "rewrite", "format",
         ]
-        
+
         for keyword in complex_keywords:
             if keyword in prompt_lower:
                 complexity_score += 1
-        
+
         for keyword in simple_keywords:
             if keyword in prompt_lower:
                 complexity_score -= 1
-        
+
         # Task type hints
         if task_type:
             if task_type in ["code_generation", "analysis", "reasoning"]:
                 complexity_score += 2
             elif task_type in ["translation", "summarization", "formatting"]:
                 complexity_score -= 1
-        
+
         # Determine complexity
         if complexity_score >= 3:
             return TaskComplexity.COMPLEX
@@ -215,7 +215,7 @@ class ModelRouter:
             return TaskComplexity.MEDIUM
         else:
             return TaskComplexity.SIMPLE
-    
+
     def select_model(
         self,
         prompt: str,
@@ -225,10 +225,10 @@ class ModelRouter:
         """Select appropriate model."""
         if force_model:
             return force_model
-        
+
         complexity = self.assess_complexity(prompt, task_type)
         return self.model_mapping[complexity]
-    
+
     def estimate_cost(
         self,
         model: str,
@@ -237,12 +237,12 @@ class ModelRouter:
     ) -> float:
         """Estimate cost for request."""
         pricing = self.cost_per_million.get(model, {"input": 1.0, "output": 1.0})
-        
+
         cost = (
             (prompt_tokens / 1_000_000) * pricing["input"] +
             (estimated_completion_tokens / 1_000_000) * pricing["output"]
         )
-        
+
         return cost
 
 # Usage
@@ -267,7 +267,7 @@ import numpy as np
 
 class SemanticCache:
     """Semantic cache for LLM responses using embeddings."""
-    
+
     def __init__(
         self,
         redis_host: str = "localhost",
@@ -281,61 +281,61 @@ class SemanticCache:
         )
         self.encoder = SentenceTransformer("all-MiniLM-L6-v2")
         self.similarity_threshold = similarity_threshold
-    
+
     def _get_embedding(self, text: str) -> np.ndarray:
         """Get embedding for text."""
         return self.encoder.encode(text, normalize=True)
-    
+
     def _cosine_similarity(self, a: np.ndarray, b: np.ndarray) -> float:
         """Calculate cosine similarity."""
         return np.dot(a, b)
-    
+
     def _get_cache_key(self, embedding: np.ndarray) -> str:
         """Generate cache key from embedding."""
         # Use first few dimensions for key (approximate)
         key_hash = hashlib.md5(embedding[:16].tobytes()).hexdigest()
         return f"semantic_cache:{key_hash}"
-    
+
     def get(
         self,
         prompt: str,
     ) -> Optional[Tuple[str, float]]:
         """Get cached response if similar prompt exists."""
         prompt_embedding = self._get_embedding(prompt)
-        
+
         # Search for similar embeddings
         # In production, use vector database (Redis Vector, Pinecone, etc.)
         # Here's a simplified version using Redis sets
-        
+
         # Get all cache keys
         cache_keys = self.redis_client.keys("semantic_cache:*")
-        
+
         best_match = None
         best_similarity = 0.0
-        
+
         for key in cache_keys:
             # Get stored embedding and response
             cached_data = self.redis_client.hgetall(key)
-            
+
             if not cached_data:
                 continue
-            
+
             cached_embedding = np.frombuffer(
                 bytes.fromhex(cached_data["embedding"]),
                 dtype=np.float32,
             )
-            
+
             similarity = self._cosine_similarity(prompt_embedding, cached_embedding)
-            
+
             if similarity > best_similarity:
                 best_similarity = similarity
                 best_match = cached_data["response"]
-        
+
         if best_similarity >= self.similarity_threshold:
             return (best_match, best_similarity)
-        
+
         return None
-    
+
     def set(
         self,
         prompt: str,
@@ -345,7 +345,7 @@ class SemanticCache:
         """Cache prompt-response pair."""
         prompt_embedding = self._get_embedding(prompt)
         cache_key = self._get_cache_key(prompt_embedding)
-        
+
         # Store embedding (as hex) and response
         self.redis_client.hset(
             cache_key,
@@ -370,13 +370,13 @@ def generate_with_cache(
         response, similarity = cached
         print(f"Cache hit! Similarity: {similarity:.3f}")
         return response
-    
+
     # Generate from LLM
     response = llm_call(prompt)
-    
+
     # Cache result
     cache.set(prompt, response)
-    
+
     return response
 ```
 
@@ -390,53 +390,53 @@ import json
 
 class PromptCache:
     """Cache for prompt prefixes (Anthropic/OpenAI style)."""
-    
+
     def __init__(self):
         self.cache: Dict[str, str] = {}
         self.cache_hits = 0
         self.cache_misses = 0
-    
+
     def _hash_prompt(self, prompt: str) -> str:
         """Hash prompt for cache key."""
         return hashlib.sha256(prompt.encode()).hexdigest()
-    
+
     def get_cached_prefix(self, messages: List[Dict]) -> Optional[str]:
         """Get cached prefix if available."""
         # Find longest common prefix
         if not messages:
             return None
-        
+
         # Build prefix hash
         prefix_parts = []
         for msg in messages[:-1]:  # All but last message
             prefix_parts.append(json.dumps(msg, sort_keys=True))
-        
+
         prefix_str = "|".join(prefix_parts)
         prefix_hash = self._hash_prompt(prefix_str)
-        
+
         if prefix_hash in self.cache:
             self.cache_hits += 1
             return self.cache[prefix_hash]
-        
+
         self.cache_misses += 1
         return None
-    
+
     def cache_prefix(self, messages: List[Dict], cache_id: str):
         """Cache prefix for future use."""
         prefix_parts = []
         for msg in messages[:-1]:
             prefix_parts.append(json.dumps(msg, sort_keys=True))
-        
+
         prefix_str = "|".join(prefix_parts)
         prefix_hash = self._hash_prompt(prefix_str)
-        
+
         self.cache[prefix_hash] = cache_id
-    
+
     def get_cache_stats(self) -> Dict:
         """Get cache statistics."""
         total = self.cache_hits + self.cache_misses
         hit_rate = self.cache_hits / total if total > 0 else 0.0
-        
+
         return {
             "cache_hits": self.cache_hits,
             "cache_misses": self.cache_misses,
@@ -454,10 +454,10 @@ def chat_completion_with_cache(
     model: str = "gpt-3.5-turbo",
 ) -> str:
     """Chat completion with prompt caching."""
-    
+
     # Check for cached prefix
     cached_id = prompt_cache.get_cached_prefix(messages)
-    
+
     if cached_id:
         # Use cached prefix
         response = openai.ChatCompletion.create(
@@ -474,12 +474,12 @@ def chat_completion_with_cache(
             model=model,
             messages=messages,
         )
-        
+
         # Cache the prefix for future use
         cache_id = response.get("cache_id")
         if cache_id:
             prompt_cache.cache_prefix(messages, cache_id)
-    
+
     return response.choices[0].message.content
 ```
 
@@ -493,13 +493,13 @@ from sentence_transformers import SentenceTransformer
 
 class EmbeddingBatcher:
     """Batch embedding requests for efficiency."""
-    
+
     def __init__(self, batch_size: int = 32):
         self.encoder = SentenceTransformer("all-MiniLM-L6-v2")
         self.batch_size = batch_size
         self.pending_texts: List[str] = []
         self.pending_futures: List = []
-    
+
     def encode_batch(self, texts: List[str]) -> np.ndarray:
         """Encode batch of texts."""
         # Batch encoding is more efficient
@@ -510,7 +510,7 @@ class EmbeddingBatcher:
             normalize_embeddings=True,
         )
         return embeddings
-    
+
     def encode_single(self, text: str) -> np.ndarray:
         """Encode single text (less efficient)."""
         return self.encoder.encode([text])[0]
@@ -519,17 +519,17 @@ class EmbeddingBatcher:
 def compare_batching_costs():
     """Compare costs of batched vs individual calls."""
     texts = [f"Text {i}" for i in range(100)]
-    
+
     batcher = EmbeddingBatcher(batch_size=32)
-    
+
     # Batched approach
     batched_embeddings = batcher.encode_batch(texts)
     # Single API call (if using API)
-    
+
     # Individual approach
     individual_embeddings = [batcher.encode_single(text) for text in texts]
     # 100 API calls
-    
+
     # Batched is ~10-100x more cost-effective
 ```
 
@@ -542,11 +542,11 @@ from datetime import datetime, timedelta
 
 class CostPerTaskTracker:
     """Track cost per task type."""
-    
+
     def __init__(self):
         self.task_costs: Dict[str, List[float]] = {}
         self.task_counts: Dict[str, int] = {}
-    
+
     def record_task(
         self,
         task_type: str,
@@ -556,17 +556,17 @@ class CostPerTaskTracker:
         if task_type not in self.task_costs:
             self.task_costs[task_type] = []
             self.task_counts[task_type] = 0
-        
+
         self.task_costs[task_type].append(cost)
         self.task_counts[task_type] += 1
-    
+
     def get_cost_per_task(self, task_type: str) -> Dict:
         """Get cost metrics for task type."""
         if task_type not in self.task_costs:
             return {}
-        
+
         costs = self.task_costs[task_type]
-        
+
         return {
             "task_type": task_type,
             "total_cost": sum(costs),
@@ -575,22 +575,22 @@ class CostPerTaskTracker:
             "max_cost": max(costs),
             "total_tasks": self.task_counts[task_type],
         }
-    
+
     def get_all_task_costs(self) -> Dict[str, Dict]:
         """Get cost metrics for all task types."""
         return {
             task_type: self.get_cost_per_task(task_type)
             for task_type in self.task_costs.keys()
         }
-    
+
     def identify_expensive_tasks(self, threshold: float = 1.0) -> List[str]:
         """Identify tasks exceeding cost threshold."""
         expensive = []
-        
+
         for task_type, metrics in self.get_all_task_costs().items():
             if metrics["avg_cost"] > threshold:
                 expensive.append(task_type)
-        
+
         return expensive
 
 # Usage
@@ -612,16 +612,16 @@ from datetime import datetime, timedelta
 
 class BudgetManager:
     """Manage budget and alerts."""
-    
+
     def __init__(self, daily_budget: float):
         self.daily_budget = daily_budget
         self.alert_callbacks: List[Callable] = []
         self.spending_history = []
-    
+
     def add_alert_callback(self, callback: Callable[[float, float], None]):
         """Add callback for budget alerts."""
         self.alert_callbacks.append(callback)
-    
+
     def check_budget(
         self,
         current_spending: float,
@@ -632,10 +632,10 @@ class BudgetManager:
             budget = self.daily_budget
         else:
             budget = self.daily_budget * 30  # Monthly
-        
+
         remaining = budget - current_spending
         percentage_used = (current_spending / budget) * 100
-        
+
         status = {
             "budget": budget,
             "spent": current_spending,
@@ -643,7 +643,7 @@ class BudgetManager:
             "percentage_used": percentage_used,
             "status": "ok",
         }
-        
+
         # Alert thresholds
         if percentage_used >= 100:
             status["status"] = "exceeded"
@@ -653,9 +653,9 @@ class BudgetManager:
             self._trigger_alerts(current_spending, budget)
         elif percentage_used >= 75:
             status["status"] = "caution"
-        
+
         return status
-    
+
     def _trigger_alerts(self, spent: float, budget: float):
         """Trigger alert callbacks."""
         for callback in self.alert_callbacks:

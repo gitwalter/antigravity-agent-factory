@@ -36,20 +36,20 @@ class PredictionRecord:
 
 class ModelPerformanceMonitor:
     """Monitor model performance metrics."""
-    
+
     def __init__(self, window_size: int = 1000):
         self.window_size = window_size
         self.predictions: List[PredictionRecord] = []
         self.metrics_history = []
-    
+
     def record_prediction(self, record: PredictionRecord):
         """Record a prediction."""
         self.predictions.append(record)
-        
+
         # Keep only recent predictions
         if len(self.predictions) > self.window_size:
             self.predictions = self.predictions[-self.window_size:]
-    
+
     def calculate_accuracy(self, window_minutes: int = 60) -> float:
         """Calculate accuracy over time window."""
         cutoff = datetime.now() - timedelta(minutes=window_minutes)
@@ -57,13 +57,13 @@ class ModelPerformanceMonitor:
             p for p in self.predictions
             if p.timestamp >= cutoff and p.actual is not None
         ]
-        
+
         if not recent:
             return None
-        
+
         correct = sum(1 for p in recent if p.prediction == p.actual)
         return correct / len(recent)
-    
+
     def detect_accuracy_drift(
         self,
         baseline_accuracy: float,
@@ -71,20 +71,20 @@ class ModelPerformanceMonitor:
     ) -> bool:
         """Detect if accuracy has drifted significantly."""
         current_accuracy = self.calculate_accuracy()
-        
+
         if current_accuracy is None:
             return False
-        
+
         drift = baseline_accuracy - current_accuracy
         return drift > threshold
-    
+
     def get_latency_stats(self) -> Dict:
         """Get latency statistics."""
         latencies = [p.latency_ms for p in self.predictions if p.latency_ms]
-        
+
         if not latencies:
             return {}
-        
+
         return {
             "mean": np.mean(latencies),
             "median": np.median(latencies),
@@ -92,7 +92,7 @@ class ModelPerformanceMonitor:
             "p99": np.percentile(latencies, 99),
             "max": np.max(latencies),
         }
-    
+
     def get_performance_report(self) -> Dict:
         """Generate performance report."""
         return {
@@ -101,19 +101,19 @@ class ModelPerformanceMonitor:
             "latency_stats": self.get_latency_stats(),
             "predictions_per_minute": self._calculate_throughput(),
         }
-    
+
     def _calculate_throughput(self) -> float:
         """Calculate predictions per minute."""
         if len(self.predictions) < 2:
             return 0.0
-        
+
         time_span = (
             self.predictions[-1].timestamp - self.predictions[0].timestamp
         ).total_seconds() / 60
-        
+
         if time_span == 0:
             return 0.0
-        
+
         return len(self.predictions) / time_span
 ```
 
@@ -132,7 +132,7 @@ import pandas as pd
 
 class DataDriftMonitor:
     """Monitor data drift using Evidently AI."""
-    
+
     def __init__(self, reference_data: pd.DataFrame):
         self.reference_data = reference_data
         self.column_mapping = ColumnMapping(
@@ -141,31 +141,31 @@ class DataDriftMonitor:
             numerical_features=list(reference_data.select_dtypes(include=[np.number]).columns),
             categorical_features=list(reference_data.select_dtypes(include=["object"]).columns),
         )
-    
+
     def check_drift(
         self,
         current_data: pd.DataFrame,
         threshold: float = 0.1,
     ) -> Dict:
         """Check for data drift."""
-        
+
         # Create drift report
         report = Report(metrics=[
             DatasetDriftMetric(),
             DataDriftTable(),
         ])
-        
+
         report.run(
             reference_data=self.reference_data,
             current_data=current_data,
             column_mapping=self.column_mapping,
         )
-        
+
         # Extract drift information
         result = report.as_dict()
         dataset_drift = result["metrics"][0]["result"]["dataset_drift"]
         drift_score = result["metrics"][0]["result"]["drift_score"]
-        
+
         # Get column-level drift
         drifted_columns = []
         if len(result["metrics"]) > 1:
@@ -175,7 +175,7 @@ class DataDriftMonitor:
                         "column": col_result["column_name"],
                         "drift_score": col_result["drift_score"],
                     })
-        
+
         return {
             "dataset_drift_detected": dataset_drift,
             "drift_score": drift_score,
@@ -183,7 +183,7 @@ class DataDriftMonitor:
             "threshold": threshold,
             "action_required": drift_score > threshold,
         }
-    
+
     def generate_drift_report_html(
         self,
         current_data: pd.DataFrame,
@@ -195,13 +195,13 @@ class DataDriftMonitor:
             DataDriftTable(),
             ColumnDriftMetric(column_name="feature_1"),
         ])
-        
+
         report.run(
             reference_data=self.reference_data,
             current_data=current_data,
             column_mapping=self.column_mapping,
         )
-        
+
         report.save_html(output_path)
         return output_path
 
@@ -236,7 +236,7 @@ langfuse = Langfuse(
 
 class LLMMonitor:
     """Monitor LLM usage and performance."""
-    
+
     @observe(name="llm_generation")
     def generate_with_monitoring(
         self,
@@ -245,7 +245,7 @@ class LLMMonitor:
         **kwargs,
     ) -> str:
         """Generate with Langfuse tracking."""
-        
+
         # Set trace metadata
         langfuse_context.update_current_trace(
             name="llm_inference",
@@ -256,7 +256,7 @@ class LLMMonitor:
                 "environment": "production",
             },
         )
-        
+
         # Set generation parameters
         langfuse_context.update_current_generation(
             model=model,
@@ -266,10 +266,10 @@ class LLMMonitor:
             },
             input=prompt,
         )
-        
+
         # Simulate LLM call
         response = self._call_llm(prompt, model, **kwargs)
-        
+
         # Record output
         langfuse_context.update_current_generation(
             output=response,
@@ -279,14 +279,14 @@ class LLMMonitor:
                 "total_tokens": self._count_tokens(prompt) + self._count_tokens(response),
             },
         )
-        
+
         return response
-    
+
     def _call_llm(self, prompt: str, model: str, **kwargs) -> str:
         """Call LLM (placeholder)."""
         # Replace with actual LLM call
         return f"Response to: {prompt}"
-    
+
     def _count_tokens(self, text: str) -> int:
         """Count tokens (simplified)."""
         return len(text.split()) * 1.3  # Rough estimate
@@ -335,7 +335,7 @@ class ABTestResult:
 
 class ABTestManager:
     """Manage A/B testing between model versions."""
-    
+
     def __init__(self, variants: Dict[str, float]):
         """
         Args:
@@ -344,56 +344,56 @@ class ABTestManager:
         self.variants = variants
         self.results: List[ABTestResult] = []
         self._validate_traffic_split()
-    
+
     def _validate_traffic_split(self):
         """Validate traffic split sums to 100%."""
         total = sum(self.variants.values())
         if abs(total - 1.0) > 0.01:
             raise ValueError(f"Traffic split must sum to 1.0, got {total}")
-    
+
     def select_variant(self) -> str:
         """Select model variant based on traffic split."""
         rand = random.random()
         cumulative = 0.0
-        
+
         for variant, percentage in self.variants.items():
             cumulative += percentage
             if rand <= cumulative:
                 return variant
-        
+
         return list(self.variants.keys())[-1]
-    
+
     def record_result(self, result: ABTestResult):
         """Record A/B test result."""
         result.timestamp = datetime.now()
         self.results.append(result)
-    
+
     def get_variant_stats(self, variant: str) -> Dict:
         """Get statistics for a variant."""
         variant_results = [
             r for r in self.results if r.model_version == variant
         ]
-        
+
         if not variant_results:
             return {}
-        
+
         latencies = [r.latency_ms for r in variant_results]
         ratings = [r.user_rating for r in variant_results if r.user_rating]
-        
+
         return {
             "count": len(variant_results),
             "avg_latency_ms": sum(latencies) / len(latencies),
             "avg_rating": sum(ratings) / len(ratings) if ratings else None,
             "p95_latency_ms": sorted(latencies)[int(len(latencies) * 0.95)],
         }
-    
+
     def compare_variants(self) -> Dict:
         """Compare all variants."""
         comparison = {}
-        
+
         for variant in self.variants.keys():
             comparison[variant] = self.get_variant_stats(variant)
-        
+
         return comparison
 
 # Usage
@@ -440,10 +440,10 @@ MODEL_PRICING = {
 
 class CostTracker:
     """Track token usage and costs."""
-    
+
     def __init__(self):
         self.usage_history: List[TokenUsage] = []
-    
+
     def record_usage(
         self,
         model: str,
@@ -452,14 +452,14 @@ class CostTracker:
     ):
         """Record token usage."""
         total_tokens = prompt_tokens + completion_tokens
-        
+
         # Calculate cost
         pricing = MODEL_PRICING.get(model, {"input": 0, "output": 0})
         cost = (
             (prompt_tokens / 1_000_000) * pricing["input"] +
             (completion_tokens / 1_000_000) * pricing["output"]
         )
-        
+
         usage = TokenUsage(
             timestamp=datetime.now(),
             model=model,
@@ -468,29 +468,29 @@ class CostTracker:
             total_tokens=total_tokens,
             cost_usd=cost,
         )
-        
+
         self.usage_history.append(usage)
-    
+
     def get_daily_cost(self, date: datetime = None) -> float:
         """Get total cost for a day."""
         if date is None:
             date = datetime.now()
-        
+
         start = date.replace(hour=0, minute=0, second=0, microsecond=0)
         end = start + timedelta(days=1)
-        
+
         daily_usage = [
             u for u in self.usage_history
             if start <= u.timestamp < end
         ]
-        
+
         return sum(u.cost_usd for u in daily_usage)
-    
+
     def get_model_breakdown(self, days: int = 7) -> Dict:
         """Get cost breakdown by model."""
         cutoff = datetime.now() - timedelta(days=days)
         recent = [u for u in self.usage_history if u.timestamp >= cutoff]
-        
+
         breakdown = {}
         for usage in recent:
             if usage.model not in breakdown:
@@ -499,13 +499,13 @@ class CostTracker:
                     "tokens": 0,
                     "requests": 0,
                 }
-            
+
             breakdown[usage.model]["cost"] += usage.cost_usd
             breakdown[usage.model]["tokens"] += usage.total_tokens
             breakdown[usage.model]["requests"] += 1
-        
+
         return breakdown
-    
+
     def check_budget_alert(self, daily_budget: float) -> bool:
         """Check if daily budget exceeded."""
         daily_cost = self.get_daily_cost()
@@ -537,32 +537,32 @@ class AlertRule:
 
 class AlertManager:
     """Manage alerting rules."""
-    
+
     def __init__(self):
         self.rules: List[AlertRule] = []
         self.alert_history = []
-    
+
     def add_rule(self, rule: AlertRule):
         """Add alert rule."""
         self.rules.append(rule)
-    
+
     def check_rules(self):
         """Check all alert rules."""
         triggered = []
-        
+
         for rule in self.rules:
             if not rule.enabled:
                 continue
-            
+
             try:
                 if rule.condition():
                     triggered.append(rule)
                     self._send_alert(rule)
             except Exception as e:
                 print(f"Error checking rule {rule.name}: {e}")
-        
+
         return triggered
-    
+
     def _send_alert(self, rule: AlertRule):
         """Send alert (placeholder)."""
         # Implement email, Slack, PagerDuty, etc.

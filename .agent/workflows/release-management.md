@@ -8,8 +8,8 @@ description: Systematic workflow for managing software releases including versio
 
 Systematic workflow for managing software releases including version bumping, changelog generation, tagging, and deployment coordination.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Applies To:** All stacks
 
 ## Trigger Conditions

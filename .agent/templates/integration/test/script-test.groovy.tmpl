@@ -1,8 +1,8 @@
 /**
  * ${SCRIPT_NAME}Spec - Unit tests for ${SCRIPT_NAME}
- * 
+ *
  * Tests the Groovy script in isolation using Spock framework.
- * 
+ *
  * Author: ${AUTHOR}
  * Created: ${DATE}
  */
@@ -12,75 +12,75 @@ import groovy.json.JsonSlurper
 import groovy.json.JsonBuilder
 
 class ${SCRIPT_NAME}Spec extends Specification {
-    
+
     // Mock message object
     def message
     def messageLog
     def messageLogFactory
-    
+
     def setup() {
         // Create mock message
         message = Mock(MockMessage)
         messageLog = Mock(MockMessageLog)
         messageLogFactory = Mock(MockMessageLogFactory)
-        
+
         messageLogFactory.getMessageLog(_) >> messageLog
     }
-    
+
     def "should process valid input successfully"() {
         given: "a valid input message"
         def inputBody = '''${SAMPLE_INPUT}'''
         message.getBody(String) >> inputBody
-        
+
         when: "the script processes the message"
         def result = processData(message)
-        
+
         then: "the output is correctly transformed"
         result != null
         // Add specific assertions here
         // 1 * message.setBody({ it.contains('expectedValue') })
     }
-    
+
     def "should handle null values gracefully"() {
         given: "input with null values"
         def inputBody = '''${SAMPLE_INPUT_WITH_NULLS}'''
         message.getBody(String) >> inputBody
-        
+
         when: "the script processes the message"
         def result = processData(message)
-        
+
         then: "null values are handled with defaults"
         notThrown(NullPointerException)
     }
-    
+
     def "should throw exception for invalid input"() {
         given: "invalid input"
         def inputBody = "invalid content"
         message.getBody(String) >> inputBody
-        
+
         when: "the script processes the message"
         processData(message)
-        
+
         then: "an exception is thrown with proper error handling"
         thrown(Exception)
         1 * message.setProperty('ErrorMessage', _)
     }
-    
+
     @Unroll
     def "should map '#sourceValue' to '#expectedTarget'"() {
         given: "input with source value"
         def inputBody = buildInput(sourceValue)
         message.getBody(String) >> inputBody
-        
+
         when: "the script processes the message"
         processData(message)
-        
+
         then: "the value is correctly mapped"
-        1 * message.setBody({ 
+        1 * message.setBody({
             def parsed = new JsonSlurper().parseText(it)
             parsed.targetField == expectedTarget
         })
-        
+
         where:
         sourceValue | expectedTarget
         "A"         | "Alpha"
@@ -88,11 +88,11 @@ class ${SCRIPT_NAME}Spec extends Specification {
         "C"         | "Gamma"
         ""          | "Default"
     }
-    
+
     // =====================================================
     // Helper Methods
     // =====================================================
-    
+
     def buildInput(String value) {
         def builder = new JsonBuilder()
         builder {
@@ -100,33 +100,33 @@ class ${SCRIPT_NAME}Spec extends Specification {
         }
         return builder.toString()
     }
-    
+
     // =====================================================
     // Mock Classes (simulate CPI environment)
     // =====================================================
-    
+
     class MockMessage {
         private String body
         private Map<String, Object> properties = [:]
         private Map<String, Object> headers = [:]
-        
+
         String getBody(Class type) { return body }
         void setBody(Object newBody) { this.body = newBody?.toString() }
-        
+
         Object getProperty(String name) { return properties[name] }
         void setProperty(String name, Object value) { properties[name] = value }
-        
+
         Object getHeader(String name, Class type) { return headers[name] }
         void setHeader(String name, Object value) { headers[name] = value }
     }
-    
+
     class MockMessageLog {
         void addAttachmentAsString(String name, String content, String mimeType) {
             // Log for debugging during tests
             println "Attachment [$name]: $content"
         }
     }
-    
+
     class MockMessageLogFactory {
         MockMessageLog getMessageLog(Object message) {
             return new MockMessageLog()

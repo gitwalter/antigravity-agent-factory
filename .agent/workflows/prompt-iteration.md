@@ -8,8 +8,8 @@ description: Iterative prompt engineering and optimization cycle. Covers prompt 
 
 Iterative prompt engineering and optimization cycle. Covers prompt design, testing, evaluation, and refinement using DSPy, LangSmith, and A/B testing patterns.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-10  
+**Version:** 1.0.0
+**Created:** 2026-02-10
 **Applies To:** prompt-engineering, llm-applications
 
 ## Trigger Conditions

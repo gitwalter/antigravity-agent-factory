@@ -8,8 +8,8 @@ description: GitHub Actions CI/CD pipeline setup and maintenance workflow. Cover
 
 GitHub Actions CI/CD pipeline setup and maintenance workflow. Covers workflow creation, test automation, linting, deployment automation, and pipeline monitoring.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-10  
+**Version:** 1.0.0
+**Created:** 2026-02-10
 **Applies To:** ci-cd, github-actions
 
 ## Trigger Conditions

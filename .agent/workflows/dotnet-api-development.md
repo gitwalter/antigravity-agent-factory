@@ -8,8 +8,8 @@ description: Comprehensive workflow for developing production-ready ASP.NET Core
 
 Comprehensive workflow for developing production-ready ASP.NET Core APIs with Entity Framework Core, authentication, and best practices. This workflow guides through project setup, data layer implementation, API endpoints, security, and deployment.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-09  
+**Version:** 1.0.0
+**Created:** 2026-02-09
 **Agent:** dotnet-developer
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.

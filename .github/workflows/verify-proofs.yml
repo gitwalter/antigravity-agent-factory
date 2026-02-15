@@ -31,16 +31,16 @@ jobs:
   verify-proofs:
     name: Verify Lean 4 Proofs
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
       - name: Install Lean 4 (elan)
         run: |
           curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain none
           echo "$HOME/.elan/bin" >> $GITHUB_PATH
-      
+
       - name: Cache Lean 4 dependencies
         uses: actions/cache@v4
         with:
@@ -51,7 +51,7 @@ jobs:
           key: lean4-${{ runner.os }}-${{ hashFiles('proofs/lean-toolchain', 'proofs/lakefile.lean') }}
           restore-keys: |
             lean4-${{ runner.os }}-
-      
+
       - name: Setup Lean toolchain
         run: |
           cd proofs
@@ -64,26 +64,26 @@ jobs:
             echo "Toolchain $TOOLCHAIN is already installed."
           fi
           elan default "$TOOLCHAIN"
-      
+
       - name: Verify proofs
         run: |
           cd proofs
           lake build
-      
+
       - name: Generate checksums
         run: |
           cd proofs
           find . -name "*.lean" -type f | sort | xargs sha256sum > checksums.txt
           echo "=== Proof File Checksums ==="
           cat checksums.txt
-      
+
       - name: Upload proof checksums
         uses: actions/upload-artifact@v4
         with:
           name: proof-checksums
           path: proofs/checksums.txt
           retention-days: 90
-      
+
       - name: Verification summary
         run: |
           echo "╔═══════════════════════════════════════════════════════════════════╗"
@@ -105,26 +105,26 @@ jobs:
     runs-on: ubuntu-latest
     needs: verify-proofs
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
       - name: Download checksums
         uses: actions/download-artifact@v4
         with:
           name: proof-checksums
           path: .attestations/
-      
+
       - name: Generate attestation JSON
         run: |
           mkdir -p .attestations
-          
+
           VERSION=$(git describe --tags --always 2>/dev/null || echo "dev")
           COMMIT_SHA=$(git rev-parse HEAD)
           COMMIT_DATE=$(git log -1 --format=%ci)
           CHECKSUMS_HASH=$(sha256sum .attestations/checksums.txt | cut -d' ' -f1)
-          
+
           cat > .attestations/$VERSION-verified.json << EOF
           {
             "_type": "https://cursor-agent-factory/attestation/v1",
@@ -146,9 +146,9 @@ jobs:
             }
           }
           EOF
-          
+
           echo "Attestation generated for $VERSION"
-      
+
       - name: Upload attestation
         uses: actions/upload-artifact@v4
         with:

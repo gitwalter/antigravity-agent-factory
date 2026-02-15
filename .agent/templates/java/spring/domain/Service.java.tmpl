@@ -9,11 +9,11 @@ import java.util.List;
 
 /**
  * {{CLASS_NAME}} - Service Layer
- * 
+ *
  * Purpose: {{SERVICE_PURPOSE}}
  * Author: {{AUTHOR}}
  * Created: {{DATE}}
- * 
+ *
  * Contains business logic for {{DOMAIN_NAME}} operations.
  * All methods are transactional to ensure data consistency.
  */
@@ -27,7 +27,7 @@ public class {{CLASS_NAME}}Service {
 
     /**
      * Create a new {{DOMAIN_NAME}} entity.
-     * 
+     *
      * @param request DTO containing creation data
      * @return Created entity as response DTO
      * @throws IllegalArgumentException if validation fails
@@ -35,48 +35,48 @@ public class {{CLASS_NAME}}Service {
     @Transactional
     public {{CLASS_NAME}}ResponseDto create({{CLASS_NAME}}CreateRequestDto request) {
         log.debug("Creating {{DOMAIN_NAME}} from request: {}", request);
-        
+
         // Validate business rules
         validateCreateRequest(request);
-        
+
         // Map DTO to entity
         {{CLASS_NAME}} entity = mapToEntity(request);
-        
+
         // Save entity
         {{CLASS_NAME}} saved = {{REPOSITORY_VAR_NAME}}.save(entity);
-        
+
         log.info("Created {{DOMAIN_NAME}} with id: {}", saved.getId());
-        
+
         return mapToResponseDto(saved);
     }
 
     /**
      * Get {{DOMAIN_NAME}} by ID.
-     * 
+     *
      * @param id Entity identifier
      * @return Entity as response DTO
      * @throws {{CLASS_NAME}}NotFoundException if entity not found
      */
     public {{CLASS_NAME}}ResponseDto getById(Long id) {
         log.debug("Fetching {{DOMAIN_NAME}} with id: {}", id);
-        
+
         {{CLASS_NAME}} entity = {{REPOSITORY_VAR_NAME}}.findById(id)
                 .orElseThrow(() -> new {{CLASS_NAME}}NotFoundException(
                         "{{DOMAIN_NAME}} not found with id: " + id));
-        
+
         return mapToResponseDto(entity);
     }
 
     /**
      * Get all {{DOMAIN_NAME}} entities with pagination.
-     * 
+     *
      * @param page Page number (0-indexed)
      * @param size Page size
      * @return List of entities as response DTOs
      */
     public List<{{CLASS_NAME}}ResponseDto> getAll(int page, int size) {
         log.debug("Fetching all {{DOMAIN_NAME}} entities - page: {}, size: {}", page, size);
-        
+
         return {{REPOSITORY_VAR_NAME}}.findAll()
                 .stream()
                 .map(this::mapToResponseDto)
@@ -85,7 +85,7 @@ public class {{CLASS_NAME}}Service {
 
     /**
      * Update existing {{DOMAIN_NAME}} entity.
-     * 
+     *
      * @param id Entity identifier
      * @param request DTO containing update data
      * @return Updated entity as response DTO
@@ -94,42 +94,42 @@ public class {{CLASS_NAME}}Service {
     @Transactional
     public {{CLASS_NAME}}ResponseDto update(Long id, {{CLASS_NAME}}UpdateRequestDto request) {
         log.debug("Updating {{DOMAIN_NAME}} with id: {}", id);
-        
+
         {{CLASS_NAME}} entity = {{REPOSITORY_VAR_NAME}}.findById(id)
                 .orElseThrow(() -> new {{CLASS_NAME}}NotFoundException(
                         "{{DOMAIN_NAME}} not found with id: " + id));
-        
+
         // Validate business rules
         validateUpdateRequest(entity, request);
-        
+
         // Update entity fields
         updateEntityFromDto(entity, request);
-        
+
         // Save updated entity
         {{CLASS_NAME}} updated = {{REPOSITORY_VAR_NAME}}.save(entity);
-        
+
         log.info("Updated {{DOMAIN_NAME}} with id: {}", updated.getId());
-        
+
         return mapToResponseDto(updated);
     }
 
     /**
      * Delete {{DOMAIN_NAME}} by ID.
-     * 
+     *
      * @param id Entity identifier
      * @throws {{CLASS_NAME}}NotFoundException if entity not found
      */
     @Transactional
     public void delete(Long id) {
         log.debug("Deleting {{DOMAIN_NAME}} with id: {}", id);
-        
+
         if (!{{REPOSITORY_VAR_NAME}}.existsById(id)) {
             throw new {{CLASS_NAME}}NotFoundException(
                     "{{DOMAIN_NAME}} not found with id: " + id);
         }
-        
+
         {{REPOSITORY_VAR_NAME}}.deleteById(id);
-        
+
         log.info("Deleted {{DOMAIN_NAME}} with id: {}", id);
     }
 

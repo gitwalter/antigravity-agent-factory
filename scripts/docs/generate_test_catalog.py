@@ -24,6 +24,7 @@ from typing import Dict, List, Optional, Set
 @dataclass
 class TestMethod:
     """Represents a single test method."""
+
     name: str
     docstring: Optional[str] = None
     markers: Set[str] = field(default_factory=set)
@@ -33,6 +34,7 @@ class TestMethod:
 @dataclass
 class TestClass:
     """Represents a test class containing test methods."""
+
     name: str
     docstring: Optional[str] = None
     methods: List[TestMethod] = field(default_factory=list)
@@ -43,6 +45,7 @@ class TestClass:
 @dataclass
 class TestFile:
     """Represents a test file containing test classes and methods."""
+
     path: Path
     docstring: Optional[str] = None
     classes: List[TestClass] = field(default_factory=list)
@@ -53,6 +56,7 @@ class TestFile:
 @dataclass
 class TestCategory:
     """Represents a category of tests (e.g., unit, integration)."""
+
     name: str
     files: List[TestFile] = field(default_factory=list)
 
@@ -60,15 +64,15 @@ class TestCategory:
 class TestCatalogGenerator:
     """
     Generates test catalog documentation from test files.
-    
+
     Scans test directories, parses Python files using AST, and extracts
     test structure including classes, methods, docstrings, and markers.
     """
-    
+
     def __init__(self, root_dir: Path, tests_dir: Path, output_path: Path):
         """
         Initialize generator.
-        
+
         Args:
             root_dir: Project root directory
             tests_dir: Directory containing test files
@@ -77,14 +81,14 @@ class TestCatalogGenerator:
         self.root_dir = root_dir.resolve()
         self.tests_dir = tests_dir.resolve()
         self.output_path = output_path.resolve()
-        
+
     def extract_markers(self, node: ast.AST) -> Set[str]:
         """
         Extract pytest markers from decorators.
-        
+
         Args:
             node: AST node with decorators
-            
+
         Returns:
             Set of marker names
         """
@@ -109,14 +113,14 @@ class TestCatalogGenerator:
                 # @skip
                 markers.add(decorator.id)
         return markers
-    
+
     def extract_docstring(self, node: ast.AST) -> Optional[str]:
         """
         Extract docstring from AST node.
-        
+
         Args:
             node: AST node
-            
+
         Returns:
             Docstring or None
         """
@@ -124,14 +128,14 @@ class TestCatalogGenerator:
         if docstring:
             return docstring.strip()
         return None
-    
+
     def parse_test_file(self, file_path: Path) -> Optional[TestFile]:
         """
         Parse a test file and extract test structure.
-        
+
         Args:
             file_path: Path to test file
-            
+
         Returns:
             TestFile object or None if parsing fails
         """
@@ -142,10 +146,10 @@ class TestCatalogGenerator:
             return None
         except Exception:
             return None
-            
+
         test_file = TestFile(path=file_path.relative_to(self.root_dir))
         test_file.docstring = self.extract_docstring(tree)
-        
+
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
                 if node.name.startswith("test_"):
@@ -153,7 +157,7 @@ class TestCatalogGenerator:
                         name=node.name,
                         docstring=self.extract_docstring(node),
                         markers=self.extract_markers(node),
-                        line_number=node.lineno
+                        line_number=node.lineno,
                     )
                     # Check if method is inside a class
                     parent_class = None
@@ -165,7 +169,7 @@ class TestCatalogGenerator:
                                     break
                             if parent_class:
                                 break
-                    
+
                     if parent_class:
                         # Find or create the test class
                         test_class = None
@@ -178,58 +182,58 @@ class TestCatalogGenerator:
                                 name=parent_class.name,
                                 docstring=self.extract_docstring(parent_class),
                                 markers=self.extract_markers(parent_class),
-                                line_number=parent_class.lineno
+                                line_number=parent_class.lineno,
                             )
                             test_file.classes.append(test_class)
                         test_class.methods.append(method)
                     else:
                         test_file.standalone_tests.append(method)
-                        
+
         return test_file if (test_file.classes or test_file.standalone_tests) else None
-    
+
     def discover_tests(self) -> Dict[str, TestCategory]:
         """
         Discover all test files and organize by category.
-        
+
         Returns:
             Dict mapping category names to TestCategory objects
         """
         categories: Dict[str, TestCategory] = {}
-        
+
         if not self.tests_dir.exists():
             return categories
-            
+
         # Find all test_*.py files
         test_files = list(self.tests_dir.rglob("test_*.py"))
-        
+
         for test_file_path in test_files:
             # Determine category from subdirectory
             rel_path = test_file_path.relative_to(self.tests_dir)
             parts = rel_path.parts[:-1]  # Exclude filename
-            
+
             if parts:
                 category_name = parts[0]  # First subdirectory
             else:
                 category_name = "general"
-                
+
             if category_name not in categories:
                 categories[category_name] = TestCategory(name=category_name)
-                
+
             parsed_file = self.parse_test_file(test_file_path)
             if parsed_file:
                 categories[category_name].files.append(parsed_file)
-                
+
         return categories
-    
+
     def generate_catalog(self) -> str:
         """
         Generate markdown catalog from discovered tests.
-        
+
         Returns:
             Markdown string
         """
         categories = self.discover_tests()
-        
+
         lines = [
             "# Test Catalog",
             "",
@@ -238,13 +242,13 @@ class TestCatalogGenerator:
             "## Summary",
             "",
             "| Category | Files | Classes | Methods |",
-            "|----------|-------|---------|---------|"
+            "|----------|-------|---------|---------|",
         ]
-        
+
         total_files = 0
         total_classes = 0
         total_methods = 0
-        
+
         for category in sorted(categories.values(), key=lambda c: c.name):
             files_count = len(category.files)
             classes_count = sum(len(f.classes) for f in category.files)
@@ -252,48 +256,54 @@ class TestCatalogGenerator:
             for f in category.files:
                 methods_count += sum(len(c.methods) for c in f.classes)
                 methods_count += len(f.standalone_tests)
-            
+
             total_files += files_count
             total_classes += classes_count
             total_methods += methods_count
-            
+
             lines.append(
                 f"| {category.name} | {files_count} | {classes_count} | {methods_count} |"
             )
-            
-        lines.append(f"| **Total** | **{total_files}** | **{total_classes}** | **{total_methods}** |")
+
+        lines.append(
+            f"| **Total** | **{total_files}** | **{total_classes}** | **{total_methods}** |"
+        )
         lines.append("")
-        
+
         # Detailed sections per category
         for category in sorted(categories.values(), key=lambda c: c.name):
             lines.append(f"## {category.name.title()} Tests")
             lines.append("")
-            
+
             for test_file in sorted(category.files, key=lambda f: str(f.path)):
                 lines.append(f"### {test_file.path}")
                 lines.append("")
-                
+
                 if test_file.docstring:
                     lines.append(f"*{test_file.docstring}*")
                     lines.append("")
-                
+
                 # Test classes
                 for test_class in test_file.classes:
                     lines.append(f"#### {test_class.name}")
                     if test_class.docstring:
                         lines.append(f"*{test_class.docstring}*")
                     if test_class.markers:
-                        lines.append(f"**Markers:** {', '.join(sorted(test_class.markers))}")
+                        lines.append(
+                            f"**Markers:** {', '.join(sorted(test_class.markers))}"
+                        )
                     lines.append("")
-                    
+
                     for method in test_class.methods:
                         lines.append(f"- `{method.name}`")
                         if method.docstring:
                             lines.append(f"  - {method.docstring}")
                         if method.markers:
-                            lines.append(f"  - Markers: {', '.join(sorted(method.markers))}")
+                            lines.append(
+                                f"  - Markers: {', '.join(sorted(method.markers))}"
+                            )
                     lines.append("")
-                
+
                 # Standalone tests
                 if test_file.standalone_tests:
                     lines.append("#### Standalone Tests")
@@ -303,25 +313,27 @@ class TestCatalogGenerator:
                         if method.docstring:
                             lines.append(f"  - {method.docstring}")
                         if method.markers:
-                            lines.append(f"  - Markers: {', '.join(sorted(method.markers))}")
+                            lines.append(
+                                f"  - Markers: {', '.join(sorted(method.markers))}"
+                            )
                     lines.append("")
-                    
+
         return "\n".join(lines)
-    
+
     def write_catalog(self) -> bool:
         """
         Write catalog to output file.
-        
+
         Returns:
             True if file was written/updated
         """
         catalog_content = self.generate_catalog()
-        
+
         if self.output_path.exists():
             existing_content = self.output_path.read_text(encoding="utf-8")
             if existing_content == catalog_content:
                 return False
-                
+
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
         self.output_path.write_text(catalog_content, encoding="utf-8")
         return True
@@ -329,51 +341,53 @@ class TestCatalogGenerator:
 
 def main():
     """Main entry point."""
-    parser = argparse.ArgumentParser(
-        description="Generate test catalog documentation"
-    )
+    parser = argparse.ArgumentParser(description="Generate test catalog documentation")
     parser.add_argument(
         "--check",
         action="store_true",
-        help="Check if catalog is up to date (exit 1 if outdated)"
+        help="Check if catalog is up to date (exit 1 if outdated)",
     )
     parser.add_argument(
         "--tests-dir",
         type=str,
         default="tests",
-        help="Directory containing test files (default: tests)"
+        help="Directory containing test files (default: tests)",
     )
     parser.add_argument(
         "--output",
         type=str,
         default="docs/testing/test-catalog.md",
-        help="Output catalog file path (default: docs/testing/test-catalog.md)"
+        help="Output catalog file path (default: docs/testing/test-catalog.md)",
     )
     parser.add_argument(
         "--root",
         type=str,
         default=".",
-        help="Project root directory (default: current directory)"
+        help="Project root directory (default: current directory)",
     )
-    
+
     args = parser.parse_args()
-    
+
     root_dir = Path(args.root).resolve()
     tests_dir = root_dir / args.tests_dir
     output_path = root_dir / args.output
-    
+
     generator = TestCatalogGenerator(root_dir, tests_dir, output_path)
-    
+
     if args.check:
         # Generate catalog in memory and compare
         new_catalog = generator.generate_catalog()
-        
+
         if output_path.exists():
             existing_catalog = output_path.read_text(encoding="utf-8")
             # Compare ignoring the timestamp line
-            new_lines = [l for l in new_catalog.splitlines() if "*Generated on" not in l]
-            existing_lines = [l for l in existing_catalog.splitlines() if "*Generated on" not in l]
-            
+            new_lines = [
+                l for l in new_catalog.splitlines() if "*Generated on" not in l
+            ]
+            existing_lines = [
+                l for l in existing_catalog.splitlines() if "*Generated on" not in l
+            ]
+
             if new_lines == existing_lines:
                 print("[OK] Test catalog is up to date")
                 return 0
@@ -381,9 +395,11 @@ def main():
                 print("[FAIL] Test catalog is outdated. Run without --check to update.")
                 return 1
         else:
-            print("[FAIL] Test catalog does not exist. Run without --check to generate.")
+            print(
+                "[FAIL] Test catalog does not exist. Run without --check to generate."
+            )
             return 1
-    
+
     # Generate catalog
     if generator.write_catalog():
         print(f"[OK] Generated test catalog: {output_path}")

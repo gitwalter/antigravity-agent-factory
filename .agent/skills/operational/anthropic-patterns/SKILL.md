@@ -35,7 +35,7 @@ llm = ChatAnthropic(
 @tool
 def get_weather(location: str) -> str:
     """Get current weather for a location.
-    
+
     Args:
         location: City name or coordinates
     """
@@ -45,7 +45,7 @@ def get_weather(location: str) -> str:
 @tool
 def search_database(query: str) -> str:
     """Search internal database for information.
-    
+
     Args:
         query: Search query
     """
@@ -60,23 +60,23 @@ async def claude_agentic_loop(user_query: str, max_iterations: int = 10):
     """Run Claude agentic loop until completion."""
     messages = [HumanMessage(content=user_query)]
     iteration = 0
-    
+
     while iteration < max_iterations:
         # Get Claude's response
         response = await llm_with_tools.ainvoke(messages)
         messages.append(response)
-        
+
         # Check if Claude is done
         if not response.tool_calls:
             # No more tool calls - agent is finished
             return response.content
-        
+
         # Execute tool calls
         for tool_call in response.tool_calls:
             tool_name = tool_call["name"]
             tool_args = tool_call["args"]
             tool_id = tool_call["id"]
-            
+
             # Find and execute tool
             tool_map = {t.name: t for t in tools}
             if tool_name in tool_map:
@@ -90,9 +90,9 @@ async def claude_agentic_loop(user_query: str, max_iterations: int = 10):
                     content=f"Error: Tool {tool_name} not found",
                     tool_call_id=tool_id
                 ))
-        
+
         iteration += 1
-    
+
     # Max iterations reached
     return "Maximum iterations reached. Agent may not have completed the task."
 
@@ -121,17 +121,17 @@ async def complex_reasoning_task(problem: str):
     """Use extended thinking for complex problems."""
     prompt = f"""Solve this complex problem step by step. Think through
     all aspects carefully before providing your answer.
-    
+
     Problem: {problem}
-    
+
     Show your reasoning process."""
-    
+
     response = await llm_thinking.ainvoke(prompt)
-    
+
     # Access thinking content if available
     if hasattr(response, 'thinking'):
         print("Thinking process:", response.thinking)
-    
+
     return response.content
 
 # Usage
@@ -196,24 +196,24 @@ async def robust_agentic_loop(user_query: str):
     messages = [HumanMessage(content=user_query)]
     tools = [risky_api_call]
     llm_with_tools = claude.bind_tools(tools)
-    
+
     max_iterations = 10
     iteration = 0
-    
+
     while iteration < max_iterations:
         try:
             response = await llm_with_tools.ainvoke(messages)
             messages.append(response)
-            
+
             if not response.tool_calls:
                 return response.content
-            
+
             # Execute tools with error handling
             for tool_call in response.tool_calls:
                 tool_name = tool_call["name"]
                 tool_args = tool_call["args"]
                 tool_id = tool_call["id"]
-                
+
                 tool_map = {t.name: t for t in tools}
                 if tool_name in tool_map:
                     try:
@@ -233,16 +233,16 @@ async def robust_agentic_loop(user_query: str):
                         content=f"Unknown tool: {tool_name}",
                         tool_call_id=tool_id
                     ))
-            
+
             iteration += 1
-            
+
         except Exception as e:
             # Handle LLM errors
             messages.append(AIMessage(
                 content=f"I encountered an error: {str(e)}. Let me try a different approach."
             ))
             iteration += 1
-    
+
     return "Task incomplete after maximum iterations."
 ```
 
@@ -277,13 +277,13 @@ async def safe_agent_query(user_query: str):
         SystemMessage(content=safety_prompt),
         HumanMessage(content=user_query)
     ]
-    
+
     response = await safe_claude.ainvoke(messages)
-    
+
     # Check for safety concerns (custom logic)
     if is_unsafe_response(response.content):
         return "I cannot help with that request as it may be unsafe or unethical."
-    
+
     return response.content
 
 def is_unsafe_response(content: str) -> bool:
@@ -339,12 +339,12 @@ async def streaming_agentic_loop(user_query: str):
     messages = [HumanMessage(content=user_query)]
     tools = [get_weather, search_database]
     llm_with_tools = claude.bind_tools(tools)
-    
+
     async for chunk in llm_with_tools.astream(messages):
         # Stream text content
         if hasattr(chunk, 'content') and chunk.content:
             print(chunk.content, end="", flush=True)
-        
+
         # Handle tool calls as they arrive
         if hasattr(chunk, 'tool_calls') and chunk.tool_calls:
             for tool_call in chunk.tool_calls:

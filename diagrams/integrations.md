@@ -21,33 +21,33 @@ flowchart TB
     subgraph Factory["Cursor Agent Factory"]
         CORE["Core System"]
     end
-    
+
     subgraph MCP["MCP Servers"]
         M1["SAP Docs"]
         M2["DeepWiki"]
         M3["Atlassian"]
         M4["Custom MCPs"]
     end
-    
+
     subgraph PM["PM Backends"]
         P1["Jira"]
         P2["GitHub Issues"]
         P3["Linear"]
         P4["Local JSON"]
     end
-    
+
     subgraph Tools["Development Tools"]
         T1["Git"]
         T2["Docker"]
         T3["Cloud Providers"]
         T4["CI/CD Systems"]
     end
-    
+
     subgraph Verify["Verification"]
         V1["Society System"]
         V2["Lean 4 Proofs"]
     end
-    
+
     CORE <--> MCP
     CORE <--> PM
     CORE <--> Tools
@@ -65,19 +65,19 @@ flowchart TB
         D2["Parse server definitions"]
         D3["Validate connections"]
     end
-    
+
     subgraph Catalog["MCP Catalog"]
         C1["mcp-servers-catalog.json"]
         C2["Available servers"]
         C3["Capabilities map"]
     end
-    
+
     subgraph Usage["MCP Usage"]
         U1["Agent invokes MCP tool"]
         U2["MCP server responds"]
         U3["Agent processes result"]
     end
-    
+
     Discovery --> Catalog --> Usage
 ```
 
@@ -94,14 +94,14 @@ flowchart TB
             S3["args: [arguments]"]
             S4["env: {environment vars}"]
         end
-        
+
         subgraph Types["Server Types"]
             T1["stdio: Local process"]
             T2["sse: HTTP streaming"]
             T3["websocket: WebSocket"]
         end
     end
-    
+
     subgraph Example["Example Configuration"]
         E1["sap-docs-server"]
         E2["deepwiki-server"]
@@ -122,33 +122,33 @@ flowchart TB
         I4["transition_issue()"]
         I5["add_comment()"]
     end
-    
+
     subgraph Backends["Backend Implementations"]
         subgraph Jira["Jira Backend"]
             J1["REST API calls"]
             J2["Authentication"]
             J3["Field mapping"]
         end
-        
+
         subgraph GitHub["GitHub Backend"]
             G1["GraphQL API"]
             G2["Token auth"]
             G3["Label mapping"]
         end
-        
+
         subgraph Linear["Linear Backend"]
             L1["GraphQL API"]
             L2["API key auth"]
             L3["Status mapping"]
         end
-        
+
         subgraph Local["Local Backend"]
             LC1["JSON file storage"]
             LC2["No auth required"]
             LC3["Simple schema"]
         end
     end
-    
+
     Interface --> Backends
 ```
 
@@ -159,15 +159,15 @@ How the right backend is selected:
 ```mermaid
 flowchart TD
     START([PM Operation Requested]) --> CHECK{Configuration exists?}
-    
+
     CHECK -->|"No"| DEFAULT["Use local JSON backend"]
     CHECK -->|"Yes"| TYPE{Backend type?}
-    
+
     TYPE -->|"jira"| JIRA["Initialize Jira client"]
     TYPE -->|"github"| GH["Initialize GitHub client"]
     TYPE -->|"linear"| LIN["Initialize Linear client"]
     TYPE -->|"local"| LOC["Initialize local storage"]
-    
+
     JIRA & GH & LIN & LOC --> AUTH["Authenticate"]
     AUTH --> READY["Backend ready"]
 ```
@@ -185,26 +185,26 @@ flowchart TB
             S3["log"]
             S4["branch --list"]
         end
-        
+
         subgraph Protected["Protected Operations"]
             P1["commit (on request)"]
             P2["push (on request)"]
             P3["branch create"]
         end
-        
+
         subgraph Dangerous["Dangerous Operations"]
             D1["push --force (warn)"]
             D2["reset --hard (warn)"]
             D3["branch -D (warn)"]
         end
     end
-    
+
     subgraph Safety["Safety Rules"]
         R1["Never auto-commit"]
         R2["Never force push to main"]
         R3["Always show diff first"]
     end
-    
+
     GitOps --> Safety
 ```
 
@@ -220,7 +220,7 @@ flowchart TB
             ES2["Hash chain"]
             ES3["Signatures"]
         end
-        
+
         subgraph Verifiers["Axiom Verifiers"]
             V1["A0SDGVerifier"]
             V2["A1LoveVerifier"]
@@ -229,20 +229,20 @@ flowchart TB
             V5["A4GuardianVerifier"]
             V6["A5MemoryVerifier"]
         end
-        
+
         subgraph Contracts["Agent Contracts"]
             C1["Capabilities"]
             C2["Obligations"]
             C3["Prohibitions"]
         end
     end
-    
+
     subgraph Integration["Factory Integration"]
         I1["Agent actions logged"]
         I2["Axiom compliance verified"]
         I3["Trust scores maintained"]
     end
-    
+
     Society --> Integration
 ```
 
@@ -258,26 +258,26 @@ flowchart TB
             D2["Image building"]
             D3["Compose orchestration"]
         end
-        
+
         subgraph Cloud["Cloud Providers"]
             C1["AWS (boto3)"]
             C2["GCP (google-cloud)"]
             C3["Azure (azure-sdk)"]
         end
-        
+
         subgraph CICD["CI/CD"]
             CI1["GitHub Actions"]
             CI2["GitLab CI"]
             CI3["Jenkins"]
         end
     end
-    
+
     subgraph ToolConfig["Tool Configuration"]
         TC1["Path resolution"]
         TC2["Environment setup"]
         TC3["Credential management"]
     end
-    
+
     Tools --> ToolConfig
 ```
 
@@ -292,9 +292,9 @@ sequenceDiagram
     participant ENV as Environment
     participant KR as Keyring
     participant SVC as External Service
-    
+
     F->>CM: Get credentials for service
-    
+
     CM->>ENV: Check environment variable
     alt Env has credential
         ENV-->>CM: Credential value
@@ -308,7 +308,7 @@ sequenceDiagram
             CM->>KR: Store securely
         end
     end
-    
+
     CM-->>F: Return credential
     F->>SVC: Authenticate with credential
     SVC-->>F: Authentication result
@@ -324,16 +324,16 @@ sequenceDiagram
     participant MC as MCP Client
     participant MS as MCP Server
     participant EXT as External Resource
-    
+
     A->>MC: Call MCP tool
     MC->>MC: Validate parameters
     MC->>MS: Send tool request
-    
+
     MS->>MS: Process request
     MS->>EXT: Fetch external data
     EXT-->>MS: External data
     MS->>MS: Format response
-    
+
     MS-->>MC: Tool response
     MC-->>A: Processed result
 ```
@@ -345,20 +345,20 @@ How integration errors are handled:
 ```mermaid
 flowchart TD
     ERR([Integration Error]) --> TYPE{Error Type?}
-    
+
     TYPE -->|"Auth failure"| AUTH["Re-authenticate"]
     TYPE -->|"Network error"| NET["Retry with backoff"]
     TYPE -->|"Rate limit"| RATE["Wait and retry"]
     TYPE -->|"Not found"| NF["Report missing resource"]
     TYPE -->|"Permission"| PERM["Request permission"]
-    
+
     AUTH --> RETRY{Retry successful?}
     NET --> RETRY
     RATE --> RETRY
-    
+
     RETRY -->|"Yes"| SUCCESS["Continue operation"]
     RETRY -->|"No"| FAIL["Report failure to user"]
-    
+
     NF --> FAIL
     PERM --> FAIL
 ```
@@ -375,13 +375,13 @@ flowchart TB
             MC2["Server definitions"]
             MC3["Environment variables"]
         end
-        
+
         subgraph PM_Config["PM Configuration"]
             PM1["settings.json pm section"]
             PM2["Backend type"]
             PM3["Connection details"]
         end
-        
+
         subgraph Tool_Config["Tool Configuration"]
             TC1["tools.json"]
             TC2["Path overrides"]
@@ -401,21 +401,21 @@ flowchart TB
         T2["Jira webhook"]
         T3["CI/CD callback"]
     end
-    
+
     subgraph Handler["Webhook Handler"]
         H1["Validate signature"]
         H2["Parse payload"]
         H3["Route to handler"]
         H4["Execute action"]
     end
-    
+
     subgraph Actions["Triggered Actions"]
         A1["Start workflow"]
         A2["Update status"]
         A3["Generate report"]
         A4["Notify team"]
     end
-    
+
     Triggers --> Handler --> Actions
 ```
 
@@ -430,18 +430,18 @@ flowchart TB
         M2["Connection testing"]
         M3["Response time tracking"]
     end
-    
+
     subgraph Status["Integration Status"]
         S1["Healthy: All connections OK"]
         S2["Degraded: Some issues"]
         S3["Unhealthy: Critical failure"]
     end
-    
+
     subgraph Alerts["Alerting"]
         A1["Log warnings"]
         A2["Notify user"]
         A3["Fallback to alternatives"]
     end
-    
+
     Monitoring --> Status --> Alerts
 ```

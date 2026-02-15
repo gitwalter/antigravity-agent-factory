@@ -1,11 +1,11 @@
 import json
-import os
 from pathlib import Path
+
 
 def debug_json(f_path):
     print(f"Checking {f_path}...")
     try:
-        with open(f_path, 'r', encoding='utf-8') as f:
+        with open(f_path, "r", encoding="utf-8") as f:
             content = f.read()
             print(f"  Length: {len(content)}")
             data = json.loads(content)
@@ -21,6 +21,7 @@ def debug_json(f_path):
         print(" " * (relative_pos + 11) + "^")
     except Exception as e:
         print(f"  Error: {e}")
+
 
 if __name__ == "__main__":
     knowledge_dir = Path(".agent/knowledge")

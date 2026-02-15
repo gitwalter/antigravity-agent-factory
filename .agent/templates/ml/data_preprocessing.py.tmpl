@@ -35,11 +35,11 @@ logger = logging.getLogger(__name__)
 class DataPreprocessor:
     """
     Data preprocessing pipeline for machine learning.
-    
+
     Provides comprehensive data cleaning, transformation, and preparation
     utilities including handling missing values, encoding categorical variables,
     scaling numerical features, and outlier detection.
-    
+
     Example:
         >>> preprocessor = DataPreprocessor(
         ...     numerical_columns=['age', 'income'],
@@ -48,7 +48,7 @@ class DataPreprocessor:
         >>> X_train_processed = preprocessor.fit_transform(X_train)
         >>> X_test_processed = preprocessor.transform(X_test)
     """
-    
+
     def __init__(
         self,
         numerical_columns: Optional[List[str]] = None,
@@ -62,7 +62,7 @@ class DataPreprocessor:
     ):
         """
         Initialize data preprocessor.
-        
+
         Args:
             numerical_columns: List of numerical column names
             categorical_columns: List of categorical column names
@@ -81,114 +81,114 @@ class DataPreprocessor:
         self.handle_outliers = handle_outliers
         self.outlier_method = outlier_method
         self.encode_categorical = encode_categorical
-        
+
         self.preprocessor_ = None
         self.label_encoders_ = {}
         self.scaler_ = None
         self.imputer_ = None
         self.is_fitted_ = False
-        
+
         logger.info(f"Initialized DataPreprocessor with strategy: {imputation_strategy}, scaling: {scaling_method}")
-    
+
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> 'DataPreprocessor':
         """
         Fit the preprocessing pipeline on training data.
-        
+
         Args:
             X: Feature dataframe
             y: Optional target series
-            
+
         Returns:
             Self for method chaining
         """
         logger.info(f"Fitting preprocessor on {len(X)} samples")
-        
+
         # Detect columns if not specified
         if not self.numerical_columns and not self.categorical_columns:
             self._detect_column_types(X)
-        
+
         # Handle missing values
         self._fit_imputation(X)
-        
+
         # Handle outliers
         if self.handle_outliers:
             self._fit_outlier_detection(X)
-        
+
         # Fit scaler for numerical columns
         if self.numerical_columns and self.scaling_method != 'none':
             self._fit_scaler(X[self.numerical_columns])
-        
+
         # Fit encoders for categorical columns
         if self.categorical_columns and self.encode_categorical:
             self._fit_encoders(X[self.categorical_columns])
-        
+
         # Build sklearn pipeline
         self._build_pipeline()
-        
+
         self.is_fitted_ = True
         logger.info("Preprocessor fitted successfully")
         return self
-    
+
     def transform(self, X: pd.DataFrame) -> np.ndarray:
         """
         Transform data using fitted preprocessor.
-        
+
         Args:
             X: Feature dataframe
-            
+
         Returns:
             Transformed numpy array
-            
+
         Raises:
             ValueError: If preprocessor is not fitted
         """
         if not self.is_fitted_:
             raise ValueError("Preprocessor must be fitted before transform")
-        
+
         logger.info(f"Transforming {len(X)} samples")
-        
+
         # Handle missing values
         X_processed = self._transform_imputation(X.copy())
-        
+
         # Handle outliers
         if self.handle_outliers:
             X_processed = self._transform_outliers(X_processed)
-        
+
         # Scale numerical columns
         if self.numerical_columns and self.scaling_method != 'none':
             X_processed[self.numerical_columns] = self._transform_scaling(
                 X_processed[self.numerical_columns]
             )
-        
+
         # Encode categorical columns
         if self.categorical_columns and self.encode_categorical:
             X_processed = self._transform_encoding(X_processed)
-        
+
         # Convert to numpy array
         if self.preprocessor_:
             return self.preprocessor_.transform(X_processed)
         else:
             return X_processed.values
-    
+
     def fit_transform(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> np.ndarray:
         """
         Fit and transform data in one step.
-        
+
         Args:
             X: Feature dataframe
             y: Optional target series
-            
+
         Returns:
             Transformed numpy array
         """
         return self.fit(X, y).transform(X)
-    
+
     def _detect_column_types(self, X: pd.DataFrame) -> None:
         """Automatically detect numerical and categorical columns."""
         for col in X.columns:
             if col == self.target_column:
                 continue
-            
+
             if X[col].dtype in ['int64', 'float64']:
                 if X[col].nunique() > 10:  # Likely numerical
                     self.numerical_columns.append(col)
@@ -196,10 +196,10 @@ class DataPreprocessor:
                     self.categorical_columns.append(col)
             else:
                 self.categorical_columns.append(col)
-        
+
         logger.info(f"Detected {len(self.numerical_columns)} numerical and "
                    f"{len(self.categorical_columns)} categorical columns")
-    
+
     def _fit_imputation(self, X: pd.DataFrame) -> None:
         """Fit imputation strategy."""
         if self.imputation_strategy == 'knn':
@@ -210,7 +210,7 @@ class DataPreprocessor:
             self.imputer_ = SimpleImputer(strategy=self.imputation_strategy)
             if self.numerical_columns:
                 self.imputer_.fit(X[self.numerical_columns])
-    
+
     def _transform_imputation(self, X: pd.DataFrame) -> pd.DataFrame:
         """Transform missing values."""
         if self.imputer_ and self.numerical_columns:
@@ -220,13 +220,13 @@ class DataPreprocessor:
                 columns=self.numerical_columns,
                 index=X.index
             )
-        
+
         # Handle categorical missing values
         if self.categorical_columns:
             X[self.categorical_columns] = X[self.categorical_columns].fillna('{{MISSING_CATEGORY}}')
-        
+
         return X
-    
+
     def _fit_scaler(self, X: pd.DataFrame) -> None:
         """Fit scaling transformer."""
         if self.scaling_method == 'standard':
@@ -235,17 +235,17 @@ class DataPreprocessor:
             self.scaler_ = MinMaxScaler()
         elif self.scaling_method == 'robust':
             self.scaler_ = RobustScaler()
-        
+
         if self.scaler_:
             self.scaler_.fit(X)
-    
+
     def _transform_scaling(self, X: pd.DataFrame) -> pd.DataFrame:
         """Transform numerical scaling."""
         if self.scaler_:
             scaled = self.scaler_.transform(X)
             return pd.DataFrame(scaled, columns=X.columns, index=X.index)
         return X
-    
+
     def _fit_encoders(self, X: pd.DataFrame) -> None:
         """Fit categorical encoders."""
         for col in self.categorical_columns:
@@ -253,7 +253,7 @@ class DataPreprocessor:
                 le = LabelEncoder()
                 le.fit(X[col].astype(str))
                 self.label_encoders_[col] = le
-    
+
     def _transform_encoding(self, X: pd.DataFrame) -> pd.DataFrame:
         """Transform categorical encoding."""
         X_encoded = X.copy()
@@ -261,11 +261,11 @@ class DataPreprocessor:
             if col in X_encoded.columns:
                 X_encoded[col] = encoder.transform(X_encoded[col].astype(str))
         return X_encoded
-    
+
     def _fit_outlier_detection(self, X: pd.DataFrame) -> None:
         """Fit outlier detection (store thresholds)."""
         self.outlier_thresholds_ = {}
-        
+
         if self.outlier_method == 'iqr':
             for col in self.numerical_columns:
                 if col in X.columns:
@@ -285,11 +285,11 @@ class DataPreprocessor:
                         'lower': mean - 3 * std,
                         'upper': mean + 3 * std
                     }
-    
+
     def _transform_outliers(self, X: pd.DataFrame) -> pd.DataFrame:
         """Handle outliers (cap or remove)."""
         X_processed = X.copy()
-        
+
         if self.outlier_method in ['iqr', 'zscore']:
             for col, thresholds in self.outlier_thresholds_.items():
                 if col in X_processed.columns:
@@ -298,26 +298,26 @@ class DataPreprocessor:
                         lower=thresholds['lower'],
                         upper=thresholds['upper']
                     )
-        
+
         return X_processed
-    
+
     def _build_pipeline(self) -> None:
         """Build sklearn preprocessing pipeline."""
         transformers = []
-        
+
         # Numerical transformations
         if self.numerical_columns:
             num_pipeline = []
-            
+
             if self.imputation_strategy != 'none':
                 num_pipeline.append(('imputer', self.imputer_))
-            
+
             if self.scaling_method != 'none' and self.scaler_:
                 num_pipeline.append(('scaler', self.scaler_))
-            
+
             if num_pipeline:
                 transformers.append(('num', Pipeline(num_pipeline), self.numerical_columns))
-        
+
         # Categorical transformations
         if self.categorical_columns and self.encode_categorical:
             cat_pipeline = []
@@ -327,37 +327,37 @@ class DataPreprocessor:
                     ('cat', OneHotEncoder(drop='first', sparse_output=False, handle_unknown='ignore'),
                      self.categorical_columns)
                 )
-        
+
         if transformers:
             self.preprocessor_ = ColumnTransformer(
                 transformers=transformers,
                 remainder='passthrough'
             )
-    
+
     def get_feature_names(self) -> List[str]:
         """
         Get feature names after transformation.
-        
+
         Returns:
             List of feature names
         """
         if self.preprocessor_:
             return self.preprocessor_.get_feature_names_out().tolist()
         return []
-    
+
     def inverse_transform(self, X: np.ndarray) -> pd.DataFrame:
         """
         Inverse transform data (approximate).
-        
+
         Args:
             X: Transformed numpy array
-            
+
         Returns:
             Dataframe with inverse transformed values
         """
         if not self.is_fitted_:
             raise ValueError("Preprocessor must be fitted before inverse_transform")
-        
+
         if self.preprocessor_:
             return pd.DataFrame(
                 self.preprocessor_.inverse_transform(X),
@@ -371,7 +371,7 @@ if __name__ == "__main__":
     # Create sample data
     np.random.seed(42)
     n_samples = 1000
-    
+
     data = {
         'age': np.random.randint(18, 80, n_samples),
         'income': np.random.normal(50000, 15000, n_samples),
@@ -379,17 +379,17 @@ if __name__ == "__main__":
         'category': np.random.choice(['A', 'B', 'C'], n_samples),
         'score': np.random.normal(75, 10, n_samples)
     }
-    
+
     # Introduce missing values
     missing_indices = np.random.choice(n_samples, size=int(0.1 * n_samples), replace=False)
     data['income'][missing_indices[:len(missing_indices)//2]] = np.nan
     data['city'][missing_indices[len(missing_indices)//2:]] = None
-    
+
     df = pd.DataFrame(data)
     print("Original data shape:", df.shape)
     print("\nMissing values:")
     print(df.isnull().sum())
-    
+
     # Initialize preprocessor
     preprocessor = DataPreprocessor(
         numerical_columns=['age', 'income', 'score'],
@@ -399,7 +399,7 @@ if __name__ == "__main__":
         handle_outliers=True,
         outlier_method='iqr'
     )
-    
+
     # Fit and transform
     X_processed = preprocessor.fit_transform(df)
     print(f"\nProcessed data shape: {X_processed.shape}")

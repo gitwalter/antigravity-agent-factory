@@ -48,11 +48,11 @@ class SFTTrainingConfig(BaseModel):
 class {{TRAINER_CLASS_NAME}}:
     """
     {{TRAINER_NAME}} - Supervised Fine-Tuning Trainer with TRL
-    
+
     Fine-tunes language models using Supervised Fine-Tuning (SFT) with the
     TRL (Transformer Reinforcement Learning) library. Supports instruction
     tuning, chat fine-tuning, and general text completion tasks.
-    
+
     Example:
         >>> trainer = {{TRAINER_CLASS_NAME}}(
         ...     base_model_name="meta-llama/Llama-2-7b-hf",
@@ -64,7 +64,7 @@ class {{TRAINER_CLASS_NAME}}:
         ...     per_device_train_batch_size=4
         ... )
     """
-    
+
     def __init__(
         self,
         base_model_name: str = "{{BASE_MODEL_NAME}}",
@@ -85,7 +85,7 @@ class {{TRAINER_CLASS_NAME}}:
     ):
         """
         Initialize SFT trainer.
-        
+
         Args:
             base_model_name: HuggingFace model identifier
             output_dir: Directory to save checkpoints and final model
@@ -106,20 +106,20 @@ class {{TRAINER_CLASS_NAME}}:
         self.base_model_name = base_model_name
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         self.dataset_text_field = dataset_text_field
         self.max_seq_length = max_seq_length
         self.packing = packing
-        
+
         if target_modules is None:
             target_modules = {{TARGET_MODULES}}
-        
+
         logger.info(f"Loading tokenizer: {base_model_name}")
         self.tokenizer = AutoTokenizer.from_pretrained(base_model_name)
-        
+
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
-        
+
         quantization_config = None
         if use_4bit:
             logger.info("Configuring 4-bit quantization...")
@@ -129,27 +129,27 @@ class {{TRAINER_CLASS_NAME}}:
                 bnb_4bit_quant_type=bnb_4bit_quant_type,
                 bnb_4bit_use_double_quant=use_nested_quant,
             )
-        
+
         logger.info(f"Loading base model: {base_model_name}")
         model_kwargs = {
             "device_map": device_map,
             "trust_remote_code": trust_remote_code,
         }
-        
+
         if quantization_config:
             model_kwargs["quantization_config"] = quantization_config
         else:
             model_kwargs["torch_dtype"] = torch.float16
-        
+
         self.model = AutoModelForCausalLM.from_pretrained(
             base_model_name,
             **model_kwargs
         )
-        
+
         if use_4bit:
             logger.info("Preparing model for k-bit training...")
             self.model = prepare_model_for_kbit_training(self.model)
-        
+
         self.lora_config = LoraConfig(
             r=lora_r,
             lora_alpha=lora_alpha,
@@ -158,18 +158,18 @@ class {{TRAINER_CLASS_NAME}}:
             bias="none",
             task_type=TaskType.CAUSAL_LM,
         )
-        
+
         logger.info("Applying LoRA adapters...")
         self.model = get_peft_model(self.model, self.lora_config)
-        
+
         trainable_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         total_params = sum(p.numel() for p in self.model.parameters())
         logger.info(
             f"Trainable parameters: {trainable_params:,} ({100 * trainable_params / total_params:.2f}%)"
         )
-        
+
         self.trainer: Optional[SFTTrainer] = None
-    
+
     def train(
         self,
         train_dataset: Dataset,
@@ -191,7 +191,7 @@ class {{TRAINER_CLASS_NAME}}:
     ) -> None:
         """
         Train the model with Supervised Fine-Tuning.
-        
+
         Args:
             train_dataset: Training dataset
             num_epochs: Number of training epochs
@@ -209,7 +209,7 @@ class {{TRAINER_CLASS_NAME}}:
             dataloader_num_workers: Number of dataloader workers
             gradient_checkpointing: Enable gradient checkpointing
             response_template: Template for response extraction (e.g., "### Response:")
-            
+
         Example:
             >>> trainer.train(
             ...     train_dataset=dataset,
@@ -219,10 +219,10 @@ class {{TRAINER_CLASS_NAME}}:
             ... )
         """
         logger.info("Starting Supervised Fine-Tuning...")
-        
+
         if gradient_checkpointing:
             self.model.gradient_checkpointing_enable()
-        
+
         training_args = TrainingArguments(
             output_dir=str(self.output_dir),
             num_train_epochs=num_epochs,
@@ -239,7 +239,7 @@ class {{TRAINER_CLASS_NAME}}:
             gradient_checkpointing=gradient_checkpointing,
             report_to="none",
         )
-        
+
         data_collator = None
         if response_template:
             data_collator = DataCollatorForCompletionOnlyLM(
@@ -247,7 +247,7 @@ class {{TRAINER_CLASS_NAME}}:
                 tokenizer=self.tokenizer,
                 mlm=False,
             )
-        
+
         self.trainer = SFTTrainer(
             model=self.model,
             args=training_args,
@@ -259,54 +259,54 @@ class {{TRAINER_CLASS_NAME}}:
             tokenizer=self.tokenizer,
             data_collator=data_collator,
         )
-        
+
         logger.info("Training started...")
         train_result = self.trainer.train()
-        
+
         logger.info(f"Training completed. Loss: {train_result.training_loss:.4f}")
-        
+
         self.save_model()
-    
+
     def save_model(self, save_path: Optional[str] = None) -> None:
         """
         Save the fine-tuned model and tokenizer.
-        
+
         Args:
             save_path: Optional custom save path (defaults to output_dir)
         """
         save_path = save_path or str(self.output_dir)
         save_path = Path(save_path)
         save_path.mkdir(parents=True, exist_ok=True)
-        
+
         logger.info(f"Saving model to {save_path}...")
-        
+
         self.model.save_pretrained(save_path)
         self.tokenizer.save_pretrained(save_path)
-        
+
         logger.info("Model saved successfully")
-    
+
     def load_model(self, model_path: str) -> None:
         """
         Load a fine-tuned SFT model.
-        
+
         Args:
             model_path: Path to saved model
         """
         logger.info(f"Loading model from {model_path}...")
-        
+
         from peft import PeftModel
-        
+
         self.model = AutoModelForCausalLM.from_pretrained(
             self.base_model_name,
             device_map="auto",
             torch_dtype=torch.float16,
         )
-        
+
         self.model = PeftModel.from_pretrained(self.model, model_path)
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-        
+
         logger.info("Model loaded successfully")
-    
+
     def generate(
         self,
         prompt: str,
@@ -317,19 +317,19 @@ class {{TRAINER_CLASS_NAME}}:
     ) -> str:
         """
         Generate text using the fine-tuned model.
-        
+
         Args:
             prompt: Input prompt text
             max_new_tokens: Maximum tokens to generate
             temperature: Sampling temperature
             top_p: Nucleus sampling parameter
             do_sample: Whether to use sampling
-            
+
         Returns:
             Generated text
         """
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
-        
+
         with torch.no_grad():
             outputs = self.model.generate(
                 **inputs,
@@ -339,7 +339,7 @@ class {{TRAINER_CLASS_NAME}}:
                 do_sample=do_sample,
                 pad_token_id=self.tokenizer.eos_token_id,
             )
-        
+
         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         return generated_text
 
@@ -347,7 +347,7 @@ class {{TRAINER_CLASS_NAME}}:
 # Example usage
 if __name__ == "__main__":
     from datasets import load_dataset
-    
+
     trainer = {{TRAINER_CLASS_NAME}}(
         base_model_name="{{BASE_MODEL_NAME}}",
         output_dir="{{OUTPUT_DIR}}",
@@ -355,7 +355,7 @@ if __name__ == "__main__":
         max_seq_length={{MAX_LENGTH}},
         use_4bit={{USE_4BIT}},
     )
-    
+
     train_data = [
         {
             "{{TEXT_COLUMN}}": "### Instruction:\n{{EXAMPLE_INSTRUCTION_1}}\n\n### Response:\n{{EXAMPLE_RESPONSE_1}}"
@@ -365,7 +365,7 @@ if __name__ == "__main__":
         },
     ]
     train_dataset = Dataset.from_list(train_data)
-    
+
     trainer.train(
         train_dataset=train_dataset,
         num_epochs={{NUM_EPOCHS}},
@@ -373,6 +373,6 @@ if __name__ == "__main__":
         learning_rate={{LEARNING_RATE}},
         response_template="### Response:",
     )
-    
+
     output = trainer.generate("{{EXAMPLE_PROMPT}}")
     print(f"Generated: {output}")

@@ -8,8 +8,8 @@ description: Comprehensive workflow for deploying machine learning models to pro
 
 Comprehensive workflow for deploying machine learning models to production including model export, containerization, serving, and monitoring.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-09  
+**Version:** 1.0.0
+**Created:** 2026-02-09
 **Agent:** mlops-engineer
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.

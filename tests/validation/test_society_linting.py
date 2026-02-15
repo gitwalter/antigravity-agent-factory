@@ -1,36 +1,29 @@
-
-import pytest
 from lib.society.integration.agent_bridge import AgentSocietyBridge
 from lib.society.integration.message_router import MessageRouter
-from lib.society.pabp.manifest import BundleManifest
-from lib.society.blockchain.anchor import AnchorService
 from lib.society.contracts.registry import ContractRegistry
 from lib.society.events.chain import HashChain
 from lib.society.events.store import EventStore
 from lib.society.hybrid.escalation import EscalationManager
-from lib.society.hybrid.system import HybridVerificationSystem
 from lib.society.integration.context import SocietyContext
-from lib.society.pabp.adapters import get_adapter, detect_platform
-from lib.society.pabp.client import PABPClient
-from lib.society.pabp.renderers import render_skill_markdown
-from lib.society.pabp.transfer import export_bundle
 from lib.society.simple import SimpleSociety
 from lib.society.trust.identity import AgentIdentity, KeyPair
 from lib.society.verification.monitor import AxiomComplianceMonitor
 from lib.society.verification.verifiers.a4_guardian import A4GuardianVerifier
 
+
 def test_society_imports():
     """Verify that all society modules can be imported without error."""
     assert True
 
+
 def test_instantiate_classes():
     """Verify that key classes can be instantiated."""
     # Basic instantiation checks to ensure no runtime errors in __init__
-    
+
     # Event System
     chain = HashChain()
     assert chain is not None
-    
+
     store = EventStore()
     assert store is not None
 
@@ -42,11 +35,13 @@ def test_instantiate_classes():
     # Integration - explicitly test the ones we fixed type checking for
     context = SocietyContext()
     assert context is not None
-    
+
     router = MessageRouter(context)
     assert router is not None
 
-    bridge = AgentSocietyBridge(agent_id="test-bridge", agent_type="worker", context=context)
+    bridge = AgentSocietyBridge(
+        agent_id="test-bridge", agent_type="worker", context=context
+    )
     assert bridge is not None
 
     # Simple Society
@@ -66,11 +61,10 @@ def test_instantiate_classes():
 
     # PABP
     # Manifest instantiation might require args, checks import at least
-    
+
     # Blockchain
     # AnchorService might require config, checks import at least
 
     # Contracts
     registry = ContractRegistry()
     assert registry is not None
-

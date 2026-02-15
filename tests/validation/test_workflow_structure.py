@@ -17,43 +17,47 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 class TestWorkflowStructure:
     """Tests for workflow markdown structure validation."""
-    
+
     @pytest.fixture
     def workflows_dir(self):
         """Get the workflows directory."""
         project_root = Path(__file__).parent.parent.parent
         return project_root / ".agent" / "workflows"
-    
+
     @pytest.fixture
     def all_workflow_files(self, workflows_dir):
         """Get all workflow markdown files."""
         return [f for f in workflows_dir.rglob("*.md") if "organization" not in f.parts]
-    
+
     def test_workflows_directory_exists(self, workflows_dir):
         """Test that workflows directory exists."""
         assert workflows_dir.exists(), "Workflows directory should exist"
-    
+
     def test_workflow_files_exist(self, all_workflow_files):
         """Test that workflow files exist."""
         assert len(all_workflow_files) > 0, "Should have at least one workflow file"
-    
+
     def test_minimum_workflow_count(self, all_workflow_files):
         """Test that we have the expected minimum number of workflows."""
         # We created 21 workflows
-        assert len(all_workflow_files) >= 20, \
-            f"Expected at least 20 workflows, found {len(all_workflow_files)}"
-    
+        assert (
+            len(all_workflow_files) >= 20
+        ), f"Expected at least 20 workflows, found {len(all_workflow_files)}"
+
     def test_all_workflows_have_title(self, all_workflow_files):
         """Test that all workflows have a markdown title."""
         errors = []
-        
+
         for workflow_file in all_workflow_files:
             # Skip placeholders
-            if workflow_file.name == "base-workflow.md" or workflow_file.name.startswith("workflow-"):
+            if (
+                workflow_file.name == "base-workflow.md"
+                or workflow_file.name.startswith("workflow-")
+            ):
                 continue
 
-            content = workflow_file.read_text(encoding='utf-8')
-            
+            content = workflow_file.read_text(encoding="utf-8")
+
             # Remove frontmatter if present
             cleaned_content = content.strip()
             if cleaned_content.startswith("---"):
@@ -64,92 +68,106 @@ class TestWorkflowStructure:
             # Check for H1 title
             if not cleaned_content.startswith("# "):
                 errors.append(f"{workflow_file.name}: Missing H1 title")
-        
+
         if errors:
             pytest.fail("\n".join(errors))
-    
+
     def test_all_workflows_have_overview(self, all_workflow_files):
         """Test that all workflows have an Overview section."""
         errors = []
-        
+
         for workflow_file in all_workflow_files:
-            content = workflow_file.read_text(encoding='utf-8')
-            
+            content = workflow_file.read_text(encoding="utf-8")
+
             if "## Overview" not in content and "# " not in content:
                 errors.append(f"{workflow_file.name}: Missing ## Overview section")
-        
+
         if errors:
             pytest.fail("\n".join(errors))
-    
+
     def test_all_workflows_have_trigger_conditions(self, all_workflow_files):
         """Test that all workflows have Trigger Conditions section."""
         errors = []
-        
+
         for workflow_file in all_workflow_files:
-            content = workflow_file.read_text(encoding='utf-8')
-            
+            content = workflow_file.read_text(encoding="utf-8")
+
             if "## Trigger Conditions" not in content:
-                errors.append(f"{workflow_file.name}: Missing ## Trigger Conditions section")
-        
+                errors.append(
+                    f"{workflow_file.name}: Missing ## Trigger Conditions section"
+                )
+
         if errors:
             pytest.fail("\n".join(errors))
-    
+
     def test_all_workflows_have_phases(self, all_workflow_files):
         """Test that all workflows have Phases section."""
         errors = []
-        
+
         for workflow_file in all_workflow_files:
-            content = workflow_file.read_text(encoding='utf-8')
-            
+            content = workflow_file.read_text(encoding="utf-8")
+
             if "## Phases" not in content and "## Steps" not in content:
-                errors.append(f"{workflow_file.name}: Missing ## Phases or ## Steps section")
-        
+                errors.append(
+                    f"{workflow_file.name}: Missing ## Phases or ## Steps section"
+                )
+
         if errors:
             pytest.fail("\n".join(errors))
-    
+
     def test_all_workflows_have_decision_points(self, all_workflow_files):
         """Test that all workflows have Decision Points section."""
         errors = []
-        
+
         for workflow_file in all_workflow_files:
-            content = workflow_file.read_text(encoding='utf-8')
-            
-            if "## Decision Points" not in content and "### Decision Points" not in content:
+            content = workflow_file.read_text(encoding="utf-8")
+
+            if (
+                "## Decision Points" not in content
+                and "### Decision Points" not in content
+            ):
                 # Optional for PABP workflows
                 pass
-        
+
         if errors:
             pytest.fail("\n".join(errors))
-    
+
     def test_all_workflows_have_example_session(self, all_workflow_files):
         """Test that all workflows have an Example Session section."""
         errors = []
-        
+
         for workflow_file in all_workflow_files:
-            content = workflow_file.read_text(encoding='utf-8')
-            
-            if "## Example Session" not in content and "### Example Session" not in content:
+            content = workflow_file.read_text(encoding="utf-8")
+
+            if (
+                "## Example Session" not in content
+                and "### Example Session" not in content
+            ):
                 # Optional for PABP workflows
                 pass
-        
+
         if errors:
             pytest.fail("\n".join(errors))
-    
+
     def test_workflow_naming_convention(self, all_workflow_files):
         """Test that workflow files use kebab-case naming."""
         errors = []
-        
+
         for workflow_file in all_workflow_files:
             filename = workflow_file.stem  # filename without extension
-            
+
             # Check for spaces
             if " " in filename:
-                errors.append(f"{workflow_file.name}: Filename should not contain spaces")
-            
+                errors.append(
+                    f"{workflow_file.name}: Filename should not contain spaces"
+                )
+
             # Check for uppercase (kebab-case should be lowercase)
             if filename != filename.lower():
-                errors.append(f"{workflow_file.name}: Filename should be lowercase (kebab-case)")
-        
+                errors.append(
+                    f"{workflow_file.name}: Filename should be lowercase (kebab-case)"
+                )
+
         if errors:
             pytest.fail("\n".join(errors))
 
@@ -159,125 +177,135 @@ class TestWorkflowStructure:
 
 class TestWorkflowContent:
     """Tests for workflow content quality."""
-    
+
     @pytest.fixture
     def workflows_dir(self):
         """Get the workflows directory."""
         project_root = Path(__file__).parent.parent.parent
         return project_root / ".agent" / "workflows"
-    
+
     @pytest.fixture
     def all_workflow_files(self, workflows_dir):
         """Get all workflow markdown files."""
         return [f for f in workflows_dir.rglob("*.md") if "organization" not in f.parts]
-    
+
     def test_workflows_have_version(self, all_workflow_files):
         """Test that workflows declare a version."""
         errors = []
-        
+
         for workflow_file in all_workflow_files:
-            content = workflow_file.read_text(encoding='utf-8')
-            
+            content = workflow_file.read_text(encoding="utf-8")
+
             # Look for **Version:** pattern
             if "**Version:**" not in content and "Version:" not in content:
                 errors.append(f"{workflow_file.name}: Missing version declaration")
-        
+
         if errors:
             pytest.fail("\n".join(errors))
-    
+
     def test_workflows_have_trigger_examples(self, all_workflow_files):
         """Test that workflows provide trigger examples."""
         errors = []
-        
+
         for workflow_file in all_workflow_files:
-            content = workflow_file.read_text(encoding='utf-8')
-            
+            content = workflow_file.read_text(encoding="utf-8")
+
             # Look for "Trigger Examples" pattern
-            if "Trigger Examples:" not in content and "**Trigger Examples:**" not in content:
+            if (
+                "Trigger Examples:" not in content
+                and "**Trigger Examples:**" not in content
+            ):
                 errors.append(f"{workflow_file.name}: Missing trigger examples")
-        
+
         if errors:
             pytest.fail("\n".join(errors))
-    
+
     def test_workflows_have_fallback_procedures(self, all_workflow_files):
         """Test that workflows have fallback procedures."""
         errors = []
-        
+
         for workflow_file in all_workflow_files:
-            content = workflow_file.read_text(encoding='utf-8')
-            
-            if "## Fallback Procedures" not in content and "### Fallback Procedures" not in content:
+            content = workflow_file.read_text(encoding="utf-8")
+
+            if (
+                "## Fallback Procedures" not in content
+                and "### Fallback Procedures" not in content
+            ):
                 # Optional for PABP workflows
                 pass
-        
+
         if errors:
             pytest.fail("\n".join(errors))
-    
+
     def test_no_broken_internal_links(self, all_workflow_files):
         """Test that workflows don't have obviously broken links."""
         errors = []
-        
+
         for workflow_file in all_workflow_files:
-            content = workflow_file.read_text(encoding='utf-8')
-            
+            content = workflow_file.read_text(encoding="utf-8")
+
             # Look for markdown links
-            links = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', content)
-            
+            links = re.findall(r"\[([^\]]+)\]\(([^)]+)\)", content)
+
             for link_text, link_url in links:
                 # Check for empty links
                 if not link_url.strip():
                     errors.append(f"{workflow_file.name}: Empty link for '{link_text}'")
-                
+
                 # Check for placeholder links
                 if "TODO" in link_url or "FIXME" in link_url:
-                    errors.append(f"{workflow_file.name}: Placeholder link '{link_url}'")
-        
+                    errors.append(
+                        f"{workflow_file.name}: Placeholder link '{link_url}'"
+                    )
+
         if errors:
             pytest.fail("\n".join(errors))
 
 
 class TestWorkflowIntegration:
     """Tests for workflow integration with other components."""
-    
+
     @pytest.fixture
     def project_root(self):
         """Get project root directory."""
         return Path(__file__).parent.parent.parent
-    
+
     def test_workflow_patterns_json_exists(self, project_root):
         """Test that workflow-patterns.json exists and is valid JSON."""
         import json
-        
+
         patterns_file = project_root / ".agent" / "knowledge" / "workflow-patterns.json"
         assert patterns_file.exists(), "workflow-patterns.json should exist"
-        
+
         # Should be valid JSON
-        content = patterns_file.read_text(encoding='utf-8')
+        content = patterns_file.read_text(encoding="utf-8")
         data = json.loads(content)
-        
+
         assert "workflowPatterns" in data, "Should have workflowPatterns key"
-    
+
     def test_workflow_patterns_reference_workflows(self, project_root):
         """Test that workflow patterns reference existing workflows."""
         import json
-        
+
         patterns_file = project_root / ".agent" / "knowledge" / "workflow-patterns.json"
-        content = patterns_file.read_text(encoding='utf-8')
+        content = patterns_file.read_text(encoding="utf-8")
         data = json.loads(content)
-        
+
         patterns = data.get("workflowPatterns", {})
-        
+
         # Check that we have a good number of patterns
-        assert len(patterns) >= 15, \
-            f"Expected at least 15 workflow patterns, found {len(patterns)}"
-    
+        assert (
+            len(patterns) >= 15
+        ), f"Expected at least 15 workflow patterns, found {len(patterns)}"
+
     def test_workflow_patterns_doc_exists(self, project_root):
         """Test that WORKFLOW_PATTERNS.md documentation exists."""
         doc_file = project_root / "docs" / "reference" / "workflow-patterns.md"
         assert doc_file.exists(), "workflow-patterns.md should exist"
-        
-        content = doc_file.read_text(encoding='utf-8')
-        
+
+        content = doc_file.read_text(encoding="utf-8")
+
         # Should have the implemented workflows section
-        assert "Implemented Workflows Catalog" in content, \
-            "Should have Implemented Workflows Catalog section"
+        assert (
+            "Implemented Workflows Catalog" in content
+        ), "Should have Implemented Workflows Catalog section"

@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field
 @tool
 def get_weather(location: str) -> str:
     """Get current weather for a location.
-    
+
     Args:
         location: City name or coordinates
     """
@@ -33,27 +33,27 @@ def get_weather(location: str) -> str:
 @tool
 def calculate(expression: str) -> str:
     """Evaluate a mathematical expression safely.
-    
+
     Args:
         expression: Math expression like '2 + 2' or 'sqrt(16)'
     """
     import ast
     import operator
-    
+
     ops = {
         ast.Add: operator.add,
         ast.Sub: operator.sub,
         ast.Mult: operator.mul,
         ast.Div: operator.truediv,
     }
-    
+
     def eval_expr(node):
         if isinstance(node, ast.Num):
             return node.n
         elif isinstance(node, ast.BinOp):
             return ops**type(node.op)**, eval_expr(node.right))
         raise ValueError("Unsupported expression")
-    
+
     tree = ast.parse(expression, mode='eval')
     return str(eval_expr(tree.body))
 ```
@@ -92,7 +92,7 @@ import httpx
 @tool
 async def fetch_api(url: str, method: str = "GET") -> str:
     """Fetch data from an API endpoint.
-    
+
     Args:
         url: The API endpoint URL
         method: HTTP method (GET, POST)
@@ -132,12 +132,12 @@ from langchain_core.messages import ToolMessage
 async def execute_tools(response, tools_map: dict):
     """Execute tool calls and return results."""
     results = []
-    
+
     for tool_call in response.tool_calls:
         tool_name = tool_call["name"]
         tool_args = tool_call["args"]
         tool_id = tool_call["id"]
-        
+
         if tool_name in tools_map:
             tool = tools_map[tool_name]
             try:
@@ -149,12 +149,12 @@ async def execute_tools(response, tools_map: dict):
                 result = f"Error: {str(e)}"
         else:
             result = f"Unknown tool: {tool_name}"
-        
+
         results.append(ToolMessage(
             content=str(result),
             tool_call_id=tool_id
         ))
-    
+
     return results
 
 # Usage
@@ -180,22 +180,22 @@ async def reliable_api_call(endpoint: str) -> str:
 @tool
 def safe_file_read(path: str) -> str:
     """Read a file safely with error handling.
-    
+
     Args:
         path: Path to the file (must be in allowed directories)
     """
     import os
-    
+
     # Security check
     allowed_dirs = ["/data", "/tmp"]
     abs_path = os.path.abspath(path)
-    
+
     if not any(abs_path.startswith(d) for d in allowed_dirs):
         return "Error: Access denied - path not in allowed directories"
-    
+
     if not os.path.exists(path):
         return f"Error: File not found - {path}"
-    
+
     try:
         with open(path, 'r') as f:
             return f.read()
@@ -220,7 +220,7 @@ class SecureTool(BaseModel):
     name: str
     permissions: list[ToolPermission]
     allowed_users: list[str] = []
-    
+
     def can_execute(self, user: str, required_perms: list[ToolPermission]) -> bool:
         if self.allowed_users and user not in self.allowed_users:
             return False

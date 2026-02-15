@@ -1,13 +1,13 @@
 /-
   Memory/Types.lean - Memory System Type Definitions
-  
+
   Cursor Agent Factory - Formal Verification System
-  
+
   This file defines the types for the Memory System, which enables
   user-validated learning from experience.
-  
-  Philosophy: The Memory System embodies A2 (User Primacy) - 
-  users control what the agent learns. All memories require 
+
+  Philosophy: The Memory System embodies A2 (User Primacy) -
+  users control what the agent learns. All memories require
   explicit user approval.
 -/
 
@@ -17,9 +17,9 @@ namespace CursorAgentFactory.Memory
 
 /-!
   # Memory Types
-  
+
   The Memory System has four categories:
-  
+
   | Type     | Description                        | Persistence |
   |----------|------------------------------------| ------------|
   | Semantic | User-approved long-term knowledge  | Permanent   |
@@ -52,7 +52,7 @@ def MemoryType.persistence : MemoryType → Persistence
 
 /-!
   # Memory Sources
-  
+
   How memories are created.
 -/
 
@@ -75,7 +75,7 @@ def MemorySource.confidenceLevel : MemorySource → Nat
 
 /-!
   # Memory Scope
-  
+
   Where memories apply.
 -/
 
@@ -87,7 +87,7 @@ inductive MemoryScope where
 
 /-!
   # Memory Record
-  
+
   Complete memory structure.
 -/
 
@@ -112,7 +112,7 @@ structure Memory where
   deriving Repr, DecidableEq
 
 /-- Create a pending memory proposal -/
-def createProposal (id content : String) (source : MemorySource) 
+def createProposal (id content : String) (source : MemorySource)
     (scope : MemoryScope) (timestamp : Nat) : Memory := {
   id := id
   content := content
@@ -127,24 +127,24 @@ def createProposal (id content : String) (source : MemorySource)
 /-- Approve a pending memory (convert to semantic) -/
 def approveMemory (m : Memory) : Memory :=
   if m.memoryType = MemoryType.pending then
-    { m with 
+    { m with
       memoryType := MemoryType.semantic
-      userApproved := true 
+      userApproved := true
     }
   else m
 
 /-- Reject a pending memory -/
 def rejectMemory (m : Memory) : Memory :=
   if m.memoryType = MemoryType.pending then
-    { m with 
+    { m with
       memoryType := MemoryType.rejected
-      userApproved := false 
+      userApproved := false
     }
   else m
 
 /-!
   # Memory State
-  
+
   Overall state of the memory system.
 -/
 
@@ -170,7 +170,7 @@ def initialMemoryState : MemoryState := {
 
 /-!
   # Layer Protection
-  
+
   The Memory System respects layer protection.
   Layers 0-2 are IMMUTABLE and cannot be modified by memories.
 -/

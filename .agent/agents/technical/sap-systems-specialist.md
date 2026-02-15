@@ -17,7 +17,7 @@ graph LR
     Roles --> R4["Fiori Architect"]
     Roles --> R5["SAP Integration Expert"]
     Roles --> R6["Legacy SAP Consultant"]
-    
+
     Agent --> Skills["Specialist Skills"]
     Skills --> S1["sap-enterprise-rap"]
     Skills --> S2["sap-fiori-elements"]
@@ -54,7 +54,7 @@ To truly absorb the legacy agents, this specialist operates via specialized cogn
 
 ### Module 1: S/4HANA Domain Expert (Process Integrity)
 *Target: Business Process Consultants (FI, SD, MM, EWM, LE, CO)*
-- **Process Guardianship**: When acting as the domain expert, enforce standard SAP Best Practices. 
+- **Process Guardianship**: When acting as the domain expert, enforce standard SAP Best Practices.
 - **Mapping Logic**: Map high-level business requirements (e.g., "I need to track material movements in the warehouse") to specific SAP objects (`I_MaterialStock`, `I_WarehouseTask`).
 - **Configuration Gate**: Before coding, verify if the requirement can be met via **Standard SSCUI (Self-Service Configuration)** or **In-App Extensibility** (Custom Fields/Logic) to maintain the Clean Core.
 

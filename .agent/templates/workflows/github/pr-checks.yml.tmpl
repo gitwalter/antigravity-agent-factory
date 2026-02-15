@@ -64,15 +64,15 @@ jobs:
           script: |
             const pr = context.payload.pull_request;
             const minDescriptionLength = 20;
-            
+
             if (!pr.body || pr.body.trim().length < minDescriptionLength) {
               core.setFailed(`PR description must be at least ${minDescriptionLength} characters long`);
             }
-            
+
             // Check for required sections
             const requiredSections = ['## Description', '## Changes'];
             const body = pr.body.toLowerCase();
-            
+
             for (const section of requiredSections) {
               if (!body.includes(section.toLowerCase())) {
                 console.warn(`Missing recommended section: ${section}`);
@@ -142,12 +142,12 @@ jobs:
               python: process.env.PYTHON_LINT_STATUS || 'unknown',
               node: process.env.NODE_LINT_STATUS || 'unknown'
             };
-            
+
             const comment = `## Lint Results
-            
+
             - Python: ${lintResults.python}
             - Node.js: ${lintResults.node}
-            
+
             Review the workflow logs for detailed information.`;
 
   test-pr:
@@ -188,9 +188,9 @@ jobs:
         with:
           script: |
             const comment = `## Test Results
-            
+
             Tests have been executed for this PR. Check the workflow logs for detailed results.
-            
+
             - Python tests: ${{ job.status }}
             - Node.js tests: ${{ job.status }}`;
 
@@ -263,9 +263,9 @@ jobs:
         with:
           script: |
             const comment = `## Security Scan Results
-            
+
             Security scans have been performed on this PR. Review the workflow logs and GitHub Security tab for detailed findings.
-            
+
             ⚠️ Please review any critical or high-severity vulnerabilities before merging.`;
 
   check-conflicts:
@@ -316,12 +316,12 @@ jobs:
               security: '${{ needs.security-scan-pr.result }}',
               conflicts: '${{ needs.check-conflicts.result }}'
             };
-            
+
             const allPassed = Object.values(checks).every(status => status === 'success' || status === 'skipped');
             const emoji = allPassed ? '✅' : '❌';
-            
+
             const summary = `## ${emoji} PR Checks Summary
-            
+
             | Check | Status |
             |-------|--------|
             | Validation | ${checks.validation === 'success' ? '✅ Passed' : checks.validation === 'failure' ? '❌ Failed' : '⏭️ Skipped'} |
@@ -329,9 +329,9 @@ jobs:
             | Tests | ${checks.test === 'success' ? '✅ Passed' : checks.test === 'failure' ? '❌ Failed' : '⏭️ Skipped'} |
             | Security Scan | ${checks.security === 'success' ? '✅ Passed' : checks.security === 'failure' ? '❌ Failed' : '⏭️ Skipped'} |
             | Merge Conflicts | ${checks.conflicts === 'success' ? '✅ None' : checks.conflicts === 'failure' ? '❌ Detected' : '⏭️ Skipped'} |
-            
+
             ${allPassed ? '🎉 All checks passed! Ready for review.' : '⚠️ Some checks failed. Please review and fix issues before merging.'}`;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,

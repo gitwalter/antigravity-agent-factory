@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 class AgentState(TypedDict):
     """
     State for the {{AGENT_NAME}} agent.
-    
+
     Attributes:
         messages: Conversation history
         context: Additional context for processing
@@ -43,14 +43,14 @@ class AgentState(TypedDict):
 class {{AGENT_CLASS_NAME}}Output(BaseModel):
     """
     Structured output for {{AGENT_NAME}}.
-    
+
     Using structured output ensures verifiability (A1).
     """
     reasoning: str = Field(description="Step-by-step reasoning for the response")
     response: str = Field(description="The main response to the user")
     confidence: float = Field(ge=0, le=1, description="Confidence level (0-1)")
     requires_confirmation: bool = Field(
-        default=False, 
+        default=False,
         description="Whether this action requires user confirmation (A2)"
     )
     warnings: List[str] = Field(
@@ -62,25 +62,25 @@ class {{AGENT_CLASS_NAME}}Output(BaseModel):
 class {{AGENT_CLASS_NAME}}:
     """
     {{AGENT_NAME}} - {{AGENT_DESCRIPTION}}
-    
+
     This agent follows the 5-layer architecture:
     - Layer 0: Respects core axioms (A1-A5)
     - Layer 1: Serves purpose of {{AGENT_PURPOSE}}
     - Layer 2: Follows quality standards and ethical boundaries
     - Layer 3: Works within {{METHODOLOGY}} methodology
     - Layer 4: Uses {{TECH_STACK}} stack
-    
+
     Example:
         >>> agent = {{AGENT_CLASS_NAME}}()
         >>> result = agent.invoke("Analyze this code")
         >>> print(result.response)
     """
-    
+
     # Configuration
     MODEL_NAME = "{{LLM_MODEL}}"
     TEMPERATURE = {{TEMPERATURE}}
     MAX_ITERATIONS = 10  # Prevent infinite loops (A4)
-    
+
     def __init__(
         self,
         model_name: Optional[str] = None,
@@ -89,7 +89,7 @@ class {{AGENT_CLASS_NAME}}:
     ):
         """
         Initialize the {{AGENT_NAME}} agent.
-        
+
         Args:
             model_name: LLM model to use (default: {{LLM_MODEL}})
             temperature: Sampling temperature (default: {{TEMPERATURE}})
@@ -98,25 +98,25 @@ class {{AGENT_CLASS_NAME}}:
         self.model_name = model_name or self.MODEL_NAME
         self.temperature = temperature if temperature is not None else self.TEMPERATURE
         self.tools = tools or []
-        
+
         # Initialize LLM
         self.llm = ChatOpenAI(
             model=self.model_name,
             temperature=self.temperature
         )
-        
+
         # Bind structured output for verifiability (A1)
         self.structured_llm = self.llm.with_structured_output({{AGENT_CLASS_NAME}}Output)
-        
+
         # Create prompt template
         self.prompt = self._create_prompt()
-        
+
         logger.info(f"Initialized {{AGENT_NAME}} with model {self.model_name}")
-    
+
     def _create_prompt(self) -> ChatPromptTemplate:
         """
         Create the prompt template for this agent.
-        
+
         The prompt encodes our axioms and purpose.
         """
         system_message = """{{SYSTEM_PROMPT}}
@@ -141,57 +141,57 @@ Always provide:
 - Any warnings or concerns
 - Flag if user confirmation is needed for consequential actions
 """
-        
+
         return ChatPromptTemplate.from_messages([
             ("system", system_message),
             MessagesPlaceholder(variable_name="messages"),
             ("human", "{input}")
         ])
-    
+
     def invoke(self, input_text: str, context: Optional[str] = None) -> {{AGENT_CLASS_NAME}}Output:
         """
         Invoke the agent with user input.
-        
+
         Args:
             input_text: User's input/question
             context: Optional additional context
-            
+
         Returns:
             Structured output with reasoning, response, and metadata
-            
+
         Example:
             >>> result = agent.invoke("Review this code", context="Python web app")
             >>> print(f"Response: {result.response}")
             >>> print(f"Confidence: {result.confidence}")
         """
         logger.info(f"Processing input: {input_text[:100]}...")
-        
+
         # Build messages
         messages = []
         if context:
             messages.append(HumanMessage(content=f"Context: {context}"))
-        
+
         # Create chain
         chain = self.prompt | self.structured_llm
-        
+
         # Invoke with tracing
         try:
             result = chain.invoke({
                 "messages": messages,
                 "input": input_text
             })
-            
+
             # Log for transparency (A3)
             logger.info(f"Response generated with confidence: {result.confidence}")
-            
+
             if result.warnings:
                 logger.warning(f"Warnings: {result.warnings}")
-            
+
             if result.requires_confirmation:
                 logger.info("This action requires user confirmation (A2)")
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Error during invocation: {e}")
             # Return safe error response (A4)
@@ -202,26 +202,26 @@ Always provide:
                 requires_confirmation=False,
                 warnings=["Error occurred - response may be incomplete"]
             )
-    
+
     async def ainvoke(self, input_text: str, context: Optional[str] = None) -> {{AGENT_CLASS_NAME}}Output:
         """
         Async version of invoke.
-        
+
         Args:
             input_text: User's input/question
             context: Optional additional context
-            
+
         Returns:
             Structured output with reasoning, response, and metadata
         """
         logger.info(f"Processing input (async): {input_text[:100]}...")
-        
+
         messages = []
         if context:
             messages.append(HumanMessage(content=f"Context: {context}"))
-        
+
         chain = self.prompt | self.structured_llm
-        
+
         try:
             result = await chain.ainvoke({
                 "messages": messages,
@@ -243,13 +243,13 @@ Always provide:
 if __name__ == "__main__":
     # Create agent
     agent = {{AGENT_CLASS_NAME}}()
-    
+
     # Test invocation
     result = agent.invoke(
         "{{EXAMPLE_INPUT}}",
         context="{{EXAMPLE_CONTEXT}}"
     )
-    
+
     print(f"Reasoning: {result.reasoning}")
     print(f"Response: {result.response}")
     print(f"Confidence: {result.confidence}")

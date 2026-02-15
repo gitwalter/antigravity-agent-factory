@@ -33,10 +33,10 @@ logger = logging.getLogger(__name__)
 class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHistory):
     """
     {{ memory_name | default('PostgreSQL Memory') }} - PostgreSQL-backed Chat Message History
-    
+
     Stores conversation messages in PostgreSQL with full SQL query support.
     Provides persistent storage with ACID guarantees for agent conversations.
-    
+
     Example:
         >>> memory = {{ memory_class_name | default('PostgreSQLMemory') }}(
         ...     connection_string="postgresql://user:pass@localhost/db",
@@ -46,7 +46,7 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
         >>> messages = memory.messages
         >>> print(f"Stored {len(messages)} messages")
     """
-    
+
     def __init__(
         self,
         session_id: str,
@@ -57,7 +57,7 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
     ):
         """
         Initialize PostgreSQL memory backend.
-        
+
         Args:
             session_id: Unique session identifier
             connection_string: PostgreSQL connection string
@@ -74,12 +74,12 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
         self._pool: Optional[asyncpg.Pool] = None
         self._messages: List[BaseMessage] = []
         self._loaded = False
-        
+
         logger.info(
             f"Initialized {{ memory_class_name | default('PostgreSQLMemory') }} "
             f"for session {session_id}"
         )
-    
+
     async def _get_pool(self) -> asyncpg.Pool:
         """Get or create connection pool."""
         if self._pool is None:
@@ -88,17 +88,17 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
                 min_size=1,
                 max_size=self.pool_size
             )
-            
+
             # Create table if needed
             if self.create_table:
                 await self._ensure_table()
-        
+
         return self._pool
-    
+
     async def _ensure_table(self):
         """Create messages table if it doesn't exist."""
         pool = await self._get_pool()
-        
+
         async with pool.acquire() as conn:
             await conn.execute(f"""
                 CREATE TABLE IF NOT EXISTS {self.table_name} (
@@ -111,22 +111,22 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     metadata JSONB DEFAULT '{{ "{}" }}'
                 );
-                
-                CREATE INDEX IF NOT EXISTS idx_{self.table_name}_session_id 
+
+                CREATE INDEX IF NOT EXISTS idx_{self.table_name}_session_id
                     ON {self.table_name}(session_id);
-                CREATE INDEX IF NOT EXISTS idx_{self.table_name}_created_at 
+                CREATE INDEX IF NOT EXISTS idx_{self.table_name}_created_at
                     ON {self.table_name}(created_at);
             """)
-        
+
         logger.info(f"Ensured table {self.table_name} exists")
-    
+
     def _serialize_message(self, message: BaseMessage) -> Dict[str, Any]:
         """
         Serialize message for PostgreSQL storage.
-        
+
         Args:
             message: LangChain message
-            
+
         Returns:
             Serialized message dictionary
         """
@@ -139,21 +139,21 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
             msg_type = "system"
         else:
             msg_type = "unknown"
-        
+
         return {
             "message_type": msg_type,
             "content": message.content,
             "additional_kwargs": getattr(message, "additional_kwargs", {}),
             "response_metadata": getattr(message, "response_metadata", {})
         }
-    
+
     def _deserialize_message(self, row: asyncpg.Record) -> BaseMessage:
         """
         Deserialize message from PostgreSQL row.
-        
+
         Args:
             row: Database row
-            
+
         Returns:
             LangChain message object
         """
@@ -161,7 +161,7 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
         content = row["content"]
         additional_kwargs = row.get("additional_kwargs", {}) or {}
         response_metadata = row.get("response_metadata", {}) or {}
-        
+
         if msg_type == "human":
             return HumanMessage(
                 content=content,
@@ -182,12 +182,12 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
             )
         else:
             return HumanMessage(content=content)
-    
+
     @property
     def messages(self) -> List[BaseMessage]:
         """
         Get all messages for this session.
-        
+
         Returns:
             List of messages
         """
@@ -202,18 +202,18 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
             except RuntimeError:
                 self._messages = asyncio.run(self._load_messages())
             self._loaded = True
-        
+
         return self._messages
-    
+
     async def _load_messages(self) -> List[BaseMessage]:
         """
         Load messages from PostgreSQL.
-        
+
         Returns:
             List of messages
         """
         pool = await self._get_pool()
-        
+
         try:
             async with pool.acquire() as conn:
                 rows = await conn.fetch(f"""
@@ -222,30 +222,30 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
                     WHERE session_id = $1
                     ORDER BY created_at ASC
                 """, self.session_id)
-                
+
                 messages = [self._deserialize_message(row) for row in rows]
                 logger.info(f"Loaded {len(messages)} messages from PostgreSQL")
                 return messages
-                
+
         except Exception as e:
             logger.error(f"Error loading messages from PostgreSQL: {e}")
             return []
-    
+
     async def add_message(self, message: BaseMessage) -> None:
         """
         Add a message to the conversation history.
-        
+
         Args:
             message: Message to add
         """
         pool = await self._get_pool()
-        
+
         try:
             msg_data = self._serialize_message(message)
-            
+
             async with pool.acquire() as conn:
                 await conn.execute(f"""
-                    INSERT INTO {self.table_name} 
+                    INSERT INTO {self.table_name}
                     (session_id, message_type, content, additional_kwargs, response_metadata)
                     VALUES ($1, $2, $3, $4, $5)
                 """,
@@ -255,44 +255,44 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
                     json.dumps(msg_data["additional_kwargs"]),
                     json.dumps(msg_data["response_metadata"])
                 )
-            
+
             # Update local cache
             if self._loaded:
                 self._messages.append(message)
-            
+
             logger.info(f"Added {type(message).__name__} message to session {self.session_id}")
-            
+
         except Exception as e:
             logger.error(f"Error adding message to PostgreSQL: {e}")
             raise
-    
+
     async def add_user_message(self, message: str) -> None:
         """Add a user message."""
         await self.add_message(HumanMessage(content=message))
-    
+
     async def add_ai_message(self, message: str) -> None:
         """Add an AI message."""
         await self.add_message(AIMessage(content=message))
-    
+
     async def clear(self) -> None:
         """Clear all messages for this session."""
         pool = await self._get_pool()
-        
+
         try:
             async with pool.acquire() as conn:
                 await conn.execute(f"""
                     DELETE FROM {self.table_name}
                     WHERE session_id = $1
                 """, self.session_id)
-            
+
             self._messages = []
             self._loaded = False
             logger.info(f"Cleared messages for session {self.session_id}")
-            
+
         except Exception as e:
             logger.error(f"Error clearing messages: {e}")
             raise
-    
+
     async def get_messages(
         self,
         limit: Optional[int] = None,
@@ -302,18 +302,18 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
     ) -> List[BaseMessage]:
         """
         Get messages with optional filtering.
-        
+
         Args:
             limit: Maximum number of messages to return
             before: Only return messages before this timestamp
             after: Only return messages after this timestamp
             message_type: Filter by message type (human, ai, system)
-            
+
         Returns:
             List of messages
         """
         pool = await self._get_pool()
-        
+
         try:
             query = f"""
                 SELECT message_type, content, additional_kwargs, response_metadata
@@ -322,48 +322,48 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
             """
             params = [self.session_id]
             param_idx = 2
-            
+
             if before:
                 query += f" AND created_at < ${param_idx}"
                 params.append(before)
                 param_idx += 1
-            
+
             if after:
                 query += f" AND created_at > ${param_idx}"
                 params.append(after)
                 param_idx += 1
-            
+
             if message_type:
                 query += f" AND message_type = ${param_idx}"
                 params.append(message_type)
                 param_idx += 1
-            
+
             query += " ORDER BY created_at ASC"
-            
+
             if limit:
                 query += f" LIMIT ${param_idx}"
                 params.append(limit)
-            
+
             async with pool.acquire() as conn:
                 rows = await conn.fetch(query, *params)
                 messages = [self._deserialize_message(row) for row in rows]
                 return messages
-                
+
         except Exception as e:
             logger.error(f"Error querying messages: {e}")
             return []
-    
+
     async def execute_query(self, query: str, params: Optional[List[Any]] = None) -> List[Dict[str, Any]]:
         """
         Execute custom SQL query on messages table.
-        
+
         Args:
             query: SQL query (use {table_name} placeholder for table name)
             params: Query parameters
-            
+
         Returns:
             List of result dictionaries
-            
+
         Example:
             >>> results = await memory.execute_query(
             ...     "SELECT COUNT(*) as count FROM {table_name} WHERE session_id = $1",
@@ -371,28 +371,28 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
             ... )
         """
         pool = await self._get_pool()
-        
+
         # Replace table name placeholder
         query = query.format(table_name=self.table_name)
-        
+
         try:
             async with pool.acquire() as conn:
                 rows = await conn.fetch(query, *(params or []))
                 return [dict(row) for row in rows]
-                
+
         except Exception as e:
             logger.error(f"Error executing query: {e}")
             raise
-    
+
     async def get_session_info(self) -> Dict[str, Any]:
         """
         Get session information and statistics.
-        
+
         Returns:
             Session metadata dictionary
         """
         pool = await self._get_pool()
-        
+
         try:
             async with pool.acquire() as conn:
                 # Get message count
@@ -401,18 +401,18 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
                     FROM {self.table_name}
                     WHERE session_id = $1
                 """, self.session_id)
-                
+
                 count = count_row["count"] if count_row else 0
-                
+
                 # Get first and last message timestamps
                 time_row = await conn.fetchrow(f"""
-                    SELECT 
+                    SELECT
                         MIN(created_at) as first_message,
                         MAX(created_at) as last_message
                     FROM {self.table_name}
                     WHERE session_id = $1
                 """, self.session_id)
-                
+
                 # Get message type counts
                 type_rows = await conn.fetch(f"""
                     SELECT message_type, COUNT(*) as count
@@ -420,9 +420,9 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
                     WHERE session_id = $1
                     GROUP BY message_type
                 """, self.session_id)
-                
+
                 type_counts = {row["message_type"]: row["count"] for row in type_rows}
-                
+
                 return {
                     "session_id": self.session_id,
                     "message_count": count,
@@ -430,14 +430,14 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
                     "last_message": time_row["last_message"].isoformat() if time_row and time_row["last_message"] else None,
                     "message_type_counts": type_counts
                 }
-                
+
         except Exception as e:
             logger.error(f"Error getting session info: {e}")
             return {
                 "session_id": self.session_id,
                 "error": str(e)
             }
-    
+
     async def close(self):
         """Close database connection pool."""
         if self._pool:
@@ -448,38 +448,38 @@ class {{ memory_class_name | default('PostgreSQLMemory') }}(BaseChatMessageHisto
 # Example usage
 if __name__ == "__main__":
     import asyncio
-    
+
     async def main():
         # Create memory instance
         memory = {{ memory_class_name | default('PostgreSQLMemory') }}(
             session_id="test-session-123",
             connection_string="{{ connection_string | default('postgresql://user:pass@localhost/db') }}"
         )
-        
+
         try:
             # Add messages
             await memory.add_user_message("Hello, how are you?")
             await memory.add_ai_message("I'm doing well, thank you!")
             await memory.add_user_message("What's the weather like?")
-            
+
             # Get messages
             messages = await memory.get_messages()
             print(f"Stored {len(messages)} messages")
             for msg in messages:
                 print(f"  {type(msg).__name__}: {msg.content[:50]}...")
-            
+
             # Get session info
             info = await memory.get_session_info()
             print(f"\nSession info: {info}")
-            
+
             # Custom query
             results = await memory.execute_query(
                 "SELECT COUNT(*) as total FROM {table_name} WHERE session_id = $1",
                 params=["test-session-123"]
             )
             print(f"\nCustom query result: {results}")
-            
+
         finally:
             await memory.close()
-    
+
     asyncio.run(main())

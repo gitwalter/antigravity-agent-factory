@@ -8,7 +8,7 @@ description: Workflow for Logistics Execution: shipping, transportation, deliver
 
 Workflow for Logistics Execution: shipping, transportation, delivery processing. References LIKP, LIPS; links to SD/MM/EWM.
 
-**Version:** 1.0.0  
+**Version:** 1.0.0
 **Applies To:** sap-s4-enterprise, sap-abap
 
 ## Trigger Conditions

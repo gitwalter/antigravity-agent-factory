@@ -26,7 +26,6 @@ Categories synced:
 """
 
 import sys
-from pathlib import Path
 
 # Handle imports for both direct script execution and module import
 try:
@@ -57,27 +56,27 @@ CountsByCategory = CategoryTestCounts
 
 # Export all public symbols
 __all__ = [
-    'CategoryTestCounts',
-    'CountsByCategory',  # Deprecated alias
-    'TestCountsByCategory',  # Deprecated alias
-    'get_python_path',
-    'collect_test_count',
-    'get_actual_counts',
-    'extract_documented_counts',
-    'update_testing_md',
+    "CategoryTestCounts",
+    "CountsByCategory",  # Deprecated alias
+    "TestCountsByCategory",  # Deprecated alias
+    "get_python_path",
+    "collect_test_count",
+    "get_actual_counts",
+    "extract_documented_counts",
+    "update_testing_md",
 ]
 
 
 def main():
     """Main entry point - delegates to sync_artifacts for test counts."""
-    if sys.platform == 'win32':
-        sys.stdout.reconfigure(encoding='utf-8')
-    sync = '--sync' in sys.argv
-    
+    if sys.platform == "win32":
+        sys.stdout.reconfigure(encoding="utf-8")
+    sync = "--sync" in sys.argv
+
     # Get actual counts
     actual = get_actual_counts()
-    
-    print(f"\nActual test counts:")
+
+    print("\nActual test counts:")
     print(f"  Total:       {actual.total}")
     print(f"  Unit:        {actual.unit}")
     print(f"  Integration: {actual.integration}")
@@ -85,14 +84,14 @@ def main():
     print(f"  Guardian:    {actual.guardian}")
     print(f"  Memory:      {actual.memory}")
     print()
-    
+
     # Check/sync documentation
     changes = update_testing_md(actual, dry_run=not sync)
-    
+
     if not changes:
         print("[OK] Test counts are in sync with documentation")
         return 0
-    
+
     if sync:
         print(f"[SYNCED] {len(changes)} count(s) updated:")
         for change in changes:
@@ -106,5 +105,5 @@ def main():
         return 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

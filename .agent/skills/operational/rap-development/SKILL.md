@@ -41,7 +41,7 @@ define table ztravelbook {
   created_at         : timestampl;
   last_changed_by    : abap.uname;
   last_changed_at    : timestampl;
-  
+
   @AbapCatalog.foreignKey.keyType : #KEY
   @AbapCatalog.foreignKey.screenCheck : true
   foreign key [0..1,1] zagency
@@ -77,12 +77,12 @@ define root view entity ZI_TravelBooking
       created_at as CreatedAt,
       last_changed_by as LastChangedBy,
       last_changed_at as LastChangedAt,
-      
+
       /* Associations */
       _Items,
       _Agency,
       _Customer,
-      
+
       /* Calculated fields */
       @EndUserText.label: 'Duration in Days'
       cast(end_date - begin_date as abap.int4) as DurationInDays
@@ -115,12 +115,12 @@ define view entity ZC_TravelBooking
       LastChangedBy,
       LastChangedAt,
       DurationInDays,
-      
+
       /* Associations */
       _Items,
       _Agency,
       _Customer,
-      
+
       /* UI Annotations */
       @UI: {
         lineItem: [ { position: 10, importance: #HIGH },
@@ -130,24 +130,24 @@ define view entity ZC_TravelBooking
         selectionField: [ { position: 10 } ]
       }
       TravelID,
-      
+
       @UI: {
         lineItem: [ { position: 20 } ],
         identification: [ { position: 20 } ],
         fieldGroup: [ { qualifier: 'General', position: 20 } ]
       }
       Description,
-      
+
       @UI: {
         lineItem: [ { position: 30 } ],
         identification: [ { position: 30 } ],
         fieldGroup: [ { qualifier: 'General', position: 30 } ]
       }
       Status,
-      
+
       @Consumption.valueHelpDefinition: [ { entity: { name: 'ZC_Agency', element: 'AgencyID' } } ]
       AgencyID,
-      
+
       @Consumption.valueHelpDefinition: [ { entity: { name: 'ZC_Customer', element: 'CustomerID' } } ]
       CustomerID
 }
@@ -170,31 +170,31 @@ authorization master ( instance )
   field ( readonly ) TravelUUID, CreatedBy, CreatedAt;
   field ( mandatory ) AgencyID, CustomerID, BeginDate, EndDate;
   field ( readonly : update ) TravelID;
-  
+
   // CRUD operations
   create;
   update;
   delete;
-  
+
   // Draft actions
   draft action Resume;
   draft action Edit;
   draft action Activate;
   draft action Discard;
-  
+
   // Standard actions
   action ( features : instance ) submit result [1] $self;
   action ( features : instance ) cancel result [1] $self;
-  
+
   // Determinations
   determination setTravelID on modify { create; }
   determination calculateTotalPrice on modify { create; update; }
   determination validateDates on modify { create; update; }
-  
+
   // Validations
   validation validateBookingDates on save { create; update; }
   validation validateCustomer on save { create; update; }
-  
+
   // Side effects
   association _Items { create; update; delete; }
   association _Agency { read; }
@@ -209,11 +209,11 @@ authorization dependent by _TravelBooking
 {
   field ( readonly ) TravelUUID, ItemUUID;
   field ( mandatory ) TravelID, Description, Price;
-  
+
   create;
   update;
   delete;
-  
+
   association _TravelBooking { create; }
 }
 ```
@@ -245,7 +245,7 @@ CLASS lhc_travelbooking DEFINITION INHERITING FROM cl_abap_behavior_handler.
 ENDCLASS.
 
 CLASS lhc_travelbooking IMPLEMENTATION.
-  
+
   METHOD setTravelID.
     " Read travel bookings
     READ ENTITIES OF ZI_TravelBooking IN LOCAL MODE
@@ -253,7 +253,7 @@ CLASS lhc_travelbooking IMPLEMENTATION.
       FIELDS ( TravelID )
       WITH CORRESPONDING #( keys )
       RESULT DATA(travel_bookings).
-    
+
     " Get next number
     DATA(number_range) = cl_numberrange_runtime=>number_get(
       exporting
@@ -261,32 +261,32 @@ CLASS lhc_travelbooking IMPLEMENTATION.
         object      = 'ZTRAVELBOOK'
         quantity    = lines( travel_bookings )
     ).
-    
+
     " Update travel bookings
     LOOP AT travel_bookings ASSIGNING FIELD-SYMBOL(<booking>).
       <booking>-TravelID = number_range-number.
       number_range-number = number_range-number + 1.
     ENDLOOP.
-    
+
     " Modify entities
     MODIFY ENTITIES OF ZI_TravelBooking IN LOCAL MODE
       ENTITY TravelBooking
       UPDATE FIELDS ( TravelID )
       WITH CORRESPONDING #( travel_bookings ).
   ENDMETHOD.
-  
+
   METHOD calculateTotalPrice.
     " Read travel bookings with items
     READ ENTITIES OF ZI_TravelBooking IN LOCAL MODE
       ENTITY TravelBooking
       ALL FIELDS WITH CORRESPONDING #( keys )
       RESULT DATA(travel_bookings).
-    
+
     READ ENTITIES OF ZI_TravelBooking IN LOCAL MODE
       ENTITY TravelBooking BY \_Items
       ALL FIELDS WITH CORRESPONDING #( keys )
       RESULT DATA(items).
-    
+
     " Calculate total price
     LOOP AT travel_bookings ASSIGNING FIELD-SYMBOL(<booking>).
       DATA(total) = <booking>-BookingFee.
@@ -295,14 +295,14 @@ CLASS lhc_travelbooking IMPLEMENTATION.
       ENDLOOP.
       <booking>-TotalPrice = total.
     ENDLOOP.
-    
+
     " Update entities
     MODIFY ENTITIES OF ZI_TravelBooking IN LOCAL MODE
       ENTITY TravelBooking
       UPDATE FIELDS ( TotalPrice )
       WITH CORRESPONDING #( travel_bookings ).
   ENDMETHOD.
-  
+
   METHOD validateDates.
     " Read travel bookings
     READ ENTITIES OF ZI_TravelBooking IN LOCAL MODE
@@ -310,7 +310,7 @@ CLASS lhc_travelbooking IMPLEMENTATION.
       FIELDS ( BeginDate EndDate Status )
       WITH CORRESPONDING #( keys )
       RESULT DATA(travel_bookings).
-    
+
     " Validate dates
     LOOP AT travel_bookings ASSIGNING FIELD-SYMBOL(<booking>).
       IF <booking>-EndDate < <booking>-BeginDate.
@@ -325,11 +325,11 @@ CLASS lhc_travelbooking IMPLEMENTATION.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.
-  
+
   METHOD validateBookingDates.
     " Similar validation logic
   ENDMETHOD.
-  
+
   METHOD validateCustomer.
     " Validate customer exists and is active
     READ ENTITIES OF ZI_TravelBooking IN LOCAL MODE
@@ -337,14 +337,14 @@ CLASS lhc_travelbooking IMPLEMENTATION.
       FIELDS ( CustomerID )
       WITH CORRESPONDING #( keys )
       RESULT DATA(travel_bookings).
-    
+
     " Check customer
     SELECT SINGLE FROM zcustomer
       FIELDS customer_id
       WHERE customer_id = @<booking>-CustomerID
         AND status = 'A'
       INTO @DATA(customer_exists).
-    
+
     IF customer_exists IS INITIAL.
       APPEND VALUE #( TravelUUID = <booking>-TravelUUID ) TO failed-travelbooking.
       APPEND VALUE #( TravelUUID = <booking>-TravelUUID
@@ -355,48 +355,48 @@ CLASS lhc_travelbooking IMPLEMENTATION.
                       %element-CustomerID = if_abap_behv=>mk-on ) TO reported-travelbooking.
     ENDIF.
   ENDMETHOD.
-  
+
   METHOD submit.
     " Read travel bookings
     READ ENTITIES OF ZI_TravelBooking IN LOCAL MODE
       ENTITY TravelBooking
       ALL FIELDS WITH CORRESPONDING #( keys )
       RESULT DATA(travel_bookings).
-    
+
     " Update status
     LOOP AT travel_bookings ASSIGNING FIELD-SYMBOL(<booking>).
       <booking>-Status = 'S'. " Submitted
     ENDLOOP.
-    
+
     " Modify entities
     MODIFY ENTITIES OF ZI_TravelBooking IN LOCAL MODE
       ENTITY TravelBooking
       UPDATE FIELDS ( Status )
       WITH CORRESPONDING #( travel_bookings ).
-    
+
     " Return result
     result = VALUE #( FOR booking IN travel_bookings
                       ( TravelUUID = booking-TravelUUID
                         %param = booking ) ).
   ENDMETHOD.
-  
+
   METHOD cancel.
     " Similar to submit, set status to 'C' (Cancelled)
   ENDMETHOD.
-  
+
   METHOD get_instance_authorizations.
     " Implement instance-level authorization checks
     READ ENTITIES OF ZI_TravelBooking IN LOCAL MODE
       ENTITY TravelBooking
       ALL FIELDS WITH CORRESPONDING #( keys )
       RESULT DATA(travel_bookings).
-    
+
     LOOP AT travel_bookings INTO DATA(booking).
       " Check authorization
       AUTHORITY-CHECK OBJECT 'ZTRAVELBOOK'
         ID 'ACTVT' FIELD '02'
         ID 'AGENCYID' FIELD booking-AgencyID.
-      
+
       IF sy-subrc = 0.
         result = VALUE #( ( TravelUUID = booking-TravelUUID
                            %update = if_abap_behv=>auth-allowed
@@ -410,7 +410,7 @@ CLASS lhc_travelbooking IMPLEMENTATION.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.
-  
+
 ENDCLASS.
 ```
 

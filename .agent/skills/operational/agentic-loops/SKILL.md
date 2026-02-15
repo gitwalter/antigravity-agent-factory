@@ -30,7 +30,7 @@ llm = ChatOpenAI(model="gpt-4", temperature=0.7)
 @tool
 def search_knowledge_base(query: str) -> str:
     """Search internal knowledge base for information.
-    
+
     Args:
         query: Search query
     """
@@ -40,7 +40,7 @@ def search_knowledge_base(query: str) -> str:
 @tool
 def calculate(expression: str) -> str:
     """Evaluate a mathematical expression.
-    
+
     Args:
         expression: Math expression like '2 + 2'
     """
@@ -57,23 +57,23 @@ async def react_loop(user_query: str, max_iterations: int = 10) -> str:
     """Basic ReAct pattern implementation."""
     messages: List = [HumanMessage(content=user_query)]
     iteration = 0
-    
+
     while iteration < max_iterations:
         # REASON: LLM generates reasoning and decides on actions
         response = await llm_with_tools.ainvoke(messages)
         messages.append(response)
-        
+
         # Check if agent is done
         if not response.tool_calls:
             return response.content
-        
+
         # ACT: Execute tool calls
         tool_map = {t.name: t for t in tools}
         for tool_call in response.tool_calls:
             tool_name = tool_call["name"]
             tool_args = tool_call["args"]
             tool_id = tool_call["id"]
-            
+
             if tool_name in tool_map:
                 try:
                     # OBSERVE: Get tool result
@@ -81,7 +81,7 @@ async def react_loop(user_query: str, max_iterations: int = 10) -> str:
                         result = await tool_map[tool_name].ainvoke(tool_args)
                     else:
                         result = tool_map[tool_name].invoke(tool_args)
-                    
+
                     messages.append(ToolMessage(
                         content=str(result),
                         tool_call_id=tool_id
@@ -91,9 +91,9 @@ async def react_loop(user_query: str, max_iterations: int = 10) -> str:
                         content=f"Error: {str(e)}",
                         tool_call_id=tool_id
                     ))
-        
+
         iteration += 1
-    
+
     return "Maximum iterations reached."
 
 # Usage
@@ -109,12 +109,12 @@ from langchain_core.prompts import ChatPromptTemplate
 
 class ReflectiveAgent:
     """Agent with reflection and self-correction capabilities."""
-    
+
     def __init__(self, llm, tools):
         self.llm = llm
         self.tools = tools
         self.llm_with_tools = llm.bind_tools(tools)
-        
+
         # Reflection prompt
         self.reflection_prompt = ChatPromptTemplate.from_messages([
             ("system", """You are a reflective agent. After taking actions, evaluate:
@@ -124,39 +124,39 @@ class ReflectiveAgent:
 4. Should we continue or stop?"""),
             ("user", "{history}")
         ])
-    
+
     async def reflect(self, messages: List, goal: str) -> dict:
         """Reflect on current progress toward goal."""
         history = "\n".join([
-            f"{msg.__class__.__name__}: {msg.content}" 
+            f"{msg.__class__.__name__}: {msg.content}"
             for msg in messages[-10:]  # Last 10 messages
         ])
-        
+
         reflection = await self.reflection_prompt.ainvoke({
             "history": f"Goal: {goal}\n\nConversation:\n{history}"
         })
-        
+
         # Parse reflection
         content = reflection.content.lower()
         should_continue = "continue" in content or "retry" in content
         errors_found = "error" in content or "failed" in content
-        
+
         return {
             "reflection": reflection.content,
             "should_continue": should_continue,
             "errors_found": errors_found
         }
-    
+
     async def execute(self, user_query: str, max_iterations: int = 10) -> str:
         """Execute with reflection."""
         messages = [HumanMessage(content=user_query)]
         iteration = 0
-        
+
         while iteration < max_iterations:
             # Act
             response = await self.llm_with_tools.ainvoke(messages)
             messages.append(response)
-            
+
             if not response.tool_calls:
                 # Reflect before finishing
                 reflection = await self.reflect(messages, user_query)
@@ -168,14 +168,14 @@ class ReflectiveAgent:
                     messages.append(correction_msg)
                     continue
                 return response.content
-            
+
             # Execute tools
             tool_map = {t.name: t for t in self.tools}
             for tool_call in response.tool_calls:
                 tool_name = tool_call["name"]
                 tool_args = tool_call["args"]
                 tool_id = tool_call["id"]
-                
+
                 if tool_name in tool_map:
                     try:
                         if asyncio.iscoroutinefunction(tool_map[tool_name].func):
@@ -191,15 +191,15 @@ class ReflectiveAgent:
                             content=f"Error: {str(e)}",
                             tool_call_id=tool_id
                         ))
-            
+
             # Reflect every few iterations
             if iteration % 3 == 0:
                 reflection = await self.reflect(messages, user_query)
                 if not reflection["should_continue"]:
                     return f"Task completed. Reflection: {reflection['reflection']}"
-            
+
             iteration += 1
-        
+
         return "Maximum iterations reached."
 
 # Usage
@@ -224,7 +224,7 @@ class Subtask(BaseModel):
 
 class Planner:
     """Agent that plans and decomposes tasks."""
-    
+
     def __init__(self, llm):
         self.llm = llm
         self.planning_prompt = ChatPromptTemplate.from_messages([
@@ -236,11 +236,11 @@ class Planner:
 Return subtasks as a structured list."""),
             ("user", "{task}")
         ])
-    
+
     async def create_plan(self, task: str) -> List[Subtask]:
         """Decompose task into subtasks."""
         response = await self.planning_prompt.ainvoke({"task": task})
-        
+
         # Parse response into subtasks (simplified - in practice use structured output)
         # For now, return example structure
         subtasks = [
@@ -248,45 +248,45 @@ Return subtasks as a structured list."""),
             Subtask(id=2, description="Analyze findings", dependencies=[1]),
             Subtask(id=3, description="Generate summary", dependencies=[2]),
         ]
-        
+
         return subtasks
-    
+
     async def execute_plan(self, task: str, tools: List) -> str:
         """Execute plan by running subtasks in order."""
         plan = await self.create_plan(task)
         results = {}
         llm_with_tools = self.llm.bind_tools(tools)
-        
+
         for subtask in plan:
             # Check dependencies
             if any(results.get(dep_id) == "failed" for dep_id in subtask.dependencies):
                 subtask.status = "failed"
                 results[subtask.id] = "failed"
                 continue
-            
+
             subtask.status = "in_progress"
-            
+
             # Execute subtask
             query = f"Subtask {subtask.id}: {subtask.description}"
             messages = [HumanMessage(content=query)]
-            
+
             iteration = 0
             while iteration < 5:  # Max iterations per subtask
                 response = await llm_with_tools.ainvoke(messages)
                 messages.append(response)
-                
+
                 if not response.tool_calls:
                     results[subtask.id] = response.content
                     subtask.status = "completed"
                     break
-                
+
                 # Execute tools
                 tool_map = {t.name: t for t in tools}
                 for tool_call in response.tool_calls:
                     tool_name = tool_call["name"]
                     tool_args = tool_call["args"]
                     tool_id = tool_call["id"]
-                    
+
                     if tool_name in tool_map:
                         try:
                             if asyncio.iscoroutinefunction(tool_map[tool_name].func):
@@ -302,13 +302,13 @@ Return subtasks as a structured list."""),
                                 content=f"Error: {str(e)}",
                                 tool_call_id=tool_id
                             ))
-                
+
                 iteration += 1
-            
+
             if iteration >= 5:
                 subtask.status = "failed"
                 results[subtask.id] = "failed"
-        
+
         # Compile final result
         return f"Plan execution complete. Results: {results}"
 
@@ -324,7 +324,7 @@ Refine outputs through multiple iterations:
 ```python
 class RefinementAgent:
     """Agent that iteratively refines its output."""
-    
+
     def __init__(self, llm):
         self.llm = llm
         self.refinement_prompt = ChatPromptTemplate.from_messages([
@@ -338,10 +338,10 @@ Iteration: {iteration}
 
 Refine the output based on the feedback.""")
         ])
-    
+
     async def refine(
-        self, 
-        request: str, 
+        self,
+        request: str,
         initial_output: str = None,
         max_iterations: int = 5,
         quality_threshold: float = 0.8
@@ -349,7 +349,7 @@ Refine the output based on the feedback.""")
         """Iteratively refine output."""
         current_output = initial_output or ""
         iteration = 0
-        
+
         while iteration < max_iterations:
             # Generate or refine
             if iteration == 0 and not initial_output:
@@ -359,10 +359,10 @@ Refine the output based on the feedback.""")
             else:
                 # Refinement iteration
                 feedback = await self._evaluate_quality(request, current_output)
-                
+
                 if feedback["score"] >= quality_threshold:
                     return current_output
-                
+
                 response = await self.refinement_prompt.ainvoke({
                     "request": request,
                     "current_output": current_output,
@@ -370,11 +370,11 @@ Refine the output based on the feedback.""")
                     "iteration": iteration + 1
                 })
                 current_output = response.content
-            
+
             iteration += 1
-        
+
         return current_output
-    
+
     async def _evaluate_quality(self, request: str, output: str) -> dict:
         """Evaluate output quality (simplified - use LLM or metrics)."""
         eval_prompt = ChatPromptTemplate.from_messages([
@@ -382,9 +382,9 @@ Refine the output based on the feedback.""")
 Provide a score and specific feedback for improvement."""),
             ("user", f"Request: {request}\n\nOutput: {output}")
         ])
-        
+
         response = await self.llm.ainvoke(eval_prompt.format(request=request, output=output))
-        
+
         # Parse score (simplified)
         content = response.content.lower()
         score = 0.7  # Default
@@ -394,7 +394,7 @@ Provide a score and specific feedback for improvement."""),
             score = 0.8
         elif "needs improvement" in content:
             score = 0.6
-        
+
         return {
             "score": score,
             "feedback": response.content
@@ -421,26 +421,26 @@ async def parallel_react_loop(user_query: str, tools: List, max_iterations: int 
     llm_with_tools = llm.bind_tools(tools)
     messages = [HumanMessage(content=user_query)]
     iteration = 0
-    
+
     while iteration < max_iterations:
         response = await llm_with_tools.ainvoke(messages)
         messages.append(response)
-        
+
         if not response.tool_calls:
             return response.content
-        
+
         # Execute all tool calls in parallel
         tool_map = {t.name: t for t in tools}
         tool_tasks = []
-        
+
         for tool_call in response.tool_calls:
             tool_name = tool_call["name"]
             tool_args = tool_call["args"]
             tool_id = tool_call["id"]
-            
+
             if tool_name in tool_map:
                 tool = tool_map[tool_name]
-                
+
                 async def execute_tool(tool, args, tool_id):
                     try:
                         if asyncio.iscoroutinefunction(tool.func):
@@ -456,15 +456,15 @@ async def parallel_react_loop(user_query: str, tools: List, max_iterations: int 
                             content=f"Error: {str(e)}",
                             tool_call_id=tool_id
                         )
-                
+
                 tool_tasks.append(execute_tool(tool, tool_args, tool_id))
-        
+
         # Wait for all tools to complete
         tool_results = await asyncio.gather(*tool_tasks)
         messages.extend(tool_results)
-        
+
         iteration += 1
-    
+
     return "Maximum iterations reached."
 ```
 
@@ -475,12 +475,12 @@ Add conditions to control loop behavior:
 ```python
 class ConditionalAgent:
     """Agent with conditional loop control."""
-    
+
     def __init__(self, llm, tools):
         self.llm = llm
         self.tools = tools
         self.llm_with_tools = llm.bind_tools(tools)
-    
+
     async def execute(
         self,
         user_query: str,
@@ -492,16 +492,16 @@ class ConditionalAgent:
         messages = [HumanMessage(content=user_query)]
         iteration = 0
         stop_conditions = stop_conditions or []
-        
+
         while iteration < max_iterations:
             response = await self.llm_with_tools.ainvoke(messages)
             messages.append(response)
-            
+
             # Check stop conditions
             content_lower = response.content.lower()
             if any(condition.lower() in content_lower for condition in stop_conditions):
                 return f"Stopped due to condition. {response.content}"
-            
+
             if not response.tool_calls:
                 # Check confidence (simplified)
                 confidence = await self._estimate_confidence(response.content)
@@ -513,14 +513,14 @@ class ConditionalAgent:
                         content="The response seems uncertain. Please try again with more confidence."
                     ))
                     continue
-            
+
             # Execute tools
             tool_map = {t.name: t for t in self.tools}
             for tool_call in response.tool_calls:
                 tool_name = tool_call["name"]
                 tool_args = tool_call["args"]
                 tool_id = tool_call["id"]
-                
+
                 if tool_name in tool_map:
                     try:
                         if asyncio.iscoroutinefunction(tool_map[tool_name].func):
@@ -536,16 +536,16 @@ class ConditionalAgent:
                             content=f"Error: {str(e)}",
                             tool_call_id=tool_id
                         ))
-            
+
             iteration += 1
-        
+
         return "Maximum iterations reached."
-    
+
     async def _estimate_confidence(self, content: str) -> float:
         """Estimate confidence in response (simplified)."""
         uncertainty_words = ["maybe", "perhaps", "uncertain", "not sure"]
         content_lower = content.lower()
-        
+
         if any(word in content_lower for word in uncertainty_words):
             return 0.5
         return 0.8
@@ -573,7 +573,7 @@ response = await client.chat.completions.create(
         "type": "mcp",
         "name": "sequential-thinking",
         "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"] 
+        "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
     }]
 )
 ```

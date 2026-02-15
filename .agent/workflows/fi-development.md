@@ -8,7 +8,7 @@ description: Workflow for FI-related development: reports, enhancements, validat
 
 Workflow for FI-related development: reports, enhancements, validations. References BKPF, BSEG, FI-CAX/VIM where relevant. S/4 on-prem and R/3/ECC.
 
-**Version:** 1.0.0  
+**Version:** 1.0.0
 **Applies To:** sap-s4-enterprise, sap-abap
 
 ## Trigger Conditions

@@ -8,8 +8,8 @@ description: Test-Driven Development workflow implementing the Red-Green-Refacto
 
 Test-Driven Development workflow implementing the Red-Green-Refactor cycle. Guides developers through writing failing tests first, implementing minimal code to pass, and then refactoring for quality.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** test-generator
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.

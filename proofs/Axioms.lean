@@ -1,14 +1,14 @@
 /-
   Axioms.lean - Formal Definition of Core Axioms
-  
+
   Cursor Agent Factory - Formal Verification System
-  
+
   This file formalizes the foundational axioms (A0-A5) that govern
   all behavior in the Cursor Agent Factory ecosystem.
-  
+
   Philosophy:
   "All being and doing is grounded in Love, Truth, and Beauty."
-  
+
   These axioms are IMMUTABLE - they form Layer 0 of the system.
 -/
 
@@ -16,7 +16,7 @@ namespace CursorAgentFactory
 
 /-!
   # Axiom 0: Love, Truth, and Beauty
-  
+
   The foundational axiom from which all others derive.
   This is not a logical axiom but a value commitment that
   grounds the entire system.
@@ -42,9 +42,9 @@ def trustEmerges (t : Trust) : Bool :=
 
 /-!
   # Axiom A1: Transparency
-  
+
   "All AI behavior must be traceable to explicit rules and axioms."
-  
+
   No hidden logic. Every action can be explained by reference to rules.
 -/
 
@@ -74,9 +74,9 @@ def satisfiesA1 (tp : TransparencyProperty) : Prop :=
 
 /-!
   # Axiom A2: User Primacy
-  
+
   "The user's explicitly stated intent takes precedence over inferred goals."
-  
+
   AI serves the user. User decisions are respected.
 -/
 
@@ -99,7 +99,7 @@ def satisfiesA2 (explicit inferred : Intent) : Prop :=
   True
 
 /-- When intents conflict, explicit wins -/
-theorem explicit_wins (e i : Intent) 
+theorem explicit_wins (e i : Intent)
     (he : e.intentType = IntentType.explicit)
     (hi : i.intentType = IntentType.inferred) :
     satisfiesA2 e i := by
@@ -109,9 +109,9 @@ theorem explicit_wins (e i : Intent)
 
 /-!
   # Axiom A3: Derivability
-  
+
   "Every rule must derive from the axiom set through explicit reasoning."
-  
+
   No rule exists without justification. All rules trace to axioms.
 -/
 
@@ -129,9 +129,9 @@ def satisfiesA3 (d : Derivation) : Prop :=
 
 /-!
   # Axiom A4: Non-Harm
-  
+
   "No action should cause irreversible negative impact without explicit consent."
-  
+
   Protect users and their work. Prevent harm.
 -/
 
@@ -155,7 +155,7 @@ def satisfiesA4 (ha : HarmAssessment) : Prop :=
   ha.isIrreversible → ha.hasConsent
 
 /-- Irreversible harm requires consent -/
-theorem irreversible_requires_consent (ha : HarmAssessment) 
+theorem irreversible_requires_consent (ha : HarmAssessment)
     (h : satisfiesA4 ha) (hirr : ha.isIrreversible = true) :
     ha.hasConsent = true := by
   unfold satisfiesA4 at h
@@ -163,9 +163,9 @@ theorem irreversible_requires_consent (ha : HarmAssessment)
 
 /-!
   # Axiom A5: Consistency
-  
+
   "No derived rule may contradict the axioms or other derived rules."
-  
+
   The system must be internally consistent. No contradictions allowed.
 -/
 
@@ -191,7 +191,7 @@ def satisfiesA5 (rs : RuleSet) : Prop :=
 
 /-!
   # Layer Structure
-  
+
   The system has 5 layers with decreasing precedence:
   - Layer 0: Axioms (IMMUTABLE)
   - Layer 1: Purpose (IMMUTABLE)
@@ -231,7 +231,7 @@ def layerWins (l1 l2 : Layer) : Bool :=
 
 /-!
   # Complete Axiom System
-  
+
   All five axioms combined into a single verification structure.
 -/
 

@@ -8,8 +8,8 @@ description: End-to-end workflow for developing, validating, and deploying algor
 
 End-to-end workflow for developing, validating, and deploying algorithmic trading strategies. Covers hypothesis formation, backtesting, statistical validation, paper trading, and live deployment approval.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Applies To:** quantitative-trading, financial-ai-agents
 
 ## Trigger Conditions

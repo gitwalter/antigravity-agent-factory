@@ -45,11 +45,11 @@ class RerankingResult(BaseModel):
 class CrossEncoderReranker(BaseDocumentCompressor):
     """
     Cross-encoder reranker using sentence-transformers.
-    
+
     Cross-encoders provide better accuracy than bi-encoders for reranking
     by jointly encoding query-document pairs.
     """
-    
+
     def __init__(
         self,
         model_name: str = "{{CROSS_ENCODER_MODEL}}",
@@ -58,7 +58,7 @@ class CrossEncoderReranker(BaseDocumentCompressor):
     ):
         """
         Initialize cross-encoder reranker.
-        
+
         Args:
             model_name: Name of the cross-encoder model
             top_n: Number of top documents to return
@@ -68,11 +68,11 @@ class CrossEncoderReranker(BaseDocumentCompressor):
         self.model_name = model_name
         self.top_n = top_n
         self.device = device
-        
+
         logger.info(f"Loading cross-encoder model: {model_name}")
         self.model = CrossEncoder(model_name, device=device)
         logger.info("Cross-encoder model loaded")
-    
+
     def compress_documents(
         self,
         documents: List[Document],
@@ -80,32 +80,32 @@ class CrossEncoderReranker(BaseDocumentCompressor):
     ) -> List[Document]:
         """
         Rerank documents using cross-encoder.
-        
+
         Args:
             documents: Documents to rerank
             query: Query string
-            
+
         Returns:
             Reranked documents
         """
         if not documents:
             return []
-        
+
         logger.info(f"Reranking {len(documents)} documents for query: {query[:50]}...")
-        
+
         # Create query-document pairs
         pairs = [[query, doc.page_content] for doc in documents]
-        
+
         # Get reranking scores
         scores = self.model.predict(pairs)
-        
+
         # Sort by score (descending)
         scored_docs = list(zip(documents, scores))
         scored_docs.sort(key=lambda x: x[1], reverse=True)
-        
+
         # Return top N
         reranked_docs = [doc for doc, _ in scored_docs[: self.top_n]]
-        
+
         logger.info(f"Reranked to top {len(reranked_docs)} documents")
         return reranked_docs
 
@@ -113,10 +113,10 @@ class CrossEncoderReranker(BaseDocumentCompressor):
 class {{RERANKER_CLASS_NAME}}:
     """
     {{RERANKER_NAME}} - Cross-Encoder Reranking System
-    
+
     Reranks retrieval results using cross-encoder models for improved precision.
     Supports multiple reranking backends (Cohere API, local cross-encoders, LLM-based).
-    
+
     Example:
         >>> reranker = {{RERANKER_CLASS_NAME}}(
         ...     reranker_type="cross_encoder",
@@ -125,7 +125,7 @@ class {{RERANKER_CLASS_NAME}}:
         >>> reranked = reranker.rerank(query, documents)
         >>> print(f"Reranked to {len(reranked.documents)} documents")
     """
-    
+
     def __init__(
         self,
         reranker_type: str = "{{RERANKER_TYPE}}",  # "cohere", "cross_encoder", "llm"
@@ -137,7 +137,7 @@ class {{RERANKER_CLASS_NAME}}:
     ):
         """
         Initialize reranker.
-        
+
         Args:
             reranker_type: Type of reranker ("cohere", "cross_encoder", "llm")
             top_n: Number of top documents to return after reranking
@@ -149,10 +149,10 @@ class {{RERANKER_CLASS_NAME}}:
         self.reranker_type = reranker_type
         self.top_n = top_n
         self.device = device
-        
+
         # Initialize reranker based on type
         self.reranker: Optional[Any] = None
-        
+
         if reranker_type == "cohere":
             if not cohere_api_key:
                 raise ValueError("cohere_api_key required for Cohere reranker")
@@ -173,7 +173,7 @@ class {{RERANKER_CLASS_NAME}}:
         elif reranker_type == "llm":
             logger.info(f"Initializing LLM reranker with model: {llm_model}")
             from langchain.retrievers.document_compressors import LLMRerank
-            
+
             llm = ChatOpenAI(model=llm_model, temperature=0)
             self.reranker = LLMRerank.from_llm(llm=llm, top_n=top_n)
         else:
@@ -181,11 +181,11 @@ class {{RERANKER_CLASS_NAME}}:
                 f"Unknown reranker type: {reranker_type}. "
                 "Choose from: 'cohere', 'cross_encoder', 'llm'"
             )
-        
+
         logger.info(
             f"Initialized {{RERANKER_NAME}} with {reranker_type} reranker, top_n={top_n}"
         )
-    
+
     def rerank(
         self,
         query: str,
@@ -193,14 +193,14 @@ class {{RERANKER_CLASS_NAME}}:
     ) -> RerankingResult:
         """
         Rerank documents for a query.
-        
+
         Args:
             query: Query string
             documents: Documents to rerank
-            
+
         Returns:
             RerankingResult with reranked documents and scores
-            
+
         Example:
             >>> result = reranker.rerank("machine learning", documents)
             >>> for doc, score in zip(result.documents, result.scores):
@@ -212,19 +212,19 @@ class {{RERANKER_CLASS_NAME}}:
                 scores=[],
                 metadata={"query": query, "reranker_type": self.reranker_type},
             )
-        
+
         logger.info(f"Reranking {len(documents)} documents for query: {query[:50]}...")
-        
+
         try:
             # Use the reranker
             if self.reranker_type == "cross_encoder":
                 # CrossEncoderReranker returns documents directly
                 reranked_docs = self.reranker.compress_documents(documents, query)
-                
+
                 # Extract scores by recomputing (or store during compression)
                 pairs = [[query, doc.page_content] for doc in documents]
                 all_scores = self.reranker.model.predict(pairs)
-                
+
                 # Map scores to reranked documents
                 doc_to_score = {
                     doc.page_content: score
@@ -236,13 +236,13 @@ class {{RERANKER_CLASS_NAME}}:
             else:
                 # Cohere or LLM reranker
                 reranked_docs = self.reranker.compress_documents(documents, query)
-                
+
                 # Extract scores from metadata if available
                 scores = []
                 for doc in reranked_docs:
                     score = doc.metadata.get("relevance_score", 1.0)
                     scores.append(score)
-            
+
             result = RerankingResult(
                 documents=reranked_docs,
                 scores=scores,
@@ -253,12 +253,12 @@ class {{RERANKER_CLASS_NAME}}:
                     "reranked_count": len(reranked_docs),
                 },
             )
-            
+
             logger.info(
                 f"Reranked {len(documents)} documents to top {len(reranked_docs)}"
             )
             return result
-            
+
         except Exception as e:
             logger.error(f"Error during reranking: {e}")
             # Return original documents on error
@@ -271,7 +271,7 @@ class {{RERANKER_CLASS_NAME}}:
                     "reranker_type": self.reranker_type,
                 },
             )
-    
+
     async def arerank(
         self,
         query: str,
@@ -284,9 +284,9 @@ class {{RERANKER_CLASS_NAME}}:
                 scores=[],
                 metadata={"query": query, "reranker_type": self.reranker_type},
             )
-        
+
         logger.info(f"Async reranking {len(documents)} documents...")
-        
+
         try:
             if hasattr(self.reranker, "acompress_documents"):
                 reranked_docs = await self.reranker.acompress_documents(
@@ -295,13 +295,13 @@ class {{RERANKER_CLASS_NAME}}:
             else:
                 # Fallback to sync
                 reranked_docs = self.reranker.compress_documents(documents, query)
-            
+
             # Extract scores
             scores = []
             for doc in reranked_docs:
                 score = doc.metadata.get("relevance_score", 1.0)
                 scores.append(score)
-            
+
             result = RerankingResult(
                 documents=reranked_docs,
                 scores=scores,
@@ -312,9 +312,9 @@ class {{RERANKER_CLASS_NAME}}:
                     "reranked_count": len(reranked_docs),
                 },
             )
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Error during async reranking: {e}")
             return RerankingResult(
@@ -322,34 +322,34 @@ class {{RERANKER_CLASS_NAME}}:
                 scores=[1.0] * min(len(documents), self.top_n),
                 metadata={"error": str(e)},
             )
-    
+
     def create_compression_retriever(
         self,
         base_retriever: Any,
     ) -> ContextualCompressionRetriever:
         """
         Create a compression retriever that automatically reranks.
-        
+
         Args:
             base_retriever: Base retriever to wrap
-            
+
         Returns:
             ContextualCompressionRetriever with reranking
-            
+
         Example:
             >>> compression_retriever = reranker.create_compression_retriever(base_retriever)
             >>> docs = compression_retriever.invoke("query")
         """
         if not self.reranker:
             raise ValueError("Reranker not initialized")
-        
+
         logger.info("Creating compression retriever with reranking...")
-        
+
         return ContextualCompressionRetriever(
             base_compressor=self.reranker,
             base_retriever=base_retriever,
         )
-    
+
     def rerank_with_metadata(
         self,
         query: str,
@@ -358,22 +358,22 @@ class {{RERANKER_CLASS_NAME}}:
     ) -> List[RerankedDocument]:
         """
         Rerank documents with detailed metadata.
-        
+
         Args:
             query: Query string
             documents: Documents to rerank
             preserve_original_rank: Whether to include original rank
-            
+
         Returns:
             List of RerankedDocument with scores and ranks
-            
+
         Example:
             >>> reranked = reranker.rerank_with_metadata("query", documents)
             >>> for item in reranked:
             ...     print(f"Rank {item.original_rank} -> Score {item.score:.3f}")
         """
         result = self.rerank(query, documents)
-        
+
         reranked_items = []
         for i, (doc, score) in enumerate(zip(result.documents, result.scores)):
             # Find original rank
@@ -383,7 +383,7 @@ class {{RERANKER_CLASS_NAME}}:
                     original_rank = documents.index(doc)
                 except ValueError:
                     original_rank = i
-            
+
             reranked_items.append(
                 RerankedDocument(
                     document=doc,
@@ -391,14 +391,14 @@ class {{RERANKER_CLASS_NAME}}:
                     original_rank=original_rank,
                 )
             )
-        
+
         return reranked_items
 
 
 # Example usage
 if __name__ == "__main__":
     from langchain_core.documents import Document
-    
+
     # Create sample documents
     documents = [
         Document(
@@ -422,25 +422,25 @@ if __name__ == "__main__":
             metadata={"source": "doc5"},
         ),
     ]
-    
+
     # Create reranker
     reranker = {{RERANKER_CLASS_NAME}}(
         reranker_type="cross_encoder",
         top_n=3,
         model_name="{{CROSS_ENCODER_MODEL}}",
     )
-    
+
     # Rerank documents
     query = "{{EXAMPLE_QUERY}}"
     result = reranker.rerank(query, documents)
-    
+
     print(f"Reranked {len(documents)} documents to top {len(result.documents)}:")
     print(f"\nQuery: {query}\n")
     for i, (doc, score) in enumerate(zip(result.documents, result.scores)):
         print(f"{i+1}. Score: {score:.4f}")
         print(f"   Content: {doc.page_content[:80]}...")
         print(f"   Source: {doc.metadata.get('source', 'unknown')}\n")
-    
+
     # Rerank with metadata
     reranked_with_meta = reranker.rerank_with_metadata(query, documents)
     print("\nReranked with metadata:")

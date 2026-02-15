@@ -8,8 +8,8 @@ description: Smart contract security audit workflow covering scope definition, s
 
 Smart contract security audit workflow covering scope definition, static analysis, manual review, penetration testing, and reporting. Supports Ethereum/Solidity and Solana/Rust.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-10  
+**Version:** 1.0.0
+**Created:** 2026-02-10
 **Applies To:** solidity-ethereum, solana-rust, defi-protocols
 
 ## Trigger Conditions

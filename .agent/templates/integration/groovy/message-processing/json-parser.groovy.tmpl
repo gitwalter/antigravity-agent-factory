@@ -1,19 +1,19 @@
 /**
  * ${SCRIPT_NAME} - JSON Parser with JsonSlurper
- * 
+ *
  * Purpose: ${SCRIPT_PURPOSE}
  * Author: ${AUTHOR}
  * Created: ${DATE}
- * 
+ *
  * Input:  JSON string
  * Output: ${OUTPUT_FORMAT} (e.g., XML, transformed JSON, or extracted data)
- * 
+ *
  * JSON Structure Expected:
  *   ${JSON_STRUCTURE_DESCRIPTION}
- * 
+ *
  * Properties Used:
  *   - ${PROPERTY_NAME}: ${PROPERTY_DESCRIPTION}
- * 
+ *
  * Notes:
  *   - Uses JsonSlurper for JSON parsing
  *   - Handles nested objects and arrays
@@ -24,32 +24,32 @@ import groovy.json.JsonSlurper
 
 def Message processData(Message message) {
     def messageLog = messageLogFactory.getMessageLog(message)
-    
+
     try {
         // Get JSON body
         def jsonBody = message.getBody(String)
         messageLog.addAttachmentAsString('InputJSON', jsonBody, 'application/json')
-        
+
         // Parse JSON with JsonSlurper
         def jsonSlurper = new JsonSlurper()
         def json = jsonSlurper.parseText(jsonBody)
-        
+
         // =====================================================
         // TODO: Extract data from JSON
         // =====================================================
-        
+
         // Example: Access root level fields
         // def id = json.id
         // def name = json.name
-        
+
         // Example: Access nested fields (safe navigation)
         // def customerId = json.customer?.id
         // def customerName = json.customer?.name
-        
+
         // Example: Access array elements
         // def firstItem = json.items[0]
         // def itemCount = json.items?.size() ?: 0
-        
+
         // Example: Iterate over array
         /*
         def items = []
@@ -61,7 +61,7 @@ def Message processData(Message message) {
             ]
         }
         */
-        
+
         // Example: Transform array
         /*
         def transformedItems = json.items?.collect { item ->
@@ -72,16 +72,16 @@ def Message processData(Message message) {
             ]
         } ?: []
         */
-        
+
         // Example: Filter array
         // def activeItems = json.items?.findAll { it.status == 'Active' } ?: []
-        
+
         // Example: Find specific element
         // def foundItem = json.items?.find { it.id == '123' }
-        
+
         // Example: Conditional extraction
         // def status = json.status == 'A' ? 'Active' : 'Inactive'
-        
+
         // Example: Extract nested structure
         /*
         def header = [
@@ -93,46 +93,46 @@ def Message processData(Message message) {
             ]
         ]
         */
-        
+
         // Your extraction logic here
         def extractedData = extractDataFromJson(json)
-        
+
         // =====================================================
-        
+
         // Set output (can be XML, transformed JSON, or properties)
         // Option 1: Set as transformed JSON
         // import groovy.json.JsonBuilder
         // def builder = new JsonBuilder(extractedData)
         // message.setBody(builder.toString())
-        
+
         // Option 2: Set extracted values as properties
         // extractedData.each { key, value ->
         //     message.setProperty(key, value?.toString())
         // }
-        
+
         // Option 3: Transform to XML
         // def resultXml = transformToXml(extractedData)
         // message.setBody(resultXml)
-        
+
         // For now, set as string representation
         message.setBody(extractedData.toString())
         messageLog.addAttachmentAsString('ExtractedData', extractedData.toString(), 'text/plain')
-        
+
     } catch (Exception e) {
-        messageLog.addAttachmentAsString('ParseError', 
+        messageLog.addAttachmentAsString('ParseError',
             "JSON parsing error: ${e.message}\n" +
-            "Input JSON:\n${message.getBody(String)}", 
+            "Input JSON:\n${message.getBody(String)}",
             'text/plain')
-        
+
         message.setProperty('ErrorMessage', e.message)
         message.setProperty('ErrorScript', '${SCRIPT_NAME}')
         message.setProperty('ErrorTimestamp', new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ"))
         message.setProperty('SAP_ErrorModelStepID', '${SCRIPT_NAME}')
         message.setProperty('SAP_ErrorText', "JSON parsing failed: ${e.message}")
-        
+
         throw e
     }
-    
+
     return message
 }
 
@@ -160,7 +160,7 @@ def extractDataFromJson(json) {
         } ?: []
     ]
     */
-    
+
     // Placeholder
     return [parsed: true, timestamp: new Date().format("yyyy-MM-dd'T'HH:mm:ss")]
 }
@@ -172,10 +172,10 @@ def extractDataFromJson(json) {
 def transformToXml(data) {
     import groovy.xml.MarkupBuilder
     import java.io.StringWriter
-    
+
     def writer = new StringWriter()
     def xml = new MarkupBuilder(writer)
-    
+
     // TODO: Implement your XML transformation
     // Example:
     /*
@@ -193,6 +193,6 @@ def transformToXml(data) {
         }
     }
     */
-    
+
     return writer.toString()
 }

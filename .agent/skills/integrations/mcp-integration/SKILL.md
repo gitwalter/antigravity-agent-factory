@@ -102,15 +102,15 @@ async def connect_to_server():
         command="python",
         args=["path/to/server.py"]
     )
-    
+
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
-            
+
             # List tools
             tools = await session.list_tools()
             print(f"Available tools: {[t.name for t in tools.tools]}")
-            
+
             # Call tool
             result = await session.call_tool("get_weather", {"location": "NYC"})
             print(result.content)
@@ -168,14 +168,14 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             return [TextContent(type="text", text=str(result))]
         except Exception as e:
             return [TextContent(type="text", text=f"Error: {e}")]
-    
+
     elif name == "search_files":
         import glob
         pattern = arguments["pattern"]
         directory = arguments.get("directory", ".")
         matches = glob.glob(f"{directory}/{pattern}")
         return [TextContent(type="text", text="\n".join(matches))]
-    
+
     raise ValueError(f"Unknown tool: {name}")
 ```
 
@@ -223,17 +223,17 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: dict) -> list[TextContent]:
     if name == "chat_completion":
         client = ai.Client()
-        
+
         response = client.chat.completions.create(
             model=arguments["model"],
             messages=arguments["messages"]
         )
-        
+
         return [TextContent(
             type="text",
             text=response.choices[0].message.content
         )]
-    
+
     raise ValueError(f"Unknown tool: {name}")
 ```
 
@@ -292,16 +292,16 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         # Security: validate path is in allowed directory
         allowed_base = Path("/data")
         full_path = Path(path).resolve()
-        
+
         if not str(full_path).startswith(str(allowed_base)):
             return [TextContent(type="text", text="Error: Access denied")]
-        
+
         try:
             with open(path, 'r') as f:
                 return [TextContent(type="text", text=f.read())]
         except Exception as e:
             return [TextContent(type="text", text=f"Error: {e}")]
-    
+
     elif name == "list_directory":
         path = arguments.get("path", ".")
         try:
@@ -309,7 +309,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             return [TextContent(type="text", text="\n".join(items))]
         except Exception as e:
             return [TextContent(type="text", text=f"Error: {e}")]
-    
+
     raise ValueError(f"Unknown tool: {name}")
 ```
 
@@ -356,29 +356,29 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
     if name == "execute_query":
         query = arguments["query"]
         db_path = arguments.get("database", "default.db")
-        
+
         # Security: only allow SELECT queries
         if not query.strip().upper().startswith("SELECT"):
             return [TextContent(type="text", text="Error: Only SELECT queries allowed")]
-        
+
         try:
             conn = sqlite3.connect(db_path)
             conn.row_factory = sqlite3.Row
             cursor = conn.execute(query)
             rows = [dict(row) for row in cursor.fetchall()]
             conn.close()
-            
+
             return [TextContent(
                 type="text",
                 text=json.dumps(rows, indent=2)
             )]
         except Exception as e:
             return [TextContent(type="text", text=f"Error: {e}")]
-    
+
     elif name == "get_schema":
         db_path = arguments.get("database", "default.db")
         table = arguments.get("table")
-        
+
         try:
             conn = sqlite3.connect(db_path)
             cursor = conn.execute(
@@ -387,14 +387,14 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             )
             schema = [row[0] for row in cursor.fetchall()]
             conn.close()
-            
+
             return [TextContent(
                 type="text",
                 text="\n".join(schema) if schema else "No tables found"
             )]
         except Exception as e:
             return [TextContent(type="text", text=f"Error: {e}")]
-    
+
     raise ValueError(f"Unknown tool: {name}")
 ```
 
@@ -437,7 +437,7 @@ async def list_tools() -> list[Tool]:
 @server.call_tool()
 async def call_tool(name: str, arguments: dict) -> list[TextContent]:
     client = Client()
-    
+
     if name == "get_trace":
         trace_id = arguments["trace_id"]
         trace = client.read_run(trace_id)
@@ -445,22 +445,22 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             type="text",
             text=json.dumps(trace.dict(), indent=2, default=str)
         )]
-    
+
     elif name == "search_runs":
         project = arguments.get("project")
         query = arguments.get("query", "")
-        
+
         runs = client.list_runs(
             project_name=project,
             filter=query
         )
-        
+
         results = [{"id": r.id, "name": r.name} for r in runs]
         return [TextContent(
             type="text",
             text=json.dumps(results, indent=2)
         )]
-    
+
     raise ValueError(f"Unknown tool: {name}")
 ```
 

@@ -26,21 +26,21 @@ logger = logging.getLogger(__name__)
 class {{REPOSITORY_CLASS_NAME}}:
     """
     Repository class for {{DOMAIN_NAME}} data access.
-    
+
     This repository implements the Repository pattern, providing a clean
     abstraction over database operations. All methods are async and use
     SQLAlchemy's async API.
-    
+
     Example:
         >>> repo = {{REPOSITORY_CLASS_NAME}}()
         >>> async with get_db_session() as session:
         >>>     result = await repo.create(session, request_data)
     """
-    
+
     def __init__(self, db_session: Optional[AsyncSession] = None):
         """
         Initialize the repository.
-        
+
         Args:
             db_session: Optional database session. If provided, operations
                        will use this session. Otherwise, a new session
@@ -48,7 +48,7 @@ class {{REPOSITORY_CLASS_NAME}}:
         """
         self.db_session = db_session
         logger.info(f"Initialized {{REPOSITORY_CLASS_NAME}}")
-    
+
     async def create(
         self,
         session: AsyncSession,
@@ -56,30 +56,30 @@ class {{REPOSITORY_CLASS_NAME}}:
     ) -> {{MODEL_CLASS_NAME}}:
         """
         Create a new {{ENTITY_NAME}} record.
-        
+
         Args:
             session: Database session
             request: {{ENTITY_NAME}} creation data
-            
+
         Returns:
             Created {{MODEL_CLASS_NAME}} instance
-            
+
         Raises:
             IntegrityError: If database constraint violation occurs
         """
         logger.debug(f"Creating {{ENTITY_NAME}} record: {request}")
-        
+
         # Convert schema to model
         db_item = {{MODEL_CLASS_NAME}}(**request.dict())
-        
+
         # Add to session
         session.add(db_item)
         await session.flush()
         await session.refresh(db_item)
-        
+
         logger.info(f"Created {{ENTITY_NAME}} record with ID: {db_item.id}")
         return db_item
-    
+
     async def get_by_id(
         self,
         session: AsyncSession,
@@ -87,20 +87,20 @@ class {{REPOSITORY_CLASS_NAME}}:
     ) -> Optional[{{MODEL_CLASS_NAME}}]:
         """
         Get a {{ENTITY_NAME}} by ID.
-        
+
         Args:
             session: Database session
             id: {{ENTITY_NAME}} identifier
-            
+
         Returns:
             {{MODEL_CLASS_NAME}} instance if found, None otherwise
         """
         logger.debug(f"Fetching {{ENTITY_NAME}} with ID: {id}")
-        
+
         stmt = select({{MODEL_CLASS_NAME}}).where({{MODEL_CLASS_NAME}}.id == id)
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
-    
+
     async def list_all(
         self,
         session: AsyncSession,
@@ -110,20 +110,20 @@ class {{REPOSITORY_CLASS_NAME}}:
     ) -> List[{{MODEL_CLASS_NAME}}]:
         """
         List all {{ENTITY_NAME}}s with pagination and optional filtering.
-        
+
         Args:
             session: Database session
             skip: Number of records to skip
             limit: Maximum number of records to return
             filter_by: Optional filter criteria (format: "field:value")
-            
+
         Returns:
             List of {{MODEL_CLASS_NAME}} instances
         """
         logger.debug(f"Listing {{ENTITY_NAME}}s: skip={skip}, limit={limit}, filter={filter_by}")
-        
+
         stmt = select({{MODEL_CLASS_NAME}})
-        
+
         # Apply filtering if provided
         if filter_by:
             # Parse filter string (e.g., "status:active")
@@ -133,16 +133,16 @@ class {{REPOSITORY_CLASS_NAME}}:
             #     field, value = filter_by.split(":", 1)
             #     stmt = stmt.where(getattr({{MODEL_CLASS_NAME}}, field) == value)
             pass
-        
+
         # Apply pagination
         stmt = stmt.offset(skip).limit(limit)
-        
+
         # Order by ID (or add custom ordering)
         stmt = stmt.order_by({{MODEL_CLASS_NAME}}.id.desc())
-        
+
         result = await session.execute(stmt)
         return list(result.scalars().all())
-    
+
     async def update(
         self,
         session: AsyncSession,
@@ -151,36 +151,36 @@ class {{REPOSITORY_CLASS_NAME}}:
     ) -> Optional[{{MODEL_CLASS_NAME}}]:
         """
         Update an existing {{ENTITY_NAME}}.
-        
+
         Args:
             session: Database session
             id: {{ENTITY_NAME}} identifier
             request: Updated {{ENTITY_NAME}} data
-            
+
         Returns:
             Updated {{MODEL_CLASS_NAME}} instance if found, None otherwise
-            
+
         Raises:
             IntegrityError: If database constraint violation occurs
         """
         logger.debug(f"Updating {{ENTITY_NAME}} with ID: {id}")
-        
+
         # Get existing record
         existing = await self.get_by_id(session, id)
         if not existing:
             return None
-        
+
         # Update fields from request
         update_data = request.dict(exclude_unset=True)
         for field, value in update_data.items():
             setattr(existing, field, value)
-        
+
         await session.flush()
         await session.refresh(existing)
-        
+
         logger.info(f"Updated {{ENTITY_NAME}} with ID: {id}")
         return existing
-    
+
     async def delete(
         self,
         session: AsyncSession,
@@ -188,27 +188,27 @@ class {{REPOSITORY_CLASS_NAME}}:
     ) -> bool:
         """
         Delete a {{ENTITY_NAME}}.
-        
+
         Args:
             session: Database session
             id: {{ENTITY_NAME}} identifier
-            
+
         Returns:
             True if deleted, False if not found
         """
         logger.debug(f"Deleting {{ENTITY_NAME}} with ID: {id}")
-        
+
         # Get existing record
         existing = await self.get_by_id(session, id)
         if not existing:
             return False
-        
+
         await session.delete(existing)
         await session.flush()
-        
+
         logger.info(f"Deleted {{ENTITY_NAME}} with ID: {id}")
         return True
-    
+
     async def count(
         self,
         session: AsyncSession,
@@ -216,22 +216,22 @@ class {{REPOSITORY_CLASS_NAME}}:
     ) -> int:
         """
         Count total number of {{ENTITY_NAME}}s.
-        
+
         Args:
             session: Database session
             filter_by: Optional filter criteria
-            
+
         Returns:
             Total count
         """
         logger.debug(f"Counting {{ENTITY_NAME}}s with filter: {filter_by}")
-        
+
         stmt = select({{MODEL_CLASS_NAME}})
-        
+
         # Apply filtering if provided
         if filter_by:
             # Add custom filter logic here
             pass
-        
+
         result = await session.execute(select(func.count()).select_from(stmt.subquery()))
         return result.scalar() or 0

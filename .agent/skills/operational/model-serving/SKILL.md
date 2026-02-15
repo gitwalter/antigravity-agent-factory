@@ -63,10 +63,10 @@ async def create_completion(request: CompletionRequest):
             max_tokens=request.max_tokens,
             stop=request.stop,
         )
-        
+
         outputs = llm.generate([request.prompt], sampling_params)
         output = outputs[0]
-        
+
         return CompletionResponse(
             text=output.outputs[0].text,
             finish_reason=output.outputs[0].finish_reason,
@@ -83,10 +83,10 @@ async def create_completion_batch(requests: List[CompletionRequest]):
         top_p=requests[0].top_p,
         max_tokens=requests[0].max_tokens,
     )
-    
+
     prompts = [req.prompt for req in requests]
     outputs = llm.generate(prompts, sampling_params)
-    
+
     return [
         {
             "text": output.outputs[0].text,
@@ -111,10 +111,10 @@ from typing import Iterator
 
 class TGIClient:
     """Client for HuggingFace Text Generation Inference server."""
-    
+
     def __init__(self, base_url: str = "http://localhost:8080"):
         self.base_url = base_url
-    
+
     def generate(
         self,
         prompt: str,
@@ -125,7 +125,7 @@ class TGIClient:
     ) -> str | Iterator[str]:
         """Generate text with TGI server."""
         url = f"{self.base_url}/generate"
-        
+
         payload = {
             "inputs": prompt,
             "parameters": {
@@ -135,7 +135,7 @@ class TGIClient:
                 "do_sample": True,
             },
         }
-        
+
         if stream:
             payload["parameters"]["details"] = True
             response = requests.post(
@@ -144,7 +144,7 @@ class TGIClient:
                 stream=True,
                 headers={"Content-Type": "application/json"},
             )
-            
+
             for line in response.iter_lines():
                 if line:
                     data = json.loads(line)
@@ -174,10 +174,10 @@ from typing import Iterator, Optional
 
 class OllamaClient:
     """Client for Ollama local model server."""
-    
+
     def __init__(self, base_url: str = "http://localhost:11434"):
         self.base_url = base_url
-    
+
     def generate(
         self,
         model: str,
@@ -187,7 +187,7 @@ class OllamaClient:
     ) -> str | Iterator[str]:
         """Generate with Ollama."""
         url = f"{self.base_url}/api/generate"
-        
+
         payload = {
             "model": model,
             "prompt": prompt,
@@ -195,9 +195,9 @@ class OllamaClient:
         }
         if system:
             payload["system"] = system
-        
+
         response = requests.post(url, json=payload, stream=stream)
-        
+
         if stream:
             for line in response.iter_lines():
                 if line:
@@ -208,7 +208,7 @@ class OllamaClient:
                         break
         else:
             return response.json()["response"]
-    
+
     def pull_model(self, model: str):
         """Pull model from Ollama registry."""
         url = f"{self.base_url}/api/pull"
@@ -238,20 +238,20 @@ app = FastAPI()
 
 class BatchQueue:
     """Batching queue for efficient inference."""
-    
+
     def __init__(self, batch_size: int = 8, timeout: float = 0.1):
         self.batch_size = batch_size
         self.timeout = timeout
         self.queue = deque()
         self.lock = asyncio.Lock()
-    
+
     async def add_request(self, request: dict) -> asyncio.Future:
         """Add request to batch queue."""
         future = asyncio.Future()
         async with self.lock:
             self.queue.append((request, future))
         return future
-    
+
     async def get_batch(self) -> List[tuple]:
         """Get batch of requests."""
         await asyncio.sleep(self.timeout)
@@ -276,18 +276,18 @@ async def process_batch(batch: List[tuple], model):
     """Process batch of requests."""
     requests = [req for req, _ in batch]
     futures = [future for _, future in batch]
-    
+
     # Batch inference
     prompts = [req["prompt"] for req in requests]
     start_time = time.time()
-    
+
     # Simulate batch inference
     results = await asyncio.gather(*[
         model.generate(prompt) for prompt in prompts
     ])
-    
+
     latency = (time.time() - start_time) * 1000
-    
+
     # Set results
     for future, result in zip(futures, results):
         future.set_result({
@@ -316,7 +316,7 @@ def optimize_gpu_memory(
     context_length: int = 4096,
 ):
     """Configure vLLM for optimal GPU memory usage."""
-    
+
     # Calculate optimal settings
     if available_memory_gb < 16:
         # Small GPU: Use quantization
@@ -333,7 +333,7 @@ def optimize_gpu_memory(
         quantization = None
         gpu_memory_utilization = 0.95
         max_model_len = 8192
-    
+
     llm = LLM(
         model=model_name,
         quantization=quantization,
@@ -342,7 +342,7 @@ def optimize_gpu_memory(
         enable_prefix_caching=True,
         enable_chunked_prefill=True,  # For long contexts
     )
-    
+
     return llm
 
 # Monitor GPU usage
@@ -354,7 +354,7 @@ def monitor_gpu():
             allocated = torch.cuda.memory_allocated(i) / 1e9
             reserved = torch.cuda.memory_reserved(i) / 1e9
             total = props.total_memory / 1e9
-            
+
             print(f"GPU {i}: {allocated:.2f}GB allocated, "
                   f"{reserved:.2f}GB reserved, {total:.2f}GB total")
 ```
@@ -370,12 +370,12 @@ import random
 
 class ModelLoadBalancer:
     """Load balancer for multiple model instances."""
-    
+
     def __init__(self, endpoints: List[str]):
         self.endpoints = endpoints
         self.client = httpx.AsyncClient(timeout=30.0)
         self.health_status = {endpoint: True for endpoint in endpoints}
-    
+
     async def health_check(self, endpoint: str) -> bool:
         """Check if endpoint is healthy."""
         try:
@@ -383,24 +383,24 @@ class ModelLoadBalancer:
             return response.status_code == 200
         except:
             return False
-    
+
     async def select_endpoint(self) -> str:
         """Select healthy endpoint using round-robin."""
         healthy = [
             ep for ep in self.endpoints
             if self.health_status.get(ep, False)
         ]
-        
+
         if not healthy:
             raise HTTPException(status_code=503, detail="No healthy endpoints")
-        
+
         return random.choice(healthy)  # Simple random, can use weighted
-    
+
     async def forward_request(self, path: str, payload: dict):
         """Forward request to selected endpoint."""
         endpoint = await self.select_endpoint()
         url = f"{endpoint}{path}"
-        
+
         try:
             response = await self.client.post(url, json=payload)
             return response.json()

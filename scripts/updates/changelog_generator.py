@@ -18,7 +18,7 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -49,6 +49,7 @@ CONVENTIONAL_COMMIT_PATTERN = re.compile(
 @dataclass
 class ChangelogEntry:
     """Represents a single entry in the changelog."""
+
     version: str
     date: str
     changes: Dict[str, List[str]]
@@ -63,7 +64,7 @@ class ChangelogEntry:
             "date": self.date,
             "changes": self.changes,
             "sources": self.sources,
-            "breaking": self.breaking
+            "breaking": self.breaking,
         }
         if self.migration_notes:
             data["migration"] = {"instructions": self.migration_notes}
@@ -73,29 +74,29 @@ class ChangelogEntry:
 class ChangelogGenerator:
     """
     Generates changelog from git commit history.
-    
+
     Parses git log, groups commits by type, and generates markdown
     changelog following conventional commits format.
     """
-    
+
     def __init__(self, root_dir: Path, changelog_path: Path):
         """
         Initialize generator.
-        
+
         Args:
             root_dir: Project root directory
             changelog_path: Path to CHANGELOG.md
         """
         self.root_dir = root_dir.resolve()
         self.changelog_path = changelog_path.resolve()
-    
+
     def get_git_log(self, since: Optional[str] = None) -> List[str]:
         """
         Get git log entries.
-        
+
         Args:
             since: Only get commits since this tag/commit
-            
+
         Returns:
             List of commit messages
         """
@@ -105,28 +106,24 @@ class ChangelogGenerator:
         else:
             # Get all commits
             cmd.append("--all")
-        
+
         try:
             result = subprocess.run(
-                cmd,
-                cwd=self.root_dir,
-                capture_output=True,
-                text=True,
-                timeout=30
+                cmd, cwd=self.root_dir, capture_output=True, text=True, timeout=30
             )
             if result.returncode != 0:
                 return []
             return [line.strip() for line in result.output.splitlines() if line.strip()]
         except Exception:
             return []
-    
+
     def parse_commit(self, message: str) -> Optional[Tuple[str, Optional[str], str]]:
         """
         Parse conventional commit message.
-        
+
         Args:
             message: Commit message
-            
+
         Returns:
             Tuple of (type, scope, description) or None if not conventional
         """
@@ -137,19 +134,21 @@ class ChangelogGenerator:
             description = match.group("description")
             return (commit_type, scope, description)
         return None
-    
-    def group_commits(self, commits: List[str]) -> Dict[str, List[Tuple[Optional[str], str]]]:
+
+    def group_commits(
+        self, commits: List[str]
+    ) -> Dict[str, List[Tuple[Optional[str], str]]]:
         """
         Group commits by type.
-        
+
         Args:
             commits: List of commit messages
-            
+
         Returns:
             Dict mapping commit types to lists of (scope, description) tuples
         """
         grouped = defaultdict(list)
-        
+
         for commit_msg in commits:
             parsed = self.parse_commit(commit_msg)
             if parsed:
@@ -159,28 +158,28 @@ class ChangelogGenerator:
             else:
                 # Non-conventional commit goes to "other"
                 grouped["other"].append((None, commit_msg))
-        
+
         return grouped
-    
+
     def generate_changelog_section(
         self,
         version: str,
         date: str,
-        grouped_commits: Dict[str, List[Tuple[Optional[str], str]]]
+        grouped_commits: Dict[str, List[Tuple[Optional[str], str]]],
     ) -> str:
         """
         Generate changelog section for a version.
-        
+
         Args:
             version: Version string
             date: Date string
             grouped_commits: Grouped commits
-            
+
         Returns:
             Markdown section
         """
         lines = [f"## [{version}] - {date}", ""]
-        
+
         # Add sections for each commit type
         for commit_type in COMMIT_TYPES.keys():
             if commit_type in grouped_commits and grouped_commits[commit_type]:
@@ -191,20 +190,20 @@ class ChangelogGenerator:
                     else:
                         lines.append(f"- {description}")
                 lines.append("")
-        
+
         # Add other commits if any
         if "other" in grouped_commits and grouped_commits["other"]:
             lines.append("### Other Changes", "")
             for _, description in grouped_commits["other"]:
                 lines.append(f"- {description}")
             lines.append("")
-        
+
         return "\n".join(lines)
-    
+
     def get_latest_version(self) -> Optional[str]:
         """
         Get latest version from git tags or CHANGELOG.md.
-        
+
         Returns:
             Version string or None
         """
@@ -215,38 +214,38 @@ class ChangelogGenerator:
                 cwd=self.root_dir,
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
             )
             if result.returncode == 0:
                 return result.stdout.strip()
         except Exception:
             pass
-        
+
         # Try reading from existing CHANGELOG.md
         if self.changelog_path.exists():
             content = self.changelog_path.read_text(encoding="utf-8")
             match = re.search(r"## \[([^\]]+)\]", content)
             if match:
                 return match.group(1)
-        
+
         return None
-    
+
     def generate_changelog(self, since: Optional[str] = None) -> str:
         """
         Generate full changelog.
-        
+
         Args:
             since: Only include commits since this tag
-            
+
         Returns:
             Markdown changelog
         """
         commits = self.get_git_log(since=since)
         grouped = self.group_commits(commits)
-        
+
         version = self.get_latest_version() or "Unreleased"
         date = datetime.now().strftime("%Y-%m-%d")
-        
+
         header = [
             "# Changelog",
             "",
@@ -256,9 +255,9 @@ class ChangelogGenerator:
             "and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).",
             "",
         ]
-        
+
         section = self.generate_changelog_section(version, date, grouped)
-        
+
         # Prepend to existing changelog if it exists
         if self.changelog_path.exists() and since:
             existing = self.changelog_path.read_text(encoding="utf-8")
@@ -270,94 +269,92 @@ class ChangelogGenerator:
                     insert_idx = i
                     break
             if insert_idx > 0:
-                return "\n".join(header) + "\n" + section + "\n" + existing[existing.find("## ["):]
-        
+                return (
+                    "\n".join(header)
+                    + "\n"
+                    + section
+                    + "\n"
+                    + existing[existing.find("## [") :]
+                )
+
         return "\n".join(header) + "\n" + section
-    
+
     def suggest_entry(self) -> str:
         """
         Suggest changelog entry for recent commits.
-        
+
         Returns:
             Suggested markdown entry
         """
         # Get commits since last tag
         latest_tag = self.get_latest_version()
         commits = self.get_git_log(since=latest_tag)
-        
+
         if not commits:
             return "No new commits since last version"
-        
+
         grouped = self.group_commits(commits)
         date = datetime.now().strftime("%Y-%m-%d")
-        
+
         return self.generate_changelog_section("Unreleased", date, grouped)
 
 
 def main():
     """Main entry point."""
-    if sys.platform == 'win32':
-        sys.stdout.reconfigure(encoding='utf-8')
+    if sys.platform == "win32":
+        sys.stdout.reconfigure(encoding="utf-8")
 
-    parser = argparse.ArgumentParser(
-        description="Generate changelog from git history"
+    parser = argparse.ArgumentParser(description="Generate changelog from git history")
+    parser.add_argument(
+        "--generate", action="store_true", help="Generate or update CHANGELOG.md"
     )
     parser.add_argument(
-        "--generate",
-        action="store_true",
-        help="Generate or update CHANGELOG.md"
-    )
-    parser.add_argument(
-        "--check",
-        action="store_true",
-        help="Check if changelog needs updating"
+        "--check", action="store_true", help="Check if changelog needs updating"
     )
     parser.add_argument(
         "--suggest",
         action="store_true",
-        help="Suggest changelog entry for recent commits"
+        help="Suggest changelog entry for recent commits",
     )
     parser.add_argument(
-        "--since",
-        type=str,
-        help="Only include commits since this tag/commit"
+        "--since", type=str, help="Only include commits since this tag/commit"
     )
     parser.add_argument(
         "--output",
         type=str,
         default="CHANGELOG.md",
-        help="Output changelog file (default: CHANGELOG.md)"
+        help="Output changelog file (default: CHANGELOG.md)",
     )
     parser.add_argument(
         "--root",
         type=str,
         default=".",
-        help="Project root directory (default: current directory)"
+        help="Project root directory (default: current directory)",
     )
-    
+
     args = parser.parse_args()
-    
+
     root_dir = Path(args.root).resolve()
     changelog_path = root_dir / args.output
-    
+
     # Check if git repo
     git_dir = root_dir / ".git"
     if not git_dir.exists():
         print("❌ Not a git repository")
         return 1
-    
+
     generator = ChangelogGenerator(root_dir, changelog_path)
-    
+
     if args.suggest:
         suggestion = generator.suggest_entry()
         print(suggestion)
         return 0
-    
+
     if args.check:
         # Check if there are new commits not in changelog
         latest_tag = generator.get_latest_version()
         commits = generator.get_git_log(since=latest_tag)
-        
+
         if commits:
             print(f"⚠️  Found {len(commits)} new commit(s) since last version")
             print("   Run with --generate to update CHANGELOG.md")
@@ -365,7 +362,7 @@ def main():
         else:
             print("✅ Changelog is up to date")
             return 0
-    
+
     # Default: generate
     changelog_content = generator.generate_changelog(since=args.since)
     changelog_path.parent.mkdir(parents=True, exist_ok=True)

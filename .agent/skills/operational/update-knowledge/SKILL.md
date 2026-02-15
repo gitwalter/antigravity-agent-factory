@@ -51,12 +51,12 @@ configuration_check:
   load_settings:
     file: {directories.config}/settings.json
     section: knowledge_evolution
-  
+
   validate:
     - mode is valid (stability_first, awareness_hybrid, freshness_first, subscription)
     - sources are configured
     - credentials are available (if needed)
-  
+
   apply_mode:
     stability_first:
       action: Only check, never auto-apply
@@ -82,23 +82,23 @@ fetch_updates:
     - adapter: github
       enabled: ${sources.github_trending}
       action: Check tracked repositories using `get_latest_release` and `search_repositories`
-    
+
     - adapter: pypi
       enabled: ${sources.package_registries}
       action: Check Python packages for updates
-    
+
     - adapter: npm
       enabled: ${sources.package_registries}
       action: Check NPM packages for updates
-    
+
     - adapter: official_docs
       enabled: ${sources.official_docs}
       action: Check documentation sources
-    
+
     - adapter: community
       enabled: ${sources.community_curated}
       action: Check community sources
-  
+
   aggregate:
     action: Combine all updates
     deduplicate: By target_file + source
@@ -154,7 +154,7 @@ preview_options:
     action: Show JSON diff for selected file
     format: Side-by-side comparison
     highlight: Added, changed, removed sections
-  
+
   show_changelog:
     action: Show changelog entries
     include:
@@ -162,7 +162,7 @@ preview_options:
       - Change descriptions
       - Source links
       - Breaking change warnings
-  
+
   show_impact:
     action: Analyze impact on project
     check:
@@ -181,40 +181,40 @@ apply_updates:
     - Create backup of current files
     - Validate update checksums
     - Check for conflicts
-  
+
   apply_options:
     all:
       action: Apply all updates
       confirm: "Apply {count} updates?"
-    
+
     selected:
       action: Apply user-selected updates
       prompt: "Select updates to apply"
-    
+
     by_priority:
       action: Apply updates above threshold
       prompt: "Apply CRITICAL and HIGH priority? (y/n)"
-    
+
     by_file:
       action: Apply updates to specific file
       prompt: "Which file to update?"
-  
+
   apply_process:
     1_backup:
       action: Create timestamped backup
       path: {directories.knowledge}/backups/{filename}.{timestamp}.json
-    
+
     2_merge:
       action: Apply changes using merge strategy
       strategies:
         conservative: Only add, never modify
         balanced: Add and update, preserve custom
         aggressive: Full replacement
-    
+
     3_validate:
       action: Validate merged content against schema
       on_error: Rollback and report
-    
+
     4_update_manifest:
       action: Update manifest.json with new versions
       record: timestamp, source, changes
@@ -233,7 +233,7 @@ rollback_options:
       - Backup timestamp
       - Version before backup
       - Changes that were applied
-  
+
   rollback_file:
     action: Rollback specific file
     process:
@@ -241,7 +241,7 @@ rollback_options:
       2: Confirm rollback
       3: Restore file from backup
       4: Update manifest
-  
+
   rollback_batch:
     action: Rollback entire update batch
     process:

@@ -62,7 +62,7 @@ Run the repository analyzer to detect existing artifacts:
 python cli/factory_cli.py --analyze <repo_path>
 ```
 
-**MCP Tools:** 
+**MCP Tools:**
 - **github**: Use `search_repositories` to verify remote existence.
 
 
@@ -297,7 +297,7 @@ If a team (2+ people) is onboarding together, suggest the Team Workshop Onboardi
 "I notice you mentioned a team. Would you like to:
 
 A) Individual Onboarding - I'll analyze and enhance your repo now
-B) Team Workshop Series - Collaborative 5-workshop journey with games 
+B) Team Workshop Series - Collaborative 5-workshop journey with games
    and discussions that builds shared vision, ethics, and custom agents
 
 The workshop series takes more time but creates deeper team alignment

@@ -8,8 +8,8 @@ description: Multi-agent coordination testing and validation workflow. Covers ha
 
 Multi-agent coordination testing and validation workflow. Covers handoff verification, conflict resolution, result aggregation, and end-to-end coordination quality.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-10  
+**Version:** 1.0.0
+**Created:** 2026-02-10
 **Applies To:** multi-agent-systems, crewai, langgraph
 
 ## Trigger Conditions

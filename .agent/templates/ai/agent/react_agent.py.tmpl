@@ -42,7 +42,7 @@ class ReActStep(BaseModel):
 class {{AGENT_CLASS_NAME}}Output(BaseModel):
     """
     Structured output for {{AGENT_NAME}} ReAct agent.
-    
+
     Using structured output ensures verifiability (A1).
     """
     final_answer: str = Field(description="Final answer to the user's query")
@@ -67,13 +67,13 @@ class {{AGENT_CLASS_NAME}}Output(BaseModel):
 def {{TOOL_FUNCTION_NAME}}(query: str) -> str:
     """
     {{TOOL_DESCRIPTION}}
-    
+
     Args:
         query: Input query to process
-    
+
     Returns:
         Tool output result
-    
+
     Example:
         >>> result = {{TOOL_FUNCTION_NAME}}("example query")
         >>> print(result)
@@ -86,20 +86,20 @@ def {{TOOL_FUNCTION_NAME}}(query: str) -> str:
 class {{AGENT_CLASS_NAME}}:
     """
     {{AGENT_NAME}} - ReAct (Reasoning and Acting) Agent
-    
+
     Implements the ReAct pattern where the agent:
     1. Reasons about the current situation
     2. Acts by selecting and executing tools
     3. Observes the results
     4. Repeats until task completion
-    
+
     This agent follows the 5-layer architecture:
     - Layer 0: Respects core axioms (A1-A5)
     - Layer 1: Serves purpose of {{AGENT_PURPOSE}}
     - Layer 2: Follows quality standards and ethical boundaries
     - Layer 3: Works within {{METHODOLOGY}} methodology
     - Layer 4: Uses {{TECH_STACK}} stack
-    
+
     Example:
         >>> agent = {{AGENT_CLASS_NAME}}()
         >>> result = agent.run("{{EXAMPLE_QUERY}}")
@@ -108,12 +108,12 @@ class {{AGENT_CLASS_NAME}}:
         ...     print(f"Thought: {step.thought}")
         ...     print(f"Action: {step.action}")
     """
-    
+
     # Configuration
     MODEL_NAME = "{{LLM_MODEL}}"
     TEMPERATURE = {{TEMPERATURE}}
     MAX_ITERATIONS = 15  # Prevent infinite loops (A4)
-    
+
     def __init__(
         self,
         model_name: Optional[str] = None,
@@ -124,7 +124,7 @@ class {{AGENT_CLASS_NAME}}:
     ):
         """
         Initialize the {{AGENT_NAME}} ReAct agent.
-        
+
         Args:
             model_name: LLM model to use (default: {{LLM_MODEL}})
             temperature: Sampling temperature (default: {{TEMPERATURE}})
@@ -136,26 +136,26 @@ class {{AGENT_CLASS_NAME}}:
         self.temperature = temperature if temperature is not None else self.TEMPERATURE
         self.max_iterations = max_iterations or self.MAX_ITERATIONS
         self.verbose = verbose
-        
+
         # Initialize LLM
         self.llm = ChatOpenAI(
             model=self.model_name,
             temperature=self.temperature
         )
-        
+
         # Default tools if none provided
         self.tools = tools or [{{TOOL_FUNCTION_NAME}}]
-        
+
         # Create ReAct prompt template
         self.prompt = self._create_react_prompt()
-        
+
         # Create ReAct agent
         self.agent = create_react_agent(
             llm=self.llm,
             tools=self.tools,
             prompt=self.prompt
         )
-        
+
         # Create executor
         self.executor = AgentExecutor(
             agent=self.agent,
@@ -165,14 +165,14 @@ class {{AGENT_CLASS_NAME}}:
             handle_parsing_errors=True,
             return_intermediate_steps=True
         )
-        
+
         logger.info(f"Initialized {{AGENT_NAME}} ReAct agent with model {self.model_name}")
         logger.info(f"Available tools: {[tool.name for tool in self.tools]}")
-    
+
     def _create_react_prompt(self) -> PromptTemplate:
         """
         Create the ReAct prompt template.
-        
+
         The ReAct prompt follows this structure:
         - Question: User's query
         - Thought: Agent's reasoning
@@ -229,9 +229,9 @@ Begin!
 Question: {input}
 Thought: {agent_scratchpad}
 """
-        
+
         return PromptTemplate.from_template(react_prompt)
-    
+
     def run(
         self,
         query: str,
@@ -239,43 +239,43 @@ Thought: {agent_scratchpad}
     ) -> {{AGENT_CLASS_NAME}}Output:
         """
         Run the ReAct agent with a query.
-        
+
         Args:
             query: User's query/question
             chat_history: Optional conversation history
-            
+
         Returns:
             Structured output with reasoning steps and final answer
-            
+
         Example:
             >>> result = agent.run("What is the weather in San Francisco?")
             >>> print(result.final_answer)
             >>> print(f"Used {result.iterations} reasoning steps")
         """
         logger.info(f"Processing query: {query[:100]}...")
-        
+
         try:
             # Prepare input
             agent_input = {
                 "input": query,
                 "chat_history": chat_history or []
             }
-            
+
             # Execute agent
             result = self.executor.invoke(agent_input)
-            
+
             # Extract intermediate steps for reasoning trace
             reasoning_steps = []
             tool_calls = []
-            
+
             if "intermediate_steps" in result:
                 for step in result["intermediate_steps"]:
                     agent_action = step[0]
                     tool_output = step[1]
-                    
+
                     # Extract thought from agent action log
                     thought = getattr(agent_action, 'log', '')
-                    
+
                     reasoning_step = ReActStep(
                         thought=thought,
                         action=agent_action.tool if hasattr(agent_action, 'tool') else None,
@@ -283,19 +283,19 @@ Thought: {agent_scratchpad}
                         observation=str(tool_output)[:500]  # Truncate long observations
                     )
                     reasoning_steps.append(reasoning_step)
-                    
+
                     tool_calls.append({
                         "tool": agent_action.tool if hasattr(agent_action, 'tool') else 'unknown',
                         "input": agent_action.tool_input if hasattr(agent_action, 'tool_input') else {},
                         "output": str(tool_output)[:200]
                     })
-            
+
             # Check if confirmation is needed (A2)
             requires_confirmation = self._check_confirmation_needed(result.get("output", ""))
-            
+
             # Estimate confidence based on iterations and tool usage
             confidence = self._estimate_confidence(len(reasoning_steps), result.get("output", ""))
-            
+
             output = {{AGENT_CLASS_NAME}}Output(
                 final_answer=result.get("output", "No answer generated"),
                 reasoning_steps=reasoning_steps,
@@ -304,12 +304,12 @@ Thought: {agent_scratchpad}
                 confidence=confidence,
                 requires_confirmation=requires_confirmation
             )
-            
+
             logger.info(f"ReAct agent completed in {len(reasoning_steps)} iterations")
             logger.info(f"Final answer confidence: {confidence:.2f}")
-            
+
             return output
-            
+
         except Exception as e:
             logger.error(f"Error during ReAct agent execution: {e}", exc_info=True)
             return {{AGENT_CLASS_NAME}}Output(
@@ -320,14 +320,14 @@ Thought: {agent_scratchpad}
                 confidence=0.0,
                 requires_confirmation=False
             )
-    
+
     def _check_confirmation_needed(self, output: str) -> bool:
         """
         Check if output indicates confirmation is needed (A2).
-        
+
         Args:
             output: Agent output text
-            
+
         Returns:
             True if confirmation is needed
         """
@@ -337,21 +337,21 @@ Thought: {agent_scratchpad}
             "execute", "run", "install"
         ]
         return any(keyword in output.lower() for keyword in confirmation_keywords)
-    
+
     def _estimate_confidence(self, iterations: int, output: str) -> float:
         """
         Estimate confidence in the final answer.
-        
+
         Args:
             iterations: Number of reasoning steps
             output: Final answer text
-            
+
         Returns:
             Confidence score between 0 and 1
         """
         # Base confidence
         confidence = 0.7
-        
+
         # Adjust based on iterations (too few or too many reduces confidence)
         if iterations == 0:
             confidence = 0.3
@@ -359,15 +359,15 @@ Thought: {agent_scratchpad}
             confidence = 0.8
         elif iterations > 10:
             confidence = 0.6
-        
+
         # Adjust based on output quality indicators
         if "error" in output.lower() or "unable" in output.lower():
             confidence *= 0.5
         if "?" in output or "uncertain" in output.lower():
             confidence *= 0.8
-        
+
         return min(confidence, 1.0)
-    
+
     async def arun(
         self,
         query: str,
@@ -375,34 +375,34 @@ Thought: {agent_scratchpad}
     ) -> {{AGENT_CLASS_NAME}}Output:
         """
         Async version of run.
-        
+
         Args:
             query: User's query/question
             chat_history: Optional conversation history
-            
+
         Returns:
             Structured output with reasoning steps and final answer
         """
         logger.info(f"Processing query (async): {query[:100]}...")
-        
+
         try:
             agent_input = {
                 "input": query,
                 "chat_history": chat_history or []
             }
-            
+
             result = await self.executor.ainvoke(agent_input)
-            
+
             reasoning_steps = []
             tool_calls = []
-            
+
             if "intermediate_steps" in result:
                 for step in result["intermediate_steps"]:
                     agent_action = step[0]
                     tool_output = step[1]
-                    
+
                     thought = getattr(agent_action, 'log', '')
-                    
+
                     reasoning_step = ReActStep(
                         thought=thought,
                         action=agent_action.tool if hasattr(agent_action, 'tool') else None,
@@ -410,16 +410,16 @@ Thought: {agent_scratchpad}
                         observation=str(tool_output)[:500]
                     )
                     reasoning_steps.append(reasoning_step)
-                    
+
                     tool_calls.append({
                         "tool": agent_action.tool if hasattr(agent_action, 'tool') else 'unknown',
                         "input": agent_action.tool_input if hasattr(agent_action, 'tool_input') else {},
                         "output": str(tool_output)[:200]
                     })
-            
+
             requires_confirmation = self._check_confirmation_needed(result.get("output", ""))
             confidence = self._estimate_confidence(len(reasoning_steps), result.get("output", ""))
-            
+
             return {{AGENT_CLASS_NAME}}Output(
                 final_answer=result.get("output", "No answer generated"),
                 reasoning_steps=reasoning_steps,
@@ -428,7 +428,7 @@ Thought: {agent_scratchpad}
                 confidence=confidence,
                 requires_confirmation=requires_confirmation
             )
-            
+
         except Exception as e:
             logger.error(f"Error during async ReAct agent execution: {e}")
             return {{AGENT_CLASS_NAME}}Output(
@@ -448,10 +448,10 @@ if __name__ == "__main__":
         model_name="{{LLM_MODEL}}",
         verbose=True
     )
-    
+
     # Run agent
     result = agent.run("{{EXAMPLE_QUERY}}")
-    
+
     print(f"\n{'='*60}")
     print(f"Final Answer: {result.final_answer}")
     print(f"{'='*60}")
@@ -464,7 +464,7 @@ if __name__ == "__main__":
             print(f"  Input: {step.action_input}")
         if step.observation:
             print(f"  Observation: {step.observation[:200]}...")
-    
+
     print(f"\nConfidence: {result.confidence:.2%}")
     if result.requires_confirmation:
         print("⚠️  This action requires user confirmation")

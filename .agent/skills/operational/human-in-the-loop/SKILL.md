@@ -36,20 +36,20 @@ async def execute_action(state: WorkflowState) -> dict:
     """Execute approved action."""
     if not state["approved"]:
         return {"result": "Action rejected by user"}
-    
+
     result = await execute(state["proposed_action"])
     return {"result": result}
 
 def create_hitl_graph():
     graph = StateGraph(WorkflowState)
-    
+
     graph.add_node("propose", propose_action)
     graph.add_node("execute", execute_action)
-    
+
     graph.set_entry_point("propose")
     graph.add_edge("propose", "execute")
     graph.add_edge("execute", END)
-    
+
     # Compile with interrupt BEFORE execute
     return graph.compile(
         checkpointer=MemorySaver(),
@@ -64,25 +64,25 @@ app = create_hitl_graph()
 
 async def run_with_approval(task: str, thread_id: str):
     config = {"configurable": {"thread_id": thread_id}}
-    
+
     # Run until interrupt
     result = await app.ainvoke(
         {"task": task, "approved": None},
         config
     )
-    
+
     # Show proposal to user
     print(f"Proposed action: {result['proposed_action']}")
-    
+
     # Get user approval (in real app, this would be async/UI)
     approved = input("Approve? (y/n): ").lower() == "y"
-    
+
     # Continue with approval decision
     final = await app.ainvoke(
         {"approved": approved},
         config
     )
-    
+
     return final
 ```
 
@@ -108,10 +108,10 @@ def should_continue(state: MultiStepState) -> str:
 
 def create_multi_approval_graph():
     graph = StateGraph(MultiStepState)
-    
+
     graph.add_node("process", process_step)
     graph.add_node("review", lambda s: s)  # Interrupt point
-    
+
     graph.set_entry_point("process")
     graph.add_edge("process", "review")
     graph.add_conditional_edges(
@@ -119,7 +119,7 @@ def create_multi_approval_graph():
         should_continue,
         {"next_step": "process", "complete": END}
     )
-    
+
     return graph.compile(
         checkpointer=MemorySaver(),
         interrupt_after=["process"]  # Pause after each step
@@ -136,7 +136,7 @@ class ConfirmationLevel(str, Enum):
     INFO = "info"       # Just notify
     CONFIRM = "confirm" # Simple yes/no
     VERIFY = "verify"   # Require typing confirmation
-    
+
 class ConfirmationRequest(BaseModel):
     action: str
     level: ConfirmationLevel
@@ -145,24 +145,24 @@ class ConfirmationRequest(BaseModel):
 
 async def request_confirmation(request: ConfirmationRequest) -> bool:
     """Request user confirmation based on level."""
-    
+
     if request.level == ConfirmationLevel.INFO:
         print(f"[INFO] {request.action}")
         return True
-    
+
     elif request.level == ConfirmationLevel.CONFIRM:
         print(f"[CONFIRM] {request.action}")
         print(f"Details: {request.details}")
         response = input("Proceed? (y/n): ")
         return response.lower() == "y"
-    
+
     elif request.level == ConfirmationLevel.VERIFY:
         print(f"[VERIFY] {request.action}")
         print(f"Details: {request.details}")
         print(f"Type '{request.verification_phrase}' to confirm:")
         response = input("> ")
         return response == request.verification_phrase
-    
+
     return False
 
 # Usage in agent
@@ -173,7 +173,7 @@ async def delete_resource(resource_id: str):
         details={"resource_id": resource_id, "type": "database"},
         verification_phrase=f"DELETE {resource_id}"
     ))
-    
+
     if confirmed:
         await perform_deletion(resource_id)
 ```
@@ -193,17 +193,17 @@ class UserFeedback(BaseModel):
 async def collect_feedback(run_id: str, output: str) -> UserFeedback:
     """Collect user feedback on agent output."""
     print(f"Agent output: {output}")
-    
+
     score = float(input("Rate 0-1: "))
     comment = input("Comments (optional): ") or None
-    
+
     feedback = UserFeedback(
         run_id=run_id,
         score=score,
         feedback_type="helpfulness",
         comment=comment
     )
-    
+
     # Log to LangSmith
     client = Client()
     client.create_feedback(
@@ -212,7 +212,7 @@ async def collect_feedback(run_id: str, output: str) -> UserFeedback:
         score=feedback.score,
         comment=feedback.comment
     )
-    
+
     return feedback
 ```
 
@@ -231,20 +231,20 @@ class EscalationManager:
     def __init__(self):
         self.current_level = EscalationLevel.AGENT
         self.escalation_history = []
-    
+
     def should_escalate(self, result: dict) -> bool:
         """Determine if escalation is needed."""
         confidence = result.get("confidence", 1.0)
         error = result.get("error")
         sensitive = result.get("sensitive", False)
-        
+
         return confidence < 0.7 or error or sensitive
-    
+
     def escalate(self, reason: str) -> EscalationLevel:
         """Escalate to next level."""
         levels = list(EscalationLevel)
         current_idx = levels.index(self.current_level)
-        
+
         if current_idx < len(levels) - 1:
             self.current_level = levels[current_idx + 1]
             self.escalation_history.append({
@@ -252,18 +252,18 @@ class EscalationManager:
                 "to": self.current_level,
                 "reason": reason
             })
-        
+
         return self.current_level
 
 # In workflow
 async def process_with_escalation(state: dict) -> dict:
     escalation = EscalationManager()
-    
+
     result = await agent_process(state)
-    
+
     while escalation.should_escalate(result):
         level = escalation.escalate(result.get("error", "low confidence"))
-        
+
         if level == EscalationLevel.HUMAN:
             # Wait for human input
             result = await wait_for_human_review(state, result)
@@ -271,7 +271,7 @@ async def process_with_escalation(state: dict) -> dict:
         else:
             # Try with more capable agent
             result = await escalated_agent_process(state, level)
-    
+
     return result
 ```
 

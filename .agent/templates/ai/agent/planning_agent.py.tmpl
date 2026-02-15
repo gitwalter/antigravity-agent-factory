@@ -57,7 +57,7 @@ class PlanStep(BaseModel):
 class ExecutionPlan(BaseModel):
     """
     A complete execution plan.
-    
+
     Contains multiple steps that can be executed sequentially or in parallel.
     """
     plan_id: str = Field(description="Unique plan identifier")
@@ -71,7 +71,7 @@ class ExecutionPlan(BaseModel):
 class {{AGENT_CLASS_NAME}}Output(BaseModel):
     """
     Structured output for planning and execution agent.
-    
+
     Using structured output ensures verifiability (A1).
     """
     plan: ExecutionPlan = Field(description="The execution plan")
@@ -88,18 +88,18 @@ class {{AGENT_CLASS_NAME}}Output(BaseModel):
 class {{AGENT_CLASS_NAME}}:
     """
     {{AGENT_NAME}} - Planning and Execution Agent
-    
+
     Implements a two-phase approach:
     1. **Planning Phase**: Analyzes the task and creates a detailed execution plan
     2. **Execution Phase**: Executes the plan step-by-step, adapting as needed
-    
+
     This agent follows the 5-layer architecture:
     - Layer 0: Respects core axioms (A1-A5)
     - Layer 1: Serves purpose of {{AGENT_PURPOSE}}
     - Layer 2: Follows quality standards and ethical boundaries
     - Layer 3: Works within {{METHODOLOGY}} methodology
     - Layer 4: Uses {{TECH_STACK}} stack
-    
+
     Example:
         >>> agent = {{AGENT_CLASS_NAME}}()
         >>> result = await agent.plan_and_execute("{{EXAMPLE_TASK}}")
@@ -107,13 +107,13 @@ class {{AGENT_CLASS_NAME}}:
         >>> for step in result.plan.steps:
         ...     print(f"Step {step.step_id}: {step.status.value}")
     """
-    
+
     # Configuration
     MODEL_NAME = "{{LLM_MODEL}}"
     TEMPERATURE = {{TEMPERATURE}}
     MAX_PLAN_STEPS = {{MAX_PLAN_STEPS}}
     AUTO_CONFIRM = {{AUTO_CONFIRM}}  # Set to False to require user confirmation
-    
+
     def __init__(
         self,
         model_name: Optional[str] = None,
@@ -123,7 +123,7 @@ class {{AGENT_CLASS_NAME}}:
     ):
         """
         Initialize the planning and execution agent.
-        
+
         Args:
             model_name: LLM model to use (default: {{LLM_MODEL}})
             temperature: Sampling temperature (default: {{TEMPERATURE}})
@@ -134,22 +134,22 @@ class {{AGENT_CLASS_NAME}}:
         self.temperature = temperature if temperature is not None else self.TEMPERATURE
         self.tools = tools or []
         self.auto_confirm = auto_confirm if auto_confirm is not None else self.AUTO_CONFIRM
-        
+
         # Initialize LLM
         self.llm = ChatOpenAI(
             model=self.model_name,
             temperature=self.temperature
         )
-        
+
         # Planning prompt
         self.planning_prompt = self._create_planning_prompt()
-        
+
         # Execution prompt
         self.execution_prompt = self._create_execution_prompt()
-        
+
         logger.info(f"Initialized {{AGENT_NAME}} with model {self.model_name}")
         logger.info(f"Auto-confirm: {self.auto_confirm}")
-    
+
     def _create_planning_prompt(self) -> ChatPromptTemplate:
         """Create prompt template for planning phase."""
         return ChatPromptTemplate.from_messages([
@@ -186,7 +186,7 @@ Return the plan in a structured format.
 """),
             ("human", "Task: {task}\nContext: {context}")
         ])
-    
+
     def _create_execution_prompt(self) -> ChatPromptTemplate:
         """Create prompt template for execution phase."""
         return ChatPromptTemplate.from_messages([
@@ -208,7 +208,7 @@ Current Context: {context}
 
 Execute this step and report the result.""")
         ])
-    
+
     async def plan_and_execute(
         self,
         task: str,
@@ -217,15 +217,15 @@ Execute this step and report the result.""")
     ) -> {{AGENT_CLASS_NAME}}Output:
         """
         Plan and execute a task.
-        
+
         Args:
             task: Task to plan and execute
             context: Optional additional context
             user_confirmed: Whether user has confirmed the plan (if None, uses auto_confirm)
-            
+
         Returns:
             Structured output with plan and execution results
-            
+
         Example:
             >>> result = await agent.plan_and_execute(
             ...     "Analyze sales data and generate report",
@@ -234,15 +234,15 @@ Execute this step and report the result.""")
         """
         start_time = datetime.now()
         logger.info(f"Planning and executing task: {task[:100]}...")
-        
+
         try:
             # Phase 1: Planning
             plan = await self._create_plan(task, context)
-            
+
             # Phase 2: Confirmation (A2)
             if user_confirmed is None:
                 user_confirmed = self.auto_confirm
-            
+
             if plan.requires_confirmation and not user_confirmed:
                 logger.info("Plan requires user confirmation (A2)")
                 return {{AGENT_CLASS_NAME}}Output(
@@ -253,15 +253,15 @@ Execute this step and report the result.""")
                     total_execution_time=(datetime.now() - start_time).total_seconds(),
                     success=False
                 )
-            
+
             # Phase 3: Execution
             execution_results, plan_adapted = await self._execute_plan(plan, context)
-            
+
             # Phase 4: Synthesis
             final_result = await self._synthesize_results(plan, execution_results)
-            
+
             execution_time = (datetime.now() - start_time).total_seconds()
-            
+
             output = {{AGENT_CLASS_NAME}}Output(
                 plan=plan,
                 execution_results=execution_results,
@@ -270,14 +270,14 @@ Execute this step and report the result.""")
                 total_execution_time=execution_time,
                 success=all(step.status == PlanStepStatus.COMPLETED for step in plan.steps)
             )
-            
+
             logger.info(f"Plan execution completed in {execution_time:.2f}s")
             return output
-            
+
         except Exception as e:
             logger.error(f"Error during plan and execute: {e}", exc_info=True)
             execution_time = (datetime.now() - start_time).total_seconds()
-            
+
             return {{AGENT_CLASS_NAME}}Output(
                 plan=ExecutionPlan(
                     plan_id="error",
@@ -291,7 +291,7 @@ Execute this step and report the result.""")
                 total_execution_time=execution_time,
                 success=False
             )
-    
+
     async def _create_plan(
         self,
         task: str,
@@ -299,22 +299,22 @@ Execute this step and report the result.""")
     ) -> ExecutionPlan:
         """
         Create an execution plan for the task.
-        
+
         Args:
             task: Task to plan
             context: Optional context
-            
+
         Returns:
             Execution plan
         """
         logger.info("Creating execution plan...")
-        
+
         chain = self.planning_prompt | self.llm
         response = await chain.ainvoke({
             "task": task,
             "context": str(context) if context else "None"
         })
-        
+
         # Parse response into plan
         # In production, use structured output parsing
         # For now, create a simple plan
@@ -328,17 +328,17 @@ Execute this step and report the result.""")
             )
             for i in range(min(3, self.MAX_PLAN_STEPS))  # Simplified: 3 steps
         ]
-        
+
         plan = ExecutionPlan(
             plan_id=f"plan-{datetime.now().timestamp()}",
             goal=task,
             steps=steps,
             requires_confirmation=True  # Default to requiring confirmation (A2)
         )
-        
+
         logger.info(f"Created plan with {len(steps)} steps")
         return plan
-    
+
     async def _execute_plan(
         self,
         plan: ExecutionPlan,
@@ -346,66 +346,66 @@ Execute this step and report the result.""")
     ) -> tuple[List[Dict[str, Any]], bool]:
         """
         Execute the plan step by step.
-        
+
         Args:
             plan: Execution plan
             context: Optional context
-            
+
         Returns:
             Tuple of (execution results, plan_adapted flag)
         """
         logger.info(f"Executing plan with {len(plan.steps)} steps...")
-        
+
         execution_results = []
         plan_adapted = False
         previous_results = {}
-        
+
         for step in plan.steps:
             # Wait for dependencies
             for dep_id in step.dependencies:
                 if dep_id not in previous_results:
                     logger.warning(f"Step {step.step_id} waiting for dependency {dep_id}")
                     await asyncio.sleep(0.1)  # Simplified wait
-            
+
             # Execute step
             step.status = PlanStepStatus.IN_PROGRESS
             step_start = datetime.now()
-            
+
             try:
                 result = await self._execute_step(step, previous_results, context)
-                
+
                 step.status = PlanStepStatus.COMPLETED
                 step.actual_output = result.get("output", "")
                 step.execution_time = (datetime.now() - step_start).total_seconds()
-                
+
                 execution_results.append({
                     "step_id": step.step_id,
                     "status": "completed",
                     "output": step.actual_output,
                     "execution_time": step.execution_time
                 })
-                
+
                 previous_results[step.step_id] = step.actual_output
-                
+
             except Exception as e:
                 logger.error(f"Step {step.step_id} failed: {e}")
                 step.status = PlanStepStatus.FAILED
                 step.error = str(e)
                 step.execution_time = (datetime.now() - step_start).total_seconds()
-                
+
                 execution_results.append({
                     "step_id": step.step_id,
                     "status": "failed",
                     "error": str(e),
                     "execution_time": step.execution_time
                 })
-                
+
                 # Adapt plan if step fails
                 plan_adapted = True
                 # In production, create recovery steps
-        
+
         return execution_results, plan_adapted
-    
+
     async def _execute_step(
         self,
         step: PlanStep,
@@ -414,17 +414,17 @@ Execute this step and report the result.""")
     ) -> Dict[str, Any]:
         """
         Execute a single plan step.
-        
+
         Args:
             step: Step to execute
             previous_results: Results from previous steps
             context: Optional context
-            
+
         Returns:
             Step execution result
         """
         logger.info(f"Executing step {step.step_id}: {step.description}")
-        
+
         chain = self.execution_prompt | self.llm
         response = await chain.ainvoke({
             "step_description": step.description,
@@ -432,11 +432,11 @@ Execute this step and report the result.""")
             "previous_results": str(previous_results),
             "context": str(context) if context else "None"
         })
-        
+
         output = response.content if hasattr(response, 'content') else str(response)
-        
+
         return {"output": output}
-    
+
     async def _synthesize_results(
         self,
         plan: ExecutionPlan,
@@ -444,11 +444,11 @@ Execute this step and report the result.""")
     ) -> str:
         """
         Synthesize execution results into final answer.
-        
+
         Args:
             plan: Original plan
             execution_results: Results from execution
-            
+
         Returns:
             Synthesized final result
         """
@@ -457,41 +457,41 @@ Execute this step and report the result.""")
             Consider all completed steps and their outputs.
             """),
             ("human", """Goal: {goal}
-            
+
 Execution Results:
 {results}
 
 Provide a comprehensive final answer.""")
         ])
-        
+
         results_text = "\n".join([
             f"Step {r['step_id']} ({r['status']}): {r.get('output', r.get('error', 'N/A'))}"
             for r in execution_results
         ])
-        
+
         chain = prompt | self.llm
         response = await chain.ainvoke({
             "goal": plan.goal,
             "results": results_text
         })
-        
+
         return response.content if hasattr(response, 'content') else str(response)
 
 
 # Example usage
 if __name__ == "__main__":
     import asyncio
-    
+
     async def main():
         # Create planning agent
         agent = {{AGENT_CLASS_NAME}}(
             model_name="{{LLM_MODEL}}",
             auto_confirm=True  # Set to False to require confirmation
         )
-        
+
         # Plan and execute
         result = await agent.plan_and_execute("{{EXAMPLE_TASK}}")
-        
+
         print(f"\n{'='*60}")
         print(f"Goal: {result.plan.goal}")
         print(f"{'='*60}")
@@ -503,14 +503,14 @@ if __name__ == "__main__":
                 PlanStepStatus.IN_PROGRESS: "→",
                 PlanStepStatus.PENDING: "○"
             }.get(step.status, "?")
-            
+
             print(f"\n{status_icon} Step {step.step_id}: {step.description}")
             print(f"   Status: {step.status.value}")
             if step.actual_output:
                 print(f"   Output: {step.actual_output[:100]}...")
             if step.error:
                 print(f"   Error: {step.error}")
-        
+
         print(f"\n{'='*60}")
         print(f"Final Result: {result.final_result}")
         print(f"{'='*60}")
@@ -518,5 +518,5 @@ if __name__ == "__main__":
         print(f"Success: {result.success}")
         if result.plan_adapted:
             print("⚠️  Plan was adapted during execution")
-    
+
     asyncio.run(main())

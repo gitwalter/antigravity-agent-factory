@@ -8,8 +8,8 @@ description: Strategy backtesting workflow with walk-forward analysis and Monte 
 
 Strategy backtesting workflow with walk-forward analysis and Monte Carlo simulation. Covers data preparation, backtest execution, statistical validation, and robustness checks.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-10  
+**Version:** 1.0.0
+**Created:** 2026-02-10
 **Applies To:** quantitative-trading, algo-trading
 
 ## Trigger Conditions

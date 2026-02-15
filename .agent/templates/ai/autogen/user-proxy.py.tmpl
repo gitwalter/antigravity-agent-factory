@@ -21,17 +21,17 @@ logger = logging.getLogger(__name__)
 class {{PROXY_CLASS_NAME}}:
     """
     {{PROXY_NAME}} - AutoGen User Proxy Agent
-    
+
     Represents the user in multi-agent systems:
     - Can execute code
     - Provides human feedback
     - Controls conversation flow
-    
+
     Example:
         >>> proxy = {{PROXY_CLASS_NAME}}()
         >>> proxy.initiate_chat(assistant, message="Write code to calculate factorial")
     """
-    
+
     def __init__(
         self,
         name: str = "user_proxy",
@@ -42,7 +42,7 @@ class {{PROXY_CLASS_NAME}}:
     ):
         """
         Initialize user proxy agent.
-        
+
         Args:
             name: Agent name
             human_input_mode: When to request human input
@@ -56,7 +56,7 @@ class {{PROXY_CLASS_NAME}}:
         self.name = name
         self.human_input_mode = human_input_mode
         self.max_consecutive_auto_reply = max_consecutive_auto_reply
-        
+
         # Default code execution config
         if code_execution_config is None:
             code_execution_config = {
@@ -64,14 +64,14 @@ class {{PROXY_CLASS_NAME}}:
                 "use_docker": False,  # Set True for production
                 "timeout": 300
             }
-        
+
         # System message
         system_msg = system_message or """{{SYSTEM_MESSAGE}}
 
 You are a human admin. You can execute code and provide feedback.
 When a task is complete, reply TERMINATE.
 """
-        
+
         # Create user proxy agent
         self.agent = UserProxyAgent(
             name=name,
@@ -80,9 +80,9 @@ When a task is complete, reply TERMINATE.
             code_execution_config=code_execution_config,
             system_message=system_msg
         )
-        
+
         logger.info(f"Initialized {{PROXY_NAME}} user proxy")
-    
+
     def initiate_chat(
         self,
         recipient: Any,
@@ -91,37 +91,37 @@ When a task is complete, reply TERMINATE.
     ) -> Any:
         """
         Initiate chat with another agent.
-        
+
         Args:
             recipient: Recipient agent
             message: Initial message
             clear_history: Clear conversation history
-        
+
         Returns:
             Chat result
-        
+
         Example:
             >>> result = proxy.initiate_chat(assistant, "Write Python code")
         """
         logger.info(f"Initiating chat with message: {message[:100]}...")
-        
+
         try:
             if clear_history:
                 self.agent.reset()
                 recipient.reset()
-            
+
             result = self.agent.initiate_chat(
                 recipient=recipient,
                 message=message
             )
-            
+
             logger.info("Chat initiated successfully")
             return result
-            
+
         except Exception as e:
             logger.error(f"Error initiating chat: {e}")
             return f"Error: {str(e)}"
-    
+
     def send(
         self,
         recipient: Any,
@@ -129,36 +129,36 @@ When a task is complete, reply TERMINATE.
     ) -> Any:
         """
         Send a message to another agent.
-        
+
         Args:
             recipient: Recipient agent
             message: Message content
-        
+
         Returns:
             Response
         """
         logger.info(f"Sending message: {message[:100]}...")
-        
+
         try:
             response = self.agent.send(
                 recipient=recipient,
                 message=message
             )
             return response
-            
+
         except Exception as e:
             logger.error(f"Error sending message: {e}")
             return f"Error: {str(e)}"
-    
+
     def reset(self) -> None:
         """Reset conversation history."""
         logger.info("Resetting user proxy")
         self.agent.reset()
-    
+
     def get_name(self) -> str:
         """Get agent name."""
         return self.name
-    
+
     def get_human_input_mode(self) -> str:
         """Get human input mode."""
         return self.human_input_mode
@@ -167,12 +167,12 @@ When a task is complete, reply TERMINATE.
 # Example usage
 if __name__ == "__main__":
     from autogen import AssistantAgent
-    
+
     # Create user proxy
     proxy = {{PROXY_CLASS_NAME}}(
         human_input_mode="TERMINATE"
     )
-    
+
     # Create assistant agent
     assistant = AssistantAgent(
         name="assistant",
@@ -182,11 +182,11 @@ if __name__ == "__main__":
             "api_key": os.getenv("OPENAI_API_KEY")
         }
     )
-    
+
     # Initiate chat
     result = proxy.initiate_chat(
         assistant,
         message="{{EXAMPLE_MESSAGE}}"
     )
-    
+
     print(f"Chat Result: {result}")

@@ -25,10 +25,10 @@ from typing import Any
 
 def analyze_test_file(filepath: str) -> dict[str, Any]:
     """Parse test file and extract classes, methods, assertions.
-    
+
     Args:
         filepath: Path to test module.
-        
+
     Returns:
         Dict with classes, methods, and assertion patterns.
     """
@@ -71,11 +71,11 @@ Generate test code in target framework:
 ```python
 def unittest_to_pytest(class_name: str, method_name: str) -> str:
     """Convert unittest method signature to pytest.
-    
+
     Args:
         class_name: Unittest TestCase class name.
         method_name: Test method name.
-        
+
     Returns:
         Pytest-style test function string.
     """
@@ -107,10 +107,10 @@ Validate generated tests parse and run:
 ```python
 def validate_translated_test(code: str) -> bool:
     """Ensure translated code is valid Python.
-    
+
     Args:
         code: Generated test code.
-        
+
     Returns:
         True if code parses successfully.
     """

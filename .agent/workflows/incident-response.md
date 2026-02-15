@@ -8,8 +8,8 @@ description: Systematic workflow for responding to production incidents. Covers 
 
 Systematic workflow for responding to production incidents. Covers detection, triage, mitigation, resolution, and post-mortem analysis.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Applies To:** All stacks
 
 ## Trigger Conditions

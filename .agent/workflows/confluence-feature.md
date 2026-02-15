@@ -8,8 +8,8 @@ description: Confluence-documented feature development workflow. Covers requirem
 
 Confluence-documented feature development workflow. Covers requirements from Confluence, design documentation, implementation, and documentation updates back to Confluence.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-10  
+**Version:** 1.0.0
+**Created:** 2026-02-10
 **Applies To:** feature-development, confluence-integration
 
 ## Trigger Conditions

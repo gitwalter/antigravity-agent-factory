@@ -8,8 +8,8 @@ description: Comprehensive workflow for designing and implementing microservices
 
 Comprehensive workflow for designing and implementing microservices architectures with .NET. This workflow covers service decomposition, service creation, communication layer setup, API Gateway configuration, and observability implementation.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-09  
+**Version:** 1.0.0
+**Created:** 2026-02-09
 **Agent:** dotnet-architect
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.
@@ -27,7 +27,7 @@ This workflow is activated when:
 - "Design a microservices architecture for e-commerce platform"
 - "Set up API Gateway with YARP for my services"
 - "Create microservices with gRPC communication"
-- "Implement service-to-service 
+- "Implement service-to-service
 
 ## Steps
 

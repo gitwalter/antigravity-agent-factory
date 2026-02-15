@@ -31,9 +31,9 @@ logger = logging.getLogger(__name__)
 class {{WORKFLOW_CLASS_NAME}}State(TypedDict):
     """
     State for {{WORKFLOW_NAME}} workflow.
-    
+
     This state is immutable - nodes return new state, not modify in place.
-    
+
     Attributes:
         messages: Conversation history
         input: Original user input
@@ -61,38 +61,38 @@ class {{WORKFLOW_CLASS_NAME}}State(TypedDict):
 def validate_input(state: {{WORKFLOW_CLASS_NAME}}State) -> dict:
     """
     Validate user input before processing.
-    
+
     Implements A4 (Non-Harm) by checking for harmful requests.
     Implements A1 (Verifiability) by validating input format.
-    
+
     Args:
         state: Current workflow state
-        
+
     Returns:
         Updated state fields
     """
     logger.info(f"Validating input: {state['input'][:100]}...")
-    
+
     input_text = state["input"]
     errors = []
-    
+
     # Validation checks (A1, A4)
     if not input_text or len(input_text.strip()) == 0:
         errors.append("Input is empty")
-    
+
     # Check for potentially harmful patterns (A4)
     harmful_patterns = ["drop database", "rm -rf", "format c:"]
     for pattern in harmful_patterns:
         if pattern.lower() in input_text.lower():
             errors.append(f"Potentially harmful pattern detected: {pattern}")
-    
+
     if errors:
         return {
             "status": "error",
             "errors": errors,
             "current_step": "validate_input"
         }
-    
+
     return {
         "status": "in_progress",
         "current_step": "validate_input",
@@ -103,23 +103,23 @@ def validate_input(state: {{WORKFLOW_CLASS_NAME}}State) -> dict:
 def process_input(state: {{WORKFLOW_CLASS_NAME}}State) -> dict:
     """
     Main processing node for {{WORKFLOW_NAME}}.
-    
+
     This is where the primary work happens.
-    
+
     Args:
         state: Current workflow state
-        
+
     Returns:
         Updated state fields with processing results
     """
     logger.info(f"Processing input at step: {state['current_step']}")
-    
+
     # Get input
     input_text = state["input"]
-    
+
     # Initialize LLM
     llm = ChatOpenAI(model="{{LLM_MODEL}}", temperature={{TEMPERATURE}})
-    
+
     # Process with LLM
     try:
         # Create prompt with axiom guidance
@@ -132,9 +132,9 @@ def process_input(state: {{WORKFLOW_CLASS_NAME}}State) -> dict:
 Request: {input_text}
 
 Provide a clear, helpful response."""
-        
+
         response = llm.invoke(prompt)
-        
+
         return {
             "intermediate_results": {
                 **state.get("intermediate_results", {}),
@@ -143,7 +143,7 @@ Provide a clear, helpful response."""
             "current_step": "process_input",
             "iteration": state.get("iteration", 0) + 1
         }
-        
+
     except Exception as e:
         logger.error(f"Error in process_input: {e}")
         return {
@@ -156,30 +156,30 @@ Provide a clear, helpful response."""
 def validate_output(state: {{WORKFLOW_CLASS_NAME}}State) -> dict:
     """
     Validate processing output before returning to user.
-    
+
     Implements A1 (Verifiability) by checking output quality.
     Implements A4 (Non-Harm) by checking for harmful content.
-    
+
     Args:
         state: Current workflow state
-        
+
     Returns:
         Updated state fields
     """
     logger.info("Validating output...")
-    
+
     result = state.get("intermediate_results", {}).get("processing_result", "")
-    
+
     if not result:
         return {
             "status": "error",
             "errors": state.get("errors", []) + ["No output generated"],
             "current_step": "validate_output"
         }
-    
+
     # Output validation (A1, A4)
     # Add your validation logic here
-    
+
     return {
         "final_output": result,
         "status": "completed",
@@ -190,20 +190,20 @@ def validate_output(state: {{WORKFLOW_CLASS_NAME}}State) -> dict:
 def handle_error(state: {{WORKFLOW_CLASS_NAME}}State) -> dict:
     """
     Handle errors gracefully.
-    
+
     Implements A3 (Transparency) by providing clear error information.
-    
+
     Args:
         state: Current workflow state
-        
+
     Returns:
         Updated state with error handling
     """
     errors = state.get("errors", [])
     logger.error(f"Handling errors: {errors}")
-    
+
     error_message = f"Workflow encountered errors: {'; '.join(errors)}"
-    
+
     return {
         "final_output": error_message,
         "status": "error",
@@ -215,17 +215,17 @@ def handle_error(state: {{WORKFLOW_CLASS_NAME}}State) -> dict:
 def human_review(state: {{WORKFLOW_CLASS_NAME}}State) -> dict:
     """
     Pause for human review and confirmation.
-    
+
     Implements A2 (User Primacy) by requiring human oversight.
-    
+
     Args:
         state: Current workflow state
-        
+
     Returns:
         Updated state awaiting confirmation
     """
     logger.info("Awaiting human review...")
-    
+
     return {
         "status": "needs_confirmation",
         "current_step": "human_review"
@@ -240,10 +240,10 @@ def human_review(state: {{WORKFLOW_CLASS_NAME}}State) -> dict:
 def route_after_validation(state: {{WORKFLOW_CLASS_NAME}}State) -> str:
     """
     Route based on validation results.
-    
+
     Args:
         state: Current workflow state
-        
+
     Returns:
         Next node name
     """
@@ -255,10 +255,10 @@ def route_after_validation(state: {{WORKFLOW_CLASS_NAME}}State) -> str:
 def route_after_processing(state: {{WORKFLOW_CLASS_NAME}}State) -> str:
     """
     Route based on processing results.
-    
+
     Args:
         state: Current workflow state
-        
+
     Returns:
         Next node name
     """
@@ -266,16 +266,16 @@ def route_after_processing(state: {{WORKFLOW_CLASS_NAME}}State) -> str:
     if state.get("iteration", 0) >= 10:
         logger.warning("Maximum iterations reached")
         return "handle_error"
-    
+
     if state.get("status") == "error":
         return "handle_error"
-    
+
     {{#IF HUMAN_IN_THE_LOOP}}
     # Check if human review is needed
     if state.get("requires_confirmation", False):
         return "human_review"
     {{/IF}}
-    
+
     return "validate_output"
 
 
@@ -286,13 +286,13 @@ def route_after_processing(state: {{WORKFLOW_CLASS_NAME}}State) -> str:
 def create_{{WORKFLOW_FUNCTION_NAME}}_graph() -> StateGraph:
     """
     Create the {{WORKFLOW_NAME}} workflow graph.
-    
+
     Returns:
         Compiled LangGraph workflow
     """
     # Create graph
     graph = StateGraph({{WORKFLOW_CLASS_NAME}}State)
-    
+
     # Add nodes
     graph.add_node("validate_input", validate_input)
     graph.add_node("process_input", process_input)
@@ -301,10 +301,10 @@ def create_{{WORKFLOW_FUNCTION_NAME}}_graph() -> StateGraph:
     {{#IF HUMAN_IN_THE_LOOP}}
     graph.add_node("human_review", human_review)
     {{/IF}}
-    
+
     # Add edges
     graph.add_edge(START, "validate_input")
-    
+
     graph.add_conditional_edges(
         "validate_input",
         route_after_validation,
@@ -313,7 +313,7 @@ def create_{{WORKFLOW_FUNCTION_NAME}}_graph() -> StateGraph:
             "handle_error": "handle_error"
         }
     )
-    
+
     graph.add_conditional_edges(
         "process_input",
         route_after_processing,
@@ -325,31 +325,31 @@ def create_{{WORKFLOW_FUNCTION_NAME}}_graph() -> StateGraph:
             {{/IF}}
         }
     )
-    
+
     graph.add_edge("validate_output", END)
     graph.add_edge("handle_error", END)
     {{#IF HUMAN_IN_THE_LOOP}}
     graph.add_edge("human_review", "validate_output")
     {{/IF}}
-    
+
     return graph
 
 
 def compile_workflow(checkpointer: Optional[MemorySaver] = None):
     """
     Compile the workflow with optional checkpointing.
-    
+
     Args:
         checkpointer: Optional checkpointer for state persistence
-        
+
     Returns:
         Compiled workflow
     """
     graph = create_{{WORKFLOW_FUNCTION_NAME}}_graph()
-    
+
     if checkpointer:
         return graph.compile(checkpointer=checkpointer)
-    
+
     return graph.compile()
 
 
@@ -360,38 +360,38 @@ def compile_workflow(checkpointer: Optional[MemorySaver] = None):
 class {{WORKFLOW_CLASS_NAME}}:
     """
     {{WORKFLOW_NAME}} workflow executor.
-    
+
     This class provides a clean interface for executing the workflow.
-    
+
     Example:
         >>> workflow = {{WORKFLOW_CLASS_NAME}}()
         >>> result = workflow.run("Process this request")
         >>> print(result["final_output"])
     """
-    
+
     def __init__(self, use_memory: bool = True):
         """
         Initialize the workflow.
-        
+
         Args:
             use_memory: Whether to use memory saver for checkpointing
         """
         self.memory = MemorySaver() if use_memory else None
         self.app = compile_workflow(self.memory)
         logger.info(f"{{WORKFLOW_NAME}} workflow initialized")
-    
+
     def run(
-        self, 
-        input_text: str, 
+        self,
+        input_text: str,
         thread_id: Optional[str] = None
     ) -> {{WORKFLOW_CLASS_NAME}}State:
         """
         Run the workflow with given input.
-        
+
         Args:
             input_text: User input to process
             thread_id: Optional thread ID for conversation tracking
-            
+
         Returns:
             Final workflow state
         """
@@ -405,23 +405,23 @@ class {{WORKFLOW_CLASS_NAME}}:
             "status": "in_progress",
             "errors": []
         }
-        
+
         config = {}
         if thread_id and self.memory:
             config = {"configurable": {"thread_id": thread_id}}
-        
+
         logger.info(f"Starting workflow with input: {input_text[:100]}...")
-        
+
         result = self.app.invoke(initial_state, config)
-        
+
         logger.info(f"Workflow completed with status: {result['status']}")
-        
+
         return result
-    
+
     def visualize(self) -> str:
         """
         Generate a Mermaid diagram of the workflow.
-        
+
         Returns:
             Mermaid diagram string
         """
@@ -435,17 +435,17 @@ class {{WORKFLOW_CLASS_NAME}}:
 if __name__ == "__main__":
     # Create workflow
     workflow = {{WORKFLOW_CLASS_NAME}}()
-    
+
     # Visualize (for debugging)
     print("Workflow Graph:")
     print(workflow.visualize())
     print()
-    
+
     # Run workflow
     result = workflow.run("{{EXAMPLE_INPUT}}")
-    
+
     print(f"Status: {result['status']}")
     print(f"Output: {result['final_output']}")
-    
+
     if result['errors']:
         print(f"Errors: {result['errors']}")

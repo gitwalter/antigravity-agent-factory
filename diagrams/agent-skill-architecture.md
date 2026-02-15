@@ -14,7 +14,7 @@ flowchart TB
             KM["knowledge-manager"]
             TG["template-generator"]
         end
-        
+
         subgraph Skills["Factory Skills"]
             RG["requirements-gathering"]
             SC["stack-configuration"]
@@ -54,7 +54,7 @@ sequenceDiagram
 
     User->>Cursorrules: "Create agent system"
     Cursorrules->>Agent: Activate requirements-architect
-    
+
     loop 5 Phases
         Agent->>Skills: Use requirements-gathering
         Skills->>Knowledge: Query patterns
@@ -63,7 +63,7 @@ sequenceDiagram
         Agent->>User: Ask next questions
         User-->>Agent: Provide answers
     end
-    
+
     Agent->>Output: Generate project configuration
     Agent->>Agent: Hand off to stack-builder
 ```
@@ -79,7 +79,7 @@ flowchart TB
             AP3["test-generator.json"]
             AP4["explorer.json"]
         end
-        
+
         subgraph SP["skills/"]
             SP1["skill-pattern.json"]
             SP2["bugfix-workflow.json"]
@@ -88,15 +88,15 @@ flowchart TB
             SP5["grounding.json"]
             SP6["strawberry-verification.json"]
         end
-        
+
         subgraph WP["workflows/"]
             WP1["workflow-pattern.json"]
         end
-        
+
         subgraph STP["stacks/"]
             STP1["stack-blueprint.json"]
         end
-        
+
         subgraph TP["templates/"]
             TP1["template-pattern.json"]
         end
@@ -161,25 +161,25 @@ flowchart TB
                 A2["test-generator.md"]
                 A3["custom-agent.md"]
             end
-            
+
             subgraph S["skills/"]
                 S1["bugfix-workflow/SKILL.md"]
                 S2["feature-workflow/SKILL.md"]
                 S3["tdd/SKILL.md"]
             end
         end
-        
+
         subgraph K["knowledge/"]
             K1["data-patterns.json"]
             K2["api-catalog.json"]
             K3["conventions.json"]
         end
-        
+
         subgraph T["templates/"]
             T1["service-class.py"]
             T2["test-template.py"]
         end
-        
+
         CR[".cursorrules"]
         README["README.md"]
     end
@@ -243,7 +243,7 @@ sequenceDiagram
     participant Output
 
     Agent->>Skill: Invoke skill
-    
+
     Skill->>Knowledge: Check cached data
     alt Found in cache
         Knowledge-->>Skill: Return cached result
@@ -252,7 +252,7 @@ sequenceDiagram
         MCP-->>Skill: Return result
         Skill->>Knowledge: Cache for future
     end
-    
+
     Skill->>Skill: Execute process steps
     Skill->>Output: Generate artifacts
     Skill-->>Agent: Return completion status
@@ -288,9 +288,9 @@ flowchart LR
     B3 --> F1
     B4 --> F1
     B5 --> F1
-    
+
     F1 --> F2 --> F3
-    
+
     F3 --> P1
     F3 --> P2
     F3 --> P3

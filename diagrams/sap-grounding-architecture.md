@@ -192,10 +192,10 @@ sequenceDiagram
 
     Dev->>Agent: Create BAPI wrapper for BAPI_USER_GET_DETAIL
     Agent->>Coord: Verify BAPI exists
-    
+
     Coord->>Spec: Route to function-grounding
     Spec->>Cache: Check function-catalog.json
-    
+
     alt Found in cache
         Cache-->>Spec: Return cached signature
     else Not in cache
@@ -203,12 +203,12 @@ sequenceDiagram
         Docs-->>Spec: Return documentation
         Spec->>Cache: Cache for future
     end
-    
+
     Spec->>Verify: Verify with Strawberry
     Verify->>Verify: Scrubbed test
     Verify->>Verify: Full test
     Verify-->>Spec: VERIFIED
-    
+
     Spec-->>Coord: Verification complete
     Coord-->>Agent: Grounding result
     Agent-->>Dev: Proceed with verified parameters
@@ -231,13 +231,13 @@ flowchart LR
             SAP_T2["fetch"]
             SAP_T3["sap_help_search"]
         end
-        
+
         subgraph ATL["atlassian"]
             ATL_T1["getConfluencePage"]
             ATL_T2["searchConfluenceUsingCql"]
             ATL_T3["getJiraIssue"]
         end
-        
+
         subgraph DW["deepwiki"]
             DW_T1["ask_question"]
             DW_T2["read_wiki_contents"]
@@ -260,7 +260,7 @@ flowchart LR
 flowchart TB
     subgraph Report["Grounding Verification Report"]
         ID["Verification ID: UUID<br/>Timestamp: ISO-8601"]
-        
+
         subgraph Metrics["Metrics"]
             M1["Total Artifacts: N"]
             M2["Verified HIGH: X"]
@@ -268,15 +268,15 @@ flowchart TB
             M4["Unverified: Z"]
             M5["Issues: W"]
         end
-        
+
         subgraph Strawberry["Strawberry Status"]
             SS["PASSED / WARNING / FAILED"]
         end
-        
+
         subgraph Rec["Recommendation"]
             R["PROCEED / PROCEED_WITH_WARNINGS / STOP / ASK_USER"]
         end
-        
+
         REASON["Reason: Detailed explanation"]
     end
 
@@ -365,17 +365,17 @@ flowchart TB
     REQ --> S1
     S1 -->|"Not in cache"| S2
     S2 --> S3 --> S4 --> S5
-    
+
     S2 --> E1
     S3 --> E2
     S4 --> E3
     S5 --> E4
-    
+
     E1 --> V1
     E2 --> V1
     E3 --> V1
     E4 --> V1
-    
+
     V1 --> V2 --> V3 --> OUT
 
     style Request fill:#e3f2fd

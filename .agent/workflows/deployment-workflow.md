@@ -8,8 +8,8 @@ description: Blockchain deployment workflow from testnet through mainnet. Covers
 
 Blockchain deployment workflow from testnet through mainnet. Covers build verification, testnet deployment, mainnet preparation, and post-deployment verification.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-10  
+**Version:** 1.0.0
+**Created:** 2026-02-10
 **Applies To:** solidity-ethereum, solana-rust, defi-protocols
 
 ## Trigger Conditions

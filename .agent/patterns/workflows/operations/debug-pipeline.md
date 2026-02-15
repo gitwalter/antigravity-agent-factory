@@ -4,8 +4,8 @@
 
 Systematic workflow for debugging CI/CD pipeline failures. This workflow demonstrates the Cursor Agent Factory workflow system architecture with phases, decision points, escalation paths, and learning hooks.
 
-**Version:** 1.0.0  
-**Created:** 2026-01-31  
+**Version:** 1.0.0
+**Created:** 2026-01-31
 **Agent:** debug-conductor
 
 > **Note:** Directory paths referenced in this workflow (knowledge/, .cursor/skills/, patterns/, etc.) are configurable via `.cursor/config/settings.json`. See [Path Configuration Guide](../../../../docs/setup/configuration.md).
@@ -32,7 +32,7 @@ This workflow is activated when:
 
 **Description:** Parse error logs and identify the failure type and location.
 
-**Entry Criteria:** Error reported or CI failure detected  
+**Entry Criteria:** Error reported or CI failure detected
 **Exit Criteria:** Error classified and located
 
 #### Step 1.1: Gather Error Information
@@ -97,7 +97,7 @@ This workflow is activated when:
 
 **Description:** Investigate the error to identify the underlying cause.
 
-**Entry Criteria:** Error classified  
+**Entry Criteria:** Error classified
 **Exit Criteria:** Root cause hypothesis formed with evidence
 
 #### Step 2.1: Trace Error Origin
@@ -166,7 +166,7 @@ This workflow is activated when:
 
 **Description:** Determine the best approach to fix the issue.
 
-**Entry Criteria:** Root cause identified  
+**Entry Criteria:** Root cause identified
 **Exit Criteria:** Fix approach selected
 
 #### Step 3.1: Evaluate Fix Options
@@ -201,7 +201,7 @@ This workflow is activated when:
 
 **Description:** Apply the selected fix.
 
-**Entry Criteria:** Fix approach selected  
+**Entry Criteria:** Fix approach selected
 **Exit Criteria:** Changes made and initial test passes
 
 #### Step 4.1: Implement Fix
@@ -255,7 +255,7 @@ pytest tests/path/to/ -v --tb=short
 
 **Description:** Comprehensive verification that the fix works and doesn't break anything.
 
-**Entry Criteria:** Local verification passed  
+**Entry Criteria:** Local verification passed
 **Exit Criteria:** Full test suite passes
 
 #### Step 5.1: Run Full Test Suite
@@ -306,7 +306,7 @@ pytest tests/ -v --cov=. --cov-report=term-missing
 
 **Description:** Capture lessons from this debugging session for future improvement.
 
-**Entry Criteria:** Fix verified (or escalated)  
+**Entry Criteria:** Fix verified (or escalated)
 **Exit Criteria:** Lessons documented
 
 #### Step 6.1: Capture Pattern

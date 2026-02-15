@@ -4,8 +4,8 @@
 
 End-to-end workflow for developing, validating, and deploying algorithmic trading strategies. Covers hypothesis formation, backtesting, statistical validation, paper trading, and live deployment approval.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Applies To:** quantitative-trading, financial-ai-agents
 
 ## Trigger Conditions
@@ -29,7 +29,7 @@ This workflow is activated when:
 
 **Description:** Define the trading hypothesis and expected behavior.
 
-**Entry Criteria:** Strategy idea exists  
+**Entry Criteria:** Strategy idea exists
 **Exit Criteria:** Hypothesis documented
 
 #### Step 1.1: Document Strategy
@@ -63,7 +63,7 @@ Risk Limits: [Maximum risk parameters]
 
 **Description:** Test strategy on historical data.
 
-**Entry Criteria:** Strategy documented  
+**Entry Criteria:** Strategy documented
 **Exit Criteria:** Backtest results available
 
 #### Step 2.1: Prepare Data
@@ -106,7 +106,7 @@ Risk Limits: [Maximum risk parameters]
 
 **Description:** Verify results are statistically significant.
 
-**Entry Criteria:** Backtest complete  
+**Entry Criteria:** Backtest complete
 **Exit Criteria:** Statistical validation passed
 
 #### Step 3.1: Bias Detection
@@ -146,7 +146,7 @@ Risk Limits: [Maximum risk parameters]
 
 **Description:** Test strategy in real-time with simulated money.
 
-**Entry Criteria:** Statistical validation passed  
+**Entry Criteria:** Statistical validation passed
 **Exit Criteria:** Paper trading period complete
 
 #### Step 4.1: Deploy to Paper
@@ -175,7 +175,7 @@ Risk Limits: [Maximum risk parameters]
 
 **Description:** Human approval gate for live deployment.
 
-**Entry Criteria:** Paper trading successful  
+**Entry Criteria:** Paper trading successful
 **Exit Criteria:** Approval decision made
 
 #### Step 5.1: Prepare Approval Package

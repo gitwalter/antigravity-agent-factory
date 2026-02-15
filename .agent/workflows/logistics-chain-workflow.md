@@ -8,7 +8,7 @@ description: Cross-module workflow for order-to-cash, procure-to-pay, or make-to
 
 Cross-module workflow for order-to-cash, procure-to-pay, or make-to-stock. For consultants and developers designing or implementing flows across FI, SD, MM, EWM, LE.
 
-**Version:** 1.0.0  
+**Version:** 1.0.0
 **Applies To:** sap-s4-enterprise
 
 ## Trigger Conditions

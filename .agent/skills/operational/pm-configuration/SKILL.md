@@ -444,19 +444,19 @@ Questions? Just ask!"
 def select_backend(team_size, existing_tools, complexity_tolerance, budget):
     if existing_tools:
         return existing_tools[0]  # Use what they have
-    
+
     if team_size < 5 and complexity_tolerance == "low":
         return "linear" or "github-projects"
-    
+
     if team_size < 5 and budget == "free":
         return "github-projects"
-    
+
     if "enterprise" in requirements or "compliance" in requirements:
         return "jira" or "azure-devops"
-    
+
     if "microsoft" in tech_stack:
         return "azure-devops"
-    
+
     return "linear"  # Default for software teams
 ```
 
@@ -466,19 +466,19 @@ def select_backend(team_size, existing_tools, complexity_tolerance, budget):
 def select_methodology(purpose, project_type, team_size, work_style):
     if "research" in purpose.lower() or "ai" in project_type.lower():
         return "research-development"
-    
+
     if "enterprise" in project_type.lower() or "compliance" in purpose.lower():
         return "enterprise-integration"
-    
+
     if "support" in purpose.lower() or "maintenance" in purpose.lower():
         return "kanban"
-    
+
     if team_size > 10:
         return "agile-scrum"  # Better structure for large teams
-    
+
     if work_style == "fully_remote" and team_size < 5:
         return "kanban"  # Simpler for small remote teams
-    
+
     return "agile-scrum"  # Default
 ```
 
@@ -487,19 +487,19 @@ def select_methodology(purpose, project_type, team_size, work_style):
 ```python
 def get_adaptive_questions(methodology, team_size):
     base_questions = ["team_size", "work_style", "pm_experience", "priority_values"]
-    
+
     if methodology == "agile-scrum":
         return base_questions + ["sprint_length", "standup_time", "planning_duration", "retro_format"]
-    
+
     if methodology == "kanban":
         return base_questions + ["wip_limits"]
-    
+
     if methodology == "research-development":
         return base_questions + ["exploration_ratio"]
-    
+
     if methodology == "enterprise-integration":
         return base_questions + ["governance_frequency", "compliance_checkpoints", "approval_gates"]
-    
+
     return base_questions
 ```
 

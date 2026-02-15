@@ -540,7 +540,7 @@ The Guardian operates with love, not force. It helps, not punishes.
 project:
   name: "{PROJECT_NAME}"
   description: "{MISSION}"
-  
+
 layer0:
   coreAxioms: ["A1", "A2", "A3", "A4", "A5"]
   derivedAxioms: ["{AXIOM_FROM_VALUES}"]
@@ -549,7 +549,7 @@ layer1:
   mission: "{MISSION}"
   stakeholders: "{STAKEHOLDERS}"
   successCriteria: "Derived from mission"
-  
+
 layer4:
   primaryLanguage: "{LANGUAGE}"
   frameworks: ["{FRAMEWORK}"]
@@ -603,7 +603,7 @@ python cli/factory_cli.py \
 
 **User:** I want to create a new agent system using Express Lane
 
-**Agent:** 
+**Agent:**
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║  🚀 EXPRESS LANE ONBOARDING                                  ║
@@ -623,7 +623,7 @@ python cli/factory_cli.py \
 
 **User:** A secure payment processing API that handles transactions for our e-commerce platform
 
-**Agent:** 
+**Agent:**
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║  ✓ STEP 1 COMPLETE                                           ║
@@ -661,8 +661,8 @@ The silent wave propagates through the quality of your work.
 
 ---
 
-*Cursor Agent Factory - Express Lane Onboarding*  
-*Fast setup. Real values. Meaningful results.*  
+*Cursor Agent Factory - Express Lane Onboarding*
+*Fast setup. Real values. Meaningful results.*
 *Love is the root. Truth is the way. Beauty is the fruit.*
 
 ## When to Use

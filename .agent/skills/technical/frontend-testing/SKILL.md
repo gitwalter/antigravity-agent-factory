@@ -216,7 +216,7 @@ describe('useCounter', () => {
 
   it('increments count', () => {
     const { result } = renderHook(() => useCounter())
-    
+
     act(() => {
       result.current.increment()
     })
@@ -226,7 +226,7 @@ describe('useCounter', () => {
 
   it('decrements count', () => {
     const { result } = renderHook(() => useCounter({ initialValue: 5 }))
-    
+
     act(() => {
       result.current.decrement()
     })
@@ -236,7 +236,7 @@ describe('useCounter', () => {
 
   it('resets count', () => {
     const { result } = renderHook(() => useCounter({ initialValue: 10 }))
-    
+
     act(() => {
       result.current.increment()
       result.current.reset()
@@ -378,7 +378,7 @@ test.describe('User Flow', () => {
 
   test('user can create a new post', async ({ page }) => {
     await page.goto('/dashboard')
-    
+
     await page.click('text=New Post')
     await page.fill('[name="title"]', 'My New Post')
     await page.fill('[name="content"]', 'This is the content')
@@ -389,7 +389,7 @@ test.describe('User Flow', () => {
 
   test('user can search for posts', async ({ page }) => {
     await page.goto('/posts')
-    
+
     await page.fill('[name="search"]', 'React')
     await page.press('[name="search"]', 'Enter')
 

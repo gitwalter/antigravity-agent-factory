@@ -1,12 +1,12 @@
 /-
   Guardian/Invariants.lean - Inductive Invariants
-  
+
   Cursor Agent Factory - Formal Verification System
-  
+
   This file proves that Guardian invariants are inductive:
   1. They hold in the initial state
   2. They are preserved by all transitions
-  
+
   Inductive invariants provide the strongest guarantees:
   if they hold initially and are preserved, they hold forever.
 -/
@@ -18,7 +18,7 @@ namespace CursorAgentFactory.Guardian.Invariants
 
 /-!
   # Inductive Invariant Framework
-  
+
   An invariant I is inductive if:
   1. I(initial) - holds in initial state
   2. ∀ s s'. I(s) ∧ transition(s, s') → I(s') - preserved by transitions
@@ -31,7 +31,7 @@ structure InductiveInvariant (inv : GuardianState → Prop) where
 
 /-!
   # State Preservation Invariant
-  
+
   statePreserved = true is an inductive invariant.
 -/
 
@@ -52,7 +52,7 @@ theorem statePreserved_inductive : InductiveInvariant statePreservedInv := {
 
 /-!
   # Response Level Consistency Invariant
-  
+
   Response level is always a valid enumeration value.
   (This is trivially true in Lean due to type system)
 -/
@@ -76,7 +76,7 @@ theorem validResponseLevel_inductive : InductiveInvariant validResponseLevel := 
 
 /-!
   # Block-Alternatives Invariant
-  
+
   If response level is Block, alternatives are offered.
 -/
 
@@ -102,15 +102,15 @@ theorem blockAlternatives_inductive : InductiveInvariant blockAlternativesInv :=
 
 /-!
   # Operational State Invariant
-  
+
   Operational state matches response level thresholds.
 -/
 
 /-- Operational state matches level -/
 def operationalMatchesLevel (s : GuardianState) : Prop :=
-  (s.responseLevel.toNat >= ResponseLevel.pause.toNat → 
+  (s.responseLevel.toNat >= ResponseLevel.pause.toNat →
    s.operational = OperationalState.awakened) ∧
-  (s.responseLevel.toNat < ResponseLevel.pause.toNat → 
+  (s.responseLevel.toNat < ResponseLevel.pause.toNat →
    s.operational = OperationalState.embedded)
 
 /-- Theorem: operationalMatchesLevel is inductive -/
@@ -139,7 +139,7 @@ theorem operationalMatchesLevel_inductive : InductiveInvariant operationalMatche
 
 /-!
   # User Notification Invariant
-  
+
   User is notified at Pause level and above.
 -/
 
@@ -162,7 +162,7 @@ theorem userNotifiedMatchesLevel_inductive : InductiveInvariant userNotifiedMatc
 
 /-!
   # Complete Invariant
-  
+
   The conjunction of all individual invariants.
 -/
 
@@ -188,7 +188,7 @@ theorem completeInvariant_initial : completeInvariant initialState := by
   · exact userNotifiedMatchesLevel_inductive.initial
 
 /-- Theorem: complete invariant is preserved by transitions -/
-theorem completeInvariant_preserved (s : GuardianState) (trigger : TriggerEvent) 
+theorem completeInvariant_preserved (s : GuardianState) (trigger : TriggerEvent)
     (h : completeInvariant s) : completeInvariant (transitionTo s trigger) := by
   unfold completeInvariant at h ⊢
   obtain ⟨h1, h2, h3, h4, h5⟩ := h
@@ -210,12 +210,12 @@ theorem completeInvariant_inductive : InductiveInvariant completeInvariant := {
 
 /-!
   # Invariant Implication
-  
+
   The complete invariant implies the state invariant from States.lean.
 -/
 
 /-- Theorem: complete invariant implies state invariant -/
-theorem completeInvariant_implies_stateInvariant (s : GuardianState) 
+theorem completeInvariant_implies_stateInvariant (s : GuardianState)
     (h : completeInvariant s) : stateInvariant s := by
   unfold completeInvariant at h
   unfold stateInvariant

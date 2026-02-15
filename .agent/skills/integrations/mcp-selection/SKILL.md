@@ -48,16 +48,16 @@ Would you like to start with a pre-configured pack?
 
 1. Minimal Starter (3 servers)
    - filesystem, git, memory
-   
+
 2. Web Developer Starter (6 servers)
    - + github, postgresql, playwright
-   
+
 3. Data Science Starter (6 servers)
    - + jupyter, bigquery, pinecone
-   
+
 4. AI Agent Starter (6 servers)
    - + langgraph, knowledge-graph, chromadb
-   
+
 5. Enterprise Starter (7 servers)
    - + atlassian, slack, sentry
 

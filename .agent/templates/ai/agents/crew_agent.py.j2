@@ -19,7 +19,7 @@ class {{ agent_class }}Config(BaseModel):
 
 class {{ agent_class }}:
     """CrewAI agent for {{ agent_name }}."""
-    
+
     def __init__(
         self,
         config: {{ agent_class }}Config = None,
@@ -30,7 +30,7 @@ class {{ agent_class }}:
     ):
         """
         Initialize CrewAI agent.
-        
+
         Args:
             config: Agent configuration
             role: Agent role (e.g., "Senior Research Analyst")
@@ -42,14 +42,14 @@ class {{ agent_class }}:
         self.role = role or "{{ role | default('AI Assistant') }}"
         self.goal = goal or "{{ goal | default('Help users accomplish their tasks') }}"
         self.backstory = backstory or """{{ backstory | default('You are a helpful AI assistant with expertise in various domains.') }}"""
-        
+
         # Initialize tools
         self.tools = tools or []
         self._initialize_tools()
-        
+
         # Create CrewAI agent
         self.agent = self._create_agent()
-    
+
     def _initialize_tools(self):
         """Initialize tools for the agent."""
         {% if tools %}
@@ -59,7 +59,7 @@ class {{ agent_class }}:
             """{{ tool_def.description }}"""
             # Tool implementation
             {{ tool_def.implementation | default("pass") }}
-        
+
         self.tools.append({{ tool_def.function_name }})
         {% endfor %}
         {% else %}
@@ -71,7 +71,7 @@ class {{ agent_class }}:
         #     return f"Processed: {input_text}"
         # self.tools.append(example_tool)
         {% endif %}
-    
+
     def _create_agent(self) -> Agent:
         """Create the CrewAI agent instance."""
         # Import LLM if custom model specified
@@ -86,7 +86,7 @@ class {{ agent_class }}:
                 )
             except ImportError:
                 logger.warning("langchain_google_genai not available. Using default LLM.")
-        
+
         # Create agent with role, goal, and backstory
         agent = Agent(
             role=self.role,
@@ -106,40 +106,40 @@ class {{ agent_class }}:
             tools=self.tools if self.tools else None,
             llm=llm
         )
-        
+
         logger.info(f"Created CrewAI agent: {self.role}")
         return agent
-    
+
     async def run(self, input_data: dict) -> dict:
         """
         Execute the agent with a task.
-        
+
         Args:
             input_data: Input dictionary with 'task' or 'description' key
-            
+
         Returns:
             Dictionary with 'response' and 'agent_info' keys
         """
         task_description = input_data.get("task") or input_data.get("description", "")
-        
+
         if not task_description:
             return {"error": "No task or description provided"}
-        
+
         logger.info(f"Agent {self.role} executing task: {task_description[:100]}...")
-        
+
         try:
             # Create a task for the agent
             from crewai import Task
-            
+
             task = Task(
                 description=task_description,
                 agent=self.agent,
                 expected_output=input_data.get("expected_output", "Detailed response to the task")
             )
-            
+
             # Execute task
             result = await self.agent.execute_task(task) if hasattr(self.agent, "execute_task") else self.agent.execute(task)
-            
+
             return {
                 "response": str(result),
                 "agent_info": {
@@ -148,7 +148,7 @@ class {{ agent_class }}:
                     "task": task_description
                 }
             }
-            
+
         except Exception as e:
             logger.error(f"Error during agent execution: {e}")
             return {
@@ -158,38 +158,38 @@ class {{ agent_class }}:
                     "goal": self.goal
                 }
             }
-    
+
     def get_role(self) -> str:
         """Get agent role."""
         return self.role
-    
+
     def get_goal(self) -> str:
         """Get agent goal."""
         return self.goal
-    
+
     def get_backstory(self) -> str:
         """Get agent backstory."""
         return self.backstory
-    
+
     def add_tool(self, tool_func):
         """Add a tool to the agent."""
         self.tools.append(tool_func)
         # Recreate agent with updated tools
         self.agent = self._create_agent()
         logger.info(f"Added tool: {tool_func.name if hasattr(tool_func, 'name') else 'unknown'}")
-    
+
     def update_role(self, role: str):
         """Update agent role."""
         self.role = role
         self.agent = self._create_agent()
         logger.info(f"Updated role to: {role}")
-    
+
     def update_goal(self, goal: str):
         """Update agent goal."""
         self.goal = goal
         self.agent = self._create_agent()
         logger.info(f"Updated goal to: {goal}")
-    
+
     def update_backstory(self, backstory: str):
         """Update agent backstory."""
         self.backstory = backstory

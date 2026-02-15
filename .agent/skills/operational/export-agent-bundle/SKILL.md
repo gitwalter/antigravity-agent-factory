@@ -122,7 +122,7 @@ if result.success:
 AgentBundle/
 ├── manifest.json       # Version, checksums, signatures
 ├── identity/           # Agent identity and keys
-│   └── agent.json     
+│   └── agent.json
 ├── skills/             # SKILL.md files
 │   └── analyze/
 │       └── SKILL.md

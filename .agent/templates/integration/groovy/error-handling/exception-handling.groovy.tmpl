@@ -1,13 +1,13 @@
 /**
  * ${SCRIPT_NAME} - Standard Exception Handling
- * 
+ *
  * Purpose: ${SCRIPT_PURPOSE}
  * Author: ${AUTHOR}
  * Created: ${DATE}
- * 
+ *
  * Input:  ${INPUT_FORMAT}
  * Output: ${OUTPUT_FORMAT}
- * 
+ *
  * Error Properties Set:
  *   - ErrorMessage: Exception message
  *   - ErrorScript: Script name where error occurred
@@ -21,33 +21,33 @@ import com.sap.gateway.ip.core.customdev.util.Message
 
 def Message processData(Message message) {
     def messageLog = messageLogFactory.getMessageLog(message)
-    
+
     try {
         // Get correlation ID if available
-        def correlationId = message.getProperty('SAP_CorrelationID') ?: 
+        def correlationId = message.getProperty('SAP_CorrelationID') ?:
                            message.getHeader('X-Correlation-ID', String) ?:
                            UUID.randomUUID().toString()
-        
+
         message.setProperty('ErrorCorrelationId', correlationId)
-        
+
         // =====================================================
         // TODO: Add your processing logic here
         // =====================================================
-        
+
         def body = message.getBody(String)
-        
+
         // Your business logic here
         def result = body
-        
+
         // =====================================================
-        
+
         message.setBody(result)
         messageLog.addAttachmentAsString('Output', result, 'text/plain')
-        
+
     } catch (Exception e) {
         // Capture error timestamp
         def errorTimestamp = new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-        
+
         // Set error properties for monitoring and debugging
         message.setProperty('ErrorMessage', e.message ?: 'Unknown error')
         message.setProperty('ErrorScript', '${SCRIPT_NAME}')
@@ -55,15 +55,15 @@ def Message processData(Message message) {
         message.setProperty('ErrorStackTrace', e.stackTrace.join('\n'))
         message.setProperty('SAP_ErrorModelStepID', '${SCRIPT_NAME}')
         message.setProperty('SAP_ErrorText', "Error in ${SCRIPT_NAME}: ${e.message}")
-        
+
         // Preserve correlation ID if set
         if (!message.getProperty('ErrorCorrelationId')) {
-            def correlationId = message.getProperty('SAP_CorrelationID') ?: 
+            def correlationId = message.getProperty('SAP_CorrelationID') ?:
                                message.getHeader('X-Correlation-ID', String) ?:
                                UUID.randomUUID().toString()
             message.setProperty('ErrorCorrelationId', correlationId)
         }
-        
+
         // Log error details as attachment (visible in CPI monitoring)
         def errorDetails = """Error Details:
 Script: ${SCRIPT_NAME}
@@ -76,9 +76,9 @@ ${e.stackTrace.join('\n')}
 
 Cause: ${e.cause ? e.cause.message : 'N/A'}
 """
-        
+
         messageLog.addAttachmentAsString('Error', errorDetails, 'text/plain')
-        
+
         // Log original message body for debugging (if not too large)
         try {
             def originalBody = message.getBody(String)
@@ -88,10 +88,10 @@ Cause: ${e.cause ? e.cause.message : 'N/A'}
         } catch (Exception logEx) {
             // Ignore logging errors
         }
-        
+
         // Re-throw exception for exception subprocess handling
         throw e
     }
-    
+
     return message
 }

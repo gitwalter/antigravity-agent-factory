@@ -103,7 +103,7 @@ def select_architecture(
     latency_requirement_ms: int,
 ) -> ArchitecturePattern:
     """Select architecture pattern based on requirements."""
-    
+
     if expected_traffic < 10000 and team_size < 5:
         return ArchitecturePattern.MONOLITH
     elif latency_requirement_ms < 100:
@@ -231,7 +231,7 @@ def select_framework(
     needs_optimization: bool,
 ) -> FrameworkType:
     """Select framework based on requirements."""
-    
+
     if needs_multi_agent and not needs_state_management:
         return FrameworkType.CREWAI
     elif needs_state_management or needs_optimization:
@@ -341,7 +341,7 @@ def select_vector_db(
     managed_preference: bool,
 ) -> VectorDB:
     """Select vector database based on requirements."""
-    
+
     if budget == "free" or scale == "small":
         return VectorDB.CHROMADB
     elif managed_preference and budget != "free":
@@ -474,7 +474,7 @@ def select_provider(
     volume: str,  # "low", "medium", "high"
 ) -> LLMProvider:
     """Select LLM provider based on requirements."""
-    
+
     if privacy_requirement or volume == "high":
         return LLMProvider.OPEN_SOURCE
     elif quality_requirement == "high" and budget != "low":
@@ -552,7 +552,7 @@ def select_embedding_model(
     self_hosted: bool,
 ) -> EmbeddingModel:
     """Select embedding model."""
-    
+
     if self_hosted:
         return EmbeddingModel.SENTENCE_TRANSFORMERS
     elif budget == "low":
@@ -584,10 +584,10 @@ def plan_scalability(
     gpu_available: bool,
 ) -> ScalabilityPlan:
     """Plan scalability strategy."""
-    
+
     # Calculate required capacity
     required_capacity = expected_rps * (avg_latency_ms / 1000)
-    
+
     if required_capacity < 10:
         # Low traffic: vertical scaling
         return ScalabilityPlan(
@@ -635,7 +635,7 @@ def select_request_pattern(
     batch_processing: bool,
 ) -> RequestPattern:
     """Select sync vs async pattern."""
-    
+
     if latency_requirement_ms < 1000 and user_waiting:
         return RequestPattern.SYNC
     elif batch_processing or not user_waiting:

@@ -25,18 +25,18 @@ import io
 
 def analyze_image_gpt4v(image_path: str, prompt: str, api_key: str) -> str:
     """Analyze image using GPT-4 Vision.
-    
+
     Args:
         image_path: Path to image file
         prompt: Question or instruction about the image
         api_key: OpenAI API key
     """
     client = OpenAI(api_key=api_key)
-    
+
     # Read and encode image
     with open(image_path, "rb") as image_file:
         image_data = base64.b64encode(image_file.read()).decode("utf-8")
-    
+
     response = client.chat.completions.create(
         model="gpt-4-vision-preview",
         messages=[
@@ -55,7 +55,7 @@ def analyze_image_gpt4v(image_path: str, prompt: str, api_key: str) -> str:
         ],
         max_tokens=500
     )
-    
+
     return response.choices[0].message.content
 
 # With LangChain
@@ -65,14 +65,14 @@ from langchain_core.messages import HumanMessage
 def analyze_image_langchain(image_path: str, prompt: str) -> str:
     """Analyze image using LangChain with GPT-4V."""
     llm = ChatOpenAI(model="gpt-4-vision-preview", max_tokens=500)
-    
+
     message = HumanMessage(
         content=[
             {"type": "text", "text": prompt},
             {"type": "image_url", "image_url": image_path}
         ]
     )
-    
+
     response = llm.invoke([message])
     return response.content
 ```
@@ -87,17 +87,17 @@ from PIL import Image
 def analyze_image_gemini(image_path: str, prompt: str) -> str:
     """Analyze image using Google Gemini Vision."""
     llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro")
-    
+
     # Load image
     image = Image.open(image_path)
-    
+
     message = HumanMessage(
         content=[
             {"type": "text", "text": prompt},
             {"type": "image_url", "image_url": image}
         ]
     )
-    
+
     response = llm.invoke([message])
     return response.content
 
@@ -105,13 +105,13 @@ def analyze_image_gemini(image_path: str, prompt: str) -> str:
 def compare_images(image_paths: list[str], prompt: str) -> str:
     """Compare multiple images."""
     llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro")
-    
+
     images = [Image.open(path) for path in image_paths]
-    
+
     content = [{"type": "text", "text": prompt}]
     for img in images:
         content.append({"type": "image_url", "image_url": img})
-    
+
     message = HumanMessage(content=content)
     response = llm.invoke([message])
     return response.content
@@ -127,15 +127,15 @@ import numpy as np
 
 class VisionAgent:
     """Agent that combines object detection with LLM reasoning."""
-    
+
     def __init__(self, yolo_model_path: str = "yolov8n.pt", llm_model: str = "gemini-1.5-pro"):
         self.detector = YOLO(yolo_model_path)
         self.llm = ChatGoogleGenerativeAI(model=llm_model)
-    
+
     def detect_objects(self, image_path: str, confidence: float = 0.5) -> list:
         """Detect objects in image."""
         results = self.detector(image_path, conf=confidence)
-        
+
         detections = []
         for result in results:
             boxes = result.boxes
@@ -145,18 +145,18 @@ class VisionAgent:
                     "confidence": float(box.conf[0]),
                     "bbox": box.xyxy[0].tolist()  # [x1, y1, x2, y2]
                 })
-        
+
         return detections
-    
+
     def analyze_with_context(self, image_path: str, question: str) -> str:
         """Analyze image with object detection context."""
         # Detect objects
         detections = self.detect_objects(image_path)
-        
+
         # Build context
         objects_str = ", ".join([d["class"] for d in detections])
         context = f"Detected objects: {objects_str}"
-        
+
         # Analyze with LLM
         image = Image.open(image_path)
         message = HumanMessage(
@@ -165,17 +165,17 @@ class VisionAgent:
                 {"type": "image_url", "image_url": image}
             ]
         )
-        
+
         response = self.llm.invoke([message])
         return response.content
-    
+
     def draw_detections(self, image_path: str, output_path: str):
         """Draw detected objects on image."""
         results = self.detector(image_path)
-        
+
         # Load image
         img = cv2.imread(image_path)
-        
+
         # Draw boxes
         for result in results:
             boxes = result.boxes
@@ -184,11 +184,11 @@ class VisionAgent:
                 class_id = int(box.cls[0])
                 confidence = float(box.conf[0])
                 label = f"{self.detector.names[class_id]} {confidence:.2f}"
-                
+
                 cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 cv2.putText(img, label, (x1, y1 - 10),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-        
+
         cv2.imwrite(output_path, img)
 
 # Usage
@@ -206,33 +206,33 @@ from PIL import Image
 
 class VisualQA:
     """Visual Question Answering system."""
-    
+
     def __init__(self, model: str = "gemini-1.5-pro"):
         self.llm = ChatGoogleGenerativeAI(model=model)
-    
+
     def answer_question(self, image_path: str, question: str, context: str = None) -> dict:
         """Answer a question about an image."""
         image = Image.open(image_path)
-        
+
         prompt = question
         if context:
             prompt = f"Context: {context}\n\nQuestion: {question}"
-        
+
         message = HumanMessage(
             content=[
                 {"type": "text", "text": prompt},
                 {"type": "image_url", "image_url": image}
             ]
         )
-        
+
         response = self.llm.invoke([message])
-        
+
         return {
             "question": question,
             "answer": response.content,
             "image": image_path
         }
-    
+
     def multi_question(self, image_path: str, questions: list[str]) -> list:
         """Answer multiple questions about an image."""
         results = []
@@ -240,23 +240,23 @@ class VisualQA:
             result = self.answer_question(image_path, question)
             results.append(result)
         return results
-    
+
     def compare_scenarios(self, image_path: str, scenarios: list[str]) -> dict:
         """Compare different scenarios or interpretations."""
         image = Image.open(image_path)
-        
+
         prompt = "Analyze this image considering these scenarios:\n"
         for i, scenario in enumerate(scenarios, 1):
             prompt += f"{i}. {scenario}\n"
         prompt += "\nProvide insights for each scenario."
-        
+
         message = HumanMessage(
             content=[
                 {"type": "text", "text": prompt},
                 {"type": "image_url", "image_url": image}
             ]
         )
-        
+
         response = self.llm.invoke([message])
         return {"analysis": response.content, "scenarios": scenarios}
 
@@ -274,7 +274,7 @@ from PIL import Image
 
 class ImageGenerator:
     """Generate images from text descriptions."""
-    
+
     def __init__(self, model_id: str = "runwayml/stable-diffusion-v1-5"):
         self.pipe = StableDiffusionPipeline.from_pretrained(
             model_id,
@@ -282,7 +282,7 @@ class ImageGenerator:
         )
         if torch.cuda.is_available():
             self.pipe = self.pipe.to("cuda")
-    
+
     def generate(self, prompt: str, negative_prompt: str = "", num_images: int = 1) -> list[Image.Image]:
         """Generate images from prompt."""
         images = self.pipe(
@@ -291,9 +291,9 @@ class ImageGenerator:
             num_images_per_prompt=num_images,
             num_inference_steps=50
         ).images
-        
+
         return images
-    
+
     def generate_with_style(self, prompt: str, style: str) -> Image.Image:
         """Generate image with specific style."""
         style_prompts = {
@@ -302,38 +302,38 @@ class ImageGenerator:
             "oil painting": "oil painting, artistic, detailed brushstrokes",
             "sketch": "pencil sketch, black and white, detailed"
         }
-        
+
         enhanced_prompt = f"{prompt}, {style_prompts.get(style, '')}"
         images = self.generate(enhanced_prompt)
         return images[0]
-    
+
     def img2img(self, image_path: str, prompt: str, strength: float = 0.75) -> Image.Image:
         """Modify existing image based on prompt."""
         from diffusers import StableDiffusionImg2ImgPipeline
-        
+
         pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
             "runwayml/stable-diffusion-v1-5",
             torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
         )
         if torch.cuda.is_available():
             pipe = pipe.to("cuda")
-        
+
         init_image = Image.open(image_path).convert("RGB")
-        
+
         image = pipe(
             prompt=prompt,
             image=init_image,
             strength=strength,
             num_inference_steps=50
         ).images[0]
-        
+
         return image
 
 # Using OpenAI DALL-E
 def generate_dalle(prompt: str, api_key: str, size: str = "1024x1024") -> str:
     """Generate image using DALL-E."""
     from openai import OpenAI
-    
+
     client = OpenAI(api_key=api_key)
     response = client.images.generate(
         model="dall-e-3",
@@ -342,7 +342,7 @@ def generate_dalle(prompt: str, api_key: str, size: str = "1024x1024") -> str:
         quality="standard",
         n=1
     )
-    
+
     return response.data[0].url
 ```
 
@@ -357,12 +357,12 @@ from PIL import Image
 
 class MultiModalRAG:
     """RAG system that handles both text and images."""
-    
+
     def __init__(self):
         self.llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro")
         self.embeddings = HuggingFaceEmbeddings()
         self.vectorstore = None
-    
+
     def add_image_document(self, image_path: str, description: str, metadata: dict = None):
         """Add image with description to vector store."""
         # Generate description if not provided
@@ -375,14 +375,14 @@ class MultiModalRAG:
                 ]
             )
             description = self.llm.invoke([message]).content
-        
+
         # Embed description
         embedding = self.embeddings.embed_query(description)
-        
+
         # Store in vector DB (pseudo-code - adjust based on your vector store)
         if self.vectorstore is None:
             self.vectorstore = Chroma(embedding_function=self.embeddings)
-        
+
         self.vectorstore.add_texts(
             texts=[description],
             embeddings=[embedding],
@@ -392,7 +392,7 @@ class MultiModalRAG:
                 **(metadata or {})
             }]
         )
-    
+
     def retrieve_and_answer(self, query: str, image_path: str = None) -> str:
         """Retrieve relevant context and answer query."""
         # Retrieve text context
@@ -401,16 +401,16 @@ class MultiModalRAG:
             context = "\n".join([doc.page_content for doc in docs])
         else:
             context = ""
-        
+
         # Build prompt
         prompt = f"Context: {context}\n\nQuestion: {query}"
-        
+
         # Add image if provided
         content = [{"type": "text", "text": prompt}]
         if image_path:
             image = Image.open(image_path)
             content.append({"type": "image_url", "image_url": image})
-        
+
         message = HumanMessage(content=content)
         response = self.llm.invoke([message])
         return response.content

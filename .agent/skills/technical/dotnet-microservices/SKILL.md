@@ -200,7 +200,7 @@ public class CatalogGrpcService : CatalogService.CatalogServiceBase
         ServerCallContext context)
     {
         var product = await _repository.GetByIdAsync(request.Id);
-        
+
         if (product == null)
         {
             throw new RpcException(
@@ -236,7 +236,7 @@ public class CatalogGrpcClient
     {
         var request = new GetProductRequest { Id = id };
         var response = await _client.GetProductAsync(request);
-        
+
         return new ProductDto
         {
             Id = response.Id,
@@ -326,16 +326,16 @@ public class OrderEventHandler : BackgroundService
             try
             {
                 var eventType = args.Message.ApplicationProperties["EventType"]?.ToString();
-                
+
                 if (eventType == "OrderCreated")
                 {
                     var orderEvent = JsonSerializer.Deserialize<OrderCreatedEvent>(
                         args.Message.Body);
-                    
+
                     using var scope = _serviceProvider.CreateScope();
                     var inventoryService = scope.ServiceProvider
                         .GetRequiredService<IInventoryService>();
-                    
+
                     await inventoryService.ReserveInventoryAsync(orderEvent!);
                 }
 
@@ -398,7 +398,7 @@ public class ProductService
         }
 
         var product = await _repository.GetByIdAsync(id);
-        
+
         if (product == null)
             return null;
 

@@ -221,10 +221,10 @@ def deploy_to_sagemaker(
     serverless: bool = False,
 ):
     """Deploy model to SageMaker."""
-    
+
     role = sagemaker.get_execution_role()
     sess = sagemaker.Session()
-    
+
     # Create HuggingFace model
     huggingface_model = HuggingFaceModel(
         model_data=f"s3://your-bucket/models/{model_id}/",
@@ -239,7 +239,7 @@ def deploy_to_sagemaker(
             "HF_TASK": "text-generation",
         },
     )
-    
+
     if serverless:
         # Serverless deployment
         predictor = huggingface_model.deploy(
@@ -255,7 +255,7 @@ def deploy_to_sagemaker(
             instance_type=instance_type,
             endpoint_name=f"{model_id}-endpoint",
         )
-    
+
     return predictor
 
 # Invoke endpoint
@@ -290,21 +290,21 @@ def deploy_to_vertex_ai(
     region: str = "us-central1",
 ):
     """Deploy model to Vertex AI."""
-    
+
     aiplatform.init(project=project_id, location=region)
-    
+
     # Upload model
     model = models.Model.upload(
         display_name="llm-model",
         artifact_uri=model_path,
         serving_container_image_uri="us-docker.pkg.dev/vertex-ai/prediction/pytorch-gpu.1-13:latest",
     )
-    
+
     # Create endpoint
     endpoint = endpoints.Endpoint.create(
         display_name="llm-endpoint",
     )
-    
+
     # Deploy model to endpoint
     endpoint.deploy(
         model=model,
@@ -316,7 +316,7 @@ def deploy_to_vertex_ai(
         max_replica_count=3,
         traffic_percentage=100,
     )
-    
+
     return endpoint
 
 # Predict
@@ -353,7 +353,7 @@ stub = modal.Stub("ml-inference")
 class ModelInference:
     def __enter__(self):
         from transformers import AutoModelForCausalLM, AutoTokenizer
-        
+
         self.tokenizer = AutoTokenizer.from_pretrained(
             "mistralai/Mistral-7B-Instruct-v0.2",
             cache_dir="/cache",
@@ -363,7 +363,7 @@ class ModelInference:
             cache_dir="/cache",
             device_map="auto",
         )
-    
+
     @modal.method
     def generate(self, prompt: str, max_tokens: int = 512):
         """Generate text."""
@@ -394,11 +394,11 @@ def export_to_onnx(
     max_seq_length: int = 512,
 ):
     """Export HuggingFace model to ONNX."""
-    
+
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(model_name)
     model.eval()
-    
+
     # Create dummy input
     dummy_input = tokenizer(
         "Hello, world!",
@@ -406,7 +406,7 @@ def export_to_onnx(
         max_length=max_seq_length,
         padding="max_length",
     )
-    
+
     # Export
     torch.onnx.export(
         model,
@@ -420,32 +420,32 @@ def export_to_onnx(
         },
         opset_version=14,
     )
-    
+
     # Verify
     onnx_model = onnx.load(output_path)
     onnx.checker.check_model(onnx_model)
-    
+
     return output_path
 
 def run_onnx_inference(model_path: str, input_text: str):
     """Run inference with ONNX Runtime."""
     tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2")
-    
+
     # Prepare input
     inputs = tokenizer(input_text, return_tensors="np")
-    
+
     # Create ONNX Runtime session
     session = ort.InferenceSession(
         model_path,
         providers=["CPUExecutionProvider"],  # or CUDAExecutionProvider
     )
-    
+
     # Run inference
     outputs = session.run(
         None,
         {"input_ids": inputs["input_ids"].astype("int64")},
     )
-    
+
     # Decode
     logits = outputs[0]
     predicted_ids = logits.argmax(axis=-1)

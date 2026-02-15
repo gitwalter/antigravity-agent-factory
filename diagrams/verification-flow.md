@@ -44,17 +44,17 @@ flowchart TB
     E3 --> SCRUB_E
     CLAIM --> SCRUB_Q
     CLAIM --> FULL_Q
-    
+
     SCRUB_E --> SCRUB_Q --> SCRUB_R
     E1 --> FULL_E
     E2 --> FULL_E
     E3 --> FULL_E
     FULL_E --> FULL_Q --> FULL_R
-    
+
     SCRUB_R --> COMPARE
     FULL_R --> COMPARE
     COMPARE --> BUDGET
-    
+
     BUDGET --> VERIFIED
     BUDGET --> PLAUSIBLE
     BUDGET --> SUSPICIOUS
@@ -109,7 +109,7 @@ flowchart TB
 
     subgraph Grounding["Grounding Skills"]
         COORD["Grounding Coordinator"]
-        
+
         subgraph Layers["5-Layer Lookup"]
             L1["Layer 1: Knowledge Cache"]
             L2["Layer 2: Documentation"]
@@ -117,7 +117,7 @@ flowchart TB
             L4["Layer 4: Specifications"]
             L5["Layer 5: Verification"]
         end
-        
+
         RESULT["Grounding Results"]
     end
 
@@ -144,14 +144,14 @@ flowchart TB
     REQ --> COORD
     COORD --> L1 --> L2 --> L3 --> L4 --> L5
     L5 --> RESULT
-    
+
     RESULT --> COLLECT --> EXTRACT --> VERIFY --> STATUS
-    
+
     STATUS --> |"All VERIFIED"| PROCEED
     STATUS --> |"Some SUSPICIOUS"| WARN
     STATUS --> |"Any UNSUPPORTED"| STOP
     STATUS --> |"Ambiguous"| ASK
-    
+
     PROCEED --> CODE
     WARN --> CODE
     CODE --> TEST --> DOC
@@ -221,25 +221,25 @@ flowchart LR
 flowchart TB
     subgraph Report["Strawberry Verification Report"]
         HEADER["Header: Verification ID, Timestamp"]
-        
+
         subgraph Evidence["Evidence Spans"]
             S0["S0: Table definition"]
             S1["S1: Schema catalog"]
             S2["S2: Documentation"]
         end
-        
+
         subgraph Claims["Claim Verification"]
             C1["Claim 1: ✓ VERIFIED"]
             C2["Claim 2: ◐ PLAUSIBLE"]
             C3["Claim 3: ⚠ SUSPICIOUS"]
         end
-        
+
         subgraph Summary["Summary"]
             WELL["Well-Supported: 2"]
             SUSP["Suspicious: 1"]
             UNSUPP["Unsupported: 0"]
         end
-        
+
         REC["RECOMMENDATION: PROCEED_WITH_WARNINGS"]
     end
 
@@ -256,17 +256,17 @@ flowchart TB
 ```mermaid
 flowchart TD
     START([Claim Generated]) --> CHECK{Confidence Level?}
-    
+
     CHECK -->|HIGH from Cache| SKIP["Skip verification<br/>(pre-verified)"]
     CHECK -->|MEDIUM from Docs| VERIFY["Trigger Strawberry<br/>Verification"]
     CHECK -->|LOW/Unknown| GATHER["Gather more evidence<br/>before proceeding"]
-    
+
     VERIFY --> RESULT{Verification Result?}
-    
+
     RESULT -->|VERIFIED| PROCEED["✓ Proceed safely"]
     RESULT -->|SUSPICIOUS| WARN["⚠ Proceed with warning"]
     RESULT -->|UNSUPPORTED| STOP["✗ Stop, ask user"]
-    
+
     GATHER --> CHECK
 
     style START fill:#e3f2fd

@@ -4,8 +4,8 @@
 
 Systematic workflow for responding to production incidents. Covers detection, triage, mitigation, resolution, and post-mortem analysis.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Applies To:** All stacks
 
 ## Trigger Conditions
@@ -29,7 +29,7 @@ This workflow is activated when:
 
 **Description:** Confirm and characterize the incident.
 
-**Entry Criteria:** Alert or report received  
+**Entry Criteria:** Alert or report received
 **Exit Criteria:** Incident confirmed
 
 #### Step 1.1: Acknowledge Alert
@@ -69,7 +69,7 @@ This workflow is activated when:
 
 **Description:** Identify scope and impact.
 
-**Entry Criteria:** Incident confirmed  
+**Entry Criteria:** Incident confirmed
 **Exit Criteria:** Impact understood
 
 #### Step 2.1: Identify Impact
@@ -106,7 +106,7 @@ This workflow is activated when:
 
 **Description:** Reduce or eliminate impact.
 
-**Entry Criteria:** Impact understood  
+**Entry Criteria:** Impact understood
 **Exit Criteria:** Impact mitigated
 
 #### Step 3.1: Identify Mitigation Options
@@ -147,7 +147,7 @@ This workflow is activated when:
 
 **Description:** Fully resolve the incident.
 
-**Entry Criteria:** Impact mitigated  
+**Entry Criteria:** Impact mitigated
 **Exit Criteria:** Incident resolved
 
 #### Step 4.1: Root Cause Analysis
@@ -178,7 +178,7 @@ This workflow is activated when:
 
 **Description:** Restore normal operations.
 
-**Entry Criteria:** Fix deployed  
+**Entry Criteria:** Fix deployed
 **Exit Criteria:** Normal operations
 
 #### Step 5.1: Verify Recovery
@@ -209,7 +209,7 @@ This workflow is activated when:
 
 **Description:** Learn from the incident.
 
-**Entry Criteria:** Incident closed  
+**Entry Criteria:** Incident closed
 **Exit Criteria:** Post-mortem complete
 
 #### Step 6.1: Conduct Post-Mortem

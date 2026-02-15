@@ -52,28 +52,28 @@ class TrackingConfig:
     """Configuration for experiment tracking."""
     # Backend selection
     backend: str = "mlflow"  # Options: "mlflow", "wandb", "both", "none"
-    
+
     # MLflow settings
     mlflow_tracking_uri: str = "{{MLFLOW_TRACKING_URI}}"  # Default: "file:./mlruns"
     mlflow_experiment_name: str = "{{EXPERIMENT_NAME}}"
     mlflow_run_name: Optional[str] = None
-    
+
     # W&B settings
     wandb_project: str = "{{WANDB_PROJECT}}"
     wandb_entity: Optional[str] = "{{WANDB_ENTITY}}"
     wandb_run_name: Optional[str] = None
     wandb_tags: List[str] = None
-    
+
     # Logging settings
     log_metrics: bool = True
     log_params: bool = True
     log_artifacts: bool = True
     log_model: bool = True
-    
+
     # Artifact paths
     artifact_dir: str = "{{ARTIFACT_DIR}}"
     model_dir: str = "{{MODEL_DIR}}"
-    
+
     # Resume settings
     resume_run_id: Optional[str] = None
     resume_wandb_id: Optional[str] = None
@@ -81,32 +81,32 @@ class TrackingConfig:
 
 class BaseTracker(ABC):
     """Abstract base class for experiment trackers."""
-    
+
     @abstractmethod
     def start_run(self, run_name: Optional[str] = None) -> None:
         """Start a new experiment run."""
         pass
-    
+
     @abstractmethod
     def end_run(self) -> None:
         """End the current experiment run."""
         pass
-    
+
     @abstractmethod
     def log_params(self, params: Dict[str, Any]) -> None:
         """Log hyperparameters."""
         pass
-    
+
     @abstractmethod
     def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None) -> None:
         """Log metrics."""
         pass
-    
+
     @abstractmethod
     def log_artifact(self, local_path: str, artifact_path: Optional[str] = None) -> None:
         """Log an artifact."""
         pass
-    
+
     @abstractmethod
     def log_model(self, model: nn.Module, model_name: str = "model") -> None:
         """Log a PyTorch model."""
@@ -115,43 +115,43 @@ class BaseTracker(ABC):
 
 class MLflowTracker(BaseTracker):
     """MLflow-based experiment tracker."""
-    
+
     def __init__(self, config: TrackingConfig):
         """
         Initialize MLflow tracker.
-        
+
         Args:
             config: Tracking configuration
         """
         if not MLFLOW_AVAILABLE:
             raise ImportError("MLflow is not installed. Install with: pip install mlflow")
-        
+
         self.config = config
         mlflow.set_tracking_uri(config.mlflow_tracking_uri)
         mlflow.set_experiment(config.mlflow_experiment_name)
         self.run = None
-    
+
     def start_run(self, run_name: Optional[str] = None) -> None:
         """Start a new MLflow run."""
         run_name = run_name or self.config.mlflow_run_name
         self.run = mlflow.start_run(run_name=run_name)
         logger.info(f"Started MLflow run: {self.run.info.run_id}")
-    
+
     def end_run(self) -> None:
         """End the current MLflow run."""
         if self.run:
             mlflow.end_run()
             logger.info("Ended MLflow run")
-    
+
     def log_params(self, params: Dict[str, Any]) -> None:
         """Log hyperparameters to MLflow."""
         if not self.config.log_params:
             return
-        
+
         # Convert all values to strings (MLflow requirement)
         params_str = {k: str(v) for k, v in params.items()}
         mlflow.log_params(params_str)
-    
+
     def log_metrics(
         self,
         metrics: Dict[str, float],
@@ -160,13 +160,13 @@ class MLflowTracker(BaseTracker):
         """Log metrics to MLflow."""
         if not self.config.log_metrics:
             return
-        
+
         if step is not None:
             for key, value in metrics.items():
                 mlflow.log_metric(key, value, step=step)
         else:
             mlflow.log_metrics(metrics)
-    
+
     def log_artifact(
         self,
         local_path: str,
@@ -175,49 +175,49 @@ class MLflowTracker(BaseTracker):
         """Log an artifact to MLflow."""
         if not self.config.log_artifacts:
             return
-        
+
         mlflow.log_artifact(local_path, artifact_path)
-    
+
     def log_model(self, model: nn.Module, model_name: str = "model") -> None:
         """Log a PyTorch model to MLflow."""
         if not self.config.log_model:
             return
-        
+
         mlflow.pytorch.log_model(model, model_name)
-    
+
     def log_image(self, image: np.ndarray, artifact_file: str) -> None:
         """Log an image to MLflow."""
         import matplotlib.pyplot as plt
-        
+
         plt.figure(figsize=(10, 6))
         plt.imshow(image)
         plt.axis('off')
         plt.savefig(artifact_file)
         plt.close()
-        
+
         self.log_artifact(artifact_file)
 
 
 class WandBTracker(BaseTracker):
     """Weights & Biases-based experiment tracker."""
-    
+
     def __init__(self, config: TrackingConfig):
         """
         Initialize W&B tracker.
-        
+
         Args:
             config: Tracking configuration
         """
         if not WANDB_AVAILABLE:
             raise ImportError("W&B is not installed. Install with: pip install wandb")
-        
+
         self.config = config
         self.run = None
-    
+
     def start_run(self, run_name: Optional[str] = None) -> None:
         """Start a new W&B run."""
         run_name = run_name or self.config.wandb_run_name
-        
+
         # Resume if specified
         if self.config.resume_wandb_id:
             self.run = wandb.init(
@@ -233,22 +233,22 @@ class WandBTracker(BaseTracker):
                 name=run_name,
                 tags=self.config.wandb_tags or []
             )
-        
+
         logger.info(f"Started W&B run: {self.run.id}")
-    
+
     def end_run(self) -> None:
         """End the current W&B run."""
         if self.run:
             wandb.finish()
             logger.info("Ended W&B run")
-    
+
     def log_params(self, params: Dict[str, Any]) -> None:
         """Log hyperparameters to W&B."""
         if not self.config.log_params:
             return
-        
+
         wandb.config.update(params)
-    
+
     def log_metrics(
         self,
         metrics: Dict[str, float],
@@ -257,12 +257,12 @@ class WandBTracker(BaseTracker):
         """Log metrics to W&B."""
         if not self.config.log_metrics:
             return
-        
+
         if step is not None:
             wandb.log(metrics, step=step)
         else:
             wandb.log(metrics)
-    
+
     def log_artifact(
         self,
         local_path: str,
@@ -271,29 +271,29 @@ class WandBTracker(BaseTracker):
         """Log an artifact to W&B."""
         if not self.config.log_artifacts:
             return
-        
+
         artifact = wandb.Artifact(
             name=artifact_path or Path(local_path).name,
             type="dataset"
         )
         artifact.add_file(local_path)
         wandb.log_artifact(artifact)
-    
+
     def log_model(self, model: nn.Module, model_name: str = "model") -> None:
         """Log a PyTorch model to W&B."""
         if not self.config.log_model:
             return
-        
+
         # Save model locally first
         model_path = Path(self.config.model_dir) / f"{model_name}.pt"
         model_path.parent.mkdir(parents=True, exist_ok=True)
         torch.save(model.state_dict(), model_path)
-        
+
         # Log as artifact
         artifact = wandb.Artifact(name=model_name, type="model")
         artifact.add_file(str(model_path))
         wandb.log_artifact(artifact)
-    
+
     def log_image(self, image: np.ndarray, name: str) -> None:
         """Log an image to W&B."""
         wandb.log({name: wandb.Image(image)})
@@ -302,14 +302,14 @@ class WandBTracker(BaseTracker):
 class ExperimentTracker:
     """
     Unified experiment tracker supporting multiple backends.
-    
+
     This class provides a unified interface for experiment tracking
     that can work with MLflow, W&B, or both simultaneously.
-    
+
     Attributes:
         config: Tracking configuration
         trackers: List of active trackers
-        
+
     Example:
         >>> config = TrackingConfig(
         ...     backend="mlflow",
@@ -322,50 +322,50 @@ class ExperimentTracker:
         >>> tracker.log_model(model)
         >>> tracker.end_run()
     """
-    
+
     def __init__(self, config: TrackingConfig):
         """
         Initialize experiment tracker.
-        
+
         Args:
             config: Tracking configuration
         """
         self.config = config
         self.trackers: List[BaseTracker] = []
-        
+
         # Initialize trackers based on backend selection
         backend = config.backend.lower()
-        
+
         if backend == "mlflow" or backend == "both":
             if MLFLOW_AVAILABLE:
                 self.trackers.append(MLflowTracker(config))
             else:
                 logger.warning("MLflow requested but not available")
-        
+
         if backend == "wandb" or backend == "both":
             if WANDB_AVAILABLE:
                 self.trackers.append(WandBTracker(config))
             else:
                 logger.warning("W&B requested but not available")
-        
+
         if not self.trackers:
             logger.warning("No trackers available. Experiment tracking disabled.")
-    
+
     def start_run(self, run_name: Optional[str] = None) -> None:
         """Start a new experiment run in all trackers."""
         for tracker in self.trackers:
             tracker.start_run(run_name)
-    
+
     def end_run(self) -> None:
         """End the current experiment run in all trackers."""
         for tracker in self.trackers:
             tracker.end_run()
-    
+
     def log_params(self, params: Dict[str, Any]) -> None:
         """Log hyperparameters to all trackers."""
         for tracker in self.trackers:
             tracker.log_params(params)
-    
+
     def log_metrics(
         self,
         metrics: Dict[str, float],
@@ -374,7 +374,7 @@ class ExperimentTracker:
         """Log metrics to all trackers."""
         for tracker in self.trackers:
             tracker.log_metrics(metrics, step)
-    
+
     def log_artifact(
         self,
         local_path: str,
@@ -383,18 +383,18 @@ class ExperimentTracker:
         """Log an artifact to all trackers."""
         for tracker in self.trackers:
             tracker.log_artifact(local_path, artifact_path)
-    
+
     def log_model(self, model: nn.Module, model_name: str = "model") -> None:
         """Log a PyTorch model to all trackers."""
         for tracker in self.trackers:
             tracker.log_model(model, model_name)
-    
+
     def log_image(self, image: np.ndarray, name: str) -> None:
         """Log an image to all trackers."""
         for tracker in self.trackers:
             if hasattr(tracker, 'log_image'):
                 tracker.log_image(image, name)
-    
+
     def log_training_step(
         self,
         epoch: int,
@@ -405,7 +405,7 @@ class ExperimentTracker:
     ) -> None:
         """
         Log a training step with common metrics.
-        
+
         Args:
             epoch: Current epoch
             batch_idx: Current batch index
@@ -415,15 +415,15 @@ class ExperimentTracker:
         """
         step = epoch * 1000 + batch_idx  # Approximate step number
         metrics = {"train_loss": train_loss}
-        
+
         if val_loss is not None:
             metrics["val_loss"] = val_loss
-        
+
         if learning_rate is not None:
             metrics["learning_rate"] = learning_rate
-        
+
         self.log_metrics(metrics, step=step)
-    
+
     def log_epoch_summary(
         self,
         epoch: int,
@@ -432,7 +432,7 @@ class ExperimentTracker:
     ) -> None:
         """
         Log epoch-level summary metrics.
-        
+
         Args:
             epoch: Current epoch number
             train_metrics: Training metrics dictionary
@@ -440,10 +440,10 @@ class ExperimentTracker:
         """
         # Prefix metrics with epoch
         metrics = {f"epoch_{k}": v for k, v in train_metrics.items()}
-        
+
         if val_metrics:
             metrics.update({f"epoch_val_{k}": v for k, v in val_metrics.items()})
-        
+
         self.log_metrics(metrics, step=epoch)
 
 
@@ -451,31 +451,31 @@ class ExperimentTracker:
 class ExperimentContext:
     """
     Context manager for experiment tracking.
-    
+
     Automatically starts and ends runs, handles errors gracefully.
-    
+
     Example:
         >>> with ExperimentContext(tracker) as exp:
         ...     exp.log_params({"lr": 0.001})
         ...     exp.log_metrics({"loss": 0.5})
     """
-    
+
     def __init__(self, tracker: ExperimentTracker, run_name: Optional[str] = None):
         """
         Initialize experiment context.
-        
+
         Args:
             tracker: Experiment tracker instance
             run_name: Optional run name
         """
         self.tracker = tracker
         self.run_name = run_name
-    
+
     def __enter__(self) -> ExperimentTracker:
         """Start the experiment run."""
         self.tracker.start_run(self.run_name)
         return self.tracker
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         """End the experiment run."""
         self.tracker.end_run()
@@ -489,9 +489,9 @@ if __name__ == "__main__":
     #     mlflow_experiment_name="my_experiment",
     #     mlflow_run_name="run_1"
     # )
-    # 
+    #
     # tracker = ExperimentTracker(config)
-    # 
+    #
     # with ExperimentContext(tracker) as exp:
     #     # Log hyperparameters
     #     exp.log_params({
@@ -499,19 +499,19 @@ if __name__ == "__main__":
     #         "batch_size": 32,
     #         "num_epochs": 10
     #     })
-    #     
+    #
     #     # Log metrics during training
     #     for epoch in range(10):
     #         train_loss = 0.5 * (0.9 ** epoch)
     #         val_loss = 0.6 * (0.9 ** epoch)
-    #         
+    #
     #         exp.log_training_step(
     #             epoch=epoch,
     #             batch_idx=0,
     #             train_loss=train_loss,
     #             val_loss=val_loss
     #         )
-    #     
+    #
     #     # Log model
     #     # exp.log_model(model, "final_model")
     pass

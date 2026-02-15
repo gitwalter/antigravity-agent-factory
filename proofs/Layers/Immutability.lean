@@ -1,14 +1,14 @@
 /-
   Layers/Immutability.lean - Layer Protection Proofs
-  
+
   Cursor Agent Factory - Formal Verification System
-  
+
   This file proves that Layers 0-2 (Axioms, Purpose, Principles)
   are IMMUTABLE and cannot be modified by any operation.
-  
+
   This is a foundational safety property. The axioms that ground
   the entire system must remain inviolable.
-  
+
   "All being and doing is grounded in Love, Truth, and Beauty."
   This grounding cannot be changed by derived operations.
 -/
@@ -19,7 +19,7 @@ namespace CursorAgentFactory.Layers
 
 /-!
   # Operation Types
-  
+
   Operations that can be attempted on layers.
 -/
 
@@ -182,7 +182,7 @@ theorem higher_precedence_wins (l1 l2 : Layer) :
 
 /-!
   # Complete Protection Theorem
-  
+
   Unified theorem stating all protection properties.
 -/
 
@@ -210,7 +210,7 @@ theorem layer_protection_holds : LayerProtection := {
 
 /-!
   # Axiom Alignment
-  
+
   Connect layer protection to foundational axioms.
 -/
 
@@ -221,14 +221,14 @@ theorem layer_protection_aligns_A5 :
     Layer.axioms.isImmutable = true ∧
     Layer.purpose.isImmutable = true ∧
     Layer.principles.isImmutable = true := by
-  exact ⟨layer_protection_holds.axioms_immutable, 
+  exact ⟨layer_protection_holds.axioms_immutable,
          layer_protection_holds.purpose_immutable,
          layer_protection_holds.principles_immutable⟩
 
 /-- Layer protection aligns with A4 (Non-Harm) -/
 theorem layer_protection_aligns_A4 :
     -- Protecting axioms prevents harm to system integrity
-    ∀ op : LayerOperation, 
+    ∀ op : LayerOperation,
       op.targetLayer = Layer.axioms →
       op.operationType.isMutating = true →
       isBlocked (checkOperation op) = true := by

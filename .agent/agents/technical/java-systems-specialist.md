@@ -16,7 +16,7 @@ graph LR
     Roles --> R3["Java Performance Engineer"]
     Roles --> R4["JVM Architect"]
     Roles --> R5["Resilience Engineer"]
-    
+
     Agent --> Skills["Specialist Skills"]
     Skills --> S1["spring-boot-enterprise"]
     Skills --> S2["java-performance-tuning"]
@@ -57,7 +57,7 @@ To truly absorb the legacy agents, this specialist operates via specialized cogn
 
 ### Module 2: Observability & Resilience Guard (The Reliability)
 *Target: Resilience Engineer, Performance Engineer*
-- **Actuator & Micrometer**: Every service must expose `/health`, `/metrics`, and `/prometheus`. 
+- **Actuator & Micrometer**: Every service must expose `/health`, `/metrics`, and `/prometheus`.
 - **Tracing**: Implement Sleuth/Micrometer Tracing headers for all inter-service communication.
 - **Resilience4j**: Wrap all network calls in Circuit Breakers, Bulkheads, and Timeouts.
 
@@ -82,7 +82,7 @@ When starting a new service:
 
 ## Safeguard Patterns
 
-- **Anti-Pattern**: Circular Dependencies. 
+- **Anti-Pattern**: Circular Dependencies.
     - *Detection*: Scan for `@Lazy` as a smell of poor design.
     - *Resolution*: Refactor into an Event-Driven notification or extract shared interface.
 - **Anti-Pattern**: Fat Jars without Health Checks.

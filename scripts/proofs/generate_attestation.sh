@@ -65,9 +65,9 @@ print_help() {
 # Verify proofs first
 verify_proofs() {
     echo -e "${BLUE}[1/4] Verifying proofs...${NC}"
-    
+
     cd "$PROOFS_DIR"
-    
+
     if lake build; then
         echo -e "${GREEN}✓ All proofs verified${NC}"
     else
@@ -79,35 +79,35 @@ verify_proofs() {
 # Generate file hashes
 generate_hashes() {
     echo -e "${BLUE}[2/4] Generating file hashes...${NC}"
-    
+
     mkdir -p "$ATTESTATIONS_DIR"
-    
+
     cd "$PROOFS_DIR"
-    
+
     # Generate SHA-256 hashes of all proof files
     find . -name "*.lean" -type f | sort | while read -r file; do
         sha256sum "$file"
     done > "$ATTESTATIONS_DIR/checksums.txt"
-    
+
     echo -e "${GREEN}✓ Checksums generated: .attestations/checksums.txt${NC}"
 }
 
 # Generate attestation JSON
 generate_attestation() {
     echo -e "${BLUE}[3/4] Generating attestation...${NC}"
-    
+
     # Get version
     if [ -z "$VERSION" ]; then
         VERSION=$(git describe --tags --always 2>/dev/null || echo "dev")
     fi
-    
+
     # Get git info
     COMMIT_SHA=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
     COMMIT_DATE=$(git log -1 --format=%ci 2>/dev/null || echo "unknown")
-    
+
     # Get checksums hash
     CHECKSUMS_HASH=$(sha256sum "$ATTESTATIONS_DIR/checksums.txt" | cut -d' ' -f1)
-    
+
     # Generate attestation
     cat > "$ATTESTATIONS_DIR/$VERSION-verified.json" << EOF
 {
@@ -161,20 +161,20 @@ generate_attestation() {
   }
 }
 EOF
-    
+
     echo -e "${GREEN}✓ Attestation generated: .attestations/$VERSION-verified.json${NC}"
 }
 
 # GPG sign attestation
 sign_attestation() {
     echo -e "${BLUE}[4/4] Signing attestation...${NC}"
-    
+
     if [ "$SIGN" = true ]; then
         if ! command -v gpg &> /dev/null; then
             echo -e "${YELLOW}WARNING: GPG not found. Skipping signature.${NC}"
             return
         fi
-        
+
         gpg --armor --detach-sign "$ATTESTATIONS_DIR/$VERSION-verified.json"
         echo -e "${GREEN}✓ Signature created: .attestations/$VERSION-verified.json.asc${NC}"
     else
@@ -192,21 +192,21 @@ print_summary() {
     echo "Generated files:"
     echo "  .attestations/checksums.txt           - SHA-256 hashes of proof files"
     echo "  .attestations/$VERSION-verified.json  - Attestation document"
-    
+
     if [ "$SIGN" = true ] && [ -f "$ATTESTATIONS_DIR/$VERSION-verified.json.asc" ]; then
         echo "  .attestations/$VERSION-verified.json.asc - GPG signature"
     fi
-    
+
     echo ""
     echo "To verify independently:"
     echo "  1. Clone the repository"
     echo "  2. Run: cd proofs && lake build"
     echo "  3. Compare checksums: sha256sum -c .attestations/checksums.txt"
-    
+
     if [ "$SIGN" = true ] && [ -f "$ATTESTATIONS_DIR/$VERSION-verified.json.asc" ]; then
         echo "  4. Verify signature: gpg --verify .attestations/$VERSION-verified.json.asc"
     fi
-    
+
     echo ""
     echo -e "${BLUE}Trust verified. Truth freely available.${NC}"
 }

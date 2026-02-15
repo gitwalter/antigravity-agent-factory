@@ -4,8 +4,8 @@
 
 Comprehensive security audit workflow for smart contracts covering static analysis, vulnerability scanning, gas optimization, and business logic review. Designed for Ethereum/Solidity and Solana/Rust ecosystems.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Applies To:** solidity-ethereum, solana-rust, defi-protocols
 
 ## Trigger Conditions
@@ -29,7 +29,7 @@ This workflow is activated when:
 
 **Description:** Understand contract purpose and architecture.
 
-**Entry Criteria:** Contract code available  
+**Entry Criteria:** Contract code available
 **Exit Criteria:** Contract understood
 
 #### Step 1.1: Scope Definition
@@ -53,7 +53,7 @@ This workflow is activated when:
 
 **Description:** Automated vulnerability scanning.
 
-**Entry Criteria:** Scope defined  
+**Entry Criteria:** Scope defined
 **Exit Criteria:** Static analysis complete
 
 #### Step 2.1: Run Security Scanners
@@ -91,7 +91,7 @@ This workflow is activated when:
 
 **Description:** Human analysis of business logic and edge cases.
 
-**Entry Criteria:** Static analysis complete  
+**Entry Criteria:** Static analysis complete
 **Exit Criteria:** Manual review complete
 
 #### Step 3.1: Access Control Review
@@ -130,7 +130,7 @@ This workflow is activated when:
 
 **Description:** Optimize gas usage and prevent gas griefing.
 
-**Entry Criteria:** Manual review complete  
+**Entry Criteria:** Manual review complete
 **Exit Criteria:** Gas optimized
 
 #### Step 4.1: Gas Profiling
@@ -165,7 +165,7 @@ This workflow is activated when:
 
 **Description:** Verify test coverage and quality.
 
-**Entry Criteria:** Gas analysis complete  
+**Entry Criteria:** Gas analysis complete
 **Exit Criteria:** Coverage verified
 
 #### Step 5.1: Analyze Test Suite
@@ -199,7 +199,7 @@ This workflow is activated when:
 
 **Description:** Compile comprehensive audit report.
 
-**Entry Criteria:** All reviews complete  
+**Entry Criteria:** All reviews complete
 **Exit Criteria:** Report delivered
 
 #### Step 6.1: Generate Audit Report
@@ -274,7 +274,7 @@ Running Mythril...
 ━━━ PHASE 3: Manual Review ━━━
 ❌ CRITICAL: Reentrancy in withdraw()
    No reentrancy guard on external call
-   
+
 ⚠️ HIGH: Oracle staleness not checked
    Price feed can be stale
 

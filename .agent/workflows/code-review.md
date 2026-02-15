@@ -8,8 +8,8 @@ description: Comprehensive workflow for performing structured code reviews cover
 
 Comprehensive workflow for performing structured code reviews covering correctness, style, design, performance, security, and maintainability. Generates actionable feedback with severity ratings and clear recommendations.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** code-reviewer
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.

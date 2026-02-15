@@ -14,16 +14,16 @@ Components:
 Usage:
     from scripts.guardian import axiom_checker, harm_detector, secret_scanner
     from scripts.guardian.mutability_guard import MutabilityGuard, get_mutability_guard
-    
+
     # Check for axiom violations
     result = axiom_checker.check_operation(operation_type, context)
-    
+
     # Check for harmful patterns
     result = harm_detector.scan_content(content)
-    
+
     # Check for secrets
     result = secret_scanner.scan_file(file_path)
-    
+
     # Check if a file can be modified (Layer protection)
     guard = get_mutability_guard()
     result = guard.can_modify("knowledge/test.json")
@@ -41,28 +41,28 @@ AXIOMS = {
     "A1": {
         "name": "Verifiability",
         "statement": "All outputs must be verifiable against source",
-        "checks": ["unverified_claims", "missing_sources", "hallucination_patterns"]
+        "checks": ["unverified_claims", "missing_sources", "hallucination_patterns"],
     },
     "A2": {
-        "name": "User Primacy", 
+        "name": "User Primacy",
         "statement": "User intent takes precedence over agent convenience",
-        "checks": ["assumption_without_clarification", "override_user_preference"]
+        "checks": ["assumption_without_clarification", "override_user_preference"],
     },
     "A3": {
         "name": "Transparency",
         "statement": "Reasoning must be explainable on request",
-        "checks": ["hidden_logic", "silent_failures", "unexplained_decisions"]
+        "checks": ["hidden_logic", "silent_failures", "unexplained_decisions"],
     },
     "A4": {
         "name": "Non-Harm",
         "statement": "No action may knowingly cause harm to users or systems",
-        "checks": ["destructive_operations", "security_risks", "data_exposure"]
+        "checks": ["destructive_operations", "security_risks", "data_exposure"],
     },
     "A5": {
         "name": "Consistency",
         "statement": "No rule may contradict these axioms",
-        "checks": ["axiom_conflicts", "rule_contradictions"]
-    }
+        "checks": ["axiom_conflicts", "rule_contradictions"],
+    },
 }
 
 # Response levels
@@ -71,5 +71,5 @@ LEVELS = {
     1: {"name": "Nudge", "action": "self_correct"},
     2: {"name": "Pause", "action": "ask_user"},
     3: {"name": "Block", "action": "stop_explain"},
-    4: {"name": "Protect", "action": "prevent_harm"}
+    4: {"name": "Protect", "action": "prevent_harm"},
 }

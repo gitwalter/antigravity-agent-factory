@@ -4,8 +4,8 @@
 
 Automated workflow for facilitating daily standup meetings, including status collection, blocker identification, and action item tracking. Keeps standups focused and time-boxed while ensuring important information surfaces.
 
-**Version:** 1.0.0  
-**Created:** 2026-02-02  
+**Version:** 1.0.0
+**Created:** 2026-02-02
 **Agent:** sprint-master
 
 > **Note:** Directory paths referenced in this workflow (knowledge/, .cursor/skills/, patterns/, etc.) are configurable via `.cursor/config/settings.json`. See [Path Configuration Guide](../../../../docs/setup/configuration.md).
@@ -31,7 +31,7 @@ This workflow is activated when:
 
 **Description:** Gather current work status from team and tools.
 
-**Entry Criteria:** Standup triggered  
+**Entry Criteria:** Standup triggered
 **Exit Criteria:** Status data collected
 
 #### Step 1.1: Query Active Work
@@ -73,7 +73,7 @@ Sprint = currentSprint() AND Status = "In Progress"
 
 **Query:**
 ```
-Sprint = currentSprint() AND Status = "Done" 
+Sprint = currentSprint() AND Status = "Done"
 AND Updated >= -24h
 ```
 
@@ -113,7 +113,7 @@ AND Updated >= -24h
 
 **Description:** Format status information for standup.
 
-**Entry Criteria:** Status collected  
+**Entry Criteria:** Status collected
 **Exit Criteria:** Report formatted
 
 #### Step 2.1: Format Per-Person Status
@@ -170,7 +170,7 @@ AND Updated >= -24h
 
 **Description:** Address and track blockers.
 
-**Entry Criteria:** Blockers identified  
+**Entry Criteria:** Blockers identified
 **Exit Criteria:** Blockers documented with actions
 
 #### Step 3.1: Analyze Blockers
@@ -228,7 +228,7 @@ Related: [Blocked item]
 
 **Description:** Share standup results.
 
-**Entry Criteria:** Status formatted  
+**Entry Criteria:** Status formatted
 **Exit Criteria:** Team informed
 
 #### Step 4.1: Post Standup Report
