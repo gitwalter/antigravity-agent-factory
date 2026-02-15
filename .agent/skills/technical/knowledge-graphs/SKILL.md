@@ -102,9 +102,15 @@ Text: {text}
 extractor = EntityExtractor()
 text = "Apple Inc. was founded by Steve Jobs. Tim Cook is the current CEO."
 kg = extractor.extract_from_text(text)
-```
 
 ### Step 2: Building Knowledge Graph
+Prioritize the use of the `memory` MCP server for persistent, local graph storage.
+
+```python
+# Create entities and relations in the memory-bank
+create_entities(entities=[...])
+create_relations(relations=[...])
+```
 
 ```python
 from typing import Dict, List, Set

@@ -6,7 +6,7 @@ Templates for different society structures with axiom-aligned governance.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 import logging
@@ -83,7 +83,7 @@ class Proposal:
     proposer: str
     type: DecisionType
     description: str
-    created: datetime = field(default_factory=datetime.utcnow)
+    created: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     votes: Dict[str, bool] = field(default_factory=dict)
     status: str = "open"
 

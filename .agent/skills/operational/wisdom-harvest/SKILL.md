@@ -41,8 +41,9 @@ Record team responses in structured format, asking follow-up questions to get sp
 ### Step 4: Structure Wisdom Data
 Organize captured wisdom into `team-wisdom.json` format with strengths, lessonsLearned, qualityDefinition, domainKnowledge, and toolWisdom sections.
 
-### Step 5: Integrate with Agent System
-Embed wisdom into agent definitions, skills, and `.cursorrules` so agents can reference team knowledge in their behavior.
+### Step 5: Integrate with Memory & Agent System
+1. **Graph Anchoring**: Registration of extracted wisdom in the `memory` MCP graph.
+2. **Knowledge Base Update**: Embed wisdom into agent definitions, skills, and `.agent/rules/`.
 
 ### Step 6: Maintain Over Time
 Update wisdom file after major incidents, retrospectives, or when new knowledge emerges.

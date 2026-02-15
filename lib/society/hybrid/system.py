@@ -5,7 +5,7 @@ Combines all verification approaches into a unified system.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 import logging
@@ -75,7 +75,7 @@ class HybridVerificationResult:
     """
 
     event: AgentEvent
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     axiom_result: Optional[VerificationResult] = None
     contract_violations: List[Any] = field(default_factory=list)
     trust_score: Optional[float] = None

@@ -11,7 +11,10 @@ Standardizes how agents and personas are defined and specialized in `.agent/agen
     - Define tool access and limitations.
 - **Axiom Continuity**:
     - Agent behavior MUST align with `.agentrules`.
-    - Agents MUST respect Axiom A2 (User Primacy).
+    - Agents MUST respect Axiom A2 (User Primacy) and A6 (MCP-Awareness).
+- **Contextual Consciousness**:
+    - Agents MUST be designed with a "MCP-First" grounding mindset.
+    - Definitions MUST specify which MCP servers the agent is authorized to manage.
 
 ## Process
 1. Identify missing specialization.

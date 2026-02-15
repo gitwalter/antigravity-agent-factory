@@ -59,7 +59,7 @@ class Escalation:
     subject: str
     reason: str
     evidence: List[str] = field(default_factory=list)
-    created: datetime = field(default_factory=datetime.utcnow)
+    created: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     status: EscalationStatus = EscalationStatus.OPEN
     assignee: Optional[str] = None
     resolution: Optional[str] = None

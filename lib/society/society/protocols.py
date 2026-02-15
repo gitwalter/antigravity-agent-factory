@@ -60,7 +60,7 @@ class Message:
     content: Dict[str, Any]
     recipients: List[str] = field(default_factory=list)
     priority: MessagePriority = MessagePriority.NORMAL
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     reply_to: Optional[str] = None
     signature: Optional[str] = None
 
@@ -368,7 +368,7 @@ class ConsensusRound:
     proposal: Any
     votes: Dict[str, bool] = field(default_factory=dict)
     status: str = "open"
-    created: datetime = field(default_factory=datetime.utcnow)
+    created: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class ConsensusProtocol(CommunicationProtocol):

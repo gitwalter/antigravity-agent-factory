@@ -11,7 +11,9 @@ Enforces consistency and quality in skill creation within the `.agent/skills/` d
     - `Prerequisites`
     - `Process` (Step-by-step instructions)
     - `Best Practices`
-- **Axiom Alignment**: Frontmatter MUST include an `axioms` block linking back to `.agentrules` (A1-A5).
+- **Axiom Alignment**: Frontmatter MUST include an `axioms` block linking back to `.agentrules` (A1-A6).
+- **MCP Integration**:
+    - Skills that require external data or complex logic MUST specify the required MCP tools in their `Prerequisites`.
 
 ## Directory Organization
 - `operational/`: Process-oriented skills (e.g., project management, workflows).

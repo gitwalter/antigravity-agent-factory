@@ -84,7 +84,7 @@ class BundleManifest:
     agent_id: str
     agent_name: str
     version: str = "1.0.0"
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     checksums: List[ComponentChecksum] = field(default_factory=list)
     bundle_checksum: str = ""
     compatibility: Dict[str, Any] = field(default_factory=dict)

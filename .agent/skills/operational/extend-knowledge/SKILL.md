@@ -26,23 +26,22 @@ Extend the Factory's knowledge base, skills, and templates through multiple rese
 
 ## Research Methods
 
-### Method 1: Web Search Research
+### Method 1: Advanced Research Research
+Use when: Topic needs current, online information or deep domain expertise.
 
-Use when: Topic needs current, online information
-
-**Tool**: `web_search`
+**Tools**: `tavily_search`, `fetch_url`, `deepwiki_ask_question`
 
 ```
-Step 1: web_search("{{topic}} best practices patterns 2026")
-Step 2: web_search("{{topic}} implementation examples")
-Step 3: web_search("{{topic}} common pitfalls anti-patterns")
+Step 1: tavily_search("{{topic}} best practices patterns 2026")
+Step 2: fetch_url("{{documentation_url}}") -> extract markdown
+Step 3: deepwiki_ask_question(repoName="{{repo}}", question="{{specific_question}}")
 ```
 
 **What I Do**:
-1. Execute web searches for the topic
-2. Read and synthesize results
-3. Extract patterns, examples, best practices
-4. Cite sources in the knowledge file
+1. Execute multi-layered searches using Tavily for high-fidelity results.
+2. Scrape official documentation directly using Fetch/Playwright.
+3. Query the DeepWiki knowledge base for repository-specific insights.
+4. Extract patterns, examples, and pitfalls with citations.
 
 ### Method 2: Document Reading
 
@@ -130,8 +129,9 @@ Step 4: Synthesize patterns into knowledge
 
 5. **Research Topic** (one or more methods)
    ```
-   web_search("{{topic}} best practices 2026")
-   web_search("{{topic}} implementation patterns")
+   tavily_search("{{topic}} best practices 2026")
+   fetch_url("{{official_docs}}")
+   deepwiki_ask_question(repoName="owner/repo", question="How does X work?")
    read_file("{{user_provided_doc}}") if provided
    ```
 

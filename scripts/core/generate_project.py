@@ -503,6 +503,7 @@ class ProjectGenerator:
             self._generate_mcp_section() if self.config.mcp_servers else ""
         )
         context["agents_list"] = self._generate_agents_list_section()
+        context["skills_list"] = self._generate_skills_list_section()
         # Check for pmIntegration enabled (for validation)
         pm_enabled = False
         if blueprint and blueprint.get("pmIntegration", {}).get("enabled", False):

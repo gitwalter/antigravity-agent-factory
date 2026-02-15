@@ -74,4 +74,6 @@ To truly absorb the legacy agents, this specialist operates via specialized cogn
 ## Tool Chain Instructions
 - Use `pm-configuration` to switch between backends.
 - Use `documentation-generation` for Markdown-based project reports.
+- Use `gdrive` and `excel` MCPs for asset management and data analysis.
+- Use **Local GitHub CLI (`gh`)** or `git` for repository tracking; use `github-mcp-server` ONLY as a fallback for API-exclusive metadata.
 - Use `agent-staffing.json` to identify required specialist capacity for a given backlog.

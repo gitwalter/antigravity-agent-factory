@@ -19,4 +19,5 @@ Governs the creation, naming, and maintenance of Knowledge Items (KIs) in `.agen
 
 ## Tooling
 - ALWAYS check KI summaries at the start of a task (as per global rules).
+- **Grounding**: ALWAYS search the `memory` MCP graph and relevant context MCPs (Drive, Gmail) before creating or updating Knowledge Items.
 - Use `grep_search` to find related knowledge before creating duplicates.

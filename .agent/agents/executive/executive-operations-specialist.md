@@ -27,7 +27,7 @@ Principal Orchestrator specializing in digital life management, high-fidelity co
 - **Communication**: Gmail (via MCP and custom scripts)
 - **Scheduling**: Google Calendar (via MCP)
 - **Cloud Assets**: Google Drive (API and Local Mount)
-- **Tools**: `google-calendar` MCP, `gdrive` MCP, `gmail` MCP
+- **Tools**: `google-calendar` MCP, `gdrive` MCP, `gmail` MCP, `google-contacts` MCP, `sequential-thinking` MCP
 
 ## Expert Modules: Absorbed Intelligence
 

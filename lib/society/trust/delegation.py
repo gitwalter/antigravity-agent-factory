@@ -31,7 +31,7 @@ class TrustDelegation:
     trust_level: float
     scope: List[str] = field(default_factory=list)
     expires: Optional[datetime] = None
-    created: datetime = field(default_factory=datetime.utcnow)
+    created: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     @property
     def is_valid(self) -> bool:

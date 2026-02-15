@@ -231,7 +231,7 @@ class AnchorRecord:
     anchor_id: str
     merkle_root: str
     event_count: int
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     transaction_id: Optional[str] = None
     status: str = "pending"
 

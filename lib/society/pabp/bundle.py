@@ -112,7 +112,7 @@ class AgentBundle:
     agent_id: str
     agent_name: str
     version: str = "1.0.0"
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     components: List[BundleComponent] = field(default_factory=list)
     reputation_snapshot: Optional[Dict[str, Any]] = None
     compatibility: Dict[str, Any] = field(default_factory=dict)

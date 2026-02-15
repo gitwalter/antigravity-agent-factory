@@ -41,7 +41,7 @@ class VerificationResult:
     event_id: str
     status: VerificationStatus
     axiom_results: List[AxiomResult]
-    verified_at: datetime = field(default_factory=datetime.utcnow)
+    verified_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     escalated: bool = False
 
     def has_violations(self) -> bool:

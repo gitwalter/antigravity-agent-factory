@@ -27,7 +27,7 @@ Guardian of the cognitive landscape, specializing in knowledge structure, regist
 ### Operating Environment
 - **Knowledge Base**: `.agent/knowledge/` (KIs, Registries, Catalogs)
 - **Registries**: `agent-staffing.json`, `version-registry.json`, `mcp-servers-catalog.json`
-- **Verification Tools**: `link_checker.py`, `jsonlint`
+- **Verification Tools**: `memory` MCP, `tavily_search`, `fetch_url`, `deepwiki`, `doc-tools`, `link_checker.py`, `jsonlint`
 
 ## Expert Modules: Absorbed Intelligence
 

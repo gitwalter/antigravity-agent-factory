@@ -12,6 +12,7 @@ Rules for creating, extending, and executing workflows in `.agent/workflows/`.
 - **Automation (Turbo)**:
     - Use `// turbo` for safe, repetitive commands.
     - Use `// turbo-all` ONLY for highly standardized, verified automation paths.
+- **Complex Logic**: For workflows with >3 dependent steps, use the `sequential-thinking` MCP to validate the execution path.
 
 ## Execution Standards
 - **Supervisor Role**: Every workflow MUST have a designated Supervisor agent (e.g., MSO).

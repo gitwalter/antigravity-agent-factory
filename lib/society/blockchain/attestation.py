@@ -50,7 +50,7 @@ class Attestation:
     claim: Dict[str, Any]
     attester: str
     evidence: List[str] = field(default_factory=list)
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     expires: Optional[datetime] = None
     signature: Optional[str] = None
     anchored: bool = False

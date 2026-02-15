@@ -20,7 +20,7 @@ Version: 1.0.0
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -152,7 +152,9 @@ class AnalysisResult:
     coverage_scores: List[CoverageScore]
     total_topics: int = 0
     covered_topics: int = 0
-    analysis_timestamp: datetime = field(default_factory=datetime.utcnow)
+    analysis_timestamp: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
     taxonomy_used: str = ""
     files_analyzed: List[str] = field(default_factory=list)
 
