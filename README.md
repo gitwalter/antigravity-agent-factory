@@ -886,7 +886,7 @@ MIT License
 
 ---
 
-*Antigravity Agent Factory v1.1.1*
+*Antigravity Agent Factory v1.1.2*
 *Meta-system for generating Antigravity AI agent development systems*
 *Now with 5-layer architecture: Integrity -> Purpose -> Principles -> Methodology -> Technical*
 *50+ MCP servers across 6 categories with starter packs and role-based recommendations*

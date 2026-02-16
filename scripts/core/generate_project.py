@@ -1938,7 +1938,7 @@ To render diagrams to PNG, use a Mermaid CLI tool or the diagram rendering scrip
 # CURSOR AGENT FACTORY INTEGRATION
 # Generated: {datetime.now().strftime("%Y-%m-%d")}
 # Blueprint: {self.config.blueprint_id or "custom"}
-# Factory Version: 1.1.1# ═══════════════════════════════════════════════════════════════════════════════
+# Factory Version: 1.1.2# ═══════════════════════════════════════════════════════════════════════════════
 
 """
 

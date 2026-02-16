@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2026-02-16
+
+### Added
+- **Robust Commit Workflow (RCW)**: Implemented `verify_and_commit.py` for a high-speed, sequential verification pipeline (Sync, Stage, Validate, Smoke Test).
+- **Tolerance Mechanism**: Added support for environment-dependent test count fluctuations in `sync_artifacts.py`.
+
+### Fixed
+- **Skill Validation**: Resolved 100% of blueprint skill ID warnings by standardizing references against the canonical catalog.
+- **Type Checking**: Fixed `mypy` duplicate module errors by excluding generated skill/agent logic from the check.
+- **Commit Workflow**: Refactored `safe_commit.py` for better reliability and faster execution using the RCW backend.
+
+### Optimized
+- **Test Performance**: Enabled parallel execution and memoized collection, reducing full suite time by 75% (~40s).
+- **Artifact Sync**: Optimized `sync_artifacts.py` unit tests to execute in <2s (previously >20s).
+
 ## [1.1.1] - 2026-02-15
 
 ### Fixed
