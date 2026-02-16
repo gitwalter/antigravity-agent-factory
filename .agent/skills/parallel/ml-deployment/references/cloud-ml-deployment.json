@@ -1,0 +1,271 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "cloud-ml-deployment",
+  "name": "Cloud ML Deployment",
+  "title": "Cloud ML Model Deployment Patterns",
+  "description": "Patterns for deploying ML models to cloud platforms including AWS SageMaker, GCP Vertex AI, Azure ML, and serverless GPU platforms",
+  "version": "1.0.0",
+  "category": "ai-ml",
+  "axiomAlignment": {
+    "A1_verifiability": "Deployment configs enable reproducible deployments",
+    "A2_user_primacy": "Cloud deployment supports user ML serving goals",
+    "A3_transparency": "Deployment logs make model serving explicit",
+    "A4_non_harm": "Rollback strategies and monitoring prevent harmful model serving",
+    "A5_consistency": "Unified cloud ML deployment patterns across platforms"
+  },
+  "related_skills": [
+    "ml-deployment",
+    "model-serving",
+    "kubernetes-deployment"
+  ],
+  "related_knowledge": [
+    "mlops-patterns.json",
+    "model-serving-patterns.json",
+    "kubernetes-ml-patterns.json"
+  ],
+  "aws_sagemaker": {
+    "description": "AWS SageMaker deployment",
+    "features": [
+      "Managed endpoints",
+      "Auto-scaling",
+      "A/B testing",
+      "Model registry"
+    ],
+    "deployment": "import sagemaker\nfrom sagemaker.pytorch import PyTorchModel\n\nmodel = PyTorchModel(\n    model_data='s3://bucket/model.tar.gz',\n    role=role,\n    entry_point='inference.py',\n    framework_version='2.0.0'\n)\n\npredictor = model.deploy(\n    initial_instance_count=1,\n    instance_type='ml.m5.large'\n)",
+    "best_practices": [
+      "Use model registry",
+      "Enable auto-scaling",
+      "Monitor endpoints",
+      "Use multi-model endpoints"
+    ]
+  },
+  "gcp_vertex_ai": {
+    "description": "Google Cloud Vertex AI deployment",
+    "features": [
+      "Managed endpoints",
+      "AutoML",
+      "Custom containers",
+      "Batch prediction"
+    ],
+    "deployment": "from google.cloud import aiplatform\n\naiplatform.init(project='my-project', location='us-central1')\n\nmodel = aiplatform.Model.upload(\n    display_name='my-model',\n    artifact_uri='gs://bucket/model',\n    serving_container_image_uri='gcr.io/image'\n)\n\nendpoint = model.deploy(\n    machine_type='n1-standard-4',\n    min_replica_count=1,\n    max_replica_count=10\n)",
+    "best_practices": [
+      "Use custom containers",
+      "Configure auto-scaling",
+      "Monitor predictions",
+      "Use feature store"
+    ]
+  },
+  "azure_ml": {
+    "description": "Azure Machine Learning deployment",
+    "features": [
+      "Managed endpoints",
+      "ACI/AKS deployment",
+      "Model registry",
+      "MLflow integration"
+    ],
+    "deployment": "from azure.ai.ml import MLClient\nfrom azure.ai.ml.entities import Model, ManagedOnlineEndpoint\n\nml_client = MLClient.from_config()\n\nmodel = Model(path='./model', name='my-model')\nml_client.models.create_or_update(model)\n\nendpoint = ManagedOnlineEndpoint(\n    name='my-endpoint',\n    auth_mode='key'\n)\nml_client.online_endpoints.begin_create_or_update(endpoint)",
+    "best_practices": [
+      "Use managed endpoints",
+      "Configure scaling",
+      "Monitor endpoints",
+      "Use model registry"
+    ]
+  },
+  "modal_serverless": {
+    "description": "Modal serverless GPU deployment",
+    "features": [
+      "Serverless GPU",
+      "Auto-scaling",
+      "Pay per use",
+      "Fast cold starts"
+    ],
+    "deployment": "import modal\n\nstub = modal.Stub('my-app')\n\n@stub.function(gpu='A10G')\n@modal.web_endpoint()\ndef predict(input_data):\n    # Model inference\n    return result",
+    "best_practices": [
+      "Use appropriate GPU",
+      "Optimize cold starts",
+      "Monitor usage",
+      "Handle concurrency"
+    ]
+  },
+  "runpod": {
+    "description": "RunPod GPU cloud platform",
+    "features": [
+      "Dedicated GPUs",
+      "Custom containers",
+      "Spot instances",
+      "API access"
+    ],
+    "use_cases": [
+      "Training",
+      "Inference",
+      "Development"
+    ]
+  },
+  "replicate": {
+    "description": "Replicate model hosting",
+    "features": [
+      "Simple deployment",
+      "Automatic scaling",
+      "API access",
+      "Version management"
+    ],
+    "deployment": "import replicate\n\nmodel = replicate.models.create(\n    owner='username',\n    name='model-name',\n    visibility='public'\n)\n\nprediction = replicate.run(\n    'username/model-name',\n    input={'text': 'Hello'}\n)",
+    "best_practices": [
+      "Version models",
+      "Monitor usage",
+      "Set up webhooks",
+      "Handle errors"
+    ]
+  },
+  "huggingface_inference": {
+    "description": "Hugging Face Inference Endpoints",
+    "features": [
+      "Managed endpoints",
+      "Auto-scaling",
+      "Model hub integration",
+      "Custom containers"
+    ],
+    "deployment": "from huggingface_hub import HfApi\n\napi = HfApi()\napi.create_inference_endpoint(\n    endpoint_name='my-endpoint',\n    repository='username/model',\n    framework='pytorch',\n    accelerator='gpu',\n    instance_type='g4dn.xlarge'\n)",
+    "best_practices": [
+      "Use appropriate instance",
+      "Monitor endpoints",
+      "Version models",
+      "Handle scaling"
+    ]
+  },
+  "deployment_recipes": {
+    "description": "Common deployment patterns",
+    "patterns": {
+      "single_endpoint": "One model per endpoint",
+      "multi_model": "Multiple models per endpoint",
+      "canary": "Gradual rollout",
+      "blue_green": "Instant switchover",
+      "a_b_testing": "Traffic splitting"
+    },
+    "best_practices": [
+      "Start with single endpoint",
+      "Use canary for updates",
+      "Monitor both versions",
+      "Rollback on issues"
+    ]
+  },
+  "model_serving": {
+    "description": "Model serving patterns",
+    "frameworks": {
+      "torchserve": "PyTorch serving",
+      "tensorflow_serving": "TensorFlow serving",
+      "triton": "NVIDIA Triton",
+      "mlserver": "V2 inference protocol"
+    },
+    "best_practices": [
+      "Use standard protocols",
+      "Optimize inference",
+      "Handle batching",
+      "Monitor latency"
+    ]
+  },
+  "monitoring": {
+    "description": "Monitor deployed models",
+    "metrics": {
+      "latency": "Prediction latency",
+      "throughput": "Requests per second",
+      "error_rate": "Error percentage",
+      "model_drift": "Data distribution shift"
+    },
+    "tools": [
+      "CloudWatch",
+      "Stackdriver",
+      "Application Insights",
+      "Custom dashboards"
+    ]
+  },
+  "patterns": {
+    "endpoint_deployment": {
+      "description": "Deploy model endpoint",
+      "use_when": "When deploying ML models to cloud platforms for production inference",
+      "code_example": "import sagemaker\nfrom sagemaker.pytorch import PyTorchModel\nmodel = PyTorchModel(model_data=\"s3://bucket/model.tar.gz\", role=role, entry_point=\"inference.py\", framework_version=\"2.0.0\")\npredictor = model.deploy(initial_instance_count=1, instance_type=\"ml.m5.large\")",
+      "best_practices": [
+        "Use managed endpoints",
+        "Configure auto-scaling",
+        "Monitor endpoints",
+        "Version models",
+        "Use canary deployments"
+      ]
+    },
+    "scaling_configuration": {
+      "description": "Configure auto-scaling",
+      "use_when": "When deploying ML models to cloud platforms for production inference",
+      "code_example": "import sagemaker\nfrom sagemaker.pytorch import PyTorchModel\nmodel = PyTorchModel(model_data=\"s3://bucket/model.tar.gz\", role=role, entry_point=\"inference.py\", framework_version=\"2.0.0\")\npredictor = model.deploy(initial_instance_count=1, instance_type=\"ml.m5.large\")",
+      "best_practices": [
+        "Use managed endpoints",
+        "Configure auto-scaling",
+        "Monitor endpoints",
+        "Version models",
+        "Use canary deployments"
+      ]
+    },
+    "traffic_splitting": {
+      "description": "Split traffic between versions",
+      "use_when": "When deploying ML models to cloud platforms for production inference",
+      "code_example": "import sagemaker\nfrom sagemaker.pytorch import PyTorchModel\nmodel = PyTorchModel(model_data=\"s3://bucket/model.tar.gz\", role=role, entry_point=\"inference.py\", framework_version=\"2.0.0\")\npredictor = model.deploy(initial_instance_count=1, instance_type=\"ml.m5.large\")",
+      "best_practices": [
+        "Use managed endpoints",
+        "Configure auto-scaling",
+        "Monitor endpoints",
+        "Version models",
+        "Use canary deployments"
+      ]
+    },
+    "rollback_strategy": {
+      "description": "Rollback on issues Pattern for cloud ml deployment - implement with do",
+      "use_when": "When deploying ML models to cloud platforms for production inference",
+      "code_example": "import sagemaker\nfrom sagemaker.pytorch import PyTorchModel\nmodel = PyTorchModel(model_data=\"s3://bucket/model.tar.gz\", role=role, entry_point=\"inference.py\", framework_version=\"2.0.0\")\npredictor = model.deploy(initial_instance_count=1, instance_type=\"ml.m5.large\")",
+      "best_practices": [
+        "Use managed endpoints",
+        "Configure auto-scaling",
+        "Monitor endpoints",
+        "Version models",
+        "Use canary deployments"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use managed endpoints",
+    "Configure auto-scaling",
+    "Monitor endpoints",
+    "Version models",
+    "Use canary deployments",
+    "Handle errors gracefully",
+    "Optimize inference",
+    "Set up alerts",
+    "Log predictions",
+    "Track costs",
+    "Use model registry",
+    "Test endpoints",
+    "Document deployment",
+    "Plan rollback",
+    "Monitor model drift"
+  ],
+  "anti_patterns": [
+    {
+      "name": "No Auto-Scaling",
+      "problem": "Poor performance or wasted resources",
+      "fix": "Configure auto-scaling"
+    },
+    {
+      "name": "No Monitoring",
+      "problem": "Can't detect issues",
+      "fix": "Set up comprehensive monitoring"
+    },
+    {
+      "name": "No Versioning",
+      "problem": "Can't rollback",
+      "fix": "Version all models"
+    },
+    {
+      "name": "Direct Deployment",
+      "problem": "Downtime on updates",
+      "fix": "Use canary or blue-green"
+    }
+  ]
+}

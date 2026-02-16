@@ -35,7 +35,7 @@ This workflow is activated when:
 
 ### Link & Documentation Audit
 - **Agent**: `system-steward`
-- **Skill**: `repository-governance`
+- **Skill**: `governing-repositories`
 - **Action**: Run `python scripts/maintenance/link_checker.py --external` and perform full repository sync.
 
 ### Determine Version

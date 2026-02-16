@@ -1,0 +1,302 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "model-training-patterns",
+  "name": "Model Training Patterns",
+  "title": "ML Model Training Patterns",
+  "description": "Patterns for training machine learning models including distributed training, optimization, and hyperparameter tuning",
+  "version": "1.0.0",
+  "category": "ai-ml",
+  "axiomAlignment": {
+    "A1_verifiability": "Training metrics enable model verification",
+    "A2_user_primacy": "Models serve user goals through validated training outcomes",
+    "A3_transparency": "Training logs make process explicit",
+    "A4_non_harm": "Reproducible checkpoints and validation prevent harmful deployments",
+    "A5_consistency": "Unified training loop and experiment tracking patterns"
+  },
+  "related_skills": [
+    "model-training",
+    "data-pipeline",
+    "ml-deployment",
+    "model-fine-tuning"
+  ],
+  "related_knowledge": [
+    "mlops-patterns.json",
+    "ml-workflow-patterns.json",
+    "deep-learning-patterns.json",
+    "data-pipeline-patterns.json"
+  ],
+  "pytorch_training": {
+    "description": "PyTorch training patterns",
+    "basic_loop": "for epoch in range(num_epochs):\n    for batch in dataloader:\n        optimizer.zero_grad()\n        outputs = model(inputs)\n        loss = criterion(outputs, targets)\n        loss.backward()\n        optimizer.step()",
+    "best_practices": [
+      "Use DataLoader for batching",
+      "Zero gradients before backward",
+      "Use appropriate loss functions",
+      "Monitor training metrics"
+    ]
+  },
+  "accelerate_distributed": {
+    "description": "Hugging Face Accelerate for distributed training",
+    "features": [
+      "Multi-GPU training",
+      "Mixed precision",
+      "Gradient accumulation",
+      "DeepSpeed integration"
+    ],
+    "usage": "from accelerate import Accelerator\n\naccelerator = Accelerator()\nmodel, optimizer, dataloader = accelerator.prepare(model, optimizer, dataloader)\n\nfor batch in dataloader:\n    outputs = model(batch)\n    loss = criterion(outputs, targets)\n    accelerator.backward(loss)\n    optimizer.step()",
+    "best_practices": [
+      "Use Accelerator.prepare()",
+      "Use accelerator.backward()",
+      "Use accelerator.gather() for metrics",
+      "Save with accelerator.save()"
+    ]
+  },
+  "deepspeed_zerro": {
+    "description": "DeepSpeed ZeRO optimization stages",
+    "stages": {
+      "zero_1": "Optimizer state partitioning",
+      "zero_2": "Optimizer + gradient partitioning",
+      "zero_3": "Optimizer + gradient + parameter partitioning"
+    },
+    "benefits": [
+      "Memory efficiency",
+      "Larger model training",
+      "Faster training"
+    ],
+    "configuration": "{\n  \"zero_optimization\": {\n    \"stage\": 3,\n    \"offload_optimizer\": {\n      \"device\": \"cpu\"\n    }\n  }\n}"
+  },
+  "fsdp": {
+    "description": "Fully Sharded Data Parallel",
+    "benefits": [
+      "Memory efficient",
+      "Scales to large models",
+      "Native PyTorch support"
+    ],
+    "usage": "from torch.distributed.fsdp import FullyShardedDataParallel as FSDP\n\nmodel = FSDP(model, auto_wrap_policy=transformer_auto_wrap_policy)",
+    "best_practices": [
+      "Use appropriate wrap policy",
+      "Configure sharding strategy",
+      "Handle state dict saving"
+    ]
+  },
+  "mixed_precision": {
+    "description": "Mixed precision training with AMP",
+    "benefits": [
+      "Faster training",
+      "Lower memory usage",
+      "Larger batch sizes"
+    ],
+    "pytorch_native": "from torch.cuda.amp import autocast, GradScaler\n\nscaler = GradScaler()\nwith autocast():\n    outputs = model(inputs)\n    loss = criterion(outputs, targets)\nscaler.scale(loss).backward()\nscaler.step(optimizer)\nscaler.update()",
+    "best_practices": [
+      "Use GradScaler",
+      "Wrap forward pass in autocast",
+      "Scale loss before backward",
+      "Update scaler after optimizer step"
+    ]
+  },
+  "gradient_accumulation": {
+    "description": "Accumulate gradients over multiple batches",
+    "use_cases": [
+      "Simulate larger batch sizes",
+      "Memory constraints",
+      "Stable training"
+    ],
+    "implementation": "accumulation_steps = 4\nfor i, batch in enumerate(dataloader):\n    outputs = model(batch)\n    loss = criterion(outputs, targets) / accumulation_steps\n    loss.backward()\n    \n    if (i + 1) % accumulation_steps == 0:\n        optimizer.step()\n        optimizer.zero_grad()",
+    "best_practices": [
+      "Divide loss by accumulation steps",
+      "Zero gradients at right time",
+      "Sync gradients across devices"
+    ]
+  },
+  "checkpointing": {
+    "description": "Save and load training checkpoints",
+    "save_checkpoint": "checkpoint = {\n    'epoch': epoch,\n    'model_state_dict': model.state_dict(),\n    'optimizer_state_dict': optimizer.state_dict(),\n    'loss': loss,\n}\ntorch.save(checkpoint, 'checkpoint.pth')",
+    "load_checkpoint": "checkpoint = torch.load('checkpoint.pth')\nmodel.load_state_dict(checkpoint['model_state_dict'])\noptimizer.load_state_dict(checkpoint['optimizer_state_dict'])\nepoch = checkpoint['epoch']",
+    "best_practices": [
+      "Save regularly",
+      "Save best model",
+      "Include metadata",
+      "Use distributed checkpointing for multi-GPU"
+    ]
+  },
+  "optuna_hpo": {
+    "description": "Hyperparameter optimization with Optuna",
+    "features": [
+      "Tree-structured Parzen Estimator",
+      "Multi-objective optimization",
+      "Pruning",
+      "Distributed optimization"
+    ],
+    "usage": "import optuna\n\ndef objective(trial):\n    lr = trial.suggest_loguniform('lr', 1e-5, 1e-2)\n    batch_size = trial.suggest_int('batch_size', 32, 256)\n    # Train model\n    return validation_loss\n\nstudy = optuna.create_study()\nstudy.optimize(objective, n_trials=100)",
+    "best_practices": [
+      "Use appropriate suggest methods",
+      "Prune unpromising trials",
+      "Use multi-objective for trade-offs",
+      "Visualize study results"
+    ]
+  },
+  "mlflow_tracking": {
+    "description": "Experiment tracking with MLflow",
+    "features": [
+      "Parameter logging",
+      "Metric tracking",
+      "Artifact storage",
+      "Model registry"
+    ],
+    "usage": "import mlflow\n\nmlflow.set_experiment('my_experiment')\nwith mlflow.start_run():\n    mlflow.log_param('lr', 0.001)\n    mlflow.log_metric('loss', loss_value)\n    mlflow.pytorch.log_model(model, 'model')",
+    "best_practices": [
+      "Log all hyperparameters",
+      "Track training and validation metrics",
+      "Save model artifacts",
+      "Use model registry"
+    ]
+  },
+  "distributed_training": {
+    "description": "Distributed training patterns",
+    "data_parallel": "Multiple GPUs, same model, different data",
+    "model_parallel": "Model split across GPUs",
+    "pipeline_parallel": "Model layers across GPUs",
+    "best_practices": [
+      "Use appropriate parallelism",
+      "Sync gradients",
+      "Handle data loading",
+      "Monitor all processes"
+    ]
+  },
+  "training_monitoring": {
+    "description": "Monitor training progress",
+    "metrics": {
+      "loss": "Training and validation loss",
+      "accuracy": "Model accuracy",
+      "learning_rate": "Learning rate schedule",
+      "gradient_norm": "Gradient norms"
+    },
+    "tools": [
+      "TensorBoard",
+      "Weights & Biases",
+      "MLflow",
+      "Custom logging"
+    ],
+    "best_practices": [
+      "Log metrics regularly",
+      "Visualize training curves",
+      "Monitor for overfitting",
+      "Track resource usage"
+    ]
+  },
+  "early_stopping": {
+    "description": "Stop training when validation loss stops improving",
+    "implementation": "from torch.utils.tensorboard import SummaryWriter\n\nbest_loss = float('inf')\npatience = 10\nno_improve = 0\n\nfor epoch in range(num_epochs):\n    val_loss = validate()\n    if val_loss < best_loss:\n        best_loss = val_loss\n        no_improve = 0\n        save_checkpoint()\n    else:\n        no_improve += 1\n        if no_improve >= patience:\n            break",
+    "best_practices": [
+      "Monitor validation metric",
+      "Set appropriate patience",
+      "Save best model",
+      "Restore best model"
+    ]
+  },
+  "learning_rate_scheduling": {
+    "description": "Learning rate scheduling strategies",
+    "strategies": {
+      "step_lr": "Reduce at fixed intervals",
+      "cosine_annealing": "Cosine decay",
+      "reduce_on_plateau": "Reduce when metric plateaus",
+      "warmup": "Gradual increase at start"
+    },
+    "usage": "from torch.optim.lr_scheduler import CosineAnnealingLR\n\nscheduler = CosineAnnealingLR(optimizer, T_max=100)\nfor epoch in range(num_epochs):\n    train()\n    scheduler.step()",
+    "best_practices": [
+      "Use warmup for large models",
+      "Choose appropriate schedule",
+      "Monitor learning rate",
+      "Save scheduler state"
+    ]
+  },
+  "patterns": {
+    "training_loop": {
+      "description": "Standard training loop structure",
+      "use_when": "When training neural networks with limited GPU memory",
+      "code_example": "import torch\noptimizer = torch.optim.Adam(model.parameters(), lr=1e-3)\nfor epoch in range(num_epochs):\n    for batch in dataloader:\n        loss = model(batch)\n        loss.backward()\n        optimizer.step()",
+      "best_practices": [
+        "Use appropriate batch size",
+        "Normalize inputs",
+        "Use data augmentation",
+        "Monitor training metrics",
+        "Save checkpoints regularly"
+      ]
+    },
+    "validation_loop": {
+      "description": "Validation during training",
+      "use_when": "When training neural networks with limited GPU memory",
+      "code_example": "import torch\noptimizer = torch.optim.Adam(model.parameters(), lr=1e-3)\nfor epoch in range(num_epochs):\n    for batch in dataloader:\n        loss = model(batch)\n        loss.backward()\n        optimizer.step()",
+      "best_practices": [
+        "Use appropriate batch size",
+        "Normalize inputs",
+        "Use data augmentation",
+        "Monitor training metrics",
+        "Save checkpoints regularly"
+      ]
+    },
+    "test_loop": {
+      "description": "Final model evaluation",
+      "use_when": "When training neural networks with limited GPU memory",
+      "code_example": "import torch\noptimizer = torch.optim.Adam(model.parameters(), lr=1e-3)\nfor epoch in range(num_epochs):\n    for batch in dataloader:\n        loss = model(batch)\n        loss.backward()\n        optimizer.step()",
+      "best_practices": [
+        "Use appropriate batch size",
+        "Normalize inputs",
+        "Use data augmentation",
+        "Monitor training metrics",
+        "Save checkpoints regularly"
+      ]
+    },
+    "checkpoint_management": {
+      "description": "Save and restore checkpoints",
+      "use_when": "When training neural networks with limited GPU memory",
+      "code_example": "import torch\noptimizer = torch.optim.Adam(model.parameters(), lr=1e-3)\nfor epoch in range(num_epochs):\n    for batch in dataloader:\n        loss = model(batch)\n        loss.backward()\n        optimizer.step()",
+      "best_practices": [
+        "Use appropriate batch size",
+        "Normalize inputs",
+        "Use data augmentation",
+        "Monitor training metrics",
+        "Save checkpoints regularly"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use appropriate batch size",
+    "Normalize inputs",
+    "Use data augmentation",
+    "Monitor training metrics",
+    "Save checkpoints regularly",
+    "Use validation set",
+    "Implement early stopping",
+    "Tune hyperparameters",
+    "Use mixed precision",
+    "Handle distributed training",
+    "Log experiments",
+    "Version datasets",
+    "Test on holdout set",
+    "Document training config",
+    "Reproduce experiments"
+  ],
+  "anti_patterns": [
+    {
+      "name": "No Validation Set",
+      "problem": "Can't detect overfitting",
+      "fix": "Always use validation set"
+    },
+    {
+      "name": "No Checkpointing",
+      "problem": "Lose progress on failure",
+      "fix": "Save checkpoints regularly"
+    },
+    {
+      "name": "Fixed Learning Rate",
+      "problem": "Suboptimal convergence",
+      "fix": "Use learning rate scheduling"
+    },
+    {
+      "name": "No Experiment Tracking",
+      "problem": "Can't compare runs",
+      "fix": "Use MLflow or similar"
+    }
+  ]
+}

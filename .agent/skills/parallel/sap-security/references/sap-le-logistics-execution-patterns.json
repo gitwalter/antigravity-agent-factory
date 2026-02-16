@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "sap-le-logistics-execution-patterns",
+  "title": "SAP LE (Logistics Execution) Patterns",
+  "name": "SAP LE (Logistics Execution) Patterns",
+  "description": "Logistics Execution shipping, transportation, delivery. S/4 on-prem and R/3/ECC.",
+  "version": "1.0.0",
+  "category": "sap",
+  "axiomAlignment": {
+    "A1_verifiability": "LIKP/LIPS tables and delivery status enable traceable verification via SAP Help",
+    "A2_user_primacy": "Delivery processing and status workflows support user-driven operations",
+    "A3_transparency": "Explicit tables (LIKP, LIPS) document delivery flow from SD to EWM",
+    "A4_non_harm": "Integration with SD, MM, EWM ensures correct delivery and stock handling",
+    "A5_consistency": "Unified delivery document flow patterns across S/4 and R/3/ECC"
+  },
+  "related_skills": [
+    "s4-process-guide"
+  ],
+  "related_knowledge": [
+    "sap-sd-patterns.json",
+    "sap-mm-patterns.json",
+    "sap-ewm-patterns.json",
+    "sap-logistics-chain.json"
+  ],
+  "patterns": {
+    "delivery_tables": {
+      "description": "Core LE tables for delivery header and items",
+      "coreTables": {
+        "LIKP": {
+          "purpose": "Delivery header"
+        },
+        "LIPS": {
+          "purpose": "Delivery item"
+        }
+      },
+      "use_when": "When implementing delivery_tables or when Core LE tables for delivery header and items",
+      "code_example": "SELECT * FROM LIKP WHERE ... FOR ALL ENTRIES IN @lt_keys. Related: LIPS",
+      "best_practices": [
+        "Use LIKP for delivery header information",
+        "Use LIPS for delivery item details",
+        "Verify table/field via SAP Help MCP",
+        "Understand integration with SD (sales order), MM (material), and EWM (warehouse)"
+      ]
+    },
+    "integration": {
+      "description": "Integration with SD, MM, and EWM modules",
+      "integration": [
+        "SD",
+        "MM",
+        "EWM"
+      ],
+      "use_when": "When implementing integration or when Integration with SD, MM, and EWM modules",
+      "code_example": "SELECT * FROM likp WHERE vbeln = @lv_vbeln FOR ALL ENTRIES IN @lt_matnr",
+      "best_practices": [
+        "Use LIKP for delivery header information",
+        "Use LIPS for delivery item details",
+        "Verify table/field via SAP Help MCP",
+        "Understand integration with SD (sales order), MM (material), and EWM (warehouse)"
+      ]
+    },
+    "transportation_management": {
+      "description": "Freight orders (FO), freight bookings (FB), freight settlement documents (FSD).",
+      "use_when": "When managing freight planning, execution, or settlement.",
+      "code_example": "Create FO from delivery; create FB for planning; generate FSD for settlement. Use /SCMTMS/* tables.",
+      "best_practices": [
+        "Link freight orders to delivery documents",
+        "Use freight bookings for transportation planning",
+        "Generate FSD for freight cost settlement"
+      ]
+    },
+    "freight_cost_distribution": {
+      "description": "Delivery item level distribution. Weight, volume, distance rules. Cost distribution profiles.",
+      "use_when": "When distributing freight costs to delivery items or cost objects.",
+      "code_example": "Configure cost distribution profile; assign weight/volume/distance rules; post to CO-PA or cost objects.",
+      "best_practices": [
+        "Define distribution rules per logistics scenario",
+        "Use cost distribution profiles for consistency",
+        "Verify allocation to correct cost objects"
+      ]
+    },
+    "material_valuation_integration": {
+      "description": "Transport costs in material value. Settlement Management posting engine.",
+      "use_when": "When posting transport costs to material valuation or using Settlement Management.",
+      "code_example": "Configure settlement rule; use Settlement Management posting engine; post freight to material price.",
+      "best_practices": [
+        "Use Settlement Management for standardized posting",
+        "Configure valuation classes for transport cost absorption",
+        "Link freight settlement to material master"
+      ]
+    },
+    "handling_units": {
+      "description": "Pack deliveries into HUs. Nested HU structures. HU management T-codes.",
+      "use_when": "When packing deliveries, managing HU hierarchy, or using HU-based logistics.",
+      "code_example": "Create HU via HUMO; pack delivery items; use /SCWM/PACK for packing; manage nested HUs.",
+      "best_practices": [
+        "Define HU structure for nested packing",
+        "Use HUMO for HU creation and management",
+        "Link HUs to delivery items for traceability"
+      ]
+    },
+    "proof_of_delivery": {
+      "description": "Confirm delivery completion. POD relevance settings. Status management.",
+      "use_when": "When requiring delivery confirmation or POD documentation.",
+      "code_example": "Set POD relevance in delivery type; confirm via VL02N; manage POD status in LIKP/LIPS.",
+      "best_practices": [
+        "Configure POD relevance per delivery type",
+        "Maintain POD status for shipment tracking",
+        "Integrate with transportation for POD capture"
+      ]
+    },
+    "multi_scenario_posting": {
+      "description": "Inbound freight to material valuation. Distributed costs to cost objects. Outbound to CO-PA.",
+      "use_when": "When posting freight costs across inbound, outbound, or distributed scenarios.",
+      "code_example": "Inbound: post to material; distributed: post to cost center/order; outbound: post to CO-PA.",
+      "best_practices": [
+        "Use correct posting scenario per business case",
+        "Configure settlement rules per scenario",
+        "Verify CO-PA valuation for outbound freight"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use LIKP for delivery header information",
+    "Use LIPS for delivery item details",
+    "Verify table/field via SAP Help MCP",
+    "Understand integration with SD (sales order), MM (material), and EWM (warehouse)"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Not understanding delivery flow",
+      "problem": "Missing integration between SD, LE, and EWM",
+      "fix": "Follow document flow from sales order (SD) to delivery (LE) to warehouse (EWM)"
+    },
+    {
+      "name": "Ignoring delivery status",
+      "problem": "Incorrect delivery processing",
+      "fix": "Check delivery status fields in LIKP/LIPS"
+    }
+  ]
+}

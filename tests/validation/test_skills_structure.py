@@ -334,16 +334,26 @@ class TestSkillFileNaming:
         return factory_root / ".agent" / "skills"
 
     def test_skill_files_named_skill_md(self, skills_dir: Path):
-        """Test that skill files are named SKILL.md."""
+        """Test that the primary skill files are named SKILL.md.
+        Note: Subdirectories like references/ or assets/ can contain other .md files.
+        """
         errors = []
-        for skill_file in skills_dir.rglob("*.md"):
-            if skill_file.name != "SKILL.md":
-                rel_path = skill_file.relative_to(
-                    skill_file.parent.parent.parent.parent
-                )
-                errors.append(
-                    f"{rel_path}: Should be named SKILL.md, got {skill_file.name}"
-                )
+        # Walk only Level 1 pattern directories and Level 2 skill directories
+        for pattern_dir in skills_dir.iterdir():
+            if not pattern_dir.is_dir():
+                continue
+            for skill_dir in pattern_dir.iterdir():
+                if not skill_dir.is_dir():
+                    continue
+                # Check for any .md file in the skill root that is NOT SKILL.md
+                for md_file in skill_dir.glob("*.md"):
+                    if md_file.name != "SKILL.md":
+                        rel_path = md_file.relative_to(
+                            md_file.parent.parent.parent.parent
+                        )
+                        errors.append(
+                            f"{rel_path}: Root skill file should be named SKILL.md, got {md_file.name}"
+                        )
 
         if errors:
             pytest.fail(

@@ -1,0 +1,211 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Spring Boot Patterns",
+  "description": "Production-grade patterns for Spring Boot 3.4 applications",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "Strong typing and dependency injection enable compile-time verification",
+    "A3_transparency": "Explicit configuration and annotations make dependencies clear",
+    "A4_adaptability": "Modular structure supports easy refactoring and testing"
+  },
+  "core_concepts": {
+    "package_by_feature": {
+      "description": "Organize code by business feature rather than technical layers",
+      "structure": "com.company.feature/{domain,application,infrastructure,interfaces}",
+      "benefits": [
+        "Clear feature boundaries",
+        "Easier to locate related code",
+        "Supports team autonomy",
+        "Better encapsulation"
+      ]
+    },
+    "spring_modulith": {
+      "description": "Modular monolith architecture with Spring Modulith",
+      "use_when": "Large applications needing module boundaries",
+      "benefits": [
+        "Enforced module boundaries",
+        "Event-driven communication",
+        "Testability",
+        "Potential for future extraction"
+      ]
+    },
+    "dependency_injection": {
+      "description": "Spring's dependency injection container",
+      "use_cases": [
+        "Service layer dependencies",
+        "Repository injection",
+        "Configuration beans",
+        "Cross-cutting concerns"
+      ]
+    },
+    "repository_pattern": {
+      "description": "Data access abstraction layer",
+      "implementations": [
+        "Spring Data JPA",
+        "Custom repositories",
+        "JdbcTemplate"
+      ]
+    }
+  },
+  "patterns": {
+    "package_by_feature_structure": {
+      "description": "Organize application by business features",
+      "use_when": "Medium to large applications with clear domain boundaries",
+      "structure": {
+        "example": "src/main/java/com/company/\n  users/\n    domain/\n      User.java\n      UserRepository.java\n    application/\n      UserService.java\n      CreateUserCommand.java\n    interfaces/\n      UserController.java\n      UserDto.java\n  products/\n    domain/\n      Product.java\n      ProductRepository.java\n    application/\n      ProductService.java\n    interfaces/\n      ProductController.java\n      ProductDto.java\n  shared/\n    config/\n      SecurityConfig.java\n      DatabaseConfig.java"
+      },
+      "code_example": "// com.company.users.domain.User.java\npackage com.company.users.domain;\n\nimport jakarta.persistence.*;\nimport java.time.LocalDateTime;\n\n@Entity\n@Table(name = \"users\")\npublic class User {\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n    \n    @Column(unique = true, nullable = false)\n    private String email;\n    \n    @Column(nullable = false)\n    private String passwordHash;\n    \n    private String name;\n    private boolean active = true;\n    private LocalDateTime createdAt;\n    \n    @PrePersist\n    protected void onCreate() {\n        createdAt = LocalDateTime.now();\n    }\n    \n    // Getters and setters\n}\n\n// com.company.users.domain.UserRepository.java\npackage com.company.users.domain;\n\nimport org.springframework.data.jpa.repository.JpaRepository;\nimport org.springframework.stereotype.Repository;\n\nimport java.util.Optional;\n\n@Repository\npublic interface UserRepository extends JpaRepository<User, Long> {\n    Optional<User> findByEmail(String email);\n    boolean existsByEmail(String email);\n}\n\n// com.company.users.application.UserService.java\npackage com.company.users.application;\n\nimport com.company.users.domain.User;\nimport com.company.users.domain.UserRepository;\nimport org.springframework.security.crypto.password.PasswordEncoder;\nimport org.springframework.stereotype.Service;\nimport org.springframework.transaction.annotation.Transactional;\n\n@Service\n@Transactional\npublic class UserService {\n    private final UserRepository userRepository;\n    private final PasswordEncoder passwordEncoder;\n    \n    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {\n        this.userRepository = userRepository;\n        this.passwordEncoder = passwordEncoder;\n    }\n    \n    public User createUser(CreateUserCommand command) {\n        if (userRepository.existsByEmail(command.email())) {\n            throw new UserAlreadyExistsException(command.email());\n        }\n        \n        User user = new User();\n        user.setEmail(command.email());\n        user.setPasswordHash(passwordEncoder.encode(command.password()));\n        user.setName(command.name());\n        \n        return userRepository.save(user);\n    }\n    \n    public Optional<User> findByEmail(String email) {\n        return userRepository.findByEmail(email);\n    }\n}\n\n// com.company.users.interfaces.UserController.java\npackage com.company.users.interfaces;\n\nimport com.company.users.application.UserService;\nimport com.company.users.application.CreateUserCommand;\nimport jakarta.validation.Valid;\nimport org.springframework.http.HttpStatus;\nimport org.springframework.web.bind.annotation.*;\n\n@RestController\n@RequestMapping(\"/api/v1/users\")\npublic class UserController {\n    private final UserService userService;\n    private final UserDtoMapper dtoMapper;\n    \n    public UserController(UserService userService, UserDtoMapper dtoMapper) {\n        this.userService = userService;\n        this.dtoMapper = dtoMapper;\n    }\n    \n    @PostMapping\n    @ResponseStatus(HttpStatus.CREATED)\n    public UserDto createUser(@Valid @RequestBody CreateUserRequest request) {\n        CreateUserCommand command = new CreateUserCommand(\n            request.email(),\n            request.password(),\n            request.name()\n        );\n        \n        User user = userService.createUser(command);\n        return dtoMapper.toDto(user);\n    }\n}",
+      "best_practices": [
+        "Keep features independent",
+        "Use dependency injection for cross-feature access",
+        "Define clear interfaces between features",
+        "Use DTOs for API boundaries"
+      ]
+    },
+    "spring_modulith_patterns": {
+      "description": "Modular monolith with Spring Modulith",
+      "use_when": "Large applications needing enforced module boundaries",
+      "code_example": "// pom.xml\n<dependency>\n    <groupId>org.springframework.modulith</groupId>\n    <artifactId>spring-modulith-starter-core</artifactId>\n</dependency>\n\n// com.company.users.Users.java (module descriptor)\npackage com.company.users;\n\nimport org.springframework.modulith.Modulithic;\n\n@Modulithic\npublic class Users {\n}\n\n// com.company.users.application.UserService.java\npackage com.company.users.application;\n\nimport org.springframework.modulith.events.ApplicationModuleListener;\nimport org.springframework.stereotype.Service;\n\n@Service\npublic class UserService {\n    \n    @ApplicationModuleListener\n    void on(ProductCreatedEvent event) {\n        // Handle event from products module\n    }\n}\n\n// com.company.products.application.ProductService.java\npackage com.company.products.application;\n\nimport org.springframework.modulith.events.EventPublicationRegistry;\nimport org.springframework.stereotype.Service;\n\n@Service\npublic class ProductService {\n    private final EventPublicationRegistry events;\n    \n    public ProductService(EventPublicationRegistry events) {\n        this.events = events;\n    }\n    \n    public Product createProduct(CreateProductCommand command) {\n        Product product = // ... create product\n        \n        // Publish event\n        events.publish(new ProductCreatedEvent(product.getId()));\n        \n        return product;\n    }\n}",
+      "best_practices": [
+        "Define module boundaries clearly",
+        "Use events for inter-module communication",
+        "Avoid direct dependencies between modules",
+        "Test module boundaries"
+      ]
+    },
+    "configuration_patterns": {
+      "description": "Configuration management with @ConfigurationProperties",
+      "use_when": "Any application requiring configuration",
+      "code_example": "// application.yml\napp:\n  security:\n    jwt:\n      secret: ${JWT_SECRET:default-secret}\n      expiration: 3600\n  database:\n    pool-size: 10\n\n// com.company.shared.config.AppProperties.java\npackage com.company.shared.config;\n\nimport org.springframework.boot.context.properties.ConfigurationProperties;\nimport org.springframework.validation.annotation.Validated;\n\n@ConfigurationProperties(prefix = \"app\")\n@Validated\npublic class AppProperties {\n    private Security security = new Security();\n    private Database database = new Database();\n    \n    public static class Security {\n        private Jwt jwt = new Jwt();\n        \n        public static class Jwt {\n            private String secret;\n            private long expiration;\n            \n            // Getters and setters\n        }\n        \n        // Getters and setters\n    }\n    \n    public static class Database {\n        private int poolSize;\n        \n        // Getters and setters\n    }\n    \n    // Getters and setters\n}\n\n// com.company.shared.config.AppConfig.java\npackage com.company.shared.config;\n\nimport org.springframework.boot.context.properties.EnableConfigurationProperties;\nimport org.springframework.context.annotation.Configuration;\n\n@Configuration\n@EnableConfigurationProperties(AppProperties.class)\npublic class AppConfig {\n}",
+      "best_practices": [
+        "Use @ConfigurationProperties for type-safe configuration",
+        "Validate configuration with @Validated",
+        "Use profiles for environment-specific config",
+        "Document configuration properties"
+      ]
+    },
+    "security_configuration": {
+      "description": "Spring Security configuration patterns",
+      "use_when": "Any application requiring authentication/authorization",
+      "code_example": "// com.company.shared.config.SecurityConfig.java\npackage com.company.shared.config;\n\nimport org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.security.config.annotation.web.builders.HttpSecurity;\nimport org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;\nimport org.springframework.security.config.http.SessionCreationPolicy;\nimport org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;\nimport org.springframework.security.crypto.password.PasswordEncoder;\nimport org.springframework.security.web.SecurityFilterChain;\nimport org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;\n\n@Configuration\n@EnableWebSecurity\npublic class SecurityConfig {\n    private final JwtAuthenticationFilter jwtFilter;\n    \n    public SecurityConfig(JwtAuthenticationFilter jwtFilter) {\n        this.jwtFilter = jwtFilter;\n    }\n    \n    @Bean\n    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {\n        http\n            .csrf(csrf -> csrf.disable())\n            .sessionManagement(session -> \n                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)\n            )\n            .authorizeHttpRequests(auth -> auth\n                .requestMatchers(\"/api/v1/auth/**\").permitAll()\n                .requestMatchers(\"/api/v1/public/**\").permitAll()\n                .requestMatchers(\"/api/v1/admin/**\").hasRole(\"ADMIN\")\n                .anyRequest().authenticated()\n            )\n            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);\n        \n        return http.build();\n    }\n    \n    @Bean\n    public PasswordEncoder passwordEncoder() {\n        return new BCryptPasswordEncoder();\n    }\n}\n\n// com.company.shared.security.JwtAuthenticationFilter.java\npackage com.company.shared.security;\n\nimport jakarta.servlet.FilterChain;\nimport jakarta.servlet.ServletException;\nimport jakarta.servlet.http.HttpServletRequest;\nimport jakarta.servlet.http.HttpServletResponse;\nimport org.springframework.security.authentication.UsernamePasswordAuthenticationToken;\nimport org.springframework.security.core.context.SecurityContextHolder;\nimport org.springframework.security.web.authentication.WebAuthenticationDetailsSource;\nimport org.springframework.stereotype.Component;\nimport org.springframework.web.filter.OncePerRequestFilter;\n\nimport java.io.IOException;\n\n@Component\npublic class JwtAuthenticationFilter extends OncePerRequestFilter {\n    private final JwtTokenProvider tokenProvider;\n    private final UserDetailsService userDetailsService;\n    \n    @Override\n    protected void doFilterInternal(\n        HttpServletRequest request,\n        HttpServletResponse response,\n        FilterChain filterChain\n    ) throws ServletException, IOException {\n        String token = extractToken(request);\n        \n        if (token != null && tokenProvider.validateToken(token)) {\n            String username = tokenProvider.getUsernameFromToken(token);\n            UserDetails userDetails = userDetailsService.loadUserByUsername(username);\n            \n            UsernamePasswordAuthenticationToken authentication = \n                new UsernamePasswordAuthenticationToken(\n                    userDetails, null, userDetails.getAuthorities()\n                );\n            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));\n            \n            SecurityContextHolder.getContext().setAuthentication(authentication);\n        }\n        \n        filterChain.doFilter(request, response);\n    }\n    \n    private String extractToken(HttpServletRequest request) {\n        String bearerToken = request.getHeader(\"Authorization\");\n        if (bearerToken != null && bearerToken.startsWith(\"Bearer \")) {\n            return bearerToken.substring(7);\n        }\n        return null;\n    }\n}",
+      "best_practices": [
+        "Use SecurityFilterChain for configuration",
+        "Implement JWT filters for stateless auth",
+        "Use method security for fine-grained control",
+        "Never store passwords in plain text"
+      ]
+    },
+    "repository_patterns": {
+      "description": "Repository pattern with Spring Data JPA",
+      "use_when": "Data access layer",
+      "code_example": "// com.company.users.domain.UserRepository.java\npackage com.company.users.domain;\n\nimport org.springframework.data.domain.Page;\nimport org.springframework.data.domain.Pageable;\nimport org.springframework.data.jpa.repository.JpaRepository;\nimport org.springframework.data.jpa.repository.Query;\nimport org.springframework.data.repository.query.Param;\nimport org.springframework.stereotype.Repository;\n\nimport java.util.Optional;\nimport java.util.List;\n\n@Repository\npublic interface UserRepository extends JpaRepository<User, Long> {\n    // Query methods\n    Optional<User> findByEmail(String email);\n    boolean existsByEmail(String email);\n    List<User> findByActiveTrue();\n    \n    // Pagination\n    Page<User> findByActiveTrue(Pageable pageable);\n    \n    // Custom query\n    @Query(\"SELECT u FROM User u WHERE u.createdAt >= :since\")\n    List<User> findRecentUsers(@Param(\"since\") LocalDateTime since);\n    \n    // Native query\n    @Query(value = \"SELECT * FROM users WHERE email LIKE %:pattern%\", nativeQuery = true)\n    List<User> searchByEmailPattern(@Param(\"pattern\") String pattern);\n}\n\n// Custom repository implementation\n// com.company.users.domain.UserRepositoryCustom.java\npublic interface UserRepositoryCustom {\n    List<User> findComplexQuery(SearchCriteria criteria);\n}\n\n// com.company.users.infrastructure.UserRepositoryImpl.java\n@Repository\npublic class UserRepositoryImpl implements UserRepositoryCustom {\n    @PersistenceContext\n    private EntityManager entityManager;\n    \n    @Override\n    public List<User> findComplexQuery(SearchCriteria criteria) {\n        CriteriaBuilder cb = entityManager.getCriteriaBuilder();\n        CriteriaQuery<User> query = cb.createQuery(User.class);\n        Root<User> root = query.from(User.class);\n        \n        // Build dynamic query based on criteria\n        // ...\n        \n        return entityManager.createQuery(query).getResultList();\n    }\n}",
+      "best_practices": [
+        "Use Spring Data JPA for standard CRUD",
+        "Create custom queries when needed",
+        "Use pagination for large datasets",
+        "Avoid N+1 queries with proper fetching"
+      ]
+    },
+    "service_layer_patterns": {
+      "description": "Service layer for business logic",
+      "use_when": "Business logic and orchestration",
+      "code_example": "// com.company.users.application.UserService.java\npackage com.company.users.application;\n\nimport com.company.users.domain.User;\nimport com.company.users.domain.UserRepository;\nimport org.springframework.stereotype.Service;\nimport org.springframework.transaction.annotation.Transactional;\n\n@Service\n@Transactional\npublic class UserService {\n    private final UserRepository userRepository;\n    private final EmailService emailService;\n    \n    public UserService(UserRepository userRepository, EmailService emailService) {\n        this.userRepository = userRepository;\n        this.emailService = emailService;\n    }\n    \n    public User createUser(CreateUserCommand command) {\n        validateEmail(command.email());\n        \n        if (userRepository.existsByEmail(command.email())) {\n            throw new UserAlreadyExistsException(command.email());\n        }\n        \n        User user = new User();\n        user.setEmail(command.email());\n        user.setPasswordHash(passwordEncoder.encode(command.password()));\n        user.setName(command.name());\n        \n        User savedUser = userRepository.save(user);\n        \n        // Send welcome email asynchronously\n        emailService.sendWelcomeEmail(savedUser.getEmail());\n        \n        return savedUser;\n    }\n    \n    @Transactional(readOnly = true)\n    public Optional<User> findById(Long id) {\n        return userRepository.findById(id);\n    }\n    \n    private void validateEmail(String email) {\n        // Validation logic\n    }\n}",
+      "best_practices": [
+        "Keep services focused on business logic",
+        "Use @Transactional for write operations",
+        "Use @Transactional(readOnly = true) for reads",
+        "Delegate data access to repositories",
+        "Handle exceptions appropriately"
+      ]
+    },
+    "controller_patterns": {
+      "description": "REST controller patterns",
+      "use_when": "API endpoints",
+      "code_example": "// com.company.users.interfaces.UserController.java\npackage com.company.users.interfaces;\n\nimport com.company.users.application.UserService;\nimport com.company.users.application.CreateUserCommand;\nimport jakarta.validation.Valid;\nimport org.springframework.data.domain.Page;\nimport org.springframework.data.domain.Pageable;\nimport org.springframework.http.HttpStatus;\nimport org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.*;\n\n@RestController\n@RequestMapping(\"/api/v1/users\")\npublic class UserController {\n    private final UserService userService;\n    private final UserDtoMapper dtoMapper;\n    \n    public UserController(UserService userService, UserDtoMapper dtoMapper) {\n        this.userService = userService;\n        this.dtoMapper = dtoMapper;\n    }\n    \n    @PostMapping\n    @ResponseStatus(HttpStatus.CREATED)\n    public UserDto createUser(@Valid @RequestBody CreateUserRequest request) {\n        CreateUserCommand command = new CreateUserCommand(\n            request.email(),\n            request.password(),\n            request.name()\n        );\n        \n        User user = userService.createUser(command);\n        return dtoMapper.toDto(user);\n    }\n    \n    @GetMapping(\"/{id}\")\n    public ResponseEntity<UserDto> getUser(@PathVariable Long id) {\n        return userService.findById(id)\n            .map(dtoMapper::toDto)\n            .map(ResponseEntity::ok)\n            .orElse(ResponseEntity.notFound().build());\n    }\n    \n    @GetMapping\n    public Page<UserDto> getUsers(Pageable pageable) {\n        return userService.findAll(pageable)\n            .map(dtoMapper::toDto);\n    }\n    \n    @ExceptionHandler(UserNotFoundException.class)\n    @ResponseStatus(HttpStatus.NOT_FOUND)\n    public ErrorResponse handleUserNotFound(UserNotFoundException ex) {\n        return new ErrorResponse(\"USER_NOT_FOUND\", ex.getMessage());\n    }\n}",
+      "best_practices": [
+        "Keep controllers thin",
+        "Use DTOs for API boundaries",
+        "Validate inputs with @Valid",
+        "Return appropriate HTTP status codes",
+        "Handle exceptions with @ExceptionHandler"
+      ]
+    },
+    "testing_patterns": {
+      "description": "Testing Spring Boot applications",
+      "use_when": "Any application requiring tests",
+      "code_example": "// UserServiceTest.java\npackage com.company.users.application;\n\nimport com.company.users.domain.User;\nimport com.company.users.domain.UserRepository;\nimport org.junit.jupiter.api.Test;\nimport org.junit.jupiter.api.extension.ExtendWith;\nimport org.mockito.InjectMocks;\nimport org.mockito.Mock;\nimport org.mockito.junit.jupiter.MockitoExtension;\n\nimport static org.assertj.core.api.Assertions.assertThat;\nimport static org.assertj.core.api.Assertions.assertThatThrownBy;\nimport static org.mockito.ArgumentMatchers.any;\nimport static org.mockito.Mockito.*;\n\n@ExtendWith(MockitoExtension.class)\nclass UserServiceTest {\n    @Mock\n    private UserRepository userRepository;\n    \n    @Mock\n    private EmailService emailService;\n    \n    @InjectMocks\n    private UserService userService;\n    \n    @Test\n    void shouldCreateUser() {\n        // Given\n        CreateUserCommand command = new CreateUserCommand(\n            \"test@example.com\",\n            \"password123\",\n            \"Test User\"\n        );\n        \n        when(userRepository.existsByEmail(any())).thenReturn(false);\n        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));\n        \n        // When\n        User result = userService.createUser(command);\n        \n        // Then\n        assertThat(result.getEmail()).isEqualTo(\"test@example.com\");\n        verify(userRepository).save(any(User.class));\n        verify(emailService).sendWelcomeEmail(anyString());\n    }\n    \n    @Test\n    void shouldThrowExceptionWhenUserExists() {\n        // Given\n        CreateUserCommand command = new CreateUserCommand(\n            \"existing@example.com\",\n            \"password123\",\n            \"Test User\"\n        );\n        \n        when(userRepository.existsByEmail(any())).thenReturn(true);\n        \n        // When/Then\n        assertThatThrownBy(() -> userService.createUser(command))\n            .isInstanceOf(UserAlreadyExistsException.class);\n    }\n}\n\n// UserControllerIntegrationTest.java\npackage com.company.users.interfaces;\n\nimport org.junit.jupiter.api.Test;\nimport org.springframework.beans.factory.annotation.Autowired;\nimport org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;\nimport org.springframework.boot.test.context.SpringBootTest;\nimport org.springframework.http.MediaType;\nimport org.springframework.test.web.servlet.MockMvc;\nimport org.springframework.transaction.annotation.Transactional;\n\nimport static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;\nimport static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;\n\n@SpringBootTest\n@AutoConfigureMockMvc\n@Transactional\nclass UserControllerIntegrationTest {\n    @Autowired\n    private MockMvc mockMvc;\n    \n    @Test\n    void shouldCreateUser() throws Exception {\n        String requestBody = \"\"\"\n        {\n            \"email\": \"test@example.com\",\n            \"password\": \"password123\",\n            \"name\": \"Test User\"\n        }\n        \"\"\";\n        \n        mockMvc.perform(post(\"/api/v1/users\")\n                .contentType(MediaType.APPLICATION_JSON)\n                .content(requestBody))\n            .andExpect(status().isCreated())\n            .andExpect(jsonPath(\"$.email\").value(\"test@example.com\"));\n    }\n}",
+      "best_practices": [
+        "Use @SpringBootTest for integration tests",
+        "Use @MockBean for mocking in tests",
+        "Use @Transactional for test cleanup",
+        "Test both success and error cases",
+        "Use AssertJ for assertions"
+      ]
+    }
+  },
+  "best_practices": [
+    "Organize by feature/domain, not technical layers",
+    "Keep controllers thin - delegate to service layer",
+    "Use dependency injection for all dependencies",
+    "Separate domain models from DTOs",
+    "Use constructor injection (preferred)",
+    "Avoid field injection",
+    "Keep dependencies explicit",
+    "Use @Qualifier when needed",
+    "Use @Transactional for write operations",
+    "Use @Transactional(readOnly = true) for reads",
+    "Understand transaction propagation",
+    "Handle transaction rollbacks properly",
+    "Never store plain passwords",
+    "Use HTTPS in production",
+    "Validate and sanitize all inputs",
+    "Use method security for fine-grained control",
+    "Implement proper authentication",
+    "Use pagination for large datasets",
+    "Avoid N+1 queries",
+    "Use @EntityGraph for eager loading",
+    "Implement caching where appropriate",
+    "Use async processing for long operations"
+  ],
+  "anti_patterns": [
+    {
+      "name": "anemic_domain_model",
+      "description": "Domain models with only getters/setters",
+      "problem": "Business logic scattered, hard to maintain",
+      "fix": "Put business logic in domain models where appropriate"
+    },
+    {
+      "name": "god_service",
+      "description": "Service classes with too many responsibilities",
+      "problem": "Hard to test, violates single responsibility",
+      "fix": "Split into focused services"
+    },
+    {
+      "name": "repository_in_controller",
+      "description": "Accessing repositories directly from controllers",
+      "problem": "Bypasses business logic, hard to test",
+      "fix": "Use service layer between controllers and repositories"
+    },
+    {
+      "name": "ignoring_transactions",
+      "description": "Not using @Transactional properly",
+      "problem": "Data inconsistency, performance issues",
+      "fix": "Use @Transactional appropriately, understand propagation"
+    },
+    {
+      "name": "circular_dependencies",
+      "description": "Circular dependencies between components",
+      "problem": "Hard to test, tight coupling",
+      "fix": "Refactor to remove cycles, use events or DTOs"
+    }
+  ],
+  "id": "spring-patterns",
+  "name": "Spring Patterns",
+  "category": "patterns",
+  "related_skills": [
+    "onboarding-flow"
+  ],
+  "related_knowledge": [
+    "manifest.json"
+  ]
+}

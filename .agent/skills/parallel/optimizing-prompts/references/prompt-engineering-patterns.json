@@ -1,0 +1,374 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "prompt-engineering-patterns",
+  "name": "Prompt Engineering Patterns",
+  "title": "Prompt Engineering Patterns",
+  "description": "Best practices for designing effective prompts for AI agents",
+  "version": "1.0.0",
+  "category": "ai-ml",
+  "axiomAlignment": {
+    "A1_verifiability": "Well-structured prompts produce verifiable outputs",
+    "A3_transparency": "Clear prompts lead to explainable agent behavior",
+    "A2_user_primacy": "Patterns prioritize user needs and practical outcomes",
+    "A4_non_harm": "Patterns include safety considerations and error handling",
+    "A5_consistency": "Patterns follow established conventions and standards"
+  },
+  "prompt_structure": {
+    "system_prompt_template": {
+      "sections": [
+        {
+          "name": "identity",
+          "description": "Who the agent is and its core purpose",
+          "example": "You are a code review assistant specializing in Python. Your purpose is to help developers write better, more maintainable code."
+        },
+        {
+          "name": "capabilities",
+          "description": "What the agent can and cannot do",
+          "example": "You can analyze code for issues, suggest improvements, and explain best practices. You cannot execute code or access external systems."
+        },
+        {
+          "name": "constraints",
+          "description": "Boundaries the agent must respect",
+          "example": "Always explain your reasoning. Never suggest changes without explaining why. If unsure, say so."
+        },
+        {
+          "name": "output_format",
+          "description": "How the agent should structure responses",
+          "example": "Format your response as:\n1. Summary (2-3 sentences)\n2. Issues Found (bullet list)\n3. Recommendations (numbered list)"
+        },
+        {
+          "name": "examples",
+          "description": "Few-shot examples of desired behavior",
+          "importance": "High - examples dramatically improve output quality"
+        }
+      ]
+    },
+    "best_practices": [
+      "Be specific and unambiguous",
+      "Use consistent terminology",
+      "Include examples for complex tasks",
+      "Define output format explicitly",
+      "State constraints clearly"
+    ]
+  },
+  "prompting_techniques": {
+    "few_shot": {
+      "description": "Provide examples of desired input-output pairs",
+      "use_when": "Task requires specific format or style",
+      "implementation": "Include 2-5 examples in prompt",
+      "example": "Example 1:\nInput: 'def add(a,b): return a+b'\nOutput: 'Function is correct but missing type hints and docstring.'\n\nExample 2:\n..."
+    },
+    "chain_of_thought": {
+      "description": "Prompt model to show reasoning steps",
+      "use_when": "Complex reasoning or multi-step problems",
+      "implementation": "Add 'Let's think step by step' or show reasoning in examples",
+      "axiom_alignment": "A3 (Transparency) - Makes reasoning visible"
+    },
+    "role_prompting": {
+      "description": "Assign a specific role or persona",
+      "use_when": "Need expertise or specific perspective",
+      "implementation": "You are a [role] with [expertise]. Approach this as a [role] would.",
+      "example": "You are a senior security engineer. Review this code for security vulnerabilities."
+    },
+    "structured_output": {
+      "description": "Define exact output structure",
+      "use_when": "Output needs to be parsed programmatically",
+      "implementation": "Use JSON schema, Pydantic models, or explicit format specification",
+      "axiom_alignment": "A1 (Verifiability) - Structured outputs are easier to validate"
+    },
+    "self_consistency": {
+      "description": "Generate multiple responses and aggregate",
+      "use_when": "High-stakes decisions, need confidence",
+      "implementation": "Run same prompt multiple times with temperature > 0, take majority"
+    },
+    "decomposition": {
+      "description": "Break complex tasks into subtasks",
+      "use_when": "Task is too complex for single prompt",
+      "implementation": "Create chain of prompts, each handling one subtask"
+    },
+    "retrieval_augmented": {
+      "description": "Include relevant context from knowledge base",
+      "use_when": "Task requires domain knowledge or facts",
+      "implementation": "Retrieve relevant documents, include in prompt context"
+    }
+  },
+  "prompt_patterns": {
+    "code_review": {
+      "template": "You are a code reviewer. Review the following code for:\n1. Correctness\n2. Code style\n3. Performance\n4. Security\n\nCode:\n```{language}\n{code}\n```\n\nProvide your review in this format:\n- **Issues**: List of problems found\n- **Suggestions**: Recommended improvements\n- **Rating**: Overall code quality (1-5)",
+      "variables": [
+        "language",
+        "code"
+      ],
+      "output_format": "structured"
+    },
+    "bug_analysis": {
+      "template": "Analyze this bug report and suggest fixes.\n\n**Bug Description**: {description}\n**Error Message**: {error}\n**Relevant Code**: \n```\n{code}\n```\n\nProvide:\n1. Root cause analysis\n2. Suggested fix\n3. How to prevent similar bugs",
+      "variables": [
+        "description",
+        "error",
+        "code"
+      ]
+    },
+    "documentation": {
+      "template": "Write documentation for this {type}.\n\n```{language}\n{code}\n```\n\nInclude:\n- Brief description\n- Parameters/Arguments\n- Return value\n- Usage example\n- Edge cases/notes",
+      "variables": [
+        "type",
+        "language",
+        "code"
+      ]
+    },
+    "test_generation": {
+      "template": "Generate unit tests for this function.\n\n```{language}\n{code}\n```\n\nRequirements:\n- Test happy path\n- Test edge cases\n- Test error handling\n- Use {test_framework}",
+      "variables": [
+        "language",
+        "code",
+        "test_framework"
+      ]
+    }
+  },
+  "anti_patterns": [
+    {
+      "name": "Vague Instructions",
+      "problem": "Prompts like 'Make this code better' lead to unpredictable outputs because the model doesn't know what 'better' means",
+      "fix": "Be specific: 'Improve this code's readability by adding type hints and splitting into smaller functions'"
+    },
+    {
+      "name": "Missing Constraints",
+      "problem": "Unconstrained prompts may produce valid but undesired outputs (wrong format, style, or approach)",
+      "fix": "Explicitly state all requirements: 'Write a function to sort a list of integers. Requirements: in-place sorting, O(n log n) time complexity, include type hints and docstring'"
+    },
+    {
+      "name": "Context Overload",
+      "problem": "Including entire codebases or excessive context dilutes focus, increases costs, and may exceed token limits",
+      "fix": "Include only relevant functions and their immediate dependencies. Use retrieval to find specific context rather than including everything"
+    },
+    {
+      "name": "Missing Examples",
+      "problem": "Describing output format without examples leads to inconsistent results, especially for complex formats",
+      "fix": "Provide concrete examples: 'Format output as a table:\n| Column1 | Column2 |\n|---------|----------|\n| value1  | value2   |'"
+    },
+    {
+      "name": "No Output Validation",
+      "problem": "Using LLM outputs directly without validation can lead to parsing errors, invalid data, or security issues",
+      "fix": "Always validate outputs: use schema validation for structured outputs, content filtering for safety, and plausibility checks for factual claims"
+    }
+  ],
+  "prompt_optimization": {
+    "iteration_process": [
+      "Start with baseline prompt",
+      "Collect failure cases",
+      "Identify patterns in failures",
+      "Add examples or constraints to address failures",
+      "Test on validation set",
+      "Repeat until quality target met"
+    ],
+    "evaluation_metrics": [
+      "Task completion rate",
+      "Output format compliance",
+      "Factual accuracy",
+      "Consistency across runs"
+    ],
+    "a_b_testing": {
+      "description": "Compare prompt variants systematically",
+      "implementation": "Run both variants on same inputs, compare metrics",
+      "tools": [
+        "LangSmith",
+        "Custom evaluation scripts"
+      ]
+    }
+  },
+  "safety_considerations": {
+    "prompt_injection_prevention": {
+      "description": "Prevent user input from overriding instructions",
+      "techniques": [
+        "Use clear delimiters between instructions and user input",
+        "Validate user input before including in prompt",
+        "Use separate system and user message sections"
+      ],
+      "axiom_alignment": "A4 (Non-Harm) - Prevent manipulation"
+    },
+    "output_validation": {
+      "description": "Validate outputs before using",
+      "techniques": [
+        "Schema validation for structured outputs",
+        "Content filtering for harmful content",
+        "Plausibility checks for factual claims"
+      ],
+      "axiom_alignment": "A1 (Verifiability) - Verify outputs are valid"
+    }
+  },
+  "model_specific_tips": {
+    "openai_gpt4": {
+      "strengths": [
+        "Complex reasoning",
+        "Following detailed instructions"
+      ],
+      "tips": [
+        "Use system message for core instructions",
+        "Explicit output format works well"
+      ]
+    },
+    "anthropic_claude": {
+      "strengths": [
+        "Long context",
+        "Nuanced understanding"
+      ],
+      "tips": [
+        "XML tags for structure work well",
+        "Claude responds well to 'think step by step'"
+      ]
+    },
+    "local_models": {
+      "tips": [
+        "Simpler prompts often work better",
+        "More examples needed",
+        "Explicit structure is crucial"
+      ]
+    }
+  },
+  "patterns": {
+    "structured_output": {
+      "description": "Use structured output schemas (JSON, Pydantic) to ensure consistent LLM responses",
+      "implementation": "Define output schema explicitly in prompt or use provider-specific structured output features",
+      "benefits": [
+        "Easier parsing",
+        "Type safety",
+        "Validation",
+        "Consistent format"
+      ],
+      "use_when": "When designing prompts for consistent, verifiable AI outputs",
+      "code_example": "Define output schema explicitly in prompt or use provider-specific structured output features",
+      "best_practices": [
+        "Use structured output schemas (JSON Schema, Pydantic) to ensure consistent, parseable LLM responses",
+        "Include 2-5 few-shot examples for complex reasoning tasks to demonstrate desired behavior and format",
+        "Prompt models to show reasoning steps using 'think step by step' or structured reasoning patterns",
+        "Assign specific roles or personas (e.g., 'You are a senior security engineer') to guide model behavior",
+        "Explicitly state all constraints, boundaries, and requirements to prevent undesired outputs"
+      ]
+    },
+    "few_shot_learning": {
+      "description": "Include 2-5 few-shot examples for complex reasoning tasks to demonstrate desired behavior",
+      "implementation": "Provide input-output pairs that show the task, format, and quality expectations",
+      "benefits": [
+        "Better task understanding",
+        "Format consistency",
+        "Quality improvement"
+      ],
+      "use_when": "When designing prompts for consistent, verifiable AI outputs",
+      "code_example": "Provide input-output pairs that show the task, format, and quality expectations",
+      "best_practices": [
+        "Use structured output schemas (JSON Schema, Pydantic) to ensure consistent, parseable LLM responses",
+        "Include 2-5 few-shot examples for complex reasoning tasks to demonstrate desired behavior and format",
+        "Prompt models to show reasoning steps using 'think step by step' or structured reasoning patterns",
+        "Assign specific roles or personas (e.g., 'You are a senior security engineer') to guide model behavior",
+        "Explicitly state all constraints, boundaries, and requirements to prevent undesired outputs"
+      ]
+    },
+    "chain_of_thought": {
+      "description": "Prompt models to show reasoning steps for complex problems using 'think step by step' or structured reasoning",
+      "implementation": "Add explicit reasoning instructions or show reasoning in examples",
+      "benefits": [
+        "Transparency",
+        "Better accuracy",
+        "Debugging capability"
+      ],
+      "use_when": "When designing prompts for consistent, verifiable AI outputs",
+      "code_example": "Add explicit reasoning instructions or show reasoning in examples",
+      "best_practices": [
+        "Use structured output schemas (JSON Schema, Pydantic) to ensure consistent, parseable LLM responses",
+        "Include 2-5 few-shot examples for complex reasoning tasks to demonstrate desired behavior and format",
+        "Prompt models to show reasoning steps using 'think step by step' or structured reasoning patterns",
+        "Assign specific roles or personas (e.g., 'You are a senior security engineer') to guide model behavior",
+        "Explicitly state all constraints, boundaries, and requirements to prevent undesired outputs"
+      ]
+    },
+    "role_based_prompting": {
+      "description": "Assign specific roles or personas to guide model behavior and expertise",
+      "implementation": "Start prompts with 'You are a [role] with [expertise]' and specify how that role would approach the task",
+      "benefits": [
+        "Consistent perspective",
+        "Domain expertise",
+        "Better outputs"
+      ],
+      "use_when": "When designing prompts for consistent, verifiable AI outputs",
+      "code_example": "Start prompts with 'You are a [role] with [expertise]' and specify how that role would approach the task",
+      "best_practices": [
+        "Use structured output schemas (JSON Schema, Pydantic) to ensure consistent, parseable LLM responses",
+        "Include 2-5 few-shot examples for complex reasoning tasks to demonstrate desired behavior and format",
+        "Prompt models to show reasoning steps using 'think step by step' or structured reasoning patterns",
+        "Assign specific roles or personas (e.g., 'You are a senior security engineer') to guide model behavior",
+        "Explicitly state all constraints, boundaries, and requirements to prevent undesired outputs"
+      ]
+    },
+    "constraint_specification": {
+      "description": "Explicitly state constraints, boundaries, and requirements to prevent undesired outputs",
+      "implementation": "List all constraints clearly: format, length, style, prohibited content, required elements",
+      "benefits": [
+        "Controlled outputs",
+        "Fewer errors",
+        "Predictable behavior"
+      ],
+      "use_when": "When designing prompts for consistent, verifiable AI outputs",
+      "code_example": "List all constraints clearly: format, length, style, prohibited content, required elements",
+      "best_practices": [
+        "Use structured output schemas (JSON Schema, Pydantic) to ensure consistent, parseable LLM responses",
+        "Include 2-5 few-shot examples for complex reasoning tasks to demonstrate desired behavior and format",
+        "Prompt models to show reasoning steps using 'think step by step' or structured reasoning patterns",
+        "Assign specific roles or personas (e.g., 'You are a senior security engineer') to guide model behavior",
+        "Explicitly state all constraints, boundaries, and requirements to prevent undesired outputs"
+      ]
+    },
+    "context_management": {
+      "description": "Include only relevant context, use clear delimiters, and manage token limits effectively",
+      "implementation": "Retrieve relevant documents, use XML tags or markdown for structure, truncate intelligently",
+      "benefits": [
+        "Better focus",
+        "Cost efficiency",
+        "Avoid context overflow"
+      ],
+      "use_when": "When designing prompts for consistent, verifiable AI outputs",
+      "code_example": "Retrieve relevant documents, use XML tags or markdown for structure, truncate intelligently",
+      "best_practices": [
+        "Use structured output schemas (JSON Schema, Pydantic) to ensure consistent, parseable LLM responses",
+        "Include 2-5 few-shot examples for complex reasoning tasks to demonstrate desired behavior and format",
+        "Prompt models to show reasoning steps using 'think step by step' or structured reasoning patterns",
+        "Assign specific roles or personas (e.g., 'You are a senior security engineer') to guide model behavior",
+        "Explicitly state all constraints, boundaries, and requirements to prevent undesired outputs"
+      ]
+    },
+    "iterative_refinement": {
+      "description": "Iteratively improve prompts by collecting failure cases, analyzing patterns, and adding targeted examples",
+      "implementation": "Test \u2192 Collect failures \u2192 Identify patterns \u2192 Add examples/constraints \u2192 Re-test",
+      "benefits": [
+        "Continuous improvement",
+        "Better performance",
+        "Reduced errors"
+      ],
+      "use_when": "When designing prompts for consistent, verifiable AI outputs",
+      "code_example": "Test \u2192 Collect failures \u2192 Identify patterns \u2192 Add examples/constraints \u2192 Re-test",
+      "best_practices": [
+        "Use structured output schemas (JSON Schema, Pydantic) to ensure consistent, parseable LLM responses",
+        "Include 2-5 few-shot examples for complex reasoning tasks to demonstrate desired behavior and format",
+        "Prompt models to show reasoning steps using 'think step by step' or structured reasoning patterns",
+        "Assign specific roles or personas (e.g., 'You are a senior security engineer') to guide model behavior",
+        "Explicitly state all constraints, boundaries, and requirements to prevent undesired outputs"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use structured output schemas (JSON Schema, Pydantic) to ensure consistent, parseable LLM responses",
+    "Include 2-5 few-shot examples for complex reasoning tasks to demonstrate desired behavior and format",
+    "Prompt models to show reasoning steps using 'think step by step' or structured reasoning patterns",
+    "Assign specific roles or personas (e.g., 'You are a senior security engineer') to guide model behavior",
+    "Explicitly state all constraints, boundaries, and requirements to prevent undesired outputs",
+    "Include only relevant context with clear delimiters (XML tags, markdown) and manage token limits",
+    "Iteratively refine prompts by collecting failure cases, identifying patterns, and adding targeted examples",
+    "Validate outputs using schema validation, content filtering, and plausibility checks before use"
+  ],
+  "related_skills": [
+    "none"
+  ],
+  "related_knowledge": [
+    "best-practices.json"
+  ]
+}

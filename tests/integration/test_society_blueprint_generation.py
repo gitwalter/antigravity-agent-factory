@@ -71,8 +71,8 @@ class TestBlueprintSocietyIntegration:
             elif "filename" in s:
                 skills.append(s["filename"])
 
-        # assert "society-tier-selection" in skills  # Temporarily disabled as missing
-        # assert "export-agent-bundle" in skills      # Temporarily disabled as missing
+        assert "selecting-society-tiers" in skills
+        assert "exporting-agent-bundles" in skills
         assert "agent-coordination" in skills
 
     def test_aidev_blueprint_includes_asp_knowledge(self, aidev_blueprint):
@@ -100,8 +100,8 @@ class TestBlueprintSocietyIntegration:
             s.get("patternId") for s in aidev_blueprint["skills"] if "patternId" in s
         ]
 
-        # assert "society-tier-selection" in skills  # Temporarily disabled
-        # assert "export-agent-bundle" in skills      # Temporarily disabled
+        assert "selecting-society-tiers" in skills
+        assert "exporting-agent-bundles" in skills
         assert "agent-coordination" in skills
 
 
@@ -167,21 +167,15 @@ class TestASPSkillsExist:
 
     def test_tier_selection_skill_exists(self, skills_dir):
         """Society tier selection skill exists."""
-        assert (
-            skills_dir / "operational" / "society-tier-selection" / "SKILL.md"
-        ).exists()
+        assert (skills_dir / "chain" / "selecting-society-tiers" / "SKILL.md").exists()
 
     def test_export_bundle_skill_exists(self, skills_dir):
         """Export agent bundle skill exists."""
-        assert (
-            skills_dir / "operational" / "export-agent-bundle" / "SKILL.md"
-        ).exists()
+        assert (skills_dir / "chain" / "exporting-agent-bundles" / "SKILL.md").exists()
 
     def test_verified_communication_skill_exists(self, skills_dir):
         """Verified communication skill exists."""
-        assert (
-            skills_dir / "operational" / "verified-communication" / "SKILL.md"
-        ).exists()
+        assert (skills_dir / "chain" / "verifying-communications" / "SKILL.md").exists()
 
 
 class TestASPDocumentationExists:

@@ -1,0 +1,155 @@
+{
+  "id": "memory-patterns",
+  "name": "Agent Memory Patterns",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "description": "Patterns for implementing memory systems in agents",
+  "memory_types": {
+    "conversation": {
+      "description": "Short-term message history",
+      "implementations": {
+        "in_memory": {
+          "class": "InMemoryChatMessageHistory",
+          "use_case": "Development, single session",
+          "persistence": false
+        },
+        "redis": {
+          "backend": "Redis",
+          "use_case": "Production, distributed",
+          "persistence": true,
+          "ttl_support": true
+        },
+        "postgres": {
+          "backend": "PostgreSQL",
+          "use_case": "Production, queryable history",
+          "persistence": true
+        }
+      }
+    },
+    "long_term": {
+      "description": "Semantic knowledge storage",
+      "implementations": {
+        "vector_store": {
+          "backends": [
+            "ChromaDB",
+            "Pinecone",
+            "Weaviate",
+            "Qdrant"
+          ],
+          "use_case": "Semantic retrieval of past interactions"
+        },
+        "knowledge_graph": {
+          "backends": [
+            "Neo4j",
+            "NetworkX"
+          ],
+          "use_case": "Entity relationships and facts"
+        }
+      }
+    },
+    "user_profile": {
+      "description": "Structured user preferences and facts",
+      "storage": [
+        "Redis hash",
+        "PostgreSQL JSON",
+        "Document DB"
+      ],
+      "schema": [
+        "name",
+        "preferences",
+        "facts",
+        "history_summary"
+      ]
+    },
+    "working": {
+      "description": "Current task context",
+      "implementation": "LangGraph state",
+      "scope": "Single workflow execution"
+    }
+  },
+  "patterns": {
+    "session_management": {
+      "description": "Manage memory per user session",
+      "pattern": "Use session_id in config.configurable",
+      "example": "RunnableWithMessageHistory with get_session_history function",
+      "use_when": "When implementing session_management",
+      "code_example": "// Example for session_management",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
+    },
+    "memory_compression": {
+      "description": "Summarize old messages to fit context",
+      "trigger": "When messages exceed threshold",
+      "method": "LLM summarization of old messages",
+      "use_when": "When implementing memory_compression",
+      "code_example": "// Example for memory_compression",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
+    },
+    "hybrid_memory": {
+      "description": "Combine short and long-term memory",
+      "pattern": "Recent messages + relevant retrieved memories",
+      "use_when": "When implementing hybrid_memory",
+      "code_example": "// Example for hybrid_memory",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
+    },
+    "entity_extraction": {
+      "description": "Extract and store entities from conversations",
+      "entities": [
+        "names",
+        "preferences",
+        "facts",
+        "relationships"
+      ],
+      "use_when": "When implementing entity_extraction",
+      "code_example": "// Example for entity_extraction",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
+    }
+  },
+  "best_practices": [
+    "Use TTL for conversation memory",
+    "Compress old messages to fit context windows",
+    "Separate short-term and long-term storage",
+    "Index memories for semantic retrieval",
+    "Implement memory forgetting for privacy"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Unbounded history",
+      "problem": "Exceeds context window",
+      "fix": "Set max messages, implement compression"
+    },
+    {
+      "name": "No persistence",
+      "problem": "Memory lost on restart",
+      "fix": "Use Redis or PostgreSQL backend"
+    }
+  ],
+  "related_skills": [
+    "memory-management",
+    "state-management",
+    "rag-patterns"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Memory-patterns Knowledge",
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns are verified through automated testing.",
+    "A2_user_primacy": "The user maintains control over all generated output.",
+    "A3_transparency": "All automated actions are logged and verifiable.",
+    "A4_non_harm": "Strict safety checks prevent destructive operations.",
+    "A5_consistency": "Uniform patterns ensure predictable system behavior."
+  },
+  "related_knowledge": [
+    "manifest.json"
+  ]
+}

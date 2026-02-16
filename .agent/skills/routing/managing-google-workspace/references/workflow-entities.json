@@ -1,0 +1,617 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Workflow System Entities",
+  "description": "Entity definitions and relationships for the Antigravity Agent Factory Workflow System",
+  "version": "1.0.0",
+  "philosophy": "Workflows are the choreography of intelligence - composing agents, skills, knowledge, and tools into purposeful action sequences that learn and improve over time.",
+  "entities": {
+    "workflow": {
+      "name": "Workflow",
+      "description": "A complete orchestrated process that achieves a specific goal through coordinated phases, steps, and decisions",
+      "purpose": "Define autonomous multi-step processes that can diagnose, decide, act, and learn",
+      "keyProperties": [
+        "id",
+        "name",
+        "version",
+        "triggers",
+        "phases",
+        "decisionPoints",
+        "escalations",
+        "learningHooks"
+      ],
+      "relationships": {
+        "contains": [
+          "phase",
+          "decisionPoint",
+          "escalation",
+          "learningHook"
+        ],
+        "activatedBy": [
+          "trigger"
+        ],
+        "references": [
+          "knowledge"
+        ],
+        "requires": [
+          "mcpRequirement"
+        ],
+        "tracks": [
+          "state"
+        ]
+      },
+      "examples": [
+        "debug-pipeline-failure",
+        "onboarding-new-developer",
+        "code-review-automation",
+        "incident-response"
+      ]
+    },
+    "trigger": {
+      "name": "Trigger",
+      "description": "A condition or event that activates a workflow",
+      "purpose": "Define when and how workflows are started",
+      "types": {
+        "event": {
+          "description": "External system sends a signal",
+          "examples": [
+            "GitHub Actions failure webhook",
+            "Jira issue created"
+          ]
+        },
+        "manual": {
+          "description": "User explicitly requests activation",
+          "examples": [
+            "'Debug this failure'",
+            "'Run code review'"
+          ]
+        },
+        "schedule": {
+          "description": "Time-based activation",
+          "examples": [
+            "Every day at midnight",
+            "Every 6 hours"
+          ]
+        },
+        "watch": {
+          "description": "File or state change detection",
+          "examples": [
+            "Config file modified",
+            "Error log updated"
+          ]
+        },
+        "chain": {
+          "description": "Another workflow completes",
+          "examples": [
+            "Post-deployment verification",
+            "Cleanup after build"
+          ]
+        },
+        "webhook": {
+          "description": "HTTP endpoint receives request",
+          "examples": [
+            "CI/CD callback",
+            "External service notification"
+          ]
+        }
+      },
+      "relationships": {
+        "activates": [
+          "workflow"
+        ]
+      }
+    },
+    "phase": {
+      "name": "Phase",
+      "description": "A logical grouping of related steps within a workflow",
+      "purpose": "Organize workflow execution into meaningful chunks with clear goals",
+      "keyProperties": [
+        "id",
+        "name",
+        "goal",
+        "steps",
+        "parallel",
+        "timeout",
+        "onFailure"
+      ],
+      "relationships": {
+        "containedBy": [
+          "workflow"
+        ],
+        "contains": [
+          "step",
+          "decisionPoint"
+        ],
+        "mayTrigger": [
+          "escalation"
+        ],
+        "transitionsTo": [
+          "phase"
+        ]
+      },
+      "examples": [
+        "diagnosis",
+        "resolution",
+        "verification",
+        "learning"
+      ]
+    },
+    "step": {
+      "name": "Step",
+      "description": "An atomic unit of work within a phase",
+      "purpose": "Execute a single, focused action using skills or MCP tools",
+      "keyProperties": [
+        "id",
+        "name",
+        "skill",
+        "inputs",
+        "outputs",
+        "timeout",
+        "retry"
+      ],
+      "relationships": {
+        "containedBy": [
+          "phase"
+        ],
+        "invokes": [
+          "skill"
+        ],
+        "executes": [
+          "action"
+        ],
+        "uses": [
+          "mcpTool"
+        ],
+        "produces": [
+          "output"
+        ]
+      },
+      "examples": [
+        "parse-error-log",
+        "identify-root-cause",
+        "apply-fix",
+        "run-tests"
+      ]
+    },
+    "skill": {
+      "name": "Skill",
+      "description": "A reusable capability that can be invoked by workflow steps",
+      "purpose": "Encapsulate complex behaviors as composable, testable units",
+      "location": ".agent/skills/{skill-id}/SKILL.md",
+      "keyProperties": [
+        "name",
+        "description",
+        "triggers",
+        "inputs",
+        "outputs",
+        "knowledge",
+        "mcpServers"
+      ],
+      "relationships": {
+        "invokedBy": [
+          "step"
+        ],
+        "uses": [
+          "knowledge",
+          "mcpServer"
+        ],
+        "mayInvoke": [
+          "skill"
+        ]
+      },
+      "categories": [
+        "diagnostic",
+        "resolution",
+        "research",
+        "generation",
+        "validation"
+      ],
+      "examples": [
+        "log-analysis",
+        "root-cause-analysis",
+        "test-rewrite",
+        "code-fix",
+        "mcp-manager"
+      ]
+    },
+    "mcpServer": {
+      "name": "MCP Server",
+      "description": "An external tool integration providing capabilities via Model Context Protocol",
+      "purpose": "Connect workflows to external services, APIs, and tools",
+      "catalogLocation": "knowledge/mcp-servers-catalog.json",
+      "keyProperties": [
+        "id",
+        "name",
+        "transport",
+        "authentication",
+        "capabilities",
+        "tools"
+      ],
+      "relationships": {
+        "requiredBy": [
+          "workflow",
+          "skill"
+        ],
+        "provides": [
+          "mcpTool"
+        ],
+        "mayFallbackTo": [
+          "mcpServer"
+        ]
+      },
+      "categories": [
+        "core",
+        "code",
+        "data",
+        "cloud",
+        "collab",
+        "aiml"
+      ],
+      "examples": [
+        "github",
+        "sentry",
+        "brave-search",
+        "context7"
+      ]
+    },
+    "mcpTool": {
+      "name": "MCP Tool",
+      "description": "A specific capability exposed by an MCP server",
+      "purpose": "Perform actions in external systems",
+      "keyProperties": [
+        "name",
+        "description",
+        "parameters",
+        "returns"
+      ],
+      "relationships": {
+        "providedBy": [
+          "mcpServer"
+        ],
+        "usedBy": [
+          "step"
+        ]
+      },
+      "examples": [
+        "github.get_workflow_run",
+        "brave-search.brave_web_search",
+        "sentry.get_issue"
+      ]
+    },
+    "knowledge": {
+      "name": "Knowledge",
+      "description": "Structured reference data that informs workflow decisions",
+      "purpose": "Provide context, patterns, and historical data for intelligent decision-making",
+      "location": "knowledge/{name}.json",
+      "keyProperties": [
+        "title",
+        "description",
+        "version",
+        "content"
+      ],
+      "relationships": {
+        "referencedBy": [
+          "workflow",
+          "skill"
+        ],
+        "updatedBy": [
+          "learningHook"
+        ]
+      },
+      "categories": [
+        "patterns",
+        "strategies",
+        "lessons",
+        "catalogs",
+        "schemas"
+      ],
+      "examples": [
+        "error-patterns.json",
+        "fix-strategies.json",
+        "lessons-learned.json",
+        "mcp-servers-catalog.json"
+      ]
+    },
+    "decisionPoint": {
+      "name": "Decision Point",
+      "description": "A conditional branching point in workflow execution",
+      "purpose": "Enable dynamic workflow paths based on runtime conditions",
+      "keyProperties": [
+        "id",
+        "evaluate",
+        "branches",
+        "default"
+      ],
+      "relationships": {
+        "containedBy": [
+          "workflow",
+          "phase"
+        ],
+        "branchesTo": [
+          "phase",
+          "step"
+        ],
+        "mayTrigger": [
+          "escalation"
+        ]
+      },
+      "examples": [
+        "confidence-check",
+        "error-type-routing",
+        "capability-detection"
+      ]
+    },
+    "branch": {
+      "name": "Branch",
+      "description": "A possible path from a decision point",
+      "purpose": "Define conditions and destinations for workflow routing",
+      "keyProperties": [
+        "condition",
+        "goto",
+        "action",
+        "escalation"
+      ],
+      "relationships": {
+        "containedBy": [
+          "decisionPoint"
+        ],
+        "goesTo": [
+          "phase",
+          "step"
+        ],
+        "triggers": [
+          "escalation"
+        ]
+      }
+    },
+    "escalation": {
+      "name": "Escalation",
+      "description": "A point where human involvement is requested",
+      "purpose": "Ensure human oversight for uncertain or high-risk situations",
+      "keyProperties": [
+        "id",
+        "trigger",
+        "method",
+        "prompt",
+        "timeout",
+        "onTimeout"
+      ],
+      "methods": {
+        "interactive": "Pause execution and ask user",
+        "notification": "Inform user but continue",
+        "issue": "Create tracking issue for later",
+        "abort": "Stop workflow entirely",
+        "fallback": "Try alternative approach"
+      },
+      "relationships": {
+        "containedBy": [
+          "workflow"
+        ],
+        "triggeredBy": [
+          "phase",
+          "step",
+          "decisionPoint"
+        ],
+        "resumesTo": [
+          "phase",
+          "step"
+        ]
+      },
+      "examples": [
+        "confirm-destructive-action",
+        "request-credentials",
+        "low-confidence-fix"
+      ]
+    },
+    "state": {
+      "name": "State",
+      "description": "Runtime tracking of workflow progress and collected data",
+      "purpose": "Enable resume, debugging, and progress visibility",
+      "keyProperties": [
+        "currentPhase",
+        "currentStep",
+        "startTime",
+        "attempts",
+        "collectedEvidence",
+        "outputs"
+      ],
+      "relationships": {
+        "trackedBy": [
+          "workflow"
+        ],
+        "persistedTo": [
+          "stateStore"
+        ],
+        "restoredFrom": [
+          "checkpoint"
+        ]
+      }
+    },
+    "learningHook": {
+      "name": "Learning Hook",
+      "description": "A capture point for continuous improvement",
+      "purpose": "Extract patterns from workflow execution to improve future performance",
+      "keyProperties": [
+        "event",
+        "capture",
+        "store",
+        "transform",
+        "actions"
+      ],
+      "events": [
+        "workflow_success",
+        "workflow_failure",
+        "step_complete",
+        "step_failure",
+        "escalation_resolved",
+        "user_correction"
+      ],
+      "relationships": {
+        "containedBy": [
+          "workflow"
+        ],
+        "updates": [
+          "knowledge"
+        ],
+        "capturesFrom": [
+          "step",
+          "phase",
+          "escalation"
+        ]
+      },
+      "examples": [
+        "capture-successful-fix",
+        "record-failed-attempt",
+        "integrate-user-feedback"
+      ]
+    },
+    "output": {
+      "name": "Output",
+      "description": "Data produced by a step for use by subsequent steps",
+      "purpose": "Enable data flow between workflow steps",
+      "keyProperties": [
+        "name",
+        "type",
+        "required",
+        "value"
+      ],
+      "relationships": {
+        "producedBy": [
+          "step"
+        ],
+        "consumedBy": [
+          "step",
+          "decisionPoint"
+        ]
+      }
+    }
+  },
+  "relationships": {
+    "summary": "The workflow system forms a hierarchy: Workflows contain Phases, Phases contain Steps. Steps invoke Skills and use MCP Tools. Decision Points route between Phases. Escalations involve humans. Learning Hooks update Knowledge for continuous improvement.",
+    "diagram": "See docs/research/WORKFLOW_SYSTEM.md for visual diagrams"
+  },
+  "lifecycleStates": {
+    "workflow": [
+      "idle",
+      "triggered",
+      "validating",
+      "initializing",
+      "acquiringMCP",
+      "needsAuth",
+      "executing",
+      "decisionPoint",
+      "researching",
+      "escalating",
+      "paused",
+      "verifying",
+      "learning",
+      "completed",
+      "failed",
+      "cancelled"
+    ],
+    "phase": [
+      "pending",
+      "executing",
+      "completed",
+      "failed",
+      "skipped"
+    ],
+    "step": [
+      "pending",
+      "executing",
+      "retrying",
+      "completed",
+      "failed",
+      "skipped"
+    ]
+  },
+  "expressionLanguage": {
+    "description": "Expression syntax for referencing values in workflows",
+    "syntax": "${expression}",
+    "references": {
+      "context": "${context.fieldName}",
+      "steps": "${steps.stepId.outputs.outputName}",
+      "phases": "${phases.phaseId.outputs.outputName}",
+      "knowledge": "${knowledge.fileName.jsonPath}",
+      "state": "${state.fieldName}",
+      "env": "${env.VARIABLE_NAME}",
+      "workflow": "${workflow.id|name|duration}"
+    },
+    "functions": {
+      "uuid": "Generate unique identifier",
+      "now": "Current timestamp",
+      "contains": "Array/string contains check",
+      "length": "Array/string length"
+    }
+  },
+  "extensionPoints": {
+    "customSkills": {
+      "description": "Add new skills in .agent/skills/{id}/SKILL.md",
+      "process": "Define inputs, outputs, process steps, and dependencies"
+    },
+    "customMCPServers": {
+      "description": "Add servers to knowledge/mcp-servers-catalog.json",
+      "process": "Define server metadata, authentication, and tools"
+    },
+    "customKnowledge": {
+      "description": "Add knowledge files to knowledge/ directory",
+      "process": "Create JSON with appropriate schema"
+    },
+    "workflowInheritance": {
+      "description": "Extend existing workflows with 'extends' property",
+      "process": "Override phases, steps, or add new elements"
+    }
+  },
+  "relatedDocuments": [
+    {
+      "name": "WORKFLOW_SYSTEM.md",
+      "path": "docs/research/WORKFLOW_SYSTEM.md",
+      "purpose": "Conceptual architecture for humans"
+    },
+    {
+      "name": "WORKFLOW_AUTHORING.md",
+      "path": "docs/WORKFLOW_AUTHORING.md",
+      "purpose": "Practical guide for creating workflows"
+    },
+    {
+      "name": "w-o-r-k-f-l-o-w-patterns.md",
+      "path": "docs/reference/WORKFLOW_PATTERNS.md",
+      "purpose": "Reusable workflow pattern catalog"
+    },
+    {
+      "name": "workflow-schema.json",
+      "path": "knowledge/schemas/workflow-schema.json",
+      "purpose": "JSON Schema for validation"
+    }
+  ],
+  "id": "workflow-entities",
+  "name": "Workflow Entities",
+  "category": "patterns",
+  "patterns": {
+    "workflow-entities-base": {
+      "name": "Base Workflow Entities Pattern",
+      "description": "Standard pattern for Workflow Entities",
+      "usage": "Use as a starting point for this category.",
+      "use_when": "When implementing workflow-entities-base",
+      "code_example": "// Example for workflow-entities-base",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
+    }
+  },
+  "best_practices": [],
+  "anti_patterns": [],
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns are verified through automated testing.",
+    "A2_user_primacy": "The user maintains control over all generated output.",
+    "A3_transparency": "All automated actions are logged and verifiable.",
+    "A4_non_harm": "Strict safety checks prevent destructive operations.",
+    "A5_consistency": "Uniform patterns ensure predictable system behavior."
+  },
+  "related_skills": [
+    "onboarding-flow"
+  ],
+  "related_knowledge": [
+    "manifest.json"
+  ]
+}

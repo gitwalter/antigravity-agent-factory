@@ -50,7 +50,7 @@ Test the agent's behavior against its mission and system-wide axioms.
 
 ### 5. Deployment & Registration
 Register the agent in the system catalog and make it available for orchestration.
-- **Skill**: `system-registration`
+- **Skill**: `registering-systems`
 - **Output**: Updated `agent-catalog.json`.
 
 ## Decision Points

@@ -1,0 +1,584 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "agent-society-verification",
+  "name": "Agent Society Verification",
+  "title": "Agent Society Verification Patterns",
+  "version": "1.0.0",
+  "description": "Dynamic verification patterns for multi-agent societies with contracts, event sourcing, and blockchain integration",
+  "category": "core",
+  "axiomAlignment": {
+    "A1_verifiability": "Hash chains and Merkle anchoring enable verification of agent actions",
+    "A2_user_primacy": "Contract verification and dispute resolution preserve user sovereignty",
+    "A3_transparency": "Event sourcing and axiom verifiers make agent behavior traceable",
+    "A4_non_harm": "Axiom compliance monitoring and violation escalation prevent harmful outcomes",
+    "A5_consistency": "Unified verification patterns across event sourcing, contracts, and blockchain"
+  },
+  "related_skills": [
+    "society-tier-selection",
+    "verified-communication",
+    "enforcement-selection"
+  ],
+  "related_knowledge": [
+    "agent-society-protocol.json",
+    "formal-verification.json"
+  ],
+  "metadata": {
+    "name": "Agent Society Verification",
+    "version": "1.0.0",
+    "description": "Dynamic verification patterns for multi-agent societies with contracts, event sourcing, and blockchain integration",
+    "category": "ai_agent",
+    "tags": [
+      "multi-agent",
+      "verification",
+      "contracts",
+      "event-sourcing",
+      "blockchain",
+      "trust",
+      "society"
+    ],
+    "created": "2026-02-05",
+    "updated": "2026-02-05"
+  },
+  "event_sourcing": {
+    "description": "Patterns for creating immutable, cryptographically signed event streams",
+    "event_schema": {
+      "event_id": "UUID v4 identifier",
+      "timestamp": "ISO 8601 timestamp",
+      "sequence": "Monotonically increasing sequence number",
+      "previous_hash": "SHA-256 hash of previous event (chain linking)",
+      "agent": {
+        "id": "Agent UUID",
+        "type": "guardian | worker | coordinator",
+        "public_key": "Ed25519 public key"
+      },
+      "action": {
+        "type": "message | decision | state_change | external_effect",
+        "description": "Human-readable description",
+        "payload": "Action-specific data",
+        "target": "Optional target agent ID"
+      },
+      "axiom_context": {
+        "declared_alignment": "List of axiom IDs this action aligns with",
+        "justification": "Explanation of axiom alignment"
+      },
+      "signature": "Ed25519 signature of canonical JSON",
+      "hash": "SHA-256 hash of this event"
+    },
+    "patterns": {
+      "hash_chain": {
+        "description": "Each event references previous hash for tamper evidence",
+        "implementation": "Hash = SHA256(event_id + timestamp + previous_hash + action + signature)"
+      },
+      "verification_monitor": {
+        "description": "Real-time axiom compliance checking",
+        "components": [
+          "Event stream subscriber",
+          "Axiom verifier plugins (A0-A5)",
+          "Violation handler with escalation",
+          "Event store with verification status"
+        ]
+      },
+      "replay_capability": {
+        "description": "Reconstruct state from event history",
+        "use_cases": [
+          "Auditing agent behavior",
+          "Debugging violations",
+          "State recovery after failures"
+        ]
+      }
+    }
+  },
+  "agent_contracts": {
+    "description": "Formal agreements defining agent capabilities, obligations, and prohibitions",
+    "contract_schema": {
+      "contract_id": "UUID v4 identifier",
+      "version": "Semantic version",
+      "created": "ISO 8601 timestamp",
+      "expires": "Optional expiration timestamp",
+      "parties": [
+        {
+          "agent_id": "Agent UUID",
+          "role": "Role in contract (service_provider, service_consumer, etc.)",
+          "public_key": "Ed25519 public key for signatures"
+        }
+      ],
+      "capabilities": {
+        "description": "Actions each role is permitted to perform",
+        "structure": "role_name -> [action_names]"
+      },
+      "obligations": {
+        "description": "Actions each role must perform under certain conditions",
+        "structure": [
+          {
+            "trigger": "Event that activates obligation",
+            "action": "Required action",
+            "parameters": "Action-specific parameters"
+          }
+        ]
+      },
+      "prohibitions": {
+        "description": "Actions that are forbidden",
+        "structure": "role_name | 'all_parties' -> [forbidden_actions]"
+      },
+      "axiom_requirements": {
+        "description": "Axiom alignment declarations",
+        "structure": "axiom_id -> requirement_description"
+      },
+      "dispute_resolution": {
+        "method": "escalate_to_supervisor | consensus_vote | human_review | blockchain_arbitration",
+        "timeout_ms": "Time allowed before escalation",
+        "fallback": "Fallback method if primary fails"
+      },
+      "signatures": {
+        "description": "Cryptographic signatures from all parties",
+        "structure": "agent_id -> signature"
+      }
+    },
+    "patterns": {
+      "capability_verification": {
+        "description": "Check if agent has capability before allowing action",
+        "steps": [
+          "Find applicable contracts for sender/receiver pair",
+          "Get sender's role in contract",
+          "Check if action is in role's capabilities list"
+        ]
+      },
+      "obligation_monitoring": {
+        "description": "Track and enforce obligation fulfillment",
+        "steps": [
+          "Detect trigger event",
+          "Start obligation timer",
+          "Monitor for fulfillment action",
+          "Escalate if timeout without fulfillment"
+        ]
+      },
+      "contract_composition": {
+        "description": "Combine contracts when agents form teams",
+        "rules": {
+          "capabilities": "Union (team can do what any member can do)",
+          "prohibitions": "Intersection (team cannot do what any member cannot do)",
+          "obligations": "Aggregated with responsibility assignment"
+        }
+      }
+    }
+  },
+  "blockchain_integration": {
+    "description": "Patterns for on-chain verification and smart contract enforcement",
+    "architecture_layers": {
+      "application_layer": "Agent logic, local event sourcing",
+      "anchoring_layer": "Merkle tree construction, batch submission",
+      "blockchain_layer": "Solana, Ethereum L2, or custom chain",
+      "verification_layer": "Public proof verification"
+    },
+    "on_chain_vs_off_chain": {
+      "on_chain": [
+        "Merkle roots (tamper evidence)",
+        "Contract terms (enforcement)",
+        "Violation proofs (accountability)"
+      ],
+      "off_chain": [
+        "Event details (privacy, cost)",
+        "Signatures (local for speed)",
+        "Full audit logs (storage)"
+      ]
+    },
+    "patterns": {
+      "merkle_anchoring": {
+        "description": "Batch events into Merkle tree, anchor root on-chain",
+        "steps": [
+          "Collect events during interval",
+          "Build Merkle tree from event hashes",
+          "Submit root to blockchain",
+          "Store proof data locally for verification"
+        ],
+        "verification": "Recompute path from event hash to root, compare with on-chain root"
+      },
+      "smart_contract_agreement": {
+        "description": "On-chain enforcement of agent agreements",
+        "components": [
+          "Agreement creation with party addresses",
+          "Multi-party signature collection",
+          "Violation reporting with evidence hash",
+          "Dispute resolution mechanism"
+        ]
+      }
+    },
+    "chain_selection": {
+      "solana": {
+        "pros": [
+          "Fast (400ms)",
+          "Low cost",
+          "High throughput"
+        ],
+        "cons": [
+          "Less decentralized"
+        ],
+        "best_for": "High-frequency anchoring"
+      },
+      "ethereum_l2": {
+        "pros": [
+          "EVM compatible",
+          "Established ecosystem"
+        ],
+        "cons": [
+          "Still has fees"
+        ],
+        "best_for": "Smart contract enforcement"
+      },
+      "custom_consortium": {
+        "pros": [
+          "Full control",
+          "No fees"
+        ],
+        "cons": [
+          "Must run infrastructure"
+        ],
+        "best_for": "Enterprise deployments"
+      },
+      "ipfs_timestamps": {
+        "pros": [
+          "Free",
+          "Decentralized storage"
+        ],
+        "cons": [
+          "No smart contracts"
+        ],
+        "best_for": "Audit trails only"
+      }
+    }
+  },
+  "hybrid_architecture": {
+    "description": "Recommended approach combining local, contract, and blockchain layers",
+    "trust_levels": {
+      "L0_local": {
+        "description": "Single node, signed events",
+        "verification": "Cryptographic signatures"
+      },
+      "L1_attested": {
+        "description": "Merkle root anchored",
+        "verification": "Blockchain timestamp proof"
+      },
+      "L2_contracted": {
+        "description": "Smart contract active",
+        "verification": "On-chain enforcement"
+      },
+      "L3_consensus": {
+        "description": "Multi-party verification",
+        "verification": "Decentralized agreement"
+      }
+    },
+    "escalation_path": {
+      "description": "Progressive escalation from local to on-chain",
+      "triggers": {
+        "violation_threshold": "N violations within time window",
+        "dispute_unresolved": "Contract dispute without resolution",
+        "multi_party_conflict": "Conflicting claims between parties"
+      },
+      "path": [
+        "Normal Operation (L0)",
+        "Contract Verification (L1)",
+        "Blockchain Dispute (L2)",
+        "Consensus Resolution (L3)"
+      ]
+    }
+  },
+  "society_patterns": {
+    "description": "Organizational patterns for agent societies",
+    "organizational_models": {
+      "flat_democracy": {
+        "description": "All agents equal, decisions by consensus voting",
+        "parameters": {
+          "quorum": "Minimum participation for valid vote",
+          "threshold": "Approval percentage required"
+        }
+      },
+      "meritocracy": {
+        "description": "Trust earned through verified behavior history",
+        "parameters": {
+          "reputation_source": "Event history with axiom compliance",
+          "voting_weight": "Based on reputation score"
+        }
+      },
+      "hierarchy": {
+        "description": "Supervisor-worker with delegated authority",
+        "parameters": {
+          "delegation_depth": "Maximum levels of delegation",
+          "authority_scope": "What can be delegated"
+        }
+      },
+      "federation": {
+        "description": "Autonomous teams with shared protocols",
+        "parameters": {
+          "protocol": "Shared communication protocol",
+          "autonomy": "What teams decide independently"
+        }
+      },
+      "dao_style": {
+        "description": "Governance by token/stake/contribution",
+        "parameters": {
+          "token_contract": "On-chain token for voting power",
+          "proposal_threshold": "Minimum stake to propose"
+        }
+      }
+    },
+    "communication_protocols": {
+      "request_response": {
+        "verification": "Contract capability check",
+        "pattern": "Synchronous call-return"
+      },
+      "publish_subscribe": {
+        "verification": "Topic access control",
+        "pattern": "Async broadcast to subscribers"
+      },
+      "negotiation": {
+        "verification": "Contract formation verification",
+        "pattern": "Multi-round proposal-counter-proposal"
+      },
+      "consensus": {
+        "verification": "Voting protocol verification",
+        "pattern": "Collective decision making"
+      },
+      "dispute_resolution": {
+        "verification": "Escalation path verification",
+        "pattern": "Conflict handling with arbitration"
+      }
+    }
+  },
+  "trust_reputation": {
+    "description": "Identity, reputation, and trust delegation patterns",
+    "identity": {
+      "cryptographic_identity": {
+        "keypair": "Ed25519 for signing",
+        "agent_id": "Derived from public key hash",
+        "verification": "Signature validation"
+      }
+    },
+    "reputation_scoring": {
+      "base_score": 50,
+      "range": [
+        0,
+        100
+      ],
+      "positive_adjustments": {
+        "verified_action": 0.5,
+        "high_trust_action": 2.0
+      },
+      "negative_adjustments": {
+        "A0_violation": 20,
+        "A1_violation": 15,
+        "A2_violation": 15,
+        "A4_violation": 10,
+        "general_violation": 5
+      }
+    },
+    "trust_delegation": {
+      "max_depth": 3,
+      "decay_per_hop": 0.8,
+      "calculation": "Multiply edge trust along shortest path with decay"
+    }
+  },
+  "axiom_verifiers": {
+    "description": "Runtime verifiers for each axiom",
+    "A0_sdg": {
+      "checks": [
+        "Resource efficiency",
+        "Long-term sustainability",
+        "Environmental impact"
+      ]
+    },
+    "A1_love": {
+      "checks": [
+        "User benefit",
+        "Non-manipulation",
+        "Wellbeing prioritization"
+      ]
+    },
+    "A2_truth": {
+      "checks": [
+        "No false claims",
+        "No hidden effects",
+        "Transparency"
+      ]
+    },
+    "A3_beauty": {
+      "checks": [
+        "Simplicity",
+        "Elegance",
+        "Unnecessary complexity avoidance"
+      ]
+    },
+    "A4_guardian": {
+      "checks": [
+        "Appropriate intervention level",
+        "User notification",
+        "Harm prevention"
+      ]
+    },
+    "A5_memory": {
+      "checks": [
+        "User consent for semantic memories",
+        "Layer immutability respect",
+        "Proper memory classification"
+      ]
+    }
+  },
+  "implementation_roadmap": {
+    "phase_1_foundation": {
+      "status": "completed",
+      "items": [
+        "Static formal verification (Lean 4)",
+        "Attestation system (GPG/Sigstore)",
+        "Trust chain documentation"
+      ]
+    },
+    "phase_2_event_sourcing": {
+      "status": "planned",
+      "items": [
+        "Event schema definition",
+        "Signed event chain implementation",
+        "Local event store",
+        "Axiom compliance monitor",
+        "Basic verification API"
+      ]
+    },
+    "phase_3_agent_contracts": {
+      "status": "planned",
+      "items": [
+        "Contract schema definition",
+        "Contract registry",
+        "Message verification",
+        "Breach detection",
+        "Dispute resolution protocol"
+      ]
+    },
+    "phase_4_blockchain": {
+      "status": "planned",
+      "items": [
+        "Chain selection and integration",
+        "Merkle tree anchoring",
+        "Smart contract development",
+        "Verification proofs"
+      ]
+    },
+    "phase_5_society": {
+      "status": "planned",
+      "items": [
+        "Organizational pattern library",
+        "Communication protocol implementations",
+        "Trust and reputation system",
+        "Federation support"
+      ]
+    },
+    "phase_6_hybrid": {
+      "status": "planned",
+      "items": [
+        "Integration of all layers",
+        "Escalation path implementation",
+        "Production hardening",
+        "Documentation and examples"
+      ]
+    }
+  },
+  "references": {
+    "internal": [
+      "{directories.docs}/VERIFICATION.md",
+      "{directories.docs}/design/AGENT_SOCIETY_VERIFICATION.md",
+      "{directories.knowledge}/formal-verification.json",
+      "{directories.knowledge}/agent-coordination.json",
+      "{directories.knowledge}/multi-agent-coordination.json"
+    ],
+    "external": [
+      {
+        "title": "Event Sourcing Pattern",
+        "url": "https://martinfowler.com/eaaDev/EventSourcing.html"
+      },
+      {
+        "title": "Merkle Trees",
+        "url": "https://en.wikipedia.org/wiki/Merkle_tree"
+      },
+      {
+        "title": "Deontic Logic",
+        "url": "https://plato.stanford.edu/entries/logic-deontic/"
+      },
+      {
+        "title": "Solana Documentation",
+        "url": "https://docs.solana.com/"
+      }
+    ]
+  },
+  "patterns": {
+    "hash_chain_events": {
+      "description": "Each event references previous hash creating tamper-evident chain",
+      "use_when": "Need immutable audit trail of agent actions",
+      "code_example": "\nevent = {\"event_id\": \"...\", \"previous_hash\": prev_hash, \"action\": {...}}\nhash = sha256(json.dumps(event, sort_keys=True))\nevent_store.append({**event, \"hash\": hash})",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "verification_monitor": {
+      "description": "Real-time axiom compliance checking on event stream",
+      "use_when": "Need to detect violations as they occur",
+      "code_example": "\nfor event in event_stream:\n    for verifier in axiom_verifiers:\n        if not verifier.check(event):\n            escalate_violation(event)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "capability_verification": {
+      "description": "Check if agent has capability before allowing action",
+      "use_when": "Enforcing agent contracts and preventing unauthorized actions",
+      "code_example": "\nif not contract.has_capability(agent_id, action_type):\n    raise UnauthorizedActionError(agent_id, action_type)\nexecute_action(agent_id, action_type, payload)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "merkle_anchoring": {
+      "description": "Batch events into Merkle tree and anchor root on blockchain",
+      "use_when": "Need tamper evidence without storing all events on-chain",
+      "code_example": "\nroot = merkle_tree.compute_root(events_batch)\nblockchain.anchor(root)\n# Verify: merkle_proof.verify(event, root)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "contract_composition": {
+      "description": "Combine contracts when agents form teams",
+      "use_when": "Multiple agents collaborate and need unified contract enforcement",
+      "code_example": "\nteam_contract = compose_contracts([agent_a.contract, agent_b.contract])\n# Capabilities: union. Prohibitions: intersection",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "trust_escalation": {
+      "description": "Progressive escalation from local verification to blockchain consensus",
+      "use_when": "Violations detected or disputes require higher trust guarantees",
+      "code_example": "\nif violation_severity > THRESHOLD:\n    current_tier = escalate_trust_tier(current_tier)\n    require_higher_verification()",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    }
+  },
+  "best_practices": [
+    "Always link events in hash chain - each event must reference previous_hash for tamper evidence",
+    "Sign every event with Ed25519 before storing - unsigned events break verification chain",
+    "Start with L0_local verification and escalate only when violations exceed thresholds or disputes arise",
+    "Create contracts before agent interactions begin - retroactive contracts cannot verify past actions",
+    "Monitor axiom compliance in real-time using verification_monitor pattern - don't batch checks",
+    "Use Merkle anchoring for audit trails when tamper evidence is needed but full on-chain storage is too expensive",
+    "Set contract expiration dates for time-bound agreements - expired contracts should auto-escalate",
+    "Implement obligation monitoring with timeouts - unfulfilled obligations should trigger escalation",
+    "Use contract composition rules correctly - team capabilities are union, prohibitions are intersection",
+    "Store verification proofs locally even when anchoring on-chain - enables efficient verification without chain queries"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Ignoring documentation",
+      "problem": "Leads to misuse",
+      "fix": "Always read docs first"
+    }
+  ]
+}

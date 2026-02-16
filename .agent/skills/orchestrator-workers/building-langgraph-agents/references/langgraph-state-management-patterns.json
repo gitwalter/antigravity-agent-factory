@@ -1,0 +1,167 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "langgraph-state-management-patterns",
+  "name": "LangGraph State Management Patterns",
+  "title": "LangGraph State Management Patterns",
+  "description": "Patterns for managing state in LangGraph workflows including TypedDict schemas, reducers, checkpointing, and interrupt points",
+  "version": "1.0.0",
+  "category": "core",
+  "axiomAlignment": {
+    "A1_verifiability": "State schemas and checkpointing enable verifiable workflow execution and recovery",
+    "A2_user_primacy": "Thread isolation and partial updates preserve user workflow context",
+    "A3_transparency": "Explicit reducers and state schemas make accumulation behavior traceable",
+    "A4_non_harm": "Proper reducer usage and state validation prevent data corruption",
+    "A5_consistency": "Unified state patterns across LangGraph workflows ensure predictable behavior"
+  },
+  "related_skills": [
+    "state-management",
+    "langgraph-agent-building",
+    "memory-management"
+  ],
+  "related_knowledge": [
+    "langgraph-workflows.json",
+    "memory-patterns.json",
+    "hitl-patterns.json"
+  ],
+  "state_schema": {
+    "typed_dict": {
+      "description": "Define state with TypedDict",
+      "example": "class AgentState(TypedDict):\n    messages: Annotated[list, add_messages]\n    step: str"
+    },
+    "annotations": {
+      "description": "Use Annotated with reducers for accumulation",
+      "built_in_reducers": {
+        "add_messages": "Accumulate messages",
+        "operator.add": "Sum numeric values"
+      },
+      "custom_reducers": {
+        "merge_dicts": "Merge dictionaries",
+        "append_unique": "Append only unique items"
+      }
+    }
+  },
+  "reducers": {
+    "add_messages": {
+      "description": "Built-in for message accumulation",
+      "import": "from langgraph.graph.message import add_messages"
+    },
+    "operator_add": {
+      "description": "Sum values",
+      "import": "from operator import add"
+    },
+    "custom": {
+      "description": "Custom reducer function",
+      "signature": "def reducer(left: T, right: T) -> T"
+    }
+  },
+  "checkpointing": {
+    "memory_saver": {
+      "class": "MemorySaver",
+      "use_case": "Development",
+      "persistence": false
+    },
+    "redis": {
+      "description": "Redis-backed checkpointer",
+      "use_case": "Production, distributed",
+      "features": [
+        "TTL",
+        "Fast",
+        "Distributed"
+      ]
+    },
+    "postgres": {
+      "description": "PostgreSQL-backed checkpointer",
+      "use_case": "Production, durability",
+      "features": [
+        "Durable",
+        "Queryable",
+        "ACID"
+      ]
+    },
+    "sqlite": {
+      "description": "SQLite-backed checkpointer",
+      "use_case": "Local production",
+      "features": [
+        "Simple",
+        "Durable",
+        "Single node"
+      ]
+    }
+  },
+  "patterns": {
+    "thread_management": {
+      "description": "Use thread_id for multi-user scenarios",
+      "config": {
+        "configurable": {
+          "thread_id": "unique_id"
+        }
+      },
+      "use_when": "Apply when thread management is needed in LangGraph State Management Patterns",
+      "code_example": "\nconfig = {\"configurable\": {\"thread_id\": str(uuid4())}}\napp.invoke(input, config)",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "interrupt_points": {
+      "description": "Pause execution for human input",
+      "options": [
+        "interrupt_before",
+        "interrupt_after"
+      ],
+      "use_when": "Apply when interrupt points is needed in LangGraph State Management Patterns",
+      "code_example": "# Implement interrupt_points per state-patterns patterns\n# See description and related documentation",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "state_update": {
+      "description": "Nodes return partial state updates",
+      "rule": "Return dict with only fields to update",
+      "use_when": "Apply when state update is needed in LangGraph State Management Patterns",
+      "code_example": "# Implement state_update per state-patterns patterns\n# See description and related documentation",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    }
+  },
+  "best_practices": [
+    "Define clear state schemas with TypedDict to enable type checking and IDE autocomplete, improving code reliability",
+    "Use appropriate reducers (add_messages, operator.add, custom reducers) for each state field to ensure correct accumulation behavior",
+    "Implement checkpointing for production workflows using Redis or PostgreSQL backends to enable workflow resumption and recovery",
+    "Use unique thread IDs in config.configurable for multi-user scenarios to isolate state and prevent cross-contamination",
+    "Clean up old checkpoints periodically using TTL or scheduled cleanup jobs to prevent storage bloat and reduce costs",
+    "Return partial state updates from nodes (only fields that changed) rather than full state to improve performance and reduce conflicts",
+    "Use interrupt_before and interrupt_after for human-in-the-loop checkpoints at critical decision points in workflows",
+    "Validate state schema consistency across workflow versions to prevent runtime errors from schema mismatches"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Mutable state",
+      "problem": "Directly mutating state objects causes side effects, race conditions, and makes debugging difficult",
+      "fix": "Always return new state dictionaries from nodes, never mutate existing state objects directly"
+    },
+    {
+      "name": "No checkpointing",
+      "problem": "Workflows cannot be resumed after failures or interruptions, losing progress and requiring full restart",
+      "fix": "Add MemorySaver for development or Redis/PostgreSQL checkpointers for production to enable state persistence"
+    },
+    {
+      "name": "Missing reducers",
+      "problem": "State fields without reducers default to replacement behavior, losing accumulated data when multiple nodes update the same field",
+      "fix": "Define Annotated types with appropriate reducers (add_messages for lists, operator.add for numbers) for all accumulating fields"
+    },
+    {
+      "name": "Reusing thread IDs",
+      "problem": "Reusing thread IDs across different workflows or users causes state contamination and incorrect behavior",
+      "fix": "Generate unique thread IDs per workflow instance or user session, use UUIDs or composite keys (user_id:session_id)"
+    },
+    {
+      "name": "Returning full state",
+      "problem": "Returning complete state from nodes overwrites unchanged fields unnecessarily, causing performance issues and potential conflicts",
+      "fix": "Return only fields that changed in partial state updates, letting LangGraph merge with existing state using reducers"
+    }
+  ]
+}

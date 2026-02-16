@@ -1,0 +1,258 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "ai-cost-optimization-patterns",
+  "name": "AI Cost Optimization Patterns",
+  "title": "AI/LLM Cost Optimization Patterns",
+  "description": "Patterns for optimizing costs in AI/LLM applications including token usage tracking, model routing, caching, and provider comparison",
+  "version": "1.0.0",
+  "category": "ai-ml",
+  "axiomAlignment": {
+    "A1_verifiability": "Cost tracking enables budget verification",
+    "A2_user_primacy": "Budget management ensures sustainable service for users",
+    "A3_transparency": "Cost metrics make spending explicit",
+    "A4_non_harm": "Budget limits prevent resource exhaustion and service degradation",
+    "A5_consistency": "Unified cost tracking and routing across model tiers"
+  },
+  "related_skills": [
+    "ai-cost-optimization",
+    "caching-optimization",
+    "langchain-usage"
+  ],
+  "related_knowledge": [
+    "llm-provider-comparison.json",
+    "guardrails-patterns.json"
+  ],
+  "token_usage_tracking": {
+    "description": "Track token usage for cost analysis",
+    "metrics": {
+      "input_tokens": "Tokens in prompts",
+      "output_tokens": "Tokens in responses",
+      "total_tokens": "Sum of input and output",
+      "cost_per_request": "Cost calculated from tokens"
+    },
+    "implementation": "from openai import OpenAI\n\nclient = OpenAI()\nresponse = client.chat.completions.create(\n    model='gpt-4',\n    messages=[{'role': 'user', 'content': 'Hello'}]\n)\n\nusage = response.usage\nprint(f'Tokens: {usage.total_tokens}, Cost: ${calculate_cost(usage)}')",
+    "best_practices": [
+      "Track all API calls",
+      "Calculate costs per request",
+      "Aggregate by user/feature",
+      "Monitor trends"
+    ]
+  },
+  "model_routing": {
+    "description": "Route requests to appropriate models",
+    "strategies": {
+      "complexity_based": "Route by task complexity",
+      "quality_based": "Route by quality requirements",
+      "cost_based": "Route by cost constraints",
+      "hybrid": "Combine multiple factors"
+    },
+    "implementation": "def route_request(prompt, complexity_score):\n    if complexity_score < 0.3:\n        return 'gpt-3.5-turbo'  # Cheaper\n    elif complexity_score < 0.7:\n        return 'gpt-4'  # Balanced\n    else:\n        return 'gpt-4-turbo'  # Best quality",
+    "best_practices": [
+      "Define routing criteria",
+      "Monitor routing decisions",
+      "A/B test routing",
+      "Optimize routing rules"
+    ]
+  },
+  "semantic_caching": {
+    "description": "Cache semantically similar requests",
+    "benefits": [
+      "Reduce API calls",
+      "Lower latency",
+      "Save costs"
+    ],
+    "implementation": "from sentence_transformers import SentenceTransformer\nimport faiss\n\nencoder = SentenceTransformer('all-MiniLM-L6-v2')\nindex = faiss.IndexFlatL2(384)\n\ncache = {}\n\ndef get_cached_response(prompt, threshold=0.95):\n    query_embedding = encoder.encode([prompt])\n    distances, indices = index.search(query_embedding, k=1)\n    \n    if distances[0][0] < threshold:\n        return cache[indices[0][0]]\n    \n    # Call API and cache\n    response = call_api(prompt)\n    cache[len(cache)] = response\n    index.add(query_embedding)\n    return response",
+    "best_practices": [
+      "Use semantic similarity",
+      "Set appropriate thresholds",
+      "Invalidate stale cache",
+      "Monitor cache hit rate"
+    ]
+  },
+  "prompt_caching": {
+    "description": "Cache prompt prefixes",
+    "use_cases": [
+      "System prompts",
+      "Few-shot examples",
+      "Repeated prefixes"
+    ],
+    "openai_example": "response = client.chat.completions.create(\n    model='gpt-4',\n    messages=[\n        {'role': 'system', 'content': system_prompt},\n        {'role': 'user', 'content': user_query}\n    ],\n    cache_control={'type': 'ephemeral'}\n)",
+    "best_practices": [
+      "Cache system prompts",
+      "Use cache tokens",
+      "Monitor cache usage",
+      "Invalidate when needed"
+    ]
+  },
+  "batching_economics": {
+    "description": "Batch requests for cost efficiency",
+    "benefits": [
+      "Lower per-request overhead",
+      "Better throughput",
+      "Cost savings"
+    ],
+    "implementation": "import asyncio\nfrom openai import AsyncOpenAI\n\nclient = AsyncOpenAI()\n\nasync def batch_process(prompts, batch_size=10):\n    batches = [prompts[i:i+batch_size] for i in range(0, len(prompts), batch_size)]\n    \n    for batch in batches:\n        tasks = [client.chat.completions.create(\n            model='gpt-3.5-turbo',\n            messages=[{'role': 'user', 'content': prompt}]\n        ) for prompt in batch]\n        \n        results = await asyncio.gather(*tasks)\n        yield results",
+    "best_practices": [
+      "Batch when possible",
+      "Optimize batch size",
+      "Handle batch failures",
+      "Monitor batch performance"
+    ]
+  },
+  "provider_pricing": {
+    "description": "Compare provider pricing",
+    "openai": {
+      "gpt_4_turbo": "$0.01/1K input tokens, $0.03/1K output tokens",
+      "gpt_4": "$0.03/1K input tokens, $0.06/1K output tokens",
+      "gpt_3_5_turbo": "$0.0005/1K input tokens, $0.0015/1K output tokens"
+    },
+    "anthropic": {
+      "claude_3_opus": "$0.015/1K input tokens, $0.075/1K output tokens",
+      "claude_3_sonnet": "$0.003/1K input tokens, $0.015/1K output tokens",
+      "claude_3_haiku": "$0.00025/1K input tokens, $0.00125/1K output tokens"
+    },
+    "best_practices": [
+      "Compare providers",
+      "Consider quality vs cost",
+      "Use cheaper models when appropriate",
+      "Monitor pricing changes"
+    ]
+  },
+  "budget_management": {
+    "description": "Manage AI spending budgets",
+    "strategies": {
+      "daily_limits": "Set daily spending limits",
+      "per_user_limits": "Limit spending per user",
+      "feature_limits": "Limit spending per feature",
+      "alerting": "Alert on budget thresholds"
+    },
+    "implementation": "class BudgetManager:\n    def __init__(self, daily_limit=100):\n        self.daily_limit = daily_limit\n        self.daily_spent = 0\n    \n    def check_budget(self, cost):\n        if self.daily_spent + cost > self.daily_limit:\n            raise BudgetExceededError()\n        self.daily_spent += cost",
+    "best_practices": [
+      "Set appropriate limits",
+      "Monitor spending",
+      "Alert on thresholds",
+      "Review budgets regularly"
+    ]
+  },
+  "cost_optimization": {
+    "description": "Optimize costs",
+    "techniques": {
+      "model_selection": "Use cheaper models when possible",
+      "prompt_optimization": "Reduce prompt size",
+      "response_limits": "Limit response length",
+      "caching": "Cache responses",
+      "batching": "Batch requests"
+    },
+    "best_practices": [
+      "Profile costs",
+      "Identify optimization opportunities",
+      "Test optimizations",
+      "Monitor impact"
+    ]
+  },
+  "usage_analytics": {
+    "description": "Analyze usage patterns",
+    "metrics": {
+      "requests_per_day": "Daily request volume",
+      "tokens_per_request": "Average tokens per request",
+      "cost_per_request": "Average cost per request",
+      "cost_by_feature": "Cost breakdown by feature",
+      "cost_by_user": "Cost breakdown by user"
+    },
+    "best_practices": [
+      "Track all metrics",
+      "Visualize trends",
+      "Identify anomalies",
+      "Report regularly"
+    ]
+  },
+  "patterns": {
+    "cost_tracking": {
+      "description": "Track costs per request",
+      "use_when": "When tracking and optimizing LLM API costs across production deployments",
+      "code_example": "from openai import OpenAI\nclient = OpenAI()\nresponse = client.chat.completions.create(model=\"gpt-4\", messages=[{\"role\": \"user\", \"content\": \"Hello\"}])\nusage = response.usage\ncost = usage.prompt_tokens * 0.00003 + usage.completion_tokens * 0.00006\nprint(f\"Tokens: {usage.total_tokens}, Cost: ${cost:.4f}\")",
+      "best_practices": [
+        "Track token usage",
+        "Calculate costs accurately",
+        "Use semantic caching",
+        "Cache prompt prefixes",
+        "Batch requests"
+      ]
+    },
+    "model_routing": {
+      "description": "Route to cost-appropriate models",
+      "use_when": "When tracking and optimizing LLM API costs across production deployments",
+      "code_example": "from openai import OpenAI\nclient = OpenAI()\nresponse = client.chat.completions.create(model=\"gpt-4\", messages=[{\"role\": \"user\", \"content\": \"Hello\"}])\nusage = response.usage\ncost = usage.prompt_tokens * 0.00003 + usage.completion_tokens * 0.00006\nprint(f\"Tokens: {usage.total_tokens}, Cost: ${cost:.4f}\")",
+      "best_practices": [
+        "Track token usage",
+        "Calculate costs accurately",
+        "Use semantic caching",
+        "Cache prompt prefixes",
+        "Batch requests"
+      ]
+    },
+    "caching_strategy": {
+      "description": "Cache to reduce costs",
+      "use_when": "When tracking and optimizing LLM API costs across production deployments",
+      "code_example": "from openai import OpenAI\nclient = OpenAI()\nresponse = client.chat.completions.create(model=\"gpt-4\", messages=[{\"role\": \"user\", \"content\": \"Hello\"}])\nusage = response.usage\ncost = usage.prompt_tokens * 0.00003 + usage.completion_tokens * 0.00006\nprint(f\"Tokens: {usage.total_tokens}, Cost: ${cost:.4f}\")",
+      "best_practices": [
+        "Track token usage",
+        "Calculate costs accurately",
+        "Use semantic caching",
+        "Cache prompt prefixes",
+        "Batch requests"
+      ]
+    },
+    "budget_enforcement": {
+      "description": "Enforce spending limits",
+      "use_when": "When tracking and optimizing LLM API costs across production deployments",
+      "code_example": "from openai import OpenAI\nclient = OpenAI()\nresponse = client.chat.completions.create(model=\"gpt-4\", messages=[{\"role\": \"user\", \"content\": \"Hello\"}])\nusage = response.usage\ncost = usage.prompt_tokens * 0.00003 + usage.completion_tokens * 0.00006\nprint(f\"Tokens: {usage.total_tokens}, Cost: ${cost:.4f}\")",
+      "best_practices": [
+        "Track token usage",
+        "Calculate costs accurately",
+        "Use semantic caching",
+        "Cache prompt prefixes",
+        "Batch requests"
+      ]
+    }
+  },
+  "best_practices": [
+    "Track token usage",
+    "Calculate costs accurately",
+    "Use semantic caching",
+    "Cache prompt prefixes",
+    "Batch requests",
+    "Route to appropriate models",
+    "Set budget limits",
+    "Monitor spending",
+    "Optimize prompts",
+    "Use cheaper models when possible",
+    "Analyze usage patterns",
+    "Review costs regularly",
+    "Alert on budget thresholds",
+    "Test cost optimizations",
+    "Document cost decisions"
+  ],
+  "anti_patterns": [
+    {
+      "name": "No Cost Tracking",
+      "problem": "Can't manage costs",
+      "fix": "Track all API calls"
+    },
+    {
+      "name": "Always Using Expensive Models",
+      "problem": "Unnecessary costs",
+      "fix": "Route to appropriate models"
+    },
+    {
+      "name": "No Caching",
+      "problem": "Redundant API calls",
+      "fix": "Implement semantic caching"
+    },
+    {
+      "name": "No Budget Limits",
+      "problem": "Uncontrolled spending",
+      "fix": "Set and enforce budgets"
+    }
+  ]
+}

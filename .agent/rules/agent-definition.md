@@ -4,7 +4,7 @@
 Standardizes how agents and personas are defined and specialized in `.agent/agents/`.
 
 ## Requirements
-- **Persona Format**: Every agent MUST have a markdown definition file in `.agent/agents/`.
+- **Persona Format**: Every agent MUST have a markdown definition file in its appropriate pattern-based directory under `.agent/agents/`.
 - **Mission First**: Definitions MUST start with a clear Mission Statement and Backstory.
 - **Capability Mapping**:
     - Bind specific skills from `.agent/skills/`.

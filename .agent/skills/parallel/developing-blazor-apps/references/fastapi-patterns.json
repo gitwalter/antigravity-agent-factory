@@ -1,0 +1,240 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "fastapi-patterns",
+  "name": "FastAPI Patterns",
+  "title": "FastAPI Patterns",
+  "description": "Production-grade patterns for FastAPI 0.115+ applications including domain-driven layout, Pydantic v2, async, and dependency injection",
+  "version": "1.0.0",
+  "category": "web",
+  "axiomAlignment": {
+    "A1_verifiability": "Type hints and Pydantic models enable compile-time verification",
+    "A2_user_primacy": "Validation and error handling protect user data and experience",
+    "A3_transparency": "Explicit dependency injection makes dependencies clear",
+    "A4_non_harm": "Input validation and exception handlers prevent harmful outcomes",
+    "A5_consistency": "Unified patterns across routers, services, and schemas"
+  },
+  "related_skills": [
+    "fastapi-development",
+    "api-design",
+    "python-async",
+    "sqlalchemy-patterns",
+    "frontend-testing"
+  ],
+  "related_knowledge": [
+    "prisma-patterns.json",
+    "api-design-patterns.json",
+    "error-handling-patterns.json",
+    "docker-patterns.json"
+  ],
+  "core_concepts": {
+    "domain_driven_layout": {
+      "description": "Organize code by domain/feature rather than technical layers",
+      "structure": "src/domain/feature/{models,services,routers,schemas}",
+      "benefits": [
+        "Clear feature boundaries",
+        "Easier to locate related code",
+        "Supports team autonomy"
+      ]
+    },
+    "pydantic_v2": {
+      "description": "Pydantic v2 with BaseSettings for configuration management",
+      "features": [
+        "Faster validation",
+        "Better type inference",
+        "Settings from environment variables",
+        "Validation on startup"
+      ]
+    },
+    "dependency_injection": {
+      "description": "FastAPI's built-in dependency injection system",
+      "use_cases": [
+        "Database sessions",
+        "Authentication/authorization",
+        "Service layer access",
+        "Configuration access"
+      ]
+    },
+    "async_patterns": {
+      "description": "Async/await for I/O-bound operations",
+      "best_practices": [
+        "Use async for database calls, HTTP requests",
+        "Avoid async for CPU-bound tasks",
+        "Use async context managers for resources"
+      ]
+    }
+  },
+  "patterns": {
+    "domain_driven_structure": {
+      "description": "Organize application by business domains",
+      "use_when": "Medium to large applications with clear domain boundaries",
+      "structure": {
+        "example": "src/\n  domains/\n    users/\n      __init__.py\n      models.py\n      schemas.py\n      service.py\n      router.py\n    products/\n      __init__.py\n      models.py\n      schemas.py\n      service.py\n      router.py\n  core/\n    config.py\n    database.py\n    dependencies.py\n  main.py"
+      },
+      "code_example": "# src/domains/users/models.py\nfrom sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column\nfrom datetime import datetime\n\nclass Base(DeclarativeBase):\n    pass\n\nclass User(Base):\n    __tablename__ = 'users'\n    \n    id: Mapped[int] = mapped_column(primary_key=True)\n    email: Mapped[str] = mapped_column(unique=True, index=True)\n    hashed_password: Mapped[str]\n    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)\n    is_active: Mapped[bool] = mapped_column(default=True)\n\n# src/domains/users/schemas.py\nfrom pydantic import BaseModel, EmailStr\nfrom datetime import datetime\n\nclass UserCreate(BaseModel):\n    email: EmailStr\n    password: str\n\nclass UserResponse(BaseModel):\n    id: int\n    email: EmailStr\n    created_at: datetime\n    is_active: bool\n    \n    model_config = {\"from_attributes\": True}\n\n# src/domains/users/router.py\nfrom fastapi import APIRouter, Depends, HTTPException\nfrom sqlalchemy.ext.asyncio import AsyncSession\nfrom ..core.dependencies import get_db\nfrom .service import UserService\nfrom .schemas import UserCreate, UserResponse\n\nrouter = APIRouter(prefix=\"/api/v1/users\", tags=[\"users\"])\n\n@router.post(\"/\", response_model=UserResponse, status_code=201)\nasync def create_user(\n    user_data: UserCreate,\n    db: AsyncSession = Depends(get_db)\n):\n    service = UserService(db)\n    return await service.create_user(user_data)",
+      "best_practices": [
+        "Keep domains independent",
+        "Use dependency injection for cross-domain access",
+        "Define clear interfaces between domains"
+      ]
+    },
+    "pydantic_settings": {
+      "description": "Configuration management with Pydantic BaseSettings",
+      "use_when": "Any application requiring configuration",
+      "code_example": "# src/core/config.py\nfrom pydantic_settings import BaseSettings, SettingsConfigDict\nfrom pydantic import Field\nfrom functools import lru_cache\n\nclass Settings(BaseSettings):\n    # Database\n    database_url: str = Field(..., env=\"DATABASE_URL\")\n    \n    # API\n    api_v1_prefix: str = Field(\"/api/v1\", env=\"API_V1_PREFIX\")\n    api_title: str = Field(\"My API\", env=\"API_TITLE\")\n    \n    # Security\n    secret_key: str = Field(..., env=\"SECRET_KEY\")\n    algorithm: str = Field(\"HS256\", env=\"ALGORITHM\")\n    access_token_expire_minutes: int = Field(30, env=\"ACCESS_TOKEN_EXPIRE_MINUTES\")\n    \n    # CORS\n    cors_origins: list[str] = Field(default=[\"http://localhost:3000\"], env=\"CORS_ORIGINS\")\n    \n    # Logging\n    log_level: str = Field(\"INFO\", env=\"LOG_LEVEL\")\n    \n    model_config = SettingsConfigDict(\n        env_file=\".env\",\n        env_file_encoding=\"utf-8\",\n        case_sensitive=False,\n        extra=\"ignore\"\n    )\n\n@lru_cache()\ndef get_settings() -> Settings:\n    return Settings()\n\n# Usage in main.py\nfrom fastapi import FastAPI\nfrom .core.config import get_settings\n\nsettings = get_settings()\napp = FastAPI(title=settings.api_title)",
+      "best_practices": [
+        "Use Field() for validation and defaults",
+        "Cache settings with lru_cache",
+        "Use .env files for local development",
+        "Validate settings on startup"
+      ]
+    },
+    "dependency_injection": {
+      "description": "Dependency injection for database, services, and auth",
+      "use_when": "Need to share resources or services across routes",
+      "code_example": "# src/core/dependencies.py\nfrom fastapi import Depends, HTTPException, status\nfrom fastapi.security import HTTPBearer, HTTPAuthorizationCredentials\nfrom sqlalchemy.ext.asyncio import AsyncSession\nfrom jose import JWTError, jwt\nfrom .database import get_async_session\nfrom .config import get_settings\nfrom ..domains.users.models import User\n\nsecurity = HTTPBearer()\n\nasync def get_db() -> AsyncSession:\n    async with get_async_session() as session:\n        yield session\n\nasync def get_current_user(\n    credentials: HTTPAuthorizationCredentials = Depends(security),\n    db: AsyncSession = Depends(get_db)\n) -> User:\n    settings = get_settings()\n    \n    try:\n        payload = jwt.decode(\n            credentials.credentials,\n            settings.secret_key,\n            algorithms=[settings.algorithm]\n        )\n        user_id: int = payload.get(\"sub\")\n        if user_id is None:\n            raise HTTPException(\n                status_code=status.HTTP_401_UNAUTHORIZED,\n                detail=\"Invalid authentication credentials\"\n            )\n    except JWTError:\n        raise HTTPException(\n            status_code=status.HTTP_401_UNAUTHORIZED,\n            detail=\"Invalid authentication credentials\"\n        )\n    \n    from sqlalchemy import select\n    result = await db.execute(select(User).where(User.id == user_id))\n    user = result.scalar_one_or_none()\n    \n    if user is None:\n        raise HTTPException(\n            status_code=status.HTTP_404_NOT_FOUND,\n            detail=\"User not found\"\n        )\n    \n    return user\n\nasync def get_current_active_user(\n    current_user: User = Depends(get_current_user)\n) -> User:\n    if not current_user.is_active:\n        raise HTTPException(\n            status_code=status.HTTP_403_FORBIDDEN,\n            detail=\"Inactive user\"\n        )\n    return current_user\n\n# Usage in router\n@router.get(\"/me\", response_model=UserResponse)\nasync def get_current_user_info(\n    current_user: User = Depends(get_current_active_user)\n):\n    return current_user",
+      "best_practices": [
+        "Use yield for resources that need cleanup",
+        "Chain dependencies for composition",
+        "Cache expensive dependencies",
+        "Use Depends() for all injected dependencies"
+      ]
+    },
+    "async_database": {
+      "description": "Async database operations with SQLAlchemy",
+      "use_when": "Any database operations",
+      "code_example": "# src/core/database.py\nfrom sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker\nfrom sqlalchemy.orm import DeclarativeBase\nfrom .config import get_settings\n\nsettings = get_settings()\n\nengine = create_async_engine(\n    settings.database_url,\n    echo=True,\n    future=True\n)\n\nAsyncSessionLocal = async_sessionmaker(\n    engine,\n    class_=AsyncSession,\n    expire_on_commit=False\n)\n\nasync def get_async_session() -> AsyncSession:\n    async with AsyncSessionLocal() as session:\n        try:\n            yield session\n            await session.commit()\n        except Exception:\n            await session.rollback()\n            raise\n        finally:\n            await session.close()\n\n# src/domains/users/service.py\nfrom sqlalchemy.ext.asyncio import AsyncSession\nfrom sqlalchemy import select\nfrom passlib.context import CryptContext\nfrom .models import User\nfrom .schemas import UserCreate\n\npwd_context = CryptContext(schemes=[\"bcrypt\"], deprecated=\"auto\")\n\nclass UserService:\n    def __init__(self, db: AsyncSession):\n        self.db = db\n    \n    async def create_user(self, user_data: UserCreate) -> User:\n        hashed_password = pwd_context.hash(user_data.password)\n        user = User(\n            email=user_data.email,\n            hashed_password=hashed_password\n        )\n        self.db.add(user)\n        await self.db.commit()\n        await self.db.refresh(user)\n        return user\n    \n    async def get_user_by_email(self, email: str) -> User | None:\n        result = await self.db.execute(\n            select(User).where(User.email == email)\n        )\n        return result.scalar_one_or_none()\n    \n    async def get_user_by_id(self, user_id: int) -> User | None:\n        result = await self.db.execute(\n            select(User).where(User.id == user_id)\n        )\n        return result.scalar_one_or_none()",
+      "best_practices": [
+        "Always use async context managers",
+        "Handle transactions explicitly",
+        "Use select() for queries",
+        "Close sessions properly"
+      ]
+    },
+    "middleware_patterns": {
+      "description": "Request/response middleware for cross-cutting concerns",
+      "use_when": "Logging, CORS, rate limiting, request timing",
+      "code_example": "# src/core/middleware.py\nfrom fastapi import Request, Response\nfrom starlette.middleware.base import BaseHTTPMiddleware\nimport time\nimport logging\n\nlogger = logging.getLogger(__name__)\n\nclass LoggingMiddleware(BaseHTTPMiddleware):\n    async def dispatch(self, request: Request, call_next):\n        start_time = time.time()\n        \n        # Log request\n        logger.info(\n            f\"{request.method} {request.url.path} - \"\n            f\"Client: {request.client.host if request.client else 'unknown'}\"\n        )\n        \n        response = await call_next(request)\n        \n        # Log response\n        process_time = time.time() - start_time\n        logger.info(\n            f\"{request.method} {request.url.path} - \"\n            f\"Status: {response.status_code} - \"\n            f\"Time: {process_time:.3f}s\"\n        )\n        \n        response.headers[\"X-Process-Time\"] = str(process_time)\n        return response\n\n# In main.py\nfrom fastapi import FastAPI\nfrom fastapi.middleware.cors import CORSMiddleware\nfrom .core.config import get_settings\nfrom .core.middleware import LoggingMiddleware\n\napp = FastAPI()\nsettings = get_settings()\n\napp.add_middleware(LoggingMiddleware)\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=settings.cors_origins,\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)",
+      "best_practices": [
+        "Order middleware correctly (CORS first, logging last)",
+        "Keep middleware focused on single concerns",
+        "Use async middleware for async operations",
+        "Add timing headers for observability"
+      ]
+    },
+    "router_organization": {
+      "description": "Organize routes using APIRouter",
+      "use_when": "Any application with multiple route groups",
+      "code_example": "# src/main.py\nfrom fastapi import FastAPI\nfrom fastapi.middleware.cors import CORSMiddleware\nfrom .core.config import get_settings\nfrom .domains.users.router import router as users_router\nfrom .domains.products.router import router as products_router\n\nsettings = get_settings()\n\napp = FastAPI(\n    title=settings.api_title,\n    version=\"1.0.0\",\n    docs_url=\"/docs\",\n    redoc_url=\"/redoc\"\n)\n\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=settings.cors_origins,\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\n\napp.include_router(users_router)\napp.include_router(products_router)\n\n@app.get(\"/health\")\nasync def health_check():\n    return {\"status\": \"healthy\"}",
+      "best_practices": [
+        "Use prefix and tags in router definition",
+        "Group related routes together",
+        "Include routers in main app",
+        "Keep main.py minimal"
+      ]
+    },
+    "error_handling": {
+      "description": "Centralized error handling with exception handlers",
+      "use_when": "Consistent error responses across the API",
+      "code_example": "# src/core/exceptions.py\nfrom fastapi import HTTPException, status\n\nclass NotFoundError(HTTPException):\n    def __init__(self, resource: str, identifier: str):\n        super().__init__(\n            status_code=status.HTTP_404_NOT_FOUND,\n            detail=f\"{resource} with {identifier} not found\"\n        )\n\nclass ValidationError(HTTPException):\n    def __init__(self, detail: str):\n        super().__init__(\n            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,\n            detail=detail\n        )\n\n# src/core/handlers.py\nfrom fastapi import Request, status\nfrom fastapi.responses import JSONResponse\nfrom fastapi.exceptions import RequestValidationError\nfrom sqlalchemy.exc import IntegrityError\n\nasync def validation_exception_handler(\n    request: Request,\n    exc: RequestValidationError\n) -> JSONResponse:\n    return JSONResponse(\n        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,\n        content={\n            \"detail\": exc.errors(),\n            \"body\": exc.body\n        }\n    )\n\nasync def integrity_error_handler(\n    request: Request,\n    exc: IntegrityError\n) -> JSONResponse:\n    return JSONResponse(\n        status_code=status.HTTP_409_CONFLICT,\n        content={\n            \"detail\": \"Resource conflict - duplicate entry or constraint violation\"\n        }\n    )\n\n# In main.py\nfrom fastapi.exceptions import RequestValidationError\nfrom sqlalchemy.exc import IntegrityError\nfrom .core.handlers import (\n    validation_exception_handler,\n    integrity_error_handler\n)\n\napp.add_exception_handler(RequestValidationError, validation_exception_handler)\napp.add_exception_handler(IntegrityError, integrity_error_handler)",
+      "best_practices": [
+        "Create custom exception classes",
+        "Use appropriate HTTP status codes",
+        "Provide clear error messages",
+        "Log errors for debugging"
+      ]
+    },
+    "testing_patterns": {
+      "description": "Testing FastAPI applications with pytest",
+      "use_when": "Any application requiring tests",
+      "code_example": "# {directories.tests}/conftest.py\nimport pytest\nfrom fastapi.testclient import TestClient\nfrom sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker\nfrom sqlalchemy.orm import DeclarativeBase\nfrom src.main import app\nfrom src.core.database import get_db\nfrom src.core.config import Settings\n\n# Test database\nTEST_DATABASE_URL = \"sqlite+aiosqlite:///./test.db\"\n\ntest_engine = create_async_engine(TEST_DATABASE_URL, echo=False)\nTestSessionLocal = async_sessionmaker(test_engine, class_=AsyncSession)\n\n@pytest.fixture\ndef test_settings() -> Settings:\n    return Settings(\n        database_url=TEST_DATABASE_URL,\n        secret_key=\"test-secret-key\"\n    )\n\n@pytest.fixture\nasync def db_session() -> AsyncSession:\n    async with TestSessionLocal() as session:\n        yield session\n        await session.rollback()\n\n@pytest.fixture\ndef client(db_session: AsyncSession) -> TestClient:\n    def override_get_db():\n        yield db_session\n    \n    app.dependency_overrides[get_db] = override_get_db\n    yield TestClient(app)\n    app.dependency_overrides.clear()\n\n# {directories.tests}/test_users.py\nimport pytest\nfrom fastapi import status\n\ndef test_create_user(client: TestClient):\n    response = client.post(\n        \"/api/v1/users/\",\n        json={\"email\": \"test@example.com\", \"password\": \"testpass123\"}\n    )\n    assert response.status_code == status.HTTP_201_CREATED\n    data = response.json()\n    assert data[\"email\"] == \"test@example.com\"\n    assert \"id\" in data\n\ndef test_get_user_not_found(client: TestClient):\n    response = client.get(\"/api/v1/users/999\")\n    assert response.status_code == status.HTTP_404_NOT_FOUND\n\n@pytest.mark.asyncio\nasync def test_user_service_create(db_session: AsyncSession):\n    from src.domains.users.service import UserService\n    from src.domains.users.schemas import UserCreate\n    \n    service = UserService(db_session)\n    user_data = UserCreate(email=\"test@example.com\", password=\"testpass123\")\n    user = await service.create_user(user_data)\n    \n    assert user.email == \"test@example.com\"\n    assert user.id is not None",
+      "best_practices": [
+        "Use TestClient for integration tests",
+        "Override dependencies for testing",
+        "Use async fixtures for async tests",
+        "Clean up test data",
+        "Test both success and error cases"
+      ]
+    }
+  },
+  "best_practices": [
+    "Organize by domain/feature, not technical layers",
+    "Keep routers thin - delegate to service layer",
+    "Use dependency injection for all external resources",
+    "Separate models, schemas, and DTOs",
+    "Use Pydantic models for request/response validation in FastAPI",
+    "Keep business logic in service layer, not in routers",
+    "Use APIRouter for grouping related endpoints",
+    "Maintain clear separation between domain, application, and interface layers",
+    "Use async for I/O-bound operations (DB, HTTP)",
+    "Avoid async for CPU-bound tasks",
+    "Use async context managers for resources",
+    "Handle exceptions in async code properly",
+    "Use asyncpg or aiosqlite for async database operations",
+    "Never mix sync and async database drivers",
+    "Use asyncio.gather() for parallel async operations",
+    "Always await async functions - never call without await",
+    "Use Pydantic models for request/response validation",
+    "Validate at the boundary (routers)",
+    "Use Field() for complex validation",
+    "Provide clear error messages",
+    "Use Pydantic validators for custom validation logic",
+    "Validate email addresses with EmailStr from pydantic",
+    "Use conint, confloat for numeric constraints",
+    "Leverage Pydantic's model_validator for cross-field validation",
+    "Never store plain passwords",
+    "Use HTTPS in production",
+    "Validate and sanitize all inputs",
+    "Use dependency injection for auth checks",
+    "Implement rate limiting",
+    "Use environment variables for secrets",
+    "Never run containers as root in production",
+    "Use password hashing libraries like passlib with bcrypt",
+    "Implement CORS properly with specific origins",
+    "Use dependency injection for authentication/authorization checks",
+    "Use async database operations",
+    "Implement connection pooling",
+    "Use response models to limit data",
+    "Consider caching for expensive operations",
+    "Use background tasks for long operations",
+    "Use response_model_exclude_unset=True to reduce payload size",
+    "Implement database query optimization with proper indexes",
+    "Use connection pooling with appropriate pool sizes"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Business Logic in Routers",
+      "problem": "Hard to test, violates separation of concerns, makes code harder to reuse",
+      "fix": "Move logic to service layer, keep routers thin - routers should only handle HTTP concerns"
+    },
+    {
+      "name": "Synchronous Database in Async Routes",
+      "problem": "Blocks event loop, poor performance, defeats purpose of async",
+      "fix": "Use async database drivers (asyncpg, aiosqlite) and async SQLAlchemy sessions"
+    },
+    {
+      "name": "Global State Variables",
+      "problem": "Hard to test, tight coupling, makes dependency tracking impossible",
+      "fix": "Use dependency injection with FastAPI's Depends() system"
+    },
+    {
+      "name": "Ignoring Exception Handling",
+      "problem": "Unclear error messages, potential security issues, poor user experience",
+      "fix": "Use exception handlers, validate inputs, return appropriate HTTP status codes"
+    },
+    {
+      "name": "Mixing Sync and Async Code",
+      "problem": "Blocks event loop, negates async benefits",
+      "fix": "Use asyncio.to_thread() for CPU-bound tasks or make everything async"
+    },
+    {
+      "name": "Skipping Request Validation",
+      "problem": "Security vulnerabilities, runtime errors, unclear API contracts",
+      "fix": "Always use Pydantic models for request/response validation"
+    },
+    {
+      "name": "Direct Database Access in Routers",
+      "problem": "Bypasses business logic, hard to test, violates layered architecture",
+      "fix": "Access database through service layer, use dependency injection for repositories"
+    }
+  ]
+}

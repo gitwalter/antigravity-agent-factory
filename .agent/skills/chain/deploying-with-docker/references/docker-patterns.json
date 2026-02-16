@@ -1,0 +1,338 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "docker-patterns",
+  "name": "Docker Patterns",
+  "title": "Docker Deployment Patterns",
+  "description": "Best practices and patterns for Docker containerization and deployment",
+  "version": "1.0.0",
+  "category": "integration",
+  "axiomAlignment": {
+    "A1_verifiability": "Dockerfiles enable reproducible builds",
+    "A2_user_primacy": "Container patterns serve deployment and developer workflows",
+    "A3_transparency": "Clear Dockerfile structure makes dependencies explicit",
+    "A4_non_harm": "Distroless images and non-root execution reduce attack surface",
+    "A5_consistency": "Unified Docker patterns across build, runtime, and deployment"
+  },
+  "related_skills": [
+    "docker-deployment",
+    "java-containerization",
+    "ml-deployment",
+    "kubernetes-deployment",
+    "ci-monitor"
+  ],
+  "related_knowledge": [
+    "kubernetes-patterns.json",
+    "kubernetes-deployment-patterns.json",
+    "cicd-patterns.json"
+  ],
+  "multi_stage_builds": {
+    "description": "Use multi-stage builds to reduce image size",
+    "benefits": [
+      "Smaller final images",
+      "Separate build and runtime dependencies",
+      "Better security (fewer packages)",
+      "Faster deployments"
+    ],
+    "pattern": {
+      "build_stage": "Install build tools and compile",
+      "runtime_stage": "Copy only runtime artifacts",
+      "code_example": "FROM node:18 AS builder\nWORKDIR /app\nCOPY package*.json .\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM node:18-alpine\nWORKDIR /app\nCOPY --from=builder /app/dist ./dist\nCOPY --from=builder /app/node_modules ./node_modules\nCMD [\"node\", \"dist/index.js\"]",
+      "description": "Use multi-stage builds to reduce image size",
+      "use_when": "CI/CD pipelines, container orchestration, or deployment automation",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
+      ]
+    },
+    "use_when": "CI/CD pipelines, container orchestration, or deployment automation",
+    "code_example": "FROM node:18 AS builder\nWORKDIR /app\nCOPY package*.json .\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM node:18-alpine\nWORKDIR /app\nCOPY --from=builder /app/dist ./dist\nCOPY --from=builder /app/node_modules ./node_modules\nCMD [\"node\", \"dist/index.js\"]",
+    "best_practices": [
+      "Validate inputs and handle errors appropriately",
+      "Document the pattern and when to use it"
+    ]
+  },
+  "layer_caching": {
+    "description": "Optimize Dockerfile for layer caching",
+    "best_practices": [
+      "Copy dependency files before source code",
+      "Install dependencies in separate layer",
+      "Order instructions from least to most frequently changing",
+      "Use .dockerignore to exclude files"
+    ],
+    "example": {
+      "bad": "COPY . .\nRUN npm install",
+      "good": "COPY package*.json .\nRUN npm install\nCOPY . ."
+    },
+    "use_when": "CI/CD pipelines, container orchestration, or deployment automation",
+    "code_example": "COPY package*.json .\nRUN npm install\nCOPY . ."
+  },
+  "security_scanning": {
+    "description": "Scan images for vulnerabilities",
+    "tools": [
+      "Trivy",
+      "Snyk",
+      "Docker Scout",
+      "Clair"
+    ],
+    "best_practices": [
+      "Scan images in CI/CD",
+      "Use minimal base images",
+      "Keep images updated",
+      "Run as non-root user",
+      "Use distroless images when possible"
+    ],
+    "use_when": "CI/CD pipelines, container orchestration, or deployment automation",
+    "code_example": "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: app-config\ndata:\n  key: value"
+  },
+  "health_checks": {
+    "description": "Implement health checks for containers",
+    "dockerfile": "HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:8000/health || exit 1",
+    "docker_compose": "healthcheck:\n  test: [\"CMD\", \"curl\", \"-f\", \"http://localhost:8000/health\"]\n  interval: 30s\n  timeout: 3s\n  retries: 3",
+    "best_practices": [
+      "Check application health, not just process",
+      "Set appropriate intervals",
+      "Configure timeouts",
+      "Handle startup period"
+    ],
+    "use_when": "CI/CD pipelines, container orchestration, or deployment automation",
+    "code_example": "HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:8000/health || exit 1"
+  },
+  "networking": {
+    "description": "Docker networking patterns",
+    "network_types": {
+      "bridge": "Default network for containers",
+      "host": "Share host network",
+      "overlay": "Multi-host networking",
+      "macvlan": "Assign MAC addresses"
+    },
+    "docker_compose_networks": "networks:\n  app-network:\n    driver: bridge",
+    "best_practices": [
+      "Use custom networks for isolation",
+      "Use service names for DNS",
+      "Configure network policies",
+      "Use overlay networks for swarm"
+    ],
+    "use_when": "CI/CD pipelines, container orchestration, or deployment automation",
+    "code_example": "FROM node:18-alpine\nWORKDIR /app\nCOPY . .\nRUN npm ci\nCMD [\"node\", \"dist/index.js\"]"
+  },
+  "volumes": {
+    "description": "Volume management patterns",
+    "types": {
+      "named_volumes": "Persistent storage managed by Docker",
+      "bind_mounts": "Mount host directories",
+      "tmpfs": "In-memory storage"
+    },
+    "best_practices": [
+      "Use named volumes for data persistence",
+      "Use bind mounts only for development",
+      "Backup volumes regularly",
+      "Set appropriate volume permissions"
+    ],
+    "use_when": "CI/CD pipelines, container orchestration, or deployment automation",
+    "code_example": "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: app-config\ndata:\n  key: value"
+  },
+  "gpu_support": {
+    "description": "GPU support with NVIDIA Container Toolkit",
+    "requirements": [
+      "NVIDIA GPU",
+      "NVIDIA drivers",
+      "NVIDIA Container Toolkit",
+      "CUDA base images"
+    ],
+    "dockerfile": "FROM nvidia/cuda:11.8.0-runtime-ubuntu22.04",
+    "docker_compose": "deploy:\n  resources:\n    reservations:\n      devices:\n        - driver: nvidia\n          count: 1\n          capabilities: [gpu]",
+    "use_cases": [
+      "Machine learning training",
+      "GPU-accelerated inference",
+      "CUDA applications"
+    ],
+    "use_when": "Machine learning training, GPU-accelerated inference, CUDA applications",
+    "code_example": "FROM nvidia/cuda:11.8.0-runtime-ubuntu22.04",
+    "best_practices": [
+      "Validate inputs and handle errors appropriately",
+      "Document the pattern and when to use it"
+    ]
+  },
+  "ci_cd_integration": {
+    "description": "Docker in CI/CD pipelines",
+    "patterns": {
+      "build_and_push": "Build image and push to registry",
+      "cache_layers": "Use BuildKit cache",
+      "multi_arch": "Build for multiple architectures",
+      "security_scan": "Scan images before deployment"
+    },
+    "github_actions_example": "name: Build and Push\nuses: docker/build-push-action@v4\nwith:\n  context: .\n  push: true\n  tags: myapp:latest\n  cache-from: type=registry,ref=myapp:buildcache\n  cache-to: type=registry,ref=myapp:buildcache",
+    "use_when": "CI/CD pipelines, container orchestration, or deployment automation",
+    "code_example": "FROM node:18-alpine\nWORKDIR /app\nCOPY . .\nRUN npm ci\nCMD [\"node\", \"dist/index.js\"]",
+    "best_practices": [
+      "Validate inputs and handle errors appropriately",
+      "Document the pattern and when to use it"
+    ]
+  },
+  "distroless_images": {
+    "description": "Use distroless images for security",
+    "benefits": [
+      "Minimal attack surface",
+      "No shell or package manager",
+      "Smaller images",
+      "Better security"
+    ],
+    "languages": {
+      "python": "gcr.io/distroless/python3-debian11",
+      "node": "gcr.io/distroless/nodejs18-debian11",
+      "java": "gcr.io/distroless/java17-debian11"
+    },
+    "limitations": [
+      "No shell for debugging",
+      "Limited debugging tools",
+      "Requires statically linked binaries"
+    ],
+    "use_when": "CI/CD pipelines, container orchestration, or deployment automation",
+    "code_example": "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: app-config\ndata:\n  key: value",
+    "best_practices": [
+      "Validate inputs and handle errors appropriately",
+      "Document the pattern and when to use it"
+    ]
+  },
+  "multi_platform_builds": {
+    "description": "Build images for multiple platforms",
+    "use_cases": [
+      "ARM64 servers",
+      "Apple Silicon",
+      "Heterogeneous clusters"
+    ],
+    "buildx_example": "docker buildx build --platform linux/amd64,linux/arm64 -t myapp:latest .",
+    "docker_compose": "services:\n  app:\n    platform: linux/amd64\n    build: .",
+    "use_when": "ARM64 servers, Apple Silicon, Heterogeneous clusters",
+    "code_example": "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: app-config\ndata:\n  key: value",
+    "best_practices": [
+      "Validate inputs and handle errors appropriately",
+      "Document the pattern and when to use it"
+    ]
+  },
+  "secrets_management": {
+    "description": "Manage secrets in Docker",
+    "docker_secrets": "docker secret create db_password ./secrets/password.txt",
+    "docker_compose_secrets": "services:\n  app:\n    secrets:\n      - db_password\nsecrets:\n  db_password:\n    file: ./secrets/password.txt",
+    "best_practices": [
+      "Never commit secrets",
+      "Use Docker secrets for Swarm",
+      "Use external secret managers",
+      "Rotate secrets regularly"
+    ],
+    "use_when": "CI/CD pipelines, container orchestration, or deployment automation",
+    "code_example": "FROM node:18-alpine\nWORKDIR /app\nCOPY . .\nRUN npm ci\nCMD [\"node\", \"dist/index.js\"]"
+  },
+  "resource_limits": {
+    "description": "Set resource limits for containers",
+    "docker_compose": "services:\n  app:\n    deploy:\n      resources:\n        limits:\n          cpus: '0.5'\n          memory: 512M\n        reservations:\n          cpus: '0.25'\n          memory: 256M",
+    "best_practices": [
+      "Set memory limits",
+      "Set CPU limits",
+      "Monitor resource usage",
+      "Adjust based on workload"
+    ],
+    "use_when": "CI/CD pipelines, container orchestration, or deployment automation",
+    "code_example": "FROM node:18-alpine\nWORKDIR /app\nCOPY . .\nRUN npm ci\nCMD [\"node\", \"dist/index.js\"]"
+  },
+  "dockerignore": {
+    "description": "Use .dockerignore to exclude files",
+    "example": ".git\n.gitignore\nREADME.md\n.env\nnode_modules\n*.log\n.DS_Store",
+    "benefits": [
+      "Faster builds",
+      "Smaller context",
+      "Exclude sensitive files",
+      "Better caching"
+    ],
+    "use_when": "CI/CD pipelines, container orchestration, or deployment automation",
+    "code_example": ".git\n.gitignore\nREADME.md\n.env\nnode_modules\n*.log\n.DS_Store",
+    "best_practices": [
+      "Validate inputs and handle errors appropriately",
+      "Document the pattern and when to use it"
+    ]
+  },
+  "patterns": {
+    "builder_pattern": {
+      "description": "Separate build and runtime stages",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# builder_pattern pattern for docker-patterns\n# Implement based on description: Separate build and runtime stages...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "sidecar_pattern": {
+      "description": "Additional containers for support services",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# sidecar_pattern pattern for docker-patterns\n# Implement based on description: Additional containers for support services...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "init_containers": {
+      "description": "Containers that run before main container",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# init_containers pattern for docker-patterns\n# Implement based on description: Containers that run before main container...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "docker_compose_override": {
+      "description": "Use override files for environment-specific configs",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# docker_compose_override pattern for docker-patterns\n# Implement based on description: Use override files for environment-specific config...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    }
+  },
+  "best_practices": [
+    "Use multi-stage builds",
+    "Optimize layer caching",
+    "Use .dockerignore",
+    "Run as non-root user",
+    "Use specific image tags",
+    "Scan images for vulnerabilities",
+    "Add health checks",
+    "Set resource limits",
+    "Use secrets management",
+    "Keep images minimal",
+    "Use distroless when possible",
+    "Document Dockerfiles",
+    "Test images before deployment",
+    "Use build cache",
+    "Monitor image sizes"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Running as Root",
+      "problem": "Security risk",
+      "fix": "Use non-root user"
+    },
+    {
+      "name": "Large Images",
+      "problem": "Slow deployments, security risk",
+      "fix": "Use multi-stage builds, minimal base images"
+    },
+    {
+      "name": "No Health Checks",
+      "problem": "Can't detect container health",
+      "fix": "Add HEALTHCHECK directive"
+    },
+    {
+      "name": "Secrets in Images",
+      "problem": "Security vulnerability",
+      "fix": "Use secrets management"
+    },
+    {
+      "name": "Copying Everything",
+      "problem": "Large build context",
+      "fix": "Use .dockerignore"
+    }
+  ],
+  "use_when": "CI/CD pipelines, container orchestration, or deployment automation",
+  "code_example": "FROM node:18-alpine\nWORKDIR /app\nCOPY . .\nRUN npm ci\nCMD [\"node\", \"dist/index.js\"]"
+}

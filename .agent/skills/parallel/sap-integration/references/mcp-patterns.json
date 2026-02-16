@@ -1,0 +1,295 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Model Context Protocol Patterns",
+  "description": "Best practices and patterns for building MCP servers and clients",
+  "version": "1.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "MCP enables traceable tool and resource interactions",
+    "A3_transparency": "Protocol makes agent capabilities explicit and discoverable"
+  },
+  "server_design_principles": {
+    "single_responsibility": {
+      "description": "Each server should have a focused purpose",
+      "use_when": "Designing new MCP servers",
+      "best_practices": [
+        "One server per domain or capability",
+        "Avoid mixing unrelated functionalities",
+        "Keep server scope manageable"
+      ],
+      "example": "A file system server vs a database server vs a web search server"
+    },
+    "stateless_design": {
+      "description": "Servers should be stateless when possible",
+      "use_when": "Designing server architecture",
+      "best_practices": [
+        "Store state in resources, not server memory",
+        "Use request IDs for tracking",
+        "Handle concurrent requests safely"
+      ],
+      "code_example": "# Good: Stateless server\nclass FileServer:\n    def handle_list_files(self, request):\n        # No server state, reads from filesystem\n        return list_files(request.path)\n\n# Bad: Stateful server\nclass FileServer:\n    def __init__(self):\n        self.cache = {}  # Server state\n    def handle_list_files(self, request):\n        # Relies on server state\n        return self.cache.get(request.path)"
+    },
+    "error_handling": {
+      "description": "Comprehensive error handling",
+      "use_when": "Implementing server methods",
+      "code_example": "from mcp.server import Server\nfrom mcp.types import ErrorCode\n\nasync def handle_tool_call(name, arguments):\n    try:\n        if name == 'search':\n            return await perform_search(arguments)\n        else:\n            raise ValueError(f'Unknown tool: {name}')\n    except ValueError as e:\n        return {\n            'error': {\n                'code': ErrorCode.INVALID_REQUEST,\n                'message': str(e)\n            }\n        }\n    except Exception as e:\n        return {\n            'error': {\n                'code': ErrorCode.INTERNAL_ERROR,\n                'message': 'Internal server error'\n            }\n        }",
+      "best_practices": [
+        "Use appropriate error codes",
+        "Provide helpful error messages",
+        "Log errors for debugging",
+        "Don't expose internal details"
+      ]
+    }
+  },
+  "tool_definition_patterns": {
+    "basic_tool": {
+      "description": "Define a tool with name, description, and input schema",
+      "use_when": "Creating tools for agents",
+      "code_example": "from mcp.server import Server\nfrom mcp.types import Tool\nfrom pydantic import BaseModel, Field\nfrom typing import Literal\n\nclass SearchInput(BaseModel):\n    query: str = Field(description='Search query')\n    max_results: int = Field(default=10, ge=1, le=100, description='Maximum results')\n    filter: Literal['all', 'recent', 'popular'] = Field(default='all', description='Result filter')\n\nsearch_tool = Tool(\n    name='search',\n    description='Search for information in the knowledge base',\n    inputSchema={\n        'type': 'object',\n        'properties': {\n            'query': {'type': 'string', 'description': 'Search query'},\n            'max_results': {'type': 'integer', 'minimum': 1, 'maximum': 100},\n            'filter': {'type': 'string', 'enum': ['all', 'recent', 'popular']}\n        },\n        'required': ['query']\n    }\n)",
+      "best_practices": [
+        "Use descriptive names",
+        "Write clear descriptions",
+        "Define comprehensive input schemas",
+        "Use JSON Schema validation",
+        "Include field descriptions"
+      ]
+    },
+    "async_tool": {
+      "description": "Asynchronous tool implementation",
+      "use_when": "Tool performs I/O operations",
+      "code_example": "import asyncio\nfrom mcp.server import Server\n\nserver = Server('my-server')\n\n@server.list_tools()\nasync def list_tools() -> list[Tool]:\n    return [search_tool]\n\n@server.call_tool()\nasync def call_tool(name: str, arguments: dict) -> list[dict]:\n    if name == 'search':\n        query = arguments.get('query')\n        max_results = arguments.get('max_results', 10)\n        \n        # Async operation\n        results = await async_search(query, max_results)\n        \n        return [{\n            'content': [{\n                'type': 'text',\n                'text': json.dumps(results, indent=2)\n            }]\n        }]",
+      "best_practices": [
+        "Use async for I/O-bound operations",
+        "Handle timeouts appropriately",
+        "Return structured responses",
+        "Use proper error handling"
+      ]
+    },
+    "tool_with_validation": {
+      "description": "Tool with input validation",
+      "use_when": "Need to validate tool inputs",
+      "code_example": "from pydantic import BaseModel, Field, validator\n\nclass CreateFileInput(BaseModel):\n    path: str = Field(description='File path')\n    content: str = Field(description='File content')\n    \n    @validator('path')\n    def validate_path(cls, v):\n        if '..' in v or v.startswith('/'):\n            raise ValueError('Invalid path')\n        return v\n\n@server.call_tool()\nasync def call_tool(name: str, arguments: dict):\n    if name == 'create_file':\n        try:\n            input_data = CreateFileInput(**arguments)\n            # Use validated input\n            return await create_file(input_data.path, input_data.content)\n        except ValidationError as e:\n            return {'error': {'message': str(e)}}",
+      "best_practices": [
+        "Validate all inputs",
+        "Use Pydantic for validation",
+        "Return clear validation errors",
+        "Sanitize inputs for security"
+      ]
+    }
+  },
+  "resource_patterns": {
+    "basic_resource": {
+      "description": "Define resources that agents can access",
+      "use_when": "Need to expose data or files",
+      "code_example": "from mcp.types import Resource\n\n@server.list_resources()\nasync def list_resources() -> list[Resource]:\n    return [\n        Resource(\n            uri='file:///documents/README.md',\n            name='README',\n            description='Project README file',\n            mimeType='text/markdown'\n        ),\n        Resource(\n            uri='file:///documents/config.json',\n            name='Configuration',\n            description='Application configuration',\n            mimeType='application/json'\n        )\n    ]",
+      "best_practices": [
+        "Use descriptive URIs",
+        "Provide clear names and descriptions",
+        "Set appropriate MIME types",
+        "Organize resources logically"
+      ]
+    },
+    "dynamic_resources": {
+      "description": "Resources that change at runtime",
+      "use_when": "Resources are created dynamically",
+      "code_example": "@server.list_resources()\nasync def list_resources() -> list[Resource]:\n    resources = []\n    \n    # List files dynamically\n    for file_path in await list_files():\n        resources.append(\n            Resource(\n                uri=f'file://{file_path}',\n                name=os.path.basename(file_path),\n                description=f'File: {file_path}',\n                mimeType=get_mime_type(file_path)\n            )\n        )\n    \n    return resources",
+      "best_practices": [
+        "Cache resource lists when appropriate",
+        "Handle resource listing errors",
+        "Update resource metadata",
+        "Consider pagination for large lists"
+      ]
+    },
+    "resource_reading": {
+      "description": "Read resource content",
+      "use_when": "Agent needs to access resource data",
+      "code_example": "@server.read_resource()\nasync def read_resource(uri: str) -> str:\n    if uri.startswith('file://'):\n        file_path = uri.replace('file://', '')\n        \n        # Security check\n        if not is_safe_path(file_path):\n            raise ValueError('Invalid file path')\n        \n        # Read file\n        with open(file_path, 'r', encoding='utf-8') as f:\n            return f.read()\n    \n    elif uri.startswith('db://'):\n        # Read from database\n        record_id = uri.replace('db://', '')\n        return await read_database_record(record_id)\n    \n    else:\n        raise ValueError(f'Unknown resource URI: {uri}')",
+      "best_practices": [
+        "Validate URI format",
+        "Implement security checks",
+        "Handle missing resources",
+        "Return appropriate content types"
+      ]
+    }
+  },
+  "gateway_architecture": {
+    "description": "MCP gateway patterns for routing and aggregation",
+    "gateway_server": {
+      "description": "Gateway that routes to multiple servers",
+      "use_when": "Need to aggregate multiple MCP servers",
+      "code_example": "from mcp.server import Server\nfrom mcp.client import Client\n\nclass GatewayServer:\n    def __init__(self):\n        self.servers = {\n            'files': Client('file-server'),\n            'database': Client('db-server'),\n            'search': Client('search-server')\n        }\n    \n    async def route_tool(self, name: str, arguments: dict):\n        # Route based on tool name prefix\n        if name.startswith('file_'):\n            return await self.servers['files'].call_tool(name, arguments)\n        elif name.startswith('db_'):\n            return await self.servers['database'].call_tool(name, arguments)\n        elif name.startswith('search_'):\n            return await self.servers['search'].call_tool(name, arguments)\n        else:\n            raise ValueError(f'Unknown tool: {name}')",
+      "best_practices": [
+        "Use consistent naming conventions",
+        "Handle routing errors",
+        "Aggregate results appropriately",
+        "Monitor gateway performance"
+      ]
+    },
+    "load_balancing": {
+      "description": "Distribute load across multiple server instances",
+      "use_when": "High traffic or redundancy needed",
+      "code_example": "class LoadBalancedGateway:\n    def __init__(self):\n        self.servers = [\n            Client('server-1'),\n            Client('server-2'),\n            Client('server-3')\n        ]\n        self.current = 0\n    \n    def get_server(self):\n        # Round-robin selection\n        server = self.servers[self.current]\n        self.current = (self.current + 1) % len(self.servers)\n        return server",
+      "best_practices": [
+        "Implement health checks",
+        "Handle server failures",
+        "Consider weighted routing",
+        "Monitor server performance"
+      ]
+    }
+  },
+  "security_patterns": {
+    "authentication": {
+      "description": "Authenticate MCP server access",
+      "use_when": "Server handles sensitive data",
+      "code_example": "from mcp.server import Server\nimport jwt\n\nclass AuthenticatedServer:\n    def __init__(self, secret_key: str):\n        self.secret_key = secret_key\n        self.server = Server('secure-server')\n    \n    def verify_token(self, token: str) -> dict:\n        try:\n            payload = jwt.decode(token, self.secret_key, algorithms=['HS256'])\n            return payload\n        except jwt.InvalidTokenError:\n            raise ValueError('Invalid token')\n    \n    @server.call_tool()\n    async def call_tool(name: str, arguments: dict, token: str = None):\n        if not token:\n            raise ValueError('Authentication required')\n        \n        user = self.verify_token(token)\n        \n        # Check permissions\n        if not self.has_permission(user, name):\n            raise ValueError('Permission denied')\n        \n        return await self.execute_tool(name, arguments)",
+      "best_practices": [
+        "Use JWT or similar tokens",
+        "Validate tokens on every request",
+        "Implement permission checks",
+        "Log authentication events"
+      ]
+    },
+    "input_sanitization": {
+      "description": "Sanitize all inputs",
+      "use_when": "Handling user-provided data",
+      "code_example": "import re\n\ndef sanitize_path(path: str) -> str:\n    # Remove path traversal attempts\n    path = path.replace('..', '')\n    path = path.replace('//', '/')\n    \n    # Remove dangerous characters\n    path = re.sub(r'[^a-zA-Z0-9/._-]', '', path)\n    \n    return path\n\n@server.call_tool()\nasync def call_tool(name: str, arguments: dict):\n    if name == 'read_file':\n        file_path = sanitize_path(arguments.get('path', ''))\n        \n        # Additional validation\n        if not file_path or file_path.startswith('/'):\n            raise ValueError('Invalid file path')\n        \n        return await read_file(file_path)",
+      "best_practices": [
+        "Validate all inputs",
+        "Sanitize file paths",
+        "Prevent path traversal",
+        "Use allowlists when possible"
+      ]
+    },
+    "rate_limiting": {
+      "description": "Limit request rate",
+      "use_when": "Prevent abuse",
+      "code_example": "from collections import defaultdict\nfrom datetime import datetime, timedelta\n\nclass RateLimiter:\n    def __init__(self, max_requests: int, window_seconds: int):\n        self.max_requests = max_requests\n        self.window_seconds = window_seconds\n        self.requests = defaultdict(list)\n    \n    def check_rate_limit(self, client_id: str) -> bool:\n        now = datetime.now()\n        window_start = now - timedelta(seconds=self.window_seconds)\n        \n        # Clean old requests\n        self.requests[client_id] = [\n            req_time for req_time in self.requests[client_id]\n            if req_time > window_start\n        ]\n        \n        if len(self.requests[client_id]) >= self.max_requests:\n            return False\n        \n        self.requests[client_id].append(now)\n        return True",
+      "best_practices": [
+        "Set appropriate limits",
+        "Use sliding window",
+        "Return clear error messages",
+        "Log rate limit violations"
+      ]
+    }
+  },
+  "transport_patterns": {
+    "stdio_transport": {
+      "description": "Use stdio for server communication",
+      "use_when": "Local server or simple setup",
+      "code_example": "from mcp.server.stdio import stdio_server\nimport asyncio\n\nasync def main():\n    server = Server('my-server')\n    \n    # Register handlers\n    @server.list_tools()\n    async def list_tools():\n        return [search_tool]\n    \n    async with stdio_server() as (read_stream, write_stream):\n        await server.run(\n            read_stream,\n            write_stream,\n            server.create_initialization_options()\n        )\n\nif __name__ == '__main__':\n    asyncio.run(main())",
+      "best_practices": [
+        "Use for local servers",
+        "Handle stdio errors",
+        "Implement proper logging"
+      ]
+    },
+    "http_transport": {
+      "description": "Use HTTP for server communication",
+      "use_when": "Remote server or web integration",
+      "code_example": "from mcp.server.fastapi import create_app\nfrom fastapi import FastAPI\n\nserver = Server('my-server')\n\n# Register handlers\n@server.list_tools()\nasync def list_tools():\n    return [search_tool]\n\napp = create_app(server)\n\nif __name__ == '__main__':\n    import uvicorn\n    uvicorn.run(app, host='0.0.0.0', port=8000)",
+      "best_practices": [
+        "Use HTTPS in production",
+        "Implement CORS properly",
+        "Add authentication",
+        "Handle errors gracefully"
+      ]
+    },
+    "sse_transport": {
+      "description": "Use Server-Sent Events for streaming",
+      "use_when": "Need real-time updates",
+      "code_example": "from mcp.server.sse import sse_server\n\nasync def main():\n    server = Server('my-server')\n    \n    async with sse_server(port=8000) as server_instance:\n        await server_instance.run()",
+      "best_practices": [
+        "Handle connection drops",
+        "Implement reconnection logic",
+        "Use for long-running operations"
+      ]
+    }
+  },
+  "error_handling_patterns": {
+    "error_codes": {
+      "description": "Use standard error codes",
+      "code_example": "from mcp.types import ErrorCode\n\nasync def handle_tool_call(name: str, arguments: dict):\n    try:\n        if name not in available_tools:\n            return {\n                'error': {\n                    'code': ErrorCode.METHOD_NOT_FOUND,\n                    'message': f'Tool {name} not found'\n                }\n            }\n        \n        if not validate_arguments(name, arguments):\n            return {\n                'error': {\n                    'code': ErrorCode.INVALID_PARAMS,\n                    'message': 'Invalid arguments'\n                }\n            }\n        \n        return await execute_tool(name, arguments)\n    \n    except PermissionError:\n        return {\n            'error': {\n                'code': ErrorCode.INTERNAL_ERROR,\n                'message': 'Permission denied'\n            }\n        }",
+      "best_practices": [
+        "Use appropriate error codes",
+        "Provide helpful messages",
+        "Log errors for debugging",
+        "Don't expose internal details"
+      ]
+    },
+    "retry_logic": {
+      "description": "Implement retry for transient failures",
+      "code_example": "from tenacity import retry, stop_after_attempt, wait_exponential\n\n@retry(\n    stop=stop_after_attempt(3),\n    wait=wait_exponential(multiplier=1, min=4, max=10)\n)\nasync def call_tool_with_retry(name: str, arguments: dict):\n    try:\n        return await call_tool(name, arguments)\n    except TransientError as e:\n        # Retry will be handled by decorator\n        raise",
+      "best_practices": [
+        "Use exponential backoff",
+        "Set maximum retry attempts",
+        "Distinguish transient vs permanent errors",
+        "Log retry attempts"
+      ]
+    }
+  },
+  "best_practices": [
+    "Follow single responsibility principle",
+    "Keep servers stateless when possible",
+    "Implement comprehensive error handling",
+    "Use proper logging",
+    "Write clear tool descriptions",
+    "Define comprehensive input schemas",
+    "Validate all inputs",
+    "Return structured outputs",
+    "Authenticate all requests",
+    "Sanitize all inputs",
+    "Implement rate limiting",
+    "Use HTTPS in production",
+    "Use async for I/O operations",
+    "Cache when appropriate",
+    "Monitor performance",
+    "Optimize hot paths"
+  ],
+  "anti_patterns": [
+    {
+      "name": "god_server",
+      "description": "Server that does everything",
+      "problem": "Hard to maintain and test",
+      "fix": "Split into focused servers"
+    },
+    {
+      "name": "no_error_handling",
+      "description": "Missing error handling",
+      "problem": "Unclear failures",
+      "fix": "Handle all error cases"
+    },
+    {
+      "name": "unsafe_inputs",
+      "description": "Not validating inputs",
+      "problem": "Security vulnerabilities",
+      "fix": "Validate and sanitize all inputs"
+    },
+    {
+      "name": "synchronous_io",
+      "description": "Blocking I/O operations",
+      "problem": "Poor performance",
+      "fix": "Use async/await for I/O"
+    }
+  ],
+  "id": "mcp-patterns",
+  "name": "Mcp Patterns",
+  "category": "patterns",
+  "patterns": {
+    "mcp-patterns-base": {
+      "name": "Base Mcp Patterns Pattern",
+      "description": "Standard pattern for Mcp Patterns",
+      "usage": "Use as a starting point for this category.",
+      "use_when": "When implementing mcp-patterns-base",
+      "code_example": "// Example for mcp-patterns-base",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
+    }
+  },
+  "related_skills": [
+    "onboarding-flow"
+  ],
+  "related_knowledge": [
+    "manifest.json"
+  ]
+}

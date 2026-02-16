@@ -1,0 +1,353 @@
+{
+  "id": "langsmith-prompts-patterns",
+  "name": "LangSmith Prompt Management Patterns",
+  "version": "1.0.0",
+  "category": "agent-development",
+  "description": "Patterns for managing prompts with LangSmith Hub including versioning, A/B testing, evaluation, and integration strategies",
+  "patterns": {
+    "hub_integration": {
+      "push_prompts": {
+        "description": "Push prompts to LangSmith Hub for version control",
+        "pattern": "Create prompt -> Push to Hub -> Get versioned prompt",
+        "example": "from langchain import hub\nfrom langchain_core.prompts import ChatPromptTemplate\n\nprompt = ChatPromptTemplate.from_messages([\n    ('system', 'You are a {role}. {instructions}'),\n    ('human', '{input}')\n])\n\nhub.push('my-org/agent-prompt', prompt, new_repo_is_public=False)",
+        "best_practices": [
+          "Use semantic versioning",
+          "Include clear descriptions",
+          "Tag prompts by use case",
+          "Set appropriate visibility"
+        ]
+      },
+      "pull_prompts": {
+        "description": "Pull prompts from Hub for use in chains",
+        "pattern": "Pull prompt from Hub -> Use in chain",
+        "example": "prompt = hub.pull('my-org/agent-prompt')\nprompt_v2 = hub.pull('my-org/agent-prompt:v2')\nchain = prompt | llm | parser",
+        "use_when": [
+          "Production deployments",
+          "Consistent prompt usage",
+          "Team collaboration"
+        ]
+      },
+      "prompt_organization": {
+        "description": "Organize prompts in Hub with naming conventions",
+        "structure": {
+          "agents": "prompts/agents/analyst-v1, researcher, etc.",
+          "tools": "prompts/tools/sql-generator, api-caller, etc.",
+          "evaluation": "prompts/evaluation/relevance-judge, quality-judge, etc."
+        },
+        "best_practices": [
+          "Use consistent naming",
+          "Group by domain",
+          "Separate dev and prod",
+          "Include version numbers"
+        ]
+      },
+      "description": "Pattern hub_integration for langsmith-prompts-patterns",
+      "use_when": "When implementing hub_integration",
+      "code_example": "// Example for hub_integration",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
+    },
+    "versioning_strategies": {
+      "semantic_versioning": {
+        "description": "Use semantic versioning for prompts (v1, v2, etc.)",
+        "pattern": "prompt-name:v1, prompt-name:v2, prompt-name:v3",
+        "best_practices": [
+          "Increment major version for breaking changes",
+          "Increment minor for additions",
+          "Use tags for variants"
+        ]
+      },
+      "version_comparison": {
+        "description": "Compare prompt versions before updating",
+        "pattern": "Pull current version -> Compare -> Push new version",
+        "example": "current = hub.pull('my-org/agent-prompt')\n# Compare with new prompt\nhub.push('my-org/agent-prompt', new_prompt)",
+        "use_when": [
+          "Updating production prompts",
+          "Tracking changes",
+          "Review processes"
+        ]
+      },
+      "environment_separation": {
+        "description": "Separate prompts for dev, staging, and production",
+        "pattern": "prompt-name-dev, prompt-name-staging, prompt-name-prod",
+        "best_practices": [
+          "Never share dev/prod prompts",
+          "Test in staging first",
+          "Use environment-specific naming"
+        ]
+      },
+      "branching_strategy": {
+        "description": "Use branches for experimental prompts",
+        "pattern": "main branch for stable -> feature branches for experiments",
+        "use_when": [
+          "Testing new approaches",
+          "Experimental features",
+          "Team collaboration"
+        ]
+      },
+      "description": "Pattern versioning_strategies for langsmith-prompts-patterns",
+      "use_when": "When implementing versioning_strategies",
+      "code_example": "// Example for versioning_strategies",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
+    },
+    "ab_testing": {
+      "variant_selection": {
+        "description": "Select prompt variants for A/B testing",
+        "pattern": "Randomly select variant -> Execute -> Log results",
+        "example": "import random\nfrom langsmith import traceable\n\n@traceable(tags=['ab-test'])\nasync def run_with_ab_test(input_data: dict, test_name: str = 'prompt_v1_vs_v2'):\n    variant = random.choice(['control', 'treatment'])\n    if variant == 'control':\n        prompt = hub.pull('my-org/agent-prompt:v1')\n    else:\n        prompt = hub.pull('my-org/agent-prompt:v2')\n    chain = prompt | llm | parser\n    result = await chain.ainvoke(input_data)\n    return {'result': result, 'variant': variant}",
+        "best_practices": [
+          "Use consistent test names",
+          "Tag runs for analysis",
+          "Ensure equal distribution",
+          "Track metrics per variant"
+        ]
+      },
+      "metrics_tracking": {
+        "description": "Track metrics for each variant",
+        "metrics": [
+          "Response quality",
+          "User satisfaction",
+          "Cost per request",
+          "Latency",
+          "Error rates"
+        ],
+        "use_when": [
+          "Comparing prompt versions",
+          "Optimizing prompts",
+          "Measuring improvements"
+        ]
+      },
+      "statistical_analysis": {
+        "description": "Analyze A/B test results statistically",
+        "best_practices": [
+          "Ensure sufficient sample size",
+          "Use appropriate statistical tests",
+          "Consider multiple metrics",
+          "Account for confounding factors"
+        ]
+      },
+      "description": "Pattern ab_testing for langsmith-prompts-patterns",
+      "use_when": "When implementing ab_testing",
+      "code_example": "// Example for ab_testing",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
+    },
+    "evaluation_patterns": {
+      "dataset_creation": {
+        "description": "Create evaluation datasets for prompt testing",
+        "pattern": "Create dataset -> Add examples -> Run evaluation",
+        "example": "from langsmith import Client\n\nclient = Client()\ndataset = client.create_dataset('prompt-eval')\nclient.create_example(\n    dataset_id=dataset.id,\n    inputs={'input': 'What is Python?'},\n    outputs={'expected': 'Python is a programming language...'}\n)",
+        "best_practices": [
+          "Include diverse examples",
+          "Cover edge cases",
+          "Include expected outputs",
+          "Regularly update dataset"
+        ]
+      },
+      "evaluator_functions": {
+        "description": "Define evaluators to measure prompt effectiveness",
+        "types": [
+          "Relevance evaluator",
+          "Quality evaluator",
+          "Correctness evaluator",
+          "Custom evaluators"
+        ],
+        "example": "def relevance_evaluator(run, example):\n    output = run.outputs.get('output', '')\n    expected = example.outputs.get('expected', '')\n    overlap = len(set(output.split()) & set(expected.split()))\n    return {'score': min(overlap / 10, 1.0)}",
+        "best_practices": [
+          "Use LLM-based evaluators for complex metrics",
+          "Combine multiple evaluators",
+          "Validate evaluator accuracy"
+        ]
+      },
+      "evaluation_execution": {
+        "description": "Run evaluations on prompt datasets",
+        "pattern": "Load dataset -> Run chain -> Evaluate -> Analyze results",
+        "example": "from langsmith.evaluation import evaluate\n\nresults = evaluate(\n    lambda x: chain.invoke(x),\n    data='prompt-eval',\n    evaluators=[relevance_evaluator]\n)",
+        "use_when": [
+          "Regression testing",
+          "Prompt optimization",
+          "Quality assurance"
+        ]
+      },
+      "continuous_evaluation": {
+        "description": "Continuously evaluate prompts in production",
+        "pattern": "Sample production runs -> Evaluate -> Alert on degradation",
+        "best_practices": [
+          "Sample representative requests",
+          "Set quality thresholds",
+          "Alert on degradation",
+          "Track trends over time"
+        ]
+      },
+      "description": "Pattern evaluation_patterns for langsmith-prompts-patterns",
+      "use_when": "When implementing evaluation_patterns",
+      "code_example": "// Example for evaluation_patterns",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
+    },
+    "prompt_templates": {
+      "variable_templates": {
+        "description": "Create reusable prompts with variables",
+        "pattern": "Define template with placeholders -> Partial application -> Use",
+        "example": "prompt = ChatPromptTemplate.from_messages([\n    ('system', 'You are a {role} assistant.\\n\\nContext: {context}\\n\\nInstructions: {instructions}'),\n    ('human', '{input}')\n])\n\nanalyst_prompt = prompt.partial(\n    role='data analyst',\n    output_format='JSON with analysis and confidence keys'\n)",
+        "use_when": [
+          "Reusable prompts",
+          "Role-specific variants",
+          "Context injection"
+        ]
+      },
+      "complex_templates": {
+        "description": "Build complex prompts with multiple components",
+        "components": [
+          "System messages",
+          "Context placeholders",
+          "History placeholders",
+          "Instructions",
+          "Output format specifications"
+        ],
+        "best_practices": [
+          "Use MessagesPlaceholder for history",
+          "Separate concerns clearly",
+          "Make templates composable"
+        ]
+      },
+      "description": "Pattern prompt_templates for langsmith-prompts-patterns",
+      "use_when": "When implementing prompt_templates",
+      "code_example": "// Example for prompt_templates",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
+    },
+    "integration_patterns": {
+      "chain_integration": {
+        "description": "Integrate Hub prompts into LangChain chains",
+        "pattern": "Pull prompt -> Combine with LLM -> Add parsers -> Create chain",
+        "example": "prompt = hub.pull('my-org/agent-prompt')\nchain = prompt | llm | StrOutputParser()",
+        "best_practices": [
+          "Keep chains modular",
+          "Use consistent patterns",
+          "Test chains independently"
+        ]
+      },
+      "tracing_integration": {
+        "description": "Use LangSmith tracing with Hub prompts",
+        "pattern": "Enable tracing -> Use Hub prompts -> View traces",
+        "benefits": [
+          "Debug prompt issues",
+          "Monitor performance",
+          "Analyze usage patterns"
+        ]
+      },
+      "production_deployment": {
+        "description": "Deploy Hub prompts to production",
+        "workflow": [
+          "Develop in dev environment",
+          "Test with evaluation dataset",
+          "A/B test in staging",
+          "Deploy to production",
+          "Monitor performance"
+        ],
+        "best_practices": [
+          "Version all production prompts",
+          "Keep dev/prod separate",
+          "Monitor for degradation",
+          "Have rollback plan"
+        ]
+      },
+      "description": "Pattern integration_patterns for langsmith-prompts-patterns",
+      "use_when": "When implementing integration_patterns",
+      "code_example": "// Example for integration_patterns",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
+    }
+  },
+  "best_practices": [
+    "Use semantic versioning for prompts (v1, v2, etc.)",
+    "Include clear descriptions when pushing prompts",
+    "Test prompts before deploying to production",
+    "Use evaluation datasets for regression testing",
+    "Tag prompts by use case and domain",
+    "Keep production and dev prompts separate",
+    "Use Hub for all prompts (avoid hardcoding)",
+    "Always version prompts",
+    "Create evaluation datasets",
+    "Run A/B tests before major changes",
+    "Monitor prompt performance in production",
+    "Use consistent naming conventions",
+    "Document prompt changes",
+    "Review prompts before production deployment",
+    "Have rollback strategy for prompt changes"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Hardcoded prompts",
+      "problem": "No version control, difficult to update",
+      "fix": "Use Hub for all prompts"
+    },
+    {
+      "name": "No versioning",
+      "problem": "Can't track changes or rollback",
+      "fix": "Always version prompts"
+    },
+    {
+      "name": "No testing",
+      "problem": "Prompts may degrade in production",
+      "fix": "Create evaluation datasets"
+    },
+    {
+      "name": "Shared dev/prod",
+      "problem": "Breaking changes affect production",
+      "fix": "Separate environments"
+    },
+    {
+      "name": "No evaluation",
+      "problem": "Can't measure prompt effectiveness",
+      "fix": "Create and run evaluations"
+    },
+    {
+      "name": "No A/B testing",
+      "problem": "Can't compare prompt variants",
+      "fix": "Run A/B tests before major changes"
+    },
+    {
+      "name": "No monitoring",
+      "problem": "Prompt degradation goes unnoticed",
+      "fix": "Monitor prompt performance"
+    },
+    {
+      "name": "Inconsistent naming",
+      "problem": "Hard to find and manage prompts",
+      "fix": "Use consistent naming conventions"
+    }
+  ],
+  "related_skills": [
+    "langsmith-prompts",
+    "langsmith-tracing",
+    "langchain-usage",
+    "prompt-engineering"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Langsmith-prompts-patterns Knowledge",
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns are verified through automated testing.",
+    "A2_user_primacy": "The user maintains control over all generated output.",
+    "A3_transparency": "All automated actions are logged and verifiable.",
+    "A4_non_harm": "Strict safety checks prevent destructive operations.",
+    "A5_consistency": "Uniform patterns ensure predictable system behavior."
+  },
+  "related_knowledge": [
+    "manifest.json"
+  ]
+}

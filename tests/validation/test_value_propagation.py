@@ -682,8 +682,11 @@ class TestGenerationScriptValidation:
         # Check for enabled check pattern
         assert "pmIntegration" in content and (
             ".get('enabled'" in content
+            or '.get("enabled"' in content
             or "['enabled']" in content
+            or '["enabled"]' in content
             or ".get('pmIntegration'" in content
+            or '.get("pmIntegration"' in content
         ), "generate_project.py does not check pmIntegration.enabled"
 
     def test_generate_project_adds_standard_agents(self, factory_root):

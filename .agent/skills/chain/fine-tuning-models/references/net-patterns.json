@@ -1,0 +1,265 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "net-patterns",
+  "name": ".NET Patterns",
+  "title": ".NET Patterns",
+  "description": "Production-grade patterns for .NET 9 applications including Clean Architecture, CQRS, MediatR, and Minimal APIs",
+  "version": "1.0.0",
+  "category": "dotnet",
+  "axiomAlignment": {
+    "A1_verifiability": "Strong typing and compile-time checks enable verification",
+    "A2_user_primacy": "Patterns serve user goals with clear boundaries and validation",
+    "A3_transparency": "Explicit dependency injection makes dependencies clear",
+    "A4_non_harm": "Error handling and validation patterns prevent harmful outcomes",
+    "A5_consistency": "Unified patterns across .NET ecosystem"
+  },
+  "related_skills": [
+    "dotnet-backend",
+    "dotnet-auth",
+    "dotnet-microservices",
+    "ef-core-patterns"
+  ],
+  "related_knowledge": [
+    "dotnet-microservices-patterns.json",
+    "dotnet-auth-patterns.json",
+    "ef-core-advanced.json"
+  ],
+  "core_concepts": {
+    "clean_architecture": {
+      "description": "Layered architecture with dependency inversion",
+      "layers": [
+        "Domain (entities, value objects)",
+        "Application (use cases, DTOs)",
+        "Infrastructure (data access, external services)",
+        "Presentation (API, UI)"
+      ],
+      "benefits": [
+        "Testability",
+        "Independence from frameworks",
+        "Business logic isolation",
+        "Flexibility"
+      ],
+      "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+      "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
+      ]
+    },
+    "cqrs": {
+      "description": "Command Query Responsibility Segregation",
+      "use_when": "Complex domains with different read/write requirements",
+      "benefits": [
+        "Optimized read models",
+        "Scalability",
+        "Clear separation of concerns"
+      ],
+      "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
+      ]
+    },
+    "mediatr": {
+      "description": "MediatR for CQRS and mediator pattern",
+      "use_when": "Decoupling request handlers from controllers",
+      "benefits": [
+        "Reduced coupling",
+        "Pipeline behaviors",
+        "Request/response handling"
+      ],
+      "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
+      ]
+    },
+    "minimal_apis": {
+      "description": "Lightweight API endpoints without controllers",
+      "use_when": "Simple endpoints, microservices",
+      "benefits": [
+        "Less boilerplate",
+        "Better performance",
+        "Simpler code"
+      ],
+      "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);",
+      "best_practices": [
+        "Validate inputs and handle errors appropriately",
+        "Document the pattern and when to use it"
+      ]
+    }
+  },
+  "patterns": {
+    "clean_architecture_layers": {
+      "description": "Organize application using Clean Architecture",
+      "use_when": "Medium to large applications",
+      "structure": {
+        "example": "src/\n  Domain/\n    Entities/\n      User.cs\n    ValueObjects/\n      Email.cs\n    Interfaces/\n      IUserRepository.cs\n  Application/\n    Features/\n      Users/\n        Commands/\n          CreateUser.cs\n        Queries/\n          GetUserById.cs\n        DTOs/\n          UserDto.cs\n    Common/\n      Behaviors/\n        ValidationBehavior.cs\n  Infrastructure/\n    Data/\n      ApplicationDbContext.cs\n      Repositories/\n        UserRepository.cs\n    Services/\n      EmailService.cs\n  WebAPI/\n    Program.cs\n    Endpoints/\n      UserEndpoints.cs"
+      },
+      "code_example": "// Domain/Entities/User.cs\nnamespace Domain.Entities;\n\npublic class User\n{\n    public int Id { get; set; }\n    public string Email { get; set; } = string.Empty;\n    public string PasswordHash { get; set; } = string.Empty;\n    public string Name { get; set; } = string.Empty;\n    public bool IsActive { get; set; } = true;\n    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;\n}\n\n// Domain/Interfaces/IUserRepository.cs\nnamespace Domain.Interfaces;\n\npublic interface IUserRepository\n{\n    Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default);\n    Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);\n    Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken = default);\n    Task<User> CreateAsync(User user, CancellationToken cancellationToken = default);\n    Task UpdateAsync(User user, CancellationToken cancellationToken = default);\n}\n\n// Application/Features/Users/Commands/CreateUser.cs\nnamespace Application.Features.Users.Commands;\n\npublic record CreateUserCommand(string Email, string Password, string Name) : IRequest<Result<int>>;\n\npublic class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Result<int>>\n{\n    private readonly IUserRepository _userRepository;\n    private readonly IPasswordHasher _passwordHasher;\n    \n    public CreateUserCommandHandler(IUserRepository userRepository, IPasswordHasher passwordHasher)\n    {\n        _userRepository = userRepository;\n        _passwordHasher = passwordHasher;\n    }\n    \n    public async Task<Result<int>> Handle(CreateUserCommand request, CancellationToken cancellationToken)\n    {\n        if (await _userRepository.ExistsByEmailAsync(request.Email, cancellationToken))\n        {\n            return Result<int>.Failure(\"User with this email already exists\");\n        }\n        \n        var user = new User\n        {\n            Email = request.Email,\n            PasswordHash = _passwordHasher.HashPassword(request.Password),\n            Name = request.Name\n        };\n        \n        var createdUser = await _userRepository.CreateAsync(user, cancellationToken);\n        \n        return Result<int>.Success(createdUser.Id);\n    }\n}",
+      "best_practices": [
+        "Keep domain layer independent",
+        "Use interfaces for dependencies",
+        "Implement use cases in application layer",
+        "Keep presentation layer thin"
+      ]
+    },
+    "cqrs_mediatr": {
+      "description": "CQRS pattern with MediatR",
+      "use_when": "Complex domains, need for optimized reads",
+      "code_example": "// Application/Features/Users/Commands/CreateUser.cs\nusing MediatR;\n\npublic record CreateUserCommand(string Email, string Password, string Name) : IRequest<Result<int>>;\n\npublic class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Result<int>>\n{\n    private readonly IUserRepository _userRepository;\n    \n    public async Task<Result<int>> Handle(CreateUserCommand request, CancellationToken cancellationToken)\n    {\n        // Command handling logic\n        return Result<int>.Success(userId);\n    }\n}\n\n// Application/Features/Users/Queries/GetUserById.cs\npublic record GetUserByIdQuery(int Id) : IRequest<Result<UserDto>>;\n\npublic class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, Result<UserDto>>\n{\n    private readonly IUserRepository _userRepository;\n    private readonly IMapper _mapper;\n    \n    public async Task<Result<UserDto>> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)\n    {\n        var user = await _userRepository.GetByIdAsync(request.Id, cancellationToken);\n        \n        if (user == null)\n        {\n            return Result<UserDto>.Failure(\"User not found\");\n        }\n        \n        return Result<UserDto>.Success(_mapper.Map<UserDto>(user));\n    }\n}\n\n// WebAPI/Endpoints/UserEndpoints.cs\nusing MediatR;\n\npublic static class UserEndpoints\n{\n    public static void MapUserEndpoints(this IEndpointRouteBuilder app)\n    {\n        var group = app.MapGroup(\"/api/v1/users\").WithTags(\"Users\");\n        \n        group.MapPost(\"/\", async (CreateUserCommand command, IMediator mediator) =>\n        {\n            var result = await mediator.Send(command);\n            \n            return result.IsSuccess\n                ? Results.Created($\"/api/v1/users/{result.Value}\", result.Value)\n                : Results.BadRequest(result.Error);\n        });\n        \n        group.MapGet(\"/{id}\", async (int id, IMediator mediator) =>\n        {\n            var result = await mediator.Send(new GetUserByIdQuery(id));\n            \n            return result.IsSuccess\n                ? Results.Ok(result.Value)\n                : Results.NotFound(result.Error);\n        });\n    }\n}",
+      "best_practices": [
+        "Separate commands and queries",
+        "Use MediatR for decoupling",
+        "Implement pipeline behaviors for cross-cutting concerns",
+        "Use Result pattern for error handling"
+      ]
+    },
+    "minimal_apis": {
+      "description": "Minimal API endpoints",
+      "use_when": "Simple endpoints, microservices",
+      "code_example": "// WebAPI/Endpoints/UserEndpoints.cs\nusing MediatR;\n\npublic static class UserEndpoints\n{\n    public static void MapUserEndpoints(this IEndpointRouteBuilder app)\n    {\n        var group = app.MapGroup(\"/api/v1/users\")\n            .WithTags(\"Users\")\n            .WithOpenApi();\n        \n        group.MapPost(\"/\", CreateUser)\n            .WithName(\"CreateUser\")\n            .Produces<int>(StatusCodes.Status201Created)\n            .Produces(StatusCodes.Status400BadRequest);\n        \n        group.MapGet(\"/{id}\", GetUserById)\n            .WithName(\"GetUserById\")\n            .Produces<UserDto>(StatusCodes.Status200OK)\n            .Produces(StatusCodes.Status404NotFound);\n        \n        group.MapGet(\"/\", GetUsers)\n            .WithName(\"GetUsers\")\n            .Produces<PaginatedResult<UserDto>>(StatusCodes.Status200OK);\n    }\n    \n    private static async Task<IResult> CreateUser(\n        CreateUserCommand command,\n        IMediator mediator,\n        CancellationToken cancellationToken)\n    {\n        var result = await mediator.Send(command, cancellationToken);\n        \n        return result.IsSuccess\n            ? Results.Created($\"/api/v1/users/{result.Value}\", result.Value)\n            : Results.BadRequest(new { error = result.Error });\n    }\n    \n    private static async Task<IResult> GetUserById(\n        int id,\n        IMediator mediator,\n        CancellationToken cancellationToken)\n    {\n        var result = await mediator.Send(new GetUserByIdQuery(id), cancellationToken);\n        \n        return result.IsSuccess\n            ? Results.Ok(result.Value)\n            : Results.NotFound(new { error = result.Error });\n    }\n    \n    private static async Task<IResult> GetUsers(\n        int page = 1,\n        int pageSize = 10,\n        IMediator mediator = null!,\n        CancellationToken cancellationToken = default)\n    {\n        var query = new GetUsersQuery(page, pageSize);\n        var result = await mediator.Send(query, cancellationToken);\n        \n        return Results.Ok(result.Value);\n    }\n}\n\n// Program.cs\nvar builder = WebApplication.CreateBuilder(args);\n\nbuilder.Services.AddEndpointsApiExplorer();\nbuilder.Services.AddSwaggerGen();\nbuilder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));\n\nvar app = builder.Build();\n\napp.MapUserEndpoints();\n\napp.Run();",
+      "best_practices": [
+        "Group related endpoints",
+        "Use WithTags for Swagger",
+        "Define return types with Produces",
+        "Use dependency injection",
+        "Handle errors consistently"
+      ]
+    },
+    "health_checks": {
+      "description": "Health check endpoints",
+      "use_when": "Monitoring, load balancers, orchestration",
+      "code_example": "// Infrastructure/HealthChecks/DatabaseHealthCheck.cs\nusing Microsoft.Extensions.Diagnostics.HealthChecks;\n\npublic class DatabaseHealthCheck : IHealthCheck\n{\n    private readonly ApplicationDbContext _context;\n    \n    public DatabaseHealthCheck(ApplicationDbContext context)\n    {\n        _context = context;\n    }\n    \n    public async Task<HealthCheckResult> CheckHealthAsync(\n        HealthCheckContext context,\n        CancellationToken cancellationToken = default)\n    {\n        try\n        {\n            var canConnect = await _context.Database.CanConnectAsync(cancellationToken);\n            \n            return canConnect\n                ? HealthCheckResult.Healthy(\"Database is available\")\n                : HealthCheckResult.Unhealthy(\"Database is unavailable\");\n        }\n        catch (Exception ex)\n        {\n            return HealthCheckResult.Unhealthy(\"Database health check failed\", ex);\n        }\n    }\n}\n\n// Program.cs\nbuilder.Services.AddHealthChecks()\n    .AddCheck<DatabaseHealthCheck>(\"database\")\n    .AddCheck<ExternalApiHealthCheck>(\"external-api\");\n\napp.MapHealthChecks(\"/health\");\napp.MapHealthChecks(\"/health/ready\", new HealthCheckOptions\n{\n    Predicate = check => check.Tags.Contains(\"ready\")\n});\napp.MapHealthChecks(\"/health/live\", new HealthCheckOptions\n{\n    Predicate = _ => false\n});",
+      "best_practices": [
+        "Implement IHealthCheck interface",
+        "Check critical dependencies",
+        "Use tags for different health check types",
+        "Return appropriate status codes"
+      ]
+    },
+    "hangfire_background_jobs": {
+      "description": "Background job processing with Hangfire",
+      "use_when": "Long-running tasks, scheduled jobs, background processing",
+      "code_example": "// Program.cs\nbuilder.Services.AddHangfire(config =>\n    config.UseSqlServerStorage(connectionString));\nbuilder.Services.AddHangfireServer();\n\napp.UseHangfireDashboard();\n\n// Application/Services/EmailService.cs\npublic class EmailService\n{\n    private readonly IBackgroundJobClient _backgroundJobClient;\n    \n    public EmailService(IBackgroundJobClient backgroundJobClient)\n    {\n        _backgroundJobClient = backgroundJobClient;\n    }\n    \n    public void SendWelcomeEmail(string email)\n    {\n        _backgroundJobClient.Enqueue(() => SendEmailAsync(email, \"Welcome\", \"Welcome message\"));\n    }\n    \n    [AutomaticRetry(Attempts = 3)]\n    public async Task SendEmailAsync(string email, string subject, string body)\n    {\n        // Email sending logic\n    }\n}\n\n// Scheduled jobs\nRecurringJob.AddOrUpdate(\n    \"cleanup-job\",\n    () => CleanupService.CleanupOldRecords(),\n    Cron.Daily);\n\n// Delayed jobs\n_backgroundJobClient.Schedule(\n    () => ProcessOrderAsync(orderId),\n    TimeSpan.FromMinutes(5));",
+      "best_practices": [
+        "Use for fire-and-forget tasks",
+        "Implement retry policies",
+        "Use dashboard for monitoring",
+        "Handle job failures gracefully"
+      ]
+    },
+    "repository_pattern": {
+      "description": "Repository pattern for data access",
+      "use_when": "Data access abstraction",
+      "code_example": "// Infrastructure/Data/Repositories/UserRepository.cs\nnamespace Infrastructure.Data.Repositories;\n\npublic class UserRepository : IUserRepository\n{\n    private readonly ApplicationDbContext _context;\n    \n    public UserRepository(ApplicationDbContext context)\n    {\n        _context = context;\n    }\n    \n    public async Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default)\n    {\n        return await _context.Users\n            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);\n    }\n    \n    public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)\n    {\n        return await _context.Users\n            .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);\n    }\n    \n    public async Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken = default)\n    {\n        return await _context.Users\n            .AnyAsync(u => u.Email == email, cancellationToken);\n    }\n    \n    public async Task<User> CreateAsync(User user, CancellationToken cancellationToken = default)\n    {\n        _context.Users.Add(user);\n        await _context.SaveChangesAsync(cancellationToken);\n        return user;\n    }\n    \n    public async Task UpdateAsync(User user, CancellationToken cancellationToken = default)\n    {\n        _context.Users.Update(user);\n        await _context.SaveChangesAsync(cancellationToken);\n    }\n}\n\n// Program.cs\nbuilder.Services.AddScoped<IUserRepository, UserRepository>();",
+      "best_practices": [
+        "Use async methods",
+        "Pass CancellationToken",
+        "Return IQueryable for flexibility",
+        "Use UnitOfWork pattern for transactions"
+      ]
+    },
+    "result_pattern": {
+      "description": "Result pattern for error handling",
+      "use_when": "Functional error handling without exceptions",
+      "code_example": "// Application/Common/Result.cs\nnamespace Application.Common;\n\npublic class Result<T>\n{\n    public bool IsSuccess { get; private set; }\n    public bool IsFailure => !IsSuccess;\n    public T? Value { get; private set; }\n    public string? Error { get; private set; }\n    \n    private Result(bool isSuccess, T? value, string? error)\n    {\n        IsSuccess = isSuccess;\n        Value = value;\n        Error = error;\n    }\n    \n    public static Result<T> Success(T value) => new(true, value, null);\n    public static Result<T> Failure(string error) => new(false, default, error);\n}\n\npublic class Result\n{\n    public bool IsSuccess { get; private set; }\n    public bool IsFailure => !IsSuccess;\n    public string? Error { get; private set; }\n    \n    private Result(bool isSuccess, string? error)\n    {\n        IsSuccess = isSuccess;\n        Error = error;\n    }\n    \n    public static Result Success() => new(true, null);\n    public static Result Failure(string error) => new(false, error);\n}\n\n// Usage in handler\npublic async Task<Result<int>> Handle(CreateUserCommand request, CancellationToken cancellationToken)\n{\n    if (await _userRepository.ExistsByEmailAsync(request.Email, cancellationToken))\n    {\n        return Result<int>.Failure(\"User with this email already exists\");\n    }\n    \n    var user = new User { Email = request.Email };\n    var createdUser = await _userRepository.CreateAsync(user, cancellationToken);\n    \n    return Result<int>.Success(createdUser.Id);\n}",
+      "best_practices": [
+        "Use for expected errors",
+        "Keep error messages clear",
+        "Use exceptions for unexpected errors",
+        "Chain results for complex flows"
+      ]
+    },
+    "fluentvalidation": {
+      "description": "FluentValidation for input validation",
+      "use_when": "Complex validation rules",
+      "code_example": "// Application/Features/Users/Commands/CreateUserValidator.cs\nusing FluentValidation;\n\npublic class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>\n{\n    public CreateUserCommandValidator()\n    {\n        RuleFor(x => x.Email)\n            .NotEmpty().WithMessage(\"Email is required\")\n            .EmailAddress().WithMessage(\"Invalid email format\");\n        \n        RuleFor(x => x.Password)\n            .NotEmpty().WithMessage(\"Password is required\")\n            .MinimumLength(8).WithMessage(\"Password must be at least 8 characters\")\n            .Matches(@\"[A-Z]\").WithMessage(\"Password must contain at least one uppercase letter\")\n            .Matches(@\"[a-z]\").WithMessage(\"Password must contain at least one lowercase letter\")\n            .Matches(@\"[0-9]\").WithMessage(\"Password must contain at least one number\");\n        \n        RuleFor(x => x.Name)\n            .NotEmpty().WithMessage(\"Name is required\")\n            .MaximumLength(100).WithMessage(\"Name must not exceed 100 characters\");\n    }\n}\n\n// Application/Common/Behaviors/ValidationBehavior.cs\npublic class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>\n    where TRequest : IRequest<TResponse>\n{\n    private readonly IEnumerable<IValidator<TRequest>> _validators;\n    \n    public ValidationBehavior(IEnumerable<IValidator<TRequest>> validators)\n    {\n        _validators = validators;\n    }\n    \n    public async Task<TResponse> Handle(\n        TRequest request,\n        RequestHandlerDelegate<TResponse> next,\n        CancellationToken cancellationToken)\n    {\n        if (_validators.Any())\n        {\n            var context = new ValidationContext<TRequest>(request);\n            \n            var validationResults = await Task.WhenAll(\n                _validators.Select(v => v.ValidateAsync(context, cancellationToken)));\n            \n            var failures = validationResults\n                .Where(r => r.Errors.Any())\n                .SelectMany(r => r.Errors)\n                .ToList();\n            \n            if (failures.Any())\n            {\n                throw new ValidationException(failures);\n            }\n        }\n        \n        return await next();\n    }\n}\n\n// Program.cs\nbuilder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);\nbuilder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));",
+      "best_practices": [
+        "Create validators for each command/query",
+        "Use pipeline behaviors for automatic validation",
+        "Provide clear error messages",
+        "Test validators separately"
+      ]
+    }
+  },
+  "best_practices": [
+    "Follow Clean Architecture principles - domain, application, infrastructure, presentation layers",
+    "Keep domain layer independent - no framework dependencies",
+    "Use dependency inversion - depend on abstractions",
+    "Separate concerns clearly - single responsibility per class",
+    "Use CQRS pattern for complex domains",
+    "Implement MediatR for decoupled request handling",
+    "Use feature-based organization for application layer",
+    "Keep presentation layer thin - delegate to handlers",
+    "Use constructor injection - makes dependencies explicit",
+    "Register services with appropriate lifetime - Scoped, Singleton, Transient",
+    "Use interfaces for dependencies - enables testing and flexibility",
+    "Avoid service locator pattern - use constructor injection",
+    "Use IServiceCollection extension methods for organization",
+    "Register services in Program.cs or Startup.cs",
+    "Use IOptions pattern for configuration",
+    "Use Result pattern for expected errors - functional error handling",
+    "Use exceptions for unexpected errors - system-level issues",
+    "Implement global exception handlers - UseExceptionHandler middleware",
+    "Log errors appropriately - use ILogger with proper levels",
+    "Return appropriate HTTP status codes",
+    "Use FluentValidation for input validation",
+    "Handle cancellation tokens properly in async methods",
+    "Use async/await for I/O operations - never block async calls",
+    "Implement caching where appropriate - IMemoryCache, IDistributedCache",
+    "Use pagination for large datasets - avoid loading all data",
+    "Optimize database queries - use projections, avoid N+1",
+    "Use compiled queries for frequently executed queries",
+    "Implement response compression",
+    "Use connection pooling for database connections",
+    "Profile and measure before optimizing",
+    "Never store plain passwords - use IPasswordHasher",
+    "Use HTTPS in production - enforce TLS",
+    "Validate all inputs - use FluentValidation",
+    "Implement proper authentication/authorization - use ASP.NET Core Identity",
+    "Use environment variables for secrets - never hardcode",
+    "Use IConfiguration for configuration management",
+    "Implement CORS properly with specific origins",
+    "Use rate limiting for APIs"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Anemic Domain Model",
+      "problem": "Business logic scattered across services, hard to maintain, violates DDD",
+      "fix": "Put business logic in domain models where appropriate, use rich domain models"
+    },
+    {
+      "name": "God Class",
+      "problem": "Hard to test, violates single responsibility principle, difficult to maintain",
+      "fix": "Split into focused classes, one responsibility per class"
+    },
+    {
+      "name": "Repository Access in Controller",
+      "problem": "Bypasses business logic, hard to test, violates Clean Architecture",
+      "fix": "Use application layer (handlers) between controllers and repositories, use MediatR"
+    },
+    {
+      "name": "Ignoring Async/Await",
+      "problem": "Poor performance, thread blocking, wasted resources",
+      "fix": "Use async/await for all I/O operations, never use .Result or .Wait()"
+    },
+    {
+      "name": "Exception Abuse",
+      "problem": "Performance issues, unclear code, exceptions are expensive",
+      "fix": "Use Result pattern for expected errors, reserve exceptions for unexpected errors"
+    },
+    {
+      "name": "Blocking Async Calls",
+      "problem": "Deadlocks, thread pool starvation, poor performance",
+      "fix": "Always use async/await, never block async calls with .Result or .Wait()"
+    },
+    {
+      "name": "Missing Input Validation",
+      "problem": "Security vulnerabilities, runtime errors, data corruption",
+      "fix": "Use FluentValidation, Data Annotations, or manual validation"
+    }
+  ],
+  "use_when": "ASP.NET Core applications, microservices, or Entity Framework data access",
+  "code_example": "builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(conn));\nvar user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);"
+}

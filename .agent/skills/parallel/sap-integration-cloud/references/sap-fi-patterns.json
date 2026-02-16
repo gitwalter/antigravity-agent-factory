@@ -1,0 +1,207 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "sap-fi-patterns",
+  "title": "SAP FI Patterns",
+  "name": "SAP FI Patterns",
+  "description": "Financial Accounting process, document types, tables, integration. S/4 on-prem and R/3/ECC.",
+  "version": "1.0.0",
+  "category": "sap",
+  "axiomAlignment": {
+    "A1_verifiability": "Document types, core tables, and posting keys enable traceable financial verification",
+    "A2_user_primacy": "Hold, Park, Save flow supports user-driven document preparation and approval",
+    "A3_transparency": "Explicit table structure (BKPF, BSEG, ACDOCA) documents document flow",
+    "A4_non_harm": "Integration with MM, SD, CO ensures correct posting and audit trails",
+    "A5_consistency": "Unified document types and table usage across R/3 and S/4"
+  },
+  "related_skills": [
+    "s4-process-guide",
+    "sap-integration"
+  ],
+  "related_knowledge": [
+    "sap-mm-patterns.json",
+    "sap-sd-patterns.json",
+    "sap-btp-patterns.json"
+  ],
+  "patterns": {
+    "document_types": {
+      "description": "FI document types for different posting scenarios",
+      "documentTypes": {
+        "SA": {
+          "description": "G/L posting",
+          "en": "G/L posting",
+          "de": "Sachkontenbuchung"
+        },
+        "KA": {
+          "description": "Vendor invoice",
+          "en": "Vendor",
+          "de": "Kreditor"
+        },
+        "DZ": {
+          "description": "Customer document",
+          "en": "Customer",
+          "de": "Debitor"
+        }
+      },
+      "use_when": "When implementing document_types or when FI document types for different posting scenarios",
+      "code_example": "SELECT * FROM bkpf WHERE bukrs = @lv_bukrs AND belnr = @lv_belnr AND gjahr = @lv_gjahr",
+      "best_practices": [
+        "Verify table/field via SAP Help MCP",
+        "Use document types and posting keys from customizing",
+        "Consider ACDOCA in S/4 for reporting",
+        "Use appropriate document types (SA, KA, DZ) for different scenarios"
+      ]
+    },
+    "core_tables": {
+      "description": "Core FI tables for document header and line items",
+      "coreTables": {
+        "BKPF": {
+          "purpose": "Accounting document header",
+          "r3": true,
+          "s4": true,
+          "keyFields": [
+            "MANDT",
+            "BUKRS",
+            "BELNR",
+            "GJAHR"
+          ]
+        },
+        "BSEG": {
+          "purpose": "Accounting document segment (line items)",
+          "r3": true,
+          "s4": true,
+          "keyFields": [
+            "MANDT",
+            "BUKRS",
+            "BELNR",
+            "GJAHR",
+            "BUZEI"
+          ]
+        },
+        "BSIS": {
+          "purpose": "G/L line item index (open items)",
+          "r3": true,
+          "s4": true
+        },
+        "BSAS": {
+          "purpose": "G/L line item index (cleared)",
+          "r3": true,
+          "s4": true
+        },
+        "BSID": {
+          "purpose": "Customer line item index",
+          "r3": true,
+          "s4": true
+        },
+        "BSAD": {
+          "purpose": "Customer line item index (cleared)",
+          "r3": true,
+          "s4": true
+        },
+        "ACDOCA": {
+          "purpose": "Universal Journal line items",
+          "r3": false,
+          "s4": true,
+          "note": "S/4 only; replaces separate indexes in S/4"
+        },
+        "SKA1": {
+          "purpose": "G/L account master (chart of accounts)",
+          "r3": true,
+          "s4": true
+        },
+        "SKAT": {
+          "purpose": "G/L account master (texts)",
+          "r3": true,
+          "s4": true
+        },
+        "T001": {
+          "purpose": "Company code",
+          "r3": true,
+          "s4": true
+        },
+        "LFA1": {
+          "purpose": "Vendor master",
+          "r3": true,
+          "s4": true
+        },
+        "KNA1": {
+          "purpose": "Customer master",
+          "r3": true,
+          "s4": true
+        }
+      },
+      "use_when": "When implementing core_tables or when Core FI tables for document header and line items",
+      "code_example": "SELECT * FROM BKPF WHERE ... FOR ALL ENTRIES IN @lt_keys. Related: BSEG, BSIS",
+      "best_practices": [
+        "Verify table/field via SAP Help MCP",
+        "Use document types and posting keys from customizing",
+        "Consider ACDOCA in S/4 for reporting",
+        "Use appropriate document types (SA, KA, DZ) for different scenarios"
+      ]
+    },
+    "parking_tables": {
+      "description": "Tables for parked documents (not yet posted)",
+      "parkingTables": {
+        "VBSEGK": {
+          "purpose": "Parked document (G/L)"
+        },
+        "VBSEGD": {
+          "purpose": "Parked document (customer)"
+        },
+        "VBSEGV": {
+          "purpose": "Parked document (vendor)"
+        }
+      },
+      "use_when": "When implementing parking_tables or when Tables for parked documents (not yet posted)",
+      "code_example": "SELECT * FROM bkpf WHERE bukrs = @lv_bukrs AND belnr = @lv_belnr AND gjahr = @lv_gjahr",
+      "best_practices": [
+        "Verify table/field via SAP Help MCP",
+        "Use document types and posting keys from customizing",
+        "Consider ACDOCA in S/4 for reporting",
+        "Use appropriate document types (SA, KA, DZ) for different scenarios"
+      ]
+    },
+    "process": {
+      "description": "FI document posting process: Hold, Park, Save as complete",
+      "process": {
+        "holdParkSave": "Hold (temporary); Park (save without posting); Save as complete (post to BKPF/BSEG)",
+        "integration": {
+          "FI_MM": "Automatic postings from MM",
+          "FI_SD": "Billing, revenue",
+          "FI_CO": "Cost elements, reconciliation"
+        }
+      },
+      "use_when": "When implementing process or when FI document posting process: Hold, Park, Save as complete",
+      "code_example": "SELECT * FROM bkpf WHERE bukrs = @lv_bukrs AND belnr = @lv_belnr AND gjahr = @lv_gjahr",
+      "best_practices": [
+        "Verify table/field via SAP Help MCP",
+        "Use document types and posting keys from customizing",
+        "Consider ACDOCA in S/4 for reporting",
+        "Use appropriate document types (SA, KA, DZ) for different scenarios"
+      ]
+    }
+  },
+  "best_practices": [
+    "Verify table/field via SAP Help MCP",
+    "Use document types and posting keys from customizing",
+    "Consider ACDOCA in S/4 for reporting",
+    "Use appropriate document types (SA, KA, DZ) for different scenarios",
+    "Verify R/3 vs S/4 table availability before use"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Using R/3-only tables in S/4",
+      "problem": "Missing data or errors in S/4",
+      "fix": "Use ACDOCA in S/4 instead of separate indexes (BSIS, BSAS, etc.)"
+    },
+    {
+      "name": "Not verifying table availability",
+      "problem": "Code fails when migrating from R/3 to S/4",
+      "fix": "Check r3/s4 flags and use appropriate tables per system"
+    },
+    {
+      "name": "Ignoring document flow",
+      "problem": "Missing integration between FI and other modules",
+      "fix": "Understand FI integration with MM, SD, and CO"
+    }
+  ]
+}

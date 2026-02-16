@@ -21,6 +21,7 @@ Usage:
 """
 
 import ast
+from functools import lru_cache
 import json
 import re
 import subprocess
@@ -82,6 +83,7 @@ class SyncTarget:
     key_field: str = ""
     line_pattern: str = ""
     annotation_pattern: str = ""
+    tolerance: int = 0
 
 
 @dataclass
@@ -436,7 +438,7 @@ class CountSyncStrategy(SyncStrategy):
         match = re.search(target.pattern, content)
         old_count = int(match.group(1)) if match else 0
 
-        if old_count == count:
+        if abs(old_count - count) <= target.tolerance:
             return SyncResult(
                 artifact="",
                 target_file=target.file,
@@ -582,7 +584,9 @@ class CategoryCountsSyncStrategy(SyncStrategy):
             match = re.search(pattern, content)
             old_count = int(match.group(1)) if match else 0
 
-            if old_count != actual_count:
+            # Apply tolerance check
+            tolerance = config.get("tolerance", target.tolerance)
+            if abs(old_count - actual_count) > tolerance:
                 changes.append(f"{category}: {old_count} -> {actual_count}")
                 # Update in content
                 replacement = pattern.replace("~?(\\d+)", f"~{actual_count}")
@@ -972,6 +976,7 @@ class SyncEngine:
                         key_field=target_data.get("key_field", ""),
                         line_pattern=target_data.get("line_pattern", ""),
                         annotation_pattern=target_data.get("annotation_pattern", ""),
+                        tolerance=target_data.get("tolerance", 0),
                     )
                 )
 
@@ -1157,6 +1162,7 @@ def collect_test_count(
     return scanner.count_pytest(test_dir)
 
 
+@lru_cache(maxsize=1)
 def get_actual_counts(root_path: Optional[Path] = None) -> CategoryTestCounts:
     """Get actual test counts from pytest for all categories.
 

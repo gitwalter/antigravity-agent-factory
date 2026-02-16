@@ -1,0 +1,123 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "sap-logistics-chain",
+  "title": "SAP Logistics Chain",
+  "name": "SAP Logistics Chain",
+  "description": "End-to-end flows: order-to-cash, procure-to-pay, key documents across FI/SD/MM/EWM/LE.",
+  "version": "1.0.0",
+  "category": "sap",
+  "axiomAlignment": {
+    "A1_verifiability": "Document numbers and key tables enable traceable end-to-end flow verification",
+    "A2_user_primacy": "Order-to-cash and procure-to-pay support user-driven business processes",
+    "A3_transparency": "Explicit table and document flow structure documents cross-module integration",
+    "A4_non_harm": "Document flow tracking ensures correct posting and data consistency",
+    "A5_consistency": "Unified O2C, P2P, MTS patterns across FI, SD, MM, EWM, LE"
+  },
+  "related_skills": [
+    "s4-process-guide"
+  ],
+  "related_knowledge": [
+    "sap-fi-patterns.json",
+    "sap-sd-patterns.json",
+    "sap-mm-patterns.json",
+    "sap-ewm-patterns.json",
+    "sap-le-patterns.json"
+  ],
+  "patterns": {
+    "order_to_cash": {
+      "description": "Complete order-to-cash process flow",
+      "orderToCash": {
+        "steps": [
+          "Sales order (VBAK/VBAP)",
+          "Delivery (LIKP/LIPS)",
+          "Billing (VBRK/VBRP)",
+          "FI posting"
+        ],
+        "tables": [
+          "VBAK",
+          "VBAP",
+          "LIKP",
+          "LIPS",
+          "VBRK",
+          "VBRP",
+          "BKPF",
+          "BSEG"
+        ]
+      },
+      "use_when": "When implementing order_to_cash or when Complete order-to-cash process flow",
+      "code_example": "SELECT * FROM vbak WHERE vbeln = @lv_vbeln\nSELECT * FROM likp WHERE vbeln = @lv_vbeln",
+      "best_practices": [
+        "Follow complete document flow from order to invoice",
+        "Understand table relationships across modules",
+        "Verify table/field via SAP Help MCP",
+        "Track document flow using document numbers"
+      ]
+    },
+    "procure_to_pay": {
+      "description": "Complete procure-to-pay process flow",
+      "procureToPay": {
+        "steps": [
+          "Purchase order (EKKO/EKPO)",
+          "Goods receipt (MKPF/MSEG)",
+          "Invoice (RSEG, FI)",
+          "FI posting"
+        ],
+        "tables": [
+          "EKKO",
+          "EKPO",
+          "MKPF",
+          "MSEG",
+          "RSEG",
+          "BKPF",
+          "BSEG"
+        ]
+      },
+      "use_when": "When implementing procure_to_pay or when Complete procure-to-pay process flow",
+      "code_example": "SELECT * FROM vbak WHERE vbeln = @lv_vbeln\nSELECT * FROM likp WHERE vbeln = @lv_vbeln",
+      "best_practices": [
+        "Follow complete document flow from order to invoice",
+        "Understand table relationships across modules",
+        "Verify table/field via SAP Help MCP",
+        "Track document flow using document numbers"
+      ]
+    },
+    "make_to_stock": {
+      "description": "Make-to-stock production process",
+      "makeToStock": {
+        "note": "Production \u2192 stock; EWM/MM movements"
+      },
+      "use_when": "When implementing make_to_stock or when Make-to-stock production process",
+      "code_example": "SELECT * FROM vbak WHERE vbeln = @lv_vbeln\nSELECT * FROM likp WHERE vbeln = @lv_vbeln",
+      "best_practices": [
+        "Follow complete document flow from order to invoice",
+        "Understand table relationships across modules",
+        "Verify table/field via SAP Help MCP",
+        "Track document flow using document numbers"
+      ]
+    }
+  },
+  "best_practices": [
+    "Follow complete document flow from order to invoice",
+    "Understand table relationships across modules",
+    "Verify table/field via SAP Help MCP",
+    "Track document flow using document numbers",
+    "Understand integration points between FI, SD, MM, EWM, and LE"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Not following document flow",
+      "problem": "Missing or incorrect data in downstream processes",
+      "fix": "Follow complete flow: Sales Order \u2192 Delivery \u2192 Billing \u2192 FI Posting"
+    },
+    {
+      "name": "Ignoring cross-module integration",
+      "problem": "Data inconsistencies between modules",
+      "fix": "Understand how SD, MM, EWM, LE integrate with FI"
+    },
+    {
+      "name": "Not tracking document numbers",
+      "problem": "Cannot trace document flow",
+      "fix": "Use document numbers to link documents across modules"
+    }
+  ]
+}

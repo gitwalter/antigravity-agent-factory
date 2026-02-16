@@ -1,6 +1,6 @@
 # Test Catalog
 
-*Generated on 2026-02-15 15:56:46*
+*Generated on 2026-02-16 12:29:30*
 
 ## Summary
 
@@ -2599,7 +2599,7 @@ also logically correct for the defined SyncEngine schema.
 - `test_sync_all_dry_run_succeeds`
   - Perform a full dry-run sync across all artifacts in the actual repository.
 
-How: Runs engine.sync_all(dry_run=True) and checks for errors in the results.
+How: Runs engine.sync_all(dry_run=True, use_fast_count=True) and checks for errors in the results.
 Why: This is the definitive integration test for the Entire Repo's
 documentation state. It ensures every sync target is valid and reachable.
 - `test_artifacts_are_currently_synced`
@@ -6194,7 +6194,8 @@ Tests validate that all skill files have:
 *Tests for skill file naming conventions.*
 
 - `test_skill_files_named_skill_md`
-  - Test that skill files are named SKILL.md.
+  - Test that the primary skill files are named SKILL.md.
+Note: Subdirectories like references/ or assets/ can contain other .md files.
 - `test_skill_directories_use_kebab_case`
   - Test that skill directories use kebab-case naming.
 

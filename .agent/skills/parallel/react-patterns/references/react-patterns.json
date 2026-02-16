@@ -1,0 +1,396 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "react-patterns",
+  "name": "React Patterns",
+  "title": "React Patterns",
+  "description": "Modern React patterns, hooks, and best practices for building scalable applications",
+  "version": "1.0.0",
+  "category": "web",
+  "related_skills": [
+    "react-patterns",
+    "frontend-testing",
+    "frontend-performance",
+    "state-management"
+  ],
+  "related_knowledge": [
+    "component-patterns.json",
+    "nextjs-patterns.json",
+    "nextjs-advanced.json",
+    "api-design-patterns.json"
+  ],
+  "sources": [
+    "https://react.dev/",
+    "https://react.dev/reference/react"
+  ],
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns include testing strategies and type safety",
+    "A2_user_primacy": "Component design prioritizes user experience and accessibility",
+    "A3_transparency": "Component design emphasizes predictability and composition",
+    "A4_non_harm": "Error boundaries and validation prevent harmful outcomes",
+    "A5_consistency": "Unified patterns for hooks, state, and composition"
+  },
+  "core_patterns": {
+    "component_composition": {
+      "description": "Build complex UIs from simple, reusable components",
+      "patterns": {
+        "container_presentational": {
+          "description": "Separate data fetching from rendering",
+          "code_example": "// Container (handles data)\nfunction UserListContainer() {\n  const [users, setUsers] = useState([]);\n  useEffect(() => {\n    fetchUsers().then(setUsers);\n  }, []);\n  return <UserList users={users} />;\n}\n\n// Presentational (pure rendering)\nfunction UserList({ users }) {\n  return (\n    <ul>\n      {users.map(user => <UserItem key={user.id} user={user} />)}\n    </ul>\n  );\n}"
+        },
+        "compound_components": {
+          "description": "Components that work together implicitly",
+          "code_example": "const Tabs = ({ children, defaultTab }) => {\n  const [activeTab, setActiveTab] = useState(defaultTab);\n  return (\n    <TabsContext.Provider value={{ activeTab, setActiveTab }}>\n      {children}\n    </TabsContext.Provider>\n  );\n};\n\nconst TabList = ({ children }) => <div role=\"tablist\">{children}</div>;\nconst Tab = ({ id, children }) => {\n  const { activeTab, setActiveTab } = useContext(TabsContext);\n  return (\n    <button\n      role=\"tab\"\n      aria-selected={activeTab === id}\n      onClick={() => setActiveTab(id)}\n    >\n      {children}\n    </button>\n  );\n};\n\n// Usage\n<Tabs defaultTab=\"tab1\">\n  <TabList>\n    <Tab id=\"tab1\">Tab 1</Tab>\n    <Tab id=\"tab2\">Tab 2</Tab>\n  </TabList>\n  <TabPanel id=\"tab1\">Content 1</TabPanel>\n  <TabPanel id=\"tab2\">Content 2</TabPanel>\n</Tabs>"
+        },
+        "render_props": {
+          "description": "Share code via prop that is a function",
+          "code_example": "function MouseTracker({ render }) {\n  const [position, setPosition] = useState({ x: 0, y: 0 });\n  \n  const handleMouseMove = (e) => {\n    setPosition({ x: e.clientX, y: e.clientY });\n  };\n  \n  return (\n    <div onMouseMove={handleMouseMove}>\n      {render(position)}\n    </div>\n  );\n}\n\n// Usage\n<MouseTracker render={({ x, y }) => (\n  <p>Mouse position: {x}, {y}</p>\n)} />"
+        }
+      }
+    },
+    "hooks_patterns": {
+      "useState": {
+        "description": "Add state to functional components",
+        "patterns": {
+          "lazy_initialization": {
+            "code_example": "// Expensive computation only runs once\nconst [state, setState] = useState(() => computeExpensiveValue());"
+          },
+          "functional_update": {
+            "code_example": "// When new state depends on previous\nsetCount(prev => prev + 1);"
+          }
+        }
+      },
+      "useEffect": {
+        "description": "Handle side effects in components",
+        "patterns": {
+          "cleanup": {
+            "code_example": "useEffect(() => {\n  const subscription = subscribe();\n  return () => subscription.unsubscribe();\n}, []);"
+          },
+          "dependency_array": {
+            "empty": "Run once on mount",
+            "with_deps": "Run when dependencies change",
+            "no_array": "Run on every render (usually wrong)"
+          }
+        }
+      },
+      "useCallback": {
+        "description": "Memoize callbacks to prevent unnecessary re-renders",
+        "code_example": "const handleClick = useCallback(() => {\n  doSomething(a, b);\n}, [a, b]);"
+      },
+      "useMemo": {
+        "description": "Memoize expensive computations",
+        "code_example": "const sortedList = useMemo(() => {\n  return [...list].sort((a, b) => a.name.localeCompare(b.name));\n}, [list]);"
+      },
+      "useReducer": {
+        "description": "Complex state logic with predictable updates",
+        "code_example": "const initialState = { count: 0, step: 1 };\n\nfunction reducer(state, action) {\n  switch (action.type) {\n    case 'increment':\n      return { ...state, count: state.count + state.step };\n    case 'setStep':\n      return { ...state, step: action.payload };\n    default:\n      throw new Error(`Unknown action: ${action.type}`);\n  }\n}\n\nfunction Counter() {\n  const [state, dispatch] = useReducer(reducer, initialState);\n  return (\n    <>\n      <span>{state.count}</span>\n      <button onClick={() => dispatch({ type: 'increment' })}>+</button>\n    </>\n  );\n}"
+      },
+      "useRef": {
+        "description": "Persist values without causing re-renders",
+        "use_cases": [
+          "DOM element references",
+          "Storing previous values",
+          "Instance variables"
+        ]
+      }
+    },
+    "custom_hooks": {
+      "description": "Extract reusable stateful logic",
+      "examples": {
+        "useLocalStorage": {
+          "code_example": "function useLocalStorage(key, initialValue) {\n  const [storedValue, setStoredValue] = useState(() => {\n    try {\n      const item = window.localStorage.getItem(key);\n      return item ? JSON.parse(item) : initialValue;\n    } catch (error) {\n      return initialValue;\n    }\n  });\n\n  const setValue = (value) => {\n    const valueToStore = value instanceof Function\n      ? value(storedValue)\n      : value;\n    setStoredValue(valueToStore);\n    window.localStorage.setItem(key, JSON.stringify(valueToStore));\n  };\n\n  return [storedValue, setValue];\n}"
+        },
+        "useFetch": {
+          "code_example": "function useFetch(url) {\n  const [data, setData] = useState(null);\n  const [loading, setLoading] = useState(true);\n  const [error, setError] = useState(null);\n\n  useEffect(() => {\n    const controller = new AbortController();\n    \n    async function fetchData() {\n      try {\n        const response = await fetch(url, { signal: controller.signal });\n        const json = await response.json();\n        setData(json);\n      } catch (err) {\n        if (err.name !== 'AbortError') {\n          setError(err);\n        }\n      } finally {\n        setLoading(false);\n      }\n    }\n    \n    fetchData();\n    return () => controller.abort();\n  }, [url]);\n\n  return { data, loading, error };\n}"
+        },
+        "useDebounce": {
+          "code_example": "function useDebounce(value, delay) {\n  const [debouncedValue, setDebouncedValue] = useState(value);\n\n  useEffect(() => {\n    const timer = setTimeout(() => setDebouncedValue(value), delay);\n    return () => clearTimeout(timer);\n  }, [value, delay]);\n\n  return debouncedValue;\n}"
+        }
+      }
+    }
+  },
+  "state_management": {
+    "context_api": {
+      "description": "Share state without prop drilling",
+      "code_example": "const ThemeContext = createContext('light');\n\nfunction ThemeProvider({ children }) {\n  const [theme, setTheme] = useState('light');\n  return (\n    <ThemeContext.Provider value={{ theme, setTheme }}>\n      {children}\n    </ThemeContext.Provider>\n  );\n}\n\nfunction useTheme() {\n  const context = useContext(ThemeContext);\n  if (!context) {\n    throw new Error('useTheme must be used within ThemeProvider');\n  }\n  return context;\n}",
+      "best_practices": [
+        "Split contexts by update frequency",
+        "Use separate contexts for state and dispatch",
+        "Create custom hooks for consuming context"
+      ]
+    },
+    "external_state": {
+      "libraries": {
+        "zustand": "Simple, hook-based state management",
+        "jotai": "Atomic state management",
+        "redux_toolkit": "Feature-rich, scalable state management",
+        "tanstack_query": "Server state management and caching"
+      }
+    }
+  },
+  "performance_patterns": {
+    "memo": {
+      "description": "Prevent unnecessary re-renders",
+      "code_example": "const ExpensiveComponent = memo(function ExpensiveComponent({ data }) {\n  // Only re-renders if data changes\n  return <div>{processData(data)}</div>;\n});"
+    },
+    "virtualization": {
+      "description": "Render only visible items in long lists",
+      "libraries": [
+        "@tanstack/react-virtual",
+        "react-window"
+      ]
+    },
+    "code_splitting": {
+      "description": "Load components on demand",
+      "code_example": "const HeavyComponent = lazy(() => import('./HeavyComponent'));\n\nfunction App() {\n  return (\n    <Suspense fallback={<Loading />}>\n      <HeavyComponent />\n    </Suspense>\n  );\n}"
+    }
+  },
+  "error_handling": {
+    "error_boundaries": {
+      "description": "Catch and handle render errors",
+      "code_example": "class ErrorBoundary extends Component {\n  state = { hasError: false };\n\n  static getDerivedStateFromError(error) {\n    return { hasError: true };\n  }\n\n  componentDidCatch(error, errorInfo) {\n    logError(error, errorInfo);\n  }\n\n  render() {\n    if (this.state.hasError) {\n      return <FallbackUI />;\n    }\n    return this.props.children;\n  }\n}"
+    }
+  },
+  "testing_patterns": {
+    "testing_library": {
+      "description": "Test components as users would interact",
+      "code_example": "import { render, screen, fireEvent } from '@testing-library/react';\n\ntest('increments counter', () => {\n  render(<Counter />);\n  \n  const button = screen.getByRole('button', { name: /increment/i });\n  fireEvent.click(button);\n  \n  expect(screen.getByText(/count: 1/i)).toBeInTheDocument();\n});"
+    },
+    "best_practices": [
+      "Query by role, text, or label over test IDs",
+      "Test behavior, not implementation",
+      "Use userEvent over fireEvent for realistic interactions"
+    ]
+  },
+  "best_practices": [
+    "Lift state up only as needed",
+    "Keep components small and focused",
+    "Use TypeScript for type safety",
+    "Prefer composition over inheritance",
+    "Memoize expensive computations",
+    "Handle loading and error states",
+    "Use semantic HTML for accessibility",
+    "Test user interactions, not implementation"
+  ],
+  "anti_patterns": [
+    {
+      "name": "prop_drilling",
+      "problem": "Passing props through many levels",
+      "fix": "Use Context or state management library"
+    },
+    {
+      "name": "useEffect_for_derived_state",
+      "problem": "Using effect to sync derived data",
+      "fix": "Calculate during render or use useMemo"
+    },
+    {
+      "name": "inline_objects_in_deps",
+      "problem": "New object reference causes infinite loops",
+      "fix": "Define objects outside component or memoize"
+    }
+  ],
+  "patterns": {
+    "core_patterns_component_composition_description": {
+      "description": "Build complex UIs from simple, reusable components",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# core_patterns_component_composition_description pattern for react-patterns\n# Implement based on description: Build complex UIs from simple, reusable components...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "core_patterns_component_composition_patterns_container_presentational_description": {
+      "description": "Separate data fetching from rendering",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# core_patterns_component_composition_patterns_container_presentational_description pattern for react-patterns\n# Implement based on description: Separate data fetching from rendering...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "core_patterns_component_composition_patterns_container_presentational_code_example": {
+      "description": "// Container (handles data)\nfunction UserListContainer() {\n  const [users, setUsers] = useState([]);\n  useEffect(() => {\n    fetchUsers().then(setUsers);\n  }, []);\n  return <UserList users={users} />;\n}\n\n// Presentational (pure rendering)\nfunction UserList({ users }) {\n  return (\n    <ul>\n      {users.map(user => <UserItem key={user.id} user={user} />)}\n    </ul>\n  );\n}",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# core_patterns_component_composition_patterns_container_presentational_code_example pattern for react-patterns\n# Implement based on description: // Container (handles data)\nfunction UserListConta...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "core_patterns_component_composition_patterns_compound_components_description": {
+      "description": "Components that work together implicitly",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# core_patterns_component_composition_patterns_compound_components_description pattern for react-patterns\n# Implement based on description: Components that work together implicitly...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "core_patterns_component_composition_patterns_compound_components_code_example": {
+      "description": "const Tabs = ({ children, defaultTab }) => {\n  const [activeTab, setActiveTab] = useState(defaultTab);\n  return (\n    <TabsContext.Provider value={{ activeTab, setActiveTab }}>\n      {children}\n    </TabsContext.Provider>\n  );\n};\n\nconst TabList = ({ children }) => <div role=\"tablist\">{children}</div>;\nconst Tab = ({ id, children }) => {\n  const { activeTab, setActiveTab } = useContext(TabsContext);\n  return (\n    <button\n      role=\"tab\"\n      aria-selected={activeTab === id}\n      onClick={() => setActiveTab(id)}\n    >\n      {children}\n    </button>\n  );\n};\n\n// Usage\n<Tabs defaultTab=\"tab1\">\n  <TabList>\n    <Tab id=\"tab1\">Tab 1</Tab>\n    <Tab id=\"tab2\">Tab 2</Tab>\n  </TabList>\n  <TabPanel id=\"tab1\">Content 1</TabPanel>\n  <TabPanel id=\"tab2\">Content 2</TabPanel>\n</Tabs>",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# core_patterns_component_composition_patterns_compound_components_code_example pattern for react-patterns\n# Implement based on description: const Tabs = ({ children, defaultTab }) => {\n  con...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "core_patterns_component_composition_patterns_render_props_description": {
+      "description": "Share code via prop that is a function",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# core_patterns_component_composition_patterns_render_props_description pattern for react-patterns\n# Implement based on description: Share code via prop that is a function...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "core_patterns_component_composition_patterns_render_props_code_example": {
+      "description": "function MouseTracker({ render }) {\n  const [position, setPosition] = useState({ x: 0, y: 0 });\n  \n  const handleMouseMove = (e) => {\n    setPosition({ x: e.clientX, y: e.clientY });\n  };\n  \n  return (\n    <div onMouseMove={handleMouseMove}>\n      {render(position)}\n    </div>\n  );\n}\n\n// Usage\n<MouseTracker render={({ x, y }) => (\n  <p>Mouse position: {x}, {y}</p>\n)} />",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# core_patterns_component_composition_patterns_render_props_code_example pattern for react-patterns\n# Implement based on description: function MouseTracker({ render }) {\n  const [posit...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "core_patterns_hooks_patterns_useState": {
+      "description": "Add state to functional components",
+      "patterns": {
+        "lazy_initialization": {
+          "code_example": "// Expensive computation only runs once\nconst [state, setState] = useState(() => computeExpensiveValue());"
+        },
+        "functional_update": {
+          "code_example": "// When new state depends on previous\nsetCount(prev => prev + 1);"
+        }
+      },
+      "use_when": "When building TypeScript/React applications and need useState",
+      "code_example": "# Usestate - implement per TypeScript/React conventions",
+      "best_practices": [
+        "Follow useState best practices for your stack",
+        "Validate and test the implementation before production use"
+      ]
+    },
+    "core_patterns_hooks_patterns_useEffect": {
+      "description": "Handle side effects in components",
+      "patterns": {
+        "cleanup": {
+          "code_example": "useEffect(() => {\n  const subscription = subscribe();\n  return () => subscription.unsubscribe();\n}, []);"
+        },
+        "dependency_array": {
+          "empty": "Run once on mount",
+          "with_deps": "Run when dependencies change",
+          "no_array": "Run on every render (usually wrong)"
+        }
+      },
+      "use_when": "When building TypeScript/React applications and need useEffect",
+      "code_example": "# Useeffect - implement per TypeScript/React conventions",
+      "best_practices": [
+        "Follow useEffect best practices for your stack",
+        "Validate and test the implementation before production use"
+      ]
+    },
+    "core_patterns_hooks_patterns_useCallback": {
+      "description": "Memoize callbacks to prevent unnecessary re-renders",
+      "code_example": "const handleClick = useCallback(() => {\n  doSomething(a, b);\n}, [a, b]);",
+      "use_when": "When building TypeScript/React applications and need useCallback",
+      "best_practices": [
+        "Follow useCallback best practices for your stack",
+        "Validate and test the implementation before production use"
+      ]
+    },
+    "core_patterns_hooks_patterns_useMemo": {
+      "description": "Memoize expensive computations",
+      "code_example": "const sortedList = useMemo(() => {\n  return [...list].sort((a, b) => a.name.localeCompare(b.name));\n}, [list]);",
+      "use_when": "When building TypeScript/React applications and need useMemo",
+      "best_practices": [
+        "Follow useMemo best practices for your stack",
+        "Validate and test the implementation before production use"
+      ]
+    },
+    "core_patterns_hooks_patterns_useReducer": {
+      "description": "Complex state logic with predictable updates",
+      "code_example": "const initialState = { count: 0, step: 1 };\n\nfunction reducer(state, action) {\n  switch (action.type) {\n    case 'increment':\n      return { ...state, count: state.count + state.step };\n    case 'setStep':\n      return { ...state, step: action.payload };\n    default:\n      throw new Error(`Unknown action: ${action.type}`);\n  }\n}\n\nfunction Counter() {\n  const [state, dispatch] = useReducer(reducer, initialState);\n  return (\n    <>\n      <span>{state.count}</span>\n      <button onClick={() => dispatch({ type: 'increment' })}>+</button>\n    </>\n  );\n}",
+      "use_when": "When building TypeScript/React applications and need useReducer",
+      "best_practices": [
+        "Follow useReducer best practices for your stack",
+        "Validate and test the implementation before production use"
+      ]
+    },
+    "core_patterns_hooks_patterns_useRef": {
+      "description": "Persist values without causing re-renders",
+      "use_cases": [
+        "DOM element references",
+        "Storing previous values",
+        "Instance variables"
+      ],
+      "use_when": "DOM element references",
+      "code_example": "# Useref - implement per TypeScript/React conventions",
+      "best_practices": [
+        "Follow useRef best practices for your stack",
+        "Validate and test the implementation before production use"
+      ]
+    },
+    "core_patterns_custom_hooks_description": {
+      "description": "Extract reusable stateful logic",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# core_patterns_custom_hooks_description pattern for react-patterns\n# Implement based on description: Extract reusable stateful logic...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "core_patterns_custom_hooks_examples_useLocalStorage_code_example": {
+      "description": "function useLocalStorage(key, initialValue) {\n  const [storedValue, setStoredValue] = useState(() => {\n    try {\n      const item = window.localStorage.getItem(key);\n      return item ? JSON.parse(item) : initialValue;\n    } catch (error) {\n      return initialValue;\n    }\n  });\n\n  const setValue = (value) => {\n    const valueToStore = value instanceof Function\n      ? value(storedValue)\n      : value;\n    setStoredValue(valueToStore);\n    window.localStorage.setItem(key, JSON.stringify(valueToStore));\n  };\n\n  return [storedValue, setValue];\n}",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# core_patterns_custom_hooks_examples_useLocalStorage_code_example pattern for react-patterns\n# Implement based on description: function useLocalStorage(key, initialValue) {\n  co...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "core_patterns_custom_hooks_examples_useFetch_code_example": {
+      "description": "function useFetch(url) {\n  const [data, setData] = useState(null);\n  const [loading, setLoading] = useState(true);\n  const [error, setError] = useState(null);\n\n  useEffect(() => {\n    const controller = new AbortController();\n    \n    async function fetchData() {\n      try {\n        const response = await fetch(url, { signal: controller.signal });\n        const json = await response.json();\n        setData(json);\n      } catch (err) {\n        if (err.name !== 'AbortError') {\n          setError(err);\n        }\n      } finally {\n        setLoading(false);\n      }\n    }\n    \n    fetchData();\n    return () => controller.abort();\n  }, [url]);\n\n  return { data, loading, error };\n}",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# core_patterns_custom_hooks_examples_useFetch_code_example pattern for react-patterns\n# Implement based on description: function useFetch(url) {\n  const [data, setData] =...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "core_patterns_custom_hooks_examples_useDebounce_code_example": {
+      "description": "function useDebounce(value, delay) {\n  const [debouncedValue, setDebouncedValue] = useState(value);\n\n  useEffect(() => {\n    const timer = setTimeout(() => setDebouncedValue(value), delay);\n    return () => clearTimeout(timer);\n  }, [value, delay]);\n\n  return debouncedValue;\n}",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# core_patterns_custom_hooks_examples_useDebounce_code_example pattern for react-patterns\n# Implement based on description: function useDebounce(value, delay) {\n  const [debo...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "testing_patterns_testing_library_description": {
+      "description": "Test components as users would interact",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# testing_patterns_testing_library_description pattern for react-patterns\n# Implement based on description: Test components as users would interact...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "testing_patterns_testing_library_code_example": {
+      "description": "import { render, screen, fireEvent } from '@testing-library/react';\n\ntest('increments counter', () => {\n  render(<Counter />);\n  \n  const button = screen.getByRole('button', { name: /increment/i });\n  fireEvent.click(button);\n  \n  expect(screen.getByText(/count: 1/i)).toBeInTheDocument();\n});",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# testing_patterns_testing_library_code_example pattern for react-patterns\n# Implement based on description: import { render, screen, fireEvent } from '@testin...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "testing_patterns_best_practices": {
+      "description": "['Query by role, text, or label over test IDs', 'Test behavior, not implementation', 'Use userEvent over fireEvent for realistic interactions']",
+      "use_when": "See description for when to apply this pattern.",
+      "code_example": "See description for when to apply this pattern.",
+      "best_practices": [
+        "Review and validate implementation against domain requirements",
+        "Review and validate implementation against domain requirements"
+      ]
+    }
+  }
+}

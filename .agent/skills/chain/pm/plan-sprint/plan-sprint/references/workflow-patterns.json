@@ -1,0 +1,1128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "workflow-patterns",
+  "name": "Workflow Patterns",
+  "title": "Workflow Patterns",
+  "description": "Common workflow patterns for Cursor agent systems",
+  "version": "1.0.0",
+  "category": "workflow",
+  "axiomAlignment": {
+    "A1_verifiability": "Explicit phases and decision points enable workflow verification",
+    "A2_user_primacy": "User-initiated triggers and approval gates preserve user control",
+    "A3_transparency": "Phase definitions and escalation paths make workflow execution traceable",
+    "A4_non_harm": "Failure handling and rollback steps prevent harmful workflow cascades",
+    "A5_consistency": "Unified workflow structure across triggers, phases, and methodologies"
+  },
+  "related_skills": [
+    "extend-workflow",
+    "workflow-generation",
+    "commit-release",
+    "pipeline-error-fix"
+  ],
+  "related_knowledge": [
+    "workflow-entities.json",
+    "cicd-patterns.json",
+    "debug-patterns.json"
+  ],
+  "triggerTypes": {
+    "jira": {
+      "name": "Jira Ticket",
+      "description": "Workflow triggered by Jira ticket mention",
+      "patternExample": "{PROJECT_KEY}-{NUMBER}",
+      "mcpServer": "atlassian",
+      "mcpTools": [
+        "getJiraIssue",
+        "searchJiraIssuesUsingJql",
+        "addCommentToJiraIssue",
+        "transitionJiraIssue"
+      ],
+      "suggestedSkills": [
+        "bugfix-workflow"
+      ],
+      "suggestedAgents": [
+        "code-reviewer"
+      ]
+    },
+    "confluence": {
+      "name": "Confluence Page",
+      "description": "Workflow triggered by Confluence page reference",
+      "patternExample": "Page ID or URL",
+      "mcpServer": "atlassian",
+      "mcpTools": [
+        "getConfluencePage",
+        "createConfluencePage",
+        "updateConfluencePage"
+      ],
+      "suggestedSkills": [
+        "feature-workflow"
+      ],
+      "suggestedAgents": [
+        "documentation-agent"
+      ]
+    },
+    "github": {
+      "name": "GitHub Issue/PR",
+      "description": "Workflow triggered by GitHub issues or pull requests",
+      "patternExample": "#123 or PR URL",
+      "mcpServer": "github",
+      "suggestedSkills": [
+        "bugfix-workflow",
+        "feature-workflow"
+      ],
+      "suggestedAgents": [
+        "code-reviewer"
+      ]
+    },
+    "gitlab": {
+      "name": "GitLab Issue/MR",
+      "description": "Workflow triggered by GitLab issues or merge requests",
+      "patternExample": "#123 or MR URL",
+      "mcpServer": "gitlab",
+      "suggestedSkills": [
+        "bugfix-workflow",
+        "feature-workflow"
+      ],
+      "suggestedAgents": [
+        "code-reviewer"
+      ]
+    },
+    "manual": {
+      "name": "Manual Trigger",
+      "description": "Workflow triggered by explicit user request",
+      "patternExample": "User command",
+      "mcpServer": null,
+      "suggestedSkills": [
+        "code-templates"
+      ],
+      "suggestedAgents": [
+        "code-reviewer",
+        "test-generator"
+      ]
+    }
+  },
+  "workflowPatterns": {
+    "feature-development": {
+      "name": "Feature Development",
+      "description": "End-to-end workflow for developing new features from specifications",
+      "location": "{directories.workflows}/universal/feature-development.md",
+      "phases": [
+        {
+          "name": "Requirements Analysis",
+          "description": "Gather and analyze requirements"
+        },
+        {
+          "name": "Architecture Design",
+          "description": "Create technical architecture"
+        },
+        {
+          "name": "TDD Implementation",
+          "description": "Test-driven development"
+        },
+        {
+          "name": "Code Review",
+          "description": "Quality review"
+        },
+        {
+          "name": "Documentation",
+          "description": "Generate documentation"
+        },
+        {
+          "name": "Integration",
+          "description": "Integration and ticket update"
+        }
+      ],
+      "applicableTriggers": [
+        "confluence",
+        "github",
+        "gitlab",
+        "manual"
+      ],
+      "stackAgnostic": true
+    },
+    "bugfix-resolution": {
+      "name": "Bugfix Resolution",
+      "description": "Systematic workflow for resolving bugs from ticket to completion",
+      "location": "{directories.workflows}/universal/bugfix-resolution.md",
+      "phases": [
+        {
+          "name": "Ticket Analysis",
+          "description": "Gather and analyze bug report"
+        },
+        {
+          "name": "Grounding and Context",
+          "description": "Verify system context"
+        },
+        {
+          "name": "Root Cause Analysis",
+          "description": "Identify underlying cause"
+        },
+        {
+          "name": "Fix Implementation",
+          "description": "Implement the fix"
+        },
+        {
+          "name": "Verification",
+          "description": "Comprehensive verification"
+        },
+        {
+          "name": "Completion",
+          "description": "Update tracking and capture lessons"
+        }
+      ],
+      "applicableTriggers": [
+        "jira",
+        "github",
+        "gitlab",
+        "manual"
+      ],
+      "stackAgnostic": true
+    },
+    "code-review-workflow": {
+      "name": "Code Review Workflow",
+      "description": "Comprehensive code review covering correctness, style, security, and maintainability",
+      "location": "{directories.workflows}/universal/code-review.md",
+      "phases": [
+        {
+          "name": "Context Gathering",
+          "description": "Understand change context"
+        },
+        {
+          "name": "Correctness Review",
+          "description": "Verify logic and error handling"
+        },
+        {
+          "name": "Style and Formatting",
+          "description": "Check coding standards"
+        },
+        {
+          "name": "Design Review",
+          "description": "Evaluate architecture"
+        },
+        {
+          "name": "Performance Review",
+          "description": "Identify performance concerns"
+        },
+        {
+          "name": "Security Review",
+          "description": "Check vulnerabilities"
+        },
+        {
+          "name": "Maintainability Review",
+          "description": "Assess long-term maintainability"
+        },
+        {
+          "name": "Report Generation",
+          "description": "Compile findings"
+        }
+      ],
+      "applicableTriggers": [
+        "github",
+        "gitlab",
+        "manual"
+      ],
+      "stackAgnostic": true
+    },
+    "quality-gate": {
+      "name": "Quality Gate",
+      "description": "Automated quality gate enforcing standards before merge",
+      "location": "{directories.workflows}/quality/quality-gate.md",
+      "phases": [
+        {
+          "name": "Static Analysis",
+          "description": "Lint, type check, format"
+        },
+        {
+          "name": "Test Execution",
+          "description": "Unit and integration tests"
+        },
+        {
+          "name": "Security Scanning",
+          "description": "Dependency and SAST scans"
+        },
+        {
+          "name": "Code Review",
+          "description": "Complexity and pattern analysis"
+        },
+        {
+          "name": "Gate Decision",
+          "description": "Pass/fail determination"
+        }
+      ],
+      "applicableTriggers": [
+        "github",
+        "gitlab",
+        "manual"
+      ],
+      "stackAgnostic": true
+    },
+    "tdd-cycle": {
+      "name": "TDD Cycle",
+      "description": "Red-Green-Refactor test-driven development workflow",
+      "location": "{directories.workflows}/universal/tdd-cycle.md",
+      "phases": [
+        {
+          "name": "Red Phase",
+          "description": "Write failing test"
+        },
+        {
+          "name": "Green Phase",
+          "description": "Make test pass"
+        },
+        {
+          "name": "Refactor Phase",
+          "description": "Improve code quality"
+        },
+        {
+          "name": "Iterate",
+          "description": "Continue for additional behaviors"
+        },
+        {
+          "name": "Completion",
+          "description": "Finalize TDD session"
+        }
+      ],
+      "applicableTriggers": [
+        "manual"
+      ],
+      "stackAgnostic": true
+    },
+    "bdd-driven-development": {
+      "name": "BDD-Driven Development",
+      "description": "Behavior-driven development with Gherkin scenarios",
+      "location": "{directories.workflows}/quality/bdd-driven-development.md",
+      "phases": [
+        {
+          "name": "Three Amigos Discovery",
+          "description": "Collaborative behavior definition"
+        },
+        {
+          "name": "Feature File Creation",
+          "description": "Write Gherkin scenarios"
+        },
+        {
+          "name": "Step Definition Creation",
+          "description": "Implement step definitions"
+        },
+        {
+          "name": "TDD Implementation",
+          "description": "Implement underlying functionality"
+        },
+        {
+          "name": "Living Documentation",
+          "description": "Generate stakeholder documentation"
+        }
+      ],
+      "applicableTriggers": [
+        "manual",
+        "confluence"
+      ],
+      "stackAgnostic": true
+    },
+    "security-audit": {
+      "name": "Security Audit",
+      "description": "Comprehensive security audit workflow",
+      "location": "{directories.workflows}/quality/security-audit.md",
+      "phases": [
+        {
+          "name": "Scope Definition",
+          "description": "Define audit scope"
+        },
+        {
+          "name": "Secret Scanning",
+          "description": "Detect exposed secrets"
+        },
+        {
+          "name": "Authentication Review",
+          "description": "Review auth mechanisms"
+        },
+        {
+          "name": "Authorization Review",
+          "description": "Review access control"
+        },
+        {
+          "name": "Input Validation",
+          "description": "Check injection vulnerabilities"
+        },
+        {
+          "name": "Dependency Audit",
+          "description": "Scan for CVEs"
+        },
+        {
+          "name": "Security Headers",
+          "description": "Review HTTP headers"
+        },
+        {
+          "name": "Report Generation",
+          "description": "Compile security report"
+        }
+      ],
+      "applicableTriggers": [
+        "manual",
+        "github",
+        "gitlab"
+      ],
+      "stackAgnostic": true
+    },
+    "sprint-planning": {
+      "name": "Sprint Planning",
+      "description": "Systematic workflow for planning sprints",
+      "location": "{directories.workflows}/agile/sprint-planning.md",
+      "phases": [
+        {
+          "name": "Preparation",
+          "description": "Review previous sprint, calculate capacity"
+        },
+        {
+          "name": "Backlog Review",
+          "description": "Review and prioritize backlog"
+        },
+        {
+          "name": "Story Selection",
+          "description": "Select stories by priority and capacity"
+        },
+        {
+          "name": "Sprint Goal",
+          "description": "Define goal and create sprint"
+        },
+        {
+          "name": "Task Breakdown",
+          "description": "Break stories into tasks"
+        },
+        {
+          "name": "Communication",
+          "description": "Notify stakeholders"
+        }
+      ],
+      "applicableTriggers": [
+        "manual",
+        "schedule"
+      ],
+      "stackAgnostic": true
+    },
+    "sprint-closure": {
+      "name": "Sprint Closure",
+      "description": "Systematic workflow for closing sprints",
+      "location": "{directories.workflows}/agile/sprint-closure.md",
+      "phases": [
+        {
+          "name": "Status Review",
+          "description": "Review all sprint items"
+        },
+        {
+          "name": "Metrics Calculation",
+          "description": "Calculate velocity and metrics"
+        },
+        {
+          "name": "Incomplete Items",
+          "description": "Handle incomplete work"
+        },
+        {
+          "name": "Burndown Analysis",
+          "description": "Analyze burndown patterns"
+        },
+        {
+          "name": "Retrospective",
+          "description": "Conduct retrospective"
+        },
+        {
+          "name": "Closure",
+          "description": "Close sprint and communicate"
+        }
+      ],
+      "applicableTriggers": [
+        "manual",
+        "schedule"
+      ],
+      "stackAgnostic": true
+    },
+    "daily-standup": {
+      "name": "Daily Standup",
+      "description": "Automated daily standup facilitation",
+      "location": "{directories.workflows}/agile/daily-standup.md",
+      "phases": [
+        {
+          "name": "Status Collection",
+          "description": "Gather current work status"
+        },
+        {
+          "name": "Status Formatting",
+          "description": "Format per-person status"
+        },
+        {
+          "name": "Blocker Resolution",
+          "description": "Address blockers"
+        },
+        {
+          "name": "Communication",
+          "description": "Share standup results"
+        }
+      ],
+      "applicableTriggers": [
+        "manual",
+        "schedule"
+      ],
+      "stackAgnostic": true
+    },
+    "backlog-refinement": {
+      "name": "Backlog Refinement",
+      "description": "Systematic backlog grooming workflow",
+      "location": "{directories.workflows}/agile/backlog-refinement.md",
+      "phases": [
+        {
+          "name": "Backlog Review",
+          "description": "Analyze backlog state"
+        },
+        {
+          "name": "Priority Review",
+          "description": "Review and adjust priorities"
+        },
+        {
+          "name": "Story Refinement",
+          "description": "Improve story quality"
+        },
+        {
+          "name": "Estimation",
+          "description": "Estimate unestimated items"
+        },
+        {
+          "name": "Readiness Check",
+          "description": "Verify Definition of Ready"
+        },
+        {
+          "name": "Documentation",
+          "description": "Document refinement outcomes"
+        }
+      ],
+      "applicableTriggers": [
+        "manual",
+        "schedule"
+      ],
+      "stackAgnostic": true
+    },
+    "smart-contract-audit": {
+      "name": "Smart Contract Audit",
+      "description": "Comprehensive security audit for smart contracts",
+      "location": "{directories.workflows}/blockchain/smart-contract-audit.md",
+      "phases": [
+        {
+          "name": "Initial Review",
+          "description": "Understand contract architecture"
+        },
+        {
+          "name": "Static Analysis",
+          "description": "Run security scanners"
+        },
+        {
+          "name": "Manual Review",
+          "description": "Business logic and edge cases"
+        },
+        {
+          "name": "Gas Analysis",
+          "description": "Optimize gas usage"
+        },
+        {
+          "name": "Test Coverage",
+          "description": "Verify test coverage"
+        },
+        {
+          "name": "Report Generation",
+          "description": "Compile audit report"
+        }
+      ],
+      "applicableTriggers": [
+        "manual"
+      ],
+      "applicableStacks": [
+        "solidity-ethereum",
+        "solana-rust",
+        "defi-protocols"
+      ]
+    },
+    "trading-strategy-pipeline": {
+      "name": "Trading Strategy Pipeline",
+      "description": "End-to-end trading strategy development and validation",
+      "location": "{directories.workflows}/trading/trading-strategy-pipeline.md",
+      "phases": [
+        {
+          "name": "Hypothesis Formation",
+          "description": "Define trading hypothesis"
+        },
+        {
+          "name": "Backtesting",
+          "description": "Test on historical data"
+        },
+        {
+          "name": "Statistical Validation",
+          "description": "Verify statistical significance"
+        },
+        {
+          "name": "Paper Trading",
+          "description": "Real-time simulation"
+        },
+        {
+          "name": "Live Approval",
+          "description": "Human approval for live deployment"
+        }
+      ],
+      "applicableTriggers": [
+        "manual"
+      ],
+      "applicableStacks": [
+        "quantitative-trading",
+        "financial-ai-agents"
+      ]
+    },
+    "rap-development": {
+      "name": "RAP Development",
+      "description": "RESTful ABAP Programming Model development workflow",
+      "location": "{directories.workflows}/sap/rap-development.md",
+      "phases": [
+        {
+          "name": "CDS Data Modeling",
+          "description": "Create CDS data model"
+        },
+        {
+          "name": "Behavior Definition",
+          "description": "Define business object behavior"
+        },
+        {
+          "name": "Behavior Implementation",
+          "description": "Implement business logic"
+        },
+        {
+          "name": "Service Definition",
+          "description": "Expose OData service"
+        },
+        {
+          "name": "Fiori Elements UI",
+          "description": "Configure UI annotations"
+        },
+        {
+          "name": "Testing & Deployment",
+          "description": "Test and deploy"
+        }
+      ],
+      "applicableTriggers": [
+        "manual",
+        "jira"
+      ],
+      "applicableStacks": [
+        "sap-rap",
+        "sap-abap"
+      ]
+    },
+    "cap-service-development": {
+      "name": "CAP Service Development",
+      "description": "SAP Cloud Application Programming Model workflow",
+      "location": "{directories.workflows}/sap/cap-service-development.md",
+      "phases": [
+        {
+          "name": "CDS Domain Modeling",
+          "description": "Define domain model"
+        },
+        {
+          "name": "Service Definition",
+          "description": "Define and expose services"
+        },
+        {
+          "name": "Service Implementation",
+          "description": "Implement custom handlers"
+        },
+        {
+          "name": "Testing",
+          "description": "Unit and integration tests"
+        },
+        {
+          "name": "Fiori UI",
+          "description": "Add Fiori Elements UI"
+        },
+        {
+          "name": "BTP Deployment",
+          "description": "Deploy to SAP BTP"
+        }
+      ],
+      "applicableTriggers": [
+        "manual",
+        "jira"
+      ],
+      "applicableStacks": [
+        "sap-cap"
+      ]
+    },
+    "multi-agent-orchestration": {
+      "name": "Multi-Agent Orchestration",
+      "description": "Design and deploy multi-agent AI systems",
+      "location": "{directories.workflows}/ai-ml/multi-agent-orchestration.md",
+      "phases": [
+        {
+          "name": "Topology Design",
+          "description": "Design agent coordination topology"
+        },
+        {
+          "name": "Agent Implementation",
+          "description": "Implement individual agents"
+        },
+        {
+          "name": "Coordination Logic",
+          "description": "Implement handoffs and supervision"
+        },
+        {
+          "name": "Testing",
+          "description": "Test multi-agent system"
+        },
+        {
+          "name": "Deployment",
+          "description": "Deploy to production"
+        }
+      ],
+      "applicableTriggers": [
+        "manual"
+      ],
+      "applicableStacks": [
+        "ai-agent-development",
+        "multi-agent-systems",
+        "python-multi-agent"
+      ]
+    },
+    "rag-pipeline-development": {
+      "name": "RAG Pipeline Development",
+      "description": "End-to-end RAG system development workflow",
+      "location": "{directories.workflows}/ai-ml/rag-pipeline-development.md",
+      "phases": [
+        {
+          "name": "Document Ingestion",
+          "description": "Load and preprocess documents"
+        },
+        {
+          "name": "Embedding & Indexing",
+          "description": "Create embeddings and vector store"
+        },
+        {
+          "name": "Retrieval Configuration",
+          "description": "Configure and optimize retrieval"
+        },
+        {
+          "name": "Generation Pipeline",
+          "description": "Build generation component"
+        },
+        {
+          "name": "Evaluation",
+          "description": "RAGAS evaluation"
+        },
+        {
+          "name": "Deployment",
+          "description": "Deploy RAG system"
+        }
+      ],
+      "applicableTriggers": [
+        "manual"
+      ],
+      "applicableStacks": [
+        "python-rag-system",
+        "starter-rag"
+      ]
+    },
+    "cicd-pipeline": {
+      "name": "CI/CD Pipeline",
+      "description": "Continuous integration and deployment workflow",
+      "location": "{directories.workflows}/operations/cicd-pipeline.md",
+      "phases": [
+        {
+          "name": "Build",
+          "description": "Compile and prepare artifacts"
+        },
+        {
+          "name": "Test",
+          "description": "Execute test suites"
+        },
+        {
+          "name": "Security",
+          "description": "Security scanning"
+        },
+        {
+          "name": "Deploy Staging",
+          "description": "Deploy to staging"
+        },
+        {
+          "name": "Approval Gate",
+          "description": "Human approval"
+        },
+        {
+          "name": "Deploy Production",
+          "description": "Deploy to production"
+        }
+      ],
+      "applicableTriggers": [
+        "github",
+        "gitlab",
+        "manual"
+      ],
+      "stackAgnostic": true
+    },
+    "release-management": {
+      "name": "Release Management",
+      "description": "Software release management workflow",
+      "location": "{directories.workflows}/universal/release-management.md",
+      "phases": [
+        {
+          "name": "Pre-Release Checks",
+          "description": "Verify release readiness"
+        },
+        {
+          "name": "Version Management",
+          "description": "Determine and apply version"
+        },
+        {
+          "name": "Changelog Generation",
+          "description": "Generate release notes"
+        },
+        {
+          "name": "Release Creation",
+          "description": "Create tag and release"
+        },
+        {
+          "name": "Deployment",
+          "description": "Deploy the release"
+        },
+        {
+          "name": "Communication",
+          "description": "Announce the release"
+        }
+      ],
+      "applicableTriggers": [
+        "manual",
+        "schedule"
+      ],
+      "stackAgnostic": true
+    },
+    "incident-response": {
+      "name": "Incident Response",
+      "description": "Production incident response workflow",
+      "location": "{directories.workflows}/operations/incident-response.md",
+      "phases": [
+        {
+          "name": "Detection",
+          "description": "Confirm and characterize incident"
+        },
+        {
+          "name": "Triage",
+          "description": "Identify scope and impact"
+        },
+        {
+          "name": "Mitigation",
+          "description": "Reduce or eliminate impact"
+        },
+        {
+          "name": "Resolution",
+          "description": "Fully resolve incident"
+        },
+        {
+          "name": "Recovery",
+          "description": "Restore normal operations"
+        },
+        {
+          "name": "Post-Mortem",
+          "description": "Learn from incident"
+        }
+      ],
+      "applicableTriggers": [
+        "manual",
+        "alert"
+      ],
+      "stackAgnostic": true
+    },
+    "bugfix": {
+      "name": "Bugfix Workflow",
+      "description": "Complete workflow for fixing bugs from tickets",
+      "phases": [
+        {
+          "name": "Read Ticket",
+          "description": "Fetch and analyze the ticket"
+        },
+        {
+          "name": "Fetch Source",
+          "description": "Acquire source code"
+        },
+        {
+          "name": "Ground Data",
+          "description": "Verify data models"
+        },
+        {
+          "name": "Analyze Code",
+          "description": "Find root cause"
+        },
+        {
+          "name": "Create Plan",
+          "description": "Document implementation plan"
+        },
+        {
+          "name": "Implement Fix",
+          "description": "Create code changes"
+        },
+        {
+          "name": "Update Ticket",
+          "description": "Update ticket status"
+        }
+      ],
+      "artifacts": [
+        "implementation_plan.md",
+        "code_changes"
+      ],
+      "applicableTriggers": [
+        "jira",
+        "github",
+        "gitlab"
+      ]
+    },
+    "feature": {
+      "name": "Feature Workflow",
+      "description": "Complete workflow for implementing new features",
+      "phases": [
+        {
+          "name": "Read Requirements",
+          "description": "Fetch and analyze specs"
+        },
+        {
+          "name": "Ground Data Model",
+          "description": "Verify data structures"
+        },
+        {
+          "name": "Create Architecture",
+          "description": "Design solution"
+        },
+        {
+          "name": "Create Tech Design",
+          "description": "Detailed specification"
+        },
+        {
+          "name": "Fetch Source",
+          "description": "Acquire existing code"
+        },
+        {
+          "name": "Create Impl Plan",
+          "description": "Implementation steps"
+        },
+        {
+          "name": "Create Test Plan",
+          "description": "Testing requirements"
+        },
+        {
+          "name": "Execute Development",
+          "description": "Create code"
+        }
+      ],
+      "artifacts": [
+        "architecture.md",
+        "technical_spec.md",
+        "implementation_plan.md",
+        "test_plan.md",
+        "code"
+      ],
+      "applicableTriggers": [
+        "confluence",
+        "github",
+        "gitlab"
+      ]
+    },
+    "code-review": {
+      "name": "Code Review Workflow",
+      "description": "Workflow for reviewing code quality",
+      "phases": [
+        {
+          "name": "Detect Style",
+          "description": "Identify coding style"
+        },
+        {
+          "name": "Analyze Code",
+          "description": "Review code structure"
+        },
+        {
+          "name": "Check Standards",
+          "description": "Verify against standards"
+        },
+        {
+          "name": "Generate Report",
+          "description": "Create review report"
+        }
+      ],
+      "artifacts": [
+        "review_report.md"
+      ],
+      "applicableTriggers": [
+        "manual",
+        "github",
+        "gitlab"
+      ]
+    },
+    "tdd": {
+      "name": "Test-Driven Development",
+      "description": "Workflow for test-driven development",
+      "phases": [
+        {
+          "name": "Write Test",
+          "description": "Create failing test"
+        },
+        {
+          "name": "Implement Code",
+          "description": "Make test pass"
+        },
+        {
+          "name": "Refactor",
+          "description": "Improve code quality"
+        },
+        {
+          "name": "Repeat",
+          "description": "Continue cycle"
+        }
+      ],
+      "artifacts": [
+        "test_files",
+        "implementation_files"
+      ],
+      "applicableTriggers": [
+        "manual"
+      ]
+    },
+    "debug": {
+      "name": "Debug Pipeline Workflow",
+      "description": "Systematic debugging of CI/CD pipeline and test failures",
+      "phases": [
+        {
+          "name": "Error Detection",
+          "description": "Parse logs, identify failure type"
+        },
+        {
+          "name": "Root Cause Analysis",
+          "description": "Trace origin, form hypothesis"
+        },
+        {
+          "name": "Resolution Strategy",
+          "description": "Evaluate fix options"
+        },
+        {
+          "name": "Implementation",
+          "description": "Apply fix, local verification"
+        },
+        {
+          "name": "Verification",
+          "description": "Full test suite, regression check"
+        },
+        {
+          "name": "Learning",
+          "description": "Capture pattern, update knowledge"
+        }
+      ],
+      "artifacts": [
+        "fix_commit",
+        "debug_log",
+        "pattern_entry"
+      ],
+      "applicableTriggers": [
+        "github",
+        "gitlab",
+        "manual"
+      ],
+      "agent": "debug-conductor",
+      "escalationPaths": [
+        "user",
+        "team",
+        "security"
+      ],
+      "learningHooks": true
+    }
+  },
+  "methodologies": {
+    "agile": {
+      "name": "Agile",
+      "description": "Iterative development with sprints",
+      "suggestedWorkflows": [
+        "bugfix",
+        "feature",
+        "tdd"
+      ],
+      "suggestedTriggers": [
+        "jira",
+        "confluence"
+      ]
+    },
+    "kanban": {
+      "name": "Kanban",
+      "description": "Continuous flow development",
+      "suggestedWorkflows": [
+        "bugfix",
+        "feature"
+      ],
+      "suggestedTriggers": [
+        "jira",
+        "github"
+      ]
+    },
+    "waterfall": {
+      "name": "Waterfall",
+      "description": "Sequential development phases",
+      "suggestedWorkflows": [
+        "feature"
+      ],
+      "suggestedTriggers": [
+        "confluence"
+      ]
+    }
+  },
+  "patterns": {
+    "general_description": {
+      "description": "Common workflow patterns for Cursor agent systems",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# general_description pattern for workflow-patterns\n# Implement based on description: Common workflow patterns for Cursor agent systems...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    },
+    "general_usage": {
+      "description": "See detailed sections below",
+      "use_when": "Apply when implementing this pattern in your domain context",
+      "code_example": "# general_usage pattern for workflow-patterns\n# Implement based on description: See detailed sections below...",
+      "best_practices": [
+        "Validate implementation against domain requirements",
+        "Document the pattern usage and rationale in code"
+      ]
+    }
+  },
+  "best_practices": [
+    "Design workflows with explicit failure handling and rollback steps at each phase",
+    "Use capability-based access control for agent permissions - grant minimum required capabilities per workflow",
+    "Implement timeout and retry strategies for all external dependencies (MCP servers, APIs)",
+    "Define clear decision points with measurable criteria to enable deterministic routing",
+    "Include learning hooks after critical phases to capture patterns for continuous improvement",
+    "Validate workflow inputs against schema before execution to catch errors early",
+    "Design workflows to be idempotent where possible - safe to retry after partial failures",
+    "Document workflow dependencies (MCP servers, knowledge files, skills) explicitly in metadata"
+  ],
+  "anti_patterns": [
+    {
+      "name": "Monolithic Workflow",
+      "problem": "Single massive workflow attempting to do everything leads to complexity, hard debugging, and failure cascades",
+      "fix": "Break into smaller, composable workflows with clear boundaries. Use workflow inheritance or chaining for complex processes"
+    },
+    {
+      "name": "Silent Failure Propagation",
+      "problem": "Workflows continue executing after failures, producing incorrect outputs and wasting resources",
+      "fix": "Implement explicit failure handling at each phase. Use escalation points and rollback mechanisms. Fail fast with clear error messages"
+    },
+    {
+      "name": "Hardcoded Assumptions",
+      "problem": "Workflows assume specific environments, file paths, or configurations that break portability",
+      "fix": "Use expression language variables (${env.VAR}, ${context.field}). Make workflows configurable through parameters and knowledge files"
+    },
+    {
+      "name": "Missing State Checkpoints",
+      "problem": "Long-running workflows lose all progress on failure, requiring full restart",
+      "fix": "Implement state checkpoints after each phase. Enable workflow resume from last successful checkpoint"
+    },
+    {
+      "name": "Orphaned Workflow Execution",
+      "problem": "Workflows trigger but no one monitors completion, failures go unnoticed",
+      "fix": "Define notification mechanisms for workflow completion/failure. Integrate with monitoring systems. Set up alerts for critical workflows"
+    }
+  ]
+}

@@ -14,14 +14,14 @@ def test_system_steward_metadata():
         (a for a in registry["agents"] if a["agent_id"] == "system-steward"), None
     )
     assert steward is not None
-    assert "repository-governance" in steward["skills"]
+    assert "governing-repositories" in steward["skills"]
     assert "registry-clerk" in steward["delegation_to"]
 
     clerk = next(
         (a for a in registry["agents"] if a["agent_id"] == "registry-clerk"), None
     )
     assert clerk is not None
-    assert "system-registration" in clerk["skills"]
+    assert "registering-systems" in clerk["skills"]
 
 
 def test_maintenance_script_availability():

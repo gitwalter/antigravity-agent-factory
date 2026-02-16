@@ -1,0 +1,363 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LangGraph Workflow Patterns",
+  "description": "Patterns for building stateful agent workflows with LangGraph",
+  "version": "2.0.0",
+  "axiomAlignment": {
+    "A1_verifiability": "State machines enable traceable, reproducible agent behavior",
+    "A3_transparency": "Graph structure makes agent logic explicit and inspectable"
+  },
+  "core_concepts": {
+    "graph": {
+      "description": "Directed graph defining agent workflow",
+      "components": [
+        "Nodes (functions)",
+        "Edges (transitions)",
+        "State (shared data)"
+      ]
+    },
+    "state": {
+      "description": "TypedDict or Pydantic model holding workflow state",
+      "best_practices": [
+        "Use immutable updates (return new state)",
+        "Define clear state schema with types",
+        "Include metadata for observability"
+      ]
+    },
+    "node": {
+      "description": "Function that transforms state",
+      "signature": "def node(state: State) -> State | dict",
+      "best_practices": [
+        "Single responsibility per node",
+        "Return only changed state keys",
+        "Handle errors gracefully"
+      ]
+    },
+    "edge": {
+      "description": "Connection between nodes, can be conditional",
+      "types": [
+        "Normal edge",
+        "Conditional edge",
+        "Entry/exit points"
+      ]
+    }
+  },
+  "patterns": {
+    "supervisor_pattern": {
+      "description": "Supervisor agent coordinates worker agents",
+      "use_when": "Complex tasks requiring multiple specialized agents",
+      "structure": {
+        "supervisor_node": "Routes tasks to appropriate workers",
+        "worker_nodes": "Specialized agents for specific tasks",
+        "aggregator_node": "Combines worker outputs"
+      },
+      "code_example": "from langgraph.graph import StateGraph, MessagesState, START, END\n\ndef supervisor(state: State) -> State:\n    # Decide which worker to invoke\n    next_worker = decide_next_worker(state)\n    return {'next': next_worker}\n\ndef worker_a(state: State) -> State:\n    # Perform specialized task A\n    result = do_task_a(state['input'])\n    return {'results': state['results'] + [result]}\n\ngraph = StateGraph(State)\ngraph.add_node('supervisor', supervisor)\ngraph.add_node('worker_a', worker_a)\ngraph.add_node('worker_b', worker_b)\ngraph.add_conditional_edges('supervisor', route_to_worker)\ngraph.add_edge(START, 'supervisor')",
+      "best_practices": [
+        "Keep supervisor logic simple and focused on routing",
+        "Define clear handoff protocols between workers",
+        "Implement timeout handling for workers"
+      ],
+      "axiom_alignment": "A2 (User Primacy) - Supervisor ensures user intent is properly delegated"
+    },
+    "sequential_workflow": {
+      "description": "Linear sequence of processing steps",
+      "use_when": "Ordered pipeline of transformations",
+      "structure": "step1 -> step2 -> step3 -> END",
+      "code_example": "graph = StateGraph(State)\ngraph.add_node('extract', extract_info)\ngraph.add_node('transform', transform_data)\ngraph.add_node('validate', validate_output)\ngraph.add_edge(START, 'extract')\ngraph.add_edge('extract', 'transform')\ngraph.add_edge('transform', 'validate')\ngraph.add_edge('validate', END)",
+      "best_practices": [
+        "Each step should be independently testable",
+        "Add validation between steps",
+        "Log state at each transition"
+      ]
+    },
+    "branching_workflow": {
+      "description": "Conditional routing based on state",
+      "use_when": "Different processing paths based on input or intermediate results",
+      "code_example": "def route_by_type(state: State) -> str:\n    if state['input_type'] == 'code':\n        return 'process_code'\n    elif state['input_type'] == 'text':\n        return 'process_text'\n    return 'default_process'\n\ngraph.add_conditional_edges(\n    'classifier',\n    route_by_type,\n    {'process_code': 'code_node', 'process_text': 'text_node', 'default_process': 'default_node'}\n)",
+      "best_practices": [
+        "Define exhaustive routing conditions",
+        "Always include default/fallback route",
+        "Test all branches"
+      ]
+    },
+    "parallel_workflow": {
+      "description": "Multiple nodes execute concurrently",
+      "use_when": "Independent tasks that can run in parallel",
+      "implementation": "Use fanout edges to multiple nodes, fanin to aggregator",
+      "best_practices": [
+        "Ensure tasks are truly independent",
+        "Handle partial failures gracefully",
+        "Implement proper aggregation logic"
+      ],
+      "code_example": "// Example for parallel_workflow"
+    },
+    "human_in_the_loop": {
+      "description": "Pause workflow for human input/approval",
+      "use_when": "Critical decisions requiring human oversight",
+      "implementation": "Use interrupt_before or interrupt_after with checkpointing",
+      "code_example": "from langgraph.checkpoint.sqlite import SqliteSaver\n\nmemory = SqliteSaver.from_conn_string(':memory:')\ngraph = builder.compile(\n    checkpointer=memory,\n    interrupt_before=['human_review']\n)\n\n# Resume after human input\ngraph.invoke(None, config={'configurable': {'thread_id': thread_id}})",
+      "best_practices": [
+        "Persist state for resumption",
+        "Provide clear context for human decision",
+        "Set timeouts for human responses"
+      ],
+      "axiom_alignment": "A2 (User Primacy) - Human oversight for critical decisions"
+    },
+    "reflection_pattern": {
+      "description": "Agent reviews and improves its own output",
+      "use_when": "Quality improvement through self-critique",
+      "structure": "generate -> reflect -> revise (loop until satisfactory)",
+      "code_example": "def should_continue(state: State) -> str:\n    if state['iteration'] >= 3:\n        return 'end'\n    if state['quality_score'] >= 0.9:\n        return 'end'\n    return 'reflect'\n\ngraph.add_conditional_edges(\n    'revise',\n    should_continue,\n    {'end': END, 'reflect': 'reflect'}\n)",
+      "best_practices": [
+        "Set maximum iteration limits",
+        "Define clear quality criteria",
+        "Track improvement across iterations"
+      ]
+    },
+    "tool_executor_pattern": {
+      "description": "Node that executes tools and returns results",
+      "use_when": "Agent needs to use external tools",
+      "implementation": "ToolNode from langgraph.prebuilt",
+      "code_example": "from langgraph.prebuilt import ToolNode\n\ntools = [search_tool, calculator_tool]\ntool_node = ToolNode(tools)\n\ngraph.add_node('tools', tool_node)\ngraph.add_edge('agent', 'tools')\ngraph.add_edge('tools', 'agent')",
+      "best_practices": [
+        "Validate tool outputs",
+        "Handle tool failures gracefully",
+        "Log tool invocations for debugging"
+      ]
+    },
+    "subgraph_pattern": {
+      "description": "Compose graphs within graphs for modularity",
+      "use_when": "Complex workflows that can be decomposed into sub-workflows",
+      "code_example": "from langgraph.graph import StateGraph, START, END\n\n# Create subgraph\nresearch_subgraph = StateGraph(State)\nresearch_subgraph.add_node('gather', gather_sources)\nresearch_subgraph.add_node('analyze', analyze_sources)\nresearch_subgraph.add_edge(START, 'gather')\nresearch_subgraph.add_edge('gather', 'analyze')\nresearch_subgraph.add_edge('analyze', END)\nresearch_compiled = research_subgraph.compile()\n\n# Use subgraph as node in main graph\nmain_graph = StateGraph(State)\nmain_graph.add_node('research', research_compiled.invoke)\nmain_graph.add_node('write', write_report)\nmain_graph.add_edge(START, 'research')\nmain_graph.add_edge('research', 'write')\nmain_graph.add_edge('write', END)",
+      "best_practices": [
+        "Keep subgraphs focused and reusable",
+        "Define clear interfaces between graphs",
+        "Test subgraphs independently",
+        "Use for complex, reusable workflows"
+      ]
+    },
+    "nested_subgraph": {
+      "description": "Subgraphs that can be nested multiple levels",
+      "use_when": "Very complex workflows with hierarchical structure",
+      "code_example": "def create_research_subgraph():\n    graph = StateGraph(State)\n    graph.add_node('search', search_node)\n    graph.add_node('filter', filter_node)\n    graph.add_edge(START, 'search')\n    graph.add_edge('search', 'filter')\n    graph.add_edge('filter', END)\n    return graph.compile()\n\ndef create_analysis_subgraph():\n    graph = StateGraph(State)\n    graph.add_node('research', create_research_subgraph().invoke)\n    graph.add_node('analyze', analyze_node)\n    graph.add_edge(START, 'research')\n    graph.add_edge('research', 'analyze')\n    graph.add_edge('analyze', END)\n    return graph.compile()\n\n# Main graph uses nested subgraph\nmain_graph.add_node('analysis', create_analysis_subgraph().invoke)",
+      "best_practices": [
+        "Limit nesting depth (2-3 levels)",
+        "Document subgraph interfaces",
+        "Test at each level",
+        "Consider flattening if too nested"
+      ]
+    }
+  },
+  "advanced_patterns": {
+    "time_travel_debugging": {
+      "description": "Inspect and replay workflow execution at any point",
+      "use_when": "Debugging complex workflows or understanding execution flow",
+      "code_example": "from langgraph.checkpoint.sqlite import SqliteSaver\nfrom langgraph.checkpoint.base import Checkpoint\n\nmemory = SqliteSaver.from_conn_string('checkpoints.db')\ngraph = builder.compile(checkpointer=memory)\n\n# Execute workflow\nconfig = {'configurable': {'thread_id': 'debug-123'}}\nresult = graph.invoke({'input': 'test'}, config=config)\n\n# Get all checkpoints for this thread\ncheckpoints = memory.list(config, filter={'thread_id': 'debug-123'})\n\n# Replay from specific checkpoint\nfor checkpoint in checkpoints:\n    print(f'Checkpoint at step {checkpoint[\"step\"]}')\n    print(f'State: {checkpoint[\"channel_values\"]}')\n    \n    # Replay from this checkpoint\n    replay_config = {\n        'configurable': {\n            'thread_id': 'debug-123',\n            'checkpoint_id': checkpoint['id']\n        }\n    }\n    replay_result = graph.invoke(None, config=replay_config)",
+      "best_practices": [
+        "Use persistent checkpointing for debugging",
+        "Store checkpoint metadata",
+        "Implement checkpoint inspection tools",
+        "Use for post-mortem analysis"
+      ]
+    },
+    "distributed_workflows": {
+      "description": "Workflows that run across multiple machines",
+      "use_when": "Large-scale or geographically distributed systems",
+      "code_example": "from langgraph.checkpoint.postgres import PostgresSaver\nimport redis\n\n# Shared checkpoint store\ncheckpointer = PostgresSaver.from_conn_string(\n    'postgresql://user:pass@host/db'\n)\n\n# Distributed graph execution\nclass DistributedGraph:\n    def __init__(self, graph, checkpointer, redis_client):\n        self.graph = graph.compile(checkpointer=checkpointer)\n        self.redis = redis_client\n    \n    def invoke_distributed(self, input_state, config):\n        # Lock for distributed execution\n        lock_key = f'lock:{config[\"configurable\"][\"thread_id\"]}'\n        \n        with self.redis.lock(lock_key, timeout=30):\n            # Execute with shared checkpoint\n            result = self.graph.invoke(input_state, config)\n            return result\n\n# Use Redis for coordination\nredis_client = redis.Redis(host='localhost', port=6379)\ndistributed_graph = DistributedGraph(graph, checkpointer, redis_client)",
+      "best_practices": [
+        "Use shared checkpoint store (Postgres, etc.)",
+        "Implement distributed locking",
+        "Handle network partitions",
+        "Monitor distributed execution",
+        "Consider message queues for coordination"
+      ]
+    },
+    "advanced_checkpointing": {
+      "description": "Advanced checkpointing strategies",
+      "snapshot_checkpointing": {
+        "description": "Periodic snapshots for fast recovery",
+        "code_example": "from langgraph.checkpoint.base import BaseCheckpointSaver\n\nclass SnapshotCheckpointSaver(BaseCheckpointSaver):\n    def __init__(self, base_saver, snapshot_interval=10):\n        self.base_saver = base_saver\n        self.snapshot_interval = snapshot_interval\n        self.snapshots = {}\n    \n    def put(self, config, checkpoint, metadata, new_versions):\n        # Save to base saver\n        result = self.base_saver.put(config, checkpoint, metadata, new_versions)\n        \n        # Create snapshot periodically\n        thread_id = config['configurable']['thread_id']\n        step = checkpoint.get('step', 0)\n        \n        if step % self.snapshot_interval == 0:\n            self.snapshots[thread_id] = {\n                'checkpoint': checkpoint,\n                'step': step,\n                'timestamp': time.time()\n            }\n        \n        return result\n    \n    def get_snapshot(self, thread_id, step=None):\n        if step:\n            # Find closest snapshot\n            for snap in self.snapshots.get(thread_id, []):\n                if snap['step'] <= step:\n                    return snap\n        return self.snapshots.get(thread_id)",
+        "best_practices": [
+          "Set appropriate snapshot interval",
+          "Clean up old snapshots",
+          "Use for long-running workflows",
+          "Balance storage vs recovery speed"
+        ]
+      },
+      "incremental_checkpointing": {
+        "description": "Store only changes between checkpoints",
+        "code_example": "class IncrementalCheckpointSaver:\n    def __init__(self, base_saver):\n        self.base_saver = base_saver\n        self.deltas = {}\n    \n    def put(self, config, checkpoint, metadata, new_versions):\n        thread_id = config['configurable']['thread_id']\n        \n        # Get previous checkpoint\n        prev_checkpoint = self.base_saver.get(config)\n        \n        if prev_checkpoint:\n            # Calculate delta\n            delta = self._calculate_delta(\n                prev_checkpoint['channel_values'],\n                checkpoint['channel_values']\n            )\n            \n            # Store delta\n            self.deltas[thread_id] = delta\n        \n        # Save full checkpoint periodically\n        return self.base_saver.put(config, checkpoint, metadata, new_versions)\n    \n    def _calculate_delta(self, old_state, new_state):\n        delta = {}\n        for key in new_state:\n            if key not in old_state or old_state[key] != new_state[key]:\n                delta[key] = new_state[key]\n        return delta",
+        "best_practices": [
+          "Use for large state objects",
+          "Periodically save full checkpoints",
+          "Handle delta reconstruction",
+          "Monitor storage savings"
+        ]
+      }
+    },
+    "state_reducers": {
+      "description": "Advanced state reduction patterns",
+      "custom_reducer": {
+        "description": "Create custom reducers for state updates",
+        "code_example": "from typing import Annotated\nfrom langgraph.graph import StateGraph\nfrom operator import add\n\n# Custom reducer for merging dictionaries\ndef merge_dicts(left: dict, right: dict) -> dict:\n    result = left.copy()\n    result.update(right)\n    return result\n\n# Custom reducer for appending with deduplication\ndef append_unique(left: list, right: list) -> list:\n    result = left.copy()\n    for item in right:\n        if item not in result:\n            result.append(item)\n    return result\n\nclass State(TypedDict):\n    # Use built-in reducer\n    messages: Annotated[list, add_messages]\n    \n    # Use operator reducer\n    counts: Annotated[dict, add]\n    \n    # Use custom reducer\n    metadata: Annotated[dict, merge_dicts]\n    unique_items: Annotated[list, append_unique]",
+        "best_practices": [
+          "Use appropriate reducers for data types",
+          "Ensure reducers are commutative and associative",
+          "Test reducer behavior",
+          "Document reducer semantics"
+        ]
+      },
+      "conditional_reducer": {
+        "description": "Reducer that applies conditionally",
+        "code_example": "def conditional_merge(left: dict, right: dict) -> dict:\n    result = left.copy()\n    \n    # Only merge non-None values\n    for key, value in right.items():\n        if value is not None:\n            result[key] = value\n    \n    return result\n\nclass State(TypedDict):\n    config: Annotated[dict, conditional_merge]",
+        "best_practices": [
+          "Document conditional logic",
+          "Ensure idempotency",
+          "Handle edge cases"
+        ]
+      }
+    },
+    "command_pattern": {
+      "description": "Encapsulate operations as commands for undo/redo",
+      "use_when": "Need to support undo/redo or audit operations",
+      "code_example": "from typing import Protocol\nfrom abc import ABC, abstractmethod\n\nclass Command(Protocol):\n    def execute(self, state: State) -> State:\n        ...\n    \n    def undo(self, state: State) -> State:\n        ...\n\nclass UpdateStateCommand:\n    def __init__(self, key: str, value: any):\n        self.key = key\n        self.value = value\n        self.previous_value = None\n    \n    def execute(self, state: State) -> State:\n        self.previous_value = state.get(self.key)\n        return {**state, self.key: self.value}\n    \n    def undo(self, state: State) -> State:\n        if self.previous_value is None:\n            return {k: v for k, v in state.items() if k != self.key}\n        return {**state, self.key: self.previous_value}\n\nclass CommandHistory:\n    def __init__(self):\n        self.history = []\n        self.current_index = -1\n    \n    def execute_command(self, command: Command, state: State) -> State:\n        # Remove any commands after current index (for redo)\n        self.history = self.history[:self.current_index + 1]\n        \n        # Execute command\n        new_state = command.execute(state)\n        \n        # Add to history\n        self.history.append(command)\n        self.current_index += 1\n        \n        return new_state\n    \n    def undo(self, state: State) -> State:\n        if self.current_index >= 0:\n            command = self.history[self.current_index]\n            self.current_index -= 1\n            return command.undo(state)\n        return state\n    \n    def redo(self, state: State) -> State:\n        if self.current_index < len(self.history) - 1:\n            self.current_index += 1\n            command = self.history[self.current_index]\n            return command.execute(state)\n        return state\n\n# Use in node\ndef command_node(state: State, history: CommandHistory) -> State:\n    command = UpdateStateCommand('status', 'processing')\n    return history.execute_command(command, state)",
+      "best_practices": [
+        "Implement execute and undo for all commands",
+        "Store command history in checkpoints",
+        "Limit history size",
+        "Use for audit trails"
+      ]
+    }
+  },
+  "state_management": {
+    "typed_state": {
+      "description": "Define state with TypedDict for type safety",
+      "code_example": "from typing import TypedDict, Annotated\nfrom langgraph.graph import add_messages\n\nclass State(TypedDict):\n    messages: Annotated[list, add_messages]\n    context: str\n    iteration: int"
+    },
+    "reducers": {
+      "description": "Functions that combine state updates",
+      "use_case": "When multiple nodes update the same key",
+      "built_in": [
+        "add_messages (for chat)",
+        "operator.add (for lists)"
+      ],
+      "code_example": "from operator import add\nfrom langgraph.graph import add_messages\n\nclass State(TypedDict):\n    # Built-in message reducer\n    messages: Annotated[list, add_messages]\n    \n    # Operator reducer for lists\n    results: Annotated[list, add]\n    \n    # Custom reducer\n    metadata: Annotated[dict, lambda left, right: {**left, **right}]",
+      "advanced_reducers": {
+        "description": "Advanced reducer patterns",
+        "merge_dicts": "from typing import Annotated\n\ndef merge_dicts(left: dict, right: dict) -> dict:\n    result = left.copy()\n    result.update(right)\n    return result\n\nclass State(TypedDict):\n    config: Annotated[dict, merge_dicts]",
+        "append_unique": "def append_unique(left: list, right: list) -> list:\n    result = left.copy()\n    for item in right:\n        if item not in result:\n            result.append(item)\n    return result\n\nclass State(TypedDict):\n    unique_items: Annotated[list, append_unique]",
+        "best_practices": [
+          "Reducers must be commutative: reducer(a, b) == reducer(b, a)",
+          "Reducers should be associative: reducer(reducer(a, b), c) == reducer(a, reducer(b, c))",
+          "Test reducer with edge cases (empty inputs, None values)",
+          "Document reducer behavior clearly"
+        ]
+      }
+    },
+    "checkpointing": {
+      "description": "Persist state for resumption and debugging",
+      "implementations": [
+        "MemorySaver",
+        "SqliteSaver",
+        "PostgresSaver"
+      ],
+      "use_when": [
+        "Human-in-the-loop",
+        "Long-running workflows",
+        "Fault tolerance"
+      ],
+      "basic_checkpointing": {
+        "code_example": "from langgraph.checkpoint.sqlite import SqliteSaver\n\nmemory = SqliteSaver.from_conn_string('checkpoints.db')\ngraph = builder.compile(checkpointer=memory)\n\nconfig = {'configurable': {'thread_id': 'conversation-123'}}\nresult = graph.invoke({'input': 'Hello'}, config=config)",
+        "best_practices": [
+          "Use persistent storage for production",
+          "Include thread_id for conversation tracking",
+          "Implement cleanup for old checkpoints"
+        ]
+      },
+      "advanced_checkpointing": {
+        "description": "Advanced checkpointing strategies",
+        "checkpoint_metadata": {
+          "code_example": "from langgraph.checkpoint.base import CheckpointMetadata\n\n# Add metadata to checkpoints\nmetadata = CheckpointMetadata(\n    source='user_input',\n    user_id='user-123',\n    session_id='session-456'\n)\n\nconfig = {\n    'configurable': {\n        'thread_id': 'thread-789',\n        'metadata': metadata\n    }\n}\n\nresult = graph.invoke({'input': 'test'}, config=config)",
+          "best_practices": [
+            "Add metadata for filtering and debugging",
+            "Include user/session identifiers",
+            "Store operation context"
+          ]
+        },
+        "checkpoint_filtering": {
+          "code_example": "from langgraph.checkpoint.sqlite import SqliteSaver\n\nmemory = SqliteSaver.from_conn_string('checkpoints.db')\n\n# List checkpoints with filter\ncheckpoints = memory.list(\n    {'configurable': {}},\n    filter={'metadata.user_id': 'user-123'}\n)\n\n# Get specific checkpoint\ncheckpoint = memory.get(\n    {'configurable': {'thread_id': 'thread-789'}},\n    {'checkpoint_id': 'checkpoint-id'}\n)",
+          "best_practices": [
+            "Use filters for efficient querying",
+            "Index frequently filtered fields",
+            "Clean up old checkpoints"
+          ]
+        },
+        "checkpoint_compression": {
+          "code_example": "import gzip\nimport json\nfrom langgraph.checkpoint.base import BaseCheckpointSaver\n\nclass CompressedCheckpointSaver(BaseCheckpointSaver):\n    def __init__(self, base_saver):\n        self.base_saver = base_saver\n    \n    def put(self, config, checkpoint, metadata, new_versions):\n        # Compress checkpoint data\n        compressed_checkpoint = {\n            **checkpoint,\n            'channel_values': self._compress(checkpoint['channel_values'])\n        }\n        \n        return self.base_saver.put(config, compressed_checkpoint, metadata, new_versions)\n    \n    def get(self, config, checkpoint_id=None):\n        checkpoint = self.base_saver.get(config, checkpoint_id)\n        if checkpoint:\n            checkpoint['channel_values'] = self._decompress(checkpoint['channel_values'])\n        return checkpoint\n    \n    def _compress(self, data):\n        return gzip.compress(json.dumps(data).encode())\n    \n    def _decompress(self, compressed_data):\n        return json.loads(gzip.decompress(compressed_data).decode())",
+          "best_practices": [
+            "Use for large state objects",
+            "Monitor compression ratio",
+            "Consider compression overhead"
+          ]
+        }
+      }
+    }
+  },
+  "prebuilt_components": {
+    "create_react_agent": {
+      "description": "Pre-built ReAct agent graph",
+      "use_when": "Standard agent with tools",
+      "code": "from langgraph.prebuilt import create_react_agent\n\nagent = create_react_agent(model, tools, checkpointer=memory)"
+    },
+    "ToolNode": {
+      "description": "Pre-built node for tool execution",
+      "use_when": "Need to execute tools in a graph"
+    }
+  },
+  "testing_langgraph": {
+    "unit_testing": {
+      "description": "Test individual nodes",
+      "approach": "Test node functions with mock state",
+      "code_example": "def test_extract_node():\n    input_state = {'input': 'test data', 'results': []}\n    output_state = extract_node(input_state)\n    assert 'extracted' in output_state"
+    },
+    "integration_testing": {
+      "description": "Test complete graph execution",
+      "approach": "Compile graph and run with test inputs",
+      "code_example": "def test_workflow():\n    graph = create_workflow()\n    result = graph.invoke({'input': 'test'})\n    assert result['status'] == 'complete'"
+    },
+    "visualization": {
+      "description": "Visualize graph structure for debugging",
+      "code": "graph.get_graph().draw_mermaid_png()"
+    }
+  },
+  "anti_patterns": [
+    {
+      "name": "god_state",
+      "description": "State with too many fields",
+      "problem": "Hard to track, prone to bugs",
+      "fix": "Keep state minimal, use nested structures for organization"
+    },
+    {
+      "name": "side_effects_in_nodes",
+      "description": "Nodes that modify external state",
+      "problem": "Hard to test, unpredictable",
+      "fix": "Make nodes pure when possible, isolate side effects"
+    },
+    {
+      "name": "missing_error_handling",
+      "description": "No handling for node failures",
+      "problem": "Silent failures, stuck workflows",
+      "fix": "Add error nodes, implement fallback paths"
+    }
+  ],
+  "id": "langgraph-workflows",
+  "name": "Langgraph Workflows",
+  "category": "patterns",
+  "best_practices": [],
+  "related_skills": [
+    "onboarding-flow"
+  ],
+  "related_knowledge": [
+    "manifest.json"
+  ]
+}

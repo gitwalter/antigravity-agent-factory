@@ -576,27 +576,19 @@ class TestIntegration:
         """
         Perform a full dry-run sync across all artifacts in the actual repository.
 
-        How: Runs engine.sync_all(dry_run=True) and checks for errors in the results.
+        How: Runs engine.sync_all(dry_run=True, use_fast_count=True) and checks for errors in the results.
         Why: This is the definitive integration test for the Entire Repo's
         documentation state. It ensures every sync target is valid and reachable.
         """
-        import os
+        engine = SyncEngine(factory_root)
+        results = engine.sync_all(dry_run=True, use_fast_count=True)
 
-        original_cwd = os.getcwd()
-        try:
-            os.chdir(factory_root)
+        # Should have results for each artifact
+        assert len(results) > 0
 
-            engine = SyncEngine(factory_root)
-            results = engine.sync_all(dry_run=True)
-
-            # Should have results for each artifact
-            assert len(results) > 0
-
-            # No errors should have occurred
-            errors = [r for r in results if "error" in r.message.lower()]
-            assert len(errors) == 0, f"Errors occurred: {errors}"
-        finally:
-            os.chdir(original_cwd)
+        # No errors should have occurred
+        errors = [r for r in results if "error" in r.message.lower()]
+        assert len(errors) == 0, f"Errors occurred: {errors}"
 
     def test_artifacts_are_currently_synced(self, factory_root):
         """
@@ -606,25 +598,17 @@ class TestIntegration:
         Why: Used as a CI gate to ensure PRs don't introduce documentation drift.
         If this fails, the developer must run 'sync_artifacts.py --sync' locally.
         """
-        import os
+        engine = SyncEngine(factory_root)
+        results = engine.sync_all(dry_run=True, use_fast_count=True)
 
-        original_cwd = os.getcwd()
-        try:
-            os.chdir(factory_root)
+        # Filter out "No strategy" messages (for unimplemented features)
+        real_changes = [
+            r for r in results if r.changed and "No strategy" not in r.message
+        ]
 
-            engine = SyncEngine(factory_root)
-            results = engine.sync_all(dry_run=True)
-
-            # Filter out "No strategy" messages (for unimplemented features)
-            real_changes = [
-                r for r in results if r.changed and "No strategy" not in r.message
-            ]
-
-            assert (
-                len(real_changes) == 0
-            ), f"Out of sync: {[r.message for r in real_changes]}"
-        finally:
-            os.chdir(original_cwd)
+        assert (
+            len(real_changes) == 0
+        ), f"Out of sync: {[r.message for r in real_changes]}"
 
 
 class TestDirectoryDetection:

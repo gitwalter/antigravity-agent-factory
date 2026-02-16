@@ -1,0 +1,343 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "llm-evaluation-patterns",
+  "name": "LLM Evaluation Patterns",
+  "title": "LLM Evaluation Patterns",
+  "description": "Patterns for evaluating LLMs, RAG systems, and AI applications",
+  "version": "1.0.0",
+  "category": "ai-ml",
+  "axiomAlignment": {
+    "A1_verifiability": "Systematic evaluation enables verification of AI behavior",
+    "A2_user_primacy": "Evaluation metrics reflect user and stakeholder requirements",
+    "A3_transparency": "Metrics and benchmarks make performance explicit",
+    "A4_non_harm": "Regression testing and monitoring prevent harmful model drift",
+    "A5_consistency": "Unified evaluation patterns across RAGAS, LLM-as-judge, and regression"
+  },
+  "related_skills": [
+    "llm-evaluation",
+    "agent-testing",
+    "rag-patterns",
+    "prompt-optimization"
+  ],
+  "related_knowledge": [
+    "rag-patterns.json",
+    "llm-evaluation-frameworks.json",
+    "anthropic-patterns.json"
+  ],
+  "evaluation_types": {
+    "offline_evaluation": {
+      "description": "Evaluate on static test sets before deployment",
+      "when_to_use": "Development, model comparison, before release",
+      "use_when": "Development, model comparison, before release",
+      "code_example": "import httpx\n\nasync with httpx.AsyncClient() as client:\n    response = await client.get(url, timeout=30.0)\n    response.raise_for_status()\n    return response.json()",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for offline_evaluation",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "online_evaluation": {
+      "description": "Monitor performance on live traffic",
+      "when_to_use": "Production monitoring, A/B testing",
+      "use_when": "Production monitoring, A/B testing",
+      "code_example": "import httpx\n\nasync with httpx.AsyncClient() as client:\n    response = await client.get(url, timeout=30.0)\n    response.raise_for_status()\n    return response.json()",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for online_evaluation",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "llm_as_judge": {
+      "description": "Use LLM to evaluate other LLM outputs",
+      "when_to_use": "Complex quality assessment, scalable evaluation",
+      "use_when": "Complex quality assessment, scalable evaluation",
+      "code_example": "import httpx\n\nasync with httpx.AsyncClient() as client:\n    response = await client.get(url, timeout=30.0)\n    response.raise_for_status()\n    return response.json()",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for llm_as_judge",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    }
+  },
+  "rag_evaluation": {
+    "ragas": {
+      "description": "Standard RAG evaluation framework",
+      "code_example": "from ragas import evaluate\nfrom ragas.metrics import (\n    faithfulness,\n    answer_relevancy,\n    context_precision,\n    context_recall,\n    context_utilization\n)\nfrom datasets import Dataset\n\n# Prepare evaluation data\neval_data = {\n    'question': questions,  # List of questions\n    'answer': answers,  # Generated answers\n    'contexts': contexts,  # Retrieved contexts for each question\n    'ground_truth': ground_truths  # Expected answers\n}\n\ndataset = Dataset.from_dict(eval_data)\n\n# Run evaluation\nresults = evaluate(\n    dataset,\n    metrics=[\n        faithfulness,  # Is answer grounded in context?\n        answer_relevancy,  # Is answer relevant to question?\n        context_precision,  # Are retrieved contexts relevant?\n        context_recall  # Did we get all needed context?\n    ]\n)\n\nprint(f'Faithfulness: {results[\"faithfulness\"]:.3f}')\nprint(f'Answer Relevancy: {results[\"answer_relevancy\"]:.3f}')\nprint(f'Context Precision: {results[\"context_precision\"]:.3f}')\nprint(f'Context Recall: {results[\"context_recall\"]:.3f}')",
+      "metrics": {
+        "faithfulness": "Measures if answer is grounded in retrieved context (0-1)",
+        "answer_relevancy": "Measures if answer addresses the question (0-1)",
+        "context_precision": "Measures precision of retrieved contexts (0-1)",
+        "context_recall": "Measures if all relevant info was retrieved (0-1)",
+        "context_utilization": "Measures how well context was used in answer"
+      },
+      "best_practices": [
+        "Evaluate on representative questions",
+        "Include edge cases in test set",
+        "Track metrics over time",
+        "Set threshold for each metric"
+      ],
+      "use_when": "Apply when implementing ragas in integration context"
+    },
+    "retrieval_metrics": {
+      "description": "Evaluate retrieval quality separately",
+      "code_example": "from sklearn.metrics import ndcg_score, precision_score, recall_score\nimport numpy as np\n\ndef evaluate_retrieval(queries, retrieved_ids, relevant_ids, k=5):\n    metrics = []\n    \n    for query_retrieved, query_relevant in zip(retrieved_ids, relevant_ids):\n        # Precision@K\n        retrieved_k = set(query_retrieved[:k])\n        relevant_set = set(query_relevant)\n        precision_k = len(retrieved_k & relevant_set) / k\n        \n        # Recall@K\n        recall_k = len(retrieved_k & relevant_set) / len(relevant_set) if relevant_set else 0\n        \n        # MRR (Mean Reciprocal Rank)\n        mrr = 0\n        for i, doc_id in enumerate(query_retrieved):\n            if doc_id in relevant_set:\n                mrr = 1 / (i + 1)\n                break\n        \n        metrics.append({\n            'precision@k': precision_k,\n            'recall@k': recall_k,\n            'mrr': mrr\n        })\n    \n    return {\n        'precision@k': np.mean([m['precision@k'] for m in metrics]),\n        'recall@k': np.mean([m['recall@k'] for m in metrics]),\n        'mrr': np.mean([m['mrr'] for m in metrics])\n    }",
+      "metrics": {
+        "precision@k": "Fraction of top-k results that are relevant",
+        "recall@k": "Fraction of relevant docs in top-k",
+        "mrr": "Mean Reciprocal Rank of first relevant result",
+        "ndcg": "Normalized Discounted Cumulative Gain"
+      },
+      "use_when": "Apply when implementing retrieval metrics in integration context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for retrieval_metrics",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    }
+  },
+  "llm_evaluation": {
+    "llm_as_judge": {
+      "description": "Use LLM to evaluate outputs",
+      "code_example": "from langchain_openai import ChatOpenAI\nfrom pydantic import BaseModel, Field\n\nclass EvaluationResult(BaseModel):\n    score: int = Field(description='Score from 1-5')\n    reasoning: str = Field(description='Explanation for score')\n\njudge_llm = ChatOpenAI(model='gpt-4o', temperature=0)\nstructured_judge = judge_llm.with_structured_output(EvaluationResult)\n\ndef evaluate_response(question: str, response: str, criteria: str) -> EvaluationResult:\n    prompt = f'''Evaluate the response on the following criteria:\n{criteria}\n\nQuestion: {question}\nResponse: {response}\n\nProvide a score (1-5) and reasoning.'''\n    \n    return structured_judge.invoke(prompt)\n\n# Evaluate on multiple criteria\ncriteria = {\n    'accuracy': 'Is the response factually correct?',\n    'completeness': 'Does the response fully address the question?',\n    'clarity': 'Is the response clear and well-structured?',\n    'helpfulness': 'Is the response helpful and actionable?'\n}\n\nfor criterion_name, criterion_desc in criteria.items():\n    result = evaluate_response(question, response, criterion_desc)\n    print(f'{criterion_name}: {result.score}/5 - {result.reasoning}')",
+      "best_practices": [
+        "Use GPT-4 class model for judging",
+        "Temperature 0 for consistency",
+        "Get structured output with reasoning",
+        "Calibrate with human evaluations"
+      ],
+      "use_when": "Apply when implementing llm as judge in integration context"
+    },
+    "pairwise_comparison": {
+      "description": "Compare two outputs to choose better one",
+      "code_example": "class ComparisonResult(BaseModel):\n    winner: str = Field(description='A, B, or TIE')\n    reasoning: str\n\ndef compare_responses(question: str, response_a: str, response_b: str) -> ComparisonResult:\n    prompt = f'''Compare these two responses to the question.\n\nQuestion: {question}\n\nResponse A: {response_a}\n\nResponse B: {response_b}\n\nWhich response is better? Choose A, B, or TIE.'''\n    \n    return structured_judge.invoke(prompt)\n\n# Use for model comparison\nwin_counts = {'A': 0, 'B': 0, 'TIE': 0}\n\nfor question in test_questions:\n    response_a = model_a.invoke(question)\n    response_b = model_b.invoke(question)\n    \n    result = compare_responses(question, response_a, response_b)\n    win_counts[result.winner] += 1\n\nprint(f'Model A wins: {win_counts[\"A\"]}')\nprint(f'Model B wins: {win_counts[\"B\"]}')\nprint(f'Ties: {win_counts[\"TIE\"]}')",
+      "use_when": "Apply when implementing pairwise comparison in integration context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for pairwise_comparison",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "reference_free": {
+      "description": "Evaluate without ground truth",
+      "code_example": "def evaluate_coherence(response: str) -> float:\n    '''Evaluate response coherence without reference.'''\n    prompt = f'''Rate the coherence of this response (1-5):\n    \n    {response}\n    \n    Consider: logical flow, consistency, structure.'''\n    \n    result = structured_judge.invoke(prompt)\n    return result.score / 5.0  # Normalize to 0-1",
+      "use_when": "Apply when implementing reference free in integration context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for reference_free",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    }
+  },
+  "automated_testing": {
+    "test_suite": {
+      "description": "Automated tests for LLM applications",
+      "code_example": "import pytest\nfrom your_app import rag_chain\n\nclass TestRAGSystem:\n    @pytest.fixture\n    def chain(self):\n        return rag_chain\n    \n    def test_basic_query(self, chain):\n        '''Test that basic queries return responses.'''\n        response = chain.invoke('What is the return policy?')\n        assert response is not None\n        assert len(response) > 50\n    \n    def test_unknown_query(self, chain):\n        '''Test handling of unknown queries.'''\n        response = chain.invoke('What is the airspeed of an unladen swallow?')\n        # Should admit uncertainty\n        assert any(phrase in response.lower() for phrase in [\n            \"don't know\", \"not sure\", \"no information\"\n        ])\n    \n    def test_response_grounding(self, chain):\n        '''Test that response is grounded in sources.'''\n        response = chain.invoke('What are the business hours?')\n        # Check for citation or source reference\n        assert '[' in response or 'source' in response.lower()\n    \n    def test_no_hallucination(self, chain):\n        '''Test that system doesn't make things up.'''\n        response = chain.invoke('What is the CEO salary?')\n        # Should not provide confidential info not in docs\n        assert 'salary' not in response.lower() or \"don't\" in response.lower()\n    \n    @pytest.mark.parametrize('question,expected_topic', [\n        ('How do I reset my password?', 'password'),\n        ('What payment methods are accepted?', 'payment'),\n        ('How to contact support?', 'support'),\n    ])\n    def test_topic_coverage(self, chain, question, expected_topic):\n        '''Test that responses cover expected topics.'''\n        response = chain.invoke(question)\n        assert expected_topic in response.lower()",
+      "best_practices": [
+        "Test for both positive and negative cases",
+        "Include hallucination detection tests",
+        "Test edge cases and adversarial inputs",
+        "Use parameterized tests for coverage"
+      ],
+      "use_when": "Apply when implementing test suite in integration context"
+    },
+    "regression_testing": {
+      "description": "Detect performance regression",
+      "code_example": "import json\nfrom pathlib import Path\n\nclass RegressionTestSuite:\n    def __init__(self, baseline_path: str = 'baseline_results.json'):\n        self.baseline_path = Path(baseline_path)\n        if self.baseline_path.exists():\n            self.baseline = json.loads(self.baseline_path.read_text())\n        else:\n            self.baseline = {}\n    \n    def run_evaluation(self, chain, test_set) -> dict:\n        results = []\n        for item in test_set:\n            response = chain.invoke(item['question'])\n            score = self.evaluate(response, item['expected'])\n            results.append(score)\n        \n        return {\n            'mean_score': sum(results) / len(results),\n            'min_score': min(results),\n            'pass_rate': sum(1 for r in results if r >= 0.7) / len(results)\n        }\n    \n    def check_regression(self, current_results: dict, threshold: float = 0.05):\n        if not self.baseline:\n            print('No baseline - saving current as baseline')\n            self.save_baseline(current_results)\n            return True\n        \n        for metric, current_value in current_results.items():\n            baseline_value = self.baseline.get(metric, 0)\n            if current_value < baseline_value - threshold:\n                print(f'REGRESSION: {metric} dropped from {baseline_value:.3f} to {current_value:.3f}')\n                return False\n        \n        print('No regression detected')\n        return True\n    \n    def save_baseline(self, results: dict):\n        self.baseline_path.write_text(json.dumps(results, indent=2))",
+      "use_when": "Apply when implementing regression testing in integration context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for regression_testing",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    }
+  },
+  "observability": {
+    "langsmith": {
+      "description": "LangChain observability platform",
+      "code_example": "import os\n\n# Enable LangSmith tracing\nos.environ['LANGCHAIN_TRACING_V2'] = 'true'\nos.environ['LANGCHAIN_API_KEY'] = 'your-api-key'\nos.environ['LANGCHAIN_PROJECT'] = 'my-project'\n\n# All LangChain calls automatically traced\nfrom langchain_openai import ChatOpenAI\n\nllm = ChatOpenAI(model='gpt-4o')\nresponse = llm.invoke('Hello!')  # Traced automatically\n\n# Manual annotation\nfrom langsmith import Client\n\nclient = Client()\n\n# Add feedback to runs\nclient.create_feedback(\n    run_id='run-id-here',\n    key='correctness',\n    score=1.0,\n    comment='Response was accurate'\n)",
+      "use_when": "Apply when implementing langsmith in integration context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for langsmith",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    },
+    "custom_logging": {
+      "description": "Custom evaluation logging",
+      "code_example": "import logging\nfrom datetime import datetime\nimport json\n\nclass EvaluationLogger:\n    def __init__(self, log_file: str = 'evaluations.jsonl'):\n        self.log_file = log_file\n        self.logger = logging.getLogger('evaluation')\n    \n    def log_evaluation(self, query: str, response: str, metrics: dict, metadata: dict = None):\n        entry = {\n            'timestamp': datetime.utcnow().isoformat(),\n            'query': query,\n            'response': response[:500],  # Truncate for logging\n            'metrics': metrics,\n            'metadata': metadata or {}\n        }\n        \n        with open(self.log_file, 'a') as f:\n            f.write(json.dumps(entry) + '\\n')\n        \n        # Alert on poor scores\n        if any(v < 0.5 for v in metrics.values()):\n            self.logger.warning(f'Low score detected: {metrics}')\n\n# Usage\nlogger = EvaluationLogger()\nlogger.log_evaluation(\n    query='What is the return policy?',\n    response='Our return policy allows...',\n    metrics={'faithfulness': 0.9, 'relevancy': 0.85}\n)",
+      "use_when": "Apply when implementing custom logging in integration context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for custom_logging",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    }
+  },
+  "benchmark_patterns": {
+    "create_benchmark": {
+      "description": "Create custom benchmark dataset",
+      "code_example": "from dataclasses import dataclass\nfrom typing import List, Optional\nimport json\n\n@dataclass\nclass BenchmarkItem:\n    id: str\n    question: str\n    expected_answer: str\n    category: str\n    difficulty: str\n    metadata: dict\n\nclass Benchmark:\n    def __init__(self, name: str, items: List[BenchmarkItem]):\n        self.name = name\n        self.items = items\n    \n    @classmethod\n    def from_file(cls, path: str) -> 'Benchmark':\n        data = json.loads(Path(path).read_text())\n        items = [BenchmarkItem(**item) for item in data['items']]\n        return cls(data['name'], items)\n    \n    def run(self, model_fn, evaluator_fn) -> dict:\n        results = []\n        for item in self.items:\n            response = model_fn(item.question)\n            score = evaluator_fn(response, item.expected_answer)\n            results.append({\n                'id': item.id,\n                'category': item.category,\n                'difficulty': item.difficulty,\n                'score': score\n            })\n        \n        return self.aggregate_results(results)\n    \n    def aggregate_results(self, results: List[dict]) -> dict:\n        import pandas as pd\n        df = pd.DataFrame(results)\n        \n        return {\n            'overall': df['score'].mean(),\n            'by_category': df.groupby('category')['score'].mean().to_dict(),\n            'by_difficulty': df.groupby('difficulty')['score'].mean().to_dict()\n        }",
+      "use_when": "Apply when implementing create benchmark in integration context",
+      "best_practices": [
+        "Document the pattern usage and rationale in code comments for create_benchmark",
+        "Validate implementation against domain requirements before deployment"
+      ]
+    }
+  },
+  "patterns": {
+    "ragas_evaluation": {
+      "description": "Use RAGAS framework for standardized RAG evaluation with faithfulness, relevancy, and context metrics",
+      "implementation": "Prepare dataset with questions, answers, contexts, ground_truths. Run evaluate() with RAGAS metrics",
+      "benefits": [
+        "Standardized metrics",
+        "Comprehensive evaluation",
+        "Easy comparison"
+      ],
+      "use_when": "When evaluating RAG systems or LLM outputs before deployment",
+      "code_example": "Prepare dataset with questions, answers, contexts, ground_truths. Run evaluate() with RAGAS metrics",
+      "best_practices": [
+        "Always evaluate LLM applications before deploying changes using representative test sets with expected outputs",
+        "Use multiple evaluation metrics (faithfulness, relevancy, accuracy, completeness) for comprehensive quality assessment",
+        "Combine automated evaluation (RAGAS, LLM-as-judge) with human evaluation for critical applications",
+        "Set performance thresholds for each metric and configure alerts to detect degradation below acceptable levels",
+        "Track evaluation metrics over time to detect model drift, data distribution shifts, and performance degradation"
+      ]
+    },
+    "llm_as_judge": {
+      "description": "Use GPT-4 class models as judges to evaluate LLM outputs at scale with structured scoring",
+      "implementation": "Create evaluation prompt with criteria, use structured output (Pydantic) for scores and reasoning",
+      "benefits": [
+        "Scalability",
+        "Consistent evaluation",
+        "Cost-effective"
+      ],
+      "use_when": "When evaluating RAG systems or LLM outputs before deployment",
+      "code_example": "Create evaluation prompt with criteria, use structured output (Pydantic) for scores and reasoning",
+      "best_practices": [
+        "Always evaluate LLM applications before deploying changes using representative test sets with expected outputs",
+        "Use multiple evaluation metrics (faithfulness, relevancy, accuracy, completeness) for comprehensive quality assessment",
+        "Combine automated evaluation (RAGAS, LLM-as-judge) with human evaluation for critical applications",
+        "Set performance thresholds for each metric and configure alerts to detect degradation below acceptable levels",
+        "Track evaluation metrics over time to detect model drift, data distribution shifts, and performance degradation"
+      ]
+    },
+    "pairwise_comparison": {
+      "description": "Compare two model outputs side-by-side to determine which performs better on specific criteria",
+      "implementation": "Present both outputs to judge LLM, get structured comparison result (A/B/TIE) with reasoning",
+      "benefits": [
+        "Relative evaluation",
+        "Model selection",
+        "A/B testing"
+      ],
+      "use_when": "When evaluating RAG systems or LLM outputs before deployment",
+      "code_example": "Present both outputs to judge LLM, get structured comparison result (A/B/TIE) with reasoning",
+      "best_practices": [
+        "Always evaluate LLM applications before deploying changes using representative test sets with expected outputs",
+        "Use multiple evaluation metrics (faithfulness, relevancy, accuracy, completeness) for comprehensive quality assessment",
+        "Combine automated evaluation (RAGAS, LLM-as-judge) with human evaluation for critical applications",
+        "Set performance thresholds for each metric and configure alerts to detect degradation below acceptable levels",
+        "Track evaluation metrics over time to detect model drift, data distribution shifts, and performance degradation"
+      ]
+    },
+    "automated_test_suite": {
+      "description": "Create pytest-style test suites for LLM applications with parameterized tests and assertions",
+      "implementation": "Define test cases with expected behaviors, use pytest for execution, assert on outputs",
+      "benefits": [
+        "CI/CD integration",
+        "Regression detection",
+        "Automated validation"
+      ],
+      "use_when": "When evaluating RAG systems or LLM outputs before deployment",
+      "code_example": "Define test cases with expected behaviors, use pytest for execution, assert on outputs",
+      "best_practices": [
+        "Always evaluate LLM applications before deploying changes using representative test sets with expected outputs",
+        "Use multiple evaluation metrics (faithfulness, relevancy, accuracy, completeness) for comprehensive quality assessment",
+        "Combine automated evaluation (RAGAS, LLM-as-judge) with human evaluation for critical applications",
+        "Set performance thresholds for each metric and configure alerts to detect degradation below acceptable levels",
+        "Track evaluation metrics over time to detect model drift, data distribution shifts, and performance degradation"
+      ]
+    },
+    "regression_detection": {
+      "description": "Compare current performance against baseline to detect degradation and prevent regressions",
+      "implementation": "Store baseline metrics, compare new results, alert on significant drops, save new baseline",
+      "benefits": [
+        "Quality assurance",
+        "Early detection",
+        "Prevent degradation"
+      ],
+      "use_when": "When evaluating RAG systems or LLM outputs before deployment",
+      "code_example": "Store baseline metrics, compare new results, alert on significant drops, save new baseline",
+      "best_practices": [
+        "Always evaluate LLM applications before deploying changes using representative test sets with expected outputs",
+        "Use multiple evaluation metrics (faithfulness, relevancy, accuracy, completeness) for comprehensive quality assessment",
+        "Combine automated evaluation (RAGAS, LLM-as-judge) with human evaluation for critical applications",
+        "Set performance thresholds for each metric and configure alerts to detect degradation below acceptable levels",
+        "Track evaluation metrics over time to detect model drift, data distribution shifts, and performance degradation"
+      ]
+    },
+    "continuous_evaluation": {
+      "description": "Sample production requests, evaluate them, and track metrics over time for drift detection",
+      "implementation": "Sample production traffic, run evaluations, log metrics, set up alerts for threshold violations",
+      "benefits": [
+        "Real-world monitoring",
+        "Drift detection",
+        "Quality tracking"
+      ],
+      "use_when": "When evaluating RAG systems or LLM outputs before deployment",
+      "code_example": "Sample production traffic, run evaluations, log metrics, set up alerts for threshold violations",
+      "best_practices": [
+        "Always evaluate LLM applications before deploying changes using representative test sets with expected outputs",
+        "Use multiple evaluation metrics (faithfulness, relevancy, accuracy, completeness) for comprehensive quality assessment",
+        "Combine automated evaluation (RAGAS, LLM-as-judge) with human evaluation for critical applications",
+        "Set performance thresholds for each metric and configure alerts to detect degradation below acceptable levels",
+        "Track evaluation metrics over time to detect model drift, data distribution shifts, and performance degradation"
+      ]
+    },
+    "multi_metric_evaluation": {
+      "description": "Evaluate on multiple dimensions (accuracy, completeness, clarity, safety) for comprehensive assessment",
+      "implementation": "Define multiple evaluators, run all on same outputs, aggregate results, identify weak areas",
+      "benefits": [
+        "Holistic view",
+        "Balanced optimization",
+        "Quality assurance"
+      ],
+      "use_when": "When evaluating RAG systems or LLM outputs before deployment",
+      "code_example": "Define multiple evaluators, run all on same outputs, aggregate results, identify weak areas",
+      "best_practices": [
+        "Always evaluate LLM applications before deploying changes using representative test sets with expected outputs",
+        "Use multiple evaluation metrics (faithfulness, relevancy, accuracy, completeness) for comprehensive quality assessment",
+        "Combine automated evaluation (RAGAS, LLM-as-judge) with human evaluation for critical applications",
+        "Set performance thresholds for each metric and configure alerts to detect degradation below acceptable levels",
+        "Track evaluation metrics over time to detect model drift, data distribution shifts, and performance degradation"
+      ]
+    }
+  },
+  "best_practices": [
+    "Always evaluate LLM applications before deploying changes using representative test sets with expected outputs",
+    "Use multiple evaluation metrics (faithfulness, relevancy, accuracy, completeness) for comprehensive quality assessment",
+    "Combine automated evaluation (RAGAS, LLM-as-judge) with human evaluation for critical applications",
+    "Set performance thresholds for each metric and configure alerts to detect degradation below acceptable levels",
+    "Track evaluation metrics over time to detect model drift, data distribution shifts, and performance degradation",
+    "Include adversarial and edge cases in test sets (empty inputs, malformed queries, out-of-domain questions)",
+    "Calibrate LLM-as-judge evaluators with human ratings on sample data to ensure alignment with human judgment",
+    "Document evaluation methodology, metrics definitions, and test set composition for reproducibility and transparency"
+  ],
+  "anti_patterns": [
+    {
+      "name": "No Evaluation Before Deployment",
+      "problem": "Deploying LLM applications without evaluation leads to unknown quality, silent failures, and poor user experience",
+      "fix": "Always evaluate on representative test sets before deployment. Set up automated evaluation pipelines in CI/CD"
+    },
+    {
+      "name": "Wrong Metrics Selection",
+      "problem": "Using metrics that don't align with user needs leads to optimizing for the wrong thing and poor real-world performance",
+      "fix": "Choose metrics that directly measure user satisfaction and business outcomes. Validate metrics with stakeholders"
+    },
+    {
+      "name": "One-Time Evaluation Only",
+      "problem": "Evaluating only once misses model drift, data distribution shifts, and performance degradation over time",
+      "fix": "Implement continuous evaluation: sample production traffic, evaluate regularly, track metrics over time, set up alerts"
+    },
+    {
+      "name": "Biased Test Set",
+      "problem": "Non-representative test data creates false confidence in model performance and fails to catch real-world issues",
+      "fix": "Use diverse, representative test sets that cover edge cases, adversarial inputs, and real-world scenarios"
+    },
+    {
+      "name": "No Baseline Comparison",
+      "problem": "Evaluating without comparing to baseline makes it impossible to detect regressions or measure improvements",
+      "fix": "Establish baseline metrics, compare all evaluations against baseline, alert on significant drops, version baselines"
+    }
+  ]
+}
