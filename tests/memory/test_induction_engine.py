@@ -8,15 +8,15 @@ import pytest
 import tempfile
 import shutil
 
-# Check if chromadb is available
+# Check if qdrant-client is available
 try:
-    import chromadb
+    import qdrant_client
 
-    HAS_CHROMADB = True
+    HAS_QDRANT = True
 except ImportError:
-    HAS_CHROMADB = False
+    HAS_QDRANT = False
 
-pytestmark = pytest.mark.skipif(not HAS_CHROMADB, reason="chromadb not installed")
+pytestmark = pytest.mark.skipif(not HAS_QDRANT, reason="qdrant-client not installed")
 
 
 class TestInductionEngine:

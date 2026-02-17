@@ -137,15 +137,15 @@ Should I remember this for future sessions?
 
 class MemoryStore:
     """
-    Hybrid memory store using ChromaDB for vectors and JSON for structured data.
+    Hybrid memory store using Qdrant for vectors and JSON for structured data.
 
     Provides persistent storage for the inductive memory system with support
     for user-validated proposals.
 
     Attributes:
         config: Configuration dictionary
-        persist_dir: Directory for ChromaDB persistence
-        vector_db: ChromaDB client
+        persist_dir: Directory for Qdrant persistence
+        client: Qdrant client
         semantic: Semantic memory collection
         episodic: Episodic memory collection
         pending: Pending proposals collection
@@ -159,7 +159,7 @@ class MemoryStore:
 
     DEFAULT_CONFIG = {
         "storage": {
-            "vector_db": "chromadb",
+            "vector_db": "qdrant",
             "persist_dir": "data/memory",
             "collections": ["semantic", "episodic", "pending", "rejected"],
         },
