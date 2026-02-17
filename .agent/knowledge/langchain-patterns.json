@@ -467,15 +467,14 @@
       ],
       "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     },
-    "faiss": {
-      "description": "FAISS vector store (in-memory or file-based)",
-      "code_example": "from langchain_community.vectorstores import FAISS\n\nvectorstore = FAISS.from_documents(documents, embeddings)\n\n# Save to disk\nvectorstore.save_local('./faiss_index')\n\n# Load from disk\nvectorstore = FAISS.load_local('./faiss_index', embeddings)",
+    "qdrant": {
+      "description": "Qdrant vector store (high-performance local or server-based)",
+      "code_example": "from langchain_qdrant import QdrantVectorStore\nfrom qdrant_client import QdrantClient\n\n# Local mode\nclient = QdrantClient(path='./data/rag/qdrant_db')\nvectorstore = QdrantVectorStore(client=client, collection_name='docs', embedding=embeddings)",
       "best_practices": [
-        "Use for in-memory or file-based storage",
-        "Good for development and testing",
-        "Consider Chroma or Pinecone for production"
-      ],
-      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
+        "Use local path for persistent storage",
+        "Enable HNSW for large collections",
+        "Use collection_name to organize data"
+      ]
     },
     "pinecone": {
       "description": "Pinecone managed vector database",
@@ -494,17 +493,6 @@
         "Include relevant metadata when indexing",
         "Use filters to narrow search space",
         "Index metadata fields for efficient filtering"
-      ],
-      "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
-    },
-    "qdrant": {
-      "description": "Qdrant vector store integration",
-      "code_example": "from langchain_community.vectorstores import Qdrant\nfrom langchain_openai import OpenAIEmbeddings\nfrom qdrant_client import QdrantClient\n\n# Connect to Qdrant\nclient = QdrantClient(\n    url='http://localhost:6333',  # or path='./qdrant_db' for local\n    api_key='your-api-key'  # Optional for cloud\n)\n\nembeddings = OpenAIEmbeddings(model='text-embedding-3-small')\n\n# Create vector store\nvectorstore = Qdrant.from_documents(\n    documents=documents,\n    embedding=embeddings,\n    client=client,\n    collection_name='documents'\n)\n\n# Or connect to existing collection\nvectorstore = Qdrant(\n    client=client,\n    collection_name='documents',\n    embeddings=embeddings\n)\n\n# Similarity search\nresults = vectorstore.similarity_search('query', k=5)\n\n# With metadata filtering\nresults = vectorstore.similarity_search(\n    'query',\n    k=5,\n    filter={'source': 'file1.pdf', 'year': {'$gte': 2023}}\n)\n\n# Hybrid search (if collection supports sparse vectors)\n# Requires custom implementation or Qdrant client directly",
-      "best_practices": [
-        "Use QdrantClient for connection management",
-        "Set collection_name appropriately",
-        "Use metadata filters for better retrieval",
-        "Consider hybrid search for production"
       ],
       "use_when": "When building agents that need tool calling, multi-step reasoning, or structured workflows."
     },

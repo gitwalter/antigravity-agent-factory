@@ -9,15 +9,15 @@ import tempfile
 import shutil
 from pathlib import Path
 
-# Check if chromadb is available
+# Check if qdrant_client is available
 try:
-    import chromadb
+    import qdrant_client
 
-    HAS_CHROMADB = True
+    HAS_QDRANT = True
 except ImportError:
-    HAS_CHROMADB = False
+    HAS_QDRANT = False
 
-pytestmark = pytest.mark.skipif(not HAS_CHROMADB, reason="chromadb not installed")
+pytestmark = pytest.mark.skipif(not HAS_QDRANT, reason="qdrant-client not installed")
 
 
 class TestMemoryStore:
@@ -174,7 +174,7 @@ class TestMemoryProposalOperations:
         from scripts.memory.memory_store import MemoryProposal
 
         proposal = MemoryProposal(
-            id="test-1",
+            id="00000000-0000-0000-0000-000000000001",
             content="Use pytest for testing",
             source="user_correction",
             scope="global",
@@ -192,7 +192,7 @@ class TestMemoryProposalOperations:
         from scripts.memory.memory_store import MemoryProposal
 
         proposal = MemoryProposal(
-            id="test-2",
+            id="00000000-0000-0000-0000-000000000002",
             content="Use black for formatting",
             source="user_teaching",
             scope="global",
@@ -216,7 +216,10 @@ class TestMemoryProposalOperations:
         from scripts.memory.memory_store import MemoryProposal
 
         proposal = MemoryProposal(
-            id="test-3", content="Use pytest", source="user_correction", scope="global"
+            id="00000000-0000-0000-0000-000000000003",
+            content="Use pytest",
+            source="user_correction",
+            scope="global",
         )
 
         proposal_id = store.add_pending_proposal(proposal)
@@ -234,7 +237,7 @@ class TestMemoryProposalOperations:
         from scripts.memory.memory_store import MemoryProposal
 
         proposal = MemoryProposal(
-            id="test-4",
+            id="00000000-0000-0000-0000-000000000004",
             content="Use unittest",
             source="user_correction",
             scope="global",
@@ -255,7 +258,7 @@ class TestMemoryProposalOperations:
         from scripts.memory.memory_store import MemoryProposal
 
         proposal = MemoryProposal(
-            id="test-5",
+            id="00000000-0000-0000-0000-000000000005",
             content="Use unittest for testing Python code",
             source="user_correction",
             scope="global",
@@ -283,7 +286,7 @@ class TestMemoryProposalOperations:
         from scripts.memory.memory_store import MemoryProposal
 
         proposal = MemoryProposal(
-            id="test-6",
+            id="00000000-0000-0000-0000-000000000006",
             content="Use pytest for testing",
             source="user_correction",
             scope="global",

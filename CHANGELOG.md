@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-02-17
+
+### Added
+- **Agentic RAG Implementation**: Transitioned to a reasoning-driven architecture using **LangGraph**.
+- **Self-Correction Logic**: Implemented heuristic grading for retrieval relevance with support for German umlaut normalization.
+- **Adaptive Fallback**: Integrated Tavily-driven web search as a fallback for queries outside the local library scope.
+- **Textbook Ingestion**: Fully indexed Stuart Russell's AIMA (3rd Ed) with 27k standardized vector points.
+
+### Changed
+- **Vector Migration**: Standardized on **Qdrant** as the primary vector store (migrated from FAISS).
+- **Embedding Alignment**: Switched to `sentence-transformers/all-MiniLM-L6-v2` across all ingestion and retrieval layers.
+- **MCP Upgrade**: Updated `antigravity-rag` server to utilize the `AgenticRAG` workflow singleton.
+
+### Fixed
+- **Character Encoding**: Resolved false-negative search results caused by German special character mismatches.
+- **Resource Management**: Implemented singleton access for Qdrant storage to prevent concurrent locking errors.
+
 ## [1.1.2] - 2026-02-16
 
 ### Added

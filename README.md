@@ -55,8 +55,8 @@ Generated projects include:
 - **Purpose documentation** (`PURPOSE.md`) - Your mission and success criteria
 - **5-layer .agentrules** - AI guidance with axioms, principles, and methodology
 - **AI agent definitions** (`.agent/agents/`) - Specialized assistants for your workflow
-- **Reusable skill definitions** (`.agent/skills/`) - Procedures your agents can follow
-- **Structured knowledge files** (`knowledge/`) - Domain expertise in JSON format
+- **190** skills in `.agent/skills/`
+- **263** knowledge files in `.agent/knowledge/` - Domain expertise in JSON format
 - **Code and document templates** (`templates/`) - Consistent starting points
 - **21 ready-to-use workflows** (`workflows/`) - Automated development, testing, PM, and deployment
 - **Methodology configuration** (`workflows/methodology.yaml`) - How your team works
@@ -174,6 +174,8 @@ See **docs/design/AGENT_SOCIETY_VERIFICATION.md** for architecture and **docs/SO
 
 The Factory includes an automatic **Knowledge Evolution System** that keeps blueprints, patterns, and knowledge files current with the latest best practices from trusted sources.
 
+The repository currently indexes **263** knowledge files, covering:
+
 ### Features
 
 | Feature | Description |
@@ -241,7 +243,7 @@ antigravity-agent-factory/
 ├── .agent/
 │   ├── agents/                  # Factory's own agents (10 agents)
 │   │   └── *.md                 # debug-conductor, git-specialist, integrity-guardian, etc.
-│   └── skills/                  # Factory's own skills (187 skills)
+│   └── skills/                  # Factory's own skills (190 skills)
 │       ├── agent-generation/
 │       ├── ai-agent-dev/
 │       ├── algo-trading/
@@ -252,7 +254,7 @@ antigravity-agent-factory/
 │   ├── patterns/                    # Reusable patterns (113+ files)
 │   ├── templates/                   # Code templates (307+ files)
 │   ├── blueprints/                  # Technology stack blueprints (34 blueprints)
-│   ├── knowledge/                   # Knowledge base (261 files)
+│   ├── knowledge/                   # Knowledge base (264 files)
 │   └── workflows/                   # Workflow definitions
 │       ├── python-fastapi/
 │   ├── python-streamlit/
@@ -886,7 +888,7 @@ MIT License
 
 ---
 
-*Antigravity Agent Factory v1.1.2*
+*Antigravity Agent Factory v1.2.0*
 *Meta-system for generating Antigravity AI agent development systems*
 *Now with 5-layer architecture: Integrity -> Purpose -> Principles -> Methodology -> Technical*
 *50+ MCP servers across 6 categories with starter packs and role-based recommendations*

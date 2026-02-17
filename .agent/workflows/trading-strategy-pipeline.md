@@ -29,21 +29,35 @@ This workflow is activated when:
 
 ## Steps
 
-### Document Strategy
+### 1. Hypothesis Formation
+- **Task**: Define the economic or behavioral intuition for the strategy.
+- **Goal**: Document the "Alpha Source" (e.g., "Overreaction to earnings misses in high-growth tech").
+- **Constraint**: Must align with `trading-governance.md` section 4.
 
-### Prepare Data
+### 2. Prepare & Clean Data
+- **Task**: Fetch historical OHLCV data.
+- **Check**: Audit for survivorship bias (use delisted tickers if available).
+- **Normalize**: Ensure splits and dividends are properly accounted for.
 
-### Run Backtest
+### 3. Strategy Implementation
+- **Task**: Vectorize the signal logic using pandas/numpy or TA-Lib.
+- **Rule**: Keep parameters < 5 to avoid overfitting (P1_OVERFITTING).
 
-### Bias Detection
+### 4. Backtest Execution
+- **Task**: Run initial simulation with realistic slippage (0.1%) and commissions.
+- **Output**: Equity curve, Drawdown chart, and Sharpe Ratio.
 
-### Walk-Forward Analysis
+### 5. Robustness Testing (Walk-Forward)
+- **Task**: Divide data into 5 segments (Anchored or Rolling).
+- **Validation**: Pass if out-of-sample Sharpe > 1.2.
 
-### Deploy to Paper
+### 6. Bias & Decay Check
+- **Task**: Compare 1st half of backtest vs 2nd half.
+- **Goal**: Identify factor decay or regime sensitivity.
 
-### Prepare Approval Package
-
-### Human Review
+### 7. Deployment Approval
+- **Task**: Package metrics and equity curve.
+- **Decision**: Promote to "Skill" if all `trading-governance.md` gates are passed.
 
 
 ## Decision Points

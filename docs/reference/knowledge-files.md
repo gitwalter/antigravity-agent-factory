@@ -1,6 +1,6 @@
 ﻿# Knowledge Files Catalog
 
-This factory currently includes **260 knowledge files** covering various aspects of AI development, project management, and technology stacks.
+The factory currently includes **263 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
 
 | File | Type | Description |
 |------|------|-------------|
@@ -197,6 +197,8 @@ This factory currently includes **260 knowledge files** covering various aspects
 | [pytorch-patterns](file:///.agent/knowledge/pytorch-patterns.json) |  |  |
 | [quantitative-finance](file:///.agent/knowledge/quantitative-finance.json) |  |  |
 | [quantitative-finance-patterns](file:///.agent/knowledge/quantitative-finance-patterns.json) |  |  |
+| [quantitative-theory](file:///.agent/knowledge/quantitative-theory.json) |  |  |
+| [rag-knowledge-catalog](file:///.agent/knowledge/rag-knowledge-catalog.json) |  |  |
 | [rag-patterns](file:///.agent/knowledge/rag-patterns.json) |  |  |
 | [ray-patterns](file:///.agent/knowledge/ray-patterns.json) |  |  |
 | [react-component-patterns](file:///.agent/knowledge/react-component-patterns.json) |  |  |
@@ -264,6 +266,7 @@ This factory currently includes **260 knowledge files** covering various aspects
 | [testcontainers-patterns](file:///.agent/knowledge/testcontainers-patterns.json) |  |  |
 | [tool-design-and-usage-patterns](file:///.agent/knowledge/tool-design-and-usage-patterns.json) |  |  |
 | [tool-patterns](file:///.agent/knowledge/tool-patterns.json) |  |  |
+| [trading-intelligence-patterns](file:///.agent/knowledge/trading-intelligence-patterns.json) |  |  |
 | [trading-patterns](file:///.agent/knowledge/trading-patterns.json) |  |  |
 | [trust-tier-decision-matrix](file:///.agent/knowledge/trust-tier-decision-matrix.json) |  |  |
 | [vector-database-patterns](file:///.agent/knowledge/vector-database-patterns.json) |  |  |

@@ -11,16 +11,16 @@ import shutil
 import json
 from pathlib import Path
 
-# Check if chromadb is available
+# Check if qdrant_client is available
 try:
-    import chromadb
+    import qdrant_client
 
-    HAS_CHROMADB = True
+    HAS_QDRANT = True
 except ImportError:
-    HAS_CHROMADB = False
+    HAS_QDRANT = False
 
 
-@pytest.mark.skipif(not HAS_CHROMADB, reason="chromadb not installed")
+@pytest.mark.skipif(not HAS_QDRANT, reason="qdrant-client not installed")
 class TestNoAxiomDrift:
     """
     CRITICAL: Regression tests ensuring axioms never change.

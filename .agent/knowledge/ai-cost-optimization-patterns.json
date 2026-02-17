@@ -61,7 +61,7 @@
       "Lower latency",
       "Save costs"
     ],
-    "implementation": "from sentence_transformers import SentenceTransformer\nimport faiss\n\nencoder = SentenceTransformer('all-MiniLM-L6-v2')\nindex = faiss.IndexFlatL2(384)\n\ncache = {}\n\ndef get_cached_response(prompt, threshold=0.95):\n    query_embedding = encoder.encode([prompt])\n    distances, indices = index.search(query_embedding, k=1)\n    \n    if distances[0][0] < threshold:\n        return cache[indices[0][0]]\n    \n    # Call API and cache\n    response = call_api(prompt)\n    cache[len(cache)] = response\n    index.add(query_embedding)\n    return response",
+    "implementation": "from langchain_qdrant import QdrantVectorStore\nfrom qdrant_client import QdrantClient\n\n# Initialize local Qdrant for caching\nclient = QdrantClient(path='./data/cache/qdrant_cache')\nvectorstore = QdrantVectorStore(client=client, collection_name='cache', embedding=encoder)\n\ndef get_cached_response(prompt, threshold=0.95):\n    results = vectorstore.similarity_search_with_score(prompt, k=1)\n    if results and results[0][1] > threshold:\n        return results[0][0].metadata['response']\n    \n    # Call API and cache\n    response = call_api(prompt)\n    vectorstore.add_texts([prompt], metadatas=[{'response': response}])\n    return response",
     "best_practices": [
       "Use semantic similarity",
       "Set appropriate thresholds",

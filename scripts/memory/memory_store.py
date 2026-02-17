@@ -199,8 +199,8 @@ class MemoryStore:
             logger.info("Memory system initialized (first run - no memories yet)")
             logger.info(f"Memory directory: {self.persist_dir.absolute()}")
 
-        # Initialize ChromaDB
-        self._init_chromadb()
+        # Initialize Qdrant
+        self._init_qdrant()
 
         # Lazy-load embedding service
         self._embedding_service = None
@@ -214,40 +214,41 @@ class MemoryStore:
                 return {**self.DEFAULT_CONFIG, **config}
         return self.DEFAULT_CONFIG.copy()
 
-    def _init_chromadb(self) -> None:
-        """Initialize ChromaDB client and collections."""
+    def _init_qdrant(self) -> None:
+        """Initialize Qdrant client and collections."""
         try:
-            import chromadb
-            from chromadb.config import Settings
+            from qdrant_client import QdrantClient
+            from qdrant_client.http.models import Distance, VectorParams
 
             # Create persistent client
-            self.vector_db = chromadb.PersistentClient(
-                path=str(self.persist_dir),
-                settings=Settings(anonymized_telemetry=False, allow_reset=True),
-            )
+            qdrant_path = self.persist_dir / "qdrant"
+            qdrant_path.mkdir(parents=True, exist_ok=True)
 
-            # Create or get collections
-            self.semantic = self.vector_db.get_or_create_collection(
-                name="semantic",
-                metadata={"description": "User-approved long-term memories"},
-            )
-            self.episodic = self.vector_db.get_or_create_collection(
-                name="episodic", metadata={"description": "Session-based observations"}
-            )
-            self.pending = self.vector_db.get_or_create_collection(
-                name="pending",
-                metadata={"description": "Proposals awaiting user approval"},
-            )
-            self.rejected = self.vector_db.get_or_create_collection(
-                name="rejected", metadata={"description": "Rejected proposals"}
-            )
+            self.client = QdrantClient(path=str(qdrant_path))
 
-            logger.debug("ChromaDB collections initialized")
+            # Collection parameters
+            vector_size = 384  # Default for MiniLM
+
+            # Ensure collections exist
+            collections = self.client.get_collections().collections
+            existing_names = [c.name for c in collections]
+
+            for name in ["semantic", "episodic", "pending", "rejected"]:
+                if name not in existing_names:
+                    logger.info(f"Creating Qdrant collection for memory: {name}")
+                    self.client.create_collection(
+                        collection_name=name,
+                        vectors_config=VectorParams(
+                            size=vector_size, distance=Distance.COSINE
+                        ),
+                    )
+
+            logger.debug("Qdrant collections initialized")
 
         except ImportError:
             raise ImportError(
-                "chromadb is required for the memory store. "
-                "Install with: pip install chromadb"
+                "qdrant-client is required for the memory store. "
+                "Install with: pip install qdrant-client"
             )
 
     @property
@@ -259,17 +260,12 @@ class MemoryStore:
             self._embedding_service = get_embedding_service()
         return self._embedding_service
 
-    def _get_collection(self, memory_type: str):
-        """Get collection by memory type."""
-        collections = {
-            "semantic": self.semantic,
-            "episodic": self.episodic,
-            "pending": self.pending,
-            "rejected": self.rejected,
-        }
-        if memory_type not in collections:
+    def _get_collection_name(self, memory_type: str) -> str:
+        """Get collection name by memory type."""
+        valid_types = ["semantic", "episodic", "pending", "rejected"]
+        if memory_type not in valid_types:
             raise ValueError(f"Unknown memory type: {memory_type}")
-        return collections[memory_type]
+        return memory_type
 
     # =========================================================================
     # Core Memory Operations
@@ -294,23 +290,30 @@ class MemoryStore:
         # Generate embedding
         embedding = self.embedding_service.embed_single(content).tolist()
 
-        # Prepare metadata - ChromaDB doesn't accept None values
+        # Prepare metadata
         full_metadata = {
             **metadata,
             "created_at": datetime.now().isoformat(),
             "memory_type": memory_type,
         }
 
-        # Filter out None values (ChromaDB requirement)
+        # Filter out None values
         full_metadata = {k: v for k, v in full_metadata.items() if v is not None}
 
         # Add to collection
-        collection = self._get_collection(memory_type)
-        collection.add(
-            ids=[memory_id],
-            embeddings=[embedding],
-            documents=[content],
-            metadatas=[full_metadata],
+        collection_name = self._get_collection_name(memory_type)
+
+        from qdrant_client.http.models import PointStruct
+
+        self.client.upsert(
+            collection_name=collection_name,
+            points=[
+                PointStruct(
+                    id=memory_id,
+                    vector=embedding,
+                    payload={"content": content, **full_metadata},
+                )
+            ],
         )
 
         logger.debug(f"Added memory to {memory_type}: {memory_id}")
@@ -337,45 +340,41 @@ class MemoryStore:
         Returns:
             List of Memory objects, sorted by similarity.
         """
-        collection = self._get_collection(memory_type)
+        collection_name = self._get_collection_name(memory_type)
 
-        if collection.count() == 0:
+        count = self.client.count(collection_name=collection_name).count
+        if count == 0:
             return []
 
         # Generate query embedding
         query_embedding = self.embedding_service.embed_single(query).tolist()
 
         # Search
-        results = collection.query(
-            query_embeddings=[query_embedding],
-            n_results=min(k, collection.count()),
-            where=where,
-            include=["documents", "metadatas", "distances"],
+        results = self.client.query_points(
+            collection_name=collection_name,
+            query=query_embedding,
+            limit=k,
+            score_threshold=threshold if threshold > 0 else None,
         )
 
         # Convert to Memory objects
         memories = []
-        if results["ids"] and results["ids"][0]:
-            for i, memory_id in enumerate(results["ids"][0]):
-                # ChromaDB returns distances, convert to similarity
-                # For cosine distance: similarity = 1 - distance
-                distance = results["distances"][0][i] if results["distances"] else 0
-                similarity = 1 - distance
+        for hit in results.points:
+            payload = hit.payload or {}
+            content = payload.pop("content", "")
 
-                if similarity >= threshold:
-                    metadata = (
-                        results["metadatas"][0][i] if results["metadatas"] else {}
-                    )
-                    metadata["similarity"] = similarity
+            # Qdrant returns similarity score directly
+            metadata = payload
+            metadata["similarity"] = hit.score
 
-                    memories.append(
-                        Memory(
-                            id=memory_id,
-                            content=results["documents"][0][i],
-                            metadata=metadata,
-                            memory_type=memory_type,
-                        )
-                    )
+            memories.append(
+                Memory(
+                    id=str(hit.id),
+                    content=content,
+                    metadata=metadata,
+                    memory_type=memory_type,
+                )
+            )
 
         return memories
 
@@ -392,16 +391,24 @@ class MemoryStore:
         Returns:
             Memory object or None if not found.
         """
-        collection = self._get_collection(memory_type)
+        collection_name = self._get_collection_name(memory_type)
 
         try:
-            result = collection.get(ids=[memory_id], include=["documents", "metadatas"])
+            results = self.client.retrieve(
+                collection_name=collection_name,
+                ids=[memory_id],
+                with_payload=True,
+            )
 
-            if result["ids"]:
+            if results:
+                hit = results[0]
+                payload = hit.payload or {}
+                content = payload.pop("content", "")
+
                 return Memory(
-                    id=result["ids"][0],
-                    content=result["documents"][0],
-                    metadata=result["metadatas"][0],
+                    id=str(hit.id),
+                    content=content,
+                    metadata=payload,
                     memory_type=memory_type,
                 )
         except Exception as e:
@@ -420,10 +427,13 @@ class MemoryStore:
         Returns:
             True if deleted, False if not found.
         """
-        collection = self._get_collection(memory_type)
+        collection_name = self._get_collection_name(memory_type)
 
         try:
-            collection.delete(ids=[memory_id])
+            self.client.delete(
+                collection_name=collection_name,
+                points_selector=[memory_id],
+            )
             logger.debug(f"Deleted memory: {memory_id}")
             return True
         except Exception as e:
@@ -489,18 +499,24 @@ class MemoryStore:
         # Generate embedding
         embedding = self.embedding_service.embed_single(proposal.content).tolist()
 
-        # Prepare metadata - ChromaDB doesn't accept None values
+        # Prepare metadata
         metadata = proposal.to_dict()
         metadata["created_at"] = datetime.now().isoformat()
         metadata["memory_type"] = "pending"
         metadata = {k: v for k, v in metadata.items() if v is not None}
 
         # Add to pending collection using the proposal's ID
-        self.pending.add(
-            ids=[proposal.id],
-            embeddings=[embedding],
-            documents=[proposal.content],
-            metadatas=[metadata],
+        from qdrant_client.http.models import PointStruct
+
+        self.client.upsert(
+            collection_name="pending",
+            points=[
+                PointStruct(
+                    id=proposal.id,
+                    vector=embedding,
+                    payload={"content": proposal.content, **metadata},
+                )
+            ],
         )
 
         logger.debug(f"Added pending proposal: {proposal.id}")
@@ -513,28 +529,35 @@ class MemoryStore:
         Returns:
             List of MemoryProposal objects.
         """
-        if self.pending.count() == 0:
+        count = self.client.count(collection_name="pending").count
+        if count == 0:
             return []
 
-        results = self.pending.get(include=["documents", "metadatas"])
+        # Get all points
+        results, _ = self.client.scroll(
+            collection_name="pending",
+            limit=count,
+            with_payload=True,
+        )
 
         proposals = []
-        if results["ids"]:
-            for i, proposal_id in enumerate(results["ids"]):
-                metadata = results["metadatas"][i] if results["metadatas"] else {}
-                proposals.append(
-                    MemoryProposal(
-                        id=proposal_id,
-                        content=results["documents"][i],
-                        source=metadata.get("source", "unknown"),
-                        scope=metadata.get("scope", "global"),
-                        status=metadata.get("status", "pending"),
-                        confidence=metadata.get("confidence", 1.0),
-                        user_response=metadata.get("user_response"),
-                        timestamp=metadata.get("timestamp", ""),
-                        context=metadata.get("context"),
-                    )
+        for hit in results:
+            payload = hit.payload or {}
+            content = payload.pop("content", "")
+
+            proposals.append(
+                MemoryProposal(
+                    id=str(hit.id),
+                    content=content,
+                    source=payload.get("source", "unknown"),
+                    scope=payload.get("scope", "global"),
+                    status=payload.get("status", "pending"),
+                    confidence=payload.get("confidence", 1.0),
+                    user_response=payload.get("user_response"),
+                    timestamp=payload.get("timestamp", ""),
+                    context=payload.get("context"),
                 )
+            )
 
         return proposals
 
@@ -614,7 +637,8 @@ class MemoryStore:
         Returns:
             True if similar to a rejected proposal.
         """
-        if self.rejected.count() == 0:
+        count = self.client.count(collection_name="rejected").count
+        if count == 0:
             return False
 
         results = self.search(content, "rejected", k=1, threshold=threshold)
@@ -627,7 +651,7 @@ class MemoryStore:
     @property
     def is_empty(self) -> bool:
         """Check if memory store has any memories."""
-        return self.semantic.count() == 0
+        return self.client.count(collection_name="semantic").count == 0
 
     @property
     def is_first_run(self) -> bool:
@@ -639,8 +663,8 @@ class MemoryStore:
         if self.is_empty:
             return "I don't have any memories yet. I'll learn from our interactions."
         else:
-            count = self.semantic.count()
-            pending = self.pending.count()
+            count = self.client.count(collection_name="semantic").count
+            pending = self.client.count(collection_name="pending").count
 
             msg = f"I have {count} memories from previous sessions."
             if pending > 0:
@@ -650,10 +674,10 @@ class MemoryStore:
     def get_stats(self) -> dict:
         """Get memory store statistics."""
         return {
-            "semantic_count": self.semantic.count(),
-            "episodic_count": self.episodic.count(),
-            "pending_count": self.pending.count(),
-            "rejected_count": self.rejected.count(),
+            "semantic_count": self.client.count(collection_name="semantic").count,
+            "episodic_count": self.client.count(collection_name="episodic").count,
+            "pending_count": self.client.count(collection_name="pending").count,
+            "rejected_count": self.client.count(collection_name="rejected").count,
             "persist_dir": str(self.persist_dir.absolute()),
             "is_first_run": self._is_first_run,
         }
@@ -665,12 +689,14 @@ class MemoryStore:
         Returns:
             Number of memories cleared.
         """
-        count = self.episodic.count()
+        count = self.client.count(collection_name="episodic").count
         if count > 0:
-            # Get all IDs and delete
-            results = self.episodic.get()
-            if results["ids"]:
-                self.episodic.delete(ids=results["ids"])
+            from qdrant_client.http.models import Filter
+
+            self.client.delete(
+                collection_name="episodic",
+                points_selector=Filter(),  # Delete all
+            )
         logger.info(f"Cleared {count} episodic memories")
         return count
 
