@@ -382,5 +382,5 @@ See **Guardian Coordination** for complete documentation.
 
 ---
 
-*Cursor Agent Factory v4.0.0*
+*Antigravity Agent Factory v1.2.0*
 *Start with purpose. Build with excellence. Serve with love.*

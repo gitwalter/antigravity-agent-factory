@@ -9,8 +9,7 @@ Source of Truth:
 Synced Locations:
 - knowledge/manifest.json → factory_version
 - README.md → Footer (*Antigravity Agent Factory vX.X.X*)
-- docs/GETTING_STARTED.md → Footer (*Antigravity Agent Factory vX.X.X*)
-- docs/ONBOARDING_GUIDE.md → Footer (*Antigravity Agent Factory vX.X.X*)
+- docs/guides/getting-started.md → Footer (*Antigravity Agent Factory vX.X.X*)
 - scripts/core/generate_project.py → Comment (# Factory Version: X.X.X)
 - templates/factory/cursorrules-template.md → Header (**Version**: X.X)
 - templates/knowledge/guardian-protocol.json.tmpl → source_factory_version
@@ -59,6 +58,12 @@ VERSION_LOCATIONS = [
         "file": "README.md",
         "name": "README.md footer",
         "pattern": r"\*Antigravity Agent Factory v(\d+\.\d+\.\d+)\*",
+        "replacement": lambda v: f"*Antigravity Agent Factory v{v}*",
+    },
+    {
+        "file": "docs/guides/getting-started.md",
+        "name": "getting-started.md footer",
+        "pattern": r"\*(?:Antigravity|Cursor) Agent Factory v(\d+\.\d+\.\d+)\*",
         "replacement": lambda v: f"*Antigravity Agent Factory v{v}*",
     },
     {
