@@ -6,9 +6,10 @@ Enforces technical best practices and platform-specific reliability standards.
 ## 1. Execution Environment
 - **Python**: ALWAYS use `python` for all Python-based tool calls. NEVER assume the system python is correct.
 - **NEVER** modify `.cursorrules` (use `.agent/rules/` instead).
-- **Shell**: Consistently use PowerShell syntax.
-- **Windows Reliability**:
-    - Use `;` for command chaining.
+- **Shell**: Use environment-appropriate shell syntax (PowerShell for Windows, Bash/Zsh for Linux).
+- **Cross-Platform Reliability**:
+    - Use `;` for command chaining in PowerShell.
+    - Use `&&` for command chaining in Bash.
 - **Tool Priority**:
     - **Local-First (P0)**: If a command-line tool (`git`, `gh`, `python`) fulfills the requirement, use it.
     - **MCP (P1)**: Use MCP only if local tools are insufficient, missing, or for bridging external services (Drive, Gmail).
