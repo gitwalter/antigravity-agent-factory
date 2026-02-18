@@ -3,17 +3,15 @@ import sys
 import logging
 from typing import List, Annotated, Union
 from typing_extensions import TypedDict
+import re
+import numpy as np
 
 # Add project root to sys.path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_qdrant import QdrantVectorStore
-from langchain_classic.storage import LocalFileStore, create_kv_docstore
-from langchain_classic.retrievers import ParentDocumentRetriever
-from qdrant_client import QdrantClient
+# Only import what we use
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
@@ -21,6 +19,8 @@ from langchain_core.output_parsers import JsonOutputParser
 from langgraph.graph import END, StateGraph, START
 
 from scripts.ai.rag.rag_optimized import get_rag
+
+logger = logging.getLogger(__name__)
 
 # --- State Definition ---
 
@@ -51,20 +51,19 @@ def retrieve(state):
     """
     Retrieve documents
     """
-    print("---RETRIEVE---")
+    logger.info("---RETRIEVE---")
     question = state["question"]
     rag = get_rag()
     documents = rag.query(question)
-    print(f"---RETRIEVED {len(documents)} DOCUMENTS---")
+    logger.info(f"---RETRIEVED {len(documents)} DOCUMENTS---")
     for i, doc in enumerate(documents):
-        print(f"Doc {i} Snippet: {doc.page_content[:100]}...")
+        # Log minimal snippet to avoid spamming logs
+        logger.debug(f"Doc {i} Snippet: {doc.page_content[:100]}...")
     return {"documents": documents, "question": question}
 
 
 def normalize_text(text: str) -> str:
     """Normalize text for more robust comparison."""
-    import re
-
     # Replace common umlauts
     text = text.lower()
     text = (
@@ -77,44 +76,72 @@ def normalize_text(text: str) -> str:
 
 def grade_documents(state):
     """
-    Determines whether the retrieved documents are relevant to the question.
+    Determines whether the retrieved documents are relevant to the question
+    using embedding-based semantic similarity.
     """
-    print("---CHECK DOCUMENT RELEVANCE TO QUESTION---")
-    question = normalize_text(state["question"])
+    logger.info("---CHECK DOCUMENT RELEVANCE TO QUESTION---")
     documents = state["documents"]
+    question = state["question"]
 
     if not documents:
+        logger.info("---NO DOCUMENTS RETRIEVED, ROUTING TO WEB SEARCH---")
         return {
             "web_search": "yes",
-            "question": state["question"],
+            "question": question,
             "documents": documents,
         }
 
-    # Heuristic: Check if normalized keywords from question appear in normalized snippets
-    keywords = [w for w in question.split() if len(w) > 3]
-    relevant_count = 0
-    for doc in documents:
-        content = normalize_text(doc.page_content)
-        if any(kw in content for kw in keywords):
-            relevant_count += 1
-            print("---DOCUMENT GRADED RELEVANT (Keyword match)---")
+    try:
+        rag = get_rag()
+        embeddings = rag.embeddings
 
-    if relevant_count == 0:
-        print("---NO DOCUMENTS GRADED RELEVANT---")
-        return {
-            "web_search": "yes",
-            "question": state["question"],
-            "documents": documents,
-        }
+        # Embed query and documents
+        query_emb = embeddings.embed_query(question)
+        doc_texts = [doc.page_content for doc in documents]
+        doc_embs = embeddings.embed_documents(doc_texts)
 
-    return {"web_search": "no", "question": state["question"], "documents": documents}
+        # Cosine similarity
+        query_vec = np.array(query_emb)
+        relevant_docs = []
+        threshold = 0.25  # MiniLM cosine similarity threshold
+
+        for doc, doc_emb in zip(documents, doc_embs):
+            doc_vec = np.array(doc_emb)
+            similarity = np.dot(query_vec, doc_vec) / (
+                np.linalg.norm(query_vec) * np.linalg.norm(doc_vec) + 1e-10
+            )
+            if similarity >= threshold:
+                relevant_docs.append(doc)
+                logger.debug(f"---DOCUMENT RELEVANT (similarity={similarity:.3f})---")
+            else:
+                logger.debug(
+                    f"---DOCUMENT FILTERED (similarity={similarity:.3f} < {threshold})---"
+                )
+
+        if not relevant_docs:
+            logger.info("---ALL DOCUMENTS BELOW THRESHOLD, ROUTING TO WEB SEARCH---")
+            return {
+                "web_search": "yes",
+                "question": question,
+                "documents": documents,  # still pass them for fallback generation
+            }
+
+        logger.info(
+            f"---{len(relevant_docs)}/{len(documents)} DOCUMENTS PASSED RELEVANCE---"
+        )
+        return {"web_search": "no", "question": question, "documents": relevant_docs}
+
+    except Exception as e:
+        # If embedding grading fails, trust the vector store results
+        logger.error(f"---GRADING ERROR: {e}, TRUSTING VECTOR STORE---")
+        return {"web_search": "no", "question": question, "documents": documents}
 
 
 def generate(state):
     """
     Generate answer/format results
     """
-    print("---FORMAT RESULTS---")
+    logger.info("---FORMAT RESULTS---")
     documents = state["documents"]
 
     if not documents:
@@ -141,7 +168,7 @@ def web_search(state):
     """
     Web search fallback placeholder
     """
-    print("---WEB SEARCH REQUESTED---")
+    logger.info("---WEB SEARCH REQUESTED---")
     return {"documents": [], "question": state["question"], "web_search": "yes"}
 
 
@@ -152,7 +179,7 @@ def decide_to_generate(state):
     """
     Determines whether to generate an answer, or re-route to web search.
     """
-    print("---ASSESS GRADED DOCUMENTS---")
+    logger.info("---ASSESS GRADED DOCUMENTS---")
     if state.get("web_search") == "yes":
         return "web_search"
     else:
@@ -197,11 +224,3 @@ class AgenticRAG:
         config = {"configurable": {"thread_id": "1"}}
         inputs = {"question": question}
         return self.app.invoke(inputs, config)
-
-
-if __name__ == "__main__":
-    agentic_rag = AgenticRAG()
-    # Test query
-    result = agentic_rag.query("Was ist Wissensrepräsentation?")
-    print(f"Status: {result.get('web_search')}")
-    print(f"Generation: {result.get('generation', '')[:200]}...")

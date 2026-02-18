@@ -282,11 +282,11 @@ When a commit fails:
 # With push
 {PYTHON_PATH} {directories.scripts}/git/safe_commit.py "feat(scope): description" --push
 
-# With body text
-{PYTHON_PATH} {directories.scripts}/git/safe_commit.py "feat(scope): description" --body "Detailed body"
+# With body text (PowerShell) - Use backtick-n for newlines
+{PYTHON_PATH} {directories.scripts}/git/safe_commit.py "feat(scope): description`n`nDetailed body text" --push
 
-# Fast mode (skip slow checks)
-{PYTHON_PATH} {directories.scripts}/git/safe_commit.py "fix(scope): quick fix" --fast --push
+# Fast mode (skip slow checks) not supported by current script version
+# {PYTHON_PATH} {directories.scripts}/git/safe_commit.py "fix(scope): quick fix" --push
 
 # Dry run (validate without committing)
 {PYTHON_PATH} {directories.scripts}/git/safe_commit.py --dry-run "feat(scope): test"

@@ -1,0 +1,157 @@
+﻿conda.exe :
+In D:\Anaconda\shell\condabin\Conda.psm1:153 Zeichen:17
++ ...             & $Env:CONDA_EXE $Env:_CE_M $Env:_CE_CONDA $Command @Othe ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+# >>>>>>>>>>>>>>>>>>>>>> ERROR REPORT <<<<<<<<<<<<<<<<<<<<<<
+
+    Traceback (most recent call last):
+      File "D:\Anaconda\lib\site-packages\conda\exceptions.py", line 1132, in __call__
+        return func(*args, **kwargs)
+      File "D:\Anaconda\lib\site-packages\conda\cli\main.py", line 69, in main_subshell
+        exit_code = do_call(args, p)
+      File "D:\Anaconda\lib\site-packages\conda\cli\conda_argparse.py", line 122, in do_call
+        return getattr(module, func_name)(args, parser)
+      File "D:\Anaconda\lib\site-packages\conda\cli\main_run.py", line 19, in execute
+        script, command = wrap_subprocess_call(
+      File "D:\Anaconda\lib\site-packages\conda\utils.py", line 409, in wrap_subprocess_call
+        assert not any("\n" in arg for arg in arguments), (
+    AssertionError: Support for scripts where arguments contain newlines not implemented.
+    .. requires writing the script to an external file and knowing how to transform the command-line (e.g. `python -c
+args` => `python file`) in a tool dependent way, or attempting something like:
+    .. https://stackoverflow.com/a/15032476 (adds unacceptable escapingrequirements)
+
+`$ D:\Anaconda\Scripts\conda-script.py run -p D:\Anaconda\envs\cursor-factory --no-capture-output python -c
+import os, sys, json
+sys.path.insert(0, r'D:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory')
+os.environ['PYTHONIOENCODING'] = 'utf-8'
+
+from scripts.ai.rag.rag_optimized import OptimizedRAG
+import logging
+logging.basicConfig(level=logging.INFO)
+
+print('=== Initializing RAG (no warmup) ===')
+rag = OptimizedRAG(warmup=False)
+
+print(f'\n[1] Parent store path: {rag.parent_store_path}')
+files = [f for f in os.listdir(rag.parent_store_path) if os.path.isfile(os.path.join(rag.parent_store_path, f)) and
+not f.startswith('.')]
+print(f'[2] Disk files: {len(files)}')
+
+# Trigger hydration
+store = rag.store
+keys = list(store.yield_keys())
+print(f'[3] InMemoryStore keys after hydration: {len(keys)}')
+
+if len(keys) > 0:
+    print(f'    First 3 keys: {keys[:3]}')
+
+    # Test vectorstore search
+    print('\n[4] Testing vectorstore.similarity_search...')
+    results = rag.vectorstore.similarity_search('machine learning', k=3)
+    print(f'    Results: {len(results)}')
+
+    if results:
+        doc_ids = [r.metadata.get('doc_id', 'NONE') for r in results]
+        print(f'    doc_ids: {doc_ids}')
+
+        # Check linkage
+        print('\n[5] Doc ID linkage check:')
+        for did in doc_ids:
+            found = store.mget([did])
+            status = 'FOUND' if found[0] is not None else 'MISSING'
+            print(f'    {did} -> {status}')
+
+        # Full retriever test
+        print('\n[6] Testing retriever.invoke...')
+        ret_results = rag.retriever.invoke('machine learning')
+        print(f'    Retriever results: {len(ret_results)}')
+        if ret_results:
+            print(f'    First result preview: {ret_results[0].page_content[:100]}...')
+else:
+    print('  ERROR: Store is still empty!')
+`
+
+  environment variables:
+                 CIO_TEST=<not set>
+        CONDA_DEFAULT_ENV=base
+                CONDA_EXE=D:\Anaconda\Scripts\conda.exe
+             CONDA_PREFIX=D:\Anaconda
+    CONDA_PROMPT_MODIFIER=(base)
+         CONDA_PYTHON_EXE=D:\Anaconda\python.exe
+               CONDA_ROOT=D:\Anaconda
+              CONDA_SHLVL=1
+           CURL_CA_BUNDLE=<not set>
+                 HOMEPATH=\Users\wpoga
+               LD_PRELOAD=<not set>
+                NODE_PATH=C:\Users\wpoga\AppData\Roaming\npm\node_modules
+                 NO_PROXY=<set>
+                     PATH=D:\Anaconda;D:\Anaconda\Library\mingw-w64\bin;D:\Anaconda\Library\usr\
+                          bin;D:\Anaconda\Library\bin;D:\Anaconda\Scripts;D:\Anaconda\bin;.;C:\P
+                          rogram Files\HP\HP One Agent;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS
+                          \System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\S
+                          ystem32\OpenSSH;C:\Program Files\GitHub CLI;C:\Program
+                          Files\nodejs;C:\Program
+                          Files\Docker\Docker\resources\bin;D:\Anaconda\envs\cursor-factory;D:\A
+                          naconda\condabin;D:\Anaconda\Scripts;D:\Anaconda\Library\bin;D:\Anacon
+                          da;C:\Program Files\Git\bin;C:\Program Files\GitHub
+                          CLI;C:\Users\wpoga\.local\bin;C:\Program Files\nodejs;C:\Users\wpoga\A
+                          ppData\Roaming\npm;C:\Users\wpoga\AppData\Local\Programs\cursor\resour
+                          ces\app\bin;C:\Users\wpoga\AppData\Local\Programs\Microsoft VS
+                          Code\bin;.
+             PSMODULEPATH=D:\Users\wpoga\Documents\WindowsPowerShell\Modules;C:\Program Files\Wi
+                          ndowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Mod
+                          ules
+          PTSMINSTALLPATH=c:\Program Files\HP\HP ProtectTools Security Manager\Bin\
+       REQUESTS_CA_BUNDLE=<not set>
+            SSL_CERT_FILE=<not set>
+   VSCODE_CODE_CACHE_PATH=C:\Users\wpoga\AppData\Roaming\Antigravity\CachedData\1504c8cc4b34dbfb
+                          b4a97ebe954b3da2b5634516
+
+     active environment : base
+    active env location : D:\Anaconda
+            shell level : 1
+       user config file : C:\Users\wpoga\.condarc
+ populated config files : C:\Users\wpoga\.condarc
+          conda version : 23.3.1
+    conda-build version : 3.24.0
+         python version : 3.9.12.final.0
+       virtual packages : __archspec=1=x86_64
+                          __cuda=12.8=0
+                          __win=0=0
+       base environment : D:\Anaconda  (writable)
+      conda av data dir : D:\Anaconda\etc\conda
+  conda av metadata url : None
+           channel URLs : https://conda.anaconda.org/quantopian/win-64
+                          https://conda.anaconda.org/quantopian/noarch
+                          https://repo.anaconda.com/pkgs/main/win-64
+                          https://repo.anaconda.com/pkgs/main/noarch
+                          https://repo.anaconda.com/pkgs/r/win-64
+                          https://repo.anaconda.com/pkgs/r/noarch
+                          https://repo.anaconda.com/pkgs/msys2/win-64
+                          https://repo.anaconda.com/pkgs/msys2/noarch
+          package cache : D:\Anaconda\pkgs
+                          C:\Users\wpoga\.conda\pkgs
+                          C:\Users\wpoga\AppData\Local\conda\conda\pkgs
+       envs directories : D:\Anaconda\envs
+If submitted, this report will be used by core maintainers to improve
+future releases of conda.
+                          C:\Users\wpoga\.conda\envs
+                          C:\Users\wpoga\AppData\Local\conda\conda\envs
+               platform : win-64
+             user-agent : conda/23.3.1 requests/2.32.5 CPython/3.9.12 Windows/10 Windows/10.0.26200
+          administrator : False
+             netrc file : None
+           offline mode : False
+
+
+An unexpected error has occurred. Conda has prepared the above report.
+
+
+No report sent. To permanently opt-out, use
+
+    $ conda config --set report_errors false
+
+Would you like conda to send this report to the core maintainers? [y/N]:

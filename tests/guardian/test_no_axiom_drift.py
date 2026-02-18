@@ -43,7 +43,10 @@ class TestNoAxiomDrift:
         from scripts.memory.induction_engine import InductionEngine
 
         store = MemoryStore(persist_dir=temp_dir)
-        return InductionEngine(memory_store=store)
+        engine = InductionEngine(memory_store=store)
+        yield engine
+        # Explicitly close to release resources (critical on Windows)
+        engine.close()
 
     def _read_file_if_exists(self, path: str) -> str:
         """Read a file if it exists, return empty string otherwise."""

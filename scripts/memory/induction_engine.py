@@ -455,6 +455,13 @@ class InductionEngine:
         """
         return proposal.format_for_user()
 
+    def close(self) -> None:
+        """
+        Close the underlying memory store.
+        """
+        if hasattr(self, "memory"):
+            self.memory.close()
+
 
 # Singleton instance for convenience
 _default_engine: Optional[InductionEngine] = None

@@ -12,11 +12,11 @@ Performs static analysis using AST parsing, computes complexity metrics (cycloma
 
 ## Process
 
-1. **AST Parsing** – Parse source into AST and extract structure. See REFERENCE.md § AST Parsing.
-2. **Complexity Calculation** – Compute cyclomatic complexity and maintainability index with radon. See REFERENCE.md § Complexity Calculation.
-3. **Dependency Mapping** – Extract import statements from AST. See REFERENCE.md § Dependency Mapping.
-4. **Quality Scoring** – Compute normalized quality score 0.0–1.0. See REFERENCE.md § Quality Scoring.
-5. **Report Generation** – Generate full analysis report. See REFERENCE.md § Report Generation.
+1. **AST Parsing** – Parse source into AST and extract structure.
+2. **Complexity Calculation** – Compute cyclomatic complexity and maintainability index with radon.
+3. **Dependency Mapping** – Extract import statements from AST.
+4. **Quality Scoring** – Compute normalized quality score 0.0–1.0.
+5. **Report Generation** – Generate full analysis report.
 
 **CLI:** Run `python scripts/analyze.py --path <file|dir>` for formatted report or `python scripts/report.py --path <dir> --output report.json` for JSON output.
 
@@ -35,7 +35,6 @@ Performs static analysis using AST parsing, computes complexity metrics (cycloma
 
 ## Bundled Resources
 
-- **REFERENCE.md** – Code examples (AST parsing, complexity calculation, dependency mapping, quality scoring, report generation)
 - **scripts/analyze.py** – Analyze single file or directory, print formatted report (`--path`)
 - **scripts/report.py** – Generate JSON report (`--path`, `--output`)
 

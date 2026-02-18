@@ -12,13 +12,12 @@ Implement Retrieval-Augmented Generation with effective chunking, hybrid retriev
 
 ## Process
 
-1. **Chunk documents** — Use recursive chunking for most docs; see REFERENCE.md for strategies (character, token, semantic, header-based).
+1. **Chunk documents** — Use recursive chunking for most docs (character, token, semantic, header-based).
 2. **Set up retrieval** — Prefer hybrid search (semantic + keyword); single pass is acceptable for simple use cases.
 3. **Rerank results** — Add cross-encoder or Cohere reranking for better relevance.
 4. **Enable citations** — Format context with `[1]`, `[2]` markers and include source metadata.
 5. **Wire pipeline** — Connect chunker → embeddings → retriever → reranker → prompt with context.
 
-See **REFERENCE.md** for full code examples.
 
 ## Chunking Strategies Comparison
 
@@ -55,7 +54,6 @@ See **REFERENCE.md** for full code examples.
 
 ## Resources
 
-- **REFERENCE.md** — Full code examples (chunking, hybrid retrieval, reranking, citations, pipeline)
 - **TROUBLESHOOTING.md** — Common issues (poor retrieval, slow indexing, hallucination, OOM, empty results)
 - **scripts/verify.py** — Run `python scripts/verify.py --project-dir .` to check RAG best practices
 - **scripts/analyze.py** — Run `python scripts/analyze.py --file doc.txt --chunk-size 1000 --overlap 200` for chunk analysis

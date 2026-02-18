@@ -11,7 +11,7 @@ Build production LangChain applications using LCEL, tools, memory, and structure
 
 ## Process
 
-1. **Initialize LLM** – Use aisuite for provider-agnostic access or LangChain native integrations (e.g. `ChatGoogleGenerativeAI`). See REFERENCE.md.
+1. **Initialize LLM** – Use aisuite for provider-agnostic access or LangChain native integrations (e.g. `ChatGoogleGenerativeAI`).
 2. **Create Chains** – Compose with LCEL pipe syntax: `prompt | llm | parser`. Use `ChatPromptTemplate` for templated prompts.
 3. **Structured Outputs** – Define Pydantic models; use `PydanticOutputParser` for type-safe responses.
 4. **Tool Calling** – Decorate functions with `@tool`, bind with `llm.bind_tools()`, invoke and handle tool calls.
@@ -66,7 +66,6 @@ response = await client.chat.completions.create(
 ## Bundled Resources
 
 - **QUICKSTART.md** – 5-minute getting started guide
-- **REFERENCE.md** – Detailed code (LLM init, LCEL chains, structured outputs, tools, memory, document loaders)
 - **scripts/verify.py** – Validate project follows LangChain patterns (`--project-dir`)
 - **examples/basic_chain/** – Simple LCEL chain with structured output
 

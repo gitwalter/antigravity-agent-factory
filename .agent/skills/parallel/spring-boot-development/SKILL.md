@@ -13,7 +13,7 @@ Build production Spring Boot applications using REST controllers, service layer 
 
 ## Process
 
-1. **Project Setup** – Use Spring Initializr or `scripts/scaffold.py --name myapp --group-id com.example`. See [REFERENCE.md](REFERENCE.md) for full `pom.xml` and project structure.
+1. **Project Setup** – Use Spring Initializr or `scripts/scaffold.py --name myapp --group-id com.example`.
 2. **REST Controllers** – Create `@RestController` with HTTP methods, constructor injection, DTOs.
 3. **Service Layer** – Implement `@Service` with `@Transactional(readOnly = true)` for reads, `@Transactional` for writes.
 4. **Exception Handling** – Add `@RestControllerAdvice` with handlers for domain exceptions, `MethodArgumentNotValidException`, `ConstraintViolationException`, and generic `Exception`.
@@ -50,7 +50,6 @@ Build production Spring Boot applications using REST controllers, service layer 
 | Resource | Purpose |
 |----------|---------|
 | [QUICKSTART.md](../../../docs/QUICKSTART.md) | 5-minute guide: Spring Initializr, controller, run, test |
-| [REFERENCE.md](REFERENCE.md) | Full code: pom.xml, controllers, services, exception handling, profiles, validation, async |
 | [scripts/scaffold.py](scripts/scaffold.py) | Scaffold Maven project structure |
 | [scripts/verify.py](scripts/verify.py) | Verify project follows skill patterns |
 | [examples/rest_api/](examples/rest_api/) | REST API example and run instructions |

@@ -7,7 +7,7 @@ category: retrieval
 agents: [python-ai-specialist, ai-app-developer]
 knowledge: [best-practices.json]
 tools: ["antigravity-rag"]
-related_skills: [ingesting-rag-content, skill-creator]
+related_skills: [ingesting-rag-content, inspecting-rag-catalog, skill-creator]
 templates: ["none"]
 ---
 

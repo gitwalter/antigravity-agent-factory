@@ -700,6 +700,20 @@ class MemoryStore:
         logger.info(f"Cleared {count} episodic memories")
         return count
 
+    def close(self) -> None:
+        """
+        Close the Qdrant client and release resources.
+
+        This is critical on Windows to avoid file locks and resource exhaustion
+        during large test runs.
+        """
+        if hasattr(self, "client"):
+            try:
+                self.client.close()
+                logger.debug("MemoryStore Qdrant client closed")
+            except Exception as e:
+                logger.warning(f"Error closing MemoryStore client: {e}")
+
 
 # Singleton instance for convenience
 _default_store: Optional[MemoryStore] = None

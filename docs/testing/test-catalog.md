@@ -1,6 +1,6 @@
 # Test Catalog
 
-*Generated on 2026-02-16 12:29:30*
+*Generated on 2026-02-18 21:04:27*
 
 ## Summary
 
@@ -11,9 +11,11 @@
 | knowledge | 2 | 5 | 27 |
 | lib | 10 | 76 | 343 |
 | memory | 3 | 8 | 45 |
+| performance | 0 | 0 | 0 |
 | unit | 28 | 255 | 929 |
 | validation | 14 | 49 | 235 |
-| **Total** | **74** | **478** | **1894** |
+| verification | 1 | 0 | 1 |
+| **Total** | **75** | **478** | **1895** |
 
 ## Guardian Tests
 
@@ -2433,6 +2435,8 @@ Tests hybrid storage functionality with ChromaDB and proposal queue.*
 
 - `test_get_memory_store_returns_same_instance`
   - Test singleton returns same instance.
+
+## Performance Tests
 
 ## Unit Tests
 
@@ -6522,3 +6526,11 @@ This prevents YAML parsing errors like:
   - Test handling of nested YAML objects.
 - `test_unreadable_file`
   - Test handling of file read errors.
+
+## Verification Tests
+
+### tests\verification\test_agentic_rag_minimal.py
+
+#### Standalone Tests
+
+- `test_agentic_rag`

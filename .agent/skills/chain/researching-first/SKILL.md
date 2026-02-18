@@ -71,16 +71,21 @@ Ask: "Does this feel like something someone else has solved well?"
 
 ### Step 2: Research Sources
 
-**Academic:**
-- ACM Digital Library
-- Google Scholar
-- arXiv (cs.SE, cs.PL)
+**Local RAG** (always try first for domain topics):
+- `@tool mcp_antigravity-rag_search_library` — semantic search across ingested ebooks
+- `@tool mcp_antigravity-rag_list_library_sources` — see what's indexed
 
-**Industry:**
-- GitHub repositories and discussions
-- Dev.to, Medium technical articles
-- Stack Overflow patterns
-- Official documentation
+**Web Search:**
+- `@tool mcp_tavily_tavily-search` — web search via Tavily MCP (Docker)
+- `@tool mcp_tavily_tavily-extract` — extract full content from URLs
+
+**Documentation:**
+- `@tool mcp_docs-langchain` — LangChain documentation (when enabled)
+- `@tool mcp_deepwiki` — open-source library docs (when enabled)
+- `@tool mcp_fetch_fetch` — read any URL directly (always available)
+
+**Code/GitHub:**
+- Use `operating-github` skill for repository exploration
 
 **Community:**
 - Reddit (r/programming, language-specific)

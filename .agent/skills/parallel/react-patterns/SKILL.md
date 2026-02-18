@@ -11,14 +11,14 @@ Build modern React 19 applications using Server Components, hooks, state managem
 
 ## Process
 
-1. **Scaffold** – Run `python scripts/scaffold.py --name <app> --output-dir .` or create structure manually. See REFERENCE.md § Project Structure.
-2. **Server Components** – Use Server Components by default; async fetch in components. See REFERENCE.md § Server Components and use() Hook.
-3. **Server Actions** – Form submissions with `'use server'` and `useTransition`. See REFERENCE.md § Server Actions.
-4. **Compound Components** – Context + child components for flexible APIs. See REFERENCE.md § Compound Components.
-5. **Custom Hooks** – Extract reusable logic (useDebounce, useLocalStorage). See REFERENCE.md § Custom Hooks.
-6. **State Management** – Zustand for global state with devtools and persist. See REFERENCE.md § State Management with Zustand.
-7. **Form Handling** – React Hook Form + Zod validation. See REFERENCE.md § Form Handling.
-8. **Component Composition** – Card, CardHeader, CardBody patterns. See REFERENCE.md § Component Composition.
+1. **Scaffold** – Run `python scripts/scaffold.py --name <app> --output-dir .` or create structure manually.
+2. **Server Components** – Use Server Components by default; async fetch in components.
+3. **Server Actions** – Form submissions with `'use server'` and `useTransition`.
+4. **Compound Components** – Context + child components for flexible APIs.
+5. **Custom Hooks** – Extract reusable logic (useDebounce, useLocalStorage).
+6. **State Management** – Zustand for global state with devtools and persist.
+7. **Form Handling** – React Hook Form + Zod validation.
+8. **Component Composition** – Card, CardHeader, CardBody patterns.
 
 ## Best Practices
 
@@ -38,7 +38,6 @@ Build modern React 19 applications using Server Components, hooks, state managem
 ## Bundled Resources
 
 - **QUICKSTART.md** – 5-minute React 19 setup with Server Component example
-- **REFERENCE.md** – Code examples (Server Components, Server Actions, Compound Components, Custom Hooks, Zustand, Form Handling, Component Composition)
 - **scripts/scaffold.py** – Generate project structure (`--name`, `--output-dir`)
 - **examples/counter/** – Simple client component with useState
 
