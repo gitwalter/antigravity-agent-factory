@@ -4,7 +4,6 @@ from typing import List, Optional
 
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_qdrant import QdrantVectorStore
 from langchain.storage import InMemoryStore
 from langchain.retrievers import ParentDocumentRetriever

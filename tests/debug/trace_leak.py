@@ -1,6 +1,5 @@
 import sys
 import os
-import builtins
 
 # Save real stdout
 _real_stdout = sys.stdout

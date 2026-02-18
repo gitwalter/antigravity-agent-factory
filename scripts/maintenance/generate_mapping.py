@@ -1,5 +1,4 @@
 import os
-import re
 
 KNOWLEDGE_PATH = r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\knowledge"
 SKILLS_ROOT = (

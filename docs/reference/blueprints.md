@@ -1,6 +1,6 @@
 # Antigravity Blueprints Reference
 
-The factory includes **27+ blueprints** organized by category. These blueprints serve as starting points for your AI agent systems.
+The factory includes **34 blueprints** organized by category. These blueprints serve as starting points for your AI agent systems.
 
 ## Python & AI
 

@@ -14,10 +14,9 @@ Stages:
 
 import subprocess
 import sys
-import os
 import time
 from pathlib import Path
-from typing import List, Tuple
+from typing import List
 
 # Configuration
 PYTHON = sys.executable

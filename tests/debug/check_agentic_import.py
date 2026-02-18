@@ -25,7 +25,6 @@ try:
     PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
     sys.path.insert(0, PROJECT_ROOT)
 
-    import scripts.ai.rag.agentic_rag
 
 except Exception as e:
     sys.stderr.write(f"Import Failed: {e}\n")

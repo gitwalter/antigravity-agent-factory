@@ -1,6 +1,5 @@
 import sys
 import os
-import io
 
 # Simulation of MCP Server startup
 print("Starting simulation...", file=sys.stderr)

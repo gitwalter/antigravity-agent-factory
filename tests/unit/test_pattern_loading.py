@@ -198,6 +198,10 @@ class TestKnowledgeFiles:
         with open(catalog_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
+        # The catalog structure has 'skills' under 'content'
+        if "content" in data:
+            data = data["content"]
+
         assert "skills" in data
         assert len(data["skills"]) > 0
 

@@ -1,6 +1,6 @@
 ﻿# Knowledge Files Catalog
 
-The factory currently includes **263 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
+The factory currently includes **267 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
 
 | File | Type | Description |
 |------|------|-------------|
@@ -63,6 +63,7 @@ The factory currently includes **263 knowledge files** covering: various aspects
 | [bitcoin-patterns](file:///.agent/knowledge/bitcoin-patterns.json) |  |  |
 | [bitcoin-protocol-patterns](file:///.agent/knowledge/bitcoin-protocol-patterns.json) |  |  |
 | [blazor-patterns](file:///.agent/knowledge/blazor-patterns.json) |  |  |
+| [blueprint-catalog](file:///.agent/knowledge/blueprint-catalog.json) |  |  |
 | [business-automation-patterns](file:///.agent/knowledge/business-automation-patterns.json) |  |  |
 | [caching-patterns](file:///.agent/knowledge/caching-patterns.json) |  |  |
 | [cdhdr-object-classes](file:///.agent/knowledge/cdhdr-object-classes.json) |  |  |
@@ -183,6 +184,7 @@ The factory currently includes **263 knowledge files** covering: various aspects
 | [openai-agents-sdk-patterns](file:///.agent/knowledge/openai-agents-sdk-patterns.json) |  |  |
 | [openai-assistants-patterns](file:///.agent/knowledge/openai-assistants-patterns.json) |  |  |
 | [pandas-patterns](file:///.agent/knowledge/pandas-patterns.json) |  |  |
+| [pattern-catalog](file:///.agent/knowledge/pattern-catalog.json) |  |  |
 | [pm-metrics](file:///.agent/knowledge/pm-metrics.json) |  |  |
 | [polars-dataframe-patterns](file:///.agent/knowledge/polars-dataframe-patterns.json) |  |  |
 | [prisma-database-patterns](file:///.agent/knowledge/prisma-database-patterns.json) |  |  |
@@ -259,6 +261,7 @@ The factory currently includes **263 knowledge files** covering: various aspects
 | [tdd-patterns](file:///.agent/knowledge/tdd-patterns.json) |  |  |
 | [team-dynamics](file:///.agent/knowledge/team-dynamics.json) |  |  |
 | [team-dynamics-knowledge](file:///.agent/knowledge/team-dynamics-knowledge.json) |  |  |
+| [template-catalog](file:///.agent/knowledge/template-catalog.json) |  |  |
 | [tensorflow-patterns](file:///.agent/knowledge/tensorflow-patterns.json) |  |  |
 | [test-patterns](file:///.agent/knowledge/test-patterns.json) |  |  |
 | [test-traceability](file:///.agent/knowledge/test-traceability.json) |  |  |
@@ -276,6 +279,7 @@ The factory currently includes **263 knowledge files** covering: various aspects
 | [visualization-patterns](file:///.agent/knowledge/visualization-patterns.json) |  |  |
 | [web-browsing-and-scraping-patterns](file:///.agent/knowledge/web-browsing-and-scraping-patterns.json) |  |  |
 | [web-browsing-patterns](file:///.agent/knowledge/web-browsing-patterns.json) |  |  |
+| [workflow-catalog](file:///.agent/knowledge/workflow-catalog.json) |  |  |
 | [workflow-entities](file:///.agent/knowledge/workflow-entities.json) |  |  |
 | [workflow-patterns](file:///.agent/knowledge/workflow-patterns.json) |  |  |
 | [workflow-system-entities](file:///.agent/knowledge/workflow-system-entities.json) |  |  |

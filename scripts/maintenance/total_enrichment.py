@@ -1,7 +1,5 @@
 import os
-import shutil
 import json
-import re
 
 SKILLS_ROOT = (
     r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\skills"

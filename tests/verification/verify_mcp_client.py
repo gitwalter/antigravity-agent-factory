@@ -1,6 +1,5 @@
 import asyncio
 import os
-import sys
 # Make sure we can find the mcp package if it's in the environment
 # Assuming mcp is installed in the conda env we rely on
 

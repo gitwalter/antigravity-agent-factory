@@ -1,6 +1,3 @@
-import sys
-
-
 def estimate_tokens(text):
     # Simple heuristic: 1 token ~= 4 chars for English
     return len(text) // 4

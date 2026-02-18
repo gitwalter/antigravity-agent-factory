@@ -1,7 +1,6 @@
 import os
 import sys
 import shutil
-import logging
 
 # Ensure project root is in path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))

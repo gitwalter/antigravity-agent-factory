@@ -33,8 +33,8 @@ Process for querying the Qdrant vector store to provide rich context for AI resp
 ## Level 3 Resources
 
 ### Scripts
-- `scripts/test_retrieval.py`: CLI tool to test queries and inspect raw Agentic RAG outputs.
-- `scripts/ai/rag/agentic_rag.py`: The system-wide orchestration logic for relevance grading.
+- **NONE**: This skill relies exclusively on the `antigravity-rag` MCP server.
+- `scripts/ai/rag/agentic_rag.py`: The system-wide orchestration logic for relevance grading (backend use only).
 
 ### References
 - `references/agentic-logic.md`: Breakdown of the Retrieve -> Grade -> Adapt decision tree.

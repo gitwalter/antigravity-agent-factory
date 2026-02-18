@@ -1,7 +1,7 @@
 import os
 import sys
 import logging
-from typing import List, Annotated, Union
+from typing import List
 from typing_extensions import TypedDict
 import re
 import numpy as np
@@ -12,10 +12,7 @@ if project_root not in sys.path:
     sys.path.append(project_root)
 
 # Only import what we use
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
-from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
-from langchain_core.output_parsers import JsonOutputParser
 from langgraph.graph import END, StateGraph, START
 
 from scripts.ai.rag.rag_optimized import get_rag

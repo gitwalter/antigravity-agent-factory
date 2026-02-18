@@ -2,7 +2,6 @@ import os
 import sys
 import logging
 import warnings
-from typing import List, Optional
 
 # =============================================================================
 # STDOUT PROTECTION FOR MCP STDIO PROTOCOL

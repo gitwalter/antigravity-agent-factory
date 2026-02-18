@@ -1,5 +1,4 @@
 import os
-import re
 
 
 def standardize_links(file_path):
