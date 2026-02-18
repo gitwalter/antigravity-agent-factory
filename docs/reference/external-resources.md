@@ -111,7 +111,7 @@ A multi-layered reflection on a significant milestone in the ai-dev-agent projec
 ## Related Documentation
 
 - [Factory Components](factory-components.md) - Internal Factory agents and skills
-- [Blueprints](BLUEPRINTS.md) - Technology stack blueprints
+- [Blueprints](blueprints.md) - Technology stack blueprints
 - [Knowledge Files](knowledge-files.md) - Structured knowledge files
 - **Sacred Psychology in Software Engineering** - Research on meaning and purpose in development
 

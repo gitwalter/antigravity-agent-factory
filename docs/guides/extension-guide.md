@@ -517,7 +517,7 @@ After extending ANY artifact, you MUST complete these steps (enforced by `.curso
 | Knowledge file (extend) | manifest.json (version) + CHANGELOG.md |
 | Skill (new) | skill-catalog.json + CHANGELOG.md |
 | Factory skill/agent | factory-components.md + CHANGELOG.md |
-| Blueprint (new) | BLUEPRINTS.md + CHANGELOG.md |
+| Blueprint (new) | blueprints.md + CHANGELOG.md |
 
 ### Automation Scripts
 

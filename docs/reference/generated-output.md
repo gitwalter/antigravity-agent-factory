@@ -866,7 +866,7 @@ You can always upgrade from Quick Start to Standard or Comprehensive later by re
 
 - **LAYERED_ARCHITECTURE.md** - Deep dive into the 5-layer architecture
 - **FACTORY_REFERENCE.md** - Complete factory overview
-- [BLUEPRINTS.md](BLUEPRINTS.md) - All available technology blueprints
+- [blueprints.md](blueprints.md) - All available technology blueprints
 - **USAGE_GUIDE.md** - Step-by-step usage instructions
 
 ---
