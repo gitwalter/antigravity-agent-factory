@@ -2,121 +2,139 @@ import os
 import sys
 import logging
 import warnings
+import contextlib
+from starlette.responses import JSONResponse
+from starlette.types import Scope, Receive, Send
+from fastmcp import FastMCP
 
 # =============================================================================
 # STDOUT PROTECTION FOR MCP STDIO PROTOCOL
 # =============================================================================
-# MCP communicates via stdout/stdin. Stray print()/warnings to stdout corrupt
-# the protocol. We redirect Python's stdout to stderr for all non-MCP output,
-# then let FastMCP use the real stdout internally for protocol messages.
-# =============================================================================
 
-# Save real stdout before any redirection
+# Capture real stdout for the MCP transport
 _real_stdout = sys.stdout
 
-# Redirect print() to stderr and suppress noisy warnings
+# Redirect global stdout to stderr to catch all noise during imports and execution
 sys.stdout = sys.stderr
+
 warnings.filterwarnings("ignore")
 logging.basicConfig(level=logging.WARNING, stream=sys.stderr)
-logger = logging.getLogger("rag_mcp_server")
 
-# Suppress 3rd party logs that might leak or spam stderr
-logging.getLogger("mcp").setLevel(logging.WARNING)
-logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.getLogger("httpcore").setLevel(logging.WARNING)
-logging.getLogger("qdrant_client").setLevel(logging.WARNING)
-
-# Restore real stdout for FastMCP protocol communication
-sys.stdout = _real_stdout
-
-from mcp.server.fastmcp import FastMCP
-
-# Project root is set via PYTHONPATH in mcp_config.json
-# But ensure it's also on sys.path for safety
+# Project root setup
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../"))
 if project_root not in sys.path:
     sys.path.append(project_root)
 
+# Initialize FastMCP
+mcp = FastMCP(
+    "Antigravity RAG Server",
+    description="Intelligent Parent-Child RAG for Ebooks",
+    sse_path="/sse",
+    message_path="/messages/",
+)
 
-def _protect_stdout(fn):
-    """Decorator that redirects stdout to stderr during RAG operations."""
-
-    def wrapper(*args, **kwargs):
-        _saved = sys.stdout
-        sys.stdout = sys.stderr
-        try:
-            return fn(*args, **kwargs)
-        finally:
-            sys.stdout = _saved
-
-    return wrapper
+# Shared session state
+_session_storage = {"id": None}
+base_app = mcp.sse_app()
 
 
-# Initialize FastMCP server with distinct endpoints
-# message_path should end with / for Starlette's Mount behavior
-mcp = FastMCP("Antigravity RAG Server", sse_path="/sse", message_path="/messages")
-
-
-@mcp.custom_route("/sse", methods=["POST"])
-async def handle_sse_post(request):
+async def app(scope: Scope, receive: Receive, send: Send):
     """
-    Handle erroneous POST requests to the SSE endpoint by forwarding them
-    to the correct /messages endpoint. This tolerates clients that
-    incorrectly use the connection URL for messages.
+    Enhanced ASGI Proxy.
+    Captures the session_id from GET /sse and forwards POST /sse to /messages/
     """
-    from starlette.responses import JSONResponse, Response
-    import httpx
+    if scope["type"] == "http":
+        path = scope.get("path", "")
+        method = scope.get("method", "")
 
-    # Check if session_id is present (required for /messages)
-    session_id = request.query_params.get("session_id")
-    if not session_id:
-        from starlette.responses import JSONResponse
+        # 1. Capture Session ID from GET /sse
+        if path == "/sse" and method == "GET":
+            from urllib.parse import parse_qs
 
-        return JSONResponse(
-            {
-                "jsonrpc": "2.0",
-                "error": {
-                    "code": -32600,
-                    "message": "Missing session_id in query parameters for POST request. Client should use the URL from the 'endpoint' event.",
-                },
-                "id": None,
-            },
-            status_code=400,
-        )
+            qs = parse_qs(scope.get("query_string", b"").decode())
+            session_id = qs.get("session_id", [None])[0]
+            if session_id:
+                _session_storage["id"] = session_id
+                print(f"DEBUG: Session Linked: {session_id}", file=sys.stderr)
+            await base_app(scope, receive, send)
+            return
 
-    # Construct correct URL
-    # We assume server is running on localhost:8000 as configured
-    messages_url = f"http://127.0.0.1:8000/messages?session_id={session_id}"
+        # 2. Proxy POST /sse to /messages/ with session persistence
+        if path == "/sse" and method == "POST":
+            session_id = _session_storage["id"]
 
-    try:
-        # Read body
-        body = await request.body()
+            if session_id:
+                # Transparently teleport to /messages/
+                new_scope = dict(scope)
+                new_scope["path"] = "/messages/"
+                new_scope["raw_path"] = b"/messages/"
 
-        # Forward request
-        async with httpx.AsyncClient() as client:
-            proxy_res = await client.post(
-                messages_url, content=body, headers=request.headers, timeout=30.0
-            )
+                # Ensure session_id is in query string
+                qs_str = scope.get("query_string", b"").decode()
+                if f"session_id={session_id}" not in qs_str:
+                    new_qs = (
+                        f"{qs_str}&session_id={session_id}"
+                        if qs_str
+                        else f"session_id={session_id}"
+                    )
+                    new_scope["query_string"] = new_qs.encode()
 
-        # Return proxied response
-        return Response(
-            content=proxy_res.content,
-            status_code=proxy_res.status_code,
-            headers=dict(proxy_res.headers),
-        )
-    except Exception as e:
-        return JSONResponse(
-            {
-                "jsonrpc": "2.0",
-                "error": {"code": -32603, "message": f"Internal Proxy Error: {str(e)}"},
-                "id": None,
-            },
-            status_code=500,
-        )
+                print(
+                    f"DEBUG: Proxying message to session {session_id}", file=sys.stderr
+                )
+                await base_app(new_scope, receive, send)
+                return
+            else:
+                # Cold-boot probe: Satisfy initialization handshake
+                import json
+
+                body = b""
+                # Note: We must be careful not to consume 'receive' if we forward,
+                # but here we ARE the terminal handler for this specific probe.
+                while True:
+                    msg = await receive()
+                    if msg["type"] == "http.request":
+                        body += msg.get("body", b"")
+                        if not msg.get("more_body", False):
+                            break
+
+                req_id = None
+                try:
+                    data = json.loads(body)
+                    req_id = data.get("id")
+                except Exception:
+                    pass
+
+                print(f"DEBUG: Cold-start probe (ID: {req_id})", file=sys.stderr)
+                content = {
+                    "jsonrpc": "2.0",
+                    "id": req_id,
+                    "result": {
+                        "protocolVersion": "2024-11-05",
+                        "capabilities": {
+                            "logging": {},
+                            "prompts": {"listChanged": False},
+                            "resources": {"listChanged": False, "subscribe": False},
+                            "tools": {"listChanged": False},
+                        },
+                        "serverInfo": {
+                            "name": "Antigravity RAG Server",
+                            "version": "1.0.0",
+                        },
+                    },
+                }
+                res = JSONResponse(content)
+                await res(scope, receive, send)
+                return
+
+    await base_app(scope, receive, send)
 
 
-@_protect_stdout
-def _init_rag():
+# Lazy RAG Initialization
+_rag_instance = None
+
+
+def _get_rag():
     global _rag_instance
     if _rag_instance is None:
         from scripts.ai.rag.rag_optimized import get_rag
@@ -128,101 +146,50 @@ def _init_rag():
 @mcp.tool()
 def search_library(query: str) -> str:
     """
-    Search the ebook library.
-    Returns the most relevant document snippets found in the vector store.
+    Search the ebook library for relevant technical information.
+    Uses Parent-Child retrieval to return full context chunks instead of fragments.
     """
-    rag = _init_rag()
-
-    _saved = sys.stdout
-    sys.stdout = sys.stderr
-    try:
-        # Direct query to OptimizedRAG (returns List[Document])
-        documents = rag.query(query)
-    finally:
-        sys.stdout = _saved
-
+    rag = _get_rag()
+    documents = rag.query(query)
     if not documents:
-        return "No information found in the library."
+        return "No relevant information found in the ebook library."
 
-    # Format results
-    formatted_results = []
+    formatted = []
     for i, doc in enumerate(documents, 1):
-        source = doc.metadata.get("source", "Unknown")
-        content = doc.page_content
-        formatted_results.append(
-            f"### Result {i} (Source: {os.path.basename(source)})\n{content}\n"
-        )
+        source = os.path.basename(doc.metadata.get("source", "Unknown"))
+        formatted.append(f"### Result {i} (Source: {source})\n\n{doc.page_content}")
 
-    return "\n".join(formatted_results)
+    return "\n\n---\n\n".join(formatted)
 
 
 @mcp.tool()
 def ingest_document(file_path: str) -> str:
-    """
-    Ingest a new PDF document into the ebook library.
-    This will process the document using Parent-Child splitting and store
-    it in the local vector database.
-    """
-    if not os.path.exists(file_path):
-        return f"Error: File not found at {file_path}"
-
-    if not file_path.lower().endswith(".pdf"):
-        return "Error: Only PDF documents are currently supported."
-
-    try:
-        rag = _init_rag()
-        _saved = sys.stdout
-        sys.stdout = sys.stderr
-        try:
-            rag.ingest_ebook(file_path)
-        finally:
-            sys.stdout = _saved
-        return f"Successfully ingested: {file_path}"
-    except Exception as e:
-        return f"Error during ingestion: {str(e)}"
+    """Ingest a PDF into the RAG vector store using optimized Parent-Child strategy."""
+    rag = _get_rag()
+    rag.ingest_ebook(file_path)
+    return f"Successfully ingested: {file_path}"
 
 
 @mcp.tool()
 def list_library_sources() -> str:
-    """
-    List all unique document sources currently indexed in the library.
-    """
-    try:
-        rag = _init_rag()
-        client = rag.client
-
-        collections = client.get_collections().collections
-        exists = any(c.name == "ebook_library" for c in collections)
-
-        if not exists:
-            return "The ebook library collection does not exist yet."
-
-        points = client.scroll(
-            collection_name="ebook_library", limit=1000, with_payload=True
-        )[0]
-        sources = {
-            p.payload.get("metadata", {}).get("source") for p in points if p.payload
-        }
-        clean_sources = sorted([s for s in sources if s])
-
-        if not clean_sources:
-            return "The library is currently empty."
-
-        return "Current library sources:\n- " + "\n- ".join(clean_sources)
-    except Exception as e:
-        return f"Error listing sources: {str(e)}"
+    """List all unique documents currently indexed in the RAG system."""
+    rag = _get_rag()
+    sources = {
+        os.path.basename(doc.metadata["source"])
+        for key in rag.store.yield_keys()
+        if (doc := rag.store.mget([key])[0]) and "source" in doc.metadata
+    }
+    if not sources:
+        return "Library is empty."
+    return "Indexed Documents:\n- " + "\n- ".join(sorted(sources))
 
 
 if __name__ == "__main__":
-    # Run as SSE server on port 8000
-    # SSE allows the server to be persistent and running outside the IDE's process tree
-    # This solves the dispatch/encoding issues seen with STDIO
+    import uvicorn
+
+    sys.stdout = _real_stdout
     print(
-        "Starting Antigravity RAG MCP Server on http://localhost:8000/sse",
+        "Starting Antigravity RAG MCP Server (Hybrid SSE Mode) on port 8000",
         file=sys.stderr,
     )
-    try:
-        mcp.run(transport="sse")
-    except Exception as e:
-        print(f"Server failed: {e}", file=sys.stderr)
-        sys.exit(1)
+    uvicorn.run(app, host="127.0.0.1", port=8000)
