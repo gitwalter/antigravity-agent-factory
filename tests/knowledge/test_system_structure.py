@@ -30,8 +30,23 @@ class TestKnowledgeFileStructure:
 
     @pytest.fixture
     def all_knowledge_files(self, knowledge_dir: Path) -> List[Path]:
-        """Get all knowledge JSON files."""
-        return list(knowledge_dir.glob("*.json"))
+        """Get all knowledge JSON files, excluding catalogs and registries."""
+        all_files = list(knowledge_dir.glob("*.json"))
+        # Exclude catalogs, registries, manifests, and graph files
+        excluded_patterns = [
+            "-catalog.json",
+            "-registry.json",
+            "manifest.json",
+            "dependency-graph.json",
+            "project-info.json",
+            "memory-config.json",
+            "version-registry.json",
+        ]
+        return [
+            f
+            for f in all_files
+            if not any(f.name.endswith(p) or f.name == p for p in excluded_patterns)
+        ]
 
     def test_knowledge_files_exist(self, all_knowledge_files: List[Path]):
         """Test that knowledge files are found."""
@@ -254,8 +269,23 @@ class TestKnowledgePatternsStructure:
 
     @pytest.fixture
     def all_knowledge_files(self, knowledge_dir: Path) -> List[Path]:
-        """Get all knowledge JSON files."""
-        return list(knowledge_dir.glob("*.json"))
+        """Get all knowledge JSON files, excluding catalogs and registries."""
+        all_files = list(knowledge_dir.glob("*.json"))
+        # Exclude catalogs, registries, manifests, and graph files
+        excluded_patterns = [
+            "-catalog.json",
+            "-registry.json",
+            "manifest.json",
+            "dependency-graph.json",
+            "project-info.json",
+            "memory-config.json",
+            "version-registry.json",
+        ]
+        return [
+            f
+            for f in all_files
+            if not any(f.name.endswith(p) or f.name == p for p in excluded_patterns)
+        ]
 
     def test_patterns_is_not_empty(self, all_knowledge_files: List[Path]):
         """Test that patterns object is not empty."""

@@ -37,14 +37,6 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-# Initialize FastMCP server with distinct endpoints
-# message_path should end with / for Starlette's Mount behavior
-mcp = FastMCP("Antigravity RAG Server", sse_path="/sse", message_path="/messages/")
-
-# Lazy singletons — RAG backend loads only on first tool call
-_agentic_rag = None
-_rag_instance = None
-
 
 def _protect_stdout(fn):
     """Decorator that redirects stdout to stderr during RAG operations."""
@@ -58,6 +50,33 @@ def _protect_stdout(fn):
             sys.stdout = _saved
 
     return wrapper
+
+
+# Initialize FastMCP server with distinct endpoints
+# message_path should end with / for Starlette's Mount behavior
+mcp = FastMCP("Antigravity RAG Server", sse_path="/sse", message_path="/messages")
+
+
+@mcp.custom_route("/sse", methods=["POST"])
+async def handle_sse_post(request):
+    """
+    Handle erroneous POST requests to the SSE endpoint.
+    Some clients might mistakenly try to write to the connection URL.
+    We return 400 instead of 405 to hopefully provide a better error message.
+    """
+    from starlette.responses import JSONResponse
+
+    return JSONResponse(
+        {
+            "jsonrpc": "2.0",
+            "error": {
+                "code": -32600,
+                "message": "Invalid Request: You are POSTing to the SSE endpoint. Please wait for the 'endpoint' event and POST to the URL provided there.",
+            },
+            "id": None,
+        },
+        status_code=400,
+    )
 
 
 @_protect_stdout

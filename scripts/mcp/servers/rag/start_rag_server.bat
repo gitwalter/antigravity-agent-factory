@@ -9,6 +9,6 @@ echo.
 call D:\Anaconda\Scripts\activate.bat D:\Anaconda\envs\cursor-factory
 set PYTHONPATH=D:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory
 
-python "D:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\scripts\mcp\servers\rag\rag_mcp_server.py"
+"D:\Anaconda\envs\cursor-factory\python.exe" "D:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\scripts\mcp\servers\rag\rag_mcp_server.py"
 
 pause

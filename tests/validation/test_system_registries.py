@@ -12,7 +12,14 @@ def test_agent_registry_consistency():
     with open(registry_path, "r", encoding="utf-8") as f:
         registry = json.load(f)
     with open(skill_catalog_path, "r", encoding="utf-8") as f:
-        skill_catalog = json.load(f)["skills"]
+        catalog_data = json.load(f)
+        # Handle both old flat structure and new nested structure
+        skills_list = catalog_data.get("skills", [])
+        if not skills_list and "content" in catalog_data:
+            skills_list = catalog_data["content"].get("skills", [])
+
+        # Convert to dict for lookup
+        skill_catalog = {s["id"]: s for s in skills_list}
 
     for agent in registry["agents"]:
         # Check DID format
@@ -43,7 +50,14 @@ def test_skill_catalog_paths():
     skill_catalog_path = root / ".agent" / "knowledge" / "skill-catalog.json"
 
     with open(skill_catalog_path, "r", encoding="utf-8") as f:
-        skill_catalog = json.load(f)["skills"]
+        catalog_data = json.load(f)
+        # Handle both old flat structure and new nested structure
+        skills_list = catalog_data.get("skills", [])
+        if not skills_list and "content" in catalog_data:
+            skills_list = catalog_data["content"].get("skills", [])
+
+        # Convert to dict for iteration
+        skill_catalog = {s["id"]: s for s in skills_list}
 
     for skill_id, skill in skill_catalog.items():
         # Skill might have 'factorySkill' or 'factoryPattern'
