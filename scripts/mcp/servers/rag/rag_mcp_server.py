@@ -60,23 +60,59 @@ mcp = FastMCP("Antigravity RAG Server", sse_path="/sse", message_path="/messages
 @mcp.custom_route("/sse", methods=["POST"])
 async def handle_sse_post(request):
     """
-    Handle erroneous POST requests to the SSE endpoint.
-    Some clients might mistakenly try to write to the connection URL.
-    We return 400 instead of 405 to hopefully provide a better error message.
+    Handle erroneous POST requests to the SSE endpoint by forwarding them
+    to the correct /messages endpoint. This tolerates clients that
+    incorrectly use the connection URL for messages.
     """
-    from starlette.responses import JSONResponse
+    from starlette.responses import JSONResponse, Response
+    import httpx
 
-    return JSONResponse(
-        {
-            "jsonrpc": "2.0",
-            "error": {
-                "code": -32600,
-                "message": "Invalid Request: You are POSTing to the SSE endpoint. Please wait for the 'endpoint' event and POST to the URL provided there.",
+    # Check if session_id is present (required for /messages)
+    session_id = request.query_params.get("session_id")
+    if not session_id:
+        from starlette.responses import JSONResponse
+
+        return JSONResponse(
+            {
+                "jsonrpc": "2.0",
+                "error": {
+                    "code": -32600,
+                    "message": "Missing session_id in query parameters for POST request. Client should use the URL from the 'endpoint' event.",
+                },
+                "id": None,
             },
-            "id": None,
-        },
-        status_code=400,
-    )
+            status_code=400,
+        )
+
+    # Construct correct URL
+    # We assume server is running on localhost:8000 as configured
+    messages_url = f"http://127.0.0.1:8000/messages?session_id={session_id}"
+
+    try:
+        # Read body
+        body = await request.body()
+
+        # Forward request
+        async with httpx.AsyncClient() as client:
+            proxy_res = await client.post(
+                messages_url, content=body, headers=request.headers, timeout=30.0
+            )
+
+        # Return proxied response
+        return Response(
+            content=proxy_res.content,
+            status_code=proxy_res.status_code,
+            headers=dict(proxy_res.headers),
+        )
+    except Exception as e:
+        return JSONResponse(
+            {
+                "jsonrpc": "2.0",
+                "error": {"code": -32603, "message": f"Internal Proxy Error: {str(e)}"},
+                "id": None,
+            },
+            status_code=500,
+        )
 
 
 @_protect_stdout
