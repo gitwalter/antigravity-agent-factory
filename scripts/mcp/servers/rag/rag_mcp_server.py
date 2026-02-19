@@ -37,8 +37,9 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-# Initialize FastMCP server
-mcp = FastMCP("Antigravity RAG Server")
+# Initialize FastMCP server with distinct endpoints
+# message_path should end with / for Starlette's Mount behavior
+mcp = FastMCP("Antigravity RAG Server", sse_path="/sse", message_path="/messages/")
 
 # Lazy singletons — RAG backend loads only on first tool call
 _agentic_rag = None

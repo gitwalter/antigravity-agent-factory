@@ -48,7 +48,7 @@ def generate_skill_catalog():
                 )
 
     catalog = {
-        "$schema": "../../schemas/knowledge-file.schema.json",
+        "$schema": "../../schemas/catalog.schema.json",
         "version": "1.0.0",
         "category": "catalogs",
         "title": "Skill Catalog",
@@ -82,7 +82,7 @@ def generate_pattern_catalog():
                     )
 
     catalog = {
-        "$schema": "../../schemas/knowledge-file.schema.json",
+        "$schema": "../../schemas/catalog.schema.json",
         "version": "1.0.0",
         "category": "catalogs",
         "title": "Pattern Catalog",
@@ -120,7 +120,7 @@ def generate_template_catalog():
                     continue
 
     catalog = {
-        "$schema": "../../schemas/knowledge-file.schema.json",
+        "$schema": "../../schemas/catalog.schema.json",
         "version": "1.0.0",
         "category": "catalogs",
         "title": "Template Catalog",
@@ -158,7 +158,7 @@ def generate_blueprint_catalog():
                     continue
 
     catalog = {
-        "$schema": "../../schemas/knowledge-file.schema.json",
+        "$schema": "../../schemas/catalog.schema.json",
         "version": "1.0.0",
         "category": "catalogs",
         "title": "Blueprint Catalog",

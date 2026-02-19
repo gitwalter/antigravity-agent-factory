@@ -65,7 +65,7 @@ SCHEMAS_DIR = ROOT / "schemas"
 ARTIFACT_DIRS = {
     "agent": ROOT / ".cursor" / "agents",
     "skill": ROOT / ".cursor" / "skills",
-    "knowledge": ROOT / "knowledge",
+    "knowledge": ROOT / ".agent" / "knowledge",
     "blueprint": ROOT / "blueprints",
     "workflow": ROOT / "workflows",
     "template": ROOT / "templates",
@@ -82,6 +82,7 @@ SCHEMA_MAP = {
     "template": "template",
     "python-agent": "python-agent",
     "registry": "registry",
+    "catalog": "catalog",
 }
 
 FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---", re.DOTALL)
@@ -373,6 +374,7 @@ def validate_all(
         "blueprint",
         "workflow",
         "registry",
+        "catalog",
     ]
 
     # --- Agents ---
@@ -472,6 +474,36 @@ def validate_all(
             if verbose:
                 print("NOTE: registry.schema.json not found, skipping registry")
 
+    # --- Catalogs ---
+    if "catalog" in all_types:
+        schema = schemas.get("catalog")
+        if schema:
+            # Catalogs are in knowledge dir with -catalog.json suffix
+            d = ARTIFACT_DIRS["knowledge"]
+            if d.exists():
+                catalog_names = [
+                    "skill-catalog.json",
+                    "pattern-catalog.json",
+                    "template-catalog.json",
+                    "blueprint-catalog.json",
+                    "agent-catalog.json",
+                    "workflow-catalog.json",
+                    "registry-catalog.json",
+                ]
+                files = [d / name for name in catalog_names if (d / name).exists()]
+                if verbose:
+                    print(
+                        f"\nValidating {len(files)} catalogs against catalog.schema.json ..."
+                    )
+                for path in files:
+                    result = validate_json_file(path, schema, "catalog")
+                    report.results.append(result)
+                    if verbose:
+                        _print_result(result)
+        else:
+            if verbose:
+                print("WARNING: catalog.schema.json not found, skipping catalogs")
+
     return report
 
 
@@ -515,6 +547,7 @@ def main() -> int:
             "blueprint",
             "workflow",
             "registry",
+            "catalog",
             "all",
         ],
         default="all",

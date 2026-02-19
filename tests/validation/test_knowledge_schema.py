@@ -14,6 +14,7 @@ from scripts.validation.schema_validator import load_schemas  # noqa: E402
 # Load canonical knowledge-file schema for general knowledge validation
 _SCHEMAS = load_schemas()
 KNOWLEDGE_FILE_SCHEMA = _SCHEMAS.get("knowledge-file", {})
+CATALOG_SCHEMA = _SCHEMAS.get("catalog", {})
 
 
 class TestKnowledgeFilesStructure:
@@ -45,9 +46,9 @@ class TestSkillCatalogSchema:
 
     @pytest.fixture
     def validator(self):
-        """Create a JSON schema validator from the canonical knowledge-file schema."""
-        assert KNOWLEDGE_FILE_SCHEMA, "knowledge-file.schema.json could not be loaded"
-        return Draft7Validator(KNOWLEDGE_FILE_SCHEMA)
+        """Create a JSON schema validator from the catalog schema."""
+        assert CATALOG_SCHEMA, "catalog.schema.json could not be loaded"
+        return Draft7Validator(CATALOG_SCHEMA)
 
     def test_skill_catalog_exists(self, knowledge_dir):
         """Test that skill-catalog.json exists."""
@@ -71,7 +72,7 @@ class TestSkillCatalogSchema:
         with open(catalog_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
-        skills = data.get("skills", {})
+        skills = data.get("content", {}).get("skills", [])
         assert len(skills) > 0, "Skill catalog should have at least one skill"
 
     def test_skill_ids_match_keys(self, knowledge_dir):
@@ -81,9 +82,12 @@ class TestSkillCatalogSchema:
         with open(catalog_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
-        for key, skill in data.get("skills", {}).items():
+        skills = data.get("content", {}).get("skills", [])
+        for skill in skills:
             skill_id = skill.get("id")
-            assert skill_id == key, f"Skill ID '{skill_id}' should match key '{key}'"
+            # In new catalog format, skills is a list, so we don't check key mapping the same way
+            # But the schema ensures id exists.
+            assert skill_id, "Skill in catalog should have an ID"
 
     def test_skills_have_categories(self, knowledge_dir):
         """Test that all skills have valid categories."""
