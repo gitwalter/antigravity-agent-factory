@@ -119,16 +119,28 @@ How a user intent becomes code:
 
 ### 5. Core Components
 
+The framework's power lies in the interaction between its core components.
+
+#### Current Implementation Stats
+This reference implementation currently includes a comprehensive set of verified components:
+- **Agents**: 10 active agents in `.agent/agents` (10 agents)
+- **Skills**: 191 specialized skills in `.agent/skills` (191 skills)
+- **Blueprints**: 34 project blueprints in `.agent/blueprints` (34 blueprints)
+- **Knowledge**: 268 JSON knowledge files in `.agent/knowledge` (268 files)
+- **Patterns**: 113 architectural patterns in `.agent/patterns` (113 patterns)
+- **Templates**: 307 Jinja2 templates in `.agent/templates` (307 templates)
+- **Verification**: 76 automated validation tests (76 tests)
+
 #### Integrity Guardian (Layer 0)
 An active runtime protection system that monitors all agent operations.
 - **Role**: Ensures alignment with Axiom 0 (Love, Truth, Beauty).
-- **Function**: intercepts and blocks destructive commands, secret leaks, or deceptive logic.
+- **Function**: Intercepts and blocks destructive commands, secret leaks, or deceptive logic.
 - **Status**: Always active. Cannot be disabled by prompts.
 
-#### Memory System
-A persistent, user-verified knowledge graph.
-- **Semantic Memory**: Long-term accepted facts.
-- **Episodic Memory**: Session-based context.
+#### Memory System (Qdrant-Backed)
+A persistent, user-verified knowledge graph utilizing Qdrant for vector search.
+- **Semantic Memory**: Long-term fact storage with high-dimensional embeddings.
+- **Episodic Memory**: Session-based context for maintaining conversation continuity.
 - **User Primacy**: All long-term memories require explicit user approval.
 
 #### Formal Verification (Lean 4)
@@ -139,7 +151,7 @@ The system's core logic is formally verified using the Lean 4 theorem prover.
 #### Agent Society
 A verified communication protocol for multi-agent collaboration.
 - Agents verify each other's "contracts" (capabilities and obligations).
-- Uses cryptographic event sourcing for audit trails.
+- Uses cryptographic event sourcing for immutable audit trails.
 
 ## The Factory Workflow
 
@@ -152,11 +164,21 @@ The Factory operates as a meta-agent that guides you from intent to implementati
 
 ## Available Blueprints
 
-The Factory includes **27+ Blueprints** for various domains:
-- **Python & AI**: FastAPI, Streamlit, LangGraph, RAG.
-- **Web**: Next.js, React.
-- **Enterprise**: Java Spring, .NET, SAP (ABAP/CAP).
-- **Blockchain**: Solidity, Solana.
+The Factory includes **34+ Blueprints** for various domains:
+
+| Blueprint | Stack | Description |
+|-----------|-------|-------------|
+| `python-fastapi` | Python, FastAPI, Pydantic | Modern, high-performance web API |
+| `python-streamlit` | Python, Streamlit | Rapid interactive data applications |
+| `python-langgraph` | Python, LangChain, LangGraph | State-of-the-art agent orchestration |
+| `python-rag` | Python, Qdrant, sentence-transformers | Retrieval-Augmented Generation system |
+| `sap-abap` | ABAP, Clean ABAP | SAP ABAP development |
+| `sap-rap` | ABAP, RAP, Fiori | SAP RESTful ABAP Programming |
+| `sap-cap` | Node.js/Java, CDS, SAP BTP | SAP Cloud Application Programming |
+| `dotnet-api` | C#, ASP.NET Core, EF Core | Enterprise-grade .NET APIs |
+| `nextjs-app` | TypeScript, Next.js, Tailwind | Modern full-stack web applications |
+| `solidity-contract` | Solidity, Hardhat/Foundry | Ethereum smart contracts |
+| `solana-program` | Rust, Anchor | High-performance Solana programs |
 
 See [docs/reference/blueprints.md](docs/reference/blueprints.md) for the complete list of available stacks.
 
