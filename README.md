@@ -14,11 +14,6 @@ While this implementation uses Python and specific tools, the underlying **Syste
 
 This reference implementation allows you to generate a demo project immediately:
 
-**Prerequisite (Optional - for RAG):**
-Start the RAG database service:
-```powershell
-docker-compose -f ops/docker-compose.yml up -d
-```
 
 **Generate Project:**
 ```powershell
