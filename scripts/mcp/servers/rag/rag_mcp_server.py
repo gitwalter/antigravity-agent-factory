@@ -64,6 +64,21 @@ def search_library(query: str) -> str:
 
 
 @mcp.tool()
+def get_ebook_toc(document_name: str) -> str:
+    """
+    Retrieves the deterministic Table of Contents for a specific document in the library.
+    Use this to get an exact outline of an ebook before searching.
+    Supply the document name or a fuzzy match of its title (e.g., 'Russell').
+    """
+    rag = _get_rag()
+    toc_content = rag.get_toc(document_name)
+
+    if toc_content:
+        return toc_content
+    return f"No Table of Contents found for document matching '{document_name}'."
+
+
+@mcp.tool()
 def ingest_document(file_path: str) -> str:
     """Ingest a PDF into the RAG vector store using optimized Parent-Child strategy."""
     rag = _get_rag()

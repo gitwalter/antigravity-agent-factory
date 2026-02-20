@@ -406,10 +406,150 @@ class OptimizedRAG:
         except Exception as e:
             logger.error(f"Warm-up failed: {str(e)}")
 
+    def _extract_toc(self, pdf_path: str) -> Optional[str]:
+        """Attempt to deterministically extract the Table of Contents via PyMuPDF."""
+        import fitz
+        import re
+
+        try:
+            doc = fitz.open(pdf_path)
+            toc = doc.get_toc()
+            toc_lines = []
+
+            # Strategy A: Use embedded PDF Metadata
+            if toc:
+                toc_lines.append("## Table of Contents (Embedded Metadata)")
+                for item in toc:
+                    level, title, page = item
+                    if level == 1:
+                        toc_lines.append(f"\n### {title}")
+                    elif level == 2 and (
+                        "Kapitel" in title or "Chapter" in title or title[0].isdigit()
+                    ):
+                        toc_lines.append(f"- {title} (Page {page})")
+
+            # Strategy B: Fallback string matching on raw text of first 50 pages
+            else:
+                extracted_text = ""
+                for i in range(min(50, len(doc))):
+                    extracted_text += doc[i].get_text()
+
+                lines = extracted_text.split("\n")
+                chapters_found = []
+
+                # Robust regex for chapters/parts with optional title on same line
+                pattern = re.compile(
+                    r"^(Kapitel|Chapter|Teil|Part)\s+([A-Z0-9]+)(.*)", re.IGNORECASE
+                )
+
+                for i, line in enumerate(lines):
+                    line = line.strip()
+                    match = pattern.match(line)
+                    if match:
+                        label = match.group(1)
+                        num = match.group(2)
+                        inline_title = match.group(3).strip()
+
+                        full_entry = f"{label} {num}"
+                        if inline_title:
+                            full_entry += f" {inline_title}"
+                        elif i + 1 < len(lines):
+                            next_line = lines[i + 1].strip()
+                            if next_line and not pattern.match(next_line):
+                                full_entry += f": {next_line}"
+
+                        chapters_found.append(full_entry)
+
+                if chapters_found:
+                    toc_lines.append("## Table of Contents (Extracted Text)")
+                    seen = set()
+                    for c in chapters_found:
+                        if c not in seen:
+                            toc_lines.append(c)
+                            seen.add(c)
+
+            if len(toc_lines) > 1:
+                return "\n".join(toc_lines)
+            return None
+
+        except Exception as e:
+            logger.warning(f"Failed to extract deterministic TOC for {pdf_path}: {e}")
+            return None
+
+    def delete_document(self, source_path: str):
+        """Remove all chunks associated with a specific source path from the library."""
+        norm_path = os.path.normpath(source_path)
+        logger.info(f"Deleting document from library: {norm_path}")
+
+        # 1. Collect IDs to delete from the docstore
+        keys_to_delete = [
+            key
+            for key in self.store.yield_keys()
+            if (doc := self.store.mget([key])[0])
+            and os.path.normpath(doc.metadata.get("source", "")) == norm_path
+        ]
+
+        if not keys_to_delete:
+            logger.warning(f"No document found with source path: {norm_path}")
+            # Still attempt Qdrant cleanup just in case docstore is out of sync
+
+        # 2. Optimized Batch Delete from Qdrant vectorstore (One call for all chunks + TOC)
+        from qdrant_client.http import models
+
+        try:
+            self.client.delete(
+                collection_name=COLLECTION_NAME,
+                points_selector=models.FilterSelector(
+                    filter=models.Filter(
+                        must=[
+                            models.FieldCondition(
+                                key="metadata.source",
+                                match=models.MatchValue(value=norm_path),
+                            )
+                        ]
+                    )
+                ),
+            )
+        except Exception as e:
+            logger.error(f"Qdrant delete failed for {norm_path}: {e}")
+
+        # 3. Delete parents from InMemoryStore
+        if keys_to_delete:
+            self.store.mdelete(keys_to_delete)
+
+            # 4. Delete parent files from disk
+            for doc_id in keys_to_delete:
+                file_path = os.path.join(self.parent_store_path, doc_id)
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+
+        # 5. Invalidate cache
+        cache_path = os.path.join(
+            os.path.dirname(self.parent_store_path), "parent_store_cache.json"
+        )
+        if os.path.exists(cache_path):
+            os.remove(cache_path)
+
+        logger.info(f"Successfully deleted document {norm_path}")
+
     def ingest_ebook(self, pdf_path: str):
         """Parse and add a PDF to the library using Parent-Child strategy."""
         if not os.path.exists(pdf_path):
             logger.error(f"File not found: {pdf_path}")
+            return
+
+        norm_path = os.path.normpath(pdf_path)
+
+        # Idempotency check: Check if this document is already in the library
+        # We check both the docstore and a potential "TOC" chunk in Qdrant
+        existing_sources = {
+            os.path.normpath(doc.metadata["source"])
+            for key in self.store.yield_keys()
+            if (doc := self.store.mget([key])[0]) and "source" in doc.metadata
+        }
+
+        if norm_path in existing_sources:
+            logger.info(f"Skipping ingestion: {norm_path} is already in the library.")
             return
 
         logger.info(f"Ingesting ebook: {pdf_path}")
@@ -417,14 +557,27 @@ class OptimizedRAG:
         docs = list(loader.load())
 
         # Add metadata for tracking
-        norm_path = os.path.normpath(pdf_path)
         for doc in docs:
             doc.metadata["source"] = norm_path
 
         # Split into parent chunks first to ensure we have the correct count for IDs
-        # The retriever will try to split again, but if we've already split,
-        # it should be a no-op / identity transform, keeping IDs aligned.
         parent_docs = self.retriever.parent_splitter.split_documents(docs)
+
+        # Execute our new logic: Try to build a deterministic TOC
+        toc_content = self._extract_toc(pdf_path)
+        if toc_content:
+            logger.info("Deterministic TOC found. Injecting as specialized chunk.")
+            # Build a dedicated Langchain Document just for the TOC layout
+            toc_doc = Document(
+                page_content=f"MASTER TABLE OF CONTENTS (INHALTSVERZEICHNIS)\n\n{toc_content}",
+                metadata={
+                    "source": norm_path,
+                    "is_toc": True,
+                    "document_title": os.path.basename(norm_path),
+                },
+            )
+            # Inject it at the very beginning of the parent_docs for vector store indexing
+            parent_docs.insert(0, toc_doc)
 
         # Generate consistent IDs for both retriever (vectorstore/RAM) and disk persistence
         import uuid
@@ -474,6 +627,42 @@ class OptimizedRAG:
         """Alias for semantic search."""
         return self.query(question, k)
 
+    def get_toc(self, document_name: str) -> Optional[str]:
+        """Retrieve the exact Table of Contents chunk for a specific document."""
+        try:
+            # We want to search for the specific chunk where metadata 'is_toc' == True
+            # and 'document_title' contains the document_name
+            # Since Qdrant client allows filtering, we can use client.scroll or search
+            from qdrant_client.http import models
+
+            results = self.client.scroll(
+                collection_name=COLLECTION_NAME,
+                scroll_filter=models.Filter(
+                    must=[
+                        models.FieldCondition(
+                            key="metadata.is_toc",
+                            match=models.MatchValue(value=True),
+                        ),
+                        models.FieldCondition(
+                            key="metadata.document_title",
+                            match=models.MatchText(text=document_name),
+                        ),
+                    ]
+                ),
+                limit=1,
+                with_payload=True,
+            )
+            records = results[0]
+            if not records:
+                return None
+
+            # Extract content from payload
+            return records[0].payload.get("page_content")
+
+        except Exception as e:
+            logger.error(f"Failed to retrieve TOC for {document_name}: {e}")
+            return None
+
 
 # Initialize global instance for the tool
 _rag_instance: Optional[OptimizedRAG] = None
@@ -507,6 +696,21 @@ def search_ebook_library(query: str) -> str:
         )
 
     return "\n\n".join(formatted_results)
+
+
+@tool
+def get_ebook_toc(document_name: str) -> str:
+    """
+    Retrieves the deterministic Table of Contents for a specific document in the library.
+    Use this to get an exact outline of an ebook before searching.
+    Supply the document name or a fuzzy match of its title (e.g., 'Russell').
+    """
+    rag = get_rag()
+    toc_content = rag.get_toc(document_name)
+
+    if toc_content:
+        return toc_content
+    return f"No Table of Contents found for document matching '{document_name}'."
 
 
 if __name__ == "__main__":

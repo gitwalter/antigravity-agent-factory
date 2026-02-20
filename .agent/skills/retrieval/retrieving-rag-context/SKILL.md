@@ -29,6 +29,7 @@ Process for querying the Qdrant vector store to provide rich context for AI resp
     - Before beginning, create an internal memory buffer (`rag_search_state`) to accumulate all relevant retrieved information.
 1.  **Retrieve (Formulate Query & Search)**:
     - Formulate a precise, domain-specific search query based on the user's need.
+    - **TOC Reconnaissance (Optional but Recommended)**: Every ingested eBook has a deterministic outline injected into the vector store. If you need to understand the broad structure of the book before deep diving, execute the TOC retrieval script: `python "scripts/get_rag_toc.py" "keyword or title"` (e.g. "Russell"). This returns a clean map of the book.
     - Execute the native retrieval script: `python "scripts/search_rag.py" "your precise query"`.
     - Wait for the JSON response containing the retrieved contextual chunks.
 2.  **Grade (Evaluate Relevance)**:
@@ -49,6 +50,8 @@ Process for querying the Qdrant vector store to provide rich context for AI resp
 - `scripts/search_rag.py`: Primary CLI utility to query the RAG via the active SSE endpoint.
   - Usage: `python "scripts/search_rag.py" "your question"`
   - Note: This streams raw JSON natively to standard out using UTF-8, making it safe and easy for you to parse.
+- `scripts/get_rag_toc.py`: Secondary CLI utility to directly fetch the Table of Contents of a specific book.
+  - Usage: `python "scripts/get_rag_toc.py" "book title or keyword"`
 
 ### References
 - `references/agentic-logic.md`: Breakdown of the Retrieve -> Grade -> Adapt decision tree.
