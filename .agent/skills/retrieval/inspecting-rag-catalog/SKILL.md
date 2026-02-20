@@ -22,12 +22,14 @@ Deterministic process for answering "What's in our RAG?" by listing all indexed 
 - Before ingesting new content (to avoid duplicates).
 
 ## Prerequisites
-- `antigravity-rag` MCP server active (configured in `c:\Users\wpoga\.gemini\antigravity\mcp_config.json`).
-- Active Qdrant vector store with at least one indexed document.
+- Active Qdrant vector store with at least one indexed document (running via Docker).
+- FastMCP RAG Server must be actively running via `scripts/mcp/servers/rag/start_rag_server.bat` (exposing SSE on port 8000).
 
 ## Process
-1. **Call catalog tool**: Use `@tool mcp_antigravity-rag_list_library_sources`.
-2. **Present results**: Display the list of unique PDF sources with their paths.
+1. **Fetch Catalog Data**:
+   - Execute the native catalog script: `python "scripts/list_ebooks.py"` locally from this skill directory.
+   - Wait for the JSON response containing the list of sources.
+2. **Present results**: Parse the JSON string and display the list of unique PDF sources with their paths.
 3. **Summarize**: Report the total count and topic areas covered.
 
 ## Important Rules

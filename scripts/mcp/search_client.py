@@ -1,9 +1,10 @@
 import asyncio
 import sys
+import argparse
 from langchain_mcp_adapters.client import MultiServerMCPClient
 
 
-async def main():
+async def main(query: str):
     try:
         # Configuration for the RAG server
         server_config = {
@@ -19,20 +20,30 @@ async def main():
         # List tools to verify connection and find the correct tool
         tools = await client.get_tools()
 
-        list_tool = next((t for t in tools if t.name == "list_library_sources"), None)
+        search_tool = next((t for t in tools if t.name == "search_library"), None)
 
-        if list_tool:
+        if search_tool:
+            print(f"Executing search for: '{query}'...")
             # invocations in LangChain are async
-            result = await list_tool.ainvoke({})
+            result = await search_tool.ainvoke({"query": query})
+            print("\n--- Search Results ---")
             print(result)
+            print("----------------------")
         else:
-            print("Error: 'list_library_sources' tool not found.", file=sys.stderr)
+            print("Error: 'search_library' tool not found.", file=sys.stderr)
             sys.exit(1)
 
     except Exception as e:
+        import traceback
+
+        traceback.print_exc()
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    parser = argparse.ArgumentParser(description="Search RAG library via MCP.")
+    parser.add_argument("query", help="Search query string")
+    args = parser.parse_args()
+
+    asyncio.run(main(args.query))

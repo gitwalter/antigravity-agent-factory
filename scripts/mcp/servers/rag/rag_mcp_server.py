@@ -26,108 +26,9 @@ if project_root not in sys.path:
     sys.path.append(project_root)
 
 # Initialize FastMCP
-mcp = FastMCP(
-    "Antigravity RAG Server",
-    description="Intelligent Parent-Child RAG for Ebooks",
-    sse_path="/sse",
-    message_path="/messages/",
-)
-
-# Shared session state
-_session_storage = {"id": None}
-base_app = mcp.sse_app()
-
-
-async def app(scope: Scope, receive: Receive, send: Send):
-    """
-    Enhanced ASGI Proxy.
-    Captures the session_id from GET /sse and forwards POST /sse to /messages/
-    """
-    if scope["type"] == "http":
-        path = scope.get("path", "")
-        method = scope.get("method", "")
-
-        # 1. Capture Session ID from GET /sse
-        if path == "/sse" and method == "GET":
-            from urllib.parse import parse_qs
-
-            qs = parse_qs(scope.get("query_string", b"").decode())
-            session_id = qs.get("session_id", [None])[0]
-            if session_id:
-                _session_storage["id"] = session_id
-                print(f"DEBUG: Session Linked: {session_id}", file=sys.stderr)
-            await base_app(scope, receive, send)
-            return
-
-        # 2. Proxy POST /sse to /messages/ with session persistence
-        if path == "/sse" and method == "POST":
-            session_id = _session_storage["id"]
-
-            if session_id:
-                # Transparently teleport to /messages/
-                new_scope = dict(scope)
-                new_scope["path"] = "/messages/"
-                new_scope["raw_path"] = b"/messages/"
-
-                # Ensure session_id is in query string
-                qs_str = scope.get("query_string", b"").decode()
-                if f"session_id={session_id}" not in qs_str:
-                    new_qs = (
-                        f"{qs_str}&session_id={session_id}"
-                        if qs_str
-                        else f"session_id={session_id}"
-                    )
-                    new_scope["query_string"] = new_qs.encode()
-
-                print(
-                    f"DEBUG: Proxying message to session {session_id}", file=sys.stderr
-                )
-                await base_app(new_scope, receive, send)
-                return
-            else:
-                # Cold-boot probe: Satisfy initialization handshake
-                import json
-
-                body = b""
-                # Note: We must be careful not to consume 'receive' if we forward,
-                # but here we ARE the terminal handler for this specific probe.
-                while True:
-                    msg = await receive()
-                    if msg["type"] == "http.request":
-                        body += msg.get("body", b"")
-                        if not msg.get("more_body", False):
-                            break
-
-                req_id = None
-                try:
-                    data = json.loads(body)
-                    req_id = data.get("id")
-                except Exception:
-                    pass
-
-                print(f"DEBUG: Cold-start probe (ID: {req_id})", file=sys.stderr)
-                content = {
-                    "jsonrpc": "2.0",
-                    "id": req_id,
-                    "result": {
-                        "protocolVersion": "2024-11-05",
-                        "capabilities": {
-                            "logging": {},
-                            "prompts": {"listChanged": False},
-                            "resources": {"listChanged": False, "subscribe": False},
-                            "tools": {"listChanged": False},
-                        },
-                        "serverInfo": {
-                            "name": "Antigravity RAG Server",
-                            "version": "1.0.0",
-                        },
-                    },
-                }
-                res = JSONResponse(content)
-                await res(scope, receive, send)
-                return
-
-    await base_app(scope, receive, send)
+# Initialize FastMCP
+# FastMCP 3.0 handles the server execution and SSE transport
+mcp = FastMCP("Antigravity RAG Server")
 
 
 # Lazy RAG Initialization
@@ -185,11 +86,24 @@ def list_library_sources() -> str:
 
 
 if __name__ == "__main__":
-    import uvicorn
+    import os
 
+    transport = os.environ.get("MCP_TRANSPORT", "stdio")
+
+    # Ensure stdout remains protected for pure MCP output
     sys.stdout = _real_stdout
-    print(
-        "Starting Antigravity RAG MCP Server (Hybrid SSE Mode) on port 8000",
-        file=sys.stderr,
-    )
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+
+    if transport.lower() == "sse":
+        print(
+            "Starting Antigravity RAG MCP Server (Native SSE Mode) on port 8000",
+            file=sys.stderr,
+        )
+        # Run using the native FastMCP runner for HTTP/SSE clients
+        mcp.run(transport="sse", host="127.0.0.1", port=8000)
+    else:
+        print(
+            "Starting Antigravity RAG MCP Server (Native STDIO Mode)",
+            file=sys.stderr,
+        )
+        # Run using the native FastMCP runner for the IDE/Antigravity
+        mcp.run(transport="stdio")

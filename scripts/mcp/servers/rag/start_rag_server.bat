@@ -8,6 +8,7 @@ echo.
 
 call D:\Anaconda\Scripts\activate.bat D:\Anaconda\envs\cursor-factory
 set PYTHONPATH=D:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory
+set MCP_TRANSPORT=sse
 
 "D:\Anaconda\envs\cursor-factory\python.exe" "D:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\scripts\mcp\servers\rag\rag_mcp_server.py"
 

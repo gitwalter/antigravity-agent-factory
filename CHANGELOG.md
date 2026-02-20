@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2] - 2026-02-20
+
+### Added
+- **RAG Capability Scripts**: Added `search_rag.py` and `list_ebooks.py` utilities to allow skill-driven, persistent SSE client interactions with the FastMCP RAG server.
+- **Skill Fallbacks**: Added explicit fallback behaviors in `retrieving-rag-context` and `inspecting-rag-catalog` skill documentation to handle SSE querying when MCP native connections fail.
+
+### Fixed
+- **Dependency Conflicts**: Fixed `requirements.txt` malformed syntax, locked `pydantic==2.12.5`, and updated `langchain-mcp-adapters>=0.2.1` to prevent pip resolution errors.
+- **RAG Server Stability**: Updated RAG server to handle client initialization probes robustly.
+
 ## [1.2.1] - 2026-02-18
 
 ### Changed
