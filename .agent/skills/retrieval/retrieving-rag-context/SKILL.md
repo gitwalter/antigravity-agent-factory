@@ -47,11 +47,11 @@ Process for querying the Qdrant vector store to provide rich context for AI resp
 ## Level 3 Resources
 
 ### Scripts
-- `scripts/search_rag.py`: Primary CLI utility to query the RAG via the active SSE endpoint.
-  - Usage: `python "scripts/search_rag.py" "your question"`
+- `.agent/skills/retrieval/retrieving-rag-context/scripts/search_rag.py`: Primary CLI utility to query the RAG via the active SSE endpoint.
+  - Usage: `python ".agent/skills/retrieval/retrieving-rag-context/scripts/search_rag.py" "your question"`
   - Note: This streams raw JSON natively to standard out using UTF-8, making it safe and easy for you to parse.
-- `scripts/get_rag_toc.py`: Secondary CLI utility to directly fetch the Table of Contents of a specific book.
-  - Usage: `python "scripts/get_rag_toc.py" "book title or keyword"`
+- `.agent/skills/retrieval/retrieving-rag-context/scripts/get_rag_toc.py`: Secondary CLI utility to directly fetch the Table of Contents of a specific book.
+  - Usage: `python ".agent/skills/retrieval/retrieving-rag-context/scripts/get_rag_toc.py" "book title or keyword"`
 
 ### References
 - `references/agentic-logic.md`: Breakdown of the Retrieve -> Grade -> Adapt decision tree.
