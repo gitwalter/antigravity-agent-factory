@@ -1,9 +1,9 @@
 ---
-name: skill-creator
-type: skill
 description: Orchestrates the creation and optimization of Anthropic-aligned skills
   within the Antigravity Agent Factory. It enforces Level 1-3 progressive disclosure,
   gerund naming conventions, and 500-line body limits.
+name: skill-creator
+type: skill
 ---
 
 # Skill Creator

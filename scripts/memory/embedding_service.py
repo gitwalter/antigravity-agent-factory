@@ -86,6 +86,14 @@ class EmbeddingService:
         # Create cache directory
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
+        # Set environment variables to stabilize DLL loading on Windows
+        # Force CPU mode for sentence-transformers/onnxruntime to avoid driver conflicts
+        if os.name == "nt":
+            os.environ.setdefault("CUDA_VISIBLE_DEVICES", "-1")
+            # Avoid MKL/OpenMP conflicts during parallel test execution
+            os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
+            os.environ.setdefault("OMP_NUM_THREADS", "1")
+
         # Set environment variable for sentence-transformers cache
         os.environ["SENTENCE_TRANSFORMERS_HOME"] = str(self.cache_dir.absolute())
 

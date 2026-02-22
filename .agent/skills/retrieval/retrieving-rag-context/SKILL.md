@@ -1,14 +1,22 @@
 ---
-name: retrieving-rag-context
+agents:
+- python-ai-specialist
+- ai-app-developer
+category: retrieval
 description: Specialized skill for retrieving rag context
+knowledge:
+- best-practices.json
+name: retrieving-rag-context
+related_skills:
+- ingesting-rag-content
+- inspecting-rag-catalog
+- skill-creator
+templates:
+- none
+tools:
+- antigravity-rag
 type: skill
 version: 1.1.0
-category: retrieval
-agents: [python-ai-specialist, ai-app-developer]
-knowledge: [best-practices.json]
-tools: ["antigravity-rag"]
-related_skills: [ingesting-rag-content, inspecting-rag-catalog, skill-creator]
-templates: ["none"]
 ---
 
 # Retrieving RAG Context

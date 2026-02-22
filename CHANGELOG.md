@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.3] - 2026-02-22
+
+### Added
+- **Domain-Aware Ingestion**: Implemented retroactive and real-time mapping of CSV/Excel data to specialized warehouse domain models (`WarehouseInventory`, `WarehouseBinMaster`).
+- **Statistical Dashboard Enhancements**:
+    - Centralized data storage in SQLite (`data_json` field) with full reconstruction capability.
+    - Integrated real-time Google News RSS feed with sentiment analysis.
+    - Implemented advanced chart support (Heatmaps) and fixed index-based plotting errors.
+    - Optimized UI with better project-level instructions and help guides.
+
+### Fixed
+- **Platform Stability**: Resolved `WinError 1114` DLL failures on Windows by forcing CPU/sequential threading for embeddings.
+- **Data Integrity**: Fixed multiple `TypeError` and `ValueError` issues in file upload and trend analysis.
+- **Security**: Hardened `.gitignore` to exclude large binary datasets and local databases.
+
 ## [1.2.2] - 2026-02-20
 
 ### Added

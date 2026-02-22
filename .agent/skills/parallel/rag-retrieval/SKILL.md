@@ -1,5 +1,6 @@
 ---
-description: Patterns for using FAISS MCP tools to ingest documents and perform semantic retrieval.
+description: Patterns for using FAISS MCP tools to ingest documents and perform semantic
+  retrieval.
 name: rag-retrieval
 type: skill
 ---

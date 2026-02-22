@@ -1,4 +1,6 @@
 ---
+## Overview
+
 description: Multi-source research workflow using RAG, web search, docs, and GitHub
 ---
 
@@ -99,3 +101,15 @@ Invoke the `researching-first` skill for complex topics requiring multiple sourc
 - Always try **local RAG first** for domain topics before escalating to web.
 - `docs-langchain` and `deepwiki` are currently disabled in MCP config. Enable them in `mcp_config.json` when needed.
 - For the full research pipeline, time-box to avoid analysis paralysis.
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...

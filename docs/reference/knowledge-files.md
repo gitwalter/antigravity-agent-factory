@@ -1,6 +1,6 @@
 ﻿# Knowledge Files Catalog
 
-The factory currently includes **267 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
+The factory currently includes **268 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
 
 | File | Type | Description |
 |------|------|-------------|
@@ -150,6 +150,7 @@ The factory currently includes **267 knowledge files** covering: various aspects
 | [maintenance-procedures](file:///.agent/knowledge/maintenance-procedures.json) |  |  |
 | [mapping-patterns](file:///.agent/knowledge/mapping-patterns.json) |  |  |
 | [market-data-handling-patterns](file:///.agent/knowledge/market-data-handling-patterns.json) |  |  |
+| [mcp-mastery](file:///.agent/knowledge/mcp-mastery.json) |  |  |
 | [mcp-patterns](file:///.agent/knowledge/mcp-patterns.json) |  |  |
 | [mcp-selection-guide](file:///.agent/knowledge/mcp-selection-guide.json) |  |  |
 | [mcp-server-selection-guide](file:///.agent/knowledge/mcp-server-selection-guide.json) |  |  |

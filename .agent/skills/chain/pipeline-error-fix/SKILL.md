@@ -1,7 +1,7 @@
 ---
+description: Systematic detection and fixing of CI/CD pipeline failures.
 name: pipeline-error-fix
 type: skill
-description: Systematic detection and fixing of CI/CD pipeline failures.
 ---
 
 # Pipeline Error Fix

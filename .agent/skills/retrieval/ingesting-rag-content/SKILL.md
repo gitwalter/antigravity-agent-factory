@@ -1,14 +1,19 @@
 ---
-name: ingesting-rag-content
+agents:
+- ai-app-developer
+category: retrieval
 description: Specialized skill for ingesting rag content
+knowledge:
+- best-practices.json
+name: ingesting-rag-content
+related_skills:
+- retrieving-rag-context
+templates:
+- none
+tools:
+- antigravity-rag
 type: skill
 version: 1.1.0
-category: retrieval
-agents: [ai-app-developer]
-knowledge: [best-practices.json]
-tools: ["antigravity-rag"]
-related_skills: [retrieving-rag-context]
-templates: ["none"]
 ---
 
 # Ingesting RAG Content

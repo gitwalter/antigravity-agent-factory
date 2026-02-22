@@ -1,4 +1,6 @@
 ---
+## Overview
+
 version: 1.0.0
 description: Step-by-step guide for finding and testing new predictive features (technical, fundamental, alternative).
 ---
@@ -49,3 +51,15 @@ This workflow defines the systematic process for identifying, testing, and valid
 - "Guardian, mine new alpha factors from the Put/Call ratio."
 - "/alpha-factor-mining --source sentiment --target technology-sector"
 - "Analyze this new data source for predictive alpha: `data/raw/sentiment_v2.csv`"
+
+
+## Decision Points
+
+- Is the requirement clear?
+- Are the tests passing?
+
+
+## Example Session
+
+User: Run the workflow
+Agent: Initiating workflow steps...
