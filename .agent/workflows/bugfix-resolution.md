@@ -18,7 +18,7 @@ Systematic workflow for resolving bugs from ticket analysis through implementati
 
 This workflow is activated when:
 
-- Jira, GitHub, or GitLab bug ticket is mentioned
+- Jira, GitHub, GitLab, or Plane issue is mentioned
 - User reports a bug or defect
 - Error report requires investigation
 - Test failure needs resolution
@@ -26,12 +26,15 @@ This workflow is activated when:
 **Trigger Examples:**
 - "Fix bug PROJ-123"
 - "Resolve issue #456"
+- "Fix Plane task AGENT-12"
 - "The login page is throwing an error"
 - "Users are reporting data not saving"
 
 ## Steps
 
 ### Fetch Ticket Details
+If a Plane issue is provided, use the native `pms-management` skill:
+`conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py list`
 
 ### Classify Bug Severity
 
@@ -60,6 +63,8 @@ This workflow is activated when:
 ### Code Review
 
 ### Update Ticket
+Update the status in Plane using:
+`conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py update --id <SEQ_ID> --state "Done"`
 
 ### Capture Lessons
 

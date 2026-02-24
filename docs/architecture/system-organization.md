@@ -6,7 +6,7 @@
 
 The Antigravity system follows a strict command-and-control hierarchy to ensure deterministic execution.
 
-### Tier 0: Workflows (Orchestration - includes **74** workflows)
+### Tier 0: Workflows (Orchestration - includes **73** workflows)
 - **Location**: `.agent/workflows/`
 - **Role**: The "SOP" (Standard Operating Procedure).
 - **Function**: Defines the high-level steps of a process. It DOES NOT execute code directly; it orchestrates Agents.

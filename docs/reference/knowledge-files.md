@@ -1,6 +1,6 @@
 ﻿# Knowledge Files Catalog
 
-The factory currently includes **268 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
+The factory currently includes **269 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
 
 | File | Type | Description |
 |------|------|-------------|
@@ -186,6 +186,7 @@ The factory currently includes **268 knowledge files** covering: various aspects
 | [openai-assistants-patterns](file:///.agent/knowledge/openai-assistants-patterns.json) |  |  |
 | [pandas-patterns](file:///.agent/knowledge/pandas-patterns.json) |  |  |
 | [pattern-catalog](file:///.agent/knowledge/pattern-catalog.json) |  |  |
+| [plane-integration](file:///.agent/knowledge/plane-integration.json) |  |  |
 | [pm-metrics](file:///.agent/knowledge/pm-metrics.json) |  |  |
 | [polars-dataframe-patterns](file:///.agent/knowledge/polars-dataframe-patterns.json) |  |  |
 | [prisma-database-patterns](file:///.agent/knowledge/prisma-database-patterns.json) |  |  |

@@ -1,0 +1,175 @@
+version: '3.8'
+
+services:
+  plane-db:
+    image: postgres:15-alpine
+    container_name: plane-db
+    restart: always
+    command: postgres -c 'max_connections=1000'
+    volumes:
+      - plane-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${PGUSER}
+      POSTGRES_PASSWORD: ${PGPASSWORD}
+      POSTGRES_DB: ${PGDATABASE}
+
+  plane-redis:
+    image: redis:7-alpine
+    container_name: plane-redis
+    restart: always
+    volumes:
+      - plane-redis-data:/data
+
+  plane-minio:
+    image: minio/minio
+    container_name: plane-minio
+    restart: always
+    command: server /data --console-address ":9001"
+    volumes:
+      - plane-minio-data:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+
+  migrator:
+    image: makeplane/plane-backend:latest
+    container_name: plane-migrator
+    command: ./bin/docker-entrypoint-migrator.sh
+    depends_on:
+      - plane-db
+      - plane-redis
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${PGUSER}:${PGPASSWORD}@plane-db:5432/${PGDATABASE}
+      REDIS_URL: redis://plane-redis:6379/
+      REDIS_SSL: "false"
+      DJANGO_SETTINGS_MODULE: plane.settings.production
+
+  api:
+    image: makeplane/plane-backend:latest
+    container_name: plane-api
+    restart: always
+    command: ./bin/docker-entrypoint-api.sh
+    ports:
+      - "8010:8000"
+    depends_on:
+      - plane-db
+      - plane-redis
+      - migrator
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${PGUSER}:${PGPASSWORD}@plane-db:5432/${PGDATABASE}
+      REDIS_URL: redis://plane-redis:6379/
+      REDIS_SSL: "false"
+      DJANGO_SETTINGS_MODULE: plane.settings.production
+
+  worker:
+    image: makeplane/plane-worker:latest
+    container_name: plane-worker
+    restart: always
+    command: ./bin/worker
+    depends_on:
+      - plane-db
+      - plane-redis
+      - api
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${PGUSER}:${PGPASSWORD}@plane-db:5432/${PGDATABASE}
+      REDIS_URL: redis://plane-redis:6379/
+      REDIS_SSL: "false"
+      CELERY_REDIS_BACKEND_USE_SSL: "false"
+      CELERY_BROKER_USE_SSL: "false"
+      DJANGO_SETTINGS_MODULE: plane.settings.production
+
+  beat-worker:
+    image: makeplane/plane-worker:latest
+    container_name: plane-beat-worker
+    restart: always
+    command: ./bin/beat
+    depends_on:
+      - plane-db
+      - plane-redis
+      - api
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${PGUSER}:${PGPASSWORD}@plane-db:5432/${PGDATABASE}
+      REDIS_URL: redis://plane-redis:6379/
+      REDIS_SSL: "false"
+      CELERY_REDIS_BACKEND_USE_SSL: "false"
+      CELERY_BROKER_USE_SSL: "false"
+      DJANGO_SETTINGS_MODULE: plane.settings.production
+
+  web:
+    image: makeplane/plane-frontend:latest
+    container_name: plane-web
+    restart: always
+    command: node web/server.js
+    depends_on:
+      - api
+    env_file:
+      - .env
+    environment:
+      API_BASE_URL: http://api:8000/api
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8080/api
+
+  admin:
+    image: makeplane/plane-admin:latest
+    container_name: plane-admin
+    restart: always
+    command: node admin/server.js
+    depends_on:
+      - api
+    env_file:
+      - .env
+    environment:
+      API_BASE_URL: http://api:8000/api
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8080/api
+
+  live:
+    image: makeplane/plane-live:latest
+    container_name: plane-live
+    restart: always
+    depends_on:
+      - api
+      - plane-redis
+    env_file:
+      - .env
+
+  space:
+    image: makeplane/plane-space:latest
+    container_name: plane-space
+    restart: always
+    command: node space/server.js
+    depends_on:
+      - api
+    env_file:
+      - .env
+    environment:
+      API_BASE_URL: http://api:8000/api
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8080/api
+
+  proxy:
+    image: makeplane/plane-proxy:latest
+    container_name: plane-proxy
+    restart: always
+    ports:
+      - "${NGINX_PORT}:80"
+    depends_on:
+      - web
+      - admin
+      - space
+      - api
+    env_file:
+      - .env
+    environment:
+      FILE_SIZE_LIMIT: ${FILE_SIZE_LIMIT}
+      BUCKET_NAME: ${MINIO_BUCKET}
+
+volumes:
+  plane-db-data:
+  plane-redis-data:
+  plane-minio-data:

@@ -1,0 +1,43 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "id": "plane-integration",
+    "name": "Plane Integration",
+    "title": "Plane PMS Native Integration",
+    "description": "Knowledge about Plane Project Management System integration using direct Django ORM access via Docker execution.",
+    "version": "1.0.0",
+    "category": "integration",
+    "axiomAlignment": {
+        "A1_verifiability": "Docker exec commands provide verifiable direct access to the source of truth.",
+        "A3_transparency": "Base64 encoding ensures transparent transmission of complex HTML payloads through shells.",
+        "A5_evolutionary_design": "Native script-based management evolves independently of API versioning."
+    },
+    "related_skills": [
+        "managing-tasks-in-plane",
+        "orchestrating-mcp"
+    ],
+    "related_knowledge": [
+        "api-integration-patterns.json",
+        "docker-patterns.json"
+    ],
+    "patterns": {
+        "orm_access": {
+            "description": "Direct Django ORM access via docker exec",
+            "command_template": "docker exec plane-api python manage.py shell -c \"import base64; exec(base64.b64decode('{encoded_cmd}').decode())\"",
+            "best_practices": [
+                "Use base64 encoding for the command string to avoid shell escaping issues.",
+                "Query by Project identifier ('AGENT') and sequence_id for human-readable IDs.",
+                "Always call .save() on model instances."
+            ]
+        }
+    },
+    "best_practices": [
+        "Always use base64 encoding for shell-executed Python commands.",
+        "Prefer Project sequence identifiers (e.g., AGENT-5) over raw UUIDs for terminal interaction.",
+        "Verify container health (`docker ps`) before executing management commands."
+    ],
+    "anti_patterns": [
+        "Passing raw Python strings with single/double quotes directly to the shell (escaping risk).",
+        "Directly modifying the Plane database without going through the Django ORM layers.",
+        "Hardcoding container names if they are likely to change in the stack."
+    ]
+}

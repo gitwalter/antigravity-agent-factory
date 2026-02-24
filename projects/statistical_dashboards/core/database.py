@@ -128,15 +128,30 @@ class DatabaseManager:
 
     def _ensure_schema_uptodate(self):
         """Ensures existing tables have all columns defined in the models."""
-        # Check for data_json column in datasets table (migration for v1.3+)
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         try:
+            # Migration for datasets
             cursor.execute("PRAGMA table_info(datasets)")
             columns = [info[1] for info in cursor.fetchall()]
             if "data_json" not in columns:
                 cursor.execute("ALTER TABLE datasets ADD COLUMN data_json TEXT")
-                conn.commit()
+
+            # Check for projects table (registry for multi-project vault)
+            cursor.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='projects'"
+            )
+            if not cursor.fetchone():
+                cursor.execute("""
+                    CREATE TABLE projects (
+                        id INTEGER PRIMARY KEY,
+                        name TEXT NOT NULL,
+                        description TEXT,
+                        created_at DATETIME
+                    )
+                """)
+
+            conn.commit()
         except Exception as e:
             print(f"Migration error: {e}")
         finally:

@@ -4,6 +4,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.cluster import KMeans
 from sklearn.metrics import r2_score, mean_squared_error
 from scipy import stats
+from core.ai_manager import AIManager
 
 
 class AnalysisManager:
@@ -110,10 +111,33 @@ class AnalysisManager:
         return {"t_statistic": t_stat, "p_value": p_val, "significant": p_val < 0.05}
 
     @staticmethod
-    def generate_ai_insight(module_type, results):
+    def generate_ai_insight(module_type, results, context="General Analysis"):
         """
         Generates a text summary based on statistical results.
-        In a real app, this could call an LLM (e.g. OpenAI/Anthropic).
+        Uses AIManager (Gemini) for real intelligent insights.
+        """
+        ai = AIManager()
+
+        # Prepare a descriptive string of the results for the LLM
+        if isinstance(results, dict):
+            # Clean up numpy types for JSON-like string
+            serializable_results = {
+                k: float(v) if isinstance(v, (np.float64, np.int64)) else v
+                for k, v in results.items()
+                if k not in ["x_range", "y_pred"]
+            }
+            data_summary = (
+                f"Statistical results for {module_type}:\n{serializable_results}"
+            )
+        else:
+            data_summary = f"Results for {module_type}: {results}"
+
+        return ai.generate_insight(context, data_summary)
+
+    @staticmethod
+    def _generate_ai_insight_legacy(module_type, results):
+        """
+        Legacy mock logic (kept for reference or fallback).
         """
         if module_type == "regression":
             r2 = results.get("r2", 0)

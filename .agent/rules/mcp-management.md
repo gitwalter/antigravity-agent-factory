@@ -15,6 +15,7 @@ Governs the strategic orchestration of the Model Context Protocol (MCP) ecosyste
 - **RAG MCP (P1)**: Mandatory for all document-heavy research (PDFs, Wikis).
 - **Research MCP (Tavily) (P2)**: Use for real-time web search and content extraction.
 - **Reasoning MCP (SequentialThinking)**: Trigger for complex logic involving more than three dependent steps.
+- **Native Plane PMS (P1)**: Mandatory for project tracking. Use the `pms-management` skill for direct backend access (bypasses MCP).
 
 ## 3. Implementation Standards
 - **Client Pattern**: All factory scripts MUST use the standardized `MultiServerMCPClient` for connection resilience.

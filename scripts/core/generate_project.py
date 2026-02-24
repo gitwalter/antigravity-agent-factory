@@ -53,10 +53,26 @@ try:
         ConflictPrompt,
     )
     from scripts.git.backup_manager import BackupManager, BackupSession
-
-    ONBOARDING_AVAILABLE = True
 except ImportError:
-    ONBOARDING_AVAILABLE = False
+    pass
+
+# Import PM components
+try:
+    from lib.pms.client import PlaneClient
+
+    PLANE_AVAILABLE = True
+except ImportError:
+    PLANE_AVAILABLE = False
+
+try:
+    from projects.statistical_dashboards.core.database import (
+        DatabaseManager,
+        Project as DBProject,
+    )
+
+    DB_AVAILABLE = True
+except ImportError:
+    DB_AVAILABLE = False
 
 
 # =============================================================================
@@ -134,9 +150,10 @@ class ProjectConfig:
     blueprint_id: Optional[str] = None
     team_context: str = ""
     pm_enabled: bool = False
-    pm_backend: Optional[str] = None
+    pm_backend: Optional[str] = "plane"
     pm_doc_backend: Optional[str] = None
-    pm_methodology: Optional[str] = None
+    pm_methodology: Optional[str] = "kanban"
+    pm_workspace: str = "antigravity"
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "ProjectConfig":
@@ -162,9 +179,10 @@ class ProjectConfig:
             blueprint_id=data.get("blueprint_id"),
             team_context=data.get("team_context", ""),
             pm_enabled=data.get("pm_enabled", False),
-            pm_backend=data.get("pm_backend"),
+            pm_backend=data.get("pm_backend", "plane"),
             pm_doc_backend=data.get("pm_doc_backend"),
-            pm_methodology=data.get("pm_methodology"),
+            pm_methodology=data.get("pm_methodology", "kanban"),
+            pm_workspace=data.get("pm_workspace", "antigravity"),
         )
 
     def get_all_agents(self) -> List[str]:
@@ -372,6 +390,13 @@ class ProjectGenerator:
 
             # Generate diagrams folder with README
             self._generate_diagrams()
+
+            # Register in PMS if enabled
+            if self.config.pm_enabled:
+                self._register_project_in_pms()
+
+            # Register in central Database if available
+            self._register_project_in_database()
 
             print("[SUCCESS] Project generated successfully")
 
@@ -1718,6 +1743,59 @@ To render diagrams to PNG, use a Mermaid CLI tool or the diagram rendering scrip
 
         self._write_file(diagrams_dir / "README.md", readme_content)
 
+    def _register_project_in_pms(self) -> None:
+        """Register the project in the configured PMS (e.g., Plane)."""
+        if not PLANE_AVAILABLE or self.config.pm_backend != "plane":
+            return
+
+        print(f"Registering project '{self.config.project_name}' in Plane PMS...")
+        try:
+            client = PlaneClient()
+            # Generate a 4-5 char identifier from project name
+            identifier = "".join(filter(str.isalnum, self.config.project_name.upper()))[
+                :5
+            ]
+
+            response = client.create_project(
+                workspace_slug=self.config.pm_workspace,
+                name=self.config.project_name,
+                identifier=identifier,
+                description=self.config.project_description,
+            )
+            print(f"Project registered in Plane with ID: {response.get('id')}")
+        except Exception as e:
+            print(f"Warning: Failed to register project in Plane: {e}")
+
+    def _register_project_in_database(self) -> None:
+        """Register the project in the centralized dashboards.db registry."""
+        if not DB_AVAILABLE:
+            return
+
+        print(f"Registering project '{self.config.project_name}' in central vault...")
+        try:
+            db_manager = DatabaseManager()
+            session = db_manager.get_session()
+
+            # Check if project already exists
+            existing = (
+                session.query(DBProject)
+                .filter_by(name=self.config.project_name)
+                .first()
+            )
+            if not existing:
+                new_project = DBProject(
+                    name=self.config.project_name,
+                    description=self.config.project_description,
+                )
+                session.add(new_project)
+                session.commit()
+                print("Project added to central vault.")
+            else:
+                print("Project already exists in central vault.")
+            session.close()
+        except Exception as e:
+            print(f"Warning: Failed to register project in database: {e}")
+
     def _generate_onboarding(self) -> Dict[str, Any]:
         """Generate project in onboarding mode.
 
@@ -1938,7 +2016,7 @@ To render diagrams to PNG, use a Mermaid CLI tool or the diagram rendering scrip
 # CURSOR AGENT FACTORY INTEGRATION
 # Generated: {datetime.now().strftime("%Y-%m-%d")}
 # Blueprint: {self.config.blueprint_id or "custom"}
-# Factory Version: 1.2.3# ═══════════════════════════════════════════════════════════════════════════════
+# Factory Version: 1.3.0# ═══════════════════════════════════════════════════════════════════════════════
 
 """
 

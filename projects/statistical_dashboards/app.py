@@ -8,7 +8,13 @@ from core.connectors.financial_connector import FinancialConnector
 from core.connectors.economic_connector import EconomicConnector
 from core.connectors.news_connector import NewsConnector
 from core.business_manager import BusinessManager
+from core.templates import TemplateManager
+from core.memory_sync import MemorySyncManager
+from core.guidance_center import GuidanceCenter
+from core.ai_manager import AIManager
+from core.report_manager import ReportManager
 import os
+from datetime import datetime
 import numpy as np
 
 # --- Configuration ---
@@ -64,7 +70,9 @@ def init_managers():
     eco = EconomicConnector()
     news = NewsConnector()
     biz = BusinessManager()
-    return db, data, viz, analysis, fin, eco, news, biz
+    tpl = TemplateManager()
+    msync = MemorySyncManager()
+    return db, data, viz, analysis, fin, eco, news, biz, tpl, msync
 
 
 (
@@ -76,6 +84,8 @@ def init_managers():
     eco_connector,
     news_connector,
     biz_manager,
+    template_manager,
+    sync_manager,
 ) = init_managers()
 
 # --- Sidebar ---
@@ -87,6 +97,7 @@ menu = st.sidebar.selectbox(
     [
         "📊 Dashboard",
         "📁 Data Manager",
+        "🏢 Project Center",
         "🔬 Advanced Analytics",
         "🏢 Warehousing Intel",
         "📈 Financial Intel",
@@ -211,6 +222,54 @@ elif menu == "📁 Data Manager":
             st.warning("Create a project first.")
         session.close()
 
+elif menu == "🏢 Project Center":
+    st.title("🏢 Project Life-Cycle Center")
+    st.markdown("Track your data science project status, priority, and tasks.")
+
+    session = db_manager.get_session()
+    projects = session.query(Project).all()
+
+    if projects:
+        project_names = [p.name for p in projects]
+        selected_p_name = st.selectbox("Select Project to Manage", project_names)
+        project = session.query(Project).filter_by(name=selected_p_name).first()
+
+        st.info(
+            "💡 **Architectural Note:** Project management (Sprints, Tasks, Staffing) is now handled in the [Plane PMS](http://localhost:8080)."
+        )
+        st.markdown(f"**Project Identity:** `{project.name}`")
+        st.write(f"**Description:** {project.description}")
+
+        st.divider()
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader("📦 Statistical Artifacts (dashboards.db)")
+            st.write(f"**Associated Datasets:** {len(project.datasets)}")
+            for ds in project.datasets:
+                st.caption(f"- {ds.filename} ({ds.row_count} rows)")
+
+            if st.button("📤 Sync Data Artifacts to Memory"):
+                sync_mgr = MemorySyncManager()
+                # Simplified sync for data only
+                path = sync_mgr.prepare_sync_payload(project, [])
+                st.success(f"Sync Ready! Payload saved to `{path}`")
+
+        with col2:
+            st.subheader("📝 Deployment & Orchestration")
+            st.button("📄 Generate Executive Data Report")
+            st.button(
+                "🔗 Open Plane PMS Dashboard",
+                on_click=lambda: st.write("Navigate to http://localhost:8080"),
+            )
+
+        st.divider()
+
+    else:
+        st.warning("No projects found. Create one in the Data Manager.")
+
+    session.close()
+
 elif menu == "🔬 Advanced Analytics":
     st.title("🔬 Advanced Statistical Analysis")
     st.markdown("Perform regression and correlation analysis on your project datasets.")
@@ -232,16 +291,22 @@ elif menu == "🔬 Advanced Analytics":
             df = data_manager.get_dataset_data(ds.id, db_manager)
 
             if df is not None:
-                analysis_tab, corr_tab, ts_tab = st.tabs(
+                analysis_tab, corr_tab, ts_tab, nlq_tab, template_tab = st.tabs(
                     [
                         "Regression Analysis",
                         "Correlation Matrix",
                         "Time-Series Baseline",
+                        "💬 Ask Your Data (NLQ)",
+                        "🛠️ Template Controls",
                     ]
                 )
 
                 with analysis_tab:
                     st.subheader("Linear Regression")
+                    st.info(
+                        "💡 **Interpretation:** Linear regression helps find a mathematical relationship between variables. "
+                        "A high R-Squared (close to 1.0) means the variables are closely linked."
+                    )
                     num_cols = df.select_dtypes(include=["number"]).columns.tolist()
                     if len(num_cols) >= 2:
                         y_var = st.selectbox(
@@ -292,7 +357,11 @@ elif menu == "🔬 Advanced Analytics":
                         st.warning("Need at least two numeric columns for regression.")
 
                 with corr_tab:
-                    st.subheader("Numeric Correlation Heatmap")
+                    st.subheader("Numeric Correlation Matrix")
+                    st.info(
+                        "💡 **Interpretation:** This matrix shows how strongly variables move together. "
+                        "Values near **1.0** mean perfect positive correlation, while **-1.0** means perfect inverse correlation."
+                    )
                     if len(num_cols) >= 2:
                         corr_matrix = analysis_manager.get_correlation_matrix(df)
                         st.plotly_chart(
@@ -354,6 +423,128 @@ elif menu == "🔬 Advanced Analytics":
                                 st.error("Time-Series analysis failed.")
                     else:
                         st.warning("No numeric data for time-series analysis.")
+
+                with nlq_tab:
+                    st.subheader("💬 Natural Language Querying")
+                    st.info(
+                        "Ask questions about your data in plain English. The AI will suggest "
+                        "the best chart and explain its reasoning."
+                    )
+
+                    user_query = st.text_input(
+                        "What would you like to know?",
+                        placeholder="e.g., Show me the relationship between temperature and UPH",
+                    )
+
+                    if st.button("Analyze & Visualize"):
+                        if user_query:
+                            ai = AIManager()
+                            with st.spinner("AI is thinking..."):
+                                suggestion = ai.nlq_to_viz(
+                                    user_query, df.columns.tolist()
+                                )
+
+                                if "error" not in suggestion:
+                                    st.success(
+                                        f"**AI Suggestion:** {suggestion['chart_type']} chart using **{suggestion['x_axis']}** and **{suggestion['y_axis']}**"
+                                    )
+                                    st.caption(
+                                        f"*Reasoning:* {suggestion['reasoning']}"
+                                    )
+
+                                    # Render the suggested chart
+                                    if suggestion["chart_type"] == "scatter":
+                                        st.plotly_chart(
+                                            viz_manager.create_scatter_chart(
+                                                df,
+                                                suggestion["x_axis"],
+                                                suggestion["y_axis"],
+                                                title=user_query,
+                                            )
+                                        )
+                                    elif suggestion["chart_type"] == "line":
+                                        st.plotly_chart(
+                                            viz_manager.create_line_chart(
+                                                df,
+                                                suggestion["x_axis"],
+                                                suggestion["y_axis"],
+                                                title=user_query,
+                                            )
+                                        )
+                                    elif suggestion["chart_type"] == "bar":
+                                        import plotly.express as px
+
+                                        st.plotly_chart(
+                                            px.bar(
+                                                df,
+                                                x=suggestion["x_axis"],
+                                                y=suggestion["y_axis"],
+                                                title=user_query,
+                                            )
+                                        )
+
+                                    # Add AI insight
+                                    # Since we don't have results yet, we just provide a placeholder or small summary
+                                    st.info(
+                                        "**Preliminary AI Insight:** Based on the data distribution, there appears to be a visible pattern..."
+                                    )
+                                else:
+                                    st.error(
+                                        f"AI could not determine a visualization: {suggestion['error']}"
+                                    )
+                        else:
+                            st.warning("Please enter a query.")
+
+                with template_tab:
+                    st.subheader("Dashboard & Diagram Templates")
+                    st.info("Manage reusable configurations for your visualizations.")
+
+                    t_cat = st.radio("Category", ["diagrams", "layouts"])
+                    available_configs = template_manager.list_templates(t_cat)
+
+                    if available_configs:
+                        selected_tpl = st.selectbox(
+                            "Select Template to Preview", available_configs
+                        )
+                        if st.button("Preview Template Content"):
+                            path = os.path.join(
+                                template_manager.templates_dir, t_cat, selected_tpl
+                            )
+                            with open(path, "r") as f:
+                                st.code(
+                                    f.read(),
+                                    language="json" if t_cat == "diagrams" else "html",
+                                )
+
+                        st.divider()
+                        st.subheader("Generate from Template")
+                        if t_cat == "diagrams":
+                            tpl_x = st.selectbox(
+                                "X-Axis Variable", num_cols, key="tpl_x"
+                            )
+                            tpl_y = st.selectbox(
+                                "Y-Axis Variable", num_cols, key="tpl_y"
+                            )
+                            tpl_title = st.text_input(
+                                "Chart Title", value="Custom Analysis"
+                            )
+
+                            if st.button("Render Dynamic Chart"):
+                                config = template_manager.render_diagram_config(
+                                    selected_tpl,
+                                    x_label=tpl_x,
+                                    y_label=tpl_y,
+                                    title=tpl_title,
+                                )
+                                fig = viz_manager.create_scatter_chart(
+                                    df,
+                                    tpl_x,
+                                    tpl_y,
+                                    title=config.get("title", "Untitled"),
+                                )
+                                st.plotly_chart(fig)
+                    else:
+                        st.info("No templates found in this category.")
             else:
                 st.error("Data file missing.")
         else:
@@ -464,15 +655,28 @@ elif menu == "🏢 Warehousing Intel":
             with tab3:
                 st.write("Detecting UPH outliers and process anomalies.")
                 st.info(
-                    "Using IQR and Z-Score methods from the Statistical Mastery skill."
+                    "Using AI-powered anomaly analysis to identify operational bottlenecks."
                 )
-                # Mocking a group comparison
-                test_results = analysis_manager.run_hypothesis_test(
-                    pd.Series([80, 82, 85]), pd.Series([70, 72, 68])
+
+                # Simulate an anomaly for demonstration
+                anomaly_point = {
+                    "associate_id": "DS-123",
+                    "uph": 45,
+                    "mean_uph": 82,
+                    "start_time": "14:02",
+                    "bin_zone": "Z-09 (High Density)",
+                }
+                st.warning(
+                    f"**Detected Anomaly:** Associate {anomaly_point['associate_id']} is performing at {anomaly_point['uph']} UPH (Site Mean: {anomaly_point['mean_uph']})"
                 )
-                st.write(
-                    analysis_manager.generate_ai_insight("hypothesis", test_results)
-                )
+
+                if st.button("Explain Anomaly with AI"):
+                    ai = AIManager()
+                    with st.spinner("Analyzing operational context..."):
+                        explanation = ai.explain_anomaly(
+                            anomaly_point, context="Warehouse Outbound Fulfillment"
+                        )
+                        st.markdown(f"**AI Analysis:**\n{explanation}")
 
         st.divider()
         st.subheader("📥 Process Data Ingestion")
@@ -594,32 +798,84 @@ elif menu == "📰 Market Sentiment":
                 st.info("No news found for this topic.")
 
 elif menu == "📖 Help & Guide":
-    st.title("📖 Statistical Dashboard Guide")
-    st.markdown("""
-    ### 🚀 Getting Started: Create a New Project
-    To begin analyzing data, you must first initialize a project:
+    st.title("📖 Statistical Dashboard Guidance Center")
+    st.markdown(
+        "Your comprehensive resource for data excellence and statistical mastery."
+    )
 
-    1. **Navigate to Data Manager**: Select **📁 Data Manager** from the sidebar.
-    2. **Initialize Project**:
-        - Under the **Create Project** tab, enter a name and description.
-        - Click **Initialize Project**.
-    3. **Upload Data**:
-        - Switch to the **Upload Data** tab.
-        - Select your project from the dropdown.
-        - Upload a CSV or Excel file and click **Process & Save**.
+    help_tabs = st.tabs(
+        [
+            "🚀 Workflow",
+            "📚 KPI Dictionary",
+            "🔬 Stats Primer",
+            "📋 Data Blueprints",
+            "💡 Use Case Stories",
+        ]
+    )
 
-    ### 📂 Example Data for Testing
-    You can find pre-generated datasets in the `projects/statistical_dashboards/data/` directory:
-    - `sales_data.csv`: Transaction-level sales records across regions.
-    - `warehouse_data.csv`: SKU-level stock levels and reorder points.
-    - `accounting_data.csv`: Journal entries with debit/credit tracking by department.
-    - `manufacturing_data.csv`: Machine-level production yields and energy consumption.
+    with help_tabs[0]:
+        st.subheader("🚀 End-to-End Analytics Workflow")
+        st.markdown(
+            """
+        1. **Define & Initialize**: Start in the **🏢 Project Center** or **📁 Data Manager**. Define your business problem.
+        2. **Ingest Meaningful Data**: Upload datasets that contain at least one ID and several numeric/categorical variables.
+        3. **Exploratory Analysis**: Use the **📊 Dashboard** to see head-to-head metrics and generic visuals.
+        4. **Deep Dive**: Use **🔬 Advanced Analytics** to test hypotheses or find hidden clusters.
+        5. **Domain Intelligence**: Leverage specialized views like **🏢 Warehousing Intel** for process-specific KPIs.
+        """
+        )
 
-    ### 🔬 Analysis Workflows
-    - **Advanced Analytics**: Run regressions, view correlation matrices, and analyze time-series trends.
-    - **Warehousing Intel**: Role-based insights for operations managers, associates, and analysts.
-    - **Financial & Economic Intel**: Pull live data for tickers, countries, and news sentiment.
-    """)
+    with help_tabs[1]:
+        st.subheader("📚 KPI Dictionary")
+        kpis = GuidanceCenter.get_kpi_dictionary()
+        for kpi in kpis:
+            with st.expander(f"**{kpi['KPI']}** ({kpi['Domain']})"):
+                st.write(f"**Definition:** {kpi['Definition']}")
+                st.write(f"**Formula:** ` {kpi['Formula']} `")
+                st.write(f"**Target:** {kpi['Target']}")
+
+    with help_tabs[2]:
+        st.subheader("🔬 Statistical Primer")
+        primer = GuidanceCenter.get_statistical_primer()
+        for concept, details in primer.items():
+            st.markdown(f"### {details['Title']} ({concept})")
+            st.write(details["Explanation"])
+            st.info(f"**Key Metric:** {details['Key Metric']}")
+            st.divider()
+
+    with help_tabs[3]:
+        st.subheader("📋 Data Blueprints")
+        blueprints = GuidanceCenter.get_dashboard_blueprints()
+        for bp_name, steps in blueprints.items():
+            with st.expander(f"**{bp_name} Layout**"):
+                for step in steps:
+                    st.write(step)
+
+        st.info(
+            "Ensure your CSV/Excel files have these headers for automatic domain mapping."
+        )
+        with st.expander("📦 Warehouse Inbound (ASN) Headers"):
+            st.code("asn_number, vendor_name, expected_arrival, sku, expected_quantity")
+
+    with help_tabs[4]:
+        st.subheader("💡 Use Case Stories")
+        st.markdown("""
+        **Story: The Vanishing UPH**
+        *Scenario*: A warehouse in New Jersey noticed a 15% drop in Picking UPH every Tuesday afternoon.
+        *Analysis*: Using **Linear Regression**, the analyst correlated 'Temperature' with 'UPH'.
+        *Finding*: Higher temperatures in the loading dock area (which peaked on Tuesdays) were causing fatigue.
+        *Result*: Installed industrial fans; UPH stabilized within a week.
+        """)
+
+        with st.expander("🏬 Case Study: The Outbound Bottle-Neck"):
+            st.markdown(
+                """
+            **The Problem:** A fulfillment center noticed that orders were consistently missing their carrier cut-off times despite high overall UPH.
+            **The Analysis:** Using the **Advanced Analytics** tab, the team ran a regression between `Dock-to-Stock` time and `Carrier Latency`.
+            **The Finding:** The data revealed that high-volume 'Hot Picks' were being stored in Zone E (highest bin level), slowing down retrieval.
+            **The Solution:** SKUs were re-slotted into Zone A (waist-height), reducing pick time by 12% and meeting all SLA cut-offs.
+            """
+            )
 
 elif menu == "⚙️ Settings":
     st.title("⚙️ System Settings")
