@@ -73,14 +73,8 @@ When committing a new feature or release (version bump), you MUST:
 
 1. **Update CHANGELOG.md first** - Add a new `## [X.X.X] - YYYY-MM-DD` section (this is the source of truth)
 2. **Update factory-updates.json** - Set `factory_version` to match the new version
-3. **Run version sync** - `{PYTHON_PATH} {directories.scripts}/validation/sync_manifest_versions.py --sync`
-   This propagates the version to: manifest.json, README.md, GETTING_STARTED.md, ONBOARDING_GUIDE.md, generate_project.py, cursorrules-template.md, guardian-protocol.json.tmpl, .cursorrules
-4. **Run artifact sync** - `{PYTHON_PATH} {directories.scripts}/validation/sync_artifacts.py --sync --fast`
-5. **Regenerate test catalog** - `{PYTHON_PATH} {directories.scripts}/docs/generate_test_catalog.py`
-6. **Validate dependency graph** - `{PYTHON_PATH} {directories.scripts}/validation/dependency_validator.py --broken`
-   Ensures no agents/skills reference non-existent artifacts. Blocks commit on failure.
 
-**Version bump order**: CHANGELOG.md -> factory-updates.json -> sync_manifest_versions.py --sync -> sync_artifacts.py --sync
+*Note: The remaining steps (version sync, artifact sync, catalog generation) are now handled **automatically** by the `pre-commit` hook when you commit. You do not need to run these manually unless debugging.*
 
 **CRITICAL ordering when new files were created**: Sync scripts count git-tracked files. If you created new files (e.g., knowledge JSON files), you MUST stage them first:
 1. `git add -A` (make new files visible to sync scripts)
@@ -334,6 +328,7 @@ Use the `github` MCP server for advanced repository management:
 ## Integration with Pre-Commit Hook
 
 The Factory's pre-commit hook (`.git/hooks/pre-commit`) now:
+- **Auto-syncs** version strings (via `sync-manifest-versions.py`)
 - **Auto-syncs** all artifacts instead of blocking
 - **Auto-stages ALL generated files** — bundles, docs, index, test catalog, manifest, and README are staged in the same commit via a sync guard that catches every unstaged file matching `docs/*`, `bundles/*`, `README.md`, `CHANGELOG.md`, and `knowledge/manifest.json`
 - **Runs artifact-aware validation** — when knowledge, skill, or workflow files are staged, the matching pytest validation suite runs automatically and blocks the commit on failure
