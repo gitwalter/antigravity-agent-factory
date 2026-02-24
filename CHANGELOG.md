@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-02-24
+
+### Added
+- **Web URL Ingestion (AGENT-18)**: Expanded the RAG Knowledge Explorer to support fetching, chunking, and embedding direct website URLs via LangChain `WebBaseLoader`.
+- **HTML Table of Contents**: Implemented a BeautifulSoup HTML parser that deterministically reconstructs a Table of Contents chunk from `h1-h4` web tags for precise, high-level context navigation.
+- **RAG Dashboard Expansion**: Added a unified "Web URL" ingest tab in the standalone `rag_knowledge_explorer` Streamlit UI.
+- **Native Plane PMS Integration**: Bypassed unreliable Plane MCP servers in favor of direct Django ORM interaction via Docker-executed shell commands.
+- **Robust Command Execution**: Implemented Base64 encoding for shell safe transmission of HTML-rich payloads in `scripts/pms/manager.py`.
+- **Plane Management Skill**: Created the `managing-tasks-in-plane` skill (categorized in `routing/`) for autonomous issue tracking and lifecycle management.
+- **Grounding Knowledge**: Added `plane-integration.json` to provide agents with direct context for ORM access patterns.
+- **Integration Documentation**: Wrote a comprehensive technical guide for the new Plane integration architecture.
+
+### Fixed
+- **Plane PMS Skill Optimization**: Hardcoded native Plane issue states to eliminate unnecessary database queries during workflow updates.
+
 ## [1.3.1] - 2026-02-24
 
 ### Added
@@ -16,13 +31,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Plane State Synchronization**: Standardized issue state filtering in `scripts/pms/manager.py` to support workflow-accurate task tracking.
 
 ## [1.3.0] - 2026-02-24
-
-### Added
-- **Native Plane PMS Integration**: Bypassed unreliable Plane MCP servers in favor of direct Django ORM interaction via Docker-executed shell commands.
-- **Robust Command Execution**: Implemented Base64 encoding for shell safe transmission of HTML-rich payloads in `scripts/pms/manager.py`.
-- **Plane Management Skill**: Created the `managing-tasks-in-plane` skill (categorized in `routing/`) for autonomous issue tracking and lifecycle management.
-- **Grounding Knowledge**: Added `plane-integration.json` to provide agents with direct context for ORM access patterns.
-- **Integration Documentation**: Wrote a comprehensive technical guide for the new Plane integration architecture.
 
 ### Fixed
 - **Core Engine Stability**: Fixed a critical `SyntaxError` (missing `except` block) in `scripts/core/generate_project.py`.

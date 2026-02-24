@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 from core.database import DatabaseManager, Project
 from core.data_manager import DataManager
@@ -74,7 +75,8 @@ def init_managers():
     tpl = TemplateManager()
     msync = MemorySyncManager()
     wf = WorkflowManager()
-    return db, data, viz, analysis, fin, eco, news, biz, tpl, msync, wf
+    ai = AIManager()
+    return db, data, viz, analysis, fin, eco, news, biz, tpl, msync, wf, ai
 
 
 (
@@ -89,6 +91,7 @@ def init_managers():
     template_manager,
     sync_manager,
     workflow_manager,
+    ai_manager,
 ) = init_managers()
 
 # --- Sidebar ---
@@ -889,7 +892,6 @@ elif menu == "📰 Market Sentiment":
                     st.divider()
             else:
                 st.info("No news found for this topic.")
-
 elif menu == "📖 Help & Guide":
     st.title("📖 Statistical Dashboard Guidance Center")
     st.markdown(
@@ -934,7 +936,8 @@ elif menu == "📖 Help & Guide":
         for concept, details in primer.items():
             st.markdown(f"### {details['Title']} ({concept})")
             st.write(details["Explanation"])
-            st.info(f"**Key Metric:** {details['Key Metric']}")
+            if "Key Metric" in details:
+                st.info(f"**Key Metric:** {details['Key Metric']}")
             st.divider()
 
     with help_tabs[3]:
@@ -955,7 +958,21 @@ elif menu == "📖 Help & Guide":
         st.subheader("🏗️ System Architecture Overview")
         arch = GuidanceCenter.get_system_architecture()
         st.write(arch["description"])
-        st.markdown(f"```mermaid\n{arch['mermaid']}\n```")
+
+        # Render mermaid natively via HTML/JS for robustness
+        components.html(
+            f"""
+            <div class="mermaid">
+                {arch['mermaid']}
+            </div>
+            <script type="module">
+                import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+                mermaid.initialize({{ startOnLoad: true, theme: 'base' }});
+            </script>
+            """,
+            height=800,
+            scrolling=True,
+        )
         st.info(
             "This diagram illustrates the hard-linking between roles, tools, and rules in the Antigravity Agent Ecosystem."
         )

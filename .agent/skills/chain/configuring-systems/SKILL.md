@@ -275,6 +275,12 @@ The skill creates/updates `{directories.config}/settings.json`:
       "community_curated": true,
       "user_feedback": true
     }
+  },
+  "llm": {
+    "primary_model": "gemini-2.5-flash",
+    "preview_model": "gemini-3-flash-preview",
+    "fallback_model": "gemini-2.5-flash-lite",
+    "default_temperature": 0.0
   }
 }
 ```

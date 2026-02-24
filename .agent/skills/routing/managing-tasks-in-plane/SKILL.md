@@ -42,18 +42,26 @@ This skill enables agents to manage projects, issues, and states in a local Plan
 ## Process
 Follow these procedures to interact with the Plane PMS native integration via shell commands.
 
-### 1. Listing Issues & States
-To list components, prefer JSON output for programmatic parsing:
+### 1. Listing Issues & Filtering by State
+To list components, prefer JSON output for programmatic parsing. **You can filter issues by state using the `--state` argument**:
 ```powershell
 # List all issues in AGENT project
 conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py list --json
 
-# List all issues in a specific state (Backlog, Todo, In Progress, Done, Cancelled)
-conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py list --state "In Progress"
+# List issues filtered by state (e.g., Backlog, Todo, In Progress, Done, Cancelled)
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py list --state "In Progress" --json
 
 # List all projects
 conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py projects --json
 ```
+
+### Supported Issue States (DO NOT QUERY DYNAMICALLY)
+Plane uses the following hardcoded standard states. **DO NOT run the `states` command to check for states before updating or filtering. Memorize and use these exact strings:**
+- `Backlog`
+- `Todo`
+- `In Progress`
+- `Done`
+- `Cancelled`
 
 ### 2. Creating & Detailed Inspection
 To create or inspect a specific issue:
@@ -99,7 +107,7 @@ conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py updat
 ## Best Commands to Use
 | Operation | Recommended Command Pattern | Goal |
 |-----------|-----------------------------|------|
-| **Discovery** | `projects` \| `list --json` \| `states` | Mapping current project landscape |
+| **Discovery** | `projects` \| `list --json` \| `list --state "Done" --json` | Mapping current project landscape & filtering |
 | **Inspection** | `details --id <ID>` | Deep understanding of a specific roadblock |
 | **Reporting** | `update --description "<ul><li>Item</li></ul>"` | Professional progress broadcasting |
 | **Refactoring** | `update --name "..."` | Aligning issue titles with evolving goals |
@@ -107,7 +115,8 @@ conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py updat
 
 ## Best Practices
 - **Explicit Project IDs**: Always verify the project ID before performing operations.
-- **State Name Matching**: Use exact state names from the `states` command output.
+- **State Name Matching**: Use the exact standard state names (`Backlog`, `Todo`, `In Progress`, `Done`, `Cancelled`). Do NOT query the states list.
+- **Filter Issues Efficiently**: If a task requires finding completed or pending work, use the `list --state "..."` capability rather than fetching all issues and filtering in memory.
 - **HTML in Description**: ALWAYS use `<ul>`, `<li>`, and `<b>` tags for professional formatting.
 - **High Transparency**: Document the *how* and *why*, not just the *what*.
 - **Sync Proof**: Include test results or verification command output in the description.

@@ -592,6 +592,109 @@ class OptimizedRAG:
         self._persist_to_disk(parent_docs, ids)
         logger.info(f"Successfully ingested {pdf_path}")
 
+    def _extract_url_toc(self, url: str) -> Optional[str]:
+        """Attempt to extract Table of Contents from a URL using HTML headings."""
+        try:
+            import requests
+            from bs4 import BeautifulSoup
+
+            # Add a generic user agent to prevent 403 Forbidden errors on some sites
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            }
+            response = requests.get(url, headers=headers, timeout=10)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.content, "html.parser")
+
+            # Find all headings h1-h4
+            headings = soup.find_all(["h1", "h2", "h3", "h4"])
+            if not headings:
+                return None
+
+            toc_lines = ["## Table of Contents (Extracted HTML Headings)"]
+            seen_texts = set()
+
+            for h in headings:
+                level = int(h.name[1])  # 'h2' -> 2
+                text = h.get_text(strip=True)
+                # Skip empty headings or duplicates
+                if text and len(text) > 2 and text not in seen_texts:
+                    seen_texts.add(text)
+                    indent = "  " * (level - 1)
+                    toc_lines.append(f"{indent}- {text}")
+
+            if len(toc_lines) > 1:
+                return "\n".join(toc_lines)
+            return None
+        except Exception as e:
+            logger.warning(f"Failed to extract TOC from URL {url}: {e}")
+            return None
+
+    def ingest_url(self, url: str):
+        """Parse and add a Web URL to the library using Parent-Child strategy."""
+
+        # Idempotency check: Check if this URL is already in the library
+        existing_sources = {
+            doc.metadata["source"]
+            for key in self.store.yield_keys()
+            if (doc := self.store.mget([key])[0]) and "source" in doc.metadata
+        }
+
+        if url in existing_sources:
+            logger.info(f"Skipping ingestion: {url} is already in the library.")
+            return
+
+        logger.info(f"Ingesting URL: {url}")
+        try:
+            from langchain_community.document_loaders import WebBaseLoader
+
+            loader = WebBaseLoader(url)
+            docs = list(loader.load())
+        except Exception as e:
+            logger.error(f"Failed to load URL {url}: {e}")
+            return
+
+        # Add metadata for tracking
+        for doc in docs:
+            doc.metadata["source"] = url
+            if "title" in doc.metadata:
+                doc.metadata["document_title"] = doc.metadata["title"]
+            else:
+                doc.metadata["document_title"] = url
+
+        # Split into parent chunks first to ensure we have the correct count for IDs
+        parent_docs = self.retriever.parent_splitter.split_documents(docs)
+
+        # Execute TOC logic for URLs
+        toc_content = self._extract_url_toc(url)
+        if toc_content:
+            logger.info("Deterministic HTML TOC found. Injecting as specialized chunk.")
+            # Build a dedicated Langchain Document just for the TOC layout
+            toc_doc = Document(
+                page_content=f"MASTER TABLE OF CONTENTS (INHALTSVERZEICHNIS)\n\n{toc_content}",
+                metadata={
+                    "source": url,
+                    "is_toc": True,
+                    "document_title": docs[0].metadata.get("title", url)
+                    if docs
+                    else url,
+                },
+            )
+            # Inject it at the very beginning of the parent_docs for vector store indexing
+            parent_docs.insert(0, toc_doc)
+
+        # Generate consistent IDs for both retriever (vectorstore/RAM) and disk persistence
+        import uuid
+
+        ids = [str(uuid.uuid4()) for _ in range(len(parent_docs))]
+
+        # This will save to vectorstore and populate the IN-MEMORY RAM store
+        self.retriever.add_documents(parent_docs, ids=ids)
+
+        # Persist new documents to disk using the SAME IDs so they can be re-hydrated next session
+        self._persist_to_disk(parent_docs, ids)
+        logger.info(f"Successfully ingested {url}")
+
     def _persist_to_disk(self, docs: List[Document], ids: List[str]):
         """Helper to ensure new ingestions are saved for the next IDE session hydration."""
         import json
@@ -642,12 +745,18 @@ class OptimizedRAG:
                         models.FieldCondition(
                             key="metadata.is_toc",
                             match=models.MatchValue(value=True),
-                        ),
+                        )
+                    ],
+                    should=[
                         models.FieldCondition(
                             key="metadata.document_title",
                             match=models.MatchText(text=document_name),
                         ),
-                    ]
+                        models.FieldCondition(
+                            key="metadata.source",
+                            match=models.MatchValue(value=document_name),
+                        ),
+                    ],
                 ),
                 limit=1,
                 with_payload=True,
@@ -722,10 +831,14 @@ if __name__ == "__main__":
         rag = get_rag()
 
         if command == "ingest" and len(sys.argv) > 2:
-            rag.ingest_ebook(sys.argv[2])
+            path_or_url = sys.argv[2]
+            if path_or_url.startswith("http://") or path_or_url.startswith("https://"):
+                rag.ingest_url(path_or_url)
+            else:
+                rag.ingest_ebook(path_or_url)
         elif command == "query" and len(sys.argv) > 2:
             print(search_ebook_library.run(sys.argv[2]))
         else:
             print(
-                "Usage: python rag_optimized.py [ingest <pdf_path> | query <question>]"
+                "Usage: python rag_optimized.py [ingest <pdf_path_or_url> | query <question>]"
             )

@@ -39,6 +39,7 @@ Ensure the agent can correctly resolve the new variable from the configuration h
 ## Rules
 
 - **No Hardcoding**: Every absolute value must move to config.
+- **LLM Model Codes**: Never hardcode LLM model names (e.g., `gemini-2.0-flash`). Always use `ConfigManager` to retrieve `primary_model`, `preview_model`, or `fallback_model` from `settings.json`.
 - **Defaults Matter**: Always preserve the original hardcoded value as the fallback.
 - **Consistency**: Use the same variable names across all files.
 - **Documentation**: Update `docs/CONFIGURATION.md` if a new core variable is introduced.
