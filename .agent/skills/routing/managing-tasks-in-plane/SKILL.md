@@ -42,28 +42,82 @@ This skill enables agents to manage projects, issues, and states in a local Plan
 ## Process
 Follow these procedures to interact with the Plane PMS native integration via shell commands.
 
-### 1. Listing Issues
-To list issues for a project, use the native `manager.py` script:
+### 1. Listing Issues & States
+To list components, prefer JSON output for programmatic parsing:
 ```powershell
-conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py list --project-id 40ab9f42-6a2a-402b-a3d7-908973557123
+# List all issues in AGENT project
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py list --json
+
+# List all issues in a specific state (Backlog, Todo, In Progress, Done, Cancelled)
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py list --state "In Progress"
+
+# List all projects
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py projects --json
 ```
 
-### 2. Creating an Issue
-To create a new task:
+### 2. Creating & Detailed Inspection
+To create or inspect a specific issue:
 ```powershell
-conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py create --name "Task Title" --description "Detailed description" --priority "high" --state "Todo"
+# Create task
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py create --name "Task Title" --description "Details"
+
+# Get full issue metadata (JSON)
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py details --id AGENT-1
 ```
 
-### 3. Updating Issue Status
-To change the status of an existing issue (use sequence ID like AGENT-5):
+### 3. Precision Updates
+Update specific fields with precision:
 ```powershell
-conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py update --id AGENT-5 --state "In Progress"
+# Update status and description
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py update --id AGENT-1 --state "In Progress" --description "Updated scope"
+
+# Rename task (Efficiency: prevents duplicate tasks for minor scope shifts)
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py update --id AGENT-1 --name "New Explicit Title"
+
+### 4. Advanced Direct Execution
+For custom queries or operations not covered by the CLI:
+```powershell
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py run_django "from plane.db.models import Module; print(list(Module.objects.all().values('name', 'id')))"
 ```
+
+## Professional Documentation Standards
+
+All issue updates, especially closures, MUST provide high transparency and professional technical details. Do not just state "Fixed" or "Done".
+
+### Mandatory Reporting Components
+1. **Technical Summary**: A 1-2 sentence overview of the core problem and the high-level approach taken.
+2. **Files Affected**: List the key files modified or created.
+3. **Internal Logic/Pattern**: Explain *why* the solution was implemented this way (e.g., "bypassed API due to 401 errors").
+4. **Verification Proof**: State exactly which tests were run and the results (e.g., "pytest passed 131/131").
+5. **Future Prevention**: Document any new rules, scripts, or quality gates added to prevent regression.
+
+### Example Professional Update
+```powershell
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py update --id AGENT-16 --state "Done" --description "<b>VERIFIED: Structural Hardening & Sync accomplished.</b><br><ul><li><b>Core Fix:</b> Repaired structural flaws in MD/JSON artifacts to satisfy CI gates.</li><li><b>Files:</b> Patched agent-1-bridge.md, dashboard-knowledge.json, and 12 others.</li><li><b>Logic:</b> Aligned manifest counts (194) with filesystem reality.</li><li><b>Proof:</b> 131/131 pytest passed.</li><li><b>Prevention:</b> Integrated verify_structures.py into the generation lifecycle.</li></ul>"
+```
+
+## Best Commands to Use
+| Operation | Recommended Command Pattern | Goal |
+|-----------|-----------------------------|------|
+| **Discovery** | `projects` \| `list --json` \| `states` | Mapping current project landscape |
+| **Inspection** | `details --id <ID>` | Deep understanding of a specific roadblock |
+| **Reporting** | `update --description "<ul><li>Item</li></ul>"` | Professional progress broadcasting |
+| **Refactoring** | `update --name "..."` | Aligning issue titles with evolving goals |
+| **Custom Ops** | `run_django "..."` | Bypassing limitations for specific data needs |
 
 ## Best Practices
 - **Explicit Project IDs**: Always verify the project ID before performing operations.
-- **State Name Matching**: Use the exact state names (Backlog, Todo, In Progress, Done, Cancelled).
-- **Environment Awareness**: Ensure the `D:\Anaconda\envs\cursor-factory` environment is active.
+- **State Name Matching**: Use exact state names from the `states` command output.
+- **HTML in Description**: ALWAYS use `<ul>`, `<li>`, and `<b>` tags for professional formatting.
+- **High Transparency**: Document the *how* and *why*, not just the *what*.
+- **Sync Proof**: Include test results or verification command output in the description.
+- **JSON First**: Always try to parse `--json` output when making automated decisions.
+
+## Anti-Patterns
+- **Using `--title`**: The CLI uses `--name` for the issue title. Using `--title` will cause a crash.
+- **Using `--state_name`**: The CLI argument is `--state`. The internal function uses `state_name`, but the subagent must use the CLI flag.
+- **Vague Statuses**: Setting state to "Done" without a detailed HTML description is a violation of professional reporting standards.
+- **Incorrect Environment**: Running without the `-p D:\Anaconda\envs\cursor-factory` flag will lead to missing dependency errors.
 
 ## References
 - Plane documentation: [https://docs.plane.so/](https://docs.plane.so/)

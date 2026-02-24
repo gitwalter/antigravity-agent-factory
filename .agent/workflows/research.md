@@ -23,17 +23,17 @@ This workflow is activated when:
 - "Look up the LangChain docs for retrieval chains"
 - "What do we know about multi-agent orchestration?"
 
-## Decision Matrix
+## Decision Matrix (Autonomous Routing)
 
-| Question Type | Skill | MCP Server | Tool |
-|---|---|---|---|
-| "What's in our RAG/library?" | `inspecting-rag-catalog` | `antigravity-rag` | `list_library_sources` |
-| Domain/ebook question | `retrieving-rag-context` | `antigravity-rag` | `search_library` |
-| Current events / web topic | *(direct)* | `tavily` | `tavily-search` |
-| Library/framework docs | *(direct)* | `deepwiki` or `docs-langchain` | `read_wiki_contents` |
-| Read a specific URL | *(direct)* | `fetch` | `fetch` |
-| Code/repo exploration | `operating-github` | GitHub MCP | repo tools |
-| Complex multi-source | `researching-first` | multiple | cascading |
+| Question Type | Strategy | Agent | Primary Tool | Rule Governance |
+|---|---|---|---|---|
+| Structural/Relationship | Graph-First | KNOPS | `memory_read_graph` | `knowledge-management.md` |
+| Domain/History | RAG-First | KNOPS | `search_library` | `knowledge-management.md` |
+| Technical/Code | Cascadic | PAIS | `search_code` | `technical-standards.md` |
+| Real-time/Web | Web-First | KNOPS | `tavily-search` | `knowledge-management.md` |
+| Complex Multi-source | Orchestrated | SYARCH | cascades | cascading rules |
+
+> **Note:** Routing is managed by `orchestration-engine.json`. Lead agents must verify MCP authorization before execution.
 
 ## Steps
 

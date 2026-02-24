@@ -1,6 +1,6 @@
 ﻿# Knowledge Files Catalog
 
-The factory currently includes **269 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
+The factory currently includes **272 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
 
 | File | Type | Description |
 |------|------|-------------|
@@ -77,6 +77,7 @@ The factory currently includes **269 knowledge files** covering: various aspects
 | [coordination-strategies](file:///.agent/knowledge/coordination-strategies.json) |  |  |
 | [cpi-error-handling](file:///.agent/knowledge/cpi-error-handling.json) |  |  |
 | [crewai-patterns](file:///.agent/knowledge/crewai-patterns.json) |  |  |
+| [dashboard-knowledge](file:///.agent/knowledge/dashboard-knowledge.json) |  |  |
 | [data-application-patterns](file:///.agent/knowledge/data-application-patterns.json) |  |  |
 | [data-engineering-for-ml](file:///.agent/knowledge/data-engineering-for-ml.json) |  |  |
 | [data-engineering-patterns](file:///.agent/knowledge/data-engineering-patterns.json) |  |  |
@@ -103,6 +104,7 @@ The factory currently includes **269 knowledge files** covering: various aspects
 | [error-handling-patterns](file:///.agent/knowledge/error-handling-patterns.json) |  |  |
 | [ethereum-security](file:///.agent/knowledge/ethereum-security.json) |  |  |
 | [ethereum-smart-contract-security](file:///.agent/knowledge/ethereum-smart-contract-security.json) |  |  |
+| [evolution-protocol](file:///.agent/knowledge/evolution-protocol.json) |  |  |
 | [factory-update-feed](file:///.agent/knowledge/factory-update-feed.json) |  |  |
 | [factory-updates](file:///.agent/knowledge/factory-updates.json) |  |  |
 | [fastapi-patterns](file:///.agent/knowledge/fastapi-patterns.json) |  |  |
@@ -184,6 +186,7 @@ The factory currently includes **269 knowledge files** covering: various aspects
 | [ocr-patterns](file:///.agent/knowledge/ocr-patterns.json) |  |  |
 | [openai-agents-sdk-patterns](file:///.agent/knowledge/openai-agents-sdk-patterns.json) |  |  |
 | [openai-assistants-patterns](file:///.agent/knowledge/openai-assistants-patterns.json) |  |  |
+| [orchestration-engine](file:///.agent/knowledge/orchestration-engine.json) |  |  |
 | [pandas-patterns](file:///.agent/knowledge/pandas-patterns.json) |  |  |
 | [pattern-catalog](file:///.agent/knowledge/pattern-catalog.json) |  |  |
 | [plane-integration](file:///.agent/knowledge/plane-integration.json) |  |  |

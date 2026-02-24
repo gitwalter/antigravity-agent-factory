@@ -55,9 +55,11 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 
 | Workflow | Description |
 |----------|-------------|
+| [agent-1-bridge](../../.agent/workflows/agent-1-bridge.md) | Agent 1 Bridge |
 | [agent-development](../../.agent/workflows/agent-development.md) | Agent Development (Enriched) |
 | [agent-testing](../../.agent/workflows/agent-testing.md) | Agent Testing |
 | [ai-system-design](../../.agent/workflows/ai-system-design.md) | Ai System Design |
+| [alpha-factor-mining](../../.agent/workflows/alpha-factor-mining.md) | Alpha Factor Mining |
 | [azure-deployment](../../.agent/workflows/azure-deployment.md) | Azure Deployment |
 | [backlog-refinement](../../.agent/workflows/backlog-refinement.md) | Backlog Refinement |
 | [backtest-validation](../../.agent/workflows/backtest-validation.md) | Backtest Validation |
@@ -76,9 +78,11 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [deployment-workflow](../../.agent/workflows/deployment-workflow.md) | Deployment Workflow |
 | [dotnet-api-development](../../.agent/workflows/dotnet-api-development.md) | Dotnet Api Development |
 | [dotnet-microservices-setup](../../.agent/workflows/dotnet-microservices-setup.md) | Dotnet Microservices Setup |
+| [eda](../../.agent/workflows/eda.md) | Exploratory Data Analysis (EDA) |
 | [ewm-development](../../.agent/workflows/ewm-development.md) | Ewm Development |
 | [fastapi-api-development](../../.agent/workflows/fastapi-api-development.md) | Fastapi Api Development |
 | [feature-development](../../.agent/workflows/feature-development.md) | Standard Feature Delivery Cycle (SFDC) |
+| [fetch-external-data](../../.agent/workflows/fetch-external-data.md) | /fetch-external-data Workflow |
 | [fi-development](../../.agent/workflows/fi-development.md) | Fi Development |
 | [fiori-app-development](../../.agent/workflows/fiori-app-development.md) | Fiori App Development |
 | [github-actions-ci](../../.agent/workflows/github-actions-ci.md) | Github Actions Ci |
@@ -107,6 +111,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [rap-with-draft](../../.agent/workflows/rap-with-draft.md) | Rap With Draft |
 | [release-management](../../.agent/workflows/release-management.md) | Release Management |
 | [repository-maintenance](../../.agent/workflows/repository-maintenance.md) | Repository Maintenance |
+| [research](../../.agent/workflows/research.md) | /research — Multi-Source Research Workflow |
 | [sap-cicd-pipeline](../../.agent/workflows/sap-cicd-pipeline.md) | Sap Cicd Pipeline |
 | [sd-development](../../.agent/workflows/sd-development.md) | Sd Development |
 | [security-audit-workflow](../../.agent/workflows/security-audit-workflow.md) | Security Audit Workflow |
@@ -120,6 +125,10 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [strategy-development](../../.agent/workflows/strategy-development.md) | Strategy Development |
 | [tdd-cycle](../../.agent/workflows/tdd-cycle.md) | Tdd Cycle |
 | [trading-strategy-pipeline](../../.agent/workflows/trading-strategy-pipeline.md) | Trading Strategy Pipeline |
+| [warehouse-analyst](../../.agent/workflows/warehouse-analyst.md) | Industrial Analyst Optimization Guide |
+| [warehouse-associate](../../.agent/workflows/warehouse-associate.md) | Warehouse Associate Operational Guide |
+| [warehouse-ingestion](../../.agent/workflows/warehouse-ingestion.md) | Warehouse Data Ingestion Workflow |
+| [warehouse-manager](../../.agent/workflows/warehouse-manager.md) | Operations Manager Strategic Guide |
 
 ## 📚 Knowledge Files
 
@@ -170,6 +179,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | bitcoin-patterns | [`.agent/knowledge/bitcoin-patterns.json`](../../.agent/knowledge/bitcoin-patterns.json) |
 | bitcoin-protocol-patterns | [`.agent/knowledge/bitcoin-protocol-patterns.json`](../../.agent/knowledge/bitcoin-protocol-patterns.json) |
 | blazor-patterns | [`.agent/knowledge/blazor-patterns.json`](../../.agent/knowledge/blazor-patterns.json) |
+| blueprint-catalog | [`.agent/knowledge/blueprint-catalog.json`](../../.agent/knowledge/blueprint-catalog.json) |
 | business-automation-patterns | [`.agent/knowledge/business-automation-patterns.json`](../../.agent/knowledge/business-automation-patterns.json) |
 | caching-patterns | [`.agent/knowledge/caching-patterns.json`](../../.agent/knowledge/caching-patterns.json) |
 | cdhdr-object-classes | [`.agent/knowledge/cdhdr-object-classes.json`](../../.agent/knowledge/cdhdr-object-classes.json) |
@@ -183,6 +193,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | coordination-strategies | [`.agent/knowledge/coordination-strategies.json`](../../.agent/knowledge/coordination-strategies.json) |
 | cpi-error-handling | [`.agent/knowledge/cpi-error-handling.json`](../../.agent/knowledge/cpi-error-handling.json) |
 | crewai-patterns | [`.agent/knowledge/crewai-patterns.json`](../../.agent/knowledge/crewai-patterns.json) |
+| dashboard-knowledge | [`.agent/knowledge/dashboard-knowledge.json`](../../.agent/knowledge/dashboard-knowledge.json) |
 | data-application-patterns | [`.agent/knowledge/data-application-patterns.json`](../../.agent/knowledge/data-application-patterns.json) |
 | data-engineering-for-ml | [`.agent/knowledge/data-engineering-for-ml.json`](../../.agent/knowledge/data-engineering-for-ml.json) |
 | data-engineering-patterns | [`.agent/knowledge/data-engineering-patterns.json`](../../.agent/knowledge/data-engineering-patterns.json) |
@@ -257,6 +268,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | manifest | [`.agent/knowledge/manifest.json`](../../.agent/knowledge/manifest.json) |
 | mapping-patterns | [`.agent/knowledge/mapping-patterns.json`](../../.agent/knowledge/mapping-patterns.json) |
 | market-data-handling-patterns | [`.agent/knowledge/market-data-handling-patterns.json`](../../.agent/knowledge/market-data-handling-patterns.json) |
+| mcp-mastery | [`.agent/knowledge/mcp-mastery.json`](../../.agent/knowledge/mcp-mastery.json) |
 | mcp-patterns | [`.agent/knowledge/mcp-patterns.json`](../../.agent/knowledge/mcp-patterns.json) |
 | mcp-selection-guide | [`.agent/knowledge/mcp-selection-guide.json`](../../.agent/knowledge/mcp-selection-guide.json) |
 | mcp-server-selection-guide | [`.agent/knowledge/mcp-server-selection-guide.json`](../../.agent/knowledge/mcp-server-selection-guide.json) |
@@ -291,6 +303,8 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | openai-agents-sdk-patterns | [`.agent/knowledge/openai-agents-sdk-patterns.json`](../../.agent/knowledge/openai-agents-sdk-patterns.json) |
 | openai-assistants-patterns | [`.agent/knowledge/openai-assistants-patterns.json`](../../.agent/knowledge/openai-assistants-patterns.json) |
 | pandas-patterns | [`.agent/knowledge/pandas-patterns.json`](../../.agent/knowledge/pandas-patterns.json) |
+| pattern-catalog | [`.agent/knowledge/pattern-catalog.json`](../../.agent/knowledge/pattern-catalog.json) |
+| plane-integration | [`.agent/knowledge/plane-integration.json`](../../.agent/knowledge/plane-integration.json) |
 | pm-metrics | [`.agent/knowledge/pm-metrics.json`](../../.agent/knowledge/pm-metrics.json) |
 | polars-dataframe-patterns | [`.agent/knowledge/polars-dataframe-patterns.json`](../../.agent/knowledge/polars-dataframe-patterns.json) |
 | prisma-database-patterns | [`.agent/knowledge/prisma-database-patterns.json`](../../.agent/knowledge/prisma-database-patterns.json) |
@@ -305,6 +319,8 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | pytorch-patterns | [`.agent/knowledge/pytorch-patterns.json`](../../.agent/knowledge/pytorch-patterns.json) |
 | quantitative-finance-patterns | [`.agent/knowledge/quantitative-finance-patterns.json`](../../.agent/knowledge/quantitative-finance-patterns.json) |
 | quantitative-finance | [`.agent/knowledge/quantitative-finance.json`](../../.agent/knowledge/quantitative-finance.json) |
+| quantitative-theory | [`.agent/knowledge/quantitative-theory.json`](../../.agent/knowledge/quantitative-theory.json) |
+| rag-knowledge-catalog | [`.agent/knowledge/rag-knowledge-catalog.json`](../../.agent/knowledge/rag-knowledge-catalog.json) |
 | rag-patterns | [`.agent/knowledge/rag-patterns.json`](../../.agent/knowledge/rag-patterns.json) |
 | ray-patterns | [`.agent/knowledge/ray-patterns.json`](../../.agent/knowledge/ray-patterns.json) |
 | react-component-patterns | [`.agent/knowledge/react-component-patterns.json`](../../.agent/knowledge/react-component-patterns.json) |
@@ -365,6 +381,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | tdd-patterns | [`.agent/knowledge/tdd-patterns.json`](../../.agent/knowledge/tdd-patterns.json) |
 | team-dynamics-knowledge | [`.agent/knowledge/team-dynamics-knowledge.json`](../../.agent/knowledge/team-dynamics-knowledge.json) |
 | team-dynamics | [`.agent/knowledge/team-dynamics.json`](../../.agent/knowledge/team-dynamics.json) |
+| template-catalog | [`.agent/knowledge/template-catalog.json`](../../.agent/knowledge/template-catalog.json) |
 | tensorflow-patterns | [`.agent/knowledge/tensorflow-patterns.json`](../../.agent/knowledge/tensorflow-patterns.json) |
 | test-patterns | [`.agent/knowledge/test-patterns.json`](../../.agent/knowledge/test-patterns.json) |
 | test-traceability-patterns | [`.agent/knowledge/test-traceability-patterns.json`](../../.agent/knowledge/test-traceability-patterns.json) |
@@ -372,6 +389,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | testcontainers-patterns | [`.agent/knowledge/testcontainers-patterns.json`](../../.agent/knowledge/testcontainers-patterns.json) |
 | tool-design-and-usage-patterns | [`.agent/knowledge/tool-design-and-usage-patterns.json`](../../.agent/knowledge/tool-design-and-usage-patterns.json) |
 | tool-patterns | [`.agent/knowledge/tool-patterns.json`](../../.agent/knowledge/tool-patterns.json) |
+| trading-intelligence-patterns | [`.agent/knowledge/trading-intelligence-patterns.json`](../../.agent/knowledge/trading-intelligence-patterns.json) |
 | trading-patterns | [`.agent/knowledge/trading-patterns.json`](../../.agent/knowledge/trading-patterns.json) |
 | trust-tier-decision-matrix | [`.agent/knowledge/trust-tier-decision-matrix.json`](../../.agent/knowledge/trust-tier-decision-matrix.json) |
 | vector-database-patterns | [`.agent/knowledge/vector-database-patterns.json`](../../.agent/knowledge/vector-database-patterns.json) |
@@ -381,11 +399,18 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | visualization-patterns | [`.agent/knowledge/visualization-patterns.json`](../../.agent/knowledge/visualization-patterns.json) |
 | web-browsing-and-scraping-patterns | [`.agent/knowledge/web-browsing-and-scraping-patterns.json`](../../.agent/knowledge/web-browsing-and-scraping-patterns.json) |
 | web-browsing-patterns | [`.agent/knowledge/web-browsing-patterns.json`](../../.agent/knowledge/web-browsing-patterns.json) |
+| workflow-catalog | [`.agent/knowledge/workflow-catalog.json`](../../.agent/knowledge/workflow-catalog.json) |
 | workflow-entities | [`.agent/knowledge/workflow-entities.json`](../../.agent/knowledge/workflow-entities.json) |
 | workflow-patterns | [`.agent/knowledge/workflow-patterns.json`](../../.agent/knowledge/workflow-patterns.json) |
 | workflow-system-entities | [`.agent/knowledge/workflow-system-entities.json`](../../.agent/knowledge/workflow-system-entities.json) |
 | workshop-facilitation-knowledge | [`.agent/knowledge/workshop-facilitation-knowledge.json`](../../.agent/knowledge/workshop-facilitation-knowledge.json) |
 | workshop-facilitation | [`.agent/knowledge/workshop-facilitation.json`](../../.agent/knowledge/workshop-facilitation.json) |
+
+## 🏗️ Active Projects
+
+| Project | Description | Path |
+|---------|-------------|------|
+| [Statistical Dashboards](../../projects/statistical_dashboards) | Advanced data science and analytics hub. | `projects/statistical_dashboards` |
 
 ## 📄 Templates
 
@@ -557,6 +582,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | Repository.cs.tmpl | Infrastructure | [`.agent/templates/csharp/cleanarch/Infrastructure/Repository.cs.tmpl`](../../.agent/templates/csharp/cleanarch/Infrastructure/Repository.cs.tmpl) |
 | Controller.cs.tmpl | WebApi | [`.agent/templates/csharp/cleanarch/WebApi/Controller.cs.tmpl`](../../.agent/templates/csharp/cleanarch/WebApi/Controller.cs.tmpl) |
 | Program.cs.tmpl | WebApi | [`.agent/templates/csharp/cleanarch/WebApi/Program.cs.tmpl`](../../.agent/templates/csharp/cleanarch/WebApi/Program.cs.tmpl) |
+| dashboard-module.py.j2 | templates | [`.agent/templates/dashboard-module.py.j2`](../../.agent/templates/dashboard-module.py.j2) |
 | ASP_README_SECTION.md.tmpl | docs | [`.agent/templates/docs/ASP_README_SECTION.md.tmpl`](../../.agent/templates/docs/ASP_README_SECTION.md.tmpl) |
 | iflow-spec.md.tmpl | integration | [`.agent/templates/docs/integration/iflow-spec.md.tmpl`](../../.agent/templates/docs/integration/iflow-spec.md.tmpl) |
 | mapping-spec.md.tmpl | integration | [`.agent/templates/docs/integration/mapping-spec.md.tmpl`](../../.agent/templates/docs/integration/mapping-spec.md.tmpl) |
@@ -699,4 +725,4 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | python.yml.tmpl | templates | [`.agent/templates/workflows/gitlab/templates/python.yml.tmpl`](../../.agent/templates/workflows/gitlab/templates/python.yml.tmpl) |
 | workflow.md.tmpl | workflows | [`.agent/templates/workflows/workflow.md.tmpl`](../../.agent/templates/workflows/workflow.md.tmpl) |
 
-*Total templates: 307*
+*Total templates: 308*

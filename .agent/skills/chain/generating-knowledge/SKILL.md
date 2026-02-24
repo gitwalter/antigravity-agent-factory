@@ -24,6 +24,8 @@ All knowledge files MUST validate against `schemas/knowledge-file.schema.json`. 
 | `category` | enum | ONLY: core, rag, agent-patterns, integration, observability, specialized, workflow, optimization, security, testing, ai-ml, trading, sap, dotnet, java, web |
 | `axiomAlignment` | object | Required keys: A1_verifiability, A2_user_primacy, A3_transparency, A4_non_harm, A5_consistency (each min 10 chars) |
 | `patterns` | object | Min 1 property. Each entry MUST have: description (min 20), use_when (min 10), code_example (min 20), best_practices (array, min 2 items each min 10 chars) |
+| `best_practices` | array | Min 2 concrete items (min 15 chars) - **MANDATORY** |
+| `anti_patterns` | array | Min 2 concrete items (min 15 chars) - **MANDATORY** |
 | `related_skills` | array | Min 1 item, each `^[a-z0-9-]+$` |
 | `related_knowledge` | array | Min 1 item, each `^[a-z0-9-]+\\.json$` |
 
@@ -60,7 +62,9 @@ All knowledge files MUST validate against `schemas/knowledge-file.schema.json`. 
     }
   },
   "related_skills": ["api-design", "integration"],
-  "related_knowledge": ["api-patterns.json"]
+  "related_knowledge": ["api-patterns.json"],
+  "best_practices": ["First best practice", "Second best practice"],
+  "anti_patterns": ["First anti-pattern", "Second anti-pattern"]
 }
 ```
 
@@ -75,20 +79,22 @@ All knowledge files MUST validate against `schemas/knowledge-file.schema.json`. 
 | Short descriptions | Min 10 chars title, 20 chars description |
 | `best_practices` has &lt; 2 items | Add at least 2 practices |
 | `related_knowledge` empty | Add at least 1 `.json` filename |
+| Missing `best_practices`/`anti_patterns` | Add both mandatory lists with at least 2 items each |
 
 ## Process
 
 1. **Determine required files** — Based on stack, identify needed knowledge files (e.g. naming-conventions, api-patterns).
 2. **Map category** — Use schema-allowed categories; apply mapping for legacy values (data-science→ai-ml, etc.).
-3. **Build structure** — Populate all required fields per schema; ensure `patterns` is object with complete entries.
-4. **Validate** — Run schema validation before committing.
+3. **Build structure** — Populate all required fields per schema; ensure `patterns` is object with complete entries and `best_practices`/`anti_patterns` are provided.
+4. **Validate** — Run schema validation and `verify_structures.py` before committing.
 
 ## Post-Creation Sync
 
 After creating or updating knowledge files, run:
 
 ```bash
-python scripts/build_knowledge_crossref.py
+91. python scripts/build_knowledge_crossref.py
+92. python scripts/validation/verify_structures.py
 ```
 
 Then run `repo-sync` skill to validate artifact consistency.

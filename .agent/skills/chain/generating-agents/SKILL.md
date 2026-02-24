@@ -74,6 +74,7 @@ For each requested agent:
 [ ] tools: array with >= 1 item (use ["none"] for no tools)
 [ ] workflows: array with >= 1 item (use ["none"] for no workflows)
 [ ] blueprints: array with >= 1 item (use ["none"] for no blueprints)
+[ ] **New Requirement**: Run `verify_structures.py` to ensure H1, Purpose, and Important Rules sections are present.
 ```
 
 ### Step 3: Render Markdown
@@ -151,6 +152,7 @@ Write to target location:
 {PYTHON_PATH} {directories.scripts}/validation/schema_validator.py --summary
 {PYTHON_PATH} {directories.scripts}/validation/validate_readme_structure.py --update
 {PYTHON_PATH} {directories.scripts}/build_knowledge_crossref.py
+{PYTHON_PATH} {directories.scripts}/validation/verify_structures.py
 ```
 
 ## Common Schema Violations and Fixes

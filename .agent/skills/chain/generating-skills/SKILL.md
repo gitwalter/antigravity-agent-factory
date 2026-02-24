@@ -42,6 +42,12 @@ All generated skills MUST validate against `schemas/skill.schema.json`:
 3. Verify `category` is in the allowed enum; map natural categories per table above
 4. Assert `tools` and `templates` have at least one item; use `["none"]` when no specific resources
 5. Run `schema_validator.py --type skill` on the generated file before committing
+6. **New Requirement**: Run `verify_structures.py` to ensure all mandatory markdown sections exist (H1, When to Use, Prerequisites, Process, Best Practices).
+
+## Process
+The generation and verification process must be followed sequentially to ensure all structural requirements are met.
+
+### 1. Run Automated Verification
 
 ## Common Schema Violations
 
@@ -53,11 +59,14 @@ All generated skills MUST validate against `schemas/skill.schema.json`:
 | `tools` omitted | Add `tools: ["none"]` |
 | `version: 1.0` | Use semantic version `1.0.0` |
 
-## Process
-
 1. Review the task requirements.
 2. Apply the skill's methodology.
-3. Validate the output against the defined criteria.
+3. **Mandatory Quality Gate Sequence**:
+   - **Step 1: Header Verification**: Every skill MUST have a unique H1 title.
+   - **Step 2: Section Enforcement**: Every skill MUST have: `When to Use`, `Prerequisites`, `Process`, and `Best Practices`.
+   - **Step 3: Content Depth**: Every section MUST have at least 20 words of descriptive content (no empty headers).
+   - **Step 4: Tool Validation**: Run `verify_structures.py` to assert compliance.
+4. Validate the output against the defined criteria.
 ### Step 1: Load Skill Pattern
 1. Load pattern from `{directories.patterns}/skills/{skill-id}.json`
 2. Parse metadata, frontmatter, and sections
@@ -69,7 +78,8 @@ Override frontmatter, knowledge references, and MCP tool references as specified
 Convert pattern to markdown. **Ensure frontmatter satisfies all schema constraints** before writing.
 
 ### Step 4: Validate Before Write
-Run `python scripts/validation/schema_validator.py --type skill` on the generated YAML frontmatter (or full SKILL.md). Fix any errors before committing.
+71. Run `python scripts/validation/schema_validator.py --type skill` on the generated YAML frontmatter (or full SKILL.md). Fix any errors before committing.
+72. Run `python scripts/validation/verify_structures.py` to ensure markdown section compliance.
 
 ### Step 5: Create Skill Directory
 ```
@@ -85,7 +95,8 @@ When adding skills to the Cursor Agent Factory:
 ```powershell
 python scripts/validation/schema_validator.py --type skill
 python scripts/build_knowledge_crossref.py
-python scripts/validation/validate_readme_structure.py --update
+88. python scripts/validation/validate_readme_structure.py --update
+89. python scripts/validation/verify_structures.py
 ```
 
 ## Standard Skill Template
@@ -108,11 +119,19 @@ agents: [ai-app-developer]
 
 {introduction}
 
+## When to Use
+
+{mandatory details}
+
+## Prerequisites
+
+{mandatory details}
+
 ## Process
 
 {process steps}
 
-## Important Rules
+## Best Practices
 
 {rules}
 ```
@@ -126,10 +145,15 @@ agents: [ai-app-developer]
 5. Run all post-creation sync commands when adding skills to the factory.
 
 ## Fallback Procedures
-
 - **If pattern not found:** Report error, skip skill
 - **If validation fails:** Fix schema violations before writing; do not commit invalid frontmatter
 - **If customization fails:** Use default pattern values; ensure defaults pass schema validation
+
+## Best Practices
+- **Verify early**: Run structural checks immediately after file creation.
+- **JSON Precision**: Always match the `id` field to the filename (without extension).
+- **Trigger Clarity**: Ensure workflows have at least 2 clear trigger examples.
+- **Process Depth**: Ensure every step has a clear description, not just a title.
 
 ## References
 

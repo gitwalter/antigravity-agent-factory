@@ -40,14 +40,7 @@ class MemorySyncManager:
             "observations": observations,
             "synced_at": datetime.now().isoformat(),
             "source": "Statistical Dashboard Project Center",
-        }
-
-        payload = {
-            "entity_name": f"Dashboard Project: {project.name}",
-            "entity_type": "Data Science Project",
-            "observations": observations,
-            "synced_at": datetime.now().isoformat(),
-            "source": "Statistical Dashboard Project Center",
+            "project_id": project.id,
         }
 
         filename = f"sync_{project.id}.json"
@@ -55,3 +48,42 @@ class MemorySyncManager:
         with open(path, "w") as f:
             json.dump(payload, f, indent=4)
         return path
+
+    def post_report_to_plane(self, project, summary_html):
+        """
+        Directly posts a statistical summary to the associated Plane issue.
+        Uses the native manager.py for reliable injection.
+        """
+        manager_script = "scripts/pms/manager.py"
+        conda_exec = "conda run -p D:\\Anaconda\\envs\\cursor-factory"
+
+        # Map project to issue ID (assuming AGENT-1 for now or project metadata)
+        # In a real scenario, the project object would have an external_id or similar.
+        issue_id = getattr(project, "external_id", "AGENT-1")
+
+        import subprocess
+
+        # Prepare safe description for shell
+        # On Windows, we need to wrap in double quotes and escape internal ones
+        safe_description = summary_html.replace('"', '\\"')
+
+        cmd = [
+            "python",
+            manager_script,
+            "update",
+            "--id",
+            issue_id,
+            "--description",
+            f'"{safe_description}"',
+        ]
+
+        full_cmd = f"{conda_exec} {' '.join(cmd)}"
+        try:
+            result = subprocess.run(
+                full_cmd, shell=True, capture_output=True, text=True
+            )
+            if result.returncode != 0:
+                return False, result.stderr or result.stdout
+            return True, result.stdout
+        except Exception as e:
+            return False, str(e)

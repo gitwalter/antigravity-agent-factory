@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-02-24
+
+### Added
+- **Hyper-Fidelity Architectural Suite (AGENT-23)**: Implemented standard-aligned C4 diagrams including System Context (L1), Container (L2), and execution sequence (L3) maps in `.agent/docs/architecture-overview.md`.
+- **System Integrity Audit**: Conducted a formal technical audit and verified integration paths for RAG (Parent-Child) and Plane PMS (Docker-Django Bridge).
+- **Guidance Center Sync**: Live-synchronized the new architectural suite into the Statistical Dashboard for real-time developer orientation.
+
+### Fixed
+- **Plane State Synchronization**: Standardized issue state filtering in `scripts/pms/manager.py` to support workflow-accurate task tracking.
+
 ## [1.3.0] - 2026-02-24
 
 ### Added

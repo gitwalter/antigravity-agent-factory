@@ -79,3 +79,127 @@ class GuidanceCenter:
                 "4. Forecast: Predictive 3-month cash flow",
             ],
         }
+
+    @staticmethod
+    def get_data_import_guide():
+        """Returns detailed column and formatting requirements for different data domains."""
+        return {
+            "Warehouse (Operational)": {
+                "Required Columns": [
+                    {
+                        "Name": "timestamp",
+                        "Format": "ISO (YYYY-MM-DD HH:MM) or Unix",
+                        "Required": True,
+                    },
+                    {
+                        "Name": "associate_id",
+                        "Format": "String/Integer",
+                        "Required": True,
+                    },
+                    {
+                        "Name": "process_type",
+                        "Format": "Pick, Stow, Pack, etc.",
+                        "Required": True,
+                    },
+                    {"Name": "activity_count", "Format": "Integer", "Required": True},
+                    {
+                        "Name": "uph",
+                        "Format": "Float/Integer",
+                        "Required": False,
+                        "Note": "Calculated if missing",
+                    },
+                ],
+                "Value Formatting": "Avoid mixing units (e.g., maintain consistant LBS vs KG). Ensure timestamps match the project timezone.",
+                "SOP Reference": "Warehouse Inbound/Outbound standard analysis patterns.",
+            },
+            "Financial (Core)": {
+                "Required Columns": [
+                    {"Name": "date", "Format": "YYYY-MM-DD", "Required": True},
+                    {"Name": "account_name", "Format": "String", "Required": True},
+                    {
+                        "Name": "amount",
+                        "Format": "Numeric (Decimal/Float)",
+                        "Required": True,
+                    },
+                    {
+                        "Name": "currency",
+                        "Format": "ISO Code (USD, EUR, etc.)",
+                        "Required": True,
+                    },
+                    {
+                        "Name": "category",
+                        "Format": "Revenue, Expense, COGS",
+                        "Required": True,
+                    },
+                ],
+                "Value Formatting": "Amounts should be positive for credits and negative for debits (or vice versa, but be consistent).",
+                "SOP Reference": "Financial Report Consolidation.",
+            },
+            "Generic/Custom": {
+                "Required Columns": [
+                    {"Name": "id", "Format": "Unique Identifier", "Required": True},
+                    {"Name": "label", "Format": "String", "Required": False},
+                    {"Name": "value", "Format": "Numeric", "Required": True},
+                ],
+                "Value Formatting": "Ensure no null values in the ID column.",
+                "Note": "Use the 'Dataset Mapping' tool in the Data Manager for custom alignment.",
+            },
+        }
+
+    @staticmethod
+    def get_system_architecture():
+        """Returns the mermaid diagram and description for the agent ecosystem."""
+        return {
+            "title": "Antigravity Hyper-Fidelity Architecture",
+            "description": "Multi-view C4 architectural model covering System Context (L1), Container Boundaries (L2), and Execution Sequence (L3).",
+            "mermaid": """
+graph TD
+    %% 1. SYSTEM CONTEXT (L1)
+    subgraph L1_Context ["L1: System Context"]
+        User["Developer/Analyst"] -->|Directs| Factory["Antigravity Agent Factory"]
+        Factory -->|Integrated Documentation| Wiki["DeepWiki / GitHub"]
+        Factory -->|Task Management| Plane["Plane PMS (Docker Stack)"]
+        Factory -->|Knowledge Base| Qdrant["Qdrant RAG (Vector Data)"]
+    end
+
+    %% 2. CONTAINER BOUNDARIES (L2)
+    subgraph L2_Containers ["L2: Container Diagram"]
+        subgraph Local_Env ["Client Host"]
+            Conda["Conda: cursor-factory"]
+            VS_Agent["VS Code Agentic UI"]
+        end
+
+        subgraph Core_Services ["Dockerized Infrastructure"]
+            subgraph Plane_PMS ["Plane Stack"]
+                P_API["plane-api (Django)"]
+                P_DB["plane-db (Postgres)"]
+            end
+
+            subgraph RAG_Infra ["RAG Stack"]
+                Q_Vectors["Qdrant Core"]
+                P_Docs["Parent Store (Disk)"]
+            end
+        end
+
+        subgraph Orchestration ["Factory Brain"]
+            MSO["Master Orchestrator"]
+            Specialists["Specialist Agents (PAIS/WQSS/KM)"]
+        end
+    end
+
+    %% 3. EXECUTION SEQUENCE (L3 - Abstracted)
+    subgraph L3_Sequence ["L3: Core Execution Path"]
+        S_PAIS["Specialist"] -->|"1. search_library()"| RAG_API["RAG Bridge"]
+        RAG_API -->|"2. vector_query"| Q_Vectors
+        RAG_API -->|"3. context_hydration"| P_Docs
+        S_PAIS -->|"4. run_command()"| P_API
+    end
+
+    %% Cross-Layer Links
+    VS_Agent --> Conda
+    Conda --> MSO
+    MSO --> Specialists
+    Specialists --> RAG_API
+    Specialists --> P_API
+""",
+        }

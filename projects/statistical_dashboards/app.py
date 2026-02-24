@@ -10,6 +10,7 @@ from core.connectors.news_connector import NewsConnector
 from core.business_manager import BusinessManager
 from core.templates import TemplateManager
 from core.memory_sync import MemorySyncManager
+from core.workflows import WorkflowManager
 from core.guidance_center import GuidanceCenter
 from core.ai_manager import AIManager
 from core.report_manager import ReportManager
@@ -72,7 +73,8 @@ def init_managers():
     biz = BusinessManager()
     tpl = TemplateManager()
     msync = MemorySyncManager()
-    return db, data, viz, analysis, fin, eco, news, biz, tpl, msync
+    wf = WorkflowManager()
+    return db, data, viz, analysis, fin, eco, news, biz, tpl, msync, wf
 
 
 (
@@ -86,10 +88,11 @@ def init_managers():
     biz_manager,
     template_manager,
     sync_manager,
+    workflow_manager,
 ) = init_managers()
 
 # --- Sidebar ---
-st.sidebar.title("🚀 Antigravity Stats v1.2")
+st.sidebar.title("🚀 Antigravity Stats v1.3")
 st.sidebar.markdown("---")
 
 menu = st.sidebar.selectbox(
@@ -98,6 +101,8 @@ menu = st.sidebar.selectbox(
         "📊 Dashboard",
         "📁 Data Manager",
         "🏢 Project Center",
+        "📚 Knowledge & SOPs",
+        "💡 Guidance Center",
         "🔬 Advanced Analytics",
         "🏢 Warehousing Intel",
         "📈 Financial Intel",
@@ -218,6 +223,24 @@ elif menu == "📁 Data Manager":
                             st.info(
                                 "No automatic domain mapping found. Using generic analysis."
                             )
+
+            st.markdown("---")
+            st.caption("🧪 Testing & Automation")
+            if st.button("🚀 Load Sample Data (Bypass Upload)"):
+                # Create a sample dataframe for testing
+                sample_df = pd.DataFrame(
+                    {
+                        "Date": pd.date_range(start="2026-01-01", periods=10),
+                        "Value": [10, 15, 20, 25, 30, 35, 40, 45, 50, 55],
+                        "UPH": [80, 85, 90, 82, 88, 95, 84, 92, 98, 105],
+                    }
+                )
+                proj = session.query(Project).filter_by(name=target_p).first()
+                data_manager.save_to_database(
+                    sample_df, proj.id, "sample_testing_data.csv", db_manager
+                )
+                st.success("Sample testing data generated and assigned.")
+                st.rerun()
         else:
             st.warning("Create a project first.")
         session.close()
@@ -249,18 +272,49 @@ elif menu == "🏢 Project Center":
             for ds in project.datasets:
                 st.caption(f"- {ds.filename} ({ds.row_count} rows)")
 
-            if st.button("📤 Sync Data Artifacts to Memory"):
-                sync_mgr = MemorySyncManager()
-                # Simplified sync for data only
-                path = sync_mgr.prepare_sync_payload(project, [])
-                st.success(f"Sync Ready! Payload saved to `{path}`")
+            if st.button(
+                "📤 Sync Data Artifacts to Memory",
+                help="Serializes project metadata and analysis paths for the Antigravity Memory MCP. This makes your work discoverable by other factory agents.",
+            ):
+                with st.spinner("Preparing Memory Sync Payload..."):
+                    path = sync_manager.prepare_sync_payload(project, [])
+                    st.success("**Knowledge Serialized!**")
+                    st.info(f"Payload ready for factory ingestion at `{path}`")
+                    st.toast("Sync Payload Generated", icon="🧠")
 
         with col2:
             st.subheader("📝 Deployment & Orchestration")
-            st.button("📄 Generate Executive Data Report")
-            st.button(
+
+            # Plane Reporting Integration
+            st.markdown("---")
+            st.caption("Native Plane Integration")
+            if st.button(
+                "📊 Post Analysis Report to Plane",
+                help="Sends a formatted HTML statistical summary directly to the associated Plane issue (e.g., AGENT-1).",
+            ):
+                with st.spinner("Transmitting stats to Plane..."):
+                    # Generate a quick summary for the report
+                    summary = f"""
+                    <h3>Statistical Analysis Report: {project.name}</h3>
+                    <p>Generated on {datetime.now().strftime('%Y-%m-%d %H:%M')}</p>
+                    <ul>
+                        <li><b>Total Datasets:</b> {len(project.datasets)}</li>
+                        <li><b>Data Points:</b> {sum(d.row_count for d in project.datasets)}</li>
+                        <li><b>Project ID:</b> {project.id}</li>
+                    </ul>
+                    <p><i>Reported by Antigravity Statistical Bridge v1.3</i></p>
+                    """
+                    success, msg = sync_manager.post_report_to_plane(project, summary)
+                    if success:
+                        st.success("Report Synchronized with Plane Issue!")
+                        st.toast("Plane Updated", icon="✈️")
+                    else:
+                        st.error(f"Plane Sync Failed: {msg}")
+
+            st.link_button(
                 "🔗 Open Plane PMS Dashboard",
-                on_click=lambda: st.write("Navigate to http://localhost:8080"),
+                "http://localhost:8080",
+                help="Opens the primary Project Management System interface.",
             )
 
         st.divider()
@@ -269,6 +323,45 @@ elif menu == "🏢 Project Center":
         st.warning("No projects found. Create one in the Data Manager.")
 
     session.close()
+
+elif menu == "📚 Knowledge & SOPs":
+    st.title("📚 Factory Knowledge & SOP Catalog")
+    st.markdown(
+        "Explore the standard operating procedures and knowledge base of the Antigravity Factory."
+    )
+
+    workflows = workflow_manager.list_workflows()
+
+    if workflows:
+        # Search and Filter
+        search_query = st.text_input("🔍 Search Workflows", "")
+        filtered_workflows = [
+            w
+            for w in workflows
+            if search_query.lower() in w["name"].lower()
+            or search_query.lower() in w["description"].lower()
+        ]
+
+        st.write(f"Found {len(filtered_workflows)} workflows.")
+
+        # Display as a grid of expanders or a list
+        for wf in filtered_workflows:
+            with st.expander(f"📖 {wf['name']}"):
+                st.write(f"**Description:** {wf['description']}")
+                st.caption(f"Path: `{wf['id']}`")
+
+                if st.button(f"View Full SOP: {wf['name']}", key=f"btn_{wf['id']}"):
+                    content = workflow_manager.get_workflow_content(wf["id"])
+                    st.markdown("---")
+                    st.markdown(content)
+                    st.download_button(
+                        label="📥 Download Markdown",
+                        data=content,
+                        file_name=wf["id"],
+                        mime="text/markdown",
+                    )
+    else:
+        st.warning("No workflows found in .agent/workflows/")
 
 elif menu == "🔬 Advanced Analytics":
     st.title("🔬 Advanced Statistical Analysis")
@@ -809,6 +902,7 @@ elif menu == "📖 Help & Guide":
             "📚 KPI Dictionary",
             "🔬 Stats Primer",
             "📋 Data Blueprints",
+            "🏗️ System Arch",
             "💡 Use Case Stories",
         ]
     )
@@ -858,6 +952,15 @@ elif menu == "📖 Help & Guide":
             st.code("asn_number, vendor_name, expected_arrival, sku, expected_quantity")
 
     with help_tabs[4]:
+        st.subheader("🏗️ System Architecture Overview")
+        arch = GuidanceCenter.get_system_architecture()
+        st.write(arch["description"])
+        st.markdown(f"```mermaid\n{arch['mermaid']}\n```")
+        st.info(
+            "This diagram illustrates the hard-linking between roles, tools, and rules in the Antigravity Agent Ecosystem."
+        )
+
+    with help_tabs[5]:
         st.subheader("💡 Use Case Stories")
         st.markdown("""
         **Story: The Vanishing UPH**

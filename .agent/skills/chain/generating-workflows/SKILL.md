@@ -35,6 +35,7 @@ Workflow frontmatter MUST validate against `schemas/workflow.schema.json`. Requi
 - [ ] At least 1 agent listed
 - [ ] `blueprints` has min 1 item (use `["none"]` when no blueprint)
 - [ ] `**Version:** x.x.x` included in file body (CI validation)
+- [ ] `## Overview` and `## Trigger Conditions` sections present and populated
 
 ## Common Violations
 
@@ -45,6 +46,7 @@ Workflow frontmatter MUST validate against `schemas/workflow.schema.json`. Requi
 | Only 1 step | Add at least 2 steps |
 | Step missing `description` | Every step needs `name` and `description` |
 | Missing `**Version:**` in body | Add version line for CI validation |
+| Missing `Overview`/`Trigger` sections | Add mandatory structural headers with content |
 
 ## Process
 
@@ -91,9 +93,10 @@ For each selected pattern, generate documentation:
 
 - `{directories.workflows}/{pattern_name}.md`
 - **REQUIRED:** Include `**Version:** x.x.x` in the file (typically in the Overview/metadata block). This is validated by CI tests and will fail the build if missing.
-- Include trigger conditions
-- Include step-by-step process
-- Include artifact outputs
+- **REQUIRED:** Include `## Overview` and `## Trigger Conditions` sections.
+- Include step-by-step process.
+- Include artifact outputs.
+- Run `verify_structures.py` to confirm structural integrity.
 
 ### Step 5: Output Configuration
 
@@ -109,14 +112,24 @@ workflows:
   mcpServers: [...]
 ```
 
-## Best Practices
+### Step 6: Post-Creation Sync
 
-- **Match workflow patterns to actual team processes**: Don't force-fit patterns; customize workflows to match how the team actually works
-- **Validate MCP server availability before workflow creation**: Check that required MCP servers are accessible and properly configured
-- **Design workflows with clear trigger conditions**: Define specific, testable conditions for when workflows activate
-- **Include manual fallback procedures**: Always document what to do when automated steps fail
-- **Test workflow execution paths**: Validate that all decision branches and escalation paths work correctly
-- **Document workflow dependencies**: Clearly list all external systems, credentials, and prerequisites
+ When adding workflows to the factory:
+
+ ```powershell
+ python scripts/validation/validate_readme_structure.py --update
+ python scripts/validation/verify_structures.py
+ ```
+
+ ## Best Practices
+
+## Best Practices
+- **Match workflow patterns to actual team processes**: Don't force-fit patterns; customize workflows to match how the team actually works.
+- **Validate MCP server availability before workflow creation**: Check that required MCP servers are accessible and properly configured.
+- **Design workflows with clear trigger conditions**: Define specific, testable conditions for when workflows activate.
+- **Include manual fallback procedures**: Always document what to do when automated steps fail.
+- **Test workflow execution paths**: Validate that all decision branches and escalation paths work correctly.
+- **Document workflow dependencies**: Clearly list all external systems, credentials, and prerequisites.
 
 ## Important Rules
 

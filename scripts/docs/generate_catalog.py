@@ -181,6 +181,14 @@ def generate_catalog():
             )
         f.write("\n")
 
+        f.write("## 🏗️ Active Projects\n\n")
+        f.write("| Project | Description | Path |\n")
+        f.write("|---------|-------------|------|\n")
+        f.write(
+            "| [Statistical Dashboards](../../projects/statistical_dashboards) | Advanced data science and analytics hub. | `projects/statistical_dashboards` |\n"
+        )
+        f.write("\n")
+
         f.write("## 📄 Templates\n\n")
         f.write("| Template | Category | Path |\n")
         f.write("|----------|----------|------|\n")
