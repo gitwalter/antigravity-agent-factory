@@ -1,4 +1,4 @@
-# Antigravity Agent Factory (Reference Implementation)
+# Antigravity Agent Factory
 
 **A reference implementation of the Axiomatic Agentic Framework.**
 
