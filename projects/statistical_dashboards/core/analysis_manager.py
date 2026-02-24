@@ -4,7 +4,6 @@ from sklearn.linear_model import LinearRegression
 from sklearn.cluster import KMeans
 from sklearn.metrics import r2_score, mean_squared_error
 from scipy import stats
-from core.ai_manager import AIManager
 
 
 class AnalysisManager:
@@ -116,6 +115,8 @@ class AnalysisManager:
         Generates a text summary based on statistical results.
         Uses AIManager (Gemini) for real intelligent insights.
         """
+        from core.ai_manager import AIManager
+
         ai = AIManager()
 
         # Prepare a descriptive string of the results for the LLM
