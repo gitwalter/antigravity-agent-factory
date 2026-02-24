@@ -688,6 +688,29 @@ python cli/factory_cli.py --sync-pm-workflows
 *Skill: pm-configuration v1.0.0*
 *Grounded in Axiom 0: Love, Truth, and Beauty*
 
+## Plane PMS Knowledge Reference
+
+To minimize API calls and ensure consistent state transitions, use the following knowledge when interacting with the project's native Plane instance (Identifier: `AGENT`).
+
+### Default States Mapping
+| Intent | Plane State Name | Group Type |
+| :--- | :--- | :--- |
+| **Backlog** | `Backlog` | `backlog` |
+| **Ready for Work** | `Todo` | `unstarted` |
+| **In Progress** | `In Progress` | `started` |
+| **Completed/Verified** | `Done` | `completed` |
+| **Cancelled** | `Cancelled` | `cancelled` |
+| **Needs Review** | `Triage` | `triage` |
+
+### Best Practices
+- **Avoid Polling**: Do not call `list_states` repeatedly. Use the mapping above.
+- **Explicit Sequence**: Always use `AGENT-{sequence_id}` for communication but pass only `{sequence_id}` to internal script functions.
+- **Workflow Closure**: Every transition to a verified state MUST be followed by a Plane status update to `Done`.
+
+## Verification
+- Run `conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py states` to confirm these states match the live system.
+- Ensure all skill-driven updates use exactly these string values.
+
 ## When to Use
 This skill should be used when strict adherence to the defined process is required.
 

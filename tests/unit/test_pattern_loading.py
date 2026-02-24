@@ -260,8 +260,23 @@ class TestPatternConsistency:
         catalog_path = knowledge_dir / "skill-catalog.json"
         if catalog_path.exists():
             with open(catalog_path, "r", encoding="utf-8") as f:
-                catalog = json.load(f)
-            catalog_skills = set(catalog.get("skills", {}).keys())
+                catalog_data = json.load(f)
+
+            # The catalog structure has 'skills' under 'content'
+            skills_data = catalog_data.get("content", {}).get("skills", [])
+            if not skills_data and "skills" in catalog_data:
+                # Fallback for old structure
+                skills_data = catalog_data["skills"]
+
+            if isinstance(skills_data, list):
+                # Extract IDs from list of skill objects
+                catalog_skills = {s.get("id") for s in skills_data if s.get("id")}
+            elif isinstance(skills_data, dict):
+                # Fallback for dict structure
+                catalog_skills = set(skills_data.keys())
+            else:
+                catalog_skills = set()
+
             available_skills = available_skills.union(catalog_skills)
 
         # Add skills from .agent/skills directory

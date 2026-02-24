@@ -63,7 +63,11 @@ If a Plane issue is provided, use the native `pms-management` skill:
 ### Code Review
 
 ### Update Ticket
-Update the status in Plane using:
+Update the status in Plane. Use the mapping below to ensure the correct state name:
+- **Completed**: use `Done` (for completions)
+- **Blocked**: use `Backlog` (if work stops)
+
+Command:
 `conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py update --id <SEQ_ID> --state "Done"`
 
 ### Capture Lessons

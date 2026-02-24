@@ -33,7 +33,7 @@ graph TD
     end
 
     subgraph Factory_Core ["Factory Containers / Processes"]
-        MSO["Master System Orchestrator (LangGraph)"]
+        MSO["Master System Orchestrator (Multi-Agent Engine)"]
 
         subgraph Registries ["Unified Registry Layer (JSON/MD)"]
             AS["agent-staffing"]

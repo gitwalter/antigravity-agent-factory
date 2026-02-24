@@ -3,6 +3,7 @@ import sys
 import subprocess
 import argparse
 import json
+from datetime import datetime
 
 # Correct environment path as per user rules
 CONDA_EXEC = r"conda run -p D:\Anaconda\envs\cursor-factory"
@@ -36,7 +37,7 @@ def list_issues(project_id: str = None, state_name: str = None, as_json: bool = 
         )
 
     logic.append("print(list(qs))")
-    cmd = "; ".join(logic)
+    cmd = "\n".join(logic)
     output = run_django_command(cmd)
     if as_json:
         print(output)
@@ -65,7 +66,7 @@ def get_issue_details(sequence_id: str):
         "print(json.dumps(data))",
         "print('END_JSON')",
     ]
-    cmd = "; ".join(logic)
+    cmd = "\n".join(logic)
     output = run_django_command(cmd)
     # Extract JSON between START_JSON and END_JSON if multiple prints exist
     if "START_JSON" in output and "END_JSON" in output:
@@ -114,7 +115,7 @@ def create_issue(
     )
     logic.append("print(f'Created Issue: AGENT-{issue.sequence_id}')")
 
-    cmd = "; ".join(logic)
+    cmd = "\n".join(logic)
     output = run_django_command(cmd)
     print(output)
 
@@ -125,6 +126,7 @@ def update_issue(
     description: str = None,
     priority: str = None,
     name: str = None,
+    append: bool = False,
 ):
     # Extract number from AGENT-5
     seq_num = sequence_id.split("-")[-1]
@@ -138,12 +140,28 @@ def update_issue(
         logic.append(f"s = State.objects.get(project=p, name='{state_name}')")
         logic.append("issue.state = s")
     if description:
-        safe_desc = repr(
-            description
-        )  # User expected to provide full HTML or plain text we wrap
-        if not (description.startswith("<") and description.endswith(">")):
-            safe_desc = repr(f"<div>{description}</div>")
-        logic.append(f"issue.description_html = {safe_desc}")
+        if append:
+            # Append logic: wrap in div if not already, add timestamp and separator
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            separator = "<hr/>"
+
+            if not (description.startswith("<") and description.endswith(">")):
+                new_part = f"<div><b>Update ({timestamp}):</b><br/>{description}</div>"
+            else:
+                new_part = f"<div><b>Update ({timestamp}):</b></div>{description}"
+
+            logic.append("current_desc = issue.description_html or ''")
+            # Ensure we don't double up separators if it's the first append
+            logic.append(
+                f"if current_desc and not current_desc.endswith('{separator}'):"
+            )
+            logic.append(f"    current_desc += '{separator}'")
+            logic.append(f"issue.description_html = current_desc + {repr(new_part)}")
+        else:
+            safe_desc = repr(description)
+            if not (description.startswith("<") and description.endswith(">")):
+                safe_desc = repr(f"<div>{description}</div>")
+            logic.append(f"issue.description_html = {safe_desc}")
     if priority:
         logic.append(f"issue.priority = '{priority}'")
     if name:
@@ -152,7 +170,40 @@ def update_issue(
     logic.append("issue.save()")
     logic.append(f"print(f'Updated Issue: AGENT-{seq_num}')")
 
-    cmd = "; ".join(logic)
+    cmd = "\n".join(logic)
+    output = run_django_command(cmd)
+    print(output)
+
+
+def create_comment(sequence_id: str, comment: str):
+    if not comment.strip():
+        print("Error: Comment cannot be empty.")
+        return
+
+    # Extract number from AGENT-5
+    seq_num = sequence_id.split("-")[-1]
+
+    logic = [
+        "from plane.db.models import Issue, Project, IssueComment",
+        "p = Project.objects.get(identifier='AGENT')",
+        f"issue = Issue.objects.get(project=p, sequence_id={seq_num})",
+    ]
+
+    # Wrap in consistent HTML if not already
+    if not (comment.strip().startswith("<") and comment.strip().endswith(">")):
+        safe_comment = repr(f"<div>{comment.strip()}</div>")
+    else:
+        safe_comment = repr(comment.strip())
+
+    # Use the project owner/workspace owner as the creator if possible
+    logic.append("user = p.workspace.owner")
+    logic.append(
+        f"IssueComment.objects.create(issue=issue, project=p, workspace=p.workspace, "
+        f"comment_html={safe_comment}, created_by=user, actor=user)"
+    )
+    logic.append(f"print(f'Added comment to Issue: AGENT-{seq_num}')")
+
+    cmd = "\n".join(logic)
     output = run_django_command(cmd)
     print(output)
 
@@ -170,8 +221,8 @@ if __name__ == "__main__":
     list_parser.add_argument("--json", action="store_true", help="Output as JSON")
 
     # Details
-    details_parser = subparsers.add_parser("details")
-    details_parser.add_argument("--id", required=True, help="Issue ID (e.g., AGENT-1)")
+    details_parser = subparsers.add_parser("details", aliases=["get"])
+    details_parser.add_argument("id", help="Issue ID (e.g., AGENT-1 or simply 1)")
 
     # Cycles
     subparsers.add_parser("cycles")
@@ -189,14 +240,24 @@ if __name__ == "__main__":
     # Update
     update_parser = subparsers.add_parser("update")
     update_parser.add_argument(
-        "--id", required=True, help="Issue identifier (e.g., AGENT-5)"
+        "id", help="Issue identifier (e.g., AGENT-5 or simply 5)"
     )
     update_parser.add_argument("--state", help="New state for the issue")
     update_parser.add_argument(
-        "--description", help="New HTML description for the issue"
+        "--description", help="New HTML description or text for the issue"
+    )
+    update_parser.add_argument(
+        "--append", action="store_true", help="Append to existing description"
     )
     update_parser.add_argument("--priority", help="New priority for the issue")
     update_parser.add_argument("--name", help="New name for the issue")
+
+    # Comment
+    comment_parser = subparsers.add_parser("comment")
+    comment_parser.add_argument(
+        "id", help="Issue identifier (e.g., AGENT-5 or simply 5)"
+    )
+    comment_parser.add_argument("--comment", required=True, help="Comment text or HTML")
 
     # Projects
     projects_parser = subparsers.add_parser("projects")
@@ -213,7 +274,7 @@ if __name__ == "__main__":
             list_issues(args.project_id, args.state, args.json)
         elif args.command == "projects":
             list_projects(args.json)
-        elif args.command == "details":
+        elif args.command in ["details", "get"]:
             get_issue_details(args.id)
         elif args.command == "cycles":
             list_cycles()
@@ -223,8 +284,15 @@ if __name__ == "__main__":
             create_issue(args.name, args.description, args.priority, args.state)
         elif args.command == "update":
             update_issue(
-                args.id, args.state, args.description, args.priority, args.name
+                args.id,
+                args.state,
+                args.description,
+                args.priority,
+                args.name,
+                args.append,
             )
+        elif args.command == "comment":
+            create_comment(args.id, args.comment)
         elif args.command == "run_django":
             print(run_django_command(args.logic))
         else:
