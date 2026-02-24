@@ -1,7 +1,5 @@
 # Antigravity Agent Factory
 
-**A reference implementation of the Axiomatic Agentic Framework.**
-
 ![antigravity-ide](https://img.shields.io/badge/antigravity--ide-blue)
 ![ai-agents](https://img.shields.io/badge/ai--agents-purple)
 ![mcp-servers](https://img.shields.io/badge/mcp--servers-green)
