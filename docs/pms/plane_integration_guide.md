@@ -76,7 +76,6 @@ In this environment, the following services work in orchestration to provide the
 | **Data** | **DB** | `plane-db` | Postgres backend (Source of Truth). |
 | | **Redis** | `plane-redis` | High-speed caching and task queue management. |
 | | **MinIO** | `plane-minio` | S3-compatible storage for attachments. |
-| | **MinIO** | `plane-minio` | S3-compatible storage for attachments. |
 | **Nervous System** | **Proxy** | `plane-proxy` | Nginx reverse proxy routing traffic. |
 | | **Live** | `plane-live` | Realtime event broadcaster for collaborative UI. |
 

@@ -25,6 +25,8 @@ services:
     container_name: plane-minio
     restart: always
     command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
     volumes:
       - plane-minio-data:/data
     environment:
@@ -53,6 +55,8 @@ services:
     command: ./bin/docker-entrypoint-api.sh
     ports:
       - "8010:8000"
+    extra_hosts:
+      - "localhost:host-gateway"
     depends_on:
       - plane-db
       - plane-redis
@@ -70,6 +74,8 @@ services:
     container_name: plane-worker
     restart: always
     command: ./bin/worker
+    extra_hosts:
+      - "localhost:host-gateway"
     depends_on:
       - plane-db
       - plane-redis
@@ -89,6 +95,8 @@ services:
     container_name: plane-beat-worker
     restart: always
     command: ./bin/beat
+    extra_hosts:
+      - "localhost:host-gateway"
     depends_on:
       - plane-db
       - plane-redis
