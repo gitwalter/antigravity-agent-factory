@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Guide users through selecting and configuring development methodology
   for agent system
+knowledge:
+- none
 name: selecting-methodologies
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Methodology Selection
 

@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Tactical Blueprint for Modern Project Management (Scrum/Kanban) and Reporting.
   Focuses on procedural truth for backlog health, sprint flow, and metrics.
+knowledge:
+- none
 name: mastering-project-management
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Capability Manifest: Project Management Mastery
 

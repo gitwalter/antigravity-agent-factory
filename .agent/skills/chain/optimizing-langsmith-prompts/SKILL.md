@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: Prompt management with LangSmith Hub - versioning, testing, and evaluation
+knowledge:
+- none
 name: optimizing-langsmith-prompts
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Langsmith Prompts
 

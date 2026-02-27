@@ -10,7 +10,7 @@ Tests the complete update flow from Factory -> Generated Projects:
 
 These tests are CRITICAL for verifying the update system works end-to-end.
 
-Author: Cursor Agent Factory
+Author: Antigravity Agent Factory
 Version: 1.0.0
 """
 
@@ -103,7 +103,7 @@ def sample_factory_updates_feed() -> Dict[str, Any]:
             "stable": "Production-ready updates",
             "latest": "Cutting-edge updates",
         },
-        "feed_url": "https://raw.githubusercontent.com/BjornMelin/cursor-agent-factory/main/knowledge/factory-updates.json",
+        "feed_url": "https://raw.githubusercontent.com/BjornMelin/antigravity-agent-factory/main/knowledge/factory-updates.json",
         "available_updates": [
             {
                 "id": "test-update-ai-specific",

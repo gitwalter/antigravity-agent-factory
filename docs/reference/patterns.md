@@ -4,7 +4,7 @@
 
 ## 1. Introduction
 
-Patterns are reusable, structured templates that define how agents, skills, methodologies, and other components work within the Cursor Agent Factory. They serve as blueprints that guide the generation of customized agent systems tailored to specific project needs.
+Patterns are reusable, structured templates that define how agents, skills, methodologies, and other components work within the Antigravity Agent Factory. They serve as blueprints that guide the generation of customized agent systems tailored to specific project needs.
 
 All patterns are grounded in **Axiom 0 (Love, Truth, and Beauty)** and validated against the core axioms (A1-A5).
 
@@ -254,7 +254,7 @@ Agent patterns define specialized AI assistants with distinct roles, workflows, 
 
 **Pattern ID**: `factory-updates`
 **Category**: Knowledge
-**Purpose**: Receive updates from the Cursor Agent Factory
+**Purpose**: Receive updates from the Antigravity Agent Factory
 **Pattern File**: `patterns/agents/factory-updates.json`
 
 **When Activated**:
@@ -449,7 +449,7 @@ Ask an LLM: "How many r's are in 'strawberry'?" The LLM might write out "s-t-r-a
 
 **Pattern ID**: `receive-updates`
 **Category**: Core
-**Purpose**: Receive and apply updates from the Cursor Agent Factory
+**Purpose**: Receive and apply updates from the Antigravity Agent Factory
 **Pattern File**: `patterns/skills/receive-updates.json`
 
 **When to Use**:
@@ -1224,7 +1224,7 @@ Team format patterns adapt workshops for different team sizes.
 
 ## Summary
 
-Patterns in the Cursor Agent Factory provide a comprehensive framework for generating customized agent systems. They ensure consistency while enabling flexibility through:
+Patterns in the Antigravity Agent Factory provide a comprehensive framework for generating customized agent systems. They ensure consistency while enabling flexibility through:
 
 - **Composition**: Patterns can be combined to create complex workflows
 - **Variables**: Project-specific customization through template variables

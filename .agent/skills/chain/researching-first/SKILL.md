@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: Research existing solutions before building to create multiplied value
+knowledge:
+- none
 name: researching-first
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Research First
 

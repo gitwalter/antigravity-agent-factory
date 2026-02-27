@@ -1,6 +1,6 @@
-# Cursor Agent Factory - Architecture Diagrams
+# Antigravity Agent Factory - Architecture Diagrams
 
-This folder contains comprehensive Mermaid diagrams documenting all aspects of the Cursor Agent Factory architecture, workflows, and system components.
+This folder contains comprehensive Mermaid diagrams documenting all aspects of the Antigravity Agent Factory architecture, workflows, and system components.
 
 ## Viewing Diagrams
 

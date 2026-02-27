@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Code and document template generation skill with mandatory schema validation
   against schemas/template.schema.json
+knowledge:
+- none
 name: generating-templates
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Template Generation
 

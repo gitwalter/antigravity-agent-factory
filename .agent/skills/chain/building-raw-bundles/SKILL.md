@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Build raw Cursor artifact bundles as verbatim zip copies filtered by
   domain profile
+knowledge:
+- none
 name: building-raw-bundles
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Build Raw Bundle
 

@@ -58,7 +58,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [agent-1-bridge](../../.agent/workflows/agent-1-bridge.md) | Agent 1 Bridge |
 | [agent-development](../../.agent/workflows/agent-development.md) | Agent Development (Enriched) |
 | [agent-testing](../../.agent/workflows/agent-testing.md) | Agent Testing |
-| [ai-system-design](../../.agent/workflows/ai-system-design.md) | Ai System Design |
+| [designing-ai-systems](../../.agent/workflows/designing-ai-systems.md) | Ai System Design |
 | [alpha-factor-mining](../../.agent/workflows/alpha-factor-mining.md) | Alpha Factor Mining |
 | [azure-deployment](../../.agent/workflows/azure-deployment.md) | Azure Deployment |
 | [backlog-refinement](../../.agent/workflows/backlog-refinement.md) | Backlog Refinement |
@@ -321,10 +321,10 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | quantitative-finance | [`.agent/knowledge/quantitative-finance.json`](../../.agent/knowledge/quantitative-finance.json) |
 | quantitative-theory | [`.agent/knowledge/quantitative-theory.json`](../../.agent/knowledge/quantitative-theory.json) |
 | rag-knowledge-catalog | [`.agent/knowledge/rag-knowledge-catalog.json`](../../.agent/knowledge/rag-knowledge-catalog.json) |
-| rag-patterns | [`.agent/knowledge/rag-patterns.json`](../../.agent/knowledge/rag-patterns.json) |
+| applying-rag-patterns | [`.agent/knowledge/applying-rag-patterns.json`](../../.agent/knowledge/applying-rag-patterns.json) |
 | ray-patterns | [`.agent/knowledge/ray-patterns.json`](../../.agent/knowledge/ray-patterns.json) |
 | react-component-patterns | [`.agent/knowledge/react-component-patterns.json`](../../.agent/knowledge/react-component-patterns.json) |
-| react-patterns | [`.agent/knowledge/react-patterns.json`](../../.agent/knowledge/react-patterns.json) |
+| applying-react-patterns | [`.agent/knowledge/applying-react-patterns.json`](../../.agent/knowledge/applying-react-patterns.json) |
 | reactive-indexing-patterns | [`.agent/knowledge/reactive-indexing-patterns.json`](../../.agent/knowledge/reactive-indexing-patterns.json) |
 | reactive-programming-patterns | [`.agent/knowledge/reactive-programming-patterns.json`](../../.agent/knowledge/reactive-programming-patterns.json) |
 | research-first-development | [`.agent/knowledge/research-first-development.json`](../../.agent/knowledge/research-first-development.json) |
@@ -678,7 +678,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | page.py.tmpl | pages | [`.agent/templates/python/streamlit/pages/page.py.tmpl`](../../.agent/templates/python/streamlit/pages/page.py.tmpl) |
 | cache.py.tmpl | utils | [`.agent/templates/python/streamlit/utils/cache.py.tmpl`](../../.agent/templates/python/streamlit/utils/cache.py.tmpl) |
 | verify_proofs.sh.tmpl | scripts | [`.agent/templates/scripts/verify_proofs.sh.tmpl`](../../.agent/templates/scripts/verify_proofs.sh.tmpl) |
-| SKILL.md.j2 | ai-agent-dev | [`.agent/templates/skills/ai-agent-dev/SKILL.md.j2`](../../.agent/templates/skills/ai-agent-dev/SKILL.md.j2) |
+| SKILL.md.j2 | developing-ai-agents | [`.agent/templates/skills/developing-ai-agents/SKILL.md.j2`](../../.agent/templates/skills/developing-ai-agents/SKILL.md.j2) |
 | base_skill.md.j2 | skills | [`.agent/templates/skills/base_skill.md.j2`](../../.agent/templates/skills/base_skill.md.j2) |
 | foundry.toml.tmpl | config | [`.agent/templates/solidity/config/foundry.toml.tmpl`](../../.agent/templates/solidity/config/foundry.toml.tmpl) |
 | hardhat.config.ts.tmpl | config | [`.agent/templates/solidity/config/hardhat.config.ts.tmpl`](../../.agent/templates/solidity/config/hardhat.config.ts.tmpl) |

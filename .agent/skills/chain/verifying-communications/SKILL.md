@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: Enable verified, axiom-compliant communication between Factory agents
+knowledge:
+- none
 name: verifying-communications
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Verified Communication
 

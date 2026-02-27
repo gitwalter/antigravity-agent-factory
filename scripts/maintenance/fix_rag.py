@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 def fix_rag_patterns():
-    p = Path("knowledge/rag-patterns.json")
+    p = Path("knowledge/applying-rag-patterns.json")
     try:
         content = p.read_text(encoding="utf-8")
     except Exception as e:
@@ -48,7 +48,7 @@ def fix_rag_patterns():
 
     new_content = "\n".join(new_lines)
     p.write_text(new_content, encoding="utf-8")
-    print("Fixed rag-patterns.json successfully.")
+    print("Fixed applying-rag-patterns.json successfully.")
 
 
 if __name__ == "__main__":

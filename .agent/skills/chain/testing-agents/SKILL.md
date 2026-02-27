@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: Unit testing with mocks, integration testing, LangSmith evaluation, benchmarking
+knowledge:
+- none
 name: testing-agents
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Agent Testing
 

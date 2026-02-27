@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Guide users through articulating why their agent system should exist,
   who it serves, and how success will be measured
+knowledge:
+- none
 name: defining-purpose
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Purpose Definition
 

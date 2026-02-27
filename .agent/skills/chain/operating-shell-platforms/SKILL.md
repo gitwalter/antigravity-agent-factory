@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Platform-specific shell command considerations for Windows PowerShell
   and Unix shells
+knowledge:
+- none
 name: operating-shell-platforms
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Shell Platform

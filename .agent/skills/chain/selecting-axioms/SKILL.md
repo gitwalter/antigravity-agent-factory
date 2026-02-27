@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: Interactive guidance for selecting appropriate trust verification tier
+knowledge:
+- none
 name: selecting-axioms
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Axiom Selection
 

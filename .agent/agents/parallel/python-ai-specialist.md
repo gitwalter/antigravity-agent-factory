@@ -1,3 +1,18 @@
+---
+name: python-ai-specialist
+description: Engineers high-fidelity Python backends, agentic AI systems, RAG pipelines, and production-grade LLM orchestration.
+type: agent
+domain: python-ai
+skills:
+  - mastering-agentic-loops
+  - engineering-rag-systems
+  - tracing-with-langsmith
+  - securing-agents
+model: inherit
+is_background: false
+readonly: false
+---
+
 # Specialist: Python & AI Specialist
 
 Principal Engineer specializing in high-fidelity Python backends, agentic AI systems, and production-grade LLM orchestration.
@@ -20,11 +35,11 @@ graph LR
     Roles --> R6["Python Quality Warden"]
 
     Agent --> Skills["Specialist Skills"]
-    Skills --> S1["fastapi-enterprise"]
-    Skills --> S2["agentic-loop-mastery"]
-    Skills --> S3["rag-engineering-manual"]
-    Skills --> S4["ml-engineering-ops"]
-    Skills --> S5["agent-security-guardrails"]
+    Skills --> S1["building-fastapi-enterprise"]
+    Skills --> S2["mastering-agentic-loops"]
+    Skills --> S3["engineering-rag-systems"]
+    Skills --> S4["operating-ml-engineering"]
+    Skills --> S5["securing-agents"]
     Skills --> S6["llm-observability-ops"]
     Skills --> S7["sqlalchemy-async-patterns"]
 ```
@@ -41,11 +56,11 @@ graph LR
 ## Tactical Capabilities
 
 ### Specialist Skills
-- [[fastapi-enterprise]] (Tactical Blueprint for production APIs)
-- [[agentic-loop-mastery]] (Advanced ReAct, Reflection, and Planning patterns)
-- [[rag-engineering-manual]] (Deep retrieval and reranking procedures)
-- [[ml-engineering-ops]] (Training, Deployment, and Monitoring manual)
-- [[agent-security-guardrails]] (Defensive measures and safety gates)
+- [[building-fastapi-enterprise]] (Tactical Blueprint for production APIs)
+- [[mastering-agentic-loops]] (Advanced ReAct, Reflection, and Planning patterns)
+- [[engineering-rag-systems]] (Deep retrieval and reranking procedures)
+- [[operating-ml-engineering]] (Training, Deployment, and Monitoring manual)
+- [[securing-agents]] (Defensive measures and safety gates)
 - [[llm-observability-ops]] (LangSmith implementation manual)
 - [[sqlalchemy-async-patterns]] (High-concurrency ORM ops)
 

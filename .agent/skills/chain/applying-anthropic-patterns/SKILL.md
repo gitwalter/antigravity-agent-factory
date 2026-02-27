@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Claude agentic loop patterns - tool use until done, extended thinking
   for complex reasoning, safety and alignment patterns, LangChain ChatAnthropic integration
+knowledge:
+- none
 name: applying-anthropic-patterns
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Anthropic Patterns
 
@@ -474,7 +486,7 @@ claude_thinking = ChatAnthropic(
 ## Related
 
 - Knowledge: `{directories.knowledge}/anthropic-patterns.json`
-- Skill: `langchain-usage`
+- Skill: `using-langchain`
 - Skill: `tool-usage`
 - Skill: `agentic-loops`
 - Skill: `memory-management`

@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Agent definition file generation with mandatory schema validation against
   schemas/agent.schema.json
+knowledge:
+- none
 name: generating-agents
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Agent Generation
 
@@ -146,7 +158,7 @@ Write to target location:
 
 ### Step 5: Post-Creation Sync (Factory Only)
 
-**CRITICAL:** After creating agents in the Cursor Agent Factory, run the repo-sync:
+**CRITICAL:** After creating agents in the Antigravity Agent Factory, run the repo-sync:
 
 ```powershell
 {PYTHON_PATH} {directories.scripts}/validation/schema_validator.py --summary

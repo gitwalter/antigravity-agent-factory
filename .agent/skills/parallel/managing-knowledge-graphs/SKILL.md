@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: parallel
 description: Graph RAG patterns, entity extraction with LLMs, relationship mapping,
   and Neo4j integration
+knowledge:
+- none
 name: managing-knowledge-graphs
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Knowledge Graphs
 
@@ -107,7 +119,7 @@ kg = extractor.extract_from_text(text)
 Prioritize the use of the `memory` MCP server for persistent, local graph storage.
 
 ```python
-# Create entities and relations in the memory-bank
+# Create entities and relations in the managing-memory-bank
 create_entities(entities=[...])
 create_relations(relations=[...])
 ```
@@ -630,8 +642,8 @@ class CompleteGraphRAG:
 
 ## Related
 
-- Skill: `rag-patterns`
-- Skill: `advanced-retrieval`
+- Skill: `applying-rag-patterns`
+- Skill: `retrieving-advanced`
 - Skill: `vision-agents`
 
 ## When to Use

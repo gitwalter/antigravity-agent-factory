@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Guide users through selecting practices that maintain excellence, alignment,
   and continuous improvement
+knowledge:
+- none
 name: selecting-practices
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Practice Selection
 

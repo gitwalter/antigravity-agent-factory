@@ -1,10 +1,20 @@
 ---
+agents:
+- none
+category: general
 description: Create burndown chart data
 knowledge:
 - workflow-patterns.json
 - best-practices.json
 name: generate-burndown
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Generate Burndown Skill

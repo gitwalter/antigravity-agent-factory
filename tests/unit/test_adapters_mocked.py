@@ -11,7 +11,7 @@ This module provides comprehensive mocked tests for all adapters in scripts/adap
 
 All HTTP requests are mocked using unittest.mock to avoid external dependencies.
 
-Author: Cursor Agent Factory
+Author: Antigravity Agent Factory
 Version: 1.0.0
 """
 
@@ -587,7 +587,9 @@ class TestNPMAdapterMocked:
 
     def test_analyze_package_version_update(self, adapter):
         """Test package analysis for version updates."""
-        package = TrackedNPMPackage(name="react", knowledge_file="react-patterns.json")
+        package = TrackedNPMPackage(
+            name="react", knowledge_file="applying-react-patterns.json"
+        )
         info = {"versions": {"18.2.0": {"engines": {"node": ">=16.0.0"}}}}
 
         changes = adapter._analyze_package(package, "18.2.0", info)
@@ -597,7 +599,9 @@ class TestNPMAdapterMocked:
 
     def test_analyze_package_node_requirement(self, adapter):
         """Test detection of Node.js requirements."""
-        package = TrackedNPMPackage(name="react", knowledge_file="react-patterns.json")
+        package = TrackedNPMPackage(
+            name="react", knowledge_file="applying-react-patterns.json"
+        )
         info = {"versions": {"18.2.0": {"engines": {"node": ">=18.0.0"}}}}
 
         changes = adapter._analyze_package(package, "18.2.0", info)
@@ -1494,7 +1498,7 @@ class TestDocsAdapterMocked:
         """Test getting version from NPM."""
         source = DocumentationSource(
             name="React",
-            knowledge_file="react-patterns.json",
+            knowledge_file="applying-react-patterns.json",
             docs_url="https://react.dev",
             version_url="https://registry.npmjs.org/react",
         )

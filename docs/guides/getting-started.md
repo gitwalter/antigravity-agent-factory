@@ -1,4 +1,4 @@
-# Getting Started with Cursor Agent Factory
+# Getting Started with Antigravity Agent Factory
 
 Welcome! This guide will help you find the perfect onboarding path for your needs.
 
@@ -382,5 +382,5 @@ See **Guardian Coordination** for complete documentation.
 
 ---
 
-*Antigravity Agent Factory v1.4.0*
+*Antigravity Agent Factory v1.4.1*
 *Start with purpose. Build with excellence. Serve with love.*

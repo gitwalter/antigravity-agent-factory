@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: general
 description: Build stateful agents and workflows with LangGraph 1.x
+knowledge:
+- none
 name: building-langgraph-agents
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Langgraph Agent Building
 
@@ -262,7 +274,7 @@ class AccumulatorState(TypedDict):
 ## Related
 
 - Knowledge: `{directories.knowledge}/langgraph-workflows.json`
-- Skill: `langchain-usage`
+- Skill: `using-langchain`
 - Skill: `langsmith-tracing`
 
 ## When to Use

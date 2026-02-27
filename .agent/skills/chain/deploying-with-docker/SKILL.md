@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Tactical Blueprint for Production-Grade Docker. Focuses on security hardening,
   image optimization, and multi-stage builds.
+knowledge:
+- none
 name: deploying-with-docker
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Capability Manifest: Docker Production Mastery
 

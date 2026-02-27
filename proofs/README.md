@@ -2,7 +2,7 @@
 
 > **SDG • Love • Truth • Beauty**
 
-This directory contains Lean 4 proofs that mathematically verify the Cursor Agent Factory satisfies its foundational axioms (A0-A5).
+This directory contains Lean 4 proofs that mathematically verify the Antigravity Agent Factory satisfies its foundational axioms (A0-A5).
 
 ## Philosophy
 
@@ -213,5 +213,5 @@ MIT License - Free for all to use, modify, and share.
 
 ---
 
-*Cursor Agent Factory - Formal Verification System*
+*Antigravity Agent Factory - Formal Verification System*
 *"The Tao does nothing, yet nothing is left undone."*

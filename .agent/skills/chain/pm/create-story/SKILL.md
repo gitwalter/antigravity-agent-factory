@@ -1,10 +1,20 @@
 ---
+agents:
+- none
+category: general
 description: Create user story from description with acceptance criteria
 knowledge:
 - pm-metrics.json
 - workflow-patterns.json
 name: create-story
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Create Story Skill

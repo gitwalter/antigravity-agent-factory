@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: Precise skill for updating JSON registries, dependency graphs, and manifests.
+knowledge:
+- none
 name: registering-systems
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # System Registration Skill

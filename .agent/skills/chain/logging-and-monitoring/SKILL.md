@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Structured logging with structlog, metrics collection, alerting patterns,
   and distributed tracing
+knowledge:
+- none
 name: logging-and-monitoring
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Logging Monitoring
 

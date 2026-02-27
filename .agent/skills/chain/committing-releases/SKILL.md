@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Safe commit and release workflow with auto-sync, changelog updates, and
   learning from failures
+knowledge:
+- none
 name: committing-releases
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Commit Release
 

@@ -1,6 +1,6 @@
 # External Resources
 
-This document catalogs external resources that complement the Cursor Agent Factory workshops, documentation, and educational materials.
+This document catalogs external resources that complement the Antigravity Agent Factory workshops, documentation, and educational materials.
 
 ## Educational Resources
 
@@ -72,7 +72,7 @@ Resources that document the meaningful milestones in the Factory's development h
 
 ### Commit 118
 
-A multi-layered reflection on a significant milestone in the ai-dev-agent project (precursor to Cursor Agent Factory):
+A multi-layered reflection on a significant milestone in the ai-dev-agent project (precursor to Antigravity Agent Factory):
 
 **Technical Layer**
 - The 118th commit of [ai-dev-agent](https://github.com/gitwalter/ai-dev-agent) repository (September 5, 2025)

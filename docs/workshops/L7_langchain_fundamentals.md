@@ -217,7 +217,7 @@ Ask yourself these questions:
 ## Related Knowledge Files
 
 - `langchain-patterns.json`
-- `rag-patterns.json`
+- `applying-rag-patterns.json`
 - `prompt-engineering-patterns.json`
 
 ---

@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: File reading/writing tools, directory traversal, file type detection,
   and security sandboxing
+knowledge:
+- none
 name: operating-filesystem
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Filesystem Ops
 

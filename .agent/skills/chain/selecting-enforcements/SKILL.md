@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Guide users through selecting enforcement patterns that ensure agent
   system lives its values
+knowledge:
+- none
 name: selecting-enforcements
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Enforcement Selection
 

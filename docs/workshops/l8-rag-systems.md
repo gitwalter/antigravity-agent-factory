@@ -220,7 +220,7 @@ Ask yourself these questions:
 
 ## Related Knowledge Files
 
-- `rag-patterns.json`
+- `applying-rag-patterns.json`
 - `vector-database-patterns.json`
 - `langchain-patterns.json`
 

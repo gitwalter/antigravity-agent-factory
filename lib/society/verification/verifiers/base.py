@@ -13,7 +13,7 @@ from lib.society.events.schema import AgentEvent
 
 
 class AxiomId(Enum):
-    """Foundational axioms of the Cursor Agent Factory."""
+    """Foundational axioms of the Antigravity Agent Factory."""
 
     A0_SDG = "A0"  # Sustainable Development Goals
     A1_LOVE = "A1"  # Love - prioritize user wellbeing

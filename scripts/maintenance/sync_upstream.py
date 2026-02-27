@@ -20,7 +20,7 @@ import re
 from pathlib import Path
 from typing import List, Tuple
 
-UPSTREAM_URL = "https://github.com/gitwalter/cursor-agent-factory.git"
+UPSTREAM_URL = "https://github.com/gitwalter/antigravity-agent-factory.git"
 UPSTREAM_REMOTE_NAME = "upstream"
 DEFAULT_BRANCH = "main"
 
@@ -122,7 +122,9 @@ def resolve_content_conflict(content: str) -> str:
         resolved = theirs
 
         # 1. Branding: Cursor -> Antigravity
-        resolved = resolved.replace("Cursor Agent Factory", "Antigravity Agent Factory")
+        resolved = resolved.replace(
+            "Antigravity Agent Factory", "Antigravity Agent Factory"
+        )
         resolved = resolved.replace("Cursor Agent", "Antigravity Agent")
         resolved = resolved.replace(
             "Cursor", "Antigravity"

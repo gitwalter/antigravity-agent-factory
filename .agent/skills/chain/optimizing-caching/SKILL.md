@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: LLM response caching, semantic caching, memoization, cache invalidation
+knowledge:
+- none
 name: optimizing-caching
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Caching Optimization
 
@@ -547,7 +559,7 @@ set_llm_cache(TTLCache(ttl=1800))  # 30 minutes
 
 - Skill: `memory-management`
 - Skill: `error-handling`
-- Skill: `langchain-usage`
+- Skill: `using-langchain`
 
 ## When to Use
 This skill should be used when strict adherence to the defined process is required.

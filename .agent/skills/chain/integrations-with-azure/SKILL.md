@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Azure App Service deployment, Azure Functions, Service Bus messaging,
   Key Vault integration, Container Apps, Application Insights
+knowledge:
+- none
 name: integrations-with-azure
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Azure Integration
 
@@ -457,7 +469,7 @@ public class OrderService
 ## Related
 
 - Knowledge: `{directories.knowledge}/azure-patterns.json`
-- Skill: `dotnet-microservices` for distributed systems
+- Skill: `building-dotnet-microservices` for distributed systems
 - Agent: `dotnet-architect` for architecture decisions
 
 ## When to Use

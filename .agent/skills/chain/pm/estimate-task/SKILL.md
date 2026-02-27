@@ -1,10 +1,20 @@
 ---
+agents:
+- none
+category: general
 description: Suggest story point estimation
 knowledge:
 - workflow-patterns.json
 - best-practices.json
 name: estimate-task
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Estimate Task Skill

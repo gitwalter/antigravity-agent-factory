@@ -1,9 +1,21 @@
 ---
+agents:
+- none
+category: parallel
 description: Dataset preparation for ML, HuggingFace datasets, custom loaders, data
   validation with Great Expectations, feature engineering, data versioning with DVC,
   preprocessing pipelines
+knowledge:
+- none
 name: processing-data-pipelines
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Data Pipeline
 
@@ -688,7 +700,7 @@ After data pipeline processing, you'll have:
 ## Related
 
 - Knowledge: `{directories.knowledge}/data-engineering-ml.json`
-- Skill: `model-training`
+- Skill: `training-models`
 - Skill: `model-fine-tuning`
 
 ## When to Use

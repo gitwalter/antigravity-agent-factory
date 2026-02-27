@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: Excel file processing and manipulation using the Excel MCP Server
+knowledge:
+- none
 name: processing-excel-files
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Excel Processing
 

@@ -96,7 +96,7 @@ class DocsAdapter(BaseAdapter):
         ),
         DocumentationSource(
             name="React",
-            knowledge_file="react-patterns.json",
+            knowledge_file="applying-react-patterns.json",
             docs_url="https://react.dev",
             version_url="https://registry.npmjs.org/react",
         ),

@@ -34,25 +34,25 @@ Extract and formalize the core requirements and success criteria.
 ### 2. Architectural Design
 Design the system structure, data models, and API interfaces.
 - **Lead Agent**: `SystemArchitectSteward`
-- **Skill**: `ai-system-design`, `api-design`
+- **Skill**: `designing-ai-systems`, `designing-apis`
 - **Output**: `implementation_plan.md`
 
 ### 3. TDD Implementation (Red Phase)
 Define the tests before writing a single line of production code.
 - **Lead Agent**: `TestConductor`
-- **Skill**: `frontend-testing` / `spring-testing` / `agent-testing`
+- **Skill**: `testing-frontend` / `testing-spring-apps` / `agent-testing`
 - **Action**: Write failing tests that represent the requirements.
 
 ### 4. Core Implementation (Green Phase)
 Implement the minimal code required to make the tests pass.
 - **Lead Agent**: `CognitiveCycleEngineer`
-- **Skill**: Relevant feature-specific skill (e.g., `nextjs-development`, `fastapi-development`)
+- **Skill**: Relevant feature-specific skill (e.g., `developing-nextjs`, `developing-fastapi`)
 - **Action**: Iterative coding until all tests are green.
 
 ### 5. Integrity & Quality Gate
 Perform code review, security audit, and documentation generation.
 - **Lead Agent**: `CodeIntegrityGuardian`
-- **Skill**: `clean-code-review`, `ai-security`
+- **Skill**: `clean-code-review`, `securing-ai-systems`
 - **Action**: Verify adherence to SOLID principles and Axiom Zero.
 
 ### 6. Documentation & Closure

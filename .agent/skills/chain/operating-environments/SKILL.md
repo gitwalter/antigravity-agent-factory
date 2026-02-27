@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Config-driven operating environment skill for shell commands, tool path
   resolution, and platform-specific syntax across all platforms
+knowledge:
+- none
 name: operating-environments
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Operating Environment
 

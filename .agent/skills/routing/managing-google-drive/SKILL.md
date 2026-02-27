@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: routing
 description: Manage files in Google Drive using the Google Drive MCP server.
+knowledge:
+- none
 name: managing-google-drive
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Google Drive Skill

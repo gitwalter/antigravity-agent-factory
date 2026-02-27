@@ -1,11 +1,21 @@
 ---
+agents:
+- none
+category: general
 description: Team health indicators
 knowledge:
 - workflow-patterns.json
 - best-practices.json
 - team-dynamics.json
 name: health-check
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Health Check Skill

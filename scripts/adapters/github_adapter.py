@@ -130,7 +130,7 @@ class GitHubAdapter(BaseAdapter):
         TrackedRepository(
             owner="facebook",
             name="react",
-            knowledge_file="react-patterns.json",
+            knowledge_file="applying-react-patterns.json",
             trust_level=TrustLevel.OFFICIAL,
         ),
         # AI/ML frameworks

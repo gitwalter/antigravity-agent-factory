@@ -1,4 +1,4 @@
-# Cursor Agent Factory - Extension Guide
+# Antigravity Agent Factory - Extension Guide
 
 This guide explains how to extend the factory with new patterns, blueprints, and capabilities.
 

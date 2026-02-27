@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Extend Factory knowledge, skills, and templates via research, documents,
   or user links
+knowledge:
+- none
 name: extending-knowledge
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Extend Knowledge
 

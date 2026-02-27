@@ -4,7 +4,7 @@ PABP Schema Validation Module
 Provides schema loading and validation utilities for the Portable Agent
 Behavior Protocol (PABP) v1.0.0 component types.
 
-Schemas sourced from: https://github.com/gitwalter/cursor-agent-factory
+Schemas sourced from: https://github.com/gitwalter/antigravity-agent-factory
 
 Supported component types:
     agent, skill, knowledge, workflow, blueprint, attestation,

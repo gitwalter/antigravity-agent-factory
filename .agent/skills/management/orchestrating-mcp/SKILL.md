@@ -6,10 +6,14 @@ agents:
 category: management
 description: Master skill for orchestrating and utilizing the full MCP ecosystem (Tavily,
   RAG, Memory, Sequential Thinking)
+knowledge:
+- none
 name: orchestrating-mcp
 related_skills:
 - skill-creator
 - retrieving-rag-context
+templates:
+- none
 tools:
 - tavily_*
 - mcp_rag_*

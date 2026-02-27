@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: LangGraph state schemas, reducers, checkpointing, and persistence
+knowledge:
+- none
 name: managing-state
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # State Management
 

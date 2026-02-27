@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Graph RAG patterns, entity extraction with LLMs, relationship mapping,
   and Neo4j integration
+knowledge:
+- none
 name: managing-knowledge-graphs
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Knowledge Graphs
 
@@ -624,8 +636,8 @@ class CompleteGraphRAG:
 
 ## Related
 
-- Skill: `rag-patterns`
-- Skill: `advanced-retrieval`
+- Skill: `applying-rag-patterns`
+- Skill: `retrieving-advanced`
 - Skill: `vision-agents`
 
 ## When to Use

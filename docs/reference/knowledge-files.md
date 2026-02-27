@@ -47,6 +47,8 @@ The factory currently includes **272 knowledge files** covering: various aspects
 | [anthropic-claude-api-patterns](file:///.agent/knowledge/anthropic-claude-api-patterns.json) |  |  |
 | [api-design-patterns](file:///.agent/knowledge/api-design-patterns.json) |  |  |
 | [api-integration-patterns](file:///.agent/knowledge/api-integration-patterns.json) |  |  |
+| [applying-rag-patterns](file:///.agent/knowledge/applying-rag-patterns.json) |  |  |
+| [applying-react-patterns](file:///.agent/knowledge/applying-react-patterns.json) |  |  |
 | [architecture-patterns](file:///.agent/knowledge/architecture-patterns.json) |  |  |
 | [artifact-dependencies](file:///.agent/knowledge/artifact-dependencies.json) |  |  |
 | [artifact-dependency-map](file:///.agent/knowledge/artifact-dependency-map.json) |  |  |
@@ -206,10 +208,8 @@ The factory currently includes **272 knowledge files** covering: various aspects
 | [quantitative-finance-patterns](file:///.agent/knowledge/quantitative-finance-patterns.json) |  |  |
 | [quantitative-theory](file:///.agent/knowledge/quantitative-theory.json) |  |  |
 | [rag-knowledge-catalog](file:///.agent/knowledge/rag-knowledge-catalog.json) |  |  |
-| [rag-patterns](file:///.agent/knowledge/rag-patterns.json) |  |  |
 | [ray-patterns](file:///.agent/knowledge/ray-patterns.json) |  |  |
 | [react-component-patterns](file:///.agent/knowledge/react-component-patterns.json) |  |  |
-| [react-patterns](file:///.agent/knowledge/react-patterns.json) |  |  |
 | [reactive-indexing-patterns](file:///.agent/knowledge/reactive-indexing-patterns.json) |  |  |
 | [reactive-programming-patterns](file:///.agent/knowledge/reactive-programming-patterns.json) |  |  |
 | [research-first-development](file:///.agent/knowledge/research-first-development.json) |  |  |

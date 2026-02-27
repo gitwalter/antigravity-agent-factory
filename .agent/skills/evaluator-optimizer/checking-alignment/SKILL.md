@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: evaluator-optimizer
 description: Verify understanding and alignment before major implementations
+knowledge:
+- none
 name: checking-alignment
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Alignment Check
 

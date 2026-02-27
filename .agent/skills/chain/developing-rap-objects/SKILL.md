@@ -1,9 +1,21 @@
 ---
+agents:
+- none
+category: chain
 description: RAP business object creation (managed, unmanaged, abstract), behavior
   definitions, determinations, validations, actions, draft handling, authorization
   control
+knowledge:
+- none
 name: developing-rap-objects
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Rap Development
 
@@ -514,7 +526,7 @@ define service ZUI_TRAVELBOOKING_O4 {
 
 - Skill: `fiori-development` - Fiori Elements UI configuration
 - Skill: `cds-modeling` - CDS view creation
-- Skill: `sap-security` - Authorization and security patterns
+- Skill: `securing-sap-systems` - Authorization and security patterns
 - Knowledge: `sap-rap-patterns.json` - RAP patterns and guidelines
 
 ## When to Use

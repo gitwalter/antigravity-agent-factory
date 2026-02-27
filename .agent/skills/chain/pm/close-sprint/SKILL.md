@@ -1,11 +1,21 @@
 ---
+agents:
+- none
+category: general
 description: Complete sprint, calculate velocity
 knowledge:
 - workflow-patterns.json
 - best-practices.json
 - team-dynamics.json
 name: close-sprint
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Close Sprint Skill

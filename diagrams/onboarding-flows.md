@@ -1,6 +1,6 @@
 # Onboarding Flow Architecture
 
-This document visualizes the three onboarding modes and non-destructive integration flow for bringing existing repositories into the Cursor Agent Factory ecosystem.
+This document visualizes the three onboarding modes and non-destructive integration flow for bringing existing repositories into the Antigravity Agent Factory ecosystem.
 
 ## Quick Reference
 

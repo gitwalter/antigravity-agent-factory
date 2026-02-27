@@ -1,12 +1,12 @@
 ---
 ## Overview
 
-description: Systematic workflow for debugging CI/CD pipeline failures. This workflow demonstrates the Cursor Agent Factory workfl...
+description: Systematic workflow for debugging CI/CD pipeline failures. This workflow demonstrates the Antigravity Agent Factory workfl...
 ---
 
 # Debug Pipeline
 
-Systematic workflow for debugging CI/CD pipeline failures. This workflow demonstrates the Cursor Agent Factory workflow system architecture with phases, decision points, escalation paths, and learning hooks.
+Systematic workflow for debugging CI/CD pipeline failures. This workflow demonstrates the Antigravity Agent Factory workflow system architecture with phases, decision points, escalation paths, and learning hooks.
 
 **Version:** 1.0.0
 **Created:** 2026-01-31

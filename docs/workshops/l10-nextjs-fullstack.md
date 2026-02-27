@@ -236,7 +236,7 @@ Ask yourself these questions:
 ## Related Knowledge Files
 
 - `nextjs-patterns.json`
-- `react-patterns.json`
+- `applying-react-patterns.json`
 
 ---
 

@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: Approval workflows, interrupts, and feedback patterns for agents
+knowledge:
+- none
 name: interacting-with-human
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Human In The Loop
 

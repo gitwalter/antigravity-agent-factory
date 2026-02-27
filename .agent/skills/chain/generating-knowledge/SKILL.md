@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: JSON knowledge file generation with mandatory schema validation against
   schemas/knowledge-file.schema.json
+knowledge:
+- none
 name: generating-knowledge
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Knowledge Generation
 
@@ -61,7 +73,7 @@ All knowledge files MUST validate against `schemas/knowledge-file.schema.json`. 
       ]
     }
   },
-  "related_skills": ["api-design", "integration"],
+  "related_skills": ["designing-apis", "integration"],
   "related_knowledge": ["api-patterns.json"],
   "best_practices": ["First best practice", "Second best practice"],
   "anti_patterns": ["First anti-pattern", "Second anti-pattern"]

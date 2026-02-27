@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Automated documentation generation from code including docstrings, API
   docs, and architecture diagrams
+knowledge:
+- none
 name: generating-documentation
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Documentation Generation
 

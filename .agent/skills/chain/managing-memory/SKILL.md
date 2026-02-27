@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: Agent memory patterns - conversation, long-term, and backend implementations
+knowledge:
+- none
 name: managing-memory
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Memory Management
 
@@ -287,7 +299,7 @@ class UserMemoryStore:
 
 - Knowledge: `{directories.knowledge}/memory-patterns.json`
 - Skill: `state-management`
-- Skill: `rag-patterns`
+- Skill: `applying-rag-patterns`
 
 ## When to Use
 This skill should be used when strict adherence to the defined process is required.

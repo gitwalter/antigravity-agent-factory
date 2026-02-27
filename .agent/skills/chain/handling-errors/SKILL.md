@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Retry strategies with tenacity, fallback patterns, circuit breakers,
   graceful degradation
+knowledge:
+- none
 name: handling-errors
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Error Handling
 
@@ -570,7 +582,7 @@ success = await transaction.execute()
 
 - Skill: `caching-optimization`
 - Skill: `tool-usage`
-- Skill: `langchain-usage`
+- Skill: `using-langchain`
 
 ## When to Use
 This skill should be used when strict adherence to the defined process is required.

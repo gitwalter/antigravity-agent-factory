@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: evaluator-optimizer
 description: Systematic code quality review using SOLID principles, code smell detection,
   and refactoring patterns
+knowledge:
+- none
 name: reviewing-clean-code
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Clean Code Review
 

@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: evaluator-optimizer
 description: RAGAS evaluation setup, DeepEval integration, LangSmith evaluation runs,
   custom metrics, retrieval quality metrics, regression testing for LLM outputs
+knowledge:
+- none
 name: evaluating-llms
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Llm Evaluation
 
@@ -740,7 +752,7 @@ After evaluation, you'll have:
 ## Related
 
 - Knowledge: `{directories.knowledge}/llm-evaluation-patterns.json`, `{directories.knowledge}/llm-evaluation-frameworks.json`
-- Skill: `model-training`
+- Skill: `training-models`
 - Skill: `model-fine-tuning`
 - Skill: `agent-testing`
 

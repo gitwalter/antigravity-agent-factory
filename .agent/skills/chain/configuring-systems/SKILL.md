@@ -1,18 +1,30 @@
 ---
-description: Interactive configuration and onboarding skill for Cursor Agent Factory
+agents:
+- none
+category: chain
+description: Interactive configuration and onboarding skill for Antigravity Agent Factory
   settings
+knowledge:
+- none
 name: configuring-systems
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # System Configuration
 
-Interactive configuration and onboarding skill for Cursor Agent Factory settings
+Interactive configuration and onboarding skill for Antigravity Agent Factory settings
 
 # System Configuration Skill
 
 ## Overview
 
-This skill provides interactive configuration and onboarding for the Cursor Agent Factory. It guides users through setting up all system settings including tool paths, credentials, knowledge evolution preferences, and platform-specific configurations.
+This skill provides interactive configuration and onboarding for the Antigravity Agent Factory. It guides users through setting up all system settings including tool paths, credentials, knowledge evolution preferences, and platform-specific configurations.
 
 ## Purpose
 
@@ -355,7 +367,7 @@ Configuration is complete when:
 
 ---
 
-*This skill ensures the Cursor Agent Factory is properly configured for optimal operation.*
+*This skill ensures the Antigravity Agent Factory is properly configured for optimal operation.*
 
 ## When to Use
 This skill should be used when strict adherence to the defined process is required.

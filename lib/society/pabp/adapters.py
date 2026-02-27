@@ -181,7 +181,7 @@ class AntigravityAdapter(PlatformAdapter):
 
     def platform_term_rewrites(self) -> Dict[str, str]:
         return {
-            "Cursor Agent Factory": "Antigravity Agent Factory",
+            "Antigravity Agent Factory": "Antigravity Agent Factory",
             "Cursor IDE": "Antigravity IDE",
             "Cursor agent system": "agent system",
             "Cursor agent": "agent",
@@ -272,7 +272,7 @@ class GenericAdapter(PlatformAdapter):
 
     def platform_term_rewrites(self) -> Dict[str, str]:
         return {
-            "Cursor Agent Factory": "Agent Factory",
+            "Antigravity Agent Factory": "Agent Factory",
             "Cursor IDE": "IDE",
             "Antigravity IDE": "IDE",
         }

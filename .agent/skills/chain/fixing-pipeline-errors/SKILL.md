@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Systematic error detection and fixing strategy for CI/CD pipeline failures
   with intelligent test packaging
+knowledge:
+- none
 name: fixing-pipeline-errors
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Pipeline Error Fix
 

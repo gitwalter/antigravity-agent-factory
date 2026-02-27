@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Create and export PABP agent bundles for cross-platform portable behavior
   transfer
+knowledge:
+- none
 name: exporting-agent-bundles
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Export Agent Bundle
 

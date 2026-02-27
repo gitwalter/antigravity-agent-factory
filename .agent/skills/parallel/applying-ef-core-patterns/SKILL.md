@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: parallel
 description: Entity Framework Core patterns for data access, migrations, and query
   optimization
+knowledge:
+- none
 name: applying-ef-core-patterns
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Ef Core Patterns
 

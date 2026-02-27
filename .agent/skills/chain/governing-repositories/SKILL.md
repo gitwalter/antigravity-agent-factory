@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Comprehensive skill for link verification, file organization, artifact
   syncing, and README automation.
+knowledge:
+- none
 name: governing-repositories
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Repository Governance Skill

@@ -31,7 +31,7 @@ Requirements:
     - jsonschema >= 4.17.0
     - PyYAML (optional, falls back to regex parser)
 
-Author: Cursor Agent Factory
+Author: Antigravity Agent Factory
 Version: 1.0.0
 """
 

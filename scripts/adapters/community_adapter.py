@@ -80,7 +80,7 @@ class CommunityAdapter(BaseAdapter):
         CommunitySource(
             name="Awesome React",
             source_type="awesome_list",
-            knowledge_file="react-patterns.json",
+            knowledge_file="applying-react-patterns.json",
             url="https://github.com/enaqx/awesome-react",
             github_repo="enaqx/awesome-react",
         ),

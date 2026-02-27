@@ -78,8 +78,10 @@ class NPMAdapter(BaseAdapter):
     # Packages to track for JavaScript/TypeScript knowledge files
     TRACKED_PACKAGES: List[TrackedNPMPackage] = [
         # React ecosystem
-        TrackedNPMPackage(name="react", knowledge_file="react-patterns.json"),
-        TrackedNPMPackage(name="react-dom", knowledge_file="react-patterns.json"),
+        TrackedNPMPackage(name="react", knowledge_file="applying-react-patterns.json"),
+        TrackedNPMPackage(
+            name="react-dom", knowledge_file="applying-react-patterns.json"
+        ),
         TrackedNPMPackage(name="next", knowledge_file="nextjs-patterns.json"),
         # Build tools
         TrackedNPMPackage(name="vite", knowledge_file="nextjs-patterns.json"),

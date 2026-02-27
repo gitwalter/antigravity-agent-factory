@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: routing
 description: Guide users through selecting appropriate MCP servers during project
   generation
+knowledge:
+- none
 name: selecting-mcp
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Mcp Selection
 

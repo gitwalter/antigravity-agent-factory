@@ -18,7 +18,7 @@ The Antigravity system follows a strict command-and-control hierarchy to ensure 
 - **Function**: Executes steps from a Workflow. An Agent is bound to specific Skills.
 - **Example**: The `Knowledge Operations Specialist` is the only agent authorized to modify the Knowledge Graph.
 
-### Tier 2: Skills (Capabilities - includes **194** skills)
+### Tier 2: Skills (Capabilities - includes **198** skills)
 - **Location**: `.agent/skills/`
 - **Role**: The "Atomic Capability".
 - **Function**: A specific, reusable procedure that an Agent performs.

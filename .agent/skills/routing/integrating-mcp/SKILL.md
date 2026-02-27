@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: routing
 description: Model Context Protocol overview, server creation, tool exposure, and
   common integrations
+knowledge:
+- none
 name: integrating-mcp
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Mcp Integration
 
@@ -501,7 +513,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 
 - Knowledge: `{directories.knowledge}/api-integration-patterns.json`
 - Skill: `tool-usage`
-- Skill: `langchain-usage`
+- Skill: `using-langchain`
 - Skill: `langsmith-tracing`
 
 ## When to Use

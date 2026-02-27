@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Fiori Elements app creation (List Report, Object Page, Worklist), CDS
   annotations for UI, value helps, draft-enabled UIs, SAP Fiori Tools usage
+knowledge:
+- none
 name: developing-fiori-apps
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Fiori Development
 

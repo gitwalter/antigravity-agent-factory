@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Web scraping with agents, browser automation, content extraction, and
   ethical scraping practices
+knowledge:
+- none
 name: browsing-web
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Web Browsing
 
@@ -503,7 +515,7 @@ response = await client.chat.completions.create(
 
 - Knowledge: `{directories.knowledge}/api-integration-patterns.json`
 - Skill: `tool-usage`
-- Skill: `langchain-usage`
+- Skill: `using-langchain`
 - Skill: `mcp-integration`
 
 ## When to Use

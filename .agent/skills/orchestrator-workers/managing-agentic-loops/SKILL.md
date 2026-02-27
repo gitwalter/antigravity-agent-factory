@@ -1,10 +1,22 @@
 ---
+agents:
+- none
+category: general
 description: Procedural implementation of ReAct, Reflection, Planning, and Iterative
   Refinement patterns.
+knowledge:
+- none
 name: managing-agentic-loops
 owner: CognitiveCycleEngineer
+related_skills:
+- none
+templates:
+- none
 tier: Tactical Capability
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Agentic Loops (Tactical Blueprint)

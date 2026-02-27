@@ -10,7 +10,7 @@ ML experiment workflow from hypothesis formation through results analysis. Cover
 
 **Version:** 1.0.0
 **Created:** 2026-02-10
-**Applies To:** model-training, ml-research
+**Applies To:** training-models, ml-research
 
 ## Trigger Conditions
 

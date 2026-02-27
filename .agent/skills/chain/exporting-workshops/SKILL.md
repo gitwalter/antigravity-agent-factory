@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Export learning workshops to standalone projects with all necessary artifacts
   for maximum AI-assisted learning
+knowledge:
+- none
 name: exporting-workshops
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Workshop Export
 
@@ -155,7 +167,7 @@ Agent: I'll set up the LangChain workshop for you.
 
 ---
 
-*Part of the Cursor Agent Factory Learning System*
+*Part of the Antigravity Agent Factory Learning System*
 
 ## When to Use
 This skill should be used when strict adherence to the defined process is required.

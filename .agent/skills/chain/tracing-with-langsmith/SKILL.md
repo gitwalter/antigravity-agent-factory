@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: Debugging and tracing LangChain/LangGraph with LangSmith MCP
+knowledge:
+- none
 name: tracing-with-langsmith
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Langsmith Tracing
 
@@ -271,7 +283,7 @@ LANGSMITH_ENDPOINT=https://api.smith.langchain.com
 ## Related
 
 - Knowledge: `{directories.knowledge}/mcp-patterns.json`
-- Skill: `langchain-usage`
+- Skill: `using-langchain`
 - Skill: `langgraph-agent-building`
 - MCP: LangSmith MCP Server
 

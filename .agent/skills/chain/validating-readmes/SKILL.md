@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Validates that project structure documented in README.md accurately reflects
   the actual filesystem structure
+knowledge:
+- none
 name: validating-readmes
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Readme Validation
 

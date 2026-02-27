@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: Create and extend workflow definitions using the workflow system architecture
+knowledge:
+- none
 name: extending-workflows
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Extend Workflow
 

@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: evaluator-optimizer
 description: Factual claim verification - the canonical profile of grounding-verification
+knowledge:
+- none
 name: verifying-with-strawberry
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Strawberry Verification
 

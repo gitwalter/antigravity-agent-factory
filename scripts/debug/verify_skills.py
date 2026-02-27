@@ -17,8 +17,8 @@ def verify_skill():
         engine = create_engine(factory_root)
 
         # Simulating context that generate_project.py would provide
-        skill_id = "ai-agent-dev"
-        skill_name = "ai-agent-dev"
+        skill_id = "developing-ai-agents"
+        skill_name = "developing-ai-agents"
         skill_description = "AI Agent Development with LangChain and LangGraph"
         skill_title = "AI Agent Development Skill"
         skill_summary = "This skill provides expertise in building AI agents using modern frameworks like LangChain, LangGraph, CrewAI, and AutoGen."

@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: evaluator-optimizer
 description: Universal two-pass verification for LLM grounding using confidence delta
   comparison
+knowledge:
+- none
 name: verifying-grounding
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Grounding Verification
 

@@ -1,11 +1,21 @@
 ---
+agents:
+- none
+category: general
 description: Pull stories into sprint
 knowledge:
 - workflow-patterns.json
 - best-practices.json
 - team-dynamics.json
 name: plan-sprint
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Plan Sprint Skill

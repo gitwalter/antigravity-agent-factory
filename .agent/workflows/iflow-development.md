@@ -10,7 +10,7 @@ SAP Cloud Platform Integration (CPI) iFlow development workflow. Covers integrat
 
 **Version:** 1.0.0
 **Created:** 2026-02-10
-**Applies To:** sap-integration, cpi-iflow
+**Applies To:** integrating-sap-systems, cpi-iflow
 
 ## Trigger Conditions
 

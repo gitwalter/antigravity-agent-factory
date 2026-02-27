@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: general
 description: LoRA/QLoRA/PEFT fine-tuning workflows with Hugging Face transformers
+knowledge:
+- none
 name: optimizing-models
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Model Optimization
 
@@ -219,7 +231,7 @@ model_awq = AutoAWQForCausalLM.from_quantized(
 ## Related
 
 - Knowledge: `{directories.knowledge}/llm-fine-tuning-patterns.json`
-- Skill: `model-training` for training infrastructure
+- Skill: `training-models` for training infrastructure
 - Skill: `data-pipeline` for dataset preparation
 
 ## When to Use

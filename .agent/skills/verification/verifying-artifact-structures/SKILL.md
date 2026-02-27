@@ -1,15 +1,22 @@
 ---
-name: verifying-artifact-structures
-description: Verifying the structural integrity of knowledge JSON and workflow markdown files.
-type: skill
-version: 1.0.0
-category: verification
 agents:
 - workflow-quality-specialist
 - integrity-guardian
+category: verification
+description: Verifying the structural integrity of knowledge JSON and workflow markdown
+  files.
+knowledge:
+- none
+name: verifying-artifact-structures
+related_skills:
+- none
+templates:
+- none
 tools:
 - verify_structures.py
 - run_command
+type: skill
+version: 1.0.0
 ---
 
 # Verifying Artifact Structures

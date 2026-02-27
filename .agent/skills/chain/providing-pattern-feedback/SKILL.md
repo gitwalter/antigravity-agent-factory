@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Implement inductive learning by observing patterns and proposing improvements
   to axioms, principles, and methodologies
+knowledge:
+- none
 name: providing-pattern-feedback
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Pattern Feedback
 

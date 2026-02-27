@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: routing
 description: Tactical Blueprint for managing Google Workspace (Drive, Gmail, Calendar).
   Focuses on prescriptive search, organization, and high-fidelity communication.
+knowledge:
+- none
 name: managing-google-workspace
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Capability Manifest: Google Workspace Mastery
 

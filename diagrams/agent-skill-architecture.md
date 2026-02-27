@@ -1,12 +1,12 @@
 # Agent and Skill Architecture Diagrams
 
-This document describes the relationship between agents, skills, knowledge files, and patterns in the Cursor Agent Factory.
+This document describes the relationship between agents, skills, knowledge files, and patterns in the Antigravity Agent Factory.
 
 ## Factory Agent Hierarchy
 
 ```mermaid
 flowchart TB
-    subgraph Factory["Cursor Agent Factory"]
+    subgraph Factory["Antigravity Agent Factory"]
         subgraph Agents["Factory Agents"]
             RA["requirements-architect"]
             SB["stack-builder"]

@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: Systematic detection and fixing of CI/CD pipeline failures.
+knowledge:
+- none
 name: pipeline-error-fix
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Pipeline Error Fix

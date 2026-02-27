@@ -1,10 +1,20 @@
 ---
+agents:
+- none
+category: general
 description: Create implementation task from story or description
 knowledge:
 - pm-metrics.json
 - workflow-patterns.json
 name: create-task
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Create Task Skill

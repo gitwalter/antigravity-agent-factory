@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: .cursorrules file generation skill
+knowledge:
+- none
 name: generating-cursorrules
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Cursorrules Generation
 

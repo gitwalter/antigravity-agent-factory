@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Production model serving with vLLM, TGI, Ollama, Triton, FastAPI endpoints,
   batching, and GPU optimization
+knowledge:
+- none
 name: serving-models
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Model Serving
 
@@ -445,9 +457,9 @@ async def generate(prompt: str):
 
 ## Related
 
-- Skill: `ml-deployment`
-- Skill: `ml-monitoring`
-- Skill: `ai-cost-optimization`
+- Skill: `deploying-ml-models`
+- Skill: `monitoring-ml-models`
+- Skill: `optimizing-ai-costs`
 
 ## When to Use
 This skill should be used when strict adherence to the defined process is required.

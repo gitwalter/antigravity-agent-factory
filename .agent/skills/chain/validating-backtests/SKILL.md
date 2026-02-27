@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Validate trading strategies with walk-forward analysis, Monte Carlo simulation,
   and robustness checks
+knowledge:
+- none
 name: validating-backtests
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Backtesting Validation
 

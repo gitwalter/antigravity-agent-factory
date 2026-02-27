@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: general
 description: Quantitative and Industrial risk assessment with VaR, drawdown analysis,
   SLA breach forecasting, and process reliability metrics.
+knowledge:
+- none
 name: assessing-risks
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Risk Assessment & Prognosis
 

@@ -2,7 +2,7 @@ import urllib.request
 import zipfile
 import io
 
-url = "https://raw.githubusercontent.com/gitwalter/cursor-agent-factory/main/bundles/full-catalog-bundle.zip"
+url = "https://raw.githubusercontent.com/gitwalter/antigravity-agent-factory/main/bundles/full-catalog-bundle.zip"
 print(f"Downloading {url}...")
 try:
     resp = urllib.request.urlopen(url)

@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Analyze Factory knowledge base to identify missing, shallow, or stale
   content
+knowledge:
+- none
 name: analyzing-knowledge-gaps
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Analyze Knowledge Gaps
 

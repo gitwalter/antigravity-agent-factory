@@ -4,7 +4,7 @@ Unit tests for scripts/git/conflict_resolver.py
 Tests conflict detection, resolution strategies, and conflict reporting
 for knowledge evolution merges.
 
-Author: Cursor Agent Factory
+Author: Antigravity Agent Factory
 Version: 1.0.0
 """
 

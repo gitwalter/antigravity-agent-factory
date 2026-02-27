@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Convert tests between frameworks (pytest, unittest, behave) and translate
   test patterns across languages
+knowledge:
+- none
 name: translating-tests
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Test Translation
 

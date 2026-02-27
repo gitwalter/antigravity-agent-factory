@@ -38,7 +38,7 @@ This document defines the specialized organization paths for every blueprint in 
 - **Supervisor**: `sap-developer`
 - **Team**: `sap-integrator`, `onboarding-architect`
 - **Resource Chain**:
-    - **Skills**: `cds-modeling`, `sap-integration`, `documentation-generation`
+    - **Skills**: `cds-modeling`, `integrating-sap-systems`, `documentation-generation`
     - **Knowledge**: `cap-best-practices.json`, `hana-db-patterns.json`
     - **Templates**: `schema.cds.tmpl`, `service.cds.tmpl`
     - **Patterns**: `domain-driven-design`

@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: parallel
 description: Token streaming from LLMs, event streaming with astream_events, WebSocket
   agent patterns, and real-time UI updates
+knowledge:
+- none
 name: streaming-realtime-data
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Streaming Realtime
 
@@ -387,7 +399,7 @@ async def stream_agent_with_tools(input_text: str):
 
 ## Related
 
-- Skill: `langchain-usage`
+- Skill: `using-langchain`
 - Skill: `langgraph-agent-building`
 - Skill: `logging-monitoring`
 

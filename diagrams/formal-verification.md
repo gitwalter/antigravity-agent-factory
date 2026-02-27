@@ -1,6 +1,6 @@
 # Formal Verification Architecture
 
-This document visualizes the Lean 4 formal verification system that mathematically proves the Cursor Agent Factory's axiom compliance.
+This document visualizes the Lean 4 formal verification system that mathematically proves the Antigravity Agent Factory's axiom compliance.
 
 ## Quick Reference
 

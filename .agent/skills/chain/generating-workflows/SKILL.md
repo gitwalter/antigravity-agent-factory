@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Workflow pattern generation and customization skill with mandatory schema
   validation against schemas/workflow.schema.json
+knowledge:
+- none
 name: generating-workflows
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Workflow Generation
 

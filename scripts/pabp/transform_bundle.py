@@ -7,7 +7,7 @@ Usage:
 
 Defaults:
     --output  pabp_output/
-    --bundle  https://raw.githubusercontent.com/gitwalter/cursor-agent-factory/main/bundles/full-factory-bundle.zip
+    --bundle  https://raw.githubusercontent.com/gitwalter/antigravity-agent-factory/main/bundles/full-factory-bundle.zip
 
 SDG - Love - Truth - Beauty
 """
@@ -28,7 +28,7 @@ from lib.society.pabp.client import PABPClient
 from lib.society.pabp.adapters import AntigravityAdapter
 
 DEFAULT_BUNDLE_URL = (
-    "https://raw.githubusercontent.com/gitwalter/cursor-agent-factory"
+    "https://raw.githubusercontent.com/gitwalter/antigravity-agent-factory"
     "/main/bundles/full-factory-bundle.zip"
 )
 

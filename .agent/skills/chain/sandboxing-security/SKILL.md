@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Input validation and sanitization, output filtering, code execution safety,
   and permission management
+knowledge:
+- none
 name: sandboxing-security
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Security Sandboxing
 

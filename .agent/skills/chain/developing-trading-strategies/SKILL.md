@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Design and implement algorithmic trading strategies with entry/exit rules,
   position sizing, and risk parameters
+knowledge:
+- none
 name: developing-trading-strategies
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Trading Strategy
 

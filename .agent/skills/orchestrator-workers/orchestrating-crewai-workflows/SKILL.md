@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: general
 description: Build multi-agent workflows using CrewAI patterns
+knowledge:
+- none
 name: orchestrating-crewai-workflows
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Crewai Workflow
 

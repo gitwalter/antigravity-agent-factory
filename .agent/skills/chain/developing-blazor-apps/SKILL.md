@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Blazor Server, WebAssembly, and Auto render modes, component lifecycle,
   state management, JavaScript interop, authentication
+knowledge:
+- none
 name: developing-blazor-apps
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Blazor Development
 
@@ -420,8 +432,8 @@ app.MapHub<NotificationHub>("/notificationHub");
 ## Related
 
 - Knowledge: `{directories.knowledge}/blazor-patterns.json`
-- Skill: `dotnet-backend` for API setup
-- Skill: `dotnet-auth` for authentication
+- Skill: `building-dotnet-backend` for API setup
+- Skill: `authenticating-dotnet` for authentication
 
 ## When to Use
 This skill should be used when strict adherence to the defined process is required.

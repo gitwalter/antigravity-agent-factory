@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: Verify internal and external links in project documentation
+knowledge:
+- none
 name: verifying-links
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Link Verification Skill

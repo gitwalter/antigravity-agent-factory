@@ -18,7 +18,7 @@ Complete integration landscape:
 
 ```mermaid
 flowchart TB
-    subgraph Factory["Cursor Agent Factory"]
+    subgraph Factory["Antigravity Agent Factory"]
         CORE["Core System"]
     end
 

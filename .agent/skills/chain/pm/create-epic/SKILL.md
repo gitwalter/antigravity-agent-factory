@@ -1,10 +1,20 @@
 ---
+agents:
+- none
+category: general
 description: Create epic with child story structure
 knowledge:
 - workflow-patterns.json
 - best-practices.json
 name: create-epic
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Create Epic Skill

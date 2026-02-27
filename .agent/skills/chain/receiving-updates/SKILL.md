@@ -1,14 +1,26 @@
 ---
-description: Receive and apply updates from the Cursor Agent Factory including skills,
+agents:
+- none
+category: chain
+description: Receive and apply updates from the Antigravity Agent Factory including skills,
   knowledge, and agents
+knowledge:
+- none
 name: receiving-updates
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Receive Updates
 
-Receive and apply updates from the Cursor Agent Factory including skills, knowledge, and agents
+Receive and apply updates from the Antigravity Agent Factory including skills, knowledge, and agents
 
-Receive and apply updates from the Cursor Agent Factory including skills, knowledge, and agents. Supports diff analysis, conflict resolution, and verified application of updates.
+Receive and apply updates from the Antigravity Agent Factory including skills, knowledge, and agents. Supports diff analysis, conflict resolution, and verified application of updates.
 
 ## Process
 
@@ -97,7 +109,7 @@ def verify_update(target_path: Path, expected_checksum: str | None = None) -> bo
 ## References
 
 - {directories.knowledge}/factory-updates.json
-- Cursor Agent Factory documentation
+- Antigravity Agent Factory documentation
 
 ## When to Use
 This skill should be used when strict adherence to the defined process is required.

@@ -1,9 +1,21 @@
 ---
+agents:
+- none
+category: chain
 description: Deployment/Service/ConfigMap/Secret patterns, Horizontal Pod Autoscaler,
   Ingress configuration, Health probes (liveness/readiness/startup), Resource requests
   and limits, Helm chart basics, Kustomize overlays, Rolling updates
+knowledge:
+- none
 name: deploying-to-kubernetes
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Kubernetes Deployment
 

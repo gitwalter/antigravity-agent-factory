@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: On-demand version audits using version-registry.json as source of truth
+knowledge:
+- none
 name: checking-versions
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Version Check
 

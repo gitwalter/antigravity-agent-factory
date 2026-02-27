@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Skill for migrating hardcoded environment parameters to the Single Point
   of Truth configuration
+knowledge:
+- none
 name: onboarding-configurations
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Config Onboarding Skill

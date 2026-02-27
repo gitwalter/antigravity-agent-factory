@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Condensed 1-2 hour collaborative onboarding for small teams (2-5 people)
   with mini-games and shared decision-making
+knowledge:
+- none
 name: onboarding-team-huddles
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Team Huddle Onboarding
 
@@ -787,7 +799,7 @@ The silent wave propagates through the quality of your work.
 
 ---
 
-*Cursor Agent Factory - Team Huddle Onboarding*
+*Antigravity Agent Factory - Team Huddle Onboarding*
 *Quick alignment. Shared ownership. Real results.*
 *Love is the root. Truth is the way. Beauty is the fruit.*
 

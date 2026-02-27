@@ -231,7 +231,7 @@ Ask yourself these questions:
 
 ## Related Knowledge Files
 
-- `react-patterns.json`
+- `applying-react-patterns.json`
 
 ---
 

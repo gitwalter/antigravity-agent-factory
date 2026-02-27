@@ -5,9 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.0] - 2026-02-24
+## [1.4.1] - 2026-02-27
 
 ### Added
+- **YAML Frontmatter in Agents**: Injected `skills:`, `domain:`, `type:`, and `model:` fields to all 10 active agents for strict schema compliance.
+- **Skill Schemas**: Added missing required fields (`version`, `category`, `tools`, `related_skills`) to 189 skills.
+- **Creator Skills Expansion**: Added 4 mandatory markdown sections (`When to Use`, `Prerequisites`, `Process`, `Best Practices`) to creator skills.
+
+### Changed
+- **Skill Naming Convention (AGENT-35)**: Renamed 46 skills to a standardized participle-based format (e.g., `api-design` -> `designing-apis`).
+- **Global Reference Rewrite**: Automatically rewired 848 skill references across all agents, documents, workflows, manifests, blueprints, and diagrams.
+- **Catalog Cleanup**: Rebuilt `skill-catalog.json` with correct display names and fully synchronized counts (198 skills).
+
+### Fixed
+- **README Synchronization**: Auto-fixed README skill counts to correctly reflect 198 skills.
+- **Validation Pipeline**: Repaired 10 post-refactoring test failures related to stale folders, updated knowledge IDs, and markdown required sections.
+
+### Removed
+- **Generating Skills**: Deprecated and deleted `generating-skills` (superseded by `skill-creator`).
+- **Research**: Deleted empty legacy `research/` directory.
+
+## [1.4.0] - 2026-02-24
 - **Web URL Ingestion (AGENT-18)**: Expanded the RAG Knowledge Explorer to support fetching, chunking, and embedding direct website URLs via LangChain `WebBaseLoader`.
 - **HTML Table of Contents**: Implemented a BeautifulSoup HTML parser that deterministically reconstructs a Table of Contents chunk from `h1-h4` web tags for precise, high-level context navigation.
 - **RAG Dashboard Expansion**: Added a unified "Web URL" ingest tab in the standalone `rag_knowledge_explorer` Streamlit UI.

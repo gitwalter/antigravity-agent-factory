@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: Tool design, binding, and error handling patterns for LangChain agents
+knowledge:
+- none
 name: using-tools
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Tool Usage
 
@@ -275,7 +287,7 @@ def write_file(path: str, content: str) -> str:
 
 - Knowledge: `{directories.knowledge}/tool-patterns.json`
 - Skill: `mcp-integration`
-- Skill: `langchain-usage`
+- Skill: `using-langchain`
 
 ## When to Use
 This skill should be used when strict adherence to the defined process is required.

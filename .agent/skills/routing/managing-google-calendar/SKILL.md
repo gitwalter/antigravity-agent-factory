@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: routing
 description: Manage calendar events using the Google Calendar MCP server.
+knowledge:
+- none
 name: managing-google-calendar
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Google Calendar Skill

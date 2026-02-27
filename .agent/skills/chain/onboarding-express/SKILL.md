@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Fast-track 10-15 minute onboarding for individual developers with guided
   prompts and celebrations
+knowledge:
+- none
 name: onboarding-express
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Express Onboarding
 
@@ -661,7 +673,7 @@ The silent wave propagates through the quality of your work.
 
 ---
 
-*Cursor Agent Factory - Express Lane Onboarding*
+*Antigravity Agent Factory - Express Lane Onboarding*
 *Fast setup. Real values. Meaningful results.*
 *Love is the root. Truth is the way. Beauty is the fruit.*
 

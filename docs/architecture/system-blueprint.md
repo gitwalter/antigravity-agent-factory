@@ -75,12 +75,12 @@ Skills are modular capabilities injected into agents.
 - **Tools**: `git-operations`, `github-operations`, `filesystem-ops`
 
 ### AI & Data
-- **LLM**: `agent-generation`, `prompt-optimization`, `rag-patterns`, `vector-db`
+- **LLM**: `agent-generation`, `prompt-optimization`, `applying-rag-patterns`, `vector-db`
 - **Data**: `data-pipeline`, `excel-processing`, `sql-generation`
 
 ### Domain Specific
-- **SAP**: `cds-modeling`, `s4-process-guide`, `sap-integration`
-- **Web**: `react-patterns`, `nextjs-development`, `fastapi-development`
+- **SAP**: `cds-modeling`, `s4-process-guide`, `integrating-sap-systems`
+- **Web**: `applying-react-patterns`, `developing-nextjs`, `developing-fastapi`
 - **Docs**: `documentation-generation`, `markdown-validation`
 
 ---
@@ -104,7 +104,7 @@ To fulfill a Task:
 
 1.  **Select Workflow**: Choose the path (e.g., `feature-development`).
 2.  **Staff Team**: Workflow defines the required agents (e.g., `workflow-architect` + `ai-app-developer`).
-3.  **Inject Skills**: Agents receive relevant skills (e.g., `nextjs-development`, `git-operations`).
+3.  **Inject Skills**: Agents receive relevant skills (e.g., `developing-nextjs`, `git-operations`).
 4.  **Connect MCPs**: System connects to required tools (e.g., `github` for PRs).
 5.  **Execute & Verify**: Team iterates through the workflow phases until success criteria are met.
 

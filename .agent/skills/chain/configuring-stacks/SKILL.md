@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: Technology stack selection and configuration skill
+knowledge:
+- none
 name: configuring-stacks
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Stack Configuration
 

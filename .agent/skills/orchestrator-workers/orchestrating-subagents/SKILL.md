@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: general
 description: Spawning subagents dynamically, parent-child agent communication, task
   delegation and result aggregation, resource management and cleanup
+knowledge:
+- none
 name: orchestrating-subagents
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Subagent Orchestration
 
@@ -638,7 +650,7 @@ async def use_pool():
 - Knowledge: `{directories.knowledge}/subagent-patterns.json`
 - Skill: `agentic-loops`
 - Skill: `langgraph-agent-building`
-- Skill: `crewai-agents`
+- Skill: `orchestrating-crewai-agents`
 - Skill: `state-management`
 
 ## When to Use

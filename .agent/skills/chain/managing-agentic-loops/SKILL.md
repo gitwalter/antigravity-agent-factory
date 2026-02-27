@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: ReAct pattern implementation, reflection and self-correction, planning
   and task decomposition, iterative refinement patterns
+knowledge:
+- none
 name: managing-agentic-loops
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Agentic Loops
 
@@ -622,7 +634,7 @@ response = await client.chat.completions.create(
 - Knowledge: `{directories.knowledge}/agentic-loop-patterns.json`
 - Skill: `anthropic-patterns`
 - Skill: `tool-usage`
-- Skill: `langchain-usage`
+- Skill: `using-langchain`
 - Skill: `langgraph-agent-building`
 
 ## When to Use

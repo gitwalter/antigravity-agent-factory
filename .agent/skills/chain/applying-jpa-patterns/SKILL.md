@@ -1,9 +1,21 @@
 ---
+agents:
+- none
+category: chain
 description: JPA entity design (relationships, inheritance, embedded), Spring Data
   JPA repositories (derived queries, @Query, Specifications), Transaction management,
   N+1 query prevention (EntityGraph, JOIN FETCH), Auditing, Flyway/Liquibase migrations
+knowledge:
+- none
 name: applying-jpa-patterns
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Jpa Patterns
 
@@ -467,8 +479,8 @@ CREATE UNIQUE INDEX idx_product_sku ON products(sku);
 ## Related
 
 - Knowledge: `{directories.knowledge}/spring-patterns.json`
-- Skill: `spring-boot-development` for service layer
-- Skill: `spring-testing` for testing repositories
+- Skill: `developing-spring-boot` for service layer
+- Skill: `testing-spring-apps` for testing repositories
 
 ## When to Use
 This skill should be used when strict adherence to the defined process is required.

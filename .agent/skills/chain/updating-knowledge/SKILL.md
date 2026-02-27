@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: chain
 description: Interactive skill for reviewing, applying, and managing knowledge updates
+knowledge:
+- none
 name: updating-knowledge
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Update Knowledge
 

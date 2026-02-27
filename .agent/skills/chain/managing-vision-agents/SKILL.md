@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Image analysis with multi-modal LLMs (GPT-4V, Gemini Vision), object
   detection integration, image generation pipelines, and visual question answering
+knowledge:
+- none
 name: managing-vision-agents
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Vision Agents
 
@@ -452,8 +464,8 @@ class MultiModalRAG:
 ## Related
 
 - Skill: `ocr-processing`
-- Skill: `rag-patterns`
-- Skill: `advanced-retrieval`
+- Skill: `applying-rag-patterns`
+- Skill: `retrieving-advanced`
 
 ## When to Use
 This skill should be used when strict adherence to the defined process is required.

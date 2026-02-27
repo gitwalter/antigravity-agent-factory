@@ -12,7 +12,7 @@ Usage:
     python scripts/docs/changelog_helper.py --suggest    # Suggest entries based on staged files
     python scripts/docs/changelog_helper.py --validate   # Validate changelog format
 
-Author: Cursor Agent Factory
+Author: Antigravity Agent Factory
 Date: 2026-02-08
 """
 

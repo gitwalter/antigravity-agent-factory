@@ -1,6 +1,6 @@
 # Factory Workflow Diagrams
 
-This document contains the core workflow diagrams for the Cursor Agent Factory.
+This document contains the core workflow diagrams for the Antigravity Agent Factory.
 
 ## Factory Generation Workflow
 

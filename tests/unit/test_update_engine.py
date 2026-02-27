@@ -7,7 +7,7 @@ Tests cover:
 - SourceAggregator: update aggregation, deduplication, health monitoring
 - UpdateEngine: update application, merge strategies, backup management
 
-Author: Cursor Agent Factory
+Author: Antigravity Agent Factory
 Version: 1.0.0
 """
 

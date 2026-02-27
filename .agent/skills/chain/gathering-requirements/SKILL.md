@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: 5-layer requirements elicitation for Cursor agent system generation with
   axioms, purpose, and methodology
+knowledge:
+- none
 name: gathering-requirements
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Requirements Gathering
 

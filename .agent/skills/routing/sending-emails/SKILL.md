@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: routing
 description: Send emails using the cached Google Workspace credentials.
+knowledge:
+- none
 name: sending-emails
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Send Email Skill

@@ -1,7 +1,19 @@
 ---
+agents:
+- none
+category: routing
 description: GitHub operations and repository management using the GitHub MCP Server
+knowledge:
+- none
 name: operating-github
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # GitHub Operations
 

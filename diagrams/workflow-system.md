@@ -1,6 +1,6 @@
 # Workflow System Architecture Diagrams
 
-This document contains the architectural diagrams for the Cursor Agent Factory Workflow System.
+This document contains the architectural diagrams for the Antigravity Agent Factory Workflow System.
 
 ## Entity Relationship Diagram
 

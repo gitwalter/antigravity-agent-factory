@@ -1,3 +1,17 @@
+---
+name: full-stack-web-specialist
+description: Engineers type-safe, performant Next.js/React web applications covering frontend, backend, and database integration.
+type: agent
+domain: web
+skills:
+  - developing-nextjs
+  - applying-react-patterns
+  - using-prisma-database
+model: inherit
+is_background: false
+readonly: false
+---
+
 # Specialist: Full-Stack Web Specialist
 
 Principal Engineer specializing in high-fidelity TypeScript ecosystems, Next.js App Router architectures, and performant, type-safe user interfaces.
@@ -19,7 +33,7 @@ graph LR
     Roles --> R6["Accessibility Auditor"]
 
     Agent --> Skills["Specialist Skills"]
-    Skills --> S1["nextjs-enterprise"]
+    Skills --> S1["building-nextjs-enterprise"]
     Skills --> S2["react-component-mastery"]
     Skills --> S3["type-safe-data-access"]
     Skills --> S4["web-performance-ops"]
@@ -37,7 +51,7 @@ graph LR
 ## Tactical Capabilities
 
 ### Specialist Skills
-- [[nextjs-enterprise]] (Tactical Blueprint for App Router 15+)
+- [[building-nextjs-enterprise]] (Tactical Blueprint for App Router 15+)
 - [[react-component-mastery]] (High-fidelity component design manual)
 - [[type-safe-data-access]] (Prisma, Drizzle, tRPC procedures)
 - [[web-performance-ops]] (Vercel/Lighthouse optimization)

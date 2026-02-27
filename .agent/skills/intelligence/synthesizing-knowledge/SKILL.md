@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: general
 description: Structured knowledge capture to extract team wisdom, lessons learned,
   and best practices for embedding in agent systems
+knowledge:
+- none
 name: synthesizing-knowledge
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Knowledge Synthesis
 
@@ -415,7 +427,7 @@ After every wisdom harvest session:
 
 ---
 
-*Cursor Agent Factory - Wisdom Harvest Skill*
+*Antigravity Agent Factory - Wisdom Harvest Skill*
 *Capturing the knowledge that matters.*
 *Love is the root. Wisdom is the light.*
 

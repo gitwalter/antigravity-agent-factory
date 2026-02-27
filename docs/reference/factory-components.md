@@ -4,7 +4,7 @@
 
 ## 1. Introduction
 
-The Cursor Agent Factory is a meta-system that generates customized Cursor agent development systems for software projects. This document describes the **factory's own components** - the agents and skills that work together during project generation - as distinct from the components that are generated for target projects.
+The Antigravity Agent Factory is a meta-system that generates customized Cursor agent development systems for software projects. This document describes the **factory's own components** - the agents and skills that work together during project generation - as distinct from the components that are generated for target projects.
 
 All factory components operate according to the core axioms (A0-A5) and implement the 5-layer architecture, ensuring consistent, trustworthy, and value-aligned behavior.
 
@@ -57,7 +57,7 @@ For team onboarding, the **Workshop Facilitator** orchestrates a 5-workshop seri
 | `template-generator` | Generate code and document templates for the target project | `template-generation`, `cursorrules-generation` | `stack-capabilities.json`, `best-practices.json` |
 | `knowledge-manager` | Structure and generate domain knowledge files for generated projects | `knowledge-generation` | `stack-capabilities.json`, `best-practices.json` |
 | `workflow-designer` | Design and configure development workflows and trigger integrations | `workflow-generation` | `workflow-patterns.json`, `mcp-servers-catalog.json` |
-| `onboarding-architect` | Orchestrate the onboarding of existing repositories into the Cursor Agent Factory ecosystem | `onboarding-flow`, `requirements-gathering`, `stack-configuration` | `skill-catalog.json`, `stack-capabilities.json`, `mcp-servers-catalog.json` |
+| `onboarding-architect` | Orchestrate the onboarding of existing repositories into the Antigravity Agent Factory ecosystem | `onboarding-flow`, `requirements-gathering`, `stack-configuration` | `skill-catalog.json`, `stack-capabilities.json`, `mcp-servers-catalog.json` |
 | `workshop-facilitator` | Facilitate team workshops for collaborative Cursor agent system design | `team-workshop-onboarding`, `requirements-gathering`, `axiom-selection`, `methodology-selection` | `workshop-facilitation.json`, `game-mechanics.json`, `team-dynamics.json`, `axiom-zero.json` |
 | `knowledge-extender` | Extend Factory knowledge, create new skills/templates/agents via research and synthesis | `extend-knowledge` | `artifact-dependencies.json`, `skill-catalog.json`, `manifest.json` |
 | `workflow-architect` | Design, create, and orchestrate workflows for complex multi-step tasks | `extend-workflow`, `requirements-gathering` | `workflow-entities.json`, `workflow-patterns.json`, `mcp-servers-catalog.json`, `skill-catalog.json` |
@@ -223,7 +223,7 @@ For team onboarding, the **Workshop Facilitator** orchestrates a 5-workshop seri
 
 ### Onboarding Architect
 
-**Name and Description**: The Onboarding Architect orchestrates the seamless integration of Cursor Agent Factory into existing repositories. This agent guides users through the onboarding process, ensuring non-destructive integration while adding factory capabilities.
+**Name and Description**: The Onboarding Architect orchestrates the seamless integration of Antigravity Agent Factory into existing repositories. This agent guides users through the onboarding process, ensuring non-destructive integration while adding factory capabilities.
 
 **When Activated**:
 - User mentions wanting to "onboard", "integrate", or "enhance" an existing repository
@@ -370,7 +370,7 @@ For team onboarding, the **Workshop Facilitator** orchestrates a 5-workshop seri
 | `enforcement-selection` | Practices | Guide users through selecting enforcement patterns (quality, safety, integrity) |
 | `alignment-check` | Quality | Verify understanding and alignment before major implementations to prevent silent misalignment |
 | `pattern-feedback` | Quality | Observe patterns from development experience and propose improvements to axioms/principles/methodology |
-| `onboarding-flow` | Specialized | Integrate Cursor Agent Factory into existing repositories non-destructively |
+| `onboarding-flow` | Specialized | Integrate Antigravity Agent Factory into existing repositories non-destructively |
 | `team-workshop-onboarding` | Specialized | Orchestrate collaborative team workshop series for designing customized Cursor agent systems |
 | `shell-platform` | Specialized | Handle platform-specific shell command considerations for Windows PowerShell and Unix shells |
 | `readme-validation` | Quality | Validate README project structure matches actual filesystem and update automatically |
@@ -588,7 +588,7 @@ For team onboarding, the **Workshop Facilitator** orchestrates a 5-workshop seri
 
 #### onboarding-flow
 
-**Name and Description**: Integrates Cursor Agent Factory into existing repositories non-destructively, preserving existing artifacts while adding missing components. Enables seamless integration of factory's agent system into repositories that already have code, configurations, and potentially some Cursor artifacts.
+**Name and Description**: Integrates Antigravity Agent Factory into existing repositories non-destructively, preserving existing artifacts while adding missing components. Enables seamless integration of factory's agent system into repositories that already have code, configurations, and potentially some Cursor artifacts.
 
 **When to Use**: User mentions an existing repository they want to enhance with AI agents, user says "onboard my repo", "integrate into existing project", "add agents to my codebase", user provides a path to a local repository, user wants to upgrade an older factory-generated setup. For teams, consider `team-workshop-onboarding` instead.
 

@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Image-to-text with various engines (Tesseract, EasyOCR, cloud APIs),
   PDF text extraction, table recognition, and layout analysis
+knowledge:
+- none
 name: processing-ocr
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Ocr Processing
 
@@ -446,8 +458,8 @@ def extract_text_azure_vision(image_path: str, endpoint: str, key: str) -> str:
 ## Related
 
 - Skill: `vision-agents`
-- Skill: `rag-patterns`
-- Skill: `advanced-retrieval`
+- Skill: `applying-rag-patterns`
+- Skill: `retrieving-advanced`
 
 ## When to Use
 This skill should be used when strict adherence to the defined process is required.

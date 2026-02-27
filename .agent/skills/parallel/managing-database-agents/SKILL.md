@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: parallel
 description: SQL generation with LLMs, schema understanding, query optimization, and
   text-to-SQL pipelines
+knowledge:
+- none
 name: managing-database-agents
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Database Agents
 
@@ -479,7 +491,7 @@ print(result["summary"])
 
 - Knowledge: `{directories.knowledge}/data-pipeline-patterns.json`
 - Skill: `mcp-integration`
-- Skill: `langchain-usage`
+- Skill: `using-langchain`
 - Skill: `tool-usage`
 
 ## When to Use

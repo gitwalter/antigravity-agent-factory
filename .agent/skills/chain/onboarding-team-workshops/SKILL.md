@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: Collaborative team workshop series for designing customized Cursor agent
   systems grounded in love, truth, and beauty
+knowledge:
+- none
 name: onboarding-team-workshops
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Team Workshop Onboarding
 

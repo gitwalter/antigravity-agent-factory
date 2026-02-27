@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: chain
 description: BTP Cloud Foundry deployment (cf push, MTA), service bindings (XSUAA,
   destination, connectivity), Kyma runtime deployment, SAP Build Work Zone integration
+knowledge:
+- none
 name: deploying-to-btp
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Btp Deployment
 
@@ -428,7 +440,7 @@ jobs:
 
 ## Related
 
-- Skill: `sap-security` - XSUAA and security configuration
+- Skill: `securing-sap-systems` - XSUAA and security configuration
 - Knowledge: `sap-btp-patterns.json` - BTP deployment patterns
 
 ## When to Use

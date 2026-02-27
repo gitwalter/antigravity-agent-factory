@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: parallel
 description: Speech-to-text (Whisper, cloud APIs), text-to-speech synthesis, real-time
   transcription, and audio analysis
+knowledge:
+- none
 name: processing-speech
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Speech Processing
 
@@ -465,7 +477,7 @@ def transcribe_azure_speech(audio_path: str, subscription_key: str, region: str,
 ## Related
 
 - Skill: `vision-agents`
-- Skill: `rag-patterns`
+- Skill: `applying-rag-patterns`
 - Skill: `ocr-processing`
 
 ## When to Use

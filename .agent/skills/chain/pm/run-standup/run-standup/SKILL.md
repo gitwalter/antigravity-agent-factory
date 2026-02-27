@@ -1,11 +1,21 @@
 ---
+agents:
+- none
+category: general
 description: Query and report current status
 knowledge:
 - workflow-patterns.json
 - best-practices.json
 - team-dynamics.json
 name: run-standup
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 
 # Run Standup Skill

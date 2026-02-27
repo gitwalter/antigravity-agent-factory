@@ -957,7 +957,7 @@ Tests the complete update flow from Factory -> Generated Projects:
 
 These tests are CRITICAL for verifying the update system works end-to-end.
 
-Author: Cursor Agent Factory
+Author: Antigravity Agent Factory
 Version: 1.0.0*
 
 #### TestUpdatePatternsExist
@@ -3081,7 +3081,7 @@ This module provides comprehensive mocked tests for all adapters in scripts/adap
 
 All HTTP requests are mocked using unittest.mock to avoid external dependencies.
 
-Author: Cursor Agent Factory
+Author: Antigravity Agent Factory
 Version: 1.0.0*
 
 #### TestPyPIAdapterMocked
@@ -3399,7 +3399,7 @@ Author: Antigravity Agent FactoryVersion: 1.0.0*
 Tests conflict detection, resolution strategies, and conflict reporting
 for knowledge evolution merges.
 
-Author: Cursor Agent Factory
+Author: Antigravity Agent Factory
 Version: 1.0.0*
 
 #### TestConflictType
@@ -5316,7 +5316,7 @@ Tests cover:
 - SourceAggregator: update aggregation, deduplication, health monitoring
 - UpdateEngine: update application, merge strategies, backup management
 
-Author: Cursor Agent Factory
+Author: Antigravity Agent Factory
 Version: 1.0.0*
 
 #### TestChangelogEntry

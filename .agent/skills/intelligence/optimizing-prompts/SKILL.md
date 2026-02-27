@@ -1,8 +1,20 @@
 ---
+agents:
+- none
+category: general
 description: DSPy integration for declarative prompt optimization, prompt versioning,
   A/B testing, few-shot optimization, chain-of-thought patterns, prompt caching
+knowledge:
+- none
 name: optimizing-prompts
+related_skills:
+- none
+templates:
+- none
+tools:
+- none
 type: skill
+version: 1.0.0
 ---
 # Prompt Optimization
 
