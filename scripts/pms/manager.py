@@ -22,20 +22,28 @@ def run_django_command(command: str):
     return result.stdout.strip()
 
 
-def list_issues(project_id: str = None, state_name: str = None, as_json: bool = False):
+def list_issues(
+    project_id: str = None,
+    state_name: str = None,
+    cycle_name: str = None,
+    module_name: str = None,
+    as_json: bool = False,
+):
     logic = [
         "from plane.db.models import Issue, Project",
         "p = Project.objects.get(identifier='AGENT')",
+        "filters = {'project': p}",
     ]
     if state_name:
-        logic.append(
-            f"qs = Issue.objects.filter(project=p, state__name='{state_name}').values('sequence_id', 'name', 'priority', 'state__name')"
-        )
-    else:
-        logic.append(
-            "qs = Issue.objects.filter(project=p).values('sequence_id', 'name', 'priority', 'state__name')"
-        )
+        logic.append(f"filters['state__name'] = '{state_name}'")
+    if cycle_name:
+        logic.append(f"filters['issue_cycle__cycle__name'] = '{cycle_name}'")
+    if module_name:
+        logic.append(f"filters['issue_module__module__name'] = '{module_name}'")
 
+    logic.append(
+        "qs = Issue.objects.filter(**filters).values('sequence_id', 'name', 'priority', 'state__name').distinct()"
+    )
     logic.append("print(list(qs))")
     cmd = "\n".join(logic)
     output = run_django_command(cmd)
@@ -43,6 +51,15 @@ def list_issues(project_id: str = None, state_name: str = None, as_json: bool = 
         print(output)
     else:
         print(f"Project Issues: \n{output}")
+
+
+def list_modules(as_json: bool = False):
+    cmd = "from plane.db.models import Module, Project; p = Project.objects.get(identifier='AGENT'); print(list(Module.objects.filter(project=p).values('name', 'id')))"
+    output = run_django_command(cmd)
+    if as_json:
+        print(output)
+    else:
+        print(f"Modules: \n{output}")
 
 
 def list_projects(as_json: bool = False):
@@ -54,7 +71,7 @@ def list_projects(as_json: bool = False):
         print(f"Projects: \n{output}")
 
 
-def get_issue_details(sequence_id: str):
+def get_issue_details(sequence_id: str, as_json: bool = False):
     seq_num = sequence_id.split("-")[-1]
     logic = [
         "from plane.db.models import Issue, Project",
@@ -71,7 +88,22 @@ def get_issue_details(sequence_id: str):
     # Extract JSON between START_JSON and END_JSON if multiple prints exist
     if "START_JSON" in output and "END_JSON" in output:
         json_part = output.split("START_JSON\n")[-1].split("\nEND_JSON")[0]
-        print(json_part)
+        if as_json:
+            print(json_part)
+        else:
+            try:
+                data = json.loads(json_part)
+                print(
+                    f"================ AGENT-{data.get('sequence_id')} ================"
+                )
+                print(f"Title: {data.get('name')}")
+                print(f"Priority: {data.get('priority')}")
+                print(f"State: {data.get('state')}")
+                print(f"\nDescription:\n{data.get('desc', '')}")
+                print("==============================================")
+            except Exception as e:
+                print(f"Failed to parse details: {e}")
+                print(output)
     else:
         print(output)
 
@@ -218,17 +250,24 @@ if __name__ == "__main__":
     list_parser.add_argument(
         "--state", help="Filter by state name (e.g., Todo, Backlog)"
     )
+    list_parser.add_argument("--cycle", help="Filter by cycle/sprint name")
+    list_parser.add_argument("--module", help="Filter by module name")
     list_parser.add_argument("--json", action="store_true", help="Output as JSON")
 
     # Details
     details_parser = subparsers.add_parser("details", aliases=["get"])
     details_parser.add_argument("id", help="Issue ID (e.g., AGENT-1 or simply 1)")
+    details_parser.add_argument("--json", action="store_true", help="Output as JSON")
 
     # Cycles
     subparsers.add_parser("cycles")
 
     # States
     subparsers.add_parser("states")
+
+    # Modules
+    modules_parser = subparsers.add_parser("modules")
+    modules_parser.add_argument("--json", action="store_true")
 
     # Create
     create_parser = subparsers.add_parser("create")
@@ -271,11 +310,13 @@ if __name__ == "__main__":
 
     try:
         if args.command == "list":
-            list_issues(args.project_id, args.state, args.json)
+            list_issues(args.project_id, args.state, args.cycle, args.module, args.json)
         elif args.command == "projects":
             list_projects(args.json)
+        elif args.command == "modules":
+            list_modules(args.json)
         elif args.command in ["details", "get"]:
-            get_issue_details(args.id)
+            get_issue_details(args.id, getattr(args, "json", False))
         elif args.command == "cycles":
             list_cycles()
         elif args.command == "states":

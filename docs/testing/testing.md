@@ -11,11 +11,11 @@ The test suite is powered by **pytest** and maintains a high degree of coverage 
 
 ### Vital Statistics
 
-The test suite consists of **2048 tests** organized into five specialized categories:
+The test suite consists of **2083 tests** organized into five specialized categories:
 
 | Category | Count | Purpose |
 |----------|-------|---------|
-| Unit Tests | ~1020 | Atomic validation of individual functions and classes. |
+| Unit Tests | ~1054 | Atomic validation of individual functions and classes. |
 | Integration Tests | ~225 | Verification of component interactions and CLI flows. |
 | Validation Tests | ~235 | Ensuring all JSON/Markdown patterns adhere to schemas. |
 | Guardian Tests | ~153 | Testing the active protection and safety engine (A1-A5). |

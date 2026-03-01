@@ -42,17 +42,29 @@ This skill enables agents to manage projects, issues, and states in a local Plan
 ## Process
 Follow these procedures to interact with the Plane PMS native integration via shell commands.
 
-### 1. Listing Issues & Filtering by State
-To list components, prefer JSON output for programmatic parsing. **You can filter issues by state using the `--state` argument**:
+### 1. Listing Issues & Filtering
+To list components, prefer JSON output for programmatic parsing. **You can combine filters for high-precision discovery**:
 ```powershell
 # List all issues in AGENT project
 conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py list --json
 
-# List issues filtered by state (e.g., Backlog, Todo, In Progress, Done, Cancelled)
+# Filter by state (e.g., Backlog, Todo, In Progress, Done, Cancelled)
 conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py list --state "In Progress" --json
+
+# Filter by cycle/sprint
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py list --cycle "sprint 002" --json
+
+# Filter by module
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py list --module "rag system" --json
+
+# Combined filter: Done issues in sprint 002
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py list --cycle "sprint 002" --state "Done" --json
 
 # List all projects
 conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py projects --json
+
+# List all modules in the project
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py modules --json
 ```
 
 ### Supported Issue States (DO NOT QUERY DYNAMICALLY)
@@ -70,17 +82,17 @@ To create or inspect a specific issue:
 conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py create --name "Task Title" --description "Details"
 
 # Get full issue metadata (JSON)
-conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py details --id AGENT-1
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py details AGENT-1
 ```
 
 ### 3. Precision Updates
 Update specific fields with precision:
 ```powershell
 # Update status and description
-conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py update --id AGENT-1 --state "In Progress" --description "Updated scope"
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py update AGENT-1 --state "In Progress" --description "Updated scope"
 
 # Rename task (Efficiency: prevents duplicate tasks for minor scope shifts)
-conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py update --id AGENT-1 --name "New Explicit Title"
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py update AGENT-1 --name "New Explicit Title"
 
 ### 4. Advanced Direct Execution
 For custom queries or operations not covered by the CLI:
@@ -101,16 +113,16 @@ All issue updates, especially closures, MUST provide high transparency and profe
 
 ### Example Professional Update
 ```powershell
-conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py update --id AGENT-16 --state "Done" --description "<b>VERIFIED: Structural Hardening & Sync accomplished.</b><br><ul><li><b>Core Fix:</b> Repaired structural flaws in MD/JSON artifacts to satisfy CI gates.</li><li><b>Files:</b> Patched agent-1-bridge.md, dashboard-knowledge.json, and 12 others.</li><li><b>Logic:</b> Aligned manifest counts (194) with filesystem reality.</li><li><b>Proof:</b> 131/131 pytest passed.</li><li><b>Prevention:</b> Integrated verify_structures.py into the generation lifecycle.</li></ul>"
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py update AGENT-16 --state "Done" --description "<b>VERIFIED: Structural Hardening & Sync accomplished.</b><br><ul><li><b>Core Fix:</b> Repaired structural flaws in MD/JSON artifacts to satisfy CI gates.</li><li><b>Files:</b> Patched agent-1-bridge.md, dashboard-knowledge.json, and 12 others.</li><li><b>Logic:</b> Aligned manifest counts (194) with filesystem reality.</li><li><b>Proof:</b> 131/131 pytest passed.</li><li><b>Prevention:</b> Integrated verify_structures.py into the generation lifecycle.</li></ul>"
 ```
 
 ## Best Commands to Use
 | Operation | Recommended Command Pattern | Goal |
 |-----------|-----------------------------|------|
 | **Discovery** | `projects` \| `list --json` \| `list --state "Done" --json` | Mapping current project landscape & filtering |
-| **Inspection** | `details --id <ID>` | Deep understanding of a specific roadblock |
-| **Reporting** | `update --description "<ul><li>Item</li></ul>"` | Professional progress broadcasting |
-| **Refactoring** | `update --name "..."` | Aligning issue titles with evolving goals |
+| **Inspection** | `details <ID>` | Deep understanding of a specific roadblock |
+| **Reporting** | `update <ID> --description "<ul><li>Item</li></ul>"` | Professional progress broadcasting |
+| **Refactoring** | `update <ID> --name "..."` | Aligning issue titles with evolving goals |
 | **Custom Ops** | `run_django "..."` | Bypassing limitations for specific data needs |
 
 ## Best Practices

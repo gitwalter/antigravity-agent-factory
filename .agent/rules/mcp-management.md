@@ -22,6 +22,37 @@ Governs the strategic orchestration of the Model Context Protocol (MCP) ecosyste
 - **Resource Cleanup**: Always use `async with` context managers to ensure socket/SSE connection termination.
 - **Safety**: Verify all tool arguments against the server's `inputSchema` before invocation.
 
-## 4. Grounding & Memory
-- **Add Observations**: Proactively add key decisions and architectural shifts to the Memory graph.
-- **Read First**: Always perform `mcp_memory_read_graph` or key entity lookup before starting sub-tasks.
+## 4. Memory MCP — Orientation & Grounding
+
+Memory MCP is the system's **live index** for fast agent orientation. Use it before file-reading for quick context.
+
+### Key Entities (query by name)
+
+| Entity | Type | Use When |
+|--------|------|----------|
+| `RAG_Library` | system_component | Working with RAG system |
+| `RAG_CLI_Commands` | script_usage | Need exact CLI syntax for rag_cli.py |
+| `RAG_Skills` | capability_index | Finding which RAG skill to use |
+| `System_Self_Optimization` | capability_index | Running maintenance/validation |
+| `Agent_Rules_Index` | system_rule | Need rule orientation |
+
+### When to Query Memory MCP
+
+- **Before running any script** → query `<Script>_CLI_Commands` for current syntax
+- **Starting a maintenance task** → query `System_Self_Optimization` for available tools
+- **Before creating knowledge/skills** → query existing entities for duplicates
+- **After modifying a script's CLI** → run `sync_script_registry.py` to update entities
+
+### Convention: WHAT / WHEN / HOW
+
+| Layer | Stores | Who Maintains |
+|-------|--------|---------------|
+| **Skill** (WHAT/WHEN) | Intent and triggers | Updated manually when purpose changes |
+| **Memory MCP** (HOW) | Exact syntax, parameters | Updated by `sync_script_registry.py` or manually |
+| **Knowledge** (WHY) | Context, patterns, best practices | Updated during research/learning |
+
+### Mandatory Practices
+
+- **Read First**: Search `mcp_memory_search_nodes` with relevant keywords before sub-tasks.
+- **Write Back**: Add key decisions, architectural shifts, and new entity relationships.
+- **Keep Current**: After modifying scripts, run the Script Change Protocol (`.agent/rules/script-change-protocol.md`).

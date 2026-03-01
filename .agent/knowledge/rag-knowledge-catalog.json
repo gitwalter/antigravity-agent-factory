@@ -3,45 +3,86 @@
     "id": "rag-knowledge-catalog",
     "name": "RAG Knowledge Catalog",
     "title": "RAG Knowledge Catalog",
-    "description": "Registry of documents and artifacts ingested into the FAISS vector store for RAG operations.",
-    "version": "1.1.0",
+    "description": "Registry and best practices for the Qdrant-backed Parent-Child RAG system. Covers deduplication, TOC extraction, cataloging, and CLI/MCP tools.",
+    "version": "2.0.0",
     "category": "rag",
     "axiomAlignment": {
-        "A1_verifiability": "Source attribution for all retrieved content",
-        "A2_user_primacy": "User controls what content is ingested",
-        "A3_transparency": "Explicit mapping of documents to vector IDs",
-        "A4_non_harm": "Filter sensitive content before ingestion",
-        "A5_consistency": "Unified ingestion catalog across all agents"
+        "A1_verifiability": "Source attribution via file_hash and normalized paths for all ingested content",
+        "A2_user_primacy": "User controls ingestion via CLI (rag_cli.py) with --force override",
+        "A3_transparency": "get_library_info() exposes full library metadata; list --detailed shows hashes and TOC status",
+        "A4_non_harm": "Hash-based dedup prevents accidental re-ingestion and wasted compute",
+        "A5_consistency": "Unified catalog across CLI, MCP server, and agent skills"
+    },
+    "system_components": {
+        "vector_store": "Qdrant (local, collection: ebook_library)",
+        "embeddings": "sentence-transformers/all-MiniLM-L6-v2 (384-dim)",
+        "core_module": "scripts/ai/rag/rag_optimized.py",
+        "cli": "scripts/ai/rag/rag_cli.py",
+        "mcp_server": "scripts/mcp/servers/rag/rag_mcp_server.py",
+        "agentic_rag": "scripts/ai/agents/rag_agent.py"
+    },
+    "deduplication": {
+        "strategies": ["SHA-256 file hash", "normalized path comparison"],
+        "force_override": "ingest --force bypasses both checks",
+        "hash_storage": "file_hash field in document metadata"
+    },
+    "toc_extraction": {
+        "strategy_chain": [
+            "PyMuPDF native TOC (doc.get_toc()) — fastest, most reliable",
+            "Regex heuristic (Chapter/Part/Section patterns) — fallback",
+            "LLM extraction (Gemini 2.5 Flash) — last resort"
+        ],
+        "output": "Injected as specialized chunk with is_toc=True metadata"
     },
     "patterns": {
         "document_ingestion": {
-            "description": "Standard flow for document ingestion with chunking and metadata",
-            "use_when": "Adding new unstructured data to the RAG system",
-            "code_example": "ingest_flow.run(document_path)",
+            "description": "Standard flow for PDF ingestion with Parent-Child chunking and hash-based dedup",
+            "use_when": "Adding new PDF ebooks to the RAG library",
+            "code_example": "conda run -p D:\\Anaconda\\envs\\cursor-factory python scripts/ai/rag/rag_cli.py ingest <pdf_path>",
             "best_practices": [
                 "Use recursive character text splitting",
-                "Store absolute paths in metadata"
+                "Store normalized absolute paths in metadata",
+                "Always compute and store file_hash for dedup",
+                "Check for duplicates before ingesting (default behavior)"
+            ]
+        },
+        "catalog_inspection": {
+            "description": "Query library state without modifying it",
+            "use_when": "Checking library health, finding duplicates, or getting document details",
+            "commands": [
+                "rag_cli.py stats",
+                "rag_cli.py list --detailed",
+                "rag_cli.py info <name>",
+                "rag_cli.py check-duplicates"
             ]
         }
     },
     "best_practices": [
         "Normalize all paths before ingestion",
-        "Deduplicate documents by content hash",
-        "Track ingestion timestamps"
+        "Deduplicate documents by SHA-256 content hash and path",
+        "Use multi-strategy TOC extraction (PyMuPDF → regex → LLM)",
+        "Check library stats before and after ingestion",
+        "Use list --detailed to verify TOC availability"
     ],
     "anti_patterns": [
         {
             "name": "Duplicate Ingestion",
             "problem": "Ingesting the same file under different relative paths",
-            "fix": "Use normalized absolute paths as unique identifiers"
+            "fix": "Hash-based dedup catches identical content regardless of path"
+        },
+        {
+            "name": "LLM-only TOC",
+            "problem": "Relying solely on LLM for TOC extraction (slow, unreliable, costly)",
+            "fix": "Multi-strategy extraction with native + regex before LLM fallback"
         }
     ],
     "related_skills": [
         "ingesting-rag-content",
+        "inspecting-rag-catalog",
         "retrieving-rag-context"
     ],
     "related_knowledge": [
-        "applying-rag-patterns.json"
-    ],
-    "ingested_documents": []
+        "applying-rag-patterns.json",
+        "advanced-rag-patterns.json"
+    ]
 }

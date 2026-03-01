@@ -73,10 +73,11 @@ class DataManager:
         """Retrieves actual dataset content from the database."""
         session = db_manager.get_session()
         from .database import Dataset
+        import io
 
         ds = session.query(Dataset).filter_by(id=dataset_id).first()
         if ds and ds.data_json:
-            data = pd.read_json(ds.data_json, orient="records")
+            data = pd.read_json(io.StringIO(ds.data_json), orient="records")
             session.close()
             return data
         session.close()

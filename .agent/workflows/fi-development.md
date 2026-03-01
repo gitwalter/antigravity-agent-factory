@@ -1,7 +1,7 @@
 ---
 ## Overview
 
-description: Workflow for FI-related development: reports, enhancements, validations. References BKPF, BSEG, FI-CAX/VIM where rele...
+description: "Workflow for FI-related development: reports, enhancements, validations. References BKPF, BSEG, FI-CAX/VIM where rele..."
 ---
 
 # Fi Development

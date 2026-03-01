@@ -20,23 +20,54 @@ Our system avoids the pitfalls of naive semantic search by using a multi-level *
 - **Framework**: LangChain (ParentDocumentRetriever)
 - **MCP Server**: `antigravity-rag` (Python-based stdio server)
 
+## Deduplication
+
+Documents are deduplicated using two strategies:
+- **SHA-256 file hash**: Catches identical content regardless of file path
+- **Normalized path check**: Prevents re-ingestion of the same file
+- **Override**: `ingest --force` bypasses both checks
+
+## TOC Extraction
+
+Multi-strategy extraction with 3-tier fallback:
+1. **PyMuPDF native** (`doc.get_toc()`) — fastest, most reliable
+2. **Regex heuristic** (Chapter/Part/Section patterns) — fallback
+3. **LLM extraction** (Gemini 2.5 Flash) — last resort
+
+## CLI Commands
+
+```bash
+rag_cli.py search <query> [--top-k N]    # Semantic search
+rag_cli.py list [--detailed]              # List documents
+rag_cli.py ingest <file> [--force]        # Ingest PDF
+rag_cli.py delete <name> [--force]        # Delete document
+rag_cli.py stats                          # Library statistics
+rag_cli.py info <name>                    # Document details
+rag_cli.py check-duplicates               # Find duplicates
+rag_cli.py scan <dir> [-r]                # Compare dir vs index
+rag_cli.py get-source <name>              # Retrieve raw chunks
+```
+
+All commands: `conda run -p D:\Anaconda\envs\cursor-factory python scripts/ai/rag/rag_cli.py <cmd>`
+
 ## MCP Tools
 
-The `antigravity-rag` server provides the following tools:
+The `antigravity-rag` server provides:
 
 ### `search_library(query: str)`
 Performs semantic search across the ebook library. Returns parent chunks containing the answer and source metadata.
 
 ### `ingest_document(file_path: str)`
 Processes a PDF document using Parent-Child splitting and adds it to the vector store.
-> [!IMPORTANT]
-> Currently, only PDF format is supported for the optimized Parent-Child workflow.
 
 ### `list_library_sources()`
 Lists all unique documents currently indexed in the system.
 
+### `get_ebook_toc(document_name: str)`
+Retrieves the Table of Contents for a specific document via fuzzy name matching.
+
 ## Performance
-By using local embeddings (`FastEmbed`) and a local Qdrant instance, the system eliminates network latency and ensures data privacy. Typical retrieval time is <100ms on standard CPU hardware.
+Local embeddings and Qdrant eliminate network latency and ensure data privacy. Typical retrieval: <100ms on standard CPU.
 
 ## Maintenance
 - **Validation**: Run `python scripts/validation/sync_artifacts.py` to ensure counts are in sync.

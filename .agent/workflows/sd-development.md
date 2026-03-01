@@ -1,7 +1,7 @@
 ---
 ## Overview
 
-description: Workflow for SD-related development: pricing, billing, delivery, reports, RAP. References VBAK, VBAP, VBRK, VBRP.
+description: "Workflow for SD-related development: pricing, billing, delivery, reports, RAP. References VBAK, VBAP, VBRK, VBRP."
 ---
 
 # Sd Development

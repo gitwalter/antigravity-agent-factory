@@ -147,7 +147,7 @@ class VersionUpdater:
             "redis": "7.4",
             "sqlite": "3.47.0",
             "mysql": "9.1",
-            "chromadb": versions.get("chromadb", "1.4.1"),
+            "chromadb": versions.get("chromadb", "1.4.2"),
             "pinecone": "cloud-managed",
             "qdrant": versions.get("qdrant-client", "1.12.0"),
             "weaviate": versions.get("weaviate-client", "4.9.0"),

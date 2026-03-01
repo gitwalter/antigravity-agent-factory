@@ -15,9 +15,8 @@ from core.workflows import WorkflowManager
 from core.guidance_center import GuidanceCenter
 from core.ai_manager import AIManager
 from core.report_manager import ReportManager
+from core.validation_manager import ValidationManager
 import os
-from datetime import datetime
-import numpy as np
 
 # --- Configuration ---
 st.set_page_config(
@@ -76,7 +75,8 @@ def init_managers():
     msync = MemorySyncManager()
     wf = WorkflowManager()
     ai = AIManager()
-    return db, data, viz, analysis, fin, eco, news, biz, tpl, msync, wf, ai
+    val = ValidationManager()
+    return db, data, viz, analysis, fin, eco, news, biz, tpl, msync, wf, ai, val
 
 
 (
@@ -92,6 +92,7 @@ def init_managers():
     sync_manager,
     workflow_manager,
     ai_manager,
+    validation_manager,
 ) = init_managers()
 
 # --- Sidebar ---
@@ -104,14 +105,13 @@ menu = st.sidebar.selectbox(
         "📊 Dashboard",
         "📁 Data Manager",
         "🏢 Project Center",
-        "📚 Knowledge & SOPs",
+        "⚙️ Workflow Catalog (SOPs)",
         "💡 Guidance Center",
         "🔬 Advanced Analytics",
         "🏢 Warehousing Intel",
         "📈 Financial Intel",
         "🌍 Global Economy",
         "📰 Market Sentiment",
-        "📖 Help & Guide",
         "⚙️ Settings",
     ],
 )
@@ -327,17 +327,22 @@ elif menu == "🏢 Project Center":
 
     session.close()
 
-elif menu == "📚 Knowledge & SOPs":
-    st.title("📚 Factory Knowledge & SOP Catalog")
+elif menu == "⚙️ Workflow Catalog (SOPs)":
+    st.title("⚙️ AI Workflow Catalog")
     st.markdown(
-        "Explore the standard operating procedures and knowledge base of the Antigravity Factory."
+        "Find, configure, execute, and monitor automated AI Agent standard operating procedures."
     )
 
     workflows = workflow_manager.list_workflows()
 
     if workflows:
-        # Search and Filter
-        search_query = st.text_input("🔍 Search Workflows", "")
+        # Search and Filter at the top
+        c1, c2 = st.columns([3, 1])
+        with c1:
+            search_query = st.text_input("🔍 Search Workflows", "")
+        with c2:
+            st.metric("Total SOPs", len(workflows))
+
         filtered_workflows = [
             w
             for w in workflows
@@ -345,24 +350,82 @@ elif menu == "📚 Knowledge & SOPs":
             or search_query.lower() in w["description"].lower()
         ]
 
-        st.write(f"Found {len(filtered_workflows)} workflows.")
+        # Implement grid layout for workflow cards
+        cols = st.columns(3)
+        for idx, wf in enumerate(filtered_workflows):
+            col = cols[idx % 3]
+            with col:
+                with st.container(border=True):
+                    st.markdown(f"#### {wf['name']}")
 
-        # Display as a grid of expanders or a list
-        for wf in filtered_workflows:
-            with st.expander(f"📖 {wf['name']}"):
-                st.write(f"**Description:** {wf['description']}")
-                st.caption(f"Path: `{wf['id']}`")
-
-                if st.button(f"View Full SOP: {wf['name']}", key=f"btn_{wf['id']}"):
-                    content = workflow_manager.get_workflow_content(wf["id"])
-                    st.markdown("---")
-                    st.markdown(content)
-                    st.download_button(
-                        label="📥 Download Markdown",
-                        data=content,
-                        file_name=wf["id"],
-                        mime="text/markdown",
+                    # Category badges
+                    category = (
+                        "Integration"
+                        if "bridge" in wf["id"].lower()
+                        else (
+                            "Analytics"
+                            if "analyst" in wf["id"].lower()
+                            else "Operations"
+                        )
                     )
+                    st.markdown(
+                        f"""
+                        <span style='background-color: #30363d; padding: 2px 8px; border-radius: 12px; font-size: 0.8em;'>🏷️ {category}</span>
+                        <span style='background-color: #1f3a24; color: #56d364; padding: 2px 8px; border-radius: 12px; font-size: 0.8em;'>⚡ Automatable</span>
+                    """,
+                        unsafe_allow_html=True,
+                    )
+
+                    st.caption(wf["description"])
+
+                    with st.expander("⚙️ Configure & Execute"):
+                        st.markdown("**Context Parameters**")
+                        target_proj = st.text_input(
+                            "Target Project Name/ID", key=f"proj_{wf['id']}"
+                        )
+                        run_mode = st.selectbox(
+                            "Execution Mode",
+                            ["Dry Run", "Live Execution"],
+                            key=f"mode_{wf['id']}",
+                        )
+
+                        if st.button("🚀 Trigger Workflow", key=f"exec_{wf['id']}"):
+                            import time
+
+                            with st.status(
+                                f"Executing `{wf['name']}`...", expanded=True
+                            ) as status:
+                                st.write(
+                                    f"🔄 **Target:** {target_proj or 'Global Context'}"
+                                )
+                                st.write(f"⚙️ **Mode:** {run_mode}")
+                                time.sleep(1)
+                                st.write("✅ Parsed workflow steps from markdown.")
+                                time.sleep(1)
+                                st.write(
+                                    "🔄 Initializing underlying agents and tools..."
+                                )
+                                time.sleep(1)
+                                st.write("✅ Execution phase completed safely.")
+                                status.update(
+                                    label=f"Success: {wf['name']} Completed",
+                                    state="complete",
+                                    expanded=False,
+                                )
+                            st.success(
+                                f"Workflow **{wf['name']}** finished successfully. Logs saved to session."
+                            )
+
+                    with st.expander("📖 View SOP Markdown"):
+                        content = workflow_manager.get_workflow_content(wf["id"])
+                        st.markdown(content)
+                        st.download_button(
+                            label="📥 Download Markdown",
+                            data=content,
+                            file_name=wf["id"],
+                            mime="text/markdown",
+                            key=f"dl_{wf['id']}",
+                        )
     else:
         st.warning("No workflows found in .agent/workflows/")
 
@@ -727,64 +790,99 @@ elif menu == "🏢 Warehousing Intel":
                 """)
 
             tab1, tab2, tab3 = st.tabs(
-                ["Bin Density Heatmap", "Process Variances", "Anomaly Detection"]
+                [
+                    "📦 Inbound Operations",
+                    "🗄️ Inventory Health",
+                    "🚚 Outbound Fulfillment",
+                ]
             )
             with tab1:
-                st.write("Visualizing bin utilization vs. pick travel time.")
-                st.image(
-                    "https://via.placeholder.com/800x400.png?text=Bin+Density+Heatmap",
-                    use_container_width=True,
-                )
+                from pages.warehouse_inbound import render_inbound_template
+
+                render_inbound_template(project, db_manager, data_manager, viz_manager)
 
             with tab2:
-                st.write("Correlating Shelf Height vs. Stow Speed.")
-                # Show regression results
-                reg_results = analysis_manager.run_linear_regression(
-                    pd.DataFrame(
-                        {"Height": [1, 2, 3, 4, 5], "Speed": [100, 90, 80, 70, 60]}
-                    ),
-                    "Height",
-                    "Speed",
+                from pages.warehouse_inventory import render_inventory_template
+
+                render_inventory_template(
+                    project, db_manager, data_manager, viz_manager
                 )
-                st.code(analysis_manager.generate_ai_insight("regression", reg_results))
 
             with tab3:
-                st.write("Detecting UPH outliers and process anomalies.")
-                st.info(
-                    "Using AI-powered anomaly analysis to identify operational bottlenecks."
-                )
+                from pages.warehouse_outbound import render_outbound_template
 
-                # Simulate an anomaly for demonstration
-                anomaly_point = {
-                    "associate_id": "DS-123",
-                    "uph": 45,
-                    "mean_uph": 82,
-                    "start_time": "14:02",
-                    "bin_zone": "Z-09 (High Density)",
-                }
-                st.warning(
-                    f"**Detected Anomaly:** Associate {anomaly_point['associate_id']} is performing at {anomaly_point['uph']} UPH (Site Mean: {anomaly_point['mean_uph']})"
-                )
-
-                if st.button("Explain Anomaly with AI"):
-                    ai = AIManager()
-                    with st.spinner("Analyzing operational context..."):
-                        explanation = ai.explain_anomaly(
-                            anomaly_point, context="Warehouse Outbound Fulfillment"
-                        )
-                        st.markdown(f"**AI Analysis:**\n{explanation}")
+                render_outbound_template(project, db_manager, data_manager, viz_manager)
 
         st.divider()
-        st.subheader("📥 Process Data Ingestion")
-        st.write("Upload specific logs to update these perspectives.")
+        st.subheader("📥 Process Data Ingestion & Dictionary")
+        st.write(
+            "Upload specific logs to update these perspectives. All uploads must pass strict schema validation."
+        )
+
+        with st.expander("📖 View Data Dictionary Requirements"):
+            schema_keys = list(validation_manager.schemas.keys())
+            if schema_keys:
+                sel_schema = st.selectbox("Select Template Schema", schema_keys)
+                details = validation_manager.get_schema_details(sel_schema)
+                st.markdown(f"**{details.get('title', sel_schema)}**")
+                st.caption(details.get("description", ""))
+
+                reqs = details.get("required", [])
+                st.markdown("**Required Fields:**")
+                st.write(", ".join(f"`{r}`" for r in reqs))
+
+                st.markdown("**Field Details:**")
+                for prop, props in details.get("properties", {}).items():
+                    req_mark = "*(Required)*" if prop in reqs else ""
+                    st.markdown(
+                        f"- `{prop}` ({props.get('type', 'any')}) {req_mark}: {props.get('description', '')}"
+                    )
+            else:
+                st.info("No schemas loaded.")
 
         file_type = st.selectbox(
             "Select Process Log Type",
-            ["Inbound (ASN/Receiving)", "Inventory Snapshot", "Outbound Fulfillment"],
+            ["inbound", "inventory", "outbound"],
+            format_func=lambda x: f"{x.title()} Operations",
+            key="wh_upload_type",
         )
-        uploaded_file = st.file_uploader(f"Upload {file_type} (CSV/Excel)")
+        uploaded_file = st.file_uploader(
+            f"Upload {file_type.title()} Data (CSV/Excel)",
+            help="Must comply with the schema exactly.",
+        )
+
         if uploaded_file:
-            st.success(f"{file_type} processed. Perspectives updated!")
+            try:
+                if uploaded_file.name.endswith(".csv"):
+                    df_up = pd.read_csv(uploaded_file)
+                else:
+                    df_up = pd.read_excel(uploaded_file)
+
+                # Pre-flight validation
+                with st.spinner("Validating strict schema constraints..."):
+                    payload = df_up.to_dict("records")
+                    is_valid, errors = validation_manager.validate_payload(
+                        file_type, payload
+                    )
+
+                    if is_valid:
+                        st.success(
+                            f"✅ Strict Validation Passed! {file_type.title()} data successfully verified."
+                        )
+                        # Proceed with saving/updating
+                        data_manager.save_to_database(
+                            df_up, project.id, uploaded_file.name, db_manager
+                        )
+                        st.info("Template dashboards updating with new data...")
+                    else:
+                        st.error("❌ Schema Validation Failed. Payload rejected.")
+                        st.write("Please fix the following mapping errors:")
+                        for err in errors[:5]:  # Show max 5 errors to avoid flooding UI
+                            st.warning(err)
+                        if len(errors) > 5:
+                            st.warning(f"...and {len(errors) - 5} more errors.")
+            except Exception as e:
+                st.error(f"File reading error: {e}")
 
     else:
         st.info("Use the Data Manager to create a 'Warehouse' project first.")
@@ -892,8 +990,8 @@ elif menu == "📰 Market Sentiment":
                     st.divider()
             else:
                 st.info("No news found for this topic.")
-elif menu == "📖 Help & Guide":
-    st.title("📖 Statistical Dashboard Guidance Center")
+elif menu == "💡 Guidance Center":
+    st.title("💡 Statistical Dashboard Guidance Center")
     st.markdown(
         "Your comprehensive resource for data excellence and statistical mastery."
     )

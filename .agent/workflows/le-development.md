@@ -1,7 +1,7 @@
 ---
 ## Overview
 
-description: Workflow for Logistics Execution: shipping, transportation, delivery processing. References LIKP, LIPS; links to SD/M...
+description: "Workflow for Logistics Execution: shipping, transportation, delivery processing. References LIKP, LIPS; links to SD/M..."
 ---
 
 # Le Development

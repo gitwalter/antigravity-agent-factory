@@ -1,7 +1,7 @@
 ---
 ## Overview
 
-description: Workflow for EWM-related development: warehouse structure, movements, custom logic. Embedded EWM in S/4HANA.
+description: "Workflow for EWM-related development: warehouse structure, movements, custom logic. Embedded EWM in S/4HANA."
 ---
 
 # Ewm Development

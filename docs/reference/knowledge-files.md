@@ -1,6 +1,6 @@
 ﻿# Knowledge Files Catalog
 
-The factory currently includes **272 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
+The factory currently includes **273 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
 
 | File | Type | Description |
 |------|------|-------------|
@@ -239,6 +239,7 @@ The factory currently includes **272 knowledge files** covering: various aspects
 | [scikit-learn-patterns](file:///.agent/knowledge/scikit-learn-patterns.json) |  |  |
 | [security-checklist](file:///.agent/knowledge/security-checklist.json) |  |  |
 | [security-patterns](file:///.agent/knowledge/security-patterns.json) |  |  |
+| [self-optimization-catalog](file:///.agent/knowledge/self-optimization-catalog.json) |  |  |
 | [semantic-kernel-patterns](file:///.agent/knowledge/semantic-kernel-patterns.json) |  |  |
 | [service-class-catalog](file:///.agent/knowledge/service-class-catalog.json) |  |  |
 | [skill-catalog](file:///.agent/knowledge/skill-catalog.json) |  |  |

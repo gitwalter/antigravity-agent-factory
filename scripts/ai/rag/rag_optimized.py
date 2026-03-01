@@ -1,6 +1,9 @@
 import os
+import hashlib
 import logging
-from typing import List, Optional
+import re
+from typing import List, Optional, Dict, Any
+from collections import defaultdict
 
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -11,6 +14,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams
 from langchain_core.tools import tool
 from langchain_core.documents import Document
+import fitz
 
 # Configure logging
 # logging.basicConfig(level=logging.INFO) <- Removed: Let app configure logging
@@ -406,75 +410,288 @@ class OptimizedRAG:
         except Exception as e:
             logger.error(f"Warm-up failed: {str(e)}")
 
+    def _compute_file_hash(self, file_path: str) -> Optional[str]:
+        """Compute SHA-256 hash of a file for deduplication."""
+        try:
+            sha256 = hashlib.sha256()
+            with open(file_path, "rb") as f:
+                for chunk in iter(lambda: f.read(8192), b""):
+                    sha256.update(chunk)
+            return sha256.hexdigest()
+        except (FileNotFoundError, OSError):
+            return None
+
+    def list_sources(self) -> List[Dict[str, Any]]:
+        """Return a deduplicated list of all indexed sources with metadata."""
+        seen_sources: Dict[str, Dict[str, Any]] = {}
+        for key in self.store.yield_keys():
+            docs = self.store.mget([key])
+            doc = docs[0] if docs else None
+            if doc is None or "source" not in doc.metadata:
+                continue
+            source = doc.metadata["source"]
+            if source not in seen_sources:
+                seen_sources[source] = {
+                    "source": source,
+                    "file_hash": doc.metadata.get("file_hash"),
+                    "chunk_count": 1,
+                    "has_toc": doc.metadata.get("is_toc", False),
+                }
+            else:
+                seen_sources[source]["chunk_count"] += 1
+                if doc.metadata.get("is_toc", False):
+                    seen_sources[source]["has_toc"] = True
+        return list(seen_sources.values())
+
+    def get_library_info(self) -> Dict[str, Any]:
+        """Return library-wide statistics and per-source metadata."""
+        sources = self.list_sources()
+        total_chunks = sum(s["chunk_count"] for s in sources)
+        return {
+            "total_documents": len(sources),
+            "total_chunks": total_chunks,
+            "sources": sources,
+        }
+
+    def _score_toc(self, toc_text: Optional[str]) -> float:
+        """Score TOC quality from 0.0 (garbage) to 1.0 (excellent).
+
+        Heuristic scoring based on:
+        - Line count (more lines = more structure)
+        - Chapter/section keywords
+        - Hierarchy markers (indentation, numbering)
+        - Penalties for copyright, short, or title-only content
+        """
+        if not toc_text or not toc_text.strip():
+            return 0.0
+
+        text = toc_text.strip()
+        lines = [l.strip() for l in text.split("\n") if l.strip()]
+        score = 0.0
+
+        # Penalty: too short (< 3 lines)
+        if len(lines) < 3:
+            return min(0.1 * len(lines), 0.2)
+
+        # Penalty: copyright/publisher content
+        copyright_keywords = [
+            "copyright",
+            "published by",
+            "all rights reserved",
+            "o'reilly",
+            "isbn",
+            "edition",
+            "printed in",
+        ]
+        copyright_hits = sum(1 for kw in copyright_keywords if kw in text.lower())
+        if copyright_hits >= 2:
+            return 0.1
+
+        # Reward: chapter/section keywords
+        structure_pattern = re.compile(
+            r"(chapter|part|section|anhang|kapitel|teil|abschnitt)\s+\d",
+            re.IGNORECASE,
+        )
+        structure_hits = len(structure_pattern.findall(text))
+        score += min(structure_hits * 0.1, 0.4)
+
+        # Reward: bullet points or numbered items
+        bullet_lines = sum(1 for l in lines if l.startswith(("-", "•", "*")))
+        score += min(bullet_lines * 0.03, 0.2)
+
+        # Reward: page number references
+        page_refs = len(
+            re.findall(r"\(p\.\s*\d+\)|\bpage\s+\d+\b|S\.\s*\d+", text, re.IGNORECASE)
+        )
+        score += min(page_refs * 0.02, 0.15)
+
+        # Reward: line count (more = more structured)
+        score += min(len(lines) * 0.02, 0.25)
+
+        return min(score, 1.0)
+
+    def get_toc(self, name: str) -> Optional[str]:
+        """Fast TOC lookup by document name — direct metadata scan, no semantic search.
+
+        Args:
+            name: Partial document name (case-insensitive fuzzy match on basename)
+
+        Returns:
+            TOC text content or None if not found
+        """
+        needle = name.lower()
+        for key in self.store.yield_keys():
+            docs = self.store.mget([key])
+            doc = docs[0] if docs else None
+            if doc is None:
+                continue
+            source = doc.metadata.get("source", "")
+            is_toc = doc.metadata.get("is_toc", False)
+            if is_toc and needle in os.path.basename(source).lower():
+                return doc.page_content
+        return None
+
+    def delete_toc(self, name: str) -> bool:
+        """Delete the TOC chunk for a document (by fuzzy name match).
+
+        Returns True if a TOC chunk was found and deleted.
+        """
+        needle = name.lower()
+        keys_to_delete = []
+        for key in self.store.yield_keys():
+            docs = self.store.mget([key])
+            doc = docs[0] if docs else None
+            if doc is None:
+                continue
+            source = doc.metadata.get("source", "")
+            is_toc = doc.metadata.get("is_toc", False)
+            if is_toc and needle in os.path.basename(source).lower():
+                keys_to_delete.append(key)
+
+        if keys_to_delete:
+            self.store.mdelete(keys_to_delete)
+            logger.info(f"Deleted {len(keys_to_delete)} TOC chunk(s) for '{name}'")
+            return True
+        return False
+
     def _extract_toc(self, pdf_path: str) -> Optional[str]:
-        """Attempt to deterministically extract the Table of Contents via PyMuPDF."""
-        import fitz
-        import re
+        """Multi-strategy TOC extraction with 3-tier fallback.
+
+        Strategy 1: PyMuPDF native TOC (doc.get_toc())
+        Strategy 2: Regex heuristic (chapter/section patterns)
+        Strategy 3: LLM extraction (Gemini, last resort)
+        """
+        filename = os.path.basename(pdf_path)
 
         try:
             doc = fitz.open(pdf_path)
-            toc = doc.get_toc()
-            toc_lines = []
+        except Exception as e:
+            logger.error(f"Failed to open PDF for TOC extraction: {e}")
+            return None
 
-            # Strategy A: Use embedded PDF Metadata
-            if toc:
-                toc_lines.append("## Table of Contents (Embedded Metadata)")
-                for item in toc:
-                    level, title, page = item
-                    if level == 1:
-                        toc_lines.append(f"\n### {title}")
-                    elif level == 2 and (
-                        "Kapitel" in title or "Chapter" in title or title[0].isdigit()
-                    ):
-                        toc_lines.append(f"- {title} (Page {page})")
+        # --- Strategy 1: PyMuPDF native TOC ---
+        try:
+            native_toc = doc.get_toc()
+            if native_toc:
+                lines = []
+                for level, title, page in native_toc:
+                    indent = "  " * (level - 1)
+                    lines.append(f"{indent}- {title} (p. {page})")
 
-            # Strategy B: Fallback string matching on raw text of first 50 pages
-            else:
-                extracted_text = ""
-                for i in range(min(50, len(doc))):
-                    extracted_text += doc[i].get_text()
+                toc_text = "\n## Table of Contents (Native)\n\n" + "\n".join(lines)
+                score = self._score_toc(toc_text)
+                if score >= 0.3:
+                    logger.info(
+                        f"Native TOC extracted for '{filename}' and scored {score:.2f}"
+                    )
+                    doc.close()
+                    return toc_text
+                else:
+                    logger.warning(
+                        f"Native TOC for '{filename}' rejected (score {score:.2f} too low)"
+                    )
+        except Exception as e:
+            logger.debug(f"Native TOC extraction failed: {e}")
 
-                lines = extracted_text.split("\n")
-                chapters_found = []
+        # --- Strategy 2: Regex heuristic ---
+        try:
+            chapter_pattern = re.compile(
+                r"^\s*(Chapter|Part|Section|CHAPTER|PART|Kapitel|Teil|Abschnitt)\s+\d+[.::\s]",
+                re.MULTILINE,
+            )
+            toc_entries = []
+            max_pages = min(20, len(doc))
+            for i in range(max_pages):
+                page_text = doc[i].get_text("text")
+                for line in page_text.split("\n"):
+                    if chapter_pattern.match(line.strip()):
+                        toc_entries.append(f"- {line.strip()}")
 
-                # Robust regex for chapters/parts with optional title on same line
-                pattern = re.compile(
-                    r"^(Kapitel|Chapter|Teil|Part)\s+([A-Z0-9]+)(.*)", re.IGNORECASE
+            if toc_entries:
+                toc_text = "\n## Table of Contents (Regex Extracted)\n\n" + "\n".join(
+                    toc_entries
+                )
+                score = self._score_toc(toc_text)
+                if score >= 0.3:
+                    logger.info(
+                        f"Regex TOC extracted for '{filename}' and scored {score:.2f}"
+                    )
+                    doc.close()
+                    return toc_text
+                else:
+                    logger.warning(
+                        f"Regex TOC for '{filename}' rejected (score {score:.2f} too low)"
+                    )
+        except Exception as e:
+            logger.debug(f"Regex TOC extraction failed: {e}")
+
+        # --- Strategy 3: LLM extraction (last resort) ---
+        try:
+            from langchain_google_genai import ChatGoogleGenerativeAI
+            from langchain_core.prompts import PromptTemplate
+            from langchain_core.output_parsers import StrOutputParser
+
+            extracted_text = []
+            max_pages_llm = min(40, len(doc))
+            for i in range(max_pages_llm):
+                page_text = doc[i].get_text("text").strip()
+                if page_text:
+                    extracted_text.append(f"--- PAGE {i+1} ---\n{page_text}")
+
+            raw_text = "\n\n".join(extracted_text)
+            if raw_text:
+                llm = ChatGoogleGenerativeAI(
+                    model="gemini-2.0-flash",
+                    temperature=0.1,
+                    max_tokens=2048,
                 )
 
-                for i, line in enumerate(lines):
-                    line = line.strip()
-                    match = pattern.match(line)
-                    if match:
-                        label = match.group(1)
-                        num = match.group(2)
-                        inline_title = match.group(3).strip()
+                template = """
+You are an expert librarian and data extraction agent.
+Your task is to analyze the front-matter pages of a technical book and extract a perfect, hierarchical Table of Contents (TOC).
 
-                        full_entry = f"{label} {num}"
-                        if inline_title:
-                            full_entry += f" {inline_title}"
-                        elif i + 1 < len(lines):
-                            next_line = lines[i + 1].strip()
-                            if next_line and not pattern.match(next_line):
-                                full_entry += f": {next_line}"
+Source Book: {filename}
 
-                        chapters_found.append(full_entry)
+Here is the raw text extracted from the first few dozen pages:
+<RAW_TEXT>
+{raw_text}
+</RAW_TEXT>
 
-                if chapters_found:
-                    toc_lines.append("## Table of Contents (Extracted Text)")
-                    seen = set()
-                    for c in chapters_found:
-                        if c not in seen:
-                            toc_lines.append(c)
-                            seen.add(c)
+INSTRUCTIONS:
+1. Locate the actual Table of Contents within the raw text. Ignore introductory praises, copyright pages, and prefaces unless they are listed IN the TOC.
+2. Extract the hierarchical structure (Parts, Chapters, Sections) and page numbers if available.
+3. Format the output STRICTLY as Markdown bullet points.
+4. Use headers (e.g., `## Part 1`) if the book is divided into parts.
+5. Do not include any conversational filler (e.g. "Here is the TOC:"). ONLY return the markdown TOC itself.
+6. If you cannot find any indication of a Table of Contents, return exactly "NO_TOC_FOUND".
 
-            if len(toc_lines) > 1:
-                return "\n".join(toc_lines)
-            return None
+RETURN ONLY THE MARKDOWN TOC:
+"""
+                prompt = PromptTemplate.from_template(template)
+                chain = prompt | llm | StrOutputParser()
 
+                logger.info(f"Invoking LLM for TOC extraction on: {filename}...")
+                result = chain.invoke({"raw_text": raw_text, "filename": filename})
+
+                if result.strip() != "NO_TOC_FOUND":
+                    toc_text = "\n## Table of Contents (AI Extracted)\n\n" + result
+                    score = self._score_toc(toc_text)
+                    if score >= 0.3:
+                        logger.info(
+                            f"LLM TOC extracted for '{filename}' and scored {score:.2f}"
+                        )
+                        return toc_text
+                    else:
+                        logger.warning(
+                            f"LLM TOC for '{filename}' rejected (score {score:.2f} too low)"
+                        )
         except Exception as e:
-            logger.warning(f"Failed to extract deterministic TOC for {pdf_path}: {e}")
-            return None
+            logger.error(f"LLM TOC extraction failed for '{filename}': {e}")
+        finally:
+            if "doc" in locals() and doc:
+                doc.close()
+
+        return None
 
     def delete_document(self, source_path: str):
         """Remove all chunks associated with a specific source path from the library."""
@@ -532,25 +749,41 @@ class OptimizedRAG:
 
         logger.info(f"Successfully deleted document {norm_path}")
 
-    def ingest_ebook(self, pdf_path: str):
-        """Parse and add a PDF to the library using Parent-Child strategy."""
+    def ingest_ebook(self, pdf_path: str, force: bool = False) -> Optional[str]:
+        """Parse and add a PDF to the library using Parent-Child strategy.
+
+        Returns a status string describing the result.
+        """
         if not os.path.exists(pdf_path):
             logger.error(f"File not found: {pdf_path}")
-            return
+            return f"Error: File not found: {pdf_path}"
 
         norm_path = os.path.normpath(pdf_path)
+        file_hash = self._compute_file_hash(pdf_path)
 
-        # Idempotency check: Check if this document is already in the library
-        # We check both the docstore and a potential "TOC" chunk in Qdrant
-        existing_sources = {
-            os.path.normpath(doc.metadata["source"])
-            for key in self.store.yield_keys()
-            if (doc := self.store.mget([key])[0]) and "source" in doc.metadata
-        }
+        if not force:
+            # Dedup check: hash-based and path-based
+            existing_hashes = set()
+            existing_sources = set()
+            for key in self.store.yield_keys():
+                docs = self.store.mget([key])
+                doc = docs[0] if docs else None
+                if doc is None:
+                    continue
+                if "source" in doc.metadata:
+                    existing_sources.add(os.path.normpath(doc.metadata["source"]))
+                if "file_hash" in doc.metadata:
+                    existing_hashes.add(doc.metadata["file_hash"])
 
-        if norm_path in existing_sources:
-            logger.info(f"Skipping ingestion: {norm_path} is already in the library.")
-            return
+            if norm_path in existing_sources:
+                msg = f"Skipped (already indexed by path): {norm_path}"
+                logger.info(msg)
+                return msg
+
+            if file_hash and file_hash in existing_hashes:
+                msg = f"Skipped (duplicate by hash): {norm_path}"
+                logger.info(msg)
+                return msg
 
         logger.info(f"Ingesting ebook: {pdf_path}")
         loader = PyMuPDFLoader(pdf_path)
@@ -559,38 +792,45 @@ class OptimizedRAG:
         # Add metadata for tracking
         for doc in docs:
             doc.metadata["source"] = norm_path
+            if file_hash:
+                doc.metadata["file_hash"] = file_hash
 
-        # Split into parent chunks first to ensure we have the correct count for IDs
+        # Split into parent chunks
         parent_docs = self.retriever.parent_splitter.split_documents(docs)
 
-        # Execute our new logic: Try to build a deterministic TOC
+        # Propagate hash to split chunks
+        for pd in parent_docs:
+            pd.metadata["source"] = norm_path
+            if file_hash:
+                pd.metadata["file_hash"] = file_hash
+
+        # Extract TOC
         toc_content = self._extract_toc(pdf_path)
         if toc_content:
-            logger.info("Deterministic TOC found. Injecting as specialized chunk.")
-            # Build a dedicated Langchain Document just for the TOC layout
+            logger.info("TOC found. Injecting as specialized chunk.")
             toc_doc = Document(
                 page_content=f"MASTER TABLE OF CONTENTS (INHALTSVERZEICHNIS)\n\n{toc_content}",
                 metadata={
                     "source": norm_path,
                     "is_toc": True,
                     "document_title": os.path.basename(norm_path),
+                    "file_hash": file_hash or "",
                 },
             )
-            # Inject it at the very beginning of the parent_docs for vector store indexing
             parent_docs.insert(0, toc_doc)
 
-        # Generate consistent IDs for both retriever (vectorstore/RAM) and disk persistence
+        # Generate consistent IDs
         import uuid
 
         ids = [str(uuid.uuid4()) for _ in range(len(parent_docs))]
 
-        # This will save to vectorstore and populate the IN-MEMORY RAM store
-        # Pass the ALREADY SPLIT parent_docs and matching ids
+        # Save to vectorstore + in-memory store
         self.retriever.add_documents(parent_docs, ids=ids)
 
-        # Persist new documents to disk using the SAME IDs so they can be re-hydrated next session
+        # Persist to disk
         self._persist_to_disk(parent_docs, ids)
         logger.info(f"Successfully ingested {pdf_path}")
+        return None
 
     def _extract_url_toc(self, url: str) -> Optional[str]:
         """Attempt to extract Table of Contents from a URL using HTML headings."""
@@ -729,48 +969,6 @@ class OptimizedRAG:
     def search(self, question: str, k: int = 5) -> List[Document]:
         """Alias for semantic search."""
         return self.query(question, k)
-
-    def get_toc(self, document_name: str) -> Optional[str]:
-        """Retrieve the exact Table of Contents chunk for a specific document."""
-        try:
-            # We want to search for the specific chunk where metadata 'is_toc' == True
-            # and 'document_title' contains the document_name
-            # Since Qdrant client allows filtering, we can use client.scroll or search
-            from qdrant_client.http import models
-
-            results = self.client.scroll(
-                collection_name=COLLECTION_NAME,
-                scroll_filter=models.Filter(
-                    must=[
-                        models.FieldCondition(
-                            key="metadata.is_toc",
-                            match=models.MatchValue(value=True),
-                        )
-                    ],
-                    should=[
-                        models.FieldCondition(
-                            key="metadata.document_title",
-                            match=models.MatchText(text=document_name),
-                        ),
-                        models.FieldCondition(
-                            key="metadata.source",
-                            match=models.MatchValue(value=document_name),
-                        ),
-                    ],
-                ),
-                limit=1,
-                with_payload=True,
-            )
-            records = results[0]
-            if not records:
-                return None
-
-            # Extract content from payload
-            return records[0].payload.get("page_content")
-
-        except Exception as e:
-            logger.error(f"Failed to retrieve TOC for {document_name}: {e}")
-            return None
 
 
 # Initialize global instance for the tool

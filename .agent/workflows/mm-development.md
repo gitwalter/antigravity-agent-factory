@@ -1,7 +1,7 @@
 ---
 ## Overview
 
-description: Workflow for MM-related development: procurement, inventory, movements, reports, RAP. References EKKO, EKPO, MKPF, MS...
+description: "Workflow for MM-related development: procurement, inventory, movements, reports, RAP. References EKKO, EKPO, MKPF, MS..."
 ---
 
 # Mm Development

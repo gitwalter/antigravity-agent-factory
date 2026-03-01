@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - 2026-03-01
+
+### Added
+- **Self-Optimization Catalog (AGENT-43)**: Implemented the OODA-based maintenance infrastructure mapping 53 scripts across Sense, Correct, Sync, Guard, and Learn phases.
+- **Script Registry & Memory Sync (AGENT-42)**: Added `sync_script_registry.py` to bridge CLI tools with the Memory MCP knowledge graph.
+- **PDF Ingestion into RAG (AGENT-40)**: Implemented hash-based deduplication and path-based idempotency in `rag_optimized.py`.
+- **RAG CLI Expansion**: Added `stats`, `info`, and `check-duplicates` commands to `rag_cli.py` for library health monitoring.
+
+### Changed
+- **Multi-Strategy TOC Extraction (AGENT-41)**: Upgraded TOC extraction to a 3-tier fallback system (PyMuPDF Native → Regex Heuristic → LLM Gemini 2.0 Flash).
+- **Memory-First Protocol**: Mandated Memory MCP lookup as a P0 requirement for all autonomous agents in the `memory-first.md` rule.
+
+### Fixed
+- **RAG TOC Stability**: Fixed `NameError` in `_extract_toc` caused by uninitialized document objects in Strategy 1.
+- **Metadata Synchronization**: Auto-fixed discrepancies in project counts, manifests, and documentation using `sync_artifacts.py`, `sync_knowledge_counts.py`, and `sync_test_counts.py`.
+
 ## [1.4.1] - 2026-02-27
 
 ### Added
