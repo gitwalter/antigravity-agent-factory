@@ -131,20 +131,88 @@ def list_states():
 
 
 def create_issue(
-    name: str, description: str = "", priority: str = "medium", state_name: str = "Todo"
+    name: str,
+    description: str = "",
+    priority: str = "medium",
+    state_name: str = "Todo",
+    cycle_name: str = None,
+    module_name: str = None,
+    assignee_email: str = None,
+    start_date: str = None,
+    target_date: str = None,
+    estimate: int = None,
+    labels: list = None,
 ):
     logic = [
-        "from plane.db.models import Issue, Project, State",
+        "from plane.db.models import Issue, Project, State, Cycle, Module, ProjectMember, Label, EstimatePoint",
+        "from django.utils import timezone",
         "p = Project.objects.get(identifier='AGENT')",
         f"s = State.objects.get(project=p, name='{state_name}')",
     ]
     safe_name = repr(name)
     safe_desc = repr("<div>" + description + "</div>")
 
-    logic.append(
-        f"issue = Issue.objects.create(project=p, workspace=p.workspace, name={safe_name}, "
-        f"description_html={safe_desc}, priority='{priority}', state=s)"
-    )
+    create_args = [
+        "project=p",
+        "workspace=p.workspace",
+        f"name={safe_name}",
+        f"description_html={safe_desc}",
+        f"priority='{priority}'",
+        "state=s",
+    ]
+
+    if start_date:
+        logic.append(
+            f"start = timezone.datetime.strptime('{start_date}', '%Y-%m-%d').date()"
+        )
+        create_args.append("start_date=start")
+    if target_date:
+        logic.append(
+            f"target = timezone.datetime.strptime('{target_date}', '%Y-%m-%d').date()"
+        )
+        create_args.append("target_date=target")
+
+    if estimate is not None:
+        logic.append(
+            f"ep = EstimatePoint.objects.filter(estimate__project=p, value={estimate}).first()"
+        )
+        create_args.append("estimate_point=ep")
+
+    logic.append(f"issue = Issue.objects.create({', '.join(create_args)})")
+
+    if assignee_email:
+        logic.append(
+            f"member = ProjectMember.objects.get(project=p, member__email='{assignee_email}')"
+        )
+        logic.append(
+            "issue.issue_assignee.create(assignee=member.member, project=p, workspace=p.workspace)"
+        )
+
+    if labels:
+        for label in labels:
+            logic.append(f"l = Label.objects.get(project=p, name='{label}')")
+            logic.append(
+                "issue.label_issue.create(label=l, project=p, workspace=p.workspace)"
+            )
+
+    if cycle_name:
+        logic.append(f"c = Cycle.objects.get(project=p, name='{cycle_name}')")
+        logic.append(
+            "from django.apps import apps; CI = apps.get_model('db', 'CycleIssue')"
+        )
+        logic.append(
+            "CI.objects.create(issue=issue, cycle=c, project=p, workspace=p.workspace)"
+        )
+
+    if module_name:
+        logic.append(f"m = Module.objects.get(project=p, name='{module_name}')")
+        logic.append(
+            "from django.apps import apps; MI = apps.get_model('db', 'ModuleIssue')"
+        )
+        logic.append(
+            "MI.objects.create(issue=issue, module=m, project=p, workspace=p.workspace)"
+        )
+
     logic.append("print(f'Created Issue: AGENT-{issue.sequence_id}')")
 
     cmd = "\n".join(logic)
@@ -275,6 +343,19 @@ if __name__ == "__main__":
     create_parser.add_argument("--description", default="")
     create_parser.add_argument("--priority", default="medium")
     create_parser.add_argument("--state", default="Todo")
+    create_parser.add_argument("--cycle", help="Cycle/Sprint name")
+    create_parser.add_argument("--module", help="Module name")
+    create_parser.add_argument("--assignee", help="Assignee email")
+    create_parser.add_argument("--start-date", help="YYYY-MM-DD")
+    create_parser.add_argument("--target-date", help="YYYY-MM-DD")
+    create_parser.add_argument("--estimate", type=int, help="Estimate value")
+    create_parser.add_argument("--labels", nargs="+", help="Space-separated labels")
+
+    # Metadata lists
+    members_parser = subparsers.add_parser("members")
+    members_parser.add_argument("--json", action="store_true")
+    labels_parser = subparsers.add_parser("labels")
+    labels_parser.add_argument("--json", action="store_true")
 
     # Update
     update_parser = subparsers.add_parser("update")
@@ -315,6 +396,22 @@ if __name__ == "__main__":
             list_projects(args.json)
         elif args.command == "modules":
             list_modules(args.json)
+        elif args.command == "members":
+            output = run_django_command(
+                "from plane.db.models import ProjectMember, Project; p = Project.objects.get(identifier='AGENT'); print(list(ProjectMember.objects.filter(project=p).values('member__email', 'member__first_name', 'member__last_name')))"
+            )
+            if args.json:
+                print(output)
+            else:
+                print(f"Project Members: \n{output}")
+        elif args.command == "labels":
+            output = run_django_command(
+                "from plane.db.models import Label, Project; p = Project.objects.get(identifier='AGENT'); print(list(Label.objects.filter(project=p).values('name', 'id')))"
+            )
+            if args.json:
+                print(output)
+            else:
+                print(f"Project Labels: \n{output}")
         elif args.command in ["details", "get"]:
             get_issue_details(args.id, getattr(args, "json", False))
         elif args.command == "cycles":
@@ -322,7 +419,19 @@ if __name__ == "__main__":
         elif args.command == "states":
             list_states()
         elif args.command == "create":
-            create_issue(args.name, args.description, args.priority, args.state)
+            create_issue(
+                args.name,
+                args.description,
+                args.priority,
+                args.state,
+                args.cycle,
+                args.module,
+                args.assignee,
+                args.start_date,
+                args.target_date,
+                args.estimate,
+                args.labels,
+            )
         elif args.command == "update":
             update_issue(
                 args.id,

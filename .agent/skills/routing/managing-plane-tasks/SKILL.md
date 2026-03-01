@@ -67,6 +67,57 @@ conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py proje
 conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py modules --json
 ```
 
+### 3. Creating Professional Issues
+Always include **Cycle**, **Module**, **Assignee**, **Priority**, and **Dates** for factory-grade orchestration. Use `members`, `labels`, and `modules` commands to find valid metadata values.
+
+**Standard Command:**
+```powershell
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py create `
+  --name "FEATURE: Component Name" `
+  --description "<b>Description:</b> Detailed HTML or text..." `
+  --priority "high" `
+  --state "Todo" `
+  --cycle "sprint 003" `
+  --module "component" `
+  --assignee "email@example.com" `
+  --start-date "2026-03-01" `
+  --target-date "2026-03-08" `
+  --estimate 5 `
+  --labels feature cleanup
+```
+
+**Metadata Lookup:**
+```powershell
+# Find valid assignees
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py members --json
+
+# Find valid labels (case-sensitive!)
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py labels --json
+
+# Find valid modules
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py modules --json
+```
+
+### 4. Updating Issues
+Use for status changes or appending technical updates:
+```powershell
+# Change state
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py update AGENT-5 --state "Done"
+
+# Append technical update (adds timestamp and separator)
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py update AGENT-5 --description "Logic verified with tests." --append
+```
+
+## Best Commands
+- **Professional Creation**: Use all metadata flags (`--cycle`, `--module`, etc.) to ensure issues are correctly bucketed in Plane.
+- **JSON for Parsing**: Always use `--json` when reading metadata or issue lists for programmatic use.
+- **Append for History**: Use `--append` during updates to maintain a chronological audit trail in the description.
+
+## Anti-Patterns
+- **Missing Metadata**: Creating issues without cycle or module (makes them hard to track in PMS).
+- **Manual ID Guessing**: Hardcoding sequence IDs instead of listing them first.
+- **Generic Titles**: Using titles like "Fix bug" instead of "FIX: [Component] Null pointer in TOC extraction".
+
 ### Supported Issue States (DO NOT QUERY DYNAMICALLY)
 Plane uses the following hardcoded standard states. **DO NOT run the `states` command to check for states before updating or filtering. Memorize and use these exact strings:**
 - `Backlog`
