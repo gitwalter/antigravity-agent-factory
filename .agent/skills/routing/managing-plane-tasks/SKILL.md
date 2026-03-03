@@ -199,93 +199,49 @@ Use the Plane MCP server tools to assign the created task to the active cycle.
 > [!TIP]
 > Always use `mcp_plane_list_cycles` to find the currently active sprint. Do not hardcode cycle UUIDs — they change every sprint.
 
-### 4. Updating Status & Metadata
-Move issues through the lifecycle by updating the `state` or adding professional progress reports.
+### 4. Professional Solution Reporting (Mandatory Closure)
 
+Every issue marked as **Done** MUST be accompanied by a professional solution summary rendered via the `solution_comment.html.j2` template. This ensures technical fidelity and aesthetic consistency, aligning perfectly with the "beautiful" task creation style used in `work_item.html.j2`.
+
+#### Step D: Prepare Solution Data
+Gather the technical details of the implementation.
+
+**Example `solution.json`:**
 ```json
-// Tool: mcp_plane_update_work_item
 {
-  "project_id": "e71eb003-87d4-4b0c-a765-a044ac5affbe",
-  "work_item_id": "ITEM-UUID",
-  "state": "ef4b2395-3edb-41e9-adcd-7ec77d534f0f"
+  "summary": "Isolated RAG workspaces for parallel CI workers to prevent file locking.",
+  "files_affected": [
+    "scripts/ai/rag/rag_optimized.py",
+    "tests/conftest.py"
+  ],
+  "verification": [
+    { "type": "Parallel Smoke Test", "result": "PASS" },
+    { "type": "Validation Suite", "result": "PASS" }
+  ],
+  "evolution": [
+    "New isolated_rag_workspace fixture in conftest.py"
+  ]
 }
 ```
 
-**Known States:**
-| State | UUID | Group |
-| :--- | :--- | :--- |
-| **Backlog** | `294ddb00-19ce-4ffe-9eac-2fd4e998d7f8` | backlog |
-| **Todo** | `8e155185-58ad-404b-8458-6a7c9edbf09b` | unstarted |
-| **In Progress** | `d89aabd2-46d4-4f46-8ce4-eb49e06cac03` | started |
-| **Done** | `ef4b2395-3edb-41e9-adcd-7ec77d534f0f` | completed |
-| **Cancelled** | `0723fa1c-6935-4661-a873-f5295203e58c` | cancelled |
+#### Step E: Render and Post Solution
+Use the `post_solution.py` script to automate the rendering and posting to Plane. This script also moves the issue to the **Done** state.
 
-## Estimate Points (Fibonacci Scale)
-
-The project uses Fibonacci-based story point estimation. **No MCP tool exists to list estimate point UUIDs** — always reference this table.
-
-| Points | UUID (`estimate_point`) | Status |
-| :---: | :--- | :---: |
-| 1 | `a1f66f54-0f4b-4ca1-9979-a34087b4594a` | ✅ Verified |
-| 2 | *(verify in Plane UI and update)* | ❓ |
-| 3 | `3b88eecb-e4ad-4d67-b557-adbeb97e590d` | ⚠️ Needs verification |
-| 5 | `bd9e29aa-b4e8-4525-b16d-893c8324f7c7` | ✅ Verified |
-| 8 | `8399793b-12e0-4d3d-9d9c-3cb43c1a51b4` | ⚠️ Needs verification |
-| 13 | *(verify in Plane UI and update)* | ❓ |
-| 21 | *(verify in Plane UI and update)* | ❓ |
-
-> [!WARNING]
-> The estimate UUIDs above were discovered by inspecting existing work items. Verify unconfirmed entries from the Plane UI and update this table.
-
-## Known Active Epics
-
-Epics are parent work items that group related tasks. Set the `parent` field to the appropriate epic UUID.
-
-| Epic Name | UUID (`parent` field) |
-| :--- | :--- |
-| **Agent System** | `e18df34b-2da0-46a7-bca2-594ca70757c0` |
-| **Statistical Dashboard** | `600ac6d6-fc68-45a2-b207-322f6dfe70aa` |
-| **RAG System** | `867a5341-0b55-4862-9b01-bee535bf29ed` |
-
-## Label Governance (Source of Truth)
-
-All labeling must strictly follow the synchronized set:
-- `BUG`, `CORE`, `DATA`, `DOCU`, `FEATURE`, `TEST`, `UI`
-- `ORCHESTRATION`, `GROUNDING`, `INTEGRATION`, `INFRA`, `SKILL`
-
-> [!IMPORTANT]
-> Use `mcp_plane_list_labels` to verify available labels and their IDs before creating or updating work items.
-
-## Knowledge Layer Synchronization
-
-The factory's knowledge layer has two synchronized representations that **MUST be kept in sync**:
-
-| Source | Location | Access |
-| :--- | :--- | :--- |
-| **Knowledge Files** | `.agent/knowledge/*.json` | File system — durable ground truth |
-| **Memory MCP Graph** | `mcp_memory_*` tools | Live operational index — fast entity queries |
-
-When adding, updating, or referencing knowledge in a task:
-1. Reference both the knowledge file name AND the corresponding memory MCP entity
-2. After completing a task, update the memory MCP graph with new learnings
-3. Ensure any new knowledge files are also reflected as memory MCP entities
-
-## Professional Documentation Standards
-When closing issues, provide a detailed summary of the accomplishment:
-- **Technical Summary**: High-level problem and solution.
-- **Files Affected**: Key modules modified.
-- **Verification Proof**: Test results and coverage details.
-- **Future Prevention**: Added guards or scripts.
-- **Factory Evolution**: New skills, workflows, agents, or knowledge created.
+```bash
+conda run -p D:\Anaconda\envs\cursor-factory python .agent/skills/routing/managing-plane-tasks/scripts/post_solution.py \
+    --issue AGENT-48 \
+    --json solution.json \
+    --close
+```
 
 ## Best Practices
 - **Memory-First**: Always query memory MCP (Step 0) before creating tasks to build situational awareness.
 - **Hypothesis-Driven**: Treat each task as a hypothesis — declare which assets solve the problem, then validate with tests.
 - **Always resolve metadata first**: Use `mcp_plane_list_labels`, `mcp_plane_list_states`, `mcp_plane_get_me` before creating work items.
-- **Complete all five steps**: A work item is not finished until Steps A–E are complete (creation, module, cycle, epic, schema).
+- **Complete all five steps**: A work item is not finished until Steps A–E are complete (creation, module, cycle, epic, schema, and solution reporting).
 - **Use expand for context**: When listing or retrieving items, use `expand: "labels,state,assignees"` for full metadata.
 - **Never hardcode cycle UUIDs**: Always query `mcp_plane_list_cycles` — cycles change every sprint.
-- **Document closures professionally**: When marking items Done, add a comment with technical summary, files affected, and verification proof.
+- **Document closures professionally**: Use `post_solution.py` to provide a technical summary, files affected, and verification proof.
 - **Respect label governance**: Only use labels from the synchronized set.
 - **Create missing assets**: If a task needs a skill, agent, or workflow that doesn't exist, use the `[NEW]` prefix and build it during execution.
 - **Evolve the knowledge graph**: After completing tasks, update both knowledge files and memory MCP entities with learnings.
