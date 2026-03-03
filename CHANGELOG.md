@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - **Legacy PMS Scripts**: Deleted deprecated `scripts/pms/manager.py`, `test_plane_conn.py`, `dump_settings.py`, and `migrate_legacy_data.py`.
 
+---
+*Release verified for high-fidelity agentic orchestration.*
+
+
 ## [1.5.0] - 2026-03-02
 
 
@@ -194,6 +198,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Updated validation scripts to support `.agent` directory structure
+### Fixed
+- Fixed version synchronization mismatch in `manifest.json`.
+- Optimized `.pre-commit-config.yaml` to exclude non-project data.
+
+---
+*Release verified for high-fidelity agentic orchestration.*
 - Fixed root path detection in documentation scripts
 - Enhanced pre-commit runner with better argument mapping
 - Updated documentation files with latest counts and structure
