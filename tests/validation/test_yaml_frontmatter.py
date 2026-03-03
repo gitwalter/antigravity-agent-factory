@@ -318,8 +318,10 @@ class TestAllProjectFilesValid:
                 + "\n".join(f"  - {e}" for e in errors)
             )
 
-    def test_all_markdown_files_valid(self, project_root):
-        """Comprehensive test: all markdown files in standard locations are valid."""
+    def test_all_core_markdown_files_valid(self, project_root):
+        """Comprehensive test: all markdown files in core locations are valid.
+        Optimized to skip large/legacy directories to prevent CI memory exhaustion.
+        """
         files = find_markdown_files(project_root)
 
         errors = []

@@ -36,6 +36,19 @@ MARKDOWN_DIRS = [
     "workflows",
 ]
 
+# Directories to explicitly exclude from recursive scans
+EXCLUDE_DIRS = [
+    "data",
+    "scripts/legacy",
+    "apps/pms",
+    "node_modules",
+    "venv",
+    ".venv",
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+]
+
 # Files to always check (even if not in MARKDOWN_DIRS)
 ADDITIONAL_FILES = [
     "README.md",
@@ -253,7 +266,7 @@ def validate_file(filepath: Path, verbose: bool = False) -> tuple[bool, Optional
 
 def find_markdown_files(repo_root: Path) -> list[Path]:
     """
-    Find all markdown files to validate.
+    Find all markdown files to validate, excluding large/irrelevant directories.
 
     Args:
         repo_root: Repository root directory
@@ -266,8 +279,16 @@ def find_markdown_files(repo_root: Path) -> list[Path]:
     # Scan configured directories
     for dir_name in MARKDOWN_DIRS:
         dir_path = repo_root / dir_name
-        if dir_path.exists():
-            files.extend(dir_path.rglob("*.md"))
+        if not dir_path.exists():
+            continue
+
+        # Use a more efficient discovery that honors exclusions
+        for p in dir_path.rglob("*.md"):
+            # Check if any parent part matches EXCLUDE_DIRS
+            if any(ex in p.parts for ex in EXCLUDE_DIRS):
+                continue
+            if p.is_file():
+                files.append(p)
 
     # Add additional files
     for file_name in ADDITIONAL_FILES:

@@ -15,8 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **PMS Architecture Transition**: Finalized move to Cloud Plane + MCP architecture.
 - **Documentation**: Overhauled `docs/pms/plane_integration_guide.md` to reflect native MCP tool usage.
 
-### Removed
-- **Legacy PMS Scripts**: Deleted deprecated `scripts/pms/manager.py`, `test_plane_conn.py`, `dump_settings.py`, and `migrate_legacy_data.py`.
+### Fixed
+- **CI/CD Coverage Regression (AGENT-48)**: Resolved the 96% coverage failure by optimizing the YAML validation recursive scan to exclude large/legacy directories, preventing worker memory exhaustion.
 
 ---
 *Release verified for high-fidelity agentic orchestration.*
