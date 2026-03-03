@@ -221,12 +221,20 @@ The Factory uses **pre-commit hooks** to ensure all commits are "safe" by defaul
 - **Validates** JSON/YAML syntax
 - **Runs** linting and type checking
 
-**PREFERRED: Use `git commit` directly** - it triggers the mandatory safety checks.
+**PREFERRED: Use `git commit` directly** - it automatically triggers the `safe_commit.py` logic via pre-commit hooks. This ensures all auto-syncs, syntax checks, and smoke tests are performed within the native git lifecycle.
 
-**FULL VERIFICATION: Use `safe_commit.py`** - use this for major releases to include **smoke tests** and automatic pushing:
+```powershell
+# Standard Factory workflow
+git add .
+git commit -m "feat(scope): description"
+git push
+```
+
+**FORCED VERIFICATION: Use `safe_commit.py`** - Primarily used by agents or for manual dry runs:
 
 ```powershell
 # safe_commit.py runs the full Robust Commit Workflow (RCW) + Smoke Tests
+# Note: Use this only if manual push orchestration is needed
 {PYTHON_PATH} {directories.scripts}/git/safe_commit.py "feat(scope): description" --push
 ```
 
@@ -287,7 +295,21 @@ When a commit fails:
 
 ## Stage and Commit Flow
 
-### Recommended: Use safe_commit.py (Enforced Validation)
+### Standard Factory Commit Workflow (Recommended)
+For most development, use standard `git` commands. The pre-commit hooks are configured to automatically run the `safe_commit.py` verification logic.
+
+```powershell
+# Standard workflow
+git add .
+git commit -m "Your descriptive message"
+git push
+```
+
+> [!TIP]
+> Use `git commit` for automatic verification. The `safe_commit.py` script is primarily a standalone tool for manual full-suite validation or dry runs.
+
+### Standalone safe_commit.py (Agent/Manual Tool)
+Used by shell agents for reliable commits or for dry-run verification.
 
 ```powershell
 # Single command - ALWAYS runs pre-commit, then commits
@@ -296,27 +318,21 @@ When a commit fails:
 # With push
 {PYTHON_PATH} {directories.scripts}/git/safe_commit.py "feat(scope): description" --push
 
-# With body text (PowerShell) - Use backtick-n for newlines
-{PYTHON_PATH} {directories.scripts}/git/safe_commit.py "feat(scope): description`n`nDetailed body text" --push
-
-# Fast mode (skip slow checks) not supported by current script version
-# {PYTHON_PATH} {directories.scripts}/git/safe_commit.py "fix(scope): quick fix" --push
-
 # Dry run (validate without committing)
 {PYTHON_PATH} {directories.scripts}/git/safe_commit.py --dry-run "feat(scope): test"
-### Robust Commit (Internal Factory Operations)
-Use this command for high-fidelity verification and automatic artifact synchronization.
+```
+### Standard Factory Commit Workflow
+For most development, use standard `git` commands. The pre-commit hooks are configured to automatically run the `safe_commit.py` verification logic.
 
 ```powershell
-# Standard safe commit and push
-conda run -p D:\Anaconda\envs\cursor-factory python scripts/git/safe_commit.py "MESSAGE" --push
-
-# Skip verification (only for cosmetic artifact sync)
-conda run -p D:\Anaconda\envs\cursor-factory python scripts/git/safe_commit.py "MESSAGE" --skip-verify --push
+# Standard workflow
+git add .
+git commit -m "Your descriptive message"
+git push
 ```
 
-> [!IMPORTANT]
-> The message argument is **positional**. Do NOT use `-m`. Standard usage: `python safe_commit.py "Your message" --push`.
+> [!TIP]
+> Use `git commit` for automatic verification. The `safe_commit.py` script is primarily a standalone tool for manual full-suite validation or dry runs, but is integrated into the native git lifecycle.
 
 **Why safe_commit.py?**
 - CANNOT be bypassed - pre-commit always runs first
@@ -395,7 +411,8 @@ After successful commit:
 
 ## Best Practices
 
-- Always use `safe_commit.py` for commits rather than manual git commands - it enforces pre-commit validation and prevents bypassing checks
+- Always use standard `git commit` for daily development - it enforces pre-commit validation natively
+- Use `safe_commit.py --dry-run` for early validation before staging heavily
 - Run pre-commit in `--sync` mode to auto-fix artifact sync issues rather than blocking - auto-fix what can be fixed, only block for unfixable issues
 - Update changelog proactively when committing 3+ significant files (blueprints, knowledge, templates, agents, skills) - document changes as you go
 - Use conventional commit format consistently (`feat:`, `fix:`, `docs:`, etc.) to enable automated changelog generation and clear history
