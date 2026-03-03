@@ -68,7 +68,7 @@ This skill enables agents to manage projects, issues, and states in a remote Pla
 - **Plane MCP Server**: Must be active and configured in `mcp_config.json`.
 - **Memory MCP Server**: Must be active for knowledge graph queries during task planning.
 - **Project Context**: Project ID `e71eb003-87d4-4b0c-a765-a044ac5affbe` | Identifier `AGENT`.
-- **Label Synchronization**: Always adhere to the project's global [Label Governance](#label-governance-source-of-truth).
+- **Label Governance**: Always use exactly one or more of these approved label strings in your JSON payload: `BUG`, `DATA`, `DOCU`, `FEATURE`, `GROUNDING`, `INFRA`, `INTEGRATION`, `ORCHESTRATION`, `SKILL`, `TEST`, `UI`. (The `create_task.py` script will automatically map these strings to their Plane UUIDs).
 
 ## Process
 
@@ -120,7 +120,7 @@ Before calling `create_task.py`, resolve ALL of the following UUIDs via MCP:
 
 | Property | How to Resolve | Required |
 | :--- | :--- | :---: |
-| `labels` | `mcp_plane_list_labels` → copy the uppercase names | ✅ |
+| `labels` | Select directly from the approved list above (e.g., `["FEATURE", "UI"]`). The Python script auto-resolves UUIDs. | ✅ |
 | `start_date` / `target_date` | Determine accurate ISO 8601 dates (e.g., `"2026-03-03"`) | ✅ |
 | `estimate_point` | Use Fibonacci scale UUID from [Estimate Points](#estimate-points-fibonacci-scale) | ✅ |
 | `parent` | If item belongs to an Epic, use UUID from [Known Active Epics](#known-active-epics) | ⚠️ If applicable |

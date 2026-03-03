@@ -33,16 +33,19 @@ Before writing any requirements, query the factory's memory to establish the str
 - **Action**: Execute `mcp_memory_search_nodes` (Tier 0) to check for relevant patterns or past architectural decisions.
 - **Fallback (MANDATORY)**: If the Tier 0 query returns zero results or outdated info, you MUST immediately pause the SFDC workflow and execute the "Zero-Context Fallback" (Ask the user, verify truth, delete old nodes, propose new Tier 4 memory). Never proceed without building verified truth coordinates.
 
-### 1. Requirements Harvesting
-Extract and formalize the core requirements and success criteria.
+### 1. Requirements Harvesting & Issue Instantiation
+Extract and formalize the core requirements and success criteria. All feature work MUST be tracked in Plane.
 - **Lead Agent**: `RequirementsArchitect`
-- **Output**: Formal requirements document (usually in `brain/`).
+- **Skill**: `managing-plane-tasks`
+- **Action**: Ensure a Plane issue exists detailing the requirements and acceptance criteria. If one does not exist, use `.agent/skills/routing/managing-plane-tasks/scripts/create_task.py` to create it immediately. Record the Issue ID in your context.
+- **Output**: Formal Plane issue and local requirements document (usually in `brain/`).
 
-### 2. Architectural Design
+### 2. Architectural Design & Plan Deployment
 Design the system structure, data models, and API interfaces.
 - **Lead Agent**: `SystemArchitectSteward`
 - **Skill**: `designing-ai-systems`, `designing-apis`
-- **Output**: `implementation_plan.md`
+- **Output**: `implementation_plan.md` in the active factory iteration folder.
+- **Mandatory PMS Sync**: Immediately after generating the `implementation_plan.md`, the AI Agent MUST post this full plan as a comment (or issue update) to the active Plane issue. Plane acts as the primary AI planning tool and provides maximum transparency to human managers.
 
 ### 3. TDD Implementation (Red Phase)
 Define the tests before writing a single line of production code.
@@ -72,7 +75,12 @@ Generate README updates, changelogs, and the final walkthrough.
 Analyze the session for significant, reusable patterns and propose them for permanent storage.
 - **Lead Agent**: `CognitiveCycleEngineer`
 - **Skill**: `managing-plane-tasks`, `managing-memory-bank`
-- **Action**: Extract architectural decisions or new methodologies. Store them as an `architectural_decisions` array on the Plane task closure. This acts as the Tier 4 Memory Proposal, awaiting User Approval to become Permanent Semantic Memory.
+- **Action**: Extract architectural decisions or new methodologies into a localized `solution.json` payload. Run `.agent/skills/routing/managing-plane-tasks/scripts/post_solution.py` to securely store these insights in the Plane issue and mark it as 'Done'. This acts as the Tier 4 Memory Proposal, awaiting User Approval to become Permanent Semantic Memory.
+
+## Mandatory: Continuous PMS Documentation
+Workflows are **PMS-driven**. Throughout all phases (1-7):
+- Agents MUST document their ongoing solution steps, test results, and architectural choices directly into the Plane issue.
+- Do not wait until Phase 7 to update Plane. Use `mcp_plane_create_work_item_comment` or equivalent tools to log audit trails incrementally as major milestones are hit during Design, Implementation, and Quality Gates.
 
 ## Decision Points
 

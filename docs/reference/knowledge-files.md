@@ -1,6 +1,6 @@
 ﻿# Knowledge Files Catalog
 
-The factory currently includes **273 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
+The factory currently includes **275 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
 
 | File | Type | Description |
 |------|------|-------------|
@@ -78,6 +78,7 @@ The factory currently includes **273 knowledge files** covering: various aspects
 | [coordination-patterns](file:///.agent/knowledge/coordination-patterns.json) |  |  |
 | [coordination-strategies](file:///.agent/knowledge/coordination-strategies.json) |  |  |
 | [cpi-error-handling](file:///.agent/knowledge/cpi-error-handling.json) |  |  |
+| [creator-skills-mapping](file:///.agent/knowledge/creator-skills-mapping.json) |  |  |
 | [crewai-patterns](file:///.agent/knowledge/crewai-patterns.json) |  |  |
 | [dashboard-knowledge](file:///.agent/knowledge/dashboard-knowledge.json) |  |  |
 | [data-application-patterns](file:///.agent/knowledge/data-application-patterns.json) |  |  |
@@ -192,6 +193,7 @@ The factory currently includes **273 knowledge files** covering: various aspects
 | [pandas-patterns](file:///.agent/knowledge/pandas-patterns.json) |  |  |
 | [pattern-catalog](file:///.agent/knowledge/pattern-catalog.json) |  |  |
 | [plane-integration](file:///.agent/knowledge/plane-integration.json) |  |  |
+| [plane-tasks-methodology](file:///.agent/knowledge/plane-tasks-methodology.json) |  |  |
 | [pm-metrics](file:///.agent/knowledge/pm-metrics.json) |  |  |
 | [polars-dataframe-patterns](file:///.agent/knowledge/polars-dataframe-patterns.json) |  |  |
 | [prisma-database-patterns](file:///.agent/knowledge/prisma-database-patterns.json) |  |  |

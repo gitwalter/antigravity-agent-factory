@@ -64,20 +64,20 @@ Follow these procedures to implement the capability:
 
 Every work item MUST be tagged with at least one label from this synchronized set. For **Remote Plane** operations, always use the `mcp_plane` tools (`create_label`, `update_label`, `list_labels`) to maintain this synchronization. Do NOT use local management scripts for remote label administration.
 
-| Label | Description |
-| :--- | :--- |
-| `BUG` | Defect or unexpected behavior. |
-| `CORE` | Core system infrastructure and logic. |
-| `DATA` | Data models, migrations, and pipelines. |
-| `DOCU` | Documentation and knowledge items. |
-| `FEATURE` | New functional capabilities. |
-| `TEST` | Testing infrastructure and test cases. |
-| `UI` | User interface and experience. |
-| `ORCHESTRATION` | Agent coordination, loops, and supervisor logic. |
-| `GROUNDING` | RAG patterns, knowledge retrieval, and memory management. |
-| `INTEGRATION` | MCP server connections and external API logic. |
-| `INFRA` | Environment setup, Conda, and shell platform management. |
-| `SKILL` | Development and refinement of agent skills. |
+| Label | Description | UUID |
+| :--- | :--- | :--- |
+| `BUG` | Defect or unexpected behavior. | `86386dc5-0402-4294-983d-5d0a8043a5fe` |
+| `CORE` | Core system infrastructure and logic. | `5b807a8c-09c4-49d5-ac0d-290568780564` |
+| `DATA` | Data models, migrations, and pipelines. | `70f46984-9401-44cd-a489-8aaad7fa8f4a` |
+| `DOCU` | Documentation and knowledge items. | `ffa3d5a6-91dd-4564-991f-77a7566657aa` |
+| `FEATURE` | New functional capabilities. | `57a1da51-90c6-46db-9340-6c88ac9b1ed0` |
+| `TEST` | Testing infrastructure and test cases. | `740d9fb4-20e8-4184-a967-8c9110d97911` |
+| `UI` | User interface and experience. | `a01878b6-eb15-4ba5-a686-218206d2c0b5` |
+| `ORCHESTRATION` | Agent coordination, loops, and supervisor logic. | `c1753b7b-68e8-4474-91dd-52e10842f17d` |
+| `GROUNDING` | RAG patterns, knowledge retrieval, and memory management. | `d688fff1-22e0-41be-b7cc-60e4af471016` |
+| `INTEGRATION` | MCP server connections and external API logic. | `78c78433-4e9e-4a44-a6ce-4017d3c51b60` |
+| `INFRA` | Environment setup, Conda, and shell platform management. | `6ecab990-939b-4353-a608-7d998b1ec8b3` |
+| `SKILL` | Development and refinement of agent skills. | `10becfa5-dc59-4ab1-a780-ad9852237c57` |
 
 ## Best Practices
 Before starting a sprint:
