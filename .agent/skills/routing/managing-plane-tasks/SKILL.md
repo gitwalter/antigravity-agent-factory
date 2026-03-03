@@ -37,6 +37,7 @@ related_skills:
 references:
 - references/task_definition_schema.json
 - references/task_definition_guide.md
+- references/solution_definition_schema.json
 templates:
 - ["none"]
 ---
@@ -103,9 +104,9 @@ A work item is **NOT considered created** until ALL mandatory steps (A through C
 > [!CAUTION]
 > Creating a work item without start_date, target_date, estimate, labels, module, cycle, and task schema is a governance violation. Always complete the full workflow.
 
-#### Step 0: Context Engineering (Memory MCP)
+#### Step 0: Context Engineering (Memory-First Navigation)
 
-**Before defining a task**, query the memory MCP knowledge graph to build situational awareness. This grounds your task hypothesis in the factory's actual capabilities.
+**MANDATORY**: Before defining a task, query the memory MCP knowledge graph. This is the **Factory Standard** for building situational awareness. Establish the "Memory-First" pattern to ensure your task hypothesis is grounded in actual factory capabilities.
 
 ```json
 // Tool: mcp_memory_open_nodes — Start with system orientation
@@ -199,30 +200,45 @@ Use the Plane MCP server tools to assign the created task to the active cycle.
 > [!TIP]
 > Always use `mcp_plane_list_cycles` to find the currently active sprint. Do not hardcode cycle UUIDs — they change every sprint.
 
-### 4. Professional Solution Reporting (Mandatory Closure)
+### 4. High-Fidelity Solution Reporting (Mandatory Closure)
 
-Every issue marked as **Done** MUST be accompanied by a professional solution summary rendered via the `solution_comment.html.j2` template. This ensures technical fidelity and aesthetic consistency, aligning perfectly with the "beautiful" task creation style used in `work_item.html.j2`.
+Every issue marked as **Done** MUST be accompanied by a professional solution summary rendered via the `solution_comment.html.j2` template. This ensures technical fidelity and prevents shallow, uninformative closures.
 
-#### Step D: Prepare Solution Data
-Gather the technical details of the implementation.
+**MANDATORY SCHEMA**: See [solution_definition_schema.json](file:///d:/Users/wpoga/Documents/Python%20Scripts/antigravity-agent-factory/.agent/skills/routing/managing-plane-tasks/references/solution_definition_schema.json).
+
+#### Step D: Prepare High-Fidelity Solution Data
+You must separate *what* you did (mechanics) from *why* you did it (architecture).
+
+⚠️ **CRITERIA FOR A GOOD SOLUTION DEFINITION**
+- **Poor (The "Alibi Blablabla")**: "Updated script. Fixed whitespace. Ran tests."
+- **Excellent (Architectural Insight)**: "Introduced a `post_solution.py` script bridging the Plane API with Jinja2 rendering. Decided to filter empty whitespace natively inside the Jinja template using `-set` blocks to offload cleaning logic from Python, ensuring clean HTML payloads."
 
 **Example `solution.json`:**
 ```json
 {
-  "summary": "Isolated RAG workspaces for parallel CI workers to prevent file locking.",
+  "summary": "Isolated RAG workspaces for parallel CI workers to prevent file locking and SQLite corruption during `pytest -n 2`.",
+  "architectural_decisions": [
+    "Implemented `isolated_rag_workspace` fixture using pytest `tmp_path_factory`.",
+    "Bypassed the global `data/` directory entirely for CI runs to prevent process collisions.",
+    "Decided to patch `OptimizedRAG` initialization path dynamically rather than relying on env vars to maintain thread safety."
+  ],
   "files_affected": [
     "scripts/ai/rag/rag_optimized.py",
     "tests/conftest.py"
   ],
   "verification": [
-    { "type": "Parallel Smoke Test", "result": "PASS" },
-    { "type": "Validation Suite", "result": "PASS" }
+    { "type": "Parallel Smoke Test", "result": "PASS" }
   ],
   "evolution": [
-    "New isolated_rag_workspace fixture in conftest.py"
+    "Added CI parallelization blueprint.",
+    "Removed toxic data blobs from Git.",
+    "Stabilized standard factory CI/CD."
   ]
 }
 ```
+
+> [!CAUTION]
+> The `post_solution.py` script contains strict minimum-length validations. If your descriptions are too short or lack architectural depth, the script will crash and block the task closure. Provide extreme technical depth.
 
 #### Step E: Render and Post Solution
 Use the `post_solution.py` script to automate the rendering and posting to Plane. This script also moves the issue to the **Done** state.

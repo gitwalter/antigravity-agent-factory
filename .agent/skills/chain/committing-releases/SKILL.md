@@ -308,19 +308,18 @@ git push
 > [!TIP]
 > Use `git commit` for automatic verification. The `safe_commit.py` script is primarily a standalone tool for manual full-suite validation or dry runs.
 
-### Standalone safe_commit.py (Agent/Manual Tool)
-Used by shell agents for reliable commits or for dry-run verification.
+### Standard Factory Commit Workflow (Recommended for Humans and Agents)
+For ALL development, use standard `git` commands. The pre-commit hooks are configured to automatically run the `safe_commit.py` verification logic.
 
 ```powershell
-# Single command - ALWAYS runs pre-commit, then commits
-{PYTHON_PATH} {directories.scripts}/git/safe_commit.py "feat(scope): description"
-
-# With push
-{PYTHON_PATH} {directories.scripts}/git/safe_commit.py "feat(scope): description" --push
-
-# Dry run (validate without committing)
-{PYTHON_PATH} {directories.scripts}/git/safe_commit.py --dry-run "feat(scope): test"
+# Standard workflow
+git add .
+git commit -m "Your descriptive message"
+git push
 ```
+
+> [!CAUTION]
+> **AI AGENT FORBIDDEN BEHAVIOR:** Agents MUST NEVER execute `safe_commit.py` or `pre_commit_runner.py` directly. You are operating in a fully integrated environment. You must execute `git add .` followed by `git commit -m "..."`. The pre-commit hooks will handle the rest. Running the scripts directly is a violation of the Factory Standard.
 ### Standard Factory Commit Workflow
 For most development, use standard `git` commands. The pre-commit hooks are configured to automatically run the `safe_commit.py` verification logic.
 

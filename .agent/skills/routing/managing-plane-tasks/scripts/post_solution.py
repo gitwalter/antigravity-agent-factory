@@ -40,6 +40,47 @@ TEMPLATE_DIR = os.path.join(SKILL_ROOT, "templates")
 DONE_STATE_ID = "ef4b2395-3edb-41e9-adcd-7ec77d534f0f"
 
 
+def validate_depth(data: dict):
+    """Enforce high-fidelity reporting standards to prevent 'alibi blablabla'."""
+    errors = []
+
+    # Validate architectural depth
+    arch = data.get("architectural_decisions", [])
+    if not arch:
+        errors.append(
+            "Missing 'architectural_decisions'. High-fidelity reporting demands deep technical insight."
+        )
+    elif len(arch) < 3 and not any(len(str(a).strip()) >= 50 for a in arch):
+        errors.append(
+            "Shallow 'architectural_decisions'. Must contain at least 3 points or highly detailed descriptions (>= 50 chars)."
+        )
+
+    # Validate evolution/mechanics depth
+    evol = data.get("evolution", [])
+    if not evol:
+        errors.append("Missing 'evolution'. What factory assets were modified/created?")
+    elif len(evol) < 3 and not any(len(str(e).strip()) >= 50 for e in evol):
+        errors.append(
+            "Shallow 'evolution'. Must contain at least 3 points or highly detailed descriptions (>= 50 chars)."
+        )
+
+    # Validate summary
+    summary = str(data.get("summary", "")).strip()
+    if len(summary) < 50:
+        errors.append(
+            f"Summary too short ({len(summary)} chars). Provide a meaningful context paragraph (>= 50 chars)."
+        )
+
+    if errors:
+        print("\n❌ HIGH-FIDELITY REPORTING VIOLATION:")
+        for err in errors:
+            print(f"  - {err}")
+        print(
+            "\nThe Plane task closure has been blocked. Revise the solution JSON to meet architectural standards."
+        )
+        sys.exit(1)
+
+
 def load_data(path: str) -> dict:
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
@@ -125,6 +166,7 @@ def main():
     }
 
     data = load_data(args.json)
+    validate_depth(data)
     html = render_solution(data)
 
     issue_uuid = get_issue_uuid(args.issue, headers)

@@ -35,10 +35,25 @@ This workflow is activated when:
 
 > **Note:** Routing is managed by `orchestration-engine.json`. Lead agents must verify MCP authorization before execution.
 
+## Phase 0: Context Engineering (Memory-First)
+
+**MANDATORY**: Before initiating any research, query the Memory MCP knowledge graph. This builds situational awareness and ensures your research is grounded in the factory's existing structural relationships.
+
+```json
+// Tool: mcp_memory_open_nodes — Build situational awareness
+{ "names": ["System_Consciousness"] }
+
+// Tool: mcp_memory_search_nodes — Explore related concepts
+{ "query": "<search entity/capability>" }
+```
+
+**Zero-Context Fallback**: If the Memory Graph lacks foundational entities regarding the capability you are researching—or if the graph links to deprecated standards—you MUST actively build the memory before proceeding to Phase 1. Ask the human operator for the structural truth, verify compliance, delete outdated nodes, and establish the Tier 4 Proposal. Never hallucinate baseline architecture.
+
 ## Steps
 
 ### 1. Classify the Query
 Determine which source is most appropriate:
+- **Structural/Context query** ("what is X?", "how does X relate to Y?") → **Always Phase 0 first**
 - **Catalog query** ("what do we have?", "list sources") → Step 2a
 - **Ingested content query** (topics matching RAG library) → Step 2b
 - **Web/current topic** (news, trends, general knowledge) → Step 2c
@@ -96,6 +111,10 @@ Invoke the `researching-first` skill for complex topics requiring multiple sourc
 4. **Docs**: DeepWiki/LangChain docs for technical depth
 5. **Document findings**: Create knowledge file
 6. **Synthesize**: Combine all sources with citations
+
+## Phase Final: Memory Induction & Proposal
+If the research uncovered a new foundational pattern, standard, or architectural rule that the factory should adopt (Layer 3 or 4 modifications), it MUST be proposed for permanent retention.
+Generate a Memory Proposal detailing the discovery. If resolving a task, embed this insight into the `architectural_decisions` array of the Plane solution.
 
 ## Notes
 - Always try **local RAG first** for domain topics before escalating to web.

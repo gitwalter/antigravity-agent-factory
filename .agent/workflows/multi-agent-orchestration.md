@@ -29,7 +29,15 @@ This workflow is activated when:
 
 ## Steps
 
-### Analyze Requirements
+### 0. Context Engineering (Memory MCP)
+**MANDATORY**: Query the knowledge graph to understand existing agent topologies and coordination patterns before designing new systems.
+
+```json
+{ "query": "agent coordination patterns" }
+```
+
+### 1. Analyze Requirements
+Determine the core goals and constraints of the multi-agent system.
 
 ### Select Topology
 

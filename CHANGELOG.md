@@ -5,11 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-03-03
+
+### Added
+- **Consent-Driven Memory Induction (AGENT-50)**: Mandated Phase Final reflection across all structural workflows (`feature`, `bugfix`, `research`), enabling agents to systematically propose Layer 3/4 architectural methodologies upon task closure.
+- **Active Memory Building (Zero-Context Fallback)**: Formally codified rules in `managing-memory-bank` preventing agents from interpreting empty state as permission to hallucinate. If the Tier 0 Active Consciousness returns zero results, agents are forced to pause and securely ask the human operator (`notify_user`) for structural truth.
+- **High-Fidelity Solution Reporting (AGENT-51)**: Replaced shallow task closure logic with strict JSON schemas (`solution_definition_schema.json`) and depth validation. `post_solution.py` now mathematically fails if an agent's technical summary lacks structural insight.
+- **Tier 0 Graph Navigation**: Established the `mcp_memory` backend explicitly as the Factory's Active Consciousness, directly integrated with Phase 0 context engineering for topography mapping.
+
+### Changed
+- **Plane Issue Updates**: Upgraded `solution_comment.html.j2` to distinctively parse and render the newly mandatory `architectural_decisions` and `evolution` arrays natively onto the cloud Plane platform.
+- **Skill Instructions**: Greatly expanded `managing-plane-tasks/SKILL.md` with explicit templates grading "Poor" vs "Excellent" technical summaries.
+
 ## [1.5.1] - 2026-03-03
 
 ### Added
-- **V8 Template Migration**: Migrated all backlog and todo items to the whitespace-optimized Jinja V8 template.
-- **MCP Script Discovery**: Enhanced `sync_script_registry.py` for automated CLI introspection.
 
 ### Changed
 - **PMS Architecture Transition**: Finalized move to Cloud Plane + MCP architecture.

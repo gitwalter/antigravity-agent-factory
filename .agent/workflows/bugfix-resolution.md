@@ -36,6 +36,11 @@ This workflow is activated when:
 If a Plane issue is provided, use the native `pms-management` skill:
 `conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py list`
 
+### Phase 0: Context Engineering (Memory-First)
+Before deep-diving into code, query the Active Consciousness to see if this bug is a known anti-pattern or if a similar fix exists.
+Use the `managing-memory-bank` skill to execute `mcp_memory_search_nodes` against the Tier 0 Graph.
+**Fallback (MANDATORY)**: If the Tier 0 query returns zero structural results for the domain being modified, or if the entity data relies on deprecated packages/patterns, you MUST suspend the workflow. Trigger the "Zero-Context Fallback" directly by using `notify_user` to ask for the current standard. Build the memory before executing the fix.
+
 ### Classify Bug Severity
 
 ### Ground Data Model
@@ -70,7 +75,9 @@ Update the status in Plane. Use the mapping below to ensure the correct state na
 Command:
 `conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py update --id <SEQ_ID> --state "Done"`
 
-### Capture Lessons
+### Phase Final: Memory Induction & Proposal
+If the bugfix revealed a new architectural constraint, methodology flaw, or critical anti-pattern (Layer 3 or 4), you MUST capture it.
+Use `managing-plane-tasks` to draft the High-Fidelity solution payload, explicitly filling the `architectural_decisions` array. This serves as the Tier 4 Memory Proposal. Do not skip this step; it is how the factory learns to prevent future bugs.
 
 
 ## Decision Points
