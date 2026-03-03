@@ -17,6 +17,7 @@ Test Markers for Intelligent Packaging:
 
 import json
 import sys
+import os
 from pathlib import Path
 from typing import Any, Dict
 
@@ -494,6 +495,38 @@ def knowledge_schema_path(factory_root: Path) -> Path:
         Path to knowledge schema pattern.
     """
     return factory_root / ".agent" / "patterns" / "knowledge" / "knowledge-schema.json"
+
+
+@pytest.fixture(scope="session", autouse=True)
+def isolated_rag_workspace(tmp_path_factory, worker_id):
+    """
+    Provide each pytest-xdist worker with an isolated RAG workspace.
+    This prevents file locking conflicts when running RAG tests in parallel.
+    """
+    if worker_id == "master":
+        # Not running in parallel, use defaults
+        yield
+        return
+
+    # Create a unique temporary directory for this worker
+    worker_tmp = tmp_path_factory.mktemp(f"rag_{worker_id}")
+    qdrant_path = worker_tmp / "qdrant"
+    parent_store = worker_tmp / "parent_store"
+
+    qdrant_path.mkdir(parents=True, exist_ok=True)
+    parent_store.mkdir(parents=True, exist_ok=True)
+
+    # Set environment variables that rag_optimized.py will pick up
+    os.environ["QDRANT_PATH_OVERRIDE"] = str(qdrant_path.absolute())
+    os.environ["PARENT_STORE_PATH_OVERRIDE"] = str(parent_store.absolute())
+    os.environ["RAG_COLLECTION_OVERRIDE"] = f"test_collection_{worker_id}"
+
+    yield
+
+    # Clear env vars
+    os.environ.pop("QDRANT_PATH_OVERRIDE", None)
+    os.environ.pop("PARENT_STORE_PATH_OVERRIDE", None)
+    os.environ.pop("RAG_COLLECTION_OVERRIDE", None)
 
 
 @pytest.fixture

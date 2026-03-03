@@ -10,6 +10,9 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")
 sys.path.insert(0, PROJECT_ROOT)
 
 
+import pytest
+
+
 def test_agentic_rag():
     from scripts.ai.rag.agentic_rag import AgenticRAG
 
@@ -23,8 +26,7 @@ def test_agentic_rag():
     gen = res.get("generation", "")
     print(f"Result Length: {len(gen)}", file=sys.stderr)
     if not gen:
-        print("ERROR: No generation returned.", file=sys.stderr)
-        sys.exit(1)
+        pytest.fail("ERROR: No generation returned.")
 
     print("SUCCESS: AgenticRAG worked.", file=sys.stderr)
 

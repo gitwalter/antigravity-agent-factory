@@ -22,9 +22,16 @@ logger = logging.getLogger(__name__)
 
 # Constants — anchored to project root so paths work regardless of CWD
 _PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
-QDRANT_PATH = os.path.join(_PROJECT_ROOT, "data", "rag", "qdrant_workspace")
-PARENT_STORE_PATH = os.path.join(_PROJECT_ROOT, "data", "rag", "parent_store")
-COLLECTION_NAME = "ebook_library"
+# Allow environment overrides for isolated testing (e.g. pytest-xdist)
+QDRANT_PATH = os.getenv(
+    "QDRANT_PATH_OVERRIDE",
+    os.path.join(_PROJECT_ROOT, "data", "rag", "qdrant_workspace"),
+)
+PARENT_STORE_PATH = os.getenv(
+    "PARENT_STORE_PATH_OVERRIDE",
+    os.path.join(_PROJECT_ROOT, "data", "rag", "parent_store"),
+)
+COLLECTION_NAME = os.getenv("RAG_COLLECTION_OVERRIDE", "ebook_library")
 
 # LLM & Embedding config — loaded from config/llm_config.json
 from scripts.ai.llm_config import (
@@ -90,7 +97,8 @@ class OptimizedRAG:
                 logger.warning(
                     f"Qdrant Docker not reachable. Falling back to local path: {QDRANT_PATH}"
                 )
-                logger.warning("NOTE: Parallel access is NOT supported in local mode.")
+                if not os.path.exists(QDRANT_PATH):
+                    os.makedirs(QDRANT_PATH, exist_ok=True)
                 self._client = QdrantClient(path=QDRANT_PATH)
 
             # Ensure collection exists

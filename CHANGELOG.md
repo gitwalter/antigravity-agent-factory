@@ -16,7 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Documentation**: Overhauled `docs/pms/plane_integration_guide.md` to reflect native MCP tool usage.
 
 ### Fixed
-- **CI/CD Coverage Regression (AGENT-48)**: Resolved the 96% coverage failure by optimizing the YAML validation recursive scan to exclude large/legacy directories, preventing worker memory exhaustion.
+- **CI/CD Stabilization (AGENT-48)**:
+    - Resolved the 96% coverage failure by optimizing YAML validation to exclude large/legacy directories.
+    - Eliminated `gw0`/`gw3` node termination by purging toxic `sys.exit` calls from verification tests.
+    - Implemented **Parallel Resource Isolation**: Refactored `OptimizedRAG` and `conftest.py` to assign unique temporary workspaces to each concurrent worker, preventing file locking conflicts.
+- **Repository Weight Reduction**: Purged 4,500+ tracked binary files from the `data/` directory and hardened `.gitignore` to prevent future data bloat.
 
 ---
 *Release verified for high-fidelity agentic orchestration.*
