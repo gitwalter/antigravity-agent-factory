@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Automated quality gate workflow that enforces code quality standards before merge. Runs comprehensive checks includin...
+version: 1.0.0
 ---
 
 # Quality Gate
@@ -10,7 +9,7 @@ Automated quality gate workflow that enforces code quality standards before merg
 
 **Version:** 1.0.0
 **Created:** 2026-02-02
-**Agent:** code-reviewer
+**Agent:** system-steward
 
 ## Trigger Conditions
 
@@ -71,3 +70,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

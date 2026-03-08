@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: Create burndown chart data
+description: >
+  Create burndown chart data
 knowledge:
 - workflow-patterns.json
 - best-practices.json

@@ -2,7 +2,8 @@
 agents:
 - none
 category: evaluator-optimizer
-description: Factual claim verification - the canonical profile of grounding-verification
+description: >
+  Factual claim verification - the canonical profile of grounding-verification
 knowledge:
 - none
 name: verifying-with-strawberry

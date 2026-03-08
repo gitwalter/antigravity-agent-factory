@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Agent definition file generation with mandatory schema validation against
+description: >
+  Agent definition file generation with mandatory schema validation against
   schemas/agent.schema.json
 knowledge:
 - none

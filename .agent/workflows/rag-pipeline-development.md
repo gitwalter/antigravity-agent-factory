@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: End-to-end workflow for developing Retrieval-Augmented Generation (RAG) systems. Covers document ingestion, embedding...
+version: 1.0.0
 ---
 
 # Rag Pipeline Development
@@ -64,3 +63,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

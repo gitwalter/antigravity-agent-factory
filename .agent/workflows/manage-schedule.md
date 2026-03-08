@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Manage daily schedule and communications
+version: 1.0.0
 ---
 
 # Manage Schedule Workflow
@@ -52,3 +51,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

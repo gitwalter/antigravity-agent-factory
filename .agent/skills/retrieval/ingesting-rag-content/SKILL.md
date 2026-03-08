@@ -2,7 +2,8 @@
 agents:
 - ai-app-developer
 category: retrieval
-description: Specialized skill for ingesting rag content
+description: >
+  Specialized skill for ingesting rag content
 knowledge:
 - best-practices.json
 name: ingesting-rag-content

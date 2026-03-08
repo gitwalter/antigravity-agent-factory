@@ -1,8 +1,5 @@
 ---
-title: Git Operation Governance
-scope: all agents, all tasks
-axioms: [A3, A4]
-priority: P00
+trigger: model_decision
 ---
 
 # Git Operation Governance

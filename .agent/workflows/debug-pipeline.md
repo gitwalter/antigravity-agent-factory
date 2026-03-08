@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Systematic workflow for debugging CI/CD pipeline failures. This workflow demonstrates the Antigravity Agent Factory workfl...
+version: 1.0.0
 ---
 
 # Debug Pipeline
@@ -10,7 +9,7 @@ Systematic workflow for debugging CI/CD pipeline failures. This workflow demonst
 
 **Version:** 1.0.0
 **Created:** 2026-01-31
-**Agent:** debug-conductor
+**Agent:** workflow-quality-specialist
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.
 
@@ -67,3 +66,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

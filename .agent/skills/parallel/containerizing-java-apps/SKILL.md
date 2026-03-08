@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Docker multi-stage builds for Java (JDK vs JRE), GraalVM native images,
+description: >
+  Docker multi-stage builds for Java (JDK vs JRE), GraalVM native images,
   Jib for containerization, Kubernetes deployment (Deployment, Service, ConfigMap,
   Secrets), Helm charts, Health probes (liveness, readiness, startup), Resource limits
 knowledge:

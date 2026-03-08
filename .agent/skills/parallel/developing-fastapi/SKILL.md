@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: FastAPI project structure, Router organization, Dependency injection,
+description: >
+  FastAPI project structure, Router organization, Dependency injection,
   Pydantic v2 models, Background tasks, WebSocket endpoints, Middleware, CORS, OpenAPI
   customization
 knowledge:

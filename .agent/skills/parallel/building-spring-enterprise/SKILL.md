@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Tactical Blueprint for production-grade Spring Boot 3+ applications.
+description: >
+  Tactical Blueprint for production-grade Spring Boot 3+ applications.
   Focuses on procedural execution, tool-calling sequences, and idiomatic excellence.
 knowledge:
 - none

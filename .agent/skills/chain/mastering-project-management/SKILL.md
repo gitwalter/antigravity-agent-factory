@@ -1,6 +1,7 @@
 ---
 name: mastering-project-management
-description: Procedural truth for orchestrating high-fidelity software delivery via Plane MCP server.
+description: >
+  Procedural truth for orchestrating high-fidelity software delivery via Plane MCP server.
 type: skill
 version: 2.0.0
 category: chain

@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Safe commit and release workflow with auto-sync, changelog updates, and
+description: >
+  Safe commit and release workflow with auto-sync, changelog updates, and
   learning from failures
 knowledge:
 - none

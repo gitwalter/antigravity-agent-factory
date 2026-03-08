@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: 5-layer requirements elicitation for Cursor agent system generation with
+description: >
+  5-layer requirements elicitation for Cursor agent system generation with
   axioms, purpose, and methodology
 knowledge:
 - none

@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: Create implementation task from story or description
+description: >
+  Create implementation task from story or description
 knowledge:
 - pm-metrics.json
 - workflow-patterns.json

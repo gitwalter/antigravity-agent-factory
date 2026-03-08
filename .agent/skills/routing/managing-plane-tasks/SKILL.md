@@ -1,6 +1,7 @@
 ---
 name: managing-plane-tasks
-description: Remote management of Plane PMS issues and states using the Plane MCP server, with formal task definition schema and memory MCP integration.
+description: >
+  Remote management of Plane PMS issues and states using the Plane MCP server, with formal task definition schema and memory MCP integration.
 type: skill
 version: 3.0.0
 category: routing
@@ -12,12 +13,12 @@ knowledge:
 - plane-integration.json
 - api-integration-patterns.json
 tools:
-- mcp_plane_list_work_items
+- mcp_plane_list_project_issues
+- mcp_plane_list_cycle_issues
+- mcp_plane_list_module_issues
 - mcp_plane_create_work_item
 - mcp_plane_update_work_item
 - mcp_plane_retrieve_work_item
-- mcp_plane_retrieve_work_item_property
-- mcp_plane_update_work_item_property
 - mcp_plane_list_labels
 - mcp_plane_create_label
 - mcp_plane_list_states
@@ -27,7 +28,9 @@ tools:
 - mcp_plane_create_work_item_comment
 - mcp_plane_add_work_items_to_module
 - mcp_plane_add_work_items_to_cycle
-- mcp_plane_search_work_items
+- mcp_plane_get_issue_using_readable_identifier
+- mcp_plane_list_project_issues_with_filters
+- mcp_plane_search_work_items (Verify availability - noted as missing in some instances)
 - mcp_memory_read_graph
 - mcp_memory_open_nodes
 - mcp_memory_search_nodes
@@ -66,6 +69,8 @@ This skill enables agents to manage projects, issues, and states in a remote Pla
 
 ## Prerequisites
 - **Plane MCP Server**: Must be active and configured in `mcp_config.json`.
+  - Use `${env:PLANE_API_TOKEN}` for the API token.
+  - Set `PLANE_WORKSPACE_SLUG` to `agent-factory`.
 - **Memory MCP Server**: Must be active for knowledge graph queries during task planning.
 - **Project Context**: Project ID `e71eb003-87d4-4b0c-a765-a044ac5affbe` | Identifier `AGENT`.
 - **Label Governance**: Always use exactly one or more of these approved label strings in your JSON payload: `BUG`, `DATA`, `DOCU`, `FEATURE`, `GROUNDING`, `INFRA`, `INTEGRATION`, `ORCHESTRATION`, `SKILL`, `TEST`, `UI`. (The `create_task.py` script will automatically map these strings to their Plane UUIDs).
@@ -75,16 +80,31 @@ This skill enables agents to manage projects, issues, and states in a remote Pla
 Follow this end-to-end workflow for all Plane project management operations.
 
 ### 1. Listing & Discovery
-Use `mcp_plane_list_work_items` with appropriate filtering. Prefer `expand` for full metadata.
+Choose the specific listing tool based on your needs. Note that **server-side filtering by status (state) is not supported**; you must fetch the issues and filter the JSON results locally.
 
+#### A. List all Project Issues
 ```json
-// Tool: mcp_plane_list_work_items
+// Tool: mcp_plane_list_project_issues
 {
-  "project_id": "e71eb003-87d4-4b0c-a765-a044ac5affbe",
-  "expand": "labels,state,assignees",
-  "order_by": "-updated_at"
+  "project_id": "e71eb003-87d4-4b0c-a765-a044ac5affbe"
 }
 ```
+
+#### B. List Issues by Cycle
+```json
+// Tool: mcp_plane_list_cycle_issues
+{
+  "project_id": "e71eb003-87d4-4b0c-a765-a044ac5affbe",
+  "cycle_id": "RESOLVED-CYCLE-UUID"
+}
+```
+
+#### C. Filtering by Status (Client-Side)
+Since the API does not support a `state` filter in the list tools, follow this pattern:
+1. Fetch issues using `mcp_plane_list_project_issues`.
+2. Iterate through the `results` array.
+3. Check `item["state"]["id"]` or `item["state"]["name"]` against your target status.
+4. Filter matching items locally.
 
 ### 2. Detailed Inspection
 Retrieve the full details of a specific item, including description and comments.
@@ -135,6 +155,9 @@ Create a `task.json` definition file on disk. Include the core requirements, fac
 
 > [!IMPORTANT]
 > **Mandatory Epic Rule:** You MUST ALWAYS provide a `parent` (Epic) UUID. No task should ever be orphaned in the backlog without an Epic. If you do not know the Epic, scan existing tickets in the same domain to find the UUID.
+
+> [!WARNING]
+> **HTML Formatting Rule:** The `requirements` and `acceptance_criteria` fields in your JSON MUST be formatted as single, continuous HTML strings (e.g., `"<ul><li>Item 1</li></ul>"`), NOT JSON arrays of strings. Passing an array will cause the Jinja renderer to iterate character by character, creating unreadable 1-letter bullet points.
 
 The execution context fields (`start_date`, `target_date`, `estimate_point`, `parent`) are sent directly to the Plane API so they appear natively in the UI.
 

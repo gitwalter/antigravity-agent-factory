@@ -1,6 +1,7 @@
 ---
 name: pattern-creator
-description: Standardized agent pattern creation and validation
+description: >
+  Standardized agent pattern creation and validation
 type: skill
 version: 1.0.0
 category: factory

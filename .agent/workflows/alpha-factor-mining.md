@@ -62,3 +62,7 @@ This workflow defines the systematic process for identifying, testing, and valid
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

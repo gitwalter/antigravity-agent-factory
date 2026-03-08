@@ -1,6 +1,7 @@
 ---
 name: agent-creator
-description: Standardized agent creation and evaluation with mandatory schema validation
+description: >
+  Standardized agent creation and evaluation with mandatory schema validation
 type: skill
 version: 2.0.0
 category: factory

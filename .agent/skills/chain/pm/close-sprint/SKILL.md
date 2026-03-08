@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: Complete sprint, calculate velocity
+description: >
+  Complete sprint, calculate velocity
 knowledge:
 - workflow-patterns.json
 - best-practices.json

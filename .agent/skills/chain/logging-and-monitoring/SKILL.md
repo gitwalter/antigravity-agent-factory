@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Structured logging with structlog, metrics collection, alerting patterns,
+description: >
+  Structured logging with structlog, metrics collection, alerting patterns,
   and distributed tracing
 knowledge:
 - none

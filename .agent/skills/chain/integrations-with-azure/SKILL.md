@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Azure App Service deployment, Azure Functions, Service Bus messaging,
+description: >
+  Azure App Service deployment, Azure Functions, Service Bus messaging,
   Key Vault integration, Container Apps, Application Insights
 knowledge:
 - none

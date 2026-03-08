@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Solana program development with Anchor framework. Covers program design, instruction implementation, testing, and dep...
+version: 1.0.0
 ---
 
 # Solana Development
@@ -56,3 +55,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: ML experiment workflow from hypothesis formation through results analysis. Covers experiment setup, training, trackin...
+version: 1.0.0
 ---
 
 # Ml Experiment
@@ -56,3 +55,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

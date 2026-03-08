@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Guide users through selecting practices that maintain excellence, alignment,
+description: >
+  Guide users through selecting practices that maintain excellence, alignment,
   and continuous improvement
 knowledge:
 - none

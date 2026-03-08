@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Optimize AI/LLM costs through intelligent routing, caching, batching,
+description: >
+  Optimize AI/LLM costs through intelligent routing, caching, batching,
   and usage analytics
 knowledge:
 - none

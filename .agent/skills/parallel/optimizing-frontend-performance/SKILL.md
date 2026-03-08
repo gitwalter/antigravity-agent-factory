@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Core Web Vitals optimization, code splitting, and React performance patterns
+description: >
+  Core Web Vitals optimization, code splitting, and React performance patterns
 knowledge:
 - none
 name: optimizing-frontend-performance

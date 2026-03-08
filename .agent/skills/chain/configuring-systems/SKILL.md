@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Interactive configuration and onboarding skill for Antigravity Agent Factory
+description: >
+  Interactive configuration and onboarding skill for Antigravity Agent Factory
   settings
 knowledge:
 - none

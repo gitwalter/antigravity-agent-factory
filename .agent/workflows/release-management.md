@@ -1,59 +1,32 @@
 ---
-## Overview
-
 description: Systematic workflow for managing software releases including version bumping, changelog generation, tagging, and depl...
+version: 1.0.0
 ---
 
-# Release Management
-
-Systematic workflow for managing software releases including version bumping, changelog generation, tagging, and deployment coordination.
+# /release-management Workflow (SDLC Phase 6)
 
 **Version:** 1.0.0
-**Created:** 2026-02-02
-**Applies To:** All stacks
+
+
+**Goal:** Coordinate the deployment of verified features into production, including versioning and formal release notes.
+
+## Steps:
+1. **Target**: Load `knowledge/eval-report.md` and `knowledge/walkthrough.md`.
+2. **Execute**: Trigger `.agent/skills/releases/committing-releases/SKILL.md` (if existing, else use generic release skill).
+3. **Link Audit**: Execute `python scripts/maintenance/link_checker.py --external` to ensure repo integrity.
+4. **Notes**: Generate `release-notes.md` using `knowledge/templates/release-notes.md`.
+5. **Output**: Update `CHANGELOG.md` and tag the repository.
+6. **Follow-up**: Prompt user to run `/monitor` (Phase 7) to verify production health.
+
+## Phase Gate (Deploy):
+- Mandatory generation of `release-notes.md`.
+- Successful merge and tagging.
+- Human review of the release candidate.
+
 
 ## Trigger Conditions
-
-This workflow is activated when:
-
-- Release preparation requested
-- Version bump needed
-- Changelog generation required
-- Release deployment initiated
-
-**Trigger Examples:**
-- "Prepare release v2.0.0"
-- "Create a new release"
-- "Bump version to 1.2.0"
-- "Generate release notes"
-
-## Steps
-
-### Verify Branch Status
-
-### Run Quality Checks
-
-### Link & Documentation Audit
-- **Agent**: `system-steward`
-- **Skill**: `governing-repositories`
-- **Action**: Run `python scripts/maintenance/link_checker.py --external` and perform full repository sync.
-
-### Determine Version
-
-### Update Version Files
-
-### Collect Changes
-
-### Generate Changelog Entry
+- Triggered by user context or meta-orchestrator.
 
 
-## Decision Points
-
-- Is the requirement clear?
-- Are the tests passing?
-
-
-## Example Session
-
-User: Run the workflow
-Agent: Initiating workflow steps...
+## Trigger Examples:
+- "Execute this workflow."

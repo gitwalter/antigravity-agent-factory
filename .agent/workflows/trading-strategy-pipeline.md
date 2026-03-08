@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: End-to-end workflow for developing, validating, and deploying algorithmic trading strategies. Covers hypothesis forma...
+version: 1.0.0
 ---
 
 # Trading Strategy Pipeline
@@ -70,3 +69,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

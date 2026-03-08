@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Config-driven operating environment skill for shell commands, tool path
+description: >
+  Config-driven operating environment skill for shell commands, tool path
   resolution, and platform-specific syntax across all platforms
 knowledge:
 - none

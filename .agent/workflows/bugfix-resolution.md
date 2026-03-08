@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Systematic workflow for resolving bugs from ticket analysis through implementation and verification. This workflow en...
+version: 1.0.0
 ---
 
 # Bugfix Resolution
@@ -10,7 +9,7 @@ Systematic workflow for resolving bugs from ticket analysis through implementati
 
 **Version:** 1.0.0
 **Created:** 2026-02-02
-**Agent:** debug-conductor
+**Agent:** workflow-quality-specialist
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.
 
@@ -32,9 +31,13 @@ This workflow is activated when:
 
 ## Steps
 
-### Fetch Ticket Details
-If a Plane issue is provided, use the native `pms-management` skill:
-`conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py list`
+### Phase 0: Issue Creation & Ticket Details
+**Agent**: `project-operations-specialist`
+All bugs MUST have a corresponding Plane issue before work begins. Use the `managing-plane-tasks` skill.
+1. Check if an issue exists.
+2. If not, create an issue in Plane ensuring strict schema compliance (must be assigned to a module and a cycle).
+3. Ensure the issue has a `BUG` label and is set to "In Progress" when work starts.
+Use the MCP server tools (`mcp_plane_create_issue`, `mcp_plane_update_issue`) and NOT the legacy `manager.py` script.
 
 ### Phase 0: Context Engineering (Memory-First)
 Before deep-diving into code, query the Active Consciousness to see if this bug is a known anti-pattern or if a similar fix exists.
@@ -60,24 +63,26 @@ Use the `managing-memory-bank` skill to execute `mcp_memory_search_nodes` agains
 ### Write Regression Test
 
 ### Implement Fix
+**Agent**: `python-ai-specialist`
+Implement the technical solution in the codebase safely.
 
 ### Verify Fix Locally
 
 ### Run Full Test Suite
+**Agent**: `workflow-quality-specialist`
+Execute `pytest` to ensure no regressions and verify the primary fix.
 
 ### Code Review
 
 ### Update Ticket
-Update the status in Plane. Use the mapping below to ensure the correct state name:
-- **Completed**: use `Done` (for completions)
-- **Blocked**: use `Backlog` (if work stops)
+Update the status in Plane using the MCP server tools. Use the `mcp_plane_update_issue` tool with the correct state ID for 'Done'.
 
-Command:
-`conda run -p D:\Anaconda\envs\cursor-factory python scripts/pms/manager.py update --id <SEQ_ID> --state "Done"`
-
-### Phase Final: Memory Induction & Proposal
-If the bugfix revealed a new architectural constraint, methodology flaw, or critical anti-pattern (Layer 3 or 4), you MUST capture it.
-Use `managing-plane-tasks` to draft the High-Fidelity solution payload, explicitly filling the `architectural_decisions` array. This serves as the Tier 4 Memory Proposal. Do not skip this step; it is how the factory learns to prevent future bugs.
+### Phase Final: High-Fidelity Closure (Memory Induction)
+**Agent**: `project-operations-specialist`
+Close the issue using the strict methodology defined in the `managing-plane-tasks` skill.
+1. Create a detailed `solution.json` file containing `summary`, `architectural_decisions`, `files_affected`, `verification`, and `evolution`.
+2. **Documentation**: Invoke the `/documentation-workflow` to generate or update the `walkthrough.md` and related technical docs.
+3. Run the `post_solution.py` script (`python .agent/skills/routing/managing-plane-tasks/scripts/post_solution.py --issue <ISSUE_ID> --json <JSON_PATH> --close`) to formulate the high-fidelity comment and close the ticket in Plane. This serves as the Tier 4 Memory Proposal.
 
 
 ## Decision Points
@@ -90,3 +95,7 @@ Use `managing-plane-tasks` to draft the High-Fidelity solution payload, explicit
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

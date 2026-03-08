@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Systematic error detection and fixing strategy for CI/CD pipeline failures
+description: >
+  Systematic error detection and fixing strategy for CI/CD pipeline failures
   with intelligent test packaging
 knowledge:
 - none

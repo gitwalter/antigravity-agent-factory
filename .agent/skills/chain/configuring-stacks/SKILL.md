@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Technology stack selection and configuration skill
+description: >
+  Technology stack selection and configuration skill
 knowledge:
 - none
 name: configuring-stacks

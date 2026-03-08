@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: REST API design (resource naming, HTTP methods, status codes), OpenAPI/Swagger
+description: >
+  REST API design (resource naming, HTTP methods, status codes), OpenAPI/Swagger
   documentation, API versioning strategies (URL, header, query), GraphQL schema design,
   gRPC proto definitions, Pagination patterns, Error response format, Rate limiting
   headers

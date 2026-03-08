@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Foundational skill for navigating the Tier 0 Active Consciousness and proposing Tier 4 Memories.
+description: >
+  Foundational skill for navigating the Tier 0 Active Consciousness and proposing Tier 4 Memories.
 knowledge:
 - agent-memory-patterns.json
 name: managing-memory-bank
@@ -88,7 +89,7 @@ Use the `managing-plane-tasks` skill to draft a High-Fidelity solution. Enter yo
 
 ### Step 4: Hydration (Post-Approval)
 If a proposal is Approved by the user, it becomes Tier 1 Permanent Memory (`.agent/knowledge/*.json`).
-If you define a new knowledge JSON, you MUST immediately "Hydrate" the Active Consciousness so other agents can mapped it in Phase 0.
+**CRITICAL**: You MUST run the mandatory filesystem synchronization suite (`sync_artifacts.py`, etc.) BEFORE hydrating the Active Consciousness to ensure the memory coordinates match the physical repository state.
 ```python
 # Use MCP tools: create_entities, create_relations
 create_entities(entities=[{"name": "AsyncPydanticRule", "entityType": "Layer4Pattern", "observations": ["Always use structured parsers for outputs"]}])

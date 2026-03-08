@@ -69,16 +69,31 @@ def generate_catalog():
         rel_to_root = path.relative_to(root).as_posix()
         return f"../../{rel_to_root}"
 
+    # Helper to clean out empty categories
+    def get_category(path, base_dir_name):
+        try:
+            # from `.agent/skills/category/skill_name/SKILL.md`
+            # root is `.agent/skills`, category is path.parent.parent.name
+            rel_parts = path.relative_to(root / ".agent" / base_dir_name).parts
+            if len(rel_parts) > 2 and base_dir_name == "skills":
+                return rel_parts[0]
+            elif len(rel_parts) > 1 and base_dir_name in ["agents", "workflows"]:
+                return rel_parts[0]
+            return "Uncategorized"
+        except Exception:
+            return "Uncategorized"
+
     agents = []
     agent_dirs = [root / ".agent" / "agents"]
     for ad in agent_dirs:
         if ad.exists():
-            for agent_file in sorted(ad.glob("*.md")):
+            for agent_file in sorted(ad.rglob("*.md")):
                 agents.append(
                     {
                         "name": agent_file.stem,
                         "title": extract_markdown_title(agent_file),
                         "path": get_rel_link(agent_file),
+                        "category": get_category(agent_file, "agents").title(),
                     }
                 )
 
@@ -86,28 +101,27 @@ def generate_catalog():
     skill_dirs = [root / ".agent" / "skills"]
     for sd in skill_dirs:
         if sd.exists():
-            for skill_dir in sorted(sd.iterdir()):
-                if skill_dir.is_dir():
-                    skill_file = skill_dir / "SKILL.md"
-                    if skill_file.exists():
-                        skills.append(
-                            {
-                                "name": skill_dir.name,
-                                "title": extract_markdown_title(skill_file),
-                                "path": get_rel_link(skill_file),
-                            }
-                        )
+            for skill_file in sorted(sd.rglob("SKILL.md")):
+                skills.append(
+                    {
+                        "name": skill_file.parent.name,
+                        "title": extract_markdown_title(skill_file),
+                        "path": get_rel_link(skill_file),
+                        "category": get_category(skill_file, "skills").title(),
+                    }
+                )
 
     workflows = []
     workflow_dirs = [root / ".agent" / "workflows"]
     for wd in workflow_dirs:
         if wd.exists():
-            for wf_file in sorted(wd.glob("*.md")):
+            for wf_file in sorted(wd.rglob("*.md")):
                 workflows.append(
                     {
                         "name": wf_file.stem,
                         "title": extract_markdown_title(wf_file),
                         "path": get_rel_link(wf_file),
+                        "category": get_category(wf_file, "workflows").title(),
                     }
                 )
 
@@ -152,25 +166,44 @@ def generate_catalog():
         f.write("\n")
 
         f.write("## 🤖 Agents\n\n")
-        f.write("| Agent | Description |\n")
-        f.write("|-------|-------------|\n")
+        # Group agents by category
+        agents_by_cat = {}
         for agent in agents:
-            f.write(f"| [{agent['name']}]({agent['path']}) | {agent['title']} |\n")
-        f.write("\n")
+            agents_by_cat.setdefault(agent["category"], []).append(agent)
+
+        for cat in sorted(agents_by_cat.keys()):
+            f.write(f"### {cat}\n\n")
+            f.write("| Agent | Description |\n")
+            f.write("|-------|-------------|\n")
+            for agent in sorted(agents_by_cat[cat], key=lambda x: x["name"]):
+                f.write(f"| [{agent['name']}]({agent['path']}) | {agent['title']} |\n")
+            f.write("\n")
 
         f.write("## 🛠 Skills\n\n")
-        f.write("| Skill | Description |\n")
-        f.write("|-------|-------------|\n")
+        skills_by_cat = {}
         for skill in skills:
-            f.write(f"| [{skill['name']}]({skill['path']}) | {skill['title']} |\n")
-        f.write("\n")
+            skills_by_cat.setdefault(skill["category"], []).append(skill)
+
+        for cat in sorted(skills_by_cat.keys()):
+            f.write(f"### {cat}\n\n")
+            f.write("| Skill | Description |\n")
+            f.write("|-------|-------------|\n")
+            for skill in sorted(skills_by_cat[cat], key=lambda x: x["name"]):
+                f.write(f"| [{skill['name']}]({skill['path']}) | {skill['title']} |\n")
+            f.write("\n")
 
         f.write("## 📋 Workflows\n\n")
-        f.write("| Workflow | Description |\n")
-        f.write("|----------|-------------|\n")
+        workflows_by_cat = {}
         for wf in workflows:
-            f.write(f"| [{wf['name']}]({wf['path']}) | {wf['title']} |\n")
-        f.write("\n")
+            workflows_by_cat.setdefault(wf["category"], []).append(wf)
+
+        for cat in sorted(workflows_by_cat.keys()):
+            f.write(f"### {cat}\n\n")
+            f.write("| Workflow | Description |\n")
+            f.write("|----------|-------------|\n")
+            for wf in sorted(workflows_by_cat[cat], key=lambda x: x["name"]):
+                f.write(f"| [{wf['name']}]({wf['path']}) | {wf['title']} |\n")
+            f.write("\n")
 
         f.write("## 📚 Knowledge Files\n\n")
         f.write("| File | Path |\n")

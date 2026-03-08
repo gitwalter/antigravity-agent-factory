@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: End-to-end workflow for developing SAP Cloud Application Programming Model (CAP) services. Covers CDS modeling, servi...
+version: 1.0.0
 ---
 
 # Cap Service Development
@@ -60,3 +59,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

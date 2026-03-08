@@ -1,6 +1,7 @@
 ---
 description: Custom Dashboard View Builder Workflow
 dashboard: true
+version: 1.0.0
 ---
 
 # Dashboard View Builder Workflow
@@ -42,3 +43,7 @@ Standardized process for creating and optimizing dashboard views.
 ### 5. Finalize & Publish
 - Save as a new "Situational Blueprint".
 - Set as default view for the relevant analytical domain.
+
+
+## Trigger Examples
+- "Execute this workflow."

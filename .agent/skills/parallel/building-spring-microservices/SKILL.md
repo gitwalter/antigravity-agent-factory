@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Spring Cloud microservices patterns with gateway, discovery, and resilience
+description: >
+  Spring Cloud microservices patterns with gateway, discovery, and resilience
 knowledge:
 - none
 name: building-spring-microservices

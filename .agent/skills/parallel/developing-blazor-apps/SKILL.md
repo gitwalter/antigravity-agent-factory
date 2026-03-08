@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Blazor Server, WebAssembly, and Auto render modes, component lifecycle,
+description: >
+  Blazor Server, WebAssembly, and Auto render modes, component lifecycle,
   state management, JavaScript interop, authentication
 knowledge:
 - none

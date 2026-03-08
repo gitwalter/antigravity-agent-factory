@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: JPA entity design (relationships, inheritance, embedded), Spring Data
+description: >
+  JPA entity design (relationships, inheritance, embedded), Spring Data
   JPA repositories (derived queries, @Query, Specifications), Transaction management,
   N+1 query prevention (EntityGraph, JOIN FETCH), Auditing, Flyway/Liquibase migrations
 knowledge:

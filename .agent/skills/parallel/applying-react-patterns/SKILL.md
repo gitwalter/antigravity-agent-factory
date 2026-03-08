@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: React 19 component patterns, hooks, state management, and composition
+description: >
+  React 19 component patterns, hooks, state management, and composition
 knowledge:
 - none
 name: applying-react-patterns

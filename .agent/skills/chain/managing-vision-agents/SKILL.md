@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Image analysis with multi-modal LLMs (GPT-4V, Gemini Vision), object
+description: >
+  Image analysis with multi-modal LLMs (GPT-4V, Gemini Vision), object
   detection integration, image generation pipelines, and visual question answering
 knowledge:
 - none

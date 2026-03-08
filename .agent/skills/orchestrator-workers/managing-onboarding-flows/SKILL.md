@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: Onboard existing repositories into the Antigravity Agent Factory ecosystem
+description: >
+  Onboard existing repositories into the Antigravity Agent Factory ecosystem
 knowledge:
 - none
 name: managing-onboarding-flows

@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Tool design, binding, and error handling patterns for LangChain agents
+description: >
+  Tool design, binding, and error handling patterns for LangChain agents
 knowledge:
 - none
 name: using-tools

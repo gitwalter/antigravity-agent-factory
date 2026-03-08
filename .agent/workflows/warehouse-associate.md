@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Personal Productivity & Station Execution Workflow
+version: 1.0.0
 ---
 
 # Warehouse Associate Operational Guide
@@ -65,3 +64,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

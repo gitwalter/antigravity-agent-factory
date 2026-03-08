@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: LangChain 1.x patterns for chains, tools, memory, and structured outputs
+description: >
+  LangChain 1.x patterns for chains, tools, memory, and structured outputs
 knowledge:
 - none
 name: using-langchain

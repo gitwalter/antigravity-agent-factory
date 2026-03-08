@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Tactical Blueprint for SAP Cloud Integration (CPI), Event Mesh, and API
+description: >
+  Tactical Blueprint for SAP Cloud Integration (CPI), Event Mesh, and API
   Management. Focuses on secure, observable, and resilient enterprise integration
   patterns.
 knowledge:

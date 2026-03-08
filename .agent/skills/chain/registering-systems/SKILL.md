@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Precise skill for updating JSON registries, dependency graphs, and manifests.
+description: >
+  Precise skill for updating JSON registries, dependency graphs, and manifests.
 knowledge:
 - none
 name: registering-systems

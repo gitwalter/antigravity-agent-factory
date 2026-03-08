@@ -43,42 +43,354 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 
 ## 🤖 Agents
 
+### Chain
+
 | Agent | Description |
 |-------|-------------|
+| [project-operations-specialist](../../.agent/agents/chain/project-operations-specialist.md) | Specialist: Project Operations Specialist |
+| [system-architecture-specialist](../../.agent/agents/chain/system-architecture-specialist.md) | Specialist: System Architecture Specialist |
+
+### Evaluator-Optimizer
+
+| Agent | Description |
+|-------|-------------|
+| [workflow-quality-specialist](../../.agent/agents/evaluator-optimizer/workflow-quality-specialist.md) | Specialist: Workflow & Quality Specialist |
+
+### Orchestrator-Workers
+
+| Agent | Description |
+|-------|-------------|
+| [executive-operations-specialist](../../.agent/agents/orchestrator-workers/executive-operations-specialist.md) | Specialist: Executive Operations Specialist |
+
+### Parallel
+
+| Agent | Description |
+|-------|-------------|
+| [dotnet-cloud-specialist](../../.agent/agents/parallel/dotnet-cloud-specialist.md) | Specialist: .NET & Cloud Specialist |
+| [full-stack-web-specialist](../../.agent/agents/parallel/full-stack-web-specialist.md) | Specialist: Full-Stack Web Specialist |
+| [java-systems-specialist](../../.agent/agents/parallel/java-systems-specialist.md) | Specialist: Java Systems Specialist |
+| [python-ai-specialist](../../.agent/agents/parallel/python-ai-specialist.md) | Specialist: Python & AI Specialist |
+| [sap-systems-specialist](../../.agent/agents/parallel/sap-systems-specialist.md) | Specialist: SAP Systems Specialist |
+
+### Routing
+
+| Agent | Description |
+|-------|-------------|
+| [knowledge-operations-specialist](../../.agent/agents/routing/knowledge-operations-specialist.md) | Specialist: Knowledge Operations Specialist |
 
 ## 🛠 Skills
 
+### Chain
+
 | Skill | Description |
 |-------|-------------|
+| [analyzing-code](../../.agent/skills/chain/analyzing-code/SKILL.md) | Code Analysis |
+| [analyzing-knowledge-gaps](../../.agent/skills/chain/analyzing-knowledge-gaps/SKILL.md) | Analyze Knowledge Gaps |
+| [applying-anthropic-patterns](../../.agent/skills/chain/applying-anthropic-patterns/SKILL.md) | Anthropic Patterns |
+| [applying-ef-core-patterns](../../.agent/skills/chain/applying-ef-core-patterns/SKILL.md) | Ef Core Patterns |
+| [applying-jpa-patterns](../../.agent/skills/chain/applying-jpa-patterns/SKILL.md) | Jpa Patterns |
+| [browsing-web](../../.agent/skills/chain/browsing-web/SKILL.md) | Web Browsing |
+| [building-raw-bundles](../../.agent/skills/chain/building-raw-bundles/SKILL.md) | Build Raw Bundle |
+| [checking-versions](../../.agent/skills/chain/checking-versions/SKILL.md) | Version Check |
+| [close-sprint](../../.agent/skills/chain/pm/close-sprint/SKILL.md) | Close Sprint Skill |
+| [committing-releases](../../.agent/skills/chain/committing-releases/SKILL.md) | Commit Release |
+| [configuring-pm](../../.agent/skills/chain/configuring-pm/SKILL.md) | Pm Configuration |
+| [configuring-stacks](../../.agent/skills/chain/configuring-stacks/SKILL.md) | Stack Configuration |
+| [configuring-systems](../../.agent/skills/chain/configuring-systems/SKILL.md) | System Configuration |
+| [create-epic](../../.agent/skills/chain/pm/create-epic/SKILL.md) | Create Epic Skill |
+| [create-story](../../.agent/skills/chain/pm/create-story/SKILL.md) | Create Story Skill |
+| [create-task](../../.agent/skills/chain/pm/create-task/SKILL.md) | Create Task Skill |
+| [defining-purpose](../../.agent/skills/chain/defining-purpose/SKILL.md) | Purpose Definition |
+| [deploying-to-btp](../../.agent/skills/chain/deploying-to-btp/SKILL.md) | Btp Deployment |
+| [deploying-to-kubernetes](../../.agent/skills/chain/deploying-to-kubernetes/SKILL.md) | Kubernetes Deployment |
+| [deploying-with-docker](../../.agent/skills/chain/deploying-with-docker/SKILL.md) | Capability Manifest: Docker Production Mastery |
+| [developing-bdd](../../.agent/skills/chain/developing-bdd/SKILL.md) | Bdd |
+| [developing-blazor-apps](../../.agent/skills/chain/developing-blazor-apps/SKILL.md) | Blazor Development |
+| [developing-fiori-apps](../../.agent/skills/chain/developing-fiori-apps/SKILL.md) | Fiori Development |
+| [developing-rap-objects](../../.agent/skills/chain/developing-rap-objects/SKILL.md) | Rap Development |
+| [developing-trading-strategies](../../.agent/skills/chain/developing-trading-strategies/SKILL.md) | Trading Strategy |
+| [estimate-task](../../.agent/skills/chain/pm/estimate-task/estimate-task/SKILL.md) | Estimate Task Skill |
+| [estimate-task](../../.agent/skills/chain/pm/estimate-task/SKILL.md) | Estimate Task Skill |
+| [exporting-agent-bundles](../../.agent/skills/chain/exporting-agent-bundles/SKILL.md) | Export Agent Bundle |
+| [exporting-workshops](../../.agent/skills/chain/exporting-workshops/SKILL.md) | Workshop Export |
+| [extending-knowledge](../../.agent/skills/chain/extending-knowledge/SKILL.md) | Extend Knowledge |
+| [extending-workflows](../../.agent/skills/chain/extending-workflows/SKILL.md) | Extend Workflow |
+| [fixing-pipeline-errors](../../.agent/skills/chain/fixing-pipeline-errors/SKILL.md) | Pipeline Error Fix |
+| [gathering-requirements](../../.agent/skills/chain/gathering-requirements/SKILL.md) | Requirements Gathering |
+| [generate-burndown](../../.agent/skills/chain/pm/generate-burndown/generate-burndown/SKILL.md) | Generate Burndown Skill |
+| [generate-burndown](../../.agent/skills/chain/pm/generate-burndown/SKILL.md) | Generate Burndown Skill |
+| [generating-agents](../../.agent/skills/chain/generating-agents/SKILL.md) | Agent Generation |
+| [generating-cursorrules](../../.agent/skills/chain/generating-cursorrules/SKILL.md) | Cursorrules Generation |
+| [generating-documentation](../../.agent/skills/chain/generating-documentation/SKILL.md) | Documentation Generation |
+| [generating-knowledge](../../.agent/skills/chain/generating-knowledge/SKILL.md) | Knowledge Generation |
+| [generating-templates](../../.agent/skills/chain/generating-templates/SKILL.md) | Template Generation |
+| [generating-workflows](../../.agent/skills/chain/generating-workflows/SKILL.md) | Workflow Generation |
+| [governing-repositories](../../.agent/skills/chain/governing-repositories/SKILL.md) | Repository Governance Skill |
+| [guiding-s4-processes](../../.agent/skills/chain/guiding-s4-processes/SKILL.md) | S4 Process Guide |
+| [handling-errors](../../.agent/skills/chain/handling-errors/SKILL.md) | Error Handling |
+| [health-check](../../.agent/skills/chain/pm/health-check/health-check/SKILL.md) | Health Check Skill |
+| [health-check](../../.agent/skills/chain/pm/health-check/SKILL.md) | Health Check Skill |
+| [integrating-mcp](../../.agent/skills/chain/integrating-mcp/SKILL.md) | Mcp Integration |
+| [integrations-with-azure](../../.agent/skills/chain/integrations-with-azure/SKILL.md) | Azure Integration |
+| [interacting-with-human](../../.agent/skills/chain/interacting-with-human/SKILL.md) | Human In The Loop |
+| [logging-and-monitoring](../../.agent/skills/chain/logging-and-monitoring/SKILL.md) | Logging Monitoring |
+| [managing-agentic-loops](../../.agent/skills/chain/managing-agentic-loops/SKILL.md) | Agentic Loops |
+| [managing-database-agents](../../.agent/skills/chain/managing-database-agents/SKILL.md) | Database Agents |
+| [managing-knowledge-graphs](../../.agent/skills/chain/managing-knowledge-graphs/SKILL.md) | Knowledge Graphs |
+| [managing-memory](../../.agent/skills/chain/managing-memory/SKILL.md) | Memory Management |
+| [managing-state](../../.agent/skills/chain/managing-state/SKILL.md) | State Management |
+| [managing-vision-agents](../../.agent/skills/chain/managing-vision-agents/SKILL.md) | Vision Agents |
+| [mastering-project-management](../../.agent/skills/chain/mastering-project-management/SKILL.md) | Capability Manifest: Project Management Mastery |
+| [modeling-cds](../../.agent/skills/chain/modeling-cds/SKILL.md) | Cds Modeling |
+| [monitoring-ci](../../.agent/skills/chain/monitoring-ci/SKILL.md) | Ci Monitor |
+| [onboarding-configurations](../../.agent/skills/chain/onboarding-configurations/SKILL.md) | Config Onboarding Skill |
+| [onboarding-express](../../.agent/skills/chain/onboarding-express/SKILL.md) | Express Onboarding |
+| [onboarding-team-huddles](../../.agent/skills/chain/onboarding-team-huddles/SKILL.md) | Team Huddle Onboarding |
+| [onboarding-team-workshops](../../.agent/skills/chain/onboarding-team-workshops/SKILL.md) | Team Workshop Onboarding |
+| [operating-environments](../../.agent/skills/chain/operating-environments/SKILL.md) | Operating Environment |
+| [operating-filesystem](../../.agent/skills/chain/operating-filesystem/SKILL.md) | Filesystem Ops |
+| [operating-shell-platforms](../../.agent/skills/chain/operating-shell-platforms/SKILL.md) | Shell Platform |
+| [optimizing-caching](../../.agent/skills/chain/optimizing-caching/SKILL.md) | Caching Optimization |
+| [optimizing-langsmith-prompts](../../.agent/skills/chain/optimizing-langsmith-prompts/SKILL.md) | Langsmith Prompts |
+| [pipeline-error-fix](../../.agent/skills/chain/pipeline-error-fix/SKILL.md) | Pipeline Error Fix |
+| [plan-sprint](../../.agent/skills/chain/pm/plan-sprint/plan-sprint/SKILL.md) | Plan Sprint Skill |
+| [plan-sprint](../../.agent/skills/chain/pm/plan-sprint/SKILL.md) | Plan Sprint Skill |
+| [processing-data-pipelines](../../.agent/skills/chain/processing-data-pipelines/SKILL.md) | Data Pipeline |
+| [processing-excel-files](../../.agent/skills/chain/processing-excel-files/SKILL.md) | Excel Processing |
+| [processing-ocr](../../.agent/skills/chain/processing-ocr/SKILL.md) | Ocr Processing |
+| [processing-speech](../../.agent/skills/chain/processing-speech/SKILL.md) | Speech Processing |
+| [providing-pattern-feedback](../../.agent/skills/chain/providing-pattern-feedback/SKILL.md) | Pattern Feedback |
+| [receiving-updates](../../.agent/skills/chain/receiving-updates/SKILL.md) | Receive Updates |
+| [registering-systems](../../.agent/skills/chain/registering-systems/SKILL.md) | System Registration Skill |
+| [researching-first](../../.agent/skills/chain/researching-first/SKILL.md) | Research First |
+| [retrieving-advanced](../../.agent/skills/chain/retrieving-advanced/SKILL.md) | Advanced Retrieval |
+| [run-standup](../../.agent/skills/chain/pm/run-standup/run-standup/SKILL.md) | Run Standup Skill |
+| [run-standup](../../.agent/skills/chain/pm/run-standup/SKILL.md) | Run Standup Skill |
+| [sandboxing-security](../../.agent/skills/chain/sandboxing-security/SKILL.md) | Security Sandboxing |
+| [selecting-axioms](../../.agent/skills/chain/selecting-axioms/SKILL.md) | Axiom Selection |
+| [selecting-enforcements](../../.agent/skills/chain/selecting-enforcements/SKILL.md) | Enforcement Selection |
+| [selecting-mcp](../../.agent/skills/chain/selecting-mcp/SKILL.md) | Mcp Selection |
+| [selecting-methodologies](../../.agent/skills/chain/selecting-methodologies/SKILL.md) | Methodology Selection |
+| [selecting-practices](../../.agent/skills/chain/selecting-practices/SKILL.md) | Practice Selection |
+| [selecting-society-tiers](../../.agent/skills/chain/selecting-society-tiers/SKILL.md) | Society Tier Selection |
+| [serving-models](../../.agent/skills/chain/serving-models/SKILL.md) | Model Serving |
+| [streaming-realtime-data](../../.agent/skills/chain/streaming-realtime-data/SKILL.md) | Streaming Realtime |
+| [testing-agents](../../.agent/skills/chain/testing-agents/SKILL.md) | Agent Testing |
+| [tracing-with-langsmith](../../.agent/skills/chain/tracing-with-langsmith/SKILL.md) | Langsmith Tracing |
+| [trading-algorithmically](../../.agent/skills/chain/trading-algorithmically/SKILL.md) | Algo Trading |
+| [translating-tests](../../.agent/skills/chain/translating-tests/SKILL.md) | Test Translation |
+| [updating-knowledge](../../.agent/skills/chain/updating-knowledge/SKILL.md) | Update Knowledge |
+| [using-tools](../../.agent/skills/chain/using-tools/SKILL.md) | Tool Usage |
+| [validating-backtests](../../.agent/skills/chain/validating-backtests/SKILL.md) | Backtesting Validation |
+| [validating-readmes](../../.agent/skills/chain/validating-readmes/SKILL.md) | Readme Validation |
+| [verifying-communications](../../.agent/skills/chain/verifying-communications/SKILL.md) | Verified Communication |
+| [verifying-links](../../.agent/skills/chain/verifying-links/SKILL.md) | Link Verification Skill |
+| [verifying-with-strawberry](../../.agent/skills/chain/verifying-with-strawberry/SKILL.md) | Strawberry Verification |
+
+### Evaluator-Optimizer
+
+| Skill | Description |
+|-------|-------------|
+| [checking-alignment](../../.agent/skills/evaluator-optimizer/checking-alignment/SKILL.md) | Alignment Check |
+| [evaluating-llms](../../.agent/skills/evaluator-optimizer/evaluating-llms/SKILL.md) | Llm Evaluation |
+| [reviewing-clean-code](../../.agent/skills/evaluator-optimizer/reviewing-clean-code/SKILL.md) | Clean Code Review |
+| [verifying-grounding](../../.agent/skills/evaluator-optimizer/verifying-grounding/SKILL.md) | Grounding Verification |
+| [verifying-with-strawberry](../../.agent/skills/evaluator-optimizer/verifying-with-strawberry/SKILL.md) | Strawberry Verification |
+
+### Ideation
+
+| Skill | Description |
+|-------|-------------|
+| [brainstorming-ideas](../../.agent/skills/ideation/brainstorming-ideas/SKILL.md) | Brainstorming Ideas |
+| [briefing-prototypes](../../.agent/skills/ideation/briefing-prototypes/SKILL.md) | Briefing Prototypes |
+| [clustering-opportunities](../../.agent/skills/ideation/clustering-opportunities/SKILL.md) | Clustering Opportunities |
+| [framing-problems](../../.agent/skills/ideation/framing-problems/SKILL.md) | Framing Problems |
+| [scanning-competition](../../.agent/skills/ideation/scanning-competition/SKILL.md) | Scanning Competition |
+
+### Intelligence
+
+| Skill | Description |
+|-------|-------------|
+| [assessing-risks](../../.agent/skills/intelligence/assessing-risks/SKILL.md) | Risk Assessment & Prognosis |
+| [get-api-docs](../../.agent/skills/intelligence/get-api-docs/SKILL.md) | Getting API Documentation (chub) |
+| [optimizing-models](../../.agent/skills/intelligence/optimizing-models/SKILL.md) | Model Optimization |
+| [optimizing-prompts](../../.agent/skills/intelligence/optimizing-prompts/SKILL.md) | Prompt Optimization |
+| [synthesizing-knowledge](../../.agent/skills/intelligence/synthesizing-knowledge/SKILL.md) | Knowledge Synthesis |
+
+### Management
+
+| Skill | Description |
+|-------|-------------|
+| [orchestrating-mcp](../../.agent/skills/management/orchestrating-mcp/SKILL.md) | MCP Orchestration |
+
+### Orchestrator-Workers
+
+| Skill | Description |
+|-------|-------------|
+| [building-langgraph-agents](../../.agent/skills/orchestrator-workers/building-langgraph-agents/SKILL.md) | Langgraph Agent Building |
+| [managing-agentic-loops](../../.agent/skills/orchestrator-workers/managing-agentic-loops/SKILL.md) | Agentic Loops (Tactical Blueprint) |
+| [managing-onboarding-flows](../../.agent/skills/orchestrator-workers/managing-onboarding-flows/SKILL.md) | Onboarding Flow |
+| [orchestrating-crewai-workflows](../../.agent/skills/orchestrator-workers/orchestrating-crewai-workflows/SKILL.md) | Crewai Workflow |
+| [orchestrating-subagents](../../.agent/skills/orchestrator-workers/orchestrating-subagents/SKILL.md) | Subagent Orchestration |
+| [orchestrating-workshop-to-pm](../../.agent/skills/orchestrator-workers/orchestrating-workshop-to-pm/SKILL.md) | Workshop To Pm |
+
+### Parallel
+
+| Skill | Description |
+|-------|-------------|
+| [agent-creator](../../.agent/skills/parallel/agent-creator/SKILL.md) | Agent Creator |
+| [applying-ef-core-patterns](../../.agent/skills/parallel/applying-ef-core-patterns/SKILL.md) | Ef Core Patterns |
+| [applying-jpa-patterns](../../.agent/skills/parallel/applying-jpa-patterns/SKILL.md) | Jpa Patterns |
+| [applying-llm-guardrails](../../.agent/skills/parallel/applying-llm-guardrails/SKILL.md) | Llm Guardrails |
+| [applying-rag-patterns](../../.agent/skills/parallel/applying-rag-patterns/SKILL.md) | Rag Patterns |
+| [applying-react-patterns](../../.agent/skills/parallel/applying-react-patterns/SKILL.md) | React Patterns |
+| [applying-sqlalchemy-patterns](../../.agent/skills/parallel/applying-sqlalchemy-patterns/SKILL.md) | Sqlalchemy Patterns |
+| [authenticating-dotnet](../../.agent/skills/parallel/authenticating-dotnet/SKILL.md) | Dotnet Auth |
+| [blueprint-creator](../../.agent/skills/parallel/blueprint-creator/SKILL.md) | Blueprint Creator |
+| [browsing-web](../../.agent/skills/parallel/browsing-web/SKILL.md) | Web Browsing |
+| [building-dotnet-backend](../../.agent/skills/parallel/building-dotnet-backend/SKILL.md) | Dotnet Backend |
+| [building-dotnet-microservices](../../.agent/skills/parallel/building-dotnet-microservices/SKILL.md) | Dotnet Microservices |
+| [building-fastapi-enterprise](../../.agent/skills/parallel/building-fastapi-enterprise/SKILL.md) | Capability Manifest: FastAPI Enterprise |
+| [building-nextjs-enterprise](../../.agent/skills/parallel/building-nextjs-enterprise/SKILL.md) | Capability Manifest: Next.js Enterprise |
+| [building-sap-fiori](../../.agent/skills/parallel/building-sap-fiori/SKILL.md) | Capability Manifest: SAP Fiori Elements |
+| [building-spring-enterprise](../../.agent/skills/parallel/building-spring-enterprise/SKILL.md) | Capability Manifest: Spring Boot Enterprise |
+| [building-spring-microservices](../../.agent/skills/parallel/building-spring-microservices/SKILL.md) | Spring Microservices |
+| [building-trpc-api](../../.agent/skills/parallel/building-trpc-api/SKILL.md) | Trpc Api |
+| [containerizing-java-apps](../../.agent/skills/parallel/containerizing-java-apps/SKILL.md) | Java Containerization |
+| [deploying-ml-models](../../.agent/skills/parallel/deploying-ml-models/SKILL.md) | Ml Deployment |
+| [designing-ai-systems](../../.agent/skills/parallel/designing-ai-systems/SKILL.md) | Ai System Design |
+| [designing-apis](../../.agent/skills/parallel/designing-apis/SKILL.md) | Api Design |
+| [developing-ai-agents](../../.agent/skills/parallel/developing-ai-agents/SKILL.md) | AI Agent Development Skill |
+| [developing-blazor-apps](../../.agent/skills/parallel/developing-blazor-apps/SKILL.md) | Blazor Development |
+| [developing-fastapi](../../.agent/skills/parallel/developing-fastapi/SKILL.md) | Fastapi Development |
+| [developing-nextjs](../../.agent/skills/parallel/developing-nextjs/SKILL.md) | Nextjs Development |
+| [developing-sap-rap](../../.agent/skills/parallel/developing-sap-rap/SKILL.md) | Capability Manifest: SAP Enterprise RAP |
+| [developing-spring-boot](../../.agent/skills/parallel/developing-spring-boot/SKILL.md) | Spring Boot Development |
+| [engineering-rag-systems](../../.agent/skills/parallel/engineering-rag-systems/SKILL.md) | Capability Manifest: RAG Engineering Manual |
+| [integrating-sap-cloud](../../.agent/skills/parallel/integrating-sap-cloud/SKILL.md) | Capability Manifest: SAP Integration Cloud |
+| [integrating-sap-systems](../../.agent/skills/parallel/integrating-sap-systems/SKILL.md) | Sap Integration |
+| [knowledge-creator](../../.agent/skills/parallel/knowledge-creator/SKILL.md) | Knowledge Creator |
+| [managing-database-agents](../../.agent/skills/parallel/managing-database-agents/SKILL.md) | Database Agents |
+| [managing-knowledge-graphs](../../.agent/skills/parallel/managing-knowledge-graphs/SKILL.md) | Knowledge Graphs |
+| [managing-memory-bank](../../.agent/skills/parallel/managing-memory-bank/SKILL.md) | Memory Bank (Active Consciousness Governance) |
+| [managing-vision-agents](../../.agent/skills/parallel/managing-vision-agents/SKILL.md) | Vision Agents |
+| [mastering-agentic-loops](../../.agent/skills/parallel/mastering-agentic-loops/SKILL.md) | Capability Manifest: Agentic Loop Mastery |
+| [modeling-cds](../../.agent/skills/parallel/modeling-cds/SKILL.md) | Cds Modeling |
+| [monitoring-ml-models](../../.agent/skills/parallel/monitoring-ml-models/SKILL.md) | Ml Monitoring |
+| [observing-spring-apps](../../.agent/skills/parallel/observing-spring-apps/SKILL.md) | Spring Observability |
+| [operating-ml-engineering](../../.agent/skills/parallel/operating-ml-engineering/SKILL.md) | Capability Manifest: ML Engineering Ops |
+| [optimizing-ai-costs](../../.agent/skills/parallel/optimizing-ai-costs/SKILL.md) | Ai Cost Optimization |
+| [optimizing-frontend-performance](../../.agent/skills/parallel/optimizing-frontend-performance/SKILL.md) | Frontend Performance |
+| [optimizing-langsmith-prompts](../../.agent/skills/parallel/optimizing-langsmith-prompts/SKILL.md) | Langsmith Prompts |
+| [optimizing-prompts](../../.agent/skills/parallel/optimizing-prompts/SKILL.md) | Prompt Optimization |
+| [orchestrating-crewai-agents](../../.agent/skills/parallel/orchestrating-crewai-agents/SKILL.md) | Crewai Agents |
+| [orchestrating-crewai-workflows](../../.agent/skills/parallel/orchestrating-crewai-workflows/SKILL.md) | Crewai Workflow |
+| [pattern-creator](../../.agent/skills/parallel/pattern-creator/SKILL.md) | Pattern Creator |
+| [processing-data-pipelines](../../.agent/skills/parallel/processing-data-pipelines/SKILL.md) | Data Pipeline |
+| [processing-ocr](../../.agent/skills/parallel/processing-ocr/SKILL.md) | Ocr Processing |
+| [processing-speech](../../.agent/skills/parallel/processing-speech/SKILL.md) | Speech Processing |
+| [programming-python-async](../../.agent/skills/parallel/programming-python-async/SKILL.md) | Capability Manifest: Python Async Mastery |
+| [retrieving-rag-context-adv](../../.agent/skills/parallel/retrieving-rag-context-adv/SKILL.md) | RAG Retrieval Skill |
+| [securing-agents](../../.agent/skills/parallel/securing-agents/SKILL.md) | Capability Manifest: Agent Security Guardrails |
+| [securing-ai-systems](../../.agent/skills/parallel/securing-ai-systems/SKILL.md) | Ai Security |
+| [securing-sap-systems](../../.agent/skills/parallel/securing-sap-systems/SKILL.md) | Sap Security |
+| [sending-emails](../../.agent/skills/parallel/sending-emails/SKILL.md) | Send Email Skill |
+| [skill-creator](../../.agent/skills/parallel/skill-creator/SKILL.md) | Skill Creator |
+| [streaming-realtime-data](../../.agent/skills/parallel/streaming-realtime-data/SKILL.md) | Streaming Realtime |
+| [template-creator](../../.agent/skills/parallel/template-creator/SKILL.md) | Template Creator |
+| [testing-frontend](../../.agent/skills/parallel/testing-frontend/SKILL.md) | Frontend Testing |
+| [testing-spring-apps](../../.agent/skills/parallel/testing-spring-apps/SKILL.md) | Spring Testing |
+| [tracing-with-langsmith](../../.agent/skills/parallel/tracing-with-langsmith/SKILL.md) | Langsmith Tracing |
+| [training-models](../../.agent/skills/parallel/training-models/SKILL.md) | Model Training |
+| [using-langchain](../../.agent/skills/parallel/using-langchain/SKILL.md) | Langchain Usage |
+| [using-prisma-database](../../.agent/skills/parallel/using-prisma-database/SKILL.md) | Prisma Database |
+| [workflow-creator](../../.agent/skills/parallel/workflow-creator/SKILL.md) | Workflow Creator |
+| [workshop-creator](../../.agent/skills/parallel/workshop-creator/SKILL.md) | Workshop Creator |
+
+### Requirements
+
+| Skill | Description |
+|-------|-------------|
+| [eliciting-nfr](../../.agent/skills/requirements/eliciting-nfr/SKILL.md) | Eliciting NFR |
+| [mapping-dependencies](../../.agent/skills/requirements/mapping-dependencies/SKILL.md) | Mapping Dependencies |
+| [reviewing-requirements](../../.agent/skills/requirements/reviewing-requirements/SKILL.md) | Reviewing Requirements |
+| [slicing-stories](../../.agent/skills/requirements/slicing-stories/SKILL.md) | Slicing Stories |
+| [writing-prd](../../.agent/skills/requirements/writing-prd/SKILL.md) | Writing PRD |
+
+### Retrieval
+
+| Skill | Description |
+|-------|-------------|
+| [ingesting-rag-content](../../.agent/skills/retrieval/ingesting-rag-content/SKILL.md) | Ingesting RAG Content |
+| [inspecting-rag-catalog](../../.agent/skills/retrieval/inspecting-rag-catalog/SKILL.md) | Inspecting RAG Catalog |
+| [retrieving-rag-context](../../.agent/skills/retrieval/retrieving-rag-context/SKILL.md) | Retrieving RAG Context |
+
+### Routing
+
+| Skill | Description |
+|-------|-------------|
+| [integrating-mcp](../../.agent/skills/routing/integrating-mcp/SKILL.md) | Mcp Integration |
+| [managing-google-calendar](../../.agent/skills/routing/managing-google-calendar/SKILL.md) | Google Calendar Skill |
+| [managing-google-drive](../../.agent/skills/routing/managing-google-drive/SKILL.md) | Google Drive Skill |
+| [managing-google-workspace](../../.agent/skills/routing/managing-google-workspace/SKILL.md) | Capability Manifest: Google Workspace Mastery |
+| [managing-plane-tasks](../../.agent/skills/routing/managing-plane-tasks/SKILL.md) | Remote Plane Management (MCP) |
+| [operating-github](../../.agent/skills/routing/operating-github/SKILL.md) | GitHub Operations |
+| [selecting-mcp](../../.agent/skills/routing/selecting-mcp/SKILL.md) | Mcp Selection |
+| [sending-emails](../../.agent/skills/routing/sending-emails/SKILL.md) | Send Email Skill |
+
+### Verification
+
+| Skill | Description |
+|-------|-------------|
+| [verifying-artifact-structures](../../.agent/skills/verification/verifying-artifact-structures/SKILL.md) | Verifying Artifact Structures |
 
 ## 📋 Workflows
 
+### Organization
+
 | Workflow | Description |
 |----------|-------------|
-| [agent-1-bridge](../../.agent/workflows/agent-1-bridge.md) | Agent 1 Bridge |
-| [agent-development](../../.agent/workflows/agent-development.md) | Agent Development (Enriched) |
-| [agent-testing](../../.agent/workflows/agent-testing.md) | Agent Testing |
-| [designing-ai-systems](../../.agent/workflows/designing-ai-systems.md) | Ai System Design |
+| [blueprint_organization_paths](../../.agent/workflows/organization/blueprint_organization_paths.md) | Blueprint Organization Paths |
+
+### Uncategorized
+
+| Workflow | Description |
+|----------|-------------|
+| [agent-1-bridge](../../.agent/workflows/agent-1-bridge.md) | Statistical Dashboard & Knowledge Bridge Synchronization |
+| [agent-development](../../.agent/workflows/agent-development.md) | /agent-development Workflow (SDLC Phase 4) |
+| [agent-testing](../../.agent/workflows/agent-testing.md) | /agent-testing Workflow (SDLC Phase 5) |
+| [ai-system-design](../../.agent/workflows/ai-system-design.md) | /ai-system-design Workflow |
 | [alpha-factor-mining](../../.agent/workflows/alpha-factor-mining.md) | Alpha Factor Mining |
+| [antigravity-factory-building](../../.agent/workflows/antigravity-factory-building.md) | Antigravity Factory System Building Process |
 | [azure-deployment](../../.agent/workflows/azure-deployment.md) | Azure Deployment |
 | [backlog-refinement](../../.agent/workflows/backlog-refinement.md) | Backlog Refinement |
 | [backtest-validation](../../.agent/workflows/backtest-validation.md) | Backtest Validation |
 | [bdd-driven-development](../../.agent/workflows/bdd-driven-development.md) | Bdd Driven Development |
+| [brainstorm](../../.agent/workflows/brainstorm.md) | /brainstorm Workflow |
+| [brief-prototype](../../.agent/workflows/brief-prototype.md) | /brief-prototype Workflow |
 | [btp-service-deployment](../../.agent/workflows/btp-service-deployment.md) | Btp Service Deployment |
 | [bugfix-resolution](../../.agent/workflows/bugfix-resolution.md) | Bugfix Resolution |
 | [build-langchain-agent](../../.agent/workflows/build-langchain-agent.md) | Building AI Agents with LangChain |
 | [cap-service-development](../../.agent/workflows/cap-service-development.md) | Cap Service Development |
 | [cicd-pipeline](../../.agent/workflows/cicd-pipeline.md) | Cicd Pipeline |
+| [cluster](../../.agent/workflows/cluster.md) | /cluster Workflow |
 | [code-review](../../.agent/workflows/code-review.md) | Code Review |
 | [confluence-feature](../../.agent/workflows/confluence-feature.md) | Confluence Feature |
 | [coordination-testing](../../.agent/workflows/coordination-testing.md) | Coordination Testing |
 | [daily-standup](../../.agent/workflows/daily-standup.md) | Daily Standup |
+| [dashboard-analysis-routine](../../.agent/workflows/dashboard-analysis-routine.md) | Statistical Analysis Routine |
+| [dashboard-data-health](../../.agent/workflows/dashboard-data-health.md) | Data Health Audit Workflow |
+| [dashboard-insight-reporting](../../.agent/workflows/dashboard-insight-reporting.md) | Insight Reporting Workflow |
+| [dashboard-kpi-governance](../../.agent/workflows/dashboard-kpi-governance.md) | KPI Governance Workflow |
+| [dashboard-onboarding](../../.agent/workflows/dashboard-onboarding.md) | Dashboard Onboarding Workflow |
+| [dashboard-view-builder](../../.agent/workflows/dashboard-view-builder.md) | Dashboard View Builder Workflow |
 | [debug-pipeline](../../.agent/workflows/debug-pipeline.md) | Debug Pipeline |
 | [defi-development](../../.agent/workflows/defi-development.md) | Defi Development |
 | [deployment-workflow](../../.agent/workflows/deployment-workflow.md) | Deployment Workflow |
 | [dotnet-api-development](../../.agent/workflows/dotnet-api-development.md) | Dotnet Api Development |
 | [dotnet-microservices-setup](../../.agent/workflows/dotnet-microservices-setup.md) | Dotnet Microservices Setup |
 | [eda](../../.agent/workflows/eda.md) | Exploratory Data Analysis (EDA) |
+| [elicit-nfr](../../.agent/workflows/elicit-nfr.md) | /elicit-nfr Workflow |
 | [ewm-development](../../.agent/workflows/ewm-development.md) | Ewm Development |
 | [fastapi-api-development](../../.agent/workflows/fastapi-api-development.md) | Fastapi Api Development |
 | [feature-development](../../.agent/workflows/feature-development.md) | Standard Feature Delivery Cycle (SFDC) |
@@ -101,21 +413,26 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [mm-development](../../.agent/workflows/mm-development.md) | Mm Development |
 | [model-evaluation](../../.agent/workflows/model-evaluation.md) | Model Evaluation |
 | [model-training-pipeline](../../.agent/workflows/model-training-pipeline.md) | Model Training Pipeline |
+| [monitor](../../.agent/workflows/monitor.md) | /monitor Workflow |
 | [multi-agent-development](../../.agent/workflows/multi-agent-development.md) | Multi Agent Development |
 | [multi-agent-orchestration](../../.agent/workflows/multi-agent-orchestration.md) | Multi Agent Orchestration |
 | [nextjs-feature-development](../../.agent/workflows/nextjs-feature-development.md) | Nextjs Feature Development |
+| [plane-task-management](../../.agent/workflows/plane-task-management.md) | Plane Issue Management Workflow |
+| [poc-orchestration-workflow](../../.agent/workflows/poc-orchestration-workflow.md) | /poc-orchestration — System Integration POC |
 | [prompt-iteration](../../.agent/workflows/prompt-iteration.md) | Prompt Iteration |
 | [quality-gate](../../.agent/workflows/quality-gate.md) | Quality Gate |
 | [rag-pipeline-development](../../.agent/workflows/rag-pipeline-development.md) | Rag Pipeline Development |
 | [rap-development](../../.agent/workflows/rap-development.md) | Rap Development |
 | [rap-with-draft](../../.agent/workflows/rap-with-draft.md) | Rap With Draft |
-| [release-management](../../.agent/workflows/release-management.md) | Release Management |
+| [release-management](../../.agent/workflows/release-management.md) | /release-management Workflow (SDLC Phase 6) |
 | [repository-maintenance](../../.agent/workflows/repository-maintenance.md) | Repository Maintenance |
 | [research](../../.agent/workflows/research.md) | /research — Multi-Source Research Workflow |
+| [review-requirements](../../.agent/workflows/review-requirements.md) | /review-requirements Workflow |
 | [sap-cicd-pipeline](../../.agent/workflows/sap-cicd-pipeline.md) | Sap Cicd Pipeline |
 | [sd-development](../../.agent/workflows/sd-development.md) | Sd Development |
-| [security-audit-workflow](../../.agent/workflows/security-audit-workflow.md) | Security Audit Workflow |
+| [sdlc-meta-orchestrator](../../.agent/workflows/sdlc-meta-orchestrator.md) | SDLC Meta-Orchestrator Workflow (v2.0) |
 | [security-audit](../../.agent/workflows/security-audit.md) | Security Audit |
+| [security-audit-workflow](../../.agent/workflows/security-audit-workflow.md) | Security Audit Workflow |
 | [smart-contract-audit](../../.agent/workflows/smart-contract-audit.md) | Smart Contract Audit |
 | [smart-contract-development](../../.agent/workflows/smart-contract-development.md) | Smart Contract Development |
 | [solana-development](../../.agent/workflows/solana-development.md) | Solana Development |
@@ -129,6 +446,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [warehouse-associate](../../.agent/workflows/warehouse-associate.md) | Warehouse Associate Operational Guide |
 | [warehouse-ingestion](../../.agent/workflows/warehouse-ingestion.md) | Warehouse Data Ingestion Workflow |
 | [warehouse-manager](../../.agent/workflows/warehouse-manager.md) | Operations Manager Strategic Guide |
+| [write-prd](../../.agent/workflows/write-prd.md) | /write-prd Workflow |
 
 ## 📚 Knowledge Files
 
@@ -163,6 +481,8 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | anthropic-claude-api-patterns | [`.agent/knowledge/anthropic-claude-api-patterns.json`](../../.agent/knowledge/anthropic-claude-api-patterns.json) |
 | api-design-patterns | [`.agent/knowledge/api-design-patterns.json`](../../.agent/knowledge/api-design-patterns.json) |
 | api-integration-patterns | [`.agent/knowledge/api-integration-patterns.json`](../../.agent/knowledge/api-integration-patterns.json) |
+| applying-rag-patterns | [`.agent/knowledge/applying-rag-patterns.json`](../../.agent/knowledge/applying-rag-patterns.json) |
+| applying-react-patterns | [`.agent/knowledge/applying-react-patterns.json`](../../.agent/knowledge/applying-react-patterns.json) |
 | architecture-patterns | [`.agent/knowledge/architecture-patterns.json`](../../.agent/knowledge/architecture-patterns.json) |
 | artifact-dependencies | [`.agent/knowledge/artifact-dependencies.json`](../../.agent/knowledge/artifact-dependencies.json) |
 | artifact-dependency-map | [`.agent/knowledge/artifact-dependency-map.json`](../../.agent/knowledge/artifact-dependency-map.json) |
@@ -192,6 +512,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | coordination-patterns | [`.agent/knowledge/coordination-patterns.json`](../../.agent/knowledge/coordination-patterns.json) |
 | coordination-strategies | [`.agent/knowledge/coordination-strategies.json`](../../.agent/knowledge/coordination-strategies.json) |
 | cpi-error-handling | [`.agent/knowledge/cpi-error-handling.json`](../../.agent/knowledge/cpi-error-handling.json) |
+| creator-skills-mapping | [`.agent/knowledge/creator-skills-mapping.json`](../../.agent/knowledge/creator-skills-mapping.json) |
 | crewai-patterns | [`.agent/knowledge/crewai-patterns.json`](../../.agent/knowledge/crewai-patterns.json) |
 | dashboard-knowledge | [`.agent/knowledge/dashboard-knowledge.json`](../../.agent/knowledge/dashboard-knowledge.json) |
 | data-application-patterns | [`.agent/knowledge/data-application-patterns.json`](../../.agent/knowledge/data-application-patterns.json) |
@@ -220,6 +541,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | error-handling-patterns | [`.agent/knowledge/error-handling-patterns.json`](../../.agent/knowledge/error-handling-patterns.json) |
 | ethereum-security | [`.agent/knowledge/ethereum-security.json`](../../.agent/knowledge/ethereum-security.json) |
 | ethereum-smart-contract-security | [`.agent/knowledge/ethereum-smart-contract-security.json`](../../.agent/knowledge/ethereum-smart-contract-security.json) |
+| evolution-protocol | [`.agent/knowledge/evolution-protocol.json`](../../.agent/knowledge/evolution-protocol.json) |
 | factory-update-feed | [`.agent/knowledge/factory-update-feed.json`](../../.agent/knowledge/factory-update-feed.json) |
 | factory-updates | [`.agent/knowledge/factory-updates.json`](../../.agent/knowledge/factory-updates.json) |
 | fastapi-patterns | [`.agent/knowledge/fastapi-patterns.json`](../../.agent/knowledge/fastapi-patterns.json) |
@@ -302,9 +624,11 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | ocr-patterns | [`.agent/knowledge/ocr-patterns.json`](../../.agent/knowledge/ocr-patterns.json) |
 | openai-agents-sdk-patterns | [`.agent/knowledge/openai-agents-sdk-patterns.json`](../../.agent/knowledge/openai-agents-sdk-patterns.json) |
 | openai-assistants-patterns | [`.agent/knowledge/openai-assistants-patterns.json`](../../.agent/knowledge/openai-assistants-patterns.json) |
+| orchestration-engine | [`.agent/knowledge/orchestration-engine.json`](../../.agent/knowledge/orchestration-engine.json) |
 | pandas-patterns | [`.agent/knowledge/pandas-patterns.json`](../../.agent/knowledge/pandas-patterns.json) |
 | pattern-catalog | [`.agent/knowledge/pattern-catalog.json`](../../.agent/knowledge/pattern-catalog.json) |
 | plane-integration | [`.agent/knowledge/plane-integration.json`](../../.agent/knowledge/plane-integration.json) |
+| plane-tasks-methodology | [`.agent/knowledge/plane-tasks-methodology.json`](../../.agent/knowledge/plane-tasks-methodology.json) |
 | pm-metrics | [`.agent/knowledge/pm-metrics.json`](../../.agent/knowledge/pm-metrics.json) |
 | polars-dataframe-patterns | [`.agent/knowledge/polars-dataframe-patterns.json`](../../.agent/knowledge/polars-dataframe-patterns.json) |
 | prisma-database-patterns | [`.agent/knowledge/prisma-database-patterns.json`](../../.agent/knowledge/prisma-database-patterns.json) |
@@ -321,10 +645,8 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | quantitative-finance | [`.agent/knowledge/quantitative-finance.json`](../../.agent/knowledge/quantitative-finance.json) |
 | quantitative-theory | [`.agent/knowledge/quantitative-theory.json`](../../.agent/knowledge/quantitative-theory.json) |
 | rag-knowledge-catalog | [`.agent/knowledge/rag-knowledge-catalog.json`](../../.agent/knowledge/rag-knowledge-catalog.json) |
-| applying-rag-patterns | [`.agent/knowledge/applying-rag-patterns.json`](../../.agent/knowledge/applying-rag-patterns.json) |
 | ray-patterns | [`.agent/knowledge/ray-patterns.json`](../../.agent/knowledge/ray-patterns.json) |
 | react-component-patterns | [`.agent/knowledge/react-component-patterns.json`](../../.agent/knowledge/react-component-patterns.json) |
-| applying-react-patterns | [`.agent/knowledge/applying-react-patterns.json`](../../.agent/knowledge/applying-react-patterns.json) |
 | reactive-indexing-patterns | [`.agent/knowledge/reactive-indexing-patterns.json`](../../.agent/knowledge/reactive-indexing-patterns.json) |
 | reactive-programming-patterns | [`.agent/knowledge/reactive-programming-patterns.json`](../../.agent/knowledge/reactive-programming-patterns.json) |
 | research-first-development | [`.agent/knowledge/research-first-development.json`](../../.agent/knowledge/research-first-development.json) |
@@ -352,8 +674,11 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | schemas-versioning-schema | [`.agent/knowledge/schemas-versioning-schema.json`](../../.agent/knowledge/schemas-versioning-schema.json) |
 | schemas-workflow-schema | [`.agent/knowledge/schemas-workflow-schema.json`](../../.agent/knowledge/schemas-workflow-schema.json) |
 | scikit-learn-patterns | [`.agent/knowledge/scikit-learn-patterns.json`](../../.agent/knowledge/scikit-learn-patterns.json) |
+| sdlc-architecture-graph | [`.agent/knowledge/sdlc-architecture-graph.json`](../../.agent/knowledge/sdlc-architecture-graph.json) |
+| sdlc-architecture-spec | [`.agent/knowledge/sdlc-architecture-spec.json`](../../.agent/knowledge/sdlc-architecture-spec.json) |
 | security-checklist | [`.agent/knowledge/security-checklist.json`](../../.agent/knowledge/security-checklist.json) |
 | security-patterns | [`.agent/knowledge/security-patterns.json`](../../.agent/knowledge/security-patterns.json) |
+| self-optimization-catalog | [`.agent/knowledge/self-optimization-catalog.json`](../../.agent/knowledge/self-optimization-catalog.json) |
 | semantic-kernel-patterns | [`.agent/knowledge/semantic-kernel-patterns.json`](../../.agent/knowledge/semantic-kernel-patterns.json) |
 | service-class-catalog | [`.agent/knowledge/service-class-catalog.json`](../../.agent/knowledge/service-class-catalog.json) |
 | skill-catalog | [`.agent/knowledge/skill-catalog.json`](../../.agent/knowledge/skill-catalog.json) |
@@ -405,6 +730,23 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | workflow-system-entities | [`.agent/knowledge/workflow-system-entities.json`](../../.agent/knowledge/workflow-system-entities.json) |
 | workshop-facilitation-knowledge | [`.agent/knowledge/workshop-facilitation-knowledge.json`](../../.agent/knowledge/workshop-facilitation-knowledge.json) |
 | workshop-facilitation | [`.agent/knowledge/workshop-facilitation.json`](../../.agent/knowledge/workshop-facilitation.json) |
+
+## 📖 SDLC Documentation & Workflows
+
+A structured collection of guides and workflows for managing the 7-phase AI Engineering SDLC.
+
+| Asset | Description | Path |
+|-------|-------------|------|
+| [**SDLC Usage Guide**](../guides/sdlc-usage-guide.md) | Comprehensive guide on how to navigate the 7-phase SDLC. | `docs/guides/sdlc-usage-guide.md` |
+| [**SDLC Meta-Orchestrator**](../../.agent/workflows/sdlc-meta-orchestrator.md) | Meta-workflow for full SDLC orchestration. | `.agent/workflows/sdlc-meta-orchestrator.md` |
+| [**Standard Feature Cycle (SFDC)**](../../.agent/workflows/feature-development.md) | Formal process for feature delivery. | `.agent/workflows/feature-development.md` |
+| [**P1: Ideation**](../../.agent/workflows/brief-prototype.md) | Workflows: `/brainstorm`, `/cluster`, `/brief-prototype`. | `.agent/workflows/brief-prototype.md` |
+| [**P2: Requirements**](../../.agent/workflows/write-prd.md) | Workflows: `/write-prd`, `/elicit-nfr`, `/review-requirements`. | `.agent/workflows/write-prd.md` |
+| [**P3: Architecture**](../../.agent/workflows/ai-system-design.md) | Workflow: `/ai-system-design`. | `.agent/workflows/ai-system-design.md` |
+| [**P4: Build**](../../.agent/workflows/agent-development.md) | Workflow: `/agent-development`. | `.agent/workflows/agent-development.md` |
+| [**P5: Test & Eval**](../../.agent/workflows/agent-testing.md) | Workflow: `/agent-testing`. | `.agent/workflows/agent-testing.md` |
+| [**P6: Deploy**](../../.agent/workflows/documentation-workflow.md) | Workflows: `/release-management`, `/documentation-workflow`. | `.agent/workflows/documentation-workflow.md` |
+| [**P7: Monitor**](../../.agent/workflows/monitor.md) | Workflow: `/monitor`. | `.agent/workflows/monitor.md` |
 
 ## 🏗️ Active Projects
 
@@ -678,7 +1020,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | page.py.tmpl | pages | [`.agent/templates/python/streamlit/pages/page.py.tmpl`](../../.agent/templates/python/streamlit/pages/page.py.tmpl) |
 | cache.py.tmpl | utils | [`.agent/templates/python/streamlit/utils/cache.py.tmpl`](../../.agent/templates/python/streamlit/utils/cache.py.tmpl) |
 | verify_proofs.sh.tmpl | scripts | [`.agent/templates/scripts/verify_proofs.sh.tmpl`](../../.agent/templates/scripts/verify_proofs.sh.tmpl) |
-| SKILL.md.j2 | developing-ai-agents | [`.agent/templates/skills/developing-ai-agents/SKILL.md.j2`](../../.agent/templates/skills/developing-ai-agents/SKILL.md.j2) |
+| SKILL.md.j2 | ai-agent-dev | [`.agent/templates/skills/ai-agent-dev/SKILL.md.j2`](../../.agent/templates/skills/ai-agent-dev/SKILL.md.j2) |
 | base_skill.md.j2 | skills | [`.agent/templates/skills/base_skill.md.j2`](../../.agent/templates/skills/base_skill.md.j2) |
 | foundry.toml.tmpl | config | [`.agent/templates/solidity/config/foundry.toml.tmpl`](../../.agent/templates/solidity/config/foundry.toml.tmpl) |
 | hardhat.config.ts.tmpl | config | [`.agent/templates/solidity/config/hardhat.config.ts.tmpl`](../../.agent/templates/solidity/config/hardhat.config.ts.tmpl) |

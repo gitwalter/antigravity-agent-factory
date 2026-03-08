@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Research existing solutions before building to create multiplied value
+description: >
+  Research existing solutions before building to create multiplied value
 knowledge:
 - none
 name: researching-first

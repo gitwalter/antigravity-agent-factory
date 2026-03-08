@@ -34,3 +34,7 @@ This workflow defines the standard operating procedure for synchronizing statist
 ## Fallback Procedures
 - Manual update of Plane issues if the bridge script fails.
 - Direct JSON ingestion into Memory if the serialization step hangs.
+
+
+## Trigger Examples
+- "Execute this workflow."

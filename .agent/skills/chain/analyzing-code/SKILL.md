@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Static code analysis with AST parsing, complexity metrics, dependency
+description: >
+  Static code analysis with AST parsing, complexity metrics, dependency
   graphs, and quality scoring
 knowledge:
 - none

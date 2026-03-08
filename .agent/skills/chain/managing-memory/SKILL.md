@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Agent memory patterns - conversation, long-term, and backend implementations
+description: >
+  Agent memory patterns - conversation, long-term, and backend implementations
 knowledge:
 - none
 name: managing-memory

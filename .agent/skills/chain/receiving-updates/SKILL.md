@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Receive and apply updates from the Antigravity Agent Factory including skills,
+description: >
+  Receive and apply updates from the Antigravity Agent Factory including skills,
   knowledge, and agents
 knowledge:
 - none

@@ -1,6 +1,7 @@
 ---
 name: template-creator
-description: Standardized template creation and validation with mandatory schema validation
+description: >
+  Standardized template creation and validation with mandatory schema validation
 type: skill
 version: 1.0.0
 category: factory

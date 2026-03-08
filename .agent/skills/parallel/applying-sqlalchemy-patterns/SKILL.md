@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: SQLAlchemy 2.0 patterns (mapped_column, Mapped types), Async engine and
+description: >
+  SQLAlchemy 2.0 patterns (mapped_column, Mapped types), Async engine and
   sessions, Relationship patterns, Alembic migrations, Repository pattern, Query optimization,
   Connection pooling
 knowledge:

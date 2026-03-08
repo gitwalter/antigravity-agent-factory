@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: Create user story from description with acceptance criteria
+description: >
+  Create user story from description with acceptance criteria
 knowledge:
 - pm-metrics.json
 - workflow-patterns.json

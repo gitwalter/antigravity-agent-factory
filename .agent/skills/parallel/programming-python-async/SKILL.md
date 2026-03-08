@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Tactical Blueprint for high-performance Python Asyncio. Focuses on structured
+description: >
+  Tactical Blueprint for high-performance Python Asyncio. Focuses on structured
   concurrency, resource safety, and resilient background processing.
 knowledge:
 - none

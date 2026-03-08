@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: "Workflow for MM-related development: procurement, inventory, movements, reports, RAP. References EKKO, EKPO, MKPF, MS..."
+version: 1.0.0
 ---
 
 # Mm Development
@@ -45,3 +44,7 @@ Standard PABP development phases apply:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

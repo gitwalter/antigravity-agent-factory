@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Test-Driven Development workflow implementing the Red-Green-Refactor cycle. Guides developers through writing failing...
+version: 1.0.0
 ---
 
 # Tdd Cycle
@@ -10,7 +9,7 @@ Test-Driven Development workflow implementing the Red-Green-Refactor cycle. Guid
 
 **Version:** 1.0.0
 **Created:** 2026-02-02
-**Agent:** test-generator
+**Agent:** workflow-quality-specialist
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.
 
@@ -66,3 +65,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

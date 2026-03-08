@@ -1,5 +1,6 @@
 ---
 description: Proof-of-Concept for the Unified Orchestration Engine demonstrating end-to-end integration.
+version: 1.0.0
 ---
 
 # /poc-orchestration — System Integration POC
@@ -7,7 +8,7 @@ description: Proof-of-Concept for the Unified Orchestration Engine demonstrating
 This workflow demonstrates the **Unified Organizational Model** (AGENT-15). It validates the hard-linking between roles, tools, and rules.
 
 **Version:** 1.0.0
-**Owner:** SystemArchitectSteward (SYARCH)
+**Owner:** system-architecture-specialist (SYARCH)
 
 ## Trigger Conditions
 
@@ -61,3 +62,7 @@ Validate results and 'promote' findings to long-term memory.
 User: /run poc-orchestration
 Agent: Routing to SYARCH for Strategic Decomposition...
 Agent [SYARCH]: Authorized tools (filesystem, git, sequentialthinking) verified. Starting decomposition...
+
+
+## Trigger Examples
+- "Execute this workflow."

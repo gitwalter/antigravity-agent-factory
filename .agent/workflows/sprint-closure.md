@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Systematic workflow for closing sprints, including status review, velocity calculation, incomplete item handling, and...
+version: 1.0.0
 ---
 
 # Sprint Closure
@@ -10,7 +9,7 @@ Systematic workflow for closing sprints, including status review, velocity calcu
 
 **Version:** 1.0.0
 **Created:** 2026-02-02
-**Agent:** sprint-master
+**Agent:** workflow-architect
 
 ## Trigger Conditions
 
@@ -66,3 +65,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

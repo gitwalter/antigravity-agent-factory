@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Comprehensive workflow for performing structured code reviews covering correctness, style, design, performance, secur...
+version: 1.0.0
 ---
 
 # Code Review
@@ -10,7 +9,7 @@ Comprehensive workflow for performing structured code reviews covering correctne
 
 **Version:** 1.0.0
 **Created:** 2026-02-02
-**Agent:** code-reviewer
+**Agent:** system-steward
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.
 
@@ -74,3 +73,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

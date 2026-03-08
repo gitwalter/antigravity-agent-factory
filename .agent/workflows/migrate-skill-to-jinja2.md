@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: How to migrate an existing skill to the new Jinja2 template format
+version: 1.0.0
 ---
 # Migrate Skill to Jinja2 Template
 
@@ -96,3 +95,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

@@ -2,7 +2,8 @@
 agents:
 - none
 category: routing
-description: Model Context Protocol overview, server creation, tool exposure, and
+description: >
+  Model Context Protocol overview, server creation, tool exposure, and
   common integrations
 knowledge:
 - none

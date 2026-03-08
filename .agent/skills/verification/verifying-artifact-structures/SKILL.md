@@ -3,7 +3,8 @@ agents:
 - workflow-quality-specialist
 - integrity-guardian
 category: verification
-description: Verifying the structural integrity of knowledge JSON and workflow markdown
+description: >
+  Verifying the structural integrity of knowledge JSON and workflow markdown
   files.
 knowledge:
 - none
@@ -46,15 +47,17 @@ conda run -p D:\Anaconda\envs\cursor-factory python scripts/validation/verify_st
 For each failure:
 - **Knowledge JSON**: Ensure `id`, `name`, `version`, `category`, `description` are present. Add `patterns`, `best_practices`, and `anti_patterns`.
 - **Workflow MD**: Ensure an H1 title, `## Overview`, `## Trigger Conditions`, and `Version:` declarations are present.
+- **Workflow Metadata**: Check if `**Version:**` and `**Trigger Examples:**` body metadata are present for IDE visibility.
 
 ### 3. Synchronize Manifests
 After structural fixes, update the system counts:
-```powershell
-conda run -p D:\Anaconda\envs\cursor-factory python scripts/validation/sync_knowledge_counts.py --sync
-conda run -p D:\Anaconda\envs\cursor-factory python scripts/validation/sync_artifacts.py --sync
-```
+1. `conda run -p D:\Anaconda\envs\cursor-factory python scripts/validation/sync_knowledge_counts.py --sync`
+2. `conda run -p D:\Anaconda\envs\cursor-factory python scripts/validation/sync_artifacts.py --sync`
+3. `conda run -p D:\Anaconda\envs\cursor-factory python scripts/validation/sync_manifest_versions.py --sync`
+4. `conda run -p D:\Anaconda\envs\cursor-factory python scripts/validation/validate_readme_structure.py --update`
 
 ## Best Practices
 - **Verify early**: Run structural checks immediately after file creation.
+- **Sync ALWAYS**: Never assume the manifests are correct. Always run the sync suite after modification.
 - **JSON Precision**: Always match the `id` field to the filename (without extension).
 - **Trigger Clarity**: Ensure workflows have at least 2 clear trigger examples.

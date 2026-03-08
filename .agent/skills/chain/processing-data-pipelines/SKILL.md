@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Dataset preparation for ML, HuggingFace datasets, custom loaders, data
+description: >
+  Dataset preparation for ML, HuggingFace datasets, custom loaders, data
   validation with Great Expectations, feature engineering, data versioning with DVC,
   preprocessing pipelines
 knowledge:

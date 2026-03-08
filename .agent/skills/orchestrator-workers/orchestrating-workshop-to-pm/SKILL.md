@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: Convert team workshop outputs to project management artifacts
+description: >
+  Convert team workshop outputs to project management artifacts
 knowledge:
 - none
 name: orchestrating-workshop-to-pm

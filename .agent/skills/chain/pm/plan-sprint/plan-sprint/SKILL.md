@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: Pull stories into sprint
+description: >
+  Pull stories into sprint
 knowledge:
 - workflow-patterns.json
 - best-practices.json

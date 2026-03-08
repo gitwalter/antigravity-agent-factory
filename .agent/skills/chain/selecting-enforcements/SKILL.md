@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Guide users through selecting enforcement patterns that ensure agent
+description: >
+  Guide users through selecting enforcement patterns that ensure agent
   system lives its values
 knowledge:
 - none

@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: CPI iFlow design patterns (content-based routing, splitter, aggregator),
+description: >
+  CPI iFlow design patterns (content-based routing, splitter, aggregator),
   Groovy script patterns, API Management policies, Event Mesh topic design, OData
   consumption
 knowledge:

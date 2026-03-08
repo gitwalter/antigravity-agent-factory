@@ -1,3 +1,7 @@
+---
+trigger: manual
+---
+
 # Trading Governance & Standards
 
 This document defines the mandatory safety and statistical standards for all trading agents, skills, and workflows within the Antigravity Agent Factory.

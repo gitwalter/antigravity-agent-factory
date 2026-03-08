@@ -1,3 +1,7 @@
+---
+trigger: model_decision
+---
+
 # Rule: Skill Development
 
 ## Context

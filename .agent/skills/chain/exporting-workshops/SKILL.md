@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Export learning workshops to standalone projects with all necessary artifacts
+description: >
+  Export learning workshops to standalone projects with all necessary artifacts
   for maximum AI-assisted learning
 knowledge:
 - none

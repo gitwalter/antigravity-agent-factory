@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Configure project management system with backend and methodology selection
+description: >
+  Configure project management system with backend and methodology selection
 knowledge:
 - none
 name: configuring-pm

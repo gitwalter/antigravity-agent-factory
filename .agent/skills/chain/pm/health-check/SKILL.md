@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: Team health indicators
+description: >
+  Team health indicators
 knowledge:
 - workflow-patterns.json
 - best-practices.json

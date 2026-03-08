@@ -3,7 +3,8 @@ agents:
 - python-ai-specialist
 - ai-app-developer
 category: retrieval
-description: Inspect and list the contents of the Qdrant RAG ebook library
+description: >
+  Inspect and list the contents of the Qdrant RAG ebook library
 knowledge: []
 name: inspecting-rag-catalog
 related_skills:

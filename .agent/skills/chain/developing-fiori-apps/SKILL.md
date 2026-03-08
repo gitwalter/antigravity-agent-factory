@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Fiori Elements app creation (List Report, Object Page, Worklist), CDS
+description: >
+  Fiori Elements app creation (List Report, Object Page, Worklist), CDS
   annotations for UI, value helps, draft-enabled UIs, SAP Fiori Tools usage
 knowledge:
 - none

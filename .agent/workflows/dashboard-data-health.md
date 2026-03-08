@@ -1,6 +1,7 @@
 ---
 description: Dashboard Data Health & Integrity Audit
 dashboard: true
+version: 1.0.0
 ---
 
 # Data Health Audit Workflow
@@ -35,3 +36,7 @@ Routine for ensuring data integrity and schema compliance for the Statistical Da
 ### 4. Resolution
 - Update the **Data Import Guide** if schema drift is detected.
 - Re-ingest cleansed data if necessary.
+
+
+## Trigger Examples
+- "Execute this workflow."

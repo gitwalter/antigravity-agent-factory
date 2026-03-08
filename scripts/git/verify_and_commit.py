@@ -46,7 +46,7 @@ def run(cmd: List[str], description: str) -> bool:
         duration = time.time() - start_time
 
         if result.returncode == 0:
-            print(f"  ✅ Success ({duration:.1f}s)")
+            print(f"  [OK] Success ({duration:.1f}s)")
             if result.stdout.strip():
                 # Print only first few lines if too long
                 lines = result.stdout.strip().splitlines()
@@ -56,12 +56,12 @@ def run(cmd: List[str], description: str) -> bool:
                     print(f"     ... ({len(lines)-5} more lines)")
             return True
         else:
-            print(f"  ❌ Failed ({duration:.1f}s)")
+            print("\n[ERROR] Verification failed. Commit aborted.")
             print(f"     STDOUT: {result.stdout.strip()[:200]}")
             print(f"     STDERR: {result.stderr.strip()[:200]}")
             return False
     except Exception as e:
-        print(f"  ❌ Error: {e}")
+        print(f"  [ERROR] Error: {e}")
         return False
 
 
@@ -69,7 +69,7 @@ def main():
     if sys.platform == "win32":
         sys.stdout.reconfigure(encoding="utf-8")
 
-    print(f"🚀 Starting Robust Commit Workflow (RCW) in {ROOT}\n")
+    print(f"RCW: Starting Robust Commit Workflow (RCW) in {ROOT}\n")
 
     # STAGE 1: Sync
     if not run(
@@ -108,7 +108,7 @@ def main():
     if not run(test_cmd, "Smoke Testing Core Modules"):
         return 1
 
-    print("\n✨ All verification stages passed! Ready to commit.")
+    print("\n[DONE] All verification stages passed! Ready to commit.")
     return 0
 
 

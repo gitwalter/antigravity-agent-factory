@@ -2,7 +2,8 @@
 agents:
 - none
 category: routing
-description: Tactical Blueprint for managing Google Workspace (Drive, Gmail, Calendar).
+description: >
+  Tactical Blueprint for managing Google Workspace (Drive, Gmail, Calendar).
   Focuses on prescriptive search, organization, and high-fidelity communication.
 knowledge:
 - none

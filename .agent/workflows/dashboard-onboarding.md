@@ -1,6 +1,7 @@
 ---
 description: Rapid Onboarding Workflow for new Dashboard Projects.
 dashboard: true
+version: 1.0.0
 ---
 
 # Dashboard Onboarding Workflow
@@ -37,3 +38,7 @@ This workflow guides the setup of a new analytical project within the Statistica
 
 ### 4. Customization
 - Use the **🛠️ Design Center** to toggle specific visualization types (Regression, Pareto, etc.).
+
+
+## Trigger Examples
+- "Execute this workflow."

@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: Quantitative and Industrial risk assessment with VaR, drawdown analysis,
+description: >
+  Quantitative and Industrial risk assessment with VaR, drawdown analysis,
   SLA breach forecasting, and process reliability metrics.
 knowledge:
 - none

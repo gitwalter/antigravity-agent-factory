@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Design and implement algorithmic trading strategies with entry/exit rules,
+description: >
+  Design and implement algorithmic trading strategies with entry/exit rules,
   position sizing, and risk parameters
 knowledge:
 - none

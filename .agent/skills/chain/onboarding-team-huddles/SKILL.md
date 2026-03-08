@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Condensed 1-2 hour collaborative onboarding for small teams (2-5 people)
+description: >
+  Condensed 1-2 hour collaborative onboarding for small teams (2-5 people)
   with mini-games and shared decision-making
 knowledge:
 - none

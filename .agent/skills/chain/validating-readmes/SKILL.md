@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Validates that project structure documented in README.md accurately reflects
+description: >
+  Validates that project structure documented in README.md accurately reflects
   the actual filesystem structure
 knowledge:
 - none

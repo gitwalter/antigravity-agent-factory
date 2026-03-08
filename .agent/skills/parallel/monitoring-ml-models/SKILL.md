@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Monitor ML model performance, data drift, LLM observability, and production
+description: >
+  Monitor ML model performance, data drift, LLM observability, and production
   metrics
 knowledge:
 - none

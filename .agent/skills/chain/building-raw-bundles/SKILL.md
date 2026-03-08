@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Build raw Cursor artifact bundles as verbatim zip copies filtered by
+description: >
+  Build raw Cursor artifact bundles as verbatim zip copies filtered by
   domain profile
 knowledge:
 - none

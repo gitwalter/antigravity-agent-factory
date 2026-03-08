@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: PyTorch training loops, distributed training with DeepSpeed/FSDP, hyperparameter
+description: >
+  PyTorch training loops, distributed training with DeepSpeed/FSDP, hyperparameter
   tuning with Optuna, experiment tracking, mixed precision training, checkpointing
 knowledge:
 - none

@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Fast-track 10-15 minute onboarding for individual developers with guided
+description: >
+  Fast-track 10-15 minute onboarding for individual developers with guided
   prompts and celebrations
 knowledge:
 - none

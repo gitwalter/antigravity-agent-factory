@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Interactive guidance for selecting appropriate trust verification tier
+description: >
+  Interactive guidance for selecting appropriate trust verification tier
 knowledge:
 - none
 name: selecting-axioms

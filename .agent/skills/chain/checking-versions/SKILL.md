@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: On-demand version audits using version-registry.json as source of truth
+description: >
+  On-demand version audits using version-registry.json as source of truth
 knowledge:
 - none
 name: checking-versions

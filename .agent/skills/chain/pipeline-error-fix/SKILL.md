@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Systematic detection and fixing of CI/CD pipeline failures.
+description: >
+  Systematic detection and fixing of CI/CD pipeline failures.
 knowledge:
 - none
 name: pipeline-error-fix

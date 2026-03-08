@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: End-to-end workflow for developing RESTful ABAP Programming Model (RAP) business objects in SAP S/4HANA. Covers CDS m...
+version: 1.0.0
 ---
 
 # Rap Development
@@ -64,3 +63,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

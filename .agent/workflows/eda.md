@@ -1,6 +1,7 @@
 ---
 description: Rapid Exploratory Data Analysis (EDA) of local or uploaded datasets.
 dashboard: true
+version: 1.0.0
 ---
 
 # Exploratory Data Analysis (EDA)
@@ -8,7 +9,7 @@ dashboard: true
 This workflow guides the process of exploring a dataset, identifying patterns, and generating initial insights using the Antigravity Stats Dashboard.
 
 **Version:** 1.0.0
-**Owner:** DataScientist
+**Owner:** python-ai-specialist
 **Skill Set:** `eda`, `data-visualization`
 
 ## Trigger Conditions
@@ -56,3 +57,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

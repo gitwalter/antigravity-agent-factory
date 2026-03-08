@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Speech-to-text (Whisper, cloud APIs), text-to-speech synthesis, real-time
+description: >
+  Speech-to-text (Whisper, cloud APIs), text-to-speech synthesis, real-time
   transcription, and audio analysis
 knowledge:
 - none

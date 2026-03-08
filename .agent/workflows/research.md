@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Multi-source research workflow using RAG, web search, docs, and GitHub
+version: 1.0.0
 ---
 
 # /research — Multi-Source Research Workflow
@@ -132,3 +131,7 @@ Generate a Memory Proposal detailing the discovery. If resolving a task, embed t
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Tactical Blueprint for RESTful ABAP Programming (RAP) and CDS Modeling.
+description: >
+  Tactical Blueprint for RESTful ABAP Programming (RAP) and CDS Modeling.
   Focuses on 'Clean Core' compliant on-stack extensibility in S/4HANA Cloud.
 knowledge:
 - none

@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Build algorithmic trading strategies with backtesting, technical indicators,
+description: >
+  Build algorithmic trading strategies with backtesting, technical indicators,
   and fundamental data
 knowledge:
 - none

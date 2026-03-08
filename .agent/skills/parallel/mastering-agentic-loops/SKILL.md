@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Tactical Blueprint for stateful AI agents and multi-agent systems. Focuses
+description: >
+  Tactical Blueprint for stateful AI agents and multi-agent systems. Focuses
   on LangGraph orchestration, state persistence, and procedural loop logic.
 knowledge:
 - none

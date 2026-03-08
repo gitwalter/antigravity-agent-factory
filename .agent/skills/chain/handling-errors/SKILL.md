@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Retry strategies with tenacity, fallback patterns, circuit breakers,
+description: >
+  Retry strategies with tenacity, fallback patterns, circuit breakers,
   graceful degradation
 knowledge:
 - none

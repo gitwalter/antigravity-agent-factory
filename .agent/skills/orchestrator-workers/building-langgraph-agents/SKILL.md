@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: Build stateful agents and workflows with LangGraph 1.x
+description: >
+  Build stateful agents and workflows with LangGraph 1.x
 knowledge:
 - none
 name: building-langgraph-agents

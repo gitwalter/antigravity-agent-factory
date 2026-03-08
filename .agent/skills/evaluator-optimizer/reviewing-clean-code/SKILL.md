@@ -2,7 +2,8 @@
 agents:
 - none
 category: evaluator-optimizer
-description: Systematic code quality review using SOLID principles, code smell detection,
+description: >
+  Systematic code quality review using SOLID principles, code smell detection,
   and refactoring patterns
 knowledge:
 - none

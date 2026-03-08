@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Cross-module workflow for order-to-cash, procure-to-pay, or make-to-stock. For consultants and developers designing o...
+version: 1.0.0
 ---
 
 # Logistics Chain Workflow
@@ -44,3 +43,7 @@ Standard PABP development phases apply:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

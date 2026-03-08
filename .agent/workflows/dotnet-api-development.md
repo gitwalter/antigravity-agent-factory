@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Comprehensive workflow for developing production-ready ASP.NET Core APIs with Entity Framework Core, authentication, ...
+version: 1.0.0
 ---
 
 # Dotnet Api Development
@@ -10,7 +9,7 @@ Comprehensive workflow for developing production-ready ASP.NET Core APIs with En
 
 **Version:** 1.0.0
 **Created:** 2026-02-09
-**Agent:** dotnet-developer
+**Agent:** template-generator
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.
 
@@ -80,3 +79,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

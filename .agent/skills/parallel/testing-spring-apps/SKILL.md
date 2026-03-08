@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: JUnit 5 patterns, Spring Boot Test slices (@WebMvcTest, @DataJpaTest),
+description: >
+  JUnit 5 patterns, Spring Boot Test slices (@WebMvcTest, @DataJpaTest),
   MockMvc for API testing, Testcontainers for integration tests (PostgreSQL, Redis,
   Kafka), Mockito patterns, Test fixtures with @TestConfiguration
 knowledge:

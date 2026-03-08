@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Production model serving with vLLM, TGI, Ollama, Triton, FastAPI endpoints,
+description: >
+  Production model serving with vLLM, TGI, Ollama, Triton, FastAPI endpoints,
   batching, and GPU optimization
 knowledge:
 - none

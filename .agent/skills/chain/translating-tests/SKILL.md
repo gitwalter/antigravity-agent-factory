@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Convert tests between frameworks (pytest, unittest, behave) and translate
+description: >
+  Convert tests between frameworks (pytest, unittest, behave) and translate
   test patterns across languages
 knowledge:
 - none

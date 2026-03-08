@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Platform-specific shell command considerations for Windows PowerShell
+description: >
+  Platform-specific shell command considerations for Windows PowerShell
   and Unix shells
 knowledge:
 - none

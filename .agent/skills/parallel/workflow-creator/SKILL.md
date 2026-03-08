@@ -1,6 +1,7 @@
 ---
 name: workflow-creator
-description: Standardized workflow creation and evaluation with mandatory schema validation
+description: >
+  Standardized workflow creation and evaluation with mandatory schema validation
 type: skill
 version: 1.0.0
 category: factory

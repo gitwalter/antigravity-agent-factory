@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Image-to-text with various engines (Tesseract, EasyOCR, cloud APIs),
+description: >
+  Image-to-text with various engines (Tesseract, EasyOCR, cloud APIs),
   PDF text extraction, table recognition, and layout analysis
 knowledge:
 - none

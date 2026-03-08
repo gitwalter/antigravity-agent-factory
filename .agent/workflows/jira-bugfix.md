@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Jira-triggered bugfix workflow from ticket analysis through resolution. Covers ticket fetching, root cause analysis, ...
+version: 1.0.0
 ---
 
 # Jira Bugfix
@@ -56,3 +55,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

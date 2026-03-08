@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Excel file processing and manipulation using the Excel MCP Server
+description: >
+  Excel file processing and manipulation using the Excel MCP Server
 knowledge:
 - none
 name: processing-excel-files

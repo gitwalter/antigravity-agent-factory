@@ -2,7 +2,8 @@
 agents:
 - none
 category: routing
-description: Guide users through selecting appropriate MCP servers during project
+description: >
+  Guide users through selecting appropriate MCP servers during project
   generation
 knowledge:
 - none

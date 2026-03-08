@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: Suggest story point estimation
+description: >
+  Suggest story point estimation
 knowledge:
 - workflow-patterns.json
 - best-practices.json

@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Guide users through articulating why their agent system should exist,
+description: >
+  Guide users through articulating why their agent system should exist,
   who it serves, and how success will be measured
 knowledge:
 - none

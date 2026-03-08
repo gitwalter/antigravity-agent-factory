@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: ASP.NET Core authentication and authorization patterns
+description: >
+  ASP.NET Core authentication and authorization patterns
 knowledge:
 - none
 name: authenticating-dotnet

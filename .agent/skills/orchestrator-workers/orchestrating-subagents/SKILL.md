@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: Spawning subagents dynamically, parent-child agent communication, task
+description: >
+  Spawning subagents dynamically, parent-child agent communication, task
   delegation and result aggregation, resource management and cleanup
 knowledge:
 - none

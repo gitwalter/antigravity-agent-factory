@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Automated workflow for full repository audits, structural cleaning, and artifact synchronization.
+version: 1.0.0
 ---
 
 # Repository Maintenance
@@ -80,3 +79,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

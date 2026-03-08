@@ -1,6 +1,7 @@
 ---
 name: workshop-creator
-description: Standardized workshop creation and validation
+description: >
+  Standardized workshop creation and validation
 type: skill
 version: 1.0.0
 category: factory

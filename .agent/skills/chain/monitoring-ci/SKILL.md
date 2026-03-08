@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Continuous CI/CD pipeline monitoring with automatic error detection and
+description: >
+  Continuous CI/CD pipeline monitoring with automatic error detection and
   fix loop
 knowledge:
 - none

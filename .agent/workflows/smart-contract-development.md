@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Smart contract development workflow with design, implementation, testing, and audit preparation. Covers Solidity/Ethe...
+version: 1.0.0
 ---
 
 # Smart Contract Development
@@ -56,3 +55,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

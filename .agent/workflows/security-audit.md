@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Comprehensive security audit workflow that systematically reviews code for vulnerabilities, checks dependencies, vali...
+version: 1.0.0
 ---
 
 # Security Audit
@@ -10,7 +9,7 @@ Comprehensive security audit workflow that systematically reviews code for vulne
 
 **Version:** 1.0.0
 **Created:** 2026-02-02
-**Agent:** security-auditor
+**Agent:** integrity-guardian
 
 ## Trigger Conditions
 
@@ -72,3 +71,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

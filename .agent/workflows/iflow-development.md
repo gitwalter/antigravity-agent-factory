@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: SAP Cloud Platform Integration (CPI) iFlow development workflow. Covers integration design, iFlow development, Groovy...
+version: 1.0.0
 ---
 
 # Iflow Development
@@ -56,3 +55,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

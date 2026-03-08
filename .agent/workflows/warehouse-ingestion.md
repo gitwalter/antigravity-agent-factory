@@ -1,6 +1,7 @@
 ---
 description: Ingesting Warehouse Operational Data
 dashboard: true
+version: 1.0.0
 ---
 
 # Warehouse Data Ingestion Workflow
@@ -75,3 +76,7 @@ Simulate MQTT streams using the `IoTConnector` (to be implemented) for real-time
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

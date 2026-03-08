@@ -2,7 +2,8 @@
 agents:
 - none
 category: evaluator-optimizer
-description: Universal two-pass verification for LLM grounding using confidence delta
+description: >
+  Universal two-pass verification for LLM grounding using confidence delta
   comparison
 knowledge:
 - none

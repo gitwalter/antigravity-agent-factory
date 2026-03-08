@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: DSPy integration for declarative prompt optimization, prompt versioning,
+description: >
+  DSPy integration for declarative prompt optimization, prompt versioning,
   A/B testing, few-shot optimization, chain-of-thought patterns, prompt caching
 knowledge:
 - none
@@ -601,6 +602,8 @@ After optimizing prompts, you'll have:
 - Iterate based on evaluation metrics
 - Version control all prompts
 - Document prompt design decisions
+- **Phase 7 Integration**: Use `scripts/core/fetch_telemetry.py` to pull live traces for iterative optimization.
+- **Consent-driven learning**: Ensure user feedback or automated score thresholds are met before updating production prompts.
 
 ## Anti-Patterns
 
@@ -619,7 +622,7 @@ After optimizing prompts, you'll have:
 - Skill: `langsmith-prompts`
 
 ## When to Use
-This skill should be used when strict adherence to the defined process is required.
+This skill should be used when strict adherence to the defined process is required, especially during **Phase 7: Monitor** for continuous improvement of agent intelligence.
 
 ## Prerequisites
 - Basic understanding of the agent factory context.

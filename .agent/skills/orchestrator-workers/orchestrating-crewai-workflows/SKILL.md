@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: Build multi-agent workflows using CrewAI patterns
+description: >
+  Build multi-agent workflows using CrewAI patterns
 knowledge:
 - none
 name: orchestrating-crewai-workflows

@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Smart contract security audit workflow covering scope definition, static analysis, manual review, penetration testing...
+version: 1.0.0
 ---
 
 # Security Audit Workflow
@@ -56,3 +55,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

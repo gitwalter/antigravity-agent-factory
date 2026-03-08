@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: This workflow guides the development of new features in Next.js applications, following a systematic approach from de...
+version: 1.0.0
 ---
 
 # Nextjs Feature Development
@@ -44,3 +43,7 @@ Standard PABP development phases apply:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

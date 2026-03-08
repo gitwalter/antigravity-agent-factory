@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: ASP.NET Core Minimal APIs, Controllers, dependency injection, middleware,
+description: >
+  ASP.NET Core Minimal APIs, Controllers, dependency injection, middleware,
   background services, options pattern, health checks
 knowledge:
 - none

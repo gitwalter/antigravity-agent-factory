@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Spring Boot 3+ project setup (Initializr), REST controllers, Service
+description: >
+  Spring Boot 3+ project setup (Initializr), REST controllers, Service
   layer patterns, Exception handling (@ControllerAdvice), Profiles and configuration,
   Bean validation, Async operations
 knowledge:

@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Web scraping with agents, browser automation, content extraction, and
+description: >
+  Web scraping with agents, browser automation, content extraction, and
   ethical scraping practices
 knowledge:
 - none

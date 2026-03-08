@@ -3,7 +3,8 @@ agents:
 - python-ai-specialist
 - ai-app-developer
 category: retrieval
-description: Specialized skill for retrieving rag context
+description: >
+  Specialized skill for retrieving rag context
 knowledge:
 - best-practices.json
 name: retrieving-rag-context

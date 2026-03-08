@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Input validation and sanitization, output filtering, code execution safety,
+description: >
+  Input validation and sanitization, output filtering, code execution safety,
   and permission management
 knowledge:
 - none

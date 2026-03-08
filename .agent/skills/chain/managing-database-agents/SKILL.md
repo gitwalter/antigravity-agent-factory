@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: SQL generation with LLMs, schema understanding, query optimization, and
+description: >
+  SQL generation with LLMs, schema understanding, query optimization, and
   text-to-SQL pipelines
 knowledge:
 - none

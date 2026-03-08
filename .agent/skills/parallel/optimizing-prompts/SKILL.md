@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: DSPy integration for declarative prompt optimization, prompt versioning,
+description: >
+  DSPy integration for declarative prompt optimization, prompt versioning,
   A/B testing, few-shot optimization, chain-of-thought patterns, prompt caching
 knowledge:
 - none

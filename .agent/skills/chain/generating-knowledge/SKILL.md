@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: JSON knowledge file generation with mandatory schema validation against
+description: >
+  JSON knowledge file generation with mandatory schema validation against
   schemas/knowledge-file.schema.json
 knowledge:
 - none

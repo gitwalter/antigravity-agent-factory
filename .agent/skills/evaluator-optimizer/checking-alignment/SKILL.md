@@ -2,7 +2,8 @@
 agents:
 - none
 category: evaluator-optimizer
-description: Verify understanding and alignment before major implementations
+description: >
+  Verify understanding and alignment before major implementations
 knowledge:
 - none
 name: checking-alignment

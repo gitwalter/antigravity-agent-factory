@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Prisma schema design patterns, relations (1:1, 1:N, M:N), migrations
+description: >
+  Prisma schema design patterns, relations (1:1, 1:N, M:N), migrations
   workflow, Prisma Client queries (findMany, create, update, transactions), seeding,
   type-safe queries, and performance optimization.
 knowledge:

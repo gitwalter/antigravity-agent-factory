@@ -1,6 +1,7 @@
 ---
 name: blueprint-creator
-description: Standardized blueprint creation and validation with mandatory schema validation
+description: >
+  Standardized blueprint creation and validation with mandatory schema validation
 type: skill
 version: 1.0.0
 category: factory

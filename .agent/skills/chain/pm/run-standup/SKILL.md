@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: Query and report current status
+description: >
+  Query and report current status
 knowledge:
 - workflow-patterns.json
 - best-practices.json

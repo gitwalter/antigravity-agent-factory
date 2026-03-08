@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Prompt injection defense, API security, and content filtering for AI
+description: >
+  Prompt injection defense, API security, and content filtering for AI
   systems
 knowledge:
 - none

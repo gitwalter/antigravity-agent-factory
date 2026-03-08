@@ -2,7 +2,8 @@
 agents:
 - none
 category: routing
-description: Manage files in Google Drive using the Google Drive MCP server.
+description: >
+  Manage files in Google Drive using the Google Drive MCP server.
 knowledge:
 - none
 name: managing-google-drive

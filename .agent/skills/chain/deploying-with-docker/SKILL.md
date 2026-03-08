@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Tactical Blueprint for Production-Grade Docker. Focuses on security hardening,
+description: >
+  Tactical Blueprint for Production-Grade Docker. Focuses on security hardening,
   image optimization, and multi-stage builds.
 knowledge:
 - none

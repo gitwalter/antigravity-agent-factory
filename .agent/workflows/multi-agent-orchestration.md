@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Workflow for designing, implementing, and deploying multi-agent AI systems. Covers topology selection, agent implemen...
+version: 1.0.0
 ---
 
 # Multi Agent Orchestration
@@ -70,3 +69,7 @@ Determine the core goals and constraints of the multi-agent system.
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

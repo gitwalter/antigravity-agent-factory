@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Accessing and analyzing global financial and economic data.
+version: 1.0.0
 ---
 
 # /fetch-external-data Workflow
@@ -61,3 +60,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

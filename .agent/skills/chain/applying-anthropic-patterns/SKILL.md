@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Claude agentic loop patterns - tool use until done, extended thinking
+description: >
+  Claude agentic loop patterns - tool use until done, extended thinking
   for complex reasoning, safety and alignment patterns, LangChain ChatAnthropic integration
 knowledge:
 - none

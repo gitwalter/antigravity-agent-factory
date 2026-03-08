@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Comprehensive workflow for deploying machine learning models to production including model export, containerization, ...
+version: 1.0.0
 ---
 
 # Ml Deployment Pipeline
@@ -10,7 +9,7 @@ Comprehensive workflow for deploying machine learning models to production inclu
 
 **Version:** 1.0.0
 **Created:** 2026-02-09
-**Agent:** mlops-engineer
+**Agent:** workflow-architect
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.
 
@@ -70,3 +69,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

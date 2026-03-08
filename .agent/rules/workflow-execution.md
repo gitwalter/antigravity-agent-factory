@@ -4,6 +4,7 @@
 Rules for creating, extending, and executing workflows in `.agent/workflows/`.
 
 ## Requirements
+- **Conscious Workflow Selection**: Before beginning any user request, an agent MUST consciously determine the correct workflow by querying the Memory MCP (`mcp_memory_search_nodes` with `workflow`) or explicitly reading `.agent/knowledge/workflow-catalog.json` or `docs/reference/catalog.md`. Do not guess workflow namespaces.
 - **Schema Adherence**: MUST follow `schemas/workflow.schema.json`.
 - **Workflow Primacy**: All major system operations MUST be orchestrated by a designated workflow.
 - **Phased Execution**:

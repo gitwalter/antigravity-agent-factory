@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: CDS view creation (basic, composite, consumption), associations, compositions,
+description: >
+  CDS view creation (basic, composite, consumption), associations, compositions,
   CDS annotations (semantic, UI, analytics), CDS access control (DCL)
 knowledge:
 - none

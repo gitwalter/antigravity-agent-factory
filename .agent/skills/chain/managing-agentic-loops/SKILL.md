@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: ReAct pattern implementation, reflection and self-correction, planning
+description: >
+  ReAct pattern implementation, reflection and self-correction, planning
   and task decomposition, iterative refinement patterns
 knowledge:
 - none

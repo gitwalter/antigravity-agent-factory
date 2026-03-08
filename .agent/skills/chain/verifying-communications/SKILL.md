@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Enable verified, axiom-compliant communication between Factory agents
+description: >
+  Enable verified, axiom-compliant communication between Factory agents
 knowledge:
 - none
 name: verifying-communications

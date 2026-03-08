@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: GitHub Actions CI/CD pipeline setup and maintenance workflow. Covers workflow creation, test automation, linting, dep...
+version: 1.0.0
 ---
 
 # Github Actions Ci
@@ -56,3 +55,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

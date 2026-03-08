@@ -151,7 +151,7 @@ Here is AGENT-31 itself, expressed as a schema-compliant task definition:
 1. **Query Memory MCP** — `mcp_memory_open_nodes(["System_Consciousness"])` for orientation
 2. **Form Hypothesis** — Select workflows, agents, skills, scripts, knowledge based on problem analysis
 3. **Check for Gaps** — If a needed asset doesn't exist, mark it `[NEW]` — it becomes a deliverable
-4. **Create the Issue** — Follow SKILL.md Steps A–E with all mandatory metadata
+4. **Create the Issue** — Follow SKILL.md Steps A–E with all mandatory metadata. Use `mcp_plane_list_project_issues` to verify creation (note: filtering by status is client-side).
 5. **Embed Schema** — Include the task schema JSON in the description under `## Task Schema`
 6. **Execute** — Agents use the schema fields as their context — workflows guide process, skills provide tactics, knowledge provides evidence
 7. **Validate** — Run the declared tests to confirm or refute the hypothesis

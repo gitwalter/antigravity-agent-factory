@@ -2,7 +2,8 @@
 agents:
 - none
 category: routing
-description: Manage calendar events using the Google Calendar MCP server.
+description: >
+  Manage calendar events using the Google Calendar MCP server.
 knowledge:
 - none
 name: managing-google-calendar

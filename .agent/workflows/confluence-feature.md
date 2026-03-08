@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Confluence-documented feature development workflow. Covers requirements from Confluence, design documentation, implem...
+version: 1.0.0
 ---
 
 # Confluence Feature
@@ -56,3 +55,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

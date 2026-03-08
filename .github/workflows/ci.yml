@@ -71,6 +71,32 @@ jobs:
           ruff check scripts/ cli/ tests/ lib/ --output-format=github
         continue-on-error: true
 
+  # Parallel job: Adversarial Eval (runs alongside fast-tests)
+  adversarial-eval:
+    name: Adversarial Evaluation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Mamba and Python 3.11
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-name: cursor-factory
+          create-args: >-
+            python=3.11
+            pip
+            pytest
+
+      - name: Run Adversarial Evaluation
+        shell: micromamba-shell {0}
+        run: |
+          # We need to install any missing core deps if the scripts rely on them
+          pip install pyyaml pytest
+          # Use regular python within shell since conda is set up by micromamba
+          python scripts/validation/evaluate.py --adversarial --ci --phase CI
+
   # Parallel job: Validate JSON (runs alongside fast-tests)
   validate-json:
     name: Validate JSON Files

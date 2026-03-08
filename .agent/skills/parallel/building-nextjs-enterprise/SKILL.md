@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Tactical Blueprint for production-grade Next.js 15+ applications. Focuses
+description: >
+  Tactical Blueprint for production-grade Next.js 15+ applications. Focuses
   on procedural execution, tool-calling sequences, and idiomatic excellence.
 knowledge:
 - none

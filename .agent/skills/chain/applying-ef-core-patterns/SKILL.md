@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Entity Framework Core patterns for data access, migrations, and query
+description: >
+  Entity Framework Core patterns for data access, migrations, and query
   optimization
 knowledge:
 - none

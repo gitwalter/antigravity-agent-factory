@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Deploy ML models to production with Docker, Kubernetes, cloud platforms,
+description: >
+  Deploy ML models to production with Docker, Kubernetes, cloud platforms,
   and edge devices
 knowledge:
 - none

@@ -1,58 +1,32 @@
 ---
-## Overview
-
 description: Agent testing workflow covering unit tests with mocks, integration tests, and LLM evaluation. Ensures agents behave c...
+version: 1.0.0
 ---
 
-# Agent Testing
-
-Agent testing workflow covering unit tests with mocks, integration tests, and LLM evaluation. Ensures agents behave correctly across isolated and end-to-end scenarios.
+# /agent-testing Workflow (SDLC Phase 5)
 
 **Version:** 1.0.0
-**Created:** 2026-02-10
-**Applies To:** langgraph-agent, langchain-agent
+
+
+**Goal:** Verify implementation against requirements using rigorous unit, integration, and LLM-based evaluation.
+
+## Steps:
+1. **Target**: Load `knowledge/walkthrough.md`, `knowledge/prd.md`, and `knowledge/ai-design.md`.
+2. **Execute**: Trigger `.agent/skills/verification/verifying-artifact-structures/SKILL.md`.
+3. **Unit Tests**: Run project-specific test suites (e.g., `pytest`, `npm test`).
+4. **Eval**: Trigger LLM-based evaluation of agentic outputs if applicable.
+5. **Report**: Generate `eval-report.md` using `knowledge/templates/eval-report.md`.
+6. **Output**: Write report to `knowledge/eval-report.md`.
+7. **Follow-up**: Prompt user to run `/release-management` (Phase 6) if the report is "Green".
+
+## Phase Gate (Test & Eval):
+- Mandatory generation of `eval-report.md`.
+- No P0 issues; 100% requirements coverage validated.
+
 
 ## Trigger Conditions
-
-This workflow is activated when:
-
-- Agent testing requested
-- Pre-deployment validation needed
-- Regression testing after changes
-- Agent quality assessment
-
-**Trigger Examples:**
-- "Test the agent before deployment"
-- "Add unit tests for the agent"
-- "Run evaluation on the agent"
-- "Validate agent tool selection"
-
-## Steps
-
-### Identify Test Levels
-
-### Create Test Plan
-
-### Tool Tests
-
-### Node Tests
-
-### Flow Tests
-
-### Tool Integration
-
-### Create Evaluation Set
-
-### Run Evaluation
+- Triggered by user context or meta-orchestrator.
 
 
-## Decision Points
-
-- Is the requirement clear?
-- Are the tests passing?
-
-
-## Example Session
-
-User: Run the workflow
-Agent: Initiating workflow steps...
+## Trigger Examples:
+- "Execute this workflow."

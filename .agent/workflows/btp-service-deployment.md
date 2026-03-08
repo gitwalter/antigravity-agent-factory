@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: End-to-end workflow for deploying SAP applications to SAP Business Technology Platform (BTP). Covers build configurat...
+version: 1.0.0
 ---
 
 # Btp Service Deployment
@@ -68,3 +67,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

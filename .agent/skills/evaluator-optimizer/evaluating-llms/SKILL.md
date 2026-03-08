@@ -2,7 +2,8 @@
 agents:
 - none
 category: evaluator-optimizer
-description: RAGAS evaluation setup, DeepEval integration, LangSmith evaluation runs,
+description: >
+  RAGAS evaluation setup, DeepEval integration, LangSmith evaluation runs,
   custom metrics, retrieval quality metrics, regression testing for LLM outputs
 knowledge:
 - none

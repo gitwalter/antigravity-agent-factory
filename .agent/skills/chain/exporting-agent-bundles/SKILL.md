@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Create and export PABP agent bundles for cross-platform portable behavior
+description: >
+  Create and export PABP agent bundles for cross-platform portable behavior
   transfer
 knowledge:
 - none

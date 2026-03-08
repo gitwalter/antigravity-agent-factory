@@ -1,68 +1,27 @@
 ---
-## Overview
-
-description: Comprehensive workflow for designing AI systems including requirements analysis, architecture selection, cost estimat...
+description: Comprehensive workflow for designing AI systems including requirements analysis, architecture selection, cost estimation, and detailed design documentation.
+version: 1.0.0
 ---
 
-# Ai System Design
-
-Comprehensive workflow for designing AI systems including requirements analysis, architecture selection, cost estimation, and proof-of-concept validation.
+# /ai-system-design Workflow
 
 **Version:** 1.0.0
-**Created:** 2026-02-09
-**Agent:** ai-architect
 
-> **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.
+
+**Goal:** Transform approved requirements (PRD) into a robust, scalable, and cost-effective AI system architecture.
+
+## Steps:
+1. **Target**: Load `knowledge/prd.md`.
+2. **Execute**: Trigger `.agent/skills/parallel/designing-ai-systems/SKILL.md`.
+3. **API Design**: Trigger `.agent/skills/parallel/designing-apis/SKILL.md` if external interfaces are required.
+4. **Template**: Use `knowledge/templates/ai-design.md`.
+5. **Output**: Write to `knowledge/ai-design.md`.
+6. **Follow-up**: Prompt user to run `/agent-development` (Phase 4) once the design is approved.
+
 
 ## Trigger Conditions
-
-This workflow is activated when:
-
-- User requests "design AI system", "AI architecture", "system design"
-- User mentions "LLM architecture", "RAG design", "AI system"
-- User requests "AI solution design" or "architecture planning"
-- User asks to "design AI application"
-
-**Trigger Examples:**
-- "Design a RAG system for document Q&A"
-- "Create architecture for LLM-powered application"
-- "Design AI system with cost constraints"
-- "Plan AI application architecture"
-
-## Steps
-
-### Gather Requirements
-
-### Identify Constraints
-
-### Define Success Criteria
-
-### Evaluate Architecture Patterns
-
-### Select Architecture
-
-### Choose Technology Stack
-
-### Estimate LLM Costs
-
-### Estimate Infrastructure Costs
-
-### Optimize Costs
-
-### Build POC
-
-### Validate Architecture
-
-### Refine Design
+- Triggered by user context or meta-orchestrator.
 
 
-## Decision Points
-
-- Is the requirement clear?
-- Are the tests passing?
-
-
-## Example Session
-
-User: Run the workflow
-Agent: Initiating workflow steps...
+## Trigger Examples:
+- "Execute this workflow."

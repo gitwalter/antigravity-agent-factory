@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Multi-agent system development workflow including agent design, coordination setup, communication patterns, and orche...
+version: 1.0.0
 ---
 
 # Multi Agent Development
@@ -56,3 +55,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

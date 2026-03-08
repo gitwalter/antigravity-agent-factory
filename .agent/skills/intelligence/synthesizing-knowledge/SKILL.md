@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: Structured knowledge capture to extract team wisdom, lessons learned,
+description: >
+  Structured knowledge capture to extract team wisdom, lessons learned,
   and best practices for embedding in agent systems
 knowledge:
 - none

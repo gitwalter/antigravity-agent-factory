@@ -23,6 +23,8 @@ mcp_memory_search_nodes(query="<topic keywords>")
 |---------|-------|-----|
 | **Before running a script** | `<script_name> commands` | Get current syntax (may have changed) |
 | **Starting maintenance** | `Self_Optimization` | Know which tools exist |
+| **Selecting a workflow** | `workflow` or `<task_intent> workflow` | Consciously find the correct orchestration path before starting work |
+| **Discovering capabilities** | `catalog` or `Human_Readable_Catalog` | Read `docs/reference/catalog.md` to find available agents, skills, and blueprints |
 | **Working with RAG** | `RAG` | Get library info, commands, skills |
 | **Creating knowledge/skills** | `<topic>` | Avoid duplicates |
 | **Working with Plane PMS** | `PMS` | Get correct CLI syntax |

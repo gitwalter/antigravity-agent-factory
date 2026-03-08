@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: Procedural implementation of ReAct, Reflection, Planning, and Iterative
+description: >
+  Procedural implementation of ReAct, Reflection, Planning, and Iterative
   Refinement patterns.
 knowledge:
 - none

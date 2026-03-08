@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: XSUAA configuration and scopes, OAuth 2.0 flows in BTP, principal propagation
+description: >
+  XSUAA configuration and scopes, OAuth 2.0 flows in BTP, principal propagation
   (cloud to on-premise), CDS access control (DCL rules), API authentication patterns
 knowledge:
 - none

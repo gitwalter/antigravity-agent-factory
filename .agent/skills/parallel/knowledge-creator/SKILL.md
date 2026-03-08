@@ -1,6 +1,7 @@
 ---
 name: knowledge-creator
-description: Standardized knowledge file creation and validation with mandatory schema validation
+description: >
+  Standardized knowledge file creation and validation with mandatory schema validation
 type: skill
 version: 1.0.0
 category: factory

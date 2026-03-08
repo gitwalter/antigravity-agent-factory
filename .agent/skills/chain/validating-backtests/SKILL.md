@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Validate trading strategies with walk-forward analysis, Monte Carlo simulation,
+description: >
+  Validate trading strategies with walk-forward analysis, Monte Carlo simulation,
   and robustness checks
 knowledge:
 - none

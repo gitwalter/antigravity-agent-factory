@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Skill for migrating hardcoded environment parameters to the Single Point
+description: >
+  Skill for migrating hardcoded environment parameters to the Single Point
   of Truth configuration
 knowledge:
 - none

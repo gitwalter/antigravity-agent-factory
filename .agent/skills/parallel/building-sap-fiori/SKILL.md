@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Tactical Blueprint for SAP Fiori Elements development. Focuses on metadata-driven
+description: >
+  Tactical Blueprint for SAP Fiori Elements development. Focuses on metadata-driven
   UI development via CDS annotations and SAP Fiori Tools.
 knowledge:
 - none

@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Interactive skill for reviewing, applying, and managing knowledge updates
+description: >
+  Interactive skill for reviewing, applying, and managing knowledge updates
 knowledge:
 - none
 name: updating-knowledge

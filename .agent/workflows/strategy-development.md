@@ -1,6 +1,7 @@
 ---
 description: Trading strategy development workflow from research through validation. Covers hypothesis formation, entry/exit rules...
 dashboard: true
+version: 1.0.0
 ---
 
 # Strategy Development
@@ -55,3 +56,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

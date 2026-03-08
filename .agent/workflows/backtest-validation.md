@@ -1,6 +1,7 @@
 ---
 description: Strategy backtesting workflow with walk-forward analysis and Monte Carlo simulation. Covers data preparation, backtest execution...
 dashboard: true
+version: 1.0.0
 ---
 
 # Backtest Validation
@@ -62,3 +63,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

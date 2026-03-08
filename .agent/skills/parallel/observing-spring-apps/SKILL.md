@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Micrometer metrics (counters, gauges, timers), Distributed tracing with
+description: >
+  Micrometer metrics (counters, gauges, timers), Distributed tracing with
   Micrometer Tracing + Zipkin/Jaeger, Structured logging (Logback + JSON), Spring
   Boot Actuator endpoints, Prometheus + Grafana setup, Custom health indicators
 knowledge:

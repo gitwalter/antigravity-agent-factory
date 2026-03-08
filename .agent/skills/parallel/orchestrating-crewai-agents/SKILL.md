@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Detailed CrewAI agent design patterns - role design, backstories, collaboration,
+description: >
+  Detailed CrewAI agent design patterns - role design, backstories, collaboration,
   hierarchical vs sequential processes, tool integration
 knowledge:
 - none

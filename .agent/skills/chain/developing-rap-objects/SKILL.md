@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: RAP business object creation (managed, unmanaged, abstract), behavior
+description: >
+  RAP business object creation (managed, unmanaged, abstract), behavior
   definitions, determinations, validations, actions, draft handling, authorization
   control
 knowledge:

@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Behavior-Driven Development workflow that starts with stakeholder-readable Gherkin scenarios and translates them into...
+version: 1.0.0
 ---
 
 # Bdd Driven Development
@@ -10,7 +9,7 @@ Behavior-Driven Development workflow that starts with stakeholder-readable Gherk
 
 **Version:** 1.0.0
 **Created:** 2026-02-02
-**Agent:** test-generator
+**Agent:** workflow-quality-specialist
 
 ## Trigger Conditions
 
@@ -66,3 +65,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

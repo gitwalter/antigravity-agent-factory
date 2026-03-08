@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: "Workflow for EWM-related development: warehouse structure, movements, custom logic. Embedded EWM in S/4HANA."
+version: 1.0.0
 ---
 
 # Ewm Development
@@ -45,3 +44,7 @@ Standard PABP development phases apply:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

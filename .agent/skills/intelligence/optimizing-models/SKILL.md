@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: LoRA/QLoRA/PEFT fine-tuning workflows with Hugging Face transformers
+description: >
+  LoRA/QLoRA/PEFT fine-tuning workflows with Hugging Face transformers
 knowledge:
 - none
 name: optimizing-models

@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Comprehensive workflow for developing production-ready LLM applications from prototype to production, including evalu...
+version: 1.0.0
 ---
 
 # Llm App Development
@@ -10,7 +9,7 @@ Comprehensive workflow for developing production-ready LLM applications from pro
 
 **Version:** 1.0.0
 **Created:** 2026-02-09
-**Agent:** ai-app-developer
+**Agent:** template-generator
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.
 
@@ -78,3 +77,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

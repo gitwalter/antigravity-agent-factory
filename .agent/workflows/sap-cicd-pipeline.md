@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: End-to-end workflow for setting up CI/CD pipelines for SAP applications. Covers build automation, testing, transport ...
+version: 1.0.0
 ---
 
 # Sap Cicd Pipeline
@@ -68,3 +67,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

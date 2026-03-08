@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Guide users through selecting and configuring development methodology
+description: >
+  Guide users through selecting and configuring development methodology
   for agent system
 knowledge:
 - none

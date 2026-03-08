@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Implement inductive learning by observing patterns and proposing improvements
+description: >
+  Implement inductive learning by observing patterns and proposing improvements
   to axioms, principles, and methodologies
 knowledge:
 - none

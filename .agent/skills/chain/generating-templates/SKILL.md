@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Code and document template generation skill with mandatory schema validation
+description: >
+  Code and document template generation skill with mandatory schema validation
   against schemas/template.schema.json
 knowledge:
 - none

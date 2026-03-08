@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Debugging and tracing LangChain/LangGraph with LangSmith MCP
+description: >
+  Debugging and tracing LangChain/LangGraph with LangSmith MCP
 knowledge:
 - none
 name: tracing-with-langsmith

@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Create and extend workflow definitions using the workflow system architecture
+description: >
+  Create and extend workflow definitions using the workflow system architecture
 knowledge:
 - none
 name: extending-workflows

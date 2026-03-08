@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Tactical Blueprint for Retrieval-Augmented Generation (RAG) systems.
+description: >
+  Tactical Blueprint for Retrieval-Augmented Generation (RAG) systems.
   Focuses on document ingestion, semantic retrieval, reranking, and citation truth.
 knowledge:
 - none

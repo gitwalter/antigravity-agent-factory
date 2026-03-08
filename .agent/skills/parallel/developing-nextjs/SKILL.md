@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Comprehensive Next.js 16 App Router patterns, Server vs Client Components
+description: >
+  Comprehensive Next.js 16 App Router patterns, Server vs Client Components
   decision tree, route handlers, Server Actions, middleware, streaming with Suspense,
   parallel routes, intercepting routes, and advanced routing patterns.
 knowledge:

@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Multi-index RAG, query decomposition, contextual compression, and self-querying
+description: >
+  Multi-index RAG, query decomposition, contextual compression, and self-querying
   retrievers
 knowledge:
 - none

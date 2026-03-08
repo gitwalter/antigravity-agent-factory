@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: End-to-end workflow for developing RAP business objects with draft handling. Covers data model, behavior definition, ...
+version: 1.0.0
 ---
 
 # Rap With Draft
@@ -74,3 +73,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

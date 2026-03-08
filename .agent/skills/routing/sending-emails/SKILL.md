@@ -2,7 +2,8 @@
 agents:
 - none
 category: routing
-description: Send emails using the cached Google Workspace credentials.
+description: >
+  Send emails using the cached Google Workspace credentials.
 knowledge:
 - none
 name: sending-emails

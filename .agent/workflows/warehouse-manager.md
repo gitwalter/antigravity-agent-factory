@@ -1,6 +1,7 @@
 ---
 description: Shift Management & SLA Compliance Workflow
 dashboard: true
+version: 1.0.0
 ---
 
 # Operations Manager Strategic Guide
@@ -61,3 +62,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

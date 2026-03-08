@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Token streaming from LLMs, event streaming with astream_events, WebSocket
+description: >
+  Token streaming from LLMs, event streaming with astream_events, WebSocket
   agent patterns, and real-time UI updates
 knowledge:
 - none

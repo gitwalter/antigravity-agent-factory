@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-03-08
+
+### Added
+- **Restored Society Integration Guides**: Re-established `society-integration-guide.md` and `trust-tier-selection.md` with high-fidelity technical content for the Agent Society Protocol (ASP).
+- **Onboarding Restoration**: Restored `getting-started.md` and ensured valid registration in the global version registry.
+- **SDLC Usage Guide Enrichment**: Transformed `sdlc-usage-guide.md` into a comprehensive developer resource with deep architectural dives.
+- **Workflow Versioning**: Introduced mandatory `version` metadata and `Trigger Examples` to all core workflows.
+
+### Changed
+- **Workflow Structural Realignment (v2.0.0)**: Upgraded all core workflows (e.g., `feature-development.md`, `bugfix-resolution.md`) to the Standard Feature Delivery Cycle (SFDC) v2.0.0, streamlining the path from requirements to release.
+- **Documentation Consolidation**: Removed legacy/redundant guides (`extension-guide.md`, `quickstart.md`, `user-guide.md`, `troubleshooting.md`) to point users toward the single source of truth in the restored documentation suite.
+- **Mandatory Repository Synchronization**: Codified "Creation implies Synchronization" rule in `documentation-generation` and `verifying-artifact-structures` skills, requiring `sync_artifacts.py` and `sync_manifest_versions.py` execution after any change.
+- **Pre-Commit Suite Expansion**: Updated `maintenance-procedures.json` to include `sync_manifest_versions.py` in the mandatory `syncSuite`.
+- **Memory System Governance**: Mandated filesystem synchronization as a hard prerequisite for memory induction in `managing-memory-bank`.
+
+### Fixed
+- **Unsynchronized Artifacts**: Added explicit anti-patterns to `best-practices.json` to prevent architectural drift and synchronization failures (AGENT-117).
+- **Maintenance Procedural Typos**: Fixed `sycnSuite` typo in system knowledge.
+- **Link Integrity**: Normalized 1,200+ internal links across the documentation catalog.
+
 ## [1.6.0] - 2026-03-03
 
 ### Added

@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Comprehensive workflow for designing and implementing microservices architectures with .NET. This workflow covers ser...
+version: 1.0.0
 ---
 
 # Dotnet Microservices Setup
@@ -10,7 +9,7 @@ Comprehensive workflow for designing and implementing microservices architecture
 
 **Version:** 1.0.0
 **Created:** 2026-02-09
-**Agent:** dotnet-architect
+**Agent:** workflow-architect
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.
 
@@ -82,3 +81,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

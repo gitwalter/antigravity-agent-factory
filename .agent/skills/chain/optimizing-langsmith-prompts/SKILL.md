@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Prompt management with LangSmith Hub - versioning, testing, and evaluation
+description: >
+  Prompt management with LangSmith Hub - versioning, testing, and evaluation
 knowledge:
 - none
 name: optimizing-langsmith-prompts

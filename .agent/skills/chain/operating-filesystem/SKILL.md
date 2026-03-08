@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: File reading/writing tools, directory traversal, file type detection,
+description: >
+  File reading/writing tools, directory traversal, file type detection,
   and security sandboxing
 knowledge:
 - none

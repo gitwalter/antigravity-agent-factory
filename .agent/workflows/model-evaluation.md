@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: ML model evaluation workflow covering metrics selection, model comparison, and reporting. Supports classification, re...
+version: 1.0.0
 ---
 
 # Model Evaluation
@@ -56,3 +55,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Supreme command entity for strategic decomposition and multi-agent orchestration.
+version: 1.0.0
 ---
 
 # Master System Orchestration (MSO)
@@ -37,7 +36,7 @@ The MSO does not execute tactical work; it governs the **Strategy** and ensures 
 
 Analyze the user's high-level request to identify the 'Root Goal' and its primary dependencies.
 
-1.  **Lead Specialist**: `SystemArchitectSteward` (SAS)
+1.  **Lead Specialist**: `system-architecture-specialist` (SAS)
 2.  **Procedural Logic**:
     - Deconstruct the request into **Functional**, **Structural**, and **Factual** requirements.
     - Search the Knowledge Base (`.agent/knowledge/`) for existing patterns that match the objective.
@@ -55,8 +54,8 @@ Map the decomposed goals to the most qualified Specialists in the `.agent/agents
 2.  **Procedural Logic**:
     - Consult `agent-staffing.json` to resolve roles (e.g., Architect, Engineer, Guardian).
     - **Delegation Logic**:
-        - If the task requires architectural changes: Assign `SystemArchitectSteward`.
-        - If the task requires LLM app implementation: Assign `CognitiveCycleEngineer`.
+        - If the task requires architectural changes: Assign `system-architecture-specialist`.
+        - If the task requires LLM app implementation: Assign `python-ai-specialist`.
         - If the task requires structural repair: Assign `IntegrityGuardian`.
     - **Gap Detection**: If no agent matches the specialty, immediately trigger the `Agent Development` SOP.
 3.  **Output**: Updated Task List in `task.md`.
@@ -67,7 +66,7 @@ Coordinate the specialists through their respective workflows (SOPs).
 
 1.  **Lead Specialist**: Role-dependent (Project Manager mode).
 2.  **Orchestration Rules**:
-    - **Parallelism**: Execute `CognitiveCycleEngineer` and `TestConductor` tasks concurrently where possible.
+    - **Parallelism**: Execute `python-ai-specialist` and `workflow-quality-specialist` tasks concurrently where possible.
     - **Handoffs**: Use `verified-communication` for data transfer between agents.
     - **State Maintenance**: Update `task.md` after every milestone.
 3.  **Verification Gate**: Each phase must pass its specific validation suite (e.g., `pytest` for code, `link_checker` for docs).
@@ -76,7 +75,7 @@ Coordinate the specialists through their respective workflows (SOPs).
 
 Aggregate the outputs and verify the total system health.
 
-1.  **Lead Specialist**: `CodeIntegrityGuardian`
+1.  **Lead Specialist**: `workflow-quality-specialist`
 2.  **Success Criteria**:
     - 100% pass rate in relevant regression suites.
     - All new links verified via `link_checker.py --deep`.
@@ -107,3 +106,7 @@ Aggregate the outputs and verify the total system health.
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

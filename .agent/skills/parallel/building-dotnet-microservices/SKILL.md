@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Service decomposition, API Gateway with YARP, inter-service communication
+description: >
+  Service decomposition, API Gateway with YARP, inter-service communication
   (gRPC, REST, message bus), distributed caching, health checks, circuit breakers
 knowledge:
 - none

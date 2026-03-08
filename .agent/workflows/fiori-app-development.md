@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: End-to-end workflow for developing Fiori Elements applications in SAP S/4HANA. Covers CDS data modeling, service defi...
+version: 1.0.0
 ---
 
 # Fiori App Development
@@ -68,3 +67,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

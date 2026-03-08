@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Comprehensive workflow for deploying .NET applications to Azure cloud services including App Service, Container Apps,...
+version: 1.0.0
 ---
 
 # Azure Deployment
@@ -10,7 +9,7 @@ Comprehensive workflow for deploying .NET applications to Azure cloud services i
 
 **Version:** 1.0.0
 **Created:** 2026-02-09
-**Agent:** dotnet-architect
+**Agent:** workflow-architect
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.
 
@@ -76,3 +75,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

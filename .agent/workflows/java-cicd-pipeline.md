@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Comprehensive CI/CD pipeline workflow for Java/Spring Boot applications using Maven/Gradle, Testcontainers, Docker/Ji...
+version: 1.0.0
 ---
 
 # Java Cicd Pipeline
@@ -10,7 +9,7 @@ Comprehensive CI/CD pipeline workflow for Java/Spring Boot applications using Ma
 
 **Version:** 1.0.0
 **Created:** 2026-02-09
-**Agent:** spring-developer, java-architect
+**Agent:** template-generator, workflow-architect
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.
 
@@ -73,3 +72,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Approval workflows, interrupts, and feedback patterns for agents
+description: >
+  Approval workflows, interrupts, and feedback patterns for agents
 knowledge:
 - none
 name: interacting-with-human

@@ -1,6 +1,7 @@
 ---
 description: Process Optimization & Industrial Engineering Workflow
 dashboard: true
+version: 1.0.0
 ---
 
 # Industrial Analyst Optimization Guide
@@ -63,3 +64,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

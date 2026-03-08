@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Behavior-driven development with Gherkin feature files, scenario outlines,
+description: >
+  Behavior-driven development with Gherkin feature files, scenario outlines,
   and step definitions
 knowledge:
 - none

@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: "Workflow for SD-related development: pricing, billing, delivery, reports, RAP. References VBAK, VBAP, VBRK, VBRP."
+version: 1.0.0
 ---
 
 # Sd Development
@@ -45,3 +44,7 @@ Standard PABP development phases apply:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

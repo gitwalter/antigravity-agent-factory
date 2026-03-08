@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Tactical Blueprint for AI Security and Guardrails. Focuses on prompt
+description: >
+  Tactical Blueprint for AI Security and Guardrails. Focuses on prompt
   injection defense, PII detection, and content safety for agentic systems.
 knowledge:
 - none

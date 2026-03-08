@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: AI Agent Development with LangChain and LangGraph
+description: >
+  AI Agent Development with LangChain and LangGraph
 knowledge:
 - none
 name: developing-ai-agents

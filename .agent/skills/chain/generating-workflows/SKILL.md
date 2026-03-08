@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Workflow pattern generation and customization skill with mandatory schema
+description: >
+  Workflow pattern generation and customization skill with mandatory schema
   validation against schemas/workflow.schema.json
 knowledge:
 - none

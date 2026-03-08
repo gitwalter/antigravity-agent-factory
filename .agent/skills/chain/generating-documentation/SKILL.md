@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Automated documentation generation from code including docstrings, API
+description: >
+  Automated documentation generation from code including docstrings, API
   docs, and architecture diagrams
 knowledge:
 - none

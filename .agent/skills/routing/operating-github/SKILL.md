@@ -2,7 +2,8 @@
 agents:
 - none
 category: routing
-description: GitHub operations and repository management using the GitHub MCP Server
+description: >
+  GitHub operations and repository management using the GitHub MCP Server
 knowledge:
 - none
 name: operating-github

@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Analyze Factory knowledge base to identify missing, shallow, or stale
+description: >
+  Analyze Factory knowledge base to identify missing, shallow, or stale
   content
 knowledge:
 - none

@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: "Workflow for FI-related development: reports, enhancements, validations. References BKPF, BSEG, FI-CAX/VIM where rele..."
+version: 1.0.0
 ---
 
 # Fi Development
@@ -45,3 +44,7 @@ Standard PABP development phases apply:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

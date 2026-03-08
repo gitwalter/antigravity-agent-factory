@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Document chunking strategies, hybrid retrieval (semantic + keyword),
+description: >
+  Document chunking strategies, hybrid retrieval (semantic + keyword),
   reranking patterns, and citation/attribution
 knowledge:
 - none

@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Tactical Blueprint for ML Training, Deployment, and Monitoring. Focuses
+description: >
+  Tactical Blueprint for ML Training, Deployment, and Monitoring. Focuses
   on production-grade PyTorch loops, distributed training, and MLOps observability.
 knowledge:
 - none

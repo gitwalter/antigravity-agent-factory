@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Comprehensive skill for link verification, file organization, artifact
+description: >
+  Comprehensive skill for link verification, file organization, artifact
   syncing, and README automation.
 knowledge:
 - none

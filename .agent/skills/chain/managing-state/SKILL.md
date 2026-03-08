@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: LangGraph state schemas, reducers, checkpointing, and persistence
+description: >
+  LangGraph state schemas, reducers, checkpointing, and persistence
 knowledge:
 - none
 name: managing-state

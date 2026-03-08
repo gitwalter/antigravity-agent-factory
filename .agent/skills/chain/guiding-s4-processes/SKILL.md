@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Answer process and configuration questions for FI (incl. FI-CAX, VIM),
+description: >
+  Answer process and configuration questions for FI (incl. FI-CAX, VIM),
   SD, MM, EWM, LE, CO, WM, AIF, and logistics chain. Supports ABAP development patterns.
   Output EN or DE.
 knowledge:

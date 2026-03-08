@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: .cursorrules file generation skill
+description: >
+  .cursorrules file generation skill
 knowledge:
 - none
 name: generating-cursorrules

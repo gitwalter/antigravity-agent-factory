@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Build an AI agent with LangChain
+version: 1.0.0
 ---
 
 # Building AI Agents with LangChain
@@ -170,3 +169,7 @@ Options for deployment:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

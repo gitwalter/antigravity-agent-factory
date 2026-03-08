@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Systematic workflow for responding to production incidents. Covers detection, triage, mitigation, resolution, and pos...
+version: 1.0.0
 ---
 
 # Incident Response
@@ -62,3 +61,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

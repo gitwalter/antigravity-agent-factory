@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Unit testing with mocks, integration testing, LangSmith evaluation, benchmarking
+description: >
+  Unit testing with mocks, integration testing, LangSmith evaluation, benchmarking
 knowledge:
 - none
 name: testing-agents

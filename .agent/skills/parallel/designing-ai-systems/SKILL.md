@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Architecture patterns, technology selection, scalability planning, and
+description: >
+  Architecture patterns, technology selection, scalability planning, and
   vector DB selection for AI applications
 knowledge:
 - none

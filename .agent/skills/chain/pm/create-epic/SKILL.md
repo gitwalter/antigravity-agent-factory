@@ -2,7 +2,8 @@
 agents:
 - none
 category: general
-description: Create epic with child story structure
+description: >
+  Create epic with child story structure
 knowledge:
 - workflow-patterns.json
 - best-practices.json

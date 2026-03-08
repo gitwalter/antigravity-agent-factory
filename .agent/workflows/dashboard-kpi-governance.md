@@ -1,6 +1,7 @@
 ---
 description: KPI Definition & Governance Process
 dashboard: true
+version: 1.0.0
 ---
 
 # KPI Governance Workflow
@@ -35,3 +36,7 @@ Systematic routine for introducing, auditing, and publishing new KPIs.
 ### 4. Stakeholder Sign-off
 - Verify alignment with the **Warehouse Analyst** and **Operations Manager** personas.
 - Move from "Experimental" to "Standard".
+
+
+## Trigger Examples
+- "Execute this workflow."

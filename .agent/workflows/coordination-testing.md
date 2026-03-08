@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: Multi-agent coordination testing and validation workflow. Covers handoff verification, conflict resolution, result ag...
+version: 1.0.0
 ---
 
 # Coordination Testing
@@ -56,3 +55,7 @@ This workflow is activated when:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

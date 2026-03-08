@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: NeMo Guardrails setup, Guardrails AI integration, prompt injection prevention,
+description: >
+  NeMo Guardrails setup, Guardrails AI integration, prompt injection prevention,
   PII detection, content safety, topic control
 knowledge:
 - none

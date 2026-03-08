@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Extend Factory knowledge, skills, and templates via research, documents,
+description: >
+  Extend Factory knowledge, skills, and templates via research, documents,
   or user links
 knowledge:
 - none

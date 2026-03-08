@@ -1,7 +1,6 @@
 ---
-## Overview
-
 description: "Workflow for Logistics Execution: shipping, transportation, delivery processing. References LIKP, LIPS; links to SD/M..."
+version: 1.0.0
 ---
 
 # Le Development
@@ -44,3 +43,7 @@ Standard PABP development phases apply:
 
 User: Run the workflow
 Agent: Initiating workflow steps...
+
+
+## Trigger Examples
+- "Execute this workflow."

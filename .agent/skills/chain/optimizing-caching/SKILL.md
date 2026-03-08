@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: LLM response caching, semantic caching, memoization, cache invalidation
+description: >
+  LLM response caching, semantic caching, memoization, cache invalidation
 knowledge:
 - none
 name: optimizing-caching

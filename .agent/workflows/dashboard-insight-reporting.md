@@ -1,6 +1,7 @@
 ---
 description: Automated Insight Reporting Workflow
 dashboard: true
+version: 1.0.0
 ---
 
 # Insight Reporting Workflow
@@ -35,3 +36,7 @@ Standardized process for generating and distributing analytical reports.
 ### 4. Distribution
 - Post to the **Knowledge Bridge**.
 - Archive the report JSON for historical comparison.
+
+
+## Trigger Examples
+- "Execute this workflow."

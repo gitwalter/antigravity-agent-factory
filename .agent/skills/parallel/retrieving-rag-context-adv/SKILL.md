@@ -2,7 +2,8 @@
 agents:
 - none
 category: parallel
-description: Patterns for using FAISS MCP tools to ingest documents and perform semantic
+description: >
+  Patterns for using FAISS MCP tools to ingest documents and perform semantic
   retrieval.
 knowledge:
 - none

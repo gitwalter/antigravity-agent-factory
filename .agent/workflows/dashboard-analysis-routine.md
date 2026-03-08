@@ -1,6 +1,7 @@
 ---
 description: Standard Statistical Analysis Routine for Dashboard users.
 dashboard: true
+version: 1.0.0
 ---
 
 # Statistical Analysis Routine
@@ -37,3 +38,7 @@ Follow this routine to professionally analyze a dataset using the dashboard's to
 
 ### 5. AI Commentary
 - Use the **🤖 AI Workspace** to generate a final executive summary.
+
+
+## Trigger Examples
+- "Execute this workflow."

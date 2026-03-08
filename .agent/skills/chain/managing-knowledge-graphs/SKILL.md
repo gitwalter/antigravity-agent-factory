@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: Graph RAG patterns, entity extraction with LLMs, relationship mapping,
+description: >
+  Graph RAG patterns, entity extraction with LLMs, relationship mapping,
   and Neo4j integration
 knowledge:
 - none

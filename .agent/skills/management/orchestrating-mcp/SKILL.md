@@ -4,7 +4,8 @@ agents:
 - ai-app-developer
 - master-system-orchestrator
 category: management
-description: Master skill for orchestrating and utilizing the full MCP ecosystem (Tavily,
+description: >
+  Master skill for orchestrating and utilizing the full MCP ecosystem (Tavily,
   RAG, Memory, Sequential Thinking)
 knowledge:
 - none

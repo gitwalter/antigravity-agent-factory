@@ -2,7 +2,8 @@
 agents:
 - none
 category: chain
-description: BTP Cloud Foundry deployment (cf push, MTA), service bindings (XSUAA,
+description: >
+  BTP Cloud Foundry deployment (cf push, MTA), service bindings (XSUAA,
   destination, connectivity), Kyma runtime deployment, SAP Build Work Zone integration
 knowledge:
 - none
