@@ -176,47 +176,56 @@ def run_tests():
         "no:sugar",
     ]
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        # Parse output for totals
-        # Example output: "31 passed, 2 skipped in 1.45s"
-        summary_line = ""
-        for line in reversed(result.stdout.splitlines()):
-            if " passed" in line or " failed" in line:
-                summary_line = line
-                break
+        # Use stderr=subprocess.STDOUT to interleave everything into stdout
+        result = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            check=False,
+        )
 
+        # Summary parsing
         passed = 0
         total = 0
-        if summary_line:
-            # Simple parsing logic
-            pass_match = re.search(r"(\d+) passed", summary_line)
-            fail_match = re.search(r"(\d+) failed", summary_line)
-            if pass_match:
-                passed = int(pass_match.group(1))
-            if fail_match:
-                failed = int(fail_match.group(1))
-                total = passed + failed
-            else:
-                total = passed  # All passed
+        summary_line = ""
+
+        # Search for the standard pytest summary line
+        # e.g., "======= 1 failed, 1232 passed, 1 skipped, 1 warning in 32.02s ========"
+        for line in reversed(result.stdout.splitlines()):
+            if " passed" in line and (
+                " in " in line or " failed" in line or " error" in line
+            ):
+                summary_line = line
+
+                import re
+
+                p_match = re.search(r"(\d+) passed", line)
+                f_match = re.search(r"(\d+) failed", line)
+                e_match = re.search(r"(\d+) error", line)
+                s_match = re.search(r"(\d+) skipped", line)
+
+                passed = int(p_match.group(1)) if p_match else 0
+                f = int(f_match.group(1)) if f_match else 0
+                e = int(e_match.group(1)) if e_match else 0
+                s = int(s_match.group(1)) if s_match else 0
+
+                total = passed + f + e + s
+                break
 
         if result.returncode != 0:
             print(f"Pytest failed with exit code {result.returncode}", flush=True)
-            if result.stdout:
-                print(
-                    f"--- PYTEST STDOUT ---\n{result.stdout}\n--- END STDOUT ---",
-                    flush=True,
-                )
-            if result.stderr:
-                print(
-                    f"--- PYTEST STDERR ---\n{result.stderr}\n--- END STDERR ---",
-                    flush=True,
-                )
+            print("--- PYTEST CONSOLE OUTPUT ---", flush=True)
+            print(result.stdout, flush=True)
+            print("--- END PYTEST OUTPUT ---", flush=True)
 
         return {
             "passed": passed,
             "total": total,
             "success": result.returncode == 0,
-            "output": summary_line or "No summary found",
+            "output": summary_line
+            if summary_line
+            else f"Pytest failed with code {result.returncode}",
         }
     except Exception as e:
         print(f"Critical error executing pytest: {e}")
