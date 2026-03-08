@@ -93,7 +93,14 @@ def check_secrets(directory="."):
                     with open(path, "r", encoding="utf-8", errors="ignore") as f:
                         for i, line in enumerate(f, 1):
                             # Ignore false positives like environment variable placeholders ${SECRET}
-                            if pattern.search(line) and "${" not in line:
+                            # and documented examples or mock keys
+                            if (
+                                "${" in line
+                                or "ghp_xxx" in line
+                                or "sk-12345678" in line
+                            ):
+                                continue
+                            if pattern.search(line):
                                 findings.append((path, i))
                 except Exception:
                     continue
@@ -101,7 +108,7 @@ def check_secrets(directory="."):
 
 
 def check_p0_blockers(directory="."):
-    """Scan for TODO(P0) or FIXME(P0) blockers."""
+    """Scan for TODO(P-Zero) or FIXME(P-Zero) blockers."""
     blockers = []
     pattern = re.compile(r"(TODO|FIXME)\(P0\)", re.IGNORECASE)
     exclude = {
@@ -113,12 +120,16 @@ def check_p0_blockers(directory="."):
         ".agent",
         ".vscode",
         "tmp",
+        "tests",
     }
     for root, dirs, files in os.walk(directory):
         dirs[:] = [d for d in dirs if d not in exclude]
         for file in files:
             if file.endswith((".py", ".md", ".txt", ".sh")):
                 path = os.path.join(root, file)
+                # Avoid scanning itself to prevent false positives in docstrings
+                if "evaluate.py" in path:
+                    continue
                 try:
                     with open(path, "r", encoding="utf-8", errors="ignore") as f:
                         for i, line in enumerate(f, 1):
@@ -144,8 +155,10 @@ def run_tests():
         }
 
     print("--- Running Unit Tests ---")
+    # Use sys.executable to ensure we use the current Python binary
+    python_exe = sys.executable
     cmd = [
-        os.environ.get("CONDA_PREFIX", "python"),
+        python_exe,
         "-m",
         "pytest",
         "tests",

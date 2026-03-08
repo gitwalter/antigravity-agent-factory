@@ -501,7 +501,7 @@ class TestValidate:
             is_valid, messages = validator.validate()
 
             # Agents should match correctly (actual 2 vs README 2)
-            assert any("✅ 'agents': 2 (matches README.md)" in m for m in messages)
+            assert any("OK: 'agents': 2 (matches README.md)" in m for m in messages)
 
     def test_validate_threshold_passing(self):
         """Test validation with threshold counts that pass."""
@@ -532,7 +532,7 @@ class TestValidate:
 
             # Knowledge should not be in discrepancies (55 >= 50)
             assert any(
-                "✅ 'knowledge': 55 (matches README.md threshold 50+)" in m
+                "OK: 'knowledge': 55 (matches README.md threshold 50+)" in m
                 for m in messages
             )
 
@@ -644,7 +644,7 @@ class TestMain:
                 result = main()
 
                 captured = capsys.readouterr()
-                assert "[OK]" in captured.out or "[FAIL]" in captured.out
+                assert "OK:" in captured.out or "FAIL:" in captured.out
 
     def test_main_generate_mode(self, capsys):
         """Test main with --generate."""
@@ -719,4 +719,4 @@ class TestMain:
                 result = main()
 
                 captured = capsys.readouterr()
-                assert "[OK]" in captured.out or "[FAIL]" in captured.out
+                assert "OK:" in captured.out or "FAIL:" in captured.out

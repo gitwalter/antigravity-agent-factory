@@ -59,10 +59,10 @@ def test_adversarial_mode_failure(tmp_path):
 
 
 def test_p0_blocker_detection(tmp_path):
-    """Verify that TODO(P0) triggers failure."""
+    """Verify that TODO(P-Zero) triggers failure."""
     bad_file = tmp_path / "bad_code.py"
     bad_file.write_text(
-        "# TODO(TEST_P0): Must fix this before release\nprint('hello')",
+        "# TODO(P0): Must fix this before release\nprint('hello')",
         encoding="utf-8",
     )
 

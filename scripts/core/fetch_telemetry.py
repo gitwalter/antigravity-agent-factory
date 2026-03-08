@@ -1,7 +1,7 @@
 import os
 import json
 import argparse
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -17,7 +17,7 @@ def fetch_telemetry(agent_id=None, limit=10):
         "trace_id": "tr-550e8400-e29b-41d4-a716-446655440000",
         "agent_id": agent_id or "generic-agent",
         "version": "1.0.0",
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(timezone.utc).isoformat() + "Z",
         "input": {"question": "What is the capital of France?"},
         "output": {"answer": "Paris"},
         "latency_ms": 150,
