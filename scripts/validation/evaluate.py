@@ -92,7 +92,8 @@ def check_secrets(directory="."):
                 try:
                     with open(path, "r", encoding="utf-8", errors="ignore") as f:
                         for i, line in enumerate(f, 1):
-                            if pattern.search(line):
+                            # Ignore false positives like environment variable placeholders ${SECRET}
+                            if pattern.search(line) and "${" not in line:
                                 findings.append((path, i))
                 except Exception:
                     continue

@@ -95,7 +95,7 @@ All project management operations use the `mcp_plane_*` tools. Below is a quick-
 
 ### Operational Skill
 
-For the full end-to-end workflow (pre-flight checklist, mandatory module/cycle association, label governance), see the [`managing-plane-tasks`](file:///d:/Users/wpoga/Documents/Python%20Scripts/antigravity-agent-factory/.agent/skills/routing/managing-plane-tasks/SKILL.md) skill.
+For the full end-to-end workflow (pre-flight checklist, mandatory module/cycle association, label governance), see the [managing-plane-tasks](../../.agent/skills/routing/managing-plane-tasks/SKILL.md) skill.
 
 ---
 

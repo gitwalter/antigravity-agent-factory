@@ -55,4 +55,4 @@ graph TD
 ```
 
 ## 3. High-Fidelity Infographic
-![SDLC Flow Infographic](file:///C:/Users/wpoga/.gemini/antigravity/brain/d3a966a4-a758-4c70-9673-7b765ee9f216/sdlc_flow_chart_1772794688817.png)
+![SDLC Flow Infographic](assets/sdlc_flow_chart.png)

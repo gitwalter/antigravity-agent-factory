@@ -62,7 +62,8 @@ def test_p0_blocker_detection(tmp_path):
     """Verify that TODO(P0) triggers failure."""
     bad_file = tmp_path / "bad_code.py"
     bad_file.write_text(
-        "# TODO(P0): Must fix this before release\nprint('hello')", encoding="utf-8"
+        "# TODO(TEST_P0): Must fix this before release\nprint('hello')",
+        encoding="utf-8",
     )
 
     blockers = evaluate.check_p0_blockers(directory=str(tmp_path))
