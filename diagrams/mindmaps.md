@@ -502,7 +502,7 @@ mindmap
       Resolve_With_Love
 ```
 
-**Related Documentation**: [.cursor/agents/integrity-guardian.md](../.agent/agents/integrity-guardian.md), [diagrams/guardian-state-machine.md](guardian-state-machine.md)
+**Related Documentation**: [.cursor/agents/chain/system-architecture-specialist.md](../.agent/agents/chain/system-architecture-specialist.md), [diagrams/guardian-state-machine.md](guardian-state-machine.md)
 
 ---
 

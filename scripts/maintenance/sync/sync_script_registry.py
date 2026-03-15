@@ -35,18 +35,14 @@ KNOWN_SCRIPTS = {
     "safe_commit.py": "Safe_Commit_Wrapper",
 }
 
-CONDA_PREFIX = r"D:\Anaconda\envs\cursor-factory"
+# CONDA_PREFIX removed to allow for environment-aware execution via sys.executable
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 
 
 def get_help_output(script_path: str) -> str:
     """Run a script with --help and capture the output."""
     cmd = [
-        "conda",
-        "run",
-        "-p",
-        CONDA_PREFIX,
-        "python",
+        sys.executable,
         script_path,
         "--help",
     ]

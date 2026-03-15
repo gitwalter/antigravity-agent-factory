@@ -672,7 +672,7 @@ If time permits and the team is interested, share this reflection on recognizing
 
 This is entirely optional content. Use it if the team seems receptive to reflection on meaning and purpose in their work.
 
-Reference: See [External Resources](../../../docs/reference/external-resources.md) for the full story.
+Reference: See [External Resources](../../../../docs/reference/external-resources.md) for the full story.
 
 
 

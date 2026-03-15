@@ -727,7 +727,40 @@ class DependencyValidator:
             Dictionary representation of the graph
         """
         return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "id": "artifact-dependency-map",
+            "title": "Artifact Dependency Map",
+            "description": "Auto-generated map of artifact dependencies within the Factory. Essential for impact analysis and lifecycle management.",
             "version": "1.0.0",
+            "category": "core",
+            "axiomAlignment": {
+                "A1_verifiability": "Maintains a verifiable map of all project dependencies.",
+                "A2_user_primacy": "Enables users to understand the impact of changes.",
+                "A3_transparency": "Provides clear visibility into systemic interconnections.",
+                "A4_non_harm": "Prevents accidental breakage by highlighting dependencies.",
+                "A5_consistency": "Enforces a consistent model across all artifact types.",
+            },
+            "patterns": {
+                "impact-analysis": {
+                    "description": "Identifying downstream artifacts affected by a change.",
+                    "use_when": "Before refactoring or deleting an artifact.",
+                    "code_example": "python scripts/validation/dependency_validator.py --impact knowledge:auth-patterns",
+                    "best_practices": [
+                        "Always check impact before force-deleting artifacts.",
+                        "Update the map using --export after major structural changes.",
+                    ],
+                }
+            },
+            "best_practices": [
+                "Maintain 100% link integrity across all tracked nodes.",
+                "Use the map to prioritize testing of highly-dependent nodes.",
+            ],
+            "anti_patterns": [
+                "Ignoring circular dependency warnings.",
+                "Manual editing of the auto-generated dependency map.",
+            ],
+            "related_skills": ["system-audit"],
+            "related_knowledge": ["knowledge-management-patterns.json"],
             "nodes": {
                 node_id: {
                     "type": node.node_type.value,

@@ -71,9 +71,9 @@ Build production Spring Boot applications using REST controllers, service layer 
 
 | Resource | Purpose |
 |----------|---------|
-| [QUICKSTART.md](../../../docs/QUICKSTART.md) | 5-minute guide: Spring Initializr, controller, run, test |
-| [scripts/scaffold.py](scripts/scaffold.py) | Scaffold Maven project structure |
-| [scripts/verify.py](scripts/verify.py) | Verify project follows skill patterns |
+| [Installation Guide](../../../docs/setup/installation.md) | 5-minute guide: Setup and run |
+| [scripts/utils.py](scripts/utils.py) | Project utilities |
+| [scripts/validate.py](scripts/validate.py) | Verify project follows skill patterns |
 | [examples/rest_api/](examples/rest_api/) | REST API example and run instructions |
 
 ## When to Use

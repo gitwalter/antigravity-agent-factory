@@ -49,11 +49,11 @@ platforms (Cursor, CrewAI, LangChain, Antigravity).
 | Target uses different directory conventions | no | **YES** |
 
 **Rule of thumb:**
-- If the recipient also uses Cursor -> use the `build-raw-bundle` skill
+- If the recipient also uses Cursor -> use the `building-raw-bundles` skill
 - If the recipient uses a different platform -> use this skill (PABP)
 - If unsure -> use raw (simpler, lossless, and Cursor users can always import it)
 
-> For raw Cursor bundles, see the [build-raw-bundle](../build-raw-bundle/SKILL.md) skill.
+> For raw Cursor bundles, see the [building-raw-bundles](../building-raw-bundles/SKILL.md) skill.
 
 ## When to Use This Skill (PABP)
 
@@ -390,7 +390,7 @@ The zip file structure is incorrect. Ensure manifest.json is at the root.
 
 ## References
 
-- [PABP Module](../../../lib/society/pabp/)
+- [PABP Module](../../../../lib/society/pabp/)
 - **ASP Value Proposition**
 - **Bundle Format Specification**
 

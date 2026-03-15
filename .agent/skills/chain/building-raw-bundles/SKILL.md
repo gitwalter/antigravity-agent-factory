@@ -36,8 +36,8 @@ conversion loss -- ideal for Cursor-to-Cursor project transfers.
 
 ## When NOT to Use This Skill
 
-- Targeting non-Cursor platforms (CrewAI, LangChain, Antigravity) -- use `export-agent-bundle` (PABP) instead
-- Exporting a single agent with selective components -- use `export-agent-bundle` (PABP) instead
+- Targeting non-Cursor platforms (CrewAI, LangChain, Antigravity) -- use `exporting-agent-bundles` (PABP) instead
+- Exporting a single agent with selective components -- use `exporting-agent-bundles` (PABP) instead
 - Need reputation/signature portability across trust boundaries -- use PABP instead
 
 ## Choosing Raw vs PABP
@@ -162,7 +162,7 @@ scripts/**/*.py                 # Automation scripts
 ## References
 
 - **Bundle Catalog** -- lists all available bundles
-- [export-agent-bundle](../export-agent-bundle/SKILL.md) -- PABP export for cross-platform
+- [exporting-agent-bundles](../exporting-agent-bundles/SKILL.md) -- PABP export for cross-platform
 - **Component Registry** -- domain mappings
 - **Scope Agreement** -- profile definitions
 

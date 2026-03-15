@@ -515,4 +515,4 @@ Use in templates:
 - [Jinja Documentation](https://jinja.palletsprojects.com/) - Official Jinja docs
 - [factory-components.md](factory-components.md) - How templates integrate with generation
 - [blueprints.md](blueprints.md) - Blueprint configuration reference
-- [extension-guide.md](../guides/extension-guide.md) - Adding new stacks and templates
+- [sdlc-usage-guide.md](../guides/sdlc-usage-guide.md) - Adding new stacks and templates

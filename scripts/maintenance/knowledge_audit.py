@@ -9,6 +9,7 @@ import os
 import subprocess
 import json
 import re
+import sys
 from pathlib import Path
 from datetime import datetime
 
@@ -20,7 +21,7 @@ KNOWLEDGE_DIR = AGENT_DIR / "knowledge"
 SKILLS_DIR = AGENT_DIR / "skills"
 REPORT_PATH = REPO_ROOT / "docs" / "audits" / "KNOWLEDGE_HEALTH.md"
 
-PYTHON_CMD = [r"d:\Anaconda\envs\cursor-factory\python.exe"]
+PYTHON_CMD = [sys.executable]
 
 
 def run_command(cmd, capture_output=True):

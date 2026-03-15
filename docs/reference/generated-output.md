@@ -871,4 +871,4 @@ You can always upgrade from Quick Start to Standard or Comprehensive later by re
 
 ---
 
-*This document describes the generated output structure. For information on extending the factory or creating custom blueprints, see [extension-guide.md](../guides/extension-guide.md).*
+*This document describes the generated output structure. For information on extending the factory or creating custom blueprints, see [sdlc-usage-guide.md](../guides/sdlc-usage-guide.md).*

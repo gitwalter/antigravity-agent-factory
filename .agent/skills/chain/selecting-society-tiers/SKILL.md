@@ -227,9 +227,9 @@ society = (SocietyBuilder("FinanceProject")
 
 ## References
 
-- [Trust Tier Decision Matrix](../../knowledge/trust-tier-decision-matrix.json)
+- [Trust Tier Decision Matrix](../../../knowledge/trust-tier-decision-matrix.json)
 - **ASP Value Proposition**
-- [Verified Communication Skill](../verified-communication/SKILL.md)
+- [Verified Communication Skill](../verifying-communications/SKILL.md)
 
 ## When to Use
 This skill should be used when strict adherence to the defined process is required.

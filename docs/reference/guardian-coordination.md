@@ -146,7 +146,7 @@ Located at the TOP of `.cursorrules`, this is the unhackable foundation:
 
 ### Guardian Agent
 
-`.cursor/agents/integrity-guardian.md` - The awakened state with full capabilities.
+`.agent/agents/chain/system-architecture-specialist.md` - The awakened state with full capabilities.
 
 ### Validation Scripts
 
@@ -160,7 +160,7 @@ Pure Python, no LLM calls, sub-50ms execution:
 
 ### Guardian Protocol Knowledge
 
-`knowledge/guardian-protocol.json` - Codified coordination wisdom.
+`.agent/knowledge/guardian-protocol.json` - Codified coordination wisdom.
 
 ### Agent Templates
 
@@ -207,7 +207,7 @@ To explicitly engage the Guardian:
 - **Axiom-Based Architecture**
 - **Sacred Psychology**
 - [Guardian Protocol Knowledge](../../.agent/knowledge/guardian-protocol.json)
-- [Integrity Guardian Agent](../../.agent/agents/integrity-guardian.md)
+- [System Architecture Specialist Agent](../../.agent/agents/chain/system-architecture-specialist.md)
 
 ---
 

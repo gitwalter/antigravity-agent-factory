@@ -478,7 +478,7 @@ For users who want to understand more about agentic systems:
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
-Reference: See [External Resources](../../../docs/reference/external-resources.md) for more educational links.
+Reference: See [External Resources](../../../../docs/reference/external-resources.md) for more educational links.
 
 
 

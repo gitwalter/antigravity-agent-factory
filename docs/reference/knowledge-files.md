@@ -1,11 +1,11 @@
-﻿# Knowledge Files Catalog
+# Knowledge Files Catalog
 
 The factory currently includes **281 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
 
 | File | Type | Description |
 |------|------|-------------|
-| [patterns.json](../../.agent/knowledge/patterns.json) | Index | Core patterns for agents and skills |
-| [axioms.md](../../.agent/knowledge/axioms.md) | Ethics | Core Antigravity axioms |
+| [patterns.json](../../.agent/knowledge/pattern-catalog.json) | Index | Core patterns for agents and skills |
+| [axioms.md](../../.agent/knowledge/axiom-zero-love-truth-beauty.json) | Ethics | Core Antigravity axioms |
 
 
 <!-- The count above is automatically updated by scripts/validation/sync_knowledge_counts.py -->

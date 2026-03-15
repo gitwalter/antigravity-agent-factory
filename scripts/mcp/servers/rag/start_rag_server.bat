@@ -6,10 +6,10 @@ echo Starting Antigravity RAG MCP Server...
 echo URL: http://localhost:8000/sse
 echo.
 
-call D:\Anaconda\Scripts\activate.bat D:\Anaconda\envs\cursor-factory
-set PYTHONPATH=D:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory
+call scripts\maintenance\detect_env.bat
+set PYTHONPATH=%CD%
 set MCP_TRANSPORT=sse
 
-"D:\Anaconda\envs\cursor-factory\python.exe" "D:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\scripts\mcp\servers\rag\rag_mcp_server.py"
+python scripts\mcp\servers\rag\rag_mcp_server.py
 
 pause

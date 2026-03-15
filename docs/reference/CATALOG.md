@@ -458,8 +458,8 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | agent-coordination-patterns | [`.agent/knowledge/agent-coordination-patterns.json`](../../.agent/knowledge/agent-coordination-patterns.json) |
 | agent-coordination | [`.agent/knowledge/agent-coordination.json`](../../.agent/knowledge/agent-coordination.json) |
 | agent-handoff-patterns | [`.agent/knowledge/agent-handoff-patterns.json`](../../.agent/knowledge/agent-handoff-patterns.json) |
-| agent-memory-patterns-2026 | [`.agent/knowledge/agent-memory-patterns-2026.json`](../../.agent/knowledge/agent-memory-patterns-2026.json) |
-| agent-memory-patterns | [`.agent/knowledge/agent-memory-patterns.json`](../../.agent/knowledge/agent-memory-patterns.json) |
+| agent-testing-patterns | [`.agent/knowledge/agent-testing-patterns.json`](../../.agent/knowledge/agent-testing-patterns.json) |
+| agent-memory-patterns | [`.agent/knowledge/memory-patterns.json`](../../.agent/knowledge/memory-patterns.json) |
 | agent-society-protocol | [`.agent/knowledge/agent-society-protocol.json`](../../.agent/knowledge/agent-society-protocol.json) |
 | agent-society-verification | [`.agent/knowledge/agent-society-verification.json`](../../.agent/knowledge/agent-society-verification.json) |
 | agent-staffing | [`.agent/knowledge/agent-staffing.json`](../../.agent/knowledge/agent-staffing.json) |
@@ -598,7 +598,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | memory-config | [`.agent/knowledge/memory-config.json`](../../.agent/knowledge/memory-config.json) |
 | memory-patterns | [`.agent/knowledge/memory-patterns.json`](../../.agent/knowledge/memory-patterns.json) |
 | memory-system-configuration | [`.agent/knowledge/memory-system-configuration.json`](../../.agent/knowledge/memory-system-configuration.json) |
-| memory-systems-patterns | [`.agent/knowledge/memory-systems-patterns.json`](../../.agent/knowledge/memory-systems-patterns.json) |
+| memory-patterns | [`.agent/knowledge/memory-patterns.json`](../../.agent/knowledge/memory-patterns.json) |
 | microsoft-autogen-patterns | [`.agent/knowledge/microsoft-autogen-patterns.json`](../../.agent/knowledge/microsoft-autogen-patterns.json) |
 | ml-agent-frameworks | [`.agent/knowledge/ml-agent-frameworks.json`](../../.agent/knowledge/ml-agent-frameworks.json) |
 | ml-workflow-patterns | [`.agent/knowledge/ml-workflow-patterns.json`](../../.agent/knowledge/ml-workflow-patterns.json) |
