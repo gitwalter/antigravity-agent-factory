@@ -245,13 +245,12 @@ class DependencyValidator:
 
             frontmatter = self._parse_frontmatter(skill_file)
 
-            # Use frontmatter name if available, otherwise use directory name
-            if frontmatter:
-                skill_name = frontmatter.get("name", skill_dir.name)
-            else:
-                skill_name = skill_dir.name
+            # Use directory name for fallback, but preferred is path-based ID
+            # to accommodate nested categories (e.g. verification/data-validation)
+            rel_path = skill_dir.relative_to(skills_dir)
+            skill_id_path = str(rel_path).replace("\\", "/")
 
-            node_id = f"skill:{skill_name}"
+            node_id = f"skill:{skill_id_path}"
 
             # Skip if already registered (avoid duplicates)
             if node_id in self.nodes:

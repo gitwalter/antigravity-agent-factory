@@ -4,8 +4,8 @@ description: Designs and enforces workflows, quality gates, testing strategies, 
 type: agent
 domain: quality
 skills:
-  - verifying-artifact-structures
-  - committing-releases
+  - verification/verifying-artifact-structures
+  - management/committing-releases
 model: inherit
 is_background: false
 readonly: false

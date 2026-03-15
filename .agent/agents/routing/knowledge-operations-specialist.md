@@ -4,9 +4,9 @@ description: Maintains the Factory's cognitive landscape — knowledge structure
 type: agent
 domain: knowledge
 skills:
-  - knowledge-creator
-  - verifying-artifact-structures
-  - operating-github
+  - parallel/knowledge-creator
+  - verification/verifying-artifact-structures
+  - routing/operating-github
 model: inherit
 is_background: false
 readonly: true

@@ -4,9 +4,9 @@ description: Engineers type-safe, performant Next.js/React web applications cove
 type: agent
 domain: web
 skills:
-  - developing-nextjs
-  - applying-react-patterns
-  - using-prisma-database
+  - parallel/developing-nextjs
+  - parallel/applying-react-patterns
+  - parallel/using-prisma-database
 model: inherit
 is_background: false
 readonly: false

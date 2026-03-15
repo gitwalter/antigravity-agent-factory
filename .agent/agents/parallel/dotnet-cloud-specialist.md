@@ -4,8 +4,8 @@ description: Engineers enterprise .NET ecosystems, Azure cloud-native architectu
 type: agent
 domain: dotnet
 skills:
-  - applying-ef-core-patterns
-  - developing-blazor-apps
+  - parallel/applying-ef-core-patterns
+  - parallel/developing-blazor-apps
 model: inherit
 is_background: false
 readonly: false

@@ -41,6 +41,7 @@ class TestKnowledgeFileStructure:
             "project-info.json",
             "memory-config.json",
             "version-registry.json",
+            "artifact-dependency-map.json",
         ]
         return [
             f
@@ -280,6 +281,7 @@ class TestKnowledgePatternsStructure:
             "project-info.json",
             "memory-config.json",
             "version-registry.json",
+            "artifact-dependency-map.json",
         ]
         return [
             f

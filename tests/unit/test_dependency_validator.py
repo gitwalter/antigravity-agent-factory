@@ -538,7 +538,7 @@ Content here.
         validator._scan_skills()
 
         assert len(validator.nodes) == 1
-        assert "skill:test-skill" in validator.nodes
+        assert "skill:pm/test-skill" in validator.nodes
 
     def test_scan_skills_duplicate_prevention(self, tmp_path):
         """Test that duplicate skills are not registered."""
@@ -553,8 +553,10 @@ Content here.
         validator = DependencyValidator(tmp_path)
         validator._scan_skills()
 
-        # Should only register once
-        assert len(validator.nodes) == 1
+        # Should register both because they have different paths
+        assert len(validator.nodes) == 2
+        assert "skill:skill-name" in validator.nodes
+        assert "skill:another/skill-name" in validator.nodes
 
 
 class TestDependencyValidatorScanAgents:

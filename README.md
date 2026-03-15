@@ -117,7 +117,7 @@ The framework's power lies in the interaction between its core components.
 #### Current Implementation Stats
 This reference implementation currently includes a comprehensive set of verified components:
 - **Agents**: 10 active agents in `.agent/agents` (13 agents)
-- **Skills**: 211 specialized skills in `.agent/skills` (213 skills)
+- **Skills**: 211 specialized skills in `.agent/skills` (216 skills)
 - **Blueprints**: 34 project blueprints in `.agent/blueprints` (34 blueprints)
 - **Knowledge**: 278 JSON knowledge files in `.agent/knowledge` (282 files)
 - **Patterns**: 113 architectural patterns in `.agent/patterns` (116 patterns)

@@ -4,8 +4,8 @@ description: Enforces structural clarity, modular design, and schema-first archi
 type: agent
 domain: architecture
 skills:
-  - designing-ai-systems
-  - designing-apis
+  - parallel/designing-ai-systems
+  - parallel/designing-apis
 model: inherit
 is_background: false
 readonly: false

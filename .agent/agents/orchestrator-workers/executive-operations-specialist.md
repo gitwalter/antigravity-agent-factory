@@ -4,10 +4,10 @@ description: Manages digital life operations — email, calendar, Drive, and exe
 type: agent
 domain: operations
 skills:
-  - managing-google-workspace
-  - managing-google-calendar
-  - managing-google-drive
-  - sending-emails
+  - routing/managing-google-workspace
+  - routing/managing-google-calendar
+  - routing/managing-google-drive
+  - routing/sending-emails
 model: inherit
 is_background: false
 readonly: false

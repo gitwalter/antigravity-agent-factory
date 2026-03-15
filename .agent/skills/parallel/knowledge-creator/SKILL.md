@@ -37,11 +37,11 @@ The **Knowledge Creator** skill manages the generation and validation of structu
 ## Standard Structure
 
 Knowledge files are JSON objects that follow `schemas/knowledge-file.schema.json`. They typically include:
-- `title`: Name of the knowledge set.
 - `description`: Purpose.
 - `version`: Semver versioning.
 - `category`: Classification.
 - `content`: The actual structured data (e.g., lists of tools, patterns, or facts).
+- **Validation**: Every knowledge file MUST pass `tests/knowledge/test_system_structure.py`.
 
 ## Process
 

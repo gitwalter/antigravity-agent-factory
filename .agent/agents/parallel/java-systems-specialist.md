@@ -4,10 +4,10 @@ description: Engineers production-grade Java ecosystems, Spring Boot architectur
 type: agent
 domain: java
 skills:
-  - developing-spring-boot
-  - building-spring-microservices
-  - observing-spring-apps
-  - testing-spring-apps
+  - parallel/developing-spring-boot
+  - parallel/building-spring-microservices
+  - parallel/observing-spring-apps
+  - parallel/testing-spring-apps
 model: inherit
 is_background: false
 readonly: false

@@ -14,15 +14,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Proactive Maintenance (PAM) (AGENT-121)**: Automated knowledge debt detection and link-integrity monitoring.
 - **SDLC Usage Guides (AGENT-115)**: Documented 20+ specialized workflows and usage patterns.
 - **Context Hub Integration (AGENT-113/112)**: Live API documentation synchronization via `chub`.
+- **New Verification Skills**: Introduced `data-validation`, `mobile-native-build`, and `smart-contract-audit` skills to the verification layer.
+- **Improved Test Organization**: Reorganized and formalized test structure into `tests/integration` and `tests/unit` subdirectories.
 
 ### Changed
 - **Universal Memory Integration (AGENT-136)**: Modernized the memory system with deterministic access protocols and performance optimizations.
 - **UI Interaction Model (AGENT-125/135)**: Implemented advanced drilldown, entity editing, and animated workflow phase parsing.
 - **Thought Trace Removal (AGENT-131)**: Streamlined the IDX experience by removing non-functional thought tracing components.
+- **Knowledge Reorganization (AGENT-134/128)**: Reorganized SDLC-related knowledge assets from the root `knowledge/` directory to `docs/sdlc/` for better architectural separation.
+- **Agent Policy Synchronization**: Updated all specialist agent definitions to align with the latest 5-layer architecture and skill dependencies.
 
 ### Fixed
 - **Systemic Validation Failures (AGENT-134/128)**: Resolved critical schema failures across knowledge files, skills, and sync integrations.
 - **Performance & Reliability Core (AGENT-118)**: Optimized CI pipelines, increased diagnostic verbosity, and repaired UTC deprecations and test blockers.
+- **Dependency Validator Calibration**: Enhanced the `dependency_validator.py` logic to correctly handle the reorganized file structure and new verification layers.
 
 ## [1.7.1] - 2026-03-09
 

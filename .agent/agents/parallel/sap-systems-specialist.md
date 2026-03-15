@@ -4,10 +4,10 @@ description: Engineers SAP S/4HANA Cloud solutions with Clean Core compliance â€
 type: agent
 domain: sap
 skills:
-  - developing-sap-rap
-  - building-sap-fiori
-  - integrating-sap-cloud
-  - securing-sap-systems
+  - parallel/developing-sap-rap
+  - parallel/building-sap-fiori
+  - parallel/integrating-sap-cloud
+  - parallel/securing-sap-systems
 model: inherit
 is_background: false
 readonly: false

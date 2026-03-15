@@ -4,8 +4,8 @@ description: Bridges product vision and technical delivery — backlog refinemen
 type: agent
 domain: project-management
 skills:
-  - managing-plane-tasks
-  - committing-releases
+  - routing/managing-plane-tasks
+  - management/committing-releases
 model: inherit
 is_background: false
 readonly: false

@@ -11,13 +11,16 @@ Governs the creation, naming, and maintenance of Knowledge Items (KIs) in `.agen
 - **Schema Validation**: All KIs MUST adhere to `schemas/knowledge-file.schema.json`.
 - **Naming Convention**: `[topic]-patterns.json` or `[technology]-idioms.json`.
 - **Mandatory Content**:
-    - `patterns`: Successful implementation examples.
+    - `id`: MUST match the filename (without extension).
+    - `name`, `version`, `category`, `description`: Required top-level fields.
+    - `patterns`: MUST be a non-empty object of successful implementation examples.
     - `best_practices`: Recommended approaches.
     - `anti_patterns`: Pitfalls to avoid.
 - **Traceability**: All knowledge must trace back to Axiom A1 (Verifiability).
 
 ## Lifecycle
 - **Creation**: Research topic -> Extract patterns -> Validate against schema -> Update `knowledge-manifest.json`.
+- **Validation**: Run `pytest tests/knowledge/test_system_structure.py` to ensure schema compliance.
 - **Updating**: Add new findings from conversation logs or project evolution.
 - **Correction**: If knowledge is found to be incorrect or outdated, update immediately.
 

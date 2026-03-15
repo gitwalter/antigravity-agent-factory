@@ -1,15 +1,11 @@
 import pytest
-import sys
-import os
 from pathlib import Path
+from scripts.api.workflow_service import parse_workflow
 
-# Add project root to sys.path
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-
-from scripts.api.workflow_service import parse_workflow, Workflow, WorkflowPhase
+# conftest.py handles sys.path and provides factory_root
 
 
-def test_standardized_parsing():
+def test_standardized_parsing(tmp_path: Path):
     content = """---
 description: Test workflow
 version: 1.0.0
@@ -30,11 +26,10 @@ version: 1.0.0
 - **Agent**: `exec-agent`
 - Action step 3
 """
-    tmp_path = Path("tmp/test_wf.md")
-    tmp_path.parent.mkdir(parents=True, exist_ok=True)
-    tmp_path.write_text(content, encoding="utf-8")
+    wf_path = tmp_path / "test_wf.md"
+    wf_path.write_text(content, encoding="utf-8")
 
-    wf = parse_workflow(tmp_path)
+    wf = parse_workflow(wf_path)
 
     assert wf.title == "Test Workflow"
     assert len(wf.phases) == 2
@@ -55,7 +50,7 @@ version: 1.0.0
     assert "Action step 3" in p2.actions
 
 
-def test_legacy_parsing():
+def test_legacy_parsing(tmp_path: Path):
     content = """
 # Legacy Workflow
 
@@ -66,10 +61,10 @@ def test_legacy_parsing():
 **Action**: legacy action 2
 **Skills**: skill-a
 """
-    tmp_path = Path("tmp/legacy_wf.md")
-    tmp_path.write_text(content, encoding="utf-8")
+    wf_path = tmp_path / "legacy_wf.md"
+    wf_path.write_text(content, encoding="utf-8")
 
-    wf = parse_workflow(tmp_path)
+    wf = parse_workflow(wf_path)
 
     assert len(wf.phases) == 1
     p = wf.phases[0]
@@ -78,7 +73,3 @@ def test_legacy_parsing():
     assert p.agent == "legacy-agent"
     assert "legacy action 1" in p.actions
     assert "legacy action 2" in p.actions
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

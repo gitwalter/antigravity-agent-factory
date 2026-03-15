@@ -4,10 +4,10 @@ description: Engineers high-fidelity Python backends, agentic AI systems, RAG pi
 type: agent
 domain: python-ai
 skills:
-  - mastering-agentic-loops
-  - engineering-rag-systems
-  - tracing-with-langsmith
-  - securing-agents
+  - parallel/mastering-agentic-loops
+  - parallel/engineering-rag-systems
+  - parallel/tracing-with-langsmith
+  - parallel/securing-agents
 model: inherit
 is_background: false
 readonly: false

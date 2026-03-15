@@ -104,7 +104,8 @@ Based on the user interview, fill in these components:
 skill-name/
 ├── SKILL.md (required)
 │   ├── YAML frontmatter (name, description required)
-│   └── Markdown instructions
+│   └── Markdown instructions (MUST include `## When to Use`, `## Prerequisites`, `## Process`, and `## Best Practices`)
+- **Validation**: Every skill MUST pass `tests/validation/test_skills_structure.py`.
 └── Bundled Resources (optional)
     ├── scripts/    - Executable code for deterministic/repetitive tasks
     ├── references/ - Docs loaded into context as needed

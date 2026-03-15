@@ -10,11 +10,11 @@ Enforces consistency and quality in skill creation within the `.agent/skills/` d
 ## Requirements
 - **Schema Validation**: All skills MUST adhere to `schemas/skill.schema.json`.
 - **File Structure**: Skills are folders containing `SKILL.md`.
-- **Required Sections**: `SKILL.md` MUST include:
-    - `When to Use`
-    - `Prerequisites`
-    - `Process` (Step-by-step instructions)
-    - `Best Practices`
+- **Required Markdown Sections**: `SKILL.md` MUST include these H2 headers:
+    - `## When to Use`
+    - `## Prerequisites`
+    - `## Process`
+    - `## Best Practices`
 - **Axiom Alignment**: Frontmatter MUST include an `axioms` block linking back to `.agentrules` (A1-A6).
 - **Pattern Categorization**: Every skill MUST reside in a behavioral pattern directory (`chain`, `parallel`, `routing`, etc.).
 - **Level 3 Bundling**: Skills MUST be directory bundles with `scripts/` and `references/` subfolders for deterministic logic.
