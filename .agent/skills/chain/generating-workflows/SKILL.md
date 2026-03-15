@@ -1,12 +1,15 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Workflow pattern generation and customization skill with mandatory schema
+description: 'Workflow pattern generation and customization skill with mandatory schema
   validation against schemas/workflow.schema.json
+
+  '
 knowledge:
-- none
+- langgraph-workflow-patterns.json
+- schemas-workflow-schema.json
+- workflow-patterns.json
 name: generating-workflows
 related_skills:
 - none
@@ -16,6 +19,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Workflow Generation
 
@@ -28,7 +39,7 @@ Generates workflow configurations and documentation based on methodology and tri
 Workflow frontmatter MUST validate against `schemas/workflow.schema.json`. Required fields:
 
 | Field | Type | Constraints |
-|-------|------|-------------|
+|-||-|
 | `name` | string | Min 3 chars |
 | `description` | string | Min 20 chars |
 | `version` | string | Semantic version |
@@ -53,7 +64,7 @@ Workflow frontmatter MUST validate against `schemas/workflow.schema.json`. Requi
 ## Common Violations
 
 | Violation | Fix |
-|-----------|-----|
+|--|--|
 | Missing `blueprints` | Add `blueprints: ["none"]` if no blueprint |
 | Invalid `domain` | Map to allowed enum or use mapping table |
 | Only 1 step | Add at least 2 steps |
@@ -75,7 +86,7 @@ Workflow frontmatter MUST validate against `schemas/workflow.schema.json`. Requi
 Match triggers to workflow patterns:
 
 | Trigger | Patterns |
-|---------|----------|
+||-|
 | Jira | `bugfix-workflow` |
 | Confluence | `feature-workflow` |
 | GitHub Issue | `bugfix-workflow` |
@@ -86,7 +97,7 @@ Match triggers to workflow patterns:
 For each trigger, configure required MCP server:
 
 | Trigger | MCP Server | Authentication |
-|---------|------------|----------------|
+|||-|
 | Jira | `atlassian` | OAuth |
 | Confluence | `atlassian` | OAuth |
 | GitHub | `deepwiki` | None |

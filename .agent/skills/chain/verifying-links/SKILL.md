@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Verify internal and external links in project documentation
+description: 'Verify internal and external links in project documentation
+
+  '
 knowledge:
 - none
 name: verifying-links
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Link Verification Skill
@@ -29,7 +38,7 @@ This skill provides the capability to scan the project's documentation (Markdown
 ## Prerequisites
 - Python 3.10+
 - `aiohttp` (for external link checking)
-- `scripts/maintenance/link_checker.py` script exists in the repository.
+- `scripts/maintenance/audit/link_checker.py` script exists in the repository.
 
 ## Process
 
@@ -38,12 +47,12 @@ This skill provides the capability to scan the project's documentation (Markdown
 
    *Check internal links only (fastest):*
    ```powershell
-   python scripts/maintenance/link_checker.py
+   python scripts/maintenance/audit/link_checker.py
    ```
 
    *Check internal and external links:*
    ```powershell
-   python scripts/maintenance/link_checker.py --external
+   python scripts/maintenance/audit/link_checker.py --external
    ```
 
 2. **Analyze Results**:

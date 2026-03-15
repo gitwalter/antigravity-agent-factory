@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Interactive guidance for selecting appropriate trust verification tier
+description: 'Interactive guidance for selecting appropriate trust verification tier
+
+  '
 knowledge:
 - none
 name: selecting-society-tiers
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Society Tier Selection
 
@@ -67,7 +76,7 @@ Over $100,000?
 ## Tier Reference
 
 | Tier | Mechanism | Latency | Cost | Best For |
-|------|-----------|---------|------|----------|
+||--|||-|
 | **L0 Local** | Ed25519 signatures | <10ms | Free | Internal agents, development |
 | **L1 Attested** | Merkle anchoring | Minutes | $0.0001 | Cross-org, audit trails |
 | **L2 Contracted** | Smart contracts | Seconds | $0.10 | Payments, SLAs |
@@ -198,7 +207,7 @@ society = (SocietyBuilder("FinanceProject")
 ## Cost-Benefit Analysis
 
 | Tier | Setup Cost | Operational Cost | Security Level |
-|------|------------|------------------|----------------|
+||||-|
 | L0 | Minimal | Free | Good for trusted environments |
 | L1 | Low | $0.10-$1/month | Audit-ready |
 | L2 | Medium | $10-$100/month | Enterprise-grade |

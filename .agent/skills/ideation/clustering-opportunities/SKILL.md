@@ -1,13 +1,35 @@
 ---
 name: clustering-opportunities
 type: skill
-description: >
-  Synthesises all raw idea dumps in knowledge/ideas/raw/ into labelled opportunity clusters with themes, strength signals, and a prioritisation matrix. Use this skill after one or more brainstorming sessions, when the user wants to make sense of accumulated ideas, find patterns, or asks "what themes are emerging" or "which ideas are worth pursuing". Writes output to knowledge/opportunities.md.
+description: 'Synthesises all raw idea dumps in knowledge/ideas/raw/ into labelled
+  opportunity clusters with themes, strength signals, and a prioritisation matrix.
+  Use this skill after one or more brainstorming sessions, when the user wants to
+  make sense of accumulated ideas, find patterns, or asks "what themes are emerging"
+  or "which ideas are worth pursuing". Writes output to knowledge/opportunities.md.
+
+  '
 license: MIT
 metadata:
   version: 1.0.0
   phase: ideation
   llm-preference: claude
+agents:
+- python-ai-specialist
+knowledge:
+- none
+templates:
+- none
+related_skills:
+- managing-plane-tasks
+- orchestrating-mcp
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Clustering Opportunities
@@ -56,7 +78,7 @@ For each cluster, produce:
 Produce a markdown table:
 
 | Cluster | User Impact | Confidence | AI Leverage | Effort Estimate | Score |
-|---------|------------|------------|-------------|-----------------|-------|
+||||-|--|-|
 | [name]  | H/M/L      | H/M/L      | H/M/L       | H/M/L (inv.)    | [sum] |
 
 Score = Impact + Confidence + AI Leverage + (inverted Effort). Max 12.

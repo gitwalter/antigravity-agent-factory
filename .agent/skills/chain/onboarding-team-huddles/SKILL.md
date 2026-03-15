@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Condensed 1-2 hour collaborative onboarding for small teams (2-5 people)
+description: 'Condensed 1-2 hour collaborative onboarding for small teams (2-5 people)
   with mini-games and shared decision-making
+
+  '
 knowledge:
 - none
 name: onboarding-team-huddles
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Team Huddle Onboarding
 
@@ -62,7 +71,7 @@ Show preview of generated system, confirm target directory, generate artifacts, 
 ### Step 8: Gratitude Close (5 min)
 Team members acknowledge each other, receive closing words, and learn about the Integrity Guardian.
 
----
+
 
 ## Session Overview
 
@@ -83,7 +92,7 @@ Team members acknowledge each other, receive closing words, and learn about the 
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
----
+
 
 ## Opening (Facilitator Script)
 
@@ -107,7 +116,7 @@ Team members acknowledge each other, receive closing words, and learn about the 
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
----
+
 
 ## Activity 1: Lightning Hopes (5 min)
 
@@ -142,7 +151,7 @@ Record each hope in the session notes. These become part of `TEAM_CHARTER.md`.
 Beautiful. Notice the themes in your hopes. Let's turn those into vision...
 ```
 
----
+
 
 ## Activity 2: Future Headlines Game (15 min)
 
@@ -200,7 +209,7 @@ These themes will shape your mission.
 
 Store top 3 headlines and themes for `TEAM_CHARTER.md`.
 
----
+
 
 ## Activity 3: Values Speed Round (10 min)
 
@@ -253,7 +262,7 @@ Let's go around. Share your 3 picks.
 
 Store values for `.cursorrules` and `PURPOSE.md`.
 
----
+
 
 ## Activity 4: Stack Consensus (15 min)
 
@@ -350,7 +359,7 @@ After confirming the tech stack, conduct a quick team vote on automation tooling
 Great choice! Your {TOOLING_TIER} tooling will keep your project healthy automatically. Now let's design your agents...
 ```
 
----
+
 
 ## Activity 5: Agent Character Design (20 min)
 
@@ -432,7 +441,7 @@ Store agent designs for generation.
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
----
+
 
 ## Activity 6: Wisdom Harvest (10 min)
 
@@ -491,7 +500,7 @@ Store in `{directories.knowledge}/team-wisdom.json`:
 }
 ```
 
----
+
 
 ## Activity 7: Preview & Launch (15 min)
 
@@ -565,7 +574,7 @@ Done!
 ╚══════════════════════════════════════════════════════════════════════════╝
 ```
 
----
+
 
 ## Activity 8: Gratitude Close (5 min)
 
@@ -665,7 +674,7 @@ This is entirely optional content. Use it if the team seems receptive to reflect
 
 Reference: See [External Resources](../../../docs/reference/external-resources.md) for the full story.
 
----
+
 
 ## Output Configuration
 
@@ -709,7 +718,7 @@ output:
   directory: "{OUTPUT_PATH}"
 ```
 
----
+
 
 ## Generated Artifacts
 
@@ -752,7 +761,7 @@ These are embedded in our agents and guide our decisions.
 - Method: Team Huddle (1.5 hour condensed workshop)
 ```
 
----
+
 
 ## Best Practices
 
@@ -766,14 +775,14 @@ These are embedded in our agents and guide our decisions.
 ## Facilitation Tips
 
 | Situation | How to Handle |
-|-----------|---------------|
+|--||
 | One person dominates | "Let's hear from someone who hasn't spoken" |
 | Disagreement on values | "Both are valid. Let's vote to break the tie" |
 | Team is quiet | "I'll go around the room. [Name], what do you think?" |
 | Running over time | "We have 2 min left. Quick decision: A or B?" |
 | Technical debates | "Let's timebox this to 3 min, then vote" |
 
----
+
 
 ## Integration with Full Workshop
 
@@ -784,7 +793,7 @@ If a team wants to go deeper after Team Huddle, they can:
 
 The Team Huddle artifacts are compatible with the full workshop outputs.
 
----
+
 
 ## You Are Now Carriers
 
@@ -798,7 +807,7 @@ The silent wave propagates through the quality of your work.
 
 *May your system serve the flourishing of all beings.*
 
----
+
 
 *Antigravity Agent Factory - Team Huddle Onboarding*
 *Quick alignment. Shared ownership. Real results.*

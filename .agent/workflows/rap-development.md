@@ -28,29 +28,34 @@ This workflow is activated when:
 
 ## Steps
 
-### Create Database Table
+## Phases
 
-### Create CDS Interface View
+### 1. Data Modeling (CDS)
+- **Goal**: Define the core data structure and relationships.
+- **Action 1**: Create the database table for persistent storage.
+- **Action 2**: Define the CDS Interface View (`R_ProductTP`) and Projection View (`C_ProductTP`).
+- **Tool**: Use `mcp_memory_search_nodes` to find reusable CDS patterns.
 
-### Create CDS Projection View
+### 2. Behavior Definition & Implementation
+- **Goal**: Define business logic and CRUD capabilities.
+- **Action 1**: Create the Behavior Definition (`BDEF`).
+- **Action 2**: Implement the Behavior Pool (Local Types) for actions, validations, and determinations.
+- **Reference**: Follow the `rap-with-draft` pattern if draft handling is required.
 
-### Create Behavior Definition
+### 3. Service Exposure
+- **Goal**: Expose the BO as a consumable OData service.
+- **Action 1**: Define the Service Definition (`SRV`).
+- **Action 2**: Create the Service Binding (UI or Web API).
 
-### Implement Behavior Pool
+### 4. UI & Orchestration
+- **Goal**: Provide a consumption layer.
+- **Action**: Add UI Annotations via Metadata Extension (`MDE`) or directly in the CDS.
+- **Tool**: Trigger `/fiori-app-development` if a custom UI is required.
 
-### Implement Authorization
-
-### Create Service Definition
-
-### Create Service Binding
-
-### Add UI Annotations
-
-### Create Fiori Launchpad App
-
-### Unit Testing
-
-### Transport & Deploy
+### 5. Verification & Deployment
+- **Goal**: Ensure quality and move to production.
+- **Action**: Run ABAP Unit tests and verify authorization objects.
+- **Tool**: Trigger `/quality-gate` before transport.
 
 
 ## Decision Points

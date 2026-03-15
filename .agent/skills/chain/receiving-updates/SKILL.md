@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Receive and apply updates from the Antigravity Agent Factory including skills,
-  knowledge, and agents
+description: 'Receive and apply updates from the Antigravity Agent Factory including
+  skills, knowledge, and agents
+
+  '
 knowledge:
 - none
 name: receiving-updates
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Receive Updates
 

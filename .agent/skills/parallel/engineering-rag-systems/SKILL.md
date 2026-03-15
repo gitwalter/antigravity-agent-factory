@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Tactical Blueprint for Retrieval-Augmented Generation (RAG) systems.
+description: 'Tactical Blueprint for Retrieval-Augmented Generation (RAG) systems.
   Focuses on document ingestion, semantic retrieval, reranking, and citation truth.
+
+  '
 knowledge:
 - none
 name: engineering-rag-systems
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Capability Manifest: RAG Engineering Manual
 

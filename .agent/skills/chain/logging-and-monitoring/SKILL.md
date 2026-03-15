@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Structured logging with structlog, metrics collection, alerting patterns,
+description: 'Structured logging with structlog, metrics collection, alerting patterns,
   and distributed tracing
+
+  '
 knowledge:
 - none
 name: logging-and-monitoring
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Logging Monitoring
 
@@ -553,7 +562,7 @@ def setup_logging(log_file: str = "agent.log"):
 ## Logging Levels
 
 | Level | Use Case | Example |
-|-------|----------|---------|
+|-|-||
 | DEBUG | Detailed debugging | Function entry/exit |
 | INFO | Normal operations | Request received |
 | WARNING | Recoverable issues | Rate limit approaching |
@@ -563,7 +572,7 @@ def setup_logging(log_file: str = "agent.log"):
 ## Metrics Types
 
 | Type | Use Case | Example |
-|------|----------|---------|
+||-||
 | Counter | Count events | Total requests |
 | Gauge | Current value | Active requests |
 | Histogram | Distribution | Request latency |
@@ -583,7 +592,7 @@ def setup_logging(log_file: str = "agent.log"):
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Unstructured logs | Use structured logging |
 | No request IDs | Add request IDs |
 | Logging secrets | Filter sensitive data |

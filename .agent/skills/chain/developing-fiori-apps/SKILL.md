@@ -1,12 +1,13 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Fiori Elements app creation (List Report, Object Page, Worklist), CDS
+description: 'Fiori Elements app creation (List Report, Object Page, Worklist), CDS
   annotations for UI, value helps, draft-enabled UIs, SAP Fiori Tools usage
+
+  '
 knowledge:
-- none
+- sap-fiori-patterns.json
 name: developing-fiori-apps
 related_skills:
 - none
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Fiori Development
 

@@ -9,7 +9,7 @@ The blueprint version updater automatically keeps framework and LLM model versio
 ## Components
 
 ### 1. Version Update Script
-**Location**: `scripts/maintenance/update_blueprint_versions.py`
+**Location**: `scripts/maintenance/repair/update_blueprint_versions.py`
 
 Automatically updates:
 - **Python Frameworks**: LangChain, LangGraph, CrewAI, AutoGen, Streamlit, FastAPI, Pydantic
@@ -20,13 +20,13 @@ Automatically updates:
 **Usage**:
 ```bash
 # Update all blueprints
-python scripts/maintenance/update_blueprint_versions.py
+python scripts/maintenance/repair/update_blueprint_versions.py
 
 # Update specific blueprint
-python scripts/maintenance/update_blueprint_versions.py --blueprint ai-agent-development
+python scripts/maintenance/repair/update_blueprint_versions.py --blueprint ai-agent-development
 
 # Dry run (preview changes without applying)
-python scripts/maintenance/update_blueprint_versions.py --dry-run
+python scripts/maintenance/repair/update_blueprint_versions.py --dry-run
 ```
 
 ### 2. Pre-commit Integration
@@ -114,7 +114,7 @@ Tracks last execution time in `.last_version_check` file. Only runs if 7+ days h
 ## Maintenance
 
 ### Adding New Frameworks
-Edit `scripts/maintenance/update_blueprint_versions.py`:
+Edit `scripts/maintenance/repair/update_blueprint_versions.py`:
 
 ```python
 python_packages = {
@@ -141,7 +141,7 @@ versions['llm_models'] = {
 rm .last_version_check
 
 # Or run script directly
-python scripts/maintenance/update_blueprint_versions.py
+python scripts/maintenance/repair/update_blueprint_versions.py
 ```
 
 ## Benefits

@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Retry strategies with tenacity, fallback patterns, circuit breakers,
+description: 'Retry strategies with tenacity, fallback patterns, circuit breakers,
   graceful degradation
+
+  '
 knowledge:
 - none
 name: handling-errors
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Error Handling
 
@@ -543,7 +552,7 @@ success = await transaction.execute()
 ## Error Handling Patterns
 
 | Pattern | Use Case | Implementation |
-|---------|----------|----------------|
+||-|-|
 | **Retry** | Transient failures | Tenacity decorators |
 | **Fallback** | Service unavailability | FallbackChain |
 | **Circuit Breaker** | Cascading failures | CircuitBreaker class |
@@ -567,7 +576,7 @@ success = await transaction.execute()
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Infinite retries | Set retry limits |
 | No backoff | Use exponential backoff |
 | Ignoring errors | Handle and log all errors |

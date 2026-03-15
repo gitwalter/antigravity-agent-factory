@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Build multi-agent workflows using CrewAI patterns
+description: 'Build multi-agent workflows using CrewAI patterns
+
+  '
 knowledge:
 - none
 name: orchestrating-crewai-workflows
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Crewai Workflow
 
@@ -114,7 +123,7 @@ final_result = flow.kickoff()
 ## What Gets Created
 
 | File | Purpose |
-|------|---------|
+|||
 | `agents/` | Agent definitions with roles |
 | `tasks/` | Task definitions with dependencies |
 | `crews/` | Crew configurations |
@@ -123,7 +132,7 @@ final_result = flow.kickoff()
 ## Process Types
 
 | Type | Use Case |
-|------|----------|
+||-|
 | `Process.sequential` | Tasks run one after another |
 | `Process.hierarchical` | Manager delegates to workers |
 
@@ -161,7 +170,7 @@ crew = Crew(
 ## Fallback Procedures
 
 | Issue | Solution |
-|-------|----------|
+|-|-|
 | Agent loops infinitely | Set `max_iter=3` |
 | Wrong task order | Use `context` parameter |
 | Tool failures | Add error handling in tools |

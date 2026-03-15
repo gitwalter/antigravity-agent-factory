@@ -12,7 +12,7 @@ axioms: [A1, A3, A5]
 
 1. **Run sync_script_registry.py** to update Memory MCP with the new interface:
    ```powershell
-   conda run -p D:\Anaconda\envs\cursor-factory python scripts/maintenance/sync_script_registry.py
+   conda run -p D:\Anaconda\envs\cursor-factory python scripts/maintenance/sync/sync_script_registry.py
    ```
 
 2. **Update relevant skills** if the change affects WHEN or WHY a command is used

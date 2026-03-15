@@ -1,14 +1,37 @@
 ---
 name: slicing-stories
 type: skill
-description: >
-  Decomposes epics from knowledge/prd.md into vertically sliced, independently shippable user stories with BDD acceptance criteria. Detects horizontal slices and technical tasks masquerading as stories, and proposes corrected splits. Use when the user wants to break down epics, create sprint-ready stories, check if stories are independently shippable, or says "let's slice the stories", "break this down", or "is this story too big". Reads knowledge/prd.md. Updates story sections in-place.
+description: 'Decomposes epics from knowledge/prd.md into vertically sliced, independently
+  shippable user stories with BDD acceptance criteria. Detects horizontal slices and
+  technical tasks masquerading as stories, and proposes corrected splits. Use when
+  the user wants to break down epics, create sprint-ready stories, check if stories
+  are independently shippable, or says "let''s slice the stories", "break this down",
+  or "is this story too big". Reads knowledge/prd.md. Updates story sections in-place.
+
+  '
 license: MIT
 allowed-tools: Read, Write
 metadata:
   version: 1.0.0
   phase: requirements
   llm-preference: claude
+agents:
+- python-ai-specialist
+knowledge:
+- none
+templates:
+- none
+related_skills:
+- managing-plane-tasks
+- orchestrating-mcp
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Slicing Stories
@@ -36,7 +59,7 @@ Load `knowledge/prd.md`. Focus on Section 3 (Functional Requirements).
 For each story in the PRD, check against these anti-patterns:
 
 | Anti-pattern | Signal | Fix |
-|--------------|--------|-----|
+|--|--|--|
 | **Layer slice** | "Build the X layer for..." | Split by user journey, not layer |
 | **Compound story** | Contains AND in the user value | Split at the AND |
 | **Infrastructure story** | No direct user value | Convert to a tech task with a story dependency |
@@ -53,7 +76,7 @@ For each anti-pattern found, produce:
      Story B: [new story — user value]
 ```
 
----
+
 
 ## Step 2 — BDD Acceptance Criteria
 
@@ -104,7 +127,7 @@ Add these mandatory scenarios to every story that involves an AI component:
     And [alerting condition is triggered]
 ```
 
----
+
 
 ## Step 3 — Story Map
 
@@ -116,7 +139,7 @@ After slicing, produce a story map table written to `knowledge/story-map.md`:
 ## [Epic E-01 name]
 
 | Story ID | Name | Size | Shippable | AI component | Priority |
-|----------|------|------|-----------|--------------|----------|
+|-|||--|--|-|
 | E-01-S-01 | [name] | S | YES | none | P1 |
 | E-01-S-02 | [name] | M | YES | [component] | P1 |
 | E-01-S-03 | [name] | L | YES | [component] | P2 |
@@ -129,12 +152,12 @@ After slicing, produce a story map table written to `knowledge/story-map.md`:
 - [ ] [Technical prerequisite 2]
 ```
 
----
+
 
 ## Sizing Guide
 
 | Size | Definition | Typical AI-system effort |
-|------|-----------|--------------------------|
+||--|--|
 | XS | Single endpoint, no AI | 0.5 day |
 | S | Single user flow, simple AI call | 1–2 days |
 | M | Multi-step flow or RAG component | 3–5 days |
@@ -143,7 +166,7 @@ After slicing, produce a story map table written to `knowledge/story-map.md`:
 
 Never accept XL as a final size. If a story is XL, run Step 1 again.
 
----
+
 
 ## After Slicing
 

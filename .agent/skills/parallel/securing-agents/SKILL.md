@@ -1,12 +1,13 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Tactical Blueprint for AI Security and Guardrails. Focuses on prompt
+description: 'Tactical Blueprint for AI Security and Guardrails. Focuses on prompt
   injection defense, PII detection, and content safety for agentic systems.
+
+  '
 knowledge:
-- none
+- openai-agents-sdk-patterns.json
 name: securing-agents
 related_skills:
 - none
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Capability Manifest: Agent Security Guardrails
 

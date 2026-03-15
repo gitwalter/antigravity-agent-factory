@@ -1,9 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Unit testing with mocks, integration testing, LangSmith evaluation, benchmarking
+description: 'Unit testing with mocks, integration testing, LangSmith evaluation,
+  benchmarking
+
+  '
 knowledge:
 - none
 name: testing-agents
@@ -15,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Agent Testing
 
@@ -508,7 +518,7 @@ async def test_agent_response_time(prompt: str):
 ## Testing Strategies
 
 | Strategy | Use Case | Tools |
-|----------|----------|-------|
+|-|-|-|
 | **Unit Tests** | Isolated components | pytest, unittest.mock |
 | **Integration Tests** | Component interactions | pytest, test databases |
 | **E2E Tests** | Complete workflows | pytest, real LLMs |
@@ -534,7 +544,7 @@ async def test_agent_response_time(prompt: str):
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Testing with production LLM | Use test models or mocks |
 | No error case testing | Test all error paths |
 | Slow tests | Mock expensive operations |

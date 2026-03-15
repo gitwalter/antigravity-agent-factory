@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: general
-description: >
-  DSPy integration for declarative prompt optimization, prompt versioning,
+description: 'DSPy integration for declarative prompt optimization, prompt versioning,
   A/B testing, few-shot optimization, chain-of-thought patterns, prompt caching
+
+  '
 knowledge:
 - none
 name: optimizing-prompts
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Prompt Optimization
 
@@ -608,7 +617,7 @@ After optimizing prompts, you'll have:
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | No evaluation | Always measure prompt performance |
 | Hardcoded examples | Use dynamic example selection |
 | Ignoring caching | Cache deterministic prompts |

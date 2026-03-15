@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- java-systems-specialist
 category: parallel
-description: >
-  Spring Cloud microservices patterns with gateway, discovery, and resilience
+description: 'Spring Cloud microservices patterns with gateway, discovery, and resilience
+
+  '
 knowledge:
 - none
 name: building-spring-microservices
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Spring Microservices
 

@@ -8,8 +8,13 @@ not just that patterns match. They test the *behavior* not just the detection.
 import sys
 from pathlib import Path
 
+# Add project root to path
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+
 # Add scripts directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "scripts"))
 
 from guardian.axiom_checker import check_command, check_file_operation
 from guardian.secret_scanner import scan_content, get_severity_level

@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Analyze Factory knowledge base to identify missing, shallow, or stale
+description: 'Analyze Factory knowledge base to identify missing, shallow, or stale
   content
+
+  '
 knowledge:
 - none
 name: analyzing-knowledge-gaps
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Analyze Knowledge Gaps
 
@@ -26,7 +35,7 @@ Systematically analyze the Factory's knowledge base against the topic taxonomy t
 ## Gap Types
 
 | Gap Type | Description | Priority |
-|----------|-------------|----------|
+|-|-|-|
 | **Missing** | Topic not covered at all | Critical |
 | **Shallow** | Covered but below required depth | High |
 | **Stale** | References outdated APIs/versions | Medium |
@@ -152,14 +161,14 @@ When reporting gaps to the user:
 ### Critical Gaps (Missing)
 
 | Topic | Domain | Required Depth | Recommendation |
-|-------|--------|----------------|----------------|
+|-|--|-|-|
 | constitutional_ai | ai_development | 3 | Create new knowledge file |
 | prompt_caching | ai_development | 2 | Create new knowledge file |
 
 ### High Priority Gaps (Shallow)
 
 | Topic | Current Depth | Required | Source File | Action |
-|-------|---------------|----------|-------------|--------|
+|-||-|-|--|
 | function_calling | 1 | 2 | mcp-patterns.json | Expand section |
 
 ### Recommendations
@@ -185,7 +194,7 @@ Identified gap: constitutional_ai (priority: CRITICAL)
 ## Fallback Procedures
 
 | Scenario | Fallback |
-|----------|----------|
+|-|-|
 | Taxonomy file not found | Use default taxonomy embedded in analyzer |
 | Knowledge directory empty | Report and suggest running quickstart |
 | No gaps found | Report healthy status, suggest maintenance |

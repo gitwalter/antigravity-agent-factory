@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: general
-description: >
-  Structured knowledge capture to extract team wisdom, lessons learned,
+description: 'Structured knowledge capture to extract team wisdom, lessons learned,
   and best practices for embedding in agent systems
+
+  '
 knowledge:
 - none
 name: synthesizing-knowledge
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Knowledge Synthesis
 
@@ -68,7 +77,7 @@ Update wisdom file after major incidents, retrospectives, or when new knowledge 
 Questions that surface what the team does well.
 
 | # | Question | Purpose |
-|---|----------|---------|
+||-||
 | 1 | What's one thing your team does that you're proud of? | Identify and preserve good practices |
 | 2 | What's a process or habit that makes your team effective? | Capture workflow wisdom |
 | 3 | What do people compliment your team on? | External validation of strengths |
@@ -78,7 +87,7 @@ Questions that surface what the team does well.
 Questions that surface hard-won knowledge.
 
 | # | Question | Purpose |
-|---|----------|---------|
+||-||
 | 1 | What's a mistake you've learned from that others should avoid? | Capture failure patterns |
 | 2 | What do you wish you'd known when you started this type of project? | Surface onboarding wisdom |
 | 3 | What's something that seems simple but is actually tricky? | Identify hidden complexity |
@@ -88,7 +97,7 @@ Questions that surface hard-won knowledge.
 Questions that surface what "good" means.
 
 | # | Question | Purpose |
-|---|----------|---------|
+||-||
 | 1 | What does "done well" look like for this project? | Define quality bar |
 | 2 | What's non-negotiable for code quality? | Identify hard requirements |
 | 3 | How do you know when something is ready for production? | Capture readiness criteria |
@@ -98,7 +107,7 @@ Questions that surface what "good" means.
 Questions that surface domain-specific wisdom.
 
 | # | Question | Purpose |
-|---|----------|---------|
+||-||
 | 1 | What are the tricky parts of your domain that trip people up? | Capture domain gotchas |
 | 2 | What terminology does your team use that outsiders might not know? | Build glossary |
 | 3 | What business rules are not obvious from the code? | Surface hidden logic |
@@ -108,12 +117,12 @@ Questions that surface domain-specific wisdom.
 Questions that surface tooling and process insights.
 
 | # | Question | Purpose |
-|---|----------|---------|
+||-||
 | 1 | What tools or shortcuts make you more productive? | Capture efficiency tips |
 | 2 | What's your debugging process when things go wrong? | Document troubleshooting |
 | 3 | How do you handle releases or deployments? | Capture release wisdom |
 
----
+
 
 ## Facilitation Modes
 
@@ -180,7 +189,7 @@ For comprehensive onboarding or dedicated knowledge capture sessions.
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
----
+
 
 ## Output Format
 
@@ -240,7 +249,7 @@ For comprehensive onboarding or dedicated knowledge capture sessions.
 }
 ```
 
----
+
 
 ## Integration with Agent Behavior
 
@@ -280,7 +289,7 @@ Watch for these known issues:
 - {domainKnowledge.gotchas}
 ```
 
----
+
 
 ## Best Practices
 
@@ -296,7 +305,7 @@ Watch for these known issues:
 ### Getting Good Answers
 
 | Technique | Example |
-|-----------|---------|
+|--||
 | **Be specific** | "What's a specific bug that taught you something?" |
 | **Ask for stories** | "Tell me about a time when..." |
 | **Probe deeper** | "Why is that important?" |
@@ -305,7 +314,7 @@ Watch for these known issues:
 ### Common Challenges
 
 | Challenge | Solution |
-|-----------|----------|
+|--|-|
 | Vague answers | "Can you give me a specific example?" |
 | Too technical | "How would you explain this to a new team member?" |
 | "We don't have any" | "What would you tell your past self?" |
@@ -318,14 +327,14 @@ There are no wrong answers here. This isn't a test.
 I'm just trying to capture what makes your team unique.
 ```
 
----
+
 
 ## Wisdom Maintenance
 
 ### When to Update
 
 | Trigger | Action |
-|---------|--------|
+||--|
 | After major incident | Add to lessonsLearned |
 | After retrospective | Review and update all sections |
 | New team member leaves | Capture their knowledge first |
@@ -343,7 +352,7 @@ This presents the current wisdom and asks:
 2. Anything no longer relevant?
 3. Any corrections?
 
----
+
 
 ## Example Session
 
@@ -373,7 +382,7 @@ This presents the current wisdom and asks:
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
----
+
 
 ## Advanced: Wisdom from Documentation
 
@@ -391,7 +400,7 @@ I found these documents. Would you like me to extract wisdom from them?
 - adr/001-database-choice.md
 ```
 
----
+
 
 ## Wisdom Transmission
 
@@ -403,7 +412,7 @@ When a team creates a project using the Factory, they become carriers of its val
 
 This is how silent change propagates - not through preaching, but through the quality of work that emerges from value-aligned systems.
 
----
+
 
 ## Closing Intention
 
@@ -426,7 +435,7 @@ After every wisdom harvest session:
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
----
+
 
 *Antigravity Agent Factory - Wisdom Harvest Skill*
 *Capturing the knowledge that matters.*

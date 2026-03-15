@@ -1,11 +1,14 @@
 ---
 agents:
-- none
+- executive-operations-specialist
 category: routing
-description: >
-  Manage files in Google Drive using the Google Drive MCP server.
+description: 'Manage files in Google Drive using the Google Drive MCP server.
+
+  '
 knowledge:
-- none
+- ai-driven-tdd-patterns.json
+- google-agent-development-kit-patterns.json
+- google-generative-ai-patterns.json
 name: managing-google-drive
 related_skills:
 - none
@@ -15,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Google Drive Skill

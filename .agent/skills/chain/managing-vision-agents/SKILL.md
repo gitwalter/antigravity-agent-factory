@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Image analysis with multi-modal LLMs (GPT-4V, Gemini Vision), object
+description: 'Image analysis with multi-modal LLMs (GPT-4V, Gemini Vision), object
   detection integration, image generation pipelines, and visual question answering
+
+  '
 knowledge:
 - none
 name: managing-vision-agents
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Vision Agents
 
@@ -432,7 +441,7 @@ class MultiModalRAG:
 ## Vision Models Comparison
 
 | Model | Type | Capabilities | Cost | Best For |
-|------|------|--------------|------|----------|
+|||--||-|
 | GPT-4V | Multi-modal | Image analysis, VQA | Paid | General vision tasks |
 | Gemini 1.5 Pro | Multi-modal | Image analysis, VQA, video | Paid/Free | Multi-modal RAG |
 | YOLOv8 | Object Detection | Object detection | Free | Real-time detection |
@@ -453,7 +462,7 @@ class MultiModalRAG:
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Sending full-resolution images | Resize to reasonable size (1024px max) |
 | No image preprocessing | Normalize, resize before analysis |
 | Ignoring API costs | Cache results, use smaller models when possible |

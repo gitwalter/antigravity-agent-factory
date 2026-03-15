@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Multi-index RAG, query decomposition, contextual compression, and self-querying
+description: 'Multi-index RAG, query decomposition, contextual compression, and self-querying
   retrievers
+
+  '
 knowledge:
 - none
 name: retrieving-advanced
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Advanced Retrieval
 
@@ -506,7 +515,7 @@ Answer:""",
 ## Retrieval Patterns Comparison
 
 | Pattern | Use Case | Pros | Cons |
-|---------|----------|------|------|
+||-|||
 | Multi-Index | Domain-specific data | Specialized retrieval | More setup |
 | Query Decomposition | Complex queries | Better coverage | More API calls |
 | Contextual Compression | Long documents | Focused context | Processing overhead |
@@ -527,7 +536,7 @@ Answer:""",
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Single retrieval method | Use ensemble or adaptive retrieval |
 | No query decomposition | Break down complex queries |
 | Ignoring metadata | Add and use structured metadata |

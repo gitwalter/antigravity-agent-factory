@@ -1,22 +1,33 @@
 ---
 name: workshop-creator
-description: >
-  Standardized workshop creation and validation
+description: 'Standardized workshop creation and validation
+
+  '
 type: skill
 version: 1.0.0
 category: factory
 agents:
-  - analyzer
-  - comparator
-  - grader
+- analyzer
+- comparator
+- grader
 knowledge:
-  - none
+- creator-skills-mapping.json
+- workshop-facilitation-knowledge.json
+- workshop-facilitation.json
 tools:
-  - none
+- none
 related_skills:
-  - skill-creator
+- skill-creator
 templates:
-  - none
+- none
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Workshop Creator

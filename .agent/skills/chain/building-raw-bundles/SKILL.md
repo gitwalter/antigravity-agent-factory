@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Build raw Cursor artifact bundles as verbatim zip copies filtered by
+description: 'Build raw Cursor artifact bundles as verbatim zip copies filtered by
   domain profile
+
+  '
 knowledge:
 - none
 name: building-raw-bundles
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Build Raw Bundle
 
@@ -34,7 +43,7 @@ conversion loss -- ideal for Cursor-to-Cursor project transfers.
 ## Choosing Raw vs PABP
 
 | Scenario | Raw | PABP |
-|----------|-----|------|
+|-|--||
 | Cursor-to-Cursor project transfer | **YES** | no |
 | Sharing with CrewAI / LangChain project | no | **YES** |
 | Preserve exact file layout and content | **YES** | no |
@@ -50,7 +59,7 @@ conversion loss -- ideal for Cursor-to-Cursor project transfers.
 ## Available Profiles
 
 | Profile | Domains | Description |
-|---------|---------|-------------|
+|||-|
 | `sap-complete` | sap, agent-core, agent-framework, cross-cutting, devops, factory-meta, pm | Full SAP stack: S/4HANA, RAP, CAP, Fiori, BTP, ABAP, logistics chain |
 | `ai-ml-stack-complete` | ai-ml, python, trading, agent-core, agent-framework, cross-cutting, devops | Full AI/ML stack: LangChain, LangGraph, RAG, training, fine-tuning, multi-agent |
 | `dotnet-csharp-complete` | dotnet, agent-core, agent-framework, cross-cutting, devops | Full .NET stack: ASP.NET Core, EF Core, Blazor, Azure, microservices |

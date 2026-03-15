@@ -1,11 +1,13 @@
 ---
 agents:
-- none
+- executive-operations-specialist
 category: routing
-description: >
-  Manage calendar events using the Google Calendar MCP server.
+description: 'Manage calendar events using the Google Calendar MCP server.
+
+  '
 knowledge:
-- none
+- google-agent-development-kit-patterns.json
+- google-generative-ai-patterns.json
 name: managing-google-calendar
 related_skills:
 - none
@@ -15,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Google Calendar Skill

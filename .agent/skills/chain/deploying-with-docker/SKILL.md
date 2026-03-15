@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Tactical Blueprint for Production-Grade Docker. Focuses on security hardening,
-  image optimization, and multi-stage builds.
+description: 'Tactical Blueprint for Production-Grade Docker. Focuses on security
+  hardening, image optimization, and multi-stage builds.
+
+  '
 knowledge:
 - none
 name: deploying-with-docker
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Capability Manifest: Docker Production Mastery
 
@@ -47,7 +56,7 @@ Follow these procedures to implement the capability:
 ## Process (Fail-State & Recovery)
 
 | Symptom | Probable Cause | Recovery Operation |
-| :--- | :--- | :--- |
+| : | : | : |
 | **Image Size > 1GB** | Missing `.dockerignore` or failing to use multi-stage builds. | Add `.dockerignore` for `venv`, `.git`, and `__pycache__`; implement Stage 2 prune. |
 | **Permission Denied** | Application trying to write to a directory owned by root. | Check `USER` directive and `chown` permissions in the Dockerfile. |
 | **Container Restart Loop** | Entrypoint script failing or Healthcheck timing out during startup. | Review `docker logs`; increase `start_period` in the healthcheck. |
@@ -76,7 +85,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0"]
 ## Prerequisites
 
 | Action | Command / Tool |
-| :--- | :--- |
+| : | : |
 | Vulnerability Scan | `docker scout quickview` or `trivy image <name>` |
 | Inspect Layers | `dive <image_id>` |
 | Prune Everything | `docker system prune -a --volumes` |

@@ -1,11 +1,12 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  CPI iFlow design patterns (content-based routing, splitter, aggregator),
+description: 'CPI iFlow design patterns (content-based routing, splitter, aggregator),
   Groovy script patterns, API Management policies, Event Mesh topic design, OData
   consumption
+
+  '
 knowledge:
 - none
 name: integrating-sap-systems
@@ -17,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Sap Integration
 

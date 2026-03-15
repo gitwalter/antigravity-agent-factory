@@ -1,8 +1,14 @@
 ---
 name: mapping-dependencies
 type: skill
-description: >
-  Maps all upstream, downstream, data, and AI dependencies needed to implement the requirements. Produces a dependency graph with integration contracts and a risk register. Use when the user wants to understand what systems need to be connected, asks "what do we depend on", "what integrations are needed", "what could block us", or is preparing for architecture. Requires knowledge/prd.md or knowledge/prototype-brief.md. Writes to knowledge/dependencies.md.
+description: 'Maps all upstream, downstream, data, and AI dependencies needed to implement
+  the requirements. Produces a dependency graph with integration contracts and a risk
+  register. Use when the user wants to understand what systems need to be connected,
+  asks "what do we depend on", "what integrations are needed", "what could block us",
+  or is preparing for architecture. Requires knowledge/prd.md or knowledge/prototype-brief.md.
+  Writes to knowledge/dependencies.md.
+
+  '
 license: MIT
 allowed-tools: Read, Write
 metadata:
@@ -11,7 +17,24 @@ metadata:
   llm-preference: gemini
   compatibility:
     tools:
-      - web-search
+    - web-search
+agents:
+- python-ai-specialist
+knowledge:
+- none
+templates:
+- none
+related_skills:
+- managing-plane-tasks
+- orchestrating-mcp
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Mapping Dependencies
@@ -33,7 +56,7 @@ Classify every dependency into exactly one of these types.
 Do not invent new types — lack of precision defeats the purpose.
 
 | Type | Definition | Example |
-|------|-----------|---------|
+||--||
 | **upstream-system** | A system that must exist and be callable before this feature works | Auth service, user profile API |
 | **downstream-system** | A system this feature writes to or triggers | Analytics pipeline, email service |
 | **data-dependency** | A dataset, schema, or corpus that must exist at runtime | User embeddings table, product catalogue |
@@ -43,7 +66,7 @@ Do not invent new types — lack of precision defeats the purpose.
 | **infrastructure** | Cloud services, queues, caches, storage | S3, Redis, SQS |
 | **team-dependency** | Another team whose work must ship before this can | Platform team's auth redesign |
 
----
+
 
 ## Step 1 — Discovery
 
@@ -58,7 +81,7 @@ Use web-search to verify:
 - LLM provider concurrency limits (search: `[provider] API rate limits tokens per minute`)
 - Known outage history for critical external dependencies (search: `[service] status incidents`)
 
----
+
 
 ## Step 2 — Integration Contracts
 
@@ -68,7 +91,7 @@ For each dependency, define the integration contract:
 ### [dependency name] ([type])
 
 | Attribute | Value |
-|-----------|-------|
+|--|-|
 | Owner | [team / vendor] |
 | Interface | [REST / GraphQL / gRPC / MCP / SDK / async event] |
 | Auth method | [API key / OAuth2 / mTLS / IAM role] |
@@ -90,7 +113,7 @@ For AI model dependencies, additionally capture:
 | Data residency | [region(s) — relevant for compliance] |
 ```
 
----
+
 
 ## Step 3 — Dependency Graph (text representation)
 
@@ -105,14 +128,14 @@ flowchart LR
   downstream1["[downstream-system]"] <-- feature
 ```
 
----
+
 
 ## Step 4 — Risk Register
 
 For each dependency, assess:
 
 | Dependency | Type | Risk | Likelihood | Impact | Mitigation |
-|------------|------|------|------------|--------|------------|
+|||||--||
 | [name] | [type] | [what could go wrong] | H/M/L | H/M/L | [strategy] |
 
 Flag any dependency where:
@@ -121,7 +144,7 @@ Flag any dependency where:
 - The rate limit is within 2× of the projected load at target scale
 - The data required does not yet exist and must be backfilled
 
----
+
 
 ## Output
 

@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Azure App Service deployment, Azure Functions, Service Bus messaging,
+description: 'Azure App Service deployment, Azure Functions, Service Bus messaging,
   Key Vault integration, Container Apps, Application Insights
+
+  '
 knowledge:
 - none
 name: integrations-with-azure
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Azure Integration
 
@@ -460,7 +469,7 @@ public class OrderService
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Hardcoded connection strings | Use Key Vault or managed identity |
 | Not using managed identity | Use DefaultAzureCredential |
 | Missing error handling | Add try-catch and retry policies |

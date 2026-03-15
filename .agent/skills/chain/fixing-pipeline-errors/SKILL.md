@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Systematic error detection and fixing strategy for CI/CD pipeline failures
+description: 'Systematic error detection and fixing strategy for CI/CD pipeline failures
   with intelligent test packaging
+
+  '
 knowledge:
 - none
 name: fixing-pipeline-errors
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Pipeline Error Fix
 
@@ -78,7 +87,7 @@ pytest {directories.tests}/integration/ -v --tb=short -x -m "slow"
 Check the CI/CD output to categorize the failure:
 
 | Failure Type | Indicator | Start With |
-|-------------|-----------|------------|
+|-|--||
 | Import Error | `ModuleNotFoundError`, `ImportError` | Tier 1 |
 | Syntax Error | `SyntaxError`, `IndentationError` | Tier 1 |
 | Schema Error | `ValidationError`, `JSONDecodeError` | Tier 1 |

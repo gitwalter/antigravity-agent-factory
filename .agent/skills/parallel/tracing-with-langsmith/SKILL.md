@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Debugging and tracing LangChain/LangGraph with LangSmith MCP
+description: 'Debugging and tracing LangChain/LangGraph with LangSmith MCP
+
+  '
 knowledge:
 - none
 name: tracing-with-langsmith
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Langsmith Tracing
 

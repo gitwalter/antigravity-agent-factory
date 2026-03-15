@@ -1,12 +1,13 @@
 ---
 agents:
-- none
+- sap-systems-specialist
 category: parallel
-description: >
-  XSUAA configuration and scopes, OAuth 2.0 flows in BTP, principal propagation
+description: 'XSUAA configuration and scopes, OAuth 2.0 flows in BTP, principal propagation
   (cloud to on-premise), CDS access control (DCL rules), API authentication patterns
+
+  '
 knowledge:
-- none
+- memory-systems-patterns.json
 name: securing-sap-systems
 related_skills:
 - none
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Sap Security
 

@@ -1,8 +1,14 @@
 ---
 name: writing-prd
 type: skill
-description: >
-  Produces a complete Agentic PRD from the approved prototype brief. Combines human-readable product context with machine-executable acceptance criteria, structured story format, and explicit AI-component requirements. Use when the user wants to write requirements, create a PRD, document what to build, or says "let's write the spec", "document the requirements", or "what are we building". Requires knowledge/prototype-brief.md to be present and approved. Writes to knowledge/prd.md.
+description: 'Produces a complete Agentic PRD from the approved prototype brief. Combines
+  human-readable product context with machine-executable acceptance criteria, structured
+  story format, and explicit AI-component requirements. Use when the user wants to
+  write requirements, create a PRD, document what to build, or says "let''s write
+  the spec", "document the requirements", or "what are we building". Requires knowledge/prototype-brief.md
+  to be present and approved. Writes to knowledge/prd.md.
+
+  '
 license: MIT
 allowed-tools: Read, Write
 metadata:
@@ -10,6 +16,23 @@ metadata:
   phase: requirements
   llm-preference: claude
   standard: agentic-prd
+agents:
+- python-ai-specialist
+knowledge:
+- none
+templates:
+- none
+related_skills:
+- managing-plane-tasks
+- orchestrating-mcp
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Writing PRD
@@ -39,7 +62,7 @@ If prototype-brief.md is missing or still marked DRAFT, stop and tell the user.
 
 Write to `knowledge/prd.md`. Mark as DRAFT until human approves.
 
----
+
 
 ## PRD Template
 
@@ -50,14 +73,14 @@ _Phase: Requirements_
 _Date: [date]_
 _Version: 1.0.0_
 
----
+
 
 ## 1. Executive Summary
 One paragraph. For humans who won't read further.
 What is being built, for whom, and what outcome it produces.
 Success criterion in one sentence.
 
----
+
 
 ## 2. Product Context
 
@@ -70,13 +93,13 @@ Success criterion in one sentence.
 
 ### Success Metrics
 | Metric | Baseline | Target | Measurement method |
-|--------|----------|--------|-------------------|
+|--|-|--|-|
 | [HEART/AARRR metric] | [now] | [goal] | [how measured] |
 
 ### Explicitly Out of Scope
 - [Item] — reason: [why excluded, not just what]
 
----
+
 
 ## 3. Functional Requirements
 
@@ -123,7 +146,7 @@ As a [persona], I want [capability] so that [value delivered].
 **Estimated size**: XS / S / M / L / XL
 **Shippable independently**: YES / NO — if NO, explain why and propose a split
 
----
+
 
 ## 4. Non-Functional Requirements
 
@@ -131,12 +154,12 @@ _See knowledge/nfr.md for full detail. Summary below._
 
 ### Performance
 | Requirement | Threshold | Measurement |
-|-------------|-----------|-------------|
+|-|--|-|
 | [e.g. API response time p95] | [< 500ms] | [load test] |
 
 ### AI-Specific NFRs
 | Requirement | Threshold | Fallback |
-|-------------|-----------|----------|
+|-|--|-|
 | LLM response latency p95 | [value] | [behaviour if exceeded] |
 | Token budget per operation | [value] | [model downgrade or truncation strategy] |
 | Hallucination tolerance | [none/low/medium] | [grounding strategy] |
@@ -150,7 +173,7 @@ _See knowledge/nfr.md for full detail. Summary below._
 ### Compliance
 - [Any regulatory constraints — GDPR, HIPAA, etc.]
 
----
+
 
 ## 5. AI Component Specifications
 
@@ -159,7 +182,7 @@ _For each AI component identified in prototype-brief.md_
 #### Component: [name]
 
 | Attribute | Value |
-|-----------|-------|
+|--|-|
 | Role | [what it does in one sentence] |
 | Input | [format, max size, source] |
 | Output | [format, structure, max length] |
@@ -169,7 +192,7 @@ _For each AI component identified in prototype-brief.md_
 | Evaluation method | [how quality is measured] |
 | Failure mode | [what happens when it produces bad output] |
 
----
+
 
 ## 6. Three-Tier Boundaries
 
@@ -184,15 +207,15 @@ _Explicit constraints for AI agents implementing this spec._
 **Never do**:
 - [Hard prohibition — e.g. "Never expose raw LLM outputs without filtering"]
 
----
+
 
 ## 7. Open Questions
 
 | ID | Question | Owner | Due |
-|----|----------|-------|-----|
+|-|-|-|--|
 | Q-01 | [unresolved decision] | [name] | [date] |
 
----
+
 
 ## 8. Glossary
 
@@ -200,11 +223,11 @@ _Define domain terms used in acceptance criteria. Agents need unambiguous vocabu
 
 - **[term]**: [precise definition]
 
----
+
 _Human approval required. Remove DRAFT and change status to READY before Architecture Phase._
 ```
 
----
+
 
 ## Writing Guidelines
 

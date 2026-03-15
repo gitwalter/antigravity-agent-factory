@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-03-15
+
+### Added
+- **Integrated Developer Experience (IDX) UI**: Initial launch of the Next.js based frontend for managing the Factory.
+- **Factory Assets Integration (AGENT-130)**: Integrated Blueprints, Rules, and Workflows directly into the IDX UI.
+- **Modular Agent Architecture (AGENT-123)**: Formalized coordination framework for complex agentic workflows.
+- **Proactive Maintenance (PAM) (AGENT-121)**: Automated knowledge debt detection and link-integrity monitoring.
+- **SDLC Usage Guides (AGENT-115)**: Documented 20+ specialized workflows and usage patterns.
+- **Context Hub Integration (AGENT-113/112)**: Live API documentation synchronization via `chub`.
+
+### Changed
+- **Universal Memory Integration (AGENT-136)**: Modernized the memory system with deterministic access protocols and performance optimizations.
+- **UI Interaction Model (AGENT-125/135)**: Implemented advanced drilldown, entity editing, and animated workflow phase parsing.
+- **Thought Trace Removal (AGENT-131)**: Streamlined the IDX experience by removing non-functional thought tracing components.
+
+### Fixed
+- **Systemic Validation Failures (AGENT-134/128)**: Resolved critical schema failures across knowledge files, skills, and sync integrations.
+- **Performance & Reliability Core (AGENT-118)**: Optimized CI pipelines, increased diagnostic verbosity, and repaired UTC deprecations and test blockers.
+
 ## [1.7.1] - 2026-03-09
 
 ### Added

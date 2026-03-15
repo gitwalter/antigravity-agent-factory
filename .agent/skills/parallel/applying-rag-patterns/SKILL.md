@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Document chunking strategies, hybrid retrieval (semantic + keyword),
+description: 'Document chunking strategies, hybrid retrieval (semantic + keyword),
   reranking patterns, and citation/attribution
+
+  '
 knowledge:
 - none
 name: applying-rag-patterns
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Rag Patterns
 
@@ -35,7 +44,7 @@ Implement Retrieval-Augmented Generation with effective chunking, hybrid retriev
 ## Chunking Strategies Comparison
 
 | Strategy | Best For | Pros | Cons |
-|----------|----------|------|------|
+|-|-|||
 | Character-based | Simple text | Fast, predictable | Ignores structure |
 | Recursive | General documents | Respects structure | May split sentences |
 | Token-based | LLM context | Accurate sizing | Requires tokenizer |
@@ -56,7 +65,7 @@ Implement Retrieval-Augmented Generation with effective chunking, hybrid retriev
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | No chunk overlap | Use 10–20% overlap |
 | Too large chunks | Keep under model context limit |
 | Ignoring document structure | Use header-aware chunking |

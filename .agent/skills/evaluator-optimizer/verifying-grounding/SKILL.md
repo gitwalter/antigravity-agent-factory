@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: evaluator-optimizer
-description: >
-  Universal two-pass verification for LLM grounding using confidence delta
+description: 'Universal two-pass verification for LLM grounding using confidence delta
   comparison
+
+  '
 knowledge:
 - none
 name: verifying-grounding
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Grounding Verification
 
@@ -93,7 +102,7 @@ Proceed with confidence, add warnings, or stop based on the verification status.
 Skills opt-in to verification by selecting a profile that matches their domain:
 
 | Profile | Domain | Thresholds | Default Trigger |
-|---------|--------|------------|-----------------|
+||--||--|
 | `strawberry` | General factual claims | Standard (delta >= 0.3) | on_medium_confidence |
 | `code` | Code structure, APIs, functions | Standard | on_medium_confidence |
 | `documentation` | External docs, API refs | Relaxed (delta >= 0.25) | on_conflict |
@@ -120,7 +129,7 @@ Skills add verification to their frontmatter:
 ## Trigger Options
 
 | Trigger | When | Use Case |
-|---------|------|----------|
+|||-|
 | `always` | Every grounding result | Critical systems, security |
 | `on_medium_confidence` | Initial confidence is MEDIUM | Default for most skills |
 | `on_critical_claim` | Claims marked critical | Selective verification |
@@ -130,7 +139,7 @@ Skills add verification to their frontmatter:
 ## Verification Statuses
 
 | Status | Meaning | Action |
-|--------|---------|--------|
+|--||--|
 | **VERIFIED** | Evidence essential (high delta) | Proceed with confidence |
 | **PLAUSIBLE** | Evidence helpful (medium delta) | Proceed with caution |
 | **SUSPICIOUS** | Evidence may not be used (low delta) | Add warning, investigate |
@@ -240,7 +249,7 @@ To save cost/latency, skip verification when:
 ## Integration with Existing Skills
 
 | Skill | Profile | Trigger |
-|-------|---------|---------|
+|-|||
 | `grounding` | data | on_medium_confidence |
 | `security-audit` | security | always |
 | `code-review` | code | on_medium_confidence |
@@ -255,15 +264,15 @@ To save cost/latency, skip verification when:
 **Trigger:** {TRIGGER}
 **Claims Analyzed:** {COUNT}
 
----
+
 
 #### Claim Verification
 
 | Claim | Scrubbed Conf | Full Conf | Delta | Status |
-|-------|---------------|-----------|-------|--------|
+|-||--|-|--|
 | {CLAIM} | {0.XX} | {0.XX} | {0.XX} | {STATUS} |
 
----
+
 
 ### RECOMMENDATION: {PROCEED|PROCEED_WITH_WARNINGS|STOP|GATHER_MORE_EVIDENCE}
 
@@ -273,7 +282,7 @@ To save cost/latency, skip verification when:
 ## Related Skills
 
 | Skill | Relationship |
-|-------|--------------|
+|-|--|
 | `strawberry-verification` | Profile implementation (extends this base) |
 | `grounding` | Consumer (opts in with data profile) |
 | `security-audit` | Consumer (opts in with security profile) |
@@ -281,7 +290,7 @@ To save cost/latency, skip verification when:
 ## Axiom Alignment
 
 | Axiom | How This Skill Applies |
-|-------|------------------------|
+|-||
 | A1 (Verifiability) | Mathematically verify claims against evidence |
 | A3 (Transparency) | Make verification reasoning visible |
 | A4 (Non-Harm) | Prevent acting on hallucinated claims |

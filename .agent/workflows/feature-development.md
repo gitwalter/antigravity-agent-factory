@@ -22,10 +22,11 @@ The formal process for developing and delivering new features within the Antigra
 
 ## Phases
 
-### Phase 0: Project Initiation
-- **Goal**: Establish tracking and metadata.
-- **Action**: Use `managing-plane-tasks` to create a `FEATURE` issue.
-- **Mandate**: Use `create_task.py` with the Jinja2 template and task schema.
+### Phase 0: Orientation & Registration
+- **Goal**: Establish the memory trail for the task.
+- **Action 1**: Use `mcp_memory_open_nodes` with `SYS:Consciousness` and `SOP:Feature-Development`.
+- **Action 2**: Create the `TASK:[IssueKey]` node and link it to the SOP.
+- **Action 3**: Use `managing-plane-tasks` to create a `FEATURE` issue.
 
 ### 1. Requirements & Analysis
 - **Goal**: Deep understanding of the PRD and technical constraints.
@@ -49,10 +50,11 @@ The formal process for developing and delivering new features within the Antigra
 - **Goal**: Formalized rollout.
 - **Action**: Invoke `/release-management`.
 
-### 6. Memory Induction
-- **Goal**: Persist new patterns/knowledge.
-- **Action 1**: Update `knowledge-manifest.json` via the `documentation-workflow`.
-- **Action 2**: Close the Plane issue via `post_solution.py` using the Jinja2 solution template.
+### 6. Memory Induction & Task Closure
+- **Goal**: Persist new patterns and clean up operational state.
+- **Action 1**: Update `KI:` nodes in Memory MCP with any new patterns discovered.
+- **Action 2**: Transition the `TASK:` node observations to a final summary.
+- **Action 3**: Close the Plane issue via `post_solution.py` using the Jinja2 solution template.
 
 ## Best Practices
 - **Phase Gates**: Never skip a phase without explicit justification in the `walkthrough.md`.

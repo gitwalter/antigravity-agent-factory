@@ -1,12 +1,14 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Tactical Blueprint for high-performance Python Asyncio. Focuses on structured
+description: 'Tactical Blueprint for high-performance Python Asyncio. Focuses on structured
   concurrency, resource safety, and resilient background processing.
+
+  '
 knowledge:
-- none
+- python-production-patterns.json
+- reactive-programming-patterns.json
 name: programming-python-async
 related_skills:
 - none
@@ -16,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Capability Manifest: Python Async Mastery
 
@@ -47,7 +57,7 @@ Follow these procedures to implement the capability:
 ## Process (Fail-State & Recovery)
 
 | Symptom | Probable Cause | Recovery Operation |
-| :--- | :--- | :--- |
+| : | : | : |
 | **Event Loop Lag** | Blocking I/O (e.g., `requests.get`) called in async code. | Identify the blocker via `loop.set_debug(True)`; replace with `aiohttp` or wrap in `to_thread()`. |
 | **Silent Task Failure** | Background task raised an exception that wasn't awaited. | Attach a callback via `task.add_done_callback()` to log errors; use `TaskGroup` to ensure exceptions bubble up. |
 | **Memory Leak (Zombie Tasks)** | `asyncio.create_task()` called without tracking the task or using a TaskGroup. | Move tasks into a managed list or use a TaskGroup context manager. |
@@ -81,7 +91,7 @@ async def lifespan(app: FastAPI):
 ## Prerequisites
 
 | Action | Command / Tool |
-| :--- | :--- |
+| : | : |
 | Debug Loop | `asyncio.run(main(), debug=True)` |
 | Profile Async | `py-spy record -o profile.svg --pid <PID>` |
 | Test Async | `pytest-asyncio` |

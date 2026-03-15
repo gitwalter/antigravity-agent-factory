@@ -1,0 +1,117 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "agent-handoff-protocol",
+  "name": "Agent Handoff Protocol",
+  "title": "Universal Agent Handoff Protocol (UCO)",
+  "description": "JSON-based protocol for exchanging session context and task state between AI agents across generic IDEs.",
+  "version": "1.0.0",
+  "category": "patterns",
+  "anti_patterns": [
+    "Overloading the `state_tree` with large binary data; use file links instead.",
+    "Bypassing UCO for out-of-band communication between agents, leading to context loss.",
+    "Failing to validate UCO schema on receipt, which can cause downstream agent crashes."
+  ],
+  "axiomAlignment": {
+    "A1_verifiability": "UCO structure allows for integrity checks of the transferred state.",
+    "A3_transparency": "The handoff object explicitly lists active workflows and constraints.",
+    "A5_consistency": "Standardized schema ensures predictable handoffs between different agent personas."
+  },
+  "definitions": {
+    "uco": {
+      "type": "object",
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "description": "Global identifier for the task (e.g., Plane ID)."
+        },
+        "session_id": {
+          "type": "string",
+          "description": "Unique identifier for the current interaction session."
+        },
+        "sender_did": {
+          "type": "string",
+          "description": "DID of the agent initiating the handoff."
+        },
+        "receiver_did": {
+          "type": "string",
+          "description": "DID of the target agent."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "active_workflow": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "step_id": {
+              "type": "integer"
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ]
+        },
+        "state_tree": {
+          "type": "object",
+          "description": "The current state of the task, including variables, file buffers, and tool outputs."
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Operating limits or rules to be inherited by the receiver."
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Relative paths to artifacts associated with the session."
+        }
+      },
+      "required": [
+        "task_id",
+        "session_id",
+        "sender_did",
+        "receiver_did",
+        "timestamp",
+        "state_tree"
+      ]
+    }
+  },
+  "patterns": {
+    "handoff_sequence": {
+      "steps": [
+        "Capture: Sender serializes current state into UCO.",
+        "Transmit: Sender posts UCO to shared memory or message bus.",
+        "Acknowledge: Receiver validates UCO schema.",
+        "Resume: Receiver hydrates local state from UCO and continues workflow."
+      ],
+      "description": "Pattern handoff_sequence for agent-handoff-protocol",
+      "use_when": "When implementing handoff_sequence",
+      "code_example": "// Example for handoff_sequence",
+      "best_practices": [
+        "Use appropriately for best results.",
+        "Monitor results and optimize."
+      ]
+    }
+  },
+  "best_practices": [
+    "Always include the Plane task ID in `task_id` for cross-system tracking.",
+    "Sanitize `state_tree` to remove temporal internal objects that cannot be serialized.",
+    "Log every handoff event in the global agent audit log."
+  ],
+  "related_skills": [
+    "onboarding-flow"
+  ],
+  "related_knowledge": [
+    "manifest.json"
+  ]
+}

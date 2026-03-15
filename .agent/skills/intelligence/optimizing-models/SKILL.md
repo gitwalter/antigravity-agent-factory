@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: general
-description: >
-  LoRA/QLoRA/PEFT fine-tuning workflows with Hugging Face transformers
+description: 'LoRA/QLoRA/PEFT fine-tuning workflows with Hugging Face transformers
+
+  '
 knowledge:
 - none
 name: optimizing-models
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Model Optimization
 

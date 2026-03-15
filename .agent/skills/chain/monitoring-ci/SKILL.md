@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Continuous CI/CD pipeline monitoring with automatic error detection and
-  fix loop
+description: 'Continuous CI/CD pipeline monitoring with automatic error detection
+  and fix loop
+
+  '
 knowledge:
 - none
 name: monitoring-ci
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Ci Monitor
 
@@ -112,7 +121,7 @@ gh run view $runId --log-failed 2>&1 | \
 ### Step 5: Parse and Categorize Errors
 
 | Error Type | Pattern | Category |
-|------------|---------|----------|
+|||-|
 | Linter | `F401`, `F541`, `F821` | code_quality |
 | Test Failure | `AssertionError`, `FAILED` | test_failure |
 | Import Error | `ImportError`, `ModuleNotFoundError` | dependency |
@@ -173,7 +182,7 @@ Return to Step 1 and continue monitoring until green.
 ### Linter Errors (ruff)
 
 | Code | Meaning | Auto-Fix |
-|------|---------|----------|
+|||-|
 | F401 | Unused import | Remove import |
 | F541 | f-string without placeholder | Use regular string |
 | F821 | Undefined name | Check imports |
@@ -182,7 +191,7 @@ Return to Step 1 and continue monitoring until green.
 ### Test Failures
 
 | Pattern | Strategy |
-|---------|----------|
+||-|
 | `AssertionError: Out of sync` | Run sync scripts |
 | `Broken references` | Add missing entries to manifest |
 | `ModuleNotFoundError` | Add to requirements |
@@ -191,7 +200,7 @@ Return to Step 1 and continue monitoring until green.
 ### Documentation Sync
 
 | File | Sync Command |
-|------|--------------|
+||--|
 | README.md counts | `sync_artifacts.py --sync` |
 | manifest.json | Add missing file entries |
 | skill-catalog.json | Add new skill entries |
@@ -293,7 +302,7 @@ gh run rerun {run_id} --repo {owner}/{repo} --failed
 ## Escalation
 
 | Condition | Action |
-|-----------|--------|
+|--|--|
 | > 3 fix attempts | Escalate to user with analysis |
 | Security issue | Stop and alert immediately |
 | Flaky test | Document and suggest stabilization |

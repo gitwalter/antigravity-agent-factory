@@ -1,12 +1,14 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Web scraping with agents, browser automation, content extraction, and
+description: 'Web scraping with agents, browser automation, content extraction, and
   ethical scraping practices
+
+  '
 knowledge:
-- none
+- web-browsing-and-scraping-patterns.json
+- web-browsing-patterns.json
 name: browsing-web
 related_skills:
 - none
@@ -16,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Web Browsing
 
@@ -477,7 +487,7 @@ response = await client.chat.completions.create(
 ## Scraping Patterns
 
 | Pattern | Use Case | Tool |
-|---------|----------|------|
+||-||
 | Static HTML | Simple sites | httpx + BeautifulSoup |
 | JavaScript-heavy | SPAs, React apps | Playwright/Selenium |
 | API endpoints | Data APIs | httpx (direct API calls) |
@@ -500,7 +510,7 @@ response = await client.chat.completions.create(
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | No rate limiting | Implement RateLimiter |
 | Ignoring robots.txt | Check and respect robots.txt |
 | Synchronous requests | Use async/await |

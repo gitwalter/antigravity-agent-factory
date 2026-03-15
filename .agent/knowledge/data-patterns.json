@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "data-patterns",
+  "name": "Data Stack Patterns",
+  "title": "Modern Data Stack Patterns",
+  "description": "Core patterns for ELT, data modeling with dbt, and pipeline orchestration using Python-based tools like Airflow or Dagster.",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns ensure data lineage and quality which are directly verifiable via tests.",
+    "A2_user_primacy": "Maintains data trust for end-users and stakeholders.",
+    "A3_transparency": "Lineage documentation makes data transformations explicit.",
+    "A4_non_harm": "Ensures data privacy and prevents catastrophic data loss during migrations.",
+    "A5_consistency": "Standardizes transformation logic and naming conventions across the data warehouse."
+  },
+  "patterns": {
+    "ELT-Layering": {
+      "description": "Structuring data warehouse transformations into staging, intermediate, and mart layers.",
+      "use_when": "Managing scalable data transformations in modern warehouses like Snowflake or BigQuery.",
+      "code_example": "-- stg_orders.sql\nselect id, status from {{ source('raw', 'orders') }}\n-- mart_sales.sql\nselect * from {{ ref('stg_orders') }} join {{ ref('stg_customers') }}",
+      "best_practices": [
+        "One source per staging model.",
+        "No joins in the staging layer.",
+        "Apply renaming and casting as close to the source as possible."
+      ]
+    },
+    "Data-Contract-Validation": {
+      "description": "Enforcing schema and quality constraints at the ingestion boundary.",
+      "use_when": "Preventing upstream breaking changes from corrupting production data pipelines.",
+      "code_example": "version: 2\nmodels:\n  - name: orders\n    tests:\n      - unique\n      - not_null\n      - accepted_values: {values: ['shipped', 'completed']}",
+      "best_practices": [
+        "Include uniqueness and nullity tests for all primary keys.",
+        "Use accepted_values for categorical status fields.",
+        "Run tests before every deployment to production."
+      ]
+    }
+  },
+  "best_practices": [
+    "Commit dbt documentation to a shared repository for visibility.",
+    "Use environment variables for all database credentials.",
+    "Implement incremental loading for large datasets to save costs.",
+    "Maintain a clear separation between raw, clean, and modeled data."
+  ],
+  "anti_patterns": [
+    {
+      "name": "One-Big-Table (OBT) in Staging",
+      "problem": "Combining multiple sources into one table early makes lineage tracing and error debugging difficult.",
+      "fix": "Use one staging model per raw source and join only in the mart layer."
+    }
+  ],
+  "related_skills": [
+    "managing-stack-context"
+  ],
+  "related_knowledge": [
+    "data-engineering-patterns.json"
+  ]
+}

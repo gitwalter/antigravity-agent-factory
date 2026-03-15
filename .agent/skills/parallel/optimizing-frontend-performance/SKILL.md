@@ -1,9 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Core Web Vitals optimization, code splitting, and React performance patterns
+description: 'Core Web Vitals optimization, code splitting, and React performance
+  patterns
+
+  '
 knowledge:
 - none
 name: optimizing-frontend-performance
@@ -15,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Frontend Performance
 

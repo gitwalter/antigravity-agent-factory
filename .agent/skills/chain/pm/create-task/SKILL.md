@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: general
-description: >
-  Create implementation task from story or description
+description: 'Create implementation task from story or description
+
+  '
 knowledge:
 - pm-metrics.json
 - workflow-patterns.json
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Create Task Skill
@@ -130,7 +139,7 @@ Would you like to:
 ## Backend Operations
 
 | Operation | Parameters | Returns |
-|-----------|------------|---------|
+|--|||
 | `createTask` | title, description, storyId, estimation | Task ID, URL |
 | `assignItem` | taskId, assignee | Updated task |
 | `updateStatus` | taskId, status | Updated task |
@@ -187,7 +196,7 @@ Description:
 ## Integration with Other Skills
 
 | Skill | Integration |
-|-------|-------------|
+|-|-|
 | `create-story` | Tasks are children of stories |
 | `estimate-task` | Get estimation for task |
 | `run-standup` | Report task progress |
@@ -196,7 +205,7 @@ Description:
 ## Fallback Procedures
 
 | Condition | Action |
-|-----------|--------|
+|--|--|
 | Task too large | Suggest breaking into subtasks |
 | Missing story | Offer to create standalone or link later |
 | Backend error | Queue for retry, notify user |

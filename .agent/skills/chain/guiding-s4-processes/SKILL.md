@@ -1,11 +1,12 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Answer process and configuration questions for FI (incl. FI-CAX, VIM),
+description: 'Answer process and configuration questions for FI (incl. FI-CAX, VIM),
   SD, MM, EWM, LE, CO, WM, AIF, and logistics chain. Supports ABAP development patterns.
   Output EN or DE.
+
+  '
 knowledge:
 - none
 name: guiding-s4-processes
@@ -17,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # S4 Process Guide
 

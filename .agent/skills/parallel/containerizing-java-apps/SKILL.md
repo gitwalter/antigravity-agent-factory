@@ -1,11 +1,12 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Docker multi-stage builds for Java (JDK vs JRE), GraalVM native images,
+description: 'Docker multi-stage builds for Java (JDK vs JRE), GraalVM native images,
   Jib for containerization, Kubernetes deployment (Deployment, Service, ConfigMap,
   Secrets), Helm charts, Health probes (liveness, readiness, startup), Resource limits
+
+  '
 knowledge:
 - none
 name: containerizing-java-apps
@@ -17,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Java Containerization
 
@@ -572,7 +581,7 @@ public class DatabaseHealthIndicator implements HealthIndicator {
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Using JDK in production | Use JRE or distroless images |
 | Running as root | Create non-root user |
 | No resource limits | Set requests and limits |

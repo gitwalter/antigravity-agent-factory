@@ -1,12 +1,14 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Code and document template generation skill with mandatory schema validation
+description: 'Code and document template generation skill with mandatory schema validation
   against schemas/template.schema.json
+
+  '
 knowledge:
-- none
+- github-agent-templates.json
+- template-catalog.json
 name: generating-templates
 related_skills:
 - none
@@ -16,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Template Generation
 
@@ -28,7 +38,7 @@ Generates code and document templates for target projects with mandatory schema 
 Template metadata (embedded in .j2/.tmpl files as comment) MUST validate against `schemas/template.schema.json`. Required fields:
 
 | Field | Type | Constraints |
-|-------|------|-------------|
+|-||-|
 | `name` | string | Min 3 chars |
 | `description` | string | Min 20 chars |
 | `version` | string | Semantic version |
@@ -50,7 +60,7 @@ Template metadata (embedded in .j2/.tmpl files as comment) MUST validate against
 ## Common Violations
 
 | Violation | Fix |
-|-----------|-----|
+|--|--|
 | Missing `used_by_blueprints` | Add `used_by_blueprints: ["none"]` if no blueprint |
 | Variable missing `required` | Each variable needs name, type, description, required |
 | Empty `variables` | Add at least 1 variable |
@@ -66,7 +76,7 @@ Template metadata (embedded in .j2/.tmpl files as comment) MUST validate against
 Based on stack, identify template categories:
 
 | Stack | Categories |
-|-------|------------|
+|-||
 | Python | service-class, repository, model, schema, test-class |
 | TypeScript | component, hook, service, test |
 | Java | controller, service, repository, entity, dto, test |
@@ -89,7 +99,7 @@ Template structure:
 Create standard document templates:
 
 | Template | Purpose |
-|----------|---------|
+|-||
 | `implementation_plan.md` | Implementation planning |
 | `technical_spec.md` | Technical specification |
 | `test_plan.md` | Test planning |
@@ -98,7 +108,7 @@ Create standard document templates:
 Use consistent variable placeholders:
 
 | Variable | Description |
-|----------|-------------|
+|-|-|
 | `{CLASS_NAME}` | Class name |
 | `{METHOD_NAME}` | Method name |
 | `{FILE_NAME}` | File name |

@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: general
-description: >
-  Create user story from description with acceptance criteria
+description: 'Create user story from description with acceptance criteria
+
+  '
 knowledge:
 - pm-metrics.json
 - workflow-patterns.json
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Create Story Skill
@@ -126,7 +135,7 @@ Would you like to:
 ## Backend Operations
 
 | Operation | Parameters | Returns |
-|-----------|------------|---------|
+|--|||
 | `createStory` | title, description, acceptanceCriteria, priority, epicId | Story ID, URL |
 | `updateStatus` | storyId, status | Updated story |
 | `addToSprint` | storyId, sprintId | Confirmation |
@@ -154,7 +163,7 @@ Would you like to:
 ## Integration with Other Skills
 
 | Skill | Integration |
-|-------|-------------|
+|-|-|
 | `create-epic` | Stories can be linked to epics |
 | `create-task` | Stories can be broken into tasks |
 | `estimate-task` | Invoke for estimation |
@@ -163,7 +172,7 @@ Would you like to:
 ## Fallback Procedures
 
 | Condition | Action |
-|-----------|--------|
+|--|--|
 | Missing persona | Suggest common personas from project |
 | Vague action | Ask clarifying questions |
 | Backend error | Queue for retry, notify user |

@@ -1,11 +1,14 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Create and extend workflow definitions using the workflow system architecture
+description: 'Create and extend workflow definitions using the workflow system architecture
+
+  '
 knowledge:
-- none
+- langgraph-workflow-patterns.json
+- schemas-workflow-schema.json
+- workflow-patterns.json
 name: extending-workflows
 related_skills:
 - none
@@ -15,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Extend Workflow
 
@@ -29,7 +40,7 @@ Create, extend, and manage workflow definitions using the Factory's workflow sys
 ## Artifacts Used
 
 | Artifact | Path | Purpose |
-|----------|------|---------|
+|-|||
 | Workflow Template | `{directories.templates}/workflows/workflow.md.tmpl` | Markdown structure for workflows |
 | Workflow Schema | `{directories.knowledge}/schemas/workflow-schema.json` | Validation rules |
 | Workflow Entities | `{directories.knowledge}/workflow-entities.json` | Entity definitions |
@@ -59,7 +70,7 @@ Workflow
 ### Workflow Lifecycle States
 
 | State | Description |
-|-------|-------------|
+|-|-|
 | `draft` | Being designed, not executable |
 | `active` | Ready for execution |
 | `executing` | Currently running |
@@ -177,7 +188,7 @@ Step 4: Update MCP tools and skills
 
 **Output**: `{directories.workflows}/{workflow-name}.md`
 
----
+
 
 ### Procedure B: Create Workflow from Pattern
 
@@ -204,7 +215,7 @@ Step 4: Update MCP tools and skills
 
 **Output**: `{directories.workflows}/{workflow-name}.md` (customized from pattern)
 
----
+
 
 ### Procedure C: Extend Existing Workflow
 
@@ -240,7 +251,7 @@ Step 4: Update MCP tools and skills
 
 **Output**: Updated `{directories.workflows}/{workflow-name}.md`
 
----
+
 
 ### Procedure D: Create Agent-Specific Workflow
 
@@ -271,7 +282,7 @@ Step 4: Update MCP tools and skills
 
 **Output**: `{directories.workflows}/{agent-name}-workflow.md`
 
----
+
 
 ## Workflow Template Structure
 
@@ -318,7 +329,7 @@ Step 4: Update MCP tools and skills
 
 **Is Mandatory:** Yes/No
 
----
+
 
 ## Decision Points
 
@@ -326,42 +337,42 @@ Step 4: Update MCP tools and skills
 **Condition:** {{What triggers this decision}}
 **Options:**
 | Condition | Next Phase | Rationale |
-|-----------|------------|-----------|
+|--||--|
 | {{condition}} | {{phase}} | {{why}} |
 
----
+
 
 ## Escalation Paths
 
 | Trigger | Action | Escalate To |
-|---------|--------|-------------|
+||--|-|
 | {{trigger}} | {{action}} | {{target}} |
 
----
+
 
 ## Learning Hooks
 
 | Hook Point | Capture | Use For |
-|------------|---------|---------|
+||||
 | {{when}} | {{what data}} | {{improvement}} |
 
----
+
 
 ## Output Artifacts
 
 | Artifact | Location | Purpose |
-|----------|----------|---------|
+|-|-||
 | {{name}} | {{path}} | {{purpose}} |
 
----
+
 
 ## Fallback Procedures
 
 | Condition | Action |
-|-----------|--------|
+|--|--|
 | {{issue}} | {{resolution}} |
 
----
+
 
 ## Related Artifacts
 
@@ -447,7 +458,7 @@ Skills: grounding, bugfix-workflow, sap-development
 ## Summary: What Gets Created
 
 | Extension Type | Output Location | Format |
-|----------------|-----------------|--------|
+|-|--|--|
 | Workflow | `{directories.workflows}/{name}.md` | Markdown |
 | Agent Workflow | `{directories.workflows}/{agent}-workflow.md` | Markdown |
 | Pattern-Based | `{directories.workflows}/{pattern}-{project}.md` | Markdown |
@@ -523,7 +534,7 @@ Proceed? (yes/no/commit only)
 ## Error Handling
 
 | Issue | Resolution |
-|-------|------------|
+|-||
 | Unknown MCP tool | Check catalog, suggest alternatives |
 | Unknown skill | Check catalog, offer to create skill |
 | Circular phases | Restructure workflow |

@@ -3,9 +3,10 @@ agents:
 - knowledge-operations-specialist
 - system-architecture-specialist
 category: management
-description: >
-  Global documentation skill for generating code references, SDLC gate artifacts,
-  and repository management files (README, Changelog, ADRs).
+description: 'Global documentation skill for generating code references, SDLC gate
+  artifacts, and repository management files (README, Changelog, ADRs).
+
+  '
 knowledge:
 - documentation-standards.json
 - api-patterns.json
@@ -19,6 +20,14 @@ tools:
 - none
 type: skill
 version: 2.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Global Documentation Generation

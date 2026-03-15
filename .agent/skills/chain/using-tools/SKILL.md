@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Tool design, binding, and error handling patterns for LangChain agents
+description: 'Tool design, binding, and error handling patterns for LangChain agents
+
+  '
 knowledge:
 - none
 name: using-tools
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Tool Usage
 
@@ -257,7 +266,7 @@ def write_file(path: str, content: str) -> str:
 ## Tool Categories
 
 | Category | Examples |
-|----------|----------|
+|-|-|
 | Data Retrieval | web_search, database_query, api_fetch |
 | Computation | calculate, analyze_data, transform |
 | I/O Operations | read_file, write_file, upload |
@@ -277,7 +286,7 @@ def write_file(path: str, content: str) -> str:
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Vague docstrings | Be specific about inputs/outputs |
 | No error handling | Always catch and return errors |
 | Sync I/O in async | Use async for all I/O |

@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: routing
-description: >
-  Guide users through selecting appropriate MCP servers during project
+description: 'Guide users through selecting appropriate MCP servers during project
   generation
+
+  '
 knowledge:
 - none
 name: selecting-mcp
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Mcp Selection
 
@@ -224,7 +233,7 @@ DATABASE_URL=postgresql://user:pass@host:5432/db
 This project uses the following MCP servers:
 
 | Server | Purpose | Setup Required |
-|--------|---------|----------------|
+|--||-|
 | filesystem | File operations | None |
 | git | Git operations | None |
 | memory | Persistent context | None |

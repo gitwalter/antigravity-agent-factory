@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- knowledge-operations-specialist
 category: routing
-description: >
-  GitHub operations and repository management using the GitHub MCP Server
+description: 'GitHub operations and repository management using the GitHub MCP Server
+
+  '
 knowledge:
 - none
 name: operating-github
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # GitHub Operations
 

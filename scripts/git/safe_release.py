@@ -156,6 +156,9 @@ def main():
     parser.add_argument("--bump", choices=["major", "minor", "patch"], default="patch")
     parser.add_argument("--fast", action="store_true")
     parser.add_argument("--skip-verify", action="store_true")
+    parser.add_argument(
+        "--no-push-tags", action="store_true", help="Skip pushing tags to remote"
+    )
     parser.add_argument("--dry-run", action="store_true")
 
     args = parser.parse_args()
@@ -204,7 +207,10 @@ def main():
 
     # 3. Push
     run_command(["git", "push"], "Pushing branch")
-    run_command(["git", "push", "origin", tag_name], "Pushing tag")
+    if not args.no_push_tags:
+        run_command(["git", "push", "origin", tag_name], "Pushing tag")
+    else:
+        print(f"ℹ️ Skipping remote tag push for {tag_name} as requested.")
 
     print(f"✨ Successfully released {new_version}")
     return 0

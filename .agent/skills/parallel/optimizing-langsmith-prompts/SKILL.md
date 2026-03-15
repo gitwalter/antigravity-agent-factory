@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Prompt management with LangSmith Hub - versioning, testing, and evaluation
+description: 'Prompt management with LangSmith Hub - versioning, testing, and evaluation
+
+  '
 knowledge:
 - none
 name: optimizing-langsmith-prompts
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Langsmith Prompts
 
@@ -199,7 +208,7 @@ prompts/
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Hardcoded prompts | Use Hub for all prompts |
 | No versioning | Always version prompts |
 | No testing | Create evaluation datasets |

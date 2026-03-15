@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Detailed CrewAI agent design patterns - role design, backstories, collaboration,
+description: 'Detailed CrewAI agent design patterns - role design, backstories, collaboration,
   hierarchical vs sequential processes, tool integration
+
+  '
 knowledge:
 - none
 name: orchestrating-crewai-agents
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Crewai Agents
 
@@ -377,7 +386,7 @@ monitored_agent = Agent(
 ## Agent Design Patterns
 
 | Pattern | Use Case | Example |
-|---------|----------|---------|
+||-||
 | **Specialist** | Single focused responsibility | Research-only agent |
 | **Generalist** | Multiple related capabilities | Full-stack developer agent |
 | **Manager** | Coordination and delegation | Project manager agent |
@@ -397,7 +406,7 @@ monitored_agent = Agent(
 ## Backstory Guidelines
 
 | Element | Description | Example |
-|---------|-------------|---------|
+||-||
 | **Experience** | Years/level of expertise | "15 years of experience" |
 | **Specialization** | Specific domain knowledge | "SaaS business models" |
 | **Behavioral Traits** | How agent approaches tasks | "Meticulous, detail-oriented" |
@@ -407,7 +416,7 @@ monitored_agent = Agent(
 ## Process Comparison
 
 | Aspect | Sequential | Hierarchical |
-|--------|-----------|--------------|
+|--|--|--|
 | **Control Flow** | Linear, predefined | Manager-driven |
 | **Delegation** | Explicit task dependencies | Dynamic delegation |
 | **Use Case** | Pipeline workflows | Complex coordination |
@@ -449,7 +458,7 @@ agent.tools = [specialized_function]
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Vague roles | Define specific, focused roles |
 | Generic backstories | Add experience, expertise, and behavioral details |
 | No max_iter limit | Set appropriate iteration limits |

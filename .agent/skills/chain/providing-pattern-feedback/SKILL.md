@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Implement inductive learning by observing patterns and proposing improvements
+description: 'Implement inductive learning by observing patterns and proposing improvements
   to axioms, principles, and methodologies
+
+  '
 knowledge:
 - none
 name: providing-pattern-feedback
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Pattern Feedback
 
@@ -289,13 +298,13 @@ proposal:
 ## Success Metrics
 
 | Metric | Target | Measurement |
-|--------|--------|-------------|
+|--|--|-|
 | Patterns identified per month | 5+ | Count of validated patterns |
 | Proposals accepted | 60%+ | Accepted / Proposed |
 | Improvement impact | Positive | Before/after metrics |
 | Time to integration | < 1 sprint | From proposal to implementation |
 
----
+
 
 *This skill embodies our commitment to continuous improvement (A10) while maintaining the integrity of our foundational principles.*
 

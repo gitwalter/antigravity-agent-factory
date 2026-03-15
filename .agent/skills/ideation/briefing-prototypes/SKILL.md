@@ -1,13 +1,37 @@
 ---
 name: briefing-prototypes
 type: skill
-description: >
-  Converts the top-ranked opportunity cluster into a concrete, buildable prototype brief ready to hand off to the architecture phase. Defines the smallest testable slice, the riskiest assumption to validate, the AI components involved, and the success signal. Use this skill when the user is ready to move from ideas to building, asks "what should we prototype", "what do we build first", or "let's make this concrete". Requires knowledge/opportunities.md. Writes to knowledge/prototype-brief.md and requires human approval before the phase gate.
+description: 'Converts the top-ranked opportunity cluster into a concrete, buildable
+  prototype brief ready to hand off to the architecture phase. Defines the smallest
+  testable slice, the riskiest assumption to validate, the AI components involved,
+  and the success signal. Use this skill when the user is ready to move from ideas
+  to building, asks "what should we prototype", "what do we build first", or "let''s
+  make this concrete". Requires knowledge/opportunities.md. Writes to knowledge/prototype-brief.md
+  and requires human approval before the phase gate.
+
+  '
 license: MIT
 metadata:
   version: 1.0.0
   phase: ideation
   llm-preference: claude
+agents:
+- python-ai-specialist
+knowledge:
+- none
+templates:
+- none
+related_skills:
+- managing-plane-tasks
+- orchestrating-mcp
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Briefing Prototypes
@@ -60,7 +84,7 @@ Method to test it: [how the prototype surface this assumption]
 
 ## AI Components
 | Component | Role | Technology Options | Key Risk |
-|-----------|------|--------------------|----------|
+|--||--|-|
 | [e.g. LLM call] | [what it does] | [Claude / Gemini / local] | [latency / cost / quality] |
 | [e.g. RAG pipeline] | [retrieval use] | [pgvector / Pinecone] | [chunking quality] |
 
@@ -82,7 +106,7 @@ If not testable in this window, the scope is too large — cut further.
 If it works: [what this unlocks — next steps]
 If it fails: [what this rules out — pivot options]
 
----
+
 _Human approval required before handoff to Architecture Phase._
 ```
 

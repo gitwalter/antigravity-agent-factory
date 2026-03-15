@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  CDS view creation (basic, composite, consumption), associations, compositions,
+description: 'CDS view creation (basic, composite, consumption), associations, compositions,
   CDS annotations (semantic, UI, analytics), CDS access control (DCL)
+
+  '
 knowledge:
 - none
 name: modeling-cds
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Cds Modeling
 

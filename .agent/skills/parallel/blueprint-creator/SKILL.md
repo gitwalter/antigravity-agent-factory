@@ -1,23 +1,33 @@
 ---
 name: blueprint-creator
-description: >
-  Standardized blueprint creation and validation with mandatory schema validation
+description: 'Standardized blueprint creation and validation with mandatory schema
+  validation
+
+  '
 type: skill
 version: 1.0.0
 category: factory
 agents:
-  - analyzer
-  - comparator
-  - grader
+- analyzer
+- comparator
+- grader
 knowledge:
-  - blueprint.schema.json
+- blueprint.schema.json
 tools:
-  - none
+- none
 related_skills:
-  - skill-creator
-  - agent-creator
+- skill-creator
+- agent-creator
 templates:
-  - none
+- none
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Blueprint Creator

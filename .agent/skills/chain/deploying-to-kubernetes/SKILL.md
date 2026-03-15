@@ -1,11 +1,12 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Deployment/Service/ConfigMap/Secret patterns, Horizontal Pod Autoscaler,
+description: 'Deployment/Service/ConfigMap/Secret patterns, Horizontal Pod Autoscaler,
   Ingress configuration, Health probes (liveness/readiness/startup), Resource requests
   and limits, Helm chart basics, Kustomize overlays, Rolling updates
+
+  '
 knowledge:
 - none
 name: deploying-to-kubernetes
@@ -17,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Kubernetes Deployment
 
@@ -446,7 +455,7 @@ spec:
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | No resource limits | Set requests and limits |
 | Missing health probes | Add liveness/readiness probes |
 | Secrets in ConfigMap | Use Secret resource |

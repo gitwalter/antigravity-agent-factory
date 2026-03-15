@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  BTP Cloud Foundry deployment (cf push, MTA), service bindings (XSUAA,
+description: 'BTP Cloud Foundry deployment (cf push, MTA), service bindings (XSUAA,
   destination, connectivity), Kyma runtime deployment, SAP Build Work Zone integration
+
+  '
 knowledge:
 - none
 name: deploying-to-btp
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Btp Deployment
 
@@ -227,7 +236,7 @@ resources:
 ### Step 3: Create Manifest.yml for Cloud Foundry
 
 ```yaml
----
+
 applications:
   - name: travel-booking-srv
     memory: 512M

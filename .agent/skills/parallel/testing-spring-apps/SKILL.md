@@ -1,13 +1,22 @@
 ---
 agents:
-- none
+- java-systems-specialist
 category: parallel
-description: >
-  JUnit 5 patterns, Spring Boot Test slices (@WebMvcTest, @DataJpaTest),
+description: 'JUnit 5 patterns, Spring Boot Test slices (@WebMvcTest, @DataJpaTest),
   MockMvc for API testing, Testcontainers for integration tests (PostgreSQL, Redis,
   Kafka), Mockito patterns, Test fixtures with @TestConfiguration
+
+  '
 knowledge:
-- none
+- agent-testing-patterns.json
+- agent-testing.json
+- backtesting-framework-patterns.json
+- kotest-testing-framework-patterns.json
+- spring-boot-kotlin-patterns.json
+- spring-boot-patterns.json
+- spring-microservices-patterns.json
+- spring-observability-patterns.json
+- spring-patterns.json
 name: testing-spring-apps
 related_skills:
 - none
@@ -17,6 +26,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Spring Testing
 

@@ -45,16 +45,9 @@ def generate_architecture_graph():
                 "label": "Architecture Mapper",
                 "agent": "workflow-architect",
             },
-            {
-                "id": "COMP-2",
-                "type": "component",
-                "label": "SDLC State Tracker",
-                "path": "docs/architecture/sdlc-architecture-spec.json",
-            },
         ],
         "edges": [
             {"from": "REQ-1", "to": "COMP-1", "label": "implemented_by"},
-            {"from": "COMP-1", "to": "COMP-2", "label": "updates"},
         ],
         "metadata": {
             "agents": prd_data.get("agents", []),

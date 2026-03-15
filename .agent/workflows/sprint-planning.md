@@ -30,31 +30,33 @@ This workflow is activated when:
 
 ## Steps
 
-### Review Previous Sprint
+## Phases
 
-### Calculate Team Capacity
+### 1. Velocity & Capacity Analysis
+- **Goal**: Determine how much work the team can take on.
+- **Action**: Review the previous sprint's completion rate.
+- **Tool**: `mcp_plane_list_cycle_issues` for the past cycle.
 
-### Review Backlog Priority
+### 2. Backlog Grooming & Selection
+- **Goal**: Identify "Ready" items for the upcoming sprint.
+- **Action**: Select items from the "Todo" state that meet the Definition of Ready (DoR).
+- **Tool**: `mcp_plane_list_project_issues` and local filtering.
 
-### Verify Story Readiness
+### 3. Sprint Creation & Goal Setting
+- **Goal**: Formalize the new iteration.
+- **Action 1**: Create the new cycle if it doesn't exist.
+- **Action 2**: Define a concise Sprint Goal in the cycle description.
+- **Tool**: `mcp_plane_create_cycle`.
 
-### Refine Unestimated Items
+### 4. Work Association
+- **Goal**: Move selected items into the new sprint.
+- **Action**: Update the `cycle_id` and `start_date`/`target_date` for each issue.
+- **Tool**: `associate_task.py` script.
 
-### Select Stories by Priority
-
-### Identify Stretch Goals
-
-### Define Sprint Goal
-
-### Create Sprint
-
-### Create Tasks
-
-### Assign Initial Owners
-
-### Generate Sprint Summary
-
-### Notify Stakeholders
+### 5. Planning Finalization
+- **Goal**: Ensure the sprint is balanced and understood.
+- **Action**: Generate a sprint summary report and notify the team.
+- **Tool**: Invoke `/documentation-workflow`.
 
 
 ## Decision Points

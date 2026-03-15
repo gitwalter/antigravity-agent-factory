@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: general
-description: >
-  Quantitative and Industrial risk assessment with VaR, drawdown analysis,
+description: 'Quantitative and Industrial risk assessment with VaR, drawdown analysis,
   SLA breach forecasting, and process reliability metrics.
+
+  '
 knowledge:
 - none
 name: assessing-risks
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Risk Assessment & Prognosis
 

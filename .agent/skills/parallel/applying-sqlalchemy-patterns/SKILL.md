@@ -1,11 +1,12 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  SQLAlchemy 2.0 patterns (mapped_column, Mapped types), Async engine and
-  sessions, Relationship patterns, Alembic migrations, Repository pattern, Query optimization,
-  Connection pooling
+description: 'SQLAlchemy 2.0 patterns (mapped_column, Mapped types), Async engine
+  and sessions, Relationship patterns, Alembic migrations, Repository pattern, Query
+  optimization, Connection pooling
+
+  '
 knowledge:
 - none
 name: applying-sqlalchemy-patterns
@@ -17,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Sqlalchemy Patterns
 
@@ -395,7 +404,7 @@ engine = create_async_engine(
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | N+1 query problems | Use eager loading (selectinload) |
 | Synchronous database calls | Use async sessions |
 | Missing transactions | Use commit/rollback properly |

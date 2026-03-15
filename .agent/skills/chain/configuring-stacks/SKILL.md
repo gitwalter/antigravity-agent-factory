@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Technology stack selection and configuration skill
+description: 'Technology stack selection and configuration skill
+
+  '
 knowledge:
 - none
 name: configuring-stacks
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Stack Configuration
 
@@ -99,7 +108,7 @@ TRANSLATION MODES:
 Based on selection, configure:
 
 | Mode | TDD | BDD | Translation | Traceability | Practice |
-|------|-----|-----|-------------|--------------|----------|
+||--|--|-|--|-|
 | tdd-only | ✓ | - | - | - | - |
 | bdd-only | - | ✓ | - | - | Three Amigos |
 | layered | ✓ | ✓ | - | Optional | Three Amigos |
@@ -110,7 +119,7 @@ Based on selection, configure:
 **Translation capabilities:**
 
 | Direction | Description | Use Case |
-|-----------|-------------|----------|
+|--|-|-|
 | BDD→TDD | Generate test stubs from scenarios | Outside-in development |
 | TDD→BDD | Generate features from tests | Legacy documentation |
 | Bidirectional | Keep both in sync | Single source of truth |
@@ -124,7 +133,7 @@ Based on selection, configure:
 **Framework mapping by stack:**
 
 | Stack | TDD Framework | BDD Framework |
-|-------|---------------|---------------|
+|-|||
 | Python | pytest | behave, pytest-bdd |
 | TypeScript | jest, vitest | cucumber-js |
 | Java | JUnit | cucumber-jvm |
@@ -200,7 +209,7 @@ testingApproach:
 ## Blueprint Matching Rules
 
 | Primary Language | Key Framework | Blueprint |
-|------------------|---------------|-----------|
+|||--|
 | Python | FastAPI | `python-fastapi` |
 | Python | Django | `python-django` |
 | TypeScript | React | `typescript-react` |

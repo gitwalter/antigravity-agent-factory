@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: evaluator-optimizer
-description: >
-  RAGAS evaluation setup, DeepEval integration, LangSmith evaluation runs,
+description: 'RAGAS evaluation setup, DeepEval integration, LangSmith evaluation runs,
   custom metrics, retrieval quality metrics, regression testing for LLM outputs
+
+  '
 knowledge:
 - none
 name: evaluating-llms
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Llm Evaluation
 
@@ -742,7 +751,7 @@ After evaluation, you'll have:
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | No evaluation | Always evaluate before deployment |
 | Single metric | Use multiple metrics |
 | No baseline | Establish baselines for regression |

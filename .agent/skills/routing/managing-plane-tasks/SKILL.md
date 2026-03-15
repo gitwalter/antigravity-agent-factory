@@ -1,7 +1,9 @@
 ---
 name: managing-plane-tasks
-description: >
-  Remote management of Plane PMS issues and states using the Plane MCP server, with formal task definition schema and memory MCP integration.
+description: 'Remote management of Plane PMS issues and states using the Plane MCP
+  server, with formal task definition schema and memory MCP integration.
+
+  '
 type: skill
 version: 3.0.0
 category: routing
@@ -42,7 +44,13 @@ references:
 - references/task_definition_guide.md
 - references/solution_definition_schema.json
 templates:
-- ["none"]
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Remote Plane Management (MCP)
@@ -55,7 +63,7 @@ This skill enables agents to manage projects, issues, and states in a remote Pla
 ## When to Use
 - When you need to create, update, or track tasks in the hosted Plane instance.
 - For all standard project lifecycle automation (refinement, updates, reporting).
-- When a pure, standardized, and- **Automation**: Use `create_task.py` to maintain visual consistency across all issues.
+- When a pure, standardized, and- **Automation**: Use `create_task.py` to maintain visual consistency across all issues, `list_cycles.py` to discover active sprint UUIDs, and `list_modules.py` / `list_labels.py` for context discovery.
 
 ## Project State Mapping (UUIDs)
 
@@ -105,6 +113,16 @@ Since the API does not support a `state` filter in the list tools, follow this p
 2. Iterate through the `results` array.
 3. Check `item["state"]["id"]` or `item["state"]["name"]` against your target status.
 4. Filter matching items locally.
+
+#### D. Discovering Metadata (Scripts)
+Use these scripts to find valid UUIDs for your task definition:
+```bash
+# List all labels
+conda run -p D:\Anaconda\envs\cursor-factory python .agent/skills/routing/managing-plane-tasks/scripts/list_labels.py
+
+# List all modules
+conda run -p D:\Anaconda\envs\cursor-factory python .agent/skills/routing/managing-plane-tasks/scripts/list_modules.py
+```
 
 ### 2. Detailed Inspection
 Retrieve the full details of a specific item, including description and comments.
@@ -174,8 +192,8 @@ The execution context fields (`start_date`, `target_date`, `estimate_point`, `pa
   "estimate_point": "bd9e29aa-b4e8-4525-b16d-893c8324f7c7",
   "parent": "e18df34b-2da0-46a7-bca2-594ca70757c0",
 
-  "requirements": ["Must support nested loops"],
-  "acceptance_criteria": ["Nested loops work to depth 3"],
+  "requirements": "<ul><li>Must support nested loops</li></ul>",
+  "acceptance_criteria": "<ul><li>Nested loops work to depth 3</li></ul>",
   "workflows": ["feature-development"],
   "agents": ["python-ai-specialist"],
   "skills": ["managing-plane-tasks"],
@@ -191,43 +209,33 @@ conda run -p D:\Anaconda\envs\cursor-factory python .agent/skills/routing/managi
 ```
 *Note: The script outputs the new `UUID` of the created task. You will need this for Steps B and C.*
 
-#### Step B: Mandatory Module Association (at least 1 module)
+#### Step B: Mandatory Module & Cycle Association
 
-Use the Plane MCP server tools to assign the created task to its context module.
+Use the `associate_task.py` script to assign the created task to its context module and cycle.
 
-```json
-// Tool: mcp_plane_add_work_items_to_module
-{
-  "project_id": "e71eb003-87d4-4b0c-a765-a044ac5affbe",
-  "module_id": "9a86f2c8-1ffe-448c-ac2e-82196fba4afa",
-  "issue_ids": ["NEW-ISSUE-UUID"]
-}
-```
-
-<a name="known-active-modules"></a>
-**Known Active Modules:**
-| Module Name | UUID |
-| :--- | :--- |
-| **agent system** | `9a86f2c8-1ffe-448c-ac2e-82196fba4afa` |
-| **statistical dashboard** | `a4123817-7b59-474a-b4d2-7d0fcb3d3fc9` |
-| **plane integration** | `d2ea0dc7-0b89-48c7-b902-26e46a35d6ba` |
-| **rag system** | `4071283a-7135-4ef8-a61b-020cdef79a02` |
-
-#### Step C: Mandatory Cycle Association
-
-Use the Plane MCP server tools to assign the created task to the active cycle.
-
-```json
-// Tool: mcp_plane_add_work_items_to_cycle
-{
-  "project_id": "e71eb003-87d4-4b0c-a765-a044ac5affbe",
-  "cycle_id": "ACTIVE-CYCLE-UUID",
-  "issue_ids": ["NEW-ISSUE-UUID"]
-}
+```bash
+conda run -p D:\Anaconda\envs\cursor-factory python .agent/skills/routing/managing-plane-tasks/scripts/associate_task.py \
+    --issue AGENT-126 \
+    --module 4071283a-7135-4ef8-a61b-020cdef79a02 \
+    --cycle RESOLVED-CYCLE-UUID
 ```
 
 > [!TIP]
-> Always use `mcp_plane_list_cycles` to find the currently active sprint. Do not hardcode cycle UUIDs — they change every sprint.
+> Always use `list_cycles.py` to find the currently active sprint. Do not hardcode cycle UUIDs — they change every sprint.
+
+```bash
+conda run -p D:\Anaconda\envs\cursor-factory python .agent/skills/routing/managing-plane-tasks/scripts/list_cycles.py
+```
+
+#### Step C: Status Management
+
+Transition issues through their lifecycle using `update_status.py`.
+
+```bash
+conda run -p D:\Anaconda\envs\cursor-factory python .agent/skills/routing/managing-plane-tasks/scripts/update_status.py \
+    --issue AGENT-126 \
+    --state "In Progress"
+```
 
 ### 4. High-Fidelity Solution Reporting (Mandatory Closure)
 

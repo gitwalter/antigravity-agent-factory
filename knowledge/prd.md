@@ -1,32 +1,19 @@
-# Product Requirements Document (PRD): [Feature Name]
+# PRD: Experimental Voice-Generated Feature
 
-## 1. Executive Summary
-- **Primary Goal**: [One sentence summary]
-- **Target SDLC Phase**: Phase 2 (Requirements)
-- **Status**: DRAFT | READY (requires human sign-off)
+**Date:** 2026-03-13
+**Source Transcript:** "Build a new module for autonomous fleet management with zero-knowledge verification."
 
-## 2. Functional Requirements
-- [FR1]: [Description]
-- [FR2]: [Description]
+## 1. Overview
+This feature was initiated via voice command and represents an experimental interaction flow.
 
-## 3. Non-Functional Requirements (NFRs)
-- **Performance**: [e.g., Latency targets]
-- **Security**: [e.g., Auth requirements]
-- **Observability**: [e.g., Logging, Tracing]
+## 2. Requirements
+- The system must support the core intent: "Build a new module for autonomous fleet management with zero-knowledge verification."
+- Handoff should be seamless between agents.
+- Compliance with Antigravity Axioms is mandatory.
 
-## 4. User Stories & Acceptance Criteria
-- **Story 1**: As a [role], I want to [action] so that [benefit].
-  - **AC1**: [Criterion 1]
-  - **AC2**: [Criterion 2]
+## 3. User Stories
+- **As a user**, I want to speak my ideas so that they are instantly captured as structured PRDs.
 
-## 5. Metadata & Traceability
-- **Parent Brief**: [Link to prototype-brief.md]
-- **Related Issues**: [Plane Issue ID]
-- **Agents**: `workflow-architect`, `test-conductor`
-
-## 6. Phase Gate Checklist
-- [ ] NFRs elicited and documented
-- [ ] Dependencies mapped
-- [ ] Acceptance criteria defined via Gherkin or JSON predicates
-- [ ] Adversarial review completed
-- [ ] Human Sign-off received
+## 4. Technical Constraints
+- Requires high-fidelity STT (e.g., OpenAI Whisper).
+- Must follow the `/write-prd` workflow standards.

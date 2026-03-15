@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Service decomposition, API Gateway with YARP, inter-service communication
+description: 'Service decomposition, API Gateway with YARP, inter-service communication
   (gRPC, REST, message bus), distributed caching, health checks, circuit breakers
+
+  '
 knowledge:
 - none
 name: building-dotnet-microservices
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Dotnet Microservices
 
@@ -573,7 +582,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Shared database across services | Each service has its own database |
 | Synchronous communication everywhere | Use async messaging where appropriate |
 | No circuit breaker | Implement circuit breaker pattern |

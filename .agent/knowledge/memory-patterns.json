@@ -1,155 +1,82 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "id": "memory-patterns",
-  "name": "Agent Memory Patterns",
-  "version": "1.0.0",
-  "category": "agent-development",
-  "description": "Patterns for implementing memory systems in agents",
-  "memory_types": {
-    "conversation": {
-      "description": "Short-term message history",
-      "implementations": {
-        "in_memory": {
-          "class": "InMemoryChatMessageHistory",
-          "use_case": "Development, single session",
-          "persistence": false
-        },
-        "redis": {
-          "backend": "Redis",
-          "use_case": "Production, distributed",
-          "persistence": true,
-          "ttl_support": true
-        },
-        "postgres": {
-          "backend": "PostgreSQL",
-          "use_case": "Production, queryable history",
-          "persistence": true
-        }
-      }
+  "name": "Consolidated Memory Patterns & Protocol",
+  "title": "Universal Memory Management Patterns",
+  "description": "The authoritative reference for memory types, tiers, and retrieval patterns in the Antigravity Agent Factory, aligned with the Memory Management Protocol (MMP).",
+  "version": "2.0.0",
+  "category": "core",
+  "axiomAlignment": {
+    "A1_verifiability": "Memory tiers enable verifiable context lifetimes via L0-L2 isolation.",
+    "A2_user_primacy": "Deterministic identifiers ensure the user can audit precisely what context an agent is retrieving.",
+    "A3_transparency": "Explicit prefixing (SOP:, TASK:) makes memory navigation human-readable and traceable.",
+    "A5_consistency": "Unified patterns eliminate fragmented behavior across specialists."
+  },
+  "memory_tiers": {
+    "L0_static": {
+      "prefix": "SYS:",
+      "scope": "Global axioms, rules, and fundamental system constants.",
+      "persistence": "Permanent",
+      "example": "SYS:Consciousness"
     },
-    "long_term": {
-      "description": "Semantic knowledge storage",
-      "implementations": {
-        "vector_store": {
-          "backends": [
-            "ChromaDB",
-            "Pinecone",
-            "Weaviate",
-            "Qdrant"
-          ],
-          "use_case": "Semantic retrieval of past interactions"
-        },
-        "knowledge_graph": {
-          "backends": [
-            "Neo4j",
-            "NetworkX"
-          ],
-          "use_case": "Entity relationships and facts"
-        }
-      }
+    "L1_capability": {
+      "prefixes": ["SOP:", "AGENT:", "SKILL:", "KI:"],
+      "scope": "Standard workflows, agent definitions, technical skills, and stable patterns.",
+      "persistence": "Long-term (Sync via sync_memory.py)",
+      "example": "SOP:Feature-Development"
     },
-    "user_profile": {
-      "description": "Structured user preferences and facts",
-      "storage": [
-        "Redis hash",
-        "PostgreSQL JSON",
-        "Document DB"
-      ],
-      "schema": [
-        "name",
-        "preferences",
-        "facts",
-        "history_summary"
-      ]
-    },
-    "working": {
-      "description": "Current task context",
-      "implementation": "LangGraph state",
-      "scope": "Single workflow execution"
+    "L2_operational": {
+      "prefix": "TASK:",
+      "scope": "Active issue state, session-specific observations, and real-time execution trails.",
+      "persistence": "Transient (Ephemeral TTL)",
+      "example": "TASK:AGENT-136"
     }
   },
   "patterns": {
-    "session_management": {
-      "description": "Manage memory per user session",
-      "pattern": "Use session_id in config.configurable",
-      "example": "RunnableWithMessageHistory with get_session_history function",
-      "use_when": "When implementing session_management",
-      "code_example": "// Example for session_management",
-      "best_practices": [
-        "Use appropriately for best results.",
-        "Monitor results and optimize."
-      ]
+    "deterministic_identification": {
+      "description": "Accessing nodes via exact prefixed IDs to eliminate keyword search failures.",
+      "implementation": "mcp_memory_open_nodes({'names': ['TASK:AGENT-136']})",
+      "best_practices": ["Always use open_nodes for known system entities.", "Prefixed IDs are case-sensitive."]
     },
-    "memory_compression": {
-      "description": "Summarize old messages to fit context",
-      "trigger": "When messages exceed threshold",
-      "method": "LLM summarization of old messages",
-      "use_when": "When implementing memory_compression",
-      "code_example": "// Example for memory_compression",
-      "best_practices": [
-        "Use appropriately for best results.",
-        "Monitor results and optimize."
-      ]
+    "memory_first_registration": {
+      "description": "Registering execution state in real-time during workflow phase transitions.",
+      "trigger": "Entering PLANNING, EXECUTION, or VERIFICATION phases.",
+      "action": "mcp_memory_add_observations to the TASK: node."
     },
-    "hybrid_memory": {
-      "description": "Combine short and long-term memory",
-      "pattern": "Recent messages + relevant retrieved memories",
-      "use_when": "When implementing hybrid_memory",
-      "code_example": "// Example for hybrid_memory",
-      "best_practices": [
-        "Use appropriately for best results.",
-        "Monitor results and optimize."
-      ]
+    "inductive_synchronization": {
+      "description": "Systematically reflecting L1 knowledge files into the graph.",
+      "tool": "sync_memory.py",
+      "frequency": "Post-maintenance or post-asset modification."
     },
-    "entity_extraction": {
-      "description": "Extract and store entities from conversations",
-      "entities": [
-        "names",
-        "preferences",
-        "facts",
-        "relationships"
-      ],
-      "use_when": "When implementing entity_extraction",
-      "code_example": "// Example for entity_extraction",
-      "best_practices": [
-        "Use appropriately for best results.",
-        "Monitor results and optimize."
-      ]
+    "session_context_anchoring": {
+      "description": "Linking transient task nodes to the system-root for traceability.",
+      "relation": "TASK:X --implements--> SOP:Y"
     }
   },
   "best_practices": [
-    "Use TTL for conversation memory",
-    "Compress old messages to fit context windows",
-    "Separate short-term and long-term storage",
-    "Index memories for semantic retrieval",
-    "Implement memory forgetting for privacy"
+    "Always check L2 (TASK:) before L1 (SOP:).",
+    "Never guess path syntax; query Memory MCP first.",
+    "Use mcp_memory_open_nodes as the primary retrieval mechanism.",
+    "Purge transient L2 tokens after solution reporting to maintain graph performance."
   ],
   "anti_patterns": [
     {
-      "name": "Unbounded history",
-      "problem": "Exceeds context window",
-      "fix": "Set max messages, implement compression"
+      "name": "Static Bloat",
+      "problem": "Flooding the graph with raw file contents instead of semantic abstractions.",
+      "fix": "Use sync_memory.py to ingest summarized patterns only."
     },
     {
-      "name": "No persistence",
-      "problem": "Memory lost on restart",
-      "fix": "Use Redis or PostgreSQL backend"
+      "name": "Orphaned Tasks",
+      "problem": "Creating task nodes without relations to SOPs or Epics.",
+      "fix": "Always link TASK: nodes to their governing SOP: and SYARCH: nodes."
     }
   ],
   "related_skills": [
-    "memory-management",
-    "state-management",
-    "applying-rag-patterns"
+    "managing-plane-tasks",
+    "orchestrating-mcp"
   ],
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Memory-patterns Knowledge",
-  "axiomAlignment": {
-    "A1_verifiability": "Patterns are verified through automated testing.",
-    "A2_user_primacy": "The user maintains control over all generated output.",
-    "A3_transparency": "All automated actions are logged and verifiable.",
-    "A4_non_harm": "Strict safety checks prevent destructive operations.",
-    "A5_consistency": "Uniform patterns ensure predictable system behavior."
-  },
   "related_knowledge": [
-    "manifest.json"
+    "manifest.json",
+    "memory-management-protocol.md"
   ]
 }

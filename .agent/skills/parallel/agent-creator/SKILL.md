@@ -1,22 +1,31 @@
 ---
 name: agent-creator
-description: >
-  Standardized agent creation and evaluation with mandatory schema validation
+description: 'Standardized agent creation and evaluation with mandatory schema validation
+
+  '
 type: skill
 version: 2.0.0
 category: factory
 agents:
-  - analyzer
-  - comparator
-  - grader
+- analyzer
+- comparator
+- grader
 knowledge:
-  - agent-taxonomy.json
+- agent-taxonomy.json
 tools:
-  - none
+- none
 related_skills:
-  - skill-creator
+- skill-creator
 templates:
-  - none
+- none
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Agent Creator

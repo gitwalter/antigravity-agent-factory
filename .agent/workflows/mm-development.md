@@ -26,12 +26,32 @@ This workflow is activated when:
 
 ## Steps
 
-Standard PABP development phases apply:
-1.  **Define Requirements**
-2.  **Design Architecture**
-3.  **Implementation**
-4.  **Verification**
-5.  **Deployment**
+## Phases
+
+### 1. Requirement & Data Mapping
+- **Goal**: Identify the correct SAP tables and fields.
+- **Action**: Map requirements to core MM tables (`EKKO`, `EKPO`, `MKPF`, `MSEG`).
+- **Reference**: Check `knowledge/mm-patterns.json` for movement types and procurement schemas.
+
+### 2. Technical Design
+- **Goal**: Choose the implementation technique (User Exit, BAdI, Report, or RAP).
+- **Action**: Search for suitable enhancement points or BAPIs (e.g., `BAPI_PO_CREATE1`).
+- **Tool**: `mcp_memory_search_nodes` for existing MM enhancements.
+
+### 3. Development & Implementation
+- **Goal**: Build the solution.
+- **Action**: Implement custom logic using ABAP Cloud or Classic ABAP depending on the target system.
+- **Template**: Use `sap-abap-report` or `sap-rap-bo` blueprints.
+
+### 4. Verification & Testing
+- **Goal**: Validate against business processes.
+- **Action**: Test goods movements or procurement cycles in the development client.
+- **Tool**: Trigger `/quality-gate` for automated logic checks.
+
+### 5. Transport & Documentation
+- **Goal**: Formally release the change.
+- **Action**: Update the functional specification and release the transport request.
+- **Tool**: Trigger `/documentation-workflow`.
 
 
 ## Decision Points

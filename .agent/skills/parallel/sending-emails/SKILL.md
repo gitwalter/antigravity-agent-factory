@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- executive-operations-specialist
 category: parallel
-description: >
-  Send emails using the cached Google Workspace credentials.
+description: 'Send emails using the cached Google Workspace credentials.
+
+  '
 knowledge:
 - none
 name: sending-emails
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Send Email Skill

@@ -1,11 +1,18 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Agent memory patterns - conversation, long-term, and backend implementations
+description: 'Agent memory patterns - conversation, long-term, and backend implementations
+
+  '
 knowledge:
-- none
+- agent-memory-patterns-2026.json
+- agent-memory-patterns.json
+- hierarchical-memory-patterns.json
+- memory-config.json
+- memory-patterns.json
+- memory-system-configuration.json
+- memory-systems-patterns.json
 name: managing-memory
 related_skills:
 - none
@@ -15,6 +22,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Memory Management
 
@@ -271,7 +286,7 @@ class UserMemoryStore:
 ## Memory Types
 
 | Type | Use Case | Backend |
-|------|----------|---------|
+||-||
 | Conversation | Recent context | In-memory, Redis |
 | Session | Multi-turn dialogs | Redis, PostgreSQL |
 | Long-term | Knowledge storage | Vector DB |
@@ -290,7 +305,7 @@ class UserMemoryStore:
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Unbounded history | Set max messages, compress |
 | No persistence | Use Redis/PostgreSQL |
 | No semantic search | Add vector embeddings |

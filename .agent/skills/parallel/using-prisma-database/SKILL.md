@@ -1,13 +1,16 @@
 ---
 agents:
-- none
+- full-stack-web-specialist
 category: parallel
-description: >
-  Prisma schema design patterns, relations (1:1, 1:N, M:N), migrations
+description: 'Prisma schema design patterns, relations (1:1, 1:N, M:N), migrations
   workflow, Prisma Client queries (findMany, create, update, transactions), seeding,
   type-safe queries, and performance optimization.
+
+  '
 knowledge:
-- none
+- database-agent-patterns.json
+- prisma-database-patterns.json
+- vector-database-patterns.json
 name: using-prisma-database
 related_skills:
 - none
@@ -17,6 +20,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Prisma Database
 

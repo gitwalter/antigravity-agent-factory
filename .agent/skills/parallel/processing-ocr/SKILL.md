@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Image-to-text with various engines (Tesseract, EasyOCR, cloud APIs),
+description: 'Image-to-text with various engines (Tesseract, EasyOCR, cloud APIs),
   PDF text extraction, table recognition, and layout analysis
+
+  '
 knowledge:
 - none
 name: processing-ocr
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Ocr Processing
 
@@ -426,7 +435,7 @@ def extract_text_azure_vision(image_path: str, endpoint: str, key: str) -> str:
 ## OCR Engines Comparison
 
 | Engine | Accuracy | Speed | Languages | Cost |
-|--------|----------|-------|-----------|------|
+|--|-|-|--||
 | Tesseract | Medium | Fast | 100+ | Free |
 | EasyOCR | High | Medium | 80+ | Free |
 | Google Vision | Very High | Fast | 50+ | Paid |
@@ -447,7 +456,7 @@ def extract_text_azure_vision(image_path: str, endpoint: str, key: str) -> str:
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | OCR without preprocessing | Apply grayscale, thresholding, denoising |
 | Low DPI PDF conversion | Use 300+ DPI for better accuracy |
 | Ignoring confidence scores | Filter results below threshold |

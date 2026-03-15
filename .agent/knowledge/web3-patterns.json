@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "web3-patterns",
+  "name": "Web3 Patterns",
+  "title": "Web3 and Smart Contract Patterns",
+  "description": "Essential patterns for Solidity smart contract development, DeFi protocol design, and secure blockchain integration.",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Blockchain state and contract logic are publicly verifiable.",
+    "A2_user_primacy": "Prioritizes user asset security and sovereignty.",
+    "A3_transparency": "On-chain audit trails provide absolute transparency of operations.",
+    "A4_non_harm": "Strict security measures prevent financial loss through exploits.",
+    "A5_consistency": "Follows established EIP standards and secure coding practices."
+  },
+  "patterns": {
+    "Proxy-Upgradability": {
+      "description": "Using proxy contracts to allow logic upgrades while maintaining the same contract address.",
+      "use_when": "Building long-lived protocols that may require fixes or enhancements after deployment.",
+      "code_example": "contract MyProxy is Proxy {\n    address public implementation;\n    function upgradeTo(address newImpl) external onlyOwner {\n        implementation = newImpl;\n    }\n}",
+      "best_practices": [
+        "Use established libraries like OpenZeppelin Upgrades.",
+        "Always separate state storage from logic execution.",
+        "Implement multi-sig or DAO governance for upgrade authority."
+      ]
+    },
+    "Pull-Over-Push-Payments": {
+      "description": "Allowing users to withdraw funds instead of sending them automatically in a transaction.",
+      "use_when": "Distributing rewards or refunds to multiple recipients securely.",
+      "code_example": "mapping(address => uint) public balances;\nfunction withdraw() external {\n    uint amount = balances[msg.sender];\n    balances[msg.sender] = 0;\n    (bool success,) = msg.sender.call{value: amount}(\"\");\n    require(success);\n}",
+      "best_practices": [
+        "Protect against reentrancy attacks by updating state before the call.",
+        "Never loop over an array of addresses to send payments.",
+        "Use the Checks-Effects-Interactions pattern strictly."
+      ]
+    }
+  },
+  "best_practices": [
+    "Always use 'reentrancyGuard' for functions that handle external calls.",
+    "Minimize on-chain storage to reduce gas costs.",
+    "Follow the latest EIP standards for token implementations (ERC-20, ERC-721).",
+    "Conduct extensive local testing and formal verification for core protocol logic."
+  ],
+  "anti_patterns": [
+    {
+      "name": "Unlimited Allowance",
+      "problem": "Requesting users to approve the maximum uint256 as an allowance is a major security risk.",
+      "fix": "Request only the necessary allowance for the current transaction or implement EIP-2612 permit."
+    }
+  ],
+  "related_skills": [
+    "managing-stack-context"
+  ],
+  "related_knowledge": [
+    "solidity-patterns.json"
+  ]
+}

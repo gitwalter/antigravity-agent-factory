@@ -1,12 +1,13 @@
 ---
 agents:
-- none
+- dotnet-cloud-specialist
 category: chain
-description: >
-  Entity Framework Core patterns for data access, migrations, and query
+description: 'Entity Framework Core patterns for data access, migrations, and query
   optimization
+
+  '
 knowledge:
-- none
+- entity-framework-core-advanced-patterns.json
 name: applying-ef-core-patterns
 related_skills:
 - none
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Ef Core Patterns
 

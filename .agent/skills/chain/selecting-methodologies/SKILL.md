@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Guide users through selecting and configuring development methodology
+description: 'Guide users through selecting and configuring development methodology
   for agent system
+
+  '
 knowledge:
 - none
 name: selecting-methodologies
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Methodology Selection
 
@@ -124,7 +133,7 @@ Based on {methodology}, here's how agents can support each role:
 
 {If Agile Scrum}
 | Role | Agent Support |
-|------|--------------|
+||--|
 | Product Owner | Documentation agent for user stories |
 | Tech Lead | Code reviewer agent for oversight |
 | Developer | Test generator, code assistant |
@@ -133,7 +142,7 @@ Based on {methodology}, here's how agents can support each role:
 
 {If R&D}
 | Role | Agent Support |
-|------|--------------|
+||--|
 | Research Lead | Explorer agent for literature |
 | Scientists | Documentation agent for findings |
 | Engineers | Code reviewer, test generator |

@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  PyTorch training loops, distributed training with DeepSpeed/FSDP, hyperparameter
+description: 'PyTorch training loops, distributed training with DeepSpeed/FSDP, hyperparameter
   tuning with Optuna, experiment tracking, mixed precision training, checkpointing
+
+  '
 knowledge:
 - none
 name: training-models
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Model Training
 
@@ -725,7 +734,7 @@ After training, you'll have:
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | No checkpointing | Save checkpoints regularly |
 | No experiment tracking | Use MLflow/W&B |
 | Hardcoded hyperparameters | Use Optuna for optimization |

@@ -1,11 +1,12 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  FastAPI project structure, Router organization, Dependency injection,
+description: 'FastAPI project structure, Router organization, Dependency injection,
   Pydantic v2 models, Background tasks, WebSocket endpoints, Middleware, CORS, OpenAPI
   customization
+
+  '
 knowledge:
 - none
 name: developing-fastapi
@@ -17,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Fastapi Development
 
@@ -51,7 +60,7 @@ Build production FastAPI applications with proper structure, dependency injectio
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Business logic in routers | Move to service layer |
 | Synchronous database calls | Use async database drivers |
 | Missing validation | Use Pydantic models |

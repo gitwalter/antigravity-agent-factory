@@ -1,14 +1,37 @@
 ---
 name: eliciting-nfr
 type: skill
-description: >
-  Conducts a structured Socratic elicitation session to surface all non-functional requirements, with deep focus on AI-specific NFRs that standard templates miss. Use when the user wants to define performance requirements, talk through constraints, discuss what the system must not do, or says "what are the NFRs", "let's think about performance", "how fast does it need to be", or "what are the constraints". Reads knowledge/prototype-brief.md. Writes to knowledge/nfr.md.
+description: 'Conducts a structured Socratic elicitation session to surface all non-functional
+  requirements, with deep focus on AI-specific NFRs that standard templates miss.
+  Use when the user wants to define performance requirements, talk through constraints,
+  discuss what the system must not do, or says "what are the NFRs", "let''s think
+  about performance", "how fast does it need to be", or "what are the constraints".
+  Reads knowledge/prototype-brief.md. Writes to knowledge/nfr.md.
+
+  '
 license: MIT
 allowed-tools: Read, Write
 metadata:
   version: 1.0.0
   phase: requirements
   llm-preference: claude
+agents:
+- python-ai-specialist
+knowledge:
+- none
+templates:
+- none
+related_skills:
+- managing-plane-tasks
+- orchestrating-mcp
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Eliciting NFR
@@ -40,7 +63,7 @@ If the user says "it depends" — ask "on what?" and get at least two concrete s
 If the user says "as fast as possible" — ask "what is the slowest acceptable?" and
 convert to a numeric threshold.
 
----
+
 
 ### Domain 1 — Latency
 
@@ -56,7 +79,7 @@ Press for:
 **AI-specific probe**: "When the AI component is involved in this action, does the
 user see a loading state? Can the response be streamed, or must it be atomic?"
 
----
+
 
 ### Domain 2 — Token Budget and Cost
 
@@ -72,7 +95,7 @@ Press for:
 10,000 daily active users each triggering it once — that's $500/day. Is that acceptable?
 If not, what is the ceiling, and what model or strategy would you use when it's exceeded?"
 
----
+
 
 ### Domain 3 — Reliability and Fallback
 
@@ -89,7 +112,7 @@ Elicit for each:
 For example, if the AI can't summarise a document, is it acceptable to return the first
 paragraph? Or must the feature be completely unavailable?"
 
----
+
 
 ### Domain 4 — Output Quality and Safety
 
@@ -104,7 +127,7 @@ Elicit:
 **AI-specific probe**: "Is there a scenario where the AI output could cause direct harm
 — financial, reputational, legal, or physical? If yes, what is the human-in-the-loop gate?"
 
----
+
 
 ### Domain 5 — Scale
 
@@ -121,7 +144,7 @@ stateless compute. If you have 1,000 concurrent users hitting the AI component,
 each waiting up to 3 seconds — does your provider support that concurrency? Have
 you checked your rate limits?"
 
----
+
 
 ### Domain 6 — Observability (mandatory for AI systems)
 
@@ -137,7 +160,7 @@ Elicit:
 **AI-specific probe**: "What is your eval strategy? Do you have a golden dataset?
 Who reviews model outputs in production, and how often?"
 
----
+
 
 ### Domain 7 — Security and Compliance
 
@@ -149,7 +172,7 @@ Elicit:
 - Prompt injection risk: does user-provided text enter the prompt directly?
 - Compliance scope: GDPR / HIPAA / SOC2 / none
 
----
+
 
 ## Output Format
 
@@ -161,17 +184,17 @@ _Date: [date] | Version: 1.0.0_
 
 ## Latency
 | Operation | p50 | p95 | p99 | Notes |
-|-----------|-----|-----|-----|-------|
+|--|--|--|--|-|
 | [action]  | [ms]| [ms]| [ms]| [streaming / atomic] |
 
 ## AI Inference Budget
 | Operation | Max input tokens | Max output tokens | Max cost/call | Monthly ceiling |
-|-----------|-----------------|------------------|---------------|----------------|
+|--|--|||-|
 | [component] | [n] | [n] | [$] | [$] |
 
 ## Reliability and Fallback
 | Failure mode | Threshold | Fallback behaviour | Acceptable degradation |
-|--------------|-----------|-------------------|----------------------|
+|--|--|-|-|
 | LLM outage | [timeout] | [behaviour] | [yes/no] |
 | Bad output detected | [condition] | [behaviour] | [yes/no] |
 

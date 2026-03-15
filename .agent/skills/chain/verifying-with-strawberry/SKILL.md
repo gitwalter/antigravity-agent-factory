@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Factual claim verification - the canonical profile of grounding-verification
+description: 'Factual claim verification - the canonical profile of grounding-verification
+
+  '
 knowledge:
 - none
 name: verifying-with-strawberry
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Strawberry Verification
 
@@ -114,7 +123,7 @@ delta = full_confidence - scrubbed_confidence
 ```
 
 | Delta | Interpretation | Status |
-|-------|---------------|--------|
+|-||--|
 | >= 0.3 | Evidence is essential | VERIFIED |
 | 0.15 - 0.3 | Evidence is helpful | PLAUSIBLE |
 | < 0.15 | Evidence may not be used | SUSPICIOUS |
@@ -137,7 +146,7 @@ Request JSON responses from the LLM:
 Use typed placeholders for consistent mapping:
 
 | Pattern | Placeholder | Example |
-|---------|-------------|---------|
+||-||
 | Table/entity names | `[TABLE_{N}]` | users → [TABLE_1] |
 | Field/column names | `[FIELD_{N}]` | email → [FIELD_1] |
 | Class names | `[CLASS_{N}]` | UserService → [CLASS_1] |
@@ -157,7 +166,7 @@ UNSUPPORTED: full_confidence < 0.6 OR verdict == CONTRADICTED
 ## Decision Actions
 
 | Status | Action |
-|--------|--------|
+|--|--|
 | VERIFIED | Proceed with confidence |
 | PLAUSIBLE | Proceed with caution, note uncertainty |
 | SUSPICIOUS | Add warning, consider if claim is from evidence or pattern guess |
@@ -236,7 +245,7 @@ Watch for these signs that the LLM may be confabulating:
 ## Integration with Other Skills
 
 | Skill | How Strawberry Verification Helps |
-|-------|-----------------------------------|
+|-|--|
 | `grounding` | Verify grounding results before use |
 | `code-review` | Validate claims about code behavior |
 | `security-audit` | Verify security vulnerability claims |
@@ -245,7 +254,7 @@ Watch for these signs that the LLM may be confabulating:
 ## Axiom Alignment
 
 | Axiom | How This Skill Applies |
-|-------|------------------------|
+|-||
 | A1 (Verifiability) | Mathematically verify claims against evidence |
 | A3 (Transparency) | Make verification reasoning visible |
 | A4 (Non-Harm) | Prevent acting on hallucinated claims |
@@ -259,23 +268,23 @@ Watch for these signs that the LLM may be confabulating:
 **Verification Method:** Confidence Delta (Native)
 **Claims Analyzed:** {COUNT}
 
----
+
 
 #### Evidence Spans
 
 | Span | Content Summary | Source |
-|------|-----------------|--------|
+||--|--|
 | S0 | {SUMMARY} | {SOURCE} |
 
----
+
 
 #### Claim Verification
 
 | Claim | Scrubbed Conf | Full Conf | Delta | Status |
-|-------|---------------|-----------|-------|--------|
+|-||--|-|--|
 | {CLAIM} | {0.XX} | {0.XX} | {0.XX} | {STATUS} |
 
----
+
 
 ### RECOMMENDATION: {PROCEED|PROCEED_WITH_WARNINGS|STOP|GATHER_MORE_EVIDENCE}
 

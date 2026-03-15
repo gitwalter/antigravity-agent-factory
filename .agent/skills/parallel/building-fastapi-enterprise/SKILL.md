@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Tactical Blueprint for production-grade FastAPI applications. Focuses
+description: 'Tactical Blueprint for production-grade FastAPI applications. Focuses
   on procedural execution, tool-calling sequences, and idiomatic excellence.
+
+  '
 knowledge:
 - none
 name: building-fastapi-enterprise
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Capability Manifest: FastAPI Enterprise
 

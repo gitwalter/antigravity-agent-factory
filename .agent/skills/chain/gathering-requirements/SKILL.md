@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  5-layer requirements elicitation for Cursor agent system generation with
-  axioms, purpose, and methodology
+description: '5-layer requirements elicitation for Cursor agent system generation
+  with axioms, purpose, and methodology
+
+  '
 knowledge:
 - none
 name: gathering-requirements
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Requirements Gathering
 
@@ -86,7 +95,7 @@ Validate completeness, confirm target directory, generate summary, and create al
 └─────────────────────────────────────────────────────────────────┘
 ```
 
----
+
 
 ## PRE-PHASE: Layer 0 - Axiom Configuration
 
@@ -107,13 +116,13 @@ we derive the core axioms that govern agent behavior.
 ### Foundation Axiom (Always Included)
 
 | ID | Axiom | Statement |
-|----|-------|-----------|
+|-|-|--|
 | A0 | Love, Truth, and Beauty | All being and doing is grounded in love, truth, and beauty |
 
 ### Core Axioms (Always Included)
 
 | ID | Axiom | Statement |
-|----|-------|-----------|
+|-|-|--|
 | A1 | Verifiability | All agent outputs must be verifiable against source |
 | A2 | User Primacy | User intent takes precedence over agent convenience |
 | A3 | Transparency | Agent reasoning must be explainable on request |
@@ -123,7 +132,7 @@ we derive the core axioms that govern agent behavior.
 ### Optional Axioms
 
 | ID | Axiom | Use When |
-|----|-------|----------|
+|-|-|-|
 | A6 | Minimalism | Maintenance and understandability are priorities |
 | A7 | Reversibility | Safety and recoverability are paramount |
 | A8 | Privacy | Handling sensitive user data |
@@ -140,7 +149,7 @@ layer0:
   customAxioms: []  # Domain-specific additions
 ```
 
----
+
 
 ## PHASE 0: Layer 1 - Purpose Definition
 
@@ -149,7 +158,7 @@ layer0:
 ### Questions
 
 | # | Question | Variable | Validation |
-|---|----------|----------|------------|
+||-|-||
 | 1 | In ONE sentence, why should this agent system exist? | `{MISSION_STATEMENT}` | Verifiable outcome (A1) |
 | 2 | Who are the primary users or beneficiaries? | `{PRIMARY_STAKEHOLDERS}` | Specific humans (A2) |
 | 3 | What is the single most important outcome? | `{SUCCESS_CRITERIA}` | Measurable (A1) |
@@ -165,7 +174,7 @@ layer1:
 
 **Generated Artifact**: `PURPOSE.md`
 
----
+
 
 ## PHASE 0.5: Depth Selection
 
@@ -182,19 +191,19 @@ C) Comprehensive - Define all layers including enforcement and practices
 ### Routing
 
 | Selection | Next Phase |
-|-----------|------------|
+|--||
 | Quick Start | Phase 1 (Technical) |
 | Standard | Phase 0.6 (Principles) |
 | Comprehensive | Phase 0.6 (Principles) |
 
----
+
 
 ## PHASE 0.6: Layer 2 - Principles (Standard & Comprehensive)
 
 ### Questions
 
 | # | Question | Variable | Reference |
-|---|----------|----------|-----------|
+||-|-|--|
 | 1 | What actions should agents NEVER take? | `{ETHICAL_BOUNDARIES}` | `{directories.patterns}/principles/ethical-boundaries.json` |
 | 2 | What quality bar must all outputs meet? | `{QUALITY_STANDARDS}` | `{directories.patterns}/principles/quality-standards.json` |
 | 3 | How should failures be handled? | `{FAILURE_HANDLING}` | `{directories.patterns}/principles/failure-handling.json` |
@@ -208,7 +217,7 @@ layer2:
   failureHandling: ["FH1", "FH2", "FH3"]
 ```
 
----
+
 
 ## PHASE 0.7: Layer 3 - Methodology (Standard & Comprehensive)
 
@@ -217,14 +226,14 @@ layer2:
 ### Questions
 
 | # | Question | Variable | Options |
-|---|----------|----------|---------|
+||-|-||
 | 1 | What development methodology fits your team? | `{METHODOLOGY}` | Agile Scrum, Kanban, R&D, Enterprise |
 | 2 | Team size? | `{TEAM_SIZE}` | 1-3, 4-6, 7-10, 10+ |
 
 ### Methodology Options
 
 | Methodology | Best For | Pattern |
-|-------------|----------|---------|
+|-|-||
 | Agile Scrum | Product development, feature teams | domain_expert_swarm + peer_collaboration |
 | Kanban | Support, maintenance, ops | continuous_flow + pull_based |
 | R&D | AI/ML, innovation, research | knowledge_mesh + adaptive_learning |
@@ -241,7 +250,7 @@ layer3:
 
 **Generated Artifact**: `{directories.workflows}/methodology.yaml`
 
----
+
 
 ## PHASE 0.8: Enforcement Selection (Comprehensive Only)
 
@@ -281,7 +290,7 @@ enforcement:
 
 **Generated Artifact**: `enforcement.yaml`
 
----
+
 
 ## PHASE 0.9: Practice Selection (Comprehensive Only)
 
@@ -320,14 +329,14 @@ practices:
 
 **Generated Artifact**: `practices.yaml`
 
----
+
 
 ## PHASE 1: Project Context (Layer 4 - Technical)
 
 ### Questions
 
 | # | Question | Variable | Validation |
-|---|----------|----------|------------|
+||-|-||
 | 1 | What is the name of your project? | `{PROJECT_NAME}` | Valid directory name |
 | 2 | Briefly describe what this project will do | `{PROJECT_DESCRIPTION}` | Non-empty, < 500 chars |
 | 3 | What domain or industry is this for? | `{DOMAIN}` | Match to known domains |
@@ -355,14 +364,14 @@ projectContext:
   teamContext: "{TEAM_CONTEXT}"
 ```
 
----
+
 
 ## PHASE 2: Technology Stack
 
 ### Questions
 
 | # | Question | Variable | Reference |
-|---|----------|----------|-----------|
+||-|-|--|
 | 1 | Primary programming language? | `{PRIMARY_LANGUAGE}` | Check blueprints |
 | 2 | Frameworks or libraries? | `{FRAMEWORKS}` | Stack-specific |
 | 3 | Database or storage systems? | `{DATABASES}` | Optional |
@@ -390,21 +399,21 @@ technologyStack:
   matchedBlueprint: "{BLUEPRINT_ID}" | null
 ```
 
----
+
 
 ## PHASE 3: Workflow Methodology
 
 ### Questions
 
 | # | Question | Variable | Options |
-|---|----------|----------|---------|
+||-|-||
 | 1 | What triggers tasks? | `{TRIGGER_SOURCES}` | Jira, Confluence, GitHub, GitLab, Manual |
 | 2 | Output artifacts? | `{OUTPUT_ARTIFACTS}` | Code, Docs, Tests, Diagrams |
 
 ### Trigger Source Details
 
 | Trigger | Additional Info Needed |
-|---------|----------------------|
+||-|
 | Jira | Project key pattern (e.g., `PROJ-###`) |
 | Confluence | Space key |
 | GitHub | Repository URL pattern |
@@ -420,14 +429,14 @@ workflowConfig:
   outputArtifacts: ["code", "docs", "tests"]
 ```
 
----
+
 
 ## PHASE 4: Knowledge Domain
 
 ### Questions
 
 | # | Question | Variable | Purpose |
-|---|----------|----------|---------|
+||-|-||
 | 1 | Domain-specific concepts? | `{DOMAIN_CONCEPTS}` | Build knowledge files |
 | 2 | Reference repositories/docs? | `{REFERENCE_SOURCES}` | DeepWiki integration |
 | 3 | Naming conventions? | `{CONVENTIONS}` | Style guide setup |
@@ -444,14 +453,14 @@ knowledgeDomain:
     styleGuide: "{STYLE_GUIDE}"
 ```
 
----
+
 
 ## PHASE 5: Agent Capabilities
 
 ### Questions
 
 | # | Question | Variable | Options |
-|---|----------|----------|---------|
+||-|-||
 | 1 | Core agents needed? | `{CORE_AGENTS}` | Multi-select |
 | 2 | Workflow skills needed? | `{CORE_SKILLS}` | Multi-select |
 | 3 | MCP server integrations? | `{MCP_INTEGRATIONS}` | Multi-select |
@@ -459,7 +468,7 @@ knowledgeDomain:
 ### Agent Options
 
 | Agent | Description | When to Suggest |
-|-------|-------------|-----------------|
+|-|-|--|
 | `code-reviewer` | Reviews code quality | Always |
 | `test-generator` | Creates test cases | When tests in artifacts |
 | `documentation-agent` | Generates documentation | When docs in artifacts |
@@ -468,7 +477,7 @@ knowledgeDomain:
 ### Skill Options
 
 | Skill | Description | When to Suggest |
-|-------|-------------|-----------------|
+|-|-|--|
 | `bugfix-workflow` | Ticket-based bug fixes | When Jira trigger |
 | `feature-workflow` | Spec-based features | When Confluence trigger |
 | `grounding` | Data model verification | Data-heavy projects |
@@ -485,7 +494,7 @@ agentCapabilities:
   mcpIntegrations: ["atlassian", "deepwiki"]
 ```
 
----
+
 
 ## Final Validation & Summary
 
@@ -539,12 +548,12 @@ agentCapabilities:
 - **Target:** {TARGET_DIR}
 ```
 
----
+
 
 ## Generated Artifacts
 
 | Layer | Artifact | Description |
-|-------|----------|-------------|
+|-|-|-|
 | 0-4 | `.cursorrules` | Complete 5-layer agent rules |
 | 1 | `PURPOSE.md` | Mission, stakeholders, success |
 | 2+ | `enforcement.yaml` | Enforcement configuration |
@@ -554,7 +563,7 @@ agentCapabilities:
 | 4 | `{directories.skills}/` | Skill definitions |
 | 4 | `{directories.knowledge}/` | Domain knowledge |
 
----
+
 
 ## Team Alternative
 

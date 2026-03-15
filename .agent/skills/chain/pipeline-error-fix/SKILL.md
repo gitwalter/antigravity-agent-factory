@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- workflow-quality-specialist
 category: chain
-description: >
-  Systematic detection and fixing of CI/CD pipeline failures.
+description: 'Systematic detection and fixing of CI/CD pipeline failures.
+
+  '
 knowledge:
 - none
 name: pipeline-error-fix
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Pipeline Error Fix

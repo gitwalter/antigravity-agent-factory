@@ -105,7 +105,7 @@ Here is AGENT-31 itself, expressed as a schema-compliant task definition:
   ],
   "scripts": [
     "scripts/validation/sync_manifest_versions.py",
-    "scripts/maintenance/sync_script_registry.py"
+    "scripts/maintenance/sync/sync_script_registry.py"
   ],
   "knowledge": [
     { "name": "plane-integration.json", "source": "knowledge_file" },

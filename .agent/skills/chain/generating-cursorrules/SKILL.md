@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  .cursorrules file generation skill
+description: '.cursorrules file generation skill
+
+  '
 knowledge:
 - none
 name: generating-cursorrules
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Cursorrules Generation
 
@@ -35,7 +44,7 @@ Load the cursorrules template from:
 Replace all template variables with project values:
 
 | Variable | Source |
-|----------|--------|
+|-|--|
 | `{PROJECT_NAME}` | config.project_name |
 | `{PROJECT_DESCRIPTION}` | config.project_description |
 | `{PRIMARY_LANGUAGE}` | config.primary_language |
@@ -48,7 +57,7 @@ Create agent table from configured agents:
 
 ```markdown
 | Agent | Purpose |
-|-------|---------|
+|-||
 | `code-reviewer` | Reviews code quality |
 | `test-generator` | Creates test cases |
 ```
@@ -58,7 +67,7 @@ Create skill table from configured skills:
 
 ```markdown
 | Skill | Description |
-|-------|-------------|
+|-|-|
 | `bugfix-workflow` | Ticket-based bug fixes |
 | `feature-workflow` | Spec-based features |
 ```
@@ -68,7 +77,7 @@ Create MCP server configuration:
 
 ```markdown
 | Server | Purpose | URL |
-|--------|---------|-----|
+|--||--|
 | `atlassian` | Jira/Confluence | https://mcp.atlassian.com/v1/sse |
 ```
 

@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: general
-description: >
-  Spawning subagents dynamically, parent-child agent communication, task
+description: 'Spawning subagents dynamically, parent-child agent communication, task
   delegation and result aggregation, resource management and cleanup
+
+  '
 knowledge:
 - none
 name: orchestrating-subagents
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Subagent Orchestration
 
@@ -604,7 +613,7 @@ async def use_pool():
 ## Orchestration Patterns
 
 | Pattern | Description | Use Case |
-|---------|-------------|----------|
+||-|-|
 | **Dynamic Spawning** | Create subagents on demand | Variable workloads |
 | **Pool Pattern** | Reuse subagents from pool | High-throughput tasks |
 | **Hierarchical** | Parent delegates to children | Complex decomposition |
@@ -614,7 +623,7 @@ async def use_pool():
 ## Communication Patterns
 
 | Pattern | Description | Use Case |
-|---------|-------------|----------|
+||-|-|
 | **Task Delegation** | Parent assigns tasks to children | Work distribution |
 | **Result Aggregation** | Combine child results | Synthesis |
 | **Status Queries** | Parent checks child status | Monitoring |
@@ -636,7 +645,7 @@ async def use_pool():
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Not cleaning up subagents | Use context managers or explicit cleanup |
 | Spawning unlimited subagents | Set limits and use pools |
 | No error handling | Wrap subagent calls in try/except |

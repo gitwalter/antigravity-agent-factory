@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Interactive configuration and onboarding skill for Antigravity Agent Factory
-  settings
+description: 'Interactive configuration and onboarding skill for Antigravity Agent
+  Factory settings
+
+  '
 knowledge:
 - none
 name: configuring-systems
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # System Configuration
 
@@ -96,7 +105,7 @@ Show the user what has been detected:
 ## Detected Configuration
 
 | Setting | Value | Source |
-|---------|-------|--------|
+||-|--|
 | Platform | {platform} | Auto-detected |
 | Python | {python_path} | {source} |
 | Git | {git_path} | {source} |
@@ -344,7 +353,7 @@ source ~/.bashrc
 ## Error Handling
 
 | Error | Resolution |
-|-------|------------|
+|-||
 | Python not found | Provide installation instructions |
 | Git not found | Provide installation instructions |
 | Invalid token | Show how to create valid token |
@@ -366,7 +375,7 @@ Configuration is complete when:
 - `grounding-verification` - May need tool paths
 - `requirements-gathering` - May trigger configuration if not set
 
----
+
 
 *This skill ensures the Antigravity Agent Factory is properly configured for optimal operation.*
 

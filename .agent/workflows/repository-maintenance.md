@@ -36,7 +36,7 @@ This workflow is activated when:
 - **Standard**: Follow [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and Semantic Versioning.
 
 ### 3. Full Link Verification
-- **Command**: `python scripts/maintenance/link_checker.py --external`
+- **Command**: `python scripts/maintenance/audit/link_checker.py --external`
 - **Action**: Identify all broken internal references and dead external URLs.
 - **Goal**: Maintain 100% link integrity across all documentation.
 
@@ -65,7 +65,12 @@ This workflow is activated when:
 - **Action**: Run linting (`ruff`), type-checking (`mypy`), and structural checks.
 - **Goal**: 100% pass before the final commit.
 
-### 10. Maintenance Report
+### 10. Knowledge Health Audit
+- **Command**: `python scripts/maintenance/knowledge_audit.py`
+- **Action**: Detect knowledge debt, verify link integrity, and generate a health report.
+- **Goal**: Maintain high documentation quality and structural integrity.
+
+### 11. Maintenance Report
 - **Action**: Generate a summary of actions taken and current system health status.
 
 

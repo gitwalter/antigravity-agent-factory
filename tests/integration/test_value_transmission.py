@@ -5,15 +5,20 @@ These tests ensure that the eternal values (love, truth, beauty, flourishing)
 are properly transmitted to every generated project.
 """
 
+import sys
+from pathlib import Path
+
+# Add project root to path
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+
 import json
 import shutil
 import tempfile
-from pathlib import Path
 import pytest
 
-import sys
-
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from scripts.core.generate_project import ProjectGenerator, ProjectConfig
 

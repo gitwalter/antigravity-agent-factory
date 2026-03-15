@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Config-driven operating environment skill for shell commands, tool path
+description: 'Config-driven operating environment skill for shell commands, tool path
   resolution, and platform-specific syntax across all platforms
+
+  '
 knowledge:
 - none
 name: operating-environments
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Operating Environment
 
@@ -30,7 +39,7 @@ hardcoded in this skill.
 ## Configuration Files (Source of Truth)
 
 | File | Purpose | Committed |
-|------|---------|-----------|
+|||--|
 | `{directories.cache}/session-paths.json` | Verified tool paths for this machine | No (gitignored) |
 | `{directories.config}/tools.json` | Resolution order, fallbacks, env vars per tool | Yes |
 | `{directories.config}/settings.json` | Platform rules, directories, credentials refs | Yes |
@@ -131,7 +140,7 @@ git commit -m $message
 #### Command Chaining Reference
 
 | Bash / Zsh | PowerShell 5.x | Purpose |
-|------------|----------------|---------|
+||-||
 | `&&` | `;` | Sequential execution |
 | `\|\|` | `; if ($LASTEXITCODE -ne 0) { ... }` | Run on failure |
 | `\|` | `\|` | Pipe (same on all platforms) |

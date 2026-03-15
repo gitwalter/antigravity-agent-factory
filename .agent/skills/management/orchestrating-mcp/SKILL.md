@@ -4,9 +4,10 @@ agents:
 - ai-app-developer
 - master-system-orchestrator
 category: management
-description: >
-  Master skill for orchestrating and utilizing the full MCP ecosystem (Tavily,
-  RAG, Memory, Sequential Thinking)
+description: 'Master skill for orchestrating and utilizing the full MCP ecosystem
+  (Tavily, RAG, Memory, Sequential Thinking)
+
+  '
 knowledge:
 - none
 name: orchestrating-mcp
@@ -25,6 +26,14 @@ tools:
 - mcp_doc-tools_*
 type: skill
 version: 1.1.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # MCP Orchestration

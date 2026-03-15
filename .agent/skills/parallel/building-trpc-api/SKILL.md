@@ -1,11 +1,12 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  tRPC router setup with Next.js App Router, procedures (query, mutation,
+description: 'tRPC router setup with Next.js App Router, procedures (query, mutation,
   subscription), input validation with Zod, middleware and context, React Query integration,
   error handling, and type inference.
+
+  '
 knowledge:
 - none
 name: building-trpc-api
@@ -17,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Trpc Api
 

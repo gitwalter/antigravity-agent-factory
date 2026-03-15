@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Build algorithmic trading strategies with backtesting, technical indicators,
+description: 'Build algorithmic trading strategies with backtesting, technical indicators,
   and fundamental data
+
+  '
 knowledge:
 - none
 name: trading-algorithmically
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Algo Trading
 
@@ -130,7 +139,7 @@ max_dd = (df['close'] / df['close'].expanding().max() - 1).min()
 ## What Gets Created
 
 | File | Purpose |
-|------|---------|
+|||
 | `strategies/` | Strategy implementations |
 | `indicators/` | Custom indicator calculations |
 | `data/` | Data fetching and caching |
@@ -140,7 +149,7 @@ max_dd = (df['close'] / df['close'].expanding().max() - 1).min()
 ## Strategy Categories
 
 | Category | Use When |
-|----------|----------|
+|-|-|
 | **Momentum** | Assets trending, ADX > 25 |
 | **Mean Reversion** | Range-bound markets, low volatility |
 | **Statistical Arbitrage** | Pairs trading, factor models |
@@ -149,7 +158,7 @@ max_dd = (df['close'] / df['close'].expanding().max() - 1).min()
 ## Key Technical Indicators
 
 | Indicator | Category | Use |
-|-----------|----------|-----|
+|--|-|--|
 | SMA/EMA | Trend | Direction, support/resistance |
 | RSI | Momentum | Overbought/oversold |
 | MACD | Trend/Momentum | Crossover signals |
@@ -161,7 +170,7 @@ max_dd = (df['close'] / df['close'].expanding().max() - 1).min()
 ## Fundamental Data Sources
 
 | Source | Data Type | Cost |
-|--------|-----------|------|
+|--|--||
 | yfinance | OHLCV, Financials | Free |
 | Alpha Vantage | OHLCV, Fundamentals | Free tier |
 | SEC EDGAR | Filings | Free |
@@ -178,7 +187,7 @@ max_dd = (df['close'] / df['close'].expanding().max() - 1).min()
 ## Anti-Patterns to Avoid
 
 | Anti-Pattern | Problem | Solution |
-|--------------|---------|----------|
+|--||-|
 | Curve fitting | Fails live | Walk-forward validation |
 | Survivorship bias | Overstated returns | Point-in-time data |
 | Look-ahead bias | Unrealistic backtest | Strict data alignment |
@@ -187,7 +196,7 @@ max_dd = (df['close'] / df['close'].expanding().max() - 1).min()
 ## Fallback Procedures
 
 | Issue | Solution |
-|-------|----------|
+|-|-|
 | yfinance rate limited | Cache data locally |
 | No fundamental data | Use technical-only strategy |
 | Backtest fails | Check data alignment |

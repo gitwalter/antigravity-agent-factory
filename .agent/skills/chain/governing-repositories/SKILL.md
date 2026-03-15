@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Comprehensive skill for link verification, file organization, artifact
+description: 'Comprehensive skill for link verification, file organization, artifact
   syncing, and README automation.
+
+  '
 knowledge:
 - none
 name: governing-repositories
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Repository Governance Skill
@@ -31,7 +40,7 @@ This skill provides unified capabilities for maintaining repository health, docu
 ## Prerequisites
 - Python 3.10+
 - `aiohttp` (for external link checking)
-- `scripts/maintenance/link_checker.py`
+- `scripts/maintenance/audit/link_checker.py`
 - `scripts/validation/update_index.py`
 - `scripts/validation/validate_readme_structure.py`
 - `scripts/validation/sync_manifest_versions.py`
@@ -40,7 +49,7 @@ This skill provides unified capabilities for maintaining repository health, docu
 The following process ensures robust repository health and documentation integrity.
 
 ### 1. Link Verification & Repair
-- **Scan**: `python scripts/maintenance/link_checker.py --external`
+- **Scan**: `python scripts/maintenance/audit/link_checker.py --external`
 - **Fix**: Identify broken relative paths and update them. Prefer kebab-case and relative paths.
 
 ### 2. Repository Cleaning & Organization

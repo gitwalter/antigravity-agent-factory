@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  SQL generation with LLMs, schema understanding, query optimization, and
-  text-to-SQL pipelines
+description: 'SQL generation with LLMs, schema understanding, query optimization,
+  and text-to-SQL pipelines
+
+  '
 knowledge:
 - none
 name: managing-database-agents
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Database Agents
 
@@ -454,7 +463,7 @@ print(result["summary"])
 ## Query Patterns
 
 | Pattern | Example |
-|---------|---------|
+|||
 | Simple SELECT | "Get all users" |
 | Filtered SELECT | "Users older than 30" |
 | Aggregation | "Total sales by month" |
@@ -478,7 +487,7 @@ print(result["summary"])
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | No SQL validation | Validate syntax before execution |
 | Allowing DML/DDL | Restrict to SELECT only |
 | No LIMIT clauses | Always add LIMIT for safety |

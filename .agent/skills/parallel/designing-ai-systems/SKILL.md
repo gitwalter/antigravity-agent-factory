@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- system-architecture-specialist
 category: parallel
-description: >
-  Architecture patterns, technology selection, scalability planning, and
+description: 'Architecture patterns, technology selection, scalability planning, and
   vector DB selection for AI applications
+
+  '
 knowledge:
 - none
 name: designing-ai-systems
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Ai System Design
 

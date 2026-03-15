@@ -38,14 +38,22 @@ version: 2.0.0
 - **Action**: Establish ADRs, data flow, and API contracts.
 
 ## 4. Build
-- **Workflows**: `/agent-development`
+- **Routing**: This phase is **Stack-Aware**. The orchestrator queries `stack-configurations.json` based on the active project stack.
+- **Workflows**:
+  - *Default*: `/feature-development`
+  - *Stack-Specific*: Routed dynamically (e.g., `/agent-development` for AI, `/rap-development` for SAP).
 - **Gate Artifact**: `knowledge/walkthrough.md`
-- **Action**: Core implementation and structural code delivery.
+- **Action**: Core implementation using stack-specific tools and patterns.
+- **Automation**: `python scripts/orchestration/verify_phase_4.py`
 
 ## 5. Test & Eval
-- **Workflows**: `/agent-testing`
+- **Routing**: This phase is **Stack-Aware**.
+- **Workflows**:
+  - *Default*: `/quality-gate`
+  - *Stack-Specific*: Routed dynamically (e.g., `/agent-testing` for Agentic, `/smart-contract-audit` for Web3).
 - **Gate Artifact**: `knowledge/eval-report.md`
-- **Action**: Quantitative and qualitative (LLM) verification of the build.
+- **Action**: Quantitative and qualitative verification using the stack's `test_runner`.
+- **Automation**: `python scripts/orchestration/verify_phase_5.py`
 
 ## 6. Deploy
 - **Workflows**: `/release-management`, `/documentation-workflow`

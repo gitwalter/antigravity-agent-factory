@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: evaluator-optimizer
-description: >
-  Verify understanding and alignment before major implementations
+description: 'Verify understanding and alignment before major implementations
+
+  '
 knowledge:
 - none
 name: checking-alignment
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Alignment Check
 
@@ -92,7 +101,7 @@ If this doesn't match what you want, please stop me now."
 Watch for these signs of potential misalignment:
 
 | Sign | What It Means | Action |
-|------|---------------|--------|
+|||--|
 | User references "the top parts" or "that thing" | Vague references may mean different things | Ask for clarification |
 | Instructions contradict earlier context | May indicate misunderstanding | Stop and verify |
 | Multiple failed attempts at same fix | Wrong mental model | Reset and re-align |
@@ -112,7 +121,7 @@ When stuck, make the AI's understanding visible:
 ## Integration with Other Skills
 
 | Skill | How Alignment Check Helps |
-|-------|---------------------------|
+|-||
 | `feature-workflow` | Verify requirements before implementation |
 | `bugfix-workflow` | Confirm reproduction steps understood |
 | `code-review` | Verify reviewer understands code intent |
@@ -121,7 +130,7 @@ When stuck, make the AI's understanding visible:
 ## Axiom Alignment
 
 | Axiom | How This Skill Applies |
-|-------|------------------------|
+|-||
 | A1 (Verifiability) | Verify understanding is correct before acting |
 | A2 (User Primacy) | Ensure we're solving what user actually wants |
 | A3 (Transparency) | Make internal understanding visible |

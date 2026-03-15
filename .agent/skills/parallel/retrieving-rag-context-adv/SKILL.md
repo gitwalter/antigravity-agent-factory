@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Patterns for using FAISS MCP tools to ingest documents and perform semantic
+description: 'Patterns for using FAISS MCP tools to ingest documents and perform semantic
   retrieval.
+
+  '
 knowledge:
 - none
 name: retrieving-rag-context-adv
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # RAG Retrieval Skill
 

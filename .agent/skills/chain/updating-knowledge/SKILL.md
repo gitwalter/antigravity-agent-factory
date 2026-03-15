@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Interactive skill for reviewing, applying, and managing knowledge updates
+description: 'Interactive skill for reviewing, applying, and managing knowledge updates
+
+  '
 knowledge:
 - none
 name: updating-knowledge
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Update Knowledge
 
@@ -132,20 +141,20 @@ Show user what updates are available:
 ### Critical Updates (Apply Immediately)
 
 | File | Version | Source | Change |
-|------|---------|--------|--------|
+|||--|--|
 | langchain-patterns.json | 1.0.0 → 1.1.0 | GitHub langchain-ai/langchain | Security fix |
 
 ### High Priority Updates
 
 | File | Version | Source | Change |
-|------|---------|--------|--------|
+|||--|--|
 | fastapi-patterns.json | 1.0.0 → 2.0.0 | GitHub tiangolo/fastapi | Breaking changes |
 | nextjs-patterns.json | 1.0.0 → 1.2.0 | NPM next@14.1.0 | New features |
 
 ### Medium Priority Updates
 
 | File | Version | Source | Change |
-|------|---------|--------|--------|
+|||--|--|
 | {more updates...} |
 
 ### Summary
@@ -278,7 +287,7 @@ After applying updates:
 ### Applied Updates
 
 | File | Previous | New | Status |
-|------|----------|-----|--------|
+||-|--|--|
 | fastapi-patterns.json | 1.0.0 | 2.0.0 | ✅ Applied |
 | langchain-patterns.json | 1.0.0 | 1.1.0 | ✅ Applied |
 | nextjs-patterns.json | 1.0.0 | 1.2.0 | ⚠️ Conflicts (merged) |
@@ -298,7 +307,7 @@ After applying updates:
 ### Skipped Updates
 
 | File | Reason |
-|------|--------|
+||--|
 | {file} | User declined |
 | {file} | Locked in manifest |
 ```
@@ -308,7 +317,7 @@ After applying updates:
 The skill supports these commands:
 
 | Command | Action |
-|---------|--------|
+||--|
 | `update-knowledge check` | Check for available updates |
 | `update-knowledge apply` | Apply pending updates |
 | `update-knowledge preview <file>` | Preview changes to file |
@@ -327,7 +336,7 @@ The skill supports these commands:
 ## Error Handling
 
 | Error | Resolution |
-|-------|------------|
+|-||
 | Source unavailable | Skip source, continue with others |
 | Checksum mismatch | Reject update, report error |
 | Merge conflict | Use conservative merge, flag for review |
@@ -349,7 +358,7 @@ Update process is successful when:
 - `pattern-feedback` - Generates feedback for improvements
 - `grounding-verification` - Verifies knowledge accuracy
 
----
+
 
 *This skill ensures controlled, transparent, and reversible knowledge evolution.*
 

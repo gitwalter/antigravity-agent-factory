@@ -1,13 +1,36 @@
 ---
 name: framing-problems
 type: skill
-description: >
-  Structures an ambiguous idea or pain point into a crisp, bounded problem statement with user context, assumptions, success criteria, and out-of-scope boundaries. Use this skill at the very start of any ideation session, when the user describes a vague goal, a frustration, an opportunity, or says something like "I want to build X" or "users are struggling with Y". Invoke before brainstorming — framing must precede divergence.
+description: 'Structures an ambiguous idea or pain point into a crisp, bounded problem
+  statement with user context, assumptions, success criteria, and out-of-scope boundaries.
+  Use this skill at the very start of any ideation session, when the user describes
+  a vague goal, a frustration, an opportunity, or says something like "I want to build
+  X" or "users are struggling with Y". Invoke before brainstorming — framing must
+  precede divergence.
+
+  '
 license: MIT
 metadata:
   version: 1.0.0
   phase: ideation
   llm-preference: claude
+agents:
+- python-ai-specialist
+knowledge:
+- none
+templates:
+- none
+related_skills:
+- managing-plane-tasks
+- orchestrating-mcp
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Framing Problems

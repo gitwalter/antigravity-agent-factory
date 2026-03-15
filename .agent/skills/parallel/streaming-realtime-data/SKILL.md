@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Token streaming from LLMs, event streaming with astream_events, WebSocket
+description: 'Token streaming from LLMs, event streaming with astream_events, WebSocket
   agent patterns, and real-time UI updates
+
+  '
 knowledge:
 - none
 name: streaming-realtime-data
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Streaming Realtime
 
@@ -368,7 +377,7 @@ async def stream_agent_with_tools(input_text: str):
 ## Streaming Patterns
 
 | Pattern | Use Case | Implementation |
-|---------|----------|----------------|
+||-|-|
 | Token Streaming | Chat interfaces | `astream()` with SSE/WebSocket |
 | Event Streaming | Debugging, monitoring | `astream_events()` |
 | State Streaming | Real-time UI updates | Custom event handlers |
@@ -389,7 +398,7 @@ async def stream_agent_with_tools(input_text: str):
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Blocking streams | Use async generators |
 | No error handling | Wrap in try/except |
 | Missing heartbeats | Send periodic pings |

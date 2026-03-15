@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "mobile-patterns",
+  "name": "Mobile Patterns",
+  "title": "Native Mobile Development Patterns",
+  "description": "Production-grade patterns for Native iOS (Swift/SwiftUI) and Android (Kotlin/Jetpack Compose) development, focusing on MVVM, clean architecture, and performance.",
+  "version": "1.0.0",
+  "category": "patterns",
+  "axiomAlignment": {
+    "A1_verifiability": "Patterns are based on official Apple and Google documentation and community best practices.",
+    "A2_user_primacy": "Focuses on delivering high-quality, responsive user experiences.",
+    "A3_transparency": "Explicitly defines architectural layers and dependency management.",
+    "A4_non_harm": "Prioritizes secure data storage and efficient resource usage to prevent device strain.",
+    "A5_consistency": "Enforces unified architectural patterns across both mobile platforms."
+  },
+  "patterns": {
+    "MVVM-Reactive": {
+      "description": "Standard architecture for reactive UI updates in native apps using Combine (iOS) or StateFlow (Android).",
+      "use_when": "Building modern interactive mobile UIs that require real-time state synchronization.",
+      "code_example": "// iOS Swift\nclass ViewModel: ObservableObject {\n  @Published var state = State()\n}\n// Android Kotlin\nclass MyViewModel : ViewModel() {\n  private val _uiState = MutableStateFlow(UiState())\n  val uiState: StateFlow<UiState> = _uiState.asStateFlow()\n}",
+      "best_practices": [
+        "Keep ViewModels platform-independent where possible.",
+        "Use reactive streams for all UI-binding logic.",
+        "Ensure state updates occur on the main thread."
+      ]
+    },
+    "Coordinator-Pattern": {
+      "description": "Decouples navigation logic from ViewControllers/Activities.",
+      "use_when": "Managing complex navigation flows in large mobile applications.",
+      "code_example": "protocol Coordinator {\n    var navigationController: UINavigationController { get set }\n    func start()\n}",
+      "best_practices": [
+        "Each coordinator should represent a single flow.",
+        "Inject dependencies into coordinators to maintain decoupling.",
+        "Store a reference to child coordinators to prevent premature deallocation."
+      ]
+    }
+  },
+  "best_practices": [
+    "Always use background threads for network and disk operations.",
+    "Implement accessibility identifiers for all interactive elements to support automated testing.",
+    "Use localized strings and assets from day one.",
+    "Handle low-memory and backgrounding states gracefully."
+  ],
+  "anti_patterns": [
+    {
+      "name": "Massive View Controller",
+      "problem": "Putting complex business logic and networking inside UI classes leads to unmaintainable code.",
+      "fix": "Deconstruct into ViewModels, Coordinators, and Services."
+    }
+  ],
+  "related_skills": [
+    "managing-stack-context"
+  ],
+  "related_knowledge": [
+    "ui-components.json"
+  ]
+}

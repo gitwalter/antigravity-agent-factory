@@ -1,10 +1,29 @@
 ---
 name: mastering-project-management
-description: >
-  Procedural truth for orchestrating high-fidelity software delivery via Plane MCP server.
+description: 'Procedural truth for orchestrating high-fidelity software delivery via
+  Plane MCP server.
+
+  '
 type: skill
 version: 2.0.0
 category: chain
+agents:
+- python-ai-specialist
+knowledge:
+- none
+templates:
+- none
+related_skills:
+- managing-plane-tasks
+- orchestrating-mcp
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Capability Manifest: Project Management Mastery
@@ -45,7 +64,7 @@ Follow these procedures to implement the capability:
 ## Process (Fail-State & Recovery)
 
 | Symptom | Probable Cause | Recovery Operation |
-| :--- | :--- | :--- |
+| : | : | : |
 | **Silent Sprint Fail** | Scope creep or hidden blockers. | Run a "Sprint Audit" to compare mid-sprint state vs. initial commitment; move non-critical items back to backlog. |
 | **Metric Inaccuracy** | Stale status in the PM backend. | Trigger a "Status Refresh" nudge to all active agents; manually audit item statuses in Plane to ensure alignment with reality. |
 | **Story Rejection** | Vague ACs leading to incorrect implementation. | Reject the story; conduct a "Hard Refinement" session to redefine ACs with the developer agent. |
@@ -53,7 +72,7 @@ Follow these procedures to implement the capability:
 ## Prerequisites
 
 | Action | Tool / Command |
-| :--- | :--- |
+| : | : |
 | Create Work Item | `mcp_plane_create_work_item` |
 | List Work Items | `mcp_plane_list_work_items` |
 | Retrieve Item | `mcp_plane_retrieve_work_item` |
@@ -66,7 +85,7 @@ Follow these procedures to implement the capability:
 Every work item MUST be tagged with at least one label from this synchronized set. For **Remote Plane** operations, always use the `mcp_plane` tools (`create_label`, `update_label`, `list_labels`) to maintain this synchronization. Do NOT use local management scripts for remote label administration.
 
 | Label | Description | UUID |
-| :--- | :--- | :--- |
+| : | : | : |
 | `BUG` | Defect or unexpected behavior. | `86386dc5-0402-4294-983d-5d0a8043a5fe` |
 | `CORE` | Core system infrastructure and logic. | `5b807a8c-09c4-49d5-ac0d-290568780564` |
 | `DATA` | Data models, migrations, and pipelines. | `70f46984-9401-44cd-a489-8aaad7fa8f4a` |
@@ -107,11 +126,11 @@ To ensure excellence, use these copy-pasteable patterns for common scenarios.
 
 ## Troubleshooting & Fail-State
 | Symptom | Probable Cause | Recovery Operation |
-| :--- | :--- | :--- |
+| : | : | : |
 | **MCP Server Unavailable** | Plane MCP server connection lost. | Verify MCP server config in `mcp_config.json`; check cloud Plane instance status. |
 | **UUID Resolution Failure** | Invalid label/state/cycle ID. | Re-query with `mcp_plane_list_labels` / `mcp_plane_list_states` to get current UUIDs. |
 | **Duplicate Work Item** | Issue with same name already exists. | Use `mcp_plane_search_work_items` to find existing item before creating. |
 | **Label Governance Violation** | Label not in the synchronized set. | Use only labels from the Label Governance table above. Verify with `mcp_plane_list_labels`. |
 
----
+
 *Operational maturity is the foundation of high-velocity agency.*

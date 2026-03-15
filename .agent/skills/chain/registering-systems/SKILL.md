@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Precise skill for updating JSON registries, dependency graphs, and manifests.
+description: 'Precise skill for updating JSON registries, dependency graphs, and manifests.
+
+  '
 knowledge:
 - none
 name: registering-systems
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # System Registration Skill

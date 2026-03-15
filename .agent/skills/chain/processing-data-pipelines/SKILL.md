@@ -1,11 +1,12 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Dataset preparation for ML, HuggingFace datasets, custom loaders, data
+description: 'Dataset preparation for ML, HuggingFace datasets, custom loaders, data
   validation with Great Expectations, feature engineering, data versioning with DVC,
   preprocessing pipelines
+
+  '
 knowledge:
 - none
 name: processing-data-pipelines
@@ -17,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Data Pipeline
 
@@ -690,7 +699,7 @@ After data pipeline processing, you'll have:
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | No validation | Always validate data quality |
 | No versioning | Use DVC for data versioning |
 | Data leakage | Proper train/test splitting |

@@ -1,6 +1,6 @@
 ﻿# Knowledge Files Catalog
 
-The factory currently includes **279 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
+The factory currently includes **281 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
 
 | File | Type | Description |
 |------|------|-------------|
@@ -24,8 +24,7 @@ The factory currently includes **279 knowledge files** covering: various aspects
 | [agent-coordination](file:///.agent/knowledge/agent-coordination.json) |  |  |
 | [agent-coordination-patterns](file:///.agent/knowledge/agent-coordination-patterns.json) |  |  |
 | [agent-handoff-patterns](file:///.agent/knowledge/agent-handoff-patterns.json) |  |  |
-| [agent-memory-patterns](file:///.agent/knowledge/agent-memory-patterns.json) |  |  |
-| [agent-memory-patterns-2026](file:///.agent/knowledge/agent-memory-patterns-2026.json) |  |  |
+| [agent-handoff-protocol](file:///.agent/knowledge/agent-handoff-protocol.json) |  |  |
 | [agent-society-protocol](file:///.agent/knowledge/agent-society-protocol.json) |  |  |
 | [agent-society-verification](file:///.agent/knowledge/agent-society-verification.json) |  |  |
 | [agent-staffing](file:///.agent/knowledge/agent-staffing.json) |  |  |
@@ -85,6 +84,7 @@ The factory currently includes **279 knowledge files** covering: various aspects
 | [data-application-patterns](file:///.agent/knowledge/data-application-patterns.json) |  |  |
 | [data-engineering-for-ml](file:///.agent/knowledge/data-engineering-for-ml.json) |  |  |
 | [data-engineering-patterns](file:///.agent/knowledge/data-engineering-patterns.json) |  |  |
+| [data-patterns](file:///.agent/knowledge/data-patterns.json) |  |  |
 | [data-pipeline-patterns](file:///.agent/knowledge/data-pipeline-patterns.json) |  |  |
 | [database-agent-patterns](file:///.agent/knowledge/database-agent-patterns.json) |  |  |
 | [debug-patterns](file:///.agent/knowledge/debug-patterns.json) |  |  |
@@ -127,7 +127,6 @@ The factory currently includes **279 knowledge files** covering: various aspects
 | [guardian-protocol](file:///.agent/knowledge/guardian-protocol.json) |  |  |
 | [guardrails-patterns](file:///.agent/knowledge/guardrails-patterns.json) |  |  |
 | [haystack-patterns](file:///.agent/knowledge/haystack-patterns.json) |  |  |
-| [hierarchical-memory-patterns](file:///.agent/knowledge/hierarchical-memory-patterns.json) |  |  |
 | [hitl-patterns](file:///.agent/knowledge/hitl-patterns.json) |  |  |
 | [hugging-face-patterns](file:///.agent/knowledge/hugging-face-patterns.json) |  |  |
 | [huggingface-patterns](file:///.agent/knowledge/huggingface-patterns.json) |  |  |
@@ -165,11 +164,11 @@ The factory currently includes **279 knowledge files** covering: various aspects
 | [memory-config](file:///.agent/knowledge/memory-config.json) |  |  |
 | [memory-patterns](file:///.agent/knowledge/memory-patterns.json) |  |  |
 | [memory-system-configuration](file:///.agent/knowledge/memory-system-configuration.json) |  |  |
-| [memory-systems-patterns](file:///.agent/knowledge/memory-systems-patterns.json) |  |  |
 | [microsoft-autogen-patterns](file:///.agent/knowledge/microsoft-autogen-patterns.json) |  |  |
 | [ml-agent-frameworks](file:///.agent/knowledge/ml-agent-frameworks.json) |  |  |
 | [ml-workflow-patterns](file:///.agent/knowledge/ml-workflow-patterns.json) |  |  |
 | [mlops-patterns](file:///.agent/knowledge/mlops-patterns.json) |  |  |
+| [mobile-patterns](file:///.agent/knowledge/mobile-patterns.json) |  |  |
 | [model-context-protocol-patterns](file:///.agent/knowledge/model-context-protocol-patterns.json) |  |  |
 | [model-serving-patterns](file:///.agent/knowledge/model-serving-patterns.json) |  |  |
 | [model-training-patterns](file:///.agent/knowledge/model-training-patterns.json) |  |  |
@@ -243,6 +242,7 @@ The factory currently includes **279 knowledge files** covering: various aspects
 | [scikit-learn-patterns](file:///.agent/knowledge/scikit-learn-patterns.json) |  |  |
 | [sdlc-architecture-graph](file:///.agent/knowledge/sdlc-architecture-graph.json) |  |  |
 | [sdlc-architecture-spec](file:///.agent/knowledge/sdlc-architecture-spec.json) |  |  |
+| [sdlc-phases](file:///.agent/knowledge/sdlc-phases.json) |  |  |
 | [security-checklist](file:///.agent/knowledge/security-checklist.json) |  |  |
 | [security-patterns](file:///.agent/knowledge/security-patterns.json) |  |  |
 | [self-optimization-catalog](file:///.agent/knowledge/self-optimization-catalog.json) |  |  |
@@ -291,9 +291,11 @@ The factory currently includes **279 knowledge files** covering: various aspects
 | [visualization-patterns](file:///.agent/knowledge/visualization-patterns.json) |  |  |
 | [web-browsing-and-scraping-patterns](file:///.agent/knowledge/web-browsing-and-scraping-patterns.json) |  |  |
 | [web-browsing-patterns](file:///.agent/knowledge/web-browsing-patterns.json) |  |  |
+| [web3-patterns](file:///.agent/knowledge/web3-patterns.json) |  |  |
 | [workflow-catalog](file:///.agent/knowledge/workflow-catalog.json) |  |  |
 | [workflow-entities](file:///.agent/knowledge/workflow-entities.json) |  |  |
 | [workflow-patterns](file:///.agent/knowledge/workflow-patterns.json) |  |  |
 | [workflow-system-entities](file:///.agent/knowledge/workflow-system-entities.json) |  |  |
 | [workshop-facilitation](file:///.agent/knowledge/workshop-facilitation.json) |  |  |
 | [workshop-facilitation-knowledge](file:///.agent/knowledge/workshop-facilitation-knowledge.json) |  |  |
+| [zero-knowledge-patterns](file:///.agent/knowledge/zero-knowledge-patterns.json) |  |  |

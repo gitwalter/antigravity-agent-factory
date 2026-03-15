@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Guide users through articulating why their agent system should exist,
+description: 'Guide users through articulating why their agent system should exist,
   who it serves, and how success will be measured
+
+  '
 knowledge:
 - none
 name: defining-purpose
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Purpose Definition
 
@@ -152,12 +161,12 @@ These values derive from our foundational axioms:
 ## Alignment with Axioms
 
 | Axiom | How This Purpose Aligns |
-|-------|------------------------|
+|-||
 | A1 - Verifiability | {mission is measurable via success criteria} |
 | A2 - User Primacy | {serves identified stakeholders} |
 | A4 - Non-Harm | {does not harm users or systems} |
 
----
+
 
 *This purpose document guides all agent behavior in this system.*
 *Last updated: {date}*

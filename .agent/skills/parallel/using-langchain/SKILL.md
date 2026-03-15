@@ -1,11 +1,12 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  LangChain 1.x patterns for chains, tools, memory, and structured outputs
+description: 'LangChain 1.x patterns for chains, tools, memory, and structured outputs
+
+  '
 knowledge:
-- none
+- langchain-patterns.json
 name: using-langchain
 related_skills:
 - none
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Langchain Usage
 
@@ -34,7 +43,7 @@ Build production LangChain applications using LCEL, tools, memory, and structure
 ## LCEL Patterns
 
 | Pattern | Example |
-|---------|---------|
+|||
 | Sequential | `chain1 \| chain2 \| chain3` |
 | Parallel | `RunnableParallel(a=chain1, b=chain2)` |
 | Conditional | `RunnableBranch((condition, chain1), chain2)` |
@@ -53,7 +62,7 @@ Build production LangChain applications using LCEL, tools, memory, and structure
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Sync in async context | Use `ainvoke` not `invoke` |
 | No error handling | Add `.with_fallbacks()` |
 | Hardcoded prompts | Use `ChatPromptTemplate` |

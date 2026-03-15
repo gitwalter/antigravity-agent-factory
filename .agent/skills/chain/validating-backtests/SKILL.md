@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Validate trading strategies with walk-forward analysis, Monte Carlo simulation,
-  and robustness checks
+description: 'Validate trading strategies with walk-forward analysis, Monte Carlo
+  simulation, and robustness checks
+
+  '
 knowledge:
 - none
 name: validating-backtests
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Backtesting Validation
 

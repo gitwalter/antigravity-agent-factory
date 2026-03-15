@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  NeMo Guardrails setup, Guardrails AI integration, prompt injection prevention,
+description: 'NeMo Guardrails setup, Guardrails AI integration, prompt injection prevention,
   PII detection, content safety, topic control
+
+  '
 knowledge:
 - none
 name: applying-llm-guardrails
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Llm Guardrails
 
@@ -447,7 +456,7 @@ After implementing guardrails, you'll have:
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Single layer of defense | Implement multiple validation layers |
 | Only checking input | Validate both input and output |
 | Ignoring PII in outputs | Always check outputs for PII |

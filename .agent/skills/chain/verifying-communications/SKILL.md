@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Enable verified, axiom-compliant communication between Factory agents
+description: 'Enable verified, axiom-compliant communication between Factory agents
+
+  '
 knowledge:
 - none
 name: verifying-communications
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Verified Communication
 
@@ -151,7 +160,7 @@ else:
 Shared infrastructure for all verified agents:
 
 | Component | Purpose |
-|-----------|---------|
+|--||
 | `EventStore` | Immutable, hash-chained event log |
 | `AxiomComplianceMonitor` | Verifies events against A0-A5 axioms |
 | `ContractVerifier` | Enforces agent contracts and capabilities |
@@ -164,7 +173,7 @@ Shared infrastructure for all verified agents:
 Per-agent interface to the verified society:
 
 | Method | Purpose |
-|--------|---------|
+|--||
 | `send_message(target, type, payload)` | Send verified message to another agent |
 | `send_decision(description, payload)` | Record a decision for audit trail |
 | `sign_contract(contract)` | Commit to a formal agent contract |
@@ -177,7 +186,7 @@ Per-agent interface to the verified society:
 Routes verified messages between agents:
 
 | Method | Purpose |
-|--------|---------|
+|--||
 | `register(bridge)` | Add agent to routing |
 | `unregister(agent_id)` | Remove agent from routing |
 | `route(event, sender, recipient)` | Deliver verified message |
@@ -187,7 +196,7 @@ Routes verified messages between agents:
 ## Message Types
 
 | Type | Purpose | Example |
-|------|---------|---------|
+||||
 | `REQUEST` | Ask agent to perform action | "Please analyze this file" |
 | `RESPONSE` | Reply to a request | "Analysis complete, found 3 issues" |
 | `INFORM` | Share information | "User preferences updated" |
@@ -201,7 +210,7 @@ Routes verified messages between agents:
 Every message is verified against foundational axioms:
 
 | Axiom | Checks For |
-|-------|------------|
+|-||
 | **A0 (SDG)** | Sustainable, non-wasteful actions |
 | **A1 (Love)** | User wellbeing, non-manipulation |
 | **A2 (Truth)** | Transparency, no deception |
@@ -269,7 +278,7 @@ worker.sign_contract(contract)
 ### Trust Levels
 
 | Level | Score Range | Meaning |
-|-------|-------------|---------|
+|-|-||
 | `TRUSTED` | 0.8 - 1.0 | Fully trusted, minimal verification |
 | `VERIFIED` | 0.6 - 0.8 | Mostly trusted, standard verification |
 | `NEUTRAL` | 0.4 - 0.6 | No track record, full verification |
@@ -279,7 +288,7 @@ worker.sign_contract(contract)
 ### Reputation Events
 
 | Event | Impact | Description |
-|-------|--------|-------------|
+|-|--|-|
 | Axiom compliance | +5 | Action passed all axiom checks |
 | Contract fulfilled | +10 | Completed obligation |
 | Axiom violation | -10 to -50 | Severity-dependent penalty |
@@ -413,7 +422,7 @@ context.trust_graph.delegate_trust(
 ### BridgeResult States
 
 | State | Meaning | Action |
-|-------|---------|--------|
+|-||--|
 | `success=True, verified=True` | Message sent and verified | Proceed |
 | `success=True, verified=False` | Message sent but violations | Review violations |
 | `success=False` | Send failed | Check error, retry |
@@ -444,7 +453,7 @@ except Exception as e:
 ## Related Components
 
 | Component | Relationship |
-|-----------|--------------|
+|--|--|
 | `lib/society/events/` | Event storage and hash chains |
 | `lib/society/verification/` | Axiom verifiers and compliance monitor |
 | `lib/society/contracts/` | Contract schema and verification |
@@ -454,7 +463,7 @@ except Exception as e:
 ## Axiom Alignment
 
 | Axiom | How This Skill Applies |
-|-------|------------------------|
+|-||
 | A0 (SDG) | Sustainable agent society, efficient resource use |
 | A1 (Love) | Agent actions serve user wellbeing |
 | A2 (Truth) | Transparent, cryptographically verified communication |

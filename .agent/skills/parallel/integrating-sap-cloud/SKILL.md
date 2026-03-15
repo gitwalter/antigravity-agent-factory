@@ -1,11 +1,12 @@
 ---
 agents:
-- none
+- sap-systems-specialist
 category: parallel
-description: >
-  Tactical Blueprint for SAP Cloud Integration (CPI), Event Mesh, and API
-  Management. Focuses on secure, observable, and resilient enterprise integration
+description: 'Tactical Blueprint for SAP Cloud Integration (CPI), Event Mesh, and
+  API Management. Focuses on secure, observable, and resilient enterprise integration
   patterns.
+
+  '
 knowledge:
 - none
 name: integrating-sap-cloud
@@ -17,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Capability Manifest: SAP Integration Cloud
 

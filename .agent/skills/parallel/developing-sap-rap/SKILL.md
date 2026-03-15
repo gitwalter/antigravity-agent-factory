@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- sap-systems-specialist
 category: parallel
-description: >
-  Tactical Blueprint for RESTful ABAP Programming (RAP) and CDS Modeling.
-  Focuses on 'Clean Core' compliant on-stack extensibility in S/4HANA Cloud.
+description: 'Tactical Blueprint for RESTful ABAP Programming (RAP) and CDS Modeling.
+  Focuses on ''Clean Core'' compliant on-stack extensibility in S/4HANA Cloud.
+
+  '
 knowledge:
 - none
 name: developing-sap-rap
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Capability Manifest: SAP Enterprise RAP
 

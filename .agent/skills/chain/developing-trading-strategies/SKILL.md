@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Design and implement algorithmic trading strategies with entry/exit rules,
-  position sizing, and risk parameters
+description: 'Design and implement algorithmic trading strategies with entry/exit
+  rules, position sizing, and risk parameters
+
+  '
 knowledge:
 - none
 name: developing-trading-strategies
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Trading Strategy
 

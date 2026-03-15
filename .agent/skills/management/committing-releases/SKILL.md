@@ -1,7 +1,9 @@
 ---
 name: committing-releases
-description: >
-  Automated release management using semantic versioning, git tagging, and automated changelog maintenance.
+description: 'Automated release management using semantic versioning, git tagging,
+  and automated changelog maintenance.
+
+  '
 type: skill
 version: 1.0.0
 category: management
@@ -17,6 +19,14 @@ related_skills:
 - orchestrating-mcp
 references:
 - CHANGELOG.md
+templates:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Committing Releases (RCW Extension)
@@ -68,5 +78,5 @@ After execution, verify:
 - **Informative Changelogs**: Ensure that recent changes are properly documented in the draft section of `CHANGELOG.md` before running the release.
 - **Tag Signing**: (Future) Enable GPG signing for release tags for non-repudiation.
 
----
+
 *Immutable releases are the anchor of engineering reliability.*

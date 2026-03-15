@@ -1,11 +1,12 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  JPA entity design (relationships, inheritance, embedded), Spring Data
+description: 'JPA entity design (relationships, inheritance, embedded), Spring Data
   JPA repositories (derived queries, @Query, Specifications), Transaction management,
   N+1 query prevention (EntityGraph, JOIN FETCH), Auditing, Flyway/Liquibase migrations
+
+  '
 knowledge:
 - none
 name: applying-jpa-patterns
@@ -17,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Jpa Patterns
 
@@ -467,7 +476,7 @@ CREATE UNIQUE INDEX idx_product_sku ON products(sku);
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | N+1 queries | Use `@EntityGraph` or `JOIN FETCH` |
 | Missing `@Transactional` | Add transaction boundaries |
 | Eager fetching everywhere | Use lazy loading with fetch joins |

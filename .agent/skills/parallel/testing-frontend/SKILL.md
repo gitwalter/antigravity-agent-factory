@@ -1,13 +1,18 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Vitest setup and configuration, React Testing Library patterns, component
+description: 'Vitest setup and configuration, React Testing Library patterns, component
   testing (render, fireEvent, waitFor), mock patterns (MSW for API mocking), Playwright
   E2E testing, snapshot testing strategy, and coverage configuration.
+
+  '
 knowledge:
-- none
+- agent-testing-patterns.json
+- agent-testing.json
+- backtesting-framework-patterns.json
+- frontend-performance-patterns.json
+- kotest-testing-framework-patterns.json
 name: testing-frontend
 related_skills:
 - none
@@ -17,6 +22,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Frontend Testing
 

@@ -13,7 +13,7 @@ version: 1.0.0
 ## Steps:
 1. **Target**: Load `knowledge/eval-report.md` and `knowledge/walkthrough.md`.
 2. **Execute**: Trigger `.agent/skills/releases/committing-releases/SKILL.md` (if existing, else use generic release skill).
-3. **Link Audit**: Execute `python scripts/maintenance/link_checker.py --external` to ensure repo integrity.
+3. **Link Audit**: Execute `python scripts/maintenance/audit/link_checker.py --external` to ensure repo integrity.
 4. **Notes**: Generate `release-notes.md` using `knowledge/templates/release-notes.md`.
 5. **Output**: Update `CHANGELOG.md` and tag the repository.
 6. **Follow-up**: Prompt user to run `/monitor` (Phase 7) to verify production health.

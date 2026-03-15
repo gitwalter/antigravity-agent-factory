@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- sap-systems-specialist
 category: parallel
-description: >
-  Tactical Blueprint for SAP Fiori Elements development. Focuses on metadata-driven
+description: 'Tactical Blueprint for SAP Fiori Elements development. Focuses on metadata-driven
   UI development via CDS annotations and SAP Fiori Tools.
+
+  '
 knowledge:
 - none
 name: building-sap-fiori
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Capability Manifest: SAP Fiori Elements
 

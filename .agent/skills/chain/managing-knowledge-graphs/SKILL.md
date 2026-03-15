@@ -1,12 +1,15 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Graph RAG patterns, entity extraction with LLMs, relationship mapping,
+description: 'Graph RAG patterns, entity extraction with LLMs, relationship mapping,
   and Neo4j integration
+
+  '
 knowledge:
-- none
+- dashboard-knowledge.json
+- game-mechanics-knowledge.json
+- workshop-facilitation-knowledge.json
 name: managing-knowledge-graphs
 related_skills:
 - none
@@ -16,6 +19,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Knowledge Graphs
 
@@ -606,7 +617,7 @@ class CompleteGraphRAG:
 ## Knowledge Graph Patterns
 
 | Pattern | Use Case | Pros | Cons |
-|---------|----------|------|------|
+||-|||
 | LLM Extraction | Unstructured text | High quality | Slower, costs |
 | Rule-based | Structured data | Fast, precise | Limited coverage |
 | Hybrid | Mixed sources | Best of both | More complex |
@@ -626,7 +637,7 @@ class CompleteGraphRAG:
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | No entity resolution | Merge duplicates before storage |
 | Ignoring relationships | Extract and store relationships |
 | Flat entity storage | Use graph database |

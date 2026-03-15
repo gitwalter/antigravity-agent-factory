@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Guide users through selecting enforcement patterns that ensure agent
+description: 'Guide users through selecting enforcement patterns that ensure agent
   system lives its values
+
+  '
 knowledge:
 - none
 name: selecting-enforcements
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Enforcement Selection
 

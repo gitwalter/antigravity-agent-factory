@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Tactical Blueprint for stateful AI agents and multi-agent systems. Focuses
+description: 'Tactical Blueprint for stateful AI agents and multi-agent systems. Focuses
   on LangGraph orchestration, state persistence, and procedural loop logic.
+
+  '
 knowledge:
 - none
 name: mastering-agentic-loops
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Capability Manifest: Agentic Loop Mastery
 

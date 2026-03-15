@@ -1,12 +1,19 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Model Context Protocol overview, server creation, tool exposure, and
+description: 'Model Context Protocol overview, server creation, tool exposure, and
   common integrations
+
+  '
 knowledge:
-- none
+- aisuite-integration.json
+- api-integration.json
+- mcp-selection-guide.json
+- mcp-server-selection-guide.json
+- mcp-servers-catalog.json
+- model-context-protocol-patterns.json
+- plane-integration.json
 name: integrating-mcp
 related_skills:
 - none
@@ -16,6 +23,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Mcp Integration
 
@@ -480,7 +495,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 ## Common MCP Servers
 
 | Server | Purpose | Tools |
-|--------|---------|-------|
+|--||-|
 | Filesystem | File operations | read_file, write_file, list_directory |
 | Database | SQL queries | execute_query, get_schema |
 | LangSmith | Tracing/debugging | get_trace, search_runs |
@@ -501,7 +516,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | No input validation | Validate all inputs with schemas |
 | Synchronous I/O | Use async/await for all I/O |
 | Unrestricted file access | Validate paths against allowed directories |

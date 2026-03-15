@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Deploy ML models to production with Docker, Kubernetes, cloud platforms,
+description: 'Deploy ML models to production with Docker, Kubernetes, cloud platforms,
   and edge devices
+
+  '
 knowledge:
 - none
 name: deploying-ml-models
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Ml Deployment
 
@@ -147,7 +156,7 @@ spec:
             port: 8000
           initialDelaySeconds: 30
           periodSeconds: 10
----
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -173,7 +182,7 @@ metadata:
 spec:
   nodeLabels:
     nvidia.com/gpu.product: "A100"
----
+
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ClusterQueue
 metadata:
@@ -186,7 +195,7 @@ spec:
       resources:
       - name: "nvidia.com/gpu"
         nominalQuota: 4
----
+
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: LocalQueue
 metadata:
@@ -194,7 +203,7 @@ metadata:
   namespace: default
 spec:
   clusterQueue: gpu-queue
----
+
 apiVersion: batch/v1
 kind: Job
 metadata:

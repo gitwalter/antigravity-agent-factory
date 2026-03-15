@@ -30,37 +30,33 @@ This workflow is activated when:
 
 ## Steps
 
-### Fetch Change Details
+## Phases
 
-### Understand Change Purpose
+### 1. Context Acquisition
+- **Goal**: Understand the scope and intent of the changes.
+- **Action**: Fetch the diff and linked Plane issue (e.g., [AGENT-133](https://app.plane.so/agent-factory/browse/AGENT-133/)).
+- **Tool**: `git diff` via `run_command` and `mcp_plane_retrieve_work_item`.
 
-### Detect Style Guide
+### 2. Static Analysis & Compliance
+- **Goal**: Ensure code adheres to factory standards.
+- **Action**: Run linters and type checkers.
+- **Tool**: `ruff`, `mypy`, or `eslint` via `run_command`.
+- **Reference**: Verify against `.agentrules` Layer 3 and 4.
 
-### Logic Verification
+### 3. Logic & Security Audit
+- **Goal**: Identify bugs, vulnerabilities, and architectural mismatches.
+- **Action**: Perform manual/AI-assisted review of logic, error handling, and security patterns.
+- **Tool**: Use `python-ai-specialist` for deep code analysis.
 
-### Error Handling Review
+### 4. Verification & Feedback
+- **Goal**: Validate that the code works as intended.
+- **Action**: Run the unit/integration tests included with the PR.
+- **Tool**: `pytest` or `npm test` via `run_command`.
 
-### Naming Convention Review
-
-### Formatting Review
-
-### Architecture Assessment
-
-### API Design Review
-
-### Algorithm Complexity
-
-### Resource Usage
-
-### Security Vulnerability Scan
-
-### Code Clarity
-
-### Test Coverage
-
-### Compile Review Report
-
-### Determine Approval Status
+### 5. Review Reporting
+- **Goal**: Communicate findings clearly.
+- **Action**: Generate a summary report with severity ratings.
+- **Tool**: Invoke `/documentation-workflow` to format the review comment.
 
 
 ## Decision Points

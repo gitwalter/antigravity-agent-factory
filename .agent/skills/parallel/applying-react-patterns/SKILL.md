@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- full-stack-web-specialist
 category: parallel
-description: >
-  React 19 component patterns, hooks, state management, and composition
+description: 'React 19 component patterns, hooks, state management, and composition
+
+  '
 knowledge:
 - none
 name: applying-react-patterns
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # React Patterns
 

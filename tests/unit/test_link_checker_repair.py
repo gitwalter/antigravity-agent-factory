@@ -2,7 +2,7 @@ import pytest
 from pathlib import Path
 import shutil
 import tempfile
-from scripts.maintenance.link_checker import LinkChecker
+from scripts.maintenance.audit.link_checker import LinkChecker
 
 
 @pytest.fixture

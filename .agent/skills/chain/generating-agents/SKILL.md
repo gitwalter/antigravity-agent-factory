@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Agent definition file generation with mandatory schema validation against
+description: 'Agent definition file generation with mandatory schema validation against
   schemas/agent.schema.json
+
+  '
 knowledge:
 - none
 name: generating-agents
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Agent Generation
 
@@ -30,7 +39,7 @@ Generates agent definition files that are **schema-compliant by construction**. 
 ### Required Frontmatter Fields
 
 | Field | Type | Constraints |
-|-------|------|-------------|
+|-||-|
 | `name` | string | Pattern: `^[a-z0-9-]+$`, min 3 chars, must match filename without `.md` |
 | `description` | string | Min 20 chars |
 | `type` | const | Must be `"agent"` |
@@ -45,7 +54,7 @@ Generates agent definition files that are **schema-compliant by construction**. 
 ### Optional Fields
 
 | Field | Type | Description |
-|-------|------|-------------|
+|-||-|
 | `mcp_servers` | array of strings | MCP servers this agent uses |
 | `agent_team` | array of strings | Other agents this agent coordinates with |
 
@@ -54,7 +63,7 @@ Generates agent definition files that are **schema-compliant by construction**. 
 Use this mapping when the natural domain doesn't match an allowed value:
 
 | Natural Domain | Use Instead |
-|---------------|-------------|
+||-|
 | data-science | `analysis` |
 | security | `testing` |
 | integration | `orchestration` |
@@ -93,7 +102,7 @@ For each requested agent:
 ### Step 3: Render Markdown
 
 ```markdown
----
+
 name: {name}
 description: {description}
 type: agent
@@ -104,7 +113,7 @@ knowledge: [{file-1}.json, {file-2}.json, ...]
 tools: [{tool-1}, ...]
 workflows: [{workflow-1} or "none"]
 blueprints: [{blueprint-1} or "none"]
----
+
 
 # {Title} Agent
 
@@ -119,13 +128,13 @@ blueprints: [{blueprint-1} or "none"]
 ## When Activated
 
 | Trigger Phrase | Context |
-|---------------|---------|
+|||
 | ... | ... |
 
 ## Skills Used
 
 | Skill | Purpose |
-|-------|---------|
+|-||
 | ... | ... |
 
 ## Workflow Diagram
@@ -138,13 +147,13 @@ graph TD
 ## Knowledge Used
 
 | Knowledge File | Content |
-|---------------|---------|
+|||
 | ... | ... |
 
 ## Collaboration
 
 | Agent | Interaction |
-|-------|------------|
+|-||
 | ... | ... |
 
 ## Important Rules
@@ -171,7 +180,7 @@ Write to target location:
 ## Common Schema Violations and Fixes
 
 | Error | Cause | Fix |
-|-------|-------|-----|
+|-|-|--|
 | `domain: 'X' is not one of [...]` | Invalid domain value | Use mapping guide above |
 | `blueprints: [] should be non-empty` | Empty array | Change to `["none"]` |
 | `knowledge.N does not match pattern` | Path prefix in ref | Remove `schemas/` prefix |

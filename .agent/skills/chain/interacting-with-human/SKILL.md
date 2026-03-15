@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Approval workflows, interrupts, and feedback patterns for agents
+description: 'Approval workflows, interrupts, and feedback patterns for agents
+
+  '
 knowledge:
 - none
 name: interacting-with-human
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Human In The Loop
 
@@ -291,7 +300,7 @@ async def process_with_escalation(state: dict) -> dict:
 ## HITL Patterns
 
 | Pattern | Use Case |
-|---------|----------|
+||-|
 | Interrupt Before | Review before action |
 | Interrupt After | Review after generation |
 | Multi-Step | Sequential approvals |
@@ -310,7 +319,7 @@ async def process_with_escalation(state: dict) -> dict:
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Blocking on sync input | Use async with timeouts |
 | No context | Provide full details for decision |
 | Binary only | Allow modifications |

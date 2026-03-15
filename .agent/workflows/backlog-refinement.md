@@ -28,41 +28,29 @@ This workflow is activated when:
 
 ## Steps
 
-### Inventory Backlog
-Fetch current issues from Plane using the `mcp-plane` server:
-Use the `mcp_plane_list_project_issues` tool to fetch current project issues.
-```json
-{
-  "project_id": "e71eb003-87d4-4b0c-a765-a044ac5affbe"
-}
-```
-*Tip: Analyze returned state identifiers to recognize Backlog vs. Todo items.*
+## Phases
 
-### Assess Backlog Health
+### 1. Inventory & Health Check
+- **Goal**: Map the current state of the backlog.
+- **Action**: List project issues and categorize by state UUIDs.
+- **Tool**: `mcp_plane_list_project_issues`.
+- **Filter**: Identify "Backlog" (`294ddb00...`) vs "Todo" (`8e155185...`) items.
 
-### Review Top Items
+### 2. Review & Refinement
+- **Goal**: Improve clarity and priority of top items.
+- **Action 1**: For unestimated items, apply the Fibonacci scale (1, 2, 3, 5, 8, 13).
+- **Action 2**: Verify "Definition of Ready" (DoR) — clear requirements, acceptance criteria, and tagged assets (workflows, skills).
+- **Tool**: `mcp_plane_update_work_item` to set `estimate_point` and `priority`.
 
-### Apply Priority Changes
+### 3. Readiness Verification
+- **Goal**: Ensure the upcoming sprint is fully covered.
+- **Action**: Calculate "Sprint Health" by checking if top items have `acceptance_criteria` and `labels`.
 
-### Review Acceptance Criteria
-
-### Clarify Story Details
-
-### Split Large Stories
-
-### Identify Unestimated Items
-
-### Conduct Estimation
-
-### Apply Definition of Ready
-
-### Calculate Ready Sprint Coverage
-
-### Update Backlog Status
-Update issue states in Plane (e.g., set to "Todo" after refinement).
-
-### Generate Refinement Report
-Summarize Plane tasks refined.
+### 4. Status Update & Reporting
+- **Goal**: Formalize the refined state.
+- **Action**: Move ready items to "Todo".
+- **Tool**: `mcp_plane_update_work_item` with `state_id`.
+- **Reporting**: Invoke `/documentation-workflow` to summarize the session.
 
 
 ## Decision Points

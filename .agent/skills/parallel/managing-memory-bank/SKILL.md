@@ -1,9 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Foundational skill for navigating the Tier 0 Active Consciousness and proposing Tier 4 Memories.
+description: 'Foundational skill for navigating the Tier 0 Active Consciousness and
+  proposing Tier 4 Memories.
+
+  '
 knowledge:
 - agent-memory-patterns.json
 name: managing-memory-bank
@@ -15,6 +17,14 @@ tools:
 - none
 type: skill
 version: 2.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Memory Bank (Active Consciousness Governance)
 
@@ -61,7 +71,7 @@ open_nodes(names=["<discovered entity 1>", "<discovered entity 2>"])
 ```
 *Goal: Understand the ecosystem you are entering so you do not duplicate work or violate existing Layer 3 (Methodology) / Layer 4 (Technical) standards.*
 
----
+
 
 ### Phase Final: Memory Induction & Consent Loop
 At the end of a session, if you detect a "Significant Pattern" (a new architectural decision, a recurring bug fix, a new coding standard), you MUST propose it.

@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Validates that project structure documented in README.md accurately reflects
-  the actual filesystem structure
+description: 'Validates that project structure documented in README.md accurately
+  reflects the actual filesystem structure
+
+  '
 knowledge:
 - none
 name: validating-readmes
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Readme Validation
 
@@ -124,7 +133,7 @@ When extending the factory with new components:
 ## Command Reference
 
 | Command | Description |
-|---------|-------------|
+||-|
 | `--check` | Validate README against actual structure (default) |
 | `--generate` | Print the correct structure markdown |
 | `--update` | Update README.md in place |
@@ -134,7 +143,7 @@ When extending the factory with new components:
 ## What Gets Scanned
 
 | Component | Location | Counted |
-|-----------|----------|---------|
+|--|-||
 | Agents | `{directories.agents}/*.md` | Number of .md files |
 | Skills | `{directories.skills}/*/SKILL.md` | Directories with SKILL.md |
 | Blueprints | `{directories.blueprints}/*/blueprint.json` | Directories with blueprint.json |

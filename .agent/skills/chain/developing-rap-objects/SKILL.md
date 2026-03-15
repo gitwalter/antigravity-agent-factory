@@ -1,13 +1,15 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  RAP business object creation (managed, unmanaged, abstract), behavior
+description: 'RAP business object creation (managed, unmanaged, abstract), behavior
   definitions, determinations, validations, actions, draft handling, authorization
   control
+
+  '
 knowledge:
-- none
+- sap-cap-cds-and-abap-patterns.json
+- sap-rap-patterns.json
 name: developing-rap-objects
 related_skills:
 - none
@@ -17,6 +19,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Rap Development
 

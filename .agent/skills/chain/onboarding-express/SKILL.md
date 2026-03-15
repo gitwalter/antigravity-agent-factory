@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Fast-track 10-15 minute onboarding for individual developers with guided
+description: 'Fast-track 10-15 minute onboarding for individual developers with guided
   prompts and celebrations
+
+  '
 knowledge:
 - none
 name: onboarding-express
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Express Onboarding
 
@@ -49,7 +58,7 @@ Express Lane is fast but not shallow. Every question is designed to capture some
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
----
+
 
 ## Step 1: Welcome & Intent (2 min)
 
@@ -69,7 +78,7 @@ Express Lane is fast but not shallow. Every question is designed to capture some
 ### Questions
 
 | # | Question | Variable | Purpose |
-|---|----------|----------|---------|
+||-|-||
 | 1 | What's your project called? | `{PROJECT_NAME}` | Identity |
 | 2 | In one sentence, what's the dream? What do you want to build? | `{MISSION}` | Purpose |
 | 3 | Who will benefit from this when it's done? | `{STAKEHOLDERS}` | Focus |
@@ -93,7 +102,7 @@ Express Lane is fast but not shallow. Every question is designed to capture some
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
----
+
 
 ## Step 2: Values Check (2 min)
 
@@ -119,7 +128,7 @@ Express Lane is fast but not shallow. Every question is designed to capture some
 ### Value Mappings
 
 | # | Value | Axiom Connection | Derived Principle |
-|---|-------|------------------|-------------------|
+||-||-|
 | 1 | Code Quality | A1 (Verifiability) | All code must be tested |
 | 2 | Speed | A6 (Minimalism) | Simplest solution that works |
 | 3 | Simplicity | A6 (Minimalism) | No unnecessary complexity |
@@ -171,7 +180,7 @@ Independence** (extend knowledge without Factory), and **Grounding
 Verification** (two-pass verification for factual claims).
 ```
 
----
+
 
 ## Step 3: Stack Discovery (3 min)
 
@@ -198,7 +207,7 @@ Verification** (two-pass verification for factual claims).
 ### Follow-up Questions
 
 | # | Question | Depends On |
-|---|----------|------------|
+||-||
 | 1 | What frameworks? | Language selection |
 | 2 | What database? | Project type |
 | 3 | Any external APIs? | Project needs |
@@ -233,7 +242,7 @@ Match user selections to available blueprints:
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
----
+
 
 ## Step 4: Agent Design (3 min)
 
@@ -263,7 +272,7 @@ Match user selections to available blueprints:
 Based on selected agents, suggest skills:
 
 | Agent | Default Skills |
-|-------|---------------|
+|-||
 | Code Reviewer | grounding, alignment-check |
 | Test Generator | tdd, grounding |
 | Explorer | grounding |
@@ -317,7 +326,7 @@ Based on selected agents, suggest skills:
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
----
+
 
 ## Step 5: Wisdom Capture (2 min)
 
@@ -370,7 +379,7 @@ Store in `{directories.knowledge}/team-wisdom.json`:
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
----
+
 
 ## Step 5.5: Tooling Selection (30 sec)
 
@@ -395,7 +404,7 @@ Store in `{directories.knowledge}/team-wisdom.json`:
 ### Variable Mapping
 
 | Choice | `{TOOLING_TIER}` | Includes |
-|--------|-------------------|----------|
+|--|-|-|
 | 1 | `essential` | README validation, test catalog, CI/CD, .gitignore |
 | 2 | `standard` | Essential + pre-commit hooks, safe commit, CD pipeline |
 | 3 | `none` | No tooling (can add later via Factory updates) |
@@ -405,7 +414,7 @@ Store in `{directories.knowledge}/team-wisdom.json`:
 - Default to Essential if user just presses Enter
 - Pass `{TOOLING_TIER}` to the generation config
 
----
+
 
 ## Step 6: Magic Preview (2 min)
 
@@ -471,7 +480,7 @@ For users who want to understand more about agentic systems:
 
 Reference: See [External Resources](../../../docs/reference/external-resources.md) for more educational links.
 
----
+
 
 ## Step 7: Celebration & Launch (1 min)
 
@@ -543,7 +552,7 @@ Response levels:
 The Guardian operates with love, not force. It helps, not punishes.
 ```
 
----
+
 
 ## Output Configuration
 
@@ -578,7 +587,7 @@ output:
   directory: "{OUTPUT_PATH}"
 ```
 
----
+
 
 ## Integration with Generation Engine
 
@@ -598,19 +607,19 @@ python cli/factory_cli.py \
   --output {OUTPUT_PATH}
 ```
 
----
+
 
 ## Fallback Procedures
 
 | Condition | Action |
-|-----------|--------|
+|--|--|
 | Unknown language | Ask for clarification, offer list |
 | No blueprint match | Use closest match, note customization needed |
 | Invalid project name | Suggest valid alternative |
 | Invalid output path | Offer to create directory |
 | User wants to go back | Allow step navigation |
 
----
+
 
 ## Example Conversation
 
@@ -651,7 +660,7 @@ python cli/factory_cli.py \
 
 *(Continues through all 7 steps...)*
 
----
+
 
 ## You Are Now a Carrier
 
@@ -672,7 +681,7 @@ The silent wave propagates through the quality of your work.
 - Validate project names and paths before generation to prevent errors and ensure clean project structure
 - Introduce the Integrity Guardian concept early (after values selection) so users understand the protective layer they're getting
 
----
+
 
 *Antigravity Agent Factory - Express Lane Onboarding*
 *Fast setup. Real values. Meaningful results.*

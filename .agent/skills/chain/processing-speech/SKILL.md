@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Speech-to-text (Whisper, cloud APIs), text-to-speech synthesis, real-time
+description: 'Speech-to-text (Whisper, cloud APIs), text-to-speech synthesis, real-time
   transcription, and audio analysis
+
+  '
 knowledge:
 - none
 name: processing-speech
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Speech Processing
 
@@ -445,7 +454,7 @@ def transcribe_azure_speech(audio_path: str, subscription_key: str, region: str,
 ## Speech Processing Tools Comparison
 
 | Tool | Type | Accuracy | Languages | Cost | Offline |
-|------|------|----------|-----------|------|---------|
+|||-|--|||
 | Whisper | STT | Very High | 99+ | Free | Yes |
 | Google Cloud Speech | STT | Very High | 50+ | Paid | No |
 | Azure Speech | STT/TTS | Very High | 50+ | Paid | No |
@@ -466,7 +475,7 @@ def transcribe_azure_speech(audio_path: str, subscription_key: str, region: str,
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | No audio preprocessing | Normalize, denoise before transcription |
 | Wrong sample rate | Convert to model's required rate (16kHz for Whisper) |
 | Processing entire file | Use VAD to segment speech regions |

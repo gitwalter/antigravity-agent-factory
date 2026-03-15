@@ -53,7 +53,7 @@ This workflow is activated when:
 ### Documentation Integrity Check
 - **Agent**: `system-steward`
 - **Skill**: `governing-repositories`
-- **Action**: Run `python scripts/maintenance/link_checker.py` to ensure the PR doesn't introduce broken links or misplace files.
+- **Action**: Run `python scripts/maintenance/audit/link_checker.py` to ensure the PR doesn't introduce broken links or misplace files.
 
 ### Aggregate Results
 

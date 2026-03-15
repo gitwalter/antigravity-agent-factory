@@ -1,8 +1,15 @@
 ---
 name: reviewing-requirements
 type: skill
-description: >
-  Conducts a multi-perspective adversarial review of knowledge/prd.md using a structured debate pattern. Activates three reviewer personas — Product Critic, AI Systems Engineer, and Security Auditor — to surface gaps, contradictions, missing edge cases, and AI-specific failure modes. Use when the user wants to validate requirements, check the PRD, find gaps, stress-test the spec, or says "review the requirements", "what are we missing", "is this complete", or "let's pressure-test this". Requires knowledge/prd.md. Writes findings to knowledge/review-findings.md.
+description: 'Conducts a multi-perspective adversarial review of knowledge/prd.md
+  using a structured debate pattern. Activates three reviewer personas — Product Critic,
+  AI Systems Engineer, and Security Auditor — to surface gaps, contradictions, missing
+  edge cases, and AI-specific failure modes. Use when the user wants to validate requirements,
+  check the PRD, find gaps, stress-test the spec, or says "review the requirements",
+  "what are we missing", "is this complete", or "let''s pressure-test this". Requires
+  knowledge/prd.md. Writes findings to knowledge/review-findings.md.
+
+  '
 license: MIT
 allowed-tools: Read, Write
 metadata:
@@ -10,6 +17,23 @@ metadata:
   phase: requirements
   llm-preference: claude
   pattern: multi-agent-debate
+agents:
+- python-ai-specialist
+knowledge:
+- none
+templates:
+- none
+related_skills:
+- managing-plane-tasks
+- orchestrating-mcp
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Reviewing Requirements
@@ -32,7 +56,7 @@ Load `knowledge/dependencies.md` if present.
 Activate each persona in sequence. Think from their perspective completely before
 moving to the next. Do not blend perspectives.
 
----
+
 
 ### Persona 1 — Product Critic
 
@@ -66,7 +90,7 @@ requirements drift, features get misunderstood, and success metrics go unmeasure
 - [question about whether something is truly necessary]
 ```
 
----
+
 
 ### Persona 2 — AI Systems Engineer
 
@@ -98,7 +122,7 @@ prompt failures, hallucination incidents, and token-budget surprises in producti
 
 ### Token Budget Analysis
 | Component | Estimated tokens/call | Calls/day (at target DAU) | Daily cost | Within budget? |
-|-----------|----------------------|--------------------------|------------|----------------|
+|--|-|--||-|
 | [name] | [n] | [n] | [$] | YES/NO |
 
 ### Missing Eval Strategy
@@ -108,7 +132,7 @@ prompt failures, hallucination incidents, and token-budget surprises in producti
 - Story [ID] — [component] returns free text but [downstream consumer] needs structure — add: [schema]
 ```
 
----
+
 
 ### Persona 3 — Security Auditor
 
@@ -145,7 +169,7 @@ that AI surfaces new attack vectors traditional security reviews miss.
 - Prompt logs retained for: [duration / not specified] — required by compliance: [yes/no]
 ```
 
----
+
 
 ## Judge Synthesis
 
@@ -160,19 +184,19 @@ _PRD version reviewed: [version]_
 ## 🔴 Critical — Must resolve before Architecture Phase
 
 | ID | Finding | Source | Action required |
-|----|---------|--------|----------------|
+|-||--|-|
 | R-01 | [issue] | [persona] | [specific fix] |
 
 ## 🟡 Important — Should resolve before Build Phase
 
 | ID | Finding | Source | Action required |
-|----|---------|--------|----------------|
+|-||--|-|
 | R-02 | [issue] | [persona] | [specific fix] |
 
 ## 🔵 Minor — Address in iteration
 
 | ID | Finding | Source | Action required |
-|----|---------|--------|----------------|
+|-||--|-|
 | R-03 | [issue] | [persona] | [specific fix] |
 
 ## ✅ Strengths (what the PRD does well)

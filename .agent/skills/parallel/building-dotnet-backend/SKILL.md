@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  ASP.NET Core Minimal APIs, Controllers, dependency injection, middleware,
+description: 'ASP.NET Core Minimal APIs, Controllers, dependency injection, middleware,
   background services, options pattern, health checks
+
+  '
 knowledge:
 - none
 name: building-dotnet-backend
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Dotnet Backend
 
@@ -381,7 +390,7 @@ app.MapHealthChecks("/health/live", new HealthCheckOptions
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | `HttpClient` as singleton | Use `IHttpClientFactory` |
 | Synchronous I/O in async methods | Use `async/await` throughout |
 | DbContext as singleton | Use scoped lifetime |

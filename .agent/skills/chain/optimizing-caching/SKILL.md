@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  LLM response caching, semantic caching, memoization, cache invalidation
+description: 'LLM response caching, semantic caching, memoization, cache invalidation
+
+  '
 knowledge:
 - none
 name: optimizing-caching
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Caching Optimization
 
@@ -521,7 +530,7 @@ set_llm_cache(TTLCache(ttl=1800))  # 30 minutes
 ## Caching Strategies
 
 | Strategy | Use Case | Pros | Cons |
-|----------|----------|------|------|
+|-|-|||
 | **Exact Match** | Identical queries | Simple, fast | Misses similar queries |
 | **Semantic** | Similar queries | Higher hit rate | More complex, slower |
 | **TTL-based** | Time-sensitive data | Automatic expiry | May expire too early/late |
@@ -544,7 +553,7 @@ set_llm_cache(TTLCache(ttl=1800))  # 30 minutes
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | No TTL | Set appropriate expiration times |
 | Caching everything | Cache only expensive operations |
 | No invalidation | Implement invalidation strategies |

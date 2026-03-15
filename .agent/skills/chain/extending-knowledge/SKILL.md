@@ -1,12 +1,17 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Extend Factory knowledge, skills, and templates via research, documents,
+description: 'Extend Factory knowledge, skills, and templates via research, documents,
   or user links
+
+  '
 knowledge:
-- none
+- advanced-agent-architectures.json
+- dashboard-knowledge.json
+- game-mechanics-knowledge.json
+- knowledge-manifest.json
+- workshop-facilitation-knowledge.json
 name: extending-knowledge
 related_skills:
 - none
@@ -16,6 +21,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Extend Knowledge
 
@@ -30,7 +43,7 @@ Extend the Factory's knowledge base, skills, and templates through multiple rese
 ## Artifacts Used
 
 | Artifact | Path | Purpose |
-|----------|------|---------|
+|-|||
 | Knowledge Template | `{directories.templates}/knowledge/knowledge-file.tmpl` | JSON structure for knowledge |
 | Skill Template | `{directories.templates}/factory/skill.md.tmpl` | Markdown structure for skills |
 | Agent Template | `{directories.templates}/factory/agent.md.tmpl` | Markdown structure for agents |
@@ -167,7 +180,7 @@ Step 4: Synthesize patterns into knowledge
 
 **Output**: `{directories.knowledge}/{topic}-patterns.json` (50-200 lines)
 
----
+
 
 ### Procedure B: Create New Skill
 
@@ -213,14 +226,14 @@ Step 4: Synthesize patterns into knowledge
 
 **Skill Template Structure**:
 ```markdown
----
+
 name: {{skill-name}}
 description: {{what it does}}
 type: skill
 agents: [{{which agents use it}}]
 templates: [{{templates used}}]
 knowledge: [{{knowledge referenced}}]
----
+
 
 # {{Skill Title}}
 
@@ -241,7 +254,7 @@ knowledge: [{{knowledge referenced}}]
 | Issue | Resolution |
 ```
 
----
+
 
 ### Procedure C: Create New Template
 
@@ -278,7 +291,7 @@ knowledge: [{{knowledge referenced}}]
 - Use `{# comment #}` for template comments
 - Include header documenting all variables
 
----
+
 
 ### Procedure D: Create New Agent
 
@@ -317,7 +330,7 @@ knowledge: [{{knowledge referenced}}]
 
 **Output**: `{directories.agents}/{agent-name}.md`
 
----
+
 
 ### Procedure E: Extend Existing Knowledge (Shallow Gap)
 
@@ -348,7 +361,7 @@ knowledge: [{{knowledge referenced}}]
 
 **Output**: Updated `{directories.knowledge}/{topic}-patterns.json`
 
----
+
 
 ## Chat Examples
 
@@ -433,7 +446,7 @@ Created: {directories.knowledge}/constitutional-ai-patterns.json
 ## Summary: What Gets Created
 
 | Extension Type | Output Location | Format |
-|----------------|-----------------|--------|
+|-|--|--|
 | Knowledge | `{directories.knowledge}/{topic}-patterns.json` | JSON |
 | Skill | `{directories.skills}/{name}/SKILL.md` | Markdown |
 | Agent | `{directories.agents}/{name}.md` | Markdown |
@@ -453,7 +466,7 @@ read_file("{directories.knowledge}/artifact-dependencies.json")
 **Detection by artifact type:**
 
 | If I Created/Modified | Must Update |
-|-----------------------|-------------|
+|--|-|
 | `{directories.knowledge}/*.json` (new) | manifest.json (add entry + stats), KNOWLEDGE_FILES.md (table + count + details), CHANGELOG.md |
 | `{directories.knowledge}/*.json` (extend) | manifest.json (bump version + change_history), KNOWLEDGE_FILES.md (if description changed), CHANGELOG.md |
 | `{directories.skills}/*/SKILL.md` (any) | skill-catalog.json, CHANGELOG.md |
@@ -563,10 +576,10 @@ search_replace("CHANGELOG.md", ...)
 #### Changes
 
 | File | Action | Description |
-|------|--------|-------------|
+||--|-|
 | `path/to/file` | Extended/Created | What was done |
 
----
+
 ```
 
 ### Step 5: Validate JSON Files
@@ -591,7 +604,7 @@ Proposed commit: feat(knowledge): {{description}}
 Proceed? (yes/no/commit only)
 ```
 
----
+
 
 ## Validation Checklist
 
@@ -639,7 +652,7 @@ Proceed? (yes/no/commit only)
 ## Error Handling
 
 | Issue | Resolution |
-|-------|------------|
+|-||
 | Web search fails | Use built-in LLM knowledge |
 | File already exists | Ask: extend or replace? |
 | Invalid JSON output | Validate and fix syntax |

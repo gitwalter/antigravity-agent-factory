@@ -1,11 +1,12 @@
 ---
 agents:
-- none
+- java-systems-specialist
 category: parallel
-description: >
-  Spring Boot 3+ project setup (Initializr), REST controllers, Service
+description: 'Spring Boot 3+ project setup (Initializr), REST controllers, Service
   layer patterns, Exception handling (@ControllerAdvice), Profiles and configuration,
   Bean validation, Async operations
+
+  '
 knowledge:
 - none
 name: developing-spring-boot
@@ -17,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Spring Boot Development
 

@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Collaborative team workshop series for designing customized Cursor agent
+description: 'Collaborative team workshop series for designing customized Cursor agent
   systems grounded in love, truth, and beauty
+
+  '
 knowledge:
 - none
 name: onboarding-team-workshops
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Team Workshop Onboarding
 
@@ -34,7 +43,7 @@ This skill is grounded in **Axiom 0: Love, Truth, and Beauty** - all being and d
 Choose the format that fits your team's needs and schedule:
 
 | Format | Duration | Best For |
-|--------|----------|----------|
+|--|-|-|
 | **Full Series** | 11-15 hours | Teams building critical systems, new teams forming culture, maximum alignment |
 | **Mini Workshop** | 2-3 hours | Teams with limited time, quick evaluations, existing strong culture |
 
@@ -42,7 +51,7 @@ Both formats are grounded in **Axiom 0: Love, Truth, and Beauty**. The Mini Work
 
 Not sure which to choose? Start with the Mini Workshop - you can always expand to the full series later as your team grows.
 
----
+
 
 ## Mini Workshop (2-3 hours)
 
@@ -332,14 +341,14 @@ Go build something beautiful!"
 ### Mini Workshop Generated Artifacts
 
 | Artifact | Location |
-|----------|----------|
+|-|-|
 | Mission Statement | `PURPOSE.md` |
 | Core Values | `.cursorrules` (principles section) |
 | Stack Configuration | Generated project structure |
 | Agent Roster | `{directories.agents}/*.md` |
 | Complete System | All files in output directory |
 
----
+
 
 ## Full Workshop Series (11-15 hours)
 
@@ -411,7 +420,7 @@ First, let me understand your team:
 Based on team size, select appropriate format:
 
 | Team Size | Format | Reference |
-|-----------|--------|-----------|
+|--|--|--|
 | 2-5 | Small Team | `{directories.patterns}/team-formats/small-team-format.json` |
 | 6-12 | Medium Team | `{directories.patterns}/team-formats/medium-team-format.json` |
 | 13+ | Large Team | `{directories.patterns}/team-formats/large-team-format.json` |
@@ -434,7 +443,7 @@ Total time: approximately {TOTAL_HOURS} hours
 Does this work for your team?"
 ```
 
----
+
 
 ## Workshop 1: Vision Quest
 
@@ -541,7 +550,7 @@ Present draft Team Charter:
 - ...
 ```
 
----
+
 
 ## Workshop 2: Ethics Arena
 
@@ -644,7 +653,7 @@ For major decisions, ask:
 - Are we optimizing for the greatest good?
 ```
 
----
+
 
 ## Workshop 3: Stack Safari
 
@@ -860,7 +869,7 @@ pmConfiguration:
 
 Present stack configuration summary including knowledge sources.
 
----
+
 
 ## Workshop 4: Agent Assembly
 
@@ -1070,7 +1079,7 @@ Top Workflows:
 Next workshop: We bring it all together!"
 ```
 
----
+
 
 ## Workshop 5: Integration Celebration
 
@@ -1157,14 +1166,14 @@ Your system is ready. Go build something beautiful.
 The universe is waiting for your gift."
 ```
 
----
+
 
 ## Generated Artifacts
 
 At the end of the workshop series, the following artifacts are generated:
 
 | Artifact | Source | Location |
-|----------|--------|----------|
+|-|--|-|
 | Team Charter | Vision Quest | `TEAM_CHARTER.md` |
 | Ethics Framework | Ethics Arena | `ETHICS_FRAMEWORK.md` |
 | Stack Configuration | Stack Safari | `stack-configuration.json` |
@@ -1177,24 +1186,24 @@ At the end of the workshop series, the following artifacts are generated:
 | Knowledge Files | All workshops | `{directories.knowledge}/*.json` |
 | PURPOSE.md | Vision Quest | `PURPOSE.md` |
 
----
+
 
 ## Fallback Procedures
 
 | Condition | Action |
-|-----------|--------|
+|--|--|
 | Team can't schedule sync | Use async-heavy format with synthesis calls |
 | Conflict during debate | Return to Axiom 0, invite human facilitator |
 | Low energy | Switch to active game, take break |
 | Time running over | Prioritize synthesis, defer activities |
 | Missing participants | Brief recap at next session |
 
----
+
 
 ## Integration with Other Skills
 
 | Skill | Integration Point |
-|-------|-------------------|
+|-|-|
 | `requirements-gathering` | Individual questionnaires use same structure |
 | `axiom-selection` | Includes A0 by default, confirms additional axioms |
 | `methodology-selection` | Selected during Stack Safari |
@@ -1202,7 +1211,7 @@ At the end of the workshop series, the following artifacts are generated:
 | `skill-generation` | Generates skills from Bingo results |
 | `onboarding-flow` | Alternative to individual onboarding |
 
----
+
 
 ## Important Rules
 
@@ -1217,7 +1226,7 @@ At the end of the workshop series, the following artifacts are generated:
 9. **Create psychological safety** - All ideas welcome, disagreement healthy
 10. **Hand off when needed** - Know when human facilitator should lead
 
----
+
 
 ## Example Session Start
 

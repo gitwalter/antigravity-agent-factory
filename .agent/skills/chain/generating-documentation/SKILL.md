@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Automated documentation generation from code including docstrings, API
+description: 'Automated documentation generation from code including docstrings, API
   docs, and architecture diagrams
+
+  '
 knowledge:
 - none
 name: generating-documentation
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Documentation Generation
 

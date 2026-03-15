@@ -1,19 +1,33 @@
 ---
 name: get-api-docs
-description: >
-  Fetch and manage up-to-date API documentation for coding tasks using Context Hub (chub).
-  Ensures agents have situation-adequate documentation for modern tools and prevents hallucinations.
+description: 'Fetch and manage up-to-date API documentation for coding tasks using
+  Context Hub (chub). Ensures agents have situation-adequate documentation for modern
+  tools and prevents hallucinations.
+
+  '
 type: skill
 version: 1.0.0
 category: intelligence
 agents:
-  - python-ai-specialist
-  - ai-app-developer
+- python-ai-specialist
+- ai-app-developer
 tools:
-  - run_command
+- run_command
 related_skills:
-  - synthesizing-knowledge
-  - assessing-risks
+- synthesizing-knowledge
+- assessing-risks
+knowledge:
+- none
+templates:
+- none
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Getting API Documentation (chub)

@@ -1,23 +1,32 @@
 ---
 name: pattern-creator
-description: >
-  Standardized agent pattern creation and validation
+description: 'Standardized agent pattern creation and validation
+
+  '
 type: skill
 version: 1.0.0
 category: factory
 agents:
-  - analyzer
-  - comparator
-  - grader
+- analyzer
+- comparator
+- grader
 knowledge:
-  - agent-pattern.json
+- agent-pattern.json
 tools:
-  - none
+- none
 related_skills:
-  - skill-creator
-  - agent-creator
+- skill-creator
+- agent-creator
 templates:
-  - none
+- none
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Pattern Creator

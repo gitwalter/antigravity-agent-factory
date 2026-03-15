@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Create and export PABP agent bundles for cross-platform portable behavior
+description: 'Create and export PABP agent bundles for cross-platform portable behavior
   transfer
+
+  '
 knowledge:
 - none
 name: exporting-agent-bundles
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Export Agent Bundle
 
@@ -28,7 +37,7 @@ platforms (Cursor, CrewAI, LangChain, Antigravity).
 ## Choosing Raw vs PABP -- Read This First
 
 | Scenario | Use Raw | Use PABP |
-|----------|---------|----------|
+|-||-|
 | Cursor-to-Cursor project transfer | **YES** | no |
 | Sharing with CrewAI / LangChain / Antigravity | no | **YES** |
 | Preserve exact file layout and content | **YES** | no |
@@ -73,7 +82,7 @@ See the detailed workflow below in [Step-by-Step Guide](#step-by-step-guide). Th
 ## Value Proposition
 
 | Without PABP | With PABP |
-|--------------|-----------|
+|--|--|
 | Rebuild agents per project | Export once, import anywhere |
 | Copy-paste skills manually | Verified bundle transfer |
 | No reputation portability | Reputation transfers (with decay) |
@@ -96,10 +105,10 @@ bundle = create_bundle(
 
 # Add skills
 bundle.add_skill("analyze", """
----
+
 name: analyze
 description: Analyze code for issues
----
+
 # Analyze Skill
 ...
 """)

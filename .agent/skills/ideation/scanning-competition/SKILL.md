@@ -1,8 +1,13 @@
 ---
 name: scanning-competition
 type: skill
-description: >
-  Researches the competitive landscape for the problem space defined in knowledge/problem-frame.md. Maps existing solutions, extracts differentiators, and surfaces market gaps. Use this skill when the user asks about competitors, existing tools, market landscape, or says "what's already out there" or "how is this solved today". Requires web-search MCP tool. Writes output to knowledge/competitive.md.
+description: 'Researches the competitive landscape for the problem space defined in
+  knowledge/problem-frame.md. Maps existing solutions, extracts differentiators, and
+  surfaces market gaps. Use this skill when the user asks about competitors, existing
+  tools, market landscape, or says "what''s already out there" or "how is this solved
+  today". Requires web-search MCP tool. Writes output to knowledge/competitive.md.
+
+  '
 license: MIT
 metadata:
   version: 1.0.0
@@ -10,7 +15,24 @@ metadata:
   llm-preference: gemini
 compatibility:
   tools:
-    - web-search
+  - web-search
+agents:
+- python-ai-specialist
+knowledge:
+- none
+templates:
+- none
+related_skills:
+- managing-plane-tasks
+- orchestrating-mcp
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Scanning Competition
@@ -60,7 +82,7 @@ Write to `knowledge/competitive.md`:
 ## Direct Competitors
 
 | Product | Core Mechanism | AI Features | Pricing | Key Weakness |
-|---------|---------------|-------------|---------|--------------|
+|||-||--|
 | [name]  | [how it works] | [LLM use]  | [tier]  | [gap]        |
 
 ## How Users Solve This Today (workarounds)

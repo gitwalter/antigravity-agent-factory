@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: general
-description: >
-  Procedural implementation of ReAct, Reflection, Planning, and Iterative
+description: 'Procedural implementation of ReAct, Reflection, Planning, and Iterative
   Refinement patterns.
+
+  '
 knowledge:
 - none
 name: managing-agentic-loops
@@ -18,6 +19,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Agentic Loops (Tactical Blueprint)
@@ -64,7 +73,7 @@ Implement a secondary reflection pass to evaluate and correct the agent's own ou
 ## Process
 
 | Objective | Preferred Sequence |
-| :--- | :--- |
+| : | : |
 | **Code Refactoring** | `view_file` → `codebase_search` → `sequential-thinking` → `replace_file_content` → `pytest` |
 | **Structural Audit** | `list_dir` → `find_by_name` → `grep_search` → `link_checker` |
 | **New Feature Dev** | `read_url_content` (Specs) → `implementation_plan` (Doc) → `task_boundary` → `write_to_file` |

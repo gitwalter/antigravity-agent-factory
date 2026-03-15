@@ -1,10 +1,12 @@
 ---
 agents:
-- none
+- project-operations-specialist
+- workflow-quality-specialist
 category: chain
-description: >
-  Safe commit and release workflow with auto-sync, changelog updates, and
-  learning from failures
+description: 'Safe commit and release workflow with auto-sync, changelog updates,
+  and learning from failures
+
+  '
 knowledge:
 - none
 name: committing-releases
@@ -16,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Commit Release
 

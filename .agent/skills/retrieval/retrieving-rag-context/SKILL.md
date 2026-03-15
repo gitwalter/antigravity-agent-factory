@@ -3,8 +3,9 @@ agents:
 - python-ai-specialist
 - ai-app-developer
 category: retrieval
-description: >
-  Specialized skill for retrieving rag context
+description: 'Specialized skill for retrieving rag context
+
+  '
 knowledge:
 - best-practices.json
 name: retrieving-rag-context
@@ -18,6 +19,14 @@ tools:
 - antigravity-rag
 type: skill
 version: 1.1.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Retrieving RAG Context

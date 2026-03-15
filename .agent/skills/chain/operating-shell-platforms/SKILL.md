@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Platform-specific shell command considerations for Windows PowerShell
+description: 'Platform-specific shell command considerations for Windows PowerShell
   and Unix shells
+
+  '
 knowledge:
 - none
 name: operating-shell-platforms
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Shell Platform
@@ -182,7 +191,7 @@ git commit -m $message
 PowerShell uses different operators:
 
 | Bash | PowerShell | Purpose |
-|------|------------|---------|
+||||
 | `&&` | `;` or `-and` | Run if previous succeeds |
 | `||` | `-or` | Run if previous fails |
 | `\|` | `\|` | Pipe (same) |
@@ -282,7 +291,7 @@ This file contains **verified working paths** for the current machine. Reading t
 ### Default Tool Paths (Windows)
 
 | Tool | Default Path | Env Variable | Notes |
-|------|--------------|--------------|-------|
+||--|--|-|
 | **Python** | `{PYTHON_PATH}` | `PYTHON_PATH` | Anaconda installation |
 | **Pip** | `{PIP_PATH}` | `PIP_PATH` | Anaconda pip |
 | **Conda** | `{CONDA_PATH}` | `CONDA_PATH` | Anaconda conda |
@@ -356,7 +365,7 @@ When a path is verified to work, update the cache:
 For Linux/macOS, paths typically use forward slashes and may be simpler:
 
 | Tool | Linux/macOS Path |
-|------|------------------|
+|||
 | **Python** | `python3` or `/usr/bin/python3` |
 | **Pip** | `pip3` or `/usr/bin/pip3` |
 | **GitHub CLI** | `gh` or `/usr/local/bin/gh` |

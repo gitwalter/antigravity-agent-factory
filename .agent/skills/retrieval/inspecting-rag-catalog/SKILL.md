@@ -3,9 +3,11 @@ agents:
 - python-ai-specialist
 - ai-app-developer
 category: retrieval
-description: >
-  Inspect and list the contents of the Qdrant RAG ebook library
-knowledge: []
+description: 'Inspect and list the contents of the Qdrant RAG ebook library
+
+  '
+knowledge:
+- none
 name: inspecting-rag-catalog
 related_skills:
 - retrieving-rag-context
@@ -16,6 +18,14 @@ tools:
 - antigravity-rag
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Inspecting RAG Catalog

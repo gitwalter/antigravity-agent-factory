@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  On-demand version audits using version-registry.json as source of truth
+description: 'On-demand version audits using version-registry.json as source of truth
+
+  '
 knowledge:
 - none
 name: checking-versions
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Version Check
 
@@ -121,14 +130,14 @@ audit_blueprint:
 
         ### Frameworks
         | Package | Blueprint | Registry | Status |
-        |---------|-----------|----------|--------|
+        ||--|-|--|
         | FastAPI | 0.128+ | 0.128.4 | ✅ Compatible |
         | Pydantic | 2.10+ | 2.10.0 | ✅ Compatible |
         | SQLAlchemy | 2.0+ | (not in registry) | ⚠️ Not tracked |
 
         ### Tools
         | Package | Blueprint | Registry | Status |
-        |---------|-----------|----------|--------|
+        ||--|-|--|
         | uvicorn | 0.34+ | (not in registry) | ⚠️ Not tracked |
 
         ### Summary
@@ -191,7 +200,7 @@ scan_project:
         ### Outdated Packages
 
         | Package | Current | Recommended | Update Type | Priority |
-        |---------|---------|-------------|-------------|----------|
+        |||-|-|-|
         | fastapi | 0.128.0 | 0.128.4 | Patch | Low |
         | langchain | 1.2.5 | 1.2.9 | Patch | Medium |
         | pydantic | 2.9.0 | 2.10.0 | Minor | High |
@@ -199,14 +208,14 @@ scan_project:
         ### Current Packages
 
         | Package | Version | Status |
-        |---------|---------|--------|
+        |||--|
         | crewai | 1.9.3 | ✅ Current |
         | langgraph | 1.0.8 | ✅ Current |
 
         ### Not Tracked
 
         | Package | Version | Note |
-        |---------|---------|------|
+        ||||
         | local-package | 1.0.0 | Custom package |
 
         ### Update Recommendations
@@ -319,7 +328,7 @@ suggest_updates:
 **Registry Date**: {registry.last_updated}
 
 | Field | Value |
-|-------|-------|
+|-|-|
 | Current Version | {current} |
 | Registry Version | {registry} |
 | Status | {current/outdated/unknown} |
@@ -412,7 +421,7 @@ Users can trigger this skill with prompts like:
 The skill supports these command patterns:
 
 | Command | Action |
-|---------|--------|
+||--|
 | `version-check package <name> [version]` | Check single package |
 | `version-check blueprint <blueprint-id>` | Audit blueprint dependencies |
 | `version-check project [path]` | Scan project dependencies |
@@ -471,7 +480,7 @@ version_comparison:
 ## Error Handling
 
 | Error | Resolution |
-|-------|------------|
+|-||
 | Registry file not found | Report error, suggest checking {directories.knowledge}/ directory |
 | Package not in registry | Mark as "not tracked", continue with others |
 | Invalid version format | Attempt to parse, fallback to "unknown" status |
@@ -501,7 +510,7 @@ Version check is successful when:
 - `{directories.blueprints}/*/blueprint.json` - Blueprint dependency definitions
 - Project dependency files (`requirements.txt`, `package.json`, etc.)
 
----
+
 
 *This skill ensures projects stay current with Factory-recommended package versions while providing safe migration paths.*
 

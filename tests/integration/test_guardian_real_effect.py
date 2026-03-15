@@ -6,14 +6,20 @@ actually PREVENTS harmful actions, not just detects them.
 """
 
 import sys
+from pathlib import Path
+
+# Add project root to path
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+
 import tempfile
 import os
-from pathlib import Path
 from typing import Tuple, Optional
 from dataclasses import dataclass
 
 # Add scripts directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "scripts"))
 
 from guardian.axiom_checker import validate_operation
 from guardian.secret_scanner import scan_content, get_severity_level

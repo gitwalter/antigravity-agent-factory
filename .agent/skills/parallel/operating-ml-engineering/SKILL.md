@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: parallel
-description: >
-  Tactical Blueprint for ML Training, Deployment, and Monitoring. Focuses
+description: 'Tactical Blueprint for ML Training, Deployment, and Monitoring. Focuses
   on production-grade PyTorch loops, distributed training, and MLOps observability.
+
+  '
 knowledge:
 - none
 name: operating-ml-engineering
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Capability Manifest: ML Engineering Ops
 

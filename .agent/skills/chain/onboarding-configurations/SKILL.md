@@ -1,12 +1,13 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Skill for migrating hardcoded environment parameters to the Single Point
+description: 'Skill for migrating hardcoded environment parameters to the Single Point
   of Truth configuration
+
+  '
 knowledge:
-- none
+- memory-system-configuration.json
 name: onboarding-configurations
 related_skills:
 - none
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Config Onboarding Skill

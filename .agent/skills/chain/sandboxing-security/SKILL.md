@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Input validation and sanitization, output filtering, code execution safety,
-  and permission management
+description: 'Input validation and sanitization, output filtering, code execution
+  safety, and permission management
+
+  '
 knowledge:
 - none
 name: sandboxing-security
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Security Sandboxing
 
@@ -539,7 +548,7 @@ if not is_safe:
 ## Security Layers
 
 | Layer | Purpose | Implementation |
-|-------|---------|----------------|
+|-||-|
 | Input Validation | Validate user inputs | Pydantic schemas |
 | Output Filtering | Sanitize outputs | OutputFilter class |
 | Code Execution | Safe code running | RestrictedPython |
@@ -561,7 +570,7 @@ if not is_safe:
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Trusting user input | Always validate |
 | No output filtering | Sanitize outputs |
 | Unsafe code execution | Use RestrictedPython |

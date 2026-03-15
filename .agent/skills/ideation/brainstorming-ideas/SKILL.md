@@ -1,13 +1,36 @@
 ---
 name: brainstorming-ideas
 type: skill
-description: >
-  Runs a high-volume divergent ideation session anchored to a problem frame. Generates a minimum of 20 raw feature or solution ideas without filtering, evaluation, or judgment. Use this skill whenever the user wants to generate ideas, explore possibilities, think broadly, or says "what could we build", "give me ideas", or "let's brainstorm". Must be run after framing-problems. Appends raw output to knowledge/ideas/raw/.
+description: 'Runs a high-volume divergent ideation session anchored to a problem
+  frame. Generates a minimum of 20 raw feature or solution ideas without filtering,
+  evaluation, or judgment. Use this skill whenever the user wants to generate ideas,
+  explore possibilities, think broadly, or says "what could we build", "give me ideas",
+  or "let''s brainstorm". Must be run after framing-problems. Appends raw output to
+  knowledge/ideas/raw/.
+
+  '
 license: MIT
 metadata:
   version: 1.0.0
   phase: ideation
   llm-preference: claude
+agents:
+- python-ai-specialist
+knowledge:
+- none
+templates:
+- none
+related_skills:
+- managing-plane-tasks
+- orchestrating-mcp
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Brainstorming Ideas

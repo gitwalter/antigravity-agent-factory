@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Export learning workshops to standalone projects with all necessary artifacts
-  for maximum AI-assisted learning
+description: 'Export learning workshops to standalone projects with all necessary
+  artifacts for maximum AI-assisted learning
+
+  '
 knowledge:
 - none
 name: exporting-workshops
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Workshop Export
 
@@ -30,7 +39,7 @@ Export any learning workshop to a standalone project with all necessary artifact
 ## Artifacts Generated
 
 | Artifact | Purpose |
-|----------|---------|
+|-||
 | `.cursorrules` | Project-level AI rules and context |
 | `{directories.rules}/<lang>.md` | Technology-specific coding rules |
 | `.cursor/knowledge/*.json` | Relevant knowledge files |
@@ -78,7 +87,7 @@ When user asks to start a workshop:
 ## Available Workshops
 
 | ID | Name | Category |
-|----|------|----------|
+|-||-|
 | l01-ethereum-fundamentals | Ethereum Smart Contracts | Blockchain |
 | l02-bitcoin-lightning | Bitcoin & Lightning | Blockchain |
 | l03-langgraph-workflows | LangGraph Workflows | AI |
@@ -152,7 +161,7 @@ Agent: I'll set up the LangChain workshop for you.
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+|-|-|
 | Workshop not found | Check workshop ID matches pattern in `{directories.patterns}/workshops/` |
 | Permission denied | Run with appropriate permissions or choose different target |
 | Dependencies fail | Use `--legacy-peer-deps` for npm or update pip |
@@ -166,7 +175,7 @@ Agent: I'll set up the LangChain workshop for you.
 - Keep solutions hidden but accessible - use `.solutions/` directory with `.gitignore` so learners can check answers without temptation
 - Test exported projects before delivery - verify dependencies install correctly and starter code runs on clean environments
 
----
+
 
 *Part of the Antigravity Agent Factory Learning System*
 

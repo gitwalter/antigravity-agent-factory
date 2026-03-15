@@ -1,7 +1,22 @@
 ---
+name: documentation-workflow
 description: Phase 6 SDLC workflow for generating and maintaining comprehensive project documentation.
-tags: [sdlc, phase-6, documentation, knowledge-management]
 version: 2.0.0
+type: pipeline
+domain: universal
+agents:
+  - project-operations-specialist
+blueprints:
+  - standard-sdlc
+steps:
+  - name: Discovery
+    description: Identify component and existing documentation state.
+  - name: Drafting
+    description: Generate the required documentation artifacts.
+  - name: Validation
+    description: Run structural and link checks on new docs.
+  - name: Induction
+    description: Sync docs with Plane and the Memory MCP graph.
 ---
 
 # Global Documentation Workflow (SDLC Phase 6)
@@ -39,13 +54,13 @@ Invoke the `documentation-generation` skill to create the artifact.
 ### 3. Structural Validation
 Ensure the documentation adheres to factory standards.
 - **Logic**: Use `scripts/validation/validate_readme_structure.py` or equivalent.
-- **Link Check**: Run `python scripts/maintenance/link_checker.py --target <new_file>`.
+- **Link Check**: Run `python scripts/maintenance/audit/link_checker.py --target <new_file>`.
 
 ### 4. Induction & Sync
 Integrate the document into the system context.
 - **Agent**: `project-operations-specialist`
 - **Skill**: Mandatory use of `.agent/skills/routing/managing-plane-tasks/SKILL.md` for Plane synchronization.
-- **Plane Sync**: Post the document content or a summarized link to the corresponding Plane issue using the `post_solution.py` logic where applicable.
+- **Plane Sync**: Post the document content or a summarized link to the corresponding Plane issue.
 - **Memory Induction**: If the doc introduces new patterns, update `knowledge-manifest.json` via the `managing-memory-bank` skill.
 
 ## Best Practices

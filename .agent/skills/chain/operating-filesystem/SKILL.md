@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  File reading/writing tools, directory traversal, file type detection,
+description: 'File reading/writing tools, directory traversal, file type detection,
   and security sandboxing
+
+  '
 knowledge:
 - none
 name: operating-filesystem
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Filesystem Ops
 
@@ -615,7 +624,7 @@ output = processor.process_file("input.txt", "output.txt")
 ## File Operation Patterns
 
 | Pattern | Use Case | Example |
-|---------|----------|---------|
+||-||
 | Read-only | Document analysis | Read config files |
 | Sandboxed write | Agent workspaces | Create temporary files |
 | Recursive search | Code analysis | Find all Python files |
@@ -638,7 +647,7 @@ output = processor.process_file("input.txt", "output.txt")
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | No path validation | Always validate and sanitize paths |
 | Allowing absolute paths | Resolve relative to base directory |
 | No size limits | Set max_file_size limits |

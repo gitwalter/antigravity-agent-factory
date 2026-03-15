@@ -1,23 +1,33 @@
 ---
 name: workflow-creator
-description: >
-  Standardized workflow creation and evaluation with mandatory schema validation
+description: 'Standardized workflow creation and evaluation with mandatory schema
+  validation
+
+  '
 type: skill
 version: 1.0.0
 category: factory
 agents:
-  - analyzer
-  - comparator
-  - grader
+- analyzer
+- comparator
+- grader
 knowledge:
-  - workflow.schema.json
+- workflow.schema.json
 tools:
-  - none
+- none
 related_skills:
-  - skill-creator
-  - agent-creator
+- skill-creator
+- agent-creator
 templates:
-  - none
+- none
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Workflow Creator

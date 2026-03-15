@@ -1,12 +1,17 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  JSON knowledge file generation with mandatory schema validation against
+description: 'JSON knowledge file generation with mandatory schema validation against
   schemas/knowledge-file.schema.json
+
+  '
 knowledge:
-- none
+- dashboard-knowledge.json
+- game-mechanics-knowledge.json
+- knowledge-generation.json
+- knowledge-manifest.json
+- workshop-facilitation-knowledge.json
 name: generating-knowledge
 related_skills:
 - none
@@ -16,6 +21,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Knowledge Generation
 
@@ -28,7 +41,7 @@ Generates structured JSON knowledge files for target projects with mandatory sch
 All knowledge files MUST validate against `schemas/knowledge-file.schema.json`. Required fields:
 
 | Field | Type | Constraints |
-|-------|------|-------------|
+|-||-|
 | `$schema` | const | Must be `"http://json-schema.org/draft-07/schema#"` |
 | `id` | string | Pattern: `^[a-z0-9-]+$`, min 3 chars, matches filename without .json |
 | `title` | string | Min 10 chars |
@@ -84,7 +97,7 @@ All knowledge files MUST validate against `schemas/knowledge-file.schema.json`. 
 ## Common Violations
 
 | Violation | Fix |
-|-----------|-----|
+|--|--|
 | `patterns` is array | Use object with named keys |
 | Missing `axiomAlignment` | Add all 5 required axiom keys |
 | Invalid category | Map to allowed enum or use mapping table |

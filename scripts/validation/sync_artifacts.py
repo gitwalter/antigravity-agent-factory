@@ -1226,15 +1226,18 @@ def get_actual_counts(root_path: Optional[Path] = None) -> CategoryTestCounts:
             )
 
         for tid in test_ids:
-            if "tests/unit/" in tid or "tests\\unit\\" in tid:
+            tid_lower = tid.lower()
+            if "tests/unit/" in tid_lower or "tests\\unit\\" in tid_lower:
                 unit += 1
-            elif "tests/integration/" in tid or "tests\\integration\\" in tid:
+            elif (
+                "tests/integration/" in tid_lower or "tests\\integration\\" in tid_lower
+            ):
                 integration += 1
-            elif "tests/validation/" in tid or "tests\\validation\\" in tid:
+            elif "tests/validation/" in tid_lower or "tests\\validation\\" in tid_lower:
                 validation += 1
-            elif "tests/guardian/" in tid or "tests\\guardian\\" in tid:
+            elif "tests/guardian/" in tid_lower or "tests\\guardian\\" in tid_lower:
                 guardian += 1
-            elif "tests/memory/" in tid or "tests\\memory\\" in tid:
+            elif "tests/memory/" in tid_lower or "tests\\memory\\" in tid_lower:
                 memory += 1
 
         # If zero tests found via line parsing, fallback to the summary line if it exists
@@ -1336,7 +1339,10 @@ def update_testing_md(
             changes.append(f"{name}: ~{old_count} -> ~{new_count}")
             # Update table row
             new_content = re.sub(
-                rf"\| {name} \| ~?\d+ \|", f"| {name} | ~{new_count} |", new_content
+                rf"\| {name} \| ~?\d+ \|",
+                f"| {name} | ~{new_count} |",
+                new_content,
+                flags=re.IGNORECASE,
             )
 
     # Update counts in test structure tree comments

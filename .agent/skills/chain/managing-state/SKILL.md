@@ -1,9 +1,10 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  LangGraph state schemas, reducers, checkpointing, and persistence
+description: 'LangGraph state schemas, reducers, checkpointing, and persistence
+
+  '
 knowledge:
 - none
 name: managing-state
@@ -15,6 +16,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # State Management
 
@@ -233,7 +242,7 @@ async def debug_node(state: AgentState) -> dict:
 ## State Patterns
 
 | Pattern | Use Case |
-|---------|----------|
+||-|
 | Message Accumulation | Chat history |
 | Counter Reducer | Token counting, iterations |
 | Dict Merge | Metadata aggregation |
@@ -243,7 +252,7 @@ async def debug_node(state: AgentState) -> dict:
 ## Checkpointer Comparison
 
 | Backend | Use Case | Pros | Cons |
-|---------|----------|------|------|
+||-|||
 | MemorySaver | Development | Fast, simple | Not persistent |
 | Redis | Distributed | Fast, TTL | Memory-bound |
 | PostgreSQL | Production | Durable, queryable | Slower |
@@ -261,7 +270,7 @@ async def debug_node(state: AgentState) -> dict:
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | Mutable state | Return new state dict |
 | No checkpointing | Add MemorySaver minimum |
 | Unbounded state | Compress/prune old data |

@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  ReAct pattern implementation, reflection and self-correction, planning
+description: 'ReAct pattern implementation, reflection and self-correction, planning
   and task decomposition, iterative refinement patterns
+
+  '
 knowledge:
 - none
 name: managing-agentic-loops
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Agentic Loops
 
@@ -594,7 +603,7 @@ response = await client.chat.completions.create(
 ## Agentic Loop Patterns
 
 | Pattern | Description | Use Case |
-|---------|-------------|----------|
+||-|-|
 | **ReAct** | Reason → Act → Observe → Repeat | General agentic tasks |
 | **Reflection** | Act → Reflect → Correct → Repeat | Quality-critical tasks |
 | **Planning** | Plan → Decompose → Execute → Aggregate | Complex multi-step tasks |
@@ -618,7 +627,7 @@ response = await client.chat.completions.create(
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | No iteration limit | Set `max_iterations` |
 | Sequential tool execution | Use `asyncio.gather` for parallel execution |
 | No error handling | Wrap tool calls in try/except |

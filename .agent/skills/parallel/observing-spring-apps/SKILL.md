@@ -1,11 +1,12 @@
 ---
 agents:
-- none
+- java-systems-specialist
 category: parallel
-description: >
-  Micrometer metrics (counters, gauges, timers), Distributed tracing with
+description: 'Micrometer metrics (counters, gauges, timers), Distributed tracing with
   Micrometer Tracing + Zipkin/Jaeger, Structured logging (Logback + JSON), Spring
   Boot Actuator endpoints, Prometheus + Grafana setup, Custom health indicators
+
+  '
 knowledge:
 - none
 name: observing-spring-apps
@@ -17,6 +18,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Spring Observability
 

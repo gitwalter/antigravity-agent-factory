@@ -38,6 +38,9 @@ When a task requires deep domain expertise, cognitive personas route to function
 | **@Bug-Hunter** | **WQSS** | Quality | `/bugfix-resolution` |
 | **@Documentarian** | **KNOPS** | Knowledge | `/documentation-workflow` |
 | **@Operator** | **PROPS** | Operations | `/cicd-pipeline` |
+| **@Mobile-Expert** | **MOBEX** | Mobile Dev | `mobile-native-development` |
+| **@Data-Architect** | **DATAARC** | Data Eng | `data-pipeline-orchestration` |
+| **@Blockchain-Guru** | **W3GURU** | Web3/Web2 | `smart-contract-development` |
 
 ---
 

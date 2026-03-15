@@ -1,10 +1,11 @@
 ---
 agents:
-- none
+- python-ai-specialist
 category: chain
-description: >
-  Claude agentic loop patterns - tool use until done, extended thinking
+description: 'Claude agentic loop patterns - tool use until done, extended thinking
   for complex reasoning, safety and alignment patterns, LangChain ChatAnthropic integration
+
+  '
 knowledge:
 - none
 name: applying-anthropic-patterns
@@ -16,6 +17,14 @@ tools:
 - none
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 # Anthropic Patterns
 
@@ -419,7 +428,7 @@ result2 = await chain_with_memory.ainvoke(
 ## Claude Model Variants
 
 | Model | Best For | Token Limit |
-|-------|----------|-------------|
+|-|-|-|
 | `claude-3-5-sonnet-20241022` | General purpose, balanced | 200K context |
 | `claude-3-opus-20240229` | Complex reasoning | 200K context |
 | `claude-3-haiku-20240307` | Fast, cost-effective | 200K context |
@@ -427,7 +436,7 @@ result2 = await chain_with_memory.ainvoke(
 ## Agentic Loop Patterns
 
 | Pattern | Description | Use Case |
-|---------|-------------|----------|
+||-|-|
 | **Tool-Use-Until-Done** | Continue until no tool calls | Multi-step tasks |
 | **Iterative Refinement** | Multiple passes with feedback | Content generation |
 | **Parallel Tool Execution** | Execute multiple tools simultaneously | Data gathering |
@@ -474,7 +483,7 @@ claude_thinking = ChatAnthropic(
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
-|--------------|-----|
+|--|--|
 | No iteration limit | Set `max_iterations` in loops |
 | Ignoring tool errors | Handle and report tool errors to Claude |
 | No safety checks | Implement safety validation |

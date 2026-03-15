@@ -3,9 +3,10 @@ agents:
 - workflow-quality-specialist
 - integrity-guardian
 category: verification
-description: >
-  Verifying the structural integrity of knowledge JSON and workflow markdown
+description: 'Verifying the structural integrity of knowledge JSON and workflow markdown
   files.
+
+  '
 knowledge:
 - none
 name: verifying-artifact-structures
@@ -18,6 +19,14 @@ tools:
 - run_command
 type: skill
 version: 1.0.0
+references:
+- none
+settings:
+  auto_approve: false
+  retry_limit: 3
+  timeout_seconds: 300
+  safe_to_parallelize: false
+  orchestration_pattern: routing
 ---
 
 # Verifying Artifact Structures

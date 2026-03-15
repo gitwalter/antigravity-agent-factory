@@ -57,16 +57,17 @@ except ImportError:
     HAS_YAML = False
 
 # ---------------------------------------------------------------------------
+print(f"DEBUG: schema_validator.py - HAS_YAML={HAS_YAML}")
 ROOT = Path(__file__).resolve().parent.parent.parent
 SCHEMAS_DIR = ROOT / "schemas"
 
 ARTIFACT_DIRS = {
-    "agent": ROOT / ".cursor" / "agents",
-    "skill": ROOT / ".cursor" / "skills",
+    "agent": ROOT / ".agent" / "agents",
+    "skill": ROOT / ".agent" / "skills",
     "knowledge": ROOT / ".agent" / "knowledge",
-    "blueprint": ROOT / "blueprints",
-    "workflow": ROOT / "workflows",
-    "template": ROOT / "templates",
+    "blueprint": ROOT / ".agent" / "blueprints",
+    "workflow": ROOT / ".agent" / "workflows",
+    "template": ROOT / ".agent" / "templates",
     "registry": ROOT / "artifacts",
 }
 
@@ -83,7 +84,7 @@ SCHEMA_MAP = {
     "catalog": "catalog",
 }
 
-FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---", re.DOTALL)
+FRONTMATTER_RE = re.compile(r"^---\s*[\r\n]+(.*?)\r?\n---", re.DOTALL | re.MULTILINE)
 
 
 # ---------------------------------------------------------------------------
@@ -152,10 +153,15 @@ def parse_yaml(text: str) -> Dict[str, Any]:
         try:
             result = yaml.safe_load(text)
             if isinstance(result, dict):
+                print(f"DEBUG: Parsed YAML: {list(result.keys())}")
                 return result
-        except yaml.YAMLError:
+        except yaml.YAMLError as e:
+            print(f"DEBUG: YAML Error: {e}")
             pass  # fall through to simple parser
-    return _parse_yaml_simple(text)
+
+    simple_result = _parse_yaml_simple(text)
+    print(f"DEBUG: Parsed Simple YAML: {list(simple_result.keys())}")
+    return simple_result
 
 
 def _parse_yaml_simple(text: str) -> Dict[str, Any]:
