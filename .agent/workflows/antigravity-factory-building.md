@@ -1,103 +1,206 @@
 ---
-description: Workflow for designing, building, and structuring the antigravity-factory
-  system itself using SDLC phases.
 agents:
+- workflow-quality-specialist
 - system-architecture-specialist
-- template-creator
+- project-operations-specialist
+- knowledge-operations-specialist
+blueprints:
+- universal
+description: Antigravity workflow for antigravity-factory-building. Standardized for
+  IDX Visual Editor.
+domain: universal
+name: antigravity-factory-building
+steps:
+- actions:
+  - '**Agents**: `system-architecture-specialist`'
+  - '**Actions**:'
+  - Generate prototype brief and obtain human approval.
+  agents:
+  - system-architecture-specialist
+  goal: Convert a raw idea or pain point into a formal, human-approved prototype brief.
+  name: Ideation & Prototype Brief
+  skills:
+  - brainstorming-ideas
+  - briefing-prototypes
+  tools:
+  - mcp_memory_search_nodes
+- actions:
+  - '**Agents**: `system-architecture-specialist`, `project-operations-specialist`'
+  - '**Actions**:'
+  - Write PRD and create issues in Plane.
+  agents:
+  - system-architecture-specialist
+  - project-operations-specialist
+  goal: Formalize the approved brief into a PRD and manageable issues in Plane.
+  name: Requirements & Issue Formalization
+  skills:
+  - writing-prd
+  - managing-plane-tasks
+  tools:
+  - mcp_plane_create_issue
+- actions:
+  - '**Agents**: `system-architecture-specialist`'
+  - '**Actions**:'
+  - Create implementation plans and map architectural nodes in Memory.
+  agents:
+  - system-architecture-specialist
+  goal: Design the technical implementation and update the system knowledge graph.
+  name: Architecture & Memory Mapping
+  skills:
+  - designing-ai-systems
+  - repository-maintenance
+  tools:
+  - mcp_memory_create_relations
+  - mcp_memory_create_entities
+- actions:
+  - '**Agents**: `project-operations-specialist`'
+  - '**Actions**:'
+  - Implement workflows, skills, and knowledge files.
+  agents:
+  - project-operations-specialist
+  goal: Execute the build of workflows, skills, and knowledge items following TDD.
+  name: Build & Implementation
+  skills:
+  - developing-ai-agents
+  - developing-ai-agents
+  tools:
+  - write_to_file
+  - pytest-cli
+- actions:
+  - '**Agents**: `workflow-quality-specialist`'
+  - '**Actions**:'
+  - Run unit and integration tests to validate integrity.
+  agents:
+  - workflow-quality-specialist
+  goal: Validate the systemic integrity of the implementation through comprehensive
+    testing-agents.
+  name: Verification & Evaluation
+  skills:
+  - testing-agents
+  - testing-agents
+  tools:
+  - pytest-cli
+  - evaluate-agent
+- actions:
+  - '**Agents**: `project-operations-specialist`'
+  - '**Actions**:'
+  - Finalize git commit and tag the release.
+  agents:
+  - project-operations-specialist
+  goal: Commit tested implementation and execute a formalized release.
+  name: Deployment & Release
+  skills:
+  - committing-releases
+  - committing-releases
+  tools:
+  - git-cli
+- actions:
+  - '**Agents**: `knowledge-operations-specialist`, `project-operations-specialist`'
+  - '**Actions**:'
+  - Sync insights to Plane and close the task loop.
+  - Triggered by user context or meta-orchestrator.
+  - '"Execute this workflow."'
+  - '**Axiomatic Alignment**: Ensure Truth, Beauty, and Love.'
+  - '**Memory First**: Check context before execution.'
+  - '**Verifiability**: Document every step.'
+  - '[workflow-standard.md](file:///.agent/rules/workflow-standard.md)'
+  agents:
+  - knowledge-operations-specialist
+  - project-operations-specialist
+  goal: Synchronize architectural insights to Plane and finalize the development loop.
+  name: Monitor & Closure
+  skills:
+  - generating-documentation
+  - managing-plane-tasks
+  tools:
+  - managing-plane-tasks.py
+tags: []
+type: sequential
 version: 1.0.0
-tags:
-- antigravity
-- factory
-- building
-- standardized
 ---
-
 
 # Antigravity Factory System Building Process
 
 **Version:** 1.0.0
 
+## Overview
+This workflow governs the full lifecycle of building AI systems within the Antigravity Agent Factory, from initial ideation and prototype briefing to formal PRD creation, implementation, and verified release.
 
-This is the meta-workflow for building out the antigravity-agent-factory. It strictly follows the 7-Phase AI SDLC Process to convert abstract ideas into formal systemic capabilities.
+## Trigger Conditions
+- User requests a new AI system or feature.
+- Meta-orchestrator identifies a gap in the system architecture.
+
+**Trigger Examples:**
+- "Build a new agent for data processing."
+- "Execute the factory building process for a new prototype."
 
 ## Phases
 
-### Phase 1: Ideation & Prototype Brief
+### 1. Ideation & Prototype Brief
 - **Goal**: Convert a raw idea or pain point into a formal, human-approved prototype brief.
 - **Agents**: `system-architecture-specialist`
 - **Skills**: brainstorming-ideas, briefing-prototypes
 - **Tools**: mcp_memory_search_nodes
+- **Agents**: `system-architecture-specialist`
 - **Actions**:
-    - Generate prototype brief and obtain human approval.
+- Generate prototype brief and obtain human approval.
 
-### Phase 2: Requirements & Issue Formalization
+### 2. Requirements & Issue Formalization
 - **Goal**: Formalize the approved brief into a PRD and manageable issues in Plane.
 - **Agents**: `system-architecture-specialist`, `project-operations-specialist`
 - **Skills**: writing-prd, managing-plane-tasks
 - **Tools**: mcp_plane_create_issue
+- **Agents**: `system-architecture-specialist`, `project-operations-specialist`
 - **Actions**:
-    - Write PRD and create issues in Plane.
+- Write PRD and create issues in Plane.
 
-### Phase 3: Architecture & Memory Mapping
+### 3. Architecture & Memory Mapping
 - **Goal**: Design the technical implementation and update the system knowledge graph.
 - **Agents**: `system-architecture-specialist`
 - **Skills**: designing-ai-systems, repository-maintenance
 - **Tools**: mcp_memory_create_relations, mcp_memory_create_entities
+- **Agents**: `system-architecture-specialist`
 - **Actions**:
-    - Create implementation plans and map architectural nodes in Memory.
+- Create implementation plans and map architectural nodes in Memory.
 
-### Phase 4: Build & Implementation
+### 4. Build & Implementation
 - **Goal**: Execute the build of workflows, skills, and knowledge items following TDD.
 - **Agents**: `project-operations-specialist`
 - **Skills**: developing-ai-agents, developing-ai-agents
 - **Tools**: write_to_file, pytest-cli
+- **Agents**: `project-operations-specialist`
 - **Actions**:
-    - Implement workflows, skills, and knowledge files.
+- Implement workflows, skills, and knowledge files.
 
-### Phase 5: Verification & Evaluation
+### 5. Verification & Evaluation
 - **Goal**: Validate the systemic integrity of the implementation through comprehensive testing-agents.
 - **Agents**: `workflow-quality-specialist`
 - **Skills**: testing-agents, testing-agents
 - **Tools**: pytest-cli, evaluate-agent
+- **Agents**: `workflow-quality-specialist`
 - **Actions**:
-    - Run unit and integration tests to validate integrity.
+- Run unit and integration tests to validate integrity.
 
-### Phase 6: Deployment & Release
+### 6. Deployment & Release
 - **Goal**: Commit tested implementation and execute a formalized release.
 - **Agents**: `project-operations-specialist`
 - **Skills**: committing-releases, committing-releases
 - **Tools**: git-cli
+- **Agents**: `project-operations-specialist`
 - **Actions**:
-    - Finalize git commit and tag the release.
+- Finalize git commit and tag the release.
 
-### Phase 7: Monitor & Closure
+### 7. Monitor & Closure
 - **Goal**: Synchronize architectural insights to Plane and finalize the development loop.
 - **Agents**: `knowledge-operations-specialist`, `project-operations-specialist`
 - **Skills**: generating-documentation, managing-plane-tasks
 - **Tools**: managing-plane-tasks.py
+- **Agents**: `knowledge-operations-specialist`, `project-operations-specialist`
 - **Actions**:
-    - Sync insights to Plane and close the task loop.
-
-## Systematic Structuring & Hierarchical Cataloging
-When adding new workflows, agents, or skills:
-1. Define the component's strict inputs and outputs.
-2. Register the component within the appropriate SDLC phase folder or tagging structure.
-3. Update the overarching Knowledge Graph via MCP Memory to establish semantic ties (e.g. `Workflow X uses Agent Y uses Skill Z`).
-
-
-## Trigger Conditions
+- Sync insights to Plane and close the task loop.
 - Triggered by user context or meta-orchestrator.
-
-
-## Trigger Examples:
 - "Execute this workflow."
-
-
-## Best Practices
 - **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
 - **Memory First**: Check context before execution.
 - **Verifiability**: Document every step.
-
-
-## Related
 - [workflow-standard.md](file:///.agent/rules/workflow-standard.md)
