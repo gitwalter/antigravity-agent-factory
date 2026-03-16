@@ -1,93 +1,139 @@
 ---
-description: Multi-agent coordination testing-agents and validation workflow. Covers handoff
-  verification, conflict resolution, result ag...
+agents:
+- system-architecture-specialist
+- workflow-quality-specialist
+- knowledge-operations-specialist
+blueprints:
+- universal
+description: Antigravity workflow for coordination-testing. Standardized for IDX Visual
+  Editor.
+domain: universal
+name: coordination-testing
+steps:
+- actions:
+  - '**Agents**: `system-architecture-specialist`'
+  - '**Actions**:'
+  - Identify handoff points and shared resource locks.
+  agents:
+  - system-architecture-specialist
+  goal: Map all agent handoff points and resource dependencies in the multi-agent
+    system.
+  name: Coordination Point Identification
+  skills:
+  - testing-agents
+  - designing-ai-systems
+  tools:
+  - mcp_memory_search_nodes
+- actions:
+  - '**Agents**: `workflow-quality-specialist`'
+  - '**Actions**:'
+  - Design test cases for successful handoffs and conflict resolution.
+  agents:
+  - workflow-quality-specialist
+  goal: Design positive and negative test scenarios for coordination flows.
+  name: Scenario Design & Mocking
+  skills:
+  - testing-agents
+  - testing-agents
+  tools:
+  - write_to_file
+  - pytest-cli
+- actions:
+  - '**Agents**: `workflow-quality-specialist`'
+  - '**Actions**:'
+  - Run flow tests and verify result aggregation.
+  agents:
+  - workflow-quality-specialist
+  goal: Run coordination tests and logging-and-monitoring for race conditions or deadlocks.
+  name: Execution & Deadlock Detection
+  skills:
+  - testing-agents
+  tools:
+  - python-interpreter
+  - shell-execute
+- actions:
+  - '**Agents**: `system-architecture-specialist`, `knowledge-operations-specialist`'
+  - '**Actions**:'
+  - Generate coordination quality report and recommendations.
+  - Is the requirement clear?
+  - Are the tests passing?
+  - '"Execute this workflow."'
+  - '**Axiomatic Alignment**: Ensure Truth, Beauty, and Love.'
+  - '**Memory First**: Check context before execution.'
+  - '**Verifiability**: Document every step.'
+  - '[workflow-standard.md](file:///.agent/rules/workflow-standard.md)'
+  agents:
+  - system-architecture-specialist
+  - knowledge-operations-specialist
+  goal: Analyze coordination quality metrics and propose flow optimizations.
+  name: Analysis & Optimization
+  skills:
+  - generating-documentation
+  - testing-agents
+  tools:
+  - python-interpreter
+tags: []
+type: sequential
 version: 1.0.0
-tags:
-- coordination
-- testing-agents
-- standardized
 ---
-
 
 # Coordination Testing
 
-Multi-agent coordination testing-agents and validation workflow. Covers handoff verification, conflict resolution, result aggregation, and end-to-end coordination quality.
-
 **Version:** 1.0.0
-**Created:** 2026-02-10
-**Applies To:** multi-agent-systems, crewai, langgraph
+
+## Overview
+Antigravity workflow for coordination-testing in multi-agent systems. Standardized for IDX Visual Editor.
 
 ## Trigger Conditions
-
-This workflow is activated when:
-
-- Multi-agent system needs validation
-- Coordination bugs suspected
-- Pre-release coordination check
-- New handoff logic added
+- New multi-agent collaboration patterns implemented.
+- Detection of race conditions, deadlocks, or handoff failures in the system.
+- User request: `/coordination-testing`.
 
 **Trigger Examples:**
-- "Test multi-agent coordination"
-- "Validate agent handoffs"
-- "Run coordination tests"
-- "Check for deadlocks in agent flow"
+- "Test the coordination between @Architect and @Bug-Hunter."
+- "Validate the handoff points in the release workflow."
 
 ## Phases
 
-### Phase 1: Coordination Point Identification
+### 1. Coordination Point Identification
 - **Goal**: Map all agent handoff points and resource dependencies in the multi-agent system.
 - **Agents**: `system-architecture-specialist`
 - **Skills**: testing-agents, designing-ai-systems
 - **Tools**: mcp_memory_search_nodes
+- **Agents**: `system-architecture-specialist`
 - **Actions**:
-    - Identify handoff points and shared resource locks.
+- Identify handoff points and shared resource locks.
 
-### Phase 2: Scenario Design & Mocking
+### 2. Scenario Design & Mocking
 - **Goal**: Design positive and negative test scenarios for coordination flows.
 - **Agents**: `workflow-quality-specialist`
 - **Skills**: testing-agents, testing-agents
 - **Tools**: write_to_file, pytest-cli
+- **Agents**: `workflow-quality-specialist`
 - **Actions**:
-    - Design test cases for successful handoffs and conflict resolution.
+- Design test cases for successful handoffs and conflict resolution.
 
-### Phase 3: Execution & Deadlock Detection
+### 3. Execution & Deadlock Detection
 - **Goal**: Run coordination tests and logging-and-monitoring for race conditions or deadlocks.
 - **Agents**: `workflow-quality-specialist`
 - **Skills**: testing-agents
 - **Tools**: python-interpreter, shell-execute
+- **Agents**: `workflow-quality-specialist`
 - **Actions**:
-    - Run flow tests and verify result aggregation.
+- Run flow tests and verify result aggregation.
 
-### Phase 4: Analysis & Optimization
+### 4. Analysis & Optimization
 - **Goal**: Analyze coordination quality metrics and propose flow optimizations.
 - **Agents**: `system-architecture-specialist`, `knowledge-operations-specialist`
 - **Skills**: generating-documentation, testing-agents
 - **Tools**: python-interpreter
+- **Agents**: `system-architecture-specialist`, `knowledge-operations-specialist`
 - **Actions**:
-    - Generate coordination quality report and recommendations.
-
-
-## Decision Points
-
+- Generate coordination quality report and recommendations.
 - Is the requirement clear?
 - Are the tests passing?
-
-
-## Example Session
-
-User: Run the workflow
-Agent: Initiating workflow steps...
-
-
-## Trigger Examples
 - "Execute this workflow."
-
-
-## Best Practices
 - **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
 - **Memory First**: Check context before execution.
 - **Verifiability**: Document every step.
-
-
-## Related
 - [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

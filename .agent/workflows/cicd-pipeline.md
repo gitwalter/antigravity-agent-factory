@@ -1,103 +1,160 @@
 ---
-description: Comprehensive workflow for managing continuous integration and deployment
-  pipelines. Covers build, test, security sca...
+agents:
+- workflow-quality-specialist
+- project-operations-specialist
+blueprints:
+- universal
+description: Antigravity workflow for cicd-pipeline. Standardized for IDX Visual Editor.
+domain: universal
+name: cicd-pipeline
+steps:
+- actions:
+  - '**Agents**: `project-operations-specialist`'
+  - '**Actions**:'
+  - Install dependencies and build artifacts.
+  agents:
+  - project-operations-specialist
+  goal: Install dependencies and compile the source code.
+  name: Build & Dependency Management
+  skills:
+  - cicd-pipeline
+  tools:
+  - npm
+  - maven
+  - gradle
+- actions:
+  - '**Agents**: `workflow-quality-specialist`'
+  - '**Actions**:'
+  - Run the test suite and verify coverage.
+  agents:
+  - workflow-quality-specialist
+  goal: Execute unit and integration tests to ensure code quality.
+  name: Automated Testing
+  skills:
+  - testing-agents
+  tools:
+  - jest
+  - pytest
+  - junit
+- actions:
+  - '**Agents**: `workflow-quality-specialist`'
+  - '**Actions**:'
+  - Execute SAST and dependency vulnerability scans.
+  agents:
+  - workflow-quality-specialist
+  goal: Perform static analysis and dependency scanning.
+  name: Security & Quality Scans
+  skills:
+  - securing-ai-systems
+  - verifying-artifact-structures
+  tools:
+  - sonarqube
+  - snyk
+- actions:
+  - '**Agents**: `project-operations-specialist`'
+  - '**Actions**:'
+  - Deploy to the staging environment and verify health.
+  agents:
+  - project-operations-specialist
+  goal: Deploy to staging and perform smoke tests.
+  name: Staging Deployment & Verification
+  skills:
+  - committing-releases
+  tools:
+  - kubectl
+  - cf-push
+- actions:
+  - '**Agents**: `project-operations-specialist`'
+  - '**Actions**:'
+  - Execute production deployment and logging-and-monitoring post-release.
+  - Is the requirement clear?
+  - Are the tests passing?
+  - '"Execute this workflow."'
+  - '**Axiomatic Alignment**: Ensure Truth, Beauty, and Love.'
+  - '**Memory First**: Check context before execution.'
+  - '**Verifiability**: Document every step.'
+  - '[workflow-standard.md](file:///.agent/rules/workflow-standard.md)'
+  agents:
+  - project-operations-specialist
+  goal: Deploy to production after approval and verify.
+  name: Production Release
+  skills:
+  - committing-releases
+  - logging-and-monitoring
+  tools:
+  - safety-gate
+  - grafana
+tags: []
+type: sequential
 version: 1.0.0
-tags:
-- cicd
-- pipeline
-- standardized
 ---
 
-
-# Cicd Pipeline
-
-Comprehensive workflow for managing continuous integration and deployment pipelines. Covers build, test, security scanning, and deployment across multiple environments.
+# CI/CD Pipeline
 
 **Version:** 1.0.0
-**Created:** 2026-02-02
-**Applies To:** All stacks
 
-> **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.
+## Overview
+Antigravity workflow for CI/CD pipeline execution. Standardized for IDX Visual Editor.
 
 ## Trigger Conditions
-
-This workflow is activated when:
-
-- Push to main/develop branch
-- Pull request created/updated
-- Scheduled build
-- Manual deployment request
+- Code committed to the repository (automated trigger).
+- Manual request to run the full CI/CD suite.
+- User request: `/cicd-pipeline`.
 
 **Trigger Examples:**
-- "Deploy to staging"
-- "Run the CI pipeline"
-- "Build and test"
-- "Release to production"
+- "Run the CI/CD pipeline for the current branch."
+- "Execute the build and deploy suite."
 
 ## Phases
 
-### Phase 1: Build & Dependency Management
+### 1. Build & Dependency Management
 - **Goal**: Install dependencies and compile the source code.
 - **Agents**: `project-operations-specialist`
 - **Skills**: cicd-pipeline
 - **Tools**: npm, maven, gradle
+- **Agents**: `project-operations-specialist`
 - **Actions**:
-    - Install dependencies and build artifacts.
+- Install dependencies and build artifacts.
 
-### Phase 2: Automated Testing
+### 2. Automated Testing
 - **Goal**: Execute unit and integration tests to ensure code quality.
 - **Agents**: `workflow-quality-specialist`
 - **Skills**: testing-agents
 - **Tools**: jest, pytest, junit
+- **Agents**: `workflow-quality-specialist`
 - **Actions**:
-    - Run the test suite and verify coverage.
+- Run the test suite and verify coverage.
 
-### Phase 3: Security & Quality Scans
+### 3. Security & Quality Scans
 - **Goal**: Perform static analysis and dependency scanning.
 - **Agents**: `workflow-quality-specialist`
 - **Skills**: securing-ai-systems, verifying-artifact-structures
 - **Tools**: sonarqube, snyk
+- **Agents**: `workflow-quality-specialist`
 - **Actions**:
-    - Execute SAST and dependency vulnerability scans.
+- Execute SAST and dependency vulnerability scans.
 
-### Phase 4: Staging Deployment & Verification
+### 4. Staging Deployment & Verification
 - **Goal**: Deploy to staging and perform smoke tests.
 - **Agents**: `project-operations-specialist`
 - **Skills**: committing-releases
 - **Tools**: kubectl, cf-push
+- **Agents**: `project-operations-specialist`
 - **Actions**:
-    - Deploy to the staging environment and verify health.
+- Deploy to the staging environment and verify health.
 
-### Phase 5: Production Release
+### 5. Production Release
 - **Goal**: Deploy to production after approval and verify.
 - **Agents**: `project-operations-specialist`
 - **Skills**: committing-releases, logging-and-monitoring
 - **Tools**: safety-gate, grafana
+- **Agents**: `project-operations-specialist`
 - **Actions**:
-    - Execute production deployment and logging-and-monitoring post-release.
-
-
-## Decision Points
-
+- Execute production deployment and logging-and-monitoring post-release.
 - Is the requirement clear?
 - Are the tests passing?
-
-
-## Example Session
-
-User: Run the workflow
-Agent: Initiating workflow steps...
-
-
-## Trigger Examples
 - "Execute this workflow."
-
-
-## Best Practices
 - **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
 - **Memory First**: Check context before execution.
 - **Verifiability**: Document every step.
-
-
-## Related
 - [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

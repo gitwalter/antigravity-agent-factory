@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.1] - 2026-03-16
+
+### Added
+- **Workflow Standardization**: Applied structural standards (Version, Overview, Trigger Conditions, Phases) to 63 failing workflow files across the factory.
+- **Workflow Audit Infrastructure**: Created `scripts/validation/audit_workflows.py` to ensure long-term compliance with workflow metadata standards.
+
+### Changed
+- **Git Hygiene**: Removed `docs/audits` from remote tracking while keeping local logs. Updated `.gitignore` to prevent future tracking of audit artifacts.
+
+### Fixed
+- **Maintenance Script Resilience**: Fixed `scripts/maintenance/knowledge_audit.py` to handle missing audit directories, resolving persistent integration test failures in the CI pipeline.
+
 ## [1.9.0] - 2026-03-16
 
 ### Added

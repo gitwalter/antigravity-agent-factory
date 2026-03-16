@@ -1,94 +1,139 @@
 ---
-description: Comprehensive security audit workflow for smart contracts covering static
-  analysis, vulnerability scanning, gas optim...
+agents:
+- blockchain-guru-specialist
+- workflow-quality-specialist
+- knowledge-operations-specialist
+blueprints:
+- universal
+description: Antigravity workflow for smart-contract-audit. Standardized for IDX Visual
+  Editor.
+domain: universal
+name: smart-contract-audit
+steps:
+- actions:
+  - '**Agents**: `workflow-quality-specialist`'
+  - '**Actions**:'
+  - Identify target contracts and run initial security scanners.
+  agents:
+  - workflow-quality-specialist
+  goal: Define audit scope and prepare the detection environment.
+  name: Scope Definition & Environment Setup
+  skills:
+  - securing-ai-systems
+  - securing-ai-systems
+  tools:
+  - slither-cli
+  - mythril-cli
+- actions:
+  - '**Agents**: `blockchain-guru-specialist`'
+  - '**Actions**:'
+  - Review ACLs and external integrations for logic flaws.
+  agents:
+  - blockchain-guru-specialist
+  goal: Manually verify access control lists and complex financial logic.
+  name: Access Control & Business Logic Review
+  skills:
+  - securing-ai-systems
+  tools:
+  - mcp_memory_search_nodes
+- actions:
+  - '**Agents**: `workflow-quality-specialist`'
+  - '**Actions**:'
+  - Conduct gas profiling and analyze test coverage/branch targets.
+  agents:
+  - workflow-quality-specialist
+  goal: Analyze gas efficiency and test coverage for critical logic.
+  name: Gas Profiling & Test Suite Analysis
+  skills:
+  - securing-ai-systems
+  - testing-agents
+  tools:
+  - foundry-cli
+  - echidna-cli
+- actions:
+  - '**Agents**: `workflow-quality-specialist`, `knowledge-operations-specialist`'
+  - '**Actions**:'
+  - Generate audit report and verify remediation findings.
+  - Is the requirement clear?
+  - Are the tests passing?
+  - '"Execute this workflow."'
+  - '**Axiomatic Alignment**: Ensure Truth, Beauty, and Love.'
+  - '**Memory First**: Check context before execution.'
+  - '**Verifiability**: Document every step.'
+  - '[workflow-standard.md](file:///.agent/rules/workflow-standard.md)'
+  agents:
+  - workflow-quality-specialist
+  - knowledge-operations-specialist
+  goal: Compile findings into a high-fidelity audit report and verify fixes.
+  name: Report Generation & Remediation
+  skills:
+  - generating-documentation
+  - securing-ai-systems
+  tools:
+  - pdf-generator
+  - write_to_file
+tags: []
+type: sequential
 version: 1.0.0
-tags:
-- smart
-- contract
-- audit
-- standardized
 ---
-
 
 # Smart Contract Audit
 
-Comprehensive security audit workflow for smart contracts covering static analysis, vulnerability scanning, gas optimization, and business logic review. Designed for Ethereum/Solidity and Solana/Rust ecosystems.
-
 **Version:** 1.0.0
-**Created:** 2026-02-02
-**Applies To:** solidity-ethereum, solana-rust, defi-protocols
+
+## Overview
+Antigravity workflow specifically tailored for deep auditing of blockchain smart contracts. Standardized for IDX Visual Editor.
 
 ## Trigger Conditions
-
-This workflow is activated when:
-
-- Pre-deployment security review required
-- Smart contract PR needs review
-- Audit requested for DeFi protocol
-- Security concern raised
+- Release of a new smart contract to mainnet or public testnet.
+- Requirement for Gas optimization and vulnerability hunting in Solidity code.
+- User request: `/smart-contract-audit`.
 
 **Trigger Examples:**
-- "Audit the token contract"
-- "Security review for the DEX"
-- "Check the lending protocol for vulnerabilities"
-- "Pre-mainnet audit"
+- "Perform a gas profiling audit on the 'NFT Marketplace' contracts."
+- "Execute a smart contract audit with focus on re-entrancy protection."
 
 ## Phases
 
-### Phase 1: Scope Definition & Environment Setup
+### 1. Scope Definition & Environment Setup
 - **Goal**: Define audit scope and prepare the detection environment.
 - **Agents**: `workflow-quality-specialist`
 - **Skills**: securing-ai-systems, securing-ai-systems
 - **Tools**: slither-cli, mythril-cli
+- **Agents**: `workflow-quality-specialist`
 - **Actions**:
-    - Identify target contracts and run initial security scanners.
+- Identify target contracts and run initial security scanners.
 
-### Phase 2: Access Control & Business Logic Review
+### 2. Access Control & Business Logic Review
 - **Goal**: Manually verify access control lists and complex financial logic.
 - **Agents**: `blockchain-guru-specialist`
 - **Skills**: securing-ai-systems
 - **Tools**: mcp_memory_search_nodes
+- **Agents**: `blockchain-guru-specialist`
 - **Actions**:
-    - Review ACLs and external integrations for logic flaws.
+- Review ACLs and external integrations for logic flaws.
 
-### Phase 3: Gas Profiling & Test Suite Analysis
+### 3. Gas Profiling & Test Suite Analysis
 - **Goal**: Analyze gas efficiency and test coverage for critical logic.
 - **Agents**: `workflow-quality-specialist`
 - **Skills**: securing-ai-systems, testing-agents
 - **Tools**: foundry-cli, echidna-cli
+- **Agents**: `workflow-quality-specialist`
 - **Actions**:
-    - Conduct gas profiling and analyze test coverage/branch targets.
+- Conduct gas profiling and analyze test coverage/branch targets.
 
-### Phase 4: Report Generation & Remediation
+### 4. Report Generation & Remediation
 - **Goal**: Compile findings into a high-fidelity audit report and verify fixes.
 - **Agents**: `workflow-quality-specialist`, `knowledge-operations-specialist`
 - **Skills**: generating-documentation, securing-ai-systems
 - **Tools**: pdf-generator, write_to_file
+- **Agents**: `workflow-quality-specialist`, `knowledge-operations-specialist`
 - **Actions**:
-    - Generate audit report and verify remediation findings.
-
-
-## Decision Points
-
+- Generate audit report and verify remediation findings.
 - Is the requirement clear?
 - Are the tests passing?
-
-
-## Example Session
-
-User: Run the workflow
-Agent: Initiating workflow steps...
-
-
-## Trigger Examples
 - "Execute this workflow."
-
-
-## Best Practices
 - **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
 - **Memory First**: Check context before execution.
 - **Verifiability**: Document every step.
-
-
-## Related
 - [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

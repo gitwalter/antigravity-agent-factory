@@ -43,8 +43,8 @@ const WorkflowNode = ({ data }: { data: any }) => {
         </div>
       )}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
-        {data.agents?.map((a: string) => <span key={a} className="tag" style={{ fontSize: 10, background: 'rgba(139, 110, 255, 0.15)', border: '1px solid rgba(139, 110, 255, 0.3)', color: '#a78bfa' }}>👤 {a}</span>)}
-        {data.skills?.map((s: string) => <span key={s} className="tag tag-success" style={{ fontSize: 10, background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.2)', color: '#4ade80' }}>🧩 {s}</span>)}
+        {Array.from(new Set(data.agents as string[] || [])).map((a: string) => <span key={a} className="tag" style={{ fontSize: 10, background: 'rgba(139, 110, 255, 0.15)', border: '1px solid rgba(139, 110, 255, 0.3)', color: '#a78bfa' }}>👤 {a}</span>)}
+        {Array.from(new Set(data.skills as string[] || [])).map((s: string) => <span key={s} className="tag tag-success" style={{ fontSize: 10, background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.2)', color: '#4ade80' }}>🧩 {s}</span>)}
       </div>
       <Handle type="source" position={Position.Bottom} style={{ background: '#8b6eff', width: 10, height: 10, border: '2px solid #0f0f19' }} />
     </div>

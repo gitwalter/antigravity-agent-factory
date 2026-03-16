@@ -1,109 +1,167 @@
 ---
-description: Comprehensive workflow for developing production-ready FastAPI applications
-  with SQLAlchemy async patterns, Pydantic ...
+agents:
+- workflow-quality-specialist
+- project-operations-specialist
+- python-ai-specialist
+blueprints:
+- universal
+description: Antigravity workflow for fastapi-api-development. Standardized for IDX
+  Visual Editor.
+domain: universal
+name: fastapi-api-development
+steps:
+- actions:
+  - '**Agents**: `project-operations-specialist`'
+  - '**Actions**:'
+  - Create project structure and install dependencies.
+  - Configure project settings and environment variables.
+  agents:
+  - project-operations-specialist
+  goal: Establish a production-ready FastAPI environment with proper dependency management.
+  name: Project Setup & Configuration
+  skills:
+  - developing-ai-agents
+  tools:
+  - conda-run
+  - write_to_file
+- actions:
+  - '**Agents**: `python-ai-specialist`'
+  - '**Actions**:'
+  - Define SQLAlchemy models and create Pydantic schemas.
+  - Configure database and create the initial migration.
+  agents:
+  - python-ai-specialist
+  goal: Design the data layer using SQLAlchemy and Pydantic for validation.
+  name: Domain Modeling & Schema Definition
+  skills:
+  - designing-apis
+  - analyzing-code
+  tools:
+  - multi_replace_file_content
+- actions:
+  - '**Agents**: `python-ai-specialist`'
+  - '**Actions**:'
+  - Implement service layer and repository pattern.
+  - Create API endpoints and configure dependencies.
+  - Add middleware for logging and security.
+  agents:
+  - python-ai-specialist
+  goal: Implement the service layer, repository pattern, and RESTful endpoints.
+  name: Business Logic & API Implementation
+  skills:
+  - developing-ai-agents
+  tools:
+  - replace_file_content
+- actions:
+  - '**Agents**: `workflow-quality-specialist`'
+  - '**Actions**:'
+  - Set up test infrastructure and write unit/integration tests.
+  agents:
+  - workflow-quality-specialist
+  goal: Ensure robustness through unit and integration testing-agents.
+  name: Testing & Quality Assurance
+  skills:
+  - verifying-artifact-structures
+  tools:
+  - pytest
+- actions:
+  - '**Agents**: `project-operations-specialist`'
+  - '**Actions**:'
+  - Configure production settings and add health checks.
+  - Create Dockerfile and configure application server (e.g., Uvicorn).
+  - Is the requirement clear?
+  - Are the tests passing?
+  - '"Execute this workflow."'
+  - '**Axiomatic Alignment**: Ensure Truth, Beauty, and Love.'
+  - '**Memory First**: Check context before execution.'
+  - '**Verifiability**: Document every step.'
+  - '[workflow-standard.md](file:///.agent/rules/workflow-standard.md)'
+  agents:
+  - project-operations-specialist
+  goal: Prepare the application for production deployment with Docker and health logging-and-monitoring.
+  name: Containerization & Ops
+  skills:
+  - cicd-pipeline
+  - logging-and-monitoring
+  tools:
+  - docker
+  - write_to_file
+tags: []
+type: sequential
 version: 1.0.0
-tags:
-- fastapi
-- api
-- development
-- standardized
 ---
 
-
-# Fastapi Api Development
-
-Comprehensive workflow for developing production-ready FastAPI applications with SQLAlchemy async patterns, Pydantic validation, and best practices. This workflow guides through project setup, domain modeling, API endpoints, testing-agents, and deployment.
+# FastAPI API Development
 
 **Version:** 1.0.0
-**Created:** 2026-02-09
-**Agent:** template-creator
 
-> **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.
+## Overview
+Antigravity workflow for FastAPI API development. Standardized for IDX Visual Editor.
 
 ## Trigger Conditions
-
-This workflow is activated when:
-
-- User requests "create FastAPI API", "build Python API", "FastAPI endpoint"
-- User mentions "SQLAlchemy", "async database", "Pydantic schema"
-- User requests "Python web service" or "async Python API"
-- User asks to "create REST API with Python"
+- Requirement for a high-performance Python-based RESTful API.
+- Need for asynchronous processing and type-safe data modeling.
+- User request: `/fastapi-api-development`.
 
 **Trigger Examples:**
-- "Create a FastAPI API for managing products"
-- "Build an async Python API with SQLAlchemy"
-- "Create FastAPI endpoints with Pydantic validation"
-- "Set up a Python web service with database acce
+- "Develop a FastAPI microservice for order processing."
+- "Implement an asynchronous background task for data synchronization."
 
 ## Phases
 
-### Phase 1: Project Setup & Configuration
+### 1. Project Setup & Configuration
 - **Goal**: Establish a production-ready FastAPI environment with proper dependency management.
 - **Agents**: `project-operations-specialist`
 - **Skills**: developing-ai-agents
 - **Tools**: conda-run, write_to_file
+- **Agents**: `project-operations-specialist`
 - **Actions**:
-    - Create project structure and install dependencies.
-    - Configure project settings and environment variables.
+- Create project structure and install dependencies.
+- Configure project settings and environment variables.
 
-### Phase 2: Domain Modeling & Schema Definition
+### 2. Domain Modeling & Schema Definition
 - **Goal**: Design the data layer using SQLAlchemy and Pydantic for validation.
 - **Agents**: `python-ai-specialist`
 - **Skills**: designing-apis, analyzing-code
 - **Tools**: multi_replace_file_content
+- **Agents**: `python-ai-specialist`
 - **Actions**:
-    - Define SQLAlchemy models and create Pydantic schemas.
-    - Configure database and create the initial migration.
+- Define SQLAlchemy models and create Pydantic schemas.
+- Configure database and create the initial migration.
 
-### Phase 3: Business Logic & API Implementation
+### 3. Business Logic & API Implementation
 - **Goal**: Implement the service layer, repository pattern, and RESTful endpoints.
 - **Agents**: `python-ai-specialist`
 - **Skills**: developing-ai-agents
 - **Tools**: replace_file_content
+- **Agents**: `python-ai-specialist`
 - **Actions**:
-    - Implement service layer and repository pattern.
-    - Create API endpoints and configure dependencies.
-    - Add middleware for logging and security.
+- Implement service layer and repository pattern.
+- Create API endpoints and configure dependencies.
+- Add middleware for logging and security.
 
-### Phase 4: Testing & Quality Assurance
+### 4. Testing & Quality Assurance
 - **Goal**: Ensure robustness through unit and integration testing-agents.
 - **Agents**: `workflow-quality-specialist`
 - **Skills**: verifying-artifact-structures
 - **Tools**: pytest
+- **Agents**: `workflow-quality-specialist`
 - **Actions**:
-    - Set up test infrastructure and write unit/integration tests.
+- Set up test infrastructure and write unit/integration tests.
 
-### Phase 5: Containerization & Ops
+### 5. Containerization & Ops
 - **Goal**: Prepare the application for production deployment with Docker and health logging-and-monitoring.
 - **Agents**: `project-operations-specialist`
 - **Skills**: cicd-pipeline, logging-and-monitoring
 - **Tools**: docker, write_to_file
+- **Agents**: `project-operations-specialist`
 - **Actions**:
-    - Configure production settings and add health checks.
-    - Create Dockerfile and configure application server (e.g., Uvicorn).
-
-
-## Decision Points
-
+- Configure production settings and add health checks.
+- Create Dockerfile and configure application server (e.g., Uvicorn).
 - Is the requirement clear?
 - Are the tests passing?
-
-
-## Example Session
-
-User: Run the workflow
-Agent: Initiating workflow steps...
-
-
-## Trigger Examples
 - "Execute this workflow."
-
-
-## Best Practices
 - **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
 - **Memory First**: Check context before execution.
 - **Verifiability**: Document every step.
-
-
-## Related
 - [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

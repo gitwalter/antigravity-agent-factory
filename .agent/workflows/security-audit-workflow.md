@@ -1,94 +1,140 @@
 ---
-description: Smart contract security audit workflow covering scope definition, static
-  analysis, manual review, penetration testing-agents...
+agents:
+- blockchain-guru-specialist
+- workflow-quality-specialist
+- knowledge-operations-specialist
+blueprints:
+- universal
+description: Antigravity workflow for security-audit-workflow. Standardized for IDX
+  Visual Editor.
+domain: universal
+name: security-audit-workflow
+steps:
+- actions:
+  - '**Agents**: `workflow-quality-specialist`'
+  - '**Actions**:'
+  - Define scope and discover environmental dependencies.
+  agents:
+  - workflow-quality-specialist
+  goal: Define audit scope and prepare the detection environment.
+  name: Scope & Discovery
+  skills:
+  - securing-ai-systems
+  - securing-ai-systems
+  tools:
+  - mcp_memory_search_nodes
+  - slither-cli
+- actions:
+  - '**Agents**: `workflow-quality-specialist`'
+  - '**Actions**:'
+  - Run scanners and triage findings into high/medium/low severity.
+  agents:
+  - workflow-quality-specialist
+  goal: Execute automated scanners and triage identified findings based on severity.
+  name: Vulnerability Hunting & Triage
+  skills:
+  - securing-ai-systems
+  tools:
+  - slither-cli
+  - mythril-cli
+- actions:
+  - '**Agents**: `blockchain-guru-specialist`, `workflow-quality-specialist`'
+  - '**Actions**:'
+  - Manually verify ACLs and logical flows for "rug-pull" or "re-entrancy" vectors.
+  agents:
+  - blockchain-guru-specialist
+  - workflow-quality-specialist
+  goal: Deep dive into manual review of access controls and business logic.
+  name: Manual Logic & Access Control Review
+  skills:
+  - securing-ai-systems
+  - securing-ai-systems
+  tools:
+  - mcp_memory_search_nodes
+- actions:
+  - '**Agents**: `workflow-quality-specialist`, `knowledge-operations-specialist`'
+  - '**Actions**:'
+  - Compile audit report and verify remediation findings before release.
+  - Is the requirement clear?
+  - Are the tests passing?
+  - '"Execute this workflow."'
+  - '**Axiomatic Alignment**: Ensure Truth, Beauty, and Love.'
+  - '**Memory First**: Check context before execution.'
+  - '**Verifiability**: Document every step.'
+  - '[workflow-standard.md](file:///.agent/rules/workflow-standard.md)'
+  agents:
+  - workflow-quality-specialist
+  - knowledge-operations-specialist
+  goal: Generate high-fidelity audit reports and verify remediation.
+  name: Reporting & Verification
+  skills:
+  - generating-documentation
+  - committing-releases
+  tools:
+  - pdf-generator
+  - safety-gate
+tags: []
+type: sequential
 version: 1.0.0
-tags:
-- security
-- audit
-- workflow
-- standardized
 ---
-
 
 # Security Audit Workflow
 
-Smart contract security audit workflow covering scope definition, static analysis, manual review, penetration testing-agents, and reporting. Supports Ethereum/Solidity and Solana/Rust.
-
 **Version:** 1.0.0
-**Created:** 2026-02-10
-**Applies To:** solidity-ethereum, solana-rust, defi-protocols
+
+## Overview
+Antigravity workflow for comprehensive security auditing of smart contracts and AI systems. Standardized for IDX Visual Editor.
 
 ## Trigger Conditions
-
-This workflow is activated when:
-
-- Pre-deployment audit required
-- Security review requested
-- Post-audit remediation verification
-- Critical vulnerability suspected
+- Pre-deployment security review requirement.
+- Scheduled security audit for existing critical infrastructure.
+- User request: `/security-audit`.
 
 **Trigger Examples:**
-- "Audit the smart contracts"
-- "Security review before mainnet"
-- "Verify audit findings are fixed"
-- "Penetration test the protocol"
+- "Conduct a full security audit of the 'Token Vesting' smart contract."
+- "Execute the security audit workflow for our new 'Context Engineering' RAG pipeline."
 
 ## Phases
 
-### Phase 1: Scope & Discovery
+### 1. Scope & Discovery
 - **Goal**: Define audit scope and prepare the detection environment.
 - **Agents**: `workflow-quality-specialist`
 - **Skills**: securing-ai-systems, securing-ai-systems
 - **Tools**: mcp_memory_search_nodes, slither-cli
+- **Agents**: `workflow-quality-specialist`
 - **Actions**:
-    - Define scope and discover environmental dependencies.
+- Define scope and discover environmental dependencies.
 
-### Phase 2: Vulnerability Hunting & Triage
+### 2. Vulnerability Hunting & Triage
 - **Goal**: Execute automated scanners and triage identified findings based on severity.
 - **Agents**: `workflow-quality-specialist`
 - **Skills**: securing-ai-systems
 - **Tools**: slither-cli, mythril-cli
+- **Agents**: `workflow-quality-specialist`
 - **Actions**:
-    - Run scanners and triage findings into high/medium/low severity.
+- Run scanners and triage findings into high/medium/low severity.
 
-### Phase 3: Manual Logic & Access Control Review
+### 3. Manual Logic & Access Control Review
 - **Goal**: Deep dive into manual review of access controls and business logic.
 - **Agents**: `blockchain-guru-specialist`, `workflow-quality-specialist`
 - **Skills**: securing-ai-systems, securing-ai-systems
 - **Tools**: mcp_memory_search_nodes
+- **Agents**: `blockchain-guru-specialist`, `workflow-quality-specialist`
 - **Actions**:
-    - Manually verify ACLs and logical flows for "rug-pull" or "re-entrancy" vectors.
+- Manually verify ACLs and logical flows for "rug-pull" or "re-entrancy" vectors.
 
-### Phase 4: Reporting & Verification
+### 4. Reporting & Verification
 - **Goal**: Generate high-fidelity audit reports and verify remediation.
 - **Agents**: `workflow-quality-specialist`, `knowledge-operations-specialist`
 - **Skills**: generating-documentation, committing-releases
 - **Tools**: pdf-generator, safety-gate
+- **Agents**: `workflow-quality-specialist`, `knowledge-operations-specialist`
 - **Actions**:
-    - Compile audit report and verify remediation findings before release.
-
-
-## Decision Points
-
+- Compile audit report and verify remediation findings before release.
 - Is the requirement clear?
 - Are the tests passing?
-
-
-## Example Session
-
-User: Run the workflow
-Agent: Initiating workflow steps...
-
-
-## Trigger Examples
 - "Execute this workflow."
-
-
-## Best Practices
 - **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
 - **Memory First**: Check context before execution.
 - **Verifiability**: Document every step.
-
-
-## Related
 - [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

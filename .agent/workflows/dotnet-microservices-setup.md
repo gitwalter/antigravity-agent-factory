@@ -1,93 +1,131 @@
 ---
-description: Comprehensive workflow for designing and implementing microservices architectures
-  with .NET. This workflow covers ser...
+agents:
+- workflow-quality-specialist
+- system-architecture-specialist
+- project-operations-specialist
+- python-ai-specialist
+blueprints:
+- universal
+description: Antigravity workflow for dotnet-microservices-setup. Standardized for
+  IDX Visual Editor.
+domain: universal
+name: dotnet-microservices-setup
+steps:
+- actions:
+  - '**Agents**: `system-architecture-specialist`'
+  - '**Actions**:'
+  - Identify business capabilities and define boundaries.
+  - Design data ownership and API contracts.
+  agents:
+  - system-architecture-specialist
+  goal: Identify business capabilities and define microservice boundaries and data
+    ownership.
+  name: Design & Decomposition
+  skills:
+  - designing-ai-systems
+  - brainstorming-ideas
+  tools:
+  - deepwiki
+- actions:
+  - '**Agents**: `python-ai-specialist`, `project-operations-specialist`'
+  - '**Actions**:'
+  - Create projects and implement service logic.
+  - Configure databases and implement endpoints.
+  - Configure sync/async communication and resilience patterns.
+  agents:
+  - python-ai-specialist
+  - project-operations-specialist
+  goal: Initialize service projects and implement core logic and communication layers
+    (gRPC, REST, Message Broker).
+  name: Service & Communication Setup
+  skills:
+  - dotnet-microservices-setup
+  - developing-ai-agents
+  tools:
+  - dotnet-cli
+  - write_to_file
+- actions:
+  - '**Agents**: `project-operations-specialist`, `workflow-quality-specialist`'
+  - '**Actions**:'
+  - Create API Gateway and configure routing.
+  - Configure distributed tracing, logging, and metrics.
+  - Implement health checks.
+  - Is the requirement clear?
+  - Are the tests passing?
+  - '"Execute this workflow."'
+  - '**Axiomatic Alignment**: Ensure Truth, Beauty, and Love.'
+  - '**Memory First**: Check context before execution.'
+  - '**Verifiability**: Document every step.'
+  - '[workflow-standard.md](file:///.agent/rules/workflow-standard.md)'
+  agents:
+  - project-operations-specialist
+  - workflow-quality-specialist
+  goal: Set up the API Gateway and establish distributed tracing, logging, and metrics.
+  name: Gateway & Observability
+  skills:
+  - cicd-pipeline
+  - logging-and-monitoring
+  tools:
+  - yarp
+  - opentelemetry
+tags: []
+type: sequential
 version: 1.0.0
-tags:
-- dotnet
-- microservices
-- setup
-- standardized
 ---
-
 
 # Dotnet Microservices Setup
 
-Comprehensive workflow for designing and implementing microservices architectures with .NET. This workflow covers service decomposition, service creation, communication layer setup, API Gateway configuration, and observability implementation.
-
 **Version:** 1.0.0
-**Created:** 2026-02-09
-**Agent:** system-architecture-specialist
 
-> **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.
+## Overview
+Antigravity workflow for dotnet-microservices-setup. Standardized for IDX Visual Editor.
 
 ## Trigger Conditions
-
-This workflow is activated when:
-
-- User requests "microservices architecture", "service decomposition"
-- User mentions "API Gateway", "YARP", "service communication"
-- User requests "distributed system", "service mesh"
-- User asks to "break down monolith" or "create microservices"
+- New microservices architecture design or expansion.
+- Need to establish cross-service communication and observability.
+- User request: `/dotnet-microservices-setup`.
 
 **Trigger Examples:**
-- "Design a microservices architecture for e-commerce platform"
-- "Set up API Gateway with YARP for my services"
-- "Create microservices with gRPC communication"
-- "Implement service-to-service
+- "Set up a new microservices environment for the e-commerce platform."
+- "Configure the API Gateway and tracing for existing services."
 
 ## Phases
 
-### Phase 1: Design & Decomposition
+### 1. Design & Decomposition
 - **Goal**: Identify business capabilities and define microservice boundaries and data ownership.
 - **Agents**: `system-architecture-specialist`
 - **Skills**: designing-ai-systems, brainstorming-ideas
 - **Tools**: deepwiki
+- **Agents**: `system-architecture-specialist`
 - **Actions**:
-    - Identify business capabilities and define boundaries.
-    - Design data ownership and API contracts.
+- Identify business capabilities and define boundaries.
+- Design data ownership and API contracts.
 
-### Phase 2: Service & Communication Setup
+### 2. Service & Communication Setup
 - **Goal**: Initialize service projects and implement core logic and communication layers (gRPC, REST, Message Broker).
 - **Agents**: `python-ai-specialist`, `project-operations-specialist`
 - **Skills**: dotnet-microservices-setup, developing-ai-agents
 - **Tools**: dotnet-cli, write_to_file
+- **Agents**: `python-ai-specialist`, `project-operations-specialist`
 - **Actions**:
-    - Create projects and implement service logic.
-    - Configure databases and implement endpoints.
-    - Configure sync/async communication and resilience patterns.
+- Create projects and implement service logic.
+- Configure databases and implement endpoints.
+- Configure sync/async communication and resilience patterns.
 
-### Phase 3: Gateway & Observability
+### 3. Gateway & Observability
 - **Goal**: Set up the API Gateway and establish distributed tracing, logging, and metrics.
 - **Agents**: `project-operations-specialist`, `workflow-quality-specialist`
 - **Skills**: cicd-pipeline, logging-and-monitoring
 - **Tools**: yarp, opentelemetry
+- **Agents**: `project-operations-specialist`, `workflow-quality-specialist`
 - **Actions**:
-    - Create API Gateway and configure routing.
-    - Configure distributed tracing, logging, and metrics.
-    - Implement health checks.
-
-
-## Decision Points
-
+- Create API Gateway and configure routing.
+- Configure distributed tracing, logging, and metrics.
+- Implement health checks.
 - Is the requirement clear?
 - Are the tests passing?
-
-
-## Example Session
-
-User: Run the workflow
-Agent: Initiating workflow steps...
-
-
-## Trigger Examples
 - "Execute this workflow."
-
-
-## Best Practices
 - **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
 - **Memory First**: Check context before execution.
 - **Verifiability**: Document every step.
-
-
-## Related
 - [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

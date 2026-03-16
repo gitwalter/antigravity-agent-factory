@@ -11,7 +11,7 @@ import json
 import glob
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 
 
 # Root of the antigravity-agent-factory project
@@ -65,10 +65,24 @@ class Workflow(BaseModel):
     workflow_type: str = "antigravity"  # antigravity | langgraph | crewai
 
 
-def parse_workflow(filepath: Path) -> Workflow:
+def parse_workflow(filename: Union[str, Path]) -> Workflow:
     """Parse a workflow .md file into a Workflow object."""
+    filename_str = str(filename)
+
+    # Determine the directory relative to the current file
+    current_dir = Path(__file__).parent.parent.parent
+    workflows_path = current_dir / ".agent" / "workflows"
+
+    if os.path.isabs(filename_str):
+        filepath = Path(filename_str)
+    else:
+        filepath = workflows_path / filename_str
+
+    if not filepath.exists():
+        raise FileNotFoundError(f"Workflow file {filename} not found at {filepath}")
+
     content = filepath.read_text(encoding="utf-8")
-    filename = filepath.stem
+    # filename already provided as str
 
     # Split YAML frontmatter from body
     frontmatter = {}
@@ -85,105 +99,133 @@ def parse_workflow(filepath: Path) -> Workflow:
     title_match = re.search(r"^#\s+(.+)$", body, re.MULTILINE)
     title = title_match.group(1).strip() if title_match else filename
 
-    # Extract phases using a more robust block-splitting approach
+    # Identify phases
     phases = []
 
-    # Identify phase headers (## or ### followed by optional "Phase" or "Step" and a number)
-    # This split preserves the headers
-    header_pattern = re.compile(
-        r"(^#{2,3}\s+(?:Phase|Step)?\s*\d+[\.:]\s*.+)", re.MULTILINE | re.IGNORECASE
-    )
-    blocks = header_pattern.split(body)
+    # Strategy: Frontmatter-First
+    # If the frontmatter has a 'steps' array, it is the primary source of truth for the UI
+    fm_steps = frontmatter.get("steps", [])
+    if isinstance(fm_steps, list) and len(fm_steps) > 0:
+        for idx, step in enumerate(fm_steps):
+            if isinstance(step, dict):
+                phase_name = step.get("name", f"Step {idx+1}")
+                # Map schema-defined 'agents' (list) or 'agent' (string legacy)
+                agents = step.get("agents", [])
+                if not agents and "agent" in step:
+                    agents = [step["agent"]]
 
-    # The first element is content before any phase
-    # The rest are pairs of [Header, Content]
-    for i in range(1, len(blocks), 2):
-        header = blocks[i]
-        content_block = blocks[i + 1] if i + 1 < len(blocks) else ""
+                phases.append(
+                    WorkflowPhase(
+                        name=phase_name,
+                        goal=step.get("goal", step.get("description", "")),
+                        agents=agents,
+                        skills=step.get("skills", []),
+                        tools=step.get("tools", []),
+                        actions=step.get("actions", []),
+                    )
+                )
 
-        # Parse phase name from header
-        name_match = re.search(
-            r"#{2,3}\s+(?:Phase|Step)?\s*\d+[\.:]\s*(.+)", header, re.IGNORECASE
+    # If no phases from frontmatter, fall back to parsing the Markdown body (Legacy Support)
+    if not phases:
+        # Identify phase headers (## or ### followed by optional "Phase" or "Step" and a number)
+        # This split preserves the headers
+        header_pattern = re.compile(
+            r"(^#{2,3}\s+(?:Phase|Step)?\s*\d+[\.:]\s*.+)", re.MULTILINE | re.IGNORECASE
         )
-        phase_name = name_match.group(1).strip() if name_match else "Unnamed Phase"
+        blocks = header_pattern.split(body)
 
-        # Initialize phase fields
-        goal = ""
-        agents = []
-        skills = []
-        tools = []
-        actions = []
+        # The first element is content before any phase
+        # The rest are pairs of [Header, Content]
+        for i in range(1, len(blocks), 2):
+            header = blocks[i]
+            content_block = blocks[i + 1] if i + 1 < len(blocks) else ""
 
-        # Parse metadata lines (Goal, Agent, Skills, Tools)
-        # We look for "- **Field**: Value" or "**Field**: Value"
-        full_block = header + "\n" + content_block
-
-        goal_match = re.search(
-            r"^\s*[-*]?\s*\*\*Goal\*\*[:\s]+(.+)$",
-            full_block,
-            re.MULTILINE | re.IGNORECASE,
-        )
-        if goal_match:
-            goal = goal_match.group(1).strip()
-
-        agent_match = re.search(
-            r"^\s*[-*]?\s*\*\*Agents?\*\*[:\s]+(.+)$",
-            full_block,
-            re.MULTILINE | re.IGNORECASE,
-        )
-        if agent_match:
-            agents = [
-                a.strip().replace("`", "")
-                for a in agent_match.group(1).split(",")
-                if a.strip()
-            ]
-
-        skills_match = re.search(
-            r"^\s*[-*]?\s*\*\*Skills\*\*[:\s]+(.+)$",
-            full_block,
-            re.MULTILINE | re.IGNORECASE,
-        )
-        if skills_match:
-            skills = [s.strip() for s in skills_match.group(1).split(",") if s.strip()]
-
-        tools_match = re.search(
-            r"^\s*[-*]?\s*\*\*Tools\*\*[:\s]+(.+)$",
-            full_block,
-            re.MULTILINE | re.IGNORECASE,
-        )
-        if tools_match:
-            tools = [t.strip() for t in tools_match.group(1).split(",") if t.strip()]
-
-        # Parse actions (any bullet/numbered list items not identified as metadata)
-        # This is more inclusive: it looks for lines starting with - or 1.
-        action_lines = re.findall(
-            r"^\s*[-*]\s+(?!\*\*Goal\*\*|\*\*Agent\*\*|\*\*Skills\*\*|\*\*Tools\*\*|\*\*Action\*\*)(.+)$",
-            content_block,
-            re.MULTILINE | re.IGNORECASE,
-        )
-        actions.extend([a.strip() for a in action_lines if a.strip()])
-
-        # Also look for explicit **Action**: lines (legacy support)
-        legacy_actions = re.findall(
-            r"^\s*[-*]?\s*\*\*Action\*\*[:\s]+(.+)$",
-            full_block,
-            re.MULTILINE | re.IGNORECASE,
-        )
-        actions.extend([a.strip() for a in legacy_actions if a.strip()])
-
-        phases.append(
-            WorkflowPhase(
-                name=phase_name,
-                goal=goal,
-                agents=agents,
-                skills=skills,
-                tools=tools,
-                actions=actions,
+            # Parse phase name from header
+            name_match = re.search(
+                r"#{2,3}\s+(?:Phase|Step)?\s*\d+[\.:]\s*(.+)", header, re.IGNORECASE
             )
-        )
+            phase_name = name_match.group(1).strip() if name_match else "Unnamed Phase"
+
+            # Initialize phase fields
+            goal = ""
+            agents = []
+            skills = []
+            tools = []
+            actions = []
+
+            # Parse metadata lines (Goal, Agent, Skills, Tools)
+            # We look for "- **Field**: Value" or "**Field**: Value"
+            full_block = header + "\n" + content_block
+
+            goal_match = re.search(
+                r"^\s*[-*]?\s*\*\*Goal\*\*[:\s]+(.+)$",
+                full_block,
+                re.MULTILINE | re.IGNORECASE,
+            )
+            if goal_match:
+                goal = goal_match.group(1).strip()
+
+            agent_match = re.search(
+                r"^\s*[-*]?\s*\*\*Agents?\*\*[:\s]+(.+)$",
+                full_block,
+                re.MULTILINE | re.IGNORECASE,
+            )
+            if agent_match:
+                agents = [
+                    a.strip().replace("`", "")
+                    for a in agent_match.group(1).split(",")
+                    if a.strip()
+                ]
+
+            skills_match = re.search(
+                r"^\s*[-*]?\s*\*\*Skills\*\*[:\s]+(.+)$",
+                full_block,
+                re.MULTILINE | re.IGNORECASE,
+            )
+            if skills_match:
+                skills = [
+                    s.strip() for s in skills_match.group(1).split(",") if s.strip()
+                ]
+
+            tools_match = re.search(
+                r"^\s*[-*]?\s*\*\*Tools\*\*[:\s]+(.+)$",
+                full_block,
+                re.MULTILINE | re.IGNORECASE,
+            )
+            if tools_match:
+                tools = [
+                    t.strip() for t in tools_match.group(1).split(",") if t.strip()
+                ]
+
+            # Parse actions (any bullet/numbered list items not identified as metadata)
+            action_lines = re.findall(
+                r"^\s*[-*]\s+(?!\*\*Goal\*\*|\*\*Agent\*\*|\*\*Skills\*\*|\*\*Tools\*\*|\*\*Action\*\*)(.+)$",
+                content_block,
+                re.MULTILINE | re.IGNORECASE,
+            )
+            actions.extend([a.strip() for a in action_lines if a.strip()])
+
+            # Also look for explicit **Action**: lines (legacy support)
+            legacy_actions = re.findall(
+                r"^\s*[-*]?\s*\*\*Action\*\*[:\s]+(.+)$",
+                full_block,
+                re.MULTILINE | re.IGNORECASE,
+            )
+            actions.extend([a.strip() for a in legacy_actions if a.strip()])
+
+            phases.append(
+                WorkflowPhase(
+                    name=phase_name,
+                    goal=goal,
+                    agents=agents,
+                    skills=skills,
+                    tools=tools,
+                    actions=actions,
+                )
+            )
 
     return Workflow(
-        filename=filename,
+        filename=Path(filename_str).name,
         description=frontmatter.get("description", ""),
         tags=frontmatter.get("tags", []),
         version=str(frontmatter.get("version", "1.0.0")),
@@ -194,104 +236,177 @@ def parse_workflow(filepath: Path) -> Workflow:
 
 
 def list_workflows() -> list[dict]:
-    """List all workflows from both project and global directories."""
-    wf_map = {}
+    """List all workflows from the project directory."""
+    workflows = []
+    if not WORKFLOWS_DIR.exists():
+        return []
 
-    dirs = [("project", WORKFLOWS_DIR), ("global", GLOBAL_WORKFLOWS_DIR)]
-
-    for source, wf_dir in dirs:
-        if not wf_dir.exists():
-            continue
-        for md_file in wf_dir.glob("*.md"):
+    for md_file in WORKFLOWS_DIR.rglob("*.md"):
+        # Calculate filename relative to WORKFLOWS_DIR (e.g. "research.md" or "org/paths.md")
+        try:
+            rel_path = md_file.relative_to(WORKFLOWS_DIR)
+            filename = str(rel_path).replace("\\", "/")
             name = md_file.stem
-            try:
-                wf = parse_workflow(md_file)
-                entry = {
-                    **wf.model_dump(),
-                    "phase_count": len(wf.phases),
-                    "sources": [source],
-                }
-                if name in wf_map:
-                    wf_map[name]["sources"].append(source)
-                else:
-                    wf_map[name] = entry
-            except Exception as e:
-                entry = {
-                    "filename": name,
-                    "title": name,
-                    "description": f"Error parsing ({source}): {e}",
+
+            wf = parse_workflow(filename)
+            entry = {
+                **wf.model_dump(),
+                "phase_count": len(wf.phases),
+                "source": "project",
+            }
+            workflows.append(entry)
+        except Exception as e:
+            workflows.append(
+                {
+                    "filename": str(md_file.relative_to(WORKFLOWS_DIR)).replace(
+                        "\\", "/"
+                    ),
+                    "title": md_file.stem,
+                    "description": f"Error parsing: {e}",
                     "tags": [],
                     "version": "?",
                     "phase_count": 0,
                     "phases": [],
-                    "sources": [source],
+                    "source": "project",
                 }
-                if name in wf_map:
-                    wf_map[name]["sources"].append(source)
-                else:
-                    wf_map[name] = entry
+            )
 
-    return sorted(wf_map.values(), key=lambda x: x["filename"])
+    return sorted(workflows, key=lambda x: x["filename"])
 
 
 def get_workflow(filename: str) -> dict:
-    """Get a single workflow by filename. Checks project then global."""
-    filepath = WORKFLOWS_DIR / f"{filename}.md"
-    source = "project"
-    if not filepath.exists():
-        filepath = GLOBAL_WORKFLOWS_DIR / f"{filename}.md"
-        source = "global"
+    """Get a single workflow by filename. Only checks project directory."""
+    # Robustly handle extensions
+    clean_filename = filename
+    if clean_filename.lower().endswith(".md"):
+        clean_filename = clean_filename[:-3]
 
+    filepath = WORKFLOWS_DIR / f"{clean_filename}.md"
     if not filepath.exists():
         return {"error": f"Workflow {filename} not found"}
 
-    wf = parse_workflow(filepath)
+    wf = parse_workflow(str(filepath))
     res = wf.model_dump()
-    res["source"] = source
+    res["source"] = "project"
     return res
 
 
-def save_workflow(filename: str, data: dict) -> dict:
-    """Save a workflow with symmetric sync to both project and global dirs."""
-    prj_path = WORKFLOWS_DIR / f"{filename}.md"
-    glb_path = GLOBAL_WORKFLOWS_DIR / f"{filename}.md"
+def save_workflow(
+    filename: str, data: Union[dict, Workflow], raw_body: str = None
+) -> dict:
+    """Save a workflow to the project workflows directory."""
+    # Robustly handle extensions
+    clean_filename = filename
+    if clean_filename.lower().endswith(".md"):
+        clean_filename = clean_filename[:-3]
+
+    prj_path = WORKFLOWS_DIR / f"{clean_filename}.md"
+
+    if isinstance(data, Workflow):
+        data = data.model_dump()
 
     # Check where it exists to decide on sync
     exists_prj = prj_path.exists()
-    exists_glb = glb_path.exists()
 
-    raw_body = data.get("raw_body")
     content = ""
 
     if raw_body:
         content = raw_body
     else:
-        # Build YAML frontmatter from phases/metadata if no raw_body
+        # Build Markdown and Sync Frontmatter
+        phases_data = data.get("phases", [])
+
+        # Convert Pydantic models to dicts if necessary
+        clean_phases = []
+        for p in phases_data:
+            if hasattr(p, "model_dump"):
+                clean_phases.append(p.model_dump())
+            elif isinstance(p, dict):
+                clean_phases.append(p)
+
+        # Build frontmatter steps array for schema compliance
+        fm_steps = []
+        for idx, p in enumerate(clean_phases):
+            step_agents = p.get("agents", [])
+            if not step_agents and p.get("agent"):
+                step_agents = [p["agent"]]
+            if not step_agents:
+                step_agents = ["@Architect"]
+
+            fm_steps.append(
+                {
+                    "name": p.get("name", f"Step {idx+1}"),
+                    "goal": p.get(
+                        "goal", p.get("description", "Execute step actions.")
+                    ),
+                    "agents": step_agents,
+                    "skills": p.get("skills", []),
+                    "tools": p.get("tools", []),
+                    "actions": p.get("actions", []),
+                }
+            )
+
+        # Ensure schema compliance for mandatory fields
+        wf_name = filename
+        wf_desc = data.get("description", "")
+        if len(wf_desc) < 20:
+            wf_desc = f"Antigravity workflow for {filename}. Standardized for IDX Visual Editor."
+
+        wf_agents = data.get("agents", [])
+        if not wf_agents:
+            # Aggregate agents from phases
+            wf_agents = list(
+                set([a for p in clean_phases for a in p.get("agents", [])])
+            )
+        if not wf_agents:
+            wf_agents = ["@Architect"]
+
+        # Ensure min 2 steps for schema compliance
+        if len(fm_steps) == 0:
+            fm_steps = [
+                {
+                    "name": "Initialization",
+                    "goal": "Initialize the workflow context.",
+                    "agents": ["@Architect"],
+                },
+                {
+                    "name": "Verification",
+                    "goal": "Verify the results of the workflow.",
+                    "agents": ["@Architect"],
+                },
+            ]
+        elif len(fm_steps) == 1:
+            fm_steps.append(
+                {
+                    "name": "Verification",
+                    "goal": "Verify the results of the workflow.",
+                    "agents": ["@Architect"],
+                }
+            )
+
         frontmatter = {
-            "description": data.get("description", ""),
-            "tags": data.get("tags", []),
+            "name": wf_name,
+            "description": wf_desc,
             "version": data.get("version", "1.0.0"),
+            "type": data.get("type", "sequential"),
+            "domain": data.get("domain", "universal"),
+            "agents": wf_agents,
+            "blueprints": data.get("blueprints", ["universal"]),
+            "tags": data.get("tags", []),
+            "steps": fm_steps,
         }
 
         # Build markdown body
         title = data.get("title", filename)
         body_lines = [f"# {title}\n"]
 
-        phases = data.get("phases", [])
-        for i, phase in enumerate(phases):
+        for i, phase in enumerate(clean_phases):
             # We'll use level 3 (###) for saving to maintain standard
             body_lines.append(f"### {i+1}. {phase.get('name', 'Unnamed')}")
             if phase.get("goal"):
                 body_lines.append(f"- **Goal**: {phase['goal']}")
 
-            # Support both 'agents' (list) and 'agent' (string/list fallback)
-            # Use phase.get("agents") if it exists, otherwise try phase.get("agent")
-            # If it's a Pydantic model (which it should be), we use attribute access or dict
-            p_agents = getattr(phase, "agents", phase.get("agents", []))
-            p_agent = getattr(phase, "agent", phase.get("agent", ""))
-
-            agents = p_agents or ([p_agent] if p_agent else [])
-
+            agents = phase.get("agents", [])
             if agents:
                 formatted_agents = [
                     f"`{a}`" if not a.startswith("`") else a for a in agents if a
@@ -299,14 +414,10 @@ def save_workflow(filename: str, data: dict) -> dict:
                 if formatted_agents:
                     body_lines.append(f"- **Agents**: {', '.join(formatted_agents)}")
 
-            if phase.get("skills") if isinstance(phase, dict) else phase.skills:
-                p_skills = (
-                    phase.get("skills") if isinstance(phase, dict) else phase.skills
-                )
-                body_lines.append(f"- **Skills**: {', '.join(p_skills)}")
-            if phase.get("tools") if isinstance(phase, dict) else phase.tools:
-                p_tools = phase.get("tools") if isinstance(phase, dict) else phase.tools
-                body_lines.append(f"- **Tools**: {', '.join(p_tools)}")
+            if phase.get("skills"):
+                body_lines.append(f"- **Skills**: {', '.join(phase['skills'])}")
+            if phase.get("tools"):
+                body_lines.append(f"- **Tools**: {', '.join(phase['tools'])}")
 
             # Simplified actions (cleaner list)
             for action in phase.get("actions", []):
@@ -316,18 +427,11 @@ def save_workflow(filename: str, data: dict) -> dict:
         content = f"---\n{yaml.dump(frontmatter, default_flow_style=False)}---\n\n"
         content += "\n".join(body_lines)
 
-    # Symmetry Sync: Write to both if they exist or if requested to sync
-    write_paths = []
-    if WORKFLOWS_DIR.exists():
-        write_paths.append(prj_path)
-    if GLOBAL_WORKFLOWS_DIR.exists():
-        write_paths.append(glb_path)
+    # Write to project workflows directory
+    prj_path.parent.mkdir(parents=True, exist_ok=True)
+    prj_path.write_text(content, encoding="utf-8")
 
-    for p in write_paths:
-        p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(content, encoding="utf-8")
-
-    return {"status": "saved", "filename": filename, "synced": len(write_paths) > 1}
+    return {"status": "saved", "filename": filename, "synced": False}
 
 
 def list_agents() -> list[dict]:

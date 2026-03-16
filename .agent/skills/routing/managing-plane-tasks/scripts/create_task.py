@@ -71,6 +71,34 @@ def get_label_map(headers: dict) -> dict:
         return {}
 
 
+def create_or_get_module(name: str, headers: dict) -> str:
+    """Create a module (Epic) in Plane if it doesn't already exist."""
+    url = f"{API_BASE}/modules/"
+    print(f"Checking for module: {name}")
+    resp = requests.get(url, headers=headers)
+    if resp.status_code == 200:
+        modules = resp.json().get("results", [])
+        for m in modules:
+            if m["name"].lower() == name.lower():
+                return m["id"]
+
+    # Create new module
+    print(f"Creating new module (Epic): {name}")
+    payload = {
+        "name": name,
+        "description": f"Automatically created epic for {name}",
+        "status": "backlog",
+    }
+    resp = requests.post(url, headers=headers, json=payload)
+    if resp.status_code in (200, 201):
+        uid = resp.json().get("id")
+        print(f"Successfully created module '{name}' (UUID: {uid})")
+        return uid
+    else:
+        print(f"Warning: Failed to create module '{name}' ({resp.status_code})")
+        return None
+
+
 def load_input(path: str) -> dict:
     """Load and validate the JSON input file."""
     with open(path, "r", encoding="utf-8") as f:
@@ -85,6 +113,12 @@ def load_input(path: str) -> dict:
         "agents",
         "skills",
         "tests",
+        "module",
+        "cycle",
+        "priority",
+        "estimate_point",
+        "start_date",
+        "target_date",
     ]
     missing = [k for k in required if k not in data]
     if missing:
@@ -136,28 +170,48 @@ def create_work_item(data: dict, description_html: str, update_id: str = None) -
         print("Context labels missing, fetching from API...")
         label_map = get_label_map(headers)
 
-    label_ids = []
-    for label_name in data.get("labels", []):
-        uid = label_map.get(label_name.upper())
-        if uid:
-            label_ids.append(uid)
+    # Resolve Cycle and Module UUIDs from Context
+    cycle_id = None
+    cycle_name_or_id = data.get("cycle")
+    if cycle_name_or_id:
+        active_cycle = context.get("ACTIVE_CYCLE", {})
+        if (
+            active_cycle.get("name") == cycle_name_or_id
+            or active_cycle.get("id") == cycle_name_or_id
+        ):
+            cycle_id = active_cycle.get("id")
         else:
-            # Last ditch attempt: re-sync if a specific label is missing?
-            # For performance, we just warn for now.
-            print(
-                f"Warning: Label '{label_name}' not found in context or project, skipping."
-            )
+            cycle_id = cycle_name_or_id
+
+    module_id = None
+    module_name_or_id = data.get("module")
+    if module_name_or_id:
+        active_modules = context.get("ACTIVE_MODULES", {})
+        for name, uid in active_modules.items():
+            if name.lower() == module_name_or_id.lower():
+                module_id = uid
+                break
+        if not module_id:
+            if len(module_name_or_id) < 30:  # Name
+                module_id = create_or_get_module(module_name_or_id, headers)
+            else:  # UUID
+                module_id = module_name_or_id
 
     payload = {
         "name": data["name"],
         "description_html": description_html,
         "priority": data.get("priority", "medium"),
+        "state": context.get("STATES", {}).get(data.get("state", "TODO").upper()),
+        "start_date": data.get("start_date"),
+        "target_date": data.get("target_date"),
+        "estimate_point": data.get("estimate_point"),
     }
 
-    # Add advanced Plane core field mappings
-    for field in ["start_date", "target_date", "estimate_point", "parent"]:
-        if data.get(field):
-            payload[field] = data[field]
+    # Associate with Cycle/Module
+    if cycle_id:
+        payload["cycle"] = cycle_id
+    if module_id:
+        payload["module"] = module_id
 
     if label_ids:
         payload["labels"] = label_ids

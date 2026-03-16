@@ -1,61 +1,73 @@
 ---
-description: Multi-source researching-first workflow using RAG, web search, docs, and GitHub
+agents:
+- '@Architect'
+blueprints:
+- universal
+description: Antigravity workflow for research. Standardized for IDX Visual Editor.
+domain: universal
+name: research
+steps:
+- actions: []
+  agents:
+  - '@Architect'
+  goal: ''
+  name: Context Engineering (Memory-First)
+  skills: []
+  tools: []
+- actions:
+  - "**Structural/Context query** (\"what is X?\", \"how does X relate to Y?\") \u2192\
+    \ **Always Phase 0 first**"
+  - "**Catalog query** (\"what do we have?\", \"list sources\") \u2192 Step 2a"
+  - "**Ingested content query** (topics matching RAG library) \u2192 Step 2b"
+  - "**Web/current topic** (news, trends, general knowledge) \u2192 Step 2c"
+  - "**Library/framework docs** (\"how does X work in LangChain?\") \u2192 Step 2d"
+  - "**Code/repo** (\"what's in repo X?\") \u2192 Step 2e"
+  - "**Complex/multi-source** (needs researching-first methodology) \u2192 Step 2f"
+  - Always try **local RAG first** for domain topics before escalating to web.
+  - '`docs-langchain` and `deepwiki` are currently disabled in MCP config. Enable
+    them in `mcp_config.json` when needed.'
+  - For the full researching-first pipeline, time-box to avoid analysis paralysis.
+  - Is the requirement clear?
+  - Are the tests passing?
+  - '"Execute this workflow."'
+  - '**Axiomatic Alignment**: Ensure Truth, Beauty, and Love.'
+  - '**Memory First**: Check context before execution.'
+  - '**Verifiability**: Document every step.'
+  - '[workflow-standard.md](file:///.agent/rules/workflow-standard.md)'
+  agents:
+  - '@Architect'
+  goal: ''
+  name: Classify the Query
+  skills: []
+  tools: []
+tags: []
+type: sequential
 version: 1.0.0
-tags:
-- researching-first
-- standardized
 ---
 
-
-# /researching-first — Multi-Source Research Workflow
-
-Route knowledge questions to the right MCP tool and skill based on the type of query.
+# Multi-Source Research Workflow
 
 **Version:** 1.0.0
 
-## Trigger Conditions
+## Overview
+Antigravity workflow for deep research across multiple local and external sources. Standardized for IDX Visual Editor.
 
-This workflow is activated when:
-- A researching-first or knowledge question is asked.
-- The user needs to find information from RAG, web, docs, or code repos.
-- User requests "researching-first", "look up", "find out", or "what do we know about".
+## Trigger Conditions
+- Complex user query requiring extensive research or fact-finding.
+- Need to synthesize information from various sources (documentation, code, web).
+- User request: `/research`.
 
 **Trigger Examples:**
-- "What's in our RAG library?"
-- "Research best practices for prompt engineering"
-- "Look up the LangChain docs for retrieval chains"
-- "What do we know about multi-agent orchestration?"
+- "Research the best practices for implementing multi-agent debate protocols."
+- "Conduct a deep dive into the 'LangGraph' documentation for POC orchestration."
 
-## Decision Matrix (Autonomous Routing)
+## Phases
 
-| Question Type | Strategy | Agent | Primary Tool | Rule Governance |
-|---|---|---|---|---|
-| Structural/Relationship | Graph-First | KNOPS | `memory_read_graph` | `knowledge-management.md` |
-| Domain/History | RAG-First | KNOPS | `search_library` | `knowledge-management.md` |
-| Technical/Code | Cascadic | PAIS | `search_code` | `technical-standards.md` |
-| Real-time/Web | Web-First | KNOPS | `tavily-search` | `knowledge-management.md` |
-| Complex Multi-source | Orchestrated | SYARCH | cascades | cascading rules |
+### 1. Context Engineering (Memory-First)
+- **Agents**: `@Architect`
 
-> **Note:** Routing is managed by `orchestration-engine.json`. Lead agents must verify MCP authorization before execution.
-
-## Phase 0: Context Engineering (Memory-First)
-
-**MANDATORY**: Before initiating any researching-first, query the Memory MCP knowledge graph. This builds situational awareness and ensures your researching-first is grounded in the factory's existing structural relationships.
-
-```json
-// Tool: mcp_memory_open_nodes — Build situational awareness
-{ "names": ["System_Consciousness"] }
-
-// Tool: mcp_memory_search_nodes — Explore related concepts
-{ "query": "<search entity/capability>" }
-```
-
-**Zero-Context Fallback**: If the Memory Graph lacks foundational entities regarding the capability you are researching-firsting—or if the graph links to deprecated standards—you MUST actively build the memory before proceeding to Phase 1. Ask the human operator for the structural truth, verify compliance, delete outdated nodes, and establish the Tier 4 Proposal. Never hallucinate baseline architecture.
-
-## Steps
-
-### 1. Classify the Query
-Determine which source is most appropriate:
+### 2. Classify the Query
+- **Agents**: `@Architect`
 - **Structural/Context query** ("what is X?", "how does X relate to Y?") → **Always Phase 0 first**
 - **Catalog query** ("what do we have?", "list sources") → Step 2a
 - **Ingested content query** (topics matching RAG library) → Step 2b
@@ -63,89 +75,13 @@ Determine which source is most appropriate:
 - **Library/framework docs** ("how does X work in LangChain?") → Step 2d
 - **Code/repo** ("what's in repo X?") → Step 2e
 - **Complex/multi-source** (needs researching-first methodology) → Step 2f
-
-### 2a. Inspect RAG Catalog
-// turbo
-Use the `inspecting-rag-catalog` skill:
-```
-@tool mcp_antigravity-rag_list_library_sources
-```
-
-### 2b. Query RAG Library
-Use the `retrieving-rag-context` skill:
-```
-@tool mcp_antigravity-rag_search_library query="<semantic query>"
-```
-The Agentic RAG system will grade relevance and fallback to web search if needed.
-
-### 2c. Web Research
-Use Tavily MCP for web search:
-```
-@tool mcp_tavily_tavily-search query="<search query>"
-```
-Optionally extract full content from results:
-```
-@tool mcp_tavily_tavily-extract urls=["<url>"]
-```
-
-### 2d. Documentation Lookup
-For framework/library docs, try in order:
-1. **LangChain docs** (if LangChain-related):
-   ```
-   @tool mcp_docs-langchain (if enabled)
-   ```
-2. **DeepWiki** (for any open-source library):
-   ```
-   @tool mcp_deepwiki_read_wiki_contents (if enabled)
-   ```
-3. **Fetch** (fallback — read any URL directly):
-   ```
-   @tool mcp_fetch_fetch url="<docs-url>"
-   ```
-
-### 2e. GitHub / Code Research
-Use the `operating-github` skill for repository exploration and code search.
-
-### 2f. Full Research Pipeline
-Invoke the `researching-first` skill for complex topics requiring multiple sources:
-1. **Local first**: Search RAG via `search_library`
-2. **Grade relevance**: If insufficient, expand to web
-3. **Web search**: Tavily for current information
-4. **Docs**: DeepWiki/LangChain docs for technical depth
-5. **Document findings**: Create knowledge file
-6. **Synthesize**: Combine all sources with citations
-
-## Phase Final: Memory Induction & Proposal
-If the researching-first uncovered a new foundational pattern, standard, or architectural rule that the factory should adopt (Layer 3 or 4 modifications), it MUST be proposed for permanent retention.
-Generate a Memory Proposal detailing the discovery. If resolving a task, embed this insight into the `architectural_decisions` array of the Plane solution.
-
-## Notes
 - Always try **local RAG first** for domain topics before escalating to web.
 - `docs-langchain` and `deepwiki` are currently disabled in MCP config. Enable them in `mcp_config.json` when needed.
 - For the full researching-first pipeline, time-box to avoid analysis paralysis.
-
-
-## Decision Points
-
 - Is the requirement clear?
 - Are the tests passing?
-
-
-## Example Session
-
-User: Run the workflow
-Agent: Initiating workflow steps...
-
-
-## Trigger Examples
 - "Execute this workflow."
-
-
-## Best Practices
 - **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
 - **Memory First**: Check context before execution.
 - **Verifiability**: Document every step.
-
-
-## Related
 - [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

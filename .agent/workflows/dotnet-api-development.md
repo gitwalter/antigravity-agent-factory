@@ -1,109 +1,170 @@
 ---
-description: Comprehensive workflow for developing production-ready ASP.NET Core APIs
-  with Entity Framework Core, authentication, ...
+agents:
+- workflow-quality-specialist
+- project-operations-specialist
+- python-ai-specialist
+blueprints:
+- universal
+description: Antigravity workflow for dotnet-api-development. Standardized for IDX
+  Visual Editor.
+domain: universal
+name: dotnet-api-development
+steps:
+- actions:
+  - '**Agents**: `project-operations-specialist`, `python-ai-specialist`'
+  - '**Actions**:'
+  - Create project structure and install dependencies.
+  - Define entities and configure DbContext.
+  - Create initial migration.
+  agents:
+  - project-operations-specialist
+  - python-ai-specialist
+  goal: Set up the .NET solution and define the Entity Framework Core model.
+  name: Initialization & Data Modeling
+  skills:
+  - developing-ai-agents
+  tools:
+  - dotnet-cli
+- actions:
+  - '**Agents**: `python-ai-specialist`'
+  - '**Actions**:'
+  - Implement Repository pattern and services.
+  - Create DTOs and API endpoints.
+  agents:
+  - python-ai-specialist
+  goal: Implement business logic, repository pattern, and API controllers/minimal
+    APIs.
+  name: Service Layer & Endpoints
+  skills:
+  - developing-ai-agents
+  - designing-apis
+  tools:
+  - write_to_file
+- actions:
+  - '**Agents**: `workflow-quality-specialist`'
+  - '**Actions**:'
+  - Add validation and configure authentication/authorization.
+  - Add security headers.
+  agents:
+  - workflow-quality-specialist
+  goal: Implement robust authentication, authorization, and input validation.
+  name: Security & Validation
+  skills:
+  - securing-ai-systems
+  tools:
+  - replace_file_content
+- actions:
+  - '**Agents**: `workflow-quality-specialist`, `project-operations-specialist`'
+  - '**Actions**:'
+  - Write unit and integration tests.
+  - Configure Swagger/OpenAPI and add health checks.
+  agents:
+  - workflow-quality-specialist
+  - project-operations-specialist
+  goal: Verify API behavior and generate Swagger documentation.
+  name: Testing & Documentation
+  skills:
+  - verifying-artifact-structures
+  - generating-documentation
+  tools:
+  - dotnet-test
+  - swagger
+- actions:
+  - '**Agents**: `project-operations-specialist`'
+  - '**Actions**:'
+  - Prepare for deployment.
+  - Is the requirement clear?
+  - Are the tests passing?
+  - '"Execute this workflow."'
+  - '**Axiomatic Alignment**: Ensure Truth, Beauty, and Love.'
+  - '**Memory First**: Check context before execution.'
+  - '**Verifiability**: Document every step.'
+  - '[workflow-standard.md](file:///.agent/rules/workflow-standard.md)'
+  agents:
+  - project-operations-specialist
+  goal: Prepare the .NET application for production rollout.
+  name: Deployment Preparation
+  skills:
+  - azure-deployment
+  - committing-releases
+  tools:
+  - safe_release.py
+tags: []
+type: sequential
 version: 1.0.0
-tags:
-- dotnet
-- api
-- development
-- standardized
 ---
-
 
 # Dotnet Api Development
 
-Comprehensive workflow for developing production-ready ASP.NET Core APIs with Entity Framework Core, authentication, and best practices. This workflow guides through project setup, data layer implementation, API endpoints, security, and deployment.
-
 **Version:** 1.0.0
-**Created:** 2026-02-09
-**Agent:** template-creator
 
-> **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.
+## Overview
+Antigravity workflow for dotnet-api-development. Standardized for IDX Visual Editor.
 
 ## Trigger Conditions
-
-This workflow is activated when:
-
-- User requests "create ASP.NET Core API", "build REST API", "create .NET API"
-- User mentions "Entity Framework", "EF Core", "database access"
-- User requests "Minimal API" or "Controller-based API"
-- User asks to "create API endpoints" or "build web service"
+- Requirement for a new .NET Core API or expansion of an existing one.
+- Need for data modeling and service layer implementation in C#.
+- User request: `/dotnet-api-development`.
 
 **Trigger Examples:**
-- "Create an ASP.NET Core API for product management"
-- "Build a REST API with Entity Framework Core"
-- "Create Minimal API endpoints for user management"
-- "Set up a .NET API with a
+- "Develop an API for user profile management."
+- "Implement a new service layer for the booking system."
 
 ## Phases
 
-### Phase 1: Initialization & Data Modeling
+### 1. Initialization & Data Modeling
 - **Goal**: Set up the .NET solution and define the Entity Framework Core model.
 - **Agents**: `project-operations-specialist`, `python-ai-specialist`
 - **Skills**: developing-ai-agents
 - **Tools**: dotnet-cli
+- **Agents**: `project-operations-specialist`, `python-ai-specialist`
 - **Actions**:
-    - Create project structure and install dependencies.
-    - Define entities and configure DbContext.
-    - Create initial migration.
+- Create project structure and install dependencies.
+- Define entities and configure DbContext.
+- Create initial migration.
 
-### Phase 2: Service Layer & Endpoints
+### 2. Service Layer & Endpoints
 - **Goal**: Implement business logic, repository pattern, and API controllers/minimal APIs.
 - **Agents**: `python-ai-specialist`
 - **Skills**: developing-ai-agents, designing-apis
 - **Tools**: write_to_file
+- **Agents**: `python-ai-specialist`
 - **Actions**:
-    - Implement Repository pattern and services.
-    - Create DTOs and API endpoints.
+- Implement Repository pattern and services.
+- Create DTOs and API endpoints.
 
-### Phase 3: Security & Validation
+### 3. Security & Validation
 - **Goal**: Implement robust authentication, authorization, and input validation.
 - **Agents**: `workflow-quality-specialist`
 - **Skills**: securing-ai-systems
 - **Tools**: replace_file_content
+- **Agents**: `workflow-quality-specialist`
 - **Actions**:
-    - Add validation and configure authentication/authorization.
-    - Add security headers.
+- Add validation and configure authentication/authorization.
+- Add security headers.
 
-### Phase 4: Testing & Documentation
+### 4. Testing & Documentation
 - **Goal**: Verify API behavior and generate Swagger documentation.
 - **Agents**: `workflow-quality-specialist`, `project-operations-specialist`
 - **Skills**: verifying-artifact-structures, generating-documentation
 - **Tools**: dotnet-test, swagger
+- **Agents**: `workflow-quality-specialist`, `project-operations-specialist`
 - **Actions**:
-    - Write unit and integration tests.
-    - Configure Swagger/OpenAPI and add health checks.
+- Write unit and integration tests.
+- Configure Swagger/OpenAPI and add health checks.
 
-### Phase 5: Deployment Preparation
+### 5. Deployment Preparation
 - **Goal**: Prepare the .NET application for production rollout.
 - **Agents**: `project-operations-specialist`
 - **Skills**: azure-deployment, committing-releases
 - **Tools**: safe_release.py
+- **Agents**: `project-operations-specialist`
 - **Actions**:
-    - Prepare for deployment.
-
-
-## Decision Points
-
+- Prepare for deployment.
 - Is the requirement clear?
 - Are the tests passing?
-
-
-## Example Session
-
-User: Run the workflow
-Agent: Initiating workflow steps...
-
-
-## Trigger Examples
 - "Execute this workflow."
-
-
-## Best Practices
 - **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
 - **Memory First**: Check context before execution.
 - **Verifiability**: Document every step.
-
-
-## Related
 - [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

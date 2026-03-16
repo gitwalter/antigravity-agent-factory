@@ -1,85 +1,113 @@
 ---
-description: Process Optimization & Industrial Engineering Workflow
-dashboard: true
+agents:
+- '@Architect'
+blueprints:
+- universal
+description: Antigravity workflow for warehouse-analyst. Standardized for IDX Visual
+  Editor.
+domain: universal
+name: warehouse-analyst
+steps:
+- actions:
+  - '**Bin Flow**: Generate the **Bin Density Heatmap**.'
+  - '**Congestion Check**: Identify "High-Traffic" aisles where multiple picks/stows
+    occur simultaneously.'
+  - '**Constraint**: If Density > 85%, stowing UPH usually drops due to lack of space.'
+  agents:
+  - '@Architect'
+  goal: ''
+  name: Density Analysis
+  skills: []
+  tools: []
+- actions:
+  - Run **Correlation Analysis** between `Shelf_Level` (A, B, C, D) and `Stow_UPH`.
+  - '**Insight**: Typically, levels C/D (ground/eye level) are 30% faster than A/E.'
+  - '**Optimization**: Reserve "Fast-Moving SKUs" for level B/C/D.'
+  agents:
+  - '@Architect'
+  goal: ''
+  name: Height vs. Speed Correlation
+  skills: []
+  tools: []
+- actions:
+  - Use the **Regression Analysis** tool to forecast next-week volume based on historical
+    ASN trends.
+  - Suggest labor headcount adjustments to the Ops Manager based on predicted cube-out
+    volume.
+  agents:
+  - '@Architect'
+  goal: ''
+  name: Predictive Labor Modeling
+  skills: []
+  tools: []
+- actions:
+  - Verify **ICA (Inventory Count Accuracy)** via cycle count logs vs. system state.
+  - Target zero variance for high-value SKUs.
+  - User request
+  - Manual activation
+  - Is the requirement clear?
+  - Are the tests passing?
+  - '"Execute this workflow."'
+  - '**Axiomatic Alignment**: Ensure Truth, Beauty, and Love.'
+  - '**Memory First**: Check context before execution.'
+  - '**Verifiability**: Document every step.'
+  - '[workflow-standard.md](file:///.agent/rules/workflow-standard.md)'
+  agents:
+  - '@Architect'
+  goal: ''
+  name: Inventory Accuracy
+  skills: []
+  tools: []
+tags: []
+type: sequential
 version: 1.0.0
-tags:
-- warehouse
-- analyst
-- standardized
 ---
-
 
 # Industrial Analyst Optimization Guide
 
-Deep-dive analytical routine for improving building-level performance.
-
 **Version:** 1.0.0
-**Owner:** OperationalAnalyst
-**Skill Set:** `industrial-analysis`, `optimization`
+
+## Overview
+Antigravity workflow for warehouse data analysis, labor modeling, and operational optimization. Standardized for IDX Visual Editor.
 
 ## Trigger Conditions
-
-This workflow is activated when:
-- Fulfillment density exceeds 85%.
-- Throughput bottlenecks are identified at the station level.
+- Periodic review of warehouse density and operational efficiency (UPH).
+- Need to forecast labor requirements based on historical volume trends.
+- User request: `/warehouse-analyst`.
 
 **Trigger Examples:**
-- "Conduct a density analysis for the main fulfillment hall."
-- "Optimize SKU placement based on pick speed correlation."
+- "Perform a density analysis for the 'Zone A' warehouse area."
+- "Execute the analyst guide to forecast labor headcount for the upcoming peak season."
 
-## 1. Density Analysis
+## Phases
+
+### 1. Density Analysis
+- **Agents**: `@Architect`
 - **Bin Flow**: Generate the **Bin Density Heatmap**.
 - **Congestion Check**: Identify "High-Traffic" aisles where multiple picks/stows occur simultaneously.
 - **Constraint**: If Density > 85%, stowing UPH usually drops due to lack of space.
 
-## 2. Height vs. Speed Correlation
+### 2. Height vs. Speed Correlation
+- **Agents**: `@Architect`
 - Run **Correlation Analysis** between `Shelf_Level` (A, B, C, D) and `Stow_UPH`.
 - **Insight**: Typically, levels C/D (ground/eye level) are 30% faster than A/E.
 - **Optimization**: Reserve "Fast-Moving SKUs" for level B/C/D.
 
-## 3. Predictive Labor Modeling
+### 3. Predictive Labor Modeling
+- **Agents**: `@Architect`
 - Use the **Regression Analysis** tool to forecast next-week volume based on historical ASN trends.
 - Suggest labor headcount adjustments to the Ops Manager based on predicted cube-out volume.
 
-## 4. Inventory Accuracy
+### 4. Inventory Accuracy
+- **Agents**: `@Architect`
 - Verify **ICA (Inventory Count Accuracy)** via cycle count logs vs. system state.
 - Target zero variance for high-value SKUs.
-
-
-## Trigger Conditions
-
 - User request
 - Manual activation
-
-
-## Phases
-
-1. Initial Analysis
-2. Implementation
-3. Verification
-
-
-## Decision Points
-
 - Is the requirement clear?
 - Are the tests passing?
-
-
-## Example Session
-
-User: Run the workflow
-Agent: Initiating workflow steps...
-
-
-## Trigger Examples
 - "Execute this workflow."
-
-
-## Best Practices
 - **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
 - **Memory First**: Check context before execution.
 - **Verifiability**: Document every step.
-
-
-## Related
 - [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

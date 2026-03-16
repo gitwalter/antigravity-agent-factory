@@ -1,83 +1,109 @@
 ---
-description: Shift Management & SLA Compliance Workflow
-dashboard: true
+agents:
+- '@Architect'
+blueprints:
+- universal
+description: Antigravity workflow for warehouse-manager. Standardized for IDX Visual
+  Editor.
+domain: universal
+name: warehouse-manager
+steps:
+- actions:
+  - '**Volume Review**: Check the **Expected ASN** vs. actual dock arrival.'
+  - '**Labor Assignment**: Audit the "Labor Health" metric. Re-assign stowers to picking
+    if the **Late Shipment Rate (LSR)** trend exceeds 3.5%.'
+  agents:
+  - '@Architect'
+  goal: ''
+  name: Shift Initialization
+  skills: []
+  tools: []
+- actions:
+  - '**Bottleneck Detection**: If D2S > 2 hours, identify if the delay is at **Unloading**
+    or **Putaway**.'
+  - Increase dock-door frequency or assign more associates to stowing.
+  agents:
+  - '@Architect'
+  goal: ''
+  name: Inbound Performance (Dock-to-Stock)
+  skills: []
+  tools: []
+- actions:
+  - '**LSR Monitoring**: Prioritize "Hot Picks" if carrier pickup is within 30 minutes.'
+  - '**Click-to-Ship**: Monitor the gap between Order Placement and Pack-out.'
+  agents:
+  - '@Architect'
+  goal: ''
+  name: Outbound Urgency
+  skills: []
+  tools: []
+- actions:
+  - Use the **Warehousing Intel** dashboard to detect "Hidden Inventory" (items received
+    but not stowed).
+  - Resolve associate station blocks in real-time.
+  - User request
+  - Manual activation
+  - Is the requirement clear?
+  - Are the tests passing?
+  - '"Execute this workflow."'
+  - '**Axiomatic Alignment**: Ensure Truth, Beauty, and Love.'
+  - '**Memory First**: Check context before execution.'
+  - '**Verifiability**: Document every step.'
+  - '[workflow-standard.md](file:///.agent/rules/workflow-standard.md)'
+  agents:
+  - '@Architect'
+  goal: ''
+  name: Resolution
+  skills: []
+  tools: []
+tags: []
+type: sequential
 version: 1.0.0
-tags:
-- warehouse
-- manager
-- standardized
 ---
-
 
 # Operations Manager Strategic Guide
 
-"Mission Control" perspective for managing shift-level fulfillment health.
-
 **Version:** 1.0.0
-**Owner:** OperationsManager
-**Skill Set:** `strategic-management`, `labor-optimization`
+
+## Overview
+Antigravity workflow for warehouse managers to oversee shift initializing, inbound/outbound performance, and issue resolution. Standardized for IDX Visual Editor.
 
 ## Trigger Conditions
-
-This workflow is activated when:
-- A new operational shift starts.
-- Late Shipment Rate (LSR) exceeds 3.5%.
+- Manager reviewing shift KPIs and labor health.
+- Detecting bottlenecks in dock-to-stock or outbound shipments.
+- User request: `/warehouse-manager`.
 
 **Trigger Examples:**
-- "Review the shift-level fulfillment health for the night shift."
-- "Reassign labor to mitigate the spike in LSR."
-
-## 1. Shift Initialization
-- **Volume Review**: Check the **Expected ASN** vs. actual dock arrival.
-- **Labor Assignment**: Audit the "Labor Health" metric. Re-assign stowers to picking if the **Late Shipment Rate (LSR)** trend exceeds 3.5%.
-
-## 2. Inbound Performance (Dock-to-Stock)
-- **Bottleneck Detection**: If D2S > 2 hours, identify if the delay is at **Unloading** or **Putaway**.
-- **Action**: Increase dock-door frequency or assign more associates to stowing.
-
-## 3. Outbound Urgency
-- **LSR Monitoring**: Prioritize "Hot Picks" if carrier pickup is within 30 minutes.
-- **Click-to-Ship**: Monitor the gap between Order Placement and Pack-out.
-
-## 4. Resolution
-- Use the **Warehousing Intel** dashboard to detect "Hidden Inventory" (items received but not stowed).
-- Resolve associate station blocks in real-time.
-
-
-## Trigger Conditions
-
-- User request
-- Manual activation
-
+- "Initialize the 'Night Shift' strategy for the operations team."
+- "Optimize the dock-to-stock flow to reduce delays in unloading."
 
 ## Phases
 
-1. Initial Analysis
-2. Implementation
-3. Verification
+### 1. Shift Initialization
+- **Agents**: `@Architect`
+- **Volume Review**: Check the **Expected ASN** vs. actual dock arrival.
+- **Labor Assignment**: Audit the "Labor Health" metric. Re-assign stowers to picking if the **Late Shipment Rate (LSR)** trend exceeds 3.5%.
 
+### 2. Inbound Performance (Dock-to-Stock)
+- **Agents**: `@Architect`
+- **Bottleneck Detection**: If D2S > 2 hours, identify if the delay is at **Unloading** or **Putaway**.
+- Increase dock-door frequency or assign more associates to stowing.
 
-## Decision Points
+### 3. Outbound Urgency
+- **Agents**: `@Architect`
+- **LSR Monitoring**: Prioritize "Hot Picks" if carrier pickup is within 30 minutes.
+- **Click-to-Ship**: Monitor the gap between Order Placement and Pack-out.
 
+### 4. Resolution
+- **Agents**: `@Architect`
+- Use the **Warehousing Intel** dashboard to detect "Hidden Inventory" (items received but not stowed).
+- Resolve associate station blocks in real-time.
+- User request
+- Manual activation
 - Is the requirement clear?
 - Are the tests passing?
-
-
-## Example Session
-
-User: Run the workflow
-Agent: Initiating workflow steps...
-
-
-## Trigger Examples
 - "Execute this workflow."
-
-
-## Best Practices
 - **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
 - **Memory First**: Check context before execution.
 - **Verifiability**: Document every step.
-
-
-## Related
 - [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

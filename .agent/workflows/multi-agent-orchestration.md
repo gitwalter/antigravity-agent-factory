@@ -1,92 +1,66 @@
 ---
-description: Workflow for designing, implementing, and deploying multi-agent AI systems.
-  Covers topology selection, agent implemen...
+agents:
+- '@Architect'
+blueprints:
+- universal
+description: Antigravity workflow for multi-agent-orchestration. Standardized for
+  IDX Visual Editor.
+domain: universal
+name: multi-agent-orchestration
+steps:
+- actions: []
+  agents:
+  - '@Architect'
+  goal: ''
+  name: Context Engineering (Memory MCP)
+  skills: []
+  tools: []
+- actions:
+  - Is the requirement clear?
+  - Are the tests passing?
+  - '"Execute this workflow."'
+  - '**Axiomatic Alignment**: Ensure Truth, Beauty, and Love.'
+  - '**Memory First**: Check context before execution.'
+  - '**Verifiability**: Document every step.'
+  - '[workflow-standard.md](file:///.agent/rules/workflow-standard.md)'
+  agents:
+  - '@Architect'
+  goal: ''
+  name: Analyze Requirements
+  skills: []
+  tools: []
+tags: []
+type: sequential
 version: 1.0.0
-tags:
-- multi
-- agent
-- orchestration
-- standardized
 ---
 
-
-# Multi Agent Orchestration
-
-Workflow for designing, implementing, and deploying multi-agent AI systems. Covers topology selection, agent implementation, coordination patterns, and testing-agents using LangGraph, CrewAI, or AutoGen.
+# Multi-Agent Orchestration
 
 **Version:** 1.0.0
-**Created:** 2026-02-02
-**Applies To:** ai-developing-ai-agents, multi-agent-systems, python-multi-agent
+
+## Overview
+Antigravity workflow for orchestrating multiple specialized agents to solve complex tasks. Standardized for IDX Visual Editor.
 
 ## Trigger Conditions
-
-This workflow is activated when:
-
-- Multi-agent system design needed
-- Agent coordination required
-- Complex AI workflow needed
-- Autonomous agent deployment
+- Received a task that spans multiple technology domains (e.g., Python and SAP).
+- Need to coordinate between different specialist personas (e.g., Architect and Engineering).
+- User request: `/multi-agent-orchestration`.
 
 **Trigger Examples:**
-- "Design a researching-first agent team"
-- "Create agents for code review"
-- "Build a multi-agent customer service system"
-- "Orchestrate agents for data analysis"
+- "Orchestrate the migration of our legacy database to the new cloud architecture."
+- "Coordinate between the Python AI specialist and SAP specialist for the 'Inventory Assistant' project."
 
-## Steps
+## Phases
 
-### 0. Context Engineering (Memory MCP)
-**MANDATORY**: Query the knowledge graph to understand existing agent topologies and coordination patterns before designing new systems.
+### 1. Context Engineering (Memory MCP)
+- **Agents**: `@Architect`
 
-```json
-{ "query": "agent coordination patterns" }
-```
-
-### 1. Analyze Requirements
-Determine the core goals and constraints of the multi-agent system.
-
-### Select Topology
-
-### Define Agent Specifications
-
-### Implement Agents
-
-### Implement Handoffs
-
-### Implement Supervisor
-
-### Unit Test Agents
-
-### Integration Testing
-
-### Evaluation
-
-### Configure Production
-
-### Deploy
-
-
-## Decision Points
-
+### 2. Analyze Requirements
+- **Agents**: `@Architect`
 - Is the requirement clear?
 - Are the tests passing?
-
-
-## Example Session
-
-User: Run the workflow
-Agent: Initiating workflow steps...
-
-
-## Trigger Examples
 - "Execute this workflow."
-
-
-## Best Practices
 - **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
 - **Memory First**: Check context before execution.
 - **Verifiability**: Document every step.
-
-
-## Related
 - [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

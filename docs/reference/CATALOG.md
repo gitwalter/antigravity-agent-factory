@@ -66,9 +66,12 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 
 | Agent | Description |
 |-------|-------------|
+| [blockchain-guru-specialist](../../.agent/agents/parallel/blockchain-guru-specialist.md) | @Blockchain-Guru |
+| [data-architect-specialist](../../.agent/agents/parallel/data-architect-specialist.md) | @Data-Architect |
 | [dotnet-cloud-specialist](../../.agent/agents/parallel/dotnet-cloud-specialist.md) | Specialist: .NET & Cloud Specialist |
 | [full-stack-web-specialist](../../.agent/agents/parallel/full-stack-web-specialist.md) | Specialist: Full-Stack Web Specialist |
 | [java-systems-specialist](../../.agent/agents/parallel/java-systems-specialist.md) | Specialist: Java Systems Specialist |
+| [mobile-specialist](../../.agent/agents/parallel/mobile-specialist.md) | @Mobile-Specialist |
 | [python-ai-specialist](../../.agent/agents/parallel/python-ai-specialist.md) | Specialist: Python & AI Specialist |
 | [sap-systems-specialist](../../.agent/agents/parallel/sap-systems-specialist.md) | Specialist: SAP Systems Specialist |
 
@@ -197,6 +200,12 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [verifying-grounding](../../.agent/skills/evaluator-optimizer/verifying-grounding/SKILL.md) | Grounding Verification |
 | [verifying-with-strawberry](../../.agent/skills/evaluator-optimizer/verifying-with-strawberry/SKILL.md) | Strawberry Verification |
 
+### Experimental
+
+| Skill | Description |
+|-------|-------------|
+| [experimental-interaction](../../.agent/skills/experimental/experimental-interaction/SKILL.md) | Experimental Interaction Skill |
+
 ### Ideation
 
 | Skill | Description |
@@ -221,6 +230,8 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 
 | Skill | Description |
 |-------|-------------|
+| [committing-releases](../../.agent/skills/management/committing-releases/SKILL.md) | Committing Releases (RCW Extension) |
+| [documentation-generation](../../.agent/skills/management/documentation-generation/SKILL.md) | Global Documentation Generation |
 | [orchestrating-mcp](../../.agent/skills/management/orchestrating-mcp/SKILL.md) | MCP Orchestration |
 
 ### Orchestrator-Workers
@@ -333,7 +344,8 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | [managing-google-calendar](../../.agent/skills/routing/managing-google-calendar/SKILL.md) | Google Calendar Skill |
 | [managing-google-drive](../../.agent/skills/routing/managing-google-drive/SKILL.md) | Google Drive Skill |
 | [managing-google-workspace](../../.agent/skills/routing/managing-google-workspace/SKILL.md) | Capability Manifest: Google Workspace Mastery |
-| [managing-plane-tasks](../../.agent/skills/routing/managing-plane-tasks/SKILL.md) | Remote Plane Management (MCP) |
+| [managing-plane-tasks](../../.agent/skills/routing/managing-plane-tasks/SKILL.md) | Script-First Plane Management |
+| [managing-stack-context](../../.agent/skills/routing/managing-stack-context/SKILL.md) | Managing Stack Context Skill |
 | [operating-github](../../.agent/skills/routing/operating-github/SKILL.md) | GitHub Operations |
 | [selecting-mcp](../../.agent/skills/routing/selecting-mcp/SKILL.md) | Mcp Selection |
 | [sending-emails](../../.agent/skills/routing/sending-emails/SKILL.md) | Send Email Skill |
@@ -342,6 +354,9 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 
 | Skill | Description |
 |-------|-------------|
+| [data-validation](../../.agent/skills/verification/data-validation/SKILL.md) | Data Validation Skill |
+| [mobile-native-build](../../.agent/skills/verification/mobile-native-build/SKILL.md) | Mobile Native Build Skill |
+| [smart-contract-audit](../../.agent/skills/verification/smart-contract-audit/SKILL.md) | Smart Contract Audit Skill |
 | [verifying-artifact-structures](../../.agent/skills/verification/verifying-artifact-structures/SKILL.md) | Verifying Artifact Structures |
 
 ## 📋 Workflows
@@ -357,96 +372,75 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | Workflow | Description |
 |----------|-------------|
 | [agent-1-bridge](../../.agent/workflows/agent-1-bridge.md) | Statistical Dashboard & Knowledge Bridge Synchronization |
-| [agent-development](../../.agent/workflows/agent-development.md) | /agent-development Workflow (SDLC Phase 4) |
-| [agent-testing](../../.agent/workflows/agent-testing.md) | /agent-testing Workflow (SDLC Phase 5) |
-| [ai-system-design](../../.agent/workflows/ai-system-design.md) | /ai-system-design Workflow |
+| [agent-development](../../.agent/workflows/agent-development.md) | /developing-ai-agents Workflow (SDLC Phase 4) |
+| [agent-testing](../../.agent/workflows/agent-testing.md) | /agent-testing-agents Workflow (SDLC Phase 5) |
+| [ai-system-design](../../.agent/workflows/ai-system-design.md) | /ai-designing-ai-systems Workflow |
 | [alpha-factor-mining](../../.agent/workflows/alpha-factor-mining.md) | Alpha Factor Mining |
 | [antigravity-factory-building](../../.agent/workflows/antigravity-factory-building.md) | Antigravity Factory System Building Process |
-| [azure-deployment](../../.agent/workflows/azure-deployment.md) | Azure Deployment |
 | [backlog-refinement](../../.agent/workflows/backlog-refinement.md) | Backlog Refinement |
 | [backtest-validation](../../.agent/workflows/backtest-validation.md) | Backtest Validation |
 | [bdd-driven-development](../../.agent/workflows/bdd-driven-development.md) | Bdd Driven Development |
-| [brainstorm](../../.agent/workflows/brainstorm.md) | /brainstorm Workflow |
-| [brief-prototype](../../.agent/workflows/brief-prototype.md) | /brief-prototype Workflow |
+| [brief-prototype](../../.agent/workflows/brief-prototype.md) | /briefing-prototypes Workflow |
 | [btp-service-deployment](../../.agent/workflows/btp-service-deployment.md) | Btp Service Deployment |
 | [bugfix-resolution](../../.agent/workflows/bugfix-resolution.md) | Bugfix Resolution |
 | [build-langchain-agent](../../.agent/workflows/build-langchain-agent.md) | Building AI Agents with LangChain |
 | [cap-service-development](../../.agent/workflows/cap-service-development.md) | Cap Service Development |
 | [cicd-pipeline](../../.agent/workflows/cicd-pipeline.md) | Cicd Pipeline |
-| [cluster](../../.agent/workflows/cluster.md) | /cluster Workflow |
 | [code-review](../../.agent/workflows/code-review.md) | Code Review |
 | [confluence-feature](../../.agent/workflows/confluence-feature.md) | Confluence Feature |
 | [coordination-testing](../../.agent/workflows/coordination-testing.md) | Coordination Testing |
-| [daily-standup](../../.agent/workflows/daily-standup.md) | Daily Standup |
 | [dashboard-analysis-routine](../../.agent/workflows/dashboard-analysis-routine.md) | Statistical Analysis Routine |
 | [dashboard-data-health](../../.agent/workflows/dashboard-data-health.md) | Data Health Audit Workflow |
 | [dashboard-insight-reporting](../../.agent/workflows/dashboard-insight-reporting.md) | Insight Reporting Workflow |
 | [dashboard-kpi-governance](../../.agent/workflows/dashboard-kpi-governance.md) | KPI Governance Workflow |
 | [dashboard-onboarding](../../.agent/workflows/dashboard-onboarding.md) | Dashboard Onboarding Workflow |
 | [dashboard-view-builder](../../.agent/workflows/dashboard-view-builder.md) | Dashboard View Builder Workflow |
-| [debug-pipeline](../../.agent/workflows/debug-pipeline.md) | Debug Pipeline |
+| [data-pipeline-orchestration](../../.agent/workflows/data-pipeline-orchestration.md) | Data Pipeline Orchestration Workflow |
 | [defi-development](../../.agent/workflows/defi-development.md) | Defi Development |
 | [deployment-workflow](../../.agent/workflows/deployment-workflow.md) | Deployment Workflow |
+| [documentation-workflow](../../.agent/workflows/documentation-workflow.md) | Global Documentation Workflow (SDLC Phase 6) |
 | [dotnet-api-development](../../.agent/workflows/dotnet-api-development.md) | Dotnet Api Development |
 | [dotnet-microservices-setup](../../.agent/workflows/dotnet-microservices-setup.md) | Dotnet Microservices Setup |
 | [eda](../../.agent/workflows/eda.md) | Exploratory Data Analysis (EDA) |
-| [elicit-nfr](../../.agent/workflows/elicit-nfr.md) | /elicit-nfr Workflow |
 | [ewm-development](../../.agent/workflows/ewm-development.md) | Ewm Development |
 | [fastapi-api-development](../../.agent/workflows/fastapi-api-development.md) | Fastapi Api Development |
 | [feature-development](../../.agent/workflows/feature-development.md) | Standard Feature Delivery Cycle (SFDC) |
-| [fetch-external-data](../../.agent/workflows/fetch-external-data.md) | /fetch-external-data Workflow |
 | [fi-development](../../.agent/workflows/fi-development.md) | Fi Development |
 | [fiori-app-development](../../.agent/workflows/fiori-app-development.md) | Fiori App Development |
 | [github-actions-ci](../../.agent/workflows/github-actions-ci.md) | Github Actions Ci |
 | [iflow-development](../../.agent/workflows/iflow-development.md) | Iflow Development |
-| [incident-response](../../.agent/workflows/incident-response.md) | Incident Response |
-| [java-cicd-pipeline](../../.agent/workflows/java-cicd-pipeline.md) | Java Cicd Pipeline |
-| [jira-bugfix](../../.agent/workflows/jira-bugfix.md) | Jira Bugfix |
 | [le-development](../../.agent/workflows/le-development.md) | Le Development |
 | [llm-app-development](../../.agent/workflows/llm-app-development.md) | Llm App Development |
-| [logistics-chain-workflow](../../.agent/workflows/logistics-chain-workflow.md) | Logistics Chain Workflow |
-| [manage-schedule](../../.agent/workflows/manage-schedule.md) | Manage Schedule Workflow |
 | [master-system-orchestration](../../.agent/workflows/master-system-orchestration.md) | Master System Orchestration (MSO) |
-| [migrate-skill-to-jinja2](../../.agent/workflows/migrate-skill-to-jinja2.md) | Migrate Skill to Jinja2 Template |
 | [ml-deployment-pipeline](../../.agent/workflows/ml-deployment-pipeline.md) | Ml Deployment Pipeline |
 | [ml-experiment](../../.agent/workflows/ml-experiment.md) | Ml Experiment |
 | [mm-development](../../.agent/workflows/mm-development.md) | Mm Development |
+| [mobile-native-development](../../.agent/workflows/mobile-native-development.md) | Mobile Native Development Workflow |
 | [model-evaluation](../../.agent/workflows/model-evaluation.md) | Model Evaluation |
 | [model-training-pipeline](../../.agent/workflows/model-training-pipeline.md) | Model Training Pipeline |
-| [monitor](../../.agent/workflows/monitor.md) | /monitor Workflow |
-| [multi-agent-development](../../.agent/workflows/multi-agent-development.md) | Multi Agent Development |
 | [multi-agent-orchestration](../../.agent/workflows/multi-agent-orchestration.md) | Multi Agent Orchestration |
-| [nextjs-feature-development](../../.agent/workflows/nextjs-feature-development.md) | Nextjs Feature Development |
 | [plane-task-management](../../.agent/workflows/plane-task-management.md) | Plane Issue Management Workflow |
 | [poc-orchestration-workflow](../../.agent/workflows/poc-orchestration-workflow.md) | /poc-orchestration — System Integration POC |
-| [prompt-iteration](../../.agent/workflows/prompt-iteration.md) | Prompt Iteration |
-| [quality-gate](../../.agent/workflows/quality-gate.md) | Quality Gate |
-| [rag-pipeline-development](../../.agent/workflows/rag-pipeline-development.md) | Rag Pipeline Development |
 | [rap-development](../../.agent/workflows/rap-development.md) | Rap Development |
 | [rap-with-draft](../../.agent/workflows/rap-with-draft.md) | Rap With Draft |
-| [release-management](../../.agent/workflows/release-management.md) | /release-management Workflow (SDLC Phase 6) |
 | [repository-maintenance](../../.agent/workflows/repository-maintenance.md) | Repository Maintenance |
-| [research](../../.agent/workflows/research.md) | /research — Multi-Source Research Workflow |
-| [review-requirements](../../.agent/workflows/review-requirements.md) | /review-requirements Workflow |
+| [research](../../.agent/workflows/research.md) | /researching-first — Multi-Source Research Workflow |
 | [sap-cicd-pipeline](../../.agent/workflows/sap-cicd-pipeline.md) | Sap Cicd Pipeline |
 | [sd-development](../../.agent/workflows/sd-development.md) | Sd Development |
 | [sdlc-meta-orchestrator](../../.agent/workflows/sdlc-meta-orchestrator.md) | SDLC Meta-Orchestrator Workflow (v2.0) |
-| [security-audit](../../.agent/workflows/security-audit.md) | Security Audit |
+| [sdlc-usage-guide](../../.agent/workflows/sdlc-usage-guide.md) | Antigravity SDLC Usage Guide |
 | [security-audit-workflow](../../.agent/workflows/security-audit-workflow.md) | Security Audit Workflow |
 | [smart-contract-audit](../../.agent/workflows/smart-contract-audit.md) | Smart Contract Audit |
-| [smart-contract-development](../../.agent/workflows/smart-contract-development.md) | Smart Contract Development |
+| [smart-contract-development](../../.agent/workflows/smart-contract-development.md) | Smart Contract Development Workflow |
 | [solana-development](../../.agent/workflows/solana-development.md) | Solana Development |
-| [spring-microservice-development](../../.agent/workflows/spring-microservice-development.md) | Spring Microservice Development |
-| [sprint-closure](../../.agent/workflows/sprint-closure.md) | Sprint Closure |
 | [sprint-planning](../../.agent/workflows/sprint-planning.md) | Sprint Planning |
-| [strategy-development](../../.agent/workflows/strategy-development.md) | Strategy Development |
-| [tdd-cycle](../../.agent/workflows/tdd-cycle.md) | Tdd Cycle |
+| [terraform-module-development](../../.agent/workflows/terraform-module-development.md) | Terraform Module Development Workflow |
 | [trading-strategy-pipeline](../../.agent/workflows/trading-strategy-pipeline.md) | Trading Strategy Pipeline |
 | [warehouse-analyst](../../.agent/workflows/warehouse-analyst.md) | Industrial Analyst Optimization Guide |
 | [warehouse-associate](../../.agent/workflows/warehouse-associate.md) | Warehouse Associate Operational Guide |
 | [warehouse-ingestion](../../.agent/workflows/warehouse-ingestion.md) | Warehouse Data Ingestion Workflow |
 | [warehouse-manager](../../.agent/workflows/warehouse-manager.md) | Operations Manager Strategic Guide |
-| [write-prd](../../.agent/workflows/write-prd.md) | /write-prd Workflow |
+| [write-prd](../../.agent/workflows/write-prd.md) | /writing-prd Workflow |
 
 ## 📚 Knowledge Files
 
@@ -458,8 +452,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | agent-coordination-patterns | [`.agent/knowledge/agent-coordination-patterns.json`](../../.agent/knowledge/agent-coordination-patterns.json) |
 | agent-coordination | [`.agent/knowledge/agent-coordination.json`](../../.agent/knowledge/agent-coordination.json) |
 | agent-handoff-patterns | [`.agent/knowledge/agent-handoff-patterns.json`](../../.agent/knowledge/agent-handoff-patterns.json) |
-| agent-testing-patterns | [`.agent/knowledge/agent-testing-patterns.json`](../../.agent/knowledge/agent-testing-patterns.json) |
-| agent-memory-patterns | [`.agent/knowledge/memory-patterns.json`](../../.agent/knowledge/memory-patterns.json) |
+| agent-handoff-protocol | [`.agent/knowledge/agent-handoff-protocol.json`](../../.agent/knowledge/agent-handoff-protocol.json) |
 | agent-society-protocol | [`.agent/knowledge/agent-society-protocol.json`](../../.agent/knowledge/agent-society-protocol.json) |
 | agent-society-verification | [`.agent/knowledge/agent-society-verification.json`](../../.agent/knowledge/agent-society-verification.json) |
 | agent-staffing | [`.agent/knowledge/agent-staffing.json`](../../.agent/knowledge/agent-staffing.json) |
@@ -487,6 +480,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | artifact-dependencies | [`.agent/knowledge/artifact-dependencies.json`](../../.agent/knowledge/artifact-dependencies.json) |
 | artifact-dependency-map | [`.agent/knowledge/artifact-dependency-map.json`](../../.agent/knowledge/artifact-dependency-map.json) |
 | asp-quick-reference | [`.agent/knowledge/asp-quick-reference.json`](../../.agent/knowledge/asp-quick-reference.json) |
+| atomic-skill-patterns | [`.agent/knowledge/atomic-skill-patterns.json`](../../.agent/knowledge/atomic-skill-patterns.json) |
 | augmented-coding-patterns | [`.agent/knowledge/augmented-coding-patterns.json`](../../.agent/knowledge/augmented-coding-patterns.json) |
 | autogen-patterns | [`.agent/knowledge/autogen-patterns.json`](../../.agent/knowledge/autogen-patterns.json) |
 | axiom-zero-love-truth-beauty | [`.agent/knowledge/axiom-zero-love-truth-beauty.json`](../../.agent/knowledge/axiom-zero-love-truth-beauty.json) |
@@ -518,6 +512,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | data-application-patterns | [`.agent/knowledge/data-application-patterns.json`](../../.agent/knowledge/data-application-patterns.json) |
 | data-engineering-for-ml | [`.agent/knowledge/data-engineering-for-ml.json`](../../.agent/knowledge/data-engineering-for-ml.json) |
 | data-engineering-patterns | [`.agent/knowledge/data-engineering-patterns.json`](../../.agent/knowledge/data-engineering-patterns.json) |
+| data-patterns | [`.agent/knowledge/data-patterns.json`](../../.agent/knowledge/data-patterns.json) |
 | data-pipeline-patterns | [`.agent/knowledge/data-pipeline-patterns.json`](../../.agent/knowledge/data-pipeline-patterns.json) |
 | database-agent-patterns | [`.agent/knowledge/database-agent-patterns.json`](../../.agent/knowledge/database-agent-patterns.json) |
 | debug-patterns | [`.agent/knowledge/debug-patterns.json`](../../.agent/knowledge/debug-patterns.json) |
@@ -598,11 +593,11 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | memory-config | [`.agent/knowledge/memory-config.json`](../../.agent/knowledge/memory-config.json) |
 | memory-patterns | [`.agent/knowledge/memory-patterns.json`](../../.agent/knowledge/memory-patterns.json) |
 | memory-system-configuration | [`.agent/knowledge/memory-system-configuration.json`](../../.agent/knowledge/memory-system-configuration.json) |
-| memory-patterns | [`.agent/knowledge/memory-patterns.json`](../../.agent/knowledge/memory-patterns.json) |
 | microsoft-autogen-patterns | [`.agent/knowledge/microsoft-autogen-patterns.json`](../../.agent/knowledge/microsoft-autogen-patterns.json) |
 | ml-agent-frameworks | [`.agent/knowledge/ml-agent-frameworks.json`](../../.agent/knowledge/ml-agent-frameworks.json) |
 | ml-workflow-patterns | [`.agent/knowledge/ml-workflow-patterns.json`](../../.agent/knowledge/ml-workflow-patterns.json) |
 | mlops-patterns | [`.agent/knowledge/mlops-patterns.json`](../../.agent/knowledge/mlops-patterns.json) |
+| mobile-patterns | [`.agent/knowledge/mobile-patterns.json`](../../.agent/knowledge/mobile-patterns.json) |
 | model-context-protocol-patterns | [`.agent/knowledge/model-context-protocol-patterns.json`](../../.agent/knowledge/model-context-protocol-patterns.json) |
 | model-serving-patterns | [`.agent/knowledge/model-serving-patterns.json`](../../.agent/knowledge/model-serving-patterns.json) |
 | model-training-patterns | [`.agent/knowledge/model-training-patterns.json`](../../.agent/knowledge/model-training-patterns.json) |
@@ -676,6 +671,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | scikit-learn-patterns | [`.agent/knowledge/scikit-learn-patterns.json`](../../.agent/knowledge/scikit-learn-patterns.json) |
 | sdlc-architecture-graph | [`.agent/knowledge/sdlc-architecture-graph.json`](../../.agent/knowledge/sdlc-architecture-graph.json) |
 | sdlc-architecture-spec | [`.agent/knowledge/sdlc-architecture-spec.json`](../../.agent/knowledge/sdlc-architecture-spec.json) |
+| sdlc-phases | [`.agent/knowledge/sdlc-phases.json`](../../.agent/knowledge/sdlc-phases.json) |
 | security-checklist | [`.agent/knowledge/security-checklist.json`](../../.agent/knowledge/security-checklist.json) |
 | security-patterns | [`.agent/knowledge/security-patterns.json`](../../.agent/knowledge/security-patterns.json) |
 | self-optimization-catalog | [`.agent/knowledge/self-optimization-catalog.json`](../../.agent/knowledge/self-optimization-catalog.json) |
@@ -724,29 +720,15 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | visualization-patterns | [`.agent/knowledge/visualization-patterns.json`](../../.agent/knowledge/visualization-patterns.json) |
 | web-browsing-and-scraping-patterns | [`.agent/knowledge/web-browsing-and-scraping-patterns.json`](../../.agent/knowledge/web-browsing-and-scraping-patterns.json) |
 | web-browsing-patterns | [`.agent/knowledge/web-browsing-patterns.json`](../../.agent/knowledge/web-browsing-patterns.json) |
+| web3-patterns | [`.agent/knowledge/web3-patterns.json`](../../.agent/knowledge/web3-patterns.json) |
 | workflow-catalog | [`.agent/knowledge/workflow-catalog.json`](../../.agent/knowledge/workflow-catalog.json) |
 | workflow-entities | [`.agent/knowledge/workflow-entities.json`](../../.agent/knowledge/workflow-entities.json) |
 | workflow-patterns | [`.agent/knowledge/workflow-patterns.json`](../../.agent/knowledge/workflow-patterns.json) |
+| workflow-structural-patterns | [`.agent/knowledge/workflow-structural-patterns.json`](../../.agent/knowledge/workflow-structural-patterns.json) |
 | workflow-system-entities | [`.agent/knowledge/workflow-system-entities.json`](../../.agent/knowledge/workflow-system-entities.json) |
 | workshop-facilitation-knowledge | [`.agent/knowledge/workshop-facilitation-knowledge.json`](../../.agent/knowledge/workshop-facilitation-knowledge.json) |
 | workshop-facilitation | [`.agent/knowledge/workshop-facilitation.json`](../../.agent/knowledge/workshop-facilitation.json) |
-
-## 📖 SDLC Documentation & Workflows
-
-A structured collection of guides and workflows for managing the 7-phase AI Engineering SDLC.
-
-| Asset | Description | Path |
-|-------|-------------|------|
-| [**SDLC Usage Guide**](../guides/sdlc-usage-guide.md) | Comprehensive guide on how to navigate the 7-phase SDLC. | `docs/guides/sdlc-usage-guide.md` |
-| [**SDLC Meta-Orchestrator**](../../.agent/workflows/sdlc-meta-orchestrator.md) | Meta-workflow for full SDLC orchestration. | `.agent/workflows/sdlc-meta-orchestrator.md` |
-| [**Standard Feature Cycle (SFDC)**](../../.agent/workflows/feature-development.md) | Formal process for feature delivery. | `.agent/workflows/feature-development.md` |
-| [**P1: Ideation**](../../.agent/workflows/brief-prototype.md) | Workflows: `/brainstorm`, `/cluster`, `/brief-prototype`. | `.agent/workflows/brief-prototype.md` |
-| [**P2: Requirements**](../../.agent/workflows/write-prd.md) | Workflows: `/write-prd`, `/elicit-nfr`, `/review-requirements`. | `.agent/workflows/write-prd.md` |
-| [**P3: Architecture**](../../.agent/workflows/ai-system-design.md) | Workflow: `/ai-system-design`. | `.agent/workflows/ai-system-design.md` |
-| [**P4: Build**](../../.agent/workflows/agent-development.md) | Workflow: `/agent-development`. | `.agent/workflows/agent-development.md` |
-| [**P5: Test & Eval**](../../.agent/workflows/agent-testing.md) | Workflow: `/agent-testing`. | `.agent/workflows/agent-testing.md` |
-| [**P6: Deploy**](../../.agent/workflows/documentation-workflow.md) | Workflows: `/release-management`, `/documentation-workflow`. | `.agent/workflows/documentation-workflow.md` |
-| [**P7: Monitor**](../../.agent/workflows/monitor.md) | Workflow: `/monitor`. | `.agent/workflows/monitor.md` |
+| zero-knowledge-patterns | [`.agent/knowledge/zero-knowledge-patterns.json`](../../.agent/knowledge/zero-knowledge-patterns.json) |
 
 ## 🏗️ Active Projects
 
@@ -963,6 +945,7 @@ A structured collection of guides and workflows for managing the 7-phase AI Engi
 | knowledge-file.tmpl | knowledge | [`.agent/templates/knowledge/knowledge-file.tmpl`](../../.agent/templates/knowledge/knowledge-file.tmpl) |
 | manifest.json.tmpl | knowledge | [`.agent/templates/knowledge/manifest.json.tmpl`](../../.agent/templates/knowledge/manifest.json.tmpl) |
 | project-info.json.tmpl | knowledge | [`.agent/templates/knowledge/project-info.json.tmpl`](../../.agent/templates/knowledge/project-info.json.tmpl) |
+| telemetry-formats.json | telemetry | [`.agent/templates/knowledge/telemetry/telemetry-formats.json`](../../.agent/templates/knowledge/telemetry/telemetry-formats.json) |
 | env.template | atlassian | [`.agent/templates/mcp/atlassian/env.template`](../../.agent/templates/mcp/atlassian/env.template) |
 | mcp-config-cloud.json.tmpl | atlassian | [`.agent/templates/mcp/atlassian/mcp-config-cloud.json.tmpl`](../../.agent/templates/mcp/atlassian/mcp-config-cloud.json.tmpl) |
 | mcp-config-local.json.tmpl | atlassian | [`.agent/templates/mcp/atlassian/mcp-config-local.json.tmpl`](../../.agent/templates/mcp/atlassian/mcp-config-local.json.tmpl) |
@@ -1067,4 +1050,4 @@ A structured collection of guides and workflows for managing the 7-phase AI Engi
 | python.yml.tmpl | templates | [`.agent/templates/workflows/gitlab/templates/python.yml.tmpl`](../../.agent/templates/workflows/gitlab/templates/python.yml.tmpl) |
 | workflow.md.tmpl | workflows | [`.agent/templates/workflows/workflow.md.tmpl`](../../.agent/templates/workflows/workflow.md.tmpl) |
 
-*Total templates: 308*
+*Total templates: 309*

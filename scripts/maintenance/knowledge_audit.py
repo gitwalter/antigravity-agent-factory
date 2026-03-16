@@ -124,6 +124,7 @@ def generate_report(debt, broken_links, dep_stats):
     for ntype, count in nodes_by_type.items():
         report.append(f"- **{ntype.capitalize()}s**: {count}")
 
+    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     REPORT_PATH.write_text("\n".join(report), encoding="utf-8")
     print(f"Report generated at {REPORT_PATH}")
 
