@@ -71,10 +71,10 @@ Build production Spring Boot applications using REST controllers, service layer 
 
 | Resource | Purpose |
 |----------|---------|
-| [Installation Guide](../../../docs/setup/installation.md) | 5-minute guide: Setup and run |
+| [Installation Guide](../../../../docs/setup/installation.md) | 5-minute guide: Setup and run |
 | [scripts/utils.py](scripts/utils.py) | Project utilities |
 | [scripts/validate.py](scripts/validate.py) | Verify project follows skill patterns |
-| [examples/rest_api/](examples/rest_api/) | REST API example and run instructions |
+| REST API Patterns | [references/spring-patterns.json](references/spring-patterns.json) |
 
 ## When to Use
 This skill should be used when strict adherence to the defined process is required.

@@ -1,7 +1,13 @@
 ---
-description: Comprehensive workflow for performing structured code reviews covering correctness, style, design, performance, secur...
+description: Comprehensive workflow for performing structured code reviews covering
+  correctness, style, design, performance, secur...
 version: 1.0.0
+tags:
+- code
+- review
+- standardized
 ---
+
 
 # Code Review
 
@@ -56,7 +62,7 @@ This workflow is activated when:
 ### 5. Review Reporting
 - **Goal**: Communicate findings clearly.
 - **Action**: Generate a summary report with severity ratings.
-- **Tool**: Invoke `/documentation-workflow` to format the review comment.
+- **Tool**: Invoke `/generating-documentation` to format the review comment.
 
 
 ## Decision Points
@@ -73,3 +79,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

@@ -1,11 +1,18 @@
 ---
-description: Smart contract security audit workflow covering scope definition, static analysis, manual review, penetration testing...
+description: Smart contract security audit workflow covering scope definition, static
+  analysis, manual review, penetration testing-agents...
 version: 1.0.0
+tags:
+- security
+- audit
+- workflow
+- standardized
 ---
+
 
 # Security Audit Workflow
 
-Smart contract security audit workflow covering scope definition, static analysis, manual review, penetration testing, and reporting. Supports Ethereum/Solidity and Solana/Rust.
+Smart contract security audit workflow covering scope definition, static analysis, manual review, penetration testing-agents, and reporting. Supports Ethereum/Solidity and Solana/Rust.
 
 **Version:** 1.0.0
 **Created:** 2026-02-10
@@ -26,23 +33,39 @@ This workflow is activated when:
 - "Verify audit findings are fixed"
 - "Penetration test the protocol"
 
-## Steps
+## Phases
 
-### Scope Definition
+### Phase 1: Scope & Discovery
+- **Goal**: Define audit scope and prepare the detection environment.
+- **Agents**: `workflow-quality-specialist`
+- **Skills**: securing-ai-systems, securing-ai-systems
+- **Tools**: mcp_memory_search_nodes, slither-cli
+- **Actions**:
+    - Define scope and discover environmental dependencies.
 
-### Environment Setup
+### Phase 2: Vulnerability Hunting & Triage
+- **Goal**: Execute automated scanners and triage identified findings based on severity.
+- **Agents**: `workflow-quality-specialist`
+- **Skills**: securing-ai-systems
+- **Tools**: slither-cli, mythril-cli
+- **Actions**:
+    - Run scanners and triage findings into high/medium/low severity.
 
-### Run Scanners
+### Phase 3: Manual Logic & Access Control Review
+- **Goal**: Deep dive into manual review of access controls and business logic.
+- **Agents**: `blockchain-guru-specialist`, `workflow-quality-specialist`
+- **Skills**: securing-ai-systems, securing-ai-systems
+- **Tools**: mcp_memory_search_nodes
+- **Actions**:
+    - Manually verify ACLs and logical flows for "rug-pull" or "re-entrancy" vectors.
 
-### Triage Findings
-
-### Access Control and Logic
-
-### Vulnerability Hunt
-
-### Report Generation
-
-### Remediation Verification
+### Phase 4: Reporting & Verification
+- **Goal**: Generate high-fidelity audit reports and verify remediation.
+- **Agents**: `workflow-quality-specialist`, `knowledge-operations-specialist`
+- **Skills**: generating-documentation, committing-releases
+- **Tools**: pdf-generator, safety-gate
+- **Actions**:
+    - Compile audit report and verify remediation findings before release.
 
 
 ## Decision Points
@@ -59,3 +82,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

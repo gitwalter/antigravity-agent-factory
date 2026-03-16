@@ -1,3 +1,12 @@
+---
+version: 2.0.0
+description: Standardized factory workflow.
+tags:
+- agent
+- '1'
+- bridge
+- standardized
+---
 # Statistical Dashboard & Knowledge Bridge Synchronization
 
 **Version:** 1.0.0
@@ -12,24 +21,37 @@ This workflow defines the standard operating procedure for synchronizing statist
 
 ## Phases
 
-### 1. Data Ingestion & Analysis
-- Open the Statistical Dashboard (`projects/statistical_dashboards/app.py`).
-- Navigate to **📁 Data Manager** and ingest the relevant operational data.
-- Perform the required analysis in **🔬 Advanced Analytics**.
+### Phase 1: Data Ingestion & Analysis
+- **Goal**: Ingest operational data and perform statistical analysis for intelligence generation.
+- **Agents**: `project-operations-specialist`
+- **Skills**: dashboard-onboarding, analysis-routine
+- **Tools**: statistical-dashboard, python-interpreter
+- **Actions**:
+    - Ingest data and perform analysis in Advanced Analytics.
 
-### 2. Knowledge Serialization
-- Navigate to **🏢 Project Center**.
-- Click **📤 Sync Data Artifacts to Memory**.
-- This generates a JSON payload in `projects/statistical_dashboards/data/sync/` for the Memory MCP to ingest.
+### Phase 2: Knowledge Serialization & Sync
+- **Goal**: Serialize analysis results and synchronize with the Memory MCP knowledge graph.
+- **Agents**: `knowledge-operations-specialist`
+- **Skills**: repository-maintenance, agent-1-bridge
+- **Tools**: mcp_memory_add_observations, mcp_memory_create_entities
+- **Actions**:
+    - Sync data artifacts to Memory and verify ingestion.
 
-### 3. Plane Reporting (Bridge Implementation)
-// turbo
-- In the **🏢 Project Center**, click **📊 Post Analysis Report to Plane**.
-- This triggers `scripts/pms/manager.py` to update the associated issue with a formatted HTML summary.
+### Phase 3: Plane Reporting (Bridge Implementation)
+- **Goal**: Synchronize analysis results with Plane issues for product management visibility.
+- **Agents**: `project-operations-specialist`
+- **Skills**: managing-plane-tasks, agent-1-bridge
+- **Tools**: scripts/pms/manager.py
+- **Actions**:
+    - Post analysis report to Plane issue (e.g., AGENT-1).
 
-### 4. Verification
-- Verify the Memory MCP has ingested the new observations.
-- Check the Plane board to ensure the issue (e.g., `AGENT-1`) reflects the latest statistical insights.
+### Phase 4: Verification & Loop Closure
+- **Goal**: Conduct final verification of knowledge integrity and Plane status synchronization.
+- **Agents**: `workflow-quality-specialist`, `knowledge-operations-specialist`
+- **Skills**: generating-documentation, verifying-artifact-structures
+- **Tools**: mcp_memory_search_nodes, plane-mcp
+- **Actions**:
+    - Verify Memory observations and Plane board reflections.
 
 ## Fallback Procedures
 - Manual update of Plane issues if the bridge script fails.
@@ -38,3 +60,13 @@ This workflow defines the standard operating procedure for synchronizing statist
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

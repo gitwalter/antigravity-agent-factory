@@ -1,8 +1,14 @@
 ---
-description: Standard Feature Delivery Cycle (SFDC) for developing new features from specifications through to completion.
-tags: [feature, development, sdlc, sfdc]
+description: Standard Feature Delivery Cycle (SFDC) for developing new features from
+  specifications through to completion.
+tags:
+- feature
+- development
+- sdlc
+- sfdc
 version: 2.0.0
 ---
+
 
 # Standard Feature Delivery Cycle (SFDC)
 
@@ -22,39 +28,69 @@ The formal process for developing and delivering new features within the Antigra
 
 ## Phases
 
+## Phases
+
 ### Phase 0: Orientation & Registration
-- **Goal**: Establish the memory trail for the task.
-- **Action 1**: Use `mcp_memory_open_nodes` with `SYS:Consciousness` and `SOP:Feature-Development`.
-- **Action 2**: Create the `TASK:[IssueKey]` node and link it to the SOP.
-- **Action 3**: Use `managing-plane-tasks` to create a `FEATURE` issue.
+- **Goal**: Establish the memory trail and Plane tracking for the feature.
+- **Agents**: `project-operations-specialist`
+- **Skills**: managing-plane-tasks, managing-memory
+- **Tools**: mcp_memory_open_nodes
+- **Actions**:
+    - Use `mcp_memory_open_nodes` with `SYS:Consciousness` and `SOP:Feature-Development`.
+    - Create the `TASK:[IssueKey]` node and link it to the SOP.
+    - Use `managing-plane-tasks` to create a `FEATURE` issue.
 
-### 1. Requirements & Analysis
+### Phase 1: Requirements & Analysis
 - **Goal**: Deep understanding of the PRD and technical constraints.
-- **Action**: Review `knowledge/prd.md` and `knowledge/nfr.md`.
+- **Agents**: `project-operations-specialist`
+- **Skills**: writing-prd, analyzing-code
+- **Tools**: view_file
+- **Actions**:
+    - Review `knowledge/prd.md` and `knowledge/nfr.md`.
 
-### 2. Implementation & Unit Testing
-- **Goal**: Safe and axiomatic code generation.
-- **Action**: Use the appropriate builder agent (e.g., `python-ai-specialist`).
-- **Standard**: Follow the `tdd-cycle.md` where applicable.
+### Phase 2: Implementation & Unit Testing
+- **Goal**: Safe and axiomatic code generation following TDD principles.
+- **Agents**: `python-ai-specialist`
+- **Skills**: developing-ai-agents, developing-ai-agents
+- **Tools**: run_command
+- **Actions**:
+    - Use the appropriate builder agent (e.g., `python-ai-specialist`).
+    - Follow the `developing-ai-agents.md` where applicable.
 
-### 3. Integration & System Testing
-- **Goal**: Verify the feature works within the larger system.
-- **Action**: Run integration tests and check for side effects.
+### Phase 3: Integration & System Testing
+- **Goal**: Verify the feature works within the larger system architecture.
+- **Agents**: `workflow-quality-specialist`
+- **Skills**: verifying-artifact-structures, testing-agents
+- **Tools**: run_command
+- **Actions**:
+    - Run integration tests and check for side effects.
 
-### 4. Quality Gate & Documentation
-- **Goal**: High-fidelity proof of work and documentation.
-- **Action 1**: Invoke `/quality-gate`.
-- **Action 2**: Invoke `/documentation-workflow` to generate `walkthrough.md` and update `README.md`.
+### Phase 4: Quality Gate & Documentation
+- **Goal**: Generate high-fidelity proof of work and complete project documentation.
+- **Agents**: `project-operations-specialist`, `workflow-quality-specialist`
+- **Skills**: verifying-artifact-structures, generating-documentation
+- **Tools**: walkthrough-generator
+- **Actions**:
+    - Invoke `/verifying-artifact-structures`.
+    - Invoke `/generating-documentation` to generate `walkthrough.md`.
 
-### 5. Deployment & Release
-- **Goal**: Formalized rollout.
-- **Action**: Invoke `/release-management`.
+### Phase 5: Deployment & Release
+- **Goal**: Rolls out the feature through the CI/CD pipeline.
+- **Agents**: `project-operations-specialist`
+- **Skills**: committing-releases
+- **Tools**: safe_release.py
+- **Actions**:
+    - Invoke `/committing-releases`.
 
-### 6. Memory Induction & Task Closure
-- **Goal**: Persist new patterns and clean up operational state.
-- **Action 1**: Update `KI:` nodes in Memory MCP with any new patterns discovered.
-- **Action 2**: Transition the `TASK:` node observations to a final summary.
-- **Action 3**: Close the Plane issue via `post_solution.py` using the Jinja2 solution template.
+### Phase 6: Memory Induction & Task Closure
+- **Goal**: Persist new patterns and clean up operational state in Plane and Memory.
+- **Agents**: `project-operations-specialist`, `knowledge-operations-specialist`
+- **Skills**: managing-memory-bank, managing-plane-tasks
+- **Tools**: managing-plane-tasks.py, memory_mcp
+- **Actions**:
+    - Update `KI:` nodes in Memory MCP with any new patterns discovered.
+    - Transition the `TASK:` node observations to a final summary.
+    - Close the Plane issue via `managing-plane-tasks.py` using the Jinja2 solution template.
 
 ## Best Practices
 - **Phase Gates**: Never skip a phase without explicit justification in the `walkthrough.md`.
@@ -63,4 +99,8 @@ The formal process for developing and delivering new features within the Antigra
 
 ## Related
 - `sdlc-meta-orchestrator.md`
-- `documentation-workflow.md`
+- `generating-documentation.md`
+
+
+## Trigger Examples
+- "Execute developing-ai-agents.md"

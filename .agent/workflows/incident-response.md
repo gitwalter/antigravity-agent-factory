@@ -1,7 +1,13 @@
 ---
-description: Systematic workflow for responding to production incidents. Covers detection, triage, mitigation, resolution, and pos...
+description: Systematic workflow for responding to production incidents. Covers detection,
+  triage, mitigation, resolution, and pos...
 version: 1.0.0
+tags:
+- incident
+- response
+- standardized
 ---
+
 
 # Incident Response
 
@@ -65,3 +71,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

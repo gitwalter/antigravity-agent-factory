@@ -1,7 +1,14 @@
 ---
-description: End-to-end workflow for developing Retrieval-Augmented Generation (RAG) systems. Covers document ingestion, embedding...
+description: End-to-end workflow for developing Retrieval-Augmented Generation (RAG)
+  systems. Covers document ingestion, embedding...
 version: 1.0.0
+tags:
+- rag
+- pipeline
+- development
+- standardized
 ---
+
 
 # Rag Pipeline Development
 
@@ -67,3 +74,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

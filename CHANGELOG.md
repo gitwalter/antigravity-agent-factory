@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2026-03-16
+
+### Added
+- **Governance Rule Schema**: Introduced formal schema for governance rules and specialized parsing logic for markdown-based rules (AGENT-141).
+- **Tri-Pane Governance Editor**: Enhanced the UI to support Metadata, Visual Graph, and Code views for rules, mirroring the workflow experience (AGENT-141).
+- **Multi-Agent Workflow Support**: Updated the backend and frontend to support multiple agents assigned to a single workflow phase (AGENT-142).
+- **Workflow Reliability Suite**: Developed `verify_workflow_assets.py` for repository-wide integrity auditing of agent and skill references (AGENT-142).
+- **Plane Skill Caching**: Introduced `sync_project_context.py` and a persistent context layer for the `managing-plane-tasks` skill to reduce API overhead.
+
+### Changed
+- **SFDC v2.0.0 Realignment**: Standardized phase headers and mandated 5-layer metadata across core factory workflows (AGENT-142).
+- **Stability Enhancements**: Hardened YAML and frontmatter parsing in the UI with recursive sanitization and robust state fallbacks (AGENT-141).
+
+### Fixed
+- **Rule Editor Crashes**: Resolved persistent `TypeError` and `YAMLException` failures when switching views in the Rule Editor (AGENT-141).
+- **Plane Task Reporting**: Fixed high-fidelity solution reporting logic and identifier resolution in `post_solution.py`.
+
 ## [1.8.0] - 2026-03-15
 
 ### Added

@@ -34,9 +34,22 @@ class WorkflowPhase(BaseModel):
     name: str
     goal: str = ""
     actions: List[str] = Field(default_factory=list)
-    agent: str = ""
+    agents: List[str] = Field(default_factory=list)
     skills: List[str] = Field(default_factory=list)
     tools: List[str] = Field(default_factory=list)
+
+    @property
+    def agent(self) -> str:
+        """Backward compatibility for 'agent' attribute."""
+        return self.agents[0] if self.agents else ""
+
+    @agent.setter
+    def agent(self, value: str):
+        """Backward compatibility for setting 'agent'."""
+        if value:
+            self.agents = [value]
+        else:
+            self.agents = []
 
 
 class Workflow(BaseModel):
@@ -75,10 +88,10 @@ def parse_workflow(filepath: Path) -> Workflow:
     # Extract phases using a more robust block-splitting approach
     phases = []
 
-    # Identify phase headers (## or ### followed by optional "Phase" and a number)
+    # Identify phase headers (## or ### followed by optional "Phase" or "Step" and a number)
     # This split preserves the headers
     header_pattern = re.compile(
-        r"(\n#{2,3}\s+(?:Phase\s+)?\d+[\.:]\s*.+)", re.MULTILINE
+        r"(^#{2,3}\s+(?:Phase|Step)?\s*\d+[\.:]\s*.+)", re.MULTILINE | re.IGNORECASE
     )
     blocks = header_pattern.split(body)
 
@@ -89,12 +102,14 @@ def parse_workflow(filepath: Path) -> Workflow:
         content_block = blocks[i + 1] if i + 1 < len(blocks) else ""
 
         # Parse phase name from header
-        name_match = re.search(r"#{2,3}\s+(?:Phase\s+)?\d+[\.:]\s*(.+)", header)
+        name_match = re.search(
+            r"#{2,3}\s+(?:Phase|Step)?\s*\d+[\.:]\s*(.+)", header, re.IGNORECASE
+        )
         phase_name = name_match.group(1).strip() if name_match else "Unnamed Phase"
 
         # Initialize phase fields
         goal = ""
-        agent = ""
+        agents = []
         skills = []
         tools = []
         actions = []
@@ -112,12 +127,16 @@ def parse_workflow(filepath: Path) -> Workflow:
             goal = goal_match.group(1).strip()
 
         agent_match = re.search(
-            r"^\s*[-*]?\s*\*\*Agent\*\*[:\s]+`?([^`\n]+)`?$",
+            r"^\s*[-*]?\s*\*\*Agents?\*\*[:\s]+(.+)$",
             full_block,
             re.MULTILINE | re.IGNORECASE,
         )
         if agent_match:
-            agent = agent_match.group(1).strip()
+            agents = [
+                a.strip().replace("`", "")
+                for a in agent_match.group(1).split(",")
+                if a.strip()
+            ]
 
         skills_match = re.search(
             r"^\s*[-*]?\s*\*\*Skills\*\*[:\s]+(.+)$",
@@ -156,7 +175,7 @@ def parse_workflow(filepath: Path) -> Workflow:
             WorkflowPhase(
                 name=phase_name,
                 goal=goal,
-                agent=agent,
+                agents=agents,
                 skills=skills,
                 tools=tools,
                 actions=actions,
@@ -264,15 +283,30 @@ def save_workflow(filename: str, data: dict) -> dict:
             body_lines.append(f"### {i+1}. {phase.get('name', 'Unnamed')}")
             if phase.get("goal"):
                 body_lines.append(f"- **Goal**: {phase['goal']}")
-            if phase.get("agent"):
-                agent_name = phase["agent"]
-                if not agent_name.startswith("`"):
-                    agent_name = f"`{agent_name}`"
-                body_lines.append(f"- **Agent**: {agent_name}")
-            if phase.get("skills"):
-                body_lines.append(f"- **Skills**: {', '.join(phase['skills'])}")
-            if phase.get("tools"):
-                body_lines.append(f"- **Tools**: {', '.join(phase['tools'])}")
+
+            # Support both 'agents' (list) and 'agent' (string/list fallback)
+            # Use phase.get("agents") if it exists, otherwise try phase.get("agent")
+            # If it's a Pydantic model (which it should be), we use attribute access or dict
+            p_agents = getattr(phase, "agents", phase.get("agents", []))
+            p_agent = getattr(phase, "agent", phase.get("agent", ""))
+
+            agents = p_agents or ([p_agent] if p_agent else [])
+
+            if agents:
+                formatted_agents = [
+                    f"`{a}`" if not a.startswith("`") else a for a in agents if a
+                ]
+                if formatted_agents:
+                    body_lines.append(f"- **Agents**: {', '.join(formatted_agents)}")
+
+            if phase.get("skills") if isinstance(phase, dict) else phase.skills:
+                p_skills = (
+                    phase.get("skills") if isinstance(phase, dict) else phase.skills
+                )
+                body_lines.append(f"- **Skills**: {', '.join(p_skills)}")
+            if phase.get("tools") if isinstance(phase, dict) else phase.tools:
+                p_tools = phase.get("tools") if isinstance(phase, dict) else phase.tools
+                body_lines.append(f"- **Tools**: {', '.join(p_tools)}")
 
             # Simplified actions (cleaner list)
             for action in phase.get("actions", []):
@@ -313,10 +347,13 @@ def list_agents() -> list[dict]:
                     pass
             agents.append(
                 {
+                    "id": agent_file.stem,
                     "name": agent_file.stem,
                     "pattern": pattern_dir.name,
                     "description": meta.get("description", ""),
-                    "path": str(agent_file.relative_to(PROJECT_ROOT)),
+                    "path": str(agent_file.relative_to(PROJECT_ROOT)).replace(
+                        "\\", "/"
+                    ),
                 }
             )
     return agents
@@ -342,11 +379,14 @@ def list_skills() -> list[dict]:
                     pass
             skills.append(
                 {
+                    "id": f"{pattern_dir.name}/{skill_dir.name}",
                     "name": meta.get("name", skill_dir.name),
                     "pattern": pattern_dir.name,
                     "description": meta.get("description", ""),
                     "tools": meta.get("tools", []),
-                    "path": str(skill_file.relative_to(PROJECT_ROOT)),
+                    "path": str(skill_file.relative_to(PROJECT_ROOT)).replace(
+                        "\\", "/"
+                    ),
                 }
             )
     return skills
@@ -393,8 +433,71 @@ def list_scripts() -> list[dict]:
 
 
 def list_rules() -> list[dict]:
-    """List all rules."""
-    return list_simple_artifacts(RULES_DIR, "*.md")
+    """List all governance rules with structured metadata."""
+    return list_simple_artifacts(RULES_DIR, "*.md", artifact_type="rule")
+
+
+def parse_rule(filepath: Path) -> dict:
+    """Parse a rule .md file into a structured dictionary."""
+    content = filepath.read_text(encoding="utf-8")
+    name = filepath.stem
+
+    # Split YAML frontmatter from body
+    frontmatter = {}
+    body = content
+    fm_match = re.match(r"^---\s*\n(.*?)\n---\s*\n(.*)", content, re.DOTALL)
+    if fm_match:
+        try:
+            frontmatter = yaml.safe_load(fm_match.group(1)) or {}
+        except yaml.YAMLError:
+            frontmatter = {}
+        body = fm_match.group(2)
+
+    # Extract sections from markdown
+    # Rules often have H1 title, H2 Context, H2 Requirements, H2 Process
+    title_match = re.search(r"^#\s+(.+)$", body, re.MULTILINE)
+    title = title_match.group(1).strip() if title_match else name
+
+    # Context
+    context_match = re.search(
+        r"##\s+Context\n(.*?)(?=\n##|$)", body, re.DOTALL | re.IGNORECASE
+    )
+    context = context_match.group(1).strip() if context_match else ""
+
+    # Requirements (List)
+    req_match = re.search(
+        r"##\s+Requirements\n(.*?)(?=\n##|$)", body, re.DOTALL | re.IGNORECASE
+    )
+    requirements = []
+    if req_match:
+        requirements = [
+            r.strip().replace("- ", "").replace("* ", "")
+            for r in req_match.group(1).split("\n")
+            if r.strip().startswith(("- ", "* "))
+        ]
+
+    # Process (List)
+    proc_match = re.search(
+        r"##\s+Process\n(.*?)(?=\n##|$)", body, re.DOTALL | re.IGNORECASE
+    )
+    process = []
+    if proc_match:
+        process = [
+            p.strip().replace("- ", "").replace("* ", "")
+            for p in proc_match.group(1).split("\n")
+            if p.strip().startswith(("- ", "* "))
+        ]
+
+    return {
+        "name": name,
+        "title": title,
+        "trigger": frontmatter.get("trigger", "manual"),
+        "context": context,
+        "requirements": requirements,
+        "process": process,
+        "path": str(filepath.relative_to(PROJECT_ROOT)).replace("\\", "/"),
+        "content": content,
+    }
 
 
 def list_blueprints() -> list[dict]:
@@ -451,6 +554,22 @@ def list_simple_artifacts(
         return []
 
     for art_file in files:
+        if artifact_type == "rule" and art_file.suffix == ".md":
+            try:
+                rule_data = parse_rule(art_file)
+                artifacts.append(
+                    {
+                        "name": rule_data["name"],
+                        "path": rule_data["path"],
+                        "description": rule_data["context"][:200],
+                        "title": rule_data["title"],
+                        "type": "rule",
+                    }
+                )
+                continue
+            except Exception:
+                pass
+
         try:
             content = art_file.read_text(encoding="utf-8")
         except Exception:

@@ -1,15 +1,22 @@
 ---
-description: Comprehensive workflow for developing production-ready Spring Boot microservices with JPA, REST APIs, testing, securi...
+description: Comprehensive workflow for developing production-ready Spring Boot microservices
+  with JPA, REST APIs, testing-agents, securi...
 version: 1.0.0
+tags:
+- spring
+- microservice
+- development
+- standardized
 ---
+
 
 # Spring Microservice Development
 
-Comprehensive workflow for developing production-ready Spring Boot microservices with JPA, REST APIs, testing, security, and deployment. This workflow guides through service design, implementation, communication patterns, testing strategies, and containerized deployment.
+Comprehensive workflow for developing production-ready Spring Boot microservices with JPA, REST APIs, testing-agents, security, and deployment. This workflow guides through service design, implementation, communication patterns, testing-agents strategies, and containerized deployment.
 
 **Version:** 1.0.0
 **Created:** 2026-02-09
-**Agent:** template-generator, workflow-architect
+**Agent:** template-creator, system-architecture-specialist
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.
 
@@ -88,3 +95,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

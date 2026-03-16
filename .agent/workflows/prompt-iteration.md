@@ -1,11 +1,17 @@
 ---
-description: Iterative prompt engineering and optimization cycle. Covers prompt design, testing, evaluation, and refinement using ...
+description: Iterative prompt engineering and optimization cycle. Covers prompt design,
+  testing-agents, evaluation, and refinement using ...
 version: 1.0.0
+tags:
+- prompt
+- iteration
+- standardized
 ---
+
 
 # Prompt Iteration
 
-Iterative prompt engineering and optimization cycle. Covers prompt design, testing, evaluation, and refinement using DSPy, LangSmith, and A/B testing patterns.
+Iterative prompt engineering and optimization cycle. Covers prompt design, testing-agents, evaluation, and refinement using DSPy, LangSmith, and A/B testing-agents patterns.
 
 **Version:** 1.0.0
 **Created:** 2026-02-10
@@ -59,3 +65,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

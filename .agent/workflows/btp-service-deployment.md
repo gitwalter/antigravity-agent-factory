@@ -1,15 +1,22 @@
 ---
-description: End-to-end workflow for deploying SAP applications to SAP Business Technology Platform (BTP). Covers build configurat...
+description: End-to-end workflow for deploying SAP applications to SAP Business Technology
+  Platform (BTP). Covers build configurat...
 version: 1.0.0
+tags:
+- btp
+- service
+- deployment
+- standardized
 ---
+
 
 # Btp Service Deployment
 
-End-to-end workflow for deploying SAP applications to SAP Business Technology Platform (BTP). Covers build configuration, service bindings, Cloud Foundry/Kyma deployment, and monitoring setup.
+End-to-end workflow for deploying SAP applications to SAP Business Technology Platform (BTP). Covers build configuration, service bindings, Cloud Foundry/Kyma deployment, and logging-and-monitoring setup.
 
 **Version:** 1.0.0
 **Created:** 2026-02-09
-**Applies To:** sap-developer, btp-deployment
+**Applies To:** sap-systems-specialist, btp-deployment
 
 ## Trigger Conditions
 
@@ -26,35 +33,39 @@ This workflow is activated when:
 - "Configure destination service for on-premise connectivity"
 - "Deploy to BTP Kyma runtime"
 
-## Steps
+## Phases
 
-### Create MTA Descriptor (mta.yaml)
+### Phase 1: Environment Readiness
+- **Goal**: Verify BTP subaccount settings, entitlements, and cloud foundry/kyma space.
+- **Agents**: `project-operations-specialist`
+- **Skills**: deploying-to-btp
+- **Tools**: cf-cli, btp-cli
+- **Actions**:
+    - Check entitlements and space configuration.
 
-### Configure XSUAA (xs-security.json)
+### Phase 2: Build & Packaging
+- **Goal**: Build the application artifacts and package them for deployment.
+- **Agents**: `project-operations-specialist`
+- **Skills**: deploying-to-btp
+- **Tools**: mta-tool, npm
+- **Actions**:
+    - Run MTA build and package service artifacts.
 
-### Create Manifest.yml (Optional)
+### Phase 3: Deployment Execution
+- **Goal**: Deploy the packaged artifacts to the BTP environment.
+- **Agents**: `project-operations-specialist`
+- **Skills**: deploying-to-btp
+- **Tools**: cf-deploy, helm
+- **Actions**:
+    - Deploy MTA or Helm charts to BTP.
 
-### Configure XSUAA Service
-
-### Configure Destination Service (if needed)
-
-### Configure Connectivity Service (if needed)
-
-### Configure SAP HANA Cloud (if needed)
-
-### Build MTA Archive
-
-### Deploy to Cloud Foundry
-
-### Deploy to Kyma (Alternative)
-
-### Verify Service Bindings
-
-### Configure Routes
-
-### Assign Roles (if needed)
-
-### Set Up Monitoring
+### Phase 4: Verification & Connectivity
+- **Goal**: Verify service health and establish connectivity (Destination, Cloud Connector).
+- **Agents**: `workflow-quality-specialist`, `project-operations-specialist`
+- **Skills**: verifying-artifact-structures, deploying-to-btp
+- **Tools**: cf-apps, sap-connectivity-service
+- **Actions**:
+    - Verify app status and configure destinations.
 
 
 ## Decision Points
@@ -71,3 +82,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

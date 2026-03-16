@@ -1,35 +1,42 @@
 ---
 name: terraform-module-development
-description: Workflow for developing and managing Cloud-Native infrastructure using Terraform modules.
+description: Workflow for developing and managing Cloud-Native infrastructure using
+  Terraform modules.
 version: 1.0.0
 type: sequential
 domain: operations
 agents:
-  - dotnet-cloud-specialist
+- dotnet-cloud-specialist
 blueprints:
-  - infrastructure-as-code
+- infrastructure-as-code
 steps:
-  - name: Requirements
-    description: Define infrastructure requirements and architecture.
-  - name: Structuring
-    description: Structure the Terraform module with main.tf, variables.tf, and outputs.tf.
-  - name: Backend Config
-    description: Configure remote state storage and backend locking.
-  - name: Provider Config
-    description: Configure provider configurations for targeted cloud (Azure, AWS, GCP).
-  - name: Initialization
-    description: Run terraform init to initialize the working directory.
-  - name: Validation
-    description: Execute terraform validate to ensure syntactic correctness.
-  - name: Security Scan
-    description: Perform security scanning using tfsec or checkov.
-  - name: Planning
-    description: Generate an execution plan (terraform plan).
-  - name: Testing
-    description: Apply changes to a staging environment and verify.
-  - name: Promotion
-    description: Promote to production using automated CI/CD gating.
+- name: Requirements
+  description: Define infrastructure requirements and architecture.
+- name: Structuring
+  description: Structure the Terraform module with main.tf, variables.tf, and outputs.tf.
+- name: Backend Config
+  description: Configure remote state storage and backend locking.
+- name: Provider Config
+  description: Configure provider configurations for targeted cloud (Azure, AWS, GCP).
+- name: Initialization
+  description: Run terraform init to initialize the working directory.
+- name: Validation
+  description: Execute terraform validate to ensure syntactic correctness.
+- name: Security Scan
+  description: Perform security scanning using tfsec or checkov.
+- name: Planning
+  description: Generate an execution plan (terraform plan).
+- name: Testing
+  description: Apply changes to a staging environment and verify.
+- name: Promotion
+  description: Promote to production using automated CI/CD gating.
+tags:
+- terraform
+- module
+- development
+- standardized
 ---
+
 
 # Terraform Module Development Workflow
 
@@ -50,22 +57,38 @@ steps:
 
 ## Phases
 
-### 1. Design & Structure
-Define architecture and setup module boilerplate.
-- **Agent**: `dotnet-cloud-specialist`
-- **Action**: Create `main.tf`, `variables.tf`, and `outputs.tf`.
+### Phase 1: Design & Structure
+- **Goal**: Define infrastructure architecture and set up module boilerplate.
+- **Agents**: `dotnet-cloud-specialist`
+- **Skills**: terraform-module-development
+- **Tools**: write_to_file
+- **Actions**:
+    - Create `main.tf`, `variables.tf`, and `outputs.tf`.
 
-### 2. Initialization & Validation
-Verify basic correctness and project setup.
-- **Action**: Run `terraform init` and `terraform validate`.
+### Phase 2: Initialization & Validation
+- **Goal**: Verify project setup and syntactic correctness.
+- **Agents**: `dotnet-cloud-specialist`
+- **Skills**: terraform-module-development
+- **Tools**: terraform-cli
+- **Actions**:
+    - Run `terraform init` and `terraform validate`.
 
-### 3. Security & Compliance
-Ensure infrastructure adheres to security standards.
-- **Action**: Execute `tfsec` or `checkov` scans.
+### Phase 3: Security & Compliance
+- **Goal**: Ensure infrastructure adheres to security standards.
+- **Agents**: `workflow-quality-specialist`
+- **Skills**: securing-ai-systems
+- **Tools**: tfsec, checkov
+- **Actions**:
+    - Execute security scanning and compliance checks.
 
-### 4. Implementation & Promotion
-Apply changes through a staged pipeline.
-- **Action**: Run `terraform plan` and apply to staging before production.
+### Phase 4: Implementation & Promotion
+- **Goal**: Generate execution plan and promote changes through environments.
+- **Agents**: `project-operations-specialist`
+- **Skills**: committing-releases, terraform-module-development
+- **Tools**: terraform-cli
+- **Actions**:
+    - Run `terraform plan` and apply to staging.
+    - Promote to production after verification.
 
 ## Best Practices
 - **Modularity**: Design modules to be small, focused, and reusable.
@@ -74,4 +97,8 @@ Apply changes through a staged pipeline.
 
 ## Related Workflows
 - `cicd-pipeline.md` - Automates the Terraform execution.
-- `security-audit.md` - Periodic review of infrastructure security.
+- `securing-ai-systems.md` - Periodic review of infrastructure security.
+
+
+## Trigger Examples
+- "Execute terraform-module-development.md"

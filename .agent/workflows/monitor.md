@@ -1,9 +1,13 @@
 ---
-description: Comprehensive workflow for production monitoring and feedback loops.
+description: Comprehensive workflow for production logging-and-monitoring and feedback loops.
 version: 1.0.0
+tags:
+- logging-and-monitoring
+- standardized
 ---
 
-# /monitor Workflow
+
+# /logging-and-monitoring Workflow
 
 **Version:** 1.0.0
 
@@ -16,7 +20,7 @@ version: 1.0.0
 3. **Audit**: Trigger `.agent/skills/releases/governing-repositories/SKILL.md` (audit section).
 4. **Report**: Generate `monitor-report.md` using `knowledge/templates/monitor-report.md`.
 5. **Output**: Write findings to `knowledge/monitor-report.md`.
-6. **Cycle Completion**: Propose the final "Closure" of the Plane issue and feed new ideas back to `/brainstorm`.
+6. **Cycle Completion**: Propose the final "Closure" of the Plane issue and feed new ideas back to `/brainstorming-ideas`.
 
 ## Phase Gate (Monitor):
 - Mandatory generation of `monitor-report.md`.
@@ -29,3 +33,13 @@ version: 1.0.0
 
 ## Trigger Examples:
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

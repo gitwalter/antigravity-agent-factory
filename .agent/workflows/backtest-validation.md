@@ -1,8 +1,14 @@
 ---
-description: Strategy backtesting workflow with walk-forward analysis and Monte Carlo simulation. Covers data preparation, backtest execution...
+description: Strategy backtesting workflow with walk-forward analysis and Monte Carlo
+  simulation. Covers data preparation, backtest execution...
 dashboard: true
 version: 1.0.0
+tags:
+- backtest
+- validation
+- standardized
 ---
+
 
 # Backtest Validation
 
@@ -67,3 +73,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

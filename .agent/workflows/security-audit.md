@@ -1,7 +1,13 @@
 ---
-description: Comprehensive security audit workflow that systematically reviews code for vulnerabilities, checks dependencies, vali...
+description: Comprehensive security audit workflow that systematically reviews code
+  for vulnerabilities, checks dependencies, vali...
 version: 1.0.0
+tags:
+- security
+- audit
+- standardized
 ---
+
 
 # Security Audit
 
@@ -75,3 +81,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

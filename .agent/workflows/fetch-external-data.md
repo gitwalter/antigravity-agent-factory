@@ -1,7 +1,13 @@
 ---
 description: Accessing and analyzing global financial and economic data.
 version: 1.0.0
+tags:
+- fetch
+- external
+- data
+- standardized
 ---
+
 
 # /fetch-external-data Workflow
 
@@ -64,3 +70,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

@@ -14,8 +14,24 @@ import json
 from datetime import datetime
 
 # --- Configuration ---
-WORKSPACE_SLUG = "agent-factory"
-PROJECT_ID = "e71eb003-87d4-4b0c-a765-a044ac5affbe"
+SKILL_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONTEXT_FILE = os.path.join(SKILL_ROOT, "references", "project_context.json")
+
+
+def load_context():
+    """Load persistent context for IDs and mappings."""
+    if os.path.exists(CONTEXT_FILE):
+        try:
+            with open(CONTEXT_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Warning: Failed to load context file: {e}")
+    return {}
+
+
+context = load_context()
+WORKSPACE_SLUG = context.get("WORKSPACE_SLUG", "agent-factory")
+PROJECT_ID = context.get("PROJECT_ID", "e71eb003-87d4-4b0c-a765-a044ac5affbe")
 API_BASE = (
     f"https://api.plane.so/api/v1/workspaces/{WORKSPACE_SLUG}/projects/{PROJECT_ID}"
 )

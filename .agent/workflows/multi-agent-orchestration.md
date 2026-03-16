@@ -1,15 +1,22 @@
 ---
-description: Workflow for designing, implementing, and deploying multi-agent AI systems. Covers topology selection, agent implemen...
+description: Workflow for designing, implementing, and deploying multi-agent AI systems.
+  Covers topology selection, agent implemen...
 version: 1.0.0
+tags:
+- multi
+- agent
+- orchestration
+- standardized
 ---
+
 
 # Multi Agent Orchestration
 
-Workflow for designing, implementing, and deploying multi-agent AI systems. Covers topology selection, agent implementation, coordination patterns, and testing using LangGraph, CrewAI, or AutoGen.
+Workflow for designing, implementing, and deploying multi-agent AI systems. Covers topology selection, agent implementation, coordination patterns, and testing-agents using LangGraph, CrewAI, or AutoGen.
 
 **Version:** 1.0.0
 **Created:** 2026-02-02
-**Applies To:** ai-agent-development, multi-agent-systems, python-multi-agent
+**Applies To:** ai-developing-ai-agents, multi-agent-systems, python-multi-agent
 
 ## Trigger Conditions
 
@@ -21,7 +28,7 @@ This workflow is activated when:
 - Autonomous agent deployment
 
 **Trigger Examples:**
-- "Design a research agent team"
+- "Design a researching-first agent team"
 - "Create agents for code review"
 - "Build a multi-agent customer service system"
 - "Orchestrate agents for data analysis"
@@ -73,3 +80,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

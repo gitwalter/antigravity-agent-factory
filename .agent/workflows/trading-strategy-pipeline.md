@@ -1,7 +1,14 @@
 ---
-description: End-to-end workflow for developing, validating, and deploying algorithmic trading strategies. Covers hypothesis forma...
+description: End-to-end workflow for developing, validating, and deploying algorithmic
+  trading strategies. Covers hypothesis forma...
 version: 1.0.0
+tags:
+- trading
+- strategy
+- pipeline
+- standardized
 ---
+
 
 # Trading Strategy Pipeline
 
@@ -73,3 +80,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

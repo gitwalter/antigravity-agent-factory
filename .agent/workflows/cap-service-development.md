@@ -1,11 +1,18 @@
 ---
-description: End-to-end workflow for developing SAP Cloud Application Programming Model (CAP) services. Covers CDS modeling, servi...
+description: End-to-end workflow for developing SAP Cloud Application Programming
+  Model (CAP) services. Covers CDS modeling, servi...
 version: 1.0.0
+tags:
+- cap
+- service
+- development
+- standardized
 ---
+
 
 # Cap Service Development
 
-End-to-end workflow for developing SAP Cloud Application Programming Model (CAP) services. Covers CDS modeling, service implementation, testing, and deployment to SAP BTP.
+End-to-end workflow for developing SAP Cloud Application Programming Model (CAP) services. Covers CDS modeling, service implementation, testing-agents, and deployment to SAP BTP.
 
 **Version:** 1.0.0
 **Created:** 2026-02-02
@@ -26,27 +33,40 @@ This workflow is activated when:
 - "Deploy CAP service to BTP"
 - "Implement custom handlers in CAP"
 
-## Steps
+## Phases
 
-### Create Entity Definitions
+### Phase 1: Data Modeling & Entity Definition
+- **Goal**: Design the application data model using CDS entity definitions and aspects.
+- **Agents**: `python-ai-specialist`
+- **Skills**: modeling-cds, analyzing-code
+- **Tools**: write_to_file
+- **Actions**:
+    - Create entity definitions and add aspects.
 
-### Add Aspects
+### Phase 2: Service Definition & Handler Implementation
+- **Goal**: Implement service logic and event handlers for business logic.
+- **Agents**: `python-ai-specialist`
+- **Skills**: modeling-cds
+- **Tools**: write_to_file
+- **Actions**:
+    - Create service definitions and implement event handlers.
 
-### Create Service Definitions
+### Phase 3: UI & Integration Testing
+- **Goal**: Add UI annotations, create the Fiori app, and perform tests.
+- **Agents**: `workflow-quality-specialist`, `project-operations-specialist`
+- **Skills**: developing-fiori-apps, testing-agents
+- **Tools**: run_tests.py, fiori-tools-cli
+- **Actions**:
+    - Perform unit and integration testing-agents.
+    - Add UI annotations and create Fiori app.
 
-### Implement Event Handlers
-
-### Unit Testing
-
-### Integration Testing
-
-### Add UI Annotations
-
-### Create Fiori App
-
-### Configure MTA
-
-### Build and Deploy
+### Phase 4: BTP Configuration & Deployment
+- **Goal**: Configure MTA and deploy the application to SAP BTP.
+- **Agents**: `project-operations-specialist`
+- **Skills**: deploying-to-btp, committing-releases
+- **Tools**: mta-tool, cf-cli
+- **Actions**:
+    - Configure MTA and build/deploy.
 
 
 ## Decision Points
@@ -63,3 +83,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

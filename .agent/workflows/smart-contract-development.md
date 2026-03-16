@@ -1,35 +1,42 @@
 ---
-name: smart-contract-development
-description: Web3 workflow for designing, implementing, and auditing smart contracts on EVM chains.
+name: securing-ai-systems
+description: Web3 workflow for designing, implementing, and auditing smart contracts
+  on EVM chains.
 version: 1.0.0
 type: iterative
 domain: blockchain
 agents:
-  - blockchain-guru-specialist
+- blockchain-guru-specialist
 blueprints:
-  - defi-protocol
+- defi-protocol
 steps:
-  - name: Architecture Design
-    description: Define contract logic, state variables, and access controls.
-  - name: Implementation
-    description: Write Solidity code following security best practices.
-  - name: Unit Testing
-    description: Develop comprehensive test suite using Foundry or Hardhat.
-  - name: Static Analysis
-    description: Run Slither, Mythril, or other static analysis tools.
-  - name: Gas Optimization
-    description: Refactor code to minimize gas consumption.
-  - name: Formal Verification
-    description: Perform formal verification for critical logic components.
-  - name: Deployment Plan
-    description: Prepare migration scripts and deployment configuration.
-  - name: Security Audit
-    description: Conduct internal and third-party security audits.
-  - name: Testnet Deployment
-    description: Deploy to Rinkeby, Goerli, or Sepolia for integration testing.
-  - name: Mainnet Release
-    description: Final deployment to Ethereum, Polygon, or other mainnets.
+- name: Architecture Design
+  description: Define contract logic, state variables, and access controls.
+- name: Implementation
+  description: Write Solidity code following security best practices.
+- name: Unit Testing
+  description: Develop comprehensive test suite using Foundry or Hardhat.
+- name: Static Analysis
+  description: Run Slither, Mythril, or other static analysis tools.
+- name: Gas Optimization
+  description: Refactor code to minimize gas consumption.
+- name: Formal Verification
+  description: Perform formal verification for critical logic components.
+- name: Deployment Plan
+  description: Prepare migration scripts and deployment configuration.
+- name: Security Audit
+  description: Conduct internal and third-party security audits.
+- name: Testnet Deployment
+  description: Deploy to Rinkeby, Goerli, or Sepolia for integration testing-agents.
+- name: Mainnet Release
+  description: Final deployment to Ethereum, Polygon, or other mainnets.
+tags:
+- smart
+- contract
+- development
+- standardized
 ---
+
 
 # Smart Contract Development Workflow
 
@@ -50,22 +57,40 @@ steps:
 
 ## Phases
 
-### 1. Architecture & Security Design
-Define the contract's economic and logic model.
-- **Agent**: `blockchain-guru-specialist`
-- **Action**: Map out state variables and access control lists.
+### Phase 1: Architecture & Security Design
+- **Goal**: Define the contract logic, state variables, and access controls for secure decentralized logic.
+- **Agents**: `blockchain-guru-specialist`
+- **Skills**: securing-ai-systems, designing-ai-systems
+- **Tools**: mcp_memory_search_nodes
+- **Actions**:
+    - Map out state variables and access control lists (ACL).
 
-### 2. Implementation & Unit Testing
-Write code and verify logic in isolation.
-- **Action**: Implement Solidity contracts and write tests using Foundry.
+### Phase 2: Implementation & Unit Testing
+- **Goal**: Implement Solidity contracts and verify logic in isolation with high coverage.
+- **Agents**: `blockchain-guru-specialist`
+- **Skills**: securing-ai-systems, testing-agents
+- **Tools**: write_to_file, foundry-cli, hardhat-cli
+- **Actions**:
+    - Implement Solidity contracts.
+    - Write and execute unit tests using Foundry or Hardhat.
 
-### 3. Analysis & Optimization
-Minimize risk and operational costs.
-- **Action**: Run static analysis and perform gas benchmarking.
+### Phase 3: Static Analysis & Gas Optimization
+- **Goal**: Minimize operational costs and identify common vulnerabilities using automated tools.
+- **Agents**: `workflow-quality-specialist`
+- **Skills**: securing-ai-systems, securing-ai-systems
+- **Tools**: slither-cli, mythril-cli
+- **Actions**:
+    - Run static analysis (Slither/Mythril).
+    - Perform gas benchmarking and optimization refactoring.
 
-### 4. Auditing & Release
-Final security verification and mainnet launch.
-- **Action**: Conduct security audits and deploy to testnet before mainnet.
+### Phase 4: Auditing & Testnet Deployment
+- **Goal**: Final security verification and integration testing-agents on public testnets.
+- **Agents**: `blockchain-guru-specialist`, `workflow-quality-specialist`
+- **Skills**: securing-ai-systems, deployment-workflow
+- **Tools**: foundry-cli, gnosis-safe-ui
+- **Actions**:
+    - Conduct internal security audit.
+    - Deploy to Sepolia/Goerli for integration testing-agents.
 
 ## Best Practices
 - **Security-First**: Always use OpenZeppelin contracts for standard functionality.
@@ -75,3 +100,7 @@ Final security verification and mainnet launch.
 ## Related Workflows
 - `deployment-workflow.md` - Handles the cross-chain deployment logic.
 - `security-audit-workflow.md` - Deep dive into security verification.
+
+
+## Trigger Examples
+- "Execute securing-ai-systems.md"

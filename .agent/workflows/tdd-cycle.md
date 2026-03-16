@@ -1,7 +1,13 @@
 ---
-description: Test-Driven Development workflow implementing the Red-Green-Refactor cycle. Guides developers through writing failing...
+description: Test-Driven Development workflow implementing the Red-Green-Refactor
+  cycle. Guides developers through writing failing...
 version: 1.0.0
+tags:
+- tdd
+- cycle
+- standardized
 ---
+
 
 # Tdd Cycle
 
@@ -69,3 +75,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

@@ -1,7 +1,11 @@
 ---
 description: Convergent synthesis of raw ideas into opportunity clusters.
 version: 1.0.0
+tags:
+- cluster
+- standardized
 ---
+
 
 # /cluster Workflow
 
@@ -23,3 +27,13 @@ version: 1.0.0
 
 ## Trigger Examples:
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

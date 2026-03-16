@@ -1,7 +1,14 @@
 ---
-description: Multi-agent system development workflow including agent design, coordination setup, communication patterns, and orche...
+description: Multi-agent system development workflow including agent design, coordination
+  setup, communication patterns, and orche...
 version: 1.0.0
+tags:
+- multi
+- agent
+- development
+- standardized
 ---
+
 
 # Multi Agent Development
 
@@ -21,7 +28,7 @@ This workflow is activated when:
 - Coordination between agents needed
 
 **Trigger Examples:**
-- "Build a multi-agent system for research"
+- "Build a multi-agent system for researching-first"
 - "Create a team of agents with different roles"
 - "Implement agent coordination"
 - "Develop a CrewAI workflow"
@@ -59,3 +66,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

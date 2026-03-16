@@ -1,7 +1,13 @@
 ---
-description: Jira-triggered bugfix workflow from ticket analysis through resolution. Covers ticket fetching, root cause analysis, ...
+description: Jira-triggered bugfix workflow from ticket analysis through resolution.
+  Covers ticket fetching, root cause analysis, ...
 version: 1.0.0
+tags:
+- jira
+- bugfix
+- standardized
 ---
+
 
 # Jira Bugfix
 
@@ -59,3 +65,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

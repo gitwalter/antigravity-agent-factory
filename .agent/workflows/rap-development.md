@@ -1,7 +1,13 @@
 ---
-description: End-to-end workflow for developing RESTful ABAP Programming Model (RAP) business objects in SAP S/4HANA. Covers CDS m...
+description: End-to-end workflow for developing RESTful ABAP Programming Model (RAP)
+  business objects in SAP S/4HANA. Covers CDS m...
 version: 1.0.0
+tags:
+- rap
+- development
+- standardized
 ---
+
 
 # Rap Development
 
@@ -30,32 +36,49 @@ This workflow is activated when:
 
 ## Phases
 
-### 1. Data Modeling (CDS)
-- **Goal**: Define the core data structure and relationships.
-- **Action 1**: Create the database table for persistent storage.
-- **Action 2**: Define the CDS Interface View (`R_ProductTP`) and Projection View (`C_ProductTP`).
-- **Tool**: Use `mcp_memory_search_nodes` to find reusable CDS patterns.
+### Phase 1: Data Modeling (CDS)
+- **Goal**: Define the core data structure and relationships in the ABAP layer.
+- **Agents**: `python-ai-specialist` (mapped to SAP Specialist)
+- **Skills**: developing-rap-objects, analyzing-code
+- **Tools**: mcp_memory_search_nodes
+- **Actions**:
+    - Create the database table for persistent storage.
+    - Define the CDS Interface View (`R_ProductTP`) and Projection View (`C_ProductTP`).
 
-### 2. Behavior Definition & Implementation
-- **Goal**: Define business logic and CRUD capabilities.
-- **Action 1**: Create the Behavior Definition (`BDEF`).
-- **Action 2**: Implement the Behavior Pool (Local Types) for actions, validations, and determinations.
-- **Reference**: Follow the `rap-with-draft` pattern if draft handling is required.
+### Phase 2: Behavior Definition & Implementation
+- **Goal**: Define business logic, CRUD capabilities, and custom actions.
+- **Agents**: `python-ai-specialist`
+- **Skills**: developing-rap-objects
+- **Tools**: write_to_file
+- **Actions**:
+    - Create the Behavior Definition (`BDEF`).
+    - Implement the Behavior Pool (Local Types) for actions, validations, and determinations.
 
-### 3. Service Exposure
-- **Goal**: Expose the BO as a consumable OData service.
-- **Action 1**: Define the Service Definition (`SRV`).
-- **Action 2**: Create the Service Binding (UI or Web API).
+### Phase 3: Service Exposure
+- **Goal**: Expose the BO as a consumable OData service for Fiori or external consumption.
+- **Agents**: `python-ai-specialist`
+- **Skills**: designing-apis
+- **Tools**: replace_file_content
+- **Actions**:
+    - Define the Service Definition (`SRV`).
+    - Create the Service Binding (UI or Web API).
 
-### 4. UI & Orchestration
-- **Goal**: Provide a consumption layer.
-- **Action**: Add UI Annotations via Metadata Extension (`MDE`) or directly in the CDS.
-- **Tool**: Trigger `/fiori-app-development` if a custom UI is required.
+### Phase 4: UI & Orchestration
+- **Goal**: Provide a consumption layer with Fiori Elements annotations.
+- **Agents**: `python-ai-specialist`
+- **Skills**: developing-fiori-apps
+- **Tools**: write_to_file
+- **Actions**:
+    - Add UI Annotations via Metadata Extension (`MDE`) or directly in the CDS.
 
-### 5. Verification & Deployment
-- **Goal**: Ensure quality and move to production.
-- **Action**: Run ABAP Unit tests and verify authorization objects.
-- **Tool**: Trigger `/quality-gate` before transport.
+### Phase 5: Verification & Deployment
+- **Goal**: Ensure quality via ABAP Unit and move to production via transports.
+- **Agents**: `workflow-quality-specialist`, `project-operations-specialist`
+- **Skills**: verifying-artifact-structures, committing-releases
+- **Tools**: run_tests.py (simulated ABAP unit)
+- **Actions**:
+    - Run ABAP Unit tests and verify authorization objects.
+    - Trigger quality gate before transport.
 
 
 ## Decision Points
@@ -72,3 +95,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

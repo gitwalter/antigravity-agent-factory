@@ -1,35 +1,42 @@
 ---
 name: data-pipeline-orchestration
-description: Workflow for managing Data Pipelines using ELT patterns, dbt modeling, and orchestration.
+description: Workflow for managing Data Pipelines using ELT patterns, dbt modeling,
+  and orchestration.
 version: 1.0.0
 type: pipeline
 domain: python
 agents:
-  - data-architect-specialist
+- data-architect-specialist
 blueprints:
-  - modern-data-stack
+- modern-data-stack
 steps:
-  - name: Ingestion
-    description: Ingest raw data into a landing zone or staging schema in the data warehouse.
-  - name: Modeling Setup
-    description: Initialize dbt project or create new models for transformation.
-  - name: Staging
-    description: Implement staging models to stabilize schemas and perform basic casting.
-  - name: Business Logic
-    description: Develop core business logic in intermediate and mart models.
-  - name: Validation
-    description: Run dbt tests (dbt test) to verify data quality and uniqueness.
-  - name: Documentation
-    description: Generate and review dbt documentation to maintain lineage.
-  - name: Orchestration
-    description: Configure orchestration tasks in Airflow (DAGs) or Dagster (Assets).
-  - name: Monitoring
-    description: Implement data drift detection using specialized validation tools.
-  - name: Deployment
-    description: Deploy models to production environment using a blue-green strategy.
-  - name: Maintenance
-    description: Monitor pipeline performance and data freshness SLAs.
+- name: Ingestion
+  description: Ingest raw data into a landing zone or staging schema in the data warehouse.
+- name: Modeling Setup
+  description: Initialize dbt project or create new models for transformation.
+- name: Staging
+  description: Implement staging models to stabilize schemas and perform basic casting.
+- name: Business Logic
+  description: Develop core business logic in intermediate and mart models.
+- name: Validation
+  description: Run dbt tests (dbt test) to verify data quality and uniqueness.
+- name: Documentation
+  description: Generate and review dbt documentation to maintain lineage.
+- name: Orchestration
+  description: Configure orchestration tasks in Airflow (DAGs) or Dagster (Assets).
+- name: Monitoring
+  description: Implement data drift detection using specialized validation tools.
+- name: Deployment
+  description: Deploy models to production environment using a blue-green strategy.
+- name: Maintenance
+  description: Monitor pipeline performance and data freshness SLAs.
+tags:
+- data
+- pipeline
+- orchestration
+- standardized
 ---
+
 
 # Data Pipeline Orchestration Workflow
 
@@ -75,3 +82,7 @@ Automate the pipeline and promote to production.
 ## Related Workflows
 - `ml-training-pipeline.md` - Consumes modeled data.
 - `cicd-pipeline.md` - Infrastructure for deployment.
+
+
+## Trigger Examples
+- "Execute data-pipeline-orchestration.md"

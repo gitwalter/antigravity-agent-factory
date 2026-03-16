@@ -1,7 +1,13 @@
 ---
-description: Systematic workflow for planning sprints, including backlog review, capacity calculation, story selection, and sprint...
+description: Systematic workflow for planning sprints, including backlog review, capacity
+  calculation, story selection, and sprint...
 version: 1.0.0
+tags:
+- sprint
+- planning
+- standardized
 ---
+
 
 # Sprint Planning
 
@@ -9,7 +15,7 @@ Systematic workflow for planning sprints, including backlog review, capacity cal
 
 **Version:** 1.0.0
 **Created:** 2026-02-02
-**Agent:** workflow-architect
+**Agent:** system-architecture-specialist
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.
 
@@ -56,7 +62,7 @@ This workflow is activated when:
 ### 5. Planning Finalization
 - **Goal**: Ensure the sprint is balanced and understood.
 - **Action**: Generate a sprint summary report and notify the team.
-- **Tool**: Invoke `/documentation-workflow`.
+- **Tool**: Invoke `/generating-documentation`.
 
 
 ## Decision Points
@@ -73,3 +79,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

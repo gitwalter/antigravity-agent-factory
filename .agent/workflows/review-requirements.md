@@ -1,9 +1,15 @@
 ---
-description: Adversarial review of requirements using 3 personas + a judge to improve F1 quality.
+description: Adversarial review of requirements using 3 personas + a judge to improve
+  F1 quality.
 version: 1.0.0
+tags:
+- review
+- requirements
+- standardized
 ---
 
-# /review-requirements Workflow
+
+# /reviewing-requirements Workflow
 
 **Version:** 1.0.0
 
@@ -24,3 +30,13 @@ version: 1.0.0
 
 ## Trigger Examples:
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

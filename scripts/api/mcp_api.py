@@ -11,6 +11,7 @@ Provides REST and WebSocket endpoints for:
 
 import os
 import json
+import logging
 import asyncio
 from pathlib import Path
 from contextlib import asynccontextmanager
@@ -111,6 +112,25 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# --- Schemas ---
+
+
+@app.get("/api/schemas/{name}")
+async def api_get_schema(name: str):
+    """Serve a JSON schema from the schemas directory."""
+    if not name.endswith(".json"):
+        name += ".schema.json"
+    schema_path = PROJECT_ROOT / "schemas" / name
+    if not schema_path.exists():
+        # Try without .schema
+        schema_path = PROJECT_ROOT / "schemas" / name.replace(".schema.json", ".json")
+
+    if not schema_path.exists():
+        raise HTTPException(status_code=404, detail=f"Schema {name} not found")
+
+    return json.loads(schema_path.read_text(encoding="utf-8"))
 
 
 # ---------------------------------------------------------------------------

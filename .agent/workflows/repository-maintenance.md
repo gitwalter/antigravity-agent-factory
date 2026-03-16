@@ -1,7 +1,13 @@
 ---
-description: Automated workflow for full repository audits, structural cleaning, and artifact synchronization.
+description: Automated workflow for full repository audits, structural cleaning, and
+  artifact synchronization.
 version: 1.0.0
+tags:
+- repository
+- maintenance
+- standardized
 ---
+
 
 # Repository Maintenance
 
@@ -46,7 +52,7 @@ This workflow is activated when:
 
 ### 5. Artifact Documentation (Proof of Work)
 - **Action**: Create or update `walkthrough.md` in the brain directory for the current session.
-- **Requirement**: Must include proof of testing and a summary of key architectural changes.
+- **Requirement**: Must include proof of testing-agents and a summary of key architectural changes.
 
 ### 6. Artifact Cache Synchronization
 - **Command**: `python scripts/validation/update_index.py --full`
@@ -88,3 +94,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

@@ -1,7 +1,14 @@
 ---
 description: How to migrate an existing skill to the new Jinja2 template format
 version: 1.0.0
+tags:
+- migrate
+- skill
+- to
+- jinja2
+- standardized
 ---
+
 # Migrate Skill to Jinja2 Template
 
 Use this workflow to migrate an existing static Markdown skill to the new Jinja2 template format (`.j2`).
@@ -99,3 +106,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

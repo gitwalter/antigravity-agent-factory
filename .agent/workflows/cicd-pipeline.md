@@ -1,7 +1,13 @@
 ---
-description: Comprehensive workflow for managing continuous integration and deployment pipelines. Covers build, test, security sca...
+description: Comprehensive workflow for managing continuous integration and deployment
+  pipelines. Covers build, test, security sca...
 version: 1.0.0
+tags:
+- cicd
+- pipeline
+- standardized
 ---
+
 
 # Cicd Pipeline
 
@@ -28,29 +34,47 @@ This workflow is activated when:
 - "Build and test"
 - "Release to production"
 
-## Steps
+## Phases
 
-### Install Dependencies
+### Phase 1: Build & Dependency Management
+- **Goal**: Install dependencies and compile the source code.
+- **Agents**: `project-operations-specialist`
+- **Skills**: cicd-pipeline
+- **Tools**: npm, maven, gradle
+- **Actions**:
+    - Install dependencies and build artifacts.
 
-### Compile/Build
+### Phase 2: Automated Testing
+- **Goal**: Execute unit and integration tests to ensure code quality.
+- **Agents**: `workflow-quality-specialist`
+- **Skills**: testing-agents
+- **Tools**: jest, pytest, junit
+- **Actions**:
+    - Run the test suite and verify coverage.
 
-### Unit Tests
+### Phase 3: Security & Quality Scans
+- **Goal**: Perform static analysis and dependency scanning.
+- **Agents**: `workflow-quality-specialist`
+- **Skills**: securing-ai-systems, verifying-artifact-structures
+- **Tools**: sonarqube, snyk
+- **Actions**:
+    - Execute SAST and dependency vulnerability scans.
 
-### Integration Tests
+### Phase 4: Staging Deployment & Verification
+- **Goal**: Deploy to staging and perform smoke tests.
+- **Agents**: `project-operations-specialist`
+- **Skills**: committing-releases
+- **Tools**: kubectl, cf-push
+- **Actions**:
+    - Deploy to the staging environment and verify health.
 
-### SAST
-
-### Dependency Scan
-
-### Deploy
-
-### Smoke Test
-
-### Request Approval
-
-### Production Deploy
-
-### Verify Production
+### Phase 5: Production Release
+- **Goal**: Deploy to production after approval and verify.
+- **Agents**: `project-operations-specialist`
+- **Skills**: committing-releases, logging-and-monitoring
+- **Tools**: safety-gate, grafana
+- **Actions**:
+    - Execute production deployment and logging-and-monitoring post-release.
 
 
 ## Decision Points
@@ -67,3 +91,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

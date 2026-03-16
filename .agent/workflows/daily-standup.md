@@ -1,7 +1,13 @@
 ---
-description: Automated workflow for facilitating daily standup meetings, including status collection, blocker identification, and ...
+description: Automated workflow for facilitating daily standup meetings, including
+  status collection, blocker identification, and ...
 version: 1.0.0
+tags:
+- daily
+- standup
+- standardized
 ---
+
 
 # Daily Standup
 
@@ -9,7 +15,7 @@ Automated workflow for facilitating daily standup meetings, including status col
 
 **Version:** 1.0.0
 **Created:** 2026-02-02
-**Agent:** workflow-architect
+**Agent:** system-architecture-specialist
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`. See **Path Configuration Guide**.
 
@@ -63,3 +69,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

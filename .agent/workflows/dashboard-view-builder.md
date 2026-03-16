@@ -2,7 +2,13 @@
 description: Custom Dashboard View Builder Workflow
 dashboard: true
 version: 1.0.0
+tags:
+- dashboard
+- view
+- builder
+- standardized
 ---
+
 
 # Dashboard View Builder Workflow
 
@@ -19,31 +25,51 @@ Standardized process for creating and optimizing dashboard views.
 - "Build a custom view for downtime root-cause analysis."
 - "Optimize the warehouse operations dashboard layout."
 
-## Steps
+## Phases
 
-### 1. Requirement Intake
-- Identify the core business question (e.g., "What is the primary cause of downtime?").
-- Select a target domain (Warehouse, Inventory, Sales).
+### Phase 1: Requirement Intake
+- **Goal**: Identify core business questions and target analytical domains.
+- **Agents**: `python-ai-specialist`
+- **Skills**: dashboard-view-builder
+- **Tools**: mcp_memory_search_nodes
+- **Actions**:
+    - Select domain and identify primary analytical objectives.
 
-### 2. Widget Selection
-- Choose the primary KPI widget for the top-left quadrant.
-- select 2-3 supporting visualizations:
-  - **Pareto Chart** for bottleneck analysis.
-  - **Heatmap** for spatial distribution.
-  - **Time Series** for trend identification.
+### Phase 2: Widget & Layout Design
+- **Goal**: Select appropriate KPI widgets and optimize visual layout.
+- **Agents**: `python-ai-specialist`
+- **Skills**: dashboard-view-builder
+- **Tools**: design-center-ui
+- **Actions**:
+    - Choose KPI widgets (Pareto, Heatmap, Time Series).
+    - Arrange widgets for optimal data density.
 
-### 3. Layout Optimization
-- Use the **🛠️ Design Center** to arrange widgets.
-- Ensure high-density data is presented clearly with appropriate spacing.
+### Phase 3: Statistical Verification
+- **Goal**: Ensure widgets support statistical significance and data accuracy.
+- **Agents**: `workflow-quality-specialist`
+- **Skills**: dashboard-data-health
+- **Tools**: statistical-validator
+- **Actions**:
+    - Verify statistical significance and add metadata annotations.
 
-### 4. Significance Check
-- Verify that the chosen widgets support statistical significance claims.
-- Add annotations for data source and period.
-
-### 5. Finalize & Publish
-- Save as a new "Situational Blueprint".
-- Set as default view for the relevant analytical domain.
+### Phase 4: Finalize & Publish
+- **Goal**: Save and publish the situational blueprint as the default view.
+- **Agents**: `project-operations-specialist`
+- **Skills**: committing-releases
+- **Tools**: dashboard-publisher
+- **Actions**:
+    - Save as Situational Blueprint and set as default.
 
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

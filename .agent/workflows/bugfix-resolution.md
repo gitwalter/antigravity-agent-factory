@@ -1,7 +1,14 @@
 ---
-description: Systematic workflow for resolving bugs from ticket analysis through implementation and verification. This workflow ensures thorough root cause analysis, proper fix implementation, and comprehensive testing.
+description: Systematic workflow for resolving bugs from ticket analysis through implementation
+  and verification. This workflow ensures thorough root cause analysis, proper fix
+  implementation, and comprehensive testing-agents.
 version: 1.1.0
+tags:
+- bugfix
+- resolution
+- standardized
 ---
+
 
 # Bugfix Resolution
 
@@ -75,14 +82,22 @@ Systematic workflow for resolving bugs from ticket analysis through implementati
 ### 7. Documentation & Closure
 - **Goal**: Update tracking and persist knowledge.
 - **Agent**: `project-operations-specialist`
-- **Skills**: managing-plane-tasks, documentation-workflow
+- **Skills**: managing-plane-tasks, generating-documentation
 - **Actions**:
     - Update the status in Plane to 'Done'.
-    - Generate `walkthrough.md` via `/documentation-workflow`.
-    - Close the issue using `post_solution.py` to render the solution via Jinja2.
+    - Generate `walkthrough.md` via `/generating-documentation`.
+    - Close the issue using `managing-plane-tasks.py` to render the solution via Jinja2.
     - Induct new patterns into the memory bank.
 
 ## Best Practices
 - **Memory First**: Always check memory before starting technical work.
 - **Traceability**: All fixes must be tied to a Plane issue.
 - **High-Fidelity**: Use Jinja2 templates for all Plane updates.
+
+
+## Trigger Examples
+- "Execute bugfix-resolution.md"
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

@@ -1,7 +1,13 @@
 ---
-description: Systematic workflow for maintaining a healthy product backlog through prioritization, estimation, story refinement, a...
+description: Systematic workflow for maintaining a healthy product backlog through
+  prioritization, estimation, story refinement, a...
 version: 1.0.0
+tags:
+- backlog
+- refinement
+- standardized
 ---
+
 
 # Backlog Refinement
 
@@ -9,7 +15,7 @@ Systematic workflow for maintaining a healthy product backlog through prioritiza
 
 **Version:** 1.0.0
 **Created:** 2026-02-02
-**Agent:** workflow-architect
+**Agent:** system-architecture-specialist
 
 ## Trigger Conditions
 
@@ -50,7 +56,7 @@ This workflow is activated when:
 - **Goal**: Formalize the refined state.
 - **Action**: Move ready items to "Todo".
 - **Tool**: `mcp_plane_update_work_item` with `state_id`.
-- **Reporting**: Invoke `/documentation-workflow` to summarize the session.
+- **Reporting**: Invoke `/generating-documentation` to summarize the session.
 
 
 ## Decision Points
@@ -67,3 +73,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

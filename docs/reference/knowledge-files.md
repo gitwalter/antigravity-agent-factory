@@ -1,6 +1,6 @@
 # Knowledge Files Catalog
 
-The factory currently includes **281 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
+The factory currently includes **282 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
 
 | File | Type | Description |
 |------|------|-------------|
@@ -295,6 +295,7 @@ The factory currently includes **281 knowledge files** covering: various aspects
 | [workflow-catalog](file:///.agent/knowledge/workflow-catalog.json) |  |  |
 | [workflow-entities](file:///.agent/knowledge/workflow-entities.json) |  |  |
 | [workflow-patterns](file:///.agent/knowledge/workflow-patterns.json) |  |  |
+| [workflow-structural-patterns](file:///.agent/knowledge/workflow-structural-patterns.json) |  |  |
 | [workflow-system-entities](file:///.agent/knowledge/workflow-system-entities.json) |  |  |
 | [workshop-facilitation](file:///.agent/knowledge/workshop-facilitation.json) |  |  |
 | [workshop-facilitation-knowledge](file:///.agent/knowledge/workshop-facilitation-knowledge.json) |  |  |

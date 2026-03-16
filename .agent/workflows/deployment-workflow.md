@@ -1,7 +1,13 @@
 ---
-description: Blockchain deployment workflow from testnet through mainnet. Covers build verification, testnet deployment, mainnet p...
+description: Blockchain deployment workflow from testnet through mainnet. Covers build
+  verification, testnet deployment, mainnet p...
 version: 1.0.0
+tags:
+- deployment
+- workflow
+- standardized
 ---
+
 
 # Deployment Workflow
 
@@ -26,23 +32,41 @@ This workflow is activated when:
 - "Prepare for mainnet deployment"
 - "Upgrade the contract"
 
-## Steps
+## Phases
 
-### Build and Verify
+### Phase 1: Build & Environment Verification
+- **Goal**: Verify build artifacts and ensure environment variables are correctly configured.
+- **Agents**: `project-operations-specialist`
+- **Skills**: deployment-workflow, cicd-pipeline
+- **Tools**: cargo, foundry-cli, shell-execute
+- **Actions**:
+    - Run build commands and verify metadata integrity.
 
-### Deployment Config
+### Phase 2: Testnet Deployment & smoke Testing
+- **Goal**: Deploy artifacts to testnet/devnet and execute smoke tests.
+- **Agents**: `blockchain-guru-specialist`
+- **Skills**: deployment-workflow, testing-agents
+- **Tools**: foundry-cli, solana-cli, anchor-cli
+- **Actions**:
+    - Deploy to Goerli/Sepolia or Solana Devnet.
+    - Run post-deployment smoke tests.
 
-### Deploy to Testnet
+### Phase 3: Governance & Sign-off
+- **Goal**: Finalize governance requirements and obtain multi-sig sign-offs.
+- **Agents**: `system-architecture-specialist`, `project-operations-specialist`
+- **Skills**: committing-releases, deployment-workflow
+- **Tools**: gnosis-safe-ui, multi-sig-controller
+- **Actions**:
+    - Manage governance signatures and finalize sign-off.
 
-### Post-Deployment Tests
-
-### Final Checks
-
-### Governance and Sign-off
-
-### Execute Deployment
-
-### Post-Deployment
+### Phase 4: Mainnet Execution & Monitoring
+- **Goal**: Execute mainnet deployment and initialize real-time logging-and-monitoring.
+- **Agents**: `blockchain-guru-specialist`, `project-operations-specialist`
+- **Skills**: deployment-workflow, logging-and-monitoring
+- **Tools**: foundry-cli, etherscan-api, datadog-agent
+- **Actions**:
+    - Execute mainnet deployment.
+    - Verify block explorer status and logging-and-monitoring alerts.
 
 
 ## Decision Points
@@ -59,3 +83,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

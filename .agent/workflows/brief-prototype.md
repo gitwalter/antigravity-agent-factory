@@ -1,21 +1,31 @@
 ---
 description: Formalizes a selected opportunity into a Prototype Brief (Phase 1 Gate).
 version: 1.0.0
+tags:
+- brief
+- prototype
+- standardized
 ---
 
-# /brief-prototype Workflow
+
+# /briefing-prototypes Workflow
 
 **Version:** 1.0.0
 
 
 **Goal:** Transform a prioritized opportunity cluster into a formal, human-approvable Prototype Brief.
 
-## Steps:
-1. **Target**: Load `knowledge/opportunities.md`.
-2. **Execute**: Trigger `.agent/skills/ideation/briefing-prototypes/SKILL.md`.
-3. **Template**: Use `knowledge/templates/prototype-brief.md`.
-4. **Output**: Write to `knowledge/prototype-brief.md`.
-5. **Phase Gate**: Ask the user for explicit approval and sign-off on the brief before moving to Phase 2 (Requirements).
+## Phases
+
+### Phase 1: Prototype Brief Extraction
+- **Goal**: Research potential opportunities and formalize the one with the highest ROI.
+- **Agent**: `project-operations-specialist`
+- **Skills**: brainstorming-ideas, researching-first
+- **Tools**: search_web, deepwiki
+- **Actions**:
+    - Load `knowledge/opportunities.md`.
+    - Trigger `.agent/skills/ideation/briefing-prototypes/SKILL.md`.
+    - Write to `knowledge/prototype-brief.md` using `knowledge/templates/prototype-brief.md`.
 
 
 ## Trigger Conditions
@@ -24,3 +34,13 @@ version: 1.0.0
 
 ## Trigger Examples:
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

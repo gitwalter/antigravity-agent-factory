@@ -1,7 +1,13 @@
 ---
 description: Build an AI agent with LangChain
 version: 1.0.0
+tags:
+- build
+- langchain
+- agent
+- standardized
 ---
+
 
 # Building AI Agents with LangChain
 
@@ -173,3 +179,7 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

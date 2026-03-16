@@ -1,11 +1,11 @@
 # Knowledge Health Report
-Generated: 2026-03-15 15:22:45
+Generated: 2026-03-16 16:15:59
 
 ## 📊 Summary Metrics
-- **Broken Links**: 9
+- **Broken Links**: 7
 - **Knowledge Debt Items**: 0
 - **Total Artifacts**: 729
-- **Total Dependencies**: 1440
+- **Total Dependencies**: 1441
 
 ## 🛠️ Knowledge Debt
 | Type | Artifact Path | Reason |

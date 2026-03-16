@@ -1,7 +1,13 @@
 ---
 description: Supreme command entity for strategic decomposition and multi-agent orchestration.
 version: 1.0.0
+tags:
+- master
+- system
+- orchestration
+- standardized
 ---
+
 
 # Master System Orchestration (MSO)
 
@@ -110,3 +116,9 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.

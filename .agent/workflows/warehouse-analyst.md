@@ -2,7 +2,12 @@
 description: Process Optimization & Industrial Engineering Workflow
 dashboard: true
 version: 1.0.0
+tags:
+- warehouse
+- analyst
+- standardized
 ---
+
 
 # Industrial Analyst Optimization Guide
 
@@ -68,3 +73,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

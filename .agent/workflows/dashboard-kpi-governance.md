@@ -2,7 +2,13 @@
 description: KPI Definition & Governance Process
 dashboard: true
 version: 1.0.0
+tags:
+- dashboard
+- kpi
+- governance
+- standardized
 ---
+
 
 # KPI Governance Workflow
 
@@ -21,22 +27,48 @@ Systematic routine for introducing, auditing, and publishing new KPIs.
 
 ## Phases
 
-### 1. Definition
-- Define the business value of the metric.
-- Document the exact formula (e.g., `(Actual / Expected) * 100`).
+### Phase 1: Metric Definition
+- **Goal**: Define business value and mathematical formula for the new KPI.
+- **Agents**: `python-ai-specialist`
+- **Skills**: dashboard-kpi-governance
+- **Tools**: mcp_memory_search_nodes
+- **Actions**:
+    - Document formula and business rationale.
 
-### 2. Implementation
-- Add the new KPI to `GuidanceCenter.get_kpi_dictionary()`.
-- Include visualization recommendations and target bands.
+### Phase 2: Implementation & Dictionary Update
+- **Goal**: Integrate KPI into the system dictionary and provide visualization targets.
+- **Agents**: `python-ai-specialist`
+- **Skills**: dashboard-kpi-governance
+- **Tools**: write_to_file
+- **Actions**:
+    - Add KPI to `GuidanceCenter` dictionary.
 
-### 3. Verification
-- Test the logic against a "Golden Dataset".
-- Confirm visual clarity in the **KPI Dictionary** tab.
+### Phase 3: Logical Verification
+- **Goal**: Test KPI logic against golden datasets for accuracy.
+- **Agents**: `workflow-quality-specialist`
+- **Skills**: verifying-artifact-structures
+- **Tools**: statistical-validator
+- **Actions**:
+    - Confirm logic and visual clarity in the dictionary.
 
-### 4. Stakeholder Sign-off
-- Verify alignment with the **Warehouse Analyst** and **Operations Manager** personas.
-- Move from "Experimental" to "Standard".
+### Phase 4: Stakeholder Governance
+- **Goal**: Obtain sign-off from relevant personas and promote to standard.
+- **Agents**: `project-operations-specialist`
+- **Skills**: committing-releases
+- **Tools**: safety-gate
+- **Actions**:
+    - Align with Analyst/Manager personas and update status.
 
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

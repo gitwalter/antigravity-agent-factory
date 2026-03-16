@@ -1,10 +1,15 @@
 ---
 description: Systematic workflow for managing Plane PMS issues and states
 agents:
-  - template-generator
-  - template-generator
+- template-creator
 version: 1.0.0
+tags:
+- plane
+- task
+- management
+- standardized
 ---
+
 
 # Plane Issue Management Workflow
 
@@ -29,7 +34,7 @@ Before creating or updating tasks, query the Memory MCP graph to understand exis
 
 ## 1. Discovery and State Sync
 Always fetch current labels, states, and cycles to ensure you use valid UUIDs.
-- **Lead Agent**: `system-architecture-specialist` or `template-generator`
+- **Lead Agent**: `system-architecture-specialist` or `template-creator`
 - **Skill**: `managing-plane-tasks`
 - **Action**: Run `mcp_plane_list_labels`, `mcp_plane_list_states`, and `mcp_plane_list_cycles`.
 
@@ -47,4 +52,14 @@ Convert unstructured requests into formal Plane issues following the strict fact
 
 ## 5. High-Fidelity Solution Closure
 - **Action**: Prepare `solution.json` with technical depth separating mechanics from architecture.
-- **Action**: Run `python .agent/skills/routing/managing-plane-tasks/scripts/post_solution.py` to finalize and transition the state to Done.
+- **Action**: Run `python .agent/skills/routing/managing-plane-tasks/scripts/managing-plane-tasks.py` to finalize and transition the state to Done.
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

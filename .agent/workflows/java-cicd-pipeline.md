@@ -1,7 +1,14 @@
 ---
-description: Comprehensive CI/CD pipeline workflow for Java/Spring Boot applications using Maven/Gradle, Testcontainers, Docker/Ji...
+description: Comprehensive CI/CD pipeline workflow for Java/Spring Boot applications
+  using Maven/Gradle, Testcontainers, Docker/Ji...
 version: 1.0.0
+tags:
+- java
+- cicd
+- pipeline
+- standardized
 ---
+
 
 # Java Cicd Pipeline
 
@@ -9,7 +16,7 @@ Comprehensive CI/CD pipeline workflow for Java/Spring Boot applications using Ma
 
 **Version:** 1.0.0
 **Created:** 2026-02-09
-**Agent:** template-generator, workflow-architect
+**Agent:** template-creator, system-architecture-specialist
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.
 
@@ -25,7 +32,7 @@ This workflow is activated when:
 **Trigger Examples:**
 - "Set up CI/CD pipeline for Spring Boot application"
 - "Create GitHub Actions workflow for Java project"
-- "Configure automated testing an
+- "Configure automated testing-agents an
 
 ## Steps
 
@@ -76,3 +83,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

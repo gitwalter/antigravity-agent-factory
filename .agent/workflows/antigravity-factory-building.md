@@ -1,10 +1,17 @@
 ---
-description: Workflow for designing, building, and structuring the antigravity-factory system itself using SDLC phases.
+description: Workflow for designing, building, and structuring the antigravity-factory
+  system itself using SDLC phases.
 agents:
-  - workflow-architect
-  - template-generator
+- system-architecture-specialist
+- template-creator
 version: 1.0.0
+tags:
+- antigravity
+- factory
+- building
+- standardized
 ---
+
 
 # Antigravity Factory System Building Process
 
@@ -14,40 +21,62 @@ version: 1.0.0
 This is the meta-workflow for building out the antigravity-agent-factory. It strictly follows the 7-Phase AI SDLC Process to convert abstract ideas into formal systemic capabilities.
 
 ## Phases
-This factory utilizes a 7-phase flow. Each phase requires a human-approved phase gate artifact before advancing.
 
-### 1. Ideation
-- **Input**: Raw idea or pain point
-- **Skills**: `framing-problems`, `brainstorming-ideas`
-- **Output**: `knowledge/prototype-brief.md` (Must be human-approved)
+### Phase 1: Ideation & Prototype Brief
+- **Goal**: Convert a raw idea or pain point into a formal, human-approved prototype brief.
+- **Agents**: `system-architecture-specialist`
+- **Skills**: brainstorming-ideas, briefing-prototypes
+- **Tools**: mcp_memory_search_nodes
+- **Actions**:
+    - Generate prototype brief and obtain human approval.
 
-### 2. Requirements
-- **Input**: Approved `prototype-brief.md`
-- **Output**: Formal `knowledge/prd.md` and Plane Issues.
-- **Action**: Trigger `plane-task-management.md` workflow to formalize epics and issues in Plane PMS.
+### Phase 2: Requirements & Issue Formalization
+- **Goal**: Formalize the approved brief into a PRD and manageable issues in Plane.
+- **Agents**: `system-architecture-specialist`, `project-operations-specialist`
+- **Skills**: writing-prd, managing-plane-tasks
+- **Tools**: mcp_plane_create_issue
+- **Actions**:
+    - Write PRD and create issues in Plane.
 
-### 3. Architecture
-- **Input**: Approved PRD
-- **Output**: Implementation Plan, ADRs, System Design specs.
-- **Action**: Update Memory Graph (Memory MCP) with new architectural nodes and relationships.
+### Phase 3: Architecture & Memory Mapping
+- **Goal**: Design the technical implementation and update the system knowledge graph.
+- **Agents**: `system-architecture-specialist`
+- **Skills**: designing-ai-systems, repository-maintenance
+- **Tools**: mcp_memory_create_relations, mcp_memory_create_entities
+- **Actions**:
+    - Create implementation plans and map architectural nodes in Memory.
 
-### 4. Build
-- **Input**: Architecture Docs
-- **Action**: TDD implementation. Create the actual workflows (`.agent/workflows/`), skills (`.agent/skills/`), and knowledge documents (`.agent/knowledge/`).
-- **Output**: Working Implementation.
+### Phase 4: Build & Implementation
+- **Goal**: Execute the build of workflows, skills, and knowledge items following TDD.
+- **Agents**: `project-operations-specialist`
+- **Skills**: developing-ai-agents, developing-ai-agents
+- **Tools**: write_to_file, pytest-cli
+- **Actions**:
+    - Implement workflows, skills, and knowledge files.
 
-### 5. Test & Eval
-- **Input**: Working Implementation
-- **Action**: Run `pytest`, `tox`, or equivalent automated test suites to validate systemic integrity.
+### Phase 5: Verification & Evaluation
+- **Goal**: Validate the systemic integrity of the implementation through comprehensive testing-agents.
+- **Agents**: `workflow-quality-specialist`
+- **Skills**: testing-agents, testing-agents
+- **Tools**: pytest-cli, evaluate-agent
+- **Actions**:
+    - Run unit and integration tests to validate integrity.
 
-### 6. Deploy
-- **Input**: Tested Implementation
-- **Action**: Formal git commit via `committing-releases` skill.
-- **Output**: Tagged release.
+### Phase 6: Deployment & Release
+- **Goal**: Commit tested implementation and execute a formalized release.
+- **Agents**: `project-operations-specialist`
+- **Skills**: committing-releases, committing-releases
+- **Tools**: git-cli
+- **Actions**:
+    - Finalize git commit and tag the release.
 
-### 7. Monitor & Closure
-- **Input**: Live system
-- **Action**: Sync the completed architectural insights to Plane using `post_solution.py` in the `managing-plane-tasks` skill.
+### Phase 7: Monitor & Closure
+- **Goal**: Synchronize architectural insights to Plane and finalize the development loop.
+- **Agents**: `knowledge-operations-specialist`, `project-operations-specialist`
+- **Skills**: generating-documentation, managing-plane-tasks
+- **Tools**: managing-plane-tasks.py
+- **Actions**:
+    - Sync insights to Plane and close the task loop.
 
 ## Systematic Structuring & Hierarchical Cataloging
 When adding new workflows, agents, or skills:
@@ -62,3 +91,13 @@ When adding new workflows, agents, or skills:
 
 ## Trigger Examples:
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

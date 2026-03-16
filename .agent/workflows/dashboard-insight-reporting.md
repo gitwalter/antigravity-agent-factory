@@ -2,7 +2,13 @@
 description: Automated Insight Reporting Workflow
 dashboard: true
 version: 1.0.0
+tags:
+- dashboard
+- insight
+- reporting
+- standardized
 ---
+
 
 # Insight Reporting Workflow
 
@@ -19,24 +25,50 @@ Standardized process for generating and distributing analytical reports.
 - "Generate a weekly insight report for the dashboard."
 - "Create an executive summary of the last 30 days."
 
-## Steps
+## Phases
 
-### 1. Context Selection
-- Select the project and time period for the report.
-- identify the "Lead Metric" for the executive summary.
+### Phase 1: Context & Metric Selection
+- **Goal**: Select report timeframe and lead metrics for analysis.
+- **Agents**: `python-ai-specialist`
+- **Skills**: dashboard-insight-reporting
+- **Tools**: mcp_memory_search_nodes
+- **Actions**:
+    - Identify lead metrics and period context.
 
-### 2. AI Synthesis
-- Trigger the **AI Workspace** to analyze trends.
-- request "Executive Takeaways" (max 3 bullets).
+### Phase 2: AI Synthesis & Trend Analysis
+- **Goal**: Use AI to synthesize trends and generate executive takeaways.
+- **Agents**: `python-ai-specialist`
+- **Skills**: dashboard-insight-reporting
+- **Tools**: ai-workspace-ui
+- **Actions**:
+    - Trigger AI analysis and generate takeaways.
 
-### 3. Visual Export
-- compile key visualizations into a PDF format.
-- Ensure all charts have clear captions and date stamps.
+### Phase 3: Visual Export & Formatting
+- **Goal**: Compile visualizations into formatted PDF reports.
+- **Agents**: `knowledge-operations-specialist`
+- **Skills**: generating-documentation
+- **Tools**: pdf-generator
+- **Actions**:
+    - Compile charts with captions and dates into PDF.
 
-### 4. Distribution
-- Post to the **Knowledge Bridge**.
-- Archive the report JSON for historical comparison.
+### Phase 4: Distribution & Archiving
+- **Goal**: Distribute report to stakeholders and archive historical state.
+- **Agents**: `project-operations-specialist`
+- **Skills**: committing-releases
+- **Tools**: knowledge-bridge-ui
+- **Actions**:
+    - Post to Knowledge Bridge and archive JSON records.
 
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

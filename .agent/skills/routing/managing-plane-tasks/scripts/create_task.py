@@ -28,14 +28,29 @@ except ImportError:
     sys.exit(1)
 
 # --- Configuration ---
-WORKSPACE_SLUG = "agent-factory"
-PROJECT_ID = "e71eb003-87d4-4b0c-a765-a044ac5affbe"
+SKILL_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONTEXT_FILE = os.path.join(SKILL_ROOT, "references", "project_context.json")
+TEMPLATE_DIR = os.path.join(SKILL_ROOT, "templates")
+
+
+def load_context():
+    """Load persistent context for IDs and mappings."""
+    if os.path.exists(CONTEXT_FILE):
+        try:
+            with open(CONTEXT_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Warning: Failed to load context file: {e}")
+    return {}
+
+
+# Default fallback config
+context = load_context()
+WORKSPACE_SLUG = context.get("WORKSPACE_SLUG", "agent-factory")
+PROJECT_ID = context.get("PROJECT_ID", "e71eb003-87d4-4b0c-a765-a044ac5affbe")
 API_BASE = (
     f"https://api.plane.so/api/v1/workspaces/{WORKSPACE_SLUG}/projects/{PROJECT_ID}"
 )
-
-SKILL_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TEMPLATE_DIR = os.path.join(SKILL_ROOT, "templates")
 
 
 def get_label_map(headers: dict) -> dict:
@@ -115,15 +130,23 @@ def create_work_item(data: dict, description_html: str, update_id: str = None) -
         "Content-Type": "application/json",
     }
 
-    # Resolve label UUIDs dynamically
-    label_map = get_label_map(headers)
+    # Resolve label UUIDs from context or fallback to API
+    label_map = context.get("LABELS", {})
+    if not label_map:
+        print("Context labels missing, fetching from API...")
+        label_map = get_label_map(headers)
+
     label_ids = []
     for label_name in data.get("labels", []):
         uid = label_map.get(label_name.upper())
         if uid:
             label_ids.append(uid)
         else:
-            print(f"Warning: Label '{label_name}' not found in project, skipping.")
+            # Last ditch attempt: re-sync if a specific label is missing?
+            # For performance, we just warn for now.
+            print(
+                f"Warning: Label '{label_name}' not found in context or project, skipping."
+            )
 
     payload = {
         "name": data["name"],

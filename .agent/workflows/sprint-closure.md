@@ -1,7 +1,13 @@
 ---
-description: Systematic workflow for closing sprints, including status review, velocity calculation, incomplete item handling, and...
+description: Systematic workflow for closing sprints, including status review, velocity
+  calculation, incomplete item handling, and...
 version: 1.0.0
+tags:
+- sprint
+- closure
+- standardized
 ---
+
 
 # Sprint Closure
 
@@ -9,7 +15,7 @@ Systematic workflow for closing sprints, including status review, velocity calcu
 
 **Version:** 1.0.0
 **Created:** 2026-02-02
-**Agent:** workflow-architect
+**Agent:** system-architecture-specialist
 
 ## Trigger Conditions
 
@@ -69,3 +75,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

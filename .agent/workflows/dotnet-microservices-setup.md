@@ -1,7 +1,14 @@
 ---
-description: Comprehensive workflow for designing and implementing microservices architectures with .NET. This workflow covers ser...
+description: Comprehensive workflow for designing and implementing microservices architectures
+  with .NET. This workflow covers ser...
 version: 1.0.0
+tags:
+- dotnet
+- microservices
+- setup
+- standardized
 ---
+
 
 # Dotnet Microservices Setup
 
@@ -9,7 +16,7 @@ Comprehensive workflow for designing and implementing microservices architecture
 
 **Version:** 1.0.0
 **Created:** 2026-02-09
-**Agent:** workflow-architect
+**Agent:** system-architecture-specialist
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.
 
@@ -28,47 +35,36 @@ This workflow is activated when:
 - "Create microservices with gRPC communication"
 - "Implement service-to-service
 
-## Steps
+## Phases
 
-### Identify Business Capabilities
+### Phase 1: Design & Decomposition
+- **Goal**: Identify business capabilities and define microservice boundaries and data ownership.
+- **Agents**: `system-architecture-specialist`
+- **Skills**: designing-ai-systems, brainstorming-ideas
+- **Tools**: deepwiki
+- **Actions**:
+    - Identify business capabilities and define boundaries.
+    - Design data ownership and API contracts.
 
-### Define Service Boundaries
+### Phase 2: Service & Communication Setup
+- **Goal**: Initialize service projects and implement core logic and communication layers (gRPC, REST, Message Broker).
+- **Agents**: `python-ai-specialist`, `project-operations-specialist`
+- **Skills**: dotnet-microservices-setup, developing-ai-agents
+- **Tools**: dotnet-cli, write_to_file
+- **Actions**:
+    - Create projects and implement service logic.
+    - Configure databases and implement endpoints.
+    - Configure sync/async communication and resilience patterns.
 
-### Design Data Ownership
-
-### Define API Contracts
-
-### Create Service Projects
-
-### Implement Service Logic
-
-### Configure Databases
-
-### Implement API Endpoints
-
-### Configure Synchronous Communication
-
-### Configure Asynchronous Communication
-
-### Implement Resilience Patterns
-
-### Configure Distributed Caching
-
-### Create API Gateway Project
-
-### Configure Routing
-
-### Add Cross-Cutting Concerns
-
-### Configure Aggregation
-
-### Configure Distributed Tracing
-
-### Configure Logging
-
-### Configure Metrics
-
-### Implement Health Checks
+### Phase 3: Gateway & Observability
+- **Goal**: Set up the API Gateway and establish distributed tracing, logging, and metrics.
+- **Agents**: `project-operations-specialist`, `workflow-quality-specialist`
+- **Skills**: cicd-pipeline, logging-and-monitoring
+- **Tools**: yarp, opentelemetry
+- **Actions**:
+    - Create API Gateway and configure routing.
+    - Configure distributed tracing, logging, and metrics.
+    - Implement health checks.
 
 
 ## Decision Points
@@ -85,3 +81,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

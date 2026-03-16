@@ -1,7 +1,14 @@
 ---
-description: Proof-of-Concept for the Unified Orchestration Engine demonstrating end-to-end integration.
+description: Proof-of-Concept for the Unified Orchestration Engine demonstrating end-to-end
+  integration.
 version: 1.0.0
+tags:
+- poc
+- orchestration
+- workflow
+- standardized
 ---
+
 
 # /poc-orchestration — System Integration POC
 
@@ -66,3 +73,13 @@ Agent [SYARCH]: Authorized tools (filesystem, git, sequentialthinking) verified.
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

@@ -1,7 +1,14 @@
 ---
-description: Cross-module workflow for order-to-cash, procure-to-pay, or make-to-stock. For consultants and developers designing o...
+description: Cross-module workflow for order-to-cash, procure-to-pay, or make-to-stock.
+  For consultants and developers designing o...
 version: 1.0.0
+tags:
+- logistics
+- chain
+- workflow
+- standardized
 ---
+
 
 # Logistics Chain Workflow
 
@@ -47,3 +54,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

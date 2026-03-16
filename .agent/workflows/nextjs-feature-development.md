@@ -1,11 +1,18 @@
 ---
-description: This workflow guides the development of new features in Next.js applications, following a systematic approach from de...
+description: This workflow guides the development of new features in Next.js applications,
+  following a systematic approach from de...
 version: 1.0.0
+tags:
+- nextjs
+- feature
+- development
+- standardized
 ---
+
 
 # Nextjs Feature Development
 
-This workflow guides the development of new features in Next.js applications, following a systematic approach from design to deployment. It ensures type safety, proper data modeling, API design, UI implementation, and comprehensive testing.
+This workflow guides the development of new features in Next.js applications, following a systematic approach from design to deployment. It ensures type safety, proper data modeling, API design, UI implementation, and comprehensive testing-agents.
 
 **Version:** 1.0.0
 
@@ -47,3 +54,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

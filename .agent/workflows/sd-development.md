@@ -1,7 +1,13 @@
 ---
-description: "Workflow for SD-related development: pricing, billing, delivery, reports, RAP. References VBAK, VBAP, VBRK, VBRP."
+description: 'Workflow for SD-related development: pricing, billing, delivery, reports,
+  RAP. References VBAK, VBAP, VBRK, VBRP.'
 version: 1.0.0
+tags:
+- sd
+- development
+- standardized
 ---
+
 
 # Sd Development
 
@@ -28,30 +34,45 @@ This workflow is activated when:
 
 ## Phases
 
-### 1. Sales Process Analysis
-- **Goal**: Identify the correct sales document types and pricing rules.
-- **Action**: Map requirements to core SD tables (`VBAK`, `VBAP`, `VBRK`, `VBRP`).
-- **Reference**: Check `knowledge/sd-patterns.json` for pricing procedures and partner functions.
+### Phase 1: Sales Process Analysis
+- **Goal**: Identify sales document types and pricing rules.
+- **Agents**: `python-ai-specialist`
+- **Skills**: guiding-s4-processes, analyzing-code
+- **Tools**: mcp_memory_search_nodes
+- **Actions**:
+    - Map requirements to core SD tables (`VBAK`, `VBAP`, `VBRK`, `VBRP`).
 
-### 2. Pricing & Logic Design
+### Phase 2: Pricing & Logic Design
 - **Goal**: Define custom pricing requirements or processing logic.
-- **Action**: Search for suitable Condition Techniques or User Exits (e.g., `MV45AFZZ`).
-- **Tool**: `mcp_memory_search_nodes` for existing SD enhancements.
+- **Agents**: `python-ai-specialist`
+- **Skills**: guiding-s4-processes, designing-apis
+- **Tools**: mcp_memory_search_nodes
+- **Actions**:
+    - Search for Condition Techniques or User Exits (`MV45AFZZ`).
 
-### 3. Implementation (RAP or Classic)
-- **Goal**: Build the sales enhancement.
-- **Action**: Implement custom logic via ABAP or RAP BOs for sales orders.
-- **Template**: Use `sap-sd-pricing-routine` or `sap-rap-bo` blueprints.
+### Phase 3: Implementation (RAP or Classic)
+- **Goal**: Build sales enhancements or RAP BOs for sales.
+- **Agents**: `python-ai-specialist`
+- **Skills**: guiding-s4-processes
+- **Tools**: write_to_file
+- **Actions**:
+    - Implement custom logic via ABAP or RAP.
 
-### 4. Integration Verification
-- **Goal**: Ensure the sales cycle flows correctly to delivery/billing.
-- **Action**: Test end-to-end sales scenarios in the development sandbox.
-- **Tool**: Trigger `/quality-gate` for automated checks.
+### Phase 4: Integration Verification
+- **Goal**: Ensure sales cycle flows correctly to delivery and billing.
+- **Agents**: `workflow-quality-specialist`
+- **Skills**: verifying-artifact-structures
+- **Tools**: run_tests.py
+- **Actions**:
+    - Test end-to-end sales scenarios.
 
-### 5. Release & Documentation
-- **Goal**: Formally deploy and document the change.
-- **Action**: Update the functional design and release the transport request.
-- **Tool**: Trigger `/documentation-workflow`.
+### Phase 5: Release & Documentation
+- **Goal**: Formally deploy and document sales changes.
+- **Agents**: `project-operations-specialist`, `knowledge-operations-specialist`
+- **Skills**: committing-releases, generating-documentation
+- **Tools**: safe_release.py
+- **Actions**:
+    - Update design documents and release transport.
 
 
 ## Decision Points
@@ -68,3 +89,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

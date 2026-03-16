@@ -14,20 +14,39 @@ import sys
 import requests
 
 # --- Configuration ---
-WORKSPACE_SLUG = "agent-factory"
-PROJECT_ID = "e71eb003-87d4-4b0c-a765-a044ac5affbe"
+SKILL_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONTEXT_FILE = os.path.join(SKILL_ROOT, "references", "project_context.json")
+
+
+def load_context():
+    """Load persistent context for IDs and mappings."""
+    if os.path.exists(CONTEXT_FILE):
+        try:
+            with open(CONTEXT_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Warning: Failed to load context file: {e}")
+    return {}
+
+
+context = load_context()
+WORKSPACE_SLUG = context.get("WORKSPACE_SLUG", "agent-factory")
+PROJECT_ID = context.get("PROJECT_ID", "e71eb003-87d4-4b0c-a765-a044ac5affbe")
 API_BASE = (
     f"https://api.plane.so/api/v1/workspaces/{WORKSPACE_SLUG}/projects/{PROJECT_ID}"
 )
 
-# State Mapping (UUIDs)
-STATES = {
-    "BACKLOG": "294ddb00-19ce-4ffe-9eac-2fd4e998d7f8",
-    "TODO": "8e155185-58ad-404b-8458-6a7c9edbf09b",
-    "IN PROGRESS": "d89aabd2-46d4-4f46-8ce4-eb49e06cac03",
-    "DONE": "ef4b2395-3edb-41e9-adcd-7ec77d534f0f",
-    "CANCELLED": "0723fa1c-6935-4661-a873-f5295203e58c",
-}
+# State Mapping (UUIDs) from context or fallback
+STATES = context.get(
+    "STATES",
+    {
+        "BACKLOG": "294ddb00-19ce-4ffe-9eac-2fd4e998d7f8",
+        "TODO": "8e155185-58ad-404b-8458-6a7c9edbf09b",
+        "IN PROGRESS": "d89aabd2-46d4-4f46-8ce4-eb49e06cac03",
+        "DONE": "ef4b2395-3edb-41e9-adcd-7ec77d534f0f",
+        "CANCELLED": "0723fa1c-6935-4661-a873-f5295203e58c",
+    },
+)
 
 
 def update_status(issue_seq_id, state_name):

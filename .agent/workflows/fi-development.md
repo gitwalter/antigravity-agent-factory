@@ -1,7 +1,13 @@
 ---
-description: "Workflow for FI-related development: reports, enhancements, validations. References BKPF, BSEG, FI-CAX/VIM where rele..."
+description: 'Workflow for FI-related development: reports, enhancements, validations.
+  References BKPF, BSEG, FI-CAX/VIM where rele...'
 version: 1.0.0
+tags:
+- fi
+- development
+- standardized
 ---
+
 
 # Fi Development
 
@@ -28,30 +34,45 @@ This workflow is activated when:
 
 ## Phases
 
-### 1. Finance Process Mapping
-- **Goal**: Identify the correct GL accounts and financial documents.
-- **Action**: Map requirements to core FI tables (`BKPF`, `BSEG`, `ACDOCA`).
-- **Reference**: Check `knowledge/fi-patterns.json` for tax codes and payment schemas.
+### Phase 1: Finance Process Mapping
+- **Goal**: Identify GL accounts and financial documents for mapping.
+- **Agents**: `python-ai-specialist`
+- **Skills**: guiding-s4-processes, analyzing-code
+- **Tools**: mcp_memory_search_nodes
+- **Actions**:
+    - Map requirements to core FI tables (`BKPF`, `BSEG`, `ACDOCA`).
 
-### 2. Enhancement Identification
-- **Goal**: Find the suitable SAP standard enhancement points.
-- **Action**: Search for suitable Validations (`OB28`), Substitutions (`OBBH`), or BAdIs.
-- **Tool**: `mcp_memory_search_nodes` for existing FI custom logic.
+### Phase 2: Enhancement Identification
+- **Goal**: Find suitable SAP standard enhancement points (Validations, Substitutions).
+- **Agents**: `python-ai-specialist`
+- **Skills**: guiding-s4-processes
+- **Tools**: mcp_memory_search_nodes
+- **Actions**:
+    - Search for Validations (`OB28`), Substitutions (`OBBH`), or BAdIs.
 
-### 3. Solution Implementation
-- **Goal**: Build and configure the financial enhancement.
-- **Action**: Implement custom logic using ABAP Cloud or classic BTEs/BAdIs.
-- **Template**: Use `sap-abap-enhancement` blueprint.
+### Phase 3: Solution Implementation
+- **Goal**: Build and configure financial enhancements or reports.
+- **Agents**: `python-ai-specialist`
+- **Skills**: guiding-s4-processes
+- **Tools**: write_to_file
+- **Actions**:
+    - Implement custom logic using ABAP or BTEs.
 
-### 4. Post-Implementation Testing
-- **Goal**: Verify financial integrity and document posting.
-- **Action**: Test document posting and check the impact on ledgers in the development client.
-- **Tool**: Trigger `/quality-gate` for logic verification.
+### Phase 4: Post-Implementation Testing
+- **Goal**: Verify financial integrity and document posting impact.
+- **Agents**: `workflow-quality-specialist`
+- **Skills**: verifying-artifact-structures
+- **Tools**: run_tests.py
+- **Actions**:
+    - Test document posting and check ledger impact.
 
-### 5. Final Audit & Release
-- **Goal**: Ensure audit compliance and release.
-- **Action**: Update the technical specification and release the transport.
-- **Tool**: Trigger `/documentation-workflow`.
+### Phase 5: Audit compliance & Release
+- **Goal**: Ensure compliance and release transport request.
+- **Agents**: `project-operations-specialist`, `knowledge-operations-specialist`
+- **Skills**: committing-releases, generating-documentation
+- **Tools**: safe_release.py
+- **Actions**:
+    - Update specifications and release transport.
 
 
 ## Decision Points
@@ -68,3 +89,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

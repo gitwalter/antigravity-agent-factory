@@ -1,9 +1,14 @@
 ---
 description: Multi-step workflow for developing AI agents from design through deployment.
 version: 1.0.0
+tags:
+- agent
+- development
+- standardized
 ---
 
-# /agent-development Workflow (SDLC Phase 4)
+
+# /developing-ai-agents Workflow (SDLC Phase 4)
 
 **Version:** 1.0.0
 **Created:** 2026-03-06
@@ -23,21 +28,55 @@ This workflow is activated when:
 - "Build the feature agent."
 - "Execute Phase 4 of SDLC."
 
-## Phases:
+## Phases
 
-### Phase 0: Project Initiation
-- **Goal**: Establish tracking and metadata.
-- **Action**: Use `managing-plane-tasks` to create an `AGENT` or `FEATURE` issue.
-- **Mandate**: Use `create_task.py` with the Jinja2 template and task schema.
+### Phase 1: Project Initiation
+- **Goal**: Establish tracking and metadata for the development task.
+- **Agents**: `project-operations-specialist`
+- **Skills**: managing-plane-tasks
+- **Tools**: create_task.py
+- **Actions**:
+    - Use `managing-plane-tasks` to create an `AGENT` or `FEATURE` issue.
+    - Use `create_task.py` with the Jinja2 template and task schema.
 
-### 1. Target: Load `knowledge/ai-design.md` and `knowledge/prd.md`.
-2. **Execute**: Trigger `.agent/skills/parallel/agent-generation/SKILL.md` (if building agents).
-3. **Build**: Iterate on implementation based on `implementation_plan.md`.
-4. **Walkthrough**: Generate `walkthrough.md` using the `/documentation-workflow`.
-5. **Output**: Write implementation to the repository and ensure all technical docs are updated.
-6. **Follow-up**: Prompt user to run `/agent-testing` (Phase 5) to verify the build.
-7. **Phase Final: Closure**: Close the Plane issue via `post_solution.py` using the Jinja2 solution template.
+### Phase 2: Design & Generation
+- **Goal**: Research requirements and generate initial agent logic/code structure.
+- **Agents**: `project-operations-specialist`, `system-architecture-specialist`
+- **Skills**: generating-agents, analyzing-code
+- **Tools**: view_file, write_to_file
+- **Actions**:
+    - Load `knowledge/ai-design.md` and `knowledge/prd.md`.
+    - Trigger `.agent/skills/chain/generating-agents/SKILL.md`.
+
+### Phase 3: Iterative Implementation
+- **Goal**: Build the feature iteratively and document the proof of work.
+- **Agents**: `project-operations-specialist`
+- **Skills**: developing-ai-agents, generating-documentation
+- **Tools**: multi_replace_file_content, walkthrough-generator
+- **Actions**:
+    - Iterate on implementation based on `implementation_plan.md`.
+    - Generate `walkthrough.md` using the `generating-documentation` skill.
+
+### Phase 4: Closure & Handoff
+- **Goal**: Update repository state and close tracking issues.
+- **Agents**: `project-operations-specialist`
+- **Skills**: committing-releases, managing-plane-tasks
+- **Tools**: managing-plane-tasks.py
+- **Actions**:
+    - Write implementation to the repository and ensure technical docs are updated.
+    - Prompt user to run `/agent-testing-agents`.
+    - Close the Plane issue via `managing-plane-tasks.py` using the Jinja2 solution template.
 
 ## Phase Gate (Build):
 - Mandatory generation of `walkthrough.md`.
 - Code must pass initial "Green" verification.
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

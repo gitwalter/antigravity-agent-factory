@@ -1,9 +1,13 @@
 ---
-description: Multi-source research workflow using RAG, web search, docs, and GitHub
+description: Multi-source researching-first workflow using RAG, web search, docs, and GitHub
 version: 1.0.0
+tags:
+- researching-first
+- standardized
 ---
 
-# /research — Multi-Source Research Workflow
+
+# /researching-first — Multi-Source Research Workflow
 
 Route knowledge questions to the right MCP tool and skill based on the type of query.
 
@@ -12,9 +16,9 @@ Route knowledge questions to the right MCP tool and skill based on the type of q
 ## Trigger Conditions
 
 This workflow is activated when:
-- A research or knowledge question is asked.
+- A researching-first or knowledge question is asked.
 - The user needs to find information from RAG, web, docs, or code repos.
-- User requests "research", "look up", "find out", or "what do we know about".
+- User requests "researching-first", "look up", "find out", or "what do we know about".
 
 **Trigger Examples:**
 - "What's in our RAG library?"
@@ -36,7 +40,7 @@ This workflow is activated when:
 
 ## Phase 0: Context Engineering (Memory-First)
 
-**MANDATORY**: Before initiating any research, query the Memory MCP knowledge graph. This builds situational awareness and ensures your research is grounded in the factory's existing structural relationships.
+**MANDATORY**: Before initiating any researching-first, query the Memory MCP knowledge graph. This builds situational awareness and ensures your researching-first is grounded in the factory's existing structural relationships.
 
 ```json
 // Tool: mcp_memory_open_nodes — Build situational awareness
@@ -46,7 +50,7 @@ This workflow is activated when:
 { "query": "<search entity/capability>" }
 ```
 
-**Zero-Context Fallback**: If the Memory Graph lacks foundational entities regarding the capability you are researching—or if the graph links to deprecated standards—you MUST actively build the memory before proceeding to Phase 1. Ask the human operator for the structural truth, verify compliance, delete outdated nodes, and establish the Tier 4 Proposal. Never hallucinate baseline architecture.
+**Zero-Context Fallback**: If the Memory Graph lacks foundational entities regarding the capability you are researching-firsting—or if the graph links to deprecated standards—you MUST actively build the memory before proceeding to Phase 1. Ask the human operator for the structural truth, verify compliance, delete outdated nodes, and establish the Tier 4 Proposal. Never hallucinate baseline architecture.
 
 ## Steps
 
@@ -58,7 +62,7 @@ Determine which source is most appropriate:
 - **Web/current topic** (news, trends, general knowledge) → Step 2c
 - **Library/framework docs** ("how does X work in LangChain?") → Step 2d
 - **Code/repo** ("what's in repo X?") → Step 2e
-- **Complex/multi-source** (needs research methodology) → Step 2f
+- **Complex/multi-source** (needs researching-first methodology) → Step 2f
 
 ### 2a. Inspect RAG Catalog
 // turbo
@@ -112,13 +116,13 @@ Invoke the `researching-first` skill for complex topics requiring multiple sourc
 6. **Synthesize**: Combine all sources with citations
 
 ## Phase Final: Memory Induction & Proposal
-If the research uncovered a new foundational pattern, standard, or architectural rule that the factory should adopt (Layer 3 or 4 modifications), it MUST be proposed for permanent retention.
+If the researching-first uncovered a new foundational pattern, standard, or architectural rule that the factory should adopt (Layer 3 or 4 modifications), it MUST be proposed for permanent retention.
 Generate a Memory Proposal detailing the discovery. If resolving a task, embed this insight into the `architectural_decisions` array of the Plane solution.
 
 ## Notes
 - Always try **local RAG first** for domain topics before escalating to web.
 - `docs-langchain` and `deepwiki` are currently disabled in MCP config. Enable them in `mcp_config.json` when needed.
-- For the full research pipeline, time-box to avoid analysis paralysis.
+- For the full researching-first pipeline, time-box to avoid analysis paralysis.
 
 
 ## Decision Points
@@ -135,3 +139,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

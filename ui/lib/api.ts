@@ -24,18 +24,20 @@ export interface Workflow {
   phase_count: number
   phases: Phase[]
   sources?: string[]
+  raw_body?: string
 }
 
 export interface Phase {
   name: string
   goal: string
   actions: string[]
-  agent: string
+  agents: string[]
   skills: string[]
   tools: string[]
 }
 
 export interface Agent {
+  id: string
   name: string
   pattern: string
   description: string
@@ -43,6 +45,7 @@ export interface Agent {
 }
 
 export interface Skill {
+  id: string
   name: string
   pattern: string
   description: string

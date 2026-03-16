@@ -1,45 +1,59 @@
 ---
 version: 1.0.0
-description: Step-by-step guide for finding and testing new predictive features (technical, fundamental, alternative).
+description: Step-by-step guide for finding and testing-agents new predictive features (technical,
+  fundamental, alternative).
 dashboard: true
+tags:
+- alpha
+- factor
+- mining
+- standardized
 ---
+
 
 # Alpha Factor Mining
 
-This workflow defines the systematic process for identifying, testing, and validating new predictive factors (Alpha) before they are integrated into the factory's trading intelligence patterns.
+This workflow defines the systematic process for identifying, testing-agents, and validating new predictive factors (Alpha) before they are integrated into the factory's trading intelligence patterns.
 
 **Version:** 1.0.0
 **Note**: All mining activities must align with `trading-governance.md`.
 
-## Steps
+## Phases
 
-### 1. Feature Hypothesis
-- **Action**: State the theoretical reason why a feature should predict price action.
-- **Example**: "Put/Call ratio spikes predict short-term reversals due to extreme fear."
+### Phase 1: Hypothesis & Hypothesis Generation
+- **Goal**: Define the theoretical basis for a new predictive feature.
+- **Agents**: `system-architecture-specialist`
+- **Skills**: designing-ai-systems, alpha-factor-mining
+- **Tools**: mcp_memory_search_nodes
+- **Actions**:
+    - State the theoretical reason for the feature.
 
-### 2. Data Acquisition
-- **Action**: Fetch primary (Price/Volume) and secondary (Sentiment/Financials) data.
-- **Check**: Ensure no look-ahead bias in feature calculation.
-- Example: `mcp_local-faiss-mcp_ingest_document(path="data/raw/sentiment_v2.csv")`
+### Phase 2: Data Acquisition & Transformation
+- **Goal**: Fetch and normalize primary and secondary data without look-ahead bias.
+- **Agents**: `project-operations-specialist`
+- **Skills**: fetch-external-data, alpha-factor-mining
+- **Tools**: mcp_fetch_fetch, write_to_file
+- **Actions**:
+    - Fetch Price/Volume and Sentiment data.
+    - Apply z-score or Min-Max normalization.
 
-### 3. Feature Transformation
-- **Action**: Apply normalization or scaling.
-- **Methods**: z-score, Min-Max, or Log-Returns.
+### Phase 3: Correlation & IC Testing
+- **Goal**: Verify factor uniqueness and predictive power (Information Coefficient).
+- **Agents**: `workflow-quality-specialist`
+- **Skills**: evaluation-optimizer, alpha-factor-mining
+- **Tools**: python-interpreter
+- **Actions**:
+    - Check correlation with existing factors.
+    - Calculate Rank Correlation (IC) and IC IR.
 
-### 4. Correlation Analysis
-- **Action**: Check correlation of the new factor with existing factors in `trading-intelligence-patterns.json`.
-- **Threshold**: pass if Absolute Correlation < 0.7.
-
-### 5. IC (Information Coefficient) Testing
-- **Action**: Calculate the Rank Correlation between the factor and future n-period returns.
-- **pass if**: Mean IC > 0.02 and IC IR (Information Ratio) > 0.5.
-
-### 6. Strategy Simulation
-- **Action**: Run a simple long/short quintile backtest on the factor.
-- **Metric**: Sharpe Ratio must be stable across multiple market regimes.
-
-### 7. Factory Registration
-- **Action**: Add the validated factor to `trading-intelligence-patterns.json` with its math and validation results.
+### Phase 4: Simulation & Registration
+- **Goal**: Validate stability across regimes and register in the intelligence library.
+- **Agents**: `system-architecture-specialist`, `knowledge-operations-specialist`
+- **Skills**: strategy-development, generating-documentation
+- **Tools**: python-interpreter, write_to_file
+- **Actions**:
+    - Run long/short quintile backtest.
+    - Add to `trading-intelligence-patterns.json`.
 
 ## Trigger Conditions
 - New data source acquired.
@@ -66,3 +80,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

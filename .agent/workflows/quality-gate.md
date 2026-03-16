@@ -1,11 +1,17 @@
 ---
-description: Automated quality gate workflow that enforces code quality standards before merge. Runs comprehensive checks includin...
+description: Automated quality gate workflow that enforces code quality standards
+  before merge. Runs comprehensive checks includin...
 version: 1.0.0
+tags:
+- quality
+- gate
+- standardized
 ---
+
 
 # Quality Gate
 
-Automated quality gate workflow that enforces code quality standards before merge. Runs comprehensive checks including linting, testing, coverage, security scanning, and code review to ensure only high-quality code enters the codebase.
+Automated quality gate workflow that enforces code quality standards before merge. Runs comprehensive checks including linting, testing-agents, coverage, security scanning, and code review to ensure only high-quality code enters the codebase.
 
 **Version:** 1.0.0
 **Created:** 2026-02-02
@@ -74,3 +80,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

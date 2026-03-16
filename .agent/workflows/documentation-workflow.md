@@ -1,23 +1,29 @@
 ---
-name: documentation-workflow
-description: Phase 6 SDLC workflow for generating and maintaining comprehensive project documentation.
+name: generating-documentation
+description: Phase 6 SDLC workflow for generating and maintaining comprehensive project
+  documentation.
 version: 2.0.0
 type: pipeline
 domain: universal
 agents:
-  - project-operations-specialist
+- project-operations-specialist
 blueprints:
-  - standard-sdlc
+- standard-sdlc
 steps:
-  - name: Discovery
-    description: Identify component and existing documentation state.
-  - name: Drafting
-    description: Generate the required documentation artifacts.
-  - name: Validation
-    description: Run structural and link checks on new docs.
-  - name: Induction
-    description: Sync docs with Plane and the Memory MCP graph.
+- name: Discovery
+  description: Identify component and existing documentation state.
+- name: Drafting
+  description: Generate the required documentation artifacts.
+- name: Validation
+  description: Run structural and link checks on new docs.
+- name: Induction
+  description: Sync docs with Plane and the Memory MCP graph.
+tags:
+- documentation
+- workflow
+- standardized
 ---
+
 
 # Global Documentation Workflow (SDLC Phase 6)
 
@@ -38,30 +44,42 @@ steps:
 
 ## Phases
 
-### 1. Discovery & Mapping
-Identify which SDLC phase or component is being documented.
-- **Agent**: `project-operations-specialist`
-- **Skill**: Mandatory use of `.agent/skills/routing/managing-plane-tasks/SKILL.md` for issue discovery.
-- **Action**: Check `task.md` or Plane issue sequence to map requirements.
-- **Tool**: `deepwiki-read_wiki_structure` to find existing docs.
+### Phase 1: Discovery & Mapping
+- **Goal**: Identify which SDLC phase or component is being documented and establish context.
+- **Agents**: `project-operations-specialist`
+- **Skills**: managing-plane-tasks, deepwiki
+- **Tools**: deepwiki-read_wiki_structure
+- **Actions**:
+    - Check `task.md` or Plane issue sequence to map requirements.
+    - Identify component and existing documentation state.
 
-### 2. Artifact Drafting
-Invoke the `documentation-generation` skill to create the artifact.
-- **For Features**: Focus on `walkthrough.md` and `README.md`.
-- **For SDLC Gates**: Focus on `prd.md`, `ai-design.md`, or `eval-report.md`.
-- **For Releases**: Update `CHANGELOG.md` and `release-notes.md`.
+### Phase 2: Artifact Drafting
+- **Goal**: Generate high-fidelity documentation artifacts based on the mapped context.
+- **Agents**: `project-operations-specialist`, `knowledge-operations-specialist`
+- **Skills**: generating-documentation, writing-prd
+- **Tools**: write_to_file, jinja2-templates
+- **Actions**:
+    - For Features: Focus on `walkthrough.md` and `README.md`.
+    - For SDLC Gates: Focus on `prd.md`, `ai-design.md`, or `eval-report.md`.
+    - For Releases: Update `CHANGELOG.md` and `release-notes.md`.
 
-### 3. Structural Validation
-Ensure the documentation adheres to factory standards.
-- **Logic**: Use `scripts/validation/validate_readme_structure.py` or equivalent.
-- **Link Check**: Run `python scripts/maintenance/audit/link_checker.py --target <new_file>`.
+### Phase 3: Structural Validation
+- **Goal**: Ensure the documentation adheres to factory standards and has functional links.
+- **Agents**: `workflow-quality-specialist`
+- **Skills**: verifiying-links, code-review
+- **Tools**: scripts/maintenance/audit/link_checker.py
+- **Actions**:
+    - Use `scripts/validation/validate_readme_structure.py` or equivalent.
+    - Run `python scripts/maintenance/audit/link_checker.py --target <new_file>`.
 
-### 4. Induction & Sync
-Integrate the document into the system context.
-- **Agent**: `project-operations-specialist`
-- **Skill**: Mandatory use of `.agent/skills/routing/managing-plane-tasks/SKILL.md` for Plane synchronization.
-- **Plane Sync**: Post the document content or a summarized link to the corresponding Plane issue.
-- **Memory Induction**: If the doc introduces new patterns, update `knowledge-manifest.json` via the `managing-memory-bank` skill.
+### Phase 4: Induction & Sync
+- **Goal**: Integrate the document into the system context and Plane tracking.
+- **Agents**: `project-operations-specialist`
+- **Skills**: managing-plane-tasks, managing-memory-bank
+- **Tools**: managing-plane-tasks.py, memory_mcp
+- **Actions**:
+    - Post the document content or a summarized link to the corresponding Plane issue.
+    - If the doc introduces new patterns, update `knowledge-manifest.json`.
 
 ## Best Practices
 - **No Stubs**: Never create empty placeholder files.
@@ -70,4 +88,8 @@ Integrate the document into the system context.
 
 ## Related Workflows
 - `sdlc-meta-orchestrator.md` - Context for phase documentation.
-- `release-management.md` - Context for version documentation.
+- `committing-releases.md` - Context for version documentation.
+
+
+## Trigger Examples
+- "Execute generating-documentation.md"

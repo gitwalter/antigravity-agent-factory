@@ -1,11 +1,17 @@
 ---
-description: Systematic workflow for debugging CI/CD pipeline failures. This workflow demonstrates the Antigravity Agent Factory workfl...
+description: Systematic workflow for analyzing-code CI/CD pipeline failures. This workflow
+  demonstrates the Antigravity Agent Factory workfl...
 version: 1.0.0
+tags:
+- debug
+- pipeline
+- standardized
 ---
+
 
 # Debug Pipeline
 
-Systematic workflow for debugging CI/CD pipeline failures. This workflow demonstrates the Antigravity Agent Factory workflow system architecture with phases, decision points, escalation paths, and learning hooks.
+Systematic workflow for analyzing-code CI/CD pipeline failures. This workflow demonstrates the Antigravity Agent Factory workflow system architecture with phases, decision points, escalation paths, and learning hooks.
 
 **Version:** 1.0.0
 **Created:** 2026-01-31
@@ -70,3 +76,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

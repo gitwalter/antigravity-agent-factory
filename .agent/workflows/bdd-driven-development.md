@@ -1,7 +1,14 @@
 ---
-description: Behavior-Driven Development workflow that starts with stakeholder-readable Gherkin scenarios and translates them into...
+description: Behavior-Driven Development workflow that starts with stakeholder-readable
+  Gherkin scenarios and translates them into...
 version: 1.0.0
+tags:
+- bdd
+- driven
+- development
+- standardized
 ---
+
 
 # Bdd Driven Development
 
@@ -26,33 +33,40 @@ This workflow is activated when:
 - "Create feature files for the checkout process"
 - "BDD for the payment module"
 
-## Steps
+## Phases
 
-### Gather Stakeholders
+### Phase 1: Behavior Discovery & Gherkin Modeling
+- **Goal**: Identify stakeholder requirements and translate them into Gherkin scenarios.
+- **Agents**: `workflow-quality-specialist`
+- **Skills**: bdd-driven-development, reviewing-requirements
+- **Tools**: mcp_memory_search_nodes
+- **Actions**:
+    - Define examples with stakeholders and write Gherkin feature files.
 
-### Define Examples
+### Phase 2: Test Automation & Implementation
+- **Goal**: Scale automated test stubs and implement the production logic to pass them.
+- **Agents**: `workflow-quality-specialist`
+- **Skills**: bdd-driven-development, developing-ai-agents
+- **Tools**: behave-cli, write_to_file
+- **Actions**:
+    - Generate step stubs and implement step definitions.
+    - Implement production code to pass the feature tests.
 
-### Write Feature Description
+### Phase 3: Verification & SDLC Integration
+- **Goal**: Verify all scenarios pass and integrate results into the CI/CD pipeline.
+- **Agents**: `workflow-quality-specialist`, `project-operations-specialist`
+- **Skills**: bdd-driven-development, verifying-artifact-structures
+- **Tools**: behave-cli, python-interpreter
+- **Actions**:
+    - Run full feature suite and verify logic against unit tests.
 
-### Write Scenarios
-
-### Add Background and Hooks
-
-### Generate Step Stubs
-
-### Implement Step Definitions
-
-### Run Feature Tests
-
-### Translate to Unit Tests
-
-### Implement Production Code
-
-### Verify All Scenarios Pass
-
-### Generate Documentation
-
-### Share with Stakeholders
+### Phase 4: Documentation & Stakeholder Handoff
+- **Goal**: Generate live documentation and finalize behavioral sign-off.
+- **Agents**: `knowledge-operations-specialist`
+- **Skills**: generating-documentation, bdd-driven-development
+- **Tools**: behave-formatter, write_to_file
+- **Actions**:
+    - Generate documentation and share results with stakeholders.
 
 
 ## Decision Points
@@ -69,3 +83,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

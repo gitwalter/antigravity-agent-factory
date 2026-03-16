@@ -1,35 +1,44 @@
 ---
 name: mobile-native-development
-description: Comprehensive workflow for Mobile Native (iOS/Android) development from initialization to store deployment.
+description: Comprehensive workflow for Mobile Native (iOS/Android) development from
+  initialization to store deployment.
 version: 1.0.0
 type: pipeline
 domain: universal
 agents:
-  - mobile-specialist
+- mobile-specialist
 blueprints:
-  - mobile-native-app
+- mobile-native-app
 steps:
-  - name: Initialization
-    description: Initialize project using platform-specific CLI (e.g., xcodebuild or gradle init).
-  - name: Configuration
-    description: Configure mandatory ignore rules for build artifacts (.gitignore, .cursorignore).
-  - name: Dependency Management
-    description: Setup dependency management (CocoaPods/Swift Package Manager for iOS, Gradle for Android).
-  - name: Implementation
-    description: Implement core architecture (MVVM/Coordinator) and UI components.
-  - name: Unit Testing
-    description: Run unit tests using platform runner (xctest or ./gradlew test).
-  - name: UI Testing
-    description: Perform UI tests on simulator/emulator.
-  - name: Static Analysis
-    description: Execute linting and static analysis (swiftlint or ktlint).
-  - name: Packaging
-    description: Package for distribution (Archive .ipa or Build .apk/.aab).
-  - name: Signing
-    description: Verify signing and provisioning profiles.
-  - name: Submission
-    description: Submit to App Store Connect or Google Play Console via automated pipelines.
+- name: Initialization
+  description: Initialize project using platform-specific CLI (e.g., xcodebuild or
+    gradle init).
+- name: Configuration
+  description: Configure mandatory ignore rules for build artifacts (.gitignore, .cursorignore).
+- name: Dependency Management
+  description: Setup dependency management (CocoaPods/Swift Package Manager for iOS,
+    Gradle for Android).
+- name: Implementation
+  description: Implement core architecture (MVVM/Coordinator) and UI components.
+- name: Unit Testing
+  description: Run unit tests using platform runner (xctest or ./gradlew test).
+- name: UI Testing
+  description: Perform UI tests on simulator/emulator.
+- name: Static Analysis
+  description: Execute linting and static analysis (swiftlint or ktlint).
+- name: Packaging
+  description: Package for distribution (Archive .ipa or Build .apk/.aab).
+- name: Signing
+  description: Verify signing and provisioning profiles.
+- name: Submission
+  description: Submit to App Store Connect or Google Play Console via automated pipelines.
+tags:
+- mobile
+- native
+- development
+- standardized
 ---
+
 
 # Mobile Native Development Workflow
 
@@ -74,4 +83,8 @@ Package and sign artifacts for distribution.
 
 ## Related Workflows
 - `fastapi-api-development.md` - Backend for mobile apps.
-- `release-management.md` - Global versioning and release.
+- `committing-releases.md` - Global versioning and release.
+
+
+## Trigger Examples
+- "Execute mobile-native-development.md"

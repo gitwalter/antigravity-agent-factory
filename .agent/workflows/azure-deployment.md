@@ -1,15 +1,21 @@
 ---
-description: Comprehensive workflow for deploying .NET applications to Azure cloud services including App Service, Container Apps,...
+description: Comprehensive workflow for deploying .NET applications to Azure cloud
+  services including App Service, Container Apps,...
 version: 1.0.0
+tags:
+- azure
+- deployment
+- standardized
 ---
+
 
 # Azure Deployment
 
-Comprehensive workflow for deploying .NET applications to Azure cloud services including App Service, Container Apps, and Azure Functions. This workflow covers containerization, Azure resource configuration, deployment, and monitoring setup.
+Comprehensive workflow for deploying .NET applications to Azure cloud services including App Service, Container Apps, and Azure Functions. This workflow covers containerization, Azure resource configuration, deployment, and logging-and-monitoring setup.
 
 **Version:** 1.0.0
 **Created:** 2026-02-09
-**Agent:** workflow-architect
+**Agent:** system-architecture-specialist
 
 > **Note:** Directory paths referenced in this workflow ({directories.knowledge}/, {directories.skills}/, {directories.patterns}/, etc.) are configurable via `{directories.config}/settings.json`.
 
@@ -79,3 +85,13 @@ Agent: Initiating workflow steps...
 
 ## Trigger Examples
 - "Execute this workflow."
+
+
+## Best Practices
+- **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.
+- **Memory First**: Check context before execution.
+- **Verifiability**: Document every step.
+
+
+## Related
+- [workflow-standard.md](file:///.agent/rules/workflow-standard.md)

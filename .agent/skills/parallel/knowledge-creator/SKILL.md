@@ -46,9 +46,11 @@ Knowledge files are JSON objects that follow `schemas/knowledge-file.schema.json
 ## Process
 
 1.  **Gather Information**: Identify the facts or data to be structured.
-2.  **Draft JSON**: Build the object structure.
-3.  **Validate**: Run `scripts/quick_validate.py` against the `.json` file.
-4.  **Sync**: Run `build_knowledge_crossref.py` to update the global registry.
+2.  **Draft JSON**: Build the object structure following `schemas/knowledge-file.schema.json`.
+3.  **Validation (Mandatory)**:
+    - Run structural tests: `conda run -p D:\Anaconda\envs\cursor-factory pytest tests/knowledge/test_system_structure.py`
+    - Run structural verification: `conda run -p D:\Anaconda\envs\cursor-factory python scripts/validation/verify_structures.py`
+4.  **Sync**: Run `conda run -p D:\Anaconda\envs\cursor-factory python scripts/validation/sync_artifacts.py` to update registries.
 
 ## When to Use
 
@@ -61,7 +63,7 @@ Knowledge files are JSON objects that follow `schemas/knowledge-file.schema.json
 
 - Access to the Factory schemas in `schemas/`
 - Understanding of the artifact structure defined in this skill
-- The `quick_validate.py` script must be available for schema validation
+- `scripts/validation/verify_structures.py` must be available for structural checks
 
 ## Best Practices
 
