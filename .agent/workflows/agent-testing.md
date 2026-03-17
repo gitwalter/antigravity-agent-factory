@@ -60,9 +60,8 @@ steps:
   - write_to_file
 tags: []
 type: sequential
-version: 1.0.0
+version: 2.0.0
 ---
-
 # /agent-testing-agents Workflow (SDLC Phase 5)
 
 **Version:** 1.0.0

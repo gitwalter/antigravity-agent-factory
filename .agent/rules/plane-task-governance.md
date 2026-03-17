@@ -26,7 +26,10 @@ Agents MUST NOT bypass the authorized creation path.
 All Plane issue generation MUST occur through the templating script:
 `.agent/skills/routing/managing-plane-tasks/scripts/create_task.py`
 
-## 3. High-Fidelity Solutions
-When transitioning a Plane issue to **Done**, you MUST generate a comprehensive high-fidelity payload using the `solution_definition_schema.json` and post it using `post_solution.py`. Shallow updates or generic "fixed the code" comments are structurally invalid and will be rejected.
+## 4. Idempotency & Duplicate Prevention
+Agents MUST maintain "Conscious Action" to avoid workspace clutter. Before creating any NEW Plane issue:
+1.  **Search First**: Query the Plane API (or use `list_issues.py`) to check if an issue with the same name or primary objective already exists.
+2.  **Parent Context**: Verify if the intended sub-task already exists under the target parent.
+3.  **No Redundancy**: If a duplicate is found, the agent MUST skip creation and instead update or refer to the existing issue.
 
 *Failure to comply with these rules corrupts the factory's structural memory.*

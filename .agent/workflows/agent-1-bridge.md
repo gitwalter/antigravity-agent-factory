@@ -76,9 +76,8 @@ steps:
   - plane-mcp
 tags: []
 type: sequential
-version: 1.0.0
+version: 2.0.0
 ---
-
 # Statistical Dashboard & Knowledge Bridge Synchronization
 
 **Version:** 1.1.0

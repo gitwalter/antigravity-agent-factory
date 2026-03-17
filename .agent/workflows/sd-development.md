@@ -84,9 +84,8 @@ steps:
   - safe_release.py
 tags: []
 type: sequential
-version: 1.0.0
+version: 2.0.0
 ---
-
 # SAP Sales and Distribution (SD) Development
 
 **Version:** 1.0.0

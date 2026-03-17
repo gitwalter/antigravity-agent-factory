@@ -40,9 +40,8 @@ steps:
   - replace_file_content
 tags: []
 type: sequential
-version: 1.0.0
+version: 2.0.0
 ---
-
 # /writing-prd Workflow
 
 **Version:** 1.0.0

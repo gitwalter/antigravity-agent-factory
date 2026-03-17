@@ -11,10 +11,10 @@ domain: universal
 name: ai-system-design
 steps:
 - actions:
-  - '**Actions**:'
+  - 'Actions:'
   - Use `python-ai-specialist` to extract entities and constraints from `docs/sdlc/prd.md`.
-  - **Memory Hook**: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:ai-system-design`.
-  - **Save-on-Discover**: Register missing SOP/SKILL nodes if found in local filesystem.
+  - Memory Hook: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:ai-system-design`.
+  - Save-on-Discover: Register missing SOP/SKILL nodes if found in local filesystem.
   agents:
   - python-ai-specialist
   goal: Analyze the PRD and NFRs to establish technical constraints.
@@ -24,7 +24,7 @@ steps:
   tools:
   - view_file
 - actions:
-  - '**Actions**:'
+  - 'Actions:'
   - Invoke the `/ai-designing-ai-systems` routing pattern to select between `chain`,
     `parallel`, or `orchestrator-workers` patterns.
   agents:
@@ -36,7 +36,7 @@ steps:
   tools:
   - mcp_memory_search_nodes
 - actions:
-  - '**Actions**:'
+  - 'Actions:'
   - Trigger `.agent/skills/parallel/designing-apis/SKILL.md` to generate OpenAPI/JSON
     Schema definitions.
   agents:
@@ -48,7 +48,7 @@ steps:
   tools:
   - write_to_file
 - actions:
-  - '**Actions**:'
+  - 'Actions:'
   - Render `knowledge/templates/ai-design.md` using the collected data.
   - Output to `docs/sdlc/ai-design.md`.
   agents:
@@ -60,14 +60,15 @@ steps:
   tools:
   - write_to_file
 - actions:
-  - '**Actions**:'
+  - 'Actions:'
   - Prompt user to run `/developing-ai-agents` for the next Phase (Build).
-  - **Memory Hook**: Synthesize logical architecture into a `KI:` node and link to the `TASK:`.
+  - Memory Hook: Synthesize logical architecture into a `KI:` node and link to the
+      `TASK:`.
   - Triggered by user context or meta-orchestrator.
   - '"Execute this workflow."'
-  - '**Axiomatic Alignment**: Ensure Truth, Beauty, and Love.'
-  - '**Memory First**: Check context before execution.'
-  - '**Verifiability**: Document every step.'
+  - 'Axiomatic Alignment: Ensure Truth, Beauty, and Love.'
+  - 'Memory First: Check context before execution.'
+  - 'Verifiability: Document every step.'
   - '[workflow-standard.md](file:///.agent/rules/workflow-standard.md)'
   agents:
   - project-operations-specialist
@@ -79,9 +80,8 @@ steps:
   - notify_user
 tags: []
 type: sequential
-version: 1.0.0
+version: 2.0.0
 ---
-
 # /ai-designing-ai-systems Workflow
 
 **Version:** 1.0.0

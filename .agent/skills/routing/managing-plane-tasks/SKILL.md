@@ -141,10 +141,13 @@ Work item creation is strictly regulated. **Direct MCP creation is forbidden.** 
 Ensure you have run `sync_project_context.py` recently. The scripts will automatically use the resolved UUIDs from `references/project_context.json`.
 
 #### Step A: Generate and Create Task via Jinja Template
-Create a `task.json` file. The scripts will handle mapping labels and states from context.
+Prepare a `task_input.json` in the `tmp/` directory. Ensure it contains the mandatory fields: `name`, `type`, `schema_version`, `requirements`, `acceptance_criteria`, `workflows`, `agents`, `skills`, `tests`, `module`, `cycle`, and `priority`.
+
+> [!TIP]
+> **Estimation Points**: You can now use numeric Fibonacci values (e.g., `1`, `3`, `5`, `8`, `13`, `21`, `34`, `55`) for the `estimate_point` field. The scripts will automatically resolve these to the correct Plane UUIDs using `references/project_context.json`.
 
 ```bash
-conda run -p D:\Anaconda\envs\cursor-factory python .agent/skills/routing/managing-plane-tasks/scripts/create_task.py --json task_input.json
+conda run -p D:\Anaconda\envs\cursor-factory python .agent/skills/routing/managing-plane-tasks/scripts/create_task.py --json tmp/task_input.json
 ```
 
 #### Step B: Associate Module & Cycle

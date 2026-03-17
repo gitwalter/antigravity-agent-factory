@@ -72,9 +72,8 @@ steps:
   - run_tests.py
 tags: []
 type: sequential
-version: 1.0.0
+version: 2.0.0
 ---
-
 # RESTful ABAP Programming (RAP) with Draft Handling
 
 **Version:** 1.0.0

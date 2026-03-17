@@ -43,6 +43,7 @@ def associate_issue(
     module_name_or_id=None,
     cycle_name_or_id=None,
     estimate=None,
+    start_date=None,
     due_date=None,
     parent_seq_id=None,
 ):
@@ -138,9 +139,23 @@ def associate_issue(
 
     # 4. Handle Estimation, Due Date, Parent
     if estimate:
-        # Note: Plane estimates are often UUIDs for specific points, but can be integers.
-        # We'll try passing it as an integer first or resolving if needed.
-        update_payload["estimate_point"] = estimate
+        estimate_id = None
+        estimate_map = context.get("ESTIMATES", {})
+        # Try to resolve by name/string value (e.g., "8")
+        estimate_id = estimate_map.get(str(estimate))
+
+        if not estimate_id:
+            if len(str(estimate)) > 30:  # Heuristic for UUID
+                estimate_id = estimate
+            else:
+                print(f"Warning: Could not resolve estimate '{estimate}' from context.")
+                # We'll still try to send it as is, maybe the API accepts integers
+                estimate_id = estimate
+
+        update_payload["estimate_point"] = estimate_id
+
+    if start_date:
+        update_payload["start_date"] = start_date
 
     if due_date:
         update_payload["target_date"] = due_date
@@ -180,12 +195,19 @@ def main():
     parser.add_argument("--module", help="Module UUID or Name")
     parser.add_argument("--cycle", help="Cycle UUID or Name")
     parser.add_argument("--estimate", help="Estimate (Point UUID or value)")
+    parser.add_argument("--start-date", help="Start date (YYYY-MM-DD)")
     parser.add_argument("--due-date", help="Due date (YYYY-MM-DD)")
     parser.add_argument("--parent", help="Parent Issue identifier (e.g., AGENT-100)")
     args = parser.parse_args()
 
     associate_issue(
-        args.issue, args.module, args.cycle, args.estimate, args.due_date, args.parent
+        args.issue,
+        args.module,
+        args.cycle,
+        args.estimate,
+        args.start_date,
+        args.due_date,
+        args.parent,
     )
 
 

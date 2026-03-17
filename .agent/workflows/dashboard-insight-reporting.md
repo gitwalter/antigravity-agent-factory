@@ -65,9 +65,8 @@ steps:
   - knowledge-bridge-ui
 tags: []
 type: sequential
-version: 1.0.0
+version: 2.0.0
 ---
-
 # Insight Reporting Workflow
 
 **Version:** 1.0.0

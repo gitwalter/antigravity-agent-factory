@@ -26,6 +26,7 @@ The sequence of navigation and execution is strictly defined as follows:
 - **Action**: You must understand the relationships and current state of the factory.
   - *Example*: `mcp_memory_open_nodes({"names": ["System_Consciousness"]})`
   - *Example*: `mcp_memory_search_nodes({"query": "<task specific entities>"})`
+- **Idempotency Verification**: Before generating *any* new structural asset (Plane issue, skill, workflow), search the project for an existing asset with the same purpose. Duplicate creation is a violation of A5 (Consistency) and structural memory.
 - **Why**: Memory serves as the primary compass. It tells you *where* things are and *how* they relate before you start digging.
 
 ### Phase 3: Structural Navigation (Workflows, Skills, Agents)

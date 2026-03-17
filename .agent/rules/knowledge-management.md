@@ -20,6 +20,7 @@ Governs the creation, naming, and maintenance of Knowledge Items (KIs) in `.agen
 
 ## Lifecycle
 - **Creation**: Research topic -> Extract patterns -> Validate against schema -> Update `knowledge-manifest.json`.
+- **Proactive Synthesis**: During Phase 7 (Monitor), agents MUST run `proactive_synthesis.py` to check for missing KIs from recently completed work.
 - **Validation**: Run `pytest tests/knowledge/test_system_structure.py` to ensure schema compliance.
 - **Updating**: Add new findings from conversation logs or project evolution.
 - **Correction**: If knowledge is found to be incorrect or outdated, update immediately.

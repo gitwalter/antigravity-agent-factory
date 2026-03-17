@@ -72,9 +72,8 @@ steps:
   - sap-connectivity-service
 tags: []
 type: sequential
-version: 1.0.0
+version: 2.0.0
 ---
-
 # BTP Service Deployment
 
 **Version:** 1.0.0

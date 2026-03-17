@@ -55,9 +55,8 @@ steps:
   tools: []
 tags: []
 type: sequential
-version: 1.0.0
+version: 2.0.0
 ---
-
 # Exploratory Data Analysis (EDA)
 
 **Version:** 1.0.0

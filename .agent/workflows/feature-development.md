@@ -12,12 +12,12 @@ domain: universal
 name: feature-development
 steps:
 - actions:
-  - '**Agents**: `project-operations-specialist`'
-  - '**Actions**:'
+  - 'Agents: `project-operations-specialist`'
+  - 'Actions:'
   - Use `create_task.py` to establish the `FEATURE` issue in Plane.
   - Run `sync_project_context.py` to ensure local UUIDs are current.
-  - **Memory Hook**: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:feature-development`.
-  - **Save-on-Discover**: Register missing SOP/SKILL nodes if found in local filesystem.
+  - Memory Hook: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:feature-development`.
+  - Save-on-Discover: Register missing SOP/SKILL nodes if found in local filesystem.
   agents:
   - project-operations-specialist
   goal: Establish Plane tracking for the feature using standardized scripts.
@@ -28,8 +28,8 @@ steps:
   - create_task.py
   - sync_project_context.py
 - actions:
-  - '**Agents**: `project-operations-specialist`'
-  - '**Actions**:'
+  - 'Agents: `project-operations-specialist`'
+  - 'Actions:'
   - Review `knowledge/prd.md` and `knowledge/nfr.md`.
   agents:
   - project-operations-specialist
@@ -41,8 +41,8 @@ steps:
   tools:
   - view_file
 - actions:
-  - '**Agents**: `python-ai-specialist`'
-  - '**Actions**:'
+  - 'Agents: `python-ai-specialist`'
+  - 'Actions:'
   - Use the appropriate builder agent (e.g., `python-ai-specialist`).
   - Follow the `developing-ai-agents.md` where applicable.
   agents:
@@ -55,8 +55,8 @@ steps:
   tools:
   - run_command
 - actions:
-  - '**Agents**: `workflow-quality-specialist`'
-  - '**Actions**:'
+  - 'Agents: `workflow-quality-specialist`'
+  - 'Actions:'
   - Run integration tests and check for side effects.
   agents:
   - workflow-quality-specialist
@@ -68,8 +68,8 @@ steps:
   tools:
   - run_command
 - actions:
-  - '**Agents**: `project-operations-specialist`, `workflow-quality-specialist`'
-  - '**Actions**:'
+  - 'Agents: `project-operations-specialist`, `workflow-quality-specialist`'
+  - 'Actions:'
   - Invoke `/verifying-artifact-structures`.
   - Invoke `/generating-documentation` to generate `walkthrough.md`.
   agents:
@@ -83,8 +83,8 @@ steps:
   tools:
   - walkthrough-generator
 - actions:
-  - '**Agents**: `project-operations-specialist`'
-  - '**Actions**:'
+  - 'Agents: `project-operations-specialist`'
+  - 'Actions:'
   - Invoke `/committing-releases`.
   agents:
   - project-operations-specialist
@@ -95,14 +95,15 @@ steps:
   tools:
   - safe_release.py
 - actions:
-  - '**Agents**: `project-operations-specialist`, `knowledge-operations-specialist`'
-  - '**Actions**:'
+  - 'Agents: `project-operations-specialist`, `knowledge-operations-specialist`'
+  - 'Actions:'
   - Close the Plane issue via `post_solution.py` using the rendered Jinja2 template.
-  - Ensure all architectural decisions and verification proofs are captured in the solution.
-  - **Memory Hook**: Synthesize learnings into a `KI:` node and link to the `TASK:`.
-  - '**Phase Gates**: Never skip a phase without explicit justification in the `walkthrough.md`.'
-  - '**Relative Links**: All documented links must use root-relative paths.'
-  - '**Evidence First**: Use screenshots/logs in documentation.'
+  - Ensure all architectural decisions and verification proofs are captured in the
+    solution.
+  - Memory Hook: Synthesize learnings into a `KI:` node and link to the `TASK:`.
+  - 'Phase Gates: Never skip a phase without explicit justification in the `walkthrough.md`.'
+  - 'Relative Links: All documented links must use root-relative paths.'
+  - 'Evidence First: Use screenshots/logs in documentation.'
   - '`sdlc-meta-orchestrator.md`'
   - '`generating-documentation.md`'
   - '"Execute developing-ai-agents.md"'
@@ -118,9 +119,8 @@ steps:
   - update_status.py
 tags: []
 type: sequential
-version: 1.0.0
+version: 2.0.0
 ---
-
 # Standard Feature Delivery Cycle (SFDC)
 
 **Version:** 1.0.0

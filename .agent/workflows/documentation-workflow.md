@@ -11,12 +11,12 @@ domain: universal
 name: documentation-workflow
 steps:
 - actions:
-  - '**Agents**: `project-operations-specialist`'
-  - '**Actions**:'
+  - 'Agents: `project-operations-specialist`'
+  - 'Actions:'
   - Check `task.md` or Plane issue sequence to map requirements.
   - Identify component and existing documentation state.
-  - **Memory Hook**: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:documentation-workflow`.
-  - **Save-on-Discover**: Register missing SOP/SKILL nodes if found in local filesystem.
+  - Memory Hook: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:documentation-workflow`.
+  - Save-on-Discover: Register missing SOP/SKILL nodes if found in local filesystem.
   agents:
   - project-operations-specialist
   goal: Identify which SDLC phase or component is being documented and establish context.
@@ -27,8 +27,8 @@ steps:
   tools:
   - deepwiki-read_wiki_structure
 - actions:
-  - '**Agents**: `project-operations-specialist`, `knowledge-operations-specialist`'
-  - '**Actions**:'
+  - 'Agents: `project-operations-specialist`, `knowledge-operations-specialist`'
+  - 'Actions:'
   - 'For Features: Focus on `walkthrough.md` and `README.md`.'
   - 'For SDLC Gates: Focus on `prd.md`, `ai-design.md`, or `eval-report.md`.'
   - 'For Releases: Update `CHANGELOG.md` and `release-notes.md`.'
@@ -44,8 +44,8 @@ steps:
   - write_to_file
   - jinja2-templates
 - actions:
-  - '**Agents**: `workflow-quality-specialist`'
-  - '**Actions**:'
+  - 'Agents: `workflow-quality-specialist`'
+  - 'Actions:'
   - Use `scripts/validation/validate_readme_structure.py` or equivalent.
   - Run `python scripts/maintenance/audit/link_checker.py --target <new_file>`.
   agents:
@@ -58,14 +58,15 @@ steps:
   tools:
   - scripts/maintenance/audit/link_checker.py
 - actions:
-  - '**Agents**: `project-operations-specialist`'
-  - '**Actions**:'
+  - 'Agents: `project-operations-specialist`'
+  - 'Actions:'
   - Post the document content or a summarized link to the corresponding Plane issue.
   - If the doc introduces new patterns, update `knowledge-manifest.json`.
-  - **Memory Hook**: Synthesize newly documented concepts into a `KI:` node and link to the `TASK:`.
-  - '**No Stubs**: Never create empty placeholder files.'
-  - '**Relative Pathing**: Use `file:///` URIs relative to the root for all links.'
-  - '**Tone**: Professional, technical, and proactive.'
+  - Memory Hook: Synthesize newly documented concepts into a `KI:` node and link to
+      the `TASK:`.
+  - 'No Stubs: Never create empty placeholder files.'
+  - 'Relative Pathing: Use `file:///` URIs relative to the root for all links.'
+  - 'Tone: Professional, technical, and proactive.'
   - '`sdlc-meta-orchestrator.md` - Context for phase documentation.'
   - '`committing-releases.md` - Context for version documentation.'
   - '"Execute generating-documentation.md"'
@@ -81,9 +82,8 @@ steps:
   - memory_mcp
 tags: []
 type: sequential
-version: 1.0.0
+version: 2.0.0
 ---
-
 # Global Documentation Workflow (SDLC Phase 6)
 
 **Version:** 1.0.0

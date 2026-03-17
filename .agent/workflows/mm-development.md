@@ -85,9 +85,8 @@ steps:
   - safe_release.py
 tags: []
 type: sequential
-version: 1.0.0
+version: 2.0.0
 ---
-
 # Materials Management (MM) Development
 
 **Version:** 1.0.0

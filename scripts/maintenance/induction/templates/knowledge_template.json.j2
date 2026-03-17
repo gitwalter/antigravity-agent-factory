@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "{{ name }}",
+  "title": "{{ title | default(name | replace('-', ' ') | title) }}",
+  "description": "{{ description }}",
+  "version": "{{ version | default('1.0.0') }}",
+  "category": "{{ category }}",
+  "axiomAlignment": {
+    "A1_verifiability": "{{ axiom_alignment.A1 | default('Ensures all knowledge can be verified through linked resources.') }}",
+    "A2_user_primacy": "{{ axiom_alignment.A2 | default('Prioritizes user visibility and control over knowledge induction.') }}",
+    "A3_transparency": "{{ axiom_alignment.A3 | default('Maintains a clear trace from raw data to distilled patterns.') }}",
+    "A4_non_harm": "{{ axiom_alignment.A4 | default('Ensures knowledge does not expose vulnerabilities or bias.') }}",
+    "A5_consistency": "{{ axiom_alignment.A5 | default('Adheres to factory-wide schema and naming standards.') }}"
+  },
+  "patterns": {
+    {% if patterns %}
+    {% for pattern_name, pattern in patterns.items() %}
+    "{{ pattern_name }}": {
+      "description": "{{ pattern.description }}",
+      "use_when": "{{ pattern.use_when }}",
+      "code_example": {{ pattern.code_example | tojson }},
+      "best_practices": {{ pattern.best_practices | tojson }},
+      "anti_patterns": {{ pattern.anti_patterns | default([]) | tojson }}
+    }{{ "," if not loop.last }}
+    {% endfor %}
+    {% else %}
+    "default-conceptual-pattern": {
+      "description": "Initial conceptual pattern for {{ name }}.",
+      "use_when": "When the knowledge item is first induced and patterns are not yet distilled.",
+      "code_example": ["// Draft your patterns here"],
+      "best_practices": ["Distill concrete patterns from successful implementations"],
+      "anti_patterns": ["Placeholder content in production knowledge items"]
+    }
+    {% endif %}
+  },
+  "related_skills": {{ related_skills | tojson }},
+  "related_knowledge": {{ related_knowledge | tojson }}
+}

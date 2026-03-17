@@ -107,6 +107,7 @@ def load_input(path: str) -> dict:
     required = [
         "name",
         "type",
+        "schema_version",
         "requirements",
         "acceptance_criteria",
         "workflows",
@@ -145,6 +146,12 @@ def render_template(data: dict) -> str:
         trim_blocks=True,
         lstrip_blocks=True,
     )
+    # Auto-populate schema_json if not provided, to meet high-fidelity requirements
+    if "schema_json" not in data:
+        # Create a copy without sensitive or internal render-only fields if any
+        schema_data = {k: v for k, v in data.items() if k != "schema_json"}
+        data["schema_json"] = json.dumps(schema_data, indent=2)
+
     template = env.get_template("work_item.html.j2")
     return template.render(**data)
 
@@ -201,8 +208,25 @@ def create_work_item(data: dict, description_html: str, update_id: str = None) -
         "state": context.get("STATES", {}).get(data.get("state", "TODO").upper()),
         "start_date": data.get("start_date"),
         "target_date": data.get("target_date"),
-        "estimate_point": data.get("estimate_point"),
     }
+
+    # Resolve estimate_point if provided as numeric name
+    raw_estimate = data.get("estimate_point")
+    if raw_estimate:
+        estimate_id = None
+        estimate_map = context.get("ESTIMATES", {})
+        estimate_id = estimate_map.get(str(raw_estimate))
+
+        if not estimate_id:
+            if len(str(raw_estimate)) > 30:  # UUID
+                estimate_id = raw_estimate
+            else:
+                print(
+                    f"Warning: Could not resolve estimate '{raw_estimate}' from context."
+                )
+                estimate_id = raw_estimate
+
+        payload["estimate_point"] = estimate_id
 
     # Associate with Cycle/Module
     if cycle_id:

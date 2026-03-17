@@ -1,0 +1,48 @@
+---
+name: {{ name }}
+description: {{ description }}
+version: {{ version | default('1.0.0') }}
+type: {{ type | default('sequential') }}
+domain: {{ domain }}
+steps:
+{% for step in steps %}
+- name: {{ step.name }}
+  goal: {{ step.goal }}
+  agents: {{ step.agents | tojson }}
+  {% if step.skills %}
+  skills: {{ step.skills | tojson }}
+  {% endif %}
+  {% if step.tools %}
+  tools: {{ step.tools | tojson }}
+  {% endif %}
+  actions:
+  {% for action in step.actions %}
+  - {{ action }}
+  {% endfor %}
+{% endfor %}
+agents: {{ agents | tojson }}
+blueprints: {{ blueprints | tojson }}
+---
+
+# /{{ name }} Workflow
+
+## Overview
+{{ description }}
+
+## Trigger Conditions
+{% for trigger in triggers %}
+- {{ trigger }}
+{% endfor %}
+
+## Phases
+
+{% for phase in steps %}
+### Phase {{ loop.index }}: {{ phase.name }}
+- **Goal**: {{ phase.goal }}
+- **Agents**: {{ phase.agents | join(', ') }}
+- **Actions**:
+{% for action in phase.actions %}
+  - {{ action }}
+{% endfor %}
+
+{% endfor %}

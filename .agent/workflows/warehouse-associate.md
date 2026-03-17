@@ -63,9 +63,8 @@ steps:
   tools: []
 tags: []
 type: sequential
-version: 1.0.0
+version: 2.0.0
 ---
-
 # Warehouse Associate Operational Guide
 
 **Version:** 1.0.0

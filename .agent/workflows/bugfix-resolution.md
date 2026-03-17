@@ -11,12 +11,12 @@ domain: universal
 name: bugfix-resolution
 steps:
 - actions:
-  - '**Actions**:'
+  - 'Actions:'
   - Check if an issue exists in Plane.
   - If not, create an issue using `create_task.py`.
   - Ensure the issue has a `BUG` label and is set to "In Progress".
-  - **Memory Hook**: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:bugfix-resolution`.
-  - **Save-on-Discover**: Register missing SOP/SKILL nodes if found in local filesystem.
+  - Memory Hook: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:bugfix-resolution`.
+  - Save-on-Discover: Register missing SOP/SKILL nodes if found in local filesystem.
   agents:
   - project-operations-specialist
   goal: Ensure the bug is tracked in the project management system.
@@ -25,7 +25,7 @@ steps:
   - managing-plane-tasks
   tools: []
 - actions:
-  - '**Actions**:'
+  - 'Actions:'
   - Query the Active Consciousness for similar bugs or domain context.
   - Use `mcp_memory_search_nodes` against the Tier 0 Graph.
   - If zero-context is found for a critical domain, use `notify_user` for clarification.
@@ -37,7 +37,7 @@ steps:
   - managing-memory-bank
   tools: []
 - actions:
-  - '**Actions**:'
+  - 'Actions:'
   - Classify bug severity and impact.
   - Ground the data model and gather relevant code context.
   - Reproduce the bug locally with a minimal script or test.
@@ -49,7 +49,7 @@ steps:
   skills: []
   tools: []
 - actions:
-  - '**Actions**:'
+  - 'Actions:'
   - Form a hypothesis for the fix.
   - Create a detailed `implementation_plan.md`.
   - Write a regression test that fails before the fix.
@@ -60,7 +60,7 @@ steps:
   skills: []
   tools: []
 - actions:
-  - '**Actions**:'
+  - 'Actions:'
   - Implement the technical solution.
   - Verify the fix locally using the regression test (Red-Green-Refactor).
   agents:
@@ -70,7 +70,7 @@ steps:
   skills: []
   tools: []
 - actions:
-  - '**Actions**:'
+  - 'Actions:'
   - Run the full test suite using `pytest`.
   - Perform a code review of the changes.
   agents:
@@ -80,15 +80,15 @@ steps:
   skills: []
   tools: []
 - actions:
-  - '**Actions**:'
+  - 'Actions:'
   - Update the status in Plane to 'Done'.
   - Generate `walkthrough.md` via `/generating-documentation`.
   - Close the issue using `managing-plane-tasks.py` to render the solution via Jinja2.
   - Induct new patterns into the memory bank.
-  - **Memory Hook**: Synthesize fix into a `KI:` node and link to the `TASK:`.
-  - '**Memory First**: Always check memory before starting technical work.'
-  - '**Traceability**: All fixes must be tied to a Plane issue.'
-  - '**High-Fidelity**: Use Jinja2 templates for all Plane updates.'
+  - Memory Hook: Synthesize fix into a `KI:` node and link to the `TASK:`.
+  - 'Memory First: Always check memory before starting technical work.'
+  - 'Traceability: All fixes must be tied to a Plane issue.'
+  - 'High-Fidelity: Use Jinja2 templates for all Plane updates.'
   - '"Execute bugfix-resolution.md"'
   - '[workflow-standard.md](file:///.agent/rules/workflow-standard.md)'
   agents:
@@ -101,9 +101,8 @@ steps:
   tools: []
 tags: []
 type: sequential
-version: 1.0.0
+version: 2.0.0
 ---
-
 # Bugfix Resolution
 
 **Version:** 1.0.0

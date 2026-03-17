@@ -74,9 +74,8 @@ steps:
   - python-interpreter
 tags: []
 type: sequential
-version: 1.0.0
+version: 2.0.0
 ---
-
 # Coordination Testing
 
 **Version:** 1.0.0

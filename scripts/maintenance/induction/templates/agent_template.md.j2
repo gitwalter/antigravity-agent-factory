@@ -1,0 +1,49 @@
+---
+name: {{ name }}
+description: {{ description }}
+type: agent
+version: {{ version | default('1.0.0') }}
+domain: {{ domain }}
+skills: {{ skills | default(['none', 'none']) | tojson }}
+knowledge: {{ knowledge | default(['none.json', 'none.json']) | tojson }}
+tools: {{ tools | default(['none']) | tojson }}
+workflows: {{ workflows | default(['none']) | tojson }}
+blueprints: {{ blueprints | default(['universal']) | tojson }}
+{% if mcp_servers %}
+mcp_servers: {{ mcp_servers | tojson }}
+{% endif %}
+---
+
+# Specialist: {{ name | replace('-', ' ') | title }}
+
+## Mission
+{{ mission }}
+
+## Backstory
+{{ backstory }}
+
+## Tactical Capabilities
+
+### Specialist Skills
+{% for skill in skills %}
+- [[{{ skill }}]]
+{% endfor %}
+
+## Decision Gates
+
+{% for phase in decision_gates %}
+### Phase {{ loop.index }}: {{ phase.name }}
+{% for step in phase.steps %}
+{{ loop.index }}. {{ step }}
+{% endfor %}
+
+{% endfor %}
+
+## Safeguard Patterns
+
+{% for pattern in safeguard_patterns %}
+### {{ pattern.name }}
+- **Detection**: {{ pattern.detection }}
+- **Resolution**: {{ pattern.resolution }}
+
+{% endfor %}

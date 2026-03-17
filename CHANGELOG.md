@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-03-17
+
+### Added
+- **Universal Factory Induction (AGENT-151)**: Introduced a modular orchestrator and intelligence layer (Drafting Engine) for automated, high-fidelity creation of Skills, Agents, Workflows, and Knowledge Items with full schema compliance.
+- **Predictive Issue Slicing (AGENT-150)**: Implemented automated task decomposition logic to proactively slice complex goals into actionable, well-defined Plane issues.
+- **Proactive Knowledge Synthesis v1.1.0**: Enhanced the `proactive_synthesis.py` maintenance script to detect and bridge knowledge gaps across the factory more effectively.
+- **Skill & Agent Specialist Patterns (AGENT-153/154)**: Codified foundational architectural patterns for Level 3 skill bundles and specialty agents, ensuring consistency across the factory ecosystem.
+
+### Changed
+- **Metadata Sync Infrastructure**: Hardened synchronization scripts (`sync_script_registry.py`, `sync_manifest_versions.py`) to handle modern 5-layer project structures and dynamic path resolution.
+
+### Fixed
+- **Knowledge Schema Enforcement**: Resolved critical test failures related to empty pattern objects in Knowledge Items by refining Jinja2 induction templates.
+- **Plane Solution Reporting**: Fixed parameter validation and rendering logic in the `post_solution.py` skill, enabling high-fidelity reporting of architectural evolution.
+
 ## [1.9.3] - 2026-03-17
 
 ### Added

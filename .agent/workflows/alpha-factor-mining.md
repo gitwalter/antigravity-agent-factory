@@ -84,9 +84,8 @@ steps:
   - write_to_file
 tags: []
 type: sequential
-version: 1.0.0
+version: 2.0.0
 ---
-
 # Alpha Factor Mining
 
 **Version:** 1.0.0

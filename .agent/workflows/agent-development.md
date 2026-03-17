@@ -77,9 +77,8 @@ steps:
   - managing-plane-tasks.py
 tags: []
 type: sequential
-version: 1.0.0
+version: 2.0.0
 ---
-
 # /developing-ai-agents Workflow (SDLC Phase 4)
 
 **Version:** 1.0.0

@@ -1,8 +1,10 @@
 ---
 name: automated-prd-to-code
 type: sequential
-version: 1.0.0
-description: 'Autonomous bridge that transforms a verified Agentic PRD into structural boilerplate and core implementation logic. Use when a READY prd.md exists and you want to bootstrap the implementation phase.'
+version: 2.0.0
+description: Autonomous bridge that transforms a verified Agentic PRD into structural
+  boilerplate and core implementation logic. Use when a READY prd.md exists and you
+  want to bootstrap the implementation phase.
 agents:
 - system-architecture-specialist
 - python-ai-specialist
@@ -26,7 +28,8 @@ steps:
   tools:
   - ProjectGenerator
   actions:
-  - Invoke `ProjectGenerator` via the bridge script to create .agent/, workflows/, and scripts/.
+  - Invoke `ProjectGenerator` via the bridge script to create .agent/, workflows/,
+    and scripts/.
 - name: Logic Implementation
   goal: Generate initial implementation files based on PRD acceptance criteria.
   agents:
@@ -36,7 +39,7 @@ steps:
   tools:
   - write_to_file
   actions:
-  - 'Populate src/ or scripts/ with implementation stubs derived from Story JSON blocks.'
+  - Populate src/ or scripts/ with implementation stubs derived from Story JSON blocks.
 - name: Verification
   goal: Validate the generated structure and initial code.
   agents:
@@ -48,7 +51,6 @@ steps:
   actions:
   - Run linting and basic structure checks on generated assets.
 ---
-
 # Automated PRD to Code Bridge
 
 **Version:** 1.0.0

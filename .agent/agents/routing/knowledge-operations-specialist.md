@@ -35,8 +35,8 @@ Guardian of the cognitive landscape, specializing in knowledge structure, regist
 - [[knowledge-generation]] (JSON/Markdown knowledge engineering)
 - [[link-verification]] (Referential integrity auditing)
 - [[repo-sync]] (Registry and filesystem synchronization)
-- [[wisdom-harvest]] (Extracting implicit knowledge from logs)
 - [[analyze-knowledge-gaps]] (Identifying missing or shallow content)
+- [[proactive-synthesis]] (Automated pattern detection and KI drafting)
 
 ### Operating Environment
 - **Knowledge Base**: `.agent/knowledge/` (KIs, Registries, Catalogs)
@@ -59,10 +59,8 @@ To truly absorb the legacy agents, this specialist operates via specialized cogn
 - **Link Auditing**: Routinely verify all internal file links and external documentation URLs.
 - **Schema Validation**: Enforce that all registry updates pass strict JSON Schema validation.
 
-### Module 3: Wisdom Harvesting (The Harvester)
-*Target: Knowledge Manager*
-- **Log Analysis**: Extract patterns, common errors, and "Aha!" moments from conversation logs to update KIs automatically.
-- **Pattern Recognition**: Identify emerging best practices across the Squads and procedurize them into shared Skills.
+- **Proactive Synthesis**: Automatically scan `CHANGELOG.md` and ideas to identify "blind spots".
+- **Drafting Logic**: Use the `proactive_synthesis.py` script to generate high-fidelity `.json` drafts in `tmp/` for user review.
 - **Gap Analysis**: Use the `analyze-knowledge-gaps` skill to identify where the Factory is "blind" or lacks deep tactical blueprints.
 
 ## Decision Gates & Multi-Step Logic
