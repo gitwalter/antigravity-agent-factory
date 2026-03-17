@@ -20,23 +20,41 @@ import subprocess
 import sys
 
 # Directories to scan for CLI scripts
+# We use relative paths from PROJECT_ROOT
 SCAN_DIRS = [
     "scripts/ai/rag",
-    "scripts/maintenance",
+    "scripts/maintenance/sync",
     "scripts/validation",
     "scripts/git",
+    ".agent/skills/routing/managing-plane-tasks/scripts",
 ]
 
 # Scripts known to have --help  (basename → entity name mapping)
 KNOWN_SCRIPTS = {
-    "rag_cli.py": "RAG_CLI_Commands",
-    "sync_script_registry.py": "Maintenance_Registry_Sync",
-    "sync_manifest_versions.py": "Version_Sync_Utility",
-    "safe_commit.py": "Safe_Commit_Wrapper",
+    "rag_cli.py": "SKILL:rag-operations",
+    "sync_script_registry.py": "SKILL:registry-sync",
+    "sync_manifest_versions.py": "SKILL:version-sync",
+    "safe_commit.py": "SKILL:git-governance",
+    "create_task.py": "SKILL:plane-task-creation",
+    "sync_project_context.py": "SKILL:plane-context-sync",
+    "post_solution.py": "SKILL:plane-solution-posting",
+    "update_task.py": "SKILL:plane-task-update",
 }
 
+# New paths to scan for Plane skills
+SCAN_DIRS.append(".agent/skills/routing/managing-plane-tasks/scripts")
+# Correct script locations:
+# scripts/ai/rag/rag_cli.py
+# scripts/maintenance/sync/sync_script_registry.py
+# scripts/maintenance/sync/sync_manifest_versions.py
+# scripts/git/safe_commit.py
+# .agent/skills/routing/managing-plane-tasks/scripts/create_task.py
+# .agent/skills/routing/managing-plane-tasks/scripts/sync_project_context.py
+# .agent/skills/routing/managing-plane-tasks/scripts/post_solution.py
+# .agent/skills/routing/managing-plane-tasks/scripts/update_task.py
 # CONDA_PREFIX removed to allow for environment-aware execution via sys.executable
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+# PROJECT_ROOT should be the current working directory where the script is executed from
+PROJECT_ROOT = os.getcwd()
 
 
 def get_help_output(script_path: str) -> str:
@@ -149,19 +167,20 @@ def main():
 
             # Build observations from help text
             commands = parse_help_to_commands(help_text)
-            observations = [
-                f"Script: {scan_dir}/{filename}",
-                f"Commands: {', '.join(commands)}"
-                if commands
-                else "No subcommands detected",
-                f"Run: conda run -p {CONDA_PREFIX} python {scan_dir}/{filename} <cmd>",
-            ]
 
-            # Add first 10 lines of help as raw reference
-            help_lines = help_text.split("\n")[:10]
-            observations.append(
-                f"Help preview: {' | '.join(l.strip() for l in help_lines if l.strip())}"
-            )
+            # Extract description from the first part of help text (before "usage:")
+            description = "N/A"
+            if "usage:" in help_text.lower():
+                description = help_text.lower().split("usage:")[0].strip()
+
+            observations = [
+                f"Path: {scan_dir}/{filename}",
+                f"Description: {description}",
+                f"Goal: {description[:100]}...",  # Truncated for quick scanning
+                f"Commands: {', '.join(commands)}" if commands else "No subcommands",
+                f"Usage: conda run -p D:\\Anaconda\\envs\\cursor-factory python {scan_dir}/{filename} <cmd>",
+                f"Keywords: {filename.replace('.py', '')}, {', '.join(commands)}",
+            ]
 
             sync_to_memory_mcp(entity_name, observations, dry_run=args.dry_run)
             synced += 1

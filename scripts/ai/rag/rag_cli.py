@@ -30,7 +30,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from scripts.ai.llm_config import get_primary_model, get_temperature
+from scripts.ai.core.llm_config import get_primary_model, get_temperature
 
 # Force UTF-8 encoding for stdout/stderr to avoid Windows encoding errors
 if sys.platform == "win32":

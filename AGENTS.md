@@ -24,7 +24,7 @@ Invoke these personas via `@persona` in your thought process to activate special
 ### ⚙️ @Operator (PROPS)
 - **Focus**: Environment stability, CI/CD health, and script optimization.
 - **Specialist**: [Project Operations](file:///.agent/agents/chain/project-operations-specialist.md)
-- **Protocol**: Always use absolute paths and the specific `conda` environment (`cursor-factory`).
+- **Protocol**: Always use absolute paths, the specific `conda` environment (`cursor-factory`), and MANDATORY root-cleanliness (all temporary files in `tmp/`).
 
 ### 💼 @Executive (EXOPS)
 - **Focus**: Digital life management, executive communication, and scheduling.

@@ -71,10 +71,21 @@ def validate_depth(data: dict):
             f"Summary too short ({len(summary)} chars). Provide a meaningful context paragraph (>= 50 chars)."
         )
 
+    # Check for empty summary or missing crucial arrays
+    if not data.get("summary") or len(data.get("summary", "")) < 20:
+        print("\n[X] HIGH-FIDELITY REPORTING VIOLATION:")
+        print("    -> Summary is too short or missing. Solutions must be descriptive.")
+        sys.exit(1)
+
+    if not data.get("changes") or len(data.get("changes", [])) == 0:
+        print("\n[X] HIGH-FIDELITY REPORTING VIOLATION:")
+        print("    -> 'changes' array is empty. You must list concrete changes.")
+        sys.exit(1)
+
     if errors:
-        print("\n❌ HIGH-FIDELITY REPORTING VIOLATION:")
+        print("\n[X] HIGH-FIDELITY REPORTING VIOLATION:")
         for err in errors:
-            print(f"  - {err}")
+            print(f"    -> {err}")
         print(
             "\nThe Plane task closure has been blocked. Revise the solution JSON to meet architectural standards."
         )

@@ -5,7 +5,7 @@ import asyncio
 from typing import Annotated, Sequence, TypedDict, Union, List
 
 from langchain_google_genai import ChatGoogleGenerativeAI
-from scripts.ai.llm_config import get_primary_model, get_temperature
+from scripts.ai.core.llm_config import get_primary_model, get_temperature
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage
 from langchain_core.tools import tool
 from langchain_mcp_adapters.client import MultiServerMCPClient

@@ -13,6 +13,8 @@ steps:
 - actions:
   - '**Actions**:'
   - Use `python-ai-specialist` to extract entities and constraints from `docs/sdlc/prd.md`.
+  - **Memory Hook**: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:ai-system-design`.
+  - **Save-on-Discover**: Register missing SOP/SKILL nodes if found in local filesystem.
   agents:
   - python-ai-specialist
   goal: Analyze the PRD and NFRs to establish technical constraints.
@@ -60,6 +62,7 @@ steps:
 - actions:
   - '**Actions**:'
   - Prompt user to run `/developing-ai-agents` for the next Phase (Build).
+  - **Memory Hook**: Synthesize logical architecture into a `KI:` node and link to the `TASK:`.
   - Triggered by user context or meta-orchestrator.
   - '"Execute this workflow."'
   - '**Axiomatic Alignment**: Ensure Truth, Beauty, and Love.'
@@ -104,6 +107,8 @@ This workflow defines the structural and architectural design process for AI sys
 - **Tools**: view_file
 - **Actions**:
 - Use `python-ai-specialist` to extract entities and constraints from `docs/sdlc/prd.md`.
+- **Memory Hook**: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:ai-system-design`.
+- **Save-on-Discover**: Register missing SOP/SKILL nodes if found in local filesystem.
 
 ### Phase 2: Architecture Selection
 - **Goal**: Choose the optimal stack (agents, MCPs, models, databases).
@@ -137,6 +142,7 @@ This workflow defines the structural and architectural design process for AI sys
 - **Tools**: notify_user
 - **Actions**:
 - Prompt user to run `/developing-ai-agents` for the next Phase (Build).
+- **Memory Hook**: Synthesize logical architecture into a `KI:` node and link to the `TASK:`.
 - Triggered by user context or meta-orchestrator.
 - "Execute this workflow."
 - **Axiomatic Alignment**: Ensure Truth, Beauty, and Love.

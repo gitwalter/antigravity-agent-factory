@@ -15,6 +15,8 @@ steps:
   - Check if an issue exists in Plane.
   - If not, create an issue using `create_task.py`.
   - Ensure the issue has a `BUG` label and is set to "In Progress".
+  - **Memory Hook**: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:bugfix-resolution`.
+  - **Save-on-Discover**: Register missing SOP/SKILL nodes if found in local filesystem.
   agents:
   - project-operations-specialist
   goal: Ensure the bug is tracked in the project management system.
@@ -83,6 +85,7 @@ steps:
   - Generate `walkthrough.md` via `/generating-documentation`.
   - Close the issue using `managing-plane-tasks.py` to render the solution via Jinja2.
   - Induct new patterns into the memory bank.
+  - **Memory Hook**: Synthesize fix into a `KI:` node and link to the `TASK:`.
   - '**Memory First**: Always check memory before starting technical work.'
   - '**Traceability**: All fixes must be tied to a Plane issue.'
   - '**High-Fidelity**: Use Jinja2 templates for all Plane updates.'
@@ -127,6 +130,8 @@ Antigravity workflow for bugfix-resolution. Standardized for IDX Visual Editor.
 - Check if an issue exists in Plane.
 - If not, create an issue using `create_task.py`.
 - Ensure the issue has a `BUG` label and is set to "In Progress".
+- **Memory Hook**: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:bugfix-resolution`.
+- **Save-on-Discover**: Register missing SOP/SKILL nodes if found in local filesystem.
 
 ### 2. Context Engineering (Memory-First)
 - **Goal**: Leverage existing knowledge and avoid repeating anti-patterns.
@@ -177,6 +182,7 @@ Antigravity workflow for bugfix-resolution. Standardized for IDX Visual Editor.
 - Generate `walkthrough.md` via `/generating-documentation`.
 - Close the issue using `managing-plane-tasks.py` to render the solution via Jinja2.
 - Induct new patterns into the memory bank.
+- **Memory Hook**: Synthesize fix into a `KI:` node and link to the `TASK:`.
 - **Memory First**: Always check memory before starting technical work.
 - **Traceability**: All fixes must be tied to a Plane issue.
 - **High-Fidelity**: Use Jinja2 templates for all Plane updates.

@@ -34,7 +34,7 @@ PARENT_STORE_PATH = os.getenv(
 COLLECTION_NAME = os.getenv("RAG_COLLECTION_OVERRIDE", "ebook_library")
 
 # LLM & Embedding config — loaded from config/llm_config.json
-from scripts.ai.llm_config import (
+from scripts.ai.core.llm_config import (
     get_embedding_model,
     get_embedding_dimension,
     get_primary_model,

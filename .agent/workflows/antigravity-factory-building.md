@@ -171,6 +171,7 @@ This workflow governs the full lifecycle of building AI systems within the Antig
 - **Agents**: `project-operations-specialist`
 - **Actions**:
 - Implement workflows, skills, and knowledge files.
+- **Root Cleanliness**: Ensure all scratch scripts used during implementation are stored in `tmp/` and cleaned up.
 
 ### 5. Verification & Evaluation
 - **Goal**: Validate the systemic integrity of the implementation through comprehensive testing-agents.

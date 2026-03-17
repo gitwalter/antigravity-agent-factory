@@ -23,7 +23,7 @@ class ConfigManager:
             )
             if factory_root not in sys.path:
                 sys.path.insert(0, factory_root)
-            from scripts.ai.llm_config import get_llm_config
+            from scripts.ai.core.llm_config import get_llm_config
 
             return get_llm_config()
         except Exception:

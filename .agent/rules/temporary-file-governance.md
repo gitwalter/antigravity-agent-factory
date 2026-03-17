@@ -18,6 +18,11 @@ Governs the creation, location, and lifecycle of temporary files and scripts use
 - **Skill Induction**: If a script performs a task that will likely be repeated (e.g., listing metadata, associating entities), refactor it into a permanent tool within a relevant skill's `scripts/` directory.
 - **Standardization**: Reusable tools must follow the factory's standards (e.g., using `conda run`, absolute paths, and structured logging/output).
 
+### 4. Enforcement & Self-Correction
+- **Pre-Check**: Before running any temporary script, verify it is in `tmp/`.
+- **Auto-Cleanup**: Include cleanup logic within temporary scripts (e.g., `atexit` or `try/finally`).
+- **Audit**: Run `python scripts/maintenance/enforce_tmp_usage.py` as part of the verification phase to ensure no artifacts were leaked to the root.
+
 ## Anti-Patterns
 - Leaving `.py`, `.json`, or `.log` files in the root directory after a task.
 - Creating duplicate logic in multiple scratch scripts instead of centralizing in a skill-based tool.

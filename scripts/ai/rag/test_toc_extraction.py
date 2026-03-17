@@ -3,7 +3,7 @@ import fitz
 import logging
 from typing import Optional
 from langchain_google_genai import ChatGoogleGenerativeAI
-from scripts.ai.llm_config import get_primary_model
+from scripts.ai.core.llm_config import get_primary_model
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 

@@ -15,6 +15,8 @@ steps:
   - '**Actions**:'
   - Check `task.md` or Plane issue sequence to map requirements.
   - Identify component and existing documentation state.
+  - **Memory Hook**: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:documentation-workflow`.
+  - **Save-on-Discover**: Register missing SOP/SKILL nodes if found in local filesystem.
   agents:
   - project-operations-specialist
   goal: Identify which SDLC phase or component is being documented and establish context.
@@ -60,6 +62,7 @@ steps:
   - '**Actions**:'
   - Post the document content or a summarized link to the corresponding Plane issue.
   - If the doc introduces new patterns, update `knowledge-manifest.json`.
+  - **Memory Hook**: Synthesize newly documented concepts into a `KI:` node and link to the `TASK:`.
   - '**No Stubs**: Never create empty placeholder files.'
   - '**Relative Pathing**: Use `file:///` URIs relative to the root for all links.'
   - '**Tone**: Professional, technical, and proactive.'
@@ -108,6 +111,8 @@ Antigravity workflow for documentation-workflow. Standardized for IDX Visual Edi
 - **Actions**:
 - Check `task.md` or Plane issue sequence to map requirements.
 - Identify component and existing documentation state.
+- **Memory Hook**: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:documentation-workflow`.
+- **Save-on-Discover**: Register missing SOP/SKILL nodes if found in local filesystem.
 
 ### 2. Artifact Drafting
 - **Goal**: Generate high-fidelity documentation artifacts based on the mapped context.
@@ -139,6 +144,7 @@ Antigravity workflow for documentation-workflow. Standardized for IDX Visual Edi
 - **Actions**:
 - Post the document content or a summarized link to the corresponding Plane issue.
 - If the doc introduces new patterns, update `knowledge-manifest.json`.
+- **Memory Hook**: Synthesize newly documented concepts into a `KI:` node and link to the `TASK:`.
 - **No Stubs**: Never create empty placeholder files.
 - **Relative Pathing**: Use `file:///` URIs relative to the root for all links.
 - **Tone**: Professional, technical, and proactive.

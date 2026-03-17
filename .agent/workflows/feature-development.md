@@ -16,6 +16,8 @@ steps:
   - '**Actions**:'
   - Use `create_task.py` to establish the `FEATURE` issue in Plane.
   - Run `sync_project_context.py` to ensure local UUIDs are current.
+  - **Memory Hook**: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:feature-development`.
+  - **Save-on-Discover**: Register missing SOP/SKILL nodes if found in local filesystem.
   agents:
   - project-operations-specialist
   goal: Establish Plane tracking for the feature using standardized scripts.
@@ -97,6 +99,7 @@ steps:
   - '**Actions**:'
   - Close the Plane issue via `post_solution.py` using the rendered Jinja2 template.
   - Ensure all architectural decisions and verification proofs are captured in the solution.
+  - **Memory Hook**: Synthesize learnings into a `KI:` node and link to the `TASK:`.
   - '**Phase Gates**: Never skip a phase without explicit justification in the `walkthrough.md`.'
   - '**Relative Links**: All documented links must use root-relative paths.'
   - '**Evidence First**: Use screenshots/logs in documentation.'
@@ -145,6 +148,8 @@ Antigravity workflow for standard feature development cycle. Standardized for ID
 - **Actions**:
 - Run `sync_project_context.py` to ensure local UUIDs are current.
 - Use `create_task.py` to establish the `FEATURE` issue in Plane.
+- **Memory Hook**: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:feature-development`.
+- **Save-on-Discover**: Register missing SOP/SKILL nodes if found in local filesystem.
 
 ### 2. Requirements & Analysis
 - **Goal**: Deep understanding of the PRD and technical constraints.
@@ -202,6 +207,7 @@ Antigravity workflow for standard feature development cycle. Standardized for ID
 - **Actions**:
 - Close the Plane issue via `post_solution.py` using the rendered Jinja2 template.
 - Ensure all architectural decisions and verification proofs are captured in the solution.
+- **Memory Hook**: Synthesize learnings into a `KI:` node and link to the `TASK:`.
 - **Phase Gates**: Never skip a phase without explicit justification in the `walkthrough.md`.
 - **Relative Links**: All documented links must use root-relative paths.
 - **Evidence First**: Use screenshots/logs in documentation.

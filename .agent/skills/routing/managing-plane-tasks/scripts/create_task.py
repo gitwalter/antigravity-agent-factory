@@ -116,9 +116,6 @@ def load_input(path: str) -> dict:
         "module",
         "cycle",
         "priority",
-        "estimate_point",
-        "start_date",
-        "target_date",
     ]
     missing = [k for k in required if k not in data]
     if missing:
@@ -212,6 +209,15 @@ def create_work_item(data: dict, description_html: str, update_id: str = None) -
         payload["cycle"] = cycle_id
     if module_id:
         payload["module"] = module_id
+
+    # Resolve input labels to UUIDs
+    label_ids = []
+    for label_name in data.get("labels", []):
+        uid = label_map.get(label_name.upper())
+        if uid:
+            label_ids.append(uid)
+        else:
+            print(f"Warning: Label '{label_name}' not found in project.")
 
     if label_ids:
         payload["labels"] = label_ids
