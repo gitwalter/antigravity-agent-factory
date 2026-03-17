@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 from urllib.parse import unquote
 
-ROOT_DIR = Path("d:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory")
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
 
 def fuzzy_link_repair():

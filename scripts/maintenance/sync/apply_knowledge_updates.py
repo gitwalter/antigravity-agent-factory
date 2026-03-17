@@ -1,10 +1,9 @@
 import os
 import yaml
 import json
+from pathlib import Path
 
-SKILLS_DIR = (
-    r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\skills"
-)
+SKILLS_DIR = Path(__file__).resolve().parent.parent.parent.parent / ".agent" / "skills"
 
 # Aggregated Knowledge Mapping results from previous step
 knowledge_mapping = {

@@ -2,7 +2,7 @@ import os
 import re
 from pathlib import Path
 
-ROOT_DIR = Path("d:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory")
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
 DOCS_DIR = ROOT_DIR / "docs"
 
 # Definitive Repair Map: {CurrentFunnyName: CorrectName}

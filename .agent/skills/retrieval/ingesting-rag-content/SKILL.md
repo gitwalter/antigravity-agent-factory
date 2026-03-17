@@ -33,7 +33,7 @@ Automated process for indexing new documents into the factory's Qdrant vector st
 ## Prerequisites
 - Python 3.10+ environment with `cursor-factory` env active.
 - Access to `D:/ebooks` or target document path.
-- `antigravity-rag` MCP server active (configured in `c:\Users\wpoga\.gemini\antigravity\mcp_config.json`).
+- `antigravity-rag` MCP server active (configured in `%USERPROFILE%\.gemini\antigravity\mcp_config.json`).
 
 ## When to Use
 - When new reference materials (PDF) are added to the project.

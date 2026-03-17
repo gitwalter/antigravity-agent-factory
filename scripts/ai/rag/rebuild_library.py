@@ -1,6 +1,7 @@
 import os
 import sys
 import shutil
+from pathlib import Path
 
 # Ensure project root is in path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
@@ -39,7 +40,7 @@ def rebuild_library():
     print("Physical storage cleared.")
 
     # 3. Discover PDFs
-    ebook_dir = r"D:\Users\wpoga\Documents\Ebooks\Artificial Intelligence"
+    ebook_dir = Path.home() / "Documents" / "Ebooks" / "Artificial Intelligence"
     pdfs = [
         os.path.join(ebook_dir, f)
         for f in os.listdir(ebook_dir)

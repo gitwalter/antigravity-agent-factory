@@ -3,13 +3,15 @@ import yaml
 import json
 import shutil
 from typing import Dict, List, Any, Optional
+from pathlib import Path
 
 # Path configuration
-LOCAL_WORKFLOWS_DIR = r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\workflows"
-GLOBAL_WORKFLOWS_DIR = r"C:\Users\wpoga\.gemini\antigravity\global_workflows"
-STANDARD_RULE_PATH = os.path.join(
-    os.path.dirname(LOCAL_WORKFLOWS_DIR), "rules", "workflow-standard.md"
+LOCAL_WORKFLOWS_DIR = (
+    Path(__file__).resolve().parent.parent.parent.parent / ".agent" / "workflows"
 )
+# Global workflows are in the user's .gemini directory
+GLOBAL_WORKFLOWS_DIR = Path.home() / ".gemini" / "antigravity" / "global_workflows"
+STANDARD_RULE_PATH = LOCAL_WORKFLOWS_DIR.parent / "rules" / "workflow-standard.md"
 
 
 class WorkflowManager:

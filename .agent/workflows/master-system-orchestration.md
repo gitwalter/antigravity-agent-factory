@@ -57,7 +57,7 @@ steps:
     workflow.'
   - '**Architectural Shift**: If implementation reveals design flaws, SAS must update
     the `implementation_plan.md`.'
-  - '**Registry**: `d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\knowledge\agent-staffing.json`'
+  - '**Registry**: `.agent/knowledge/agent-staffing.json`'
   - '**SOP**: `Standard Feature Delivery Cycle` (SFDC)'
   - '**SOP**: `Agent Development`'
   - '"Execute this workflow."'
@@ -125,7 +125,7 @@ Antigravity workflow for high-level system orchestration and complex task decomp
 - **Truth**: Is the implementation accurate and fully documented?
 - **Insufficient Tools**: If needed skills don't exist, pivot to the **Skill Enrichment** workflow.
 - **Architectural Shift**: If implementation reveals design flaws, SAS must update the `implementation_plan.md`.
-- **Registry**: `d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\knowledge\agent-staffing.json`
+- **Registry**: `.agent/knowledge/agent-staffing.json`
 - **SOP**: `Standard Feature Delivery Cycle` (SFDC)
 - **SOP**: `Agent Development`
 - "Execute this workflow."

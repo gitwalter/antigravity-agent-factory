@@ -22,8 +22,12 @@ def check_file(path):
     print("-" * 20)
 
 
-base = Path(
-    "d:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory/.agent/templates/ai/graphs"
+base = (
+    Path(__file__).resolve().parent.parent.parent
+    / ".agent"
+    / "templates"
+    / "ai"
+    / "graphs"
 )
 check_file(base / "simple_graph.py.j2")
 check_file(base / "hitl_graph.py.j2")

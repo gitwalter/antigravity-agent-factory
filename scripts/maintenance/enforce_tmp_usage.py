@@ -3,9 +3,11 @@ import shutil
 import glob
 import sys
 
+from pathlib import Path
+
 # Constants
-ROOT_DIR = r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory"
-TMP_DIR = os.path.join(ROOT_DIR, "tmp")
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+TMP_DIR = ROOT_DIR / "tmp"
 FORBIDDEN_EXTENSIONS = [".py", ".json", ".log", ".txt", ".temp", ".tmp"]
 ALLOWED_FILES = [
     "README.md",

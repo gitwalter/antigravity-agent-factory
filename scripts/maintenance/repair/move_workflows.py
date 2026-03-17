@@ -1,8 +1,11 @@
 from pathlib import Path
 import shutil
 
-base_dir = Path(
-    r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\patterns\workflows"
+base_dir = (
+    Path(__file__).resolve().parent.parent.parent.parent
+    / ".agent"
+    / "patterns"
+    / "workflows"
 )
 
 categories = [

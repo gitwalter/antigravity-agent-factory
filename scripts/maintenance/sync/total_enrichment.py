@@ -1,10 +1,10 @@
 import os
 import json
+from pathlib import Path
 
-SKILLS_ROOT = (
-    r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\skills"
-)
-KNOWLEDGE_PATH = r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\knowledge"
+factory_root = Path(__file__).resolve().parent.parent.parent.parent
+SKILLS_ROOT = factory_root / ".agent" / "skills"
+KNOWLEDGE_PATH = factory_root / ".agent" / "knowledge"
 
 VALIDATE_TEMPLATE = """import os
 import sys

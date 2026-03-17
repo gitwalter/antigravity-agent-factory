@@ -1,10 +1,10 @@
 import json
 import os
+from pathlib import Path
 
-CATALOG_PATH = r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\knowledge\skill-catalog.json"
-SKILLS_ROOT = (
-    r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\skills"
-)
+factory_root = Path(__file__).resolve().parent.parent.parent.parent
+CATALOG_PATH = factory_root / ".agent" / "knowledge" / "skill-catalog.json"
+SKILLS_ROOT = factory_root / ".agent" / "skills"
 
 
 def sync_catalog():

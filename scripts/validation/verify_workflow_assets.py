@@ -5,7 +5,9 @@ from pathlib import Path
 from typing import List, Dict, Set
 
 # --- Configuration ---
-ROOT_DIR = Path(r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory")
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+if not (ROOT_DIR / ".agentrules").exists():
+    ROOT_DIR = Path.cwd()
 WORKFLOWS_DIR = ROOT_DIR / ".agent" / "workflows"
 AGENTS_DIR = ROOT_DIR / ".agent" / "agents"
 SKILLS_DIR = ROOT_DIR / ".agent" / "skills"

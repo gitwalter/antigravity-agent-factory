@@ -21,6 +21,7 @@ scripts:
 - scripts/list_cycles.py
 - scripts/list_modules.py
 - scripts/list_labels.py
+- scripts/list_issues.py
 - scripts/post_solution.py
 tools:
 - mcp_plane_retrieve_work_item
@@ -108,6 +109,14 @@ conda run -p D:\Anaconda\envs\cursor-factory python .agent/skills/routing/managi
 #### C. List Labels
 ```bash
 conda run -p D:\Anaconda\envs\cursor-factory python .agent/skills/routing/managing-plane-tasks/scripts/list_labels.py
+```
+
+#### D. List & Filter Issues
+```bash
+conda run -p D:\Anaconda\envs\cursor-factory python .agent/skills/routing/managing-plane-tasks/scripts/list_issues.py \
+    --cycle UUID \
+    --module UUID \
+    --labels UUID,UUID
 ```
 
 ### 2. Detailed Inspection (MCP Fallback)

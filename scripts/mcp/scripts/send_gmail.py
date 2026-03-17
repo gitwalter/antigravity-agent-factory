@@ -2,6 +2,7 @@ import os
 import json
 import base64
 import argparse
+from pathlib import Path
 from email.message import EmailMessage
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
@@ -10,9 +11,20 @@ from google.auth.transport.requests import Request
 # DEPRECATED: This script is replaced by the GongRzhe/Gmail-MCP-Server.
 # Use the 'gmail' MCP server for improved feature support (attachments, auto-auth).
 
-# Paths to credentials (HARDCODED for security isolation)
-GAUTH_PATH = r"C:\Users\wpoga\.gemini\antigravity\brain\a93caf4d-b65d-451f-b60a-50033eac1db7\mcp-google-workspace\.gauth.json"
-TOKEN_PATH = r"C:\Users\wpoga\.gemini\antigravity\brain\a93caf4d-b65d-451f-b60a-50033eac1db7\mcp-google-workspace\.oauth2.w.pogantsch@googlemail.com.json"
+# Paths to credentials (HARDCODED for security isolation - but using Path.home())
+brain_root = Path.home() / ".gemini" / "antigravity" / "brain"
+GAUTH_PATH = (
+    brain_root
+    / "a93caf4d-b65d-451f-b60a-50033eac1db7"
+    / "mcp-google-workspace"
+    / ".gauth.json"
+)
+TOKEN_PATH = (
+    brain_root
+    / "a93caf4d-b65d-451f-b60a-50033eac1db7"
+    / "mcp-google-workspace"
+    / ".oauth2.w.pogantsch@googlemail.com.json"
+)
 
 
 def get_credentials():

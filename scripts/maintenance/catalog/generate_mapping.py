@@ -1,9 +1,9 @@
 import os
+from pathlib import Path
 
-KNOWLEDGE_PATH = r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\knowledge"
-SKILLS_ROOT = (
-    r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\skills"
-)
+factory_root = Path(__file__).resolve().parent.parent.parent.parent
+KNOWLEDGE_PATH = factory_root / ".agent" / "knowledge"
+SKILLS_ROOT = factory_root / ".agent" / "skills"
 
 
 def get_mapping():

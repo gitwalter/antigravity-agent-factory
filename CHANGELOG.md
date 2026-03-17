@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.3] - 2026-03-17
+
+### Added
+- **Advanced Plane Issue Filtering**: Introduced `list_issues.py` to the `managing-plane-tasks` skill, supporting granular filtering by cycle (sprint), module, and labels (AGENT-147).
+- **Systemic Registry Alignment**: Performed extensive structural enrichment and repair of skill, agent, and workflow mappings across the factory (scripts/maintenance/sync, AGENT-144).
+- **Maintenance Suite Enhancements**: Updated multiple maintenance scripts for better audit and repair capabilities (scripts/maintenance/audit, scripts/maintenance/repair).
+
+### Changed
+- **Digital Life Integration**: Updated Gmail and contact scripts for smoother orchestration (scripts/mcp/scripts, AGENT-145).
+- **SDLC Formalization**: Refined workflow memory and dependency structure for 7-phase alignment (AGENT-146).
+
+### Removed
+- **Root Hygiene**: Eliminated `thoughts.log` and `generation_debug.log` production from the root directory to maintain architectural cleanliness.
+- **Dead Test Suite**: Removed `test_thought_flow.py` as it was no longer relevant after the log removal.
+
 ## [1.9.2] - 2026-03-17
 
 ### Fixed

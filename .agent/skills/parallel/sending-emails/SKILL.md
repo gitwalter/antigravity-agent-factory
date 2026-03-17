@@ -59,7 +59,7 @@ Send an email to a specific recipient.
 # To send an email
 run_command(
     CommandLine='python scripts/send_gmail.py --to "recipient@example.com" --subject "Subject Line" --body "Message body goes here"',
-    Cwd='d:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory',
+    Cwd='.', # Use factory root
     SafeToAutoRun=False, # User should confirm email sending usually
     WaitMsBeforeAsync=5000
 )

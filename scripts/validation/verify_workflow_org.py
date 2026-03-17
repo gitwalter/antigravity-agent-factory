@@ -3,7 +3,7 @@ from pathlib import Path
 
 
 def verify_implementation():
-    root = Path(r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory")
+    root = Path(__file__).resolve().parent.parent.parent
 
     # Files to check
     files_to_verify = [

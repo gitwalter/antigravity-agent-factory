@@ -2,10 +2,9 @@ import os
 import re
 import yaml
 import json
+from pathlib import Path
 
-AGENTS_DIR = (
-    r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\agents"
-)
+AGENTS_DIR = Path(__file__).resolve().parent.parent.parent.parent / ".agent" / "agents"
 
 
 def map_agents_to_skills():

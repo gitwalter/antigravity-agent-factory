@@ -552,28 +552,9 @@ async def thought_stream(websocket: WebSocket):
                                 "error": run.error,
                             }
                         )
-            except Exception:
-                # Fallback: tail local thoughts.log
-                log_path = PROJECT_ROOT / "thoughts.log"
-                if log_path.exists():
-                    try:
-                        with open(log_path, "r", encoding="utf-8") as f:
-                            # Read all lines to find new ones
-                            lines = f.readlines()
-                            for line in lines:
-                                line = line.strip()
-                                if not line:
-                                    continue
-                                try:
-                                    data = json.loads(line)
-                                    line_id = data.get("id", f"hash_{hash(line)}")
-                                    if line_id not in seen_ids:
-                                        seen_ids.add(line_id)
-                                        await websocket.send_json(data)
-                                except json.JSONDecodeError:
-                                    pass
-                    except Exception as e:
-                        logging.error(f"Error reading thoughts.log: {e}")
+            except Exception as e:
+                # Fallback removed - thoughts.log is no longer used
+                logging.debug(f"LangSmith stream unavailable: {e}")
 
             await asyncio.sleep(2)
     except Exception:

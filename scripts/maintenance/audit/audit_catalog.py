@@ -1,10 +1,10 @@
 import os
 import json
+from pathlib import Path
 
-SKILLS_ROOT = (
-    r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\skills"
-)
-CATALOG_PATH = r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\knowledge\skill-catalog.json"
+factory_root = Path(__file__).resolve().parent.parent.parent.parent
+SKILLS_ROOT = factory_root / ".agent" / "skills"
+CATALOG_PATH = factory_root / ".agent" / "knowledge" / "skill-catalog.json"
 
 
 def audit_catalog():

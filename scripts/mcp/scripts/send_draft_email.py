@@ -1,10 +1,18 @@
 import os
 import re
+from pathlib import Path
 
 # Import send_email from the existing script (assuming it's in the same dir)
 from send_gmail import send_email
 
-DRAFT_PATH = r"C:\Users\wpoga\.gemini\antigravity\brain\9803b5fa-661a-48fc-bc2f-20490e0a6280\draft_email_to_andreas.md"
+DRAFT_PATH = (
+    Path.home()
+    / ".gemini"
+    / "antigravity"
+    / "brain"
+    / "9803b5fa-661a-48fc-bc2f-20490e0a6280"
+    / "draft_email_to_andreas.md"
+)
 RECIPIENT = "andreas.graeber@gmail.com"
 
 

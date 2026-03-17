@@ -47,43 +47,6 @@ async def get_traffic():
         return []
 
 
-@app.websocket("/ws/thoughts")
-async def thought_stream(websocket: WebSocket):
-    await websocket.accept()
-    base_dir = os.path.dirname(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    )
-    log_path = os.path.join(base_dir, "thoughts.log")
-    try:
-        # Read existing thoughts first
-        if os.path.exists(log_path):
-            with open(log_path, "r") as f:
-                for line in f:
-                    if line.strip():
-                        await websocket.send_json(json.loads(line))
-
-        # Tail the file for new thoughts
-        if os.path.exists(log_path):
-            with open(log_path, "r") as file:
-                file.seek(0, 2)  # Go to end
-                while True:
-                    line = file.readline()
-                    if not line:
-                        await asyncio.sleep(0.5)
-                        continue
-                    if line.strip():
-                        await websocket.send_json(json.loads(line))
-        else:
-            print(f"Log path not found: {log_path}")
-    except Exception as e:
-        print(f"WebSocket error: {e}")
-    finally:
-        try:
-            await websocket.close()
-        except Exception:
-            pass
-
-
 if __name__ == "__main__":
     import uvicorn
 

@@ -38,7 +38,14 @@ API_BASE = (
 )
 
 
-def associate_issue(issue_seq_id, module_id=None, cycle_id=None):
+def associate_issue(
+    issue_seq_id,
+    module_name_or_id=None,
+    cycle_name_or_id=None,
+    estimate=None,
+    due_date=None,
+    parent_seq_id=None,
+):
     api_key = os.environ.get("PLANE_API_TOKEN")
     if not api_key:
         print("Error: PLANE_API_TOKEN environment variable not set.")
@@ -60,7 +67,6 @@ def associate_issue(issue_seq_id, module_id=None, cycle_id=None):
     issues = resp.json().get("results", [])
     issue_uuid = None
     for issue in issues:
-        # Check for exact sequence match
         if f"AGENT-{issue['sequence_id']}" == issue_seq_id:
             issue_uuid = issue["id"]
             break
@@ -71,58 +77,116 @@ def associate_issue(issue_seq_id, module_id=None, cycle_id=None):
 
     print(f"Found Issue UUID: {issue_uuid}")
 
-    # 2. Associate with Module
-    if module_id:
-        print(f"Adding to module {module_id}...")
-        # Note: The endpoint might be /modules/{module_id}/issues/ or /issues/{issue_uuid}/
-        # Plane API often uses a bulk add endpoint or a patch on the issue.
-        # However, the documented way in some versions is:
-        module_url = f"{API_BASE}/modules/{module_id}/module-issues/"
-        payload = {"issues": [issue_uuid]}
-        resp = requests.post(module_url, headers=headers, json=payload)
-        if resp.status_code in (200, 201):
-            print("Successfully associated with module.")
-        else:
-            # Try alternate endpoint if 404
-            alt_url = f"{API_BASE}/modules/{module_id}/issues/"
-            resp = requests.post(alt_url, headers=headers, json=payload)
+    update_payload = {}
+
+    # 2. Resolve Module
+    if module_name_or_id:
+        module_id = None
+        active_modules = context.get("ACTIVE_MODULES", {})
+        for name, uid in active_modules.items():
+            if name.lower() == module_name_or_id.lower():
+                module_id = uid
+                break
+
+        if not module_id:
+            if len(module_name_or_id) > 30:  # Heuristic for UUID
+                module_id = module_name_or_id
+            else:
+                print(f"Error: Could not resolve module name '{module_name_or_id}'")
+
+        if module_id:
+            print(f"Adding to module {module_id}...")
+            module_url = f"{API_BASE}/modules/{module_id}/module-issues/"
+            payload = {"issues": [issue_uuid]}
+            resp = requests.post(module_url, headers=headers, json=payload)
             if resp.status_code in (200, 201):
-                print("Successfully associated with module (alt endpoint).")
+                print("Successfully associated with module.")
             else:
                 print(f"Error associating with module: {resp.status_code}")
                 print(resp.text[:500])
 
-    # 3. Associate with Cycle
-    if cycle_id:
-        print(f"Adding to cycle {cycle_id}...")
-        cycle_url = f"{API_BASE}/cycles/{cycle_id}/cycle-issues/"
-        payload = {"issues": [issue_uuid]}
-        resp = requests.post(cycle_url, headers=headers, json=payload)
-        if resp.status_code in (200, 201):
-            print("Successfully associated with cycle.")
-        else:
-            # Try alternate endpoint if 404
-            alt_url = f"{API_BASE}/cycles/{cycle_id}/issues/"
-            resp = requests.post(alt_url, headers=headers, json=payload)
+    # 3. Resolve Cycle
+    if cycle_name_or_id:
+        cycle_id = None
+        active_cycle = context.get("ACTIVE_CYCLE", {})
+        if active_cycle.get("name") == cycle_name_or_id:
+            cycle_id = active_cycle.get("id")
+
+        if not cycle_id:
+            all_cycles = context.get("ALL_CYCLES", {})
+            for name, uid in all_cycles.items():
+                if name.lower() == cycle_name_or_id.lower():
+                    cycle_id = uid
+                    break
+
+        if not cycle_id:
+            if len(cycle_name_or_id) > 30:
+                cycle_id = cycle_name_or_id
+            else:
+                print(f"Error: Could not resolve cycle name '{cycle_name_or_id}'")
+
+        if cycle_id:
+            print(f"Adding to cycle {cycle_id}...")
+            cycle_url = f"{API_BASE}/cycles/{cycle_id}/cycle-issues/"
+            payload = {"issues": [issue_uuid]}
+            resp = requests.post(cycle_url, headers=headers, json=payload)
             if resp.status_code in (200, 201):
-                print("Successfully associated with cycle (alt endpoint).")
+                print("Successfully associated with cycle.")
             else:
                 print(f"Error associating with cycle: {resp.status_code}")
                 print(resp.text[:500])
 
+    # 4. Handle Estimation, Due Date, Parent
+    if estimate:
+        # Note: Plane estimates are often UUIDs for specific points, but can be integers.
+        # We'll try passing it as an integer first or resolving if needed.
+        update_payload["estimate_point"] = estimate
+
+    if due_date:
+        update_payload["target_date"] = due_date
+
+    if parent_seq_id:
+        print(f"Resolving parent issue {parent_seq_id}...")
+        p_search_url = f"{API_BASE}/issues/?search={parent_seq_id}"
+        p_resp = requests.get(p_search_url, headers=headers)
+        if p_resp.status_code == 200:
+            p_issues = p_resp.json().get("results", [])
+            for p_issue in p_issues:
+                if f"AGENT-{p_issue['sequence_id']}" == parent_seq_id:
+                    update_payload["parent"] = p_issue["id"]
+                    print(f"Found Parent UUID: {p_issue['id']}")
+                    break
+        if "parent" not in update_payload:
+            print(f"Error: Could not find parent issue {parent_seq_id}")
+
+    if update_payload:
+        print(f"Updating issue {issue_uuid} with {update_payload}...")
+        patch_url = f"{API_BASE}/issues/{issue_uuid}/"
+        patch_resp = requests.patch(patch_url, headers=headers, json=update_payload)
+        if patch_resp.status_code in (200, 204):
+            print("Successfully updated issue metadata.")
+        else:
+            print(f"Error updating issue metadata: {patch_resp.status_code}")
+            print(patch_resp.text[:500])
+
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Associate a Plane issue with a module and/or cycle."
+        description="Associate a Plane issue with a module, cycle, estimate, due date, and/or parent."
     )
     parser.add_argument(
         "--issue", required=True, help="Issue identifier (e.g., AGENT-126)"
     )
-    parser.add_argument("--module", help="Module UUID")
-    parser.add_argument("--cycle", help="Cycle UUID")
+    parser.add_argument("--module", help="Module UUID or Name")
+    parser.add_argument("--cycle", help="Cycle UUID or Name")
+    parser.add_argument("--estimate", help="Estimate (Point UUID or value)")
+    parser.add_argument("--due-date", help="Due date (YYYY-MM-DD)")
+    parser.add_argument("--parent", help="Parent Issue identifier (e.g., AGENT-100)")
     args = parser.parse_args()
 
-    associate_issue(args.issue, args.module, args.cycle)
+    associate_issue(
+        args.issue, args.module, args.cycle, args.estimate, args.due_date, args.parent
+    )
 
 
 if __name__ == "__main__":

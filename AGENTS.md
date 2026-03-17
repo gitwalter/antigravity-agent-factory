@@ -87,7 +87,7 @@ For architectural or complex logic disputes:
 ### 3. Hierarchical Memory
 Always ground your context in this order:
 1. **Local**: `.agent/knowledge/` (Technical Patterns)
-2. **Global**: `C:\Users\wpoga\.gemini\antigravity\knowledge\` (Shared Context)
+2. **Global**: `%USERPROFILE%\.gemini\antigravity\knowledge\` (Shared Context)
 3. **Philosophical**: `.agentrules` (Immutable Axioms)
 
 ---

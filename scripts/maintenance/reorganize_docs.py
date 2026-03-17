@@ -1,7 +1,9 @@
 import os
 from pathlib import Path
 
-ROOT_DIR = Path("d:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory")
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+if not (ROOT_DIR / ".agentrules").exists():
+    ROOT_DIR = Path.cwd()
 DOCS_DIR = ROOT_DIR / "docs"
 
 # Define the move map (current basename -> new relative path from docs/)

@@ -27,9 +27,9 @@ This workflow is activated when:
 
 1.  **Project Initialization**: Create a new project in the Statistical Dashboard named "Warehouse Intelligence [Location ID]".
 2.  **Data Ingestion**:
-    - Download and populate the [Inbound Log Template](file:///d:/Users/wpoga/Documents/Python%20Scripts/antigravity-agent-factory/projects/statistical_dashboards/data/templates/warehouse/inbound_log.csv).
-    - Download and populate the [Inventory Snapshot Template](file:///d:/Users/wpoga/Documents/Python%20Scripts/antigravity-agent-factory/projects/statistical_dashboards/data/templates/warehouse/inventory_snapshot.csv).
-    - Download and populate the [Outbound Fulfillment Template](file:///d:/Users/wpoga/Documents/Python%20Scripts/antigravity-agent-factory/projects/statistical_dashboards/data/templates/warehouse/outbound_fulfillment.csv).
+    - Download and populate the [Inbound Log Template](projects/statistical_dashboards/data/templates/warehouse/inbound_log.csv).
+    - Download and populate the [Inventory Snapshot Template](projects/statistical_dashboards/data/templates/warehouse/inventory_snapshot.csv).
+    - Download and populate the [Outbound Fulfillment Template](projects/statistical_dashboards/data/templates/warehouse/outbound_fulfillment.csv).
 3.  **Upload to Dashboard**: Use the **Data Manager** tab in the Streamlit app to upload these files to your project.
 4.  **Analyze Storing Performance**:
     - Navigate to **Warehousing Intel**.

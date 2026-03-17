@@ -1,11 +1,11 @@
 import os
 import yaml
 import json
+from pathlib import Path
 
-SKILLS_DIR = (
-    r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\skills"
-)
-AGENTS_MAPPING_FILE = r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\scripts\skill_to_agents.json"
+factory_root = Path(__file__).resolve().parent.parent.parent.parent
+SKILLS_DIR = factory_root / ".agent" / "skills"
+AGENTS_MAPPING_FILE = factory_root / "scripts" / "skill_to_agents.json"
 
 # First, save the mapping from the previous tool output to a file for the script to use
 mapping = {

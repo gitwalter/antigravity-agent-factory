@@ -1,9 +1,12 @@
 import os
 import sys
+from pathlib import Path
 
 
 def init_skill_bundle(skill_name, category):
-    base_path = r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\skills"
+    base_path = (
+        Path(__file__).resolve().parent.parent.parent.parent / ".agent" / "skills"
+    )
     skill_path = os.path.join(base_path, category, skill_name)
 
     if os.path.exists(skill_path):

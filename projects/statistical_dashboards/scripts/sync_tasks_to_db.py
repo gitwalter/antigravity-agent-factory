@@ -2,6 +2,7 @@ import os
 import re
 import sys
 from datetime import datetime
+from pathlib import Path
 
 # Add project root to path
 sys.path.append(os.getcwd())
@@ -47,7 +48,14 @@ def parse_task_md(file_path):
 
 def sync_to_db():
     project_name = "Statistical Dashboard Masterplan"
-    task_md_path = "C:/Users/wpoga/.gemini/antigravity/brain/2be546a4-efe7-4194-8b80-5fa52924d5da/task.md"
+    task_md_path = (
+        Path.home()
+        / ".gemini"
+        / "antigravity"
+        / "brain"
+        / "2be546a4-efe7-4194-8b80-5fa52924d5da"
+        / "task.md"
+    )
 
     if not os.path.exists(task_md_path):
         print(f"Error: task.md not found at {task_md_path}")

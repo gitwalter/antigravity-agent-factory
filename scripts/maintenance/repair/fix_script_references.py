@@ -1,7 +1,8 @@
 import os
 import re
+from pathlib import Path
 
-root_dir = r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory"
+root_dir = Path(__file__).resolve().parent.parent.parent.parent
 
 # Mapping from old path to new path
 replacements = {

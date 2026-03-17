@@ -27,7 +27,7 @@ Use this skill when exploring new interaction modalities or when coordinating co
 
 ## Tools
 - `scripts/experimental/voice_to_prd.py`: Process simulated voice transcripts into PRDs.
-- `d:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory/.agent/knowledge/agent-handoff-protocol.json`: Schema for UCO exchange.
+- `.agent/knowledge/agent-handoff-protocol.json`: Schema for UCO exchange.
 
 ## Best Practices
 - Always validate the UCO schema before handoff.

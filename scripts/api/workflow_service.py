@@ -17,7 +17,7 @@ from typing import Optional, List, Dict, Any, Union
 # Root of the antigravity-agent-factory project
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 SCRIPTS_DIR = PROJECT_ROOT / "scripts"
-GLOBAL_WORKFLOWS_DIR = Path(r"C:\Users\wpoga\.gemini\antigravity\global_workflows")
+GLOBAL_WORKFLOWS_DIR = Path.home() / ".gemini" / "antigravity" / "global_workflows"
 WORKFLOWS_DIR = PROJECT_ROOT / ".agent" / "workflows"
 AGENTS_DIR = PROJECT_ROOT / ".agent" / "agents"
 SKILLS_DIR = PROJECT_ROOT / ".agent" / "skills"

@@ -23,31 +23,6 @@ def get_aisuite_client() -> ai.Client:
     return ai.Client()
 
 
-def log_thought(
-    name: str, run_type: str, status: str, error: str = None, latency_ms: int = None
-):
-    """Log a thought to the local thoughts.log for the IDX sidebar fallback."""
-    try:
-        from workflow_service import PROJECT_ROOT
-
-        log_path = PROJECT_ROOT / "thoughts.log"
-
-        entry = {
-            "type": "trace",
-            "id": f"thought_{os.urandom(4).hex()}",
-            "name": name,
-            "run_type": run_type,
-            "status": status,
-            "error": error,
-            "latency_ms": latency_ms,
-        }
-
-        with open(log_path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(entry) + "\n")
-    except Exception as e:
-        logging.error(f"Failed to log thought: {e}")
-
-
 def get_langchain_llm(
     model: str = "gemini-2.5-flash-lite",
     temperature: float = 0,
@@ -81,9 +56,6 @@ def chat_with_aisuite(
         kwargs["tools"] = tools
         kwargs["max_turns"] = max_turns
 
-    # Register the start of the thought
-    log_thought(messages[-1]["content"][:30], "chat", "running")
-
     try:
         import time
 
@@ -92,12 +64,10 @@ def chat_with_aisuite(
         latency = int((time.time() - start_time) * 1000)
 
         content = response.choices[0].message.content
-        log_thought(messages[-1]["content"][:30], "chat", "success", latency_ms=latency)
 
         return {
             "content": content,
             "model": model,
         }
     except Exception as e:
-        log_thought(messages[-1]["content"][:30], "chat", "error", error=str(e))
         raise e

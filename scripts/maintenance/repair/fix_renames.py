@@ -1,8 +1,12 @@
-import os
-import re
+import sys
 from pathlib import Path
 
-ROOT_DIR = Path("d:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory")
+# Add factory root to sys.path
+factory_root = Path(__file__).resolve().parent.parent.parent.parent
+if str(factory_root) not in sys.path:
+    sys.path.insert(0, str(factory_root))
+
+ROOT_DIR = factory_root
 DOCS_DIR = ROOT_DIR / "docs"
 
 

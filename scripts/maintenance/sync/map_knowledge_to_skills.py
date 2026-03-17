@@ -2,11 +2,11 @@ import os
 import yaml
 import json
 import re
+from pathlib import Path
 
-SKILLS_DIR = (
-    r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\skills"
-)
-KNOWLEDGE_DIR = r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\knowledge"
+factory_root = Path(__file__).resolve().parent.parent.parent.parent
+SKILLS_DIR = factory_root / ".agent" / "skills"
+KNOWLEDGE_DIR = factory_root / ".agent" / "knowledge"
 
 
 def get_knowledge_files():

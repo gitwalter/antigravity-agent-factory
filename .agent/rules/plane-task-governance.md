@@ -19,12 +19,12 @@ You must NEVER create a Plane ticket that lacks the required schema fields. The 
 - `knowledge` (Array defining `.agent/knowledge/` and Memory MCP bounds)
 - `tests` (Array with structured test parameters)
 
-**Reference Schema:** `d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\skills\routing\managing-plane-tasks\references\task_definition_schema.json`
+**Reference Schema**: `.agent/skills/routing/managing-plane-tasks/references/task_definition_schema.json`
 
 ## 2. Authorized Tools Only
 Agents MUST NOT bypass the authorized creation path.
 All Plane issue generation MUST occur through the templating script:
-`d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\skills\routing\managing-plane-tasks\scripts\create_task.py`
+`.agent/skills/routing/managing-plane-tasks/scripts/create_task.py`
 
 ## 3. High-Fidelity Solutions
 When transitioning a Plane issue to **Done**, you MUST generate a comprehensive high-fidelity payload using the `solution_definition_schema.json` and post it using `post_solution.py`. Shallow updates or generic "fixed the code" comments are structurally invalid and will be rejected.

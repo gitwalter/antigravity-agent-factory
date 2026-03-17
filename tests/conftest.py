@@ -526,6 +526,7 @@ def isolated_rag_workspace(tmp_path_factory, request):
     os.environ["QDRANT_PATH_OVERRIDE"] = str(qdrant_path.absolute())
     os.environ["PARENT_STORE_PATH_OVERRIDE"] = str(parent_store.absolute())
     os.environ["RAG_COLLECTION_OVERRIDE"] = f"test_collection_{worker_id}"
+    os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 
     yield
 
@@ -533,6 +534,7 @@ def isolated_rag_workspace(tmp_path_factory, request):
     os.environ.pop("QDRANT_PATH_OVERRIDE", None)
     os.environ.pop("PARENT_STORE_PATH_OVERRIDE", None)
     os.environ.pop("RAG_COLLECTION_OVERRIDE", None)
+    os.environ.pop("HF_HUB_DISABLE_SYMLINKS_WARNING", None)
 
 
 @pytest.fixture

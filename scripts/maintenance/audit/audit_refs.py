@@ -1,8 +1,7 @@
 import os
+from pathlib import Path
 
-SKILLS_ROOT = (
-    r"d:\Users\wpoga\Documents\Python Scripts\antigravity-agent-factory\.agent\skills"
-)
+SKILLS_ROOT = Path(__file__).resolve().parent.parent.parent.parent / ".agent" / "skills"
 
 
 def audit_references():

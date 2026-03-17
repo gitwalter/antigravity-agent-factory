@@ -1,11 +1,17 @@
-import os
-import yaml
-import json
+import sys
 from pathlib import Path
 
-SKILLS_DIR = Path(
-    "d:/Users/wpoga/Documents/Python Scripts/antigravity-agent-factory/.agent/skills"
-)
+# Add factory root to sys.path for core imports
+factory_root = Path(__file__).resolve().parent.parent.parent.parent
+if str(factory_root) not in sys.path:
+    sys.path.insert(0, str(factory_root))
+
+try:
+    from scripts.core.config_manager import ConfigManager
+
+    SKILLS_DIR = ConfigManager.get_instance().factory_root / ".agent" / "skills"
+except ImportError:
+    SKILLS_DIR = factory_root / ".agent" / "skills"
 
 
 def fill_gaps():
