@@ -29,16 +29,20 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8, letterSpacing: '-0.02em' }}>
-        Dashboard
-      </h1>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: 24, fontSize: 14 }}>
-        Antigravity Agent Factory — Development Experience
-      </p>
+      <div className="dashboard-header" style={{ marginBottom: 32 }}>
+        <h1 className="glow-text" style={{ fontSize: 32, fontWeight: 800, marginBottom: 8, letterSpacing: '-0.04em' }}>
+          Dashboard
+        </h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 16, opacity: 0.8 }}>
+          Antigravity Agent Factory — Premium Development Experience
+        </p>
+      </div>
 
       {error && (
-        <div className="card" style={{ borderColor: 'var(--warning)', marginBottom: 20 }}>
-          <p style={{ color: 'var(--warning)', fontSize: 13 }}>⚠ {error}</p>
+        <div className="card" style={{ borderColor: 'var(--warning)', marginBottom: 24, background: 'rgba(255, 184, 108, 0.05)' }}>
+          <p style={{ color: 'var(--warning)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>⚠</span> {error}
+          </p>
         </div>
       )}
 
@@ -59,31 +63,35 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>Quick Actions</h2>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <a href="/workflows" className="btn btn-primary">⚙ Build Workflow</a>
+      <div style={{ marginBottom: 40 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, letterSpacing: '-0.02em' }}>Quick Actions</h2>
+        <div style={{ display: 'flex', gap: 16 }}>
+          <a href="/workflows" className="btn btn-primary glow-primary">⚙ Build Workflow</a>
           <a href="/agent-workflows" className="btn btn-primary">⚡ Generate Agent Workflow</a>
           <a href="/tools" className="btn btn-secondary">🔧 Browse Tools</a>
         </div>
       </div>
 
       {/* Recent Workflows */}
-      <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>Recent Workflows</h2>
+      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em' }}>Recent Workflows</h2>
+        <a href="/workflows" style={{ fontSize: 13, color: 'var(--accent-primary)', textDecoration: 'none' }}>View all →</a>
+      </div>
+
       <div className="card-grid">
         {workflows.slice(0, 6).map(wf => (
           <a href={`/workflows?edit=${wf.filename}`} key={wf.filename} style={{ textDecoration: 'none', color: 'inherit' }}>
             <div className="card">
               <div className="card-header">
-                <span className="card-title" style={{ color: 'var(--text-primary)' }}>{wf.title || wf.filename}</span>
-                <span className="tag" style={{ border: '1px solid var(--accent-primary)', color: 'var(--accent-primary)', fontWeight: 600 }}>{wf.phase_count} phases</span>
+                <span className="card-title">{wf.title || wf.filename}</span>
+                <span className="tag tag-success">{wf.phase_count} phases</span>
               </div>
-              <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12 }}>
-                {wf.description || 'No description'}
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                {wf.description || 'No description provided for this factory workflow.'}
               </p>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {(wf.tags || []).slice(0, 4).map(tag => (
-                  <span key={tag} className="tag" style={{ fontSize: 10, background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>{tag}</span>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {(wf.tags || []).slice(0, 3).map(tag => (
+                  <span key={tag} className="tag">{tag}</span>
                 ))}
               </div>
             </div>

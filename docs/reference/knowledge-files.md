@@ -1,6 +1,6 @@
 # Knowledge Files Catalog
 
-The factory currently includes **282 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
+The factory currently includes **283 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
 
 | File | Type | Description |
 |------|------|-------------|
@@ -120,6 +120,7 @@ The factory currently includes **282 knowledge files** covering: various aspects
 | [game-mechanics](file:///.agent/knowledge/game-mechanics.json) |  |  |
 | [game-mechanics-knowledge](file:///.agent/knowledge/game-mechanics-knowledge.json) |  |  |
 | [github-agent-templates](file:///.agent/knowledge/github-agent-templates.json) |  |  |
+| [glassmorphism-ui-patterns](file:///.agent/knowledge/glassmorphism-ui-patterns.json) |  |  |
 | [google-agent-development-kit-patterns](file:///.agent/knowledge/google-agent-development-kit-patterns.json) |  |  |
 | [google-generative-ai-patterns](file:///.agent/knowledge/google-generative-ai-patterns.json) |  |  |
 | [gradient-boosting-patterns](file:///.agent/knowledge/gradient-boosting-patterns.json) |  |  |

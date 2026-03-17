@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Universal Factory Induction (AGENT-151)**: Introduced a modular orchestrator and intelligence layer (Drafting Engine) for automated, high-fidelity creation of Skills, Agents, Workflows, and Knowledge Items with full schema compliance.
+- **Premium UI Overhaul (AGENT-152)**: Implemented a modern glassmorphism design system across the Factory UI, featuring backdrop blur effects, mesh gradients, and animated background elements.
+- **Context-Aware Sidebar (AGENT-152)**: Integrated reactive navigation logic that dynamically maps the active URL to the 7-phase SDLC lifecycle, providing real-time cognitive grounding for the operator.
 - **Predictive Issue Slicing (AGENT-150)**: Implemented automated task decomposition logic to proactively slice complex goals into actionable, well-defined Plane issues.
 - **Proactive Knowledge Synthesis v1.1.0**: Enhanced the `proactive_synthesis.py` maintenance script to detect and bridge knowledge gaps across the factory more effectively.
 - **Skill & Agent Specialist Patterns (AGENT-153/154)**: Codified foundational architectural patterns for Level 3 skill bundles and specialty agents, ensuring consistency across the factory ecosystem.
@@ -19,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - **Knowledge Schema Enforcement**: Resolved critical test failures related to empty pattern objects in Knowledge Items by refining Jinja2 induction templates.
 - **Plane Solution Reporting**: Fixed parameter validation and rendering logic in the `post_solution.py` skill, enabling high-fidelity reporting of architectural evolution.
+- **Workflow Parsing Resilience**: Implemented a robust sanitization layer in `workflow_service.py` to prevent Pydantic validation crashes when parsing unquoted colon strings in YAML frontmatter.
 
 ## [1.9.3] - 2026-03-17
 

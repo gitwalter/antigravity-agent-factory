@@ -65,6 +65,24 @@ class Workflow(BaseModel):
     workflow_type: str = "antigravity"  # antigravity | langgraph | crewai
 
 
+def sanitize_list_of_strings(data: Any) -> List[str]:
+    """Ensures data is a list of strings, converting dicts if necessary."""
+    if not isinstance(data, list):
+        if data is None:
+            return []
+        return [str(data)]
+
+    cleaned = []
+    for item in data:
+        if isinstance(item, dict):
+            # YAML might parse "Key: Value" as a dict if it has a colon and no quotes
+            for k, v in item.items():
+                cleaned.append(f"{k}: {v}")
+        elif item is not None:
+            cleaned.append(str(item))
+    return cleaned
+
+
 def parse_workflow(filename: Union[str, Path]) -> Workflow:
     """Parse a workflow .md file into a Workflow object."""
     filename_str = str(filename)
@@ -118,10 +136,10 @@ def parse_workflow(filename: Union[str, Path]) -> Workflow:
                     WorkflowPhase(
                         name=phase_name,
                         goal=step.get("goal", step.get("description", "")),
-                        agents=agents,
-                        skills=step.get("skills", []),
-                        tools=step.get("tools", []),
-                        actions=step.get("actions", []),
+                        agents=sanitize_list_of_strings(agents),
+                        skills=sanitize_list_of_strings(step.get("skills", [])),
+                        tools=sanitize_list_of_strings(step.get("tools", [])),
+                        actions=sanitize_list_of_strings(step.get("actions", [])),
                     )
                 )
 
@@ -217,10 +235,10 @@ def parse_workflow(filename: Union[str, Path]) -> Workflow:
                 WorkflowPhase(
                     name=phase_name,
                     goal=goal,
-                    agents=agents,
-                    skills=skills,
-                    tools=tools,
-                    actions=actions,
+                    agents=sanitize_list_of_strings(agents),
+                    skills=sanitize_list_of_strings(skills),
+                    tools=sanitize_list_of_strings(tools),
+                    actions=sanitize_list_of_strings(actions),
                 )
             )
 
