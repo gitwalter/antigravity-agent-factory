@@ -13,6 +13,7 @@ Rules for creating, extending, and executing workflows in `.agent/workflows/`.
 - **Automation (Turbo)**:
     - Use `// turbo` for safe, repetitive commands.
     - Use `// turbo-all` ONLY for highly standardized, verified automation paths.
+- **Shell Execution**: All shell-based steps in a workflow MUST be verified against `.agent/knowledge/tech/powershell-patterns.json` before execution.
 - **Complex Logic**: For workflows with >3 dependent steps, use the `sequential-thinking` MCP to validate the execution path.
 - **PMS Integration**:
     - **Intelligence over Polling**: Do NOT poll for Plane states. Refer to the standard mapping (`Todo`, `In Progress`, `Done`, `Backlog`, `Triage`).

@@ -6,19 +6,19 @@
 
 The Antigravity system follows a strict command-and-control hierarchy to ensure deterministic execution.
 
-### Tier 0: Workflows (Orchestration - includes **71** workflows)
+### Tier 0: Workflows (Orchestration - includes **72** workflows)
 - **Location**: `.agent/workflows/`
 - **Role**: The "SOP" (Standard Operating Procedure).
 - **Function**: Defines the high-level steps of a process. It DOES NOT execute code directly; it orchestrates Agents.
 - **Example**: `/research` workflow dictates *when* to check the catalog and *when* to search the web.
 
-### Tier 1: Agents (Specialists - includes **13** agents)
+### Tier 1: Agents (Specialists - includes **14** agents)
 - **Location**: Defined in `task.md` context or `.agent/agents/` (conceptual).
 - **Role**: The "Persona".
 - **Function**: Executes steps from a Workflow. An Agent is bound to specific Skills.
 - **Example**: The `Knowledge Operations Specialist` is the only agent authorized to modify the Knowledge Graph.
 
-### Tier 2: Skills (Capabilities - includes **218** skills)
+### Tier 2: Skills (Capabilities - includes **229** skills)
 - **Location**: `.agent/skills/`
 - **Role**: The "Atomic Capability".
 - **Function**: A specific, reusable procedure that an Agent performs.

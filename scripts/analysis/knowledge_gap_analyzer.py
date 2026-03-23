@@ -307,7 +307,7 @@ class KnowledgeGapAnalyzer:
         self._knowledge_cache.clear()
         self._content_index.clear()
 
-        for file_path in self.knowledge_dir.glob("*.json"):
+        for file_path in self.knowledge_dir.rglob("*.json"):
             if file_path.name.startswith("_") or "schema" in file_path.name.lower():
                 continue
 
@@ -660,7 +660,7 @@ def run_gap_analysis(
         AnalysisResult with findings
     """
     if knowledge_dir is None:
-        knowledge_dir = Path(__file__).parent.parent.parent / "knowledge"
+        knowledge_dir = Path(__file__).parent.parent.parent / ".agent" / "knowledge"
 
     analyzer = KnowledgeGapAnalyzer(knowledge_dir)
     return analyzer.analyze(taxonomy_name)

@@ -13,7 +13,7 @@ steps:
 - actions:
   - 'Actions:'
   - Check if an issue exists in Plane.
-  - If not, create an issue using `create_task.py`.
+  - If not, STRICTLY use the `managing-plane-tasks` skill to create an issue via the Jinja template and `create_task.py`. DO NOT use direct MCP for task creation.
   - Ensure the issue has a `BUG` label and is set to "In Progress".
   - Memory Hook: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:bugfix-resolution`.
   - Save-on-Discover: Register missing SOP/SKILL nodes if found in local filesystem.
@@ -46,7 +46,8 @@ steps:
   - python-ai-specialist
   goal: Identify the exact cause and reproduction steps.
   name: Root Cause Analysis
-  skills: []
+  skills:
+  - operating-shell-platforms
   tools: []
 - actions:
   - 'Actions:'
@@ -67,7 +68,8 @@ steps:
   - python-ai-specialist
   goal: Apply the fix and ensure it solves the reported issue.
   name: Fix Implementation & Local Verification
-  skills: []
+  skills:
+  - operating-shell-platforms
   tools: []
 - actions:
   - 'Actions:'
@@ -77,7 +79,8 @@ steps:
   - workflow-quality-specialist
   goal: Ensure no regressions and maintain code health.
   name: System Quality Gate
-  skills: []
+  skills:
+  - operating-shell-platforms
   tools: []
 - actions:
   - 'Actions:'
@@ -127,7 +130,7 @@ Antigravity workflow for bugfix-resolution. Standardized for IDX Visual Editor.
 - **Skills**: managing-plane-tasks
 - **Actions**:
 - Check if an issue exists in Plane.
-- If not, create an issue using `create_task.py`.
+- If not, STRICTLY use the `managing-plane-tasks` skill to create an issue via the Jinja template and `create_task.py`. DO NOT use direct MCP for task creation.
 - Ensure the issue has a `BUG` label and is set to "In Progress".
 - **Memory Hook**: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:bugfix-resolution`.
 - **Save-on-Discover**: Register missing SOP/SKILL nodes if found in local filesystem.

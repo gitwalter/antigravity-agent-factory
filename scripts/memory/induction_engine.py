@@ -42,6 +42,8 @@ from scripts.memory.memory_store import (
     get_memory_store,
 )
 from scripts.guardian.mutability_guard import MutabilityGuard, get_mutability_guard
+from scripts.memory.episodic_logger import get_episodic_logger
+from scripts.memory.governance_gates import ReadFilteringGate, WriteValidationGate
 
 logger = logging.getLogger(__name__)
 
@@ -145,6 +147,11 @@ class InductionEngine:
         self.guard = mutability_guard or get_mutability_guard()
         self.config = config or self._default_config()
 
+        # SSGM Governance Components
+        self.episodic_logger = get_episodic_logger()
+        self.read_gate = ReadFilteringGate()
+        self.write_gate = WriteValidationGate()
+
         # Track current session observations
         self._session_observations: List[ObservationEvent] = []
 
@@ -205,7 +212,8 @@ class InductionEngine:
             metadata=event.get("metadata", {}),
         )
 
-        # Track observation
+        # Track observation (SSGM: Immutable Episodic Log)
+        self.episodic_logger.log_observation(event)
         self._session_observations.append(observation)
 
         # Check if similar to rejected
@@ -232,6 +240,11 @@ class InductionEngine:
             context=observation.context,
             timestamp=observation.timestamp,
         )
+
+        # SSGM: Validate proposal before storage
+        if not self.write_gate.validate_proposal(proposal):
+            logger.warning(f"Proposal {proposal.id} rejected by WriteValidationGate")
+            return None
 
         # Add to pending queue
         self.memory.add_pending_proposal(proposal)
@@ -335,7 +348,11 @@ class InductionEngine:
     # =========================================================================
 
     def get_relevant_memories(
-        self, query: str, k: int = 5, include_episodic: bool = True
+        self,
+        query: str,
+        k: int = 5,
+        include_episodic: bool = True,
+        current_intent: Optional[str] = None,
     ) -> List[Memory]:
         """
         Get memories relevant to a query.
@@ -351,14 +368,13 @@ class InductionEngine:
         # Search semantic memory
         semantic_results = self.memory.search(query, "semantic", k=k, threshold=0.5)
 
-        if include_episodic:
-            # Also search episodic for recent observations
-            episodic_results = self.memory.search(
-                query, "episodic", k=k // 2, threshold=0.5
-            )
-            return semantic_results + episodic_results
+        # SSGM: Apply Read Filtering Gate (Temporal Decay + Intent)
+        all_results = semantic_results
+        filtered_results = self.read_gate.filter_memories(
+            query, all_results, current_intent=current_intent
+        )
 
-        return semantic_results
+        return filtered_results[:k]
 
     def get_memory_context(self, query: str) -> str:
         """

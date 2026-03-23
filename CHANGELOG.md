@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0] - 2026-03-23
+
+### Added
+- **SSGM V2: Cognitive Governance (AGENT-158)**: Implemented semantic summarization and reconciliation logic for the Stability and Safety-Governed Memory (SSGM) framework.
+- **Error-to-Knowledge Bridge (AGENT-162)**: Introduced a proactive synthesis workflow that transforms diagnostic errors into verified Knowledge Items (KIs).
+- **Predictive Skill Induction (AGENT-151/157)**: Enhanced the factory's ability to autonomously induce and optimize memory systems.
+
+### Changed
+- **Knowledge Base Reorganization (AGENT-173)**: Performed a full structural audit and consolidated the knowledge directory, migrating manifests to the root `.agent/knowledge/` for better discoverability.
+- **Global Shell Standardization**: Aligned all agents and workflows with the `operating-shell-platforms` skill for robust cross-platform PowerShell execution.
+
+### Fixed
+- **Knowledge Sync Failures (AGENT-175)**: Resolved path resolution and schema validation failures following the knowledge directory reorganization.
+- **Skill Structure Compliance (AGENT-171)**: Patched multiple skill files to ensure 100% compliance with versioning and documentation standards.
+
 ## [1.10.0] - 2026-03-17
 
 ### Added

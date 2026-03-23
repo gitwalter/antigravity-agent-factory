@@ -680,7 +680,7 @@ class TestMetricsSchema:
 
     def test_metrics_is_valid_json(self, knowledge_dir):
         """Test that pm-metrics.json is valid JSON."""
-        metrics_file = knowledge_dir / "pm-metrics.json"
+        metrics_file = knowledge_dir / "integration" / "pm-metrics.json"
 
         with open(metrics_file, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -689,7 +689,7 @@ class TestMetricsSchema:
 
     def test_metrics_have_required_fields(self, knowledge_dir, validator):
         """Test that all metrics have required fields."""
-        metrics_file = knowledge_dir / "pm-metrics.json"
+        metrics_file = knowledge_dir / "integration" / "pm-metrics.json"
 
         with open(metrics_file, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -714,7 +714,7 @@ class TestMetricsSchema:
 
     def test_all_categories_covered(self, knowledge_dir):
         """Test that all metric categories are covered."""
-        metrics_file = knowledge_dir / "pm-metrics.json"
+        metrics_file = knowledge_dir / "integration" / "pm-metrics.json"
 
         with open(metrics_file, "r", encoding="utf-8") as f:
             data = json.load(f)

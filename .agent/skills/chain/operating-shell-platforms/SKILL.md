@@ -7,7 +7,7 @@ description: 'Platform-specific shell command considerations for Windows PowerSh
 
   '
 knowledge:
-- none
+- powershell-patterns
 name: operating-shell-platforms
 related_skills:
 - none
@@ -16,7 +16,7 @@ templates:
 tools:
 - none
 type: skill
-version: 1.0.0
+version: 1.1.0
 references:
 - none
 settings:
@@ -110,7 +110,19 @@ This is a **recurring error** - always use simple string syntax on Windows.
 >
 ```
 
-## Scope
+## CRITICAL: Antigravity Factory Environment (Windows)
+> **ALWAYS USE CONDA RUN WITH THE CORRECT ENVPATH!**
+>
+> The factory environment is strictly managed. For Python execution, use:
+> ```powershell
+> conda run -p D:\Anaconda\envs\cursor-factory python <script.py>
+> ```
+> Or the absolute interpreter path:
+> ```powershell
+> D:\Anaconda\envs\cursor-factory\python.exe <script.py>
+> ```
+>
+> **Mandatory Grounding**: Before executing any shell-based task, agents MUST ground themselves in `.agent/knowledge/tech/powershell-patterns.json`.
 **This skill is LOCAL to this machine only.** Do not apply automatically - always ask the user before applying platform-specific command adjustments.
 
 ## Process

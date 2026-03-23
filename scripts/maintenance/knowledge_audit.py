@@ -83,7 +83,7 @@ def run_dependency_validator():
     """Runs the dependency validator and refreshes the map."""
     script = REPO_ROOT / "scripts" / "validation" / "dependency_validator.py"
     # Export the graph
-    export_path = KNOWLEDGE_DIR / "artifact-dependency-map.json"
+    export_path = KNOWLEDGE_DIR / "core" / "artifact-dependency-map.json"
     run_command(PYTHON_CMD + [str(script), "--export", str(export_path)])
 
     # Get stats

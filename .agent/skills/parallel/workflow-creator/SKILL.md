@@ -48,10 +48,18 @@ All workflows MUST pass `schemas/workflow.schema.json` validation. This ensures 
 
 ## Process
 
-1.  **Design**: Outline the manual or automated steps.
-2.  **Draft**: Create the `.md` file in the appropriate domain subdirectory.
-3.  **Validate**: Run `scripts/quick_validate.py` to ensure schema compliance.
-4.  **Test**: Dry-run the workflow to verify step clarity and turbo execution.
+1.  **TDD Phase (RED)**:
+    - Write a failing verification test in `tests/workflows/` (e.g., `test_my_new_workflow_validity`).
+    - **Verify RED**: Run the test and confirm failure via `conda run -p D:\Anaconda\envs\cursor-factory pytest <test_path>`.
+2.  **Implementation Phase (GREEN)**:
+    - Draft the `.md` file in the appropriate domain subdirectory.
+    - Write the minimal content needed to pass the test.
+3.  **Validation Phase**:
+    - Run `scripts/quick_validate.py` to ensure schema compliance.
+    - **Verify GREEN**: Run the verification test again to confirm it passes.
+4.  **REFACTOR & Sync**:
+    - Clean up the workflow instructions.
+    - **Mandatory Sync**: Run `conda run -p D:\Anaconda\envs\cursor-factory python scripts/sync_global_workflows.py`.
 
 ## When to Use
 

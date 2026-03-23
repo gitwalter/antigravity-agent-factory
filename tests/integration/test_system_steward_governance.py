@@ -1,18 +1,12 @@
-import sys
-from pathlib import Path
-
-# Add project root to path
-PROJECT_ROOT = Path(__file__).parent.parent.parent
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
 import json
+from pathlib import Path
 
 
 def test_system_steward_metadata():
     """Integration test checking system-steward ability and knowledge integration."""
     root = Path(__file__).parent.parent.parent
-    registry_path = root / ".agent" / "knowledge" / "agent-team-registry.json"
+    knowledge_dir = root / ".agent" / "knowledge"
+    registry_path = knowledge_dir / "agents" / "agent-team-registry.json"
 
     with open(registry_path, "r", encoding="utf-8") as f:
         registry = json.load(f)
@@ -34,5 +28,9 @@ def test_system_steward_metadata():
 def test_maintenance_script_availability():
     """Ensures the core script used by the steward is where it should be."""
     root = Path(__file__).parent.parent.parent
+    knowledge_dir = root / ".agent" / "knowledge"
+    feed_path = knowledge_dir / "integration" / "factory-updates.json"
     script_path = root / "scripts" / "maintenance" / "audit" / "link_checker.py"
+
+    assert feed_path.exists()
     assert script_path.exists()

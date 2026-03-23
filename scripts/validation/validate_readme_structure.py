@@ -45,7 +45,13 @@ SCAN_CONFIG = {
     "knowledge": {
         "dir": ".agent/knowledge",
         "pattern": "*.json",
+        "recursive": True,
         "readme_pattern": r"\((\d+)(\+)? (?:JSON )?files?\)",
+        "exclude": [
+            "core/manifest.json",
+            "core/knowledge-manifest.json",
+            "core/artifact-dependency-map.json",
+        ],
     },
     "patterns": {
         "dir": ".agent/patterns",
@@ -270,13 +276,30 @@ class StructureValidator:
         # Default: count files matching pattern
         pattern = config.get("pattern", "*")
         recursive = config.get("recursive", False)
+        exclude = config.get("exclude", [])
 
         if recursive:
-            count = len([p for p in section_dir.rglob(pattern) if p.is_file()])
+            paths = [p for p in section_dir.rglob(pattern) if p.is_file()]
         else:
-            count = len([p for p in section_dir.glob(pattern) if p.is_file()])
+            paths = [p for p in section_dir.glob(pattern) if p.is_file()]
 
-        return count
+        # Filter exclusions
+        if exclude:
+            filtered_paths = []
+            for p in paths:
+                rel_p = str(p.relative_to(section_dir)).replace("\\", "/")
+                # Check if path or any of its parents are in exclude list
+                is_excluded = False
+                for ex in exclude:
+                    ex_norm = ex.replace("\\", "/").rstrip("/")
+                    if rel_p == ex_norm or rel_p.startswith(ex_norm + "/"):
+                        is_excluded = True
+                        break
+                if not is_excluded:
+                    filtered_paths.append(p)
+            paths = filtered_paths
+
+        return len(paths)
 
     def scan_all(self) -> Dict[str, int]:
         """

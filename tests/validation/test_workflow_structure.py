@@ -274,7 +274,9 @@ class TestWorkflowIntegration:
         """Test that workflow-patterns.json exists and is valid JSON."""
         import json
 
-        patterns_file = project_root / ".agent" / "knowledge" / "workflow-patterns.json"
+        patterns_file = (
+            project_root / ".agent" / "knowledge" / "core" / "workflow-patterns.json"
+        )
         assert patterns_file.exists(), "workflow-patterns.json should exist"
 
         # Should be valid JSON
@@ -287,7 +289,9 @@ class TestWorkflowIntegration:
         """Test that workflow patterns reference existing workflows."""
         import json
 
-        patterns_file = project_root / ".agent" / "knowledge" / "workflow-patterns.json"
+        patterns_file = (
+            project_root / ".agent" / "knowledge" / "core" / "workflow-patterns.json"
+        )
         content = patterns_file.read_text(encoding="utf-8")
         data = json.loads(content)
 

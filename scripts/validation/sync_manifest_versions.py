@@ -158,7 +158,7 @@ def sync_manifest(dry_run: bool = True) -> tuple[bool, list[str]]:
     Returns:
         (all_synced, list of changes)
     """
-    manifest_path = Path(".agent/knowledge/manifest.json")
+    manifest_path = Path(".agent/knowledge/core/manifest.json")
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 
     changes = []
@@ -197,24 +197,32 @@ def sync_manifest(dry_run: bool = True) -> tuple[bool, list[str]]:
     # 3. Sync each knowledge file's version in manifest from actual file
     knowledge_dir = Path(".agent/knowledge")
     # Update version in knowledge/project-info.json
-    project_info_path = knowledge_dir / "project-info.json"
+    project_info_path = knowledge_dir / "core" / "project-info.json"
     if not project_info_path.exists():
-        print(f"Warning: {project_info_path} not found")
-        # return # Do not return, continue with other files
+        # Try finding it recursively
+        matches = list(knowledge_dir.glob("**/project-info.json"))
+        if matches:
+            project_info_path = matches[0]
+        else:
+            print(f"Warning: project-info.json not found in {knowledge_dir}")
 
     for filename, entry in manifest.get("files", {}).items():
-        filepath = knowledge_dir / filename
-        if filepath.exists():
-            actual_version = get_file_version(filepath)
-            manifest_version = entry.get("version")
+        # Find file recursively since they are now in subdirectories
+        matches = list(knowledge_dir.glob(f"**/{filename}"))
+        if not matches:
+            continue
 
-            if actual_version and actual_version != manifest_version:
-                changes.append(
-                    f"manifest[{filename}]: {manifest_version} -> {actual_version}"
-                )
-                if not dry_run:
-                    entry["version"] = actual_version
-                    manifest_changed = True
+        filepath = matches[0]
+        actual_version = get_file_version(filepath)
+        manifest_version = entry.get("version")
+
+        if actual_version and actual_version != manifest_version:
+            changes.append(
+                f"manifest[{filename}]: {manifest_version} -> {actual_version}"
+            )
+            if not dry_run:
+                entry["version"] = actual_version
+                manifest_changed = True
 
     # 4. Write updated manifest if changed
     if not dry_run and manifest_changed:

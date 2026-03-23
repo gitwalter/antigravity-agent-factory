@@ -39,7 +39,7 @@ def knowledge_dir(project_root: Path) -> Path:
 @pytest.fixture
 def research_first_pattern(knowledge_dir: Path) -> dict:
     """Load the research-first development pattern."""
-    pattern_path = knowledge_dir / "research-first-development.json"
+    pattern_path = knowledge_dir / "integration" / "research-first-development.json"
     if not pattern_path.exists():
         pytest.skip("research-first-development.json not yet created")
     return json.loads(pattern_path.read_text(encoding="utf-8"))
@@ -55,8 +55,10 @@ class TestKnowledgeFileStructure:
 
     def test_knowledge_file_exists(self, knowledge_dir: Path):
         """Research-first pattern knowledge file should exist."""
-        pattern_path = knowledge_dir / "research-first-development.json"
-        assert pattern_path.exists(), "research-first-development.json not found"
+        knowledge_file = (
+            knowledge_dir / "integration" / "research-first-development.json"
+        )
+        assert knowledge_file.exists(), "research-first-development.json not found"
 
     def test_has_required_top_level_fields(self, research_first_pattern: dict):
         """Knowledge file should have required top-level fields."""
@@ -276,16 +278,18 @@ class TestIntegrationPoints:
     def test_knowledge_file_is_listed_in_manifest(self, project_root: Path):
         """Knowledge file should be discoverable via manifest or directory."""
         knowledge_dir = project_root / ".agent" / "knowledge"
-        pattern_path = knowledge_dir / "research-first-development.json"
+        pattern_path = knowledge_dir / "integration" / "research-first-development.json"
 
         # Either file exists in knowledge dir, or is listed in manifest
-        manifest_path = knowledge_dir / "manifest.json"
+        manifest_path = knowledge_dir / "core" / "manifest.json"
 
         if manifest_path.exists():
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             files = manifest.get("files", [])
             assert (
-                "research-first-development.json" in str(files) or pattern_path.exists()
+                "research-first-development.json" in files
+                or "integration/research-first-development.json" in files
+                or pattern_path.exists()
             )
         else:
             assert pattern_path.exists()

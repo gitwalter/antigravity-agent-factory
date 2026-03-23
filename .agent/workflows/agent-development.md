@@ -23,33 +23,56 @@ steps:
   tools:
   - create_task.py
 - actions:
+  - '**Agents**: `system-architecture-specialist`'
+  - '**Actions**:'
+  - **Brainstorming Phase**: Use the `brainstorming` skill to refine project intent.
+  - **Clarify**: Ask one question at a time.
+  - **Propose**: 2-3 approaches with trade-offs.
+  - **Hard Gate**: Present design and get USER approval.
+  - **Design Doc**: Save to `docs/designs/YYYY-MM-DD-<topic>.md`.
+  agents:
+  - system-architecture-specialist
+  goal: Ensure a solid, user-approved design before any planning or code.
+  name: Brainstorming & Design Approval
+  skills:
+  - brainstorming
+  tools:
+  - write_to_file
+- actions:
   - '**Agents**: `project-operations-specialist`, `system-architecture-specialist`'
   - '**Actions**:'
   - Load `knowledge/ai-design.md` and `knowledge/prd.md`.
-  - Trigger `.agent/skills/chain/generating-agents/SKILL.md`.
+  - **Planning Phase**: Use the `writing-plans` skill to decompose the design.
+  - **Granularity**: Ensure tasks are 2-5 minute chunks.
+  - **Refinement**: Each task must include a RED (fail) and GREEN (pass) verification step.
+  - Generate `implementation_plan.md` using the factory template.
+  - Use `notify_user` to request review and approval.
   agents:
   - project-operations-specialist
   - system-architecture-specialist
-  goal: Research requirements and generate initial agent logic/code structure.
-  name: Design & Generation
+  goal: Create a detailed, bite-sized implementation roadmap.
+  name: Structural Planning
   skills:
-  - generating-agents
-  - analyzing-code
+  - writing-plans
   tools:
-  - view_file
   - write_to_file
+  - notify_user
 - actions:
   - '**Agents**: `project-operations-specialist`'
   - '**Actions**:'
-  - Iterate on implementation based on `implementation_plan.md`.
-  - Generate `walkthrough.md` using the `generating-documentation` skill.
+  - **Execution Phase**: Use the `subagent-driven-development` skill.
+  - **RED**: Verify a failing test for each task.
+  - **GREEN**: Implement minimal code and verify pass.
+  - **Evidence**: Save verification output to `tmp/verification_<task_id>.log`.
+  - **Documentation**: Generate `walkthrough.md` incrementally.
   agents:
   - project-operations-specialist
-  goal: Build the feature iteratively and document the proof of work.
-  name: Iterative Implementation
+  goal: Build the feature with maximum rigor and evidence.
+  name: Rigorous Implementation
   skills:
-  - developing-ai-agents
-  - generating-documentation
+  - subagent-driven-development
+  - tdd-rigor
+  - verification-before-completion
   tools:
   - multi_replace_file_content
   - walkthrough-generator

@@ -45,12 +45,17 @@ Knowledge files are JSON objects that follow `schemas/knowledge-file.schema.json
 
 ## Process
 
-1.  **Gather Information**: Identify the facts or data to be structured.
-2.  **Draft JSON**: Build the object structure following `schemas/knowledge-file.schema.json`.
-3.  **Validation (Mandatory)**:
-    - Run structural tests: `conda run -p D:\Anaconda\envs\cursor-factory pytest tests/knowledge/test_system_structure.py`
-    - Run structural verification: `conda run -p D:\Anaconda\envs\cursor-factory python scripts/validation/verify_structures.py`
-4.  **Sync**: Run `conda run -p D:\Anaconda\envs\cursor-factory python scripts/validation/sync_artifacts.py` to update registries.
+1.  **TDD Phase (RED)**:
+    - Write a failing test in `tests/knowledge/` representing the new data structure requirements.
+    - **Verify RED**: Run `conda run -p D:\Anaconda\envs\cursor-factory pytest tests/knowledge/test_system_structure.py` and confirm failure.
+2.  **Implementation Phase (GREEN)**:
+    - Draft the JSON object structure following `schemas/knowledge-file.schema.json`.
+3.  **Validation Phase**:
+    - **Verify GREEN**: Run structural tests and confirm pass.
+    - Run structural verification: `conda run -p D:\Anaconda\envs\cursor-factory python scripts/validation/verify_structures.py`.
+4.  **Sync**:
+    - Update registries: `conda run -p D:\Anaconda\envs\cursor-factory python scripts/validation/sync_artifacts.py`.
+    - **Mandatory Global Sync**: Run `conda run -p D:\Anaconda\envs\cursor-factory python scripts/sync_global_workflows.py`.
 
 ## When to Use
 

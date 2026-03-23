@@ -31,7 +31,7 @@ class TestKnowledgeFileStructure:
     @pytest.fixture
     def all_knowledge_files(self, knowledge_dir: Path) -> List[Path]:
         """Get all knowledge JSON files, excluding catalogs and registries."""
-        all_files = list(knowledge_dir.glob("*.json"))
+        all_files = list(knowledge_dir.rglob("*.json"))
         # Exclude catalogs, registries, manifests, and graph files
         excluded_patterns = [
             "-catalog.json",
@@ -271,7 +271,7 @@ class TestKnowledgePatternsStructure:
     @pytest.fixture
     def all_knowledge_files(self, knowledge_dir: Path) -> List[Path]:
         """Get all knowledge JSON files, excluding catalogs and registries."""
-        all_files = list(knowledge_dir.glob("*.json"))
+        all_files = list(knowledge_dir.rglob("*.json"))
         # Exclude catalogs, registries, manifests, and graph files
         excluded_patterns = [
             "-catalog.json",

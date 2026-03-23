@@ -1,8 +1,6 @@
 ---
 name: committing-releases
-description: 'Automated release management using semantic versioning, git tagging,
-  and automated changelog maintenance.
-
+description: 'Automated release management using semantic versioning and automated changelog maintenance.
   '
 type: skill
 version: 1.0.0
@@ -29,9 +27,7 @@ settings:
   orchestration_pattern: routing
 ---
 
-# Committing Releases (RCW Extension)
-
-This skill formalizes the release process for the Antigravity Agent Factory. It extends the Robust Commit Workflow (RCW) by adding automated semantic versioning and immutable git tagging.
+This skill formalizes the release process for the Antigravity Agent Factory. It extends the Robust Commit Workflow (RCW) by adding automated semantic versioning.
 
 ## When to Use
 - When completing a major feature phase (e.g., transition from Phase 5 to Phase 6).
@@ -55,22 +51,21 @@ Determine the bump type based on [Semantic Versioning](https://semver.org/):
 
 ### 2. Automated Execution
 Run the release script. This will automatically:
-1. Extract the current version from `CHANGELOG.md`.
-2. Update `CHANGELOG.md` with the new version and date.
-3. Run `safe_commit.py` (which runs full verification/smoke tests).
-4. Create a signed/annotated git tag.
-5. Push commit and tag to the remote repository.
+1. **Analyze Plane Issues**: Perform a federated search for all implemented Plane issues since the last release to ensure the changelog is exhaustive.
+2. Extract the current version from `CHANGELOG.md`.
+3. Update `CHANGELOG.md` with the new version and date.
+4. Run `safe_commit.py` (which runs full verification/smoke tests).
+5. Push commit to the remote repository.
 
 ```bash
 # Example: Minor release (e.g., 1.6.0 -> 1.7.0)
-conda run -p D:\Anaconda\envs\cursor-factory python scripts/git/safe_release.py --bump minor
+conda run -p D:\Anaconda\envs\cursor-factory python scripts/git/safe_release.py --bump minor --no-tag
 ```
 
 ### 3. Verification
 After execution, verify:
-- `git log --oneline --graph --decorate` shows the new tag.
 - `CHANGELOG.md` contains the new version header.
-- Remote repository reflects the new tag.
+- Remote repository reflects the new version commit.
 
 ## Best Practices
 - **Never manual bump**: Always use `safe_release.py` to ensure the `CHANGELOG.md` and `git tag` are perfectly synchronized.

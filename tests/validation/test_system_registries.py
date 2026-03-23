@@ -6,8 +6,10 @@ from pathlib import Path
 def test_agent_registry_consistency():
     """Verifies that all registered agents have consistent metadata and existing skill references."""
     root = Path(__file__).parent.parent.parent
-    registry_path = root / ".agent" / "knowledge" / "agent-team-registry.json"
-    skill_catalog_path = root / ".agent" / "knowledge" / "skill-catalog.json"
+    registry_path = (
+        root / ".agent" / "knowledge" / "agents" / "agent-team-registry.json"
+    )
+    skill_catalog_path = root / ".agent" / "knowledge" / "core" / "skill-catalog.json"
 
     with open(registry_path, "r", encoding="utf-8") as f:
         registry = json.load(f)
@@ -47,7 +49,7 @@ def test_agent_registry_consistency():
 def test_skill_catalog_paths():
     """Verifies that all skill definitions exist at their declared paths."""
     root = Path(__file__).parent.parent.parent
-    skill_catalog_path = root / ".agent" / "knowledge" / "skill-catalog.json"
+    skill_catalog_path = root / ".agent" / "knowledge" / "core" / "skill-catalog.json"
 
     with open(skill_catalog_path, "r", encoding="utf-8") as f:
         catalog_data = json.load(f)
@@ -82,7 +84,7 @@ def test_skill_catalog_paths():
 def test_graph_integrity():
     """Verifies that the dependency graph nodes exist and edges point to valid nodes."""
     root = Path(__file__).parent.parent.parent
-    graph_path = root / ".agent" / "knowledge" / "dependency-graph.json"
+    graph_path = root / ".agent" / "knowledge" / "core" / "dependency-graph.json"
 
     with open(graph_path, "r", encoding="utf-8") as f:
         graph = json.load(f)

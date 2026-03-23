@@ -8,6 +8,12 @@ skills:
   - parallel/engineering-rag-systems
   - parallel/tracing-with-langsmith
   - parallel/securing-agents
+  - parallel/agent-creator
+  - parallel/workflow-creator
+  - parallel/skill-creator
+  - parallel/knowledge-creator
+  - verification/tdd-rigor
+  - verification/systematic-debugging
 model: inherit
 is_background: false
 readonly: false

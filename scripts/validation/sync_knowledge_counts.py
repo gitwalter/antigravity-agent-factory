@@ -31,19 +31,22 @@ def count_knowledge_files() -> int:
     if not knowledge_dir.exists():
         return 0
 
-    # Count .json files, excluding schema files, manifest.json, and subdirectories
-    # manifest.json is a meta-file that tracks knowledge files, not a knowledge file itself
+    # Count .json files recursively, excluding schema files, manifest.json, and internal files
     json_files = [
         f
-        for f in knowledge_dir.glob("*.json")
-        if f.is_file() and not f.name.startswith("_") and f.name != "manifest.json"
+        for f in knowledge_dir.glob("**/*.json")
+        if f.is_file()
+        and not f.name.startswith("_")
+        and f.name != "manifest.json"
+        and f.name != "knowledge-manifest.json"
+        and f.name != "artifact-dependency-map.json"
     ]
     return len(json_files)
 
 
 def get_manifest_count() -> int:
     """Extract total_files from manifest.json."""
-    manifest_path = Path(".agent/knowledge/manifest.json")
+    manifest_path = Path(".agent/knowledge/core/manifest.json")
     if not manifest_path.exists():
         return 0
 
@@ -77,7 +80,7 @@ def update_manifest(actual_count: int, dry_run: bool = True) -> bool:
     Returns:
         True if update was needed (or would be needed)
     """
-    manifest_path = Path(".agent/knowledge/manifest.json")
+    manifest_path = Path(".agent/knowledge/core/manifest.json")
     if not manifest_path.exists():
         return False
 

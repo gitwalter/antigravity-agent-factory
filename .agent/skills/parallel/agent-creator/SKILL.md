@@ -78,11 +78,18 @@ Use this skill to refactor existing agents or create new specialized agents for 
 
 ## Process
 
-1. Clarify the agent purpose, domain, and target topology
-2. Identify relevant skills and knowledge to reference
-3. Draft the agent .md file with YAML frontmatter and structured body
-4. Validate against the agent schema using quick_validate.py
-5. Iterate with user feedback until complete and schema-compliant
+1.  **TDD Phase (RED)**:
+    - Write a failing verification test in `tests/agents/`.
+    - **Verify RED**: Run the test and confirm failure.
+2.  **Implementation Phase (GREEN)**:
+    - Identify relevant skills and knowledge.
+    - Draft the agent `.md` file with minimal content to pass the test.
+3.  **Validation Phase**:
+    - Validate against the agent schema using `quick_validate.py`.
+    - **Verify GREEN**: Run the verification test again to confirm it passes.
+4.  **REFACTOR & Sync**:
+    - Iterate with user feedback.
+    - **Mandatory Sync**: Run `conda run -p D:\Anaconda\envs\cursor-factory python scripts/sync_global_workflows.py`.
 
 ## Best Practices
 

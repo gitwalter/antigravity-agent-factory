@@ -15,6 +15,7 @@ steps:
   - system-architecture-specialist
   skills:
   - prd-parsing-logic
+  - operating-shell-platforms
   tools:
   - prd_to_code_bridge.py
   actions:
@@ -46,6 +47,7 @@ steps:
   - workflow-quality-specialist
   skills:
   - testing-agents
+  - operating-shell-platforms
   tools:
   - pytest-cli
   actions:

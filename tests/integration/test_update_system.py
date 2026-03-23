@@ -260,13 +260,13 @@ class TestFactoryUpdatesFeed:
 
     def test_factory_updates_json_exists(self, knowledge_dir: Path):
         """Test that factory-updates.json exists in Factory."""
-        feed_path = knowledge_dir / "factory-updates.json"
+        feed_path = knowledge_dir / "integration" / "factory-updates.json"
 
         assert feed_path.exists(), f"factory-updates.json must exist at {feed_path}"
 
     def test_factory_updates_json_valid_structure(self, knowledge_dir: Path):
         """Test factory-updates.json has valid structure."""
-        feed_path = knowledge_dir / "factory-updates.json"
+        feed_path = knowledge_dir / "integration" / "factory-updates.json"
 
         if feed_path.exists():
             with open(feed_path, "r", encoding="utf-8") as f:
@@ -988,13 +988,13 @@ class TestUpdateSystemSmoke:
 
     def test_smoke_feed_exists(self, knowledge_dir: Path):
         """Quick check that update feed exists."""
-        feed = knowledge_dir / "factory-updates.json"
+        feed = knowledge_dir / "integration" / "factory-updates.json"
 
         assert feed.exists(), "factory-updates.json feed missing"
 
     def test_smoke_feed_parseable(self, knowledge_dir: Path):
         """Quick check that update feed is valid JSON."""
-        feed = knowledge_dir / "factory-updates.json"
+        feed = knowledge_dir / "integration" / "factory-updates.json"
 
         with open(feed, "r", encoding="utf-8") as f:
             data = json.load(f)

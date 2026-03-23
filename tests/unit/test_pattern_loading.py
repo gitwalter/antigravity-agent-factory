@@ -191,7 +191,7 @@ class TestKnowledgeFiles:
 
     def test_skill_catalog_exists(self, knowledge_dir):
         """Test that skill-catalog.json exists and has skills."""
-        catalog_path = knowledge_dir / "skill-catalog.json"
+        catalog_path = knowledge_dir / "core" / "skill-catalog.json"
 
         assert catalog_path.exists()
 

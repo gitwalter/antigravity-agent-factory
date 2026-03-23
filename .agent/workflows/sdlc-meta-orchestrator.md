@@ -28,6 +28,7 @@ steps:
   - brainstorming-ideas
   - researching-first
   - briefing-prototypes
+  - operating-shell-platforms
   tools:
   - search_web
   - deepwiki
@@ -46,6 +47,7 @@ steps:
   - writing-prd
   - slicing-stories
   - reviewing-requirements
+  - operating-shell-platforms
   tools:
   - replace_file_content
   - write_to_file
@@ -79,7 +81,7 @@ steps:
   skills:
   - developing-ai-agents
   - developing-rap-objects
-  - developing-ai-agents
+  - operating-shell-platforms
   tools:
   - conda-run
   - write_to_file
@@ -98,6 +100,7 @@ steps:
   - testing-agents
   - verifying-artifact-structures
   - securing-ai-systems
+  - operating-shell-platforms
   tools:
   - run_command
 - actions:
@@ -113,6 +116,7 @@ steps:
   skills:
   - committing-releases
   - generating-documentation
+  - operating-shell-platforms
   tools:
   - safe_release.py
 - actions:

@@ -240,7 +240,7 @@ class TestSyncManifest:
 
         # Create knowledge directory and manifest
         agent_dir = tmp_path / ".agent"
-        knowledge_dir = agent_dir / "knowledge"
+        knowledge_dir = agent_dir / "knowledge" / "core"
         knowledge_dir.mkdir(parents=True)
         manifest = knowledge_dir / "manifest.json"
         manifest.write_text(
@@ -262,7 +262,7 @@ class TestSyncManifest:
 
         # Create knowledge directory and manifest with matching version
         agent_dir = tmp_path / ".agent"
-        knowledge_dir = agent_dir / "knowledge"
+        knowledge_dir = agent_dir / "knowledge" / "core"
         knowledge_dir.mkdir(parents=True)
         manifest = knowledge_dir / "manifest.json"
         manifest.write_text(

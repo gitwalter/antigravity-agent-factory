@@ -22,7 +22,7 @@ scripts:
 - scripts/list_modules.py
 - scripts/list_labels.py
 - scripts/list_issues.py
-- scripts/post_solution.py
+- scripts/post_solution.py: High-fidelity solution reporter (mandatory for closure).
 tools:
 - mcp_plane_retrieve_work_item
 - mcp_memory_read_graph
@@ -141,7 +141,17 @@ Work item creation is strictly regulated. **Direct MCP creation is forbidden.** 
 Ensure you have run `sync_project_context.py` recently. The scripts will automatically use the resolved UUIDs from `references/project_context.json`.
 
 #### Step A: Generate and Create Task via Jinja Template
-Prepare a `task_input.json` in the `tmp/` directory. Ensure it contains the mandatory fields: `name`, `type`, `schema_version`, `requirements`, `acceptance_criteria`, `workflows`, `agents`, `skills`, `tests`, `module`, `cycle`, and `priority`.
+Prepare a `task_input.json` in the `tmp/` directory.
+
+> [!IMPORTANT]
+> **Mandatory Fields & Auto-Resolution**:
+> - **cycle**: If not provided, the script will automatically use the `ACTIVE_CYCLE` from `project_context.json`.
+> - **module**: If not provided, it will default to "agent system" or fail if no logical default exists.
+> - **priority**: Defaults to "medium".
+> - **parent**: Defaults to `null`.
+>
+> **Pre-Flight Validation**:
+> Always run `sync_project_context.py` before `create_task.py`. The script now checks for the presence of mandatory structural UUIDs before attempting the Plane API call, preventing 400 errors.
 
 > [!TIP]
 > **Estimation Points**: You can now use numeric Fibonacci values (e.g., `1`, `3`, `5`, `8`, `13`, `21`, `34`, `55`) for the `estimate_point` field. The scripts will automatically resolve these to the correct Plane UUIDs using `references/project_context.json`.
@@ -177,18 +187,64 @@ Every issue marked as **Done** MUST be accompanied by a professional solution su
 Follow [solution_definition_schema.json](file:///.agent/skills/routing/managing-plane-tasks/references/solution_definition_schema.json).
 
 #### Step E: Render and Post Solution
-Use the `post_solution.py` script. This script also moves the issue to the **Done** state if `--close` is provided.
+Use the `post_solution.py` script. This script### Phase 5: Close the Loop (High-Fidelity)
+Once work is verified, generate a high-fidelity solution JSON and post it to close the task.
 
-```bash
-conda run -p D:\Anaconda\envs\cursor-factory python .agent/skills/routing/managing-plane-tasks/scripts/post_solution.py \
-    --issue AGENT-XX \
-    --json solution.json \
-    --close
+**Example Command**:
+```powershell
+conda run -p D:\Anaconda\envs\cursor-factory python .agent/skills/routing/managing-plane-tasks/scripts/post_solution.py --issue AGENT-173 --json solution.json --close
+```
+
+**Optimal Solution Template (`solution.json`)**:
+```json
+{
+    "issue": "AGENT-173",
+    "title": "Knowledge Base Reorganization & Test Fixes",
+    "summary": "This task accomplished a comprehensive reorganization of the .agent/knowledge base, moving over 250 files into categorized subdirectories (core, agents, tech, integration) to improve system manageability and context retrieval. Additionally, the managing-plane-tasks skill was hardened to enforce mandatory priority, module, and cycle fields, with support for active cycle auto-selection. All 54 validation tests were successfully verified under the new recursive directory structure.",
+    "architectural_decisions": [
+        "Recursive Globbing Strategy: Adopted **/*.json for all validation scripts and sync tools to support nested categorization, ensuring scalability as the knowledge base grows.",
+        "Resource Governance: Shifted from auto-creation of modules/cycles to strict validation against existing factory assets to maintain repository integrity.",
+        "Active Cycle Resolution: Implemented keyword-based resolution ('active' or 'current') to streamline task assignment and reduce manual UUID lookups during execution."
+    ],
+    "evolution": [
+        "Modified scripts/validation/sync_knowledge_counts.py and associated unit tests to support multi-level file counting.",
+        "Hardened .agent/skills/routing/managing-plane-tasks/scripts/create_task.py with stricter schema validation and cycle resolution.",
+        "Standardized .agent/workflows/feature-development.md to adopt high-fidelity task management protocols."
+    ],
+    "files_affected": [
+        ".agent/skills/routing/managing-plane-tasks/scripts/create_task.py",
+        ".agent/skills/routing/managing-plane-tasks/references/task_definition_schema.json",
+        ".agent/skills/routing/managing-plane-tasks/scripts/post_solution.py",
+        "scripts/validation/sync_knowledge_counts.py",
+        "tests/validation/test_knowledge_schema.py"
+    ],
+    "changes": [
+        {
+            "category": "Structure",
+            "description": "Reorganized knowledge base into 4 categories: core, agents, tech, integration."
+        },
+        {
+            "category": "Governance",
+            "description": "Made 'priority', 'module', and 'cycle' mandatory in Plane task creation schema."
+        }
+    ],
+    "verification": [
+        {
+            "type": "Automated Tests",
+            "result": "54/54 tests passed across validation/test_knowledge_schema.py and unit/sync/test_sync_knowledge_counts.py"
+        },
+        {
+            "type": "Manual Verification",
+            "result": "Verified recursive directory structure and manifest.json synchronization manually."
+        }
+    ]
+}
 ```
 
 ## Best Practices
 - **Script-First**: ALWAYS use `sync_project_context.py` before work and specialized scripts for all mutations.
 - **Jinja-Only**: NEVER update issue descriptions manually or via raw MCP tools. Use `create_task.py` and `post_solution.py`.
+- **Existing-Only**: NEVER attempt to create new modules, cycles, or labels through this skill. Use the Plane UI or authorized administrative scripts for resource creation.
 - **Context Reuse**: Leverage the UUIDs in `references/project_context.json` to minimize API latency.
 - **Hypothesis-Driven**: Treat each task as a hypothesis — declare which assets solve the problem, then validate with tests.
 - **High-Fidelity Closure**: A task is only **Done** when `post_solution.py` has rendered the architectural decisions and verification proof.

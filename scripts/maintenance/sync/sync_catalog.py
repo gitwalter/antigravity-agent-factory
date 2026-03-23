@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 factory_root = Path(__file__).resolve().parent.parent.parent.parent
-CATALOG_PATH = factory_root / ".agent" / "knowledge" / "skill-catalog.json"
+CATALOG_PATH = factory_root / ".agent" / "knowledge" / "core" / "skill-catalog.json"
 SKILLS_ROOT = factory_root / ".agent" / "skills"
 
 

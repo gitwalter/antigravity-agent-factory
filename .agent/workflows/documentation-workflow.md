@@ -48,15 +48,23 @@ steps:
   - 'Actions:'
   - Use `scripts/validation/validate_readme_structure.py` or equivalent.
   - Run `python scripts/maintenance/audit/link_checker.py --target <new_file>`.
+- actions:
+  - 'Agents: `knowledge-operations-specialist`'
+  - 'Actions:'
+  - **TDD Phase (RED)**: Write a failing schema test in `tests/knowledge/`.
+  - **Verify RED**: Run `pytest tests/knowledge/test_system_structure.py` and confirm failure.
+  - **Implementation Phase (GREEN)**: Use `knowledge-creator` to draft the KI JSON.
+  - **Verify GREEN**: Run structural tests and confirm pass.
+  - **Mandatory Global Sync**: Run `conda run -p D:\Anaconda\envs\cursor-factory python scripts/sync_global_workflows.py`.
   agents:
-  - workflow-quality-specialist
-  goal: Ensure the documentation adheres to factory standards and has functional links.
-  name: Structural Validation
+  - knowledge-operations-specialist
+  goal: Create TDD-verified Knowledge Items (KIs).
+  name: Structural Extraction (TDD-Enforced)
   skills:
-  - verifiying-links
-  - code-review
+  - knowledge-creator
+  - tdd-rigor
   tools:
-  - scripts/maintenance/audit/link_checker.py
+  - write_to_file
 - actions:
   - 'Agents: `project-operations-specialist`'
   - 'Actions:'

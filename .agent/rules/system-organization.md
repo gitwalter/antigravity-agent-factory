@@ -15,10 +15,10 @@ Enforces the structural integrity of the Antigravity architecture and the author
 - **Tools (Tier 3)**:
     - Scripts MUST be located in `scripts/` and organized by domain (e.g., `scripts/ai/rag/`).
 
-## 2. Memory Graph Authority
-- **Reflection**: Any modification to the system architecture (adding a Workflow, Agent, or Skill) MUST be reflected in the Memory Graph.
-- **Verification**: Before using a new tool or skill, verify its status in the Memory Graph (conceptually).
-- **Grounding**: Decisions on "who does what" are derived from the Memory Graph relations (`orchestrates`, `utilizes`, `governed_by`).
+## 2. Structural Authority
+- **Federated Context**: The primary source of truth is the organized filesystem hierarchy (`.agent/rules/`, `.agent/workflows/`, etc.).
+- **Indexing**: All structural changes (adding Workflows, Agents, Skills) SHOULD be indexed in the Memory MCP to facilitate high-speed discovery.
+- **Grounding**: Decisions on orchestration are derived from the Federated Context Protocol.
 
 ## 3. Traceability
 - **Script Usage**: Ideally, all functional code resides in `scripts/` or MCP servers.

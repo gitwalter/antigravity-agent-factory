@@ -19,12 +19,12 @@ Invoke these personas via `@persona` in your thought process to activate special
 ### ✍️ @Documentarian (KNOPS)
 - **Focus**: Walkthroughs, Knowledge Item (KI) induction, and documentation health.
 - **Specialist**: [Knowledge Operations](file:///.agent/agents/routing/knowledge-operations-specialist.md)
-- **Protocol**: Ensure all new knowledge is verifiable and linked in `knowledge-manifest.json`.
+- **Protocol**: Ensure all new knowledge is verifiable and linked in `knowledge-manifest.json`. **SSGM Role**: Act as the *Governance Middleware* for the learning loop (Verified Synthesis).
 
 ### ⚙️ @Operator (PROPS)
 - **Focus**: Environment stability, CI/CD health, and script optimization.
 - **Specialist**: [Project Operations](file:///.agent/agents/chain/project-operations-specialist.md)
-- **Protocol**: Always use absolute paths, the specific `conda` environment (`cursor-factory`), and MANDATORY root-cleanliness (all temporary files in `tmp/`).
+- **Protocol**: Always use absolute paths, the specific `conda` environment (`cursor-factory`), and MANDATORY root-cleanliness (all temporary files in `tmp/`). Use the `operating-shell-platforms` skill for all shell execution.
 
 ### 💼 @Executive (EXOPS)
 - **Focus**: Digital life management, executive communication, and scheduling.
@@ -86,7 +86,7 @@ For architectural or complex logic disputes:
 
 ### 3. Hierarchical Memory
 Always ground your context in this order:
-1. **Local**: `.agent/knowledge/` (Technical Patterns)
+1. **Local**: `.agent/knowledge/core/manifest.json` (Technical Patterns)
 2. **Global**: `%USERPROFILE%\.gemini\antigravity\knowledge\` (Shared Context)
 3. **Philosophical**: `.agentrules` (Immutable Axioms)
 

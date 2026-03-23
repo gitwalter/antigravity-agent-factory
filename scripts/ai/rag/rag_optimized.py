@@ -169,7 +169,7 @@ class OptimizedRAG:
                 vectorstore=self.vectorstore,
                 docstore=self.store,
                 child_splitter=self._child_splitter,
-                parent_splitter=self._parent_splitter,
+                parent_splitter=None,  # We manage parent splitting manually to track IDs for disk persistence
             )
         return self._retriever
 
@@ -819,7 +819,7 @@ RETURN ONLY THE MARKDOWN TOC:
                 doc.metadata["file_hash"] = file_hash
 
         # Split into parent chunks
-        parent_docs = self.retriever.parent_splitter.split_documents(docs)
+        parent_docs = self._parent_splitter.split_documents(docs)
 
         # Propagate hash to split chunks
         for pd in parent_docs:
@@ -926,7 +926,7 @@ RETURN ONLY THE MARKDOWN TOC:
                 doc.metadata["document_title"] = url
 
         # Split into parent chunks first to ensure we have the correct count for IDs
-        parent_docs = self.retriever.parent_splitter.split_documents(docs)
+        parent_docs = self._parent_splitter.split_documents(docs)
 
         # Execute TOC logic for URLs
         toc_content = self._extract_url_toc(url)

@@ -5,7 +5,10 @@ type: agent
 domain: knowledge
 skills:
   - parallel/knowledge-creator
+  - parallel/skill-creator
   - verification/verifying-artifact-structures
+  - verification/tdd-rigor
+  - verification/systematic-debugging
   - routing/operating-github
 model: inherit
 is_background: false

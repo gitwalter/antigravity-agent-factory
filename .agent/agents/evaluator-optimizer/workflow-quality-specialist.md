@@ -4,7 +4,11 @@ description: Designs and enforces workflows, quality gates, testing strategies, 
 type: agent
 domain: quality
 skills:
+  - parallel/workflow-creator
+  - parallel/skill-creator
   - verification/verifying-artifact-structures
+  - verification/tdd-rigor
+  - verification/systematic-debugging
   - management/committing-releases
 model: inherit
 is_background: false

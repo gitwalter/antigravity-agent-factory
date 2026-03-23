@@ -478,7 +478,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | applying-react-patterns | [`.agent/knowledge/applying-react-patterns.json`](../../.agent/knowledge/applying-react-patterns.json) |
 | architecture-patterns | [`.agent/knowledge/architecture-patterns.json`](../../.agent/knowledge/architecture-patterns.json) |
 | artifact-dependencies | [`.agent/knowledge/artifact-dependencies.json`](../../.agent/knowledge/artifact-dependencies.json) |
-| artifact-dependency-map | [`.agent/knowledge/artifact-dependency-map.json`](../../.agent/knowledge/artifact-dependency-map.json) |
+| artifact-dependency-map | [`.agent/knowledge/core/artifact-dependency-map.json`](../../.agent/knowledge/core/artifact-dependency-map.json) |
 | asp-quick-reference | [`.agent/knowledge/asp-quick-reference.json`](../../.agent/knowledge/asp-quick-reference.json) |
 | atomic-skill-patterns | [`.agent/knowledge/atomic-skill-patterns.json`](../../.agent/knowledge/atomic-skill-patterns.json) |
 | augmented-coding-patterns | [`.agent/knowledge/augmented-coding-patterns.json`](../../.agent/knowledge/augmented-coding-patterns.json) |
@@ -556,14 +556,14 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | guardrails-patterns | [`.agent/knowledge/guardrails-patterns.json`](../../.agent/knowledge/guardrails-patterns.json) |
 | haystack-patterns | [`.agent/knowledge/haystack-patterns.json`](../../.agent/knowledge/haystack-patterns.json) |
 | hitl-patterns | [`.agent/knowledge/hitl-patterns.json`](../../.agent/knowledge/hitl-patterns.json) |
-| hugging-face-patterns | [`.agent/knowledge/hugging-face-patterns.json`](../../.agent/knowledge/hugging-face-patterns.json) |
+| hugging-face-patterns | [`.agent/knowledge/huggingface-patterns.json`](../../.agent/knowledge/huggingface-patterns.json) |
 | huggingface-patterns | [`.agent/knowledge/huggingface-patterns.json`](../../.agent/knowledge/huggingface-patterns.json) |
 | human-in-the-loop-patterns | [`.agent/knowledge/human-in-the-loop-patterns.json`](../../.agent/knowledge/human-in-the-loop-patterns.json) |
 | iflow-patterns | [`.agent/knowledge/iflow-patterns.json`](../../.agent/knowledge/iflow-patterns.json) |
 | instructor-patterns | [`.agent/knowledge/instructor-patterns.json`](../../.agent/knowledge/instructor-patterns.json) |
 | java-jvm-containerization-patterns | [`.agent/knowledge/java-jvm-containerization-patterns.json`](../../.agent/knowledge/java-jvm-containerization-patterns.json) |
 | jupyter-notebook-patterns | [`.agent/knowledge/jupyter-notebook-patterns.json`](../../.agent/knowledge/jupyter-notebook-patterns.json) |
-| knowledge-manifest | [`.agent/knowledge/knowledge-manifest.json`](../../.agent/knowledge/knowledge-manifest.json) |
+| knowledge-manifest | [Knowledge Manifest](file:///.agent/knowledge/core/knowledge-manifest.json) |
 | kotest-testing-framework-patterns | [`.agent/knowledge/kotest-testing-framework-patterns.json`](../../.agent/knowledge/kotest-testing-framework-patterns.json) |
 | kotlin-coroutine-patterns | [`.agent/knowledge/kotlin-coroutine-patterns.json`](../../.agent/knowledge/kotlin-coroutine-patterns.json) |
 | kotlin-idioms | [`.agent/knowledge/kotlin-idioms.json`](../../.agent/knowledge/kotlin-idioms.json) |
@@ -591,7 +591,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | mcp-server-selection-guide | [`.agent/knowledge/mcp-server-selection-guide.json`](../../.agent/knowledge/mcp-server-selection-guide.json) |
 | mcp-servers-catalog | [`.agent/knowledge/mcp-servers-catalog.json`](../../.agent/knowledge/mcp-servers-catalog.json) |
 | memory-config | [`.agent/knowledge/memory-config.json`](../../.agent/knowledge/memory-config.json) |
-| memory-patterns | [`.agent/knowledge/memory-patterns.json`](../../.agent/knowledge/memory-patterns.json) |
+| memory-patterns | [`.agent/knowledge/memory-systems-patterns.json`](../../.agent/knowledge/memory-systems-patterns.json) |
 | memory-system-configuration | [`.agent/knowledge/memory-system-configuration.json`](../../.agent/knowledge/memory-system-configuration.json) |
 | microsoft-autogen-patterns | [`.agent/knowledge/microsoft-autogen-patterns.json`](../../.agent/knowledge/microsoft-autogen-patterns.json) |
 | ml-agent-frameworks | [`.agent/knowledge/ml-agent-frameworks.json`](../../.agent/knowledge/ml-agent-frameworks.json) |
@@ -626,6 +626,7 @@ A comprehensive directory of all blueprints, agents, skills, workflows, and temp
 | plane-tasks-methodology | [`.agent/knowledge/plane-tasks-methodology.json`](../../.agent/knowledge/plane-tasks-methodology.json) |
 | pm-metrics | [`.agent/knowledge/pm-metrics.json`](../../.agent/knowledge/pm-metrics.json) |
 | polars-dataframe-patterns | [`.agent/knowledge/polars-dataframe-patterns.json`](../../.agent/knowledge/polars-dataframe-patterns.json) |
+| powershell-patterns | [`.agent/knowledge/tech/powershell-patterns.json`](../../.agent/knowledge/tech/powershell-patterns.json) |
 | prisma-database-patterns | [`.agent/knowledge/prisma-database-patterns.json`](../../.agent/knowledge/prisma-database-patterns.json) |
 | project-info | [`.agent/knowledge/project-info.json`](../../.agent/knowledge/project-info.json) |
 | project-management-metrics-reference | [`.agent/knowledge/project-management-metrics-reference.json`](../../.agent/knowledge/project-management-metrics-reference.json) |

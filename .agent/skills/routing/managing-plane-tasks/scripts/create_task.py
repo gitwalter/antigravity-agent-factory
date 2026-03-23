@@ -1,18 +1,3 @@
-#!/usr/bin/env python3
-"""
-Create Task — Jinja2 Template Renderer for Plane Work Items
-
-Renders a structured HTML description from a JSON input file using the
-work_item.html.j2 template, then creates a work item in Plane via the API.
-
-Usage:
-    conda run -p D:\\Anaconda\\envs\\cursor-factory python \\
-        .agent/skills/routing/managing-plane-tasks/scripts/create_task.py \\
-        --json task_input.json
-
-The JSON input file schema matches task_definition_schema.json.
-"""
-
 import argparse
 import json
 import os
@@ -46,267 +31,99 @@ def load_context():
 
 # Default fallback config
 context = load_context()
-WORKSPACE_SLUG = context.get("WORKSPACE_SLUG", "agent-factory")
-PROJECT_ID = context.get("PROJECT_ID", "e71eb003-87d4-4b0c-a765-a044ac5affbe")
+WORKSPACE_SLUG = "agent-factory"
+PROJECT_ID = "e71eb003-87d4-4b0c-a765-a044ac5affbe"
 API_BASE = (
     f"https://api.plane.so/api/v1/workspaces/{WORKSPACE_SLUG}/projects/{PROJECT_ID}"
 )
 
 
-def get_label_map(headers: dict) -> dict:
-    """Fetch all labels for the project and map name (uppercase) to UUID."""
-    url = f"{API_BASE}/labels/"
-    resp = requests.get(url, headers=headers)
-    if resp.status_code == 200:
-        data = resp.json()
-        if isinstance(data, dict) and "results" in data:
-            results = data["results"]
-        elif isinstance(data, list):
-            results = data
-        else:
-            results = []
-        return {item["name"].upper(): item["id"] for item in results}
-    else:
-        print(f"Warning: Failed to fetch labels ({resp.status_code})")
-        return {}
+def render_template(data: dict) -> str:
+    """Render the work item template using Jinja2."""
+    file_loader = FileSystemLoader(TEMPLATE_DIR)
+    env = Environment(loader=file_loader)
+    template = env.get_template("work_item.html.j2")
 
+    # Process complex fields into a format suitable for the template
+    render_data = data.copy()
+    if isinstance(render_data.get("requirements"), list):
+        render_data["requirements_list"] = render_data["requirements"]
 
-def create_or_get_module(name: str, headers: dict) -> str:
-    """Create a module (Epic) in Plane if it doesn't already exist."""
-    url = f"{API_BASE}/modules/"
-    print(f"Checking for module: {name}")
-    resp = requests.get(url, headers=headers)
-    if resp.status_code == 200:
-        modules = resp.json().get("results", [])
-        for m in modules:
-            if m["name"].lower() == name.lower():
-                return m["id"]
-
-    # Create new module
-    print(f"Creating new module (Epic): {name}")
-    payload = {
-        "name": name,
-        "description": f"Automatically created epic for {name}",
-        "status": "backlog",
-    }
-    resp = requests.post(url, headers=headers, json=payload)
-    if resp.status_code in (200, 201):
-        uid = resp.json().get("id")
-        print(f"Successfully created module '{name}' (UUID: {uid})")
-        return uid
-    else:
-        print(f"Warning: Failed to create module '{name}' ({resp.status_code})")
-        return None
-
-
-def load_input(path: str) -> dict:
-    """Load and validate the JSON input file."""
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    required = [
-        "name",
-        "type",
-        "schema_version",
-        "requirements",
-        "acceptance_criteria",
+    # Provide defaults for list assets to avoid template iteration errors
+    list_fields = [
         "workflows",
         "agents",
         "skills",
+        "rules",
+        "patterns",
+        "blueprints",
+        "templates",
         "tests",
-        "module",
-        "cycle",
-        "priority",
+        "knowledge",
+        "scripts",
+        "memory_queries",
     ]
-    missing = [k for k in required if k not in data]
-    if missing:
-        print(f"Error: Missing required fields: {', '.join(missing)}")
-        sys.exit(1)
+    for field in list_fields:
+        if field not in render_data or render_data[field] is None:
+            render_data[field] = []
 
-    # Defaults for optional fields
-    data.setdefault("rules", [])
-    data.setdefault("patterns", [])
-    data.setdefault("blueprints", [])
-    data.setdefault("templates", [])
-    data.setdefault("knowledge", [])
-    data.setdefault("scripts", [])
-    data.setdefault("memory_queries", [])
-    data.setdefault("notes", "")
-    data.setdefault("priority", "medium")
-    data.setdefault("labels", [data["type"].upper()])
+    # Handle schema_version/type if they exist in schema
+    if "schema_version" in data:
+        render_data["schema_json"] = json.dumps(data, indent=2)
 
-    return data
-
-
-def render_template(data: dict) -> str:
-    """Render the Jinja2 template with the given data."""
-    env = Environment(
-        loader=FileSystemLoader(TEMPLATE_DIR),
-        autoescape=False,
-        trim_blocks=True,
-        lstrip_blocks=True,
-    )
-    # Auto-populate schema_json if not provided, to meet high-fidelity requirements
-    if "schema_json" not in data:
-        # Create a copy without sensitive or internal render-only fields if any
-        schema_data = {k: v for k, v in data.items() if k != "schema_json"}
-        data["schema_json"] = json.dumps(schema_data, indent=2)
-
-    template = env.get_template("work_item.html.j2")
-    return template.render(**data)
-
-
-def create_work_item(data: dict, description_html: str, update_id: str = None) -> dict:
-    """Create or update the work item in Plane via the API."""
-    api_key = os.environ.get("PLANE_API_TOKEN")
-    if not api_key:
-        print("Error: PLANE_API_TOKEN environment variable not set.")
-        sys.exit(1)
-
-    headers = {
-        "x-api-key": api_key,
-        "Content-Type": "application/json",
-    }
-
-    # Resolve label UUIDs from context or fallback to API
-    label_map = context.get("LABELS", {})
-    if not label_map:
-        print("Context labels missing, fetching from API...")
-        label_map = get_label_map(headers)
-
-    # Resolve Cycle and Module UUIDs from Context
-    cycle_id = None
-    cycle_name_or_id = data.get("cycle")
-    if cycle_name_or_id:
-        active_cycle = context.get("ACTIVE_CYCLE", {})
-        if (
-            active_cycle.get("name") == cycle_name_or_id
-            or active_cycle.get("id") == cycle_name_or_id
-        ):
-            cycle_id = active_cycle.get("id")
-        else:
-            cycle_id = cycle_name_or_id
-
-    module_id = None
-    module_name_or_id = data.get("module")
-    if module_name_or_id:
-        active_modules = context.get("ACTIVE_MODULES", {})
-        for name, uid in active_modules.items():
-            if name.lower() == module_name_or_id.lower():
-                module_id = uid
-                break
-        if not module_id:
-            if len(module_name_or_id) < 30:  # Name
-                module_id = create_or_get_module(module_name_or_id, headers)
-            else:  # UUID
-                module_id = module_name_or_id
-
-    payload = {
-        "name": data["name"],
-        "description_html": description_html,
-        "priority": data.get("priority", "medium"),
-        "state": context.get("STATES", {}).get(data.get("state", "TODO").upper()),
-        "start_date": data.get("start_date"),
-        "target_date": data.get("target_date"),
-    }
-
-    # Resolve estimate_point if provided as numeric name
-    raw_estimate = data.get("estimate_point")
-    if raw_estimate:
-        estimate_id = None
-        estimate_map = context.get("ESTIMATES", {})
-        estimate_id = estimate_map.get(str(raw_estimate))
-
-        if not estimate_id:
-            if len(str(raw_estimate)) > 30:  # UUID
-                estimate_id = raw_estimate
-            else:
-                print(
-                    f"Warning: Could not resolve estimate '{raw_estimate}' from context."
-                )
-                estimate_id = raw_estimate
-
-        payload["estimate_point"] = estimate_id
-
-    # Associate with Cycle/Module
-    if cycle_id:
-        payload["cycle"] = cycle_id
-    if module_id:
-        payload["module"] = module_id
-
-    # Resolve input labels to UUIDs
-    label_ids = []
-    for label_name in data.get("labels", []):
-        uid = label_map.get(label_name.upper())
-        if uid:
-            label_ids.append(uid)
-        else:
-            print(f"Warning: Label '{label_name}' not found in project.")
-
-    if label_ids:
-        payload["labels"] = label_ids
-
-    if update_id:
-        url = f"{API_BASE}/work-items/{update_id}/"
-        resp = requests.patch(url, headers=headers, json=payload)
-        action = "Updated"
-    else:
-        url = f"{API_BASE}/work-items/"
-        resp = requests.post(url, headers=headers, json=payload)
-        action = "Created"
-
-    if resp.status_code in (200, 201):
-        result = resp.json()
-        seq = result.get("sequence_id", "?")
-        print(f"\nSUCCESS {action}: AGENT-{seq}")
-        print(f"   Name: {data['name']}")
-        print(f"   URL:  https://app.plane.so/{WORKSPACE_SLUG}/browse/AGENT-{seq}/")
-        return result
-    else:
-        print(f"Error {action.lower()} work item: {resp.status_code}")
-        print(resp.text[:500])
-        sys.exit(1)
+    return template.render(**render_data)
 
 
 def check_artifacts_exist(data: dict) -> list:
-    """
-    Check if referenced artifacts exist in the repo.
-    Returns a list of missing artifacts that need prerequisite issues.
-    """
-    repo_root = os.path.abspath(os.path.join(SKILL_ROOT, "..", "..", "..", ".."))
+    """Validate that declared workflows, agents, and skills exist in the filesystem."""
+    repo_root = os.path.abspath(os.path.join(SKILL_ROOT, "..", "..", ".."))
     missing = []
 
-    checks = {
-        "workflows": ".agent/workflows",
-        "skills": ".agent/skills",
-        "rules": ".agent/rules",
-    }
+    # Check Workflows
+    for wf in data.get("workflows", []):
+        path = os.path.join(repo_root, ".agent", "workflows", f"{wf}.md")
+        if not os.path.exists(path):
+            missing.append({"type": "workflow", "name": wf, "path": path})
 
-    for field, base_dir in checks.items():
-        for asset in data.get(field, []):
-            if asset.startswith("[NEW] "):
-                missing.append({"type": field, "name": asset.replace("[NEW] ", "")})
-                continue
-            # Check if the artifact directory/file exists
-            asset_path = os.path.join(repo_root, base_dir)
-            if os.path.isdir(asset_path):
-                # Check for the asset as a subdirectory or .md file
-                found = False
-                for entry in os.listdir(asset_path):
-                    if entry == asset or entry == f"{asset}.md":
-                        found = True
-                        break
-                    # Check subdirectories
-                    sub = os.path.join(asset_path, entry)
-                    if os.path.isdir(sub):
-                        for sub_entry in os.listdir(sub):
-                            if sub_entry == asset or sub_entry == f"{asset}.md":
-                                found = True
-                                break
-                    if found:
-                        break
-                if not found:
-                    missing.append({"type": field, "name": asset})
+    # Check Agents (handling subdirectories)
+    agent_dirs = [
+        "chain",
+        "routing",
+        "parallel",
+        "orchestrator-workers",
+        "evaluator-optimizer",
+    ]
+    for agent in data.get("agents", []):
+        found = False
+        for d in agent_dirs:
+            path = os.path.join(repo_root, ".agent", "agents", d, f"{agent}.md")
+            if os.path.exists(path):
+                found = True
+                break
+        if not found:
+            missing.append(
+                {"type": "agent", "name": agent, "path": "multiple searchable paths"}
+            )
+
+    # Check Skills
+    for skill in data.get("skills", []):
+        found = False
+        skill_patterns = [
+            "chain",
+            "routing",
+            "parallel",
+            "orchestrator-workers",
+            "evaluator-optimizer",
+        ]
+        for p in skill_patterns:
+            path = os.path.join(repo_root, ".agent", "skills", p, skill, "SKILL.md")
+            if os.path.exists(path):
+                found = True
+                break
+        if not found:
+            missing.append(
+                {"type": "skill", "name": skill, "path": "multiple searchable paths"}
+            )
 
     return missing
 
@@ -324,45 +141,190 @@ def report_missing_artifacts(missing: list):
     print()
 
 
+def create_work_item(data: dict, html: str, update_id: str = None):
+    """Create or update a Plane work item."""
+    api_key = os.environ.get("PLANE_API_TOKEN")
+    if not api_key:
+        print("Error: PLANE_API_TOKEN environment variable not set.")
+        sys.exit(1)
+
+    headers = {
+        "x-api-key": api_key,
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "name": data["name"],
+        "description_html": html,
+        "priority": data.get("priority", "none").lower(),
+        "start_date": data.get("start_date"),
+        "target_date": data.get("target_date"),
+    }
+
+    # Resolve Cycle (by name or UUID)
+    cycle_id = None
+    raw_cycle = data.get("cycle")
+    if raw_cycle:
+        if len(str(raw_cycle)) > 30:  # Likely a UUID
+            cycle_id = raw_cycle
+        else:
+            cycle_id = context.get("CYCLES", {}).get(raw_cycle.upper())
+            if not cycle_id and raw_cycle.lower() == "active":
+                cycle_id = context.get("ACTIVE_CYCLE_ID")
+
+    # Resolve Module (by name or UUID)
+    module_id = None
+    raw_module = data.get("module")
+    if raw_module:
+        if len(str(raw_module)) > 30:
+            module_id = raw_module
+        else:
+            module_id = context.get("MODULES", {}).get(raw_module.upper())
+
+    # Map Estimate Point (numeric name to UUID)
+    raw_estimate = data.get("estimate_point")
+    if raw_estimate:
+        estimate_map = context.get("ESTIMATES", {})
+        estimate_id = estimate_map.get(str(raw_estimate))
+        if not estimate_id:
+            estimate_id = raw_estimate if len(str(raw_estimate)) > 30 else None
+
+        if estimate_id:
+            payload["estimate_point"] = estimate_id
+
+    # Resolve Labels
+    label_map = context.get("LABELS", {})
+    label_ids = []
+    for lbl in data.get("labels", []):
+        uid = label_map.get(lbl.upper())
+        if uid:
+            label_ids.append(uid)
+    if label_ids:
+        payload["labels"] = label_ids
+
+    if update_id:
+        url = f"{API_BASE}/work-items/{update_id}/"
+        resp = requests.patch(url, headers=headers, json=payload)
+        action = "Updated"
+    else:
+        url = f"{API_BASE}/work-items/"
+        resp = requests.post(url, headers=headers, json=payload)
+        action = "Created"
+
+    if resp.status_code in (200, 201):
+        result = resp.json()
+        new_id = result.get("id")
+        seq = result.get("sequence_id", "?")
+
+        # Link extras
+        if cycle_id:
+            requests.post(
+                f"{API_BASE}/cycles/{cycle_id}/work-items/",
+                headers=headers,
+                json={"work_items": [new_id]},
+            )
+        if module_id:
+            requests.post(
+                f"{API_BASE}/modules/{module_id}/work-items/",
+                headers=headers,
+                json={"work_items": [new_id]},
+            )
+
+        print(f"\nSUCCESS {action}: AGENT-{seq}")
+        print(f"   Name: {data['name']}")
+        print(f"   URL: https://app.plane.so/{WORKSPACE_SLUG}/browse/AGENT-{seq}/")
+        return result
+    else:
+        print(f"Error {action.lower()} work item: {resp.status_code}")
+        print(f"   Response: {resp.text}")
+        sys.exit(1)
+
+
 def main():
-    parser = argparse.ArgumentParser(
-        description="Create a Plane work item from a JSON template input."
-    )
-    parser.add_argument("--json", required=True, help="Path to the JSON input file")
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Render to tmp/dry_run.html instead of creating",
-    )
-    parser.add_argument(
-        "--update",
-        help="Update an existing issue by its UUID instead of creating a new one",
-    )
+    parser = argparse.ArgumentParser(description="Create/Update Plane Tasks")
+    parser.add_argument("--json", help="Path to JSON data")
+    parser.add_argument("--update", help="UUID to update")
+    parser.add_argument("--issue-id", help="Alias for update")
+    parser.add_argument("--name", help="Task name")
+    parser.add_argument("--priority", help="Priority")
+    parser.add_argument("--requirements", help="Semicolon-separated")
+    parser.add_argument("--acceptance-criteria", help="Semicolon-separated")
+    parser.add_argument("--workflows", help="Semicolon-separated")
+    parser.add_argument("--agents", help="Semicolon-separated")
+    parser.add_argument("--skills", help="Semicolon-separated")
+    parser.add_argument("--tests", help="Semicolon-separated type:script:exp")
+    parser.add_argument("--start-date", help="YYYY-MM-DD")
+    parser.add_argument("--target-date", help="YYYY-MM-DD")
+    parser.add_argument("--estimate-point", help="Numeric name or UUID")
+    parser.add_argument("--module", help="Name or UUID")
+    parser.add_argument("--cycle", help="Name, UUID or 'active'")
+    parser.add_argument("--notes", help="Notes")
+    parser.add_argument("--dry-run", action="store_true")
+
     args = parser.parse_args()
 
-    # Load input
-    data = load_input(args.json)
+    data = {}
+    if args.json:
+        with open(args.json, "r", encoding="utf-8") as f:
+            data = json.load(f)
 
-    # Check for missing artifacts
+    def split_arg(v):
+        return [x.strip() for x in v.split(";") if x.strip()] if v else None
+
+    # Merge CLI
+    if args.name:
+        data["name"] = args.name
+    if args.priority:
+        data["priority"] = args.priority
+    if args.requirements:
+        data["requirements"] = split_arg(args.requirements)
+    if args.acceptance_criteria:
+        data["acceptance_criteria"] = split_arg(args.acceptance_criteria)
+    if args.workflows:
+        data["workflows"] = split_arg(args.workflows)
+    if args.agents:
+        data["agents"] = split_arg(args.agents)
+    if args.skills:
+        data["skills"] = split_arg(args.skills)
+    if args.start_date:
+        data["start_date"] = args.start_date
+    if args.target_date:
+        data["target_date"] = args.target_date
+    if args.estimate_point:
+        data["estimate_point"] = args.estimate_point
+    if args.module:
+        data["module"] = args.module
+    if args.cycle:
+        data["cycle"] = args.cycle
+    if args.notes:
+        data["notes"] = args.notes
+
+    if args.tests:
+        t_list = []
+        for t_raw in split_arg(args.tests):
+            p = t_raw.split(":", 2)
+            if len(p) == 3:
+                t_list.append({"type": p[0], "script": p[1], "expected": p[2]})
+            else:
+                t_list.append({"type": "UNIT", "script": "", "expected": p[0]})
+        data["tests"] = t_list
+
+    if not data.get("name"):
+        print("Error: Missing task name.")
+        sys.exit(1)
+
     missing = check_artifacts_exist(data)
     report_missing_artifacts(missing)
 
-    # Render template
     html = render_template(data)
 
     if args.dry_run:
-        out_path = os.path.join(
-            SKILL_ROOT, "..", "..", "..", "..", "tmp", "dry_run.html"
-        )
-        out_path = os.path.abspath(out_path)
-        os.makedirs(os.path.dirname(out_path), exist_ok=True)
-        with open(out_path, "w", encoding="utf-8") as f:
-            f.write(html)
-        print(f"\nSUCCESS Dry-run complete. HTML written to:\n   {out_path}\n")
+        print("\nDRY RUN HTML (Trimmed):\n")
+        print(html[:500] + "...")
         return
 
-    # Create or update work item
-    create_work_item(data, html, args.update)
+    update_id = args.update or args.issue_id
+    create_work_item(data, html, update_id)
 
 
 if __name__ == "__main__":

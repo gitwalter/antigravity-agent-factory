@@ -18,6 +18,17 @@ steps:
   skills: []
   tools: []
 - actions:
+  - '**Goal**: Ensure no implemented work is left undocumented.'
+  - Correlate all local changes with Plane issues completed since the last commit.
+  - Generate a technical summary for each linked issue.
+  agents:
+  - '@Architect'
+  goal: ''
+  name: Plane Issue Analysis
+  skills:
+  - managing-plane-tasks
+  tools: []
+- actions:
   - '**Standard**: Follow [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     and Semantic Versioning.'
   - Update `CHANGELOG.md` with all changes since the last release.
@@ -34,7 +45,8 @@ steps:
   - '@Architect'
   goal: Maintain 100% link integrity across all documentation.
   name: Full Link Verification
-  skills: []
+  skills:
+  - operating-shell-platforms
   tools: []
 - actions:
   - '**Focus**: Prioritize index files and root-level documentation.'
@@ -62,7 +74,8 @@ steps:
   - '@Architect'
   goal: ''
   name: Artifact Cache Synchronization
-  skills: []
+  skills:
+  - operating-shell-platforms
   tools: []
 - actions:
   - '**Command**: `python scripts/validation/sync_manifest_versions.py --sync`'
@@ -72,7 +85,8 @@ steps:
   - '@Architect'
   goal: ''
   name: Version Registry Sync
-  skills: []
+  skills:
+  - operating-shell-platforms
   tools: []
 - actions:
   - '**Command**: `python scripts/validation/validate_readme_structure.py --update`'
@@ -81,7 +95,8 @@ steps:
   - '@Architect'
   goal: ''
   name: README Automation
-  skills: []
+  skills:
+  - operating-shell-platforms
   tools: []
 - actions:
   - '**Command**: `python -m pre-commit run --all-files`'
@@ -90,7 +105,8 @@ steps:
   - '@Architect'
   goal: 100% pass before the final commit.
   name: Pre-commit Validation
-  skills: []
+  skills:
+  - operating-shell-platforms
   tools: []
 - actions:
   - '**Command**: `python scripts/maintenance/knowledge_audit.py`'
@@ -99,7 +115,8 @@ steps:
   - '@Architect'
   goal: Maintain high documentation quality and structural integrity.
   name: Knowledge Health Audit
-  skills: []
+  skills:
+  - operating-shell-platforms
   tools: []
 - actions:
   - Is the requirement clear?
@@ -143,10 +160,15 @@ Antigravity workflow for routine repository maintenance, structural auditing, an
 - **Verification**: Ensure no files remain in the root that shouldn't be there.
 - Move misplaced files to correct subdirectories and enforce kebab-case naming.
 
-### 2. Changelog Documentation
+### 2. Plane Issue Analysis
+- **Agents**: `@Architect`
+- **Goal**: Correlate local work with Plane issue states.
+- Perform a federated search for all implemented Plane issues since the last release to ensure 100% documentation coverage.
+
+### 3. Changelog Documentation
 - **Agents**: `@Architect`
 - **Standard**: Follow [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and Semantic Versioning.
-- Update `CHANGELOG.md` with all changes since the last release.
+- Update `CHANGELOG.md` with all changes and correlated Plane issues identified in the previous phase.
 
 ### 3. Full Link Verification
 - **Goal**: Maintain 100% link integrity across all documentation.

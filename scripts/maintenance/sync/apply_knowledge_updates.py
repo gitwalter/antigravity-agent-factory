@@ -62,7 +62,6 @@ knowledge_mapping = {
         "agent-memory-patterns.json",
         "hierarchical-memory-patterns.json",
         "memory-config.json",
-        "memory-patterns.json",
         "memory-system-configuration.json",
         "memory-systems-patterns.json",
     ],

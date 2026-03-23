@@ -150,19 +150,21 @@ class TestASPKnowledgeFilesExist:
 
     def test_asp_knowledge_exists(self, knowledge_dir):
         """Agent society protocol knowledge exists."""
-        assert (knowledge_dir / "agent-society-protocol.json").exists()
+        assert (knowledge_dir / "agents" / "agent-society-protocol.json").exists()
 
     def test_tier_matrix_exists(self, knowledge_dir):
         """Trust tier decision matrix exists."""
-        assert (knowledge_dir / "trust-tier-decision-matrix.json").exists()
+        assert (knowledge_dir / "core" / "trust-tier-decision-matrix.json").exists()
 
     def test_pattern_selection_exists(self, knowledge_dir):
         """Coordination pattern selection exists."""
-        assert (knowledge_dir / "coordination-pattern-selection.json").exists()
+        assert (
+            knowledge_dir / "agents" / "coordination-pattern-selection.json"
+        ).exists()
 
     def test_quick_reference_exists(self, knowledge_dir):
         """ASP quick reference exists."""
-        assert (knowledge_dir / "asp-quick-reference.json").exists()
+        assert (knowledge_dir / "integration" / "asp-quick-reference.json").exists()
 
 
 class TestASPSkillsExist:

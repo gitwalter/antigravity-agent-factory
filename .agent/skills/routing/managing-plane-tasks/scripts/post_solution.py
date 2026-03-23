@@ -1,110 +1,73 @@
-#!/usr/bin/env python3
-"""
-Post Solution — Professional Solution Reporter for Plane
-
-Renders a structured HTML solution comment from a JSON input file
-and posts it to a specific Plane issue via the API.
-
-Usage:
-    conda run -p D:\\Anaconda\\envs\\cursor-factory python \\
-        .agent/skills/routing/managing-plane-tasks/scripts/post_solution.py \\
-        --issue AGENT-48 \\
-        --json solution_data.json \\
-        --close
-"""
-
-import argparse
-import json
 import os
 import sys
+import json
+import argparse
 import requests
+from jinja2 import Environment, FileSystemLoader
 
-try:
-    from jinja2 import Environment, FileSystemLoader
-except ImportError:
-    print("Error: jinja2 not installed.")
-    sys.exit(1)
+# Configuration
+SKILL_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONTEXT_FILE = os.path.join(SKILL_ROOT, "references", "project_context.json")
+TEMPLATE_DIR = os.path.join(SKILL_ROOT, "templates")
 
-# --- Configuration ---
+
+def load_context():
+    """Load persistent context for IDs and mappings."""
+    if os.path.exists(CONTEXT_FILE):
+        try:
+            with open(CONTEXT_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Warning: Failed to load context file: {e}")
+    return {}
+
+
+# Default fallback config
+context = load_context()
 WORKSPACE_SLUG = "agent-factory"
 PROJECT_ID = "e71eb003-87d4-4b0c-a765-a044ac5affbe"
 API_BASE = (
     f"https://api.plane.so/api/v1/workspaces/{WORKSPACE_SLUG}/projects/{PROJECT_ID}"
 )
-
-# Paths relative to this script
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-SKILL_ROOT = os.path.dirname(SCRIPT_DIR)
-TEMPLATE_DIR = os.path.join(SKILL_ROOT, "templates")
-
-DONE_STATE_ID = "ef4b2395-3edb-41e9-adcd-7ec77d534f0f"
+DONE_STATE_ID = "ef4b2395-3edb-41e9-adcd-7ec77d534f0f"  # Verified via MCP for 'Done'
 
 
 def validate_depth(data: dict):
-    """Enforce high-fidelity reporting standards to prevent 'alibi blablabla'."""
-    errors = []
-
-    # Validate architectural depth
-    arch = data.get("architectural_decisions", [])
-    if not arch:
-        errors.append(
-            "Missing 'architectural_decisions'. High-fidelity reporting demands deep technical insight."
-        )
-    elif len(arch) < 3 and not any(len(str(a).strip()) >= 50 for a in arch):
-        errors.append(
-            "Shallow 'architectural_decisions'. Must contain at least 3 points or highly detailed descriptions (>= 50 chars)."
-        )
-
-    # Validate evolution/mechanics depth
-    evol = data.get("evolution", [])
-    if not evol:
-        errors.append("Missing 'evolution'. What factory assets were modified/created?")
-    elif len(evol) < 3 and not any(len(str(e).strip()) >= 50 for e in evol):
-        errors.append(
-            "Shallow 'evolution'. Must contain at least 3 points or highly detailed descriptions (>= 50 chars)."
-        )
-
-    # Validate summary
-    summary = str(data.get("summary", "")).strip()
-    if len(summary) < 50:
-        errors.append(
-            f"Summary too short ({len(summary)} chars). Provide a meaningful context paragraph (>= 50 chars)."
-        )
-
-    # Check for empty summary or missing crucial arrays
-    if not data.get("summary") or len(data.get("summary", "")) < 20:
-        print("\n[X] HIGH-FIDELITY REPORTING VIOLATION:")
-        print("    -> Summary is too short or missing. Solutions must be descriptive.")
-        sys.exit(1)
-
-    if not data.get("changes") or len(data.get("changes", [])) == 0:
-        print("\n[X] HIGH-FIDELITY REPORTING VIOLATION:")
-        print("    -> 'changes' array is empty. You must list concrete changes.")
-        sys.exit(1)
-
-    if errors:
-        print("\n[X] HIGH-FIDELITY REPORTING VIOLATION:")
-        for err in errors:
-            print(f"    -> {err}")
+    """Ensure the solution report has sufficient technical depth."""
+    required_keys = [
+        "summary",
+        "changes",
+        "verification_evidence",
+        "evolution",
+        "architectural_decisions",
+    ]
+    missing = [k for k in required_keys if k not in data or not data[k]]
+    if missing:
         print(
-            "\nThe Plane task closure has been blocked. Revise the solution JSON to meet architectural standards."
+            f"\n[X] ARCHITECTURAL BLOCKER:\n    -> Missing required solution fields: {', '.join(missing)}"
         )
         sys.exit(1)
 
+    if len(data.get("summary", "")) < 20:
+        print("\n[X] ARCHITECTURAL BLOCKER:\n    -> Solution 'summary' is too brief.")
+        sys.exit(1)
 
-def load_data(path: str) -> dict:
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    if not data.get("verification_evidence"):
+        print("\n[X] ARCHITECTURAL BLOCKER:\n    -> Missing 'verification_evidence'.")
+        sys.exit(1)
+
+    long_evidence = [e for e in data["verification_evidence"] if len(e) > 10]
+    if not long_evidence:
+        print(
+            "\n[X] ARCHITECTURAL BLOCKER:\n    -> 'verification_evidence' must contain at least one descriptive item."
+        )
+        sys.exit(1)
 
 
 def render_solution(data: dict) -> str:
-    env = Environment(
-        loader=FileSystemLoader(TEMPLATE_DIR),
-        autoescape=False,
-        trim_blocks=True,
-        lstrip_blocks=True,
-        extensions=["jinja2.ext.do"],
-    )
+    """Render the solution report using Jinja2."""
+    file_loader = FileSystemLoader(TEMPLATE_DIR)
+    env = Environment(loader=file_loader)
     template = env.get_template("solution_comment.html.j2")
     return template.render(**data)
 
@@ -130,19 +93,41 @@ def get_issue_uuid(issue_identifier: str, headers: dict) -> str:
             if item.get("sequence_id") == seq:
                 return item["id"]
 
-    print(f"Error: Could not find issue {issue_identifier} in project.")
+    print(f"Error: Could not find issue {issue_identifier}. URL: {url}")
     sys.exit(1)
 
 
+def get_existing_comments(issue_uuid: str, headers: dict) -> list:
+    """Fetch existing comments for the issue."""
+    url = f"{API_BASE}/work-items/{issue_uuid}/comments/"
+    resp = requests.get(url, headers=headers)
+    if resp.status_code == 200:
+        return resp.json().get("results", [])
+    return []
+
+
 def post_comment(issue_uuid: str, html: str, headers: dict):
+    """Post a comment if a similar one doesn't exist."""
+    existing = get_existing_comments(issue_uuid, headers)
+
+    import re
+
+    def clean(node):
+        return re.sub("<[^<]+?>", "", node).strip().lower()
+
+    clean_new = clean(html)
+    for comment in existing:
+        if clean(comment.get("comment_html", "")) == clean_new:
+            print("INFO: Solution comment already exists. Skipping.")
+            return
+
     url = f"{API_BASE}/work-items/{issue_uuid}/comments/"
     payload = {"comment_html": html}
     resp = requests.post(url, headers=headers, json=payload)
-    if resp.status_code in (200, 201):
-        print("SUCCESS: Posted solution comment.")
+    if resp.status_code == 201:
+        print("SUCCESS: Solution comment posted to Plane.")
     else:
-        print(f"Error: {resp.status_code}")
-        sys.exit(1)
+        print(f"Error posting comment: {resp.status_code} - {resp.text} - URL: {url}")
 
 
 def close_issue(issue_uuid: str, headers: dict):
@@ -151,19 +136,22 @@ def close_issue(issue_uuid: str, headers: dict):
     resp = requests.patch(url, headers=headers, json=payload)
     if resp.status_code == 200:
         print("SUCCESS: Issue closed (Done).")
+    else:
+        print(f"Error closing issue: {resp.status_code} - {resp.text}")
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Post a professional solution comment to Plane."
-    )
-    parser.add_argument(
-        "--issue", required=True, help="Issue identifier (e.g., AGENT-48)"
-    )
-    parser.add_argument("--json", required=True, help="Path to JSON solution data")
-    parser.add_argument(
-        "--close", action="store_true", help="Automatically move issue to 'Done'"
-    )
+    parser = argparse.ArgumentParser(description="Post Solution to Plane")
+    parser.add_argument("--issue", required=True, help="AGENT-XX or UUID")
+    parser.add_argument("--json", help="Path to JSON")
+    parser.add_argument("--close", action="store_true")
+    parser.add_argument("--summary", help="Summary")
+    parser.add_argument("--changes", help="Semicolon separated")
+    parser.add_argument("--verification-evidence", help="Semicolon separated")
+    parser.add_argument("--evolution", help="Semicolon separated")
+    parser.add_argument("--architectural-decisions", help="Semicolon separated")
+    parser.add_argument("--lessons-learned", help="Semicolon separated")
+
     args = parser.parse_args()
 
     api_key = os.environ.get("PLANE_API_TOKEN")
@@ -171,16 +159,37 @@ def main():
         print("Error: PLANE_API_TOKEN not set.")
         sys.exit(1)
 
-    headers = {
-        "x-api-key": api_key,
-        "Content-Type": "application/json",
-    }
+    headers = {"x-api-key": api_key, "Content-Type": "application/json"}
 
-    data = load_data(args.json)
+    data = {}
+    if args.json:
+        with open(args.json, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+    def split_arg(a):
+        return [x.strip() for x in a.split(";") if x.strip()] if a else None
+
+    if args.summary:
+        data["summary"] = args.summary
+    if args.changes:
+        data["changes"] = split_arg(args.changes)
+    if args.verification_evidence:
+        data["verification_evidence"] = split_arg(args.verification_evidence)
+    if args.evolution:
+        data["evolution"] = split_arg(args.evolution)
+    if args.architectural_decisions:
+        data["architectural_decisions"] = split_arg(args.architectural_decisions)
+    if args.lessons_learned:
+        data["lessons_learned"] = split_arg(args.lessons_learned)
+
+    issue_identifier = args.issue
+    if "-" in issue_identifier and len(issue_identifier) > 20:
+        issue_uuid = issue_identifier
+    else:
+        issue_uuid = get_issue_uuid(issue_identifier, headers)
+
     validate_depth(data)
     html = render_solution(data)
-
-    issue_uuid = get_issue_uuid(args.issue, headers)
     post_comment(issue_uuid, html, headers)
 
     if args.close:

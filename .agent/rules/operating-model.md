@@ -20,14 +20,18 @@ The sequence of navigation and execution is strictly defined as follows:
 - **Purpose**: Defines the *What* and *Why*.
 - **Contents**: The task schema dictates the requirements, acceptance criteria, and the initial *hypothesis* of which factory assets (workflows, skills, scripts) are required.
 
-### Phase 2: Context Engineering (Memory-First Navigation)
-- **Origin**: Before taking any action, query the **Memory MCP**.
-- **Purpose**: Builds *Situational Awareness*.
-- **Action**: You must understand the relationships and current state of the factory.
-  - *Example*: `mcp_memory_open_nodes({"names": ["System_Consciousness"]})`
-  - *Example*: `mcp_memory_search_nodes({"query": "<task specific entities>"})`
-- **Idempotency Verification**: Before generating *any* new structural asset (Plane issue, skill, workflow), search the project for an existing asset with the same purpose. Duplicate creation is a violation of A5 (Consistency) and structural memory.
-- **Why**: Memory serves as the primary compass. It tells you *where* things are and *how* they relate before you start digging.
+### Phase 2: Federated Context Engineering
+- **Origin**: Before taking any action, assemble your context from the factory's structural knowledge.
+- **Purpose**: Builds *Situational Awareness* and *Grounding*.
+- **Action**: Use the **Federated Context Protocol** to gather information from:
+  - **Rules**: `.agent/rules/` for behavioral and architectural governance.
+  - **Workflows**: `.agent/workflows/` for strategic SOPs.
+  - **Skills**: `.agent/skills/` for tactical tool usage and script syntax.
+  - **Knowledge Items**: `.agent/knowledge/` and KI Summaries for verified patterns.
+  - **RAG**: `antigravity-rag` for deep technical search.
+- **Memory MCP**: Use as a secondary relational index to discover connections or long-term operational state.
+- **Idempotency Verification**: Before generating *any* new structural asset, search the project for an existing asset with the same purpose.
+- **Why**: Context is federated across the factory. No single tool contains the whole truth; the filesystem and its organized hierarchy are the primary anchors.
 
 ### Phase 3: Structural Navigation (Workflows, Skills, Agents)
 - **Origin**: Using the context from Phase 2, consult the active assets.
@@ -53,4 +57,4 @@ The sequence of navigation and execution is strictly defined as follows:
 
 ## Summary Axiom
 
-**"We are always in workflows using agents and skills. We use the memory-mcp as our primary navigation tool. Workflows, skills, and agents help as secondary navigation tools to do the concrete work. Concrete work *always* comes from a task, usually in Plane."**
+**"We are always in workflows using agents and skills. We use the Federated Context Protocol as our primary navigation tool, leveraging the organized assets of the Agent Factory. Workflow SOPs, skills, rules, and agents ensure precise execution. Memory MCP serves as a relational index for optimization and long-term state."**

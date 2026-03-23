@@ -7,6 +7,7 @@ Enforces technical best practices and platform-specific reliability standards.
 - **Python**: ALWAYS use `python` for all Python-based tool calls. NEVER assume the system python is correct.
 - **NEVER** modify `.cursorrules` (use `.agent/rules/` instead).
 - **Shell**: Use environment-appropriate shell syntax (PowerShell for Windows, Bash/Zsh for Linux).
+    - **Grounding**: Before executing *any* shell-based command, agents MUST ground themselves in `.agent/knowledge/tech/powershell-patterns.json` to ensure exact syntax and environment compliance.
 - **Cross-Platform Reliability**:
     - Use `;` for command chaining in PowerShell.
     - Use `&&` for command chaining in Bash.

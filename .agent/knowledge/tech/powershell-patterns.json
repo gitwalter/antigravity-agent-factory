@@ -1,0 +1,47 @@
+{
+  "id": "powershell-patterns",
+  "name": "PowerShell & Shell Usage Patterns",
+  "version": "1.0.0",
+  "category": "Technology",
+  "description": "Standardized patterns for executing commands, managing environments, and handling filesystem operations in the Antigravity Agent Factory Windows/PowerShell environment.",
+  "patterns": {
+    "python_execution": {
+      "description": "Consistent Python execution using the project's specific conda environment.",
+      "implementation": "conda run -p D:\\Anaconda\\envs\\cursor-factory python <script_path> <args>",
+      "alternative": "D:\\Anaconda\\envs\\cursor-factory\\python.exe <script_path> <args>",
+      "note": "Avoid using 'python' or 'python3' directly as it may resolve to the wrong system interpreter."
+    },
+    "command_chaining": {
+      "description": "Executing multiple commands sequentially in a single run_command call.",
+      "implementation": "<command1> ; <command2> ; <command3>",
+      "example": "Remove-Item tmp/old.py -Force ; python scripts/gen.py",
+      "note": "In PowerShell, use the semicolon (;) for chaining."
+    },
+    "path_handling": {
+      "description": "Robust path referencing to avoid 'file not found' errors.",
+      "best_practice": "Use absolute paths or paths relative to the repository root (d:\\Users\\wpoga\\Documents\\Python Scripts\\antigravity-agent-factory).",
+      "normalization": "Normalize slashes to backslashes (\\) for native Windows commands, though PowerShell handles forward slashes (/) for many operations."
+    },
+    "file_operations": {
+      "delete": "Remove-Item <path> -Force -Recurse",
+      "move": "Move-Item -Path <src> -Destination <dest> -Force",
+      "copy": "Copy-Item -Path <src> -Destination <dest> -Recurse",
+      "search": "Get-ChildItem -Path <dir> -Filter <pattern> -Recurse"
+    },
+    "environment_variables": {
+      "set": "$env:VARIABLE_NAME = 'value'",
+      "get": "$env:VARIABLE_NAME"
+    }
+  },
+  "best_practices": [
+    "Always wrap paths with spaces in double quotes.",
+    "Use -Force for deletions to bypass confirmation prompts.",
+    "Explicitly reconfigure encoding if printing non-ASCII characters to the terminal (sys.stdout.reconfigure(encoding='utf-8')).",
+    "Prefer 'conda run' for script execution to ensure the environment is correctly activated including environment variables."
+  ],
+  "anti_patterns": [
+    "Using '&&' for chaining (this is cmd.exe syntax, not native to PowerShell without specific wrappers).",
+    "Assuming the existence of Unix utilities like 'rm', 'mv', 'cp', or 'fd' unless verified via Get-Command.",
+    "Using relative paths like './' without being certain of the Current Working Directory (CWD)."
+  ]
+}

@@ -48,8 +48,8 @@ def mock_rag():
         rag._vectorstore = MagicMock()
         rag._store = MagicMock()
         rag._retriever = MagicMock()
-        rag._parent_splitter = None
-        rag._child_splitter = None
+        rag._parent_splitter = MagicMock()
+        rag._child_splitter = MagicMock()
         return rag
 
 
@@ -140,8 +140,7 @@ class TestIngestDeduplication:
 
         # Mock the actual ingestion pipeline
         mock_rag._extract_toc = MagicMock(return_value=None)
-        mock_rag.retriever.parent_splitter = MagicMock()
-        mock_rag.retriever.parent_splitter.split_documents = MagicMock(return_value=[])
+        mock_rag._parent_splitter.split_documents = MagicMock(return_value=[])
         mock_rag.retriever.add_documents = MagicMock()
         mock_rag._persist_to_disk = MagicMock()
 
@@ -159,8 +158,7 @@ class TestIngestDeduplication:
         mock_rag._extract_toc = MagicMock(return_value=None)
 
         captured_docs = []
-        mock_rag.retriever.parent_splitter = MagicMock()
-        mock_rag.retriever.parent_splitter.split_documents = MagicMock(
+        mock_rag._parent_splitter.split_documents = MagicMock(
             return_value=[MagicMock(metadata={"source": temp_pdf})]
         )
         mock_rag.retriever.add_documents = MagicMock(

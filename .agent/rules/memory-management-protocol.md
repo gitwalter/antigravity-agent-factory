@@ -1,20 +1,18 @@
-# Rule: Memory Management Protocol (MMP)
+# Rule: Memory & Relational Indexing Protocol (MRIP)
 
 ## Purpose
-Establishes a systematic, deterministic, and performance-enhancing protocol for all Memory MCP interactions within the Antigravity Agent Factory. This represents the **Memory-First Orientation** required for all non-trivial tasks.
+Establishes a systematic protocol for utilizing the Memory MCP as a **relational index** for the Antigravity Agent Factory. While the Federated Context is our primary orientation, the Memory MCP provides high-speed discovery and relational mapping.
 
-## 1. The Memory-First Protocol (Mandatory Orientation)
-Before executing any non-trivial action, agents MUST query the Memory MCP for context. Memory queries take <100ms, whereas file lookups take >500ms. **Memory is the fast path to correct action.**
+## 1. The Relational Indexing Protocol (Optimization)
+Before executing complex navigation, agents MAY query the Memory MCP to discover relationships that are not immediately obvious in the filesystem. Memory is an *optimization* layer for situational awareness.
 
-### When to Query
+### When to Query (Secondary Navigation)
 | Trigger | Query | Why |
 | :--- | :--- | :--- |
-| **Before running a script** | `<script_name> commands` | Get current syntax (may have changed) |
-| **Starting maintenance** | `Self_Optimization` | Know which tools exist |
-| **Selecting a workflow** | `workflow` or `<task_intent> workflow` | Find the correct orchestration path |
-| **Discovering capabilities** | `catalog` or `Human_Readable_Catalog` | Read `docs/reference/catalog.md` for assets |
-| **Creating knowledge/skills** | `<topic>` | Avoid duplicates |
-| **Unsure which rule applies** | `Rules_Index` | Find the right rule |
+| **Discovering relationships** | `mcp_memory_search_nodes` | Find connections between disparate assets |
+| **Fast Lookup** | Entity deterministic path | Skip multi-level directory listing |
+| **Operational State** | `TASK:[IssueKey]` | Retrieve session-specific transient notes |
+| **Duplication Check** | `<topic>` | Verify if a concept is already indexed |
 
 ## 2. Deterministic Identifiers & Search Strategy
 To eliminate failed reads and "useless access", agents MUST adopt a **Search-then-Open** strategy:

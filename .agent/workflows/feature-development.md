@@ -14,10 +14,11 @@ steps:
 - actions:
   - 'Agents: `project-operations-specialist`'
   - 'Actions:'
-  - Use `create_task.py` to establish the `FEATURE` issue in Plane.
+  - Check if an issue exists in Plane.
+  - If not, STRICTLY use the `managing-plane-tasks` skill to create an issue via the Jinja template and `create_task.py`. DO NOT use direct MCP for task creation.
   - Run `sync_project_context.py` to ensure local UUIDs are current.
-  - Memory Hook: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:feature-development`.
-  - Save-on-Discover: Register missing SOP/SKILL nodes if found in local filesystem.
+  - **Memory Hook**: Call `mcp_memory_open_nodes` for `TASK:[IssueKey]` and `SOP:feature-development`.
+  - **Save-on-Discover**: Register missing SOP/SKILL nodes if found in local filesystem.
   agents:
   - project-operations-specialist
   goal: Establish Plane tracking for the feature using standardized scripts.
@@ -97,16 +98,13 @@ steps:
 - actions:
   - 'Agents: `project-operations-specialist`, `knowledge-operations-specialist`'
   - 'Actions:'
+  - Update the status in Plane to 'Done'.
   - Close the Plane issue via `post_solution.py` using the rendered Jinja2 template.
-  - Ensure all architectural decisions and verification proofs are captured in the
-    solution.
+  - Ensure all architectural decisions and verification proofs are captured in the solution.
   - Memory Hook: Synthesize learnings into a `KI:` node and link to the `TASK:`.
   - 'Phase Gates: Never skip a phase without explicit justification in the `walkthrough.md`.'
   - 'Relative Links: All documented links must use root-relative paths.'
   - 'Evidence First: Use screenshots/logs in documentation.'
-  - '`sdlc-meta-orchestrator.md`'
-  - '`generating-documentation.md`'
-  - '"Execute developing-ai-agents.md"'
   agents:
   - project-operations-specialist
   - knowledge-operations-specialist
@@ -160,15 +158,15 @@ Antigravity workflow for standard feature development cycle. Standardized for ID
 - **Actions**:
 - Review `knowledge/prd.md` and `knowledge/nfr.md`.
 
-### 3. Implementation & Unit Testing
-- **Goal**: Safe and axiomatic code generation following TDD principles.
+### 3. Implementation & Unit Testing (TDD-Enforced)
+- **Goal**: Safe and axiomatic code generation following the Iron Law of TDD.
 - **Agents**: `python-ai-specialist`
-- **Skills**: developing-ai-agents, developing-ai-agents
+- **Skills**: tdd-rigor, systematic-debugging, agent-creator, workflow-creator
 - **Tools**: run_command
-- **Agents**: `python-ai-specialist`
 - **Actions**:
-- Use the appropriate builder agent (e.g., `python-ai-specialist`).
-- Follow the `developing-ai-agents.md` where applicable.
+- **Verify RED**: Write and run failing tests for all new components.
+- **Verify GREEN**: Implement minimal logic to pass.
+- **Mandatory Global Sync**: Run `sync_global_workflows.py` if agents or skills were created.
 
 ### 4. Integration & System Testing
 - **Goal**: Verify the feature works within the larger system architecture.

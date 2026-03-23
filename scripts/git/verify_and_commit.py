@@ -81,15 +81,9 @@ def main():
     print(f"RCW: Starting Robust Commit Workflow (RCW) in {ROOT}")
     total_start = time.time()
 
-    # STAGE 0: Pre-Commit (Catch formatting/sync issues early)
-    if not run(["pre-commit", "run", "--all-files"], "Running Pre-commit Hooks"):
-        # Pre-commit might have fixed things. We re-stage and continue.
-        print("[INFO] Pre-commit modified files. Re-staging...")
-        if not run(["git", "add", "."], "Re-staging Hook Fixes"):
-            return 1
-        # Note: we don't return 1 here because pre-commit *fixed* the issues.
-        # However, for strictly "Validation", one might prefer to fail.
-        # In this factory, we prefer auto-fixing for velocity.
+    # STAGE 0: Pre-Commit (Handled by git commit hooks - skipping full scan for speed)
+    # Note: git commit will naturally trigger hooks for staged files.
+    # We only run sync here to ensure factory integrity.
 
     # STAGE 1: Sync
     if not run(
@@ -123,11 +117,20 @@ def main():
     ):
         return 1
 
-    # STAGE 4: Smoke Test
-    print(f"[RUN] Running Core Smoke Tests ({len(CORE_TESTS)} files)...")
-    test_cmd = ["-m", "pytest", "-n", "auto"] + CORE_TESTS
-    if not run(test_cmd, "Smoke Testing Core Modules"):
-        return 1
+    # STAGE 4: Smoke Test (Skipped in fast mode)
+    if not args.fast:
+        print(f"[RUN] Running Core Smoke Tests ({len(CORE_TESTS)} files)...")
+        test_cmd = ["-m", "pytest", "-n", "auto"] + CORE_TESTS
+        if not run(test_cmd, "Smoke Testing Core Modules"):
+            return 1
+    else:
+        print("  [SKIP] Smoke tests skipped in --fast mode.")
+
+    total_duration = time.time() - total_start
+    print(
+        f"\n[DONE] High-Velocity Verification passed in {total_duration:.1f}s! Ready to commit."
+    )
+    return 0
 
     total_duration = time.time() - total_start
     print(

@@ -58,8 +58,8 @@ class TestCountKnowledgeFiles:
         count = count_knowledge_files()
         assert count == 1
 
-    def test_excludes_subdirectories(self, tmp_path, monkeypatch):
-        """Should not count files in subdirectories."""
+    def test_excludes_subdirectories_is_false(self, tmp_path, monkeypatch):
+        """Should count files in subdirectories recursively."""
         monkeypatch.chdir(tmp_path)
 
         knowledge_dir = tmp_path / ".agent" / "knowledge"
@@ -71,7 +71,7 @@ class TestCountKnowledgeFiles:
         (subdir / "file2.json").write_text("{}", encoding="utf-8")
 
         count = count_knowledge_files()
-        assert count == 1
+        assert count == 2
 
     def test_returns_zero_for_missing_dir(self, tmp_path, monkeypatch):
         """Should return 0 if knowledge/ doesn't exist."""
@@ -91,7 +91,8 @@ class TestGetManifestCount:
         knowledge_dir = tmp_path / ".agent" / "knowledge"
         knowledge_dir.mkdir(parents=True)
 
-        manifest = knowledge_dir / "manifest.json"
+        manifest = knowledge_dir / "core" / "manifest.json"
+        manifest.parent.mkdir(parents=True, exist_ok=True)
         manifest.write_text(
             json.dumps({"statistics": {"total_files": 42}}), encoding="utf-8"
         )
@@ -113,7 +114,8 @@ class TestGetManifestCount:
         knowledge_dir = tmp_path / ".agent" / "knowledge"
         knowledge_dir.mkdir(parents=True)
 
-        manifest = knowledge_dir / "manifest.json"
+        manifest = knowledge_dir / "core" / "manifest.json"
+        manifest.parent.mkdir(parents=True, exist_ok=True)
         manifest.write_text('{"files": {}}', encoding="utf-8")
 
         count = get_manifest_count()
@@ -170,7 +172,8 @@ class TestUpdateManifest:
         knowledge_dir = tmp_path / ".agent" / "knowledge"
         knowledge_dir.mkdir(parents=True)
 
-        manifest = knowledge_dir / "manifest.json"
+        manifest = knowledge_dir / "core" / "manifest.json"
+        manifest.parent.mkdir(parents=True, exist_ok=True)
         original = json.dumps({"statistics": {"total_files": 10}})
         manifest.write_text(original, encoding="utf-8")
 
@@ -186,7 +189,8 @@ class TestUpdateManifest:
         knowledge_dir = tmp_path / ".agent" / "knowledge"
         knowledge_dir.mkdir(parents=True)
 
-        manifest = knowledge_dir / "manifest.json"
+        manifest = knowledge_dir / "core" / "manifest.json"
+        manifest.parent.mkdir(parents=True, exist_ok=True)
         manifest.write_text(
             json.dumps({"statistics": {"total_files": 10}}), encoding="utf-8"
         )
@@ -204,7 +208,8 @@ class TestUpdateManifest:
         knowledge_dir = tmp_path / ".agent" / "knowledge"
         knowledge_dir.mkdir(parents=True)
 
-        manifest = knowledge_dir / "manifest.json"
+        manifest = knowledge_dir / "core" / "manifest.json"
+        manifest.parent.mkdir(parents=True, exist_ok=True)
         manifest.write_text(
             json.dumps({"statistics": {"total_files": 10}}), encoding="utf-8"
         )
@@ -265,7 +270,8 @@ class TestSyncKnowledgeCounts:
         (knowledge_dir / "file2.json").write_text("{}", encoding="utf-8")
 
         # Create manifest with wrong count
-        manifest = knowledge_dir / "manifest.json"
+        manifest = knowledge_dir / "core" / "manifest.json"
+        manifest.parent.mkdir(parents=True, exist_ok=True)
         manifest.write_text(
             json.dumps({"statistics": {"total_files": 10}}), encoding="utf-8"
         )
@@ -293,7 +299,8 @@ class TestSyncKnowledgeCounts:
         (knowledge_dir / "file2.json").write_text("{}", encoding="utf-8")
 
         # Create manifest with correct count (2 = file1.json + file2.json, NOT including manifest.json)
-        manifest = knowledge_dir / "manifest.json"
+        manifest = knowledge_dir / "core" / "manifest.json"
+        manifest.parent.mkdir(parents=True, exist_ok=True)
         manifest.write_text(
             json.dumps({"statistics": {"total_files": 2}}), encoding="utf-8"
         )
@@ -325,8 +332,10 @@ class TestIntegration:
         assert (factory_root / ".agent" / "knowledge").exists()
 
     def test_manifest_exists(self, factory_root):
-        """knowledge/manifest.json should exist."""
-        assert (factory_root / ".agent" / "knowledge" / "manifest.json").exists()
+        """knowledge/core/manifest.json should exist."""
+        assert (
+            factory_root / ".agent" / "knowledge" / "core" / "manifest.json"
+        ).exists()
 
     def test_knowledge_files_md_exists(self, factory_root):
         """docs/reference/KNOWLEDGE_FILES.md should exist."""

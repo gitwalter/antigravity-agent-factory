@@ -522,11 +522,18 @@ Good luck!
 
 ## Process
 
-1. Gather intent and requirements from the user
-2. Research existing artifacts for patterns and references
-3. Draft the artifact following the schema and structure guidelines
-4. Validate using `quick_validate.py`
-5. Iterate based on feedback until compliant and complete
+1.  **TDD Phase (RED)**:
+    - Write a failing test case in `tests/validation/` for the new skill.
+    - **Verify RED**: Run the test and confirm it catches the missing skill behavior.
+2.  **Implementation Phase (GREEN)**:
+    - Draft the `SKILL.md` following the schema and structure guidelines.
+    - Write minimal instructions to pass the test.
+3.  **Validation Phase**:
+    - Validate using `quick_validate.py`.
+    - **Verify GREEN**: Run the test again and confirm pass.
+4.  **REFACTOR & Sync**:
+    - Iterate based on feedback until compliant and complete.
+    - **Mandatory Global Sync**: Run `conda run -p D:\Anaconda\envs\cursor-factory python scripts/sync_global_workflows.py`.
 
 ## Best Practices
 

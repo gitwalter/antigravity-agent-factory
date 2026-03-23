@@ -22,6 +22,7 @@ class TestTierSelectionKnowledge:
             Path(__file__).parent.parent.parent
             / ".agent"
             / "knowledge"
+            / "core"
             / "trust-tier-decision-matrix.json"
         )
         with open(knowledge_path, "r", encoding="utf-8") as f:
@@ -115,6 +116,7 @@ class TestCoordinationPatternKnowledge:
             Path(__file__).parent.parent.parent
             / ".agent"
             / "knowledge"
+            / "agents"
             / "coordination-pattern-selection.json"
         )
         with open(knowledge_path, "r", encoding="utf-8") as f:
@@ -175,6 +177,7 @@ class TestQuickReferenceKnowledge:
             Path(__file__).parent.parent.parent
             / ".agent"
             / "knowledge"
+            / "integration"
             / "asp-quick-reference.json"
         )
         with open(knowledge_path, "r", encoding="utf-8") as f:
