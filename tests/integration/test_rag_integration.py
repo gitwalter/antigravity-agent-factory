@@ -2,7 +2,6 @@ import pytest
 import os
 import sys
 import time
-from fastmcp import FastMCP
 
 # Add project root to path
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))

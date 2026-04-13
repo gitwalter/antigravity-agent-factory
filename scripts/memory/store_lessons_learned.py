@@ -33,14 +33,14 @@ def store_learnings():
         memory_type="memory_entity",
     )
 
-    # 4. Episodic (Fact of the fix)
+    # 5. CI Dependency Learning
     store.add_memory(
-        content="Successfully refactored MemoryStore and EmbeddingService to use lazy loading. Verified near-instant (0.06s) import time for MemoryStore.",
-        metadata={"source": "agent", "type": "fix_verification"},
-        memory_type="episodic",
+        content="CI Hygiene Protocol: Verify that all imports in integration tests are backed by requirements.txt or requirements-dev.txt. Unused imports of prototyping libraries (like fastmcp) can break CI pipelines.",
+        metadata={"category": "lesson_learned", "topic": "CI/CD"},
+        memory_type="memory_semantic",
     )
 
-    print("Successfully stored 4 lesson-learned memories across tiers.")
+    print("Successfully stored 5 lesson-learned memories across tiers.")
 
 
 if __name__ == "__main__":

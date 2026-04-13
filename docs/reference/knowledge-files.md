@@ -1,6 +1,6 @@
 <!-- The count above is automatically updated by scripts/validation/sync_knowledge_counts.py -->
 2:
-3: The factory currently includes **287 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
+3: The factory currently includes **288 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
 4:
 5: | File | Type | Description |
 6: |------|------|-------------|
@@ -68,6 +68,7 @@
 | [business-automation-patterns](file:///.agent/knowledge/integration/business-automation-patterns.json) |  |  |
 | [caching-patterns](file:///.agent/knowledge/tech/caching-patterns.json) |  |  |
 | [cdhdr-object-classes](file:///.agent/knowledge/integration/cdhdr-object-classes.json) |  |  |
+| [ci-hygiene-patterns](file:///.agent/knowledge/integration/ci-hygiene-patterns.json) |  |  |
 | [cicd-patterns](file:///.agent/knowledge/integration/cicd-patterns.json) |  |  |
 | [claude-agentic-patterns](file:///.agent/knowledge/agents/claude-agentic-patterns.json) |  |  |
 | [cloud-ml-deployment](file:///.agent/knowledge/integration/cloud-ml-deployment.json) |  |  |

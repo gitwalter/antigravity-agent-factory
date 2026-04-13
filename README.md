@@ -119,7 +119,7 @@ This reference implementation currently includes a comprehensive set of verified
 - **Agents**: 10 active agents in `.agent/agents` (14 agents)
 - **Skills**: 211 specialized skills in `.agent/skills` (230 skills)
 - **Blueprints**: 34 project blueprints in `.agent/blueprints` (34 blueprints)
-- **Knowledge**: 278 JSON knowledge files in `.agent/knowledge` (287 files)
+- **Knowledge**: 278 JSON knowledge files in `.agent/knowledge` (288 files)
 - **Patterns**: 113 architectural patterns in `.agent/patterns` (116 patterns)
 - **Templates**: 309 Jinja2 templates in `.agent/templates` (309 templates)
 - **Verification**: 83 automated validation tests (93 tests)
