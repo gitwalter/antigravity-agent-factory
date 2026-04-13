@@ -1,0 +1,42 @@
+{
+  "$schema": "../../schemas/knowledge-file.schema.json",
+  "id": "cognitive-memory-patterns",
+  "name": "Cognitive Memory Patterns",
+  "version": "1.0.0",
+  "category": "core",
+  "description": "Implementation patterns for the Dual-Storage Cognitive Memory system mapping SQLite exact-match and Qdrant semantic/procedural tiers.",
+  "patterns": {
+    "dual_storage_dispatch": {
+      "context": "When deciding where to store a piece of information",
+      "implementation": "1. Route exact event logs (tool traces, chat lines) to SQLite.\n2. Route extracted entities, summaries, workflows, and global knowledge to Qdrant.",
+      "rationale": "Keeps the vector index clean from noise, reserving semantic space for conceptual insights."
+    },
+    "parent_child_rag": {
+      "context": "Retrieving long workflows or structured documents.",
+      "implementation": "Index small 'child' chunks representing steps or frontmatter summaries, but return the full 'parent' markdown in metadata payload.",
+      "rationale": "Prevents truncation of syntax context when agent is following complex step-based execution."
+    },
+    "decay_pruning": {
+      "context": "Preventing hallucination from stale, contradictory memories.",
+      "implementation": "Use Weibull-decay (time-based heuristic) combined with Intent-Aware Filtering via the LLM to selectively mask or delete low-relevance summaries.",
+      "rationale": "Axiom A5 (Consistency) - older episodic memories must decay to make room for newer validated patterns."
+    }
+  },
+  "best_practices": [
+    "Always reference memory_config.py for COLLECTION constants rather than hardcoding string names.",
+    "Do not execute blocking LLM syntheses inside IDE synchronous hooks. Push raw JSONL events first, process asynchronously.",
+    "Verify extraction logic using the CLI before committing new pipelines."
+  ],
+  "anti_patterns": [
+    {
+      "anti_pattern": "Storing raw conversation logs in Vector Space",
+      "consequence": "Dilutes the semantic layout, creating high overlap between disparate user sessions.",
+      "solution": "Push raw logs to MemoryDatabase (SQL) instead."
+    },
+    {
+      "anti_pattern": "Directly modifying Qdrant state without governance gates",
+      "consequence": "Allows hallucinations or incorrect behavior to corrupt the global knowledge baseline.",
+      "solution": "Run proposals through the WriteValidationGate to ensure Axiomatic alignment."
+    }
+  ]
+}

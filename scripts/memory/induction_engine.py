@@ -41,6 +41,11 @@ from scripts.memory.memory_store import (
     Memory,
     get_memory_store,
 )
+from scripts.memory.memory_config import (
+    COLLECTION_SEMANTIC,
+    COLLECTION_PROCEDURAL,
+    COLLECTION_ENTITY,
+)
 from scripts.guardian.mutability_guard import MutabilityGuard, get_mutability_guard
 from scripts.memory.episodic_logger import get_episodic_logger
 from scripts.memory.governance_gates import ReadFilteringGate, WriteValidationGate
@@ -77,30 +82,35 @@ OBSERVATION_TYPES = {
         "confidence": 0.95,
         "proposal_template": "You corrected me to {content}. Remember this?",
         "scope": "global",
+        "target_collection": COLLECTION_SEMANTIC,
     },
     "explicit_teaching": {
         "description": "User explicitly taught something",
         "confidence": 1.0,
         "proposal_template": "You taught me: {content}. Store as knowledge?",
         "scope": "global",
+        "target_collection": COLLECTION_SEMANTIC,
     },
     "successful_pattern": {
         "description": "A pattern that worked well",
         "confidence": 0.7,
         "proposal_template": "Using {content} worked well. Remember this approach?",
         "scope": "project",
+        "target_collection": COLLECTION_PROCEDURAL,
     },
     "error_resolution": {
         "description": "How an error was resolved",
         "confidence": 0.8,
         "proposal_template": "We fixed an issue by {content}. Remember for next time?",
         "scope": "global",
+        "target_collection": COLLECTION_PROCEDURAL,
     },
     "preference": {
         "description": "User preference detected",
         "confidence": 0.85,
         "proposal_template": "I noticed you prefer {content}. Remember this preference?",
         "scope": "global",
+        "target_collection": COLLECTION_ENTITY,
     },
 }
 
@@ -224,10 +234,11 @@ class InductionEngine:
         # Extract learning from observation
         learning = self._extract_learning(observation)
 
-        # Determine scope and confidence
+        # Determine scope, confidence, and target
         type_config = OBSERVATION_TYPES.get(event_type, {})
         scope = type_config.get("scope", "global")
         confidence = type_config.get("confidence", 0.8)
+        target = type_config.get("target_collection", COLLECTION_SEMANTIC)
 
         # Create proposal
         proposal = MemoryProposal(
@@ -239,6 +250,7 @@ class InductionEngine:
             confidence=confidence,
             context=observation.context,
             timestamp=observation.timestamp,
+            target_collection=target,
         )
 
         # SSGM: Validate proposal before storage
@@ -366,7 +378,9 @@ class InductionEngine:
             List of relevant Memory objects.
         """
         # Search semantic memory
-        semantic_results = self.memory.search(query, "semantic", k=k, threshold=0.5)
+        semantic_results = self.memory.search(
+            query, COLLECTION_SEMANTIC, k=k, threshold=0.5
+        )
 
         # SSGM: Apply Read Filtering Gate (Temporal Decay + Intent)
         all_results = semantic_results

@@ -43,6 +43,27 @@ def measure_queries(rag, queries, warm=False):
     return durations
 
 
+def measure_memory_tiers():
+    from scripts.mcp_infra.servers.rag.rag_mcp_server import _do_search, prepare_context
+
+    tiers = ["memory_semantic", "memory_procedural", "memory_entity", "memory_summary"]
+
+    print("\n--- Memory Tier Benchmarking ---")
+    results = {}
+    for tier in tiers:
+        start = time.time()
+        _do_search("test query", tier)
+        duration = time.time() - start
+        results[tier] = duration
+        print(f"{tier:20}: {duration:.4f}s")
+
+    start_fusion = time.time()
+    prepare_context("test query")
+    fusion_duration = time.time() - start_fusion
+    print(f"{'prepare_context':20}: {fusion_duration:.4f}s")
+    return results, fusion_duration
+
+
 def main():
     print("=== RAG Performance Test ===")
 
@@ -51,14 +72,14 @@ def main():
 
     # Test Queries based on actual library content
     test_queries = [
-        "What are the core principles of AI agent governance?",  # From WEF/Practices docs
-        "Explain the concept of Agentic RAG and how it differs from standard RAG.",  # From BSA blog
-        "What initiates the action in an intelligent agent?",  # From Woodridge
-        "Summary of Claude's constitution",  # From Claude's constitution
-        "How to build effective AI agents?",  # From Practical Guide
+        "What are the core principles of AI agent governance?",
+        "Explain the concept of Agentic RAG and how it differs from standard RAG.",
+        "What initiates the action in an intelligent agent?",
+        "Summary of Claude's constitution",
+        "How to build effective AI agents?",
     ]
 
-    # 1. First query (might be slower if lazy loading happens, though warmup should handle it)
+    # 1. First query (might be slower if lazy loading happens)
     first_query_start = time.time()
     rag.query("warmup query")
     first_query_time = time.time() - first_query_start
@@ -67,10 +88,21 @@ def main():
     # 2. Warm queries
     warm_times = measure_queries(rag, test_queries, warm=True)
 
-    print("\n=== Summary Results ===")
-    print(f"Initialization: {init_time:.4f}s")
-    print(f"Avg Warm Query: {statistics.mean(warm_times):.4f}s")
-    print(f"Throughput: {1/statistics.mean(warm_times):.2f} queries/sec")
+    # 3. Memory Tiers
+    memory_results, fusion_time = measure_memory_tiers()
+
+    print("\n=== Final Performance Summary ===")
+    print(f"Initialization       : {init_time:.4f}s")
+    print(f"Avg Library Query    : {statistics.mean(warm_times):.4f}s")
+    print(f"Prepare Context Speed: {fusion_time:.4f}s")
+    print(f"Max Memory Tier Speed: {max(memory_results.values()):.4f}s")
+
+    # Assertions for "Fast" Retrieval
+    assert (
+        max(memory_results.values()) < 1.0
+    ), "Memory tier retrieval is too slow (>1.0s)"
+    assert fusion_time < 2.5, "Context preparation is too slow (>2.5s)"
+    print("\n✅ PERFORMANCE TARGETS MET")
 
 
 if __name__ == "__main__":

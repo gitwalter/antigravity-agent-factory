@@ -1,21 +1,33 @@
 # Test Catalog
 
-*Generated on 2026-02-20 23:19:17*
+*Generated on 2026-04-11 01:23:01*
 
 ## Summary
 
 | Category | Files | Classes | Methods |
 |----------|-------|---------|---------|
+| core | 1 | 0 | 3 |
 | guardian | 5 | 22 | 90 |
-| integration | 12 | 63 | 225 |
+| integration | 14 | 64 | 233 |
 | knowledge | 2 | 5 | 27 |
 | lib | 10 | 76 | 343 |
-| memory | 3 | 8 | 45 |
+| memory | 5 | 10 | 49 |
 | performance | 0 | 0 | 0 |
-| unit | 28 | 255 | 929 |
+| scripts | 2 | 0 | 3 |
+| unit | 37 | 268 | 977 |
 | validation | 14 | 49 | 235 |
 | verification | 1 | 0 | 1 |
-| **Total** | **75** | **478** | **1895** |
+| **Total** | **91** | **494** | **1961** |
+
+## Core Tests
+
+### tests\core\test_blueprint_renderer.py
+
+#### Standalone Tests
+
+- `test_renderer_initialization`
+- `test_render_stack_success`
+- `test_render_composition`
 
 ## Guardian Tests
 
@@ -328,6 +340,15 @@ verifies that no protected files have been modified.
   - Verify NEVER_MODIFY list includes all critical files.
 
 ## Integration Tests
+
+### tests\integration\test_audit_bot.py
+
+#### Standalone Tests
+
+- `test_knowledge_audit_execution`
+  - Verify that the knowledge audit script runs successfully and generates a report.
+- `test_knowledge_debt_detection`
+  - Verify that knowledge debt detection identifies thin files.
 
 ### tests\integration\test_cli.py
 
@@ -777,6 +798,26 @@ actually PREVENTS harmful actions, not just detects them.*
 
 - `test_developer_workflow_with_guardian`
   - Simulate a typical developer workflow with Guardian protection.
+
+### tests\integration\test_rag_integration.py
+
+#### TestRAGRetrieval
+*Integration tests for the RAG MCP Server tools.
+Verifies that all 4 memory tiers are reachable and returning data/errors consistently.*
+**Markers:** integration
+
+- `test_search_memory_semantic`
+  - Verify semantic search returns a response (data or 'no relevant memory').
+- `test_search_memory_procedural`
+  - Verify procedural search returns a response.
+- `test_search_memory_entity`
+  - Verify entity search returns a response.
+- `test_search_memory_summary`
+  - Verify summary search returns a response.
+- `test_prepare_context_fusion`
+  - Verify prepare_context fuses multiple tiers.
+- `test_propose_memory_staging`
+  - Verify propose_memory stages in the 'pending' collection.
 
 ### tests\integration\test_society_blueprint_generation.py
 
@@ -2436,9 +2477,52 @@ Tests hybrid storage functionality with ChromaDB and proposal queue.*
 - `test_get_memory_store_returns_same_instance`
   - Test singleton returns same instance.
 
+### tests\memory\test_ssgm_integration.py
+
+*Integration test for SSGM (Stability and Safety-Governed Memory)
+Verifies the flow from observation to filtered retrieval and MCP sync.*
+
+#### TestSSGMIntegration
+
+- `test_full_memory_flow`
+
+### tests\memory\test_ssgm_v2_integration.py
+
+#### TestSSGMV2Integration
+
+- `test_intent_aware_read_filtering`
+  - Markers: patch
+- `test_axiomatic_write_validation_reject`
+  - Markers: patch
+- `test_semantic_reconciliation_synthesis`
+  - Markers: patch
+
 ## Performance Tests
 
+## Scripts Tests
+
+### tests\scripts\ai\test_llm_config.py
+
+#### Standalone Tests
+
+- `test_config_defaults`
+- `test_shorthand_accessors`
+
+### tests\scripts\ai\test_memoization.py
+
+#### Standalone Tests
+
+- `test_memoization_logic`
+
 ## Unit Tests
+
+### tests\unit\core\test_fetch_telemetry.py
+
+#### TestFetchTelemetry
+
+- `test_fetch_telemetry_structure`
+- `test_save_telemetry`
+  - Markers: patch
 
 ### tests\unit\sync\test_sync_artifacts.py
 
@@ -2741,8 +2825,8 @@ Ensures the knowledge count sync script correctly:
   - Should count all .json files in knowledge/.
 - `test_excludes_underscore_prefixed`
   - Should exclude files starting with underscore.
-- `test_excludes_subdirectories`
-  - Should not count files in subdirectories.
+- `test_excludes_subdirectories_is_false`
+  - Should count files in subdirectories recursively.
 - `test_returns_zero_for_missing_dir`
   - Should return 0 if knowledge/ doesn't exist.
 
@@ -2798,7 +2882,7 @@ Ensures the knowledge count sync script correctly:
 - `test_knowledge_dir_exists`
   - knowledge/ directory should exist.
 - `test_manifest_exists`
-  - knowledge/manifest.json should exist.
+  - knowledge/core/manifest.json should exist.
 - `test_knowledge_files_md_exists`
   - docs/reference/KNOWLEDGE_FILES.md should exist.
 - `test_counts_are_currently_synced`
@@ -3924,6 +4008,19 @@ the actual (buggy) behavior.
 - `test_scan_artifacts_builds_adjacency`
   - Test that scan_artifacts builds adjacency lists.
 
+### tests\unit\test_evaluate.py
+
+#### Standalone Tests
+
+- `test_script_exists`
+  - Verify that the evaluate script is importable.
+- `test_eval_report_generation`
+  - Verify that a report is correctly created from the template.
+- `test_adversarial_mode_failure`
+  - Verify that adversarial mode detects problems like broken links and secrets.
+- `test_p0_blocker_detection`
+  - Verify that TODO(P-Zero) triggers failure.
+
 ### tests\unit\test_factory_cli.py
 
 *Unit tests for cli/factory_cli.py
@@ -4109,6 +4206,17 @@ Tests for GapType and GapPriority enumerations.*
   - Test sorting priorities by value.
 - `test_priority_from_value`
   - Test creating GapPriority from value.
+
+### tests\unit\test_idx_ws.py
+
+#### Standalone Tests
+
+- `test_health_check`
+  - Verify health endpoint works and returns expected version.
+- `test_websocket_thoughts`
+  - Test connection to the thoughts websocket.
+- `test_websocket_events`
+  - Test connection to the events websocket.
 
 ### tests\unit\test_install_hooks.py
 
@@ -4740,6 +4848,164 @@ Tests cover:
 - `test_generate_tracks_all_files`
   - Test that all generated files are tracked.
 
+### tests\unit\test_rag_catalog.py
+
+*TDD Tests for RAG Catalog / Library Info (AGENT-40).
+
+Tests the NEW get_library_info() method in OptimizedRAG.
+Written BEFORE implementation (Red phase).*
+
+#### TestGetLibraryInfo
+*Tests for get_library_info().*
+
+- `test_structure_has_required_keys`
+  - get_library_info returns dict with expected top-level keys.
+- `test_empty_library`
+  - get_library_info handles empty library gracefully.
+- `test_counts_match_reality`
+  - Counts in get_library_info match actual store contents.
+- `test_sources_include_metadata`
+  - Each source entry includes path, hash, and chunk count.
+- `test_toc_availability_tracked`
+  - Sources indicate whether a TOC chunk exists.
+
+### tests\unit\test_rag_deduplication.py
+
+*TDD Tests for RAG Deduplication (AGENT-40).
+
+Tests the NEW hash-based deduplication in OptimizedRAG.
+Written BEFORE implementation (Red phase).*
+
+#### TestComputeFileHash
+*Tests for _compute_file_hash().*
+
+- `test_deterministic_same_file`
+  - Same file produces the same hash every time.
+- `test_different_files_different_hashes`
+  - Different files produce different hashes.
+- `test_nonexistent_file_returns_none`
+  - Non-existent file returns None (not an exception).
+- `test_hash_matches_manual_sha256`
+  - Hash matches a manually computed SHA-256.
+
+#### TestIngestDeduplication
+*Tests for hash-based dedup in ingest_ebook().*
+
+- `test_ingest_skips_duplicate_by_hash`
+  - Second ingestion of same-hash file is skipped.
+- `test_ingest_skips_duplicate_by_path`
+  - Second ingestion of same-path file is skipped.
+- `test_ingest_allows_force_reingest`
+  - Force flag bypasses dedup.
+- `test_ingest_stores_hash_in_metadata`
+  - Newly ingested docs have file_hash in their metadata.
+
+#### TestListSources
+*Tests for list_sources() method.*
+
+- `test_returns_list_of_dicts`
+  - list_sources returns a list of dicts with expected keys.
+- `test_empty_library`
+  - list_sources returns empty list for empty library.
+
+### tests\unit\test_rag_toc.py
+
+*TDD Tests for Multi-Strategy TOC Extraction (AGENT-41).
+
+Tests the NEW _extract_toc() with 3-tier fallback:
+  1. PyMuPDF native TOC (doc.get_toc())
+  2. Regex heuristic (chapter/section patterns)
+  3. LLM extraction (existing Gemini, last resort)
+
+Written BEFORE implementation (Red phase).*
+
+#### TestTocPyMuPDFNative
+*Tests for PyMuPDF native TOC extraction (Strategy 1).*
+
+- `test_uses_native_toc_when_available`
+  - When PyMuPDF doc.get_toc() returns entries, use them directly.
+  - Markers: patch
+- `test_skips_empty_native_toc`
+  - When native TOC is empty, falls through to next strategy.
+  - Markers: patch
+
+#### TestTocRegexFallback
+*Tests for regex-based TOC extraction (Strategy 2).*
+
+- `test_regex_catches_chapter_patterns`
+  - Regex detects 'Chapter N:' patterns in text.
+  - Markers: patch
+
+#### TestTocLlmFallback
+*Tests for LLM-based TOC extraction (Strategy 3, last resort).*
+
+- `test_llm_called_only_when_others_fail`
+  - LLM is NOT called if native TOC succeeds.
+  - Markers: patch
+
+#### TestTocEdgeCases
+*Edge case tests for TOC extraction.*
+
+- `test_returns_none_when_all_fail`
+  - Returns None when all three strategies fail.
+  - Markers: patch
+- `test_file_open_failure_returns_none`
+  - Corrupted/unreadable PDF returns None gracefully.
+  - Markers: patch
+
+### tests\unit\test_rag_toc_quality.py
+
+*TDD Tests for AGENT-46: TOC Quality & Fast Delivery.
+
+Tests for:
+  - get_toc(name) — direct metadata-based lookup (no semantic search)
+  - _score_toc(toc_text) — quality scoring
+  - delete_toc(name) — remove a bad TOC chunk
+  - _extract_toc improvements with quality gate*
+
+#### TestTocQualityScoring
+*Tests for _score_toc() quality assessment.*
+
+- `test_good_toc_scores_high`
+  - A well-structured TOC with chapters scores >= 0.7.
+- `test_title_only_scores_low`
+  - A TOC that's just a book title scores near 0.
+- `test_copyright_page_scores_low`
+  - A copyright page disguised as TOC scores low.
+- `test_empty_string_scores_zero`
+  - Empty string scores 0.
+- `test_none_scores_zero`
+  - None input scores 0.
+- `test_short_toc_with_chapters_scores_medium`
+  - Short but real TOC (3 chapters) scores moderate.
+
+#### TestGetToc
+*Tests for get_toc(name) — direct docstore lookup.*
+
+- `test_returns_toc_content`
+  - get_toc returns TOC text for a matching document.
+- `test_returns_none_when_no_toc`
+  - get_toc returns None for doc without a TOC chunk.
+- `test_returns_none_when_no_match`
+  - get_toc returns None for non-existent document.
+- `test_fuzzy_matches_by_basename`
+  - get_toc matches by partial basename (case-insensitive).
+
+#### TestDeleteToc
+*Tests for delete_toc(name) — remove a bad TOC chunk.*
+
+- `test_deletes_toc_chunk`
+  - delete_toc removes only the TOC chunk, not regular chunks.
+- `test_returns_false_when_no_toc`
+  - delete_toc returns False when no TOC chunk exists.
+
+#### TestTocQualityGate
+*Tests that _extract_toc rejects low-quality results.*
+
+- `test_rejects_title_only_toc_from_native`
+  - Native TOC with only 1-2 entries is rejected (falls through).
+  - Markers: patch
+
 ### tests\unit\test_reactive_index.py
 
 *Tests for the Reactive Artifact Indexing System.
@@ -5306,6 +5572,17 @@ Tests cover:
 - `test_create_with_defaults`
   - Test creating engine with default settings.
 
+### tests\unit\test_ui_rendering.py
+
+#### Standalone Tests
+
+- `test_idx_api_health`
+  - Verify that the IDX Orchestrator API starts correctly.
+- `test_mcp_servers_endpoint`
+  - Verify the MCP servers list endpoint.
+- `test_ui_component_structure`
+  - Verify that the UI page files exist in the correct locations.
+
 ### tests\unit\test_update_engine.py
 
 *Comprehensive unit tests for the scripts/updates/ module.
@@ -5749,6 +6026,13 @@ Tests README structure validation and update functionality.*
   - Test main with --root argument.
 - `test_main_default_is_check`
   - Test that default mode is --check.
+
+### tests\unit\test_workflow_parsing.py
+
+#### Standalone Tests
+
+- `test_standardized_parsing`
+- `test_legacy_parsing`
 
 ## Validation Tests
 
@@ -6512,8 +6796,9 @@ This prevents YAML parsing errors like:
   - Test that all skill files have valid YAML frontmatter.
 - `test_all_docs_have_valid_yaml`
   - Test that all doc files have valid YAML frontmatter.
-- `test_all_markdown_files_valid`
-  - Comprehensive test: all markdown files in standard locations are valid.
+- `test_all_core_markdown_files_valid`
+  - Comprehensive test: all markdown files in core locations are valid.
+Optimized to skip large/legacy directories to prevent CI memory exhaustion.
 
 #### TestEdgeCases
 *Tests for edge cases and special scenarios.*

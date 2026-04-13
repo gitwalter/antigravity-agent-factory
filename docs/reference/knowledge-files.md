@@ -1,6 +1,6 @@
 <!-- The count above is automatically updated by scripts/validation/sync_knowledge_counts.py -->
 2:
-3: The factory currently includes **285 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
+3: The factory currently includes **287 knowledge files** covering: various aspects of AI development, project management, and technology stacks.
 4:
 5: | File | Type | Description |
 6: |------|------|-------------|
@@ -72,6 +72,7 @@
 | [claude-agentic-patterns](file:///.agent/knowledge/agents/claude-agentic-patterns.json) |  |  |
 | [cloud-ml-deployment](file:///.agent/knowledge/integration/cloud-ml-deployment.json) |  |  |
 | [code-review-checklist](file:///.agent/knowledge/integration/code-review-checklist.json) |  |  |
+| [cognitive-memory-patterns](file:///.agent/knowledge/core/cognitive-memory-patterns.json) |  |  |
 | [common-table-patterns](file:///.agent/knowledge/integration/common-table-patterns.json) |  |  |
 | [coordination-pattern-selection](file:///.agent/knowledge/agents/coordination-pattern-selection.json) |  |  |
 | [coordination-patterns](file:///.agent/knowledge/agents/coordination-patterns.json) |  |  |
@@ -160,6 +161,7 @@
 | [mcp-selection-guide](file:///.agent/knowledge/integration/mcp-selection-guide.json) |  |  |
 | [mcp-server-selection-guide](file:///.agent/knowledge/integration/mcp-server-selection-guide.json) |  |  |
 | [mcp-servers-catalog](file:///.agent/knowledge/integration/mcp-servers-catalog.json) |  |  |
+| [memory-architecture-idioms](file:///.agent/knowledge/memory-architecture-idioms.json) |  |  |
 | [memory-config](file:///.agent/knowledge/core/memory-config.json) |  |  |
 | [memory-system-configuration](file:///.agent/knowledge/core/memory-system-configuration.json) |  |  |
 | [memory-systems-patterns](file:///.agent/knowledge/core/memory-systems-patterns.json) |  |  |

@@ -206,6 +206,46 @@ class TestMutabilityGuard:
         assert "L2" in summary
         assert "immutable" in summary.lower()
 
+    def test_guard_instances_are_isolated(self):
+        """Verify that multiple guard instances do not share state."""
+        from scripts.guardian.mutability_guard import MutabilityGuard
+        import tempfile
+        import json
+        import os
+
+        # Instance 1: Default
+        guard1 = MutabilityGuard()
+
+        # Instance 2: Custom config that adds a protected path
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            config = {"protection": {"protected_paths": ["custom/protected/path"]}}
+            json.dump(config, f)
+            config_path = f.name
+
+        try:
+            guard2 = MutabilityGuard(config_path=config_path)
+
+            # Check Instance 2 has the path
+            assert guard2._is_never_modify("custom/protected/path") is True
+
+            # Check Instance 1 does NOT have the path (Isolation check)
+            assert guard1._is_never_modify("custom/protected/path") is False
+
+            # Instance 3: Default (should also not have it)
+            guard3 = MutabilityGuard()
+            assert guard3._is_never_modify("custom/protected/path") is False
+
+        finally:
+            if os.path.exists(config_path):
+                os.remove(config_path)
+
+    def test_axiom_path_integrity(self, guard):
+        """Verify the axiom path is correctly protected (fix for the comment typo)."""
+        # This path was previously commented out in PROTECTED_LAYERS
+        result = guard.can_modify(".agent/patterns/axioms/some-axiom.json")
+        assert result.allowed is False
+        assert "L0" in result.layer or "Axioms" in result.reason
+
 
 class TestMutabilityGuardSingleton:
     """Tests for the singleton pattern."""

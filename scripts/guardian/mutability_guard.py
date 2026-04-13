@@ -27,6 +27,7 @@ Usage:
 import json
 import logging
 import re
+import copy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Dict, Any
@@ -64,7 +65,8 @@ PROTECTED_LAYERS: Dict[str, Dict[str, Any]] = {
         "name": "Axioms & Guardian",
         "description": "Core axioms (A1-A5) and Guardian protocol - the foundation",
         "paths": [
-            ".agentrules",  # Contains Layer 0 section            ".agent/patterns/axioms/",
+            ".agentrules",  # Contains Layer 0 section
+            ".agent/patterns/axioms/",
         ],
         "content_patterns": [
             r"# LAYER 0: INTEGRITY GUARDIAN",
@@ -153,7 +155,9 @@ class MutabilityGuard:
             config_path: Path to memory-config.json for custom configuration.
         """
         self.config = self._load_config(config_path)
-        self.protected_layers = PROTECTED_LAYERS.copy()
+        self.protected_layers = copy.deepcopy(PROTECTED_LAYERS)
+        self.never_modify = NEVER_MODIFY.copy()
+        self.mutable_paths = MUTABLE_PATHS.copy()
 
         # Apply any custom configuration
         if "protection" in self.config:
@@ -171,14 +175,14 @@ class MutabilityGuard:
         # Add custom protected paths
         if "protected_paths" in protection_config:
             for path in protection_config["protected_paths"]:
-                if path not in NEVER_MODIFY:
-                    NEVER_MODIFY.append(path)
+                if path not in self.never_modify:
+                    self.never_modify.append(path)
 
         # Add custom mutable paths
         if "mutable_paths" in protection_config:
             for path in protection_config["mutable_paths"]:
-                if path not in MUTABLE_PATHS:
-                    MUTABLE_PATHS.append(path)
+                if path not in self.mutable_paths:
+                    self.mutable_paths.append(path)
 
     def _normalize_path(self, path: str) -> str:
         """Normalize a path for comparison."""
@@ -213,7 +217,7 @@ class MutabilityGuard:
         """Check if path is in an explicitly mutable location."""
         normalized = self._normalize_path(path)
 
-        for mutable_path in MUTABLE_PATHS:
+        for mutable_path in self.mutable_paths:
             mutable_normalized = self._normalize_path(mutable_path)
             if normalized.startswith(mutable_normalized):
                 return True
@@ -224,7 +228,7 @@ class MutabilityGuard:
         """Check if path is in the never-modify list."""
         normalized = self._normalize_path(path)
 
-        for never_path in NEVER_MODIFY:
+        for never_path in self.never_modify:
             never_normalized = self._normalize_path(never_path)
             if normalized == never_normalized:
                 return True
@@ -370,15 +374,15 @@ class MutabilityGuard:
 
     def get_all_protected_paths(self) -> List[str]:
         """
-        Get all protected paths.
+        Get all currently protected paths.
 
         Returns:
-            List of all paths protected by any layer.
+            List of unique protected paths.
         """
         paths = []
         for layer_config in self.protected_layers.values():
             paths.extend(layer_config["paths"])
-        paths.extend(NEVER_MODIFY)
+        paths.extend(self.never_modify)
         return list(set(paths))
 
     def get_protection_summary(self) -> str:

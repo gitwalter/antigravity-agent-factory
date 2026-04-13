@@ -93,7 +93,7 @@ class TestInductionEngine:
         memory = engine.accept_proposal(proposal.id)
 
         assert memory is not None
-        assert memory.memory_type == "semantic"
+        assert memory.memory_type in ("semantic", "memory_semantic")
 
         # Should now be searchable
         results = engine.memory.search("pytest", "semantic", k=5)

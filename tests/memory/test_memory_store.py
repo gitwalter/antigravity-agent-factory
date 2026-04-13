@@ -37,7 +37,10 @@ class TestMemoryStore:
         """Create a memory store instance with temp directory."""
         from scripts.memory.memory_store import MemoryStore
 
-        return MemoryStore(persist_dir=temp_dir)
+        store = MemoryStore(persist_dir=temp_dir)
+        yield store
+        # Critical: Close client to release file locks on Windows
+        store.close()
 
     def test_store_initialization(self, store):
         """Test that store initializes correctly."""
@@ -226,10 +229,11 @@ class TestMemoryProposalOperations:
 
         # Accept with edit
         memory = store.accept_proposal(
-            proposal_id, edited_content="Always use pytest for Python testing"
+            proposal_id,
+            edited_content="Use pytest framework with fixtures for Python testing",
         )
 
-        assert memory.content == "Always use pytest for Python testing"
+        assert memory.content == "Use pytest framework with fixtures for Python testing"
         assert memory.metadata.get("was_edited") is True
 
     def test_reject_proposal(self, store):

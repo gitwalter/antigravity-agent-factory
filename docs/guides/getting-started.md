@@ -22,4 +22,4 @@ To begin using the Factory, we recommend the following flow:
 - See [Configuration Guide](../setup/configuration.md) for API key management.
 
 ---
-*Antigravity Agent Factory v1.11.0*
+*Antigravity Agent Factory v1.12.0*

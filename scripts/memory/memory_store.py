@@ -26,11 +26,11 @@ Usage:
     store.add_memory(
         content="Use pytest for testing",
         metadata={"source": "user_teaching", "scope": "global"},
-        memory_type="semantic"
+        memory_type="memory_semantic"
     )
 
     # Search memories
-    results = store.search("testing frameworks", memory_type="semantic", k=5)
+    results = store.search("testing frameworks", memory_type="memory_semantic", k=5)
 """
 
 import json
@@ -39,7 +39,30 @@ import uuid
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
+
+from scripts.memory.memory_config import (
+    QDRANT_HOST,
+    QDRANT_PORT,
+    VECTOR_SIZE,
+    COLLECTION_SEMANTIC,
+    COLLECTION_PROCEDURAL,
+    COLLECTION_TOOLBOX,
+    COLLECTION_ENTITY,
+    COLLECTION_SUMMARY,
+)
+
+# Short-name aliases for backwards compatibility
+_COLLECTION_ALIASES = {
+    "semantic": COLLECTION_SEMANTIC,
+    "procedural": COLLECTION_PROCEDURAL,
+    "toolbox": COLLECTION_TOOLBOX,
+    "entity": COLLECTION_ENTITY,
+    "summary": COLLECTION_SUMMARY,
+    "episodic": "episodic",  # kept as-is
+    "pending": "pending",  # kept as-is
+    "rejected": "rejected",  # kept as-is
+}
 
 logger = logging.getLogger(__name__)
 
@@ -105,6 +128,7 @@ class MemoryProposal:
     user_response: Optional[str] = None
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
     context: Optional[str] = None
+    target_collection: str = COLLECTION_SEMANTIC
 
     def to_dict(self) -> dict:
         """Convert to dictionary for storage."""
@@ -145,7 +169,7 @@ class MemoryStore:
     Attributes:
         config: Configuration dictionary
         persist_dir: Directory for Qdrant persistence
-        client: Qdrant client
+        _client: Qdrant client (internal, lazy)
         semantic: Semantic memory collection
         episodic: Episodic memory collection
         pending: Pending proposals collection
@@ -161,7 +185,16 @@ class MemoryStore:
         "storage": {
             "vector_db": "qdrant",
             "persist_dir": "data/memory",
-            "collections": ["semantic", "episodic", "pending", "rejected"],
+            "collections": [
+                COLLECTION_SEMANTIC,
+                COLLECTION_PROCEDURAL,
+                COLLECTION_TOOLBOX,
+                COLLECTION_ENTITY,
+                COLLECTION_SUMMARY,
+                "episodic",
+                "pending",
+                "rejected",
+            ],
         },
         "proposals": {
             "require_user_approval": True,
@@ -185,6 +218,7 @@ class MemoryStore:
         self.config = self._load_config(config_path)
 
         # Set persist directory
+        self._explicit_persist = persist_dir is not None
         if persist_dir:
             self.persist_dir = Path(persist_dir)
         else:
@@ -199,8 +233,8 @@ class MemoryStore:
             logger.info("Memory system initialized (first run - no memories yet)")
             logger.info(f"Memory directory: {self.persist_dir.absolute()}")
 
-        # Initialize Qdrant
-        self._init_qdrant()
+        # Initialize Qdrant Client (Lazy)
+        self._client = None
 
         # Lazy-load embedding service
         self._embedding_service = None
@@ -214,32 +248,53 @@ class MemoryStore:
                 return {**self.DEFAULT_CONFIG, **config}
         return self.DEFAULT_CONFIG.copy()
 
+    @property
+    def client(self):
+        """Lazy-loaded Qdrant client."""
+        if self._client is None:
+            self._init_qdrant()
+        return self._client
+
     def _init_qdrant(self) -> None:
         """Initialize Qdrant client and collections."""
         try:
+            # IMPORTANT: Lazy imports to keep memory store initialization fast
             from qdrant_client import QdrantClient
             from qdrant_client.http.models import Distance, VectorParams
-
-            # Create persistent client
-            qdrant_path = self.persist_dir / "qdrant"
-            qdrant_path.mkdir(parents=True, exist_ok=True)
-
-            self.client = QdrantClient(path=str(qdrant_path))
-
-            # Collection parameters
-            vector_size = 384  # Default for MiniLM
+            from scripts.memory.memory_config import (
+                QDRANT_HOST,
+                QDRANT_PORT,
+                QDRANT_PATH,
+                VECTOR_SIZE,
+            )
 
             # Ensure collections exist
-            collections = self.client.get_collections().collections
+            self._client = (
+                QdrantClient(path=str(self.persist_dir))
+                if self._explicit_persist
+                else (
+                    QdrantClient(path=QDRANT_PATH)
+                    if QDRANT_PATH
+                    else QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+                )
+            )
+
+            collections = self._client.get_collections().collections
             existing_names = [c.name for c in collections]
 
-            for name in ["semantic", "episodic", "pending", "rejected"]:
-                if name not in existing_names:
-                    logger.info(f"Creating Qdrant collection for memory: {name}")
-                    self.client.create_collection(
-                        collection_name=name,
+            target_collections = self.config["storage"]["collections"]
+
+            for name in target_collections:
+                effective_name = self._get_collection_name(name)
+
+                if effective_name not in existing_names:
+                    logger.info(
+                        f"Creating Qdrant collection for memory: {effective_name}"
+                    )
+                    self._client.create_collection(
+                        collection_name=effective_name,
                         vectors_config=VectorParams(
-                            size=vector_size, distance=Distance.COSINE
+                            size=VECTOR_SIZE, distance=Distance.COSINE
                         ),
                     )
 
@@ -250,6 +305,13 @@ class MemoryStore:
                 "qdrant-client is required for the memory store. "
                 "Install with: pip install qdrant-client"
             )
+        except Exception as e:
+            if QDRANT_PATH:
+                logger.error(f"Failed to initialize local Qdrant at {QDRANT_PATH}: {e}")
+            else:
+                logger.error(
+                    f"Failed to connect to Qdrant at {QDRANT_HOST}:{QDRANT_PORT}. Is Docker running? Error: {e}"
+                )
 
     @property
     def embedding_service(self):
@@ -261,18 +323,29 @@ class MemoryStore:
         return self._embedding_service
 
     def _get_collection_name(self, memory_type: str) -> str:
-        """Get collection name by memory type."""
-        valid_types = ["semantic", "episodic", "pending", "rejected"]
-        if memory_type not in valid_types:
-            raise ValueError(f"Unknown memory type: {memory_type}")
-        return memory_type
+        """Get collection name by memory type. Supports both full names and short aliases."""
+        from scripts.memory.memory_config import get_collection_name
+
+        # Resolve short-name alias first
+        resolved = _COLLECTION_ALIASES.get(memory_type, memory_type)
+
+        # Apply prefix/override logic
+        effective_name = get_collection_name(resolved)
+
+        logger.debug(
+            f"Resolved collection name: {memory_type} -> {resolved} -> {effective_name}"
+        )
+        return effective_name
 
     # =========================================================================
     # Core Memory Operations
     # =========================================================================
 
     def add_memory(
-        self, content: str, metadata: Dict[str, Any], memory_type: str = "semantic"
+        self,
+        content: str,
+        metadata: Dict[str, Any],
+        memory_type: str = COLLECTION_SEMANTIC,
     ) -> str:
         """
         Add a memory to the store.
@@ -283,12 +356,30 @@ class MemoryStore:
             memory_type: Type of memory (semantic, episodic, pending, rejected).
 
         Returns:
-            The memory ID.
+            The memory ID (either newly created, or existing if deduplicated).
         """
-        memory_id = str(uuid.uuid4())
+        # Pre-Consolidation Validation (Deduplication Gate)
+        # Prevent semantic drift by rejecting high-similarity duplicates
+        # Generate embedding once and reuse for both search and insertion
+        embedding_vector = self.embedding_service.embed_single(content)
+        embedding = embedding_vector.tolist()
 
-        # Generate embedding
-        embedding = self.embedding_service.embed_single(content).tolist()
+        existing = self.search(
+            query=content,
+            query_embedding=embedding,
+            memory_type=memory_type,
+            k=1,
+            threshold=0.95,
+        )
+        if existing:
+            duplicates = [e for e in existing if e.metadata.get("similarity", 0) > 0.95]
+            if duplicates:
+                logger.debug(
+                    f"SSGM Deduplication Gate: Similar memory found in {memory_type}. Rejecting insertion."
+                )
+                return duplicates[0].id
+
+        memory_id = str(uuid.uuid4())
 
         # Prepare metadata
         full_metadata = {
@@ -322,10 +413,11 @@ class MemoryStore:
     def search(
         self,
         query: str,
-        memory_type: str = "semantic",
+        memory_type: str = COLLECTION_SEMANTIC,
         k: int = 5,
         threshold: float = 0.0,
         where: Optional[Dict[str, Any]] = None,
+        query_embedding: Optional[List[float]] = None,
     ) -> List[Memory]:
         """
         Search for memories by semantic similarity.
@@ -336,6 +428,7 @@ class MemoryStore:
             k: Maximum number of results.
             threshold: Minimum similarity score (0.0 to 1.0).
             where: Optional metadata filter.
+            query_embedding: Optional pre-computed embedding vector.
 
         Returns:
             List of Memory objects, sorted by similarity.
@@ -346,8 +439,9 @@ class MemoryStore:
         if count == 0:
             return []
 
-        # Generate query embedding
-        query_embedding = self.embedding_service.embed_single(query).tolist()
+        # Generate query embedding if not provided
+        if query_embedding is None:
+            query_embedding = self.embedding_service.embed_single(query).tolist()
 
         # Search
         results = self.client.query_points(
@@ -379,7 +473,7 @@ class MemoryStore:
         return memories
 
     def get_memory(
-        self, memory_id: str, memory_type: str = "semantic"
+        self, memory_id: str, memory_type: str = COLLECTION_SEMANTIC
     ) -> Optional[Memory]:
         """
         Get a specific memory by ID.
@@ -416,7 +510,9 @@ class MemoryStore:
 
         return None
 
-    def delete_memory(self, memory_id: str, memory_type: str = "semantic") -> bool:
+    def delete_memory(
+        self, memory_id: str, memory_type: str = COLLECTION_SEMANTIC
+    ) -> bool:
         """
         Delete a memory by ID.
 
@@ -455,7 +551,7 @@ class MemoryStore:
             Formatted context string.
         """
         # Search semantic memory
-        semantic_results = self.search(query, "semantic", k=k, threshold=0.5)
+        semantic_results = self.search(query, COLLECTION_SEMANTIC, k=k, threshold=0.5)
 
         # Search episodic memory (recent observations)
         episodic_results = self.search(query, "episodic", k=k // 2, threshold=0.5)
@@ -509,7 +605,7 @@ class MemoryStore:
         from qdrant_client.http.models import PointStruct
 
         self.client.upsert(
-            collection_name="pending",
+            collection_name=self._get_collection_name("pending"),
             points=[
                 PointStruct(
                     id=proposal.id,
@@ -529,13 +625,14 @@ class MemoryStore:
         Returns:
             List of MemoryProposal objects.
         """
-        count = self.client.count(collection_name="pending").count
+        collection_name = self._get_collection_name("pending")
+        count = self.client.count(collection_name=collection_name).count
         if count == 0:
             return []
 
         # Get all points
         results, _ = self.client.scroll(
-            collection_name="pending",
+            collection_name=collection_name,
             limit=count,
             with_payload=True,
         )
@@ -562,10 +659,13 @@ class MemoryStore:
         return proposals
 
     def accept_proposal(
-        self, proposal_id: str, edited_content: Optional[str] = None
+        self,
+        proposal_id: str,
+        edited_content: Optional[str] = None,
+        target_collection: Optional[str] = None,
     ) -> Memory:
         """
-        Accept a proposal and move it to semantic memory.
+        Accept a proposal and move it to the target memory collection.
 
         Args:
             proposal_id: The proposal ID.
@@ -582,23 +682,27 @@ class MemoryStore:
         # Use edited content if provided
         content = edited_content or proposal_memory.content
 
-        # Create semantic memory
-        metadata = {
-            "source": proposal_memory.metadata.get("source", "proposal"),
-            "scope": proposal_memory.metadata.get("scope", "global"),
-            "original_proposal_id": proposal_id,
-            "approved_at": datetime.now().isoformat(),
-            "was_edited": edited_content is not None,
-        }
+        # Determine target collection: provided > proposal metadata > default
+        if not target_collection:
+            target_collection = proposal_memory.metadata.get(
+                "target_collection", COLLECTION_SEMANTIC
+            )
 
-        memory_id = self.add_memory(content, metadata, "semantic")
+        # Update metadata if edited
+        metadata = proposal_memory.metadata.copy()
+        if edited_content:
+            metadata["was_edited"] = True
+
+        memory_id = self.add_memory(content, metadata, target_collection)
 
         # Remove from pending
         self.delete_memory(proposal_id, "pending")
 
-        logger.info(f"Accepted proposal {proposal_id} -> semantic memory {memory_id}")
+        logger.info(
+            f"Accepted proposal {proposal_id} -> {target_collection} memory {memory_id}"
+        )
 
-        return self.get_memory(memory_id, "semantic")
+        return self.get_memory(memory_id, target_collection)
 
     def reject_proposal(self, proposal_id: str) -> None:
         """
@@ -637,7 +741,8 @@ class MemoryStore:
         Returns:
             True if similar to a rejected proposal.
         """
-        count = self.client.count(collection_name="rejected").count
+        rejected_collection = self._get_collection_name("rejected")
+        count = self.client.count(collection_name=rejected_collection).count
         if count == 0:
             return False
 
@@ -651,7 +756,12 @@ class MemoryStore:
     @property
     def is_empty(self) -> bool:
         """Check if memory store has any memories."""
-        return self.client.count(collection_name="semantic").count == 0
+        return (
+            self.client.count(
+                collection_name=self._get_collection_name(COLLECTION_SEMANTIC)
+            ).count
+            == 0
+        )
 
     @property
     def is_first_run(self) -> bool:
@@ -660,11 +770,14 @@ class MemoryStore:
 
     def get_status_message(self) -> str:
         """Get human-readable status for agent to report."""
+        semantic_collection = self._get_collection_name(COLLECTION_SEMANTIC)
+        pending_collection = self._get_collection_name("pending")
+
         if self.is_empty:
             return "I don't have any memories yet. I'll learn from our interactions."
         else:
-            count = self.client.count(collection_name="semantic").count
-            pending = self.client.count(collection_name="pending").count
+            count = self.client.count(collection_name=semantic_collection).count
+            pending = self.client.count(collection_name=pending_collection).count
 
             msg = f"I have {count} memories from previous sessions."
             if pending > 0:
@@ -674,10 +787,18 @@ class MemoryStore:
     def get_stats(self) -> dict:
         """Get memory store statistics."""
         return {
-            "semantic_count": self.client.count(collection_name="semantic").count,
-            "episodic_count": self.client.count(collection_name="episodic").count,
-            "pending_count": self.client.count(collection_name="pending").count,
-            "rejected_count": self.client.count(collection_name="rejected").count,
+            "semantic_count": self.client.count(
+                collection_name=self._get_collection_name(COLLECTION_SEMANTIC)
+            ).count,
+            "episodic_count": self.client.count(
+                collection_name=self._get_collection_name("episodic")
+            ).count,
+            "pending_count": self.client.count(
+                collection_name=self._get_collection_name("pending")
+            ).count,
+            "rejected_count": self.client.count(
+                collection_name=self._get_collection_name("rejected")
+            ).count,
             "persist_dir": str(self.persist_dir.absolute()),
             "is_first_run": self._is_first_run,
         }
@@ -689,12 +810,13 @@ class MemoryStore:
         Returns:
             Number of memories cleared.
         """
-        count = self.client.count(collection_name="episodic").count
+        collection_name = self._get_collection_name("episodic")
+        count = self.client.count(collection_name=collection_name).count
         if count > 0:
             from qdrant_client.http.models import Filter
 
             self.client.delete(
-                collection_name="episodic",
+                collection_name=collection_name,
                 points_selector=Filter(),  # Delete all
             )
         logger.info(f"Cleared {count} episodic memories")

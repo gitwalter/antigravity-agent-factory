@@ -12,7 +12,7 @@ async def run():
     # Point to the RAG MCP server script
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
     script_path = os.path.join(
-        project_root, "scripts/mcp/servers/rag/rag_mcp_server.py"
+        project_root, "scripts/mcp_infra/servers/rag/rag_mcp_server.py"
     )
 
     # Use the same python/conda environment

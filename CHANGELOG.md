@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0] - 2026-04-13
+
+### Added
+- **Automated Cognitive Memory System (SSGM Tier 0-2)**: Integrated high-performance Qdrant-backed RAG infrastructure for dual-substrate memory (Active/Permanent).
+- **Federated Entity Indexing**: Implemented automated entity extraction and indexing pipelines (`entity_indexer.py`, `procedural_indexer.py`) mapping factory-wide relationships.
+- **Reliable Write Governance (AGENT-180)**: Introduced strict SSGM write protocols and safety guards to ensure memory integrity during high-concurrency operations.
+- **Experience Collector & Reflection Engine**: Developed a proactive bridge between session episodes and permanent semantic knowledge through an automated reflection loop.
+- **Memory Management CLI**: Launched a comprehensive toolset (`memory_cli.py`) for auditing, cleaning, and managing the factory's cognitive assets.
+
+### Changed
+- **Memory-First Grounding Protocol**: Aligned all core specialists to prioritize Federated Memory lookups before proceeding with task execution.
+- **Test Infrastructure Enrichment**: Expanded the integration suite with RAG performance and reliability benchmarks.
+
+### Fixed
+- **Hallucination Guardrails**: Patched zero-context fallbacks in the memory retrieval layer to prevent speculative generation when data is missing.
+
 ## [1.11.0] - 2026-03-23
 
 ### Added

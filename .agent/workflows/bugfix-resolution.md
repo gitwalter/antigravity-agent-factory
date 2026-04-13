@@ -27,7 +27,8 @@ steps:
 - actions:
   - 'Actions:'
   - Query the Active Consciousness for similar bugs or domain context.
-  - Use `mcp_memory_search_nodes` against the Tier 0 Graph.
+  - MUST use `prepare_context` from the `rag` MCP server to query the Semantic, Procedural, and Entity collections for related code constraints.
+  - Use `mcp_memory_search_nodes` against the Tier 0 Graph for deep relational tracking.
   - If zero-context is found for a critical domain, use `notify_user` for clarification.
   agents:
   - project-operations-specialist
@@ -87,7 +88,8 @@ steps:
   - Update the status in Plane to 'Done'.
   - Generate `walkthrough.md` via `/generating-documentation`.
   - Close the issue using `managing-plane-tasks.py` to render the solution via Jinja2.
-  - Induct new patterns into the memory bank.
+  - MUST use `propose_memory` from the `rag` MCP server to submit the bug's root cause and constraint fix to the `pending` SSGM collection for long-term learning.
+  - Induct new relational patterns into the memory bank.
   - Memory Hook: Synthesize fix into a `KI:` node and link to the `TASK:`.
   - 'Memory First: Always check memory before starting technical work.'
   - 'Traceability: All fixes must be tied to a Plane issue.'
@@ -138,10 +140,11 @@ Antigravity workflow for bugfix-resolution. Standardized for IDX Visual Editor.
 ### 2. Context Engineering (Memory-First)
 - **Goal**: Leverage existing knowledge and avoid repeating anti-patterns.
 - **Agents**: `project-operations-specialist`
-- **Skills**: managing-memory-bank
+- **Skills**: managing-memory-bank, orchestrating-mcp
 - **Actions**:
 - Query the Active Consciousness for similar bugs or domain context.
-- Use `mcp_memory_search_nodes` against the Tier 0 Graph.
+- MUST use `prepare_context` from the `rag` MCP server to query the Semantic, Procedural, and Entity collections for related code constraints.
+- Use `mcp_memory_search_nodes` against the Tier 0 Graph for deep relational tracking.
 - If zero-context is found for a critical domain, use `notify_user` for clarification.
 
 ### 3. Root Cause Analysis
@@ -183,7 +186,8 @@ Antigravity workflow for bugfix-resolution. Standardized for IDX Visual Editor.
 - Update the status in Plane to 'Done'.
 - Generate `walkthrough.md` via `/generating-documentation`.
 - Close the issue using `managing-plane-tasks.py` to render the solution via Jinja2.
-- Induct new patterns into the memory bank.
+- MUST use `propose_memory` from the `rag` MCP server to submit the bug's root cause and constraint fix to the `pending` SSGM collection for long-term learning.
+- Induct new relational patterns into the memory bank.
 - **Memory Hook**: Synthesize fix into a `KI:` node and link to the `TASK:`.
 - **Memory First**: Always check memory before starting technical work.
 - **Traceability**: All fixes must be tied to a Plane issue.

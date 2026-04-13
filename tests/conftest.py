@@ -501,7 +501,7 @@ def knowledge_schema_path(factory_root: Path) -> Path:
 def isolated_rag_workspace(tmp_path_factory, request):
     """
     Provide each pytest-xdist worker with an isolated RAG workspace.
-    This prevents file locking conflicts when running RAG tests in parallel.
+    Even single-process (master) runs are isolated to prevent production pollution.
     """
     # Try to get worker_id from xdist, default to "master" if not found
     try:
@@ -509,32 +509,95 @@ def isolated_rag_workspace(tmp_path_factory, request):
     except Exception:
         worker_id = "master"
 
-    if worker_id == "master":
-        # Not running in parallel, use defaults
-        yield
-        return
-
     # Create a unique temporary directory for this worker
     worker_tmp = tmp_path_factory.mktemp(f"rag_{worker_id}")
-    qdrant_path = worker_tmp / "qdrant"
-    parent_store = worker_tmp / "parent_store"
+    qdrant_db_path = worker_tmp / "qdrant_db"
 
-    qdrant_path.mkdir(parents=True, exist_ok=True)
-    parent_store.mkdir(parents=True, exist_ok=True)
+    qdrant_db_path.mkdir(parents=True, exist_ok=True)
 
-    # Set environment variables that rag_optimized.py will pick up
-    os.environ["QDRANT_PATH_OVERRIDE"] = str(qdrant_path.absolute())
-    os.environ["PARENT_STORE_PATH_OVERRIDE"] = str(parent_store.absolute())
-    os.environ["RAG_COLLECTION_OVERRIDE"] = f"test_collection_{worker_id}"
+    # Force Local File-Based Mode for tests (Safety First)
+    os.environ["QDRANT_PATH"] = str(qdrant_db_path.absolute())
+    os.environ["RAG_COLLECTION_PREFIX"] = f"test_{worker_id}_"
     os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+
+    # Force SQLite Isolation
+    sqlite_path = worker_tmp / f"test_memory_{worker_id}.db"
+    os.environ["ANTIGRAVITY_SQLITE_PATH"] = str(sqlite_path.absolute())
+
+    # Disable remote connection attempts during tests
+    os.environ["QDRANT_HOST"] = "TEST_DISABLED"
+    os.environ["QDRANT_PORT"] = "0"
+
+    print(f"\n[FIXTURE] Isolated RAG Workspace for {worker_id}: {qdrant_db_path}")
 
     yield
 
     # Clear env vars
-    os.environ.pop("QDRANT_PATH_OVERRIDE", None)
-    os.environ.pop("PARENT_STORE_PATH_OVERRIDE", None)
-    os.environ.pop("RAG_COLLECTION_OVERRIDE", None)
+    os.environ.pop("QDRANT_PATH", None)
+    os.environ.pop("RAG_COLLECTION_PREFIX", None)
+    os.environ.pop("ANTIGRAVITY_SQLITE_PATH", None)
+    os.environ.pop("QDRANT_HOST", None)
+    os.environ.pop("QDRANT_PORT", None)
     os.environ.pop("HF_HUB_DISABLE_SYMLINKS_WARNING", None)
+
+
+# --- Memory Isolation Constants ---
+MEMORY_COLLECTIONS = [
+    "memory_semantic",
+    "memory_procedural",
+    "memory_toolbox",
+    "memory_entity",
+    "memory_summary",
+    "episodic",
+    "pending",
+    "rejected",
+]
+
+
+@pytest.fixture(autouse=True)
+def clean_isolated_qdrant():
+    """
+    Function-scoped fixture that clears memory collections in the isolated
+    test workspace before each test.
+
+    This ensures functional isolation between tests while strictly hitting
+    the temporary QDRANT_PATH defined in the session-scoped 'isolated_rag_workspace'.
+    """
+    from scripts.memory.memory_config import (
+        get_collection_name,
+        QDRANT_PATH,
+        QDRANT_HOST,
+        QDRANT_PORT,
+    )
+
+    # Safety: check if isolation is active
+    if not QDRANT_PATH and (not QDRANT_HOST or QDRANT_HOST == "TEST_DISABLED"):
+        yield
+        return
+
+    try:
+        from qdrant_client import QdrantClient
+        from qdrant_client.http.models import Filter
+
+        if QDRANT_PATH:
+            client = QdrantClient(path=QDRANT_PATH)
+        else:
+            client = QdrantClient(host=QDRANT_HOST, port=int(QDRANT_PORT))
+
+        existing = {c.name for c in client.get_collections().collections}
+
+        for base_name in MEMORY_COLLECTIONS:
+            collection = get_collection_name(base_name)
+            if collection in existing:
+                try:
+                    client.delete(collection_name=collection, points_selector=Filter())
+                except Exception:
+                    pass
+        client.close()
+    except Exception:
+        pass
+
+    yield
 
 
 @pytest.fixture

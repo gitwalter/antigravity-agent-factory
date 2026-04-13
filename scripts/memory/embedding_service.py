@@ -24,10 +24,9 @@ Usage:
 
 import os
 import logging
+import numpy as np
 from pathlib import Path
 from typing import List, Union, Optional
-
-import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +112,9 @@ class EmbeddingService:
             logger.info(f"Model cache directory: {self.cache_dir.absolute()}")
 
             # This will download on first run (~80MB for MiniLM)
-            self._model = SentenceTransformer(self.model_name)
+            self._model = SentenceTransformer(
+                self.model_name, cache_folder=str(self.cache_dir.absolute())
+            )
 
             # Update dimension from loaded model
             self._dimension = self._model.get_sentence_embedding_dimension()
@@ -143,7 +144,7 @@ class EmbeddingService:
         """Check if model is loaded."""
         return self._model is not None
 
-    def embed(self, texts: Union[str, List[str]]) -> np.ndarray:
+    def embed(self, texts: Union[str, List[str]]) -> "np.ndarray":
         """
         Generate embeddings for text(s).
 
@@ -174,7 +175,7 @@ class EmbeddingService:
 
         return embeddings
 
-    def embed_single(self, text: str) -> np.ndarray:
+    def embed_single(self, text: str) -> "np.ndarray":
         """
         Generate embedding for a single text.
 
@@ -251,7 +252,9 @@ class EmbeddingService:
         filtered = [(text, score) for text, score in sorted_pairs if score >= threshold]
         return filtered[:k]
 
-    def batch_similarity(self, queries: List[str], candidates: List[str]) -> np.ndarray:
+    def batch_similarity(
+        self, queries: List[str], candidates: List[str]
+    ) -> "np.ndarray":
         """
         Calculate similarity matrix between queries and candidates.
 

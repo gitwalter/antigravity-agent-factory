@@ -129,8 +129,22 @@ The unified runner executes in **2 parallel execution groups** (optimized for ma
 
 | Group | Scripts (Parallel) | Time |
 |-------|-------------------|------|
-| 0 | `sync_manifest`, `sync_knowledge`, `validate_yaml`, `dependency_validator` (critical), `sync_artifacts`, `generate_test_catalog`, `changelog_check` | ~1.2s (7 parallel) |
-| 1 | `validate_readme`, `update_index` | ~0.5s (2 parallel) |
+| 0 | `sync_artifacts`, `sync_manifest`, `validate_yaml`, `dependency_validator` | ~1.2s |
+| 1 | `validate_json`, `validate_readme`, `update_index` | ~0.5s |
+
+**Total: ~2-4 seconds** (Optimized: Redundant full scans removed)
+
+### High-Velocity Verification (RCW)
+The `verify_and_commit.py` script (backend for `safe_commit.py`) has been optimized to eliminate redundant full-repository scans. Use the **`--fast`** flag to skip non-essential heavy tests during development:
+
+```powershell
+# Optimized verification (Skips expensive pytest and full pre-commit runs)
+{PYTHON_PATH} {directories.scripts}/git/safe_commit.py "feat(scope): descriptio" --fast --push
+```
+
+> [!WARNING]
+> **Windows/Conda Encoding Issue**: When using `conda run` on Windows, emojis or special characters in script output may cause a `UnicodeEncodeError`.
+> **Solution**: Use the direct path to the environment's `python.exe` and ensure `sys.stdout.reconfigure(encoding="utf-8")` is present in the script.
 
 **Total: ~3-5 seconds** (optimized with fast file-based test counting)
 
@@ -302,6 +316,8 @@ When a commit fails:
 | `set -e` silent fail | Shell exits on any error | Removed `set -e`, explicit error handling |
 | Broken dependency ref | Agent/skill references non-existent artifact | Fix node IDs in `dependency-graph.json` or skill frontmatter |
 | Knowledge count mismatch | Sync scripts ran before `git add` with new untracked files | ALWAYS `git add -A` BEFORE running sync scripts - they count git-tracked files only |
+| UnicodeEncodeError | `conda run` outputting emojis on Windows | Use direct `python.exe` instead of `conda run` and set encoding to UTF-8 |
+| Hanging on Release | Redundant full-repository pre-commit scans | Use optimized `verify_and_commit.py` with `--fast` flag |
 | Leftover auto-generated files | Pre-commit sync scripts modify bundles/docs but sync guard missed them | Fixed: sync guard now catches all `docs/*`, `bundles/*`, `README.md`, `knowledge/manifest.json` via prefix matching |
 
 ## Stage and Commit Flow
